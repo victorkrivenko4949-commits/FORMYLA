@@ -21,14 +21,8 @@
 
         <nav class="nav">
             <a href="{{ url_for('index') }}">Разделы</a>
-            {% set solved_count = session.get('solved_problems', [])|length %}
-            {% set is_locked = solved_count < 5 %}
-            <a href="{{ url_for('olympiads') }}" {% if is_locked %}style="opacity: 0.6;"{% endif %}>
-                {% if is_locked %}🔒 {% endif %}Олимпиады
-            </a>
-            <a href="/practice" {% if is_locked %}style="opacity: 0.6;"{% endif %}>
-                {% if is_locked %}🔒 {% endif %}Написать олимпиаду
-            </a>
+            <a href="{{ url_for('olympiads') }}">Олимпиады</a>
+            <a href="/practice">Написать олимпиаду</a>
         </nav>
         
         <!-- Форма поиска -->

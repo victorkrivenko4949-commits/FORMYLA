@@ -63,9 +63,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 VARIANTS = {}
 
-# Константа для маршрута обучения
-REQUIRED_SOLVED_TASKS = 5
-
 
 SUBJECTS = {
     "algebra": "Алгебра",
@@ -217,8 +214,7 @@ def index():
     solved_count = len(session.get('solved_problems', []))
     return render_template("index.html",
         subjects=SUBJECTS,
-        solved_count=solved_count,
-        required=REQUIRED_SOLVED_TASKS
+        solved_count=solved_count
     )
 
 
@@ -445,15 +441,6 @@ def check_answer():
 
 @app.route("/practice")
 def practice():
-    # Проверка доступа
-    solved_count = len(session.get('solved_problems', []))
-    if solved_count < REQUIRED_SOLVED_TASKS:
-        return render_template('locked.html',
-            solved=solved_count,
-            required=REQUIRED_SOLVED_TASKS,
-            section_name="Написать олимпиаду"
-        )
-    
     return render_template("practice.html", olympiads=OLYMPIADS_INFO, grades=GRADES, rounds=ROUNDS)
 
 
@@ -583,15 +570,6 @@ def submit_solution(variant_id):
 
 @app.route("/olympiads")
 def olympiads():
-    # Проверка доступа
-    solved_count = len(session.get('solved_problems', []))
-    if solved_count < REQUIRED_SOLVED_TASKS:
-        return render_template('locked.html',
-            solved=solved_count,
-            required=REQUIRED_SOLVED_TASKS,
-            section_name="Олимпиады"
-        )
-    
     # Структура: {slug: {year: {round_key: [round_title, [grade1, grade2, ...]]}}}
     # Порядок: Олимпиада -> Год -> Этап -> Класс
     olympiad_data = {}
@@ -625,15 +603,6 @@ def olympiads():
 
 @app.route("/olympiads/open", methods=["POST"])
 def olympiad_open():
-    # Проверка доступа
-    solved_count = len(session.get('solved_problems', []))
-    if solved_count < REQUIRED_SOLVED_TASKS:
-        return render_template('locked.html',
-            solved=solved_count,
-            required=REQUIRED_SOLVED_TASKS,
-            section_name="Олимпиады"
-        )
-    
     slug = request.form.get("olympiad")
     year = request.form.get("year")
     grade = request.form.get("grade")
