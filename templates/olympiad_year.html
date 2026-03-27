@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ olympiad.title }} {{ year_data.year }} — FORMYLA{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>{{ olympiad.title }} — {{ year_data.year }}</h1>
+    <p>{{ olympiad.full_title }}</p>
+</section>
+
+<section class="subject-card" style="max-width: 900px; margin: 0 auto;">
+    <h2>Архив года</h2>
+
+    <p>
+        <strong>Задачи:</strong>
+        {% if year_data.has_problems %}
+            доступны
+        {% else %}
+            скоро появятся
+        {% endif %}
+    </p>
+
+    <p>
+        <strong>Решения:</strong>
+        {% if year_data.has_solutions %}
+            доступны
+        {% else %}
+            скоро появятся
+        {% endif %}
+    </p>
+
+    <p>
+        <strong>Источник:</strong>
+        <a href="{{ year_data.source_url }}" target="_blank">{{ year_data.source_url }}</a>
+    </p>
+
+    <p>
+        Позже сюда можно добавить:
+        список задач, ответы, решения, PDF, фильтры по классу и кнопки «Сохранить» и «Решать».
+    </p>
+
+    <a class="subject-link" href="{{ url_for('olympiad_detail', olympiad_slug=olympiad.slug) }}">Назад к годам</a>
+</section>
+{% endblock %}

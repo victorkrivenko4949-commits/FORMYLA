@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subtopic_title }} — {{ subject_title }}{% endblock %}
+
+{% block content %}
+<a href="/section/{{ subject_key }}" class="back-link">← {{ subject_title }}</a>
+
+<h1 class="page-title">{{ subtopic_title }}</h1>
+<p class="page-subtitle">{{ subject_title }} · Выберите класс и уровень сложности</p>
+
+<div style="margin-top: 30px;">
+    {% for grade in grades %}
+    <div style="background: #25252b; padding: 20px 25px; border-radius: 12px; margin-bottom: 15px;">
+        <div style="color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 15px;">
+            {{ grade }} класс
+            <span style="color: #888; font-weight: 400; font-size: 14px;">
+                ({{ grade_counts.get(grade, 0) }} задач)
+            </span>
+        </div>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {% for level in range(1, 11) %}
+            {% set level_count = level_counts.get(grade, {}).get(level, 0) %}
+            {% set bg_color = '#005bb5' if level_count > 0 else '#333' %}
+            <a href="/problems?subject={{ subject_key }}&subtopic={{ subtopic_key }}&grade={{ grade }}&level={{ level }}"
+               style="background: {{ bg_color }}; color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; transition: opacity 0.2s;"
+               {% if level_count == 0 %}onclick="return false;" style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                Ур.{{ level }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div style="text-align: center; margin-top: 40px;">
+    <a href="/section/{{ subject_key }}" class="btn-secondary" style="margin-right: 10px;">Назад</a>
+    <a href="/" class="btn-primary">Главная</a>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Решения — {{ olympiad.full_title }}{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{{ olympiad.full_title }}</h1>
+<p class="page-subtitle">
+    {{ combo.year }} год, {{ combo.grade }} класс — {{ combo.round_title | default('') }}
+</p>
+<p style="color: #888; margin-bottom: 30px;">Ответы и подробные решения</p>
+
+{% for p in combo.problems %}
+<div style="background: #25252b; padding: 25px 30px; margin-bottom: 25px; border-radius: 12px;">
+    <span style="background: #005bb5; color: #fff; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+        Задача {{ p.num }}
+    </span>
+    
+    <div style="color: #e0e0e0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; margin: 20px 0; padding-bottom: 20px; border-bottom: 1px solid #333;">
+        {{ p.text | safe }}
+    </div>
+    
+    {% if p.answer %}
+    <div style="margin-bottom: 20px;">
+        <span style="color: #00cc66; font-weight: 600; font-size: 15px;">Ответ:</span>
+        <span style="color: #e0e0e0; margin-left: 10px; font-size: 15px;">{{ p.answer | safe }}</span>
+    </div>
+    {% endif %}
+    
+    <div style="color: #ffaa00; font-weight: 600; margin-bottom: 12px; font-size: 15px;">
+        Подробное решение:
+    </div>
+    <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1a1a2e; padding: 20px; border-radius: 10px;">
+        {{ p.solution | default('Решение не найдено') | safe }}
+    </div>
+</div>
+{% endfor %}
+
+<div style="text-align: center; margin-top: 40px;">
+    <a href="/olympiads" class="btn-primary" style="padding: 14px 40px; font-size: 16px;">
+        Выбрать другой пробник
+    </a>
+</div>
+{% endblock %}

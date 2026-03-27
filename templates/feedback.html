@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="feedback-page">
+    <div class="feedback-header">
+        <h1>Результаты проверки</h1>
+        <div class="feedback-meta">
+            <span>{{ variant.olympiad_title }}</span>
+            <span>{{ variant.grade }} класс</span>
+            <span>{{ variant.round_title }}</span>
+        </div>
+    </div>
+
+    <div class="feedback-card">
+        <div class="feedback-content">
+            {{ feedback | replace('\n', '<br>') | safe }}
+        </div>
+    </div>
+
+    <div class="feedback-actions">
+        <a href="/practice" class="btn-again">Написать ещё вариант</a>
+        <a href="/" class="btn-home">На главную</a>
+    </div>
+</div>
+
+<style>
+.feedback-page { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+.feedback-header { margin-bottom: 32px; }
+.feedback-header h1 { font-size: 2rem; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
+.feedback-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+.feedback-meta span {
+    background: #1e293b;
+    color: #7dd3fc;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    border: 1px solid #334155;
+}
+.feedback-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 32px;
+}
+.feedback-content {
+    color: #e2e8f0;
+    line-height: 1.8;
+    font-size: 1rem;
+    white-space: pre-wrap;
+}
+.feedback-actions { display: flex; gap: 16px; }
+.btn-again {
+    background: linear-gradient(135deg, #86efac, #7dd3fc);
+    color: #0f172a;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+}
+.btn-again:hover { opacity: 0.9; }
+.btn-home {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+    border: 1px solid #334155;
+    transition: background 0.2s;
+}
+.btn-home:hover { background: #334155; }
+</style>
+{% endblock %}

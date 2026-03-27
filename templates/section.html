@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject_title }} — FORMYLA{% endblock %}
+
+{% block content %}
+<a href="/" class="back-link">← Главная</a>
+
+<h1 class="page-title">{{ subject_title }}</h1>
+<p class="page-subtitle">Всего задач: {{ total }} · Подтем: {{ subtopics|length }}</p>
+
+<div style="margin-top: 30px;">
+    {% for sub_key, sub_title in subtopics.items() %}
+    <a href="/section/{{ subject_key }}/{{ sub_key }}" 
+       style="display: block; background: #25252b; padding: 20px 25px; margin-bottom: 12px; border-radius: 12px; text-decoration: none; border-left: 4px solid #005bb5; transition: background 0.2s;">
+        <div style="color: #fff; font-size: 18px; font-weight: 600;">{{ sub_title }}</div>
+        <div style="color: #888; font-size: 14px; margin-top: 5px;">
+            {{ subtopic_counts.get(sub_key, 0) }} задач · Классы 5–11 · 10 уровней
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<div style="text-align: center; margin-top: 40px;">
+    <a href="/" class="btn-secondary" style="padding: 12px 30px;">Назад</a>
+</div>
+{% endblock %}

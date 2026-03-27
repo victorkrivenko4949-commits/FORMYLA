@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}FORMYLA — Разделы{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Разделы</h1>
+<p class="page-subtitle">Выбери раздел для тренировки.</p>
+
+<div class="cards-grid">
+    {% for key, title in subjects.items() %}
+        <a href="{{ url_for('section', subject_key=key) }}" class="card">
+            <h2 class="card-title">{{ title }}</h2>
+            <p class="card-text">
+                {% if key == 'algebra' %}
+                    Уравнения, неравенства, выражения.
+                {% elif key == 'geometry' %}
+                    Планиметрия, фигуры, углы, площади.
+                {% elif key == 'combinatorics' %}
+                    Подсчёт, перебор, логика конструкций.
+                {% elif key == 'number_theory' %}
+                    Делимость, остатки, простые числа.
+                {% elif key == 'movement' %}
+                    Встречное движение, догонка, скорость.
+                {% elif key == 'knights_liars' %}
+                    Логические задачи про рыцарей и лжецов.
+                {% else %}
+                    Олимпиадные задачи по математике.
+                {% endif %}
+            </p>
+        </a>
+    {% endfor %}
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+

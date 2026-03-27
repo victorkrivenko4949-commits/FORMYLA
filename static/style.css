@@ -1,0 +1,294 @@
+:root {
+    --bg-main: #0f172a;
+    --bg-soft: #111827;
+    --bg-elevated: #172033;
+    --bg-card: rgba(30, 41, 59, 0.94);
+    
+    --border-soft: rgba(255, 255, 255, 0.08);
+    --border-mid: rgba(255, 255, 255, 0.14);
+    
+    --text-main: #ffffff;
+    --text-soft: #cbd5e1;
+    --text-muted: #94a3b8;
+
+    --accent-1: #8b5cf6;
+    --accent-2: #38bdf8;
+    
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    color-scheme: dark;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-main);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.16), transparent 26%),
+        radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.16), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.08), transparent 28%),
+        linear-gradient(180deg, #0b1220 0%, #0f172a 45%, #111827 100%);
+    caret-color: transparent;
+}
+
+a, button, h1, h2, h3, p, div, span, label, li, strong, em, b, i, pre, code {
+    caret-color: transparent;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* =========================================
+   ЯДЕРНОЕ ПРАВИЛО ПРОТИВ ЧЕРНОГО ТЕКСТА
+   ========================================= */
+.force-white,
+.force-white * {
+    color: #ffffff !important;
+    background-color: transparent !important;
+}
+/* ========================================= */
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 34px;
+    background: rgba(11, 18, 32, 0.78);
+    border-bottom: 1px solid var(--border-soft);
+    backdrop-filter: blur(14px);
+}
+
+.logo {
+    color: var(--text-main);
+    font-size: 31px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.logo:hover {
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.nav {
+    display: flex;
+    gap: 18px;
+}
+
+.nav a {
+    color: var(--text-soft);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 8px 0;
+    transition: color 0.18s ease;
+}
+
+.nav a:hover {
+    color: #ffffff;
+}
+
+.main {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 44px 22px 70px;
+}
+
+.page-title {
+    margin: 0 0 10px 0;
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text-main);
+    user-select: none;
+}
+
+.page-subtitle {
+    margin: 0 0 30px 0;
+    font-size: 17px;
+    color: var(--text-soft);
+    user-select: none;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    display: block;
+    padding: 24px 22px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.92) 0%, rgba(17, 24, 39, 0.98) 100%);
+    border: 1px solid var(--border-soft);
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    user-select: none;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(129, 140, 248, 0.35);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+}
+
+.card-title {
+    margin: 0 0 12px 0;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.card-text {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text-soft);
+}
+
+.filters, .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid var(--border-soft);
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 170px;
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+select, input, textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-mid);
+    background: rgba(15, 23, 42, 0.94);
+    color: #ffffff !important;
+    font-size: 15px;
+    box-shadow: none;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: rgba(56, 189, 248, 0.65);
+}
+
+option {
+    background: #111827 !important;
+    color: #ffffff !important;
+}
+
+button, .btn, .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #ffffff !important;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 10px 24px rgba(56, 189, 248, 0.18);
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    opacity: 0.98;
+}
+
+/* КАРТОЧКА ЗАДАЧИ НА СТРАНИЦЕ РЕШЕНИЯ */
+.problem-card {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(17, 24, 39, 0.98) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.problem-title {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.problem-text {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.answer {
+    padding: 18px;
+    margin-top: 20px;
+    border-radius: 14px;
+    background: rgba(34, 197, 94, 0.1); /* Легкий зеленый фон */
+    border: 1px solid rgba(34, 197, 94, 0.22);
+    font-size: 17px;
+}
+
+.solution {
+    padding: 18px;
+    margin-top: 16px;
+    border-radius: 14px;
+    background: rgba(56, 189, 248, 0.08); /* Легкий синий фон */
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    font-size: 17px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 18px;
+    color: var(--text-soft);
+    font-weight: 600;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.back-link:hover {
+    color: #ffffff;
+    transform: translateX(-2px);
+}
+
+@media (max-width: 860px) {
+    .header { padding: 16px 18px; }
+    .logo { font-size: 24px; }
+    .main { padding: 30px 16px 52px; }
+    .page-title { font-size: 36px; }
+    .problem-title { font-size: 26px; }
+    .problem-card { padding: 18px; }
+    .problem-text, .answer, .solution { font-size: 16px; }
+}

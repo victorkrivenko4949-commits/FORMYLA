@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ subject_name }} - Олимпиадная математика</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <header>
+        <a href="/" class="back-link">← На главную</a>
+        <h1>{{ subject_name }}</h1>
+    </header>
+
+    <main>
+        <!-- Форма фильтрации -->
+        <div class="filter-container">
+            <form method="GET">
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <label for="grade">КЛАСС</label>
+                        <select name="grade" id="grade">
+                            <option value="">Все классы</option>
+                            {% for g in grades %}
+                                <option value="{{ g }}" {% if selected_grade == g|string %}selected{% endif %}>{{ g }} класс</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="difficulty">УРОВЕНЬ</label>
+                        <select name="difficulty" id="difficulty">
+                            <option value="">Все уровни</option>
+                            {% for diff_id, diff_name in difficulties.items() %}
+                                <option value="{{ diff_id }}" {% if selected_difficulty == diff_id|string %}selected{% endif %}>Уровень {{ diff_id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Применить фильтр</button>
+            </form>
+        </div>
+
+        <!-- Отладочная информация (потом удалим) -->
+        <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 12px; color: #666;">
+            <strong>Debug info:</strong> Выбран класс: '{{ selected_grade }}' | Выбран уровень: '{{ selected_difficulty }}' | Всего задач в разделе: {{ problems|length }}
+        </div>
+
+        <!-- Список задач -->
+        <div class="problems-list">
+            {% if problems %}
+                <p class="results-count">Показано задач: {{ problems|length }}</p>
+                {% for problem in problems %}
+                    <a href="/problem/{{ problem.id }}" class="problem-card">
+                        <div class="problem-header">
+                            <span class="problem-grade">{{ problem.grade }} класс</span>
+                            <span class="problem-difficulty">Уровень {{ problem.difficulty }}</span>
+                        </div>
+                        <h3>{{ problem.title }}</h3>
+                        <p class="problem-preview">{{ problem.text | truncate(100) }}</p>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">
+                    <h3>Задачи не найдены</h3>
+                    <p>К сожалению, задач для выбранного класса и уровня пока нет в базе (файле problems.py).</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
+
+
+

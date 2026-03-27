@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Олимпиады — FORMYLA{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Олимпиады</h1>
+    <p>Выбери олимпиаду, год, этап и класс — получишь полный пробник как на настоящей олимпиаде</p>
+</section>
+
+<section style="max-width: 600px; margin: 0 auto 40px auto;">
+    <form method="post" action="{{ url_for('olympiad_open') }}" id="olympForm">
+
+        <label style="display:block; margin-bottom: 20px;">
+            <span style="display:block; margin-bottom: 8px; font-weight:600;">Олимпиада</span>
+            <select name="olympiad" id="selOlymp" required
+                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
+                <option value="">Выбери олимпиаду</option>
+                {% for o in olympiads %}
+                    <option value="{{ o.slug }}">{{ o.full_title }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label style="display:block; margin-bottom: 20px;">
+            <span style="display:block; margin-bottom: 8px; font-weight:600;">Год</span>
+            <select name="year" id="selYear" required
+                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
+                <option value="">Сначала выбери олимпиаду</option>
+            </select>
+        </label>
+
+        <label style="display:block; margin-bottom: 20px;">
+            <span style="display:block; margin-bottom: 8px; font-weight:600;">Этап</span>
+            <select name="round" id="selRound" required
+                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
+                <option value="">Сначала выбери год</option>
+            </select>
+        </label>
+
+        <label style="display:block; margin-bottom: 20px;">
+            <span style="display:block; margin-bottom: 8px; font-weight:600;">Класс</span>
+            <select name="grade" id="selGrade" required
+                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
+                <option value="">Сначала выбери этап</option>
+            </select>
+        </label>
+
+        <button type="submit"
+                style="background:#005bb5; color:#fff; padding:14px; border-radius:12px;
+                       border:none; cursor:pointer; width:100%; font-size:16px; font-weight:600;">
+            Начать пробник
+        </button>
+    </form>
+</section>
+
+<section class="subjects-grid">
+    {% for o in olympiads %}
+        <div class="subject-card">
+            <h2>{{ o.full_title }}</h2>
+            <p style="color:#888; margin-bottom:8px;">
+                Классы: {% for g in o.grades %}{{ g }}{% if not loop.last %}, {% endif %}{% endfor %}
+            </p>
+            <p style="color:#888;">
+                Этапы: {% for key, name in o.rounds.items() %}{{ name }}{% if not loop.last %}, {% endif %}{% endfor %}
+            </p>
+        </div>
+    {% endfor %}
+</section>
+
+<script>
+// DATA[slug][year][round_key] = [round_title, [grade1, grade2, ...]]
+var DATA = {{ olympiad_data | tojson | safe }};
+
+var selOlymp = document.getElementById('selOlymp');
+var selYear = document.getElementById('selYear');
+var selRound = document.getElementById('selRound');
+var selGrade = document.getElementById('selGrade');
+
+selOlymp.addEventListener('change', function() {
+    var slug = this.value;
+    selYear.innerHTML = '<option value="">Выбери год</option>';
+    selRound.innerHTML = '<option value="">Сначала выбери год</option>';
+    selGrade.innerHTML = '<option value="">Сначала выбери этап</option>';
+    if (!slug || !DATA[slug]) return;
+    var years = Object.keys(DATA[slug]).sort(function(a,b){ return b-a; });
+    for (var i = 0; i < years.length; i++) {
+        selYear.innerHTML += '<option value="' + years[i] + '">' + years[i] + '</option>';
+    }
+});
+
+selYear.addEventListener('change', function() {
+    var slug = selOlymp.value;
+    var year = this.value;
+    selRound.innerHTML = '<option value="">Выбери этап</option>';
+    selGrade.innerHTML = '<option value="">Сначала выбери этап</option>';
+    if (!slug || !year || !DATA[slug] || !DATA[slug][year]) return;
+    var rounds = DATA[slug][year];
+    var roundKeys = Object.keys(rounds);
+    for (var i = 0; i < roundKeys.length; i++) {
+        var rk = roundKeys[i];
+        var roundTitle = rounds[rk][0];
+        selRound.innerHTML += '<option value="' + rk + '">' + roundTitle + '</option>';
+    }
+    if (roundKeys.length === 1) {
+        selRound.value = roundKeys[0];
+        fillGrades(slug, year, roundKeys[0]);
+    }
+});
+
+selRound.addEventListener('change', function() {
+    var slug = selOlymp.value;
+    var year = selYear.value;
+    var rnd = this.value;
+    fillGrades(slug, year, rnd);
+});
+
+function fillGrades(slug, year, rnd) {
+    selGrade.innerHTML = '<option value="">Выбери класс</option>';
+    if (!slug || !year || !rnd || !DATA[slug] || !DATA[slug][year] || !DATA[slug][year][rnd]) return;
+    var grades = DATA[slug][year][rnd][1];
+    for (var i = 0; i < grades.length; i++) {
+        selGrade.innerHTML += '<option value="' + grades[i] + '">' + grades[i] + ' класс</option>';
+    }
+    if (grades.length === 1) {
+        selGrade.value = grades[0];
+    }
+}
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}DEBUG — все задачи{% endblock %}
+
+{% block content %}
+<h1 class="page-title">DEBUG: все задачи из PROBLEMS_DB</h1>
+<p class="page-subtitle">Эта страница только для проверки, что база подключена.</p>
+
+<p class="page-subtitle">Всего задач: {{ problems|length }}</p>
+
+<ul class="problems-list">
+    {% for p in problems %}
+        <li class="problems-item">
+            id {{ p.id }},
+            subject: {{ p.subject }},
+            grade: {{ p.grade }},
+            difficulty: {{ p.difficulty }},
+            title: {{ p.title }}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

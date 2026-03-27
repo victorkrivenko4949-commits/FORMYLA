@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ olympiad.full_title }}{% endblock %}
+
+{% block content %}
+<!-- Sticky таймер -->
+<div id="timer-bar" style="position: sticky; top: 10px; z-index: 100; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center;">
+    <div style="color: #fff; font-weight: 600; font-size: 16px;">
+        ⏳ Осталось времени:
+    </div>
+    <div id="timer" style="color: #fff; font-size: 24px; font-weight: 700; font-family: 'Courier New', monospace;">
+        03:00:00
+    </div>
+</div>
+
+<h1 class="page-title">{{ olympiad.full_title }}</h1>
+<p class="page-subtitle">
+    {{ combo.year }} год, {{ combo.grade }} класс — {{ combo.round_title | default('') }}
+</p>
+<p style="color: #888; margin-bottom: 20px;">Задач в пробнике: {{ problems|length }}</p>
+
+<div style="background: #1a1a2e; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #005bb5;">
+    <p style="margin: 0; color: #ccc;">
+        Это реальный пробник олимпиады. Попробуй решить все задачи самостоятельно. У тебя есть 3 часа!
+    </p>
+</div>
+
+{% for p in problems %}
+<div style="background: #25252b; padding: 20px 25px; margin-bottom: 15px; border-radius: 12px;">
+    <span style="background: #005bb5; color: #fff; padding: 4px 14px; border-radius: 8px; font-weight: 600;">
+        Задача {{ p.num }}
+    </span>
+    <div style="color: #e0e0e0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; margin-top: 12px;">
+        {{ p.text | safe }}
+    </div>
+</div>
+{% endfor %}
+
+<div style="text-align: center; margin-top: 40px;">
+    <a href="/olympiads/solution/{{ combo.id }}" class="btn-primary" style="padding: 14px 40px; font-size: 16px; margin-right: 15px;">
+        Показать ответы и решения
+    </a>
+    <a href="/olympiads" class="btn-secondary" style="padding: 14px 40px; font-size: 16px;">
+        Назад к выбору
+    </a>
+</div>
+
+<script>
+(function() {
+    const timerKey = "timer_combo_{{ combo.id }}";
+    const DURATION = 3 * 60 * 60 * 1000; // 3 часа в миллисекундах
+    const timerEl = document.getElementById('timer');
+    const timerBar = document.getElementById('timer-bar');
+    
+    // Инициализация таймера
+    let endTime = localStorage.getItem(timerKey);
+    if (!endTime) {
+        endTime = Date.now() + DURATION;
+        localStorage.setItem(timerKey, endTime);
+    } else {
+        endTime = parseInt(endTime);
+    }
+    
+    function formatTime(ms) {
+        if (ms <= 0) return '00:00:00';
+        
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    
+    function updateTimer() {
+        const remaining = endTime - Date.now();
+        
+        if (remaining <= 0) {
+            timerEl.textContent = '00:00:00';
+            timerBar.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            clearInterval(timerInterval);
+            
+            alert('⏰ Время вышло! Пора смотреть решения.');
+            window.location.href = '/olympiads/solution/{{ combo.id }}';
+            return;
+        }
+        
+        timerEl.textContent = formatTime(remaining);
+        
+        // Меняем цвет при < 5 минут
+        if (remaining < 5 * 60 * 1000) {
+            timerBar.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+        }
+        
+        // Меняем цвет при < 1 минуты
+        if (remaining < 1 * 60 * 1000) {
+            timerBar.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        }
+    }
+    
+    // Обновляем каждую секунду
+    const timerInterval = setInterval(updateTimer, 1000);
+    updateTimer(); // Первый вызов сразу
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты проверки — FORMYLA{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto; padding: 20px;">
+    <h1 class="page-title">Результаты проверки варианта</h1>
+    
+    <!-- Итоговая статистика -->
+    <div style="background: {% if success_rate >= 80 %}#10b981{% elif success_rate >= 60 %}#f59e0b{% else %}#ef4444{% endif %}; padding: 30px; border-radius: 16px; margin: 30px 0; text-align: center; color: #fff;">
+        <div style="font-size: 48px; font-weight: 700; margin-bottom: 10px;">
+            {{ correct_count }} / {{ total_count }}
+        </div>
+        <div style="font-size: 24px; margin-bottom: 5px;">
+            {% if success_rate >= 80 %}
+                🎉 Отлично!
+            {% elif success_rate >= 60 %}
+                👍 Хорошо!
+            {% else %}
+                💪 Продолжай тренироваться!
+            {% endif %}
+        </div>
+        <div style="font-size: 18px; opacity: 0.9;">
+            Процент успеха: {{ success_rate }}%
+        </div>
+    </div>
+    
+    <!-- Детальный разбор каждой задачи -->
+    <h2 style="margin-top: 40px; margin-bottom: 20px; font-size: 24px;">Разбор задач</h2>
+    
+    {% for result in results %}
+    <div style="background: #f8fafc; border: 2px solid {% if result.is_correct %}#10b981{% else %}#ef4444{% endif %}; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 18px; color: #1e293b;">
+                Задача {{ loop.index }}
+            </h3>
+            <span style="background: {% if result.is_correct %}#10b981{% else %}#ef4444{% endif %}; color: #fff; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                {% if result.is_correct %}✅ Верно{% else %}❌ Неверно{% endif %}
+            </span>
+        </div>
+        
+        <div style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #334155; line-height: 1.6;">
+            {{ result.problem.text | safe }}
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <div style="font-size: 13px; color: #64748b; margin-bottom: 5px; font-weight: 500;">Ваш ответ:</div>
+                <div style="background: {% if result.is_correct %}#ecfdf5{% else %}#fee2e2{% endif %}; padding: 10px 15px; border-radius: 8px; font-weight: 600; color: #1e293b;">
+                    {% if result.user_answer %}{{ result.user_answer }}{% else %}<span style="color: #94a3b8;">Не указан</span>{% endif %}
+                </div>
+            </div>
+            <div>
+                <div style="font-size: 13px; color: #64748b; margin-bottom: 5px; font-weight: 500;">Правильный ответ:</div>
+                <div style="background: #ecfdf5; padding: 10px 15px; border-radius: 8px; font-weight: 600; color: #059669;">
+                    {{ result.correct_answer }}
+                </div>
+            </div>
+        </div>
+        
+        {% if result.problem.solution %}
+        <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #3b82f6; font-weight: 600; padding: 10px; background: #eff6ff; border-radius: 8px;">
+                📖 Показать решение
+            </summary>
+            <div style="margin-top: 15px; padding: 15px; background: #fff; border-radius: 8px; color: #334155; line-height: 1.7; white-space: pre-wrap;">
+                {{ result.problem.solution | safe }}
+            </div>
+        </details>
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+    <!-- Кнопки действий -->
+    <div style="text-align: center; margin-top: 40px; padding-bottom: 40px;">
+        <a href="/practice" class="btn-primary" style="display: inline-block; padding: 14px 32px; font-size: 16px; margin-right: 15px; text-decoration: none;">
+            Попробовать другой вариант
+        </a>
+        <a href="/" class="btn-secondary" style="display: inline-block; padding: 14px 32px; font-size: 16px; text-decoration: none;">
+            На главную
+        </a>
+    </div>
+</div>
+{% endblock %}

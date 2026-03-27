@@ -1,0 +1,224 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Задача #{{ problem.id }}{% endblock %}
+
+{% block content %}
+<a href="javascript:history.back()" class="back-link">← Назад к списку</a>
+
+<div class="problem-card">
+
+    <div class="problem-meta">
+        Класс: {{ problem.grade }} &bull; Уровень: {{ problem.difficulty }}
+    </div>
+
+    <h1 class="problem-title">{{ problem.title }}</h1>
+
+    <div class="problem-text">
+        {{ problem.text | safe }}
+    </div>
+
+    {% if is_solved %}
+    <!-- Задача уже решена -->
+    <div class="reveal-block" style="background: #10b981; border-color: #10b981; padding: 15px; border-radius: 12px; margin-top: 20px;">
+        <div style="color: #fff; font-weight: 600; font-size: 16px;">✅ Задача решена!</div>
+        <div style="color: #d1fae5; margin-top: 8px;">Правильный ответ: <strong>{{ problem.answer | safe }}</strong></div>
+    </div>
+    
+    <div class="reveal-block">
+        <button class="reveal-btn" onclick="toggleReveal('solution-box', this)">
+            📖 Посмотреть решение
+        </button>
+        <div id="solution-box" class="reveal-content hidden">
+            <span class="reveal-label solution-label">Решение</span>
+            <div>
+                {% if problem.solution %}
+                    {{ problem.solution | safe }}
+                {% else %}
+                    <span style="color: #475569;">Решение скоро появится...</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Форма для ввода ответа -->
+    <div class="answer-input-block" id="answer-form-{{ problem.id }}">
+        <label for="user-answer-{{ problem.id }}" style="display: block; color: #94a3b8; font-size: 14px; margin-bottom: 8px; font-weight: 500;">
+            Введите ваш ответ:
+        </label>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <input
+                type="text"
+                id="user-answer-{{ problem.id }}"
+                placeholder="Например: 42 или x=5"
+                style="flex: 1; padding: 12px 16px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 15px;"
+                onkeypress="if(event.key === 'Enter') checkAnswer({{ problem.id }})"
+            />
+            <button
+                onclick="checkAnswer({{ problem.id }})"
+                style="padding: 12px 24px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; transition: background 0.2s;"
+                onmouseover="this.style.background='#2563eb'"
+                onmouseout="this.style.background='#3b82f6'"
+            >
+                Проверить
+            </button>
+        </div>
+        <div id="feedback-{{ problem.id }}" style="margin-top: 12px; font-size: 14px;"></div>
+    </div>
+    
+    <div id="solution-container-{{ problem.id }}" style="display: none;">
+        <div class="reveal-block">
+            <div class="reveal-content" style="display: block;">
+                <span class="reveal-label solution-label">Решение</span>
+                <div>
+                    {% if problem.solution %}
+                        {{ problem.solution | safe }}
+                    {% else %}
+                        <span style="color: #475569;">Решение скоро появится...</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+<style>
+.problem-card {
+    max-width: 780px;
+    margin: 40px auto;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 40px;
+}
+
+.problem-meta {
+    font-size: 14px;
+    color: #475569;
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+}
+
+.problem-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+}
+
+.problem-text {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #cbd5e1;
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #0d1826;
+    border-left: 3px solid #334155;
+    border-radius: 8px;
+}
+
+.reveal-block {
+    margin-bottom: 16px;
+}
+
+.reveal-btn {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.reveal-btn:hover {
+    background: #263348;
+    color: #e2e8f0;
+    border-color: #475569;
+}
+
+.reveal-content {
+    margin-top: 12px;
+    padding: 20px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #e2e8f0;
+    animation: fadeIn 0.25s ease;
+}
+
+.reveal-content.hidden {
+    display: none;
+}
+
+#answer-box {
+    background: #0d2218;
+    border: 1px solid #166534;
+}
+
+#solution-box {
+    background: #0c1a2e;
+    border: 1px solid #1e3a5f;
+}
+
+.reveal-label {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.answer-label {
+    background: #14532d;
+    color: #86efac;
+}
+
+.solution-label {
+    background: #1e3a5f;
+    color: #7dd3fc;
+}
+
+.back-link {
+    display: inline-block;
+    margin: 24px 0 0 24px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #94a3b8;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+function toggleReveal(id, btn) {
+    const box = document.getElementById(id);
+    const isHidden = box.classList.contains('hidden');
+    if (isHidden) {
+        box.classList.remove('hidden');
+        if (id === 'answer-box') btn.innerHTML = '✕ Скрыть ответ';
+        if (id === 'solution-box') btn.innerHTML = '✕ Скрыть решение';
+    } else {
+        box.classList.add('hidden');
+        if (id === 'answer-box') btn.innerHTML = '👁 Посмотреть ответ';
+        if (id === 'solution-box') btn.innerHTML = '📖 Посмотреть решение';
+    }
+}
+</script>
+{% endblock %}

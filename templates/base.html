@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FORMYLA{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ]
+        });"></script>
+</head>
+<body>
+    <header class="header">
+        <a href="{{ url_for('index') }}" class="logo">FORMYLA</a>
+
+        <nav class="nav">
+            <a href="{{ url_for('index') }}">Разделы</a>
+            {% set solved_count = session.get('solved_problems', [])|length %}
+            {% set is_locked = solved_count < 5 %}
+            <a href="{{ url_for('olympiads') }}" {% if is_locked %}style="opacity: 0.6;"{% endif %}>
+                {% if is_locked %}🔒 {% endif %}Олимпиады
+            </a>
+            <a href="/practice" {% if is_locked %}style="opacity: 0.6;"{% endif %}>
+                {% if is_locked %}🔒 {% endif %}Написать олимпиаду
+            </a>
+        </nav>
+        
+        <!-- Форма поиска -->
+        <form action="/problems" method="get" style="margin-left: auto; display: flex; gap: 8px;">
+            <input type="text" name="q" placeholder="🔍 Поиск по задачам..."
+                   value="{{ request.args.get('q', '') }}"
+                   style="padding: 8px 16px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; min-width: 250px; font-size: 14px;">
+            <button type="submit" style="padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
+                Найти
+            </button>
+        </form>
+    </header>
+
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script>
+    async function checkAnswer(problemId) {
+        const inputEl = document.getElementById(`user-answer-${problemId}`);
+        const feedbackEl = document.getElementById(`feedback-${problemId}`);
+        const formEl = document.getElementById(`answer-form-${problemId}`);
+        const solutionEl = document.getElementById(`solution-container-${problemId}`);
+        
+        const userAnswer = inputEl.value.trim();
+        
+        if (!userAnswer) {
+            feedbackEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Введите ответ</span>';
+            return;
+        }
+        
+        feedbackEl.innerHTML = '<span style="color: #94a3b8;">Проверяем...</span>';
+        
+        try {
+            const response = await fetch('/api/check_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    problem_id: problemId,
+                    user_answer: userAnswer
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.correct) {
+                feedbackEl.innerHTML = '<span style="color: #10b981; font-weight: 600;">✅ Верно! Отличная работа!</span>';
+                
+                // Показываем решение
+                if (solutionEl) {
+                    solutionEl.style.display = 'block';
+                }
+                
+                // Через 1 секунду перезагружаем страницу для обновления статуса
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                feedbackEl.innerHTML = `<span style="color: #ef4444; font-weight: 600;">❌ Неверно. Попробуйте еще раз!</span>`;
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        } catch (error) {
+            feedbackEl.innerHTML = '<span style="color: #ef4444;">Ошибка при проверке. Попробуйте еще раз.</span>';
+            console.error('Error:', error);
+        }
+    }
+    </script>
+</body>
+</html>

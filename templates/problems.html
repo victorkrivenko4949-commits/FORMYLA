@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ subject_title }} — задачи{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{{ subject_title }} — задачи</h1>
+
+{% if search_query %}
+<div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+    <p style="color: #1e40af; margin: 0; font-size: 15px;">
+        🔍 Поиск по запросу: <strong>"{{ search_query }}"</strong> — Найдено: <strong>{{ total_count }}</strong> задач(и)
+    </p>
+</div>
+{% endif %}
+
+<p class="page-subtitle" style="margin-bottom: 20px;">
+  Найдено задач: {{ total_count }} {% if total_pages > 1 %}(страница {{ page }} из {{ total_pages }}){% endif %}
+</p>
+
+{% if problems|length == 0 %}
+  <div class="card" style="margin-top: 20px;">Для выбранных параметров задач пока нет (или база пустая).</div>
+{% else %}
+  <ul class="list" style="padding: 0; list-style: none;">
+    {% for p in problems %}
+      {% set is_solved = p.id in solved_problems %}
+      <li class="item" style="margin-bottom: 10px; padding: 15px; border: 1px solid {% if is_solved %}#10b981{% else %}#ddd{% endif %}; border-radius: 8px; background: {% if is_solved %}#ecfdf5{% else %}#fff{% endif %}; position: relative;">
+        {% if is_solved %}
+        <span style="position: absolute; top: 10px; right: 15px; background: #10b981; color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+          ✅ Решено
+        </span>
+        {% endif %}
+        <a class="link" href="{{ url_for('problem_detail', problem_id=p.id) }}" style="text-decoration: none; color: #111; font-weight: bold; font-size: 16px; display: block; padding-right: 100px;">
+          Задача ID: {{ p.id }} | {{ p.title }}
+        </a>
+        <div class="meta" style="color: #666; font-size: 13px; margin-top: 5px;">
+          Предмет: {{ p.subject }} | Класс: {{ p.grade }} | Сложность: {{ p.difficulty }}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% if total_pages > 1 %}
+<div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 40px; padding: 20px 0;">
+    {% if page > 1 %}
+    <a href="?{% for key, value in request.args.items() %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page - 1 }}"
+       style="padding: 10px 20px; background: #3b82f6; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
+        ← Назад
+    </a>
+    {% else %}
+    <span style="padding: 10px 20px; background: #cbd5e1; color: #64748b; border-radius: 8px; font-weight: 600;">
+        ← Назад
+    </span>
+    {% endif %}
+    
+    <span style="color: #64748b; font-weight: 500;">
+        Страница {{ page }} из {{ total_pages }}
+    </span>
+    
+    {% if page < total_pages %}
+    <a href="?{% for key, value in request.args.items() %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page + 1 }}"
+       style="padding: 10px 20px; background: #3b82f6; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">
+        Вперед →
+    </a>
+    {% else %}
+    <span style="padding: 10px 20px; background: #cbd5e1; color: #64748b; border-radius: 8px; font-weight: 600;">
+        Вперед →
+    </span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+

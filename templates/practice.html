@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="practice-page">
+    <h1>Написать олимпиаду</h1>
+    <p class="subtitle">Выбери олимпиаду, класс и этап — мы сгенерируем уникальный вариант на основе реальных задач.</p>
+
+    <form method="POST" action="/practice/generate" class="practice-form">
+        <div class="form-group">
+            <label>Олимпиада</label>
+            <select name="olympiad" required>
+                <option value="">— Выбери олимпиаду —</option>
+                {% for o in olympiads %}
+                <option value="{{ o.slug }}">{{ o.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Класс</label>
+            <select name="grade" required>
+                <option value="">— Выбери класс —</option>
+                {% for g in grades %}
+                <option value="{{ g }}">{{ g }} класс</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Этап</label>
+            <select name="round" required>
+                <option value="">— Выбери этап —</option>
+                {% for key, title in rounds.items() %}
+                <option value="{{ key }}">{{ title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn-generate">
+            <span class="btn-text">Сгенерировать вариант</span>
+            <span class="btn-loading" style="display:none;">Генерируем... (~15 сек)</span>
+        </button>
+    </form>
+</div>
+
+<style>
+.practice-page {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+.practice-page h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 10px;
+}
+.subtitle {
+    color: #94a3b8;
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+.practice-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.form-group label {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.form-group select {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #f1f5f9;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.form-group select:focus {
+    border-color: #86efac;
+}
+.btn-generate {
+    background: linear-gradient(135deg, #86efac, #7dd3fc);
+    color: #0f172a;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 10px;
+}
+.btn-generate:hover { opacity: 0.9; }
+</style>
+
+<script>
+document.querySelector(".practice-form").addEventListener("submit", function() {
+    document.querySelector(".btn-text").style.display = "none";
+    document.querySelector(".btn-loading").style.display = "inline";
+    document.querySelector(".btn-generate").disabled = true;
+});
+</script>
+{% endblock %}
