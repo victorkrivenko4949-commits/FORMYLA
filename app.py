@@ -7,6 +7,14 @@ except ImportError:
 import requests, random, json, uuid, os, base64, math
 from werkzeug.utils import secure_filename
 
+# AI Integration
+try:
+    from ai.deepseek_client import DeepSeekClient, DeepSeekAPIError
+    DEEPSEEK_AVAILABLE = True
+except ImportError:
+    DEEPSEEK_AVAILABLE = False
+    print("⚠️  DeepSeek client not available. AI recommendations disabled.")
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-' + str(uuid.uuid4()))
