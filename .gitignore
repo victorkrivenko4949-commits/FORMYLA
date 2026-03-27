@@ -48,3 +48,9 @@ static/uploads/*
 
 # Logs
 *.log
+
+# Generated data
+data/
+*.jsonl
+*.bak
+checkpoint.json
