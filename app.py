@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, abort, redirect, session, jsonify
+from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_mail import Mail, Message
 from olympiads import OLYMPIADS_DB as _RAW_DB, OLYMPIADS_INFO
 try:
     from problems import PROBLEMS_DB
@@ -6,6 +8,10 @@ except ImportError:
     PROBLEMS_DB = []
 import requests, random, json, uuid, os, base64, math
 from werkzeug.utils import secure_filename
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
 
 # AI Integration
 try:
@@ -18,6 +24,45 @@ except ImportError:
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-' + str(uuid.uuid4()))
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formyla.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Flask-Login configuration (долгоживущие cookie)
+app.config['REMEMBER_COOKIE_DURATION'] = 2592000  # 30 дней в секундах
+app.config['REMEMBER_COOKIE_SECURE'] = False  # True для HTTPS в продакшене
+app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+
+# Flask-Mail configuration (Yandex SMTP)
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 465))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'False') == 'True'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+
+# Yandex OAuth configuration
+app.config['YANDEX_CLIENT_ID'] = os.environ.get('YANDEX_CLIENT_ID')
+app.config['YANDEX_CLIENT_SECRET'] = os.environ.get('YANDEX_CLIENT_SECRET')
+app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
+
+# Initialize database, login manager and mail
+from models import db, User, init_db
+init_db(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице'
+
+mail = Mail(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 # ============================================================
@@ -84,41 +129,33 @@ SUBJECTS = {
 
 SUBTOPICS = {
     "algebra": {
-        "equations": "Уравнения",
-        "inequalities": "Неравенства",
-        "sequences": "Последовательности",
-        "functions": "Функции",
-        "systems": "Системы уравнений",
+        "equations": "Уравнения и системы",
+        "inequalities": "Неравенства и оценки (8-11)",
+        "text_problems": "Текстовые задачи",
+        "other_algebra": "Другое (Алгебра)"
     },
     "geometry": {
-        "triangles": "Треугольники",
-        "circles": "Окружности",
-        "areas": "Площади",
-        "quadrilaterals": "Четырёхугольники",
-        "coordinate": "Координатная геометрия",
+        "basics": "Углы, отрезки и многоугольники",
+        "triangles": "Треугольники (7-11)",
+        "circles": "Окружности (8-11)",
+        "other_geometry": "Другое (Геометрия)"
     },
     "combinatorics": {
-        "counting": "Подсчёт и перебор",
-        "pigeonhole": "Принцип Дирихле",
-        "graphs": "Графы и раскраски",
+        "dirichlet_and_graphs": "Графы и Принцип Дирихле",
         "games": "Игры и стратегии",
+        "other_combinatorics": "Другое (Комбинаторика)"
     },
     "number_theory": {
-        "divisibility": "Делимость",
-        "remainders": "Остатки",
-        "primes": "Простые числа",
-        "diophantine": "Диофантовы уравнения",
-    },
-    "knights_liars": {
-        "classic": "Классические задачи",
-        "conditions": "Задачи с условиями",
-        "island": "Задачи на острове",
+        "divisibility": "Делимость и остатки",
+        "primes_and_equations": "Простые числа и диофантовы уравнения (7-11)",
+        "other_number_theory": "Другое (Теория чисел)"
     },
     "movement": {
-        "uniform": "Равномерное движение",
-        "encounter": "Движение навстречу и вдогонку",
-        "special": "Движение по воде и эскалаторы",
+        "movement_all": "Все задачи на движение"
     },
+    "knights_liars": {
+        "logic_all": "Рыцари, лжецы и логика"
+    }
 }
 
 
@@ -127,7 +164,7 @@ GRADES = [5, 6, 7, 8, 9, 10, 11]
 
 LEVELS = [
     (1, "Уровень 1"), (2, "Уровень 2"), (3, "Уровень 3"), (4, "Уровень 4"), (5, "Уровень 5"),
-    (6, "Уровень 6"), (7, "Уровень 7"), (8, "Уровень 8"), (9, "Уровень 9"), (10, "Уровень 10")
+    (6, "Уровень 6"), (7, "Уровень 7")
 ]
 
 
@@ -234,12 +271,19 @@ def section(subject_key):
     subject_title = SUBJECTS[subject_key]
     subtopics = SUBTOPICS.get(subject_key, {})
 
-    # Считаем количество задач для каждой подтемы
+    # Считаем количество задач для каждой подтемы (максимум 5 на ячейку)
     subtopic_counts = {}
-    for p in PROBLEMS_DB:
-        if p.get("subject") == subject_key:
-            sub = p.get("subtopic", "")
-            subtopic_counts[sub] = subtopic_counts.get(sub, 0) + 1
+    for sub_key in subtopics.keys():
+        count = 0
+        for grade in GRADES:
+            for level in range(1, 8):  # 7 уровней
+                tasks = [p for p in PROBLEMS_DB
+                        if p.get("subject") == subject_key
+                        and p.get("subtopic") == sub_key
+                        and p.get("grade") == grade
+                        and p.get("difficulty") == level]
+                count += min(len(tasks), 5)  # Максимум 5 на ячейку
+        subtopic_counts[sub_key] = count
 
     total = sum(subtopic_counts.values())
 
@@ -264,18 +308,24 @@ def section_subtopic(subject_key, subtopic_key):
     subject_title = SUBJECTS[subject_key]
     subtopic_title = subtopics[subtopic_key]
 
-    # Подсчет задач по классам
+    # Подсчет задач по классам (максимум 5 задач на уровень)
     grade_counts = {}
     level_counts = {}
     
     for g in GRADES:
-        cnt = sum(1 for p in PROBLEMS_DB if p.get("subject")==subject_key and p.get("subtopic")==subtopic_key and p.get("grade")==g)
-        grade_counts[g] = cnt
-        
+        # Подсчитываем задачи по уровням с ограничением 5 на уровень
         level_counts[g] = {}
-        for lev in range(1, 11):
-            lev_cnt = sum(1 for p in PROBLEMS_DB if p.get("subject")==subject_key and p.get("subtopic")==subtopic_key and p.get("grade")==g and p.get("difficulty")==lev)
+        total_for_grade = 0
+        
+        for lev in range(1, 8):  # 7 уровней!
+            # Считаем задачи для этого уровня
+            problems_for_level = [p for p in PROBLEMS_DB if p.get("subject")==subject_key and p.get("subtopic")==subtopic_key and p.get("grade")==g and p.get("difficulty")==lev]
+            # Ограничиваем до 5 задач
+            lev_cnt = min(len(problems_for_level), 5)
             level_counts[g][lev] = lev_cnt
+            total_for_grade += lev_cnt
+        
+        grade_counts[g] = total_for_grade
 
     return render_template('subtopic.html',
         subject_key=subject_key,
@@ -348,31 +398,25 @@ def problems_list():
 
     back_url = f"/section/{subject_key}/{subtopic_key}" if subtopic_key else f"/section/{subject_key}"
 
-    # Пагинация
-    PER_PAGE = 20
+    # ВСЕГДА показываем ТОЛЬКО 5 задач (БЕЗ пагинации)
+    MAX_PROBLEMS = 5
     total_count = len(filtered)
-    total_pages = math.ceil(total_count / PER_PAGE) if total_count > 0 else 1
     
-    # Ограничиваем номер страницы
-    page = max(1, min(page, total_pages))
-    
-    # Срез для текущей страницы
-    start_idx = (page - 1) * PER_PAGE
-    end_idx = start_idx + PER_PAGE
-    paginated_problems = filtered[start_idx:end_idx]
+    # Берём только первые 5 задач
+    limited_problems = filtered[:MAX_PROBLEMS]
 
     solved_problems = session.get('solved_problems', [])
     
     return render_template('problems.html',
         subject_title=subject_title,
         subtopic_title=subtopic_title,
-        problems=paginated_problems,
+        problems=limited_problems,
         back_url=back_url,
         page_title=page_title,
         solved_problems=solved_problems,
-        page=page,
-        total_pages=total_pages,
-        total_count=total_count,
+        page=1,
+        total_pages=1,
+        total_count=min(total_count, MAX_PROBLEMS),
         search_query=search_query
     )
 
@@ -666,6 +710,558 @@ def olympiad_solution(combo_id):
         olympiad=olympiad,
         combo=combo
     )
+
+
+def send_auth_email(recipient_email, code):
+    """Отправка кода через smtplib (Yandex SMTP)."""
+    import smtplib
+    import ssl
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    from email import charset
+    
+    # Устанавливаем UTF-8 кодировку
+    charset.add_charset('utf-8', charset.QP, charset.QP, 'utf-8')
+    
+    sender = os.getenv('MAIL_USERNAME')
+    password = os.getenv('MAIL_PASSWORD')
+    
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = f'Код для входа в FORMYLA: {code}'
+    msg['From'] = f'FORMYLA <{sender}>'
+    msg['To'] = recipient_email
+    msg.set_charset('utf-8')
+    
+    html = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; text-align: center;">
+        <h2 style="color: #333;">FORMYLA</h2>
+        <p>Ваш код для входа:</p>
+        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #4F46E5; margin: 20px 0; padding: 15px; background: #F3F4F6; border-radius: 8px;">
+            {code}
+        </div>
+        <p style="color: #888; font-size: 12px;">Код действителен 10 минут.</p>
+    </div>
+    """
+    msg.attach(MIMEText(html, 'html', 'utf-8'))
+    
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.yandex.ru', 465, context=context) as server:
+        server.login(sender, password)
+        server.sendmail(sender, recipient_email, msg.as_string())
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Passwordless вход - шаг 1: ввод email."""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == "POST":
+        import sys
+        print(">>> LOGIN POST ВЫЗВАН", flush=True)
+        sys.stdout.flush()
+        app.logger.warning("LOGIN POST ВЫЗВАН")
+        
+        email = request.form.get('email', '').strip().lower()
+        
+        if not email:
+            flash('Email обязателен', 'error')
+            return render_template('login.html')
+        
+        # Проверяем или создаем пользователя
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Создаем нового пользователя
+            user = User(email=email)
+            db.session.add(user)
+        
+        # Генерируем код
+        code = user.generate_auth_code()
+        db.session.commit()
+        
+        print(f">>> КОД СГЕНЕРИРОВАН: {code}", flush=True)
+        app.logger.warning(f"КОД СГЕНЕРИРОВАН: {code} для {email}")
+        
+        # Отправляем код на email
+        # Проверяем настройки
+        mail_configured = app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD')
+        
+        print(f"\n🔍 DEBUG: MAIL_USERNAME = {app.config.get('MAIL_USERNAME')}", flush=True)
+        print(f"🔍 DEBUG: MAIL_PASSWORD = {'*' * len(app.config.get('MAIL_PASSWORD', ''))} ({len(app.config.get('MAIL_PASSWORD', ''))} символов)", flush=True)
+        print(f"🔍 DEBUG: Mail configured = {mail_configured}\n", flush=True)
+        
+        if mail_configured:
+            try:
+                send_auth_email(email, code)
+                
+                # Дублируем в консоль для отладки
+                print("\n" + "="*60, flush=True)
+                print("✅ EMAIL УСПЕШНО ОТПРАВЛЕН", flush=True)
+                print("="*60, flush=True)
+                print(f"   Кому: {email}", flush=True)
+                print(f"   Код: {code}", flush=True)
+                print("="*60 + "\n", flush=True)
+                app.logger.warning(f"EMAIL ОТПРАВЛЕН: {email}, код: {code}")
+                
+                flash(f'Код отправлен на {email}. Проверьте почту!', 'success')
+                
+            except Exception as e:
+                print(f"\n❌ ОШИБКА ОТПРАВКИ EMAIL: {e}\n", flush=True)
+                app.logger.error(f"ОШИБКА EMAIL: {e}")
+                # Fallback - выводим код в консоль
+                print("\n" + "="*60, flush=True)
+                print("⚠️  FALLBACK - КОД В КОНСОЛИ", flush=True)
+                print("="*60, flush=True)
+                print(f"   Email: {email}", flush=True)
+                print(f"   КОД: {code}", flush=True)
+                print(f"   Действителен: 10 минут", flush=True)
+                print("="*60 + "\n", flush=True)
+                
+                flash(f'Ошибка отправки. Код: {code}', 'warning')
+        else:
+            # Email не настроен
+            print("\n" + "="*60, flush=True)
+            print("⚠️  EMAIL НЕ НАСТРОЕН - КОД В КОНСОЛИ", flush=True)
+            print("="*60, flush=True)
+            print(f"   Email: {email}", flush=True)
+            print(f"   КОД: {code}", flush=True)
+            print(f"   Действителен: 10 минут", flush=True)
+            print("="*60 + "\n", flush=True)
+            app.logger.warning(f"EMAIL НЕ НАСТРОЕН - КОД: {code}")
+            
+            flash(f'Код сгенерирован: {code}', 'warning')
+        
+        # Сохраняем email в сессию для следующего шага
+        session['verify_email'] = email
+        return redirect(url_for('verify_code'))
+    
+    return render_template('login.html')
+
+
+@app.route("/verify-code", methods=["GET", "POST"])
+def verify_code():
+    """Passwordless вход - шаг 2: проверка кода."""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    email = session.get('verify_email')
+    if not email:
+        flash('Сначала введите email', 'error')
+        return redirect(url_for('login'))
+    
+    if request.method == "POST":
+        code = request.form.get('code', '').strip()
+        
+        if not code:
+            flash('Введите код', 'error')
+            return render_template('verify_code.html', email=email)
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            flash('Пользователь не найден', 'error')
+            return redirect(url_for('login'))
+        
+        if user.verify_auth_code(code):
+            # Успешная авторизация
+            user.clear_auth_code()
+            from datetime import datetime
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            
+            # Вход с долгоживущей сессией (30 дней)
+            login_user(user, remember=True, duration=None)
+            session.pop('verify_email', None)
+            
+            flash('Добро пожаловать!', 'success')
+            
+            # Редирект на онбординг если не пройден
+            if not user.onboarding_completed:
+                return redirect(url_for('onboarding'))
+            
+            # Иначе на главную
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('index'))
+        
+        flash('Неверный или просроченный код', 'error')
+        return render_template('verify_code.html', email=email)
+    
+    return render_template('verify_code.html', email=email)
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    """Выход пользователя."""
+    logout_user()
+    flash('Вы вышли из системы', 'success')
+    return redirect(url_for('index'))
+
+
+@app.route("/yandex_receiver")
+def yandex_receiver():
+    """Техническая страница для Яндекс OAuth виджета."""
+    html = f'''<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>Ожидание...</title>
+    <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js"></script>
+</head>
+<body>
+    <script>
+        window.YaSendSuggestToken("{app.config['DOMAIN_URL']}");
+    </script>
+</body>
+</html>'''
+    return html
+
+
+@app.route("/auth/yandex/login", methods=["POST"])
+def yandex_login():
+    """Обработка OAuth токена от Яндекса."""
+    data = request.get_json()
+    access_token = data.get('access_token')
+    
+    if not access_token:
+        return jsonify({'error': 'Токен не предоставлен'}), 400
+    
+    try:
+        # Получаем данные от Яндекса
+        response = requests.get(
+            'https://login.yandex.ru/info?format=json',
+            headers={'Authorization': f'OAuth {access_token}'}
+        )
+        
+        if response.status_code != 200:
+            return jsonify({'error': 'Ошибка Яндекса'}), 400
+        
+        yandex_data = response.json()
+        provider_user_id = str(yandex_data.get('id'))
+        email = yandex_data.get('default_email')
+        name = yandex_data.get('display_name') or yandex_data.get('real_name', '')
+        avatar_id = yandex_data.get('default_avatar_id', '')
+        avatar_url = f"https://avatars.yandex.net/get-yapic/{avatar_id}/islands-200" if avatar_id else None
+        
+        from models import OAuthAccount
+        
+        # Ищем OAuth аккаунт
+        oauth = OAuthAccount.query.filter_by(provider='yandex', provider_user_id=provider_user_id).first()
+        
+        if oauth:
+            user = oauth.user
+        else:
+            # Ищем по email
+            user = User.query.filter_by(email=email).first()
+            
+            if not user:
+                # Создаем нового
+                user = User(email=email, name=name, avatar_url=avatar_url)
+                db.session.add(user)
+                db.session.flush()
+            
+            # Создаем OAuth связь
+            oauth = OAuthAccount(user_id=user.id, provider='yandex', provider_user_id=provider_user_id)
+            db.session.add(oauth)
+        
+        # Обновляем данные
+        if name and not user.name:
+            user.name = name
+        if avatar_url and not user.avatar_url:
+            user.avatar_url = avatar_url
+        
+        from datetime import datetime
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+        
+        # Авторизуем
+        login_user(user, remember=True)
+        
+        # Редирект
+        redirect_url = url_for('onboarding') if not user.onboarding_completed else url_for('index')
+        
+        return jsonify({'success': True, 'redirect_url': redirect_url})
+        
+    except Exception as e:
+        print(f"Ошибка OAuth: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route("/onboarding")
+@login_required
+def onboarding():
+    """Страница AI-онбординга для новых пользователей."""
+    # Если онбординг уже пройден, редирект на главную
+    if current_user.onboarding_completed:
+        flash('Вы уже прошли онбординг!', 'info')
+        return redirect(url_for('index'))
+    
+    return render_template('onboarding.html')
+
+
+@app.route("/api/onboarding", methods=["POST"])
+@login_required
+def api_onboarding():
+    """API для анализа математического опыта пользователя через AI."""
+    if not DEEPSEEK_AVAILABLE:
+        return jsonify({
+            'error': 'AI сервис недоступен',
+            'level': 'intermediate',
+            'report': 'Спасибо за ваш рассказ! Начнем с задач среднего уровня.',
+            'recommended_topics': ['algebra', 'geometry']
+        }), 503
+    
+    data = request.get_json()
+    user_text = data.get('text', '').strip()
+    
+    if not user_text:
+        return jsonify({'error': 'Текст не может быть пустым'}), 400
+    
+    if len(user_text) < 20:
+        return jsonify({'error': 'Расскажите подробнее (минимум 20 символов)'}), 400
+    
+    try:
+        # Инициализируем DeepSeek клиент
+        client = DeepSeekClient()
+        
+        # Анализируем опыт пользователя
+        result = client.analyze_user_background(user_text)
+        
+        # Сохраняем в БД
+        current_user.complete_onboarding(
+            level=result['level'],
+            report=result['report'],
+            topics=result['recommended_topics']
+        )
+        db.session.commit()
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        print(f"Ошибка анализа: {e}")
+        return jsonify({
+            'error': 'Ошибка анализа',
+            'level': 'intermediate',
+            'report': 'Спасибо за ваш рассказ! Мы подберем для вас подходящие задачи.',
+            'recommended_topics': ['algebra', 'geometry']
+        }), 500
+
+
+@app.route("/api/tutor/history")
+@login_required
+def tutor_history():
+    """Получить историю чата с тьютором."""
+    from models import ChatMessage
+    messages = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp).all()
+    return jsonify([msg.to_dict() for msg in messages])
+
+
+@app.route("/api/tutor/send", methods=["POST"])
+@login_required
+def tutor_send():
+    """Отправить сообщение тьютору."""
+    if not DEEPSEEK_AVAILABLE:
+        return jsonify({'error': 'AI недоступен'}), 503
+    
+    data = request.get_json()
+    message = data.get('message', '').strip()
+    
+    if not message:
+        return jsonify({'error': 'Сообщение пустое'}), 400
+    
+    try:
+        from models import ChatMessage
+        
+        # Сохраняем сообщение пользователя
+        user_msg = ChatMessage(user_id=current_user.id, role='user', content=message)
+        db.session.add(user_msg)
+        db.session.commit()
+        
+        # Получаем историю
+        history = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp).all()
+        history_list = [{'role': msg.role, 'content': msg.content} for msg in history[-10:]]
+        
+        # Получаем ответ от AI
+        client = DeepSeekClient()
+        response = client.chat_with_tutor(current_user, message, history_list)
+        
+        # Сохраняем ответ AI
+        ai_msg = ChatMessage(user_id=current_user.id, role='assistant', content=response)
+        db.session.add(ai_msg)
+        db.session.commit()
+        
+        return jsonify({
+            'user_message': user_msg.to_dict(),
+            'ai_response': ai_msg.to_dict()
+        })
+        
+    except Exception as e:
+        print(f"Ошибка чата: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route("/profile")
+@login_required
+def profile():
+    """Личный кабинет пользователя."""
+    return render_template('profile.html', user=current_user)
+
+
+# ============================================================
+# MOCK EXAMS (Пробники)
+# ============================================================
+
+@app.route("/api/exam/generate", methods=["POST"])
+@login_required
+def generate_exam():
+    """Генерация нового пробника."""
+    from models import MockExam, MockExamTask
+    import random
+    
+    data = request.get_json() or {}
+    grade = data.get('grade', 9)  # По умолчанию 9 класс
+    
+    # Выбираем 5 случайных задач из разных тем для указанного класса
+    subjects = ['algebra', 'geometry', 'combinatorics', 'number_theory', 'movement', 'knights_liars']
+    selected_problems = []
+    
+    for subject in random.sample(subjects, min(5, len(subjects))):
+        problems = [p for p in PROBLEMS_DB if p.get('subject') == subject and p.get('grade') == grade]
+        if problems:
+            selected_problems.append(random.choice(problems))
+    
+    # Дополняем до 5 если нужно
+    while len(selected_problems) < 5:
+        selected_problems.append(random.choice(PROBLEMS_DB))
+    
+    # Создаем пробник
+    exam = MockExam(user_id=current_user.id)
+    db.session.add(exam)
+    db.session.flush()
+    
+    # Добавляем задачи
+    for prob in selected_problems:
+        task = MockExamTask(exam_id=exam.id, problem_id=prob['id'])
+        db.session.add(task)
+    
+    db.session.commit()
+    
+    return jsonify({'exam_id': exam.id})
+
+
+@app.route("/exam/<int:exam_id>")
+@login_required
+def exam_page(exam_id):
+    """Страница прохождения пробника."""
+    from models import MockExam
+    exam = MockExam.query.get_or_404(exam_id)
+    
+    if exam.user_id != current_user.id:
+        abort(403)
+    
+    # Получаем задачи
+    tasks_data = []
+    for task in exam.tasks:
+        problem = next((p for p in PROBLEMS_DB if p['id'] == task.problem_id), None)
+        if problem:
+            tasks_data.append({
+                'task_id': task.id,
+                'problem': problem
+            })
+    
+    return render_template('exam.html', exam=exam, tasks=tasks_data)
+
+
+@app.route("/api/exam/<int:exam_id>/submit", methods=["POST"])
+@login_required
+def submit_exam(exam_id):
+    """Отправка пробника на проверку AI."""
+    from models import MockExam, MockExamTask
+    
+    exam = MockExam.query.get_or_404(exam_id)
+    if exam.user_id != current_user.id:
+        abort(403)
+    
+    data = request.get_json()
+    answers = data.get('answers', {})
+    
+    # Сохраняем ответы
+    for task in exam.tasks:
+        task_data = answers.get(str(task.id), {})
+        task.user_answer = task_data.get('answer', '')
+        task.user_solution_text = task_data.get('solution', '')
+    
+    exam.status = 'checking'
+    db.session.commit()
+    
+    # Проверка через AI
+    if DEEPSEEK_AVAILABLE:
+        try:
+            client = DeepSeekClient()
+            
+            # Подготовка данных
+            exam_data = []
+            for task in exam.tasks:
+                problem = next((p for p in PROBLEMS_DB if p['id'] == task.problem_id), None)
+                if problem:
+                    exam_data.append({
+                        'text': problem['text'],
+                        'correct_answer': problem['answer'],
+                        'correct_solution': problem['solution'],
+                        'user_answer': task.user_answer or '',
+                        'user_solution': task.user_solution_text or ''
+                    })
+            
+            # Проверка
+            result = client.grade_exam(exam_data)
+            
+            # Сохранение результатов
+            for i, task in enumerate(exam.tasks):
+                task_result = result['tasks'][i] if i < len(result['tasks']) else {}
+                task.is_correct = task_result.get('is_correct', False)
+                task.ai_comment = task_result.get('comment', '')
+            
+            exam.ai_feedback = result.get('overall_feedback', '')
+            exam.score = result.get('score', 0)
+            exam.status = 'graded'
+            db.session.commit()
+            
+            return jsonify({'success': True, 'exam_id': exam_id})
+            
+        except Exception as e:
+            print(f"Ошибка проверки: {e}")
+            exam.status = 'in_progress'
+            db.session.commit()
+            return jsonify({'error': str(e)}), 500
+    
+    return jsonify({'error': 'AI недоступен'}), 503
+
+
+@app.route("/exam/<int:exam_id>/results")
+@login_required
+def exam_results(exam_id):
+    """Страница результатов пробника."""
+    from models import MockExam
+    exam = MockExam.query.get_or_404(exam_id)
+    
+    if exam.user_id != current_user.id:
+        abort(403)
+    
+    # Получаем задачи с результатами
+    results_data = []
+    for task in exam.tasks:
+        problem = next((p for p in PROBLEMS_DB if p['id'] == task.problem_id), None)
+        if problem:
+            results_data.append({
+                'problem': problem,
+                'user_answer': task.user_answer,
+                'user_solution': task.user_solution_text,
+                'is_correct': task.is_correct,
+                'ai_comment': task.ai_comment
+            })
+    
+    return render_template('exam_results.html', exam=exam, results=results_data)
 
 
 if __name__ == "__main__":

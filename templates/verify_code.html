@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Введите код - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 80px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
+            🔐 Введите код
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            Код отправлен на <strong style="color: var(--accent-2);">{{ email }}</strong>
+        </p>
+        <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 10px;">
+            (Проверьте консоль сервера)
+        </p>
+    </div>
+
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 12px 15px; margin-bottom: 20px; border-radius: var(--radius-sm); {% if category == 'error' %}background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; color: #fca5a5;{% else %}background: rgba(34, 197, 94, 0.1); border-left: 4px solid #22c55e; color: #86efac;{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('verify_code') }}">
+            
+            <div style="margin-bottom: 30px;">
+                <label for="code" style="display: block; color: var(--text-soft); margin-bottom: 12px; font-weight: 500; font-size: 1.1em; text-align: center;">
+                    Введите 6-значный код
+                </label>
+                <input 
+                    type="text" 
+                    id="code" 
+                    name="code" 
+                    required
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    placeholder="000000"
+                    autofocus
+                    style="width: 100%; padding: 20px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 32px; color: var(--text-main); caret-color: var(--accent-2); transition: all 0.3s; text-align: center; letter-spacing: 8px; font-weight: 600;"
+                    onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 4px rgba(56, 189, 248, 0.15)'"
+                    onblur="this.style.borderColor='var(--border-mid)'; this.style.boxShadow='none'"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6)"
+                >
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.1); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 25px; text-align: center;">
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.9em;">
+                    ⏱️ Код действителен 10 минут
+                </p>
+            </div>
+
+            <button 
+                type="submit"
+                style="width: 100%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; padding: 16px; font-size: 18px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(56, 189, 248, 0.3)'"
+            >
+                ✅ Подтвердить
+            </button>
+
+        </form>
+
+        <div style="text-align: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border-soft);">
+            <a href="{{ url_for('login') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.95em; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-2)'" onmouseout="this.style.color='var(--text-muted)'">
+                ← Ввести другой email
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.4;
+}
+
+input[type="text"] {
+    font-family: 'Courier New', monospace;
+}
+</style>
+
+{% endblock %}

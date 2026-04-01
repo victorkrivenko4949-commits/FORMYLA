@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 80px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
+            👋 Вход в FORMYLA
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            Введите email - мы отправим вам код
+        </p>
+    </div>
+
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 12px 15px; margin-bottom: 20px; border-radius: var(--radius-sm); {% if category == 'error' %}background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; color: #fca5a5;{% else %}background: rgba(34, 197, 94, 0.1); border-left: 4px solid #22c55e; color: #86efac;{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            
+            <div style="margin-bottom: 30px;">
+                <label for="email" style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500; font-size: 1.1em;">
+                    📧 Ваш Email
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required
+                    placeholder="your@email.com"
+                    autofocus
+                    style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 18px; color: var(--text-main); caret-color: var(--accent-2); transition: all 0.3s;"
+                    onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.1)'"
+                    onblur="this.style.borderColor='var(--border-mid)'; this.style.boxShadow='none'"
+                >
+            </div>
+
+            <div style="background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: var(--radius-sm); margin-bottom: 25px; border-left: 3px solid var(--accent-2);">
+                <p style="margin: 0; color: var(--text-soft); font-size: 0.95em;">
+                    🔒 <strong>Без пароля!</strong> Мы отправим вам 6-значный код для входа
+                </p>
+            </div>
+
+            <button 
+                type="submit"
+                style="width: 100%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; padding: 16px; font-size: 18px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(56, 189, 248, 0.3)'"
+            >
+                📨 Получить код
+            </button>
+
+        </form>
+
+        <!-- Разделитель -->
+        <div style="text-align: center; margin: 25px 0; color: var(--text-muted);">или</div>
+
+        <!-- Кнопка Яндекса -->
+        <div id="yandex-button-container" style="width: 100%; display: flex; justify-content: center;"></div>
+
+    </div>
+
+</div>
+
+<style>
+input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+</style>
+
+<script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"></script>
+<script>
+window.onload = function() {
+    window.YaAuthSuggest.init(
+        {
+            client_id: "{{ config.YANDEX_CLIENT_ID if config.YANDEX_CLIENT_ID else '' }}",
+            response_type: "token",
+            redirect_uri: "{{ config.DOMAIN_URL if config.DOMAIN_URL else 'http://localhost:5000' }}/yandex_receiver"
+        },
+        "{{ config.DOMAIN_URL if config.DOMAIN_URL else 'http://localhost:5000' }}",
+        {
+            view: "button",
+            parentId: "yandex-button-container",
+            buttonView: "main",
+            buttonTheme: "dark",
+            buttonSize: "l",
+            buttonBorderRadius: 8
+        }
+    )
+    .then(result => result.handler())
+    .then(data => {
+        fetch('/auth/yandex/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({access_token: data.access_token})
+        })
+        .then(r => r.json())
+        .then(result => {
+            if(result.success) {
+                window.location.href = result.redirect_url || '/';
+            } else {
+                alert("Ошибка: " + result.error);
+            }
+        });
+    })
+    .catch(err => console.log('OAuth отменен:', err));
+};
+</script>
+
+{% endblock %}

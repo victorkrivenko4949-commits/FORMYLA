@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Configuration
 PROBLEMS_JSONL = "data/generated_problems.jsonl"
+PARSED_PROBLEMS_JSONL = "data/parsed_problems.jsonl"
 SOLUTIONS_JSONL = "data/generated_solutions.jsonl"
 PROBLEMS_PY = "problems.py"
 OLYMPIADS_PY = "olympiads.py"
@@ -38,19 +39,28 @@ def create_backup(filepath):
     return None
 
 
-def migrate_problems(dry_run=False):
+def migrate_problems(dry_run=False, source='generated'):
     """
-    Migrate generated problems from JSONL to problems.py
+    Migrate problems from JSONL to problems.py
     
     Args:
         dry_run: If True, only analyze without writing
+        source: 'generated' for generated_problems.jsonl or 'parsed' for parsed_problems.jsonl
     """
     print("\n" + "=" * 70)
     print("MIGRATING PROBLEMS")
     print("=" * 70)
     
-    if not os.path.exists(PROBLEMS_JSONL):
-        print(f"[WARNING] File not found: {PROBLEMS_JSONL}")
+    # Select source file
+    if source == 'parsed':
+        input_file = PARSED_PROBLEMS_JSONL
+        print(f"Source: Parsed problems from external databases")
+    else:
+        input_file = PROBLEMS_JSONL
+        print(f"Source: Generated problems from AI")
+    
+    if not os.path.exists(input_file):
+        print(f"[WARNING] File not found: {input_file}")
         print("   Skipping problems migration")
         return
     
@@ -59,7 +69,7 @@ def migrate_problems(dry_run=False):
     skipped = 0
     
     try:
-        with open(PROBLEMS_JSONL, 'r', encoding='utf-8') as f:
+        with open(input_file, 'r', encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -234,6 +244,12 @@ def main():
     """Main migration function."""
     parser = argparse.ArgumentParser(description='Migrate generated data to database files')
     parser.add_argument('--dry-run', action='store_true', help='Analyze without writing')
+    parser.add_argument(
+        '--source',
+        choices=['generated', 'parsed', 'both'],
+        default='generated',
+        help='Source of problems: generated (AI), parsed (external databases), or both'
+    )
     args = parser.parse_args()
     
     print("=" * 70)
@@ -246,11 +262,16 @@ def main():
         print("\n[PRODUCTION] Files will be overwritten")
         print("   Backups will be created automatically")
     
-    # Migrate problems
-    migrate_problems(dry_run=args.dry_run)
+    # Migrate problems based on source
+    if args.source in ['generated', 'both']:
+        migrate_problems(dry_run=args.dry_run, source='generated')
     
-    # Migrate solutions
-    migrate_solutions(dry_run=args.dry_run)
+    if args.source in ['parsed', 'both']:
+        migrate_problems(dry_run=args.dry_run, source='parsed')
+    
+    # Migrate solutions (only for generated problems)
+    if args.source in ['generated', 'both']:
+        migrate_solutions(dry_run=args.dry_run)
     
     print("\n" + "=" * 70)
     print("MIGRATION COMPLETE")

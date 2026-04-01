@@ -19,7 +19,7 @@ from ai.deepseek_client import DeepSeekClient, CheckpointManager, DeepSeekAPIErr
 
 # Configuration
 TEST_MODE = True  # Set to False for full generation
-TEST_LIMIT = 3    # Number of tasks to generate in test mode
+TEST_LIMIT = 5    # Number of tasks to generate in test mode
 
 OUTPUT_DIR = "data"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "generated_problems.jsonl")
@@ -237,33 +237,65 @@ def main():
     print(f"✓ Checkpoint loaded: {len(processed)} tasks already processed")
     
     # Generate task list
-    tasks_to_generate = []
-    task_id = 1
-    
-    for subject_key, subject_data in SUBJECTS.items():
-        for subtopic_key, subtopic_title in subject_data["subtopics"].items():
-            for grade in GRADES:
-                for difficulty in DIFFICULTIES:
-                    task_key = f"{subject_key}_{subtopic_key}_{grade}_{difficulty}"
-                    if task_key not in processed:
-                        tasks_to_generate.append({
-                            'id': task_id,
-                            'subject_key': subject_key,
-                            'subject_data': subject_data,
-                            'subtopic_key': subtopic_key,
-                            'subtopic_title': subtopic_title,
-                            'grade': grade,
-                            'difficulty': difficulty,
-                            'key': task_key
-                        })
-                    task_id += 1
-    
-    total_tasks = len(tasks_to_generate)
-    print(f"\n📊 Tasks to generate: {total_tasks}")
-    
     if TEST_MODE:
-        tasks_to_generate = tasks_to_generate[:TEST_LIMIT]
-        print(f"   (Limited to {TEST_LIMIT} for testing)")
+        # Custom test: 20 tasks for 9th grade only
+        tasks_to_generate = []
+        task_id = 1
+        
+        # 10 tasks for Algebra (9th grade, levels 1-10)
+        for difficulty in range(1, 11):
+            tasks_to_generate.append({
+                'id': task_id,
+                'subject_key': 'algebra',
+                'subject_data': SUBJECTS['algebra'],
+                'subtopic_key': 'equations',
+                'subtopic_title': 'Уравнения',
+                'grade': 9,
+                'difficulty': difficulty,
+                'key': f"algebra_equations_9_{difficulty}"
+            })
+            task_id += 1
+        
+        # 10 tasks for Geometry (9th grade, levels 1-10)
+        for difficulty in range(1, 11):
+            tasks_to_generate.append({
+                'id': task_id,
+                'subject_key': 'geometry',
+                'subject_data': SUBJECTS['geometry'],
+                'subtopic_key': 'triangles',
+                'subtopic_title': 'Треугольники',
+                'grade': 9,
+                'difficulty': difficulty,
+                'key': f"geometry_triangles_9_{difficulty}"
+            })
+            task_id += 1
+        
+        print(f"\n📊 Custom test mode: {len(tasks_to_generate)} tasks for 9th grade")
+    else:
+        # Full generation mode
+        tasks_to_generate = []
+        task_id = 1
+        
+        for subject_key, subject_data in SUBJECTS.items():
+            for subtopic_key, subtopic_title in subject_data["subtopics"].items():
+                for grade in GRADES:
+                    for difficulty in DIFFICULTIES:
+                        task_key = f"{subject_key}_{subtopic_key}_{grade}_{difficulty}"
+                        if task_key not in processed:
+                            tasks_to_generate.append({
+                                'id': task_id,
+                                'subject_key': subject_key,
+                                'subject_data': subject_data,
+                                'subtopic_key': subtopic_key,
+                                'subtopic_title': subtopic_title,
+                                'grade': grade,
+                                'difficulty': difficulty,
+                                'key': task_key
+                            })
+                        task_id += 1
+        
+        total_tasks = len(tasks_to_generate)
+        print(f"\n📊 Tasks to generate: {total_tasks}")
     
     # Generation loop
     generated_count = 0

@@ -1,0 +1,158 @@
+<!-- AI Тьютор - плавающий виджет чата -->
+{% if current_user.is_authenticated %}
+<div id="tutorWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <!-- Кнопка открытия -->
+    <button id="tutorBtn" onclick="toggleTutorChat()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        🤖
+    </button>
+    
+    <!-- Окно чата -->
+    <div id="tutorChat" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 500px; background: var(--bg-card); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); flex-direction: column;">
+        
+        <!-- Заголовок -->
+        <div style="padding: 15px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-weight: 600; color: var(--text-main);">🤖 AI-Тьютор</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Ваш личный репетитор</div>
+            </div>
+            <button onclick="toggleTutorChat()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">×</button>
+        </div>
+        
+        <!-- Сообщения -->
+        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="text-align: center; color: var(--text-muted); font-size: 14px; padding: 20px;">
+                Привет! Я твой AI-тьютор. Задавай вопросы по задачам!
+            </div>
+        </div>
+        
+        <!-- Индикатор печати -->
+        <div id="typingIndicator" style="display: none; padding: 10px 15px; color: var(--text-muted); font-size: 14px;">
+            <span style="animation: pulse 1.5s infinite;">Тьютор печатает...</span>
+        </div>
+        
+        <!-- Ввод -->
+        <div style="padding: 15px; border-top: 1px solid var(--border-soft);">
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="tutorInput" placeholder="Напишите вопрос..." style="flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); caret-color: var(--accent-2);" onkeypress="if(event.key==='Enter') sendToTutor()">
+                <button onclick="sendToTutor()" style="padding: 10px 15px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600;">📤</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+#chatMessages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chatMessages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+#chatMessages::-webkit-scrollbar-thumb {
+    background: var(--accent-2);
+    border-radius: 3px;
+}
+</style>
+
+<script>
+let chatOpen = false;
+
+function toggleTutorChat() {
+    chatOpen = !chatOpen;
+    const chat = document.getElementById('tutorChat');
+    const btn = document.getElementById('tutorBtn');
+    
+    if (chatOpen) {
+        chat.style.display = 'flex';
+        btn.textContent = '✕';
+        loadChatHistory();
+    } else {
+        chat.style.display = 'none';
+        btn.textContent = '🤖';
+    }
+}
+
+async function loadChatHistory() {
+    try {
+        const response = await fetch('/api/tutor/history');
+        const messages = await response.json();
+        
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+        
+        messages.forEach(msg => {
+            addMessageToChat(msg.role, msg.content, false);
+        });
+        
+        scrollChatToBottom();
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+async function sendToTutor() {
+    const input = document.getElementById('tutorInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Добавляем сообщение пользователя
+    addMessageToChat('user', message);
+    input.value = '';
+    
+    // Показываем индикатор
+    document.getElementById('typingIndicator').style.display = 'block';
+    scrollChatToBottom();
+    
+    try {
+        const response = await fetch('/api/tutor/send', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: message})
+        });
+        
+        const data = await response.json();
+        
+        // Скрываем индикатор
+        document.getElementById('typingIndicator').style.display = 'none';
+        
+        if (data.ai_response) {
+            addMessageToChat('assistant', data.ai_response.content);
+        }
+        
+    } catch (error) {
+        document.getElementById('typingIndicator').style.display = 'none';
+        addMessageToChat('assistant', 'Ошибка связи с тьютором. Попробуйте еще раз.');
+    }
+}
+
+function addMessageToChat(role, content, scroll = true) {
+    const container = document.getElementById('chatMessages');
+    const msgDiv = document.createElement('div');
+    
+    if (role === 'user') {
+        msgDiv.style.cssText = 'align-self: flex-end; max-width: 70%; padding: 10px 15px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border-radius: 15px 15px 0 15px; word-wrap: break-word;';
+    } else {
+        msgDiv.style.cssText = 'align-self: flex-start; max-width: 70%; padding: 10px 15px; background: rgba(30, 41, 59, 0.8); color: var(--text-soft); border-radius: 15px 15px 15px 0; word-wrap: break-word;';
+        msgDiv.innerHTML = '<span style="font-weight: 600; color: var(--accent-2);">🤖 Тьютор:</span><br>';
+    }
+    
+    msgDiv.innerHTML += content;
+    container.appendChild(msgDiv);
+    
+    if (scroll) scrollChatToBottom();
+}
+
+function scrollChatToBottom() {
+    const container = document.getElementById('chatMessages');
+    container.scrollTop = container.scrollHeight;
+}
+</script>
+{% endif %}

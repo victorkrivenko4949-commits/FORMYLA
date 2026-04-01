@@ -16,8 +16,9 @@ from typing import Optional, Dict, Any
 # Fix Windows console encoding
 if sys.platform == 'win32':
     import codecs
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+    if hasattr(sys.stdout, 'buffer'):
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 # Configure logging
 logging.basicConfig(
@@ -163,6 +164,212 @@ class DeepSeekClient:
         # All retries exhausted
         logger.error(f"All {self.max_retries} retries exhausted")
         raise DeepSeekAPIError(f"Failed after {self.max_retries} attempts")
+    
+    def analyze_user_background(self, user_text: str) -> Dict[str, Any]:
+        """
+        Анализирует математический опыт пользователя и дает рекомендации.
+        
+        Args:
+            user_text: Текст пользователя о его математическом опыте
+            
+        Returns:
+            Dict с ключами:
+                - level: str (beginner, intermediate, advanced)
+                - report: str (персональный отчет для пользователя)
+                - recommended_topics: list (рекомендуемые темы)
+                
+        Raises:
+            DeepSeekAPIError: If analysis failed
+        """
+        system_prompt = """Ты — профессиональный тренер по олимпиадной математике.
+Твоя задача — проанализировать опыт нового ученика и дать ему персональные рекомендации.
+
+Верни ответ СТРОГО в виде валидного JSON без markdown форматирования:
+{
+  "level": "beginner|intermediate|advanced",
+  "report": "Персональный мотивирующий ответ на 2-3 абзаца",
+  "recommended_topics": ["algebra", "geometry", ...]
+}
+
+Доступные темы: algebra, geometry, combinatorics, number_theory, movement, knights_liars
+
+Уровни:
+- beginner: новичок, мало опыта с олимпиадами
+- intermediate: есть опыт, участвовал в олимпиадах
+- advanced: сильный уровень, призер олимпиад"""
+
+        user_prompt = f"""Новый ученик рассказывает о своем опыте:
+
+"{user_text}"
+
+Проанализируй его текст и дай персональные рекомендации."""
+
+        try:
+            response = self.generate(
+                prompt=user_prompt,
+                system_prompt=system_prompt,
+                temperature=0.7,
+                max_tokens=1000
+            )
+            
+            # Очистка от markdown
+            response = response.strip()
+            if response.startswith("```json"):
+                response = response[7:]
+            if response.startswith("```"):
+                response = response[3:]
+            if response.endswith("```"):
+                response = response[:-3]
+            response = response.strip()
+            
+            # Парсинг JSON
+            result = json.loads(response)
+            
+            # Валидация
+            if 'level' not in result or 'report' not in result or 'recommended_topics' not in result:
+                raise ValueError("Missing required fields in AI response")
+            
+            if result['level'] not in ['beginner', 'intermediate', 'advanced']:
+                result['level'] = 'intermediate'  # default
+            
+            logger.info(f"User background analyzed: level={result['level']}")
+            return result
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response: {e}")
+            # Возвращаем дефолтный ответ
+            return {
+                'level': 'intermediate',
+                'report': 'Спасибо за ваш рассказ! Мы подберем для вас подходящие задачи.',
+                'recommended_topics': ['algebra', 'geometry']
+            }
+        except Exception as e:
+            logger.error(f"Error analyzing user background: {e}")
+            raise DeepSeekAPIError(f"Failed to analyze user background: {e}")
+    
+    def chat_with_tutor(self, user, new_message: str, chat_history: list) -> str:
+        """
+        Чат с персональным AI-тьютором.
+        
+        Args:
+            user: объект User с профилем
+            new_message: новое сообщение от пользователя
+            chat_history: список последних сообщений [{role, content}, ...]
+            
+        Returns:
+            str: ответ тьютора
+        """
+        # Формируем системный промпт с учетом профиля
+        system_prompt = f"""Ты — личный ИИ-репетитор по математике на платформе FORMYLA.
+
+Твой ученик: {user.email}
+Уровень: {user.math_level or 'не определен'}
+Твои заметки: {user.ai_report or 'Новый ученик'}
+
+Твоя задача:
+- Помогать с олимпиадными задачами
+- Давать НАВОДЯЩИЕ вопросы, а не прямые ответы
+- Хвалить за успехи
+- Мотивировать продолжать
+
+ВАЖНО: НИКОГДА не давай прямой числовой ответ сразу. Задавай вопросы, чтобы ученик сам дошел до решения."""
+
+        # Формируем историю для контекста
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        
+        # Добавляем последние 10 сообщений из истории
+        for msg in chat_history[-10:]:
+            messages.append({
+                "role": msg.get('role', 'user'),
+                "content": msg.get('content', '')
+            })
+        
+        # Добавляем новое сообщение
+        messages.append({"role": "user", "content": new_message})
+        
+        try:
+            response = self.generate(
+                prompt=new_message,
+                system_prompt=system_prompt,
+                temperature=0.7,
+                max_tokens=500
+            )
+            
+            logger.info(f"Tutor response generated for user {user.id}")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error in tutor chat: {e}")
+            return "Извините, возникла ошибка. Попробуйте еще раз!"
+    
+    def grade_exam(self, exam_tasks: list) -> Dict[str, Any]:
+        """
+        Проверка пробника через AI.
+        
+        Args:
+            exam_tasks: список задач с ответами пользователя
+            
+        Returns:
+            Dict с оценками и комментариями
+        """
+        # Формируем промпт
+        tasks_text = ""
+        for i, task in enumerate(exam_tasks, 1):
+            tasks_text += f"\n\n=== Задача {i} ===\n"
+            tasks_text += f"Условие: {task['text']}\n"
+            tasks_text += f"Правильный ответ: {task['correct_answer']}\n"
+            tasks_text += f"Правильное решение: {task['correct_solution']}\n"
+            tasks_text += f"Ответ ученика: {task['user_answer']}\n"
+            tasks_text += f"Решение ученика: {task['user_solution']}\n"
+        
+        system_prompt = """Ты — эксперт по проверке олимпиадных работ по математике.
+
+Проверь решения ученика и верни JSON:
+{
+  "tasks": [
+    {
+      "task_number": 1,
+      "is_correct": true/false,
+      "comment": "Комментарий к решению"
+    },
+    ...
+  ],
+  "overall_feedback": "Общий анализ и рекомендации",
+  "score": 85
+}
+
+Оценивай строго но справедливо. Хвали за правильные решения."""
+
+        try:
+            response = self.generate(
+                prompt=f"Проверь решения:{tasks_text}",
+                system_prompt=system_prompt,
+                temperature=0.3,
+                max_tokens=2000
+            )
+            
+            # Парсинг
+            response = response.strip()
+            if response.startswith("```json"):
+                response = response[7:]
+            if response.startswith("```"):
+                response = response[3:]
+            if response.endswith("```"):
+                response = response[:-3]
+            
+            result = json.loads(response.strip())
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error grading exam: {e}")
+            # Fallback
+            return {
+                'tasks': [{'task_number': i+1, 'is_correct': False, 'comment': 'Ошибка проверки'} for i in range(len(exam_tasks))],
+                'overall_feedback': 'Не удалось проверить работу',
+                'score': 0
+            }
 
 
 class CheckpointManager:

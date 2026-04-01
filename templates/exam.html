@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Пробник - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main);">📝 Пробник #{{ exam.id }}</h1>
+        <p style="color: var(--text-soft);">5 задач · Проверка AI</p>
+    </div>
+
+    <form id="examForm">
+        {% for item in tasks %}
+        <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px;">
+            <h3 style="color: var(--accent-2); margin-bottom: 15px;">Задача {{ loop.index }}</h3>
+            
+            <div style="color: var(--text-soft); line-height: 1.8; margin-bottom: 20px;">
+                {{ item.problem.text }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">Ваш ответ:</label>
+                <input type="text" name="answer_{{ item.task_id }}" placeholder="Введите ответ" style="width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2);">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">Ход решения (текст):</label>
+                <textarea name="solution_{{ item.task_id }}" placeholder="Опишите как вы решали задачу..." style="width: 100%; min-height: 120px; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2); resize: vertical;"></textarea>
+            </div>
+            
+            <div>
+                <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">📷 Или загрузите фото решения:</label>
+                <input type="file" name="photo_{{ item.task_id }}" accept="image/*" capture="environment" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-soft); cursor: pointer;">
+                <div id="preview_{{ item.task_id }}" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <button type="button" onclick="submitExam()" id="submitBtn" style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: var(--radius-sm); font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: all 0.3s;">
+                🤖 Сдать на проверку AI
+            </button>
+        </div>
+    </form>
+    
+    <div id="checking" style="display: none; text-align: center; padding: 40px;">
+        <div class="spinner" style="border: 4px solid rgba(255, 255, 255, 0.1); border-top: 4px solid var(--accent-2); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+        <p style="color: var(--text-soft); font-size: 1.2em;">AI проверяет вашу работу...</p>
+    </div>
+
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+async function submitExam() {
+    const form = document.getElementById('examForm');
+    const btn = document.getElementById('submitBtn');
+    const checking = document.getElementById('checking');
+    
+    // Собираем ответы
+    const answers = {};
+    {% for item in tasks %}
+    answers['{{ item.task_id }}'] = {
+        answer: form.querySelector('[name="answer_{{ item.task_id }}"]').value,
+        solution: form.querySelector('[name="solution_{{ item.task_id }}"]').value
+    };
+    {% endfor %}
+    
+    // Показываем лоадер
+    form.style.display = 'none';
+    checking.style.display = 'block';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/exam/{{ exam.id }}/submit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({answers: answers})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.href = '/exam/{{ exam.id }}/results';
+        } else {
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            form.style.display = 'block';
+            checking.style.display = 'none';
+            btn.disabled = false;
+        }
+    } catch (error) {
+        alert('Ошибка отправки: ' + error);
+        form.style.display = 'block';
+        checking.style.display = 'none';
+        btn.disabled = false;
+    }
+}
+</script>
+
+{% endblock %}
