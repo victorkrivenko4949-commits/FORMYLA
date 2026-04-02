@@ -39,10 +39,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formyla.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Flask-Login configuration (долгоживущие cookie)
-app.config['REMEMBER_COOKIE_DURATION'] = 2592000  # 30 дней в секундах
-app.config['REMEMBER_COOKIE_SECURE'] = False  # True для HTTPS в продакшене
+app.config['REMEMBER_COOKIE_DURATION'] = 2592000  # 30 дней
+app.config['REMEMBER_COOKIE_SECURE'] = True  # HTTPS на Render
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS
 
 # Flask-Mail configuration (Yandex SMTP)
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
@@ -913,7 +914,8 @@ def logout():
 def yandex_login_start():
     """Начало OAuth через Яндекс (редирект)."""
     client_id = app.config.get('YANDEX_CLIENT_ID')
-    redirect_uri = f"{app.config.get('DOMAIN_URL')}/yandex_receiver"
+    domain = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
+    redirect_uri = f"{domain}/yandex_receiver"
     
     if not client_id:
         flash('Яндекс OAuth не настроен', 'error')
@@ -1122,8 +1124,11 @@ def tutor_send():
         })
         
     except Exception as e:
-        print(f"Ошибка чата: {e}")
-        return jsonify({'error': str(e)}), 500
+        print(f"Ошибка чата: {e}", flush=True)
+        app.logger.error(f"AI Tutor error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Ошибка AI: {str(e)}'}), 500
 
 
 @app.route("/profile")
