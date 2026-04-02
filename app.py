@@ -30,8 +30,10 @@ print("="*60)
 print("DEBUG: Доступные переменные окружения:")
 env_keys = list(os.environ.keys())
 print(f"Всего переменных: {len(env_keys)}")
+print(f"SECRET_KEY = {'ЕСТЬ' if os.environ.get('SECRET_KEY') else 'НЕТ (используется автогенерация)'}")
 print(f"MAIL_USERNAME = {os.environ.get('MAIL_USERNAME')}")
 print(f"MAIL_PASSWORD = {'ЕСТЬ' if os.environ.get('MAIL_PASSWORD') else 'НЕТ'}")
+print(f"DEEPSEEK_API_KEY = {'ЕСТЬ' if os.environ.get('DEEPSEEK_API_KEY') else 'НЕТ'}")
 print("="*60)
 
 # Database configuration
@@ -39,11 +41,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formyla.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Flask-Login configuration (долгоживущие cookie)
-app.config['REMEMBER_COOKIE_DURATION'] = 2592000  # 30 дней
-app.config['REMEMBER_COOKIE_SECURE'] = True  # HTTPS на Render
+from datetime import timedelta
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)
+domain_url = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
+app.config['REMEMBER_COOKIE_SECURE'] = domain_url.startswith('https')
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS
+app.config['SESSION_COOKIE_SECURE'] = domain_url.startswith('https')
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Flask-Mail configuration (Yandex SMTP)
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
