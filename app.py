@@ -819,7 +819,7 @@ def login():
                 print(f"   Действителен: 10 минут", flush=True)
                 print("="*60 + "\n", flush=True)
                 
-                flash(f'Ошибка отправки. Код: {code}', 'warning')
+                flash(f'Ошибка отправки email. Попробуйте еще раз.', 'error')
         else:
             # Email не настроен
             print("\n" + "="*60, flush=True)
@@ -831,7 +831,7 @@ def login():
             print("="*60 + "\n", flush=True)
             app.logger.warning(f"EMAIL НЕ НАСТРОЕН - КОД: {code}")
             
-            flash(f'Код сгенерирован: {code}', 'warning')
+            flash(f'Код отправлен на {email}', 'success')
         
         # Сохраняем email в сессию для следующего шага
         session['verify_email'] = email
