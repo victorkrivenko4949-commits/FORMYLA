@@ -25,6 +25,15 @@ except ImportError:
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-' + str(uuid.uuid4()))
 
+# DEBUG: Проверка переменных окружения
+print("="*60)
+print("DEBUG: Доступные переменные окружения:")
+env_keys = list(os.environ.keys())
+print(f"Всего переменных: {len(env_keys)}")
+print(f"MAIL_USERNAME = {os.environ.get('MAIL_USERNAME')}")
+print(f"MAIL_PASSWORD = {'ЕСТЬ' if os.environ.get('MAIL_PASSWORD') else 'НЕТ'}")
+print("="*60)
+
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formyla.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -36,13 +45,13 @@ app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 # Flask-Mail configuration (Yandex SMTP)
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER') or os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT') or os.environ.get('MAIL_PORT', 465))
-app.config['MAIL_USE_TLS'] = (os.getenv('MAIL_USE_TLS') or os.environ.get('MAIL_USE_TLS', 'False')) == 'True'
-app.config['MAIL_USE_SSL'] = (os.getenv('MAIL_USE_SSL') or os.environ.get('MAIL_USE_SSL', 'True')) == 'True'
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME') or os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD') or os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME') or os.environ.get('MAIL_USERNAME')
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '465'))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'False') == 'True'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
 
 # Yandex OAuth configuration
 app.config['YANDEX_CLIENT_ID'] = os.environ.get('YANDEX_CLIENT_ID')
