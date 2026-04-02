@@ -11,7 +11,7 @@
 <div style="text-align: center; margin-bottom: 30px;">
     <div style="display: inline-block; background: var(--bg-card); padding: 20px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
         <label style="display: block; color: var(--text-soft); margin-bottom: 10px; font-weight: 500;">Выберите класс:</label>
-        <select id="gradeSelect" style="padding: 10px 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; margin-bottom: 15px; cursor: pointer;">
+        <select id="gradeSelect" style="padding: 10px 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; margin-bottom: 15px; cursor: pointer; width: 100%;">
             <option value="5">5 класс</option>
             <option value="6">6 класс</option>
             <option value="7">7 класс</option>
@@ -19,6 +19,15 @@
             <option value="9" selected>9 класс</option>
             <option value="10">10 класс</option>
             <option value="11">11 класс</option>
+        </select>
+        
+        <label style="display: block; color: var(--text-soft); margin-bottom: 10px; margin-top: 15px; font-weight: 500;">Уровень сложности:</label>
+        <select id="levelSelect" style="padding: 10px 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; margin-bottom: 15px; cursor: pointer; width: 100%;">
+            <option value="1">Начинающий</option>
+            <option value="2">Базовый</option>
+            <option value="3" selected>Средний</option>
+            <option value="4">Продвинутый</option>
+            <option value="5">Олимпиадный</option>
         </select>
         <br>
         <button onclick="generateExam()" style="padding: 15px 40px; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
@@ -57,6 +66,7 @@
 async function generateExam() {
     const btn = event.target;
     const grade = document.getElementById('gradeSelect').value;
+    const level = document.getElementById('levelSelect').value;
     
     btn.disabled = true;
     btn.textContent = '⏳ Генерация...';
@@ -65,7 +75,7 @@ async function generateExam() {
         const response = await fetch('/api/exam/generate', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({grade: parseInt(grade)})
+            body: JSON.stringify({grade: parseInt(grade), level: parseInt(level)})
         });
         
         const data = await response.json();
