@@ -1262,6 +1262,23 @@ def submit_exam(exam_id):
             exam.status = 'graded'
             db.session.commit()
             
+            # Отправляем анализ в чат с тьютором
+            try:
+                from models import ChatMessage
+                chat_msg = f"""🎯 Пробник #{exam_id} проверен!
+
+Ваш результат: {exam.score}%
+
+{exam.ai_feedback}
+
+Хотите разобрать ошибки или попробовать еще раз?"""
+                
+                ai_msg = ChatMessage(user_id=current_user.id, role='assistant', content=chat_msg)
+                db.session.add(ai_msg)
+                db.session.commit()
+            except:
+                pass  # Не критично если не отправилось
+            
             return jsonify({'success': True, 'exam_id': exam_id})
             
         except Exception as e:
