@@ -92,6 +92,15 @@ async function loadChatHistory() {
         const container = document.getElementById('chatMessages');
         container.innerHTML = '';
         
+        if (messages.length > 0) {
+            // Персональное приветствие для повторных визитов
+            const lastUserMsg = messages.filter(m => m.role === 'user').slice(-1)[0];
+            const greeting = document.createElement('div');
+            greeting.style.cssText = 'text-align: center; color: var(--text-muted); font-size: 14px; padding: 15px; line-height: 1.6; background: rgba(56, 189, 248, 0.1); border-radius: 8px; margin-bottom: 10px;';
+            greeting.innerHTML = `С возвращением! 👋<br>В прошлый раз мы работали над задачами.<br>Продолжим или начнём новое?`;
+            container.appendChild(greeting);
+        }
+        
         messages.forEach(msg => {
             addMessageToChat(msg.role, msg.content, false);
         });
