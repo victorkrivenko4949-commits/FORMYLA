@@ -292,3 +292,53 @@ button:hover {
     .problem-card { padding: 18px; }
     .problem-text, .answer, .solution { font-size: 16px; }
 }
+
+/* Адаптивная верстка для мобильных */
+@media (max-width: 768px) {
+    /* Навигация */
+    .header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .nav {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+    
+    /* Карточки в одну колонку */
+    .cards-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* AI-тьютор на всю ширину */
+    #tutorChat {
+        width: 100vw !important;
+        height: 100vh !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    #tutorBtn {
+        bottom: 10px !important;
+        right: 10px !important;
+    }
+    
+    /* Крупнее шрифты и кнопки */
+    body {
+        font-size: 16px;
+    }
+    
+    button, .btn, a.card {
+        min-height: 44px;
+        font-size: 16px;
+    }
+    
+    input, textarea {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
