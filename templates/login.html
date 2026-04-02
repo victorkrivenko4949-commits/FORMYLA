@@ -70,7 +70,7 @@
         
         <!-- Fallback кнопка если SDK не загрузился -->
         <div style="text-align: center;">
-            <a href="#" onclick="alert('Яндекс OAuth настраивается. Пока используйте вход по email.'); return false;" style="display: inline-block; padding: 12px 30px; background: #FC3F1D; color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; transition: all 0.3s;">
+            <a href="{{ url_for('yandex_login_start') }}" style="display: inline-block; padding: 12px 30px; background: #FC3F1D; color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; transition: all 0.3s;">
                 🟡 Войти через Яндекс
             </a>
         </div>

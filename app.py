@@ -900,6 +900,21 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route("/yandex_login")
+def yandex_login_start():
+    """Начало OAuth через Яндекс (редирект)."""
+    client_id = app.config.get('YANDEX_CLIENT_ID')
+    redirect_uri = f"{app.config.get('DOMAIN_URL')}/yandex_receiver"
+    
+    if not client_id:
+        flash('Яндекс OAuth не настроен', 'error')
+        return redirect(url_for('login'))
+    
+    # Редирект на Яндекс OAuth
+    auth_url = f"https://oauth.yandex.ru/authorize?response_type=token&client_id={client_id}&redirect_uri={redirect_uri}"
+    return redirect(auth_url)
+
+
 @app.route("/yandex_receiver")
 def yandex_receiver():
     """Техническая страница для Яндекс OAuth виджета."""
