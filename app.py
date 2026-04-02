@@ -36,13 +36,13 @@ app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 # Flask-Mail configuration (Yandex SMTP)
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 465))
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'False') == 'True'
-app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'True') == 'True'
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER') or os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT') or os.environ.get('MAIL_PORT', 465))
+app.config['MAIL_USE_TLS'] = (os.getenv('MAIL_USE_TLS') or os.environ.get('MAIL_USE_TLS', 'False')) == 'True'
+app.config['MAIL_USE_SSL'] = (os.getenv('MAIL_USE_SSL') or os.environ.get('MAIL_USE_SSL', 'True')) == 'True'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME') or os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD') or os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME') or os.environ.get('MAIL_USERNAME')
 
 # Yandex OAuth configuration
 app.config['YANDEX_CLIENT_ID'] = os.environ.get('YANDEX_CLIENT_ID')
@@ -788,7 +788,8 @@ def login():
         mail_configured = app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD')
         
         print(f"\n🔍 DEBUG: MAIL_USERNAME = {app.config.get('MAIL_USERNAME')}", flush=True)
-        print(f"🔍 DEBUG: MAIL_PASSWORD = {'*' * len(app.config.get('MAIL_PASSWORD', ''))} ({len(app.config.get('MAIL_PASSWORD', ''))} символов)", flush=True)
+        mail_pass = app.config.get('MAIL_PASSWORD') or ''
+        print(f"🔍 DEBUG: MAIL_PASSWORD = {'*' * len(mail_pass)} ({len(mail_pass)} символов)", flush=True)
         print(f"🔍 DEBUG: Mail configured = {mail_configured}\n", flush=True)
         
         if mail_configured:
