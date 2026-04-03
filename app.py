@@ -659,7 +659,15 @@ def olympiads():
         year = str(combo["year"])
         rnd = combo["round"]
         rnd_title = combo.get("round_title", rnd)
-        grade = int(combo["grade"])
+        grade_str = str(combo["grade"])
+        # Обрабатываем диапазоны типа "10-11"
+        if '-' in grade_str:
+            grade = grade_str  # Оставляем как строку
+        else:
+            try:
+                grade = int(grade_str)
+            except:
+                grade = grade_str
         if slug not in olympiad_data:
             olympiad_data[slug] = {}
         if year not in olympiad_data[slug]:
