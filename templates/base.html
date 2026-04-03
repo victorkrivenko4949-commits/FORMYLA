@@ -18,7 +18,9 @@
 </head>
 <body>
     <header class="header">
-        <a href="{{ url_for('index') }}" class="logo">FORMYLA</a>
+        <a href="{{ url_for('index') }}" class="logo" style="display: flex; align-items: center; gap: 10px;">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="FORMYLA" style="height: 40px;">
+        </a>
 
         <nav class="nav">
             <a href="{{ url_for('index') }}">Разделы</a>
