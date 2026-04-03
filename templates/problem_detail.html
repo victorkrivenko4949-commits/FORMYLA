@@ -116,6 +116,19 @@
     }
     </script>
     {% endif %}
+    
+    <!-- Предложение после решения -->
+    <div id="nextSteps" style="display: none; background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); margin-top: 20px; text-align: center;">
+        <p style="color: var(--text-soft); margin-bottom: 15px;">Отличная работа! Что дальше?</p>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="/problems?subject={{ problem.subject }}&difficulty={{ problem.difficulty }}" style="padding: 10px 20px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);">
+                🔄 Похожая задача
+            </a>
+            <a href="/" onclick="document.querySelector('#tutorBtn')?.click(); return false;" style="padding: 10px 20px; background: rgba(139, 92, 246, 0.1); color: var(--accent-1); text-decoration: none; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.3);">
+                📝 Написать пробник
+            </a>
+        </div>
+    </div>
 
 
 <style>
