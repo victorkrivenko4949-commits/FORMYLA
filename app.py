@@ -1316,6 +1316,71 @@ def exam_results(exam_id):
     return render_template('exam_results.html', exam=exam, results=results_data)
 
 
+# ============================================================
+# СЕКРЕТЫ ОЛИМПИАДНИКОВ
+# ============================================================
+
+SECRETS_TOPICS = {
+    'number_theory_digits': 'Разложение на разряды',
+    'divisibility': 'Признаки делимости',
+    'modulo': 'Остатки и модули',
+    'gcd_lcm': 'НОД и НОК',
+    'combinatorics_rules': 'Правило суммы и произведения',
+    'dirichlet': 'Принцип Дирихле',
+    'algebra_estimation': 'Метод оценки',
+    'am_gm': 'Неравенство AM-GM',
+    'geometry_areas': 'Площади и отношения',
+    'circles': 'Вписанные окружности',
+    'logic_invariant': 'Инвариант',
+    'coloring': 'Раскраска'
+}
+
+@app.route("/secrets")
+def secrets():
+    """Список секретов олимпиадников."""
+    return render_template('secrets.html', topics=SECRETS_TOPICS)
+
+
+@app.route("/secrets/<topic_slug>")
+def secret_topic(topic_slug):
+    """Страница с теорией (AI-генерация)."""
+    if topic_slug not in SECRETS_TOPICS:
+        abort(404)
+    
+    from models import SecretTopic
+    
+    # Ищем в кэше
+    topic = SecretTopic.query.filter_by(slug=topic_slug).first()
+    
+    if not topic and DEEPSEEK_AVAILABLE:
+        # Генерируем через AI
+        try:
+            client = DeepSeekClient()
+            title = SECRETS_TOPICS[topic_slug]
+            
+            prompt = f"""Создай подробный теоретический материал по теме: {title}
+
+Структура:
+1. Краткое объяснение метода
+2. Формулы и правила
+3. 2-3 примера задач с решениями
+4. Когда применять
+
+Формат: HTML с inline стилями (темная тема)"""
+            
+            content = client.generate(prompt, temperature=0.7, max_tokens=2000)
+            
+            # Сохраняем в кэш
+            topic = SecretTopic(slug=topic_slug, title=title, content=content)
+            db.session.add(topic)
+            db.session.commit()
+            
+        except:
+            topic = SecretTopic(slug=topic_slug, title=SECRETS_TOPICS[topic_slug], content="<p>Контент генерируется...</p>")
+    
+    return render_template('secret_topic.html', topic=topic)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
