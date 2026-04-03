@@ -89,20 +89,20 @@
         </div>
         {% endif %}
     </div>
-    {% else %}
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); text-align: center;">
-        <p style="color: var(--text-soft); margin-bottom: 20px;">
-            Вы еще не прошли онбординг
-        </p>
-        <a href="{{ url_for('onboarding') }}" 
-           style="display: inline-block; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; text-decoration: none; padding: 12px 30px; border-radius: var(--radius-sm); font-weight: 600; transition: all 0.3s;"
-           onmouseover="this.style.transform='translateY(-2px)'"
-           onmouseout="this.style.transform='translateY(0)'"
-        >
-            Пройти онбординг
-        </a>
-    </div>
     {% endif %}
+
+    <!-- Быстрые действия -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px;">
+        <h3 style="color: var(--text-main); margin-bottom: 20px; text-align: center;">Быстрые действия</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <a href="/" onclick="document.getElementById('tutorBtn')?.click(); return false;" style="padding: 15px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: var(--radius-sm); text-align: center; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.3s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
+                💬 Открыть тьютора
+            </a>
+            <a href="/" style="padding: 15px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; text-decoration: none; border-radius: var(--radius-sm); text-align: center; border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'">
+                📝 Написать пробник
+            </a>
+        </div>
+    </div>
 
     <!-- Действия -->
     <div style="text-align: center; margin-top: 40px;">
