@@ -1134,7 +1134,7 @@ def tutor_send():
         
         # Получаем историю
         history = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp).all()
-        history_list = [{'role': msg.role, 'content': msg.content} for msg in history[-10:]]
+        history_list = [{'role': msg.role, 'content': msg.content} for msg in history[-20:]]
         
         # Получаем ответ от AI
         client = DeepSeekClient()
