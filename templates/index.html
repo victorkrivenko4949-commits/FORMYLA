@@ -6,8 +6,14 @@
 <h1 class="page-title">Разделы</h1>
 <p class="page-subtitle">Выбери раздел для тренировки.</p>
 
-<!-- Кнопка пробника -->
+<!-- Блок "Продолжить" -->
 {% if current_user.is_authenticated %}
+<div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <h3 style="color: var(--accent-2); margin-bottom: 15px;">⚡ Продолжить</h3>
+    <p style="color: var(--text-soft); margin-bottom: 15px;">Начните новый пробник или продолжите изучение тем!</p>
+</div>
+
+<!-- Кнопка пробника -->
 <div style="text-align: center; margin-bottom: 30px;">
     <div style="display: inline-block; background: var(--bg-card); padding: 20px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
         <label style="display: block; color: var(--text-soft); margin-bottom: 10px; font-weight: 500;">Выберите класс:</label>
