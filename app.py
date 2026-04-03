@@ -160,24 +160,20 @@ SUBTOPICS = {
     "algebra": {
         "equations": "Уравнения и системы",
         "inequalities": "Неравенства и оценки (8-11)",
-        "text_problems": "Текстовые задачи",
-        "other_algebra": "Другое (Алгебра)"
+        "text_problems": "Текстовые задачи"
     },
     "geometry": {
         "basics": "Углы, отрезки и многоугольники",
         "triangles": "Треугольники (7-11)",
-        "circles": "Окружности (8-11)",
-        "other_geometry": "Другое (Геометрия)"
+        "circles": "Окружности (8-11)"
     },
     "combinatorics": {
         "dirichlet_and_graphs": "Графы и Принцип Дирихле",
-        "games": "Игры и стратегии",
-        "other_combinatorics": "Другое (Комбинаторика)"
+        "games": "Игры и стратегии"
     },
     "number_theory": {
         "divisibility": "Делимость и остатки",
-        "primes_and_equations": "Простые числа и диофантовы уравнения (7-11)",
-        "other_number_theory": "Другое (Теория чисел)"
+        "primes_and_equations": "Простые числа и диофантовы уравнения (7-11)"
     },
     "movement": {
         "movement_all": "Все задачи на движение"
