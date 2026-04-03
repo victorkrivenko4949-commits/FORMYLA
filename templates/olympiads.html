@@ -61,7 +61,7 @@
                 Классы: {% for g in o.grades %}{{ g }}{% if not loop.last %}, {% endif %}{% endfor %}
             </p>
             <p style="color:#888;">
-                Этапы: {% for key, name in o.rounds.items() %}{{ name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                Этапы: {% for key, name in o.get('rounds', {}).items() %}{{ name }}{% if not loop.last %}, {% endif %}{% endfor %}
             </p>
         </div>
     {% endfor %}
