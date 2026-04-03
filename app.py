@@ -673,7 +673,9 @@ def olympiads():
     for slug in olympiad_data:
         for year in olympiad_data[slug]:
             for rnd in olympiad_data[slug][year]:
-                olympiad_data[slug][year][rnd][1].sort()
+                # Конвертируем все grade в строки для JSON
+                grades_list = olympiad_data[slug][year][rnd][1]
+                olympiad_data[slug][year][rnd][1] = sorted([str(g) for g in grades_list])
 
     return render_template(
         "olympiads.html",
