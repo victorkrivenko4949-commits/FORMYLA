@@ -29,6 +29,11 @@
             <a href="{{ url_for('index') }}">Разделы</a>
             <a href="{{ url_for('olympiads') }}">Олимпиады</a>
             <a href="/practice">Написать олимпиаду</a>
+            {% if current_user.is_authenticated %}
+            <a href="#" onclick="document.getElementById('tutorBtn')?.click(); return false;" style="display: flex; align-items: center; gap: 6px;">
+                💬 AI-Тьютор
+            </a>
+            {% endif %}
         </nav>
         
         <!-- Форма поиска -->
