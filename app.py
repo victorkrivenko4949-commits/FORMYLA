@@ -1,7 +1,21 @@
 from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
-from olympiads import OLYMPIADS_DB as _RAW_DB, OLYMPIADS_INFO
+from olympiads import OLYMPIADS_DB as _RAW_DB
+try:
+    from olympiads import OLYMPIADS_INFO
+except ImportError:
+    # Создаем OLYMPIADS_INFO из OLYMPIADS_DB
+    OLYMPIADS_INFO = []
+    seen = set()
+    for item in _RAW_DB:
+        slug = item.get('olympiad', '')
+        if slug and slug not in seen:
+            OLYMPIADS_INFO.append({
+                'slug': slug,
+                'title': item.get('olympiad_title', slug)
+            })
+            seen.add(slug)
 try:
     from problems import PROBLEMS_DB
 except ImportError:
