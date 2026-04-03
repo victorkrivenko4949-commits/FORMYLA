@@ -279,8 +279,8 @@ class DeepSeekClient:
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         
-        # Добавляем последние 10 сообщений из истории
-        for msg in chat_history[-10:]:
+        # Добавляем последние 20 сообщений из истории
+        for msg in chat_history[-20:]:
             messages.append({
                 "role": msg.get('role', 'user'),
                 "content": msg.get('content', '')
@@ -289,13 +289,37 @@ class DeepSeekClient:
         # Добавляем новое сообщение
         messages.append({"role": "user", "content": new_message})
         
+        logger.info(f"Sending {len(messages)} messages to DeepSeek (including system prompt)")
+        
         try:
-            response = self.generate(
-                prompt=new_message,
-                system_prompt=system_prompt,
-                temperature=0.7,
-                max_tokens=500
+            # Отправляем всю историю в DeepSeek
+            payload = {
+                "model": "deepseek-chat",
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 500
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(
+                self.base_url,
+                headers=headers,
+                json=payload,
+                timeout=self.timeout
             )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'choices' in data and len(data['choices']) > 0:
+                    content = data['choices'][0]['message']['content']
+                    logger.info(f"Tutor response generated for user {user.id}")
+                    return content
+            
+            raise DeepSeekAPIError(f"API error: {response.status_code}")
             
             logger.info(f"Tutor response generated for user {user.id}")
             return response
