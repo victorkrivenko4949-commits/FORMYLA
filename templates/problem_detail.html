@@ -89,6 +89,33 @@
         </div>
     </div>
     {% endif %}
+    
+    <!-- Кнопка "Спросить тьютора" -->
+    {% if current_user.is_authenticated %}
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="openTutorWithContext()" style="padding: 12px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            💬 Спросить AI-тьютора об этой задаче
+        </button>
+    </div>
+    
+    <script>
+    function openTutorWithContext() {
+        // Открываем чат
+        if (typeof toggleTutorChat === 'function') {
+            if (!chatOpen) toggleTutorChat();
+            
+            // Добавляем контекст задачи
+            setTimeout(() => {
+                const input = document.getElementById('tutorInput');
+                if (input) {
+                    input.value = 'Помоги с задачей: {{ problem.text[:100] }}...';
+                    input.focus();
+                }
+            }, 300);
+        }
+    }
+    </script>
+    {% endif %}
 
 
 <style>
