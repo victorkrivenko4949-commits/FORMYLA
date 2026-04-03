@@ -1037,65 +1037,7 @@ def yandex_login():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route("/onboarding")
-@login_required
-def onboarding():
-    """Страница AI-онбординга для новых пользователей."""
-    # Если онбординг уже пройден, редирект на главную
-    if current_user.onboarding_completed:
-        flash('Вы уже прошли онбординг!', 'info')
-        return redirect(url_for('index'))
-    
-    return render_template('onboarding.html')
-
-
-@app.route("/api/onboarding", methods=["POST"])
-@login_required
-def api_onboarding():
-    """API для анализа математического опыта пользователя через AI."""
-    if not DEEPSEEK_AVAILABLE:
-        return jsonify({
-            'error': 'AI сервис недоступен',
-            'level': 'intermediate',
-            'report': 'Спасибо за ваш рассказ! Начнем с задач среднего уровня.',
-            'recommended_topics': ['algebra', 'geometry']
-        }), 503
-    
-    data = request.get_json()
-    user_text = data.get('text', '').strip()
-    
-    if not user_text:
-        return jsonify({'error': 'Текст не может быть пустым'}), 400
-    
-    if len(user_text) < 20:
-        return jsonify({'error': 'Расскажите подробнее (минимум 20 символов)'}), 400
-    
-    try:
-        # Инициализируем DeepSeek клиент
-        client = DeepSeekClient()
-        
-        # Анализируем опыт пользователя
-        result = client.analyze_user_background(user_text)
-        
-        # Сохраняем в БД
-        current_user.complete_onboarding(
-            level=result['level'],
-            report=result['report'],
-            topics=result['recommended_topics']
-        )
-        db.session.commit()
-        
-        return jsonify(result), 200
-        
-    except Exception as e:
-        print(f"Ошибка анализа: {e}")
-        return jsonify({
-            'error': 'Ошибка анализа',
-            'level': 'intermediate',
-            'report': 'Спасибо за ваш рассказ! Мы подберем для вас подходящие задачи.',
-            'recommended_topics': ['algebra', 'geometry']
-        }), 500
-
+# Онбординг удален - используйте AI-тьютор
 
 @app.route("/api/tutor/history")
 @login_required
