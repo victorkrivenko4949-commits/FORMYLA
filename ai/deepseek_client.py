@@ -289,6 +289,7 @@ class DeepSeekClient:
         # Добавляем новое сообщение
         messages.append({"role": "user", "content": new_message})
         
+        print(f">>> Messages count: {len(messages)}", flush=True)
         logger.info(f"Sending {len(messages)} messages to DeepSeek (including system prompt)")
         
         try:
