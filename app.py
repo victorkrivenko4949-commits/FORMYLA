@@ -95,6 +95,29 @@ app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 from models import db, User, Friendship, Mentorship, init_db
 init_db(app)
 
+# AUTO-MIGRATION: Add agent_type column if it doesn't exist
+# This runs on every startup to ensure database schema is up to date
+try:
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        
+        # Check if chat_messages table exists
+        if 'chat_messages' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('chat_messages')]
+            
+            # Add agent_type column if it doesn't exist
+            if 'agent_type' not in columns:
+                print("[AUTO-MIGRATION] Adding 'agent_type' column to chat_messages...")
+                db.engine.execute(text("ALTER TABLE chat_messages ADD COLUMN agent_type VARCHAR(50) DEFAULT 'general' NOT NULL"))
+                db.engine.execute(text("CREATE INDEX IF NOT EXISTS ix_chat_messages_agent_type ON chat_messages (agent_type)"))
+                print("[AUTO-MIGRATION] ✓ Column 'agent_type' added successfully!")
+            else:
+                print("[AUTO-MIGRATION] ✓ Column 'agent_type' already exists")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] Warning: {e}")
+    # Continue anyway - app should still work
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
