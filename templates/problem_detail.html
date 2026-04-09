@@ -67,34 +67,80 @@
         <div id="feedback-{{ problem.id }}" style="margin-top: 12px; font-size: 14px;"></div>
     </div>
     
-    <!-- Кнопка "Показать решение" - всегда видна -->
-    <div class="reveal-block" style="margin-top: 24px;">
-        <button class="reveal-btn" onclick="toggleReveal('solution-box-{{ problem.id }}', this)" id="solution-toggle-{{ problem.id }}">
-            💡 Показать ответ и решение
-        </button>
-        <div id="solution-box-{{ problem.id }}" class="reveal-content hidden">
-            <span class="reveal-label answer-label">Правильный ответ</span>
-            <div style="margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #86efac;">
-                {{ problem.answer | safe }}
-            </div>
-            
-            <span class="reveal-label solution-label">Решение</span>
-            <div>
-                {% if problem.solution %}
-                    {{ problem.solution | safe }}
-                {% else %}
-                    <span style="color: #475569;">Решение скоро появится...</span>
-                {% endif %}
+    <!-- Разделение логики: Олимпиады vs Базовые задачи -->
+    {% if is_olympiad %}
+        <!-- ДЛЯ ОЛИМПИАД: Статичное решение (старый функционал) -->
+        <div class="reveal-block" style="margin-top: 24px;">
+            <button class="reveal-btn" onclick="toggleReveal('solution-box-{{ problem.id }}', this)" id="solution-toggle-{{ problem.id }}">
+                💡 Показать ответ и решение
+            </button>
+            <div id="solution-box-{{ problem.id }}" class="reveal-content hidden">
+                <span class="reveal-label answer-label">Правильный ответ</span>
+                <div style="margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #86efac;">
+                    {{ problem.answer | safe }}
+                </div>
+                
+                <span class="reveal-label solution-label">Решение</span>
+                <div>
+                    {% if problem.solution %}
+                        {{ problem.solution | safe }}
+                    {% else %}
+                        <span style="color: #475569;">Решение скоро появится...</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
+    {% else %}
+        <!-- ДЛЯ БАЗОВЫХ ЗАДАЧ: AI-Тьютор (только для авторизованных) -->
+        {% if current_user.is_authenticated %}
+        <div class="ai-tutor-section" style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <button onclick="getAIHint({{ problem.id }})" id="hint-btn-{{ problem.id }}" class="ai-btn hint-btn">
+                💡 Получить подсказку от AI
+            </button>
+            <button onclick="getAISolution({{ problem.id }})" id="solution-btn-{{ problem.id }}" class="ai-btn solution-btn">
+                🤖 Сгенерировать решение AI
+            </button>
+        </div>
+        
+        <!-- Контейнер для AI подсказки -->
+        <div id="ai-hint-{{ problem.id }}" class="reveal-content hidden" style="margin-top: 12px; background: #0c1a2e; border: 1px solid #1e3a5f;">
+            <span class="reveal-label" style="background: #1e3a5f; color: #7dd3fc;">💡 Подсказка от AI</span>
+            <div id="ai-hint-content-{{ problem.id }}" style="line-height: 1.8;"></div>
+        </div>
+        
+        <!-- Контейнер для AI решения -->
+        <div id="ai-solution-{{ problem.id }}" class="reveal-content hidden" style="margin-top: 12px; background: #0c1a2e; border: 1px solid #1e3a5f;">
+            <span class="reveal-label answer-label">Правильный ответ</span>
+            <div id="ai-answer-{{ problem.id }}" style="margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #86efac;"></div>
+            
+            <span class="reveal-label solution-label">🤖 Решение от AI</span>
+            <div id="ai-solution-content-{{ problem.id }}" style="line-height: 1.8;"></div>
+        </div>
+        {% else %}
+        <!-- Для неавторизованных: показываем только ответ -->
+        <div class="reveal-block" style="margin-top: 24px;">
+            <button class="reveal-btn" onclick="toggleReveal('answer-box-{{ problem.id }}', this)" id="answer-toggle-{{ problem.id }}">
+                👁 Показать ответ
+            </button>
+            <div id="answer-box-{{ problem.id }}" class="reveal-content hidden" style="background: #0d2218; border: 1px solid #166534;">
+                <span class="reveal-label answer-label">Правильный ответ</span>
+                <div style="font-size: 16px; font-weight: 600; color: #86efac;">
+                    {{ problem.answer | safe }}
+                </div>
+                <div style="margin-top: 15px; padding: 12px; background: rgba(56, 189, 248, 0.1); border-radius: 8px; color: #7dd3fc; font-size: 14px;">
+                    💡 Авторизуйтесь, чтобы получить помощь AI-тьютора с подсказками и решениями!
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
     {% endif %}
     
-    <!-- Кнопка "Спросить тьютора" -->
+    <!-- Кнопка "Спросить тьютора в чате" -->
     {% if current_user.is_authenticated %}
     <div style="text-align: center; margin-top: 30px;">
-        <button onclick="openTutorWithContext()" style="padding: 12px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            💬 Спросить AI-тьютора об этой задаче
+        <button onclick="openTutorWithContext()" style="padding: 12px 30px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            💬 Обсудить с AI-тьютором в чате
         </button>
     </div>
     
@@ -234,6 +280,50 @@
     color: #7dd3fc;
 }
 
+.ai-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 200px;
+}
+
+.hint-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.hint-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.hint-btn:disabled {
+    background: #334155;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.solution-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.solution-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.solution-btn:disabled {
+    background: #334155;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .back-link {
     display: inline-block;
     margin: 24px 0 0 24px;
@@ -263,7 +353,7 @@ function toggleReveal(id, btn) {
         if (id.includes('solution-box')) btn.innerHTML = '✕ Скрыть решение';
     } else {
         box.classList.add('hidden');
-        if (id.includes('answer-box')) btn.innerHTML = '👁 Посмотреть ответ';
+        if (id.includes('answer-box')) btn.innerHTML = '👁 Показать ответ';
         if (id.includes('solution-box')) btn.innerHTML = '💡 Показать ответ и решение';
     }
 }
@@ -307,6 +397,145 @@ function checkAnswer(problemId) {
         feedback.innerHTML = '<span style="color: #f59e0b;">⚠️ Ошибка проверки</span>';
         console.error('Error:', error);
     });
+}
+
+// AI Tutor Functions
+
+// Helper function to safely render Markdown with LaTeX protection
+function protectAndRenderMarkdown(text) {
+    if (!window.marked) {
+        return text;
+    }
+    
+    const mathStorage = [];
+    let counter = 0;
+    
+    // Step 1: Protect display math $$...$$ with unique tokens
+    text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+        const token = `XMATHBLOCKX${counter}XMATHBLOCKX`;
+        mathStorage.push({ token, math: match });
+        counter++;
+        return token;
+    });
+    
+    // Step 2: Protect inline math $...$
+    text = text.replace(/\$([^\$\n]+?)\$/g, (match) => {
+        const token = `XMATHINLINEX${counter}XMATHINLINEX`;
+        mathStorage.push({ token, math: match });
+        counter++;
+        return token;
+    });
+    
+    // Step 3: Parse Markdown (math is now protected)
+    let html = marked.parse(text);
+    
+    // Step 4: Restore all math
+    mathStorage.forEach(({ token, math }) => {
+        html = html.split(token).join(math);
+    });
+    
+    return html;
+}
+
+
+async function getAIHint(problemId) {
+    const btn = document.getElementById(`hint-btn-${problemId}`);
+    const container = document.getElementById(`ai-hint-${problemId}`);
+    const content = document.getElementById(`ai-hint-content-${problemId}`);
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Генерирую подсказку...';
+    
+    try {
+        const response = await fetch(`/api/tutor/hint/${problemId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            content.innerHTML = `<span style="color: #ef4444;">❌ ${data.error}</span>`;
+        } else {
+            // Safely render Markdown while protecting LaTeX
+            const htmlContent = protectAndRenderMarkdown(data.hint);
+            content.innerHTML = htmlContent;
+            
+            // Then render MathJax formulas
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([content]).catch((err) => {
+                    console.warn('MathJax rendering error:', err.message);
+                });
+            }
+        }
+        
+        // Show container
+        container.classList.remove('hidden');
+        
+        // Update button
+        btn.innerHTML = '✓ Подсказка получена';
+        btn.style.background = '#10b981';
+        
+    } catch (error) {
+        content.innerHTML = '<span style="color: #ef4444;">❌ Ошибка связи с сервером</span>';
+        container.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '💡 Получить подсказку от AI';
+        console.error('Error:', error);
+    }
+}
+
+async function getAISolution(problemId) {
+    const btn = document.getElementById(`solution-btn-${problemId}`);
+    const container = document.getElementById(`ai-solution-${problemId}`);
+    const answerDiv = document.getElementById(`ai-answer-${problemId}`);
+    const content = document.getElementById(`ai-solution-content-${problemId}`);
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Генерирую решение...';
+    
+    try {
+        const response = await fetch(`/api/tutor/solution/${problemId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            content.innerHTML = `<span style="color: #ef4444;">❌ ${data.error}</span>`;
+        } else {
+            // Render answer (may contain LaTeX)
+            answerDiv.innerHTML = data.answer;
+            
+            // Safely render Markdown while protecting LaTeX
+            const htmlContent = protectAndRenderMarkdown(data.solution);
+            content.innerHTML = htmlContent;
+            
+            // Then render MathJax formulas for the entire container
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([container]).catch((err) => {
+                    console.warn('MathJax rendering error:', err.message);
+                });
+            }
+        }
+        
+        // Show container
+        container.classList.remove('hidden');
+        
+        // Update button
+        btn.innerHTML = '✓ Решение получено';
+        btn.style.background = '#10b981';
+        
+    } catch (error) {
+        content.innerHTML = '<span style="color: #ef4444;">❌ Ошибка связи с сервером</span>';
+        container.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '🤖 Сгенерировать решение AI';
+        console.error('Error:', error);
+    }
 }
 </script>
 {% endblock %}

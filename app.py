@@ -20,6 +20,19 @@ try:
     from problems import PROBLEMS_DB
 except ImportError:
     PROBLEMS_DB = []
+try:
+    from problem_images import IMAGE_MAP
+except ImportError:
+    IMAGE_MAP = {}
+
+print(f"DEBUG: Загружено {len(IMAGE_MAP)} привязок картинок из problem_images.py")
+try:
+    from problem_images import IMAGE_MAP
+except ImportError:
+    IMAGE_MAP = {}
+
+print(f"DEBUG: Загружено {len(IMAGE_MAP)} привязок картинок из problem_images.py")
+
 import requests, random, json, uuid, os, base64, math
 from werkzeug.utils import secure_filename
 
@@ -55,7 +68,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formyla.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Flask-Login configuration (долгоживущие cookie)
-from datetime import timedelta
+from datetime import timedelta, datetime
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)
 domain_url = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 app.config['REMEMBER_COOKIE_SECURE'] = domain_url.startswith('https')
@@ -79,7 +92,7 @@ app.config['YANDEX_CLIENT_SECRET'] = os.environ.get('YANDEX_CLIENT_SECRET')
 app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 
 # Initialize database, login manager and mail
-from models import db, User, init_db
+from models import db, User, Friendship, Mentorship, init_db
 init_db(app)
 
 login_manager = LoginManager()
@@ -133,6 +146,17 @@ else:
     print(f"olympiads.py: старый формат, {len(_RAW_DB)} задач -> {len(COMBOS)} пробников")
 
 print(f"Пробников всего: {len(COMBOS)}, с задачами: {sum(1 for c in COMBOS if c.get('problems'))}")
+
+# Привязываем картинки к задачам
+if IMAGE_MAP:
+    for combo in COMBOS:
+        combo_id = combo.get('id')
+        for problem in combo.get('problems', []):
+            prob_num = problem.get('num')
+            img_key = f"{combo_id}_{prob_num}"
+            if img_key in IMAGE_MAP:
+                problem['image'] = IMAGE_MAP[img_key]
+
 # ============================================================
 
 
@@ -183,6 +207,35 @@ SUBTOPICS = {
     }
 }
 
+
+# ============================================================
+# SUBTOPIC_MAPPING: Связывает URL-slugs с реальными subtopic из БД
+# ============================================================
+SUBTOPIC_MAPPING = {
+    # == ТЕОРИЯ ЧИСЕЛ ==
+    'divisibility': ['divisibility', 'remainders'],
+    'primes_and_equations': ['primes', 'diophantine'],
+    
+    # == АЛГЕБРА ==
+    'equations': ['equations', 'systems'],
+    'inequalities': ['inequalities'],
+    'text_problems': ['functions', 'sequences'],
+    
+    # == ГЕОМЕТРИЯ ==
+    'basics': ['quadrilaterals', 'areas', 'coordinate'],
+    'triangles': ['triangles'],
+    'circles': ['circles'],
+    
+    # == КОМБИНАТОРИКА ==
+    'dirichlet_and_graphs': ['graphs', 'pigeonhole'],
+    'games': ['games', 'counting'],
+    
+    # == ДВИЖЕНИЕ ==
+    'movement_all': ['encounter', 'special', 'uniform'],
+    
+    # == РЫЦАРИ И ЛЖЕЦЫ ==
+    'logic_all': ['classic', 'conditions', 'island']
+}
 
 GRADES = [5, 6, 7, 8, 9, 10, 11]
 
@@ -299,12 +352,15 @@ def section(subject_key):
     # Считаем количество задач для каждой подтемы (максимум 5 на ячейку)
     subtopic_counts = {}
     for sub_key in subtopics.keys():
+        # Получаем список реальных ключей БД через маппинг
+        target_db_subtopics = SUBTOPIC_MAPPING.get(sub_key, [sub_key])
+        
         count = 0
         for grade in GRADES:
             for level in range(1, 8):  # 7 уровней
                 tasks = [p for p in PROBLEMS_DB
                         if p.get("subject") == subject_key
-                        and p.get("subtopic") == sub_key
+                        and p.get("subtopic") in target_db_subtopics
                         and p.get("grade") == grade
                         and p.get("difficulty") == level]
                 count += min(len(tasks), 5)  # Максимум 5 на ячейку
@@ -333,6 +389,9 @@ def section_subtopic(subject_key, subtopic_key):
     subject_title = SUBJECTS[subject_key]
     subtopic_title = subtopics[subtopic_key]
 
+    # Получаем список реальных ключей БД через маппинг
+    target_db_subtopics = SUBTOPIC_MAPPING.get(subtopic_key, [subtopic_key])
+
     # Подсчет задач по классам (максимум 5 задач на уровень)
     grade_counts = {}
     level_counts = {}
@@ -343,8 +402,12 @@ def section_subtopic(subject_key, subtopic_key):
         total_for_grade = 0
         
         for lev in range(1, 8):  # 7 уровней!
-            # Считаем задачи для этого уровня
-            problems_for_level = [p for p in PROBLEMS_DB if p.get("subject")==subject_key and p.get("subtopic")==subtopic_key and p.get("grade")==g and p.get("difficulty")==lev]
+            # Считаем задачи для этого уровня, используя маппинг
+            problems_for_level = [p for p in PROBLEMS_DB
+                                 if p.get("subject") == subject_key
+                                 and p.get("subtopic") in target_db_subtopics
+                                 and p.get("grade") == g
+                                 and p.get("difficulty") == lev]
             # Ограничиваем до 5 задач
             lev_cnt = min(len(problems_for_level), 5)
             level_counts[g][lev] = lev_cnt
@@ -372,6 +435,9 @@ def problems_list():
     page = request.args.get("page", 1, type=int)
     search_query = request.args.get("q", "").strip().lower()
 
+    # Получаем список реальных ключей БД через маппинг
+    target_db_subtopics = SUBTOPIC_MAPPING.get(subtopic_key, [subtopic_key]) if subtopic_key else None
+
     filtered = []
     for p in PROBLEMS_DB:
         db_subject = str(p.get("subject", "")).lower()
@@ -394,7 +460,12 @@ def problems_list():
         elif db_subject == subject_key:
             match_subject = True
 
-        match_subtopic = (subtopic_key is None) or (p.get("subtopic") == subtopic_key)
+        # Используем маппинг для проверки подтемы
+        if target_db_subtopics is None:
+            match_subtopic = True
+        else:
+            match_subtopic = p.get("subtopic") in target_db_subtopics
+            
         match_grade = (grade is None) or (p.get("grade") == grade)
         match_level = (level is None) or (p.get("difficulty") == level)
         
@@ -665,19 +736,43 @@ def olympiads():
             olympiad_data[slug][year][rnd] = [rnd_title, []]
         if grade not in olympiad_data[slug][year][rnd][1]:
             olympiad_data[slug][year][rnd][1].append(grade)
-    # Сортируем классы
+    # Сортируем классы и конвертируем ВСЕ ключи в строки для JSON
+    normalized_data = {}
     for slug in olympiad_data:
+        normalized_data[str(slug)] = {}
         for year in olympiad_data[slug]:
+            normalized_data[str(slug)][str(year)] = {}
             for rnd in olympiad_data[slug][year]:
                 # Конвертируем все grade в строки для JSON
                 grades_list = olympiad_data[slug][year][rnd][1]
-                olympiad_data[slug][year][rnd][1] = sorted([str(g) for g in grades_list])
+                normalized_data[str(slug)][str(year)][str(rnd)] = [
+                    str(olympiad_data[slug][year][rnd][0]),  # round_title
+                    sorted([str(g) for g in grades_list])  # grades
+                ]
 
+    # DEBUG: Логирование структуры данных
+    import logging
+    logging.warning("=== ДЕБАГ OLYMPIAD_DATA ===")
+    logging.warning(f"Тип normalized_data: {type(normalized_data)}")
+    if isinstance(normalized_data, dict):
+        top_keys = list(normalized_data.keys())
+        logging.warning(f"Ключи первого уровня (Олимпиады): {top_keys[:10]}")
+        if top_keys:
+            first_key = top_keys[0]
+            logging.warning(f"Пример ключа: {first_key}, тип значения: {type(normalized_data[first_key])}")
+            if isinstance(normalized_data[first_key], dict):
+                years = list(normalized_data[first_key].keys())
+                logging.warning(f"Ключи второго уровня для '{first_key}' (Года): {years[:5]}")
+    else:
+        logging.warning("ВНИМАНИЕ: normalized_data НЕ является словарем!")
+    logging.warning(f"Всего олимпиад: {len(normalized_data) if isinstance(normalized_data, dict) else 0}")
+    logging.warning("===========================")
+    
     return render_template(
         "olympiads.html",
         olympiads=OLYMPIADS_INFO,
-        olympiad_data=olympiad_data,
-        grades=GRADES
+        olympiad_data=normalized_data,
+        grades=[str(g) for g in GRADES]  # Конвертируем в строки для JSON
     )
 
 
@@ -688,15 +783,11 @@ def olympiad_open():
     grade = request.form.get("grade")
     rnd = request.form.get("round")
 
-    print(f"DEBUG olympiad_open: slug={slug!r}, year={year!r}, grade={grade!r}, rnd={rnd!r}")
-
     olympiad = get_olympiad_by_slug(slug)
     if not olympiad:
-        print("DEBUG: олимпиада не найдена по slug")
         abort(404)
 
     if not year or not grade:
-        print("DEBUG: year или grade пустые")
         abort(404)
 
     # Ищем пробник (combo)
@@ -709,14 +800,33 @@ def olympiad_open():
             combo = c
             break
 
-    if combo:
-        print(f"НАЙДЕН combo id={combo['id']}, round={combo['round']}")
-        print(f"  задач: {len(combo.get('problems', []))}")
-    else:
-        print(f"НЕ НАЙДЕН combo для {slug}/{year}/{grade}/{rnd}")
-
     if not combo:
         abort(404)
+
+    # Привязываем рисунки к задачам при каждом запросе
+    if IMAGE_MAP:
+        for p in combo.get('problems', []):
+            num = p.get('num')
+            img = IMAGE_MAP.get((combo.get('id'), num))
+            if img:
+                p['image'] = f'/static/images/problems/{img}'
+    
+    # RUNTIME PATCH: Удаление фразы "см. рисунок" для обхода клиентского кеша
+    patch_count = 0
+    for p in combo.get('problems', []):
+        if p.get('text'):
+            before = p['text']
+            p['text'] = p['text'].replace('(см. рисунок)', '').replace('см. рисунок', '')
+            if before != p['text']:
+                patch_count += 1
+        if p.get('solution'):
+            before_sol = p['solution']
+            p['solution'] = p['solution'].replace('(см. рисунок)', '').replace('см. рисунок', '')
+            if before_sol != p['solution']:
+                patch_count += 1
+    
+    if patch_count > 0:
+        print(f"[RUNTIME PATCH] Удалено 'см. рисунок' из {patch_count} полей в combo_id={combo.get('id')}")
 
     return render_template('olympiad_detail.html',
         olympiad=olympiad,
@@ -733,6 +843,31 @@ def olympiad_solution(combo_id):
         abort(404)
 
     olympiad = get_olympiad_by_slug(combo["olympiad"])
+
+    # Привязываем рисунки к задачам при каждом запросе
+    if IMAGE_MAP:
+        for p in combo.get('problems', []):
+            num = p.get('num')
+            img = IMAGE_MAP.get((combo.get('id'), num))
+            if img:
+                p['image'] = f'/static/images/problems/{img}'
+    
+    # RUNTIME PATCH: Удаление фразы "см. рисунок" для обхода клиентского кеша
+    patch_count = 0
+    for p in combo.get('problems', []):
+        if p.get('text'):
+            before = p['text']
+            p['text'] = p['text'].replace('(см. рисунок)', '').replace('см. рисунок', '')
+            if before != p['text']:
+                patch_count += 1
+        if p.get('solution'):
+            before_sol = p['solution']
+            p['solution'] = p['solution'].replace('(см. рисунок)', '').replace('см. рисунок', '')
+            if before_sol != p['solution']:
+                patch_count += 1
+    
+    if patch_count > 0:
+        print(f"[RUNTIME PATCH] Удалено 'см. рисунок' из {patch_count} полей в combo_id={combo.get('id')} (solutions)")
 
     return render_template('olympiad_solutions.html',
         olympiad=olympiad,
@@ -905,11 +1040,7 @@ def verify_code():
             
             flash('Добро пожаловать!', 'success')
             
-            # Редирект на онбординг если не пройден
-            if not user.onboarding_completed:
-                return redirect(url_for('onboarding'))
-            
-            # Иначе на главную
+            # Редирект на главную или указанную страницу
             next_page = request.args.get('next')
             return redirect(next_page or url_for('index'))
         
@@ -1023,8 +1154,8 @@ def yandex_login():
         # Авторизуем
         login_user(user, remember=True)
         
-        # Редирект
-        redirect_url = url_for('onboarding') if not user.onboarding_completed else url_for('index')
+        # Редирект на главную страницу
+        redirect_url = url_for('index')
         
         return jsonify({'success': True, 'redirect_url': redirect_url})
         
@@ -1038,21 +1169,43 @@ def yandex_login():
 @app.route("/api/tutor/history")
 @login_required
 def tutor_history():
-    """Получить историю чата с тьютором."""
+    """Получить историю чата с тьютором для конкретного агента."""
     from models import ChatMessage
-    messages = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp).all()
+    agent_type = request.args.get('agent_type', 'general')
+    messages = ChatMessage.query.filter_by(
+        user_id=current_user.id,
+        agent_type=agent_type
+    ).order_by(ChatMessage.timestamp).all()
     return jsonify([msg.to_dict() for msg in messages])
 
 
 @app.route("/api/tutor/send", methods=["POST"])
 @login_required
 def tutor_send():
-    """Отправить сообщение тьютору."""
+    """Отправить сообщение тьютору (специализированному агенту)."""
     if not DEEPSEEK_AVAILABLE:
         return jsonify({'error': 'AI недоступен'}), 503
     
-    data = request.get_json()
-    message = data.get('message', '').strip()
+    # Проверяем, это JSON или FormData (для файлов)
+    if request.is_json:
+        data = request.get_json()
+        message = data.get('message', '').strip()
+        agent_type = data.get('agent_type', 'general')
+        hint_mode = data.get('hint_mode', True)
+        image_data = None
+    else:
+        # FormData с файлом
+        message = request.form.get('message', '').strip()
+        agent_type = request.form.get('agent_type', 'general')
+        hint_mode = request.form.get('hint_mode', 'true').lower() == 'true'
+        
+        # Обработка файла
+        image_data = None
+        if 'file' in request.files:
+            file = request.files['file']
+            if file and file.filename:
+                import base64
+                image_data = base64.b64encode(file.read()).decode('utf-8')
     
     if not message:
         return jsonify({'error': 'Сообщение пустое'}), 400
@@ -1060,21 +1213,41 @@ def tutor_send():
     try:
         from models import ChatMessage
         
-        # Сохраняем сообщение пользователя
-        user_msg = ChatMessage(user_id=current_user.id, role='user', content=message)
+        # Сохраняем сообщение пользователя с привязкой к агенту
+        user_msg = ChatMessage(
+            user_id=current_user.id,
+            agent_type=agent_type,
+            role='user',
+            content=message + (" [📎 Прикреплено изображение]" if image_data else "")
+        )
         db.session.add(user_msg)
         db.session.commit()
         
-        # Получаем историю
-        history = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp).all()
+        # Получаем историю для ЭТОГО агента (не смешиваем с другими)
+        history = ChatMessage.query.filter_by(
+            user_id=current_user.id,
+            agent_type=agent_type
+        ).order_by(ChatMessage.timestamp).all()
         history_list = [{'role': msg.role, 'content': msg.content} for msg in history[-20:]]
         
-        # Получаем ответ от AI
+        # Получаем ответ от AI с учетом типа агента, режима и изображения
         client = DeepSeekClient()
-        response = client.chat_with_tutor(current_user, message, history_list)
+        response = client.chat_with_tutor(
+            current_user,
+            message,
+            history_list,
+            agent_type=agent_type,
+            hint_mode=hint_mode,
+            image_data=image_data
+        )
         
-        # Сохраняем ответ AI
-        ai_msg = ChatMessage(user_id=current_user.id, role='assistant', content=response)
+        # Сохраняем ответ AI с привязкой к агенту
+        ai_msg = ChatMessage(
+            user_id=current_user.id,
+            agent_type=agent_type,
+            role='assistant',
+            content=response
+        )
         db.session.add(ai_msg)
         db.session.commit()
         
@@ -1091,11 +1264,105 @@ def tutor_send():
         return jsonify({'error': f'Ошибка AI: {str(e)}'}), 500
 
 
+@app.route("/api/tutor/hint/<int:problem_id>", methods=["POST"])
+@login_required
+def get_ai_hint(problem_id):
+    """Получить наводящую подсказку от AI для конкретной задачи."""
+    if not DEEPSEEK_AVAILABLE:
+        return jsonify({'error': 'AI недоступен'}), 503
+    
+    # Ищем задачу в обеих базах
+    problem = next((p for p in PROBLEMS_DB if p.get("id") == problem_id), None)
+    if not problem:
+        problem = next((p for p in _RAW_DB if p.get("id") == problem_id), None)
+    
+    if not problem:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    try:
+        client = DeepSeekClient()
+        hint = client.generate_hint(
+            problem_text=problem.get('text', ''),
+            problem_answer=problem.get('answer', ''),
+            difficulty=problem.get('difficulty', 1)
+        )
+        
+        return jsonify({
+            'hint': hint,
+            'problem_id': problem_id
+        })
+        
+    except Exception as e:
+        app.logger.error(f"AI Hint error: {e}")
+        return jsonify({'error': f'Ошибка генерации подсказки: {str(e)}'}), 500
+
+
+@app.route("/api/tutor/solution/<int:problem_id>", methods=["POST"])
+@login_required
+def get_ai_solution(problem_id):
+    """Получить полное решение от AI для конкретной задачи."""
+    if not DEEPSEEK_AVAILABLE:
+        return jsonify({'error': 'AI недоступен'}), 503
+    
+    # Ищем задачу в обеих базах
+    problem = next((p for p in PROBLEMS_DB if p.get("id") == problem_id), None)
+    if not problem:
+        problem = next((p for p in _RAW_DB if p.get("id") == problem_id), None)
+    
+    if not problem:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    try:
+        client = DeepSeekClient()
+        solution = client.generate_solution(
+            problem_text=problem.get('text', ''),
+            problem_answer=problem.get('answer', ''),
+            difficulty=problem.get('difficulty', 1)
+        )
+        
+        return jsonify({
+            'solution': solution,
+            'answer': problem.get('answer', ''),
+            'problem_id': problem_id
+        })
+        
+    except Exception as e:
+        app.logger.error(f"AI Solution error: {e}")
+        return jsonify({'error': f'Ошибка генерации решения: {str(e)}'}), 500
+
+
 @app.route("/profile")
 @login_required
 def profile():
-    """Личный кабинет пользователя."""
-    return render_template('profile.html', user=current_user)
+    """Личный кабинет пользователя с учениками."""
+    # Получаем список учеников (accepted)
+    mentorships = Mentorship.query.filter_by(
+        teacher_id=current_user.id,
+        status='accepted'
+    ).all()
+    
+    students = []
+    for m in mentorships:
+        student = User.query.get(m.student_id)
+        if student:
+            students.append(student)
+    
+    # Получаем входящие заявки (где я - ученик)
+    pending_requests = Mentorship.query.filter_by(
+        student_id=current_user.id,
+        status='pending'
+    ).all()
+    
+    incoming_requests = []
+    for m in pending_requests:
+        teacher = User.query.get(m.teacher_id)
+        if teacher:
+            incoming_requests.append({'mentorship': m, 'teacher': teacher})
+    
+    return render_template('profile.html',
+                         user=current_user,
+                         students=students,
+                         incoming_requests=incoming_requests)
 
 
 # ============================================================
@@ -1272,6 +1539,376 @@ def exam_results(exam_id):
 
 
 # ============================================================
+# ADAPTIVE TESTING (Адаптивное тестирование)
+# ============================================================
+
+@app.route("/api/adaptive-test/start", methods=["POST"])
+@login_required
+def start_adaptive_test():
+    """Начать новое адаптивное тестирование."""
+    from models import AdaptiveTest, AdaptiveTestProblem
+    from services.adaptive_test import AdaptiveTestEngine
+    
+    data = request.get_json() or {}
+    subject = data.get('subject')  # Опционально: фильтр по предмету
+    grade = data.get('grade')  # Опционально: фильтр по классу
+    num_problems = data.get('num_problems', 25)  # По умолчанию 25 задач
+    
+    # Получаем историю пользователя для оценки начального уровня
+    user_history = []
+    previous_tests = AdaptiveTest.query.filter_by(
+        user_id=current_user.id,
+        status='completed'
+    ).order_by(AdaptiveTest.completed_at.desc()).limit(5).all()
+    
+    for test in previous_tests:
+        for problem in test.problems:
+            if problem.is_correct is not None:
+                user_history.append({
+                    'difficulty': problem.problem_difficulty,
+                    'is_correct': problem.is_correct
+                })
+    
+    # Создаем движок адаптивного тестирования
+    engine = AdaptiveTestEngine(PROBLEMS_DB)
+    
+    # Оцениваем начальный уровень
+    initial_ability = engine.estimate_user_ability(user_history) if user_history else 3.5
+    
+    # Создаем тест
+    test = AdaptiveTest(
+        user_id=current_user.id,
+        subject=subject,
+        grade=grade,
+        num_problems=num_problems,
+        initial_ability=initial_ability,
+        current_ability=initial_ability
+    )
+    db.session.add(test)
+    db.session.flush()
+    
+    # Выбираем первую задачу
+    first_problem = engine.select_next_problem(
+        user_ability=initial_ability,
+        subject=subject,
+        grade=grade,
+        excluded_ids=[]
+    )
+    
+    if not first_problem:
+        db.session.rollback()
+        return jsonify({'error': 'Не удалось найти подходящие задачи'}), 400
+    
+    # Добавляем первую задачу
+    test_problem = AdaptiveTestProblem(
+        test_id=test.id,
+        problem_id=first_problem['id'],
+        sequence_number=1,
+        user_ability_before=initial_ability,
+        problem_difficulty=float(first_problem.get('level', 3.5))
+    )
+    db.session.add(test_problem)
+    db.session.commit()
+    
+    return jsonify({
+        'test_id': test.id,
+        'problem': first_problem,
+        'current_number': 1,
+        'total_problems': num_problems,
+        'current_ability': initial_ability
+    })
+
+
+@app.route("/api/problem/<int:problem_id>")
+@login_required
+def get_problem(problem_id):
+    """Получить данные задачи по ID"""
+    problem = next((p for p in PROBLEMS_DB if p['id'] == problem_id), None)
+    if problem:
+        return jsonify(problem)
+    return jsonify({'error': 'Problem not found'}), 404
+
+
+@app.route("/api/adaptive-test/<int:test_id>/submit", methods=["POST"])
+@login_required
+def submit_adaptive_answer(test_id):
+    """Отправить ответ на задачу адаптивного теста."""
+    from models import AdaptiveTest, AdaptiveTestProblem
+    from services.adaptive_test import AdaptiveTestEngine
+    
+    test = AdaptiveTest.query.get_or_404(test_id)
+    
+    if test.user_id != current_user.id:
+        abort(403)
+    
+    if test.status != 'in_progress':
+        return jsonify({'error': 'Тест уже завершен'}), 400
+    
+    data = request.get_json() or {}
+    problem_id = data.get('problem_id')
+    user_answer = data.get('answer', '').strip()
+    user_solution = data.get('solution', '').strip()
+    
+    # Находим текущую задачу
+    current_problem_record = AdaptiveTestProblem.query.filter_by(
+        test_id=test_id,
+        problem_id=problem_id
+    ).first()
+    
+    if not current_problem_record:
+        return jsonify({'error': 'Задача не найдена'}), 404
+    
+    if current_problem_record.is_correct is not None:
+        return jsonify({'error': 'Ответ уже отправлен'}), 400
+    
+    # Находим задачу в базе
+    problem = next((p for p in PROBLEMS_DB if p['id'] == problem_id), None)
+    if not problem:
+        return jsonify({'error': 'Задача не найдена в базе'}), 404
+    
+    # Проверяем ответ
+    correct_answer = str(problem.get('answer', '')).strip().lower()
+    user_answer_normalized = user_answer.lower()
+    is_correct = (user_answer_normalized == correct_answer)
+    
+    # Обновляем запись задачи
+    current_problem_record.user_answer = user_answer
+    current_problem_record.user_solution_text = user_solution
+    current_problem_record.is_correct = is_correct
+    current_problem_record.answered_at = datetime.utcnow()
+    
+    # Обновляем способность пользователя
+    engine = AdaptiveTestEngine(PROBLEMS_DB)
+    new_ability = engine.update_ability_after_answer(
+        current_ability=test.current_ability,
+        problem_difficulty=current_problem_record.problem_difficulty,
+        is_correct=is_correct
+    )
+    
+    current_problem_record.user_ability_after = new_ability
+    test.current_ability = new_ability
+    
+    # Проверяем, нужно ли добавить следующую задачу
+    answered_count = AdaptiveTestProblem.query.filter_by(test_id=test_id).filter(
+        AdaptiveTestProblem.is_correct.isnot(None)
+    ).count()
+    
+    next_problem = None
+    if answered_count < test.num_problems:
+        # Выбираем следующую задачу
+        excluded_ids = [p.problem_id for p in test.problems]
+        
+        next_problem_data = engine.select_next_problem(
+            user_ability=new_ability,
+            subject=test.subject,
+            grade=test.grade,
+            excluded_ids=excluded_ids
+        )
+        
+        if next_problem_data:
+            next_problem_record = AdaptiveTestProblem(
+                test_id=test.id,
+                problem_id=next_problem_data['id'],
+                sequence_number=answered_count + 1,
+                user_ability_before=new_ability,
+                problem_difficulty=float(next_problem_data.get('level', 3.5))
+            )
+            db.session.add(next_problem_record)
+            next_problem = next_problem_data
+    
+    # Если это была последняя задача, завершаем тест
+    if answered_count >= test.num_problems or next_problem is None:
+        test.status = 'analyzing'
+        test.completed_at = datetime.utcnow()
+    
+    db.session.commit()
+    
+    response = {
+        'is_correct': is_correct,
+        'correct_answer': problem.get('answer'),
+        'current_ability': round(new_ability, 2),
+        'answered_count': answered_count,
+        'total_problems': test.num_problems
+    }
+    
+    if next_problem:
+        response['next_problem'] = next_problem
+        response['next_number'] = answered_count + 1
+    else:
+        response['test_completed'] = True
+        response['test_id'] = test.id
+    
+    return jsonify(response)
+
+
+@app.route("/api/adaptive-test/<int:test_id>/analyze", methods=["POST"])
+@login_required
+def analyze_adaptive_test(test_id):
+    """Анализ результатов адаптивного теста с помощью AI."""
+    from models import AdaptiveTest, AdaptiveTestProblem
+    from services.adaptive_test import AdaptiveTestEngine, get_olympiad_status
+    
+    test = AdaptiveTest.query.get_or_404(test_id)
+    
+    if test.user_id != current_user.id:
+        abort(403)
+    
+    if test.status not in ['analyzing', 'completed']:
+        return jsonify({'error': 'Тест еще не завершен'}), 400
+    
+    # Собираем данные для анализа
+    problems = []
+    answers = []
+    
+    for problem_record in test.problems.order_by(AdaptiveTestProblem.sequence_number):
+        problem = next((p for p in PROBLEMS_DB if p['id'] == problem_record.problem_id), None)
+        if problem:
+            problems.append(problem)
+            answers.append({
+                'is_correct': problem_record.is_correct,
+                'user_answer': problem_record.user_answer,
+                'solution': problem_record.user_solution_text
+            })
+    
+    # Анализируем результаты
+    engine = AdaptiveTestEngine(PROBLEMS_DB)
+    analysis = engine.analyze_test_results(problems, answers)
+    
+    # Обновляем тест
+    test.final_ability = analysis['final_ability']
+    test.total_correct = analysis['total_correct']
+    test.accuracy = analysis['accuracy']
+    
+    # Получаем олимпиадный статус
+    olympiad_status = get_olympiad_status(analysis['final_ability'])
+    
+    # Собираем статистику по разделам
+    subject_stats = {}
+    for problem, answer in zip(problems, answers):
+        subject = problem.get('subject', 'unknown')
+        if subject not in subject_stats:
+            subject_stats[subject] = {'correct': 0, 'total': 0}
+        subject_stats[subject]['total'] += 1
+        if answer.get('is_correct'):
+            subject_stats[subject]['correct'] += 1
+    
+    # Определяем сильные и слабые разделы
+    strong_subjects = []
+    weak_subjects = []
+    for subject, stats in subject_stats.items():
+        accuracy = stats['correct'] / stats['total'] if stats['total'] > 0 else 0
+        if accuracy >= 0.7 and stats['total'] >= 3:
+            strong_subjects.append(subject)
+        elif accuracy < 0.5 and stats['total'] >= 3:
+            weak_subjects.append(subject)
+    
+    # Генерируем AI анализ если доступен
+    if DEEPSEEK_AVAILABLE:
+        try:
+            client = DeepSeekClient()
+            
+            # Переводим названия разделов на русский
+            subject_names = {
+                'algebra': 'Алгебра',
+                'geometry': 'Геометрия',
+                'combinatorics': 'Комбинаторика',
+                'number_theory': 'Теория чисел',
+                'movement': 'Задачи на движение',
+                'knights_liars': 'Рыцари и лжецы'
+            }
+            
+            strong_names = [subject_names.get(s, s) for s in strong_subjects]
+            weak_names = [subject_names.get(s, s) for s in weak_subjects]
+            
+            # Формируем промпт для AI-тренера
+            prompt = f"""Ты опытный тренер олимпиадной сборной. Ученик только что прошел адаптивное тестирование (25 задач).
+
+Его итоговый статус: {olympiad_status['status']}
+Финальный уровень: {analysis['final_ability']:.1f}/7.0
+Правильных ответов: {analysis['total_correct']} из {analysis['total_problems']} ({analysis['accuracy']:.0f}%)
+
+Сильные разделы: {', '.join(strong_names) if strong_names else 'пока не выявлены'}
+Слабые разделы: {', '.join(weak_names) if weak_names else 'пока не выявлены'}
+
+Напиши короткий, ободряющий отзыв (3-4 предложения) с конкретной рекомендацией, на какие разделы на сайте FORMYLA ему нужно сделать упор в ближайший месяц, чтобы достичь следующего статуса: {olympiad_status.get('next_status', 'высшего уровня')}.
+
+Будь мотивирующим, но честным. Говори прямо и по делу, как настоящий тренер."""
+
+            # Отправляем с таймаутом 10 секунд
+            ai_analysis = client.generate(
+                prompt=prompt,
+                system_prompt="Ты опытный тренер олимпиадной математической сборной. Твоя задача - мотивировать учеников и давать конкретные рекомендации.",
+                temperature=0.8,
+                max_tokens=400
+            )
+            
+            test.ai_analysis = ai_analysis
+            
+        except Exception as e:
+            logger.error(f"Ошибка AI анализа: {e}")
+            test.ai_analysis = "ИИ-тренер сейчас анализирует результаты других олимпиадников. Загляните сюда чуть позже!"
+    
+    test.status = 'completed'
+    db.session.commit()
+    
+    return jsonify({
+        'analysis': analysis,
+        'ai_analysis': test.ai_analysis,
+        'olympiad_status': olympiad_status
+    })
+
+
+@app.route("/adaptive-test/<int:test_id>")
+@login_required
+def adaptive_test_page(test_id):
+    """Страница прохождения адаптивного теста."""
+    from models import AdaptiveTest
+    
+    test = AdaptiveTest.query.get_or_404(test_id)
+    
+    if test.user_id != current_user.id:
+        abort(403)
+    
+    # Конвертируем задачи в словари для JSON с данными задач
+    problems_list = [p.to_dict(include_problem_data=True) for p in test.problems.all()]
+    
+    return render_template('adaptive_test.html', test=test, problems_list=problems_list)
+
+
+@app.route("/adaptive-test/<int:test_id>/results")
+@login_required
+def adaptive_test_results(test_id):
+    """Страница результатов адаптивного теста."""
+    from models import AdaptiveTest
+    from services.adaptive_test import get_olympiad_status
+    
+    test = AdaptiveTest.query.get_or_404(test_id)
+    
+    if test.user_id != current_user.id:
+        abort(403)
+    
+    # Получаем задачи с результатами
+    results_data = []
+    for problem_record in test.problems.order_by(AdaptiveTestProblem.sequence_number):
+        problem = next((p for p in PROBLEMS_DB if p['id'] == problem_record.problem_id), None)
+        if problem:
+            results_data.append({
+                'problem': problem,
+                'user_answer': problem_record.user_answer,
+                'user_solution': problem_record.user_solution_text,
+                'is_correct': problem_record.is_correct,
+                'difficulty': problem_record.problem_difficulty,
+                'ability_before': problem_record.user_ability_before,
+                'ability_after': problem_record.user_ability_after
+            })
+    
+    # Получаем олимпиадный статус
+    olympiad_status = get_olympiad_status(test.final_ability) if test.final_ability else None
+    
+    return render_template('adaptive_test_results.html', test=test, results=results_data, olympiad_status=olympiad_status)
+
+
+# ============================================================
 # СЕКРЕТЫ ОЛИМПИАДНИКОВ
 # ============================================================
 
@@ -1336,6 +1973,484 @@ def secret_topic(topic_slug):
     return render_template('secret_topic.html', topic=topic)
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route("/social")
+@login_required
+def social_page():
+    """Страница социальных функций"""
+    return render_template('social.html')
 
+
+# ============================================================
+# SOCIAL FEATURES API
+# ============================================================
+
+@app.route("/api/social/set-nickname", methods=["POST"])
+@login_required
+def set_nickname():
+    """Установить никнейм пользователя"""
+    try:
+        data = request.get_json()
+        nickname = data.get('nickname', '').strip()
+        
+        # Валидация
+        if not nickname:
+            return jsonify({'success': False, 'error': 'Nickname cannot be empty'}), 400
+        
+        if len(nickname) < 3 or len(nickname) > 50:
+            return jsonify({'success': False, 'error': 'Nickname must be 3-50 characters'}), 400
+        
+        # Проверка на допустимые символы (буквы, цифры, подчеркивание)
+        import re
+        if not re.match(r'^[a-zA-Z0-9_а-яА-ЯёЁ]+$', nickname):
+            return jsonify({'success': False, 'error': 'Nickname can only contain letters, numbers and underscore'}), 400
+        
+        # Проверка уникальности
+        existing = User.query.filter_by(nickname=nickname).first()
+        if existing and existing.id != current_user.id:
+            return jsonify({'success': False, 'error': 'Nickname already taken'}), 409
+        
+        # Устанавливаем никнейм
+        current_user.nickname = nickname
+        db.session.commit()
+        
+        return jsonify({'success': True, 'nickname': nickname})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/search-users")
+@login_required
+def search_users():
+    """Поиск пользователей по никнейму"""
+    try:
+        query = request.args.get('q', '').strip()
+        limit = min(int(request.args.get('limit', 10)), 50)  # Максимум 50
+        
+        if not query or len(query) < 2:
+            return jsonify({'success': False, 'error': 'Query too short (min 2 characters)'}), 400
+        
+        # Поиск по никнейму (LIKE с LIMIT)
+        users = User.query.filter(
+            User.nickname.ilike(f'%{query}%'),
+            User.id != current_user.id  # Исключаем себя
+        ).limit(limit).all()
+        
+        results = [{
+            'id': u.id,
+            'nickname': u.nickname,
+            'name': u.name,
+            'avatar_url': u.avatar_url
+        } for u in users if u.nickname]  # Только с никнеймами
+        
+        return jsonify({'success': True, 'users': results})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/friends/request", methods=["POST"])
+@login_required
+def send_friend_request():
+    """Отправить заявку в друзья"""
+    try:
+        data = request.get_json()
+        to_user_id = data.get('user_id')
+        
+        if not to_user_id:
+            return jsonify({'success': False, 'error': 'User ID required'}), 400
+        
+        # Проверка существования пользователя
+        to_user = User.query.get(to_user_id)
+        if not to_user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        # Создаем заявку (с проверкой на себя и дубликаты)
+        friendship = Friendship.create_friendship_request(current_user.id, to_user_id)
+        db.session.add(friendship)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'friendship_id': friendship.id,
+            'status': friendship.status
+        })
+    
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/friends/respond", methods=["POST"])
+@login_required
+def respond_friend_request():
+    """Принять или отклонить заявку в друзья"""
+    try:
+        data = request.get_json()
+        friendship_id = data.get('friendship_id')
+        action = data.get('action')  # 'accept' or 'reject'
+        
+        if not friendship_id or action not in ['accept', 'reject']:
+            return jsonify({'success': False, 'error': 'Invalid parameters'}), 400
+        
+        friendship = Friendship.query.get(friendship_id)
+        if not friendship:
+            return jsonify({'success': False, 'error': 'Friendship not found'}), 404
+        
+        # Проверка прав (только получатель может принять/отклонить)
+        if friendship.user_1_id != current_user.id and friendship.user_2_id != current_user.id:
+            return jsonify({'success': False, 'error': 'Not authorized'}), 403
+        
+        if action == 'accept':
+            friendship.accept()
+        else:
+            friendship.reject()
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'status': friendship.status})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/friends/list")
+@login_required
+def list_friends():
+    """Получить список друзей"""
+    try:
+        # Получаем все дружбы где пользователь участвует
+        friendships = Friendship.query.filter(
+            db.or_(
+                Friendship.user_1_id == current_user.id,
+                Friendship.user_2_id == current_user.id
+            ),
+            Friendship.status == 'accepted'
+        ).all()
+        
+        friends = []
+        for f in friendships:
+            other_user_id = f.get_other_user_id(current_user.id)
+            other_user = User.query.get(other_user_id)
+            if other_user:
+                friends.append({
+                    'id': other_user.id,
+                    'nickname': other_user.nickname,
+                    'name': other_user.name,
+                    'avatar_url': other_user.avatar_url
+                })
+        
+        return jsonify({'success': True, 'friends': friends})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/mentorship/request", methods=["POST"])
+@login_required
+def send_mentorship_request():
+    """Отправить заявку учитель-ученик"""
+    try:
+        data = request.get_json()
+        student_id = data.get('student_id')
+        
+        if not student_id:
+            return jsonify({'success': False, 'error': 'Student ID required'}), 400
+        
+        # Проверка существования пользователя
+        student = User.query.get(student_id)
+        if not student:
+            return jsonify({'success': False, 'error': 'Student not found'}), 404
+        
+        # Создаем заявку (текущий пользователь = учитель)
+        mentorship = Mentorship.create_mentorship_request(current_user.id, student_id)
+        db.session.add(mentorship)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'mentorship_id': mentorship.id,
+            'status': mentorship.status
+        })
+    
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/mentorship/respond", methods=["POST"])
+@login_required
+def respond_mentorship_request():
+    """Принять или отклонить заявку учитель-ученик"""
+    try:
+        data = request.get_json()
+        mentorship_id = data.get('mentorship_id')
+        action = data.get('action')  # 'accept' or 'reject'
+        
+        if not mentorship_id or action not in ['accept', 'reject']:
+            return jsonify({'success': False, 'error': 'Invalid parameters'}), 400
+        
+        mentorship = Mentorship.query.get(mentorship_id)
+        if not mentorship:
+            return jsonify({'success': False, 'error': 'Mentorship not found'}), 404
+        
+        # Проверка прав (только ученик может принять/отклонить)
+        if mentorship.student_id != current_user.id:
+            return jsonify({'success': False, 'error': 'Not authorized'}), 403
+        
+        if action == 'accept':
+            mentorship.accept()
+        else:
+            mentorship.reject()
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'status': mentorship.status})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/mentorship/students")
+@login_required
+def list_students():
+    """Получить список учеников (для учителя)"""
+    try:
+        mentorships = Mentorship.query.filter_by(
+            teacher_id=current_user.id,
+            status='accepted'
+        ).all()
+        
+        students = []
+        for m in mentorships:
+            student = User.query.get(m.student_id)
+            if student:
+                students.append({
+                    'id': student.id,
+                    'nickname': student.nickname,
+                    'name': student.name,
+                    'avatar_url': student.avatar_url
+                })
+        
+        return jsonify({'success': True, 'students': students})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route("/api/social/mentorship/teachers")
+@login_required
+def list_teachers():
+    """Получить список учителей (для ученика)"""
+    try:
+        mentorships = Mentorship.query.filter_by(
+            student_id=current_user.id,
+            status='accepted'
+        ).all()
+        
+        teachers = []
+        for m in mentorships:
+            teacher = User.query.get(m.teacher_id)
+            if teacher:
+                teachers.append({
+                    'id': teacher.id,
+                    'nickname': teacher.nickname,
+                    'name': teacher.name,
+                    'avatar_url': teacher.avatar_url
+                })
+        
+        return jsonify({'success': True, 'teachers': teachers})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ============================================================
+# PROFILE AND STUDENT PROGRESS TRACKING
+# ============================================================
+
+@app.route("/update_nickname", methods=["POST"])
+@login_required
+def update_nickname():
+    """Обновление nickname пользователя"""
+    import re
+    
+    new_nickname = request.form.get('nickname', '').strip()
+    
+    # Убираем @ если есть
+    if new_nickname.startswith('@'):
+        new_nickname = new_nickname[1:]
+    
+    # Валидация
+    if not new_nickname:
+        flash('Никнейм не может быть пустым', 'error')
+        return redirect(url_for('profile'))
+    
+    if len(new_nickname) < 3 or len(new_nickname) > 50:
+        flash('Никнейм должен быть от 3 до 50 символов', 'error')
+        return redirect(url_for('profile'))
+    
+    # Только буквы, цифры и подчеркивание
+    if not re.match(r'^[a-zA-Z0-9_а-яА-ЯёЁ]+$', new_nickname):
+        flash('Никнейм может содержать только буквы, цифры и подчеркивание', 'error')
+        return redirect(url_for('profile'))
+    
+    # Проверка уникальности
+    existing = User.query.filter(User.nickname.ilike(new_nickname)).first()
+    if existing and existing.id != current_user.id:
+        flash(f'Никнейм @{new_nickname} уже занят', 'error')
+        return redirect(url_for('profile'))
+    
+    # Обновляем
+    try:
+        current_user.nickname = new_nickname
+        db.session.commit()
+        flash(f'Никнейм успешно изменен на @{new_nickname}!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при обновлении: {str(e)}', 'error')
+    
+    return redirect(url_for('profile'))
+
+
+@app.route("/add_student", methods=["POST"])
+@login_required
+def add_student():
+    """Добавление ученика по nickname"""
+    student_nickname = request.form.get('nickname', '').strip()
+    
+    # Убираем @ если пользователь ввел
+    if student_nickname.startswith('@'):
+        student_nickname = student_nickname[1:]
+    
+    if not student_nickname:
+        flash('Введите никнейм ученика', 'error')
+        return redirect(url_for('profile'))
+    
+    # Ищем пользователя по nickname (case-insensitive)
+    student = User.query.filter(User.nickname.ilike(student_nickname)).first()
+    
+    if not student:
+        flash(f'Пользователь @{student_nickname} не найден', 'error')
+        return redirect(url_for('profile'))
+    
+    if student.id == current_user.id:
+        flash('Нельзя добавить самого себя', 'error')
+        return redirect(url_for('profile'))
+    
+    # Проверяем существующую связь
+    existing = Mentorship.query.filter_by(
+        teacher_id=current_user.id,
+        student_id=student.id
+    ).first()
+    
+    if existing:
+        if existing.status == 'pending':
+            flash('Заявка уже отправлена, ожидает подтверждения', 'warning')
+        elif existing.status == 'accepted':
+            flash('Этот ученик уже добавлен', 'info')
+        else:
+            flash('Заявка была отклонена ранее', 'error')
+        return redirect(url_for('profile'))
+    
+    # Создаем заявку
+    try:
+        mentorship = Mentorship(
+            teacher_id=current_user.id,
+            student_id=student.id,
+            status='pending'  # Требует подтверждения от ученика
+        )
+        db.session.add(mentorship)
+        db.session.commit()
+        flash(f'Заявка отправлена пользователю @{student.nickname}. Ожидайте подтверждения.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при добавлении: {str(e)}', 'error')
+    
+    return redirect(url_for('profile'))
+
+
+@app.route("/accept_request/<int:mentorship_id>", methods=["POST"])
+@login_required
+def accept_request(mentorship_id):
+    """Принять заявку на менторство"""
+    mentorship = Mentorship.query.get_or_404(mentorship_id)
+    
+    # Проверка прав (только ученик может принять)
+    if mentorship.student_id != current_user.id:
+        flash('У вас нет прав для этого действия', 'error')
+        return redirect(url_for('profile'))
+    
+    try:
+        mentorship.accept()
+        db.session.commit()
+        teacher = User.query.get(mentorship.teacher_id)
+        flash(f'Вы приняли заявку от @{teacher.nickname or teacher.email}!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка: {str(e)}', 'error')
+    
+    return redirect(url_for('profile'))
+
+
+@app.route("/reject_request/<int:mentorship_id>", methods=["POST"])
+@login_required
+def reject_request(mentorship_id):
+    """Отклонить заявку на менторство"""
+    mentorship = Mentorship.query.get_or_404(mentorship_id)
+    
+    # Проверка прав (только ученик может отклонить)
+    if mentorship.student_id != current_user.id:
+        flash('У вас нет прав для этого действия', 'error')
+        return redirect(url_for('profile'))
+    
+    try:
+        mentorship.reject()
+        db.session.commit()
+        flash('Заявка отклонена', 'info')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка: {str(e)}', 'error')
+    
+    return redirect(url_for('profile'))
+
+
+@app.route("/student/<int:student_id>")
+@login_required
+def student_profile(student_id):
+    """Просмотр профиля ученика"""
+    # Проверяем права доступа
+    mentorship = Mentorship.query.filter_by(
+        teacher_id=current_user.id,
+        student_id=student_id,
+        status='accepted'
+    ).first()
+    
+    if not mentorship:
+        flash('У вас нет доступа к этому профилю', 'error')
+        return redirect(url_for('profile'))
+    
+    student = User.query.get_or_404(student_id)
+    
+    # Собираем статистику ученика
+    # (здесь можно добавить подсчет решенных задач, тестов и т.д.)
+    
+    return render_template('student_profile.html',
+        student=student,
+        teacher=current_user
+    )
+
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5001)
+
+ 

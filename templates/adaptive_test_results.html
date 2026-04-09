@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты адаптивного теста - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    
+    <!-- Заголовок -->
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 2.8em; color: var(--text-main); margin-bottom: 15px;">📊 Результаты теста</h1>
+        <p style="color: var(--text-soft); font-size: 1.1em;">Адаптивное тестирование #{{ test.id }}</p>
+    </div>
+
+    <!-- Олимпиадный статус -->
+    {% if olympiad_status %}
+    <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(56, 189, 248, 0.15) 100%); padding: 40px; border-radius: var(--radius-lg); border: 2px solid {{ olympiad_status.color }}; margin-bottom: 40px; text-align: center;">
+        <div style="color: var(--text-muted); font-size: 16px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Ваш олимпиадный статус</div>
+        <h2 style="color: {{ olympiad_status.color }}; font-size: 3em; font-weight: 800; margin: 15px 0; text-shadow: 0 0 20px {{ olympiad_status.color }}40;">
+            {{ olympiad_status.status }}
+        </h2>
+        <p style="color: var(--text-soft); font-size: 1.1em; margin-top: 15px;">{{ olympiad_status.description }}</p>
+        
+        {% if olympiad_status.next_status %}
+        <div style="margin-top: 25px; padding: 20px; background: rgba(0, 0, 0, 0.3); border-radius: var(--radius-md); border: 1px solid var(--border-soft);">
+            <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 10px;">🎯 Следующая цель</div>
+            <div style="color: var(--accent-2); font-size: 1.3em; font-weight: 600;">{{ olympiad_status.next_status }}</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Основная статистика -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+        <div style="background: var(--bg-card); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); text-align: center;">
+            <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;">Финальный уровень</div>
+            <div style="color: var(--accent-2); font-size: 36px; font-weight: 700;">{{ test.final_ability|round(1) }}</div>
+            <div style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">из 7.0</div>
+        </div>
+        
+        <div style="background: var(--bg-card); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); text-align: center;">
+            <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;">Правильных ответов</div>
+            <div style="color: var(--accent-1); font-size: 36px; font-weight: 700;">{{ test.total_correct }}</div>
+            <div style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">из {{ test.num_problems }}</div>
+        </div>
+        
+        <div style="background: var(--bg-card); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); text-align: center;">
+            <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;">Точность</div>
+            <div style="color: #22c55e; font-size: 36px; font-weight: 700;">{{ test.accuracy|round(0)|int }}%</div>
+            <div style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">успешности</div>
+        </div>
+    </div>
+
+    <!-- График прогресса способностей -->
+    <div style="background: var(--bg-card); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px;">
+        <h3 style="color: var(--text-main); margin-bottom: 20px;">📈 Динамика уровня</h3>
+        <canvas id="abilityChart" style="max-height: 250px;"></canvas>
+    </div>
+
+    <!-- Вердикт ИИ-тренера -->
+    {% if test.ai_analysis %}
+    <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(56, 189, 248, 0.15) 100%); padding: 35px; border-radius: var(--radius-lg); border: 2px solid rgba(139, 92, 246, 0.4); margin-bottom: 30px; box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);">
+        <h3 style="color: var(--accent-1); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 1.5em;">
+            <span style="font-size: 1.3em;">🤖</span> Вердикт ИИ-тренера
+        </h3>
+        <div style="color: var(--text-soft); line-height: 1.9; font-size: 1.05em; padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: var(--radius-md); border-left: 4px solid var(--accent-1);">
+            {{ test.ai_analysis }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Детальные результаты по задачам -->
+    <div style="background: var(--bg-card); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px;">
+        <h3 style="color: var(--text-main); margin-bottom: 25px;">📝 Детальные результаты</h3>
+        
+        {% for item in results %}
+        <div style="background: rgba(15, 23, 42, 0.5); padding: 25px; border-radius: var(--radius-md); border: 1px solid var(--border-soft); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <div>
+                    <h4 style="color: var(--accent-2); margin-bottom: 5px;">Задача {{ loop.index }}</h4>
+                    <div style="color: var(--text-muted); font-size: 13px;">
+                        Сложность: {{ item.difficulty|round(1) }} | 
+                        Уровень до: {{ item.ability_before|round(1) }} → 
+                        после: {{ item.ability_after|round(1) }}
+                    </div>
+                </div>
+                <div style="font-size: 32px;">
+                    {% if item.is_correct %}✅{% else %}❌{% endif %}
+                </div>
+            </div>
+            
+            <div style="color: var(--text-soft); line-height: 1.7; margin-bottom: 15px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                {{ item.problem.text }}
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 5px;">Ваш ответ:</div>
+                    <div style="color: {% if item.is_correct %}#22c55e{% else %}#ef4444{% endif %}; font-weight: 600;">
+                        {{ item.user_answer or '(не указан)' }}
+                    </div>
+                </div>
+                <div>
+                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 5px;">Правильный ответ:</div>
+                    <div style="color: #22c55e; font-weight: 600;">{{ item.problem.answer }}</div>
+                </div>
+            </div>
+            
+            {% if item.user_solution %}
+            <div style="margin-top: 15px;">
+                <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">Ваше решение:</div>
+                <div style="color: var(--text-soft); padding: 12px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 14px; line-height: 1.6;">
+                    {{ item.user_solution }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Действия -->
+    <div style="text-align: center; margin-top: 40px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('index') }}" style="padding: 14px 30px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-weight: 600; text-decoration: none; transition: all 0.3s;">
+            ← На главную
+        </a>
+        <button onclick="startNewTest()" style="padding: 14px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: all 0.3s;">
+            🎯 Пройти еще раз
+        </button>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// График динамики способностей
+const ctx = document.getElementById('abilityChart');
+const abilityData = [
+    {{ test.initial_ability }},
+    {% for item in results %}
+    {{ item.ability_after }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+const labels = ['Начало'];
+{% for item in results %}
+labels.push('Задача {{ loop.index }}');
+{% endfor %}
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Уровень способностей',
+            data: abilityData,
+            borderColor: 'rgb(56, 189, 248)',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: 'rgb(56, 189, 248)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                titleColor: '#cbd5e1',
+                bodyColor: '#fff',
+                borderColor: 'rgba(56, 189, 248, 0.5)',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: false,
+                callbacks: {
+                    label: function(context) {
+                        return 'Уровень: ' + context.parsed.y.toFixed(2);
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                min: 1,
+                max: 7,
+                ticks: {
+                    color: '#94a3b8',
+                    stepSize: 1
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.05)'
+                }
+            },
+            x: {
+                ticks: {
+                    color: '#94a3b8',
+                    maxRotation: 45,
+                    minRotation: 45
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.05)'
+                }
+            }
+        }
+    }
+});
+
+async function startNewTest() {
+    try {
+        const response = await fetch('/api/adaptive-test/start', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                subject: {{ test.subject|tojson if test.subject else 'null' }},
+                grade: {{ test.grade if test.grade else 'null' }},
+                num_problems: {{ test.num_problems }}
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            window.location.href = `/adaptive-test/${data.test_id}`;
+        } else {
+            alert('Ошибка: ' + (data.error || 'Не удалось создать тест'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка создания теста');
+    }
+}
+</script>
+
+{% endblock %}

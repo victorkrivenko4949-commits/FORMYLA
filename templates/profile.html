@@ -21,6 +21,29 @@
         </h2>
         
         <div style="display: grid; gap: 15px;">
+            <!-- Никнейм с возможностью редактирования -->
+            <div style="padding: 12px 0; border-bottom: 1px solid var(--border-soft);">
+                <div id="nickname-display" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted);">Никнейм:</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: var(--accent-2); font-weight: 600;">
+                            {% if user.nickname %}@{{ user.nickname }}{% else %}Не установлен{% endif %}
+                        </span>
+                        <button onclick="showNicknameForm()" style="background: none; border: none; color: var(--accent-2); cursor: pointer; font-size: 16px; padding: 4px 8px;">
+                            ✏️
+                        </button>
+                    </div>
+                </div>
+                <form id="nickname-form" action="/update_nickname" method="POST" style="display: none;">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" name="nickname" value="{{ user.nickname or '' }}" placeholder="Введите никнейм" required autofocus
+                               style="flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main);">
+                        <button type="submit" class="btn-primary" style="padding: 10px 20px;">Сохранить</button>
+                        <button type="button" onclick="hideNicknameForm()" class="btn-secondary" style="padding: 10px 20px;">Отмена</button>
+                    </div>
+                </form>
+            </div>
+            
             <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-soft);">
                 <span style="color: var(--text-muted);">Email:</span>
                 <span style="color: var(--text-main); font-weight: 500;">{{ user.email }}</span>
@@ -104,6 +127,80 @@
         </div>
     </div>
 
+    <!-- Входящие заявки -->
+    {% if incoming_requests %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px; border-left: 4px solid #f59e0b;">
+        <h3 style="color: #f59e0b; margin-bottom: 20px;">📬 Входящие заявки ({{ incoming_requests|length }})</h3>
+        
+        <div style="display: grid; gap: 15px;">
+            {% for req in incoming_requests %}
+            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: 8px; border: 1px solid var(--border-soft);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="color: var(--text-main); font-weight: 600;">
+                            {{ req.teacher.name or req.teacher.email }}
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                            {% if req.teacher.nickname %}@{{ req.teacher.nickname }}{% else %}{{ req.teacher.email }}{% endif %}
+                        </div>
+                        <div style="color: var(--text-soft); font-size: 13px; margin-top: 4px;">
+                            Хочет добавить вас в ученики
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <form action="{{ url_for('accept_request', mentorship_id=req.mentorship.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                ✓ Принять
+                            </button>
+                        </form>
+                        <form action="{{ url_for('reject_request', mentorship_id=req.mentorship.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                ✗ Отклонить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Мои ученики -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px;">
+        <h3 style="color: var(--text-main); margin-bottom: 20px;">👨‍🎓 Мои ученики</h3>
+        
+        <!-- Форма добавления -->
+        <form action="{{ url_for('add_student') }}" method="POST" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" name="nickname" placeholder="Введите никнейм (например, @ivan)" required
+                       style="flex: 1; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main);">
+                <button type="submit" class="btn-primary" style="padding: 12px 24px;">
+                    Добавить
+                </button>
+            </div>
+        </form>
+        
+        <!-- Список учеников -->
+        {% if students %}
+        <div style="display: grid; gap: 10px; margin-top: 15px;">
+            {% for student in students %}
+            <a href="{{ url_for('student_profile', student_id=student.id) }}"
+               style="display: block; padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: 8px; text-decoration: none; border: 1px solid var(--border-soft); transition: all 0.3s;"
+               onmouseover="this.style.background='rgba(30, 41, 59, 0.8)'; this.style.borderColor='var(--accent-2)'"
+               onmouseout="this.style.background='rgba(30, 41, 59, 0.6)'; this.style.borderColor='var(--border-soft)'">
+                <div style="color: var(--text-main); font-weight: 600;">{{ student.name or student.email }}</div>
+                <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">{{ student.email }}</div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+            У вас пока нет учеников. Добавьте первого!
+        </p>
+        {% endif %}
+    </div>
+
     <!-- Действия -->
     <div style="text-align: center; margin-top: 40px;">
         <a href="{{ url_for('index') }}" 
@@ -124,4 +221,23 @@
     </div>
 
 </div>
+
+<script>
+function showNicknameForm() {
+    document.getElementById('nickname-display').style.display = 'none';
+    const form = document.getElementById('nickname-form');
+    form.style.display = 'block';
+    // Автофокус на поле ввода
+    const input = form.querySelector('input[name="nickname"]');
+    if (input) {
+        input.focus();
+        input.select(); // Выделяем текст для быстрой замены
+    }
+}
+
+function hideNicknameForm() {
+    document.getElementById('nickname-display').style.display = 'flex';
+    document.getElementById('nickname-form').style.display = 'none';
+}
+</script>
 {% endblock %}

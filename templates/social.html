@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Социальная сеть — FORMYLA{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Социальная сеть</h1>
+<p class="page-subtitle">Найди друзей и учителей для совместного обучения</p>
+
+<!-- Никнейм пользователя -->
+<div style="background: #25252b; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+    <h2 style="color: #fff; font-size: 20px; margin-bottom: 15px;">Мой никнейм</h2>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="nickname-input" 
+               value="{{ current_user.nickname or '' }}" 
+               placeholder="Введите никнейм (3-50 символов)"
+               style="flex: 1; padding: 12px; background: #1a1a1f; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 14px;">
+        <button onclick="setNickname()" class="btn-primary" style="padding: 12px 24px;">
+            Сохранить
+        </button>
+    </div>
+    <div id="nickname-status" style="margin-top: 10px; font-size: 14px;"></div>
+</div>
+
+<!-- Поиск пользователей -->
+<div style="background: #25252b; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+    <h2 style="color: #fff; font-size: 20px; margin-bottom: 15px;">Поиск пользователей</h2>
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="text" id="search-input" 
+               placeholder="Поиск по никнейму..."
+               style="flex: 1; padding: 12px; background: #1a1a1f; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 14px;">
+        <button onclick="searchUsers()" class="btn-primary" style="padding: 12px 24px;">
+            Найти
+        </button>
+    </div>
+    <div id="search-results"></div>
+</div>
+
+<!-- Друзья -->
+<div style="background: #25252b; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+    <h2 style="color: #fff; font-size: 20px; margin-bottom: 15px;">Мои друзья</h2>
+    <div id="friends-list"></div>
+</div>
+
+<!-- Ученики (для учителей) -->
+<div style="background: #25252b; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+    <h2 style="color: #fff; font-size: 20px; margin-bottom: 15px;">Мои ученики</h2>
+    <div id="students-list"></div>
+</div>
+
+<!-- Учителя (для учеников) -->
+<div style="background: #25252b; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+    <h2 style="color: #fff; font-size: 20px; margin-bottom: 15px;">Мои учителя</h2>
+    <div id="teachers-list"></div>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="/" class="btn-secondary">На главную</a>
+</div>
+
+<script>
+// Установить никнейм
+async function setNickname() {
+    const nickname = document.getElementById('nickname-input').value.trim();
+    const statusDiv = document.getElementById('nickname-status');
+    
+    if (!nickname) {
+        statusDiv.innerHTML = '<span style="color: #ff4444;">❌ Никнейм не может быть пустым</span>';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/social/set-nickname', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nickname})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            statusDiv.innerHTML = '<span style="color: #00ff88;">✓ Никнейм сохранен!</span>';
+        } else {
+            statusDiv.innerHTML = `<span style="color: #ff4444;">❌ ${data.error}</span>`;
+        }
+    } catch (error) {
+        statusDiv.innerHTML = '<span style="color: #ff4444;">❌ Ошибка сети</span>';
+    }
+}
+
+// Поиск пользователей
+async function searchUsers() {
+    const query = document.getElementById('search-input').value.trim();
+    const resultsDiv = document.getElementById('search-results');
+    
+    if (query.length < 2) {
+        resultsDiv.innerHTML = '<p style="color: #888;">Введите минимум 2 символа</p>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/social/search-users?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success && data.users.length > 0) {
+            resultsDiv.innerHTML = data.users.map(user => `
+                <div style="background: #1a1a1f; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="color: #fff; font-weight: 600;">@${user.nickname}</div>
+                        <div style="color: #888; font-size: 14px;">${user.name || 'Без имени'}</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="sendFriendRequest(${user.id})" class="btn-primary" style="padding: 8px 16px; font-size: 13px;">
+                            Добавить в друзья
+                        </button>
+                        <button onclick="sendMentorshipRequest(${user.id})" class="btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+                            Добавить учеником
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            resultsDiv.innerHTML = '<p style="color: #888;">Пользователи не найдены</p>';
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = '<p style="color: #ff4444;">Ошибка поиска</p>';
+    }
+}
+
+// Отправить заявку в друзья
+async function sendFriendRequest(userId) {
+    try {
+        const response = await fetch('/api/social/friends/request', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_id: userId})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✓ Заявка в друзья отправлена!');
+        } else {
+            alert('❌ ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Ошибка сети');
+    }
+}
+
+// Отправить заявку учитель-ученик
+async function sendMentorshipRequest(studentId) {
+    try {
+        const response = await fetch('/api/social/mentorship/request', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({student_id: studentId})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✓ Заявка отправлена!');
+        } else {
+            alert('❌ ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Ошибка сети');
+    }
+}
+
+// Загрузить список друзей
+async function loadFriends() {
+    try {
+        const response = await fetch('/api/social/friends/list');
+        const data = await response.json();
+        
+        const friendsDiv = document.getElementById('friends-list');
+        
+        if (data.success && data.friends.length > 0) {
+            friendsDiv.innerHTML = data.friends.map(friend => `
+                <div style="background: #1a1a1f; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="color: #fff; font-weight: 600;">@${friend.nickname}</div>
+                    <div style="color: #888; font-size: 14px;">${friend.name || 'Без имени'}</div>
+                </div>
+            `).join('');
+        } else {
+            friendsDiv.innerHTML = '<p style="color: #888;">У вас пока нет друзей</p>';
+        }
+    } catch (error) {
+        document.getElementById('friends-list').innerHTML = '<p style="color: #ff4444;">Ошибка загрузки</p>';
+    }
+}
+
+// Загрузить список учеников
+async function loadStudents() {
+    try {
+        const response = await fetch('/api/social/mentorship/students');
+        const data = await response.json();
+        
+        const studentsDiv = document.getElementById('students-list');
+        
+        if (data.success && data.students.length > 0) {
+            studentsDiv.innerHTML = data.students.map(student => `
+                <div style="background: #1a1a1f; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="color: #fff; font-weight: 600;">@${student.nickname}</div>
+                    <div style="color: #888; font-size: 14px;">${student.name || 'Без имени'}</div>
+                </div>
+            `).join('');
+        } else {
+            studentsDiv.innerHTML = '<p style="color: #888;">У вас пока нет учеников</p>';
+        }
+    } catch (error) {
+        document.getElementById('students-list').innerHTML = '<p style="color: #ff4444;">Ошибка загрузки</p>';
+    }
+}
+
+// Загрузить список учителей
+async function loadTeachers() {
+    try {
+        const response = await fetch('/api/social/mentorship/teachers');
+        const data = await response.json();
+        
+        const teachersDiv = document.getElementById('teachers-list');
+        
+        if (data.success && data.teachers.length > 0) {
+            teachersDiv.innerHTML = data.teachers.map(teacher => `
+                <div style="background: #1a1a1f; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="color: #fff; font-weight: 600;">@${teacher.nickname}</div>
+                    <div style="color: #888; font-size: 14px;">${teacher.name || 'Без имени'}</div>
+                </div>
+            `).join('');
+        } else {
+            teachersDiv.innerHTML = '<p style="color: #888;">У вас пока нет учителей</p>';
+        }
+    } catch (error) {
+        document.getElementById('teachers-list').innerHTML = '<p style="color: #ff4444;">Ошибка загрузки</p>';
+    }
+}
+
+// Загрузить все списки при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    loadFriends();
+    loadStudents();
+    loadTeachers();
+});
+
+// Enter для поиска
+document.getElementById('search-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') searchUsers();
+});
+
+// Enter для никнейма
+document.getElementById('nickname-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') setNickname();
+});
+</script>
+{% endblock %}

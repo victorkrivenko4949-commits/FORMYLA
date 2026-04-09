@@ -15,9 +15,16 @@
             <select name="olympiad" id="selOlymp" required
                     style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
                 <option value="">Выбери олимпиаду</option>
-                {% for o in olympiads %}
-                    <option value="{{ o.slug }}">{{ o.full_title }}</option>
-                {% endfor %}
+                <option value="euler">Эйлер</option>
+                <option value="formula_unity">Формула Единства</option>
+                <option value="kurchatov">Курчатов</option>
+                <option value="lomonosov">Ломоносов</option>
+                <option value="phystech">Физтех</option>
+                <option value="pvg">Покори Воробьёвы горы!</option>
+                <option value="spbgu">СПбГУ</option>
+                <option value="turgor">Турнир городов</option>
+                <option value="vsosh">ВсОШ</option>
+                <option value="vysshaya_proba">Высшая проба</option>
             </select>
         </label>
 

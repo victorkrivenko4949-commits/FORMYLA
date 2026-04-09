@@ -1,47 +1,143 @@
-<!-- AI Тьютор - плавающий виджет чата -->
+<!-- AI Тьютор - плавающий виджет с выбором агента (PREMIUM UX) -->
 {% if current_user.is_authenticated %}
 <div id="tutorWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
     <!-- Кнопка открытия -->
-    <button id="tutorBtn" onclick="toggleTutorChat()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <button id="tutorBtn" onclick="toggleTutorPopup()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
         🤖
     </button>
     
-    <!-- Окно чата -->
-    <div id="tutorChat" style="display: none; position: absolute; bottom: 80px; right: 0; width: 500px; height: 600px; background: var(--bg-card); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); flex-direction: column;">
+    <!-- Всплывающее окно -->
+    <div id="ai-tutor-popup" style="display: none; position: fixed; bottom: 100px; right: 20px; width: 500px; height: 600px; background: var(--bg-card); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); flex-direction: column; resize: both; overflow: auto; min-width: 350px; min-height: 400px; max-width: 90vw; max-height: 90vh;">
         
-        <!-- Заголовок -->
-        <div style="padding: 15px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-weight: 600; color: var(--text-main);">🤖 AI-Тьютор</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Ваш личный репетитор</div>
+        <!-- ЭКРАН 1: Выбор агента -->
+        <div id="agentSelectionScreen" style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
+            <!-- Заголовок -->
+            <div style="margin-bottom: 20px;">
+                <div style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 8px;">🤖 AI-Тьютор</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
+                    Выберите агента (если ИИ давать более узкое направление, то он СИЛЬНО лучше отвечает)
+                </div>
             </div>
-            <button onclick="toggleTutorChat()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">×</button>
+            
+            <!-- Сетка агентов -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex: 1; overflow-y: auto;">
+                <!-- Агент по алгебре -->
+                <button class="agent-card" onclick="selectAgent('algebra', 'Агент по алгебре')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">📐</div>
+                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по алгебре</div>
+                </button>
+                
+                <!-- Агент по геометрии -->
+                <button class="agent-card" onclick="selectAgent('geometry', 'Агент по геометрии')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">📏</div>
+                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по геометрии</div>
+                </button>
+                
+                <!-- Агент по теории чисел -->
+                <button class="agent-card" onclick="selectAgent('number_theory', 'Агент по теории чисел')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🔢</div>
+                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по теории чисел</div>
+                </button>
+                
+                <!-- Агент по комбинаторике -->
+                <button class="agent-card" onclick="selectAgent('combinatorics', 'Агент по комбинаторике')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🎲</div>
+                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по комбинаторике</div>
+                </button>
+                
+                <!-- Агент по задачам на движение -->
+                <button class="agent-card" onclick="selectAgent('movement', 'Агент по задачам на движение')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🚀</div>
+                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по задачам на движение</div>
+                </button>
+                
+                <!-- Агент по логике -->
+                <button class="agent-card" onclick="selectAgent('logic', 'Агент по логике')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🧩</div>
+                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по логике</div>
+                </button>
+                
+                <!-- Агент-наставник -->
+                <button class="agent-card" onclick="selectAgent('mentor', 'Агент-наставник')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center; grid-column: span 2;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🎓</div>
+                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px; margin-bottom: 4px;">Агент-наставник</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Узнать всё об олимпиадах (советы и стратегия)</div>
+                </button>
+            </div>
+            
+            <!-- Кнопка закрытия -->
+            <button onclick="toggleTutorPopup()" style="margin-top: 15px; padding: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 14px;">
+                Закрыть
+            </button>
         </div>
         
-        <!-- Сообщения -->
-        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
-            <div style="text-align: center; color: var(--text-muted); font-size: 14px; padding: 20px; line-height: 1.6;">
-                Привет! Я AI-эксперт по подготовке к олимпиадам по математике.<br><br>
-                Я умею:<br>
-                • Помогать решать задачи<br>
-                • Объяснять темы<br>
-                • Проверять решения<br><br>
-                Что хочешь сделать?
+        <!-- ЭКРАН 2: Чат с агентом -->
+        <div id="chatScreen" style="display: none; flex-direction: column; height: 100%;">
+            <!-- Заголовок чата -->
+            <div style="padding: 15px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button onclick="backToAgentSelection()" style="background: none; border: none; color: var(--accent-2); font-size: 18px; cursor: pointer; padding: 5px;" title="Вернуться к агентам">⬅</button>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-main);" id="currentAgentName">Агент</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Ваш специализированный помощник</div>
+                    </div>
+                </div>
+                <button onclick="toggleTutorPopup()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            
+            <!-- iOS-style Toggle переключатель -->
+            <div style="padding: 12px 15px; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 14px; color: var(--text-soft);">Давать только подсказки</span>
+                <label class="ios-toggle">
+                    <input type="checkbox" id="hintModeToggle" checked>
+                    <span class="ios-toggle-slider"></span>
+                </label>
+            </div>
+            
+            <!-- Сообщения -->
+            <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Сообщения будут добавляться динамически -->
+            </div>
+            
+            <!-- Индикатор печати -->
+            <div id="typingIndicator" style="display: none; padding: 10px 15px;">
+                <div style="display: inline-block; padding: 10px 15px; background: rgba(30, 41, 59, 0.8); border-radius: 15px 15px 15px 0;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ввод -->
+            <div style="padding: 15px; border-top: 1px solid var(--border-soft);">
+                <div style="display: flex; gap: 8px; align-items: flex-end;">
+                    <!-- Кнопка загрузки файла -->
+                    <label for="fileInput" style="padding: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;" title="Прикрепить изображение или PDF">
+                        📎
+                    </label>
+                    <input type="file" id="fileInput" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelect(event)">
+                    
+                    <!-- Поле ввода -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                        <div id="filePreview" style="display: none; font-size: 12px; color: var(--accent-2); padding: 5px;">
+                            📎 <span id="fileName"></span>
+                            <button onclick="clearFile()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 5px;">✕</button>
+                        </div>
+                        <input type="text" id="tutorInput" placeholder="Напишите вопрос..." style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); caret-color: var(--accent-2);" onkeypress="if(event.key==='Enter') sendToTutor()">
+                    </div>
+                    
+                    <!-- Кнопка отправки -->
+                    <button onclick="sendToTutor()" style="padding: 10px 15px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600;">📤</button>
+                </div>
             </div>
         </div>
-        
-        <!-- Индикатор печати -->
-        <div id="typingIndicator" style="display: none; padding: 10px 15px; color: var(--text-muted); font-size: 14px;">
-            <span style="animation: pulse 1.5s infinite;">Тьютор печатает...</span>
-        </div>
-        
-        <!-- Ввод -->
-        <div style="padding: 15px; border-top: 1px solid var(--border-soft);">
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="tutorInput" placeholder="Напишите вопрос..." style="flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); caret-color: var(--accent-2);" onkeypress="if(event.key==='Enter') sendToTutor()">
-                <button onclick="sendToTutor()" style="padding: 10px 15px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600;">📤</button>
-            </div>
-        </div>
+    </div>
+    
+    <!-- Popup кнопка "Объяснить выделенное" -->
+    <div id="explainPopup" style="display: none; position: fixed; z-index: 10000; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.5); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="explainSelected()">
+        ❓ Объяснить подробнее
     </div>
 </div>
 
@@ -49,6 +145,81 @@
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
+}
+
+@keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+    30% { transform: translateY(-10px); opacity: 1; }
+}
+
+.typing-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-2);
+    border-radius: 50%;
+    display: inline-block;
+    animation: typingDot 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* iOS-style Toggle Switch */
+.ios-toggle {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.ios-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ios-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4a5568;
+    transition: 0.3s;
+    border-radius: 28px;
+}
+
+.ios-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ios-toggle input:checked + .ios-toggle-slider {
+    background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%);
+}
+
+.ios-toggle input:checked + .ios-toggle-slider:before {
+    transform: translateX(22px);
 }
 
 #chatMessages::-webkit-scrollbar {
@@ -64,46 +235,112 @@
     background: var(--accent-2);
     border-radius: 3px;
 }
+
+.agent-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-2);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+/* Markdown formatting in messages */
+.ai-message strong {
+    color: var(--accent-2);
+    font-weight: 700;
+}
+
+.ai-message p {
+    margin: 0.5em 0;
+}
+
+.ai-message ul, .ai-message ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
 </style>
 
 <script>
-let chatOpen = false;
+let popupOpen = false;
+let currentAgent = null;
+let currentAgentName = '';
+let selectedFile = null;
+let selectedText = '';
 
-function toggleTutorChat() {
-    chatOpen = !chatOpen;
-    const chat = document.getElementById('tutorChat');
+function toggleTutorPopup() {
+    popupOpen = !popupOpen;
+    const popup = document.getElementById('ai-tutor-popup');
     const btn = document.getElementById('tutorBtn');
     
-    if (chatOpen) {
-        chat.style.display = 'flex';
+    if (popupOpen) {
+        popup.style.display = 'flex';
         btn.textContent = '✕';
-        loadChatHistory();
+        showAgentSelection();
     } else {
-        chat.style.display = 'none';
+        popup.style.display = 'none';
         btn.textContent = '🤖';
     }
 }
 
-async function loadChatHistory() {
+function showAgentSelection() {
+    document.getElementById('agentSelectionScreen').style.display = 'flex';
+    document.getElementById('chatScreen').style.display = 'none';
+    currentAgent = null;
+}
+
+function selectAgent(agentType, agentName) {
+    currentAgent = agentType;
+    currentAgentName = agentName;
+    
+    document.getElementById('agentSelectionScreen').style.display = 'none';
+    document.getElementById('chatScreen').style.display = 'flex';
+    document.getElementById('currentAgentName').textContent = agentName;
+    
+    loadChatHistory(agentType);
+}
+
+function backToAgentSelection() {
+    showAgentSelection();
+    clearFile();
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        selectedFile = file;
+        document.getElementById('filePreview').style.display = 'block';
+        document.getElementById('fileName').textContent = file.name;
+    }
+}
+
+function clearFile() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePreview').style.display = 'none';
+}
+
+async function loadChatHistory(agentType) {
     try {
-        const response = await fetch('/api/tutor/history');
+        const response = await fetch(`/api/tutor/history?agent_type=${agentType}`);
         const messages = await response.json();
         
         const container = document.getElementById('chatMessages');
         container.innerHTML = '';
         
-        if (messages.length > 0) {
-            // Персональное приветствие для повторных визитов
-            const lastUserMsg = messages.filter(m => m.role === 'user').slice(-1)[0];
+        if (messages.length === 0) {
             const greeting = document.createElement('div');
-            greeting.style.cssText = 'text-align: center; color: var(--text-muted); font-size: 14px; padding: 15px; line-height: 1.6; background: rgba(56, 189, 248, 0.1); border-radius: 8px; margin-bottom: 10px;';
-            greeting.innerHTML = `С возвращением! 👋<br>В прошлый раз мы работали над задачами.<br>Продолжим или начнём новое?`;
+            greeting.style.cssText = 'text-align: center; color: var(--text-muted); font-size: 14px; padding: 20px; line-height: 1.6; background: rgba(56, 189, 248, 0.1); border-radius: 8px;';
+            greeting.innerHTML = `Привет! Я ${currentAgentName}. 👋<br><br>Чем могу помочь?`;
             container.appendChild(greeting);
+        } else {
+            messages.forEach(msg => {
+                addMessageToChat(msg.role, msg.content, false);
+            });
         }
         
-        messages.forEach(msg => {
-            addMessageToChat(msg.role, msg.content, false);
-        });
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise([container]).catch((err) => {
+                console.warn('MathJax batch rendering error:', err.message);
+            });
+        }
         
         scrollChatToBottom();
     } catch (error) {
@@ -115,35 +352,58 @@ async function sendToTutor() {
     const input = document.getElementById('tutorInput');
     const message = input.value.trim();
     
-    if (!message) return;
+    if (!message || !currentAgent) return;
     
-    // Добавляем сообщение пользователя
-    addMessageToChat('user', message);
+    const hintMode = document.getElementById('hintModeToggle').checked;
+    
+    addMessageToChat('user', message + (selectedFile ? ' [📎 ' + selectedFile.name + ']' : ''));
     input.value = '';
     
-    // Показываем индикатор
     document.getElementById('typingIndicator').style.display = 'block';
     scrollChatToBottom();
     
     try {
-        const response = await fetch('/api/tutor/send', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message: message})
-        });
+        let response;
+        
+        if (selectedFile) {
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('agent_type', currentAgent);
+            formData.append('hint_mode', hintMode);
+            formData.append('file', selectedFile);
+            
+            response = await fetch('/api/tutor/send', {
+                method: 'POST',
+                body: formData
+            });
+            
+            clearFile();
+        } else {
+            response = await fetch('/api/tutor/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    message: message,
+                    agent_type: currentAgent,
+                    hint_mode: hintMode
+                })
+            });
+        }
         
         const data = await response.json();
         
-        // Скрываем индикатор
         document.getElementById('typingIndicator').style.display = 'none';
         
         if (data.ai_response) {
             addMessageToChat('assistant', data.ai_response.content);
+        } else if (data.error) {
+            addMessageToChat('assistant', '❌ ' + data.error);
         }
         
     } catch (error) {
         document.getElementById('typingIndicator').style.display = 'none';
-        addMessageToChat('assistant', 'Ошибка связи с тьютором. Попробуйте еще раз.');
+        addMessageToChat('assistant', 'Ошибка связи с агентом. Попробуйте еще раз.');
+        console.error('Error:', error);
     }
 }
 
@@ -153,16 +413,81 @@ function addMessageToChat(role, content, scroll = true) {
     
     if (role === 'user') {
         msgDiv.style.cssText = 'align-self: flex-end; max-width: 70%; padding: 10px 15px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border-radius: 15px 15px 0 15px; word-wrap: break-word;';
+        msgDiv.textContent = content;
     } else {
-        msgDiv.style.cssText = 'align-self: flex-start; max-width: 70%; padding: 10px 15px; background: rgba(30, 41, 59, 0.8); color: var(--text-soft); border-radius: 15px 15px 15px 0; word-wrap: break-word;';
-        msgDiv.innerHTML = '<span style="font-weight: 600; color: var(--accent-2);">🤖 Тьютор:</span><br>';
+        msgDiv.style.cssText = 'align-self: flex-start; max-width: 85%; padding: 12px 16px; background: rgba(30, 41, 59, 0.8); color: var(--text-soft); border-radius: 15px 15px 15px 0; word-wrap: break-word; line-height: 1.6;';
+        msgDiv.className = 'ai-message';
+        
+        // Простой Markdown парсинг
+        let formatted = content;
+        // Жирный текст
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Списки
+        formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
+        if (formatted.includes('<li>')) {
+            formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+        }
+        // Абзацы
+        formatted = formatted.replace(/\n\n/g, '</p><p>');
+        formatted = '<p>' + formatted + '</p>';
+        
+        msgDiv.innerHTML = '<span style="font-weight: 600; color: var(--accent-2);">🤖 Агент:</span><br>' + formatted;
+        
+        // Добавляем обработчик выделения текста
+        msgDiv.addEventListener('mouseup', handleTextSelection);
     }
     
-    msgDiv.innerHTML += content;
     container.appendChild(msgDiv);
+    
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([msgDiv]).catch((err) => {
+            console.warn('MathJax rendering error:', err.message);
+        });
+    }
     
     if (scroll) scrollChatToBottom();
 }
+
+function handleTextSelection(event) {
+    const selection = window.getSelection();
+    const text = selection.toString().trim();
+    
+    if (text.length > 0) {
+        selectedText = text;
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        const popup = document.getElementById('explainPopup');
+        popup.style.display = 'block';
+        popup.style.left = (rect.left + rect.width / 2 - 90) + 'px';
+        popup.style.top = (rect.top - 40) + 'px';
+    } else {
+        document.getElementById('explainPopup').style.display = 'none';
+    }
+}
+
+function explainSelected() {
+    if (!selectedText || !currentAgent) return;
+    
+    const input = document.getElementById('tutorInput');
+    const quotedText = '> ' + selectedText.replace(/\n/g, '\n> ');
+    const message = quotedText + '\n\nОбъясни этот момент подробнее:';
+    
+    input.value = message;
+    document.getElementById('explainPopup').style.display = 'none';
+    window.getSelection().removeAllRanges();
+    
+    // Автоматически отправляем
+    sendToTutor();
+}
+
+// Скрываем popup при клике вне выделения
+document.addEventListener('mousedown', function(event) {
+    const popup = document.getElementById('explainPopup');
+    if (popup && !popup.contains(event.target)) {
+        popup.style.display = 'none';
+    }
+});
 
 function scrollChatToBottom() {
     const container = document.getElementById('chatMessages');

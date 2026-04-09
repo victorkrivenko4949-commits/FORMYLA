@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Адаптивное тестирование - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main);">🎯 Адаптивное тестирование</h1>
+        <p style="color: var(--text-soft);">Тест подстраивается под ваш уровень</p>
+        
+        <!-- Прогресс и статистика -->
+        <div style="max-width: 600px; margin: 20px auto; display: flex; gap: 20px; justify-content: center;">
+            <div style="background: var(--bg-card); padding: 15px 25px; border-radius: var(--radius-md); border: 1px solid var(--border-soft);">
+                <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">Текущий уровень</div>
+                <div id="abilityDisplay" style="color: var(--accent-2); font-size: 24px; font-weight: 700;">{{ test.current_ability|round(1) }}</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 15px 25px; border-radius: var(--radius-md); border: 1px solid var(--border-soft);">
+                <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">Прогресс</div>
+                <div id="progressDisplay" style="color: var(--accent-1); font-size: 24px; font-weight: 700;">
+                    <span id="currentNum">0</span>/<span id="totalNum">{{ test.num_problems }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Прогресс-бар -->
+        <div style="max-width: 500px; margin: 20px auto;">
+            <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 5px; overflow: hidden;">
+                <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); transition: width 0.5s;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для задачи -->
+    <div id="problemContainer"></div>
+    
+    <!-- Лоадер -->
+    <div id="loading" style="display: none; text-align: center; padding: 60px;">
+        <div class="spinner" style="border: 4px solid rgba(255, 255, 255, 0.1); border-top: 4px solid var(--accent-2); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+        <p style="color: var(--text-soft); font-size: 1.2em;">Подбираем следующую задачу...</p>
+    </div>
+    
+    <!-- Результат ответа -->
+    <div id="answerFeedback" style="display: none; margin-top: 30px; padding: 25px; border-radius: var(--radius-lg); text-align: center;"></div>
+
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+</style>
+
+<script>
+let testId = {{ test.id }};
+let currentProblem = null;
+let currentNumber = 0;
+let totalProblems = {{ test.num_problems }};
+let currentAbility = {{ test.current_ability }};
+
+// Загружаем первую задачу при загрузке страницы
+window.addEventListener('DOMContentLoaded', loadCurrentProblem);
+
+async function loadCurrentProblem() {
+    // Получаем текущую задачу из теста
+    const problems = {{ problems_list|tojson }};
+    
+    if (problems.length === 0) {
+        showError('Не удалось загрузить задачу');
+        return;
+    }
+    
+    // Находим первую неотвеченную задачу
+    const unanswered = problems.find(p => p.is_correct === null);
+    
+    if (!unanswered) {
+        // Все задачи отвечены, переходим к анализу
+        await analyzeTest();
+        return;
+    }
+    
+    // Загружаем данные задачи
+    currentNumber = unanswered.sequence_number;
+    currentAbility = unanswered.user_ability_before;
+    
+    // Обновляем UI
+    updateProgress(currentNumber - 1, totalProblems);
+    document.getElementById('abilityDisplay').textContent = currentAbility.toFixed(1);
+    
+    // Получаем полные данные задачи (нужно добавить в контекст или загрузить через API)
+    // Для простоты, предполагаем что задача передана в контексте
+    displayProblem(unanswered.problem_id, currentNumber);
+}
+
+function displayProblem(problemId, number) {
+    const container = document.getElementById('problemContainer');
+    
+    // Получаем данные задачи из problems_list
+    const problems = {{ problems_list|tojson }};
+    const problemData = problems.find(p => p.sequence_number === number);
+    
+    if (!problemData) {
+        container.innerHTML = '<p style="color: red;">Ошибка: задача не найдена</p>';
+        return;
+    }
+    
+    const problemText = problemData.problem_text || 'Текст задачи не загружен';
+    const problemSubject = problemData.problem_subject || 'Неизвестный раздел';
+    
+    container.innerHTML = `
+        <div class="fade-in" style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 35px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
+            <div style="margin-bottom: 25px;">
+                <h3 id="progress-counter" style="color: var(--accent-2); font-size: 1.5rem; font-weight: 700; margin: 0 0 10px 0;">
+                    Задача ${number} из ${totalProblems}
+                </h3>
+                <div style="color: var(--text-muted); font-size: 14px;">
+                    Раздел: <span style="color: var(--accent-1);">${problemSubject}</span>
+                </div>
+            </div>
+            
+            <div id="problemText" style="color: var(--text-main); line-height: 1.8; margin: 1.5rem 0; font-size: 1.25rem; white-space: pre-wrap; background: rgba(15, 23, 42, 0.4); padding: 20px; border-radius: var(--radius-sm); border-left: 4px solid var(--accent-2);">
+                ${problemText}
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-soft); margin-bottom: 10px; font-weight: 500;">Ваш ответ:</label>
+                <input type="text" id="userAnswer" placeholder="Введите ответ" 
+                       style="width: 100%; padding: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2); font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; color: var(--text-soft); margin-bottom: 10px; font-weight: 500;">Ход решения (опционально):</label>
+                <textarea id="userSolution" placeholder="Опишите как вы решали задачу..." 
+                          style="width: 100%; min-height: 120px; padding: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2); resize: vertical; font-size: 15px;"></textarea>
+            </div>
+            
+            <div style="text-align: center;">
+                <button onclick="submitAnswer(${problemId})" id="submitBtn" 
+                        style="padding: 14px 40px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: var(--radius-sm); font-size: 17px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: all 0.3s;">
+                    Ответить →
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+async function submitAnswer(problemId) {
+    const answer = document.getElementById('userAnswer').value.trim();
+    const solution = document.getElementById('userSolution').value.trim();
+    
+    if (!answer) {
+        alert('Пожалуйста, введите ответ');
+        return;
+    }
+    
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Проверка...';
+    
+    try {
+        const response = await fetch(`/api/adaptive-test/${testId}/submit`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                problem_id: problemId,
+                answer: answer,
+                solution: solution
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAnswerFeedback(data);
+            
+            // Обновляем способность
+            currentAbility = data.current_ability;
+            document.getElementById('abilityDisplay').textContent = currentAbility.toFixed(1);
+            
+            // Обновляем прогресс
+            updateProgress(data.answered_count, totalProblems);
+            
+            // Если есть следующая задача, показываем её через 3 секунды
+            if (data.next_problem) {
+                setTimeout(() => {
+                    hideAnswerFeedback();
+                    displayProblem(data.next_problem.id, data.next_number);
+                }, 3000);
+            } else if (data.test_completed) {
+                // Тест завершен, анализируем результаты
+                setTimeout(() => {
+                    analyzeTest();
+                }, 2000);
+            }
+        } else {
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            btn.disabled = false;
+            btn.textContent = 'Ответить →';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка отправки ответа');
+        btn.disabled = false;
+        btn.textContent = 'Ответить →';
+    }
+}
+
+function showAnswerFeedback(data) {
+    const feedback = document.getElementById('answerFeedback');
+    const container = document.getElementById('problemContainer');
+    
+    container.style.opacity = '0.5';
+    
+    if (data.is_correct) {
+        feedback.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 15px;">✅</div>
+            <h3 style="color: var(--accent-2); margin-bottom: 10px;">Правильно!</h3>
+            <p style="color: var(--text-soft);">Ваш уровень: ${data.current_ability.toFixed(1)}/7.0</p>
+        `;
+        feedback.style.background = 'rgba(34, 197, 94, 0.1)';
+        feedback.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+    } else {
+        feedback.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+            <h3 style="color: #ef4444; margin-bottom: 10px;">Неправильно</h3>
+            <p style="color: var(--text-soft);">Правильный ответ: <strong>${data.correct_answer}</strong></p>
+            <p style="color: var(--text-soft); margin-top: 10px;">Ваш уровень: ${data.current_ability.toFixed(1)}/7.0</p>
+        `;
+        feedback.style.background = 'rgba(239, 68, 68, 0.1)';
+        feedback.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+    }
+    
+    feedback.style.display = 'block';
+    feedback.classList.add('fade-in');
+}
+
+function hideAnswerFeedback() {
+    const feedback = document.getElementById('answerFeedback');
+    const container = document.getElementById('problemContainer');
+    
+    feedback.style.display = 'none';
+    container.style.opacity = '1';
+}
+
+function updateProgress(current, total) {
+    const percent = (current / total) * 100;
+    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('currentNum').textContent = current;
+}
+
+async function analyzeTest() {
+    const container = document.getElementById('problemContainer');
+    const loading = document.getElementById('loading');
+    
+    container.style.display = 'none';
+    loading.style.display = 'block';
+    loading.querySelector('p').textContent = 'AI анализирует ваши результаты...';
+    
+    try {
+        const response = await fetch(`/api/adaptive-test/${testId}/analyze`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        if (response.ok) {
+            // Переходим на страницу результатов
+            window.location.href = `/adaptive-test/${testId}/results`;
+        } else {
+            alert('Ошибка анализа результатов');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка анализа результатов');
+    }
+}
+
+function showError(message) {
+    const container = document.getElementById('problemContainer');
+    container.innerHTML = `
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 30px; border-radius: var(--radius-lg); text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+            <h3 style="color: #ef4444; margin-bottom: 10px;">Ошибка</h3>
+            <p style="color: var(--text-soft);">${message}</p>
+        </div>
+    `;
+}
+</script>
+
+{% endblock %}
