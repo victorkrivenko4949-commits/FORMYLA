@@ -77,11 +77,11 @@ app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = domain_url.startswith('https')
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Flask-Mail configuration (Yandex SMTP with TLS for international IPs)
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))  # Changed to 587 for TLS
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'  # Enabled TLS
-app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False') == 'True'  # Disabled SSL
+# Flask-Mail configuration (Gmail by default, supports Yandex and others via env vars)
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False') == 'True'
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
@@ -899,7 +899,7 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через smtplib (Yandex SMTP with TLS for international IPs)."""
+    """Отправка кода через smtplib (Gmail/Yandex SMTP with TLS)."""
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
@@ -929,9 +929,13 @@ def send_auth_email(recipient_email, code):
     """
     msg.attach(MIMEText(html, 'html', 'utf-8'))
     
-    # Use TLS (port 587) instead of SSL (port 465) for better compatibility with international IPs
+    # Use TLS (port 587) for better compatibility with international IPs
+    # Supports Gmail, Yandex, and other SMTP servers via environment variables
+    smtp_server = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    smtp_port = int(os.getenv('MAIL_PORT', '587'))
+    
     try:
-        server = smtplib.SMTP('smtp.yandex.ru', 587, timeout=30)
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
         server.ehlo()
         server.starttls()  # Upgrade to TLS
         server.ehlo()
