@@ -77,11 +77,11 @@ app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = domain_url.startswith('https')
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Flask-Mail configuration (Gmail by default, supports Yandex and others via env vars)
+# Flask-Mail configuration (Gmail by default, fully configurable via env vars)
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
-app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False') == 'True'
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() in ['true', '1', 't']
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() in ['true', '1', 't']
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
@@ -945,10 +945,10 @@ def send_auth_email(recipient_email, code):
         print(f"[EMAIL] Successfully sent to {recipient_email}")
     except smtplib.SMTPAuthenticationError as e:
         print(f"[EMAIL ERROR] Authentication failed: {e}")
-        raise Exception(f"Ошибка аутентификации SMTP. Проверьте пароль приложения Яндекса.")
+        raise Exception(f"Ошибка аутентификации SMTP. Проверьте MAIL_USERNAME и MAIL_PASSWORD (пароль приложения).")
     except smtplib.SMTPConnectError as e:
         print(f"[EMAIL ERROR] Connection failed: {e}")
-        raise Exception(f"Не удалось подключиться к SMTP-серверу Яндекса.")
+        raise Exception(f"Не удалось подключиться к SMTP-серверу {smtp_server}:{smtp_port}.")
     except smtplib.SMTPException as e:
         print(f"[EMAIL ERROR] SMTP error: {e}")
         raise Exception(f"Ошибка SMTP-сервера: {str(e)}")
