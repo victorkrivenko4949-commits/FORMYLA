@@ -77,11 +77,11 @@ app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = domain_url.startswith('https')
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Flask-Mail configuration (Yandex SMTP)
+# Flask-Mail configuration (Yandex SMTP with TLS for international IPs)
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '465'))
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'False') == 'True'
-app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'True') == 'True'
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))  # Changed to 587 for TLS
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'  # Enabled TLS
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False') == 'True'  # Disabled SSL
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
@@ -899,9 +899,8 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через smtplib (Yandex SMTP)."""
+    """Отправка кода через smtplib (Yandex SMTP with TLS for international IPs)."""
     import smtplib
-    import ssl
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
     from email import charset
@@ -930,10 +929,28 @@ def send_auth_email(recipient_email, code):
     """
     msg.attach(MIMEText(html, 'html', 'utf-8'))
     
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.yandex.ru', 465, context=context) as server:
+    # Use TLS (port 587) instead of SSL (port 465) for better compatibility with international IPs
+    try:
+        server = smtplib.SMTP('smtp.yandex.ru', 587, timeout=30)
+        server.ehlo()
+        server.starttls()  # Upgrade to TLS
+        server.ehlo()
         server.login(sender, password)
         server.sendmail(sender, recipient_email, msg.as_string())
+        server.quit()
+        print(f"[EMAIL] Successfully sent to {recipient_email}")
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"[EMAIL ERROR] Authentication failed: {e}")
+        raise Exception(f"Ошибка аутентификации SMTP. Проверьте пароль приложения Яндекса.")
+    except smtplib.SMTPConnectError as e:
+        print(f"[EMAIL ERROR] Connection failed: {e}")
+        raise Exception(f"Не удалось подключиться к SMTP-серверу Яндекса.")
+    except smtplib.SMTPException as e:
+        print(f"[EMAIL ERROR] SMTP error: {e}")
+        raise Exception(f"Ошибка SMTP-сервера: {str(e)}")
+    except Exception as e:
+        print(f"[EMAIL ERROR] Unexpected error: {e}")
+        raise Exception(f"Неожиданная ошибка при отправке email: {str(e)}")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -994,8 +1011,10 @@ def login():
                 flash(f'Код отправлен на {email}. Проверьте почту!', 'success')
                 
             except Exception as e:
-                print(f"\n❌ ОШИБКА ОТПРАВКИ EMAIL: {e}\n", flush=True)
-                app.logger.error(f"ОШИБКА EMAIL: {e}")
+                error_message = str(e)
+                print(f"\n❌ ОШИБКА ОТПРАВКИ EMAIL: {error_message}\n", flush=True)
+                app.logger.error(f"ОШИБКА EMAIL: {error_message}")
+                
                 # Fallback - выводим код в консоль
                 print("\n" + "="*60, flush=True)
                 print("⚠️  FALLBACK - КОД В КОНСОЛИ", flush=True)
@@ -1005,7 +1024,13 @@ def login():
                 print(f"   Действителен: 10 минут", flush=True)
                 print("="*60 + "\n", flush=True)
                 
-                flash(f'Ошибка отправки email. Попробуйте еще раз.', 'error')
+                # Показываем понятное сообщение пользователю
+                if "аутентификации" in error_message.lower() or "authentication" in error_message.lower():
+                    flash(f'Ошибка настройки email-сервера. Обратитесь к администратору.', 'error')
+                elif "подключиться" in error_message.lower() or "connect" in error_message.lower():
+                    flash(f'Не удалось подключиться к почтовому серверу. Попробуйте позже.', 'error')
+                else:
+                    flash(f'Ошибка отправки email: {error_message}', 'error')
         else:
             # Email не настроен
             print("\n" + "="*60, flush=True)
