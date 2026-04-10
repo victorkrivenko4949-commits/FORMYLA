@@ -9,6 +9,7 @@ import json
 import requests
 import time
 import re
+import os
 sys.path.insert(0, ".")
 from olympiads import OLYMPIADS_DB
 
@@ -68,19 +69,42 @@ ROUND_TITLES = {
 SUBJECTS = ['number_theory', 'algebra', 'geometry', 'combinatorics', 'logic']
 
 
-def audit_gaps():
-    """Audit dyr v baze"""
+def load_existing_patch():
+    """Zagruzhaem uzhe sgenerirovanye zadachi"""
+    try:
+        from olympiads_full_patch import OLYMPIADS_FULL_PATCH
+        print(f"Loaded {len(OLYMPIADS_FULL_PATCH)} existing tasks")
+        return OLYMPIADS_FULL_PATCH
+    except ImportError:
+        print("No existing patch found, starting fresh")
+        return []
+
+
+def audit_gaps(existing_tasks):
+    """Audit dyr v baze s uchetom uzhe sgenerirovanyh zadach"""
     print("="*70)
     print("STEP 1: AUDIT GAPS IN DATABASE")
     print("="*70)
     
-    # Podschityvaem tekushchee sostoyanie
+    # Podschityvaem tekushchee sostoyanie iz osnovnoj bazy
     current_state = {}
     for combo in OLYMPIADS_DB:
         olympiad = combo.get('olympiad')
         year = combo.get('year')
         grade = combo.get('grade')
         round_key = combo.get('round')
+        
+        key = (olympiad, year, round_key, grade)
+        if key not in current_state:
+            current_state[key] = 0
+        current_state[key] += 1
+    
+    # Dobavlyaem uzhe sgenerirovanye zadachi
+    for task in existing_tasks:
+        olympiad = task.get('olympiad')
+        year = task.get('year')
+        grade = task.get('grade')
+        round_key = task.get('round')
         
         key = (olympiad, year, round_key, grade)
         if key not in current_state:
@@ -110,8 +134,9 @@ def audit_gaps():
                         total_gaps += needed
     
     # Vyvodim otchet
-    print(f"\nTOTAL MISSING: {total_gaps} tasks")
-    print(f"Number of gaps (combinations): {len(gaps_list)}")
+    print(f"\nExisting tasks in patch: {len(existing_tasks)}")
+    print(f"TOTAL STILL MISSING: {total_gaps} tasks")
+    print(f"Number of gaps remaining: {len(gaps_list)}")
     print("="*70)
     
     return gaps_list, total_gaps
@@ -303,25 +328,28 @@ def save_incremental(generated_tasks, filename='olympiads_full_patch.py'):
         f.write(content)
 
 
-def fill_all_gaps():
+def fill_all_gaps(existing_tasks):
     """
     FULL GENERATION: filling ALL gaps with incremental saves
     """
     print("\n" + "="*70)
-    print("STEP 2: FULL TASK GENERATION")
+    print("STEP 2: CONTINUE TASK GENERATION")
     print("="*70)
     
-    gaps_list, total_gaps = audit_gaps()
+    gaps_list, total_gaps = audit_gaps(existing_tasks)
     
     if not gaps_list:
-        print("\nNo gaps found!")
-        return []
+        print("\nNo gaps found! All tasks generated!")
+        return existing_tasks
     
-    print(f"\nFilling ALL {len(gaps_list)} gaps ({total_gaps} tasks)")
+    print(f"\nFilling remaining {len(gaps_list)} gaps ({total_gaps} tasks)")
     print("-"*70)
     
-    generated_tasks = []
-    next_id = 90001
+    # Nachinaem s poslednego ID + 1
+    next_id = existing_tasks[-1]['id'] + 1 if existing_tasks else 90001
+    print(f"Starting from ID: {next_id}\n")
+    
+    generated_tasks = list(existing_tasks)  # Kopiya sushchestvuyushchih
     successful_count = 0
     failed_count = 0
     
@@ -350,21 +378,23 @@ def fill_all_gaps():
         
         print(f"    OK Added {len(tasks)} tasks (ID: {tasks[0]['id']}-{tasks[-1]['id']})")
         
-        # Sohranenie posle kazhdyh 10 uspeshnyh generacij
-        if successful_count % 10 == 0:
+        # Sohranenie posle kazhdyh 5 uspeshnyh generacij
+        if successful_count % 5 == 0:
             save_incremental(generated_tasks)
             print(f"\n*** CHECKPOINT: Saved {len(generated_tasks)} tasks to file ***\n")
         
         # Progress report
-        if len(generated_tasks) % 50 == 0:
-            print(f"\n*** PROGRESS: {len(generated_tasks)} tasks generated, {successful_count} successful, {failed_count} failed ***\n")
+        new_count = len(generated_tasks) - len(existing_tasks)
+        if new_count % 25 == 0 and new_count > 0:
+            print(f"\n*** PROGRESS: {new_count} new tasks generated, {successful_count} successful, {failed_count} failed ***\n")
         
         # Pauza mezhdu zaprosami
         time.sleep(2)
     
     print("\n" + "="*70)
     print(f"GENERATION COMPLETE:")
-    print(f"  Total generated: {len(generated_tasks)} tasks")
+    print(f"  Total in patch: {len(generated_tasks)} tasks")
+    print(f"  New generated: {len(generated_tasks) - len(existing_tasks)} tasks")
     print(f"  Successful: {successful_count} combinations")
     print(f"  Failed: {failed_count} combinations")
     print("="*70)
@@ -400,11 +430,14 @@ def save_full_patch(generated_tasks):
 
 def main():
     """Glavnaya funkciya"""
-    print("\n>>> SMART GAP FILLER - FULL GENERATION WITH RETRY")
+    print("\n>>> SMART GAP FILLER - RESUME GENERATION")
     print("="*70)
     
-    # Generiruem zadachi
-    generated_tasks = fill_all_gaps()
+    # Zagruzhaem sushchestvuyushchie zadachi
+    existing_tasks = load_existing_patch()
+    
+    # Generiruem ostavshiesya zadachi
+    generated_tasks = fill_all_gaps(existing_tasks)
     
     if not generated_tasks:
         print("\nWARNING No tasks generated")
@@ -413,21 +446,21 @@ def main():
     # Final save
     save_full_patch(generated_tasks)
     
-    # Primer pervoj zadachi
+    # Primer poslednej zadachi
     print("\n" + "="*70)
-    print("EXAMPLE OF FIRST TASK (format check):")
+    print("EXAMPLE OF LAST TASK (format check):")
     print("="*70)
     
     if generated_tasks:
-        first_task = generated_tasks[0]
-        for key, value in first_task.items():
+        last_task = generated_tasks[-1]
+        for key, value in last_task.items():
             if isinstance(value, str) and len(value) > 100:
                 print(f"  {key}: {value[:100]}...")
             else:
                 print(f"  {key}: {value}")
     
     print("\n" + "="*70)
-    print("OK FULL GENERATION COMPLETE!")
+    print("OK GENERATION COMPLETE!")
     print("="*70)
 
 

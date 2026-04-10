@@ -874,26 +874,22 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через smtplib (поддержка Gmail TLS и Yandex SSL)."""
+    """Отправка кода через Yandex SMTP (захардкожено для Render)."""
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
-    from email import charset
     
-    # Устанавливаем UTF-8 кодировку
-    charset.add_charset('utf-8', charset.QP, charset.QP, 'utf-8')
+    # Жестко прописываем настройки Яндекса для Render
+    smtp_server = 'smtp.yandex.ru'
+    smtp_port = 465
+    smtp_user = 'kr1venkovictor@yandex.ru'
+    # Пароль берем из окружения в целях безопасности
+    smtp_pass = os.environ.get('MAIL_PASSWORD', 'ktxfblhgcrlryncy')
     
-    sender = os.getenv('MAIL_USERNAME')
-    password = os.getenv('MAIL_PASSWORD')
-    smtp_server = os.getenv('MAIL_SERVER', 'smtp.yandex.ru')
-    smtp_port = int(os.getenv('MAIL_PORT', '465'))
-    use_ssl = os.getenv('MAIL_USE_SSL', 'True') == 'True'
-    
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = f'Код для входа в FORMYLA: {code}'
-    msg['From'] = f'FORMYLA <{sender}>'
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
     msg['To'] = recipient_email
-    msg.set_charset('utf-8')
+    msg['Subject'] = 'Код подтверждения FORMYLA'
     
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; text-align: center;">
@@ -908,36 +904,17 @@ def send_auth_email(recipient_email, code):
     msg.attach(MIMEText(html, 'html', 'utf-8'))
     
     try:
-        # Используем SSL (порт 465) для Yandex или TLS (порт 587) для Gmail
-        if use_ssl:
-            # SSL соединение (Yandex, порт 465)
-            print(f"[EMAIL] Connecting via SSL to {smtp_server}:{smtp_port}")
-            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=30)
-            server.ehlo()
-        else:
-            # TLS соединение (Gmail, порт 587)
-            print(f"[EMAIL] Connecting via TLS to {smtp_server}:{smtp_port}")
-            server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-        
-        server.login(sender, password)
-        server.sendmail(sender, recipient_email, msg.as_string())
+        # Для порта 465 всегда используем SMTP_SSL
+        print(f"[EMAIL] Connecting to {smtp_server}:{smtp_port} via SSL")
+        server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=30)
+        server.login(smtp_user, smtp_pass)
+        server.send_message(msg)
         server.quit()
         print(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"[EMAIL ERROR] Authentication failed: {e}")
-        raise Exception(f"Ошибка аутентификации SMTP. Проверьте MAIL_USERNAME и MAIL_PASSWORD (пароль приложения).")
-    except smtplib.SMTPConnectError as e:
-        print(f"[EMAIL ERROR] Connection failed: {e}")
-        raise Exception(f"Не удалось подключиться к SMTP-серверу {smtp_server}:{smtp_port}.")
-    except smtplib.SMTPException as e:
-        print(f"[EMAIL ERROR] SMTP error: {e}")
-        raise Exception(f"Ошибка SMTP-сервера: {str(e)}")
+        return True
     except Exception as e:
-        print(f"[EMAIL ERROR] Unexpected error: {e}")
-        raise Exception(f"Неожиданная ошибка при отправке email: {str(e)}")
+        print(f"[EMAIL ERROR] Failed to send: {e}")
+        raise Exception(f"Ошибка отправки email: {str(e)}")
 
 
 @app.route("/login", methods=["GET", "POST"])
