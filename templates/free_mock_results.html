@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты пробника - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    
+    <!-- Общий результат -->
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 20px;">
+            📊 Результаты пробника
+        </h1>
+        
+        <div style="display: inline-block; padding: 30px 50px; background: linear-gradient(135deg, {% if score >= 80 %}rgba(34, 197, 94, 0.1){% elif score >= 60 %}rgba(245, 158, 11, 0.1){% else %}rgba(239, 68, 68, 0.1){% endif %}, transparent); border-radius: var(--radius-lg); border: 2px solid {% if score >= 80 %}#22c55e{% elif score >= 60 %}#f59e0b{% else %}#ef4444{% endif %};">
+            <div style="font-size: 4em; font-weight: 800; color: {% if score >= 80 %}#86efac{% elif score >= 60 %}#fbbf24{% else %}#fca5a5{% endif %}; margin-bottom: 10px;">
+                {{ score }}%
+            </div>
+            <div style="font-size: 1.2em; color: var(--text-soft);">
+                Правильно: {{ correct_count }} из {{ total_count }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Детальные результаты -->
+    <h2 style="color: var(--accent-2); margin-bottom: 30px; text-align: center;">
+        Разбор задач
+    </h2>
+    
+    {% for result in results %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border-left: 4px solid {% if result.is_correct %}#22c55e{% else %}#ef4444{% endif %}; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="color: var(--text-main); margin: 0;">Задача {{ loop.index }}</h3>
+            {% if result.is_correct %}
+            <span style="padding: 8px 16px; background: rgba(34, 197, 94, 0.2); color: #86efac; border-radius: 8px; font-weight: 600;">
+                ✓ Верно
+            </span>
+            {% else %}
+            <span style="padding: 8px 16px; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-radius: 8px; font-weight: 600;">
+                ✗ Неверно
+            </span>
+            {% endif %}
+        </div>
+        
+        <div style="color: var(--text-soft); line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap;">
+            {{ result.task.text }}
+        </div>
+        
+        <div style="display: grid; gap: 15px; margin-top: 20px;">
+            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm);">
+                <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">Ваш ответ:</div>
+                <div style="color: {% if result.is_correct %}#86efac{% else %}#fca5a5{% endif %}; font-weight: 600; font-size: 18px;">
+                    {{ result.user_answer or '(не указан)' }}
+                </div>
+            </div>
+            
+            {% if not result.is_correct %}
+            <div style="padding: 15px; background: rgba(34, 197, 94, 0.1); border-radius: var(--radius-sm); border: 1px solid rgba(34, 197, 94, 0.3);">
+                <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">Правильный ответ:</div>
+                <div style="color: #86efac; font-weight: 600; font-size: 18px;">
+                    {{ result.correct_answer }}
+                </div>
+            </div>
+            
+            {% if result.task.solution %}
+            <div style="padding: 20px; background: rgba(56, 189, 248, 0.05); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-2);">
+                <div style="color: var(--accent-2); font-weight: 600; margin-bottom: 10px;">💡 Решение:</div>
+                <div style="color: var(--text-soft); line-height: 1.8; white-space: pre-wrap;">
+                    {{ result.task.solution }}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+        
+    </div>
+    {% endfor %}
+    
+    <!-- Кнопки действий -->
+    <div style="display: flex; gap: 15px; justify-content: center; margin-top: 40px;">
+        <a href="{{ url_for('free_mock_start') }}" 
+           style="padding: 15px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; transition: transform 0.3s;"
+           onmouseover="this.style.transform='translateY(-2px)'"
+           onmouseout="this.style.transform='translateY(0)'">
+            🔄 Новый пробник
+        </a>
+        <a href="{{ url_for('index') }}" 
+           style="padding: 15px 30px; background: rgba(255, 255, 255, 0.05); color: var(--text-soft); text-decoration: none; border-radius: 12px; font-weight: 600; border: 1px solid var(--border-soft); transition: all 0.3s;"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'">
+            🏠 На главную
+        </a>
+    </div>
+    
+</div>
+{% endblock %}

@@ -1668,6 +1668,85 @@ def exam_results(exam_id):
 
 
 # ============================================================
+# FREE MOCK TEST (Бесплатный пробник)
+# ============================================================
+
+@app.route("/free_mock/start")
+@login_required
+def free_mock_start():
+    """Начать бесплатный пробник (5 задач, 1-3 уровень)."""
+    import random
+    
+    # Выбираем 5 случайных задач уровня 1-3 из ADAPTIVE_DB
+    easy_tasks = [p for p in ADAPTIVE_DB if p.get('difficulty', 5) <= 3]
+    
+    if len(easy_tasks) < 5:
+        # Если мало легких задач, берем любые
+        easy_tasks = ADAPTIVE_DB
+    
+    if len(easy_tasks) < 5:
+        flash('Недостаточно задач для генерации пробника', 'error')
+        return redirect(url_for('index'))
+    
+    selected_tasks = random.sample(easy_tasks, 5)
+    
+    # Сохраняем в сессию
+    session['free_mock_tasks'] = [t['id'] for t in selected_tasks]
+    session.permanent = True
+    
+    return render_template('free_mock.html', tasks=selected_tasks)
+
+
+@app.route("/free_mock/submit", methods=["POST"])
+@login_required
+def free_mock_submit():
+    """Проверка ответов бесплатного пробника."""
+    task_ids = session.get('free_mock_tasks', [])
+    
+    if not task_ids:
+        flash('Сессия истекла. Начните новый пробник.', 'error')
+        return redirect(url_for('free_mock_start'))
+    
+    # Получаем задачи
+    tasks = [p for p in ADAPTIVE_DB if p['id'] in task_ids]
+    
+    # Проверяем ответы
+    results = []
+    correct_count = 0
+    
+    for i, task in enumerate(tasks, 1):
+        user_answer = request.form.get(f'answer_{i}', '').strip()
+        correct_answer = str(task.get('answer', '')).strip()
+        
+        # Нормализация ответов (убираем пробелы, приводим к нижнему регистру, заменяем запятую на точку)
+        user_answer_normalized = user_answer.lower().replace(' ', '').replace(',', '.')
+        correct_answer_normalized = correct_answer.lower().replace(' ', '').replace(',', '.')
+        
+        is_correct = user_answer_normalized == correct_answer_normalized
+        
+        if is_correct:
+            correct_count += 1
+        
+        results.append({
+            'task': task,
+            'user_answer': user_answer,
+            'correct_answer': correct_answer,
+            'is_correct': is_correct
+        })
+    
+    score = round((correct_count / len(tasks)) * 100)
+    
+    # Очищаем сессию
+    session.pop('free_mock_tasks', None)
+    
+    return render_template('free_mock_results.html',
+                         results=results,
+                         score=score,
+                         correct_count=correct_count,
+                         total_count=len(tasks))
+
+
+# ============================================================
 # ADAPTIVE TESTING (Адаптивное тестирование)
 # ============================================================
 
