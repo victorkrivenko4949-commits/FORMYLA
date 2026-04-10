@@ -3,38 +3,8 @@
 {% block title %}FORMYLA — Разделы{% endblock %}
 
 {% block content %}
-<h1 class="page-title">Разделы</h1>
-<p class="page-subtitle">Выбери раздел для тренировки.</p>
-
-<!-- Блок "Продолжить" -->
-{% if current_user.is_authenticated %}
-<div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <h3 style="color: var(--accent-2); margin-bottom: 15px;">⚡ Продолжить</h3>
-    <p style="color: var(--text-soft); margin-bottom: 15px;">Начните новый пробник или продолжите изучение тем!</p>
-</div>
-
-<!-- Кнопка пробника -->
-<div style="text-align: center; margin-bottom: 30px;">
-    <div style="display: inline-block; background: var(--bg-card); padding: 20px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
-        <label style="display: block; color: var(--text-soft); margin-bottom: 10px; font-weight: 500;">Выберите класс:</label>
-        <select id="gradeSelect" style="padding: 10px 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; margin-bottom: 20px; cursor: pointer; width: 100%;">
-            <option value="5">5 класс</option>
-            <option value="6">6 класс</option>
-            <option value="7">7 класс</option>
-            <option value="8">8 класс</option>
-            <option value="9" selected>9 класс</option>
-            <option value="10">10 класс</option>
-            <option value="11">11 класс</option>
-        </select>
-        <button onclick="generateExam()" style="padding: 15px 40px; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); transition: transform 0.3s; margin-right: 10px;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            📝 Написать пробник (5 задач)
-        </button>
-        <button onclick="startAdaptiveTest()" style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            🎯 Адаптивный тест (25 задач)
-        </button>
-    </div>
-</div>
-{% endif %}
+<h1 class="page-title">Темы для изучения</h1>
+<p class="page-subtitle">Выбери раздел математики и начни тренировку по темам.</p>
 
 <div class="cards-grid">
     {% for key, title in subjects.items() %}
@@ -61,70 +31,6 @@
     {% endfor %}
 </div>
 
-<script>
-async function generateExam() {
-    const btn = event.target;
-    const grade = document.getElementById('gradeSelect').value;
-    
-    btn.disabled = true;
-    btn.textContent = '⏳ Генерация...';
-    
-    try {
-        const response = await fetch('/api/exam/generate', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({grade: parseInt(grade)})
-        });
-        
-        const data = await response.json();
-        
-        if (data.exam_id) {
-            window.location.href = '/exam/' + data.exam_id;
-        } else {
-            alert('Ошибка генерации пробника');
-            btn.disabled = false;
-            btn.textContent = '📝 Написать пробник (5 задач)';
-        }
-    } catch (error) {
-        alert('Ошибка: ' + error);
-        btn.disabled = false;
-        btn.textContent = '📝 Написать пробник (5 задач)';
-    }
-}
-
-async function startAdaptiveTest() {
-    const btn = event.target;
-    const grade = document.getElementById('gradeSelect').value;
-    
-    btn.disabled = true;
-    btn.textContent = '⏳ Создание теста...';
-    
-    try {
-        const response = await fetch('/api/adaptive-test/start', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                grade: parseInt(grade),
-                num_problems: 25
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.test_id) {
-            window.location.href = '/adaptive-test/' + data.test_id;
-        } else {
-            alert('Ошибка: ' + (data.error || 'Не удалось создать тест'));
-            btn.disabled = false;
-            btn.textContent = '🎯 Адаптивный тест (10 задач)';
-        }
-    } catch (error) {
-        alert('Ошибка: ' + error);
-        btn.disabled = false;
-        btn.textContent = '🎯 Адаптивный тест (25 задач)';
-    }
-}
-</script>
 {% endblock %}
 
 

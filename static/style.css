@@ -314,6 +314,7 @@ button:hover {
         padding: 15px;
         border-bottom: 1px solid var(--border-soft);
         z-index: 100;
+        gap: 8px;
     }
     
     .nav.active {
@@ -322,8 +323,18 @@ button:hover {
     
     .nav a {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
         text-align: center;
+        font-size: 15px;
+        background: rgba(30, 41, 59, 0.6);
+        border-radius: 8px;
+        border: 1px solid var(--border-soft);
+        transition: all 0.2s;
+    }
+    
+    .nav a:active {
+        background: rgba(56, 189, 248, 0.2);
+        border-color: var(--accent-2);
     }
     
     /* Hamburger кнопка */
