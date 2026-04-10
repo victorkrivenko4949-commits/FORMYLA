@@ -643,6 +643,12 @@ def practice():
     return render_template("practice.html", olympiads=OLYMPIADS_INFO, grades=GRADES, rounds=ROUNDS)
 
 
+@app.route("/probniks")
+def probniks_page():
+    """Страница выбора типа пробника (бесплатный или адаптивный)."""
+    return render_template('probniks.html', title="Пробники", active_page="probniks")
+
+
 
 
 def generate_practice():
