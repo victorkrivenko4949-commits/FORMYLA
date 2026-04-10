@@ -76,6 +76,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Flask-Login configuration (долгоживущие cookie)
 from datetime import timedelta, datetime
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Постоянные сессии на 30 дней
 domain_url = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 app.config['REMEMBER_COOKIE_SECURE'] = domain_url.startswith('https')
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
@@ -1049,6 +1050,7 @@ def login():
             flash(f'Код отправлен на {email}', 'success')
         
         # Сохраняем email в сессию для следующего шага
+        session.permanent = True  # Делаем сессию постоянной (30 дней)
         session['verify_email'] = email
         return redirect(url_for('verify_code'))
     
@@ -1087,6 +1089,7 @@ def verify_code():
             db.session.commit()
             
             # Вход с долгоживущей сессией (30 дней)
+            session.permanent = True  # Делаем сессию постоянной (30 дней)
             login_user(user, remember=True, duration=None)
             session.pop('verify_email', None)
             
@@ -1204,6 +1207,7 @@ def yandex_login():
         db.session.commit()
         
         # Авторизуем
+        session.permanent = True  # Делаем сессию постоянной (30 дней)
         login_user(user, remember=True)
         
         # Редирект на главную страницу
