@@ -50,7 +50,13 @@ except ImportError:
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-' + str(uuid.uuid4()))
+# CRITICAL: SECRET_KEY must be consistent across restarts to maintain session integrity
+# Using a fallback that's consistent for development, but MUST be set in production
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-DO-NOT-USE-IN-PRODUCTION-12345')
+
+# Validate SECRET_KEY is set properly
+if app.secret_key == 'dev-secret-key-DO-NOT-USE-IN-PRODUCTION-12345':
+    print("⚠️  WARNING: Using default SECRET_KEY! Set SECRET_KEY environment variable in production!")
 
 # DEBUG: Проверка переменных окружения
 print("="*60)
