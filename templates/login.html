@@ -26,16 +26,16 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('login') }}">
+        <form method="POST" action="{{ url_for('login') }}" id="login-form" onsubmit="return handleLoginSubmit(event)">
             
             <div style="margin-bottom: 30px;">
                 <label for="email" style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500; font-size: 1.1em;">
                     📧 Ваш Email
                 </label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
                     required
                     placeholder="your@email.com"
                     autofocus
@@ -51,13 +51,15 @@
                 </p>
             </div>
 
-            <button 
+            <button
                 type="submit"
-                style="width: 100%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; padding: 16px; font-size: 18px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'"
+                id="submit-btn"
+                style="width: 100%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; padding: 16px; font-size: 18px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s; font-weight: 600; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; gap: 10px;"
+                onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'; }"
                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(56, 189, 248, 0.3)'"
             >
-                📨 Получить код
+                <span id="btn-text">📨 Получить код</span>
+                <span id="btn-spinner" style="display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;"></span>
             </button>
 
         </form>
@@ -65,8 +67,14 @@
         <!-- Разделитель -->
         <div style="text-align: center; margin: 25px 0; color: var(--text-muted);">или</div>
 
+        <!-- Индикатор загрузки для Яндекс кнопки -->
+        <div id="yandex-loading" style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 16px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); gap: 10px;">
+            <div style="width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: var(--accent-2); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+            <span style="color: var(--text-soft);">Загрузка Яндекс ID...</span>
+        </div>
+
         <!-- Кнопка Яндекса (SDK виджет) -->
-        <div id="yandex-button-container" style="width: 100%; display: flex; justify-content: center;"></div>
+        <div id="yandex-button-container" style="width: 100%; display: none; justify-content: center;"></div>
 
     </div>
 
@@ -77,10 +85,37 @@ input::placeholder {
     color: var(--text-muted);
     opacity: 0.6;
 }
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 </style>
 
 <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"></script>
 <script>
+// Защита от двойного клика на кнопке "Получить код"
+let isSubmitting = false;
+
+function handleLoginSubmit(event) {
+    if (isSubmitting) {
+        event.preventDefault();
+        return false;
+    }
+    
+    isSubmitting = true;
+    const btn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'not-allowed';
+    btnText.textContent = 'Отправка...';
+    btnSpinner.style.display = 'inline-block';
+    
+    return true;
+}
+
 window.onload = function() {
     window.YaAuthSuggest.init(
         {
@@ -98,7 +133,12 @@ window.onload = function() {
             buttonBorderRadius: 8
         }
     )
-    .then(result => result.handler())
+    .then(result => {
+        // Скрываем индикатор загрузки, показываем кнопку
+        document.getElementById('yandex-loading').style.display = 'none';
+        document.getElementById('yandex-button-container').style.display = 'flex';
+        return result.handler();
+    })
     .then(data => {
         fetch('/auth/yandex/login', {
             method: 'POST',
@@ -114,7 +154,12 @@ window.onload = function() {
             }
         });
     })
-    .catch(err => console.log('OAuth отменен:', err));
+    .catch(err => {
+        console.log('OAuth отменен:', err);
+        // В случае ошибки тоже показываем кнопку
+        document.getElementById('yandex-loading').style.display = 'none';
+        document.getElementById('yandex-button-container').style.display = 'flex';
+    });
 };
 </script>
 
