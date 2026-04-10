@@ -37,7 +37,7 @@
                 <form id="nickname-form" action="/update_nickname" method="POST" style="display: none;">
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <input type="text" name="nickname" value="{{ user.nickname or '' }}" placeholder="Введите никнейм" required autofocus
-                               style="flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main);">
+                               style="flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); caret-color: var(--accent-2);">
                         <button type="submit" class="btn-primary" style="padding: 10px 20px;">Сохранить</button>
                         <button type="button" onclick="hideNicknameForm()" class="btn-secondary" style="padding: 10px 20px;">Отмена</button>
                     </div>
