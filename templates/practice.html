@@ -8,7 +8,7 @@
     <form method="POST" action="/practice/generate" class="practice-form">
         <div class="form-group">
             <label>Олимпиада</label>
-            <select name="olympiad" required>
+            <select name="olympiad" id="olympiadSelect" required onchange="updateRounds()">
                 <option value="">— Выбери олимпиаду —</option>
                 {% for o in olympiads %}
                 <option value="{{ o.slug }}">{{ o.title }}</option>
@@ -28,11 +28,8 @@
 
         <div class="form-group">
             <label>Этап</label>
-            <select name="round" required>
+            <select name="round" id="roundSelect" required>
                 <option value="">— Выбери этап —</option>
-                {% for key, title in rounds.items() %}
-                <option value="{{ key }}">{{ title }}</option>
-                {% endfor %}
             </select>
         </div>
 
@@ -107,6 +104,85 @@
 </style>
 
 <script>
+// Маппинг олимпиад на этапы
+const olympiadRounds = {
+    'vsosh': [
+        {value: 'school', text: 'Школьный'},
+        {value: 'municipal', text: 'Муниципальный'},
+        {value: 'regional', text: 'Региональный'},
+        {value: 'final', text: 'Заключительный'}
+    ],
+    'kurchatov': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'lomonosov': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'phystech': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'vysshaya_proba': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'formula_edinstva': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'pokori_vorobyovy': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'spbgu': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'euler': [
+        {value: 'qualifying', text: 'Отборочный'},
+        {value: 'final_rsosh', text: 'Заключительный'}
+    ],
+    'tournament_gorodov': [
+        {value: 'autumn', text: 'Осенний'},
+        {value: 'spring', text: 'Весенний'}
+    ]
+};
+
+function updateRounds() {
+    const olympiadSelect = document.getElementById('olympiadSelect');
+    const roundSelect = document.getElementById('roundSelect');
+    const selectedOlympiad = olympiadSelect.value;
+    
+    // Очищаем список этапов
+    roundSelect.innerHTML = '<option value="">— Выбери этап —</option>';
+    
+    if (selectedOlympiad && olympiadRounds[selectedOlympiad]) {
+        // Добавляем этапы для выбранной олимпиады
+        olympiadRounds[selectedOlympiad].forEach(round => {
+            const option = document.createElement('option');
+            option.value = round.value;
+            option.textContent = round.text;
+            roundSelect.appendChild(option);
+        });
+    } else if (selectedOlympiad) {
+        // Если олимпиада не в маппинге, показываем все этапы
+        const allRounds = [
+            {value: 'school', text: 'Школьный'},
+            {value: 'municipal', text: 'Муниципальный'},
+            {value: 'regional', text: 'Региональный'},
+            {value: 'final', text: 'Заключительный'}
+        ];
+        allRounds.forEach(round => {
+            const option = document.createElement('option');
+            option.value = round.value;
+            option.textContent = round.text;
+            roundSelect.appendChild(option);
+        });
+    }
+}
+
 document.querySelector(".practice-form").addEventListener("submit", function() {
     document.querySelector(".btn-text").style.display = "none";
     document.querySelector(".btn-loading").style.display = "inline";

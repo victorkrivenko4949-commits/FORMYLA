@@ -60,6 +60,71 @@
     </form>
 </section>
 
+<!-- Описания олимпиад с льготами -->
+<section style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    <h2 style="text-align: center; color: var(--accent-2); margin-bottom: 30px; font-size: 1.8em;">
+        📚 Льготы и сложность олимпиад
+    </h2>
+    
+    <div style="display: grid; gap: 20px;">
+        <!-- ВсОШ -->
+        <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05)); padding: 25px; border-radius: var(--radius-lg); border-left: 4px solid #ef4444;">
+            <h3 style="color: #fca5a5; margin-top: 0; font-size: 1.3em;">🏆 ВсОШ (Всероссийская олимпиада школьников)</h3>
+            <p style="color: var(--text-soft); line-height: 1.7; margin-bottom: 10px;">
+                Главная олимпиада страны. 4 этапа: Школьный → Муниципальный → Региональный → Заключительный.
+            </p>
+            <p style="color: var(--accent-2); font-weight: 600; margin-bottom: 5px;">
+                💎 Льготы: Диплом заключительного этапа дает БВИ (Без Вступительных Испытаний) в любой вуз РФ профильного направления.
+            </p>
+            <p style="color: #fca5a5; font-weight: 600;">
+                ⚡ Сложность: Высшая. Требует глубоких знаний и нестандартного мышления.
+            </p>
+        </div>
+
+        <!-- Перечневые 1 уровня -->
+        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05)); padding: 25px; border-radius: var(--radius-lg); border-left: 4px solid #f59e0b;">
+            <h3 style="color: #fbbf24; margin-top: 0; font-size: 1.3em;">🎓 Ломоносова (МГУ) / Физтех (МФТИ) / Высшая проба (ВШЭ)</h3>
+            <p style="color: var(--text-soft); line-height: 1.7; margin-bottom: 10px;">
+                Олимпиады 1 уровня РСОШ. 2 этапа: Отборочный → Заключительный.
+            </p>
+            <p style="color: var(--accent-2); font-weight: 600; margin-bottom: 5px;">
+                💎 Льготы: Дают БВИ или 100 баллов ЕГЭ в топовые вузы страны (МГУ, МФТИ, ВШЭ и др.).
+            </p>
+            <p style="color: #fbbf24; font-weight: 600;">
+                ⚡ Сложность: Высокая. Требуют нестандартного подхода и олимпиадной подготовки.
+            </p>
+        </div>
+
+        <!-- Другие перечневые -->
+        <div style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05)); padding: 25px; border-radius: var(--radius-lg); border-left: 4px solid #22c55e;">
+            <h3 style="color: #86efac; margin-top: 0; font-size: 1.3em;">🚀 Курчатовская / Формула единства / Покори Воробьевы горы / СПбГУ</h3>
+            <p style="color: var(--text-soft); line-height: 1.7; margin-bottom: 10px;">
+                Олимпиады 2-3 уровня РСОШ. Отличный шанс для поступления в технические вузы.
+            </p>
+            <p style="color: var(--accent-2); font-weight: 600; margin-bottom: 5px;">
+                💎 Льготы: БВИ или 100 баллов ЕГЭ в технические вузы (МФТИ, МИФИ, МГУ и др.).
+            </p>
+            <p style="color: #86efac; font-weight: 600;">
+                ⚡ Сложность: Средняя-Высокая. Доступнее олимпиад 1 уровня, но требуют подготовки.
+            </p>
+        </div>
+
+        <!-- Эйлер -->
+        <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05)); padding: 25px; border-radius: var(--radius-lg); border-left: 4px solid #8b5cf6;">
+            <h3 style="color: #c4b5fd; margin-top: 0; font-size: 1.3em;">🧮 Олимпиада им. Эйлера (8 класс)</h3>
+            <p style="color: var(--text-soft); line-height: 1.7; margin-bottom: 10px;">
+                Аналог регионального/заключительного этапа ВсОШ для 8 классов.
+            </p>
+            <p style="color: var(--accent-2); font-weight: 600; margin-bottom: 5px;">
+                💎 Льготы: Диплом дает преимущества при поступлении в физмат школы и лицеи.
+            </p>
+            <p style="color: #c4b5fd; font-weight: 600;">
+                ⚡ Сложность: Высшая. Сложнейшая геометрия и теория чисел для 8 класса.
+            </p>
+        </div>
+    </div>
+</section>
+
 <section class="subjects-grid">
     {% for o in olympiads %}
         <div class="subject-card">
