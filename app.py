@@ -77,14 +77,25 @@ app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = domain_url.startswith('https')
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Flask-Mail configuration (Gmail by default, fully configurable via env vars)
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '587'))
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() in ['true', '1', 't']
-app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() in ['true', '1', 't']
+# Flask-Mail configuration (Yandex by default, fully configurable via env vars)
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '465'))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'False') == 'True'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'True') == 'True'
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+
+# DEBUG: Проверка конфигурации Flask-Mail
+print("="*60)
+print("DEBUG: Flask-Mail Configuration:")
+print(f"MAIL_SERVER = {app.config['MAIL_SERVER']}")
+print(f"MAIL_PORT = {app.config['MAIL_PORT']}")
+print(f"MAIL_USE_TLS = {app.config['MAIL_USE_TLS']}")
+print(f"MAIL_USE_SSL = {app.config['MAIL_USE_SSL']}")
+print(f"MAIL_USERNAME = {app.config['MAIL_USERNAME']}")
+print(f"MAIL_PASSWORD = {'*' * len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 'НЕТ'} ({len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 0} символов)")
+print("="*60)
 
 # Yandex OAuth configuration
 app.config['YANDEX_CLIENT_ID'] = os.environ.get('YANDEX_CLIENT_ID')
@@ -863,7 +874,7 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через smtplib (Gmail/Yandex SMTP with TLS)."""
+    """Отправка кода через smtplib (поддержка Gmail TLS и Yandex SSL)."""
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
@@ -874,6 +885,9 @@ def send_auth_email(recipient_email, code):
     
     sender = os.getenv('MAIL_USERNAME')
     password = os.getenv('MAIL_PASSWORD')
+    smtp_server = os.getenv('MAIL_SERVER', 'smtp.yandex.ru')
+    smtp_port = int(os.getenv('MAIL_PORT', '465'))
+    use_ssl = os.getenv('MAIL_USE_SSL', 'True') == 'True'
     
     msg = MIMEMultipart('alternative')
     msg['Subject'] = f'Код для входа в FORMYLA: {code}'
@@ -893,20 +907,25 @@ def send_auth_email(recipient_email, code):
     """
     msg.attach(MIMEText(html, 'html', 'utf-8'))
     
-    # Use TLS (port 587) for better compatibility with international IPs
-    # Supports Gmail, Yandex, and other SMTP servers via environment variables
-    smtp_server = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    smtp_port = int(os.getenv('MAIL_PORT', '587'))
-    
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
-        server.ehlo()
-        server.starttls()  # Upgrade to TLS
-        server.ehlo()
+        # Используем SSL (порт 465) для Yandex или TLS (порт 587) для Gmail
+        if use_ssl:
+            # SSL соединение (Yandex, порт 465)
+            print(f"[EMAIL] Connecting via SSL to {smtp_server}:{smtp_port}")
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=30)
+            server.ehlo()
+        else:
+            # TLS соединение (Gmail, порт 587)
+            print(f"[EMAIL] Connecting via TLS to {smtp_server}:{smtp_port}")
+            server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+        
         server.login(sender, password)
         server.sendmail(sender, recipient_email, msg.as_string())
         server.quit()
-        print(f"[EMAIL] Successfully sent to {recipient_email}")
+        print(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
     except smtplib.SMTPAuthenticationError as e:
         print(f"[EMAIL ERROR] Authentication failed: {e}")
         raise Exception(f"Ошибка аутентификации SMTP. Проверьте MAIL_USERNAME и MAIL_PASSWORD (пароль приложения).")
