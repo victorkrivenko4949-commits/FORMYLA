@@ -1157,9 +1157,21 @@ def yandex_receiver():
     return html
 
 
+@app.route("/link_yandex")
+@login_required
+def link_yandex():
+    """Начало привязки Яндекс ID к существующему аккаунту."""
+    # Сохраняем флаг, что это linking, а не обычный вход
+    session['linking_mode'] = True
+    session.permanent = True
+    
+    # Перенаправляем на Яндекс OAuth
+    return redirect(url_for('yandex_login_start'))
+
+
 @app.route("/auth/yandex/login", methods=["POST"])
 def yandex_login():
-    """Обработка OAuth токена от Яндекса."""
+    """Обработка OAuth токена от Яндекса (вход или привязка аккаунта)."""
     data = request.get_json()
     access_token = data.get('access_token')
     
@@ -1185,6 +1197,26 @@ def yandex_login():
         
         from models import OAuthAccount
         
+        # Проверяем, это linking или обычный вход
+        is_linking = session.pop('linking_mode', False)
+        
+        if is_linking and current_user.is_authenticated:
+            # РЕЖИМ ПРИВЯЗКИ: добавляем Яндекс к существующему аккаунту
+            # Проверяем, не привязан ли уже этот Яндекс ID к другому аккаунту
+            existing_oauth = OAuthAccount.query.filter_by(provider='yandex', provider_user_id=provider_user_id).first()
+            
+            if existing_oauth and existing_oauth.user_id != current_user.id:
+                return jsonify({'error': 'Этот Яндекс ID уже привязан к другому аккаунту'}), 400
+            
+            if not existing_oauth:
+                # Создаем новую привязку
+                oauth = OAuthAccount(user_id=current_user.id, provider='yandex', provider_user_id=provider_user_id)
+                db.session.add(oauth)
+                db.session.commit()
+            
+            return jsonify({'success': True, 'redirect_url': url_for('profile'), 'message': 'Яндекс ID успешно привязан!'})
+        
+        # РЕЖИМ ВХОДА: обычная авторизация через Яндекс
         # Ищем OAuth аккаунт
         oauth = OAuthAccount.query.filter_by(provider='yandex', provider_user_id=provider_user_id).first()
         
