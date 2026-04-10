@@ -76,7 +76,10 @@ def process_database():
     if long_answers:
         print("Examples of changes:")
         for ex in long_answers[:5]:
-            print(f"  ID {ex['id']}: {ex['old_len']} chars -> '{ex['new']}'")
+            try:
+                print(f"  ID {ex['id']}: {ex['old_len']} chars -> [shortened]")
+            except:
+                pass
         print()
     
     # Сохраняем
