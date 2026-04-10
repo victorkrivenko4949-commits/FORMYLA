@@ -205,59 +205,32 @@ SUBJECTS = {
 
 SUBTOPICS = {
     "algebra": {
-        "equations": "Уравнения и системы",
-        "inequalities": "Неравенства и оценки (8-11)",
+        "equations": "Уравнения",
+        "inequalities": "Неравенства",
         "text_problems": "Текстовые задачи"
     },
     "geometry": {
-        "basics": "Углы, отрезки и многоугольники",
-        "triangles": "Треугольники (7-11)",
-        "circles": "Окружности (8-11)"
-    },
-    "combinatorics": {
-        "dirichlet_and_graphs": "Графы и Принцип Дирихле",
-        "games": "Игры и стратегии"
+        "basics": "Основы геометрии",
+        "triangles": "Треугольники",
+        "circles": "Окружности"
     },
     "number_theory": {
-        "divisibility": "Делимость и остатки",
-        "primes_and_equations": "Простые числа и диофантовы уравнения (7-11)"
+        "divisibility": "Делимость",
+        "primes_and_equations": "Простые числа и диофантовы уравнения"
+    },
+    "combinatorics": {
+        "counting": "Подсчет вариантов",
+        "dirichlet_and_graphs": "Принцип Дирихле и графы",
+        "games_and_invariants": "Игры и инварианты"
     },
     "movement": {
-        "movement_all": "Все задачи на движение"
+        "linear": "Прямолинейное движение",
+        "circular": "Движение по окружности и циклы"
     },
     "knights_liars": {
-        "logic_all": "Рыцари, лжецы и логика"
+        "basic_logic": "Базовая логика",
+        "complex_logic": "Сложные логические задачи"
     }
-}
-
-
-# ============================================================
-# SUBTOPIC_MAPPING: Связывает URL-slugs с реальными subtopic из БД
-# ============================================================
-SUBTOPIC_MAPPING = {
-    # == ТЕОРИЯ ЧИСЕЛ ==
-    'divisibility': ['divisibility', 'remainders'],
-    'primes_and_equations': ['primes', 'diophantine'],
-    
-    # == АЛГЕБРА ==
-    'equations': ['equations', 'systems'],
-    'inequalities': ['inequalities'],
-    'text_problems': ['functions', 'sequences'],
-    
-    # == ГЕОМЕТРИЯ ==
-    'basics': ['quadrilaterals', 'areas', 'coordinate'],
-    'triangles': ['triangles'],
-    'circles': ['circles'],
-    
-    # == КОМБИНАТОРИКА ==
-    'dirichlet_and_graphs': ['graphs', 'pigeonhole'],
-    'games': ['games', 'counting'],
-    
-    # == ДВИЖЕНИЕ ==
-    'movement_all': ['encounter', 'special', 'uniform'],
-    
-    # == РЫЦАРИ И ЛЖЕЦЫ ==
-    'logic_all': ['classic', 'conditions', 'island']
 }
 
 GRADES = [5, 6, 7, 8, 9, 10, 11]
@@ -375,15 +348,12 @@ def section(subject_key):
     # Считаем количество задач для каждой подтемы (максимум 5 на ячейку)
     subtopic_counts = {}
     for sub_key in subtopics.keys():
-        # Получаем список реальных ключей БД через маппинг
-        target_db_subtopics = SUBTOPIC_MAPPING.get(sub_key, [sub_key])
-        
         count = 0
         for grade in GRADES:
             for level in range(1, 8):  # 7 уровней
                 tasks = [p for p in PROBLEMS_DB
                         if p.get("subject") == subject_key
-                        and p.get("subtopic") in target_db_subtopics
+                        and p.get("subtopic") == sub_key
                         and p.get("grade") == grade
                         and p.get("difficulty") == level]
                 count += min(len(tasks), 5)  # Максимум 5 на ячейку
@@ -412,9 +382,6 @@ def section_subtopic(subject_key, subtopic_key):
     subject_title = SUBJECTS[subject_key]
     subtopic_title = subtopics[subtopic_key]
 
-    # Получаем список реальных ключей БД через маппинг
-    target_db_subtopics = SUBTOPIC_MAPPING.get(subtopic_key, [subtopic_key])
-
     # Подсчет задач по классам (максимум 5 задач на уровень)
     grade_counts = {}
     level_counts = {}
@@ -425,10 +392,10 @@ def section_subtopic(subject_key, subtopic_key):
         total_for_grade = 0
         
         for lev in range(1, 8):  # 7 уровней!
-            # Считаем задачи для этого уровня, используя маппинг
+            # Считаем задачи для этого уровня
             problems_for_level = [p for p in PROBLEMS_DB
                                  if p.get("subject") == subject_key
-                                 and p.get("subtopic") in target_db_subtopics
+                                 and p.get("subtopic") == subtopic_key
                                  and p.get("grade") == g
                                  and p.get("difficulty") == lev]
             # Ограничиваем до 5 задач
@@ -458,9 +425,6 @@ def problems_list():
     page = request.args.get("page", 1, type=int)
     search_query = request.args.get("q", "").strip().lower()
 
-    # Получаем список реальных ключей БД через маппинг
-    target_db_subtopics = SUBTOPIC_MAPPING.get(subtopic_key, [subtopic_key]) if subtopic_key else None
-
     filtered = []
     for p in PROBLEMS_DB:
         db_subject = str(p.get("subject", "")).lower()
@@ -483,11 +447,11 @@ def problems_list():
         elif db_subject == subject_key:
             match_subject = True
 
-        # Используем маппинг для проверки подтемы
-        if target_db_subtopics is None:
+        # Проверка подтемы (прямое сравнение)
+        if subtopic_key is None:
             match_subtopic = True
         else:
-            match_subtopic = p.get("subtopic") in target_db_subtopics
+            match_subtopic = p.get("subtopic") == subtopic_key
             
         match_grade = (grade is None) or (p.get("grade") == grade)
         match_level = (level is None) or (p.get("difficulty") == level)
