@@ -874,16 +874,15 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через Yandex SMTP (захардкожено для Render)."""
+    """Отправка кода через Yandex SMTP на порту 587 с TLS (для Render)."""
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
     
-    # Жестко прописываем настройки Яндекса для Render
+    # Используем надежный порт 587 для TLS
     smtp_server = 'smtp.yandex.ru'
-    smtp_port = 465
+    smtp_port = 587
     smtp_user = 'kr1venkovictor@yandex.ru'
-    # Пароль берем из окружения в целях безопасности
     smtp_pass = os.environ.get('MAIL_PASSWORD', 'ktxfblhgcrlryncy')
     
     msg = MIMEMultipart()
@@ -904,9 +903,12 @@ def send_auth_email(recipient_email, code):
     msg.attach(MIMEText(html, 'html', 'utf-8'))
     
     try:
-        # Для порта 465 всегда используем SMTP_SSL
-        print(f"[EMAIL] Connecting to {smtp_server}:{smtp_port} via SSL")
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=30)
+        # Для порта 587 используем обычный SMTP с обязательным starttls()
+        print(f"[EMAIL] Connecting to {smtp_server}:{smtp_port} via TLS")
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
         server.login(smtp_user, smtp_pass)
         server.send_message(msg)
         server.quit()
