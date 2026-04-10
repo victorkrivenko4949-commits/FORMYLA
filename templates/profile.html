@@ -29,7 +29,7 @@
                         <span style="color: var(--accent-2); font-weight: 600;">
                             {% if user.nickname %}@{{ user.nickname }}{% else %}Не установлен{% endif %}
                         </span>
-                        <button onclick="showNicknameForm()" style="background: none; border: none; color: var(--accent-2); cursor: pointer; font-size: 16px; padding: 4px 8px;">
+                        <button onclick="showNicknameForm()" style="background: none; border: none; color: var(--accent-2); cursor: pointer; font-size: 16px; padding: 4px 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
                             ✏️
                         </button>
                     </div>

@@ -92,7 +92,9 @@ a {
 
 .nav {
     display: flex;
-    gap: 18px;
+    gap: 16px;
+    margin-right: auto;
+    margin-left: 24px;
 }
 
 .nav a {
