@@ -1418,25 +1418,52 @@ def profile():
 @app.route("/api/exam/generate", methods=["POST"])
 @login_required
 def generate_exam():
-    """Генерация нового пробника."""
+    """Генерация нового пробника с задачами разного уровня сложности."""
     from models import MockExam, MockExamTask
     import random
     
     data = request.get_json() or {}
     grade = data.get('grade', 9)  # По умолчанию 9 класс
     
-    # Выбираем 5 случайных задач из разных тем для указанного класса
-    subjects = ['algebra', 'geometry', 'combinatorics', 'number_theory', 'movement', 'knights_liars']
-    selected_problems = []
+    # Фильтруем задачи по классу
+    grade_problems = [p for p in PROBLEMS_DB if p.get('grade') == grade]
     
-    for subject in random.sample(subjects, min(5, len(subjects))):
-        problems = [p for p in PROBLEMS_DB if p.get('subject') == subject and p.get('grade') == grade]
-        if problems:
-            selected_problems.append(random.choice(problems))
+    if not grade_problems:
+        # Если нет задач для класса, берем любые
+        grade_problems = PROBLEMS_DB
+    
+    # Группируем по уровню сложности
+    by_difficulty = {}
+    for p in grade_problems:
+        diff = p.get('difficulty', 3)
+        if diff not in by_difficulty:
+            by_difficulty[diff] = []
+        by_difficulty[diff].append(p)
+    
+    # Выбираем задачи с нарастающей сложностью (как на реальной олимпиаде)
+    selected_problems = []
+    target_distribution = [
+        (1, 2, 1),  # 1 легкая задача
+        (3, 4, 2),  # 2 средние задачи
+        (5, 6, 1),  # 1 сложная задача
+        (7, 10, 1)  # 1 очень сложная задача
+    ]
+    
+    for min_diff, max_diff, count in target_distribution:
+        candidates = []
+        for d in range(min_diff, max_diff + 1):
+            candidates.extend(by_difficulty.get(d, []))
+        if candidates:
+            selected_problems.extend(random.sample(candidates, min(count, len(candidates))))
     
     # Дополняем до 5 если нужно
-    while len(selected_problems) < 5:
-        selected_problems.append(random.choice(PROBLEMS_DB))
+    if len(selected_problems) < 5:
+        remaining = [p for p in grade_problems if p not in selected_problems]
+        if remaining:
+            selected_problems.extend(random.sample(remaining, min(5 - len(selected_problems), len(remaining))))
+    
+    # Ограничиваем до 5 задач
+    selected_problems = selected_problems[:5]
     
     # Создаем пробник
     exam = MockExam(user_id=current_user.id)
