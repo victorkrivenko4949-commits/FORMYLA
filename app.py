@@ -21,6 +21,11 @@ try:
 except ImportError:
     PROBLEMS_DB = []
 try:
+    from adaptive_data import ADAPTIVE_DB
+except ImportError:
+    ADAPTIVE_DB = []
+    print("ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.")
+try:
     from problem_images import IMAGE_MAP
 except ImportError:
     IMAGE_MAP = {}
@@ -187,6 +192,7 @@ else:
     print(f"olympiads.py: старый формат, {len(_RAW_DB)} задач -> {len(COMBOS)} пробников")
 
 print(f"Пробников всего: {len(COMBOS)}, с задачами: {sum(1 for c in COMBOS if c.get('problems'))}")
+print(f"Адаптивный тест: загружено {len(ADAPTIVE_DB)} задач из adaptive_data")
 
 # Привязываем картинки к задачам
 if IMAGE_MAP:
@@ -2577,3 +2583,4 @@ if __name__ == '__main__':
     app.run(debug=True, port=5001)
 
  
+
