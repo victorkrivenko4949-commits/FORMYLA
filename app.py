@@ -293,7 +293,39 @@ def generate_variant(olympiad_slug, grade, round_key):
     if not source:
         return []
 
-    selected = random.sample(source, min(5, len(source)))
+    # Выбираем 5 задач с нарастающей сложностью (имитация реальной олимпиады)
+    # Группируем задачи по уровню сложности
+    by_difficulty = {}
+    for p in source:
+        diff = p.get("difficulty", 3)  # По умолчанию средний уровень
+        if diff not in by_difficulty:
+            by_difficulty[diff] = []
+        by_difficulty[diff].append(p)
+    
+    selected = []
+    # Пытаемся выбрать задачи разных уровней: 1-2 легкие, 2-3 средние, 1-2 сложные
+    target_distribution = [
+        (1, 2, 1),  # 1 задача уровня 1-2
+        (3, 4, 2),  # 2 задачи уровня 3-4
+        (5, 6, 1),  # 1 задача уровня 5-6
+        (7, 10, 1)  # 1 задача уровня 7+
+    ]
+    
+    for min_diff, max_diff, count in target_distribution:
+        candidates = []
+        for d in range(min_diff, max_diff + 1):
+            candidates.extend(by_difficulty.get(d, []))
+        if candidates:
+            selected.extend(random.sample(candidates, min(count, len(candidates))))
+    
+    # Если не набрали 5 задач, дополняем случайными
+    if len(selected) < 5:
+        remaining = [p for p in source if p not in selected]
+        if remaining:
+            selected.extend(random.sample(remaining, min(5 - len(selected), len(remaining))))
+    
+    # Ограничиваем до 5 задач
+    selected = selected[:5]
     modified = []
 
 
