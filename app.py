@@ -1789,48 +1789,38 @@ def free_mock_generate():
         
         tasks = json.loads(response)
         
-        # Валидация
-        if not isinstance(tasks, list):
-            raise ValueError(f"Ответ не является массивом: {type(tasks)}")
+        # Базовая валидация
+        if not tasks or not isinstance(tasks, list):
+            raise ValueError("Получен пустой или невалидный ответ от AI")
         
-        if len(tasks) == 0:
-            raise ValueError("Получен пустой массив задач")
+        print(f"📊 Получено {len(tasks)} задач от DeepSeek")
         
-        if len(tasks) < 20:
-            print(f"⚠️ Получено только {len(tasks)} задач, ожидалось 25")
-        
-        # Берем первые 25 задач (или сколько есть)
+        # Берем первые 25 задач
         tasks = tasks[:25]
         
-        # Валидация структуры каждой задачи
+        # Добавляем только ID (минимизируем размер сессии)
         for i, task in enumerate(tasks, 1):
-            if not isinstance(task, dict):
-                raise ValueError(f"Задача {i} не является объектом")
-            if 'text' not in task or 'answer' not in task:
-                raise ValueError(f"Задача {i} не содержит обязательные поля text/answer")
-            
-            # Добавляем метаданные
-            task['id'] = f"free_mock_{grade}_{level}_{i}"
-            task['grade'] = grade
-            task['level'] = level
-            
-            # Устанавливаем дефолтные значения
-            if 'solution' not in task:
-                task['solution'] = 'Решение не предоставлено'
-            if 'difficulty' not in task:
-                task['difficulty'] = 4
+            task['id'] = i  # Простой числовой ID вместо длинной строки
+            # Убираем длинные поля solution для экономии места в cookie
+            if 'solution' in task and len(str(task.get('solution', ''))) > 500:
+                task['solution'] = task['solution'][:500] + '...'
         
-        # Проверка на пустой список после обработки
-        if not tasks:
-            raise ValueError("После обработки не осталось валидных задач")
+        # Сохраняем в сессию (только ID, чтобы не превысить лимит cookie)
+        # Полные задачи сохраняем в отдельной переменной
+        test_id = f"free_mock_{current_user.id}_{int(datetime.utcnow().timestamp())}"
         
-        # Сохраняем в сессию
-        session['free_mock_tasks'] = tasks
+        # Сохраняем задачи в глобальной переменной (временное хранилище)
+        if not hasattr(app, 'free_mock_cache'):
+            app.free_mock_cache = {}
+        app.free_mock_cache[test_id] = tasks
+        
+        # В сессию сохраняем только ID теста
+        session['free_mock_test_id'] = test_id
         session['free_mock_grade'] = grade
         session['free_mock_level'] = level
         session.permanent = True
         
-        print(f"✅ Успешно сгенерировано {len(tasks)} задач")
+        print(f"✅ Успешно сгенерировано {len(tasks)} задач, test_id={test_id}")
         
         return redirect(url_for('free_mock_test'))
         
@@ -1852,12 +1842,18 @@ def free_mock_generate():
 @login_required
 def free_mock_test():
     """Страница прохождения теста с 25 задачами."""
-    tasks = session.get('free_mock_tasks')
+    test_id = session.get('free_mock_test_id')
     
-    if not tasks:
+    if not test_id:
         flash('Сессия истекла. Создайте новый вариант.', 'error')
         return redirect(url_for('free_mock_start'))
     
+    # Получаем задачи из кэша
+    if not hasattr(app, 'free_mock_cache') or test_id not in app.free_mock_cache:
+        flash('Тест не найден. Создайте новый вариант.', 'error')
+        return redirect(url_for('free_mock_start'))
+    
+    tasks = app.free_mock_cache[test_id]
     grade = session.get('free_mock_grade', 'N/A')
     level = session.get('free_mock_level', 'N/A')
     
@@ -1871,11 +1867,13 @@ def free_mock_test():
 @login_required
 def free_mock_submit():
     """Проверка ответов бесплатного пробника (25 задач)."""
-    tasks = session.get('free_mock_tasks')
+    test_id = session.get('free_mock_test_id')
     
-    if not tasks:
+    if not test_id or not hasattr(app, 'free_mock_cache') or test_id not in app.free_mock_cache:
         flash('Сессия истекла. Начните новый пробник.', 'error')
         return redirect(url_for('free_mock_start'))
+    
+    tasks = app.free_mock_cache[test_id]
     
     # Проверяем ответы (ИСПРАВЛЕНО: используем task['id'] вместо порядкового номера)
     results = []
