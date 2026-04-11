@@ -55,11 +55,11 @@ class DeepSeekClient:
         self.timeout = 60  # seconds
         
     def generate(
-        self, 
-        prompt: str, 
-        system_prompt: str = "", 
+        self,
+        prompt: str,
+        system_prompt: str = "",
         temperature: float = 0.3,
-        max_tokens: int = 2000
+        max_tokens: int = 8192
     ) -> str:
         """
         Generate text using DeepSeek API with retry logic.
@@ -68,7 +68,7 @@ class DeepSeekClient:
             prompt: User prompt
             system_prompt: System prompt (optional)
             temperature: Sampling temperature (0.0-2.0)
-            max_tokens: Maximum tokens to generate
+            max_tokens: Maximum tokens to generate (default: 8192)
             
         Returns:
             Generated text
@@ -209,7 +209,7 @@ class DeepSeekClient:
                 prompt=user_prompt,
                 system_prompt=system_prompt,
                 temperature=0.7,
-                max_tokens=1000
+                max_tokens=8192
             )
             
             # Очистка от markdown
@@ -510,7 +510,7 @@ class DeepSeekClient:
                 "model": model,
                 "messages": messages,
                 "temperature": 0.7,
-                "max_tokens": 500
+                "max_tokens": 8192
             }
             
             headers = {
@@ -584,7 +584,7 @@ class DeepSeekClient:
                 prompt=f"Проверь решения:{tasks_text}",
                 system_prompt=system_prompt,
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=8192
             )
             
             # Парсинг
@@ -648,7 +648,7 @@ class DeepSeekClient:
                 prompt=user_prompt,
                 system_prompt=system_prompt,
                 temperature=0.7,
-                max_tokens=400
+                max_tokens=8192
             )
             logger.info("Hint generated successfully")
             return response
@@ -700,7 +700,7 @@ class DeepSeekClient:
                 prompt=user_prompt,
                 system_prompt=system_prompt,
                 temperature=0.3,
-                max_tokens=1500
+                max_tokens=8192
             )
             logger.info("Solution generated successfully")
             return response

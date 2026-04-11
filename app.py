@@ -394,6 +394,7 @@ def generate_variant(olympiad_slug, grade, round_key):
 
 @app.route("/")
 def index():
+    """Главная страница - список предметов."""
     solved_count = len(session.get('solved_problems', []))
     return render_template("index.html",
         subjects=SUBJECTS,
@@ -545,25 +546,31 @@ def problems_list():
 
     back_url = f"/section/{subject_key}/{subtopic_key}" if subtopic_key else f"/section/{subject_key}"
 
-    # ВСЕГДА показываем ТОЛЬКО 5 задач (БЕЗ пагинации)
-    MAX_PROBLEMS = 5
+    # Пагинация: показываем по 20 задач на странице
+    PER_PAGE = 20
     total_count = len(filtered)
+    total_pages = max(1, (total_count + PER_PAGE - 1) // PER_PAGE)
     
-    # Берём только первые 5 задач
-    limited_problems = filtered[:MAX_PROBLEMS]
+    # Ограничиваем номер страницы
+    page = max(1, min(page, total_pages))
+    
+    # Вычисляем срез для текущей страницы
+    start_idx = (page - 1) * PER_PAGE
+    end_idx = start_idx + PER_PAGE
+    paginated_problems = filtered[start_idx:end_idx]
 
     solved_problems = session.get('solved_problems', [])
     
     return render_template('problems.html',
         subject_title=subject_title,
         subtopic_title=subtopic_title,
-        problems=limited_problems,
+        problems=paginated_problems,
         back_url=back_url,
         page_title=page_title,
         solved_problems=solved_problems,
-        page=1,
-        total_pages=1,
-        total_count=min(total_count, MAX_PROBLEMS),
+        page=page,
+        total_pages=total_pages,
+        total_count=total_count,
         search_query=search_query
     )
 
@@ -1680,48 +1687,153 @@ def exam_results(exam_id):
 @app.route("/free_mock/start")
 @login_required
 def free_mock_start():
-    """Начать бесплатный пробник (5 задач, 1-3 уровень)."""
-    import random
+    """Показать страницу настройки бесплатного пробника."""
+    return render_template('free_mock_setup.html')
+
+
+@app.route("/free_mock/generate", methods=["POST"])
+@login_required
+def free_mock_generate():
+    """Генерация 25 задач через DeepSeek AI."""
+    grade = request.form.get('grade')
+    level = request.form.get('level')
     
-    # Выбираем 5 случайных задач уровня 1-3 из ADAPTIVE_DB
-    easy_tasks = [p for p in ADAPTIVE_DB if p.get('difficulty', 5) <= 3]
+    if not grade or not level:
+        flash('Пожалуйста, выберите класс и уровень сложности', 'error')
+        return redirect(url_for('free_mock_start'))
     
-    if len(easy_tasks) < 5:
-        # Если мало легких задач, берем любые
-        easy_tasks = ADAPTIVE_DB
+    # Проверка доступности DeepSeek
+    if not DEEPSEEK_AVAILABLE:
+        flash('AI-генерация временно недоступна. Попробуйте позже.', 'error')
+        return redirect(url_for('free_mock_start'))
     
-    if len(easy_tasks) < 5:
-        flash('Недостаточно задач для генерации пробника', 'error')
-        return redirect(url_for('index'))
+    try:
+        # Инициализация DeepSeek клиента
+        deepseek = DeepSeekClient()
+        
+        # Промпт для генерации задач
+        system_prompt = """Ты - эксперт по математике, создающий задачи для школьников.
+Генерируй задачи в строгом JSON формате без дополнительного текста."""
+        
+        user_prompt = f"""Сгенерируй 25 математических задач для {grade} класса, уровень "{level}".
+
+Требования:
+- Разнообразные темы: алгебра, геометрия, текстовые задачи, логика
+- 5 блоков по 5 задач с возрастающей сложностью внутри блока
+- Каждая задача должна иметь короткий числовой или текстовый ответ
+- Обязательно укажи полное решение для каждой задачи
+- ВСЕ задачи должны быть 4 уровня сложности (средний уровень)
+
+Верни ТОЛЬКО валидный JSON массив в формате:
+[
+  {{
+    "id": 1,
+    "text": "Текст задачи",
+    "answer": "Краткий ответ",
+    "solution": "Подробное решение с объяснением",
+    "difficulty": 4
+  }},
+  ...
+]
+
+Важно: ответ должен содержать ТОЛЬКО JSON массив, без markdown разметки и дополнительного текста."""
+
+        # Генерация через DeepSeek
+        print(f"🤖 Генерация 25 задач для {grade} класса, уровень {level}...")
+        response = deepseek.generate(
+            prompt=user_prompt,
+            system_prompt=system_prompt,
+            temperature=0.7,
+            max_tokens=8000
+        )
+        
+        # Парсинг JSON
+        # Убираем возможные markdown блоки
+        response = response.strip()
+        if response.startswith('```json'):
+            response = response[7:]
+        if response.startswith('```'):
+            response = response[3:]
+        if response.endswith('```'):
+            response = response[:-3]
+        response = response.strip()
+        
+        tasks = json.loads(response)
+        
+        # Валидация
+        if not isinstance(tasks, list) or len(tasks) < 20:
+            raise ValueError(f"Получено недостаточно задач: {len(tasks) if isinstance(tasks, list) else 0}")
+        
+        # Берем первые 25 задач
+        tasks = tasks[:25]
+        
+        # Добавляем метаданные
+        for i, task in enumerate(tasks, 1):
+            task['id'] = f"free_mock_{grade}_{level}_{i}"
+            task['grade'] = grade
+            task['level'] = level
+        
+        # Сохраняем в сессию
+        session['free_mock_tasks'] = tasks
+        session['free_mock_grade'] = grade
+        session['free_mock_level'] = level
+        session.permanent = True
+        
+        print(f"✅ Успешно сгенерировано {len(tasks)} задач")
+        
+        return redirect(url_for('free_mock_test'))
+        
+    except DeepSeekAPIError as e:
+        print(f"❌ Ошибка DeepSeek API: {e}")
+        flash(f'Ошибка генерации задач: {str(e)}', 'error')
+        return redirect(url_for('free_mock_start'))
+    except json.JSONDecodeError as e:
+        print(f"❌ Ошибка парсинга JSON: {e}")
+        flash('Ошибка обработки ответа AI. Попробуйте еще раз.', 'error')
+        return redirect(url_for('free_mock_start'))
+    except Exception as e:
+        print(f"❌ Неожиданная ошибка: {e}")
+        flash(f'Произошла ошибка: {str(e)}', 'error')
+        return redirect(url_for('free_mock_start'))
+
+
+@app.route("/free_mock/test")
+@login_required
+def free_mock_test():
+    """Страница прохождения теста с 25 задачами."""
+    tasks = session.get('free_mock_tasks')
     
-    selected_tasks = random.sample(easy_tasks, 5)
+    if not tasks:
+        flash('Сессия истекла. Создайте новый вариант.', 'error')
+        return redirect(url_for('free_mock_start'))
     
-    # Сохраняем в сессию
-    session['free_mock_tasks'] = [t['id'] for t in selected_tasks]
-    session.permanent = True
+    grade = session.get('free_mock_grade', 'N/A')
+    level = session.get('free_mock_level', 'N/A')
     
-    return render_template('free_mock.html', tasks=selected_tasks)
+    return render_template('free_mock_test.html',
+                         tasks=tasks,
+                         grade=grade,
+                         level=level)
 
 
 @app.route("/free_mock/submit", methods=["POST"])
 @login_required
 def free_mock_submit():
-    """Проверка ответов бесплатного пробника."""
-    task_ids = session.get('free_mock_tasks', [])
+    """Проверка ответов бесплатного пробника (25 задач)."""
+    tasks = session.get('free_mock_tasks')
     
-    if not task_ids:
+    if not tasks:
         flash('Сессия истекла. Начните новый пробник.', 'error')
         return redirect(url_for('free_mock_start'))
     
-    # Получаем задачи
-    tasks = [p for p in ADAPTIVE_DB if p['id'] in task_ids]
-    
-    # Проверяем ответы
+    # Проверяем ответы (ИСПРАВЛЕНО: используем task['id'] вместо порядкового номера)
     results = []
     correct_count = 0
     
-    for i, task in enumerate(tasks, 1):
-        user_answer = request.form.get(f'answer_{i}', '').strip()
+    for task in tasks:
+        task_id = task.get('id', '')
+        # Получаем ответ пользователя по ID задачи
+        user_answer = request.form.get(f'answer_{task_id}', '').strip()
         correct_answer = str(task.get('answer', '')).strip()
         
         # Нормализация ответов (убираем пробелы, приводим к нижнему регистру, заменяем запятую на точку)
@@ -1737,24 +1849,75 @@ def free_mock_submit():
             'task': task,
             'user_answer': user_answer,
             'correct_answer': correct_answer,
-            'is_correct': is_correct
+            'is_correct': is_correct,
+            'solution': task.get('solution', 'Решение не предоставлено')
         })
     
     score = round((correct_count / len(tasks)) * 100)
     
+    grade = session.get('free_mock_grade', 'N/A')
+    level = session.get('free_mock_level', 'N/A')
+    
     # Очищаем сессию
     session.pop('free_mock_tasks', None)
+    session.pop('free_mock_grade', None)
+    session.pop('free_mock_level', None)
     
     return render_template('free_mock_results.html',
                          results=results,
                          score=score,
                          correct_count=correct_count,
-                         total_count=len(tasks))
+                         total_count=len(tasks),
+                         grade=grade,
+                         level=level)
 
 
 # ============================================================
 # ADAPTIVE TESTING (Адаптивное тестирование)
 # ============================================================
+
+@app.route("/adaptive_test/start")
+@login_required
+def adaptive_test_start_simple():
+    """Простой запуск адаптивного теста с фильтрацией по теме."""
+    topic = request.args.get('topic')
+    
+    if not topic:
+        flash('Выберите тему для тестирования', 'error')
+        return redirect(url_for('probniks_page'))
+    
+    # Маппинг тем на русский
+    topic_names = {
+        'algebra': 'Алгебра',
+        'geometry': 'Геометрия',
+        'combinatorics': 'Комбинаторика',
+        'number_theory': 'Теория чисел',
+        'movement': 'Задачи на движение',
+        'knights_liars': 'Рыцари и лжецы'
+    }
+    
+    topic_name = topic_names.get(topic, topic)
+    
+    # Фильтруем задачи по теме
+    filtered_tasks = [p for p in ADAPTIVE_DB if p.get('subject') == topic]
+    
+    if len(filtered_tasks) < 25:
+        flash(f'Недостаточно задач по теме "{topic_name}". Доступно: {len(filtered_tasks)}', 'error')
+        return redirect(url_for('probniks_page'))
+    
+    # Сохраняем в сессию
+    session['adaptive_topic'] = topic
+    session['adaptive_topic_name'] = topic_name
+    session['adaptive_filtered_tasks'] = [t['id'] for t in filtered_tasks]
+    session['adaptive_current_difficulty'] = 3  # Начальная сложность
+    session['adaptive_answers'] = []  # История ответов
+    session.permanent = True
+    
+    flash(f'Адаптивный тест по теме "{topic_name}" готов! Найдено {len(filtered_tasks)} задач.', 'success')
+    
+    # Перенаправляем на API для начала теста
+    return redirect(url_for('probniks_page'))
+
 
 @app.route("/api/adaptive-test/start", methods=["POST"])
 @login_required
@@ -2053,7 +2216,7 @@ def analyze_adaptive_test(test_id):
                 prompt=prompt,
                 system_prompt="Ты опытный тренер олимпиадной математической сборной. Твоя задача - мотивировать учеников и давать конкретные рекомендации.",
                 temperature=0.8,
-                max_tokens=400
+                max_tokens=8192
             )
             
             test.ai_analysis = ai_analysis
@@ -2174,7 +2337,7 @@ def secret_topic(topic_slug):
 
 Формат: HTML с inline стилями (темная тема)"""
             
-            content = client.generate(prompt, temperature=0.7, max_tokens=2000)
+            content = client.generate(prompt, temperature=0.7, max_tokens=8192)
             
             # Сохраняем в кэш
             topic = SecretTopic(slug=topic_slug, title=title, content=content)

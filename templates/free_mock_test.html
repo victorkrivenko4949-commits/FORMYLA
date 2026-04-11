@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Бесплатный пробник - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    
+    <!-- Заголовок -->
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
+            📝 Бесплатный пробник
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            {{ grade }} класс • {{ level }} уровень • 25 задач
+        </p>
+        <p style="font-size: 0.95em; color: var(--text-muted); margin-top: 10px;">
+            Решай задачи в своем темпе. Решения будут показаны только для неправильных ответов.
+        </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('free_mock_submit') }}" id="mockForm">
+        
+        {% set ns = namespace(block_num=0) %}
+        {% for i in range(0, tasks|length, 5) %}
+            {% set ns.block_num = ns.block_num + 1 %}
+            {% set block_tasks = tasks[i:i+5] %}
+            
+            <!-- Блок задач -->
+            <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 35px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 35px;">
+                
+                <h2 style="color: var(--accent-2); margin-bottom: 30px; font-size: 1.5em; text-align: center; padding-bottom: 15px; border-bottom: 2px solid var(--border-mid);">
+                    📚 Блок {{ ns.block_num }} из 5
+                </h2>
+                
+                {% for task in block_tasks %}
+                    {% set task_num = loop.index + (ns.block_num - 1) * 5 %}
+                    
+                    <div style="margin-bottom: {{ '0' if loop.last else '35px' }}; padding-bottom: {{ '0' if loop.last else '30px' }}; border-bottom: {{ '1px solid var(--border-soft)' if not loop.last else 'none' }};">
+                        
+                        <!-- Заголовок задачи (БЕЗ бейджа уровня) -->
+                        <div style="margin-bottom: 15px;">
+                            <h3 style="color: var(--accent-2); margin: 0; font-size: 1.2em;">
+                                Задача {{ task_num }}
+                            </h3>
+                        </div>
+                        
+                        <!-- Текст задачи -->
+                        <div style="color: var(--text-soft); line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap;">{{ task.text }}</div>
+                        
+                        <!-- Поле для ответа (ИСПРАВЛЕНО: используем task.id) -->
+                        <div style="margin-top: 20px;">
+                            <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
+                                Ваш ответ:
+                            </label>
+                            <input type="text"
+                                   name="answer_{{ task.id }}"
+                                   id="answer_{{ task.id }}"
+                                   required
+                                   placeholder="Введите ответ"
+                                   style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; caret-color: var(--accent-2);"
+                                   onfocus="this.style.borderColor='var(--accent-2)'"
+                                   onblur="this.style.borderColor='var(--border-mid)'">
+                        </div>
+                        
+                    </div>
+                {% endfor %}
+                
+            </div>
+        {% endfor %}
+        
+        <!-- Кнопка отправки -->
+        <div style="text-align: center; margin-top: 40px; margin-bottom: 40px;">
+            <button type="submit" 
+                    style="padding: 20px 60px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); transition: transform 0.3s;"
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'">
+                ✅ Завершить тест и проверить ответы
+            </button>
+        </div>
+
+    </form>
+
+    <!-- Прогресс заполнения -->
+    <div style="position: fixed; bottom: 30px; right: 30px; background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); min-width: 200px;">
+        <div style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 8px;">Прогресс:</div>
+        <div style="color: var(--accent-2); font-size: 1.5em; font-weight: 600;">
+            <span id="answered">0</span> / {{ tasks|length }}
+        </div>
+        <div style="margin-top: 10px; height: 6px; background: rgba(15, 23, 42, 0.6); border-radius: 3px; overflow: hidden;">
+            <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-2), var(--accent-1)); transition: width 0.3s;"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Отслеживание прогресса заполнения
+    const totalTasks = {{ tasks|length }};
+    const inputs = document.querySelectorAll('input[type="text"]');
+    const answeredSpan = document.getElementById('answered');
+    const progressBar = document.getElementById('progressBar');
+    
+    function updateProgress() {
+        let answered = 0;
+        inputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                answered++;
+            }
+        });
+        
+        answeredSpan.textContent = answered;
+        const percentage = (answered / totalTasks) * 100;
+        progressBar.style.width = percentage + '%';
+    }
+    
+    // Обновляем прогресс при вводе
+    inputs.forEach(input => {
+        input.addEventListener('input', updateProgress);
+    });
+    
+    // Подтверждение перед отправкой
+    document.getElementById('mockForm').addEventListener('submit', function(e) {
+        let answered = 0;
+        inputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                answered++;
+            }
+        });
+        
+        if (answered < totalTasks) {
+            const unanswered = totalTasks - answered;
+            if (!confirm(`Вы ответили на ${answered} из ${totalTasks} задач. Осталось ${unanswered} незаполненных. Продолжить?`)) {
+                e.preventDefault();
+            }
+        }
+    });
+    
+    // Сохранение ответов в localStorage (на случай случайного закрытия)
+    inputs.forEach((input, index) => {
+        // Восстановление из localStorage
+        const saved = localStorage.getItem(`free_mock_answer_${index}`);
+        if (saved) {
+            input.value = saved;
+        }
+        
+        // Сохранение при изменении
+        input.addEventListener('input', function() {
+            localStorage.setItem(`free_mock_answer_${index}`, this.value);
+        });
+    });
+    
+    // Очистка localStorage при отправке
+    document.getElementById('mockForm').addEventListener('submit', function() {
+        inputs.forEach((input, index) => {
+            localStorage.removeItem(`free_mock_answer_${index}`);
+        });
+    });
+    
+    // Инициализация прогресса
+    updateProgress();
+</script>
+
+{% endblock %}
