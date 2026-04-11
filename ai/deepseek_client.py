@@ -61,9 +61,9 @@ class DeepSeekClient:
             self.model = "deepseek-chat"
             logger.info("🔄 Using official DeepSeek API")
         
-        self.max_retries = 2  # Уменьшено с 5 до 2 для предотвращения зависаний
+        self.max_retries = 1  # ТОЛЬКО 1 попытка для отладки
         self.base_delay = 2  # seconds
-        self.timeout = 300  # seconds (5 минут для генерации 25 задач)
+        self.timeout = 90  # seconds
         
     def generate(
         self,

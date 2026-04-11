@@ -1773,11 +1773,12 @@ def free_mock_generate():
             max_tokens=8000
         )
         
-        print(f"📥 ОТВЕТ DeepSeek (первые 500 символов): {response[:500]}...")
-        print(f"📏 Длина ответа: {len(response)} символов")
+        print("="*80)
+        print("СЫРОЙ ОТВЕТ ИИ (ПОЛНОСТЬЮ):")
+        print(response)
+        print("="*80)
         
-        # Парсинг JSON
-        # Убираем возможные markdown блоки
+        # Парсинг JSON - убираем markdown блоки
         response = response.strip()
         if response.startswith('```json'):
             response = response[7:]
@@ -1787,23 +1788,15 @@ def free_mock_generate():
             response = response[:-3]
         response = response.strip()
         
+        # Простой парсинг без валидации
         tasks = json.loads(response)
-        
-        # Базовая валидация
-        if not tasks or not isinstance(tasks, list):
-            raise ValueError("Получен пустой или невалидный ответ от AI")
-        
-        print(f"📊 Получено {len(tasks)} задач от DeepSeek")
         
         # Берем первые 25 задач
         tasks = tasks[:25]
         
-        # Добавляем только ID (минимизируем размер сессии)
+        # Добавляем ID
         for i, task in enumerate(tasks, 1):
-            task['id'] = i  # Простой числовой ID вместо длинной строки
-            # Убираем длинные поля solution для экономии места в cookie
-            if 'solution' in task and len(str(task.get('solution', ''))) > 500:
-                task['solution'] = task['solution'][:500] + '...'
+            task['id'] = i
         
         # Сохраняем в сессию (только ID, чтобы не превысить лимит cookie)
         # Полные задачи сохраняем в отдельной переменной
