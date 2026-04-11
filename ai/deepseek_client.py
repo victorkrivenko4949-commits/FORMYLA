@@ -63,7 +63,7 @@ class DeepSeekClient:
         
         self.max_retries = 2  # Уменьшено с 5 до 2 для предотвращения зависаний
         self.base_delay = 2  # seconds
-        self.timeout = 120  # seconds (увеличено для генерации больших объемов)
+        self.timeout = 150  # seconds (увеличено для генерации больших объемов - 25 задач)
         
     def generate(
         self,
