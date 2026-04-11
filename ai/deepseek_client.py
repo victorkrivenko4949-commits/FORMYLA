@@ -52,7 +52,7 @@ class DeepSeekClient:
         self.base_url = "https://api.deepseek.com/v1/chat/completions"
         self.max_retries = 2  # Уменьшено с 5 до 2 для предотвращения зависаний
         self.base_delay = 2  # seconds
-        self.timeout = 45  # seconds (уменьшено с 60)
+        self.timeout = 120  # seconds (увеличено для генерации больших объемов)
         
     def generate(
         self,
