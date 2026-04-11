@@ -49,7 +49,18 @@ class DeepSeekClient:
         if not self.api_key:
             raise ValueError("DEEPSEEK_API_KEY not provided and not found in environment")
         
-        self.base_url = "https://api.deepseek.com/v1/chat/completions"
+        # Поддержка OpenRouter как альтернативного провайдера
+        use_openrouter = os.environ.get('USE_OPENROUTER', 'false').lower() in ['true', '1', 't', 'yes']
+        
+        if use_openrouter:
+            self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+            self.model = "deepseek/deepseek-chat"
+            logger.info("🔄 Using OpenRouter as DeepSeek provider")
+        else:
+            self.base_url = "https://api.deepseek.com/v1/chat/completions"
+            self.model = "deepseek-chat"
+            logger.info("🔄 Using official DeepSeek API")
+        
         self.max_retries = 2  # Уменьшено с 5 до 2 для предотвращения зависаний
         self.base_delay = 2  # seconds
         self.timeout = 120  # seconds (увеличено для генерации больших объемов)
@@ -82,7 +93,7 @@ class DeepSeekClient:
         messages.append({"role": "user", "content": prompt})
         
         payload = {
-            "model": "deepseek-chat",
+            "model": self.model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens
