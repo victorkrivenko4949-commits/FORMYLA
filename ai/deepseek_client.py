@@ -50,9 +50,9 @@ class DeepSeekClient:
             raise ValueError("DEEPSEEK_API_KEY not provided and not found in environment")
         
         self.base_url = "https://api.deepseek.com/v1/chat/completions"
-        self.max_retries = 5
+        self.max_retries = 2  # Уменьшено с 5 до 2 для предотвращения зависаний
         self.base_delay = 2  # seconds
-        self.timeout = 60  # seconds
+        self.timeout = 45  # seconds (уменьшено с 60)
         
     def generate(
         self,

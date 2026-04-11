@@ -1764,12 +1764,17 @@ def free_mock_generate():
 
         # Генерация через DeepSeek
         print(f"🤖 Генерация 25 задач для {grade} класса, уровень {level}...")
+        print(f"📝 ПРОМПТ (первые 200 символов): {user_prompt[:200]}...")
+        
         response = deepseek.generate(
             prompt=user_prompt,
             system_prompt=system_prompt,
             temperature=0.7,
             max_tokens=8000
         )
+        
+        print(f"📥 ОТВЕТ DeepSeek (первые 500 символов): {response[:500]}...")
+        print(f"📏 Длина ответа: {len(response)} символов")
         
         # Парсинг JSON
         # Убираем возможные markdown блоки
