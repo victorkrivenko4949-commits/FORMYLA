@@ -955,16 +955,39 @@ def send_auth_email(recipient_email, code):
     msg = MIMEMultipart()
     msg['From'] = smtp_user
     msg['To'] = recipient_email
-    msg['Subject'] = 'Код подтверждения FORMYLA'
+    msg['Subject'] = 'Код подтверждения для доступа к платформе FORMYLA'
     
     html = f"""
-    <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; text-align: center;">
-        <h2 style="color: #333;">FORMYLA</h2>
-        <p>Ваш код для входа:</p>
-        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #4F46E5; margin: 20px 0; padding: 15px; background: #F3F4F6; border-radius: 8px;">
-            {code}
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background: #ffffff; border-radius: 10px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #4F46E5; margin: 0;">FORMYLA</h1>
+            <p style="color: #666; font-size: 14px; margin-top: 5px;">Образовательная платформа по математике</p>
         </div>
-        <p style="color: #888; font-size: 12px;">Код действителен 10 минут.</p>
+        
+        <p style="color: #333; font-size: 16px; line-height: 1.6;">
+            Здравствуйте!<br><br>
+            Вы запросили код для входа на образовательную платформу FORMYLA.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Ваш проверочный код:</p>
+            <div style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #4F46E5; padding: 20px; background: #F3F4F6; border-radius: 10px; display: inline-block;">
+                {code}
+            </div>
+        </div>
+        
+        <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 30px;">
+            Код действителен в течение 10 минут. Введите его на странице входа для доступа к вашему аккаунту.
+        </p>
+        
+        <p style="color: #999; font-size: 13px; line-height: 1.6; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            Если вы не запрашивали этот код, просто проигнорируйте это письмо. Ваш аккаунт в безопасности.
+        </p>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="color: #666; font-size: 14px; margin: 0;">С уважением,</p>
+            <p style="color: #4F46E5; font-size: 16px; font-weight: 600; margin: 5px 0;">Команда FORMYLA</p>
+        </div>
     </div>
     """
     msg.attach(MIMEText(html, 'html', 'utf-8'))
