@@ -1785,17 +1785,39 @@ def free_mock_generate():
         tasks = json.loads(response)
         
         # Валидация
-        if not isinstance(tasks, list) or len(tasks) < 20:
-            raise ValueError(f"Получено недостаточно задач: {len(tasks) if isinstance(tasks, list) else 0}")
+        if not isinstance(tasks, list):
+            raise ValueError(f"Ответ не является массивом: {type(tasks)}")
         
-        # Берем первые 25 задач
+        if len(tasks) == 0:
+            raise ValueError("Получен пустой массив задач")
+        
+        if len(tasks) < 20:
+            print(f"⚠️ Получено только {len(tasks)} задач, ожидалось 25")
+        
+        # Берем первые 25 задач (или сколько есть)
         tasks = tasks[:25]
         
-        # Добавляем метаданные
+        # Валидация структуры каждой задачи
         for i, task in enumerate(tasks, 1):
+            if not isinstance(task, dict):
+                raise ValueError(f"Задача {i} не является объектом")
+            if 'text' not in task or 'answer' not in task:
+                raise ValueError(f"Задача {i} не содержит обязательные поля text/answer")
+            
+            # Добавляем метаданные
             task['id'] = f"free_mock_{grade}_{level}_{i}"
             task['grade'] = grade
             task['level'] = level
+            
+            # Устанавливаем дефолтные значения
+            if 'solution' not in task:
+                task['solution'] = 'Решение не предоставлено'
+            if 'difficulty' not in task:
+                task['difficulty'] = 4
+        
+        # Проверка на пустой список после обработки
+        if not tasks:
+            raise ValueError("После обработки не осталось валидных задач")
         
         # Сохраняем в сессию
         session['free_mock_tasks'] = tasks
