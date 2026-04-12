@@ -1945,7 +1945,9 @@ def api_free_mock_generate_block():
             topics_exclusion = f" Темы должны отличаться от этих: {', '.join(previous_topics)}."
         
         system_prompt = """Ты - профессиональный составитель математических олимпиад уровня Всероссийской олимпиады, IMO, Физтеха.
-Генерируй задачи в строгом JSON формате без дополнительного текста."""
+Генерируй задачи в строгом JSON формате без дополнительного текста.
+
+ОЧЕНЬ ВАЖНО: ВЕРНИ СТРОГО ВАЛИДНЫЙ JSON-МАССИВ. ВСЕ ВНУТРЕННИЕ КАВЫЧКИ ДОЛЖНЫ БЫТЬ ЭКРАНИРОВАНЫ. ВСЕ СЛЭШИ ДЛЯ LATEX ДОЛЖНЫ БЫТЬ ДВОЙНЫМИ (например \\\\frac). НЕ ПИШИ НИКАКОГО ТЕКСТА ДО ИЛИ ПОСЛЕ JSON."""
         
         # Определяем уровень сложности для промпта
         difficulty_descriptions = {
@@ -2018,7 +2020,7 @@ def api_free_mock_generate_block():
             max_tokens=4000
         )
         
-        # Улучшенный парсинг JSON - убираем markdown блоки и лишний текст
+        # Улучшенный парсинг JSON с регулярками и обработкой ошибок
         response_text = response.strip()
         
         # Убираем markdown блоки
@@ -2032,18 +2034,27 @@ def api_free_mock_generate_block():
         
         response_text = response_text.strip()
         
-        # Убираем возможные вводные фразы (ищем первую '[' и последнюю ']')
-        start_idx = response_text.find('[')
-        end_idx = response_text.rfind(']')
-        
-        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-            response_text = response_text[start_idx:end_idx+1]
+        # Используем регулярку для извлечения JSON массива
+        import re
+        match = re.search(r'\[.*\]', response_text, re.DOTALL)
+        if match:
+            response_text = match.group(0)
         
         response_text = response_text.strip()
         
         print(f"📝 Очищенный ответ (первые 200 символов): {response_text[:200]}...")
         
-        tasks = json.loads(response_text)
+        # Пытаемся распарсить JSON с обработкой ошибок
+        try:
+            tasks = json.loads(response_text)
+        except json.JSONDecodeError as json_err:
+            print("="*80)
+            print(f"❌ ОШИБКА ПАРСИНГА JSON: {json_err}")
+            print("="*80)
+            print("СЛОМАННЫЙ JSON (полностью):")
+            print(response_text)
+            print("="*80)
+            raise  # Пробрасываем ошибку дальше для обработки в except блоке
         
         # Проверяем, что получили ровно 5 задач
         if len(tasks) != 5:
