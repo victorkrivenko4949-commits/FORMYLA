@@ -120,6 +120,53 @@ let classLevel = '';
 let difficulty = '';
 let previousTopics = [];
 let isFetchingNext = false;
+let preloadedTasks = {};  // Для сохранения предзагруженных задач
+
+// МАССИВ ТЕМ ДЛЯ РОТАЦИИ (5 тем по кругу)
+const topics = ["Алгебра", "Геометрия", "Комбинаторика", "Теория чисел", "Логика"];
+
+// Функция сохранения прогресса в localStorage
+function saveProgress() {
+    const progressData = {
+        classLevel: classLevel,
+        difficulty: difficulty,
+        currentTaskNum: currentTaskNum,
+        allTasks: allTasks,
+        userAnswers: userAnswers,
+        preloadedTasks: preloadedTasks,
+        tasksQueue: tasksQueue,
+        previousTopics: previousTopics
+    };
+    localStorage.setItem('freeMockProgress', JSON.stringify(progressData));
+    console.log('💾 Прогресс сохранен:', progressData);
+}
+
+// Функция восстановления прогресса из localStorage
+function restoreProgress() {
+    const saved = localStorage.getItem('freeMockProgress');
+    if (!saved) return false;
+    
+    try {
+        const data = JSON.parse(saved);
+        
+        // Восстанавливаем все переменные
+        classLevel = data.classLevel;
+        difficulty = data.difficulty;
+        currentTaskNum = data.currentTaskNum;
+        allTasks = data.allTasks || [];
+        userAnswers = data.userAnswers || [];
+        preloadedTasks = data.preloadedTasks || {};
+        tasksQueue = data.tasksQueue || {};
+        previousTopics = data.previousTopics || [];
+        
+        console.log('✅ Прогресс восстановлен:', data);
+        return true;
+    } catch (e) {
+        console.error('❌ Ошибка восстановления прогресса:', e);
+        localStorage.removeItem('freeMockProgress');
+        return false;
+    }
+}
 
 // Начало теста
 function startTest() {
@@ -136,6 +183,10 @@ function startTest() {
     allTasks = [];
     previousTopics = [];
     isFetchingNext = false;
+    preloadedTasks = {};
+    
+    // Сохраняем начальное состояние
+    saveProgress();
     
     // Загружаем первую задачу
     loadTask(1);
@@ -203,8 +254,11 @@ async function preloadTask(taskNum, retryCount = 0) {
     }
 }
 
-// Fetch задачи с сервера
+// Fetch задачи с сервера (С РОТАЦИЕЙ ТЕМ)
 async function fetchTask(taskNum) {
+    // Определяем целевую тему по номеру задачи (ротация по 5 темам)
+    const targetTopic = topics[(taskNum - 1) % 5];
+    
     const response = await fetch('/api/free_mock/generate_single_task', {
         method: 'POST',
         headers: {
@@ -214,7 +268,8 @@ async function fetchTask(taskNum) {
             class_level: classLevel,
             difficulty: difficulty,
             task_number: taskNum,
-            previous_topics: previousTopics
+            previous_topics: previousTopics,
+            target_topic: targetTopic  // ПЕРЕДАЕМ ЦЕЛЕВУЮ ТЕМУ
         })
     });
     
@@ -229,6 +284,10 @@ async function fetchTask(taskNum) {
     if (task.topic && !previousTopics.includes(task.topic)) {
         previousTopics.push(task.topic);
     }
+    
+    // Сохраняем прогресс после успешной загрузки задачи
+    preloadedTasks[taskNum] = task;
+    saveProgress();
     
     return task;
 }
@@ -318,6 +377,9 @@ function nextTask() {
     userAnswers.push(answer);
     allTasks.push(tasksQueue[currentTaskNum]);
     
+    // СОХРАНЯЕМ ПРОГРЕСС после каждого ответа
+    saveProgress();
+    
     // Переходим к следующей задаче
     currentTaskNum++;
     
@@ -370,6 +432,10 @@ async function finishMock() {
         }
         
         const results = await response.json();
+        
+        // ОЧИЩАЕМ localStorage после завершения теста
+        localStorage.removeItem('freeMockProgress');
+        console.log('🗑️ Прогресс очищен после завершения теста');
         
         // Рендерим результаты
         renderResults(results);
@@ -436,6 +502,42 @@ function renderResults(data) {
         </div>
     `;
 }
+
+// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ - проверка сохраненного прогресса
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 Проверка сохраненного прогресса...');
+    
+    if (restoreProgress()) {
+        // Есть сохраненный прогресс - спрашиваем пользователя
+        if (confirm('У вас есть незаконченный пробник. Хотите продолжить?')) {
+            console.log('✅ Пользователь выбрал продолжить');
+            
+            // Скрываем форму настроек
+            document.getElementById('setup-form').style.display = 'none';
+            
+            // Проверяем, есть ли текущая задача в очереди
+            if (tasksQueue[currentTaskNum]) {
+                // Рендерим текущую задачу
+                renderTask(tasksQueue[currentTaskNum], currentTaskNum);
+                
+                // Запускаем предзагрузку следующей задачи
+                if (currentTaskNum < 25) {
+                    preloadTask(currentTaskNum + 1);
+                }
+            } else {
+                // Если задачи нет в очереди, загружаем её
+                loadTask(currentTaskNum);
+            }
+        } else {
+            console.log('❌ Пользователь выбрал начать заново');
+            // Очищаем сохраненный прогресс
+            localStorage.removeItem('freeMockProgress');
+            // Показываем форму настроек (она уже видна по умолчанию)
+        }
+    } else {
+        console.log('ℹ️ Сохраненного прогресса нет');
+    }
+});
 </script>
 
 {% endblock %}
