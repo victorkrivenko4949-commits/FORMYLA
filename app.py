@@ -2086,6 +2086,7 @@ def api_free_mock_generate_single_task():
         task_number = data.get('task_number', 1)
         previous_topics = data.get('previous_topics', [])
         target_topic = data.get('target_topic')  # НОВЫЙ ПАРАМЕТР для баланса тем
+        previous_tasks = data.get('previous_tasks', [])  # КОНТЕКСТ ПРЕДЫДУЩИХ ЗАДАЧ
         
         if not class_level or not difficulty:
             return jsonify({'error': 'Не указаны класс или сложность'}), 400
@@ -2106,6 +2107,20 @@ def api_free_mock_generate_single_task():
         topic_requirement = ""
         if target_topic:
             topic_requirement = f"\n\nСГЕНЕРИРУЙ ЗАДАЧУ СТРОГО НА ТЕМУ: {target_topic}."
+        
+        # КОНТЕКСТ ПРЕДЫДУЩИХ ЗАДАЧ для предотвращения повторений
+        previous_tasks_context = ""
+        if previous_tasks:
+            previous_tasks_str = "\n".join([f"{i+1}. {task[:100]}..." for i, task in enumerate(previous_tasks)])
+            previous_tasks_context = f"""
+
+КРИТИЧЕСКИ ВАЖНО: Ниже приведен список задач, которые УЖЕ БЫЛИ в этом варианте.
+Твоя новая задача ДОЛЖНА КАРДИНАЛЬНО ОТЛИЧАТЬСЯ от них по математической идее, сюжету и методу решения!
+ЗАПРЕЩЕНО просто менять числа или имена в старых задачах. Придумай СОВЕРШЕННО НОВУЮ задачу!
+
+УЖЕ БЫЛИ ЗАДАЧИ:
+{previous_tasks_str}
+"""
         
         system_prompt = """Ты - профессиональный составитель математических олимпиад уровня Всероссийской олимпиады, IMO, Физтеха.
 Генерируй задачу в строгом JSON формате без дополнительного текста.
@@ -2133,7 +2148,7 @@ def api_free_mock_generate_single_task():
 
 ТРЕБУЕМЫЙ УРОВЕНЬ СЛОЖНОСТИ: {difficulty} - {difficulty_desc}
 
-Это задача {task_number}/25.{topics_exclusion}{topic_requirement}
+Это задача {task_number}/25.{topics_exclusion}{topic_requirement}{previous_tasks_context}
 
 ПРАВИЛА:
 1. Задача НЕ должна гуглиться. Придумай новую оригинальную формулировку.
