@@ -168,23 +168,38 @@ async function loadTask(taskNum) {
     }
 }
 
-// Предзагрузка следующей задачи в фоне
-async function preloadTask(taskNum) {
+// Предзагрузка следующей задачи в фоне с автоматическими повторными попытками
+async function preloadTask(taskNum, retryCount = 0) {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 2000; // 2 секунды
+    
     if (taskNum > 25 || tasksQueue[taskNum] || isFetchingNext) {
         return;  // Не загружаем, если задача уже есть или идет загрузка
     }
     
     isFetchingNext = true;
-    console.log(`🔄 Предзагрузка задачи ${taskNum} в фоне...`);
+    console.log(`🔄 Предзагрузка задачи ${taskNum} в фоне... (попытка ${retryCount + 1}/${MAX_RETRIES})`);
     
     try {
         const task = await fetchTask(taskNum);
         tasksQueue[taskNum] = task;
-        console.log(`✅ Задача ${taskNum} предзагружена`);
-    } catch (error) {
-        console.error(`❌ Ошибка предзагрузки задачи ${taskNum}:`, error);
-    } finally {
+        console.log(`✅ Задача ${taskNum} предзагружена успешно`);
         isFetchingNext = false;
+    } catch (error) {
+        console.error(`❌ Ошибка предзагрузки задачи ${taskNum} (попытка ${retryCount + 1}):`, error);
+        
+        // Если не достигли максимума попыток, пробуем еще раз через 2 секунды
+        if (retryCount < MAX_RETRIES - 1) {
+            console.log(`⏳ Повторная попытка через ${RETRY_DELAY/1000} секунд...`);
+            isFetchingNext = false;
+            
+            setTimeout(() => {
+                preloadTask(taskNum, retryCount + 1);
+            }, RETRY_DELAY);
+        } else {
+            console.error(`💥 Все ${MAX_RETRIES} попытки исчерпаны для задачи ${taskNum}`);
+            isFetchingNext = false;
+        }
     }
 }
 
