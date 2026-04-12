@@ -192,7 +192,7 @@ function startTest() {
     loadTask(1);
 }
 
-// Загрузка задачи (с показом спиннера)
+// Загрузка задачи (с показом спиннера и ТИХИМ авто-повтором)
 async function loadTask(taskNum) {
     // Проверяем, есть ли задача уже в очереди
     if (tasksQueue[taskNum]) {
@@ -207,15 +207,15 @@ async function loadTask(taskNum) {
     document.getElementById('loading-text').textContent = `Генерация задачи ${taskNum}/25...`;
     
     try {
-        const task = await fetchTask(taskNum);
+        const task = await fetchTask(taskNum);  // fetchTask теперь сам делает авто-повтор
         tasksQueue[taskNum] = task;
         renderTask(task, taskNum);
     } catch (error) {
-        console.error('Ошибка загрузки задачи:', error);
-        alert('Ошибка загрузки задачи: ' + error.message);
-        // Возвращаемся к форме настроек
+        // Только если ВСЕ попытки исчерпаны (после 10 попыток)
+        console.error('❌ Критическая ошибка после всех попыток:', error);
         document.getElementById('loading-spinner').style.display = 'none';
-        document.getElementById('setup-form').style.display = 'block';
+        document.getElementById('loading-text').textContent = 'Не удалось сгенерировать задачу. Попробуйте обновить страницу.';
+        // НЕ показываем alert - просто оставляем сообщение в спиннере
     }
 }
 
@@ -254,46 +254,77 @@ async function preloadTask(taskNum, retryCount = 0) {
     }
 }
 
-// Fetch задачи с сервера (С РОТАЦИЕЙ ТЕМ И КОНТЕКСТОМ ПРЕДЫДУЩИХ ЗАДАЧ)
-async function fetchTask(taskNum) {
+// Fetch задачи с сервера (С РОТАЦИЕЙ ТЕМ, КОНТЕКСТОМ И ТИХИМ АВТО-ПОВТОРОМ)
+async function fetchTask(taskNum, retryCount = 0) {
+    const MAX_RETRIES = 10;  // До 10 попыток
+    const RETRY_DELAY = 2000;  // 2 секунды между попытками
+    
     // Определяем целевую тему по номеру задачи (ротация по 5 темам)
     const targetTopic = topics[(taskNum - 1) % 5];
     
     // Собираем краткие описания уже сгенерированных задач (первые 100 символов)
     const previous_tasks = allTasks.map(t => t.text.substring(0, 100));
     
-    const response = await fetch('/api/free_mock/generate_single_task', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            class_level: classLevel,
-            difficulty: difficulty,
-            task_number: taskNum,
-            previous_topics: previousTopics,
-            target_topic: targetTopic,  // ПЕРЕДАЕМ ЦЕЛЕВУЮ ТЕМУ
-            previous_tasks: previous_tasks  // ПЕРЕДАЕМ КОНТЕКСТ ПРЕДЫДУЩИХ ЗАДАЧ
-        })
-    });
-    
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Ошибка генерации');
+    try {
+        const response = await fetch('/api/free_mock/generate_single_task', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                class_level: classLevel,
+                difficulty: difficulty,
+                task_number: taskNum,
+                previous_topics: previousTopics,
+                target_topic: targetTopic,
+                previous_tasks: previous_tasks
+            })
+        });
+        
+        // Если сервер вернул ошибку (500 или другую)
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Ошибка сервера' }));
+            
+            // ТИХИЙ АВТО-ПОВТОР: не показываем ошибку пользователю
+            if (retryCount < MAX_RETRIES) {
+                console.log(`⚠️ Ошибка генерации задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.error}`);
+                console.log(`⏳ Повторная попытка через ${RETRY_DELAY/1000} секунд...`);
+                
+                // Ждем и пробуем снова
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                return fetchTask(taskNum, retryCount + 1);
+            } else {
+                // Исчерпаны все попытки - только тогда выбрасываем ошибку
+                throw new Error(`Не удалось сгенерировать задачу после ${MAX_RETRIES} попыток`);
+            }
+        }
+        
+        const task = await response.json();
+        
+        // Добавляем тему в список использованных
+        if (task.topic && !previousTopics.includes(task.topic)) {
+            previousTopics.push(task.topic);
+        }
+        
+        // Сохраняем прогресс после успешной загрузки задачи
+        preloadedTasks[taskNum] = task;
+        saveProgress();
+        
+        console.log(`✅ Задача ${taskNum} успешно сгенерирована${retryCount > 0 ? ` (после ${retryCount + 1} попыток)` : ''}`);
+        return task;
+        
+    } catch (error) {
+        // Ошибка сети или парсинга JSON
+        if (retryCount < MAX_RETRIES) {
+            console.log(`⚠️ Ошибка сети для задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.message}`);
+            console.log(`⏳ Повторная попытка через ${RETRY_DELAY/1000} секунд...`);
+            
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            return fetchTask(taskNum, retryCount + 1);
+        } else {
+            throw error;
+        }
     }
-    
-    const task = await response.json();
-    
-    // Добавляем тему в список использованных
-    if (task.topic && !previousTopics.includes(task.topic)) {
-        previousTopics.push(task.topic);
-    }
-    
-    // Сохраняем прогресс после успешной загрузки задачи
-    preloadedTasks[taskNum] = task;
-    saveProgress();
-    
-    return task;
 }
 
 // Рендеринг задачи
