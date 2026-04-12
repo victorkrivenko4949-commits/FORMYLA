@@ -549,17 +549,54 @@ function renderResults(data) {
                 </div>
             </div>
             
-            <div style="display: flex; gap: 15px; justify-content: center;">
-                <button onclick="location.reload()" 
+            <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 40px;">
+                <button onclick="location.reload()"
                         style="padding: 15px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);">
                     🔄 Пройти еще раз
                 </button>
-                <button onclick="window.location.href='/'" 
+                <button onclick="window.location.href='/'"
                         style="padding: 15px 30px; background: rgba(15, 23, 42, 0.6); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;">
                     🏠 На главную
                 </button>
             </div>
             
+        </div>
+        
+        <!-- ДЕТАЛЬНЫЙ РАЗБОР ВСЕХ ЗАДАЧ -->
+        <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-top: 30px;">
+            <h2 style="color: var(--accent-2); margin-bottom: 25px; text-align: center;">📋 Детальный разбор</h2>
+            
+            <div id="detailed-results">
+                ${data.results.map(r => `
+                    <div style="border: 1px solid var(--border-soft); padding: 20px; margin-bottom: 15px; border-radius: var(--radius-sm); background: rgba(15, 23, 42, 0.4);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h4 style="color: var(--text-main); margin: 0;">Задача ${r.task_num}</h4>
+                            <span style="padding: 4px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; ${r.is_correct ? 'background: rgba(34, 197, 94, 0.2); color: #22c55e;' : 'background: rgba(239, 68, 68, 0.2); color: #ef4444;'}">
+                                ${r.is_correct ? '✓ Верно' : '✗ Неверно'}
+                            </span>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <span style="color: var(--text-muted);">Ваш ответ:</span>
+                            <span style="color: ${r.is_correct ? '#22c55e' : '#ef4444'}; font-weight: 600; margin-left: 10px;">${r.user_answer || '(не указан)'}</span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <span style="color: var(--text-muted);">Правильный ответ:</span>
+                            <span style="color: var(--accent-2); font-weight: 600; margin-left: 10px;">${r.correct_answer}</span>
+                        </div>
+                        
+                        <button onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.textContent = this.textContent.includes('Показать') ? '▲ Скрыть решение' : '▼ Показать решение';"
+                                style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); border: 1px solid var(--accent-2); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">
+                            ▼ Показать решение
+                        </button>
+                        
+                        <div style="display: none; margin-top: 15px; padding: 15px; background: rgba(56, 189, 248, 0.05); border-left: 3px solid var(--accent-2); border-radius: 4px;">
+                            <p style="color: var(--text-soft); margin: 0; line-height: 1.6;">${r.solution}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
         </div>
     `;
 }

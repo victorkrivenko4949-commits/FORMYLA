@@ -2122,7 +2122,7 @@ def api_free_mock_generate_single_task():
 {previous_tasks_str}
 """
         
-        system_prompt = """Ты - профессиональный составитель математических олимпиад уровня Всероссийской олимпиады, IMO, Физтеха.
+        system_prompt = """Ты - профессиональный составитель математических задач для ШКОЛЬНИКОВ.
 Генерируй задачу в строгом JSON формате без дополнительного текста.
 
 КРИТИЧЕСКИ ВАЖНО:
@@ -2133,7 +2133,13 @@ def api_free_mock_generate_single_task():
 - ВЕРНИ СТРОГО ОДИН ВАЛИДНЫЙ JSON-ОБЪЕКТ (НЕ МАССИВ!). НЕ ОБОРАЧИВАЙ ЕГО В МАРКДАУН (без ```json).
 - РЕШЕНИЕ ДОЛЖНО БЫТЬ МАКСИМАЛЬНО КРАТКИМ, НЕ БОЛЕЕ 2 ПРЕДЛОЖЕНИЙ.
 - НЕ ПИШИ НИКАКОГО ТЕКСТА ДО ИЛИ ПОСЛЕ JSON.
-- ВЕСЬ ОТВЕТ ТОЛЬКО ОДИН JSON-ОБЪЕКТ."""
+- ВЕСЬ ОТВЕТ ТОЛЬКО ОДИН JSON-ОБЪЕКТ.
+
+СТРОГОЕ СООТВЕТСТВИЕ КЛАССУ:
+- Для 5-6 класса ЗАПРЕЩЕНО: биссектриса, медиана, высота треугольника, синус, косинус, квадратные уравнения, сложные неравенства.
+- Для 5-6 класса РАЗРЕШЕНО: базовая арифметика, простые уравнения, периметр, площадь прямоугольника, углы треугольника (сумма 180°).
+- Для 7-8 класса можно добавить: простые квадратные уравнения, теорему Пифагора, базовую геометрию.
+- Для 9-11 класса можно использовать продвинутые темы."""
         
         # Определяем уровень сложности для промпта
         difficulty_descriptions = {
@@ -2275,15 +2281,13 @@ def api_free_mock_evaluate():
                 correct_count += 1
             
             results.append({
-                'task_number': i + 1,
+                'task_num': i + 1,
                 'is_correct': is_correct,
                 'user_answer': user_answer,
                 'correct_answer': correct_answer,
-                'topic': task.get('topic', 'Неизвестная тема')
+                'topic': task.get('topic', 'Неизвестная тема'),
+                'solution': task.get('solution', 'Решение недоступно')
             })
-        
-        # Генерация фидбека через DeepSeek
-        deepseek = DeepSeekClient()
         
         # Собираем статистику по темам
         topic_stats = {}
@@ -2295,58 +2299,41 @@ def api_free_mock_evaluate():
             if result['is_correct']:
                 topic_stats[topic]['correct'] += 1
         
-        # Формируем промпт для фидбека
-        stats_text = "\n".join([
-            f"- {topic}: {stats['correct']}/{stats['total']} правильных"
-            for topic, stats in topic_stats.items()
-        ])
+        # Формируем сильные и слабые темы
+        strong_topics = []
+        weak_topics = []
         
-        system_prompt = """Ты - опытный преподаватель математики, анализирующий результаты теста."""
+        for topic, stats in topic_stats.items():
+            percentage = (stats['correct'] / stats['total']) * 100 if stats['total'] > 0 else 0
+            if percentage >= 70:
+                strong_topics.append(topic)
+            elif percentage < 50:
+                weak_topics.append(topic)
         
-        user_prompt = f"""Ученик решил тест из 25 задач. Результат: {correct_count}/25 правильных ответов.
-
-Статистика по темам:
-{stats_text}
-
-Проанализируй результаты и верни JSON объект:
-{{
-  "score": "{correct_count}/25",
-  "strong_topics": "список сильных тем через запятую",
-  "weak_topics": "список слабых тем через запятую",
-  "feedback": "краткий совет на 2-3 предложения"
-}}
-
-Верни ТОЛЬКО JSON без markdown разметки."""
-
-        print(f"🤖 Генерация фидбека для результата {correct_count}/25...")
+        # Формируем фидбек
+        if correct_count < 10:
+            strong_topics_str = "Пока нет ярко выраженных сильных сторон"
+            feedback = f"Результат {correct_count} из {len(tasks)} говорит о том, что нужно больше практики. Сосредоточьтесь на базовых темах и решайте больше задач каждый день."
+        elif correct_count < 15:
+            strong_topics_str = ", ".join(strong_topics) if strong_topics else "Есть потенциал"
+            feedback = f"Неплохой результат! Продолжайте практиковаться, особенно в слабых темах."
+        else:
+            strong_topics_str = ", ".join(strong_topics) if strong_topics else "Хорошая база"
+            feedback = f"Отличный результат! Вы показали хорошее понимание материала. Продолжайте в том же духе!"
         
-        response = deepseek.generate(
-            prompt=user_prompt,
-            system_prompt=system_prompt,
-            temperature=0.5,
-            max_tokens=1000
-        )
+        weak_topics_str = ", ".join(weak_topics) if weak_topics else "Нет явных слабых мест"
         
-        # Парсинг JSON
-        response = response.strip()
-        if response.startswith('```json'):
-            response = response[7:]
-        if response.startswith('```'):
-            response = response[3:]
-        if response.endswith('```'):
-            response = response[:-3]
-        response = response.strip()
+        print(f"✅ Оценка завершена: {correct_count}/{len(tasks)}")
         
-        feedback_data = json.loads(response)
-        
-        # Добавляем детальные результаты
-        feedback_data['results'] = results
-        feedback_data['correct_count'] = correct_count
-        feedback_data['total_count'] = 25
-        
-        print(f"✅ Фидбек сгенерирован")
-        
-        return jsonify(feedback_data), 200
+        return jsonify({
+            'score': f"{correct_count}/{len(tasks)}",
+            'strong_topics': strong_topics_str,
+            'weak_topics': weak_topics_str,
+            'feedback': feedback,
+            'results': results,
+            'correct_count': correct_count,
+            'total_count': len(tasks)
+        }), 200
         
     except DeepSeekAPIError as e:
         print(f"❌ Ошибка DeepSeek API: {e}")
