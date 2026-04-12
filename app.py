@@ -2005,7 +2005,9 @@ def api_free_mock_generate_block():
   ...
 ]
 
-Важно: ответ должен содержать ТОЛЬКО JSON массив, без markdown разметки и дополнительного текста."""
+Важно: ответ должен содержать ТОЛЬКО JSON массив, без markdown разметки и дополнительного текста.
+
+ВЕРНИ ТОЛЬКО ЧИСТЫЙ JSON-МАССИВ [{{}}, {{}}, ...]. БЕЗ СЛОВ "Вот ваши задачи", БЕЗ МАРКДАУНА ```json ```."""
 
         print(f"🤖 Генерация блока {block_number}/5 для {class_level} класса, уровень {difficulty}...")
         
@@ -2016,17 +2018,32 @@ def api_free_mock_generate_block():
             max_tokens=4000
         )
         
-        # Парсинг JSON - убираем markdown блоки
-        response = response.strip()
-        if response.startswith('```json'):
-            response = response[7:]
-        if response.startswith('```'):
-            response = response[3:]
-        if response.endswith('```'):
-            response = response[:-3]
-        response = response.strip()
+        # Улучшенный парсинг JSON - убираем markdown блоки и лишний текст
+        response_text = response.strip()
         
-        tasks = json.loads(response)
+        # Убираем markdown блоки
+        if response_text.startswith('```json'):
+            response_text = response_text[7:]
+        elif response_text.startswith('```'):
+            response_text = response_text[3:]
+        
+        if response_text.endswith('```'):
+            response_text = response_text[:-3]
+        
+        response_text = response_text.strip()
+        
+        # Убираем возможные вводные фразы (ищем первую '[' и последнюю ']')
+        start_idx = response_text.find('[')
+        end_idx = response_text.rfind(']')
+        
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            response_text = response_text[start_idx:end_idx+1]
+        
+        response_text = response_text.strip()
+        
+        print(f"📝 Очищенный ответ (первые 200 символов): {response_text[:200]}...")
+        
+        tasks = json.loads(response_text)
         
         # Проверяем, что получили ровно 5 задач
         if len(tasks) != 5:

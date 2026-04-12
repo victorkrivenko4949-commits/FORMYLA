@@ -61,7 +61,7 @@ class DeepSeekClient:
             self.model = "deepseek-chat"
             logger.info("🔄 Using official DeepSeek API")
         
-        self.max_retries = 1  # ТОЛЬКО 1 попытка для отладки
+        self.max_retries = 2  # 2 попытки для устойчивости к ошибкам парсинга JSON
         self.base_delay = 2  # seconds
         self.timeout = 90  # seconds
         
