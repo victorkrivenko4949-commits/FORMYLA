@@ -2075,6 +2075,130 @@ def api_free_mock_generate_block():
         return jsonify({'error': f'Произошла ошибка: {str(e)}'}), 500
 
 
+@app.route("/api/free_mock/generate_single_task", methods=["POST"])
+@login_required
+def api_free_mock_generate_single_task():
+    """API: Генерация ОДНОЙ задачи (для фоновой подгрузки)."""
+    try:
+        data = request.get_json()
+        class_level = data.get('class_level')
+        difficulty = data.get('difficulty')
+        task_number = data.get('task_number', 1)
+        previous_topics = data.get('previous_topics', [])
+        
+        if not class_level or not difficulty:
+            return jsonify({'error': 'Не указаны класс или сложность'}), 400
+        
+        # Проверка доступности DeepSeek
+        if not DEEPSEEK_AVAILABLE:
+            return jsonify({'error': 'AI-генерация временно недоступна'}), 503
+        
+        # Инициализация DeepSeek клиента
+        deepseek = DeepSeekClient()
+        
+        # Формируем промпт для ОДНОЙ задачи
+        topics_exclusion = ""
+        if previous_topics:
+            topics_exclusion = f" Тема должна отличаться от этих: {', '.join(previous_topics)}."
+        
+        system_prompt = """Ты - профессиональный составитель математических олимпиад уровня Всероссийской олимпиады, IMO, Физтеха.
+Генерируй задачу в строгом JSON формате без дополнительного текста.
+
+ОЧЕНЬ ВАЖНО: ВЕРНИ СТРОГО ВАЛИДНЫЙ JSON-ОБЪЕКТ (НЕ МАССИВ!). ВСЕ ВНУТРЕННИЕ КАВЫЧКИ ДОЛЖНЫ БЫТЬ ЭКРАНИРОВАНЫ. РЕШЕНИЕ ДОЛЖНО БЫТЬ КРАТКИМ (МАКСИМУМ 3-4 ПРЕДЛОЖЕНИЯ). НЕ ПИШИ НИКАКОГО ТЕКСТА ДО ИЛИ ПОСЛЕ JSON."""
+        
+        # Определяем уровень сложности для промпта
+        difficulty_descriptions = {
+            "1": "базовый (простые вычисления, стандартные формулы)",
+            "2": "легкий (задачи на понимание концепций, простые уравнения)",
+            "3": "средний (комбинированные задачи, требующие нескольких шагов)",
+            "4": "сложный (нестандартные подходы, олимпиадные приемы)",
+            "5": "олимпиадный (высокий уровень абстракции, продвинутые методы)"
+        }
+        difficulty_desc = difficulty_descriptions.get(str(difficulty), "средний")
+        
+        user_prompt = f"""Ты составитель олимпиад. Сгенерируй СТРОГО ОДНУ сложную математическую задачу для {class_level} класса.
+
+ТРЕБУЕМЫЙ УРОВЕНЬ СЛОЖНОСТИ: {difficulty} - {difficulty_desc}
+
+Это задача {task_number}/25.{topics_exclusion}
+
+ПРАВИЛА:
+1. Задача НЕ должна гуглиться. Придумай новую оригинальную формулировку.
+2. Ответ должен быть однозначным числом или кратким выражением (не более 10 символов).
+3. Решение должно быть КРАТКИМ (максимум 3-4 предложения, БЕЗ длинных рассуждений).
+4. Уровень сложности должен строго соответствовать {difficulty}.
+
+ВЕРНИ ТОЛЬКО ОДИН ВАЛИДНЫЙ JSON-ОБЪЕКТ (БЕЗ МАССИВА, БЕЗ МАРКДАУНА):
+{{
+  "text": "Условие задачи (четкое, без лишних слов)",
+  "answer": "Краткий ответ",
+  "solution": "Краткое решение (3-4 предложения)",
+  "difficulty": {difficulty},
+  "topic": "Название темы"
+}}
+
+ВАЖНО: ВЕРНИ ТОЛЬКО ЧИСТЫЙ JSON-ОБЪЕКТ. БЕЗ СЛОВ "Вот задача", БЕЗ МАРКДАУНА ```json ```."""
+
+        print(f"🤖 Генерация задачи {task_number}/25 для {class_level} класса, уровень {difficulty}...")
+        
+        response = deepseek.generate(
+            prompt=user_prompt,
+            system_prompt=system_prompt,
+            temperature=0.7,
+            max_tokens=1000  # Меньше токенов для одной задачи
+        )
+        
+        # Улучшенный парсинг JSON
+        response_text = response.strip()
+        
+        # Убираем markdown блоки
+        if response_text.startswith('```json'):
+            response_text = response_text[7:]
+        elif response_text.startswith('```'):
+            response_text = response_text[3:]
+        
+        if response_text.endswith('```'):
+            response_text = response_text[:-3]
+        
+        response_text = response_text.strip()
+        
+        # Используем регулярку для извлечения JSON объекта
+        import re
+        match = re.search(r'\{.*\}', response_text, re.DOTALL)
+        if match:
+            response_text = match.group(0)
+        
+        response_text = response_text.strip()
+        
+        print(f"📝 Очищенный ответ (первые 150 символов): {response_text[:150]}...")
+        
+        # Пытаемся распарсить JSON с обработкой ошибок
+        try:
+            task = json.loads(response_text)
+        except json.JSONDecodeError as json_err:
+            print("="*80)
+            print(f"❌ ОШИБКА ПАРСИНГА JSON: {json_err}")
+            print("="*80)
+            print("СЛОМАННЫЙ JSON (полностью):")
+            print(response_text)
+            print("="*80)
+            raise
+        
+        print(f"✅ Задача {task_number} сгенерирована")
+        
+        return jsonify(task), 200
+        
+    except DeepSeekAPIError as e:
+        print(f"❌ Ошибка DeepSeek API: {e}")
+        return jsonify({'error': f'Ошибка генерации: {str(e)}'}), 500
+    except json.JSONDecodeError as e:
+        print(f"❌ Ошибка парсинга JSON: {e}")
+        return jsonify({'error': 'Ошибка обработки ответа AI'}), 500
+    except Exception as e:
+        print(f"❌ Неожиданная ошибка: {e}")
+        return jsonify({'error': f'Произошла ошибка: {str(e)}'}), 500
+
+
 @app.route("/api/free_mock/evaluate", methods=["POST"])
 @login_required
 def api_free_mock_evaluate():

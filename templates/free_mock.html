@@ -11,7 +11,7 @@
             📝 Бесплатный пробник
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
-            25 задач • 5 блоков по 5 задач • Пошаговая генерация
+            25 задач • Пошаговая генерация • Без ожидания
         </p>
     </div>
 
@@ -64,25 +64,25 @@
             
         </div>
         
-        <!-- Блок с задачами (скрыт по умолчанию) -->
-        <div id="tasks-block" style="display: none;">
+        <!-- Блок с задачей (скрыт по умолчанию) -->
+        <div id="task-block" style="display: none;">
             <!-- Прогресс-бар -->
             <div style="background: var(--bg-card); padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <span style="color: var(--text-soft); font-weight: 600;">Прогресс:</span>
-                    <span id="progress-text" style="color: var(--accent-2); font-weight: 600;">Блок 1/5</span>
+                    <span id="progress-text" style="color: var(--accent-2); font-weight: 600;">Задача 1/25</span>
                 </div>
                 <div style="width: 100%; height: 8px; background: rgba(15, 23, 42, 0.6); border-radius: 4px; overflow: hidden;">
-                    <div id="progress-bar" style="width: 20%; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent-1)); transition: width 0.5s;"></div>
+                    <div id="progress-bar" style="width: 4%; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent-1)); transition: width 0.5s;"></div>
                 </div>
             </div>
             
-            <!-- Контейнер для задач -->
-            <div id="tasks-container"></div>
+            <!-- Контейнер для текущей задачи -->
+            <div id="current-task-container"></div>
             
-            <!-- Кнопки навигации -->
+            <!-- Кнопка навигации -->
             <div style="text-align: center; margin-top: 40px;">
-                <button id="next-button" onclick="nextBlock()" 
+                <button id="next-button" onclick="nextTask()" 
                         style="padding: 18px 50px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;"
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform='translateY(0)'">
@@ -94,7 +94,7 @@
         <!-- Спиннер загрузки -->
         <div id="loading-spinner" style="display: none; text-align: center; padding: 60px;">
             <div style="display: inline-block; width: 60px; height: 60px; border: 6px solid rgba(56, 189, 248, 0.2); border-top-color: var(--accent-2); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            <p style="color: var(--text-soft); margin-top: 20px; font-size: 18px;">Генерация задач...</p>
+            <p id="loading-text" style="color: var(--text-soft); margin-top: 20px; font-size: 18px;">Генерация задачи...</p>
         </div>
         
         <!-- Результаты (скрыты по умолчанию) -->
@@ -111,14 +111,15 @@
 </style>
 
 <script>
-// Глобальные переменные
-let currentBlock = 1;
-let allTasks = [];
+// Глобальные переменные для архитектуры с очередью
+let currentTaskNum = 1;
+let tasksQueue = {};  // Очередь предзагруженных задач
 let userAnswers = [];
-let currentTasks = [];
+let allTasks = [];
 let classLevel = '';
 let difficulty = '';
 let previousTopics = [];
+let isFetchingNext = false;
 
 // Начало теста
 function startTest() {
@@ -129,82 +130,103 @@ function startTest() {
     document.getElementById('setup-form').style.display = 'none';
     
     // Сбрасываем состояние
-    currentBlock = 1;
-    allTasks = [];
+    currentTaskNum = 1;
+    tasksQueue = {};
     userAnswers = [];
+    allTasks = [];
     previousTopics = [];
+    isFetchingNext = false;
     
-    // Генерируем первый блок
-    generateBlock();
+    // Загружаем первую задачу
+    loadTask(1);
 }
 
-// Генерация блока задач
-async function generateBlock() {
+// Загрузка задачи (с показом спиннера)
+async function loadTask(taskNum) {
+    // Проверяем, есть ли задача уже в очереди
+    if (tasksQueue[taskNum]) {
+        console.log(`✅ Задача ${taskNum} уже в очереди, используем её`);
+        renderTask(tasksQueue[taskNum], taskNum);
+        return;
+    }
+    
     // Показываем спиннер
     document.getElementById('loading-spinner').style.display = 'block';
-    document.getElementById('tasks-block').style.display = 'none';
+    document.getElementById('task-block').style.display = 'none';
+    document.getElementById('loading-text').textContent = `Генерация задачи ${taskNum}/25...`;
     
     try {
-        const response = await fetch('/api/free_mock/generate_block', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                class_level: classLevel,
-                difficulty: difficulty,
-                block_number: currentBlock,
-                previous_topics_list: previousTopics
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Ошибка генерации');
-        }
-        
-        currentTasks = await response.json();
-        
-        // Собираем темы для следующего блока
-        currentTasks.forEach(task => {
-            if (task.topic && !previousTopics.includes(task.topic)) {
-                previousTopics.push(task.topic);
-            }
-        });
-        
-        // Рендерим задачи
-        renderTasks();
-        
-        // Скрываем спиннер, показываем задачи
-        document.getElementById('loading-spinner').style.display = 'none';
-        document.getElementById('tasks-block').style.display = 'block';
-        
-        // Обновляем прогресс
-        updateProgress();
-        
+        const task = await fetchTask(taskNum);
+        tasksQueue[taskNum] = task;
+        renderTask(task, taskNum);
     } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Ошибка генерации задач: ' + error.message);
+        console.error('Ошибка загрузки задачи:', error);
+        alert('Ошибка загрузки задачи: ' + error.message);
         // Возвращаемся к форме настроек
         document.getElementById('loading-spinner').style.display = 'none';
         document.getElementById('setup-form').style.display = 'block';
     }
 }
 
-// Рендеринг задач
-function renderTasks() {
-    const container = document.getElementById('tasks-container');
-    container.innerHTML = '';
+// Предзагрузка следующей задачи в фоне
+async function preloadTask(taskNum) {
+    if (taskNum > 25 || tasksQueue[taskNum] || isFetchingNext) {
+        return;  // Не загружаем, если задача уже есть или идет загрузка
+    }
     
-    currentTasks.forEach((task, index) => {
-        const taskNumber = (currentBlock - 1) * 5 + index + 1;
-        
-        const taskDiv = document.createElement('div');
-        taskDiv.style.cssText = 'background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;';
-        
-        taskDiv.innerHTML = `
+    isFetchingNext = true;
+    console.log(`🔄 Предзагрузка задачи ${taskNum} в фоне...`);
+    
+    try {
+        const task = await fetchTask(taskNum);
+        tasksQueue[taskNum] = task;
+        console.log(`✅ Задача ${taskNum} предзагружена`);
+    } catch (error) {
+        console.error(`❌ Ошибка предзагрузки задачи ${taskNum}:`, error);
+    } finally {
+        isFetchingNext = false;
+    }
+}
+
+// Fetch задачи с сервера
+async function fetchTask(taskNum) {
+    const response = await fetch('/api/free_mock/generate_single_task', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            class_level: classLevel,
+            difficulty: difficulty,
+            task_number: taskNum,
+            previous_topics: previousTopics
+        })
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Ошибка генерации');
+    }
+    
+    const task = await response.json();
+    
+    // Добавляем тему в список использованных
+    if (task.topic && !previousTopics.includes(task.topic)) {
+        previousTopics.push(task.topic);
+    }
+    
+    return task;
+}
+
+// Рендеринг задачи
+function renderTask(task, taskNum) {
+    const container = document.getElementById('current-task-container');
+    
+    container.innerHTML = `
+        <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+            
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--accent-2); margin: 0;">Задача ${taskNumber}</h3>
+                <h3 style="color: var(--accent-2); margin: 0;">Задача ${taskNum}</h3>
                 <span style="padding: 6px 12px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); border-radius: 8px; font-size: 14px; font-weight: 600;">
                     Уровень ${task.difficulty || difficulty}
                 </span>
@@ -219,84 +241,101 @@ function renderTasks() {
                     Ваш ответ:
                 </label>
                 <input type="text" 
-                       id="answer-${index}" 
+                       id="current-answer" 
                        placeholder="Введите ответ"
                        style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; caret-color: var(--accent-2);"
                        onfocus="this.style.borderColor='var(--accent-2)'"
-                       onblur="this.style.borderColor='var(--border-mid)'">
+                       onblur="this.style.borderColor='var(--border-mid)'"
+                       onkeypress="if(event.key==='Enter') nextTask()">
             </div>
-        `;
-        
-        container.appendChild(taskDiv);
-    });
+            
+        </div>
+    `;
+    
+    // Скрываем спиннер, показываем задачу
+    document.getElementById('loading-spinner').style.display = 'none';
+    document.getElementById('task-block').style.display = 'block';
+    
+    // Обновляем прогресс
+    updateProgress(taskNum);
+    
+    // Фокус на поле ввода
+    document.getElementById('current-answer').focus();
+    
+    // СРАЗУ ПОСЛЕ РЕНДЕРА запускаем предзагрузку следующей задачи
+    if (taskNum < 25) {
+        preloadTask(taskNum + 1);
+    }
 }
 
 // Обновление прогресса
-function updateProgress() {
+function updateProgress(taskNum) {
     const progressText = document.getElementById('progress-text');
     const progressBar = document.getElementById('progress-bar');
     const nextButton = document.getElementById('next-button');
     
-    progressText.textContent = `Блок ${currentBlock}/5`;
-    progressBar.style.width = `${(currentBlock / 5) * 100}%`;
+    progressText.textContent = `Задача ${taskNum}/25`;
+    progressBar.style.width = `${(taskNum / 25) * 100}%`;
     
-    // Меняем текст кнопки на последнем блоке
-    if (currentBlock === 5) {
+    // Меняем текст кнопки на последней задаче
+    if (taskNum === 25) {
         nextButton.textContent = '✅ Завершить тест';
         nextButton.onclick = finishMock;
     } else {
         nextButton.textContent = 'Далее →';
-        nextButton.onclick = nextBlock;
+        nextButton.onclick = nextTask;
     }
 }
 
-// Переход к следующему блоку
-function nextBlock() {
-    // Собираем ответы
-    const blockAnswers = [];
-    for (let i = 0; i < currentTasks.length; i++) {
-        const input = document.getElementById(`answer-${i}`);
-        blockAnswers.push(input ? input.value.trim() : '');
-    }
+// Переход к следующей задаче
+function nextTask() {
+    // Собираем ответ
+    const answerInput = document.getElementById('current-answer');
+    const answer = answerInput ? answerInput.value.trim() : '';
     
-    // Проверяем, что все ответы заполнены
-    if (blockAnswers.some(answer => answer === '')) {
-        alert('Пожалуйста, ответьте на все вопросы');
+    // Проверяем, что ответ заполнен
+    if (answer === '') {
+        alert('Пожалуйста, введите ответ');
         return;
     }
     
-    // Сохраняем ответы и задачи
-    userAnswers.push(...blockAnswers);
-    allTasks.push(...currentTasks);
+    // Сохраняем ответ и задачу
+    userAnswers.push(answer);
+    allTasks.push(tasksQueue[currentTaskNum]);
     
-    // Переходим к следующему блоку
-    currentBlock++;
-    generateBlock();
+    // Переходим к следующей задаче
+    currentTaskNum++;
+    
+    // Проверяем, есть ли следующая задача в очереди
+    if (tasksQueue[currentTaskNum]) {
+        // Мгновенно рендерим её
+        renderTask(tasksQueue[currentTaskNum], currentTaskNum);
+    } else {
+        // Показываем спиннер и ждем загрузки
+        loadTask(currentTaskNum);
+    }
 }
 
 // Завершение теста
 async function finishMock() {
-    // Собираем последние ответы
-    const blockAnswers = [];
-    for (let i = 0; i < currentTasks.length; i++) {
-        const input = document.getElementById(`answer-${i}`);
-        blockAnswers.push(input ? input.value.trim() : '');
-    }
+    // Собираем последний ответ
+    const answerInput = document.getElementById('current-answer');
+    const answer = answerInput ? answerInput.value.trim() : '';
     
-    // Проверяем, что все ответы заполнены
-    if (blockAnswers.some(answer => answer === '')) {
-        alert('Пожалуйста, ответьте на все вопросы');
+    // Проверяем, что ответ заполнен
+    if (answer === '') {
+        alert('Пожалуйста, введите ответ');
         return;
     }
     
-    // Сохраняем последние ответы и задачи
-    userAnswers.push(...blockAnswers);
-    allTasks.push(...currentTasks);
+    // Сохраняем последний ответ и задачу
+    userAnswers.push(answer);
+    allTasks.push(tasksQueue[currentTaskNum]);
     
     // Показываем спиннер
-    document.getElementById('tasks-block').style.display = 'none';
+    document.getElementById('task-block').style.display = 'none';
     document.getElementById('loading-spinner').style.display = 'block';
-    document.getElementById('loading-spinner').querySelector('p').textContent = 'Проверка ответов...';
+    document.getElementById('loading-text').textContent = 'Проверка ответов...';
     
     try {
         const response = await fetch('/api/free_mock/evaluate', {
@@ -328,7 +367,7 @@ async function finishMock() {
         console.error('Ошибка:', error);
         alert('Ошибка проверки ответов: ' + error.message);
         document.getElementById('loading-spinner').style.display = 'none';
-        document.getElementById('tasks-block').style.display = 'block';
+        document.getElementById('task-block').style.display = 'block';
     }
 }
 
