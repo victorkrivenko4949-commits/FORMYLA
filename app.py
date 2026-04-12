@@ -2238,14 +2238,20 @@ def api_free_mock_generate_single_task():
 @app.route("/api/free_mock/evaluate", methods=["POST"])
 @login_required
 def api_free_mock_evaluate():
-    """API: Проверка всех 25 задач и генерация фидбека."""
+    """API: Проверка задач и генерация фидбека."""
     try:
         data = request.get_json()
         tasks = data.get('tasks', [])
         answers = data.get('answers', [])
         
-        if not tasks or not answers or len(tasks) != 25 or len(answers) != 25:
-            return jsonify({'error': 'Неверное количество задач или ответов'}), 400
+        # БОЛЕЕ ГИБКАЯ ПРОВЕРКА: длины должны совпадать, но не обязательно 25
+        if not tasks or not answers:
+            return jsonify({'error': 'Отсутствуют задачи или ответы'}), 400
+        
+        if len(tasks) != len(answers):
+            return jsonify({
+                'error': f'Длина массивов не совпадает: {len(tasks)} задач, {len(answers)} ответов'
+            }), 400
         
         # Проверка доступности DeepSeek
         if not DEEPSEEK_AVAILABLE:

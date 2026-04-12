@@ -233,6 +233,14 @@ async function preloadTask(taskNum, retryCount = 0) {
     
     try {
         const task = await fetchTask(taskNum);
+        
+        // Проверяем, что задача действительно получена (не null)
+        if (task === null) {
+            console.log(`⛔ Задача ${taskNum} > 25, предзагрузка остановлена`);
+            isFetchingNext = false;
+            return;
+        }
+        
         tasksQueue[taskNum] = task;
         console.log(`✅ Задача ${taskNum} предзагружена успешно`);
         isFetchingNext = false;
@@ -256,6 +264,12 @@ async function preloadTask(taskNum, retryCount = 0) {
 
 // Fetch задачи с сервера (С РОТАЦИЕЙ ТЕМ, КОНТЕКСТОМ И ТИХИМ АВТО-ПОВТОРОМ)
 async function fetchTask(taskNum, retryCount = 0) {
+    // ЖЕСТКАЯ ПРОВЕРКА: не генерируем задачи после 25-й
+    if (taskNum > 25) {
+        console.log(`⛔ Попытка сгенерировать задачу ${taskNum} > 25, игнорируем`);
+        return null;
+    }
+    
     const MAX_RETRIES = 10;  // До 10 попыток
     const RETRY_DELAY = 2000;  // 2 секунды между попытками
     
@@ -440,9 +454,21 @@ async function finishMock() {
         return;
     }
     
-    // Сохраняем последний ответ и задачу
-    userAnswers.push(answer);
-    allTasks.push(tasksQueue[currentTaskNum]);
+    // ИСПРАВЛЕНИЕ: Проверяем, не добавлен ли уже ответ для текущей задачи
+    // Если длина ответов меньше длины задач, добавляем ответ
+    if (userAnswers.length < allTasks.length) {
+        userAnswers.push(answer);
+    } else if (userAnswers.length === allTasks.length) {
+        // Обновляем последний ответ (на случай, если пользователь изменил его)
+        userAnswers[userAnswers.length - 1] = answer;
+    }
+    
+    // Добавляем текущую задачу, если она еще не в массиве
+    if (allTasks.length < currentTaskNum && tasksQueue[currentTaskNum]) {
+        allTasks.push(tasksQueue[currentTaskNum]);
+    }
+    
+    console.log(`📊 Отправка на проверку: ${allTasks.length} задач, ${userAnswers.length} ответов`);
     
     // Показываем спиннер
     document.getElementById('task-block').style.display = 'none';
