@@ -5,29 +5,213 @@
 {% block content %}
 <div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
     
+    <!-- Заголовок -->
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
             📝 Бесплатный пробник
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
-            5 задач • Уровень 1-3 • Без проверки решений
+            25 задач • 5 блоков по 5 задач • Пошаговая генерация
         </p>
     </div>
 
-    <form method="POST" action="{{ url_for('free_mock_submit') }}">
+    <!-- Контейнер для динамического контента -->
+    <div id="mock-container">
         
-        {% for task in tasks %}
-        <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <!-- Форма настроек (показывается в начале) -->
+        <div id="setup-form" style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
             
+            <h2 style="color: var(--accent-2); margin-bottom: 30px; text-align: center;">⚙️ Настройки теста</h2>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
+                    Класс:
+                </label>
+                <select id="class-select" 
+                        style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px;">
+                    <option value="5">5 класс</option>
+                    <option value="6">6 класс</option>
+                    <option value="7">7 класс</option>
+                    <option value="8">8 класс</option>
+                    <option value="9">9 класс</option>
+                    <option value="10">10 класс</option>
+                    <option value="11">11 класс</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
+                    Уровень сложности:
+                </label>
+                <select id="difficulty-select" 
+                        style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px;">
+                    <option value="1">1 - Базовый</option>
+                    <option value="2">2 - Легкий</option>
+                    <option value="3" selected>3 - Средний</option>
+                    <option value="4">4 - Сложный</option>
+                    <option value="5">5 - Олимпиадный</option>
+                </select>
+            </div>
+            
+            <div style="text-align: center;">
+                <button onclick="startTest()" 
+                        style="padding: 18px 50px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform='translateY(0)'">
+                    🚀 Начать тест
+                </button>
+            </div>
+            
+        </div>
+        
+        <!-- Блок с задачами (скрыт по умолчанию) -->
+        <div id="tasks-block" style="display: none;">
+            <!-- Прогресс-бар -->
+            <div style="background: var(--bg-card); padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="color: var(--text-soft); font-weight: 600;">Прогресс:</span>
+                    <span id="progress-text" style="color: var(--accent-2); font-weight: 600;">Блок 1/5</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: rgba(15, 23, 42, 0.6); border-radius: 4px; overflow: hidden;">
+                    <div id="progress-bar" style="width: 20%; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent-1)); transition: width 0.5s;"></div>
+                </div>
+            </div>
+            
+            <!-- Контейнер для задач -->
+            <div id="tasks-container"></div>
+            
+            <!-- Кнопки навигации -->
+            <div style="text-align: center; margin-top: 40px;">
+                <button id="next-button" onclick="nextBlock()" 
+                        style="padding: 18px 50px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform='translateY(0)'">
+                    Далее →
+                </button>
+            </div>
+        </div>
+        
+        <!-- Спиннер загрузки -->
+        <div id="loading-spinner" style="display: none; text-align: center; padding: 60px;">
+            <div style="display: inline-block; width: 60px; height: 60px; border: 6px solid rgba(56, 189, 248, 0.2); border-top-color: var(--accent-2); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="color: var(--text-soft); margin-top: 20px; font-size: 18px;">Генерация задач...</p>
+        </div>
+        
+        <!-- Результаты (скрыты по умолчанию) -->
+        <div id="results-block" style="display: none;"></div>
+        
+    </div>
+    
+</div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Глобальные переменные
+let currentBlock = 1;
+let allTasks = [];
+let userAnswers = [];
+let currentTasks = [];
+let classLevel = '';
+let difficulty = '';
+let previousTopics = [];
+
+// Начало теста
+function startTest() {
+    classLevel = document.getElementById('class-select').value;
+    difficulty = document.getElementById('difficulty-select').value;
+    
+    // Скрываем форму настроек
+    document.getElementById('setup-form').style.display = 'none';
+    
+    // Сбрасываем состояние
+    currentBlock = 1;
+    allTasks = [];
+    userAnswers = [];
+    previousTopics = [];
+    
+    // Генерируем первый блок
+    generateBlock();
+}
+
+// Генерация блока задач
+async function generateBlock() {
+    // Показываем спиннер
+    document.getElementById('loading-spinner').style.display = 'block';
+    document.getElementById('tasks-block').style.display = 'none';
+    
+    try {
+        const response = await fetch('/api/free_mock/generate_block', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                class_level: classLevel,
+                difficulty: difficulty,
+                block_number: currentBlock,
+                previous_topics_list: previousTopics
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка генерации');
+        }
+        
+        currentTasks = await response.json();
+        
+        // Собираем темы для следующего блока
+        currentTasks.forEach(task => {
+            if (task.topic && !previousTopics.includes(task.topic)) {
+                previousTopics.push(task.topic);
+            }
+        });
+        
+        // Рендерим задачи
+        renderTasks();
+        
+        // Скрываем спиннер, показываем задачи
+        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('tasks-block').style.display = 'block';
+        
+        // Обновляем прогресс
+        updateProgress();
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка генерации задач: ' + error.message);
+        // Возвращаемся к форме настроек
+        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('setup-form').style.display = 'block';
+    }
+}
+
+// Рендеринг задач
+function renderTasks() {
+    const container = document.getElementById('tasks-container');
+    container.innerHTML = '';
+    
+    currentTasks.forEach((task, index) => {
+        const taskNumber = (currentBlock - 1) * 5 + index + 1;
+        
+        const taskDiv = document.createElement('div');
+        taskDiv.style.cssText = 'background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;';
+        
+        taskDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--accent-2); margin: 0;">Задача {{ loop.index }}</h3>
+                <h3 style="color: var(--accent-2); margin: 0;">Задача ${taskNumber}</h3>
                 <span style="padding: 6px 12px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); border-radius: 8px; font-size: 14px; font-weight: 600;">
-                    Уровень {{ task.difficulty }}
+                    Уровень ${task.difficulty || difficulty}
                 </span>
             </div>
             
             <div style="color: var(--text-soft); line-height: 1.8; margin-bottom: 25px; white-space: pre-wrap;">
-                {{ task.text }}
+                ${task.text}
             </div>
             
             <div style="margin-top: 20px;">
@@ -35,27 +219,169 @@
                     Ваш ответ:
                 </label>
                 <input type="text" 
-                       name="answer_{{ loop.index }}" 
-                       required
+                       id="answer-${index}" 
                        placeholder="Введите ответ"
                        style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; caret-color: var(--accent-2);"
                        onfocus="this.style.borderColor='var(--accent-2)'"
                        onblur="this.style.borderColor='var(--border-mid)'">
             </div>
+        `;
+        
+        container.appendChild(taskDiv);
+    });
+}
+
+// Обновление прогресса
+function updateProgress() {
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.getElementById('progress-bar');
+    const nextButton = document.getElementById('next-button');
+    
+    progressText.textContent = `Блок ${currentBlock}/5`;
+    progressBar.style.width = `${(currentBlock / 5) * 100}%`;
+    
+    // Меняем текст кнопки на последнем блоке
+    if (currentBlock === 5) {
+        nextButton.textContent = '✅ Завершить тест';
+        nextButton.onclick = finishMock;
+    } else {
+        nextButton.textContent = 'Далее →';
+        nextButton.onclick = nextBlock;
+    }
+}
+
+// Переход к следующему блоку
+function nextBlock() {
+    // Собираем ответы
+    const blockAnswers = [];
+    for (let i = 0; i < currentTasks.length; i++) {
+        const input = document.getElementById(`answer-${i}`);
+        blockAnswers.push(input ? input.value.trim() : '');
+    }
+    
+    // Проверяем, что все ответы заполнены
+    if (blockAnswers.some(answer => answer === '')) {
+        alert('Пожалуйста, ответьте на все вопросы');
+        return;
+    }
+    
+    // Сохраняем ответы и задачи
+    userAnswers.push(...blockAnswers);
+    allTasks.push(...currentTasks);
+    
+    // Переходим к следующему блоку
+    currentBlock++;
+    generateBlock();
+}
+
+// Завершение теста
+async function finishMock() {
+    // Собираем последние ответы
+    const blockAnswers = [];
+    for (let i = 0; i < currentTasks.length; i++) {
+        const input = document.getElementById(`answer-${i}`);
+        blockAnswers.push(input ? input.value.trim() : '');
+    }
+    
+    // Проверяем, что все ответы заполнены
+    if (blockAnswers.some(answer => answer === '')) {
+        alert('Пожалуйста, ответьте на все вопросы');
+        return;
+    }
+    
+    // Сохраняем последние ответы и задачи
+    userAnswers.push(...blockAnswers);
+    allTasks.push(...currentTasks);
+    
+    // Показываем спиннер
+    document.getElementById('tasks-block').style.display = 'none';
+    document.getElementById('loading-spinner').style.display = 'block';
+    document.getElementById('loading-spinner').querySelector('p').textContent = 'Проверка ответов...';
+    
+    try {
+        const response = await fetch('/api/free_mock/evaluate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                tasks: allTasks,
+                answers: userAnswers
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка проверки');
+        }
+        
+        const results = await response.json();
+        
+        // Рендерим результаты
+        renderResults(results);
+        
+        // Скрываем спиннер, показываем результаты
+        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('results-block').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка проверки ответов: ' + error.message);
+        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('tasks-block').style.display = 'block';
+    }
+}
+
+// Рендеринг результатов
+function renderResults(data) {
+    const container = document.getElementById('results-block');
+    
+    const percentage = Math.round((data.correct_count / data.total_count) * 100);
+    
+    container.innerHTML = `
+        <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); text-align: center;">
+            
+            <h2 style="color: var(--accent-2); margin-bottom: 30px;">🎉 Тест завершен!</h2>
+            
+            <div style="font-size: 3em; color: var(--accent-1); margin-bottom: 20px; font-weight: 700;">
+                ${data.score}
+            </div>
+            
+            <div style="font-size: 1.5em; color: var(--text-soft); margin-bottom: 40px;">
+                ${percentage}% правильных ответов
+            </div>
+            
+            <div style="text-align: left; margin-bottom: 30px;">
+                <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(34, 197, 94, 0.3); margin-bottom: 15px;">
+                    <h3 style="color: #22c55e; margin-bottom: 10px;">💪 Сильные темы:</h3>
+                    <p style="color: var(--text-soft); margin: 0;">${data.strong_topics}</p>
+                </div>
+                
+                <div style="background: rgba(239, 68, 68, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(239, 68, 68, 0.3); margin-bottom: 15px;">
+                    <h3 style="color: #ef4444; margin-bottom: 10px;">📚 Слабые темы:</h3>
+                    <p style="color: var(--text-soft); margin: 0;">${data.weak_topics}</p>
+                </div>
+                
+                <div style="background: rgba(56, 189, 248, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(56, 189, 248, 0.3);">
+                    <h3 style="color: var(--accent-2); margin-bottom: 10px;">💡 Рекомендации:</h3>
+                    <p style="color: var(--text-soft); margin: 0;">${data.feedback}</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button onclick="location.reload()" 
+                        style="padding: 15px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);">
+                    🔄 Пройти еще раз
+                </button>
+                <button onclick="window.location.href='/'" 
+                        style="padding: 15px 30px; background: rgba(15, 23, 42, 0.6); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                    🏠 На главную
+                </button>
+            </div>
             
         </div>
-        {% endfor %}
-        
-        <div style="text-align: center; margin-top: 40px;">
-            <button type="submit" 
-                    style="padding: 18px 50px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;"
-                    onmouseover="this.style.transform='translateY(-2px)'"
-                    onmouseout="this.style.transform='translateY(0)'">
-                ✅ Проверить ответы
-            </button>
-        </div>
-        
-    </form>
-    
-</div>
+    `;
+}
+</script>
+
 {% endblock %}

@@ -1711,8 +1711,8 @@ def exam_results(exam_id):
 @app.route("/free_mock/start")
 @login_required
 def free_mock_start():
-    """Показать страницу настройки бесплатного пробника."""
-    return render_template('free_mock_setup.html')
+    """Показать страницу бесплатного пробника с пошаговой генерацией."""
+    return render_template('free_mock.html')
 
 
 @app.route("/free_mock/generate", methods=["POST"])
@@ -1912,6 +1912,257 @@ def free_mock_submit():
                          total_count=len(tasks),
                          grade=grade,
                          level=level)
+
+
+# ============================================================
+# FREE MOCK API (Пошаговая генерация для бесплатного пробника)
+# ============================================================
+
+@app.route("/api/free_mock/generate_block", methods=["POST"])
+@login_required
+def api_free_mock_generate_block():
+    """API: Генерация одного блока из 5 задач."""
+    try:
+        data = request.get_json()
+        class_level = data.get('class_level')
+        difficulty = data.get('difficulty')
+        block_number = data.get('block_number', 1)
+        previous_topics = data.get('previous_topics_list', [])
+        
+        if not class_level or not difficulty:
+            return jsonify({'error': 'Не указаны класс или сложность'}), 400
+        
+        # Проверка доступности DeepSeek
+        if not DEEPSEEK_AVAILABLE:
+            return jsonify({'error': 'AI-генерация временно недоступна'}), 503
+        
+        # Инициализация DeepSeek клиента
+        deepseek = DeepSeekClient()
+        
+        # Формируем промпт
+        topics_exclusion = ""
+        if previous_topics:
+            topics_exclusion = f" Темы должны отличаться от этих: {', '.join(previous_topics)}."
+        
+        system_prompt = """Ты - профессиональный составитель математических олимпиад уровня Всероссийской олимпиады, IMO, Физтеха.
+Генерируй задачи в строгом JSON формате без дополнительного текста."""
+        
+        # Определяем уровень сложности для промпта
+        difficulty_descriptions = {
+            "1": "базовый (простые вычисления, стандартные формулы)",
+            "2": "легкий (задачи на понимание концепций, простые уравнения)",
+            "3": "средний (комбинированные задачи, требующие нескольких шагов)",
+            "4": "сложный (нестандартные подходы, олимпиадные приемы)",
+            "5": "олимпиадный (высокий уровень абстракции, продвинутые методы)"
+        }
+        difficulty_desc = difficulty_descriptions.get(str(difficulty), "средний")
+        
+        # Специальные требования для высоких уровней сложности
+        advanced_requirements = ""
+        if str(difficulty) in ["4", "5"]:
+            advanced_requirements = """
+ВАЖНО! Для уровня сложности 4-5 СТРОГО ЗАПРЕЩЕНО:
+- Простые линейные/квадратные уравнения
+- Базовая школьная геометрия (площади треугольников по формуле Герона)
+- Простые текстовые задачи на движение/работу
+- Задачи, которые решаются в 1-2 действия
+
+ОБЯЗАТЕЛЬНО используй:
+- Диофантовы уравнения и теорию чисел
+- Комбинаторику и принцип Дирихле
+- Инварианты и раскраски
+- Сложные неравенства (Коши-Буняковского, Йенсена)
+- Продвинутую геометрию (теоремы Чевы, Менелая, вписанные/описанные окружности)
+- Графы и теорию игр
+- Функциональные уравнения
+- Задачи на доказательство и конструктивные примеры"""
+        
+        user_prompt = f"""Ты профессиональный составитель математических олимпиад (уровня Всероса, IMO, Физтеха).
+Твоя цель: сгенерировать ровно 5 уникальных задач для {class_level} класса.
+
+ТРЕБУЕМЫЙ УРОВЕНЬ СЛОЖНОСТИ: {difficulty} - {difficulty_desc}
+ИЗ ЭТОГО УРОВНЯ ВЫХОДИТЬ СТРОГО ЗАПРЕЩЕНО! Все 5 задач должны быть одинаково сложными.
+
+Это блок задач номер {block_number} из 5.{topics_exclusion}
+{advanced_requirements}
+
+ПРАВИЛА ГЕНЕРАЦИИ:
+1. Задачи НЕ должны гуглиться. Придумывай новые оригинальные формулировки.
+2. Ответ должен быть однозначным числом или кратким выражением (не более 10 символов).
+3. Решение должно быть подробным, но структурированным (4-6 предложений).
+4. Каждая задача должна быть из РАЗНЫХ тем математики.
+5. Уровень сложности ВСЕХ задач должен строго соответствовать {difficulty}.
+
+Верни СТРОГО валидный JSON-массив из 5 объектов в формате:
+[
+  {{
+    "text": "Условие задачи (четкое, без лишних слов)",
+    "answer": "Краткий ответ",
+    "solution": "Подробное пошаговое решение",
+    "difficulty": {difficulty},
+    "topic": "Название темы (например: Теория чисел, Комбинаторика, Геометрия)"
+  }},
+  ...
+]
+
+Важно: ответ должен содержать ТОЛЬКО JSON массив, без markdown разметки и дополнительного текста."""
+
+        print(f"🤖 Генерация блока {block_number}/5 для {class_level} класса, уровень {difficulty}...")
+        
+        response = deepseek.generate(
+            prompt=user_prompt,
+            system_prompt=system_prompt,
+            temperature=0.7,
+            max_tokens=4000
+        )
+        
+        # Парсинг JSON - убираем markdown блоки
+        response = response.strip()
+        if response.startswith('```json'):
+            response = response[7:]
+        if response.startswith('```'):
+            response = response[3:]
+        if response.endswith('```'):
+            response = response[:-3]
+        response = response.strip()
+        
+        tasks = json.loads(response)
+        
+        # Проверяем, что получили ровно 5 задач
+        if len(tasks) != 5:
+            tasks = tasks[:5]  # Берем первые 5
+        
+        print(f"✅ Блок {block_number} сгенерирован: {len(tasks)} задач")
+        
+        return jsonify(tasks), 200
+        
+    except DeepSeekAPIError as e:
+        print(f"❌ Ошибка DeepSeek API: {e}")
+        return jsonify({'error': f'Ошибка генерации: {str(e)}'}), 500
+    except json.JSONDecodeError as e:
+        print(f"❌ Ошибка парсинга JSON: {e}")
+        return jsonify({'error': 'Ошибка обработки ответа AI'}), 500
+    except Exception as e:
+        print(f"❌ Неожиданная ошибка: {e}")
+        return jsonify({'error': f'Произошла ошибка: {str(e)}'}), 500
+
+
+@app.route("/api/free_mock/evaluate", methods=["POST"])
+@login_required
+def api_free_mock_evaluate():
+    """API: Проверка всех 25 задач и генерация фидбека."""
+    try:
+        data = request.get_json()
+        tasks = data.get('tasks', [])
+        answers = data.get('answers', [])
+        
+        if not tasks or not answers or len(tasks) != 25 or len(answers) != 25:
+            return jsonify({'error': 'Неверное количество задач или ответов'}), 400
+        
+        # Проверка доступности DeepSeek
+        if not DEEPSEEK_AVAILABLE:
+            return jsonify({'error': 'AI-генерация временно недоступна'}), 503
+        
+        # Простая проверка ответов
+        correct_count = 0
+        results = []
+        
+        for i, (task, user_answer) in enumerate(zip(tasks, answers)):
+            correct_answer = str(task.get('answer', '')).strip()
+            user_answer = str(user_answer).strip()
+            
+            # Нормализация ответов
+            user_answer_normalized = user_answer.lower().replace(' ', '').replace(',', '.')
+            correct_answer_normalized = correct_answer.lower().replace(' ', '').replace(',', '.')
+            
+            is_correct = user_answer_normalized == correct_answer_normalized
+            
+            if is_correct:
+                correct_count += 1
+            
+            results.append({
+                'task_number': i + 1,
+                'is_correct': is_correct,
+                'user_answer': user_answer,
+                'correct_answer': correct_answer,
+                'topic': task.get('topic', 'Неизвестная тема')
+            })
+        
+        # Генерация фидбека через DeepSeek
+        deepseek = DeepSeekClient()
+        
+        # Собираем статистику по темам
+        topic_stats = {}
+        for result in results:
+            topic = result['topic']
+            if topic not in topic_stats:
+                topic_stats[topic] = {'correct': 0, 'total': 0}
+            topic_stats[topic]['total'] += 1
+            if result['is_correct']:
+                topic_stats[topic]['correct'] += 1
+        
+        # Формируем промпт для фидбека
+        stats_text = "\n".join([
+            f"- {topic}: {stats['correct']}/{stats['total']} правильных"
+            for topic, stats in topic_stats.items()
+        ])
+        
+        system_prompt = """Ты - опытный преподаватель математики, анализирующий результаты теста."""
+        
+        user_prompt = f"""Ученик решил тест из 25 задач. Результат: {correct_count}/25 правильных ответов.
+
+Статистика по темам:
+{stats_text}
+
+Проанализируй результаты и верни JSON объект:
+{{
+  "score": "{correct_count}/25",
+  "strong_topics": "список сильных тем через запятую",
+  "weak_topics": "список слабых тем через запятую",
+  "feedback": "краткий совет на 2-3 предложения"
+}}
+
+Верни ТОЛЬКО JSON без markdown разметки."""
+
+        print(f"🤖 Генерация фидбека для результата {correct_count}/25...")
+        
+        response = deepseek.generate(
+            prompt=user_prompt,
+            system_prompt=system_prompt,
+            temperature=0.5,
+            max_tokens=1000
+        )
+        
+        # Парсинг JSON
+        response = response.strip()
+        if response.startswith('```json'):
+            response = response[7:]
+        if response.startswith('```'):
+            response = response[3:]
+        if response.endswith('```'):
+            response = response[:-3]
+        response = response.strip()
+        
+        feedback_data = json.loads(response)
+        
+        # Добавляем детальные результаты
+        feedback_data['results'] = results
+        feedback_data['correct_count'] = correct_count
+        feedback_data['total_count'] = 25
+        
+        print(f"✅ Фидбек сгенерирован")
+        
+        return jsonify(feedback_data), 200
+        
+    except DeepSeekAPIError as e:
+        print(f"❌ Ошибка DeepSeek API: {e}")
+        return jsonify({'error': f'Ошибка генерации фидбека: {str(e)}'}), 500
+    except json.JSONDecodeError as e:
+        print(f"❌ Ошибка парсинга JSON: {e}")
+        return jsonify({'error': 'Ошибка обработки ответа AI'}), 500
+    except Exception as e:
+        print(f"❌ Неожиданная ошибка: {e}")
+        return jsonify({'error': f'Произошла ошибка: {str(e)}'}), 500
 
 
 # ============================================================
