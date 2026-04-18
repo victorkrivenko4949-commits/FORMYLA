@@ -295,26 +295,51 @@ button:hover {
     .problem-text, .answer, .solution { font-size: 16px; }
 }
 
-/* Адаптивная верстка для мобильных */
+/* ========================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ (Mobile First)
+   ======================================== */
 @media (max-width: 768px) {
-    /* Навигация */
+    /* HEADER И НАВИГАЦИЯ */
     .header {
         flex-wrap: wrap;
-        padding: 10px 15px;
+        padding: 12px 15px;
+        gap: 10px;
     }
     
+    .logo img {
+        height: 32px;
+    }
+    
+    /* Скрываем поиск и авторизацию на мобильных для экономии места */
+    .header form {
+        display: none !important;
+    }
+    
+    .header > div:last-child {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-left: 0 !important;
+        margin-top: 10px;
+    }
+    
+    /* Навигация - выпадающее меню */
     .nav {
         display: none;
-        position: absolute;
-        top: 60px;
+        position: fixed;
+        top: 70px;
         left: 0;
         right: 0;
-        background: var(--bg-elevated);
+        background: rgba(11, 18, 32, 0.98);
+        backdrop-filter: blur(14px);
         flex-direction: column;
         padding: 15px;
         border-bottom: 1px solid var(--border-soft);
-        z-index: 100;
-        gap: 8px;
+        z-index: 1000;
+        gap: 10px;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     
     .nav.active {
@@ -323,62 +348,192 @@ button:hover {
     
     .nav a {
         width: 100%;
-        padding: 14px;
+        padding: 16px;
         text-align: center;
-        font-size: 15px;
-        background: rgba(30, 41, 59, 0.6);
-        border-radius: 8px;
+        font-size: 16px;
+        background: rgba(30, 41, 59, 0.8);
+        border-radius: 10px;
         border: 1px solid var(--border-soft);
         transition: all 0.2s;
+        color: var(--text-soft);
     }
     
-    .nav a:active {
+    .nav a:active,
+    .nav a:hover {
         background: rgba(56, 189, 248, 0.2);
         border-color: var(--accent-2);
+        color: var(--text-main);
     }
     
     /* Hamburger кнопка */
     .hamburger {
         display: block !important;
-        background: none;
-        border: none;
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
         color: var(--text-main);
         font-size: 24px;
         cursor: pointer;
-        padding: 8px;
+        padding: 8px 12px;
+        margin-left: auto;
+        transition: all 0.2s;
     }
     
-    /* Карточки в одну колонку */
+    .hamburger:active {
+        background: rgba(56, 189, 248, 0.2);
+        border-color: var(--accent-2);
+    }
+    
+    /* ОСНОВНОЙ КОНТЕНТ */
+    .main {
+        padding: 20px 15px 50px;
+    }
+    
+    .page-title {
+        font-size: 32px;
+        margin-bottom: 15px;
+    }
+    
+    .page-subtitle {
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+    
+    /* КАРТОЧКИ В ОДНУ КОЛОНКУ */
     .cards-grid {
         grid-template-columns: 1fr !important;
+        gap: 15px;
     }
     
-    /* AI-тьютор на всю ширину */
+    .card {
+        padding: 20px 18px;
+    }
+    
+    .card-title {
+        font-size: 24px;
+    }
+    
+    .card-text {
+        font-size: 14px;
+    }
+    
+    /* ЗАДАЧИ И ОЛИМПИАДЫ */
+    .problem-card {
+        padding: 20px 16px;
+    }
+    
+    .problem-title {
+        font-size: 24px;
+    }
+    
+    .problem-text,
+    .answer,
+    .solution {
+        font-size: 15px;
+        line-height: 1.6;
+    }
+    
+    /* КАРТИНКИ - НЕ ВЫЛЕЗАЮТ ЗА ЭКРАН */
+    .task-image-container img,
+    .problem-image img,
+    img {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* ФОРМУЛЫ - ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ */
+    .katex-display,
+    .MathJax_Display,
+    .problem-text,
+    .solution,
+    .answer {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    
+    /* ФОРМЫ И ФИЛЬТРЫ */
+    .filters,
+    .filter-form {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    label {
+        min-width: 100%;
+    }
+    
+    /* КНОПКИ И ИНПУТЫ - УДОБНЫЕ ДЛЯ ТАПА */
+    button,
+    .btn,
+    .btn-primary,
+    a.card {
+        min-height: 48px;
+        font-size: 16px;
+        padding: 14px 20px;
+    }
+    
+    input,
+    textarea,
+    select {
+        font-size: 16px !important;
+        padding: 14px;
+        min-height: 48px;
+    }
+    
+    /* AI-ТЬЮТОР НА ВСЮ ШИРИНУ */
     #tutorChat {
         width: 100vw !important;
         height: 100vh !important;
         bottom: 0 !important;
         right: 0 !important;
+        left: 0 !important;
+        top: 0 !important;
         border-radius: 0 !important;
+        max-width: 100vw !important;
     }
     
     #tutorBtn {
-        bottom: 10px !important;
-        right: 10px !important;
+        bottom: 15px !important;
+        right: 15px !important;
+        width: 56px !important;
+        height: 56px !important;
+        font-size: 24px !important;
     }
     
-    /* Крупнее шрифты и кнопки */
+    /* ТАБЛИЦЫ - ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    /* УБИРАЕМ ЛИШНИЕ ОТСТУПЫ */
     body {
-        font-size: 16px;
+        font-size: 15px;
     }
     
-    button, .btn, a.card {
-        min-height: 44px;
-        font-size: 16px;
+    /* SUBJECTS GRID (если есть) */
+    .subjects-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ */
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 28px;
     }
     
-    input, textarea {
-        font-size: 16px;
-        padding: 12px;
+    .card-title {
+        font-size: 20px;
+    }
+    
+    .main {
+        padding: 15px 10px 40px;
+    }
+    
+    .header {
+        padding: 10px 12px;
     }
 }

@@ -10,33 +10,31 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     
-    <!-- MathJax Configuration: Supports both LaTeX and plain text math -->
-    <script>
-      window.MathJax = {
-        tex: {
-          inlineMath: [['$', '$'], ['\\(', '\\)']],
-          displayMath: [['$$', '$$'], ['\\[', '\\]']],
-          processEscapes: true,
-          processEnvironments: true
-        },
-        options: {
-          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-          ignoreHtmlClass: 'tex2jax_ignore',
-          processHtmlClass: 'tex2jax_process'
-        },
-        startup: {
-          pageReady: () => {
-            return MathJax.startup.defaultPageReady().then(() => {
-              console.log('✓ MathJax loaded and ready');
-            });
-          }
-        }
-      };
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     
     <!-- Marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Auto-render KaTeX on page load -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        if (window.renderMathInElement) {
+          renderMathInElement(document.body, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+            ],
+            throwOnError: false
+          });
+          console.log('✓ KaTeX auto-render completed');
+        }
+      });
+    </script>
 </head>
 <body>
     <header class="header">
@@ -44,12 +42,20 @@
             <img src="/static/logo.png" alt="FORMYLA" height="40">
         </a>
 
-        <nav class="nav">
+        <!-- Burger Menu Button (Mobile Only) -->
+        <button class="hamburger" id="hamburgerBtn" style="display: none;" onclick="toggleMobileMenu()">
+            <span id="hamburgerIcon">☰</span>
+        </button>
+
+        <nav class="nav" id="mainNav">
             <a href="{{ url_for('index') }}">Темы</a>
             <a href="{{ url_for('olympiads') }}">Олимпиады</a>
             <a href="/practice">Написать олимпиаду</a>
             <a href="/probniks">Пробники</a>
             <a href="{{ url_for('secrets') }}">Секреты</a>
+            <a href="{{ url_for('leaderboard') }}" style="display: flex; align-items: center; gap: 6px;">
+                🏆 Лидеры
+            </a>
             {% if current_user.is_authenticated %}
             <a href="#" onclick="document.getElementById('tutorBtn')?.click(); return false;" style="display: flex; align-items: center; gap: 6px;">
                 💬 AI-Тьютор
@@ -161,6 +167,38 @@ MathJax = {
             console.error('Error:', error);
         }
     }
+    </script>
+    
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+    function toggleMobileMenu() {
+        const nav = document.getElementById('mainNav');
+        const icon = document.getElementById('hamburgerIcon');
+        
+        nav.classList.toggle('active');
+        
+        // Меняем иконку
+        if (nav.classList.contains('active')) {
+            icon.textContent = '✕';
+        } else {
+            icon.textContent = '☰';
+        }
+    }
+    
+    // Закрываем меню при клике на ссылку
+    document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    const nav = document.getElementById('mainNav');
+                    const icon = document.getElementById('hamburgerIcon');
+                    nav.classList.remove('active');
+                    icon.textContent = '☰';
+                }
+            });
+        });
+    });
     </script>
     
     <!-- AI Тьютор виджет -->
