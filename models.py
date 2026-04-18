@@ -30,6 +30,18 @@ class User(UserMixin, db.Model):
     recommended_topics = db.Column(db.String(200))  # JSON строка с темами
     onboarding_completed = db.Column(db.Boolean, default=False)
     
+    # Leaderboard Statistics
+    total_problems_solved = db.Column(db.Integer, default=0)  # Всего решено задач
+    current_level = db.Column(db.Integer, default=1)  # Текущий уровень (1-10)
+    experience_points = db.Column(db.Integer, default=0)  # Очки опыта
+    mock_exams_passed = db.Column(db.Integer, default=0)  # Пробников пройдено с >80%
+    adaptive_tests_completed = db.Column(db.Integer, default=0)  # Адаптивных тестов завершено
+    highest_difficulty_solved = db.Column(db.Integer, default=0)  # Максимальная сложность решенной задачи
+    
+    # Relationships
+    topic_progress = db.relationship('UserTopicProgress', backref='user', lazy=True, cascade='all, delete-orphan')
+    test_results = db.relationship('AdaptiveTestResult', backref='user', lazy=True, cascade='all, delete-orphan')
+    
     # Метаданные
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
@@ -72,6 +84,41 @@ class User(UserMixin, db.Model):
         if self.recommended_topics:
             return self.recommended_topics.split(',')
         return []
+    
+    def update_stats_after_problem(self, is_correct, difficulty):
+        """Обновить статистику после решения задачи"""
+        if is_correct:
+            self.total_problems_solved += 1
+            self.experience_points += difficulty * 10  # 10 XP за каждый уровень сложности
+            
+            # Обновить максимальную сложность
+            if difficulty > self.highest_difficulty_solved:
+                self.highest_difficulty_solved = difficulty
+            
+            # Повышение уровня (каждые 100 XP = новый уровень)
+            self.current_level = min(10, 1 + (self.experience_points // 100))
+    
+    def update_stats_after_mock_exam(self, score):
+        """Обновить статистику после пробника"""
+        if score >= 80:
+            self.mock_exams_passed += 1
+            self.experience_points += 50  # Бонус за успешный пробник
+            self.current_level = min(10, 1 + (self.experience_points // 100))
+    
+    def update_stats_after_adaptive_test(self):
+        """Обновить статистику после адаптивного теста"""
+        self.adaptive_tests_completed += 1
+        self.experience_points += 30  # Бонус за завершение адаптивного теста
+        self.current_level = min(10, 1 + (self.experience_points // 100))
+    
+    def get_leaderboard_score(self):
+        """Вычислить общий рейтинг для leaderboard"""
+        # Формула рейтинга: XP + бонусы за достижения
+        score = self.experience_points
+        score += self.mock_exams_passed * 100  # Большой бонус за пробники
+        score += self.adaptive_tests_completed * 50
+        score += self.highest_difficulty_solved * 20
+        return score
     
     def __repr__(self):
         return f'<User {self.email}>'
@@ -381,6 +428,106 @@ class Mentorship(db.Model):
     
     def __repr__(self):
         return f'<Mentorship Teacher:{self.teacher_id} -> Student:{self.student_id} ({self.status})>'
+
+
+class OlympiadSecret(db.Model):
+    """Модель для базы знаний олимпиадной математики"""
+    __tablename__ = 'olympiad_secrets'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    topic = db.Column(db.String(100), nullable=False, index=True)  # Категория
+    title = db.Column(db.String(200), nullable=False)  # Название метода
+    content = db.Column(db.Text, nullable=False)  # Markdown статья
+    difficulty_level = db.Column(db.Integer, nullable=False)  # 1-3
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<OlympiadSecret {self.topic}: {self.title}>'
+
+
+class AdaptiveTask(db.Model):
+    """Модель для задач Адаптивного теста (отдельная таблица от олимпиад)"""
+    __tablename__ = 'adaptive_tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    class_level = db.Column(db.Integer, nullable=False, index=True)  # Класс (5, 6, 7, etc.)
+    difficulty_level = db.Column(db.Integer, nullable=False, index=True)  # Уровень сложности 1-7
+    topic = db.Column(db.String(200), nullable=False, index=True)  # Тема из матрицы 25 тем
+    task_text = db.Column(db.Text, nullable=False)  # Условие задачи (с LaTeX)
+    solution = db.Column(db.Text, nullable=False)  # Полное авторское решение
+    criteria_1_point = db.Column(db.Text, nullable=False)  # Критерий на 1 балл
+    criteria_2_points = db.Column(db.Text, nullable=False)  # Критерий на 2 балла
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        """Конвертация в словарь для JSON"""
+        return {
+            'id': self.id,
+            'class_level': self.class_level,
+            'difficulty_level': self.difficulty_level,
+            'topic': self.topic,
+            'task_text': self.task_text,
+            'solution': self.solution,
+            'criteria_1_point': self.criteria_1_point,
+            'criteria_2_points': self.criteria_2_points
+        }
+    
+    def __repr__(self):
+        return f'<AdaptiveTask {self.id}: Class {self.class_level}, Difficulty {self.difficulty_level}, Topic: {self.topic[:30]}>'
+
+
+class UserTopicProgress(db.Model):
+    """Прогресс пользователя по конкретной теме"""
+    __tablename__ = 'user_topic_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Тема
+    topic = db.Column(db.String(50), nullable=False, index=True)  # 'algebra', 'geometry', etc.
+    topic_name_ru = db.Column(db.String(100))  # 'Алгебра', 'Геометрия'
+    
+    # Текущий уровень по IRT (1-7)
+    current_level = db.Column(db.Integer, default=3)  # Начальный уровень = 3
+    
+    # Статистика
+    tasks_attempted = db.Column(db.Integer, default=0)
+    tasks_correct = db.Column(db.Integer, default=0)
+    last_test_date = db.Column(db.DateTime)
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<UserTopicProgress user_id={self.user_id}, topic={self.topic}, level={self.current_level}>'
+
+
+class AdaptiveTestResult(db.Model):
+    """История прохождения адаптивных тестов"""
+    __tablename__ = 'adaptive_test_results'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Параметры теста
+    topic = db.Column(db.String(50))  # Тема теста
+    class_level = db.Column(db.Integer)  # Класс
+    
+    # Результаты
+    final_level = db.Column(db.Integer)  # Финальный уровень IRT (1-7)
+    tasks_correct = db.Column(db.Integer)  # Правильных ответов
+    tasks_total = db.Column(db.Integer, default=25)  # Всего задач
+    
+    # Детали (JSON)
+    answers_history = db.Column(db.Text)  # JSON с историей ответов
+    
+    # Метаданные
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    
+    def __repr__(self):
+        return f'<AdaptiveTestResult user_id={self.user_id}, topic={self.topic}, level={self.final_level}>'
 
 
 def init_db(app):

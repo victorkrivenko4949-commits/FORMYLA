@@ -1,0 +1,5650 @@
+[
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 9,
+    "level": 4,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 9,
+    "level": 5,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 9,
+    "level": 6,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 9,
+    "level": 7,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Уравнения",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 5,
+    "level": 1,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 5,
+    "level": 2,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 5,
+    "level": 3,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 5,
+    "level": 4,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 6,
+    "level": 1,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 6,
+    "level": 2,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 6,
+    "level": 3,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 6,
+    "level": 4,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 6,
+    "level": 5,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 6,
+    "level": 6,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 6,
+    "level": 7,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 7,
+    "level": 4,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 7,
+    "level": 5,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 7,
+    "level": 6,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 7,
+    "level": 7,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 8,
+    "level": 6,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 8,
+    "level": 7,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 9,
+    "level": 1,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Неравенства",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "algebra",
+    "subtopic": "Текстовые задачи",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Основы геометрии",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 6,
+    "level": 1,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 7,
+    "level": 1,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 7,
+    "level": 2,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 8,
+    "level": 1,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 8,
+    "level": 2,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 8,
+    "level": 3,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 8,
+    "level": 4,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 8,
+    "level": 5,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 8,
+    "level": 6,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 9,
+    "level": 1,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Окружности",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 7,
+    "level": 1,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 7,
+    "level": 2,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 7,
+    "level": 3,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 7,
+    "level": 4,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 7,
+    "level": 5,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 7,
+    "level": 6,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 7,
+    "level": 7,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 9,
+    "level": 1,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 9,
+    "level": 2,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 9,
+    "level": 3,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 9,
+    "level": 4,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 9,
+    "level": 5,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 9,
+    "level": 6,
+    "have": 1,
+    "need": 2
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Треугольники",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "geometry",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 9,
+    "level": 5,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 9,
+    "level": 6,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 9,
+    "level": 7,
+    "have": 2,
+    "need": 1
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Делимость",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Простые числа и уравнения",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "number_theory",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Принцип Дирихле и графы",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Игры и инварианты",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "combinatorics",
+    "subtopic": "Другие задачи",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "movement",
+    "subtopic": "Задачи на движение",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 5,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 5,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 5,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 5,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 5,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 5,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 5,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 6,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 6,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 6,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 6,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 6,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 6,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 6,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 7,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 7,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 7,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 7,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 7,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 7,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 7,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 8,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 8,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 8,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 8,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 8,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 8,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 8,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 9,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 9,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 9,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 9,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 9,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 9,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 9,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 10,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 10,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 10,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 10,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 10,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 10,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 10,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 11,
+    "level": 1,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 11,
+    "level": 2,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 11,
+    "level": 3,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 11,
+    "level": 4,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 11,
+    "level": 5,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 11,
+    "level": 6,
+    "have": 0,
+    "need": 3
+  },
+  {
+    "subject": "knights_liars",
+    "subtopic": "Логические задачи",
+    "grade": 11,
+    "level": 7,
+    "have": 0,
+    "need": 3
+  }
+]

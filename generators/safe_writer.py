@@ -76,6 +76,17 @@ class SafeJSONWriter:
             self.write_task(task)
         print(f"💾 Batch written: {len(tasks)} tasks (total: {self.tasks_written})")
             
+    def flush(self):
+        """
+        Принудительный сброс данных на диск (защита от OOM/SIGKILL).
+        Вызывается после каждого батча для гарантии сохранности данных.
+        """
+        if self.file and not self.is_closed:
+            self.file.flush()
+            # Kernel-level sync для максимальной защиты
+            import os
+            os.fsync(self.file.fileno())
+            
     def close(self):
         """Закрывает JSON-массив и файл."""
         if not self.is_closed and self.file:

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Таблица лидеров - FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    
+    <!-- Заголовок -->
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
+            🏆 Таблица лидеров
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            Топ-20 лучших математиков FORMYLA
+        </p>
+        {% if total_users > 0 %}
+        <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 10px;">
+            Всего участников: {{ total_users }}
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Статистика текущего пользователя -->
+    {% if current_user_rank %}
+    <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1)); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px; text-align: center;">
+        <h3 style="color: var(--accent-2); margin-bottom: 15px;">📊 Ваша статистика</h3>
+        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <div style="font-size: 2em; color: var(--accent-1); font-weight: bold;">{{ current_user_rank.rank }}</div>
+                <div style="color: var(--text-muted); font-size: 0.9em;">Место</div>
+            </div>
+            <div>
+                <div style="font-size: 2em; color: var(--accent-2); font-weight: bold;">{{ current_user_rank.level }}</div>
+                <div style="color: var(--text-muted); font-size: 0.9em;">Уровень</div>
+            </div>
+            <div>
+                <div style="font-size: 2em; color: var(--text-main); font-weight: bold;">{{ current_user_rank.total_solved }}</div>
+                <div style="color: var(--text-muted); font-size: 0.9em;">Решено задач</div>
+            </div>
+            <div>
+                <div style="font-size: 2em; color: #10b981; font-weight: bold;">{{ current_user_rank.score }}</div>
+                <div style="color: var(--text-muted); font-size: 0.9em;">Рейтинг</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Таблица лидеров -->
+    {% if top_users %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-soft); overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+        
+        {% for entry in top_users %}
+        <div style="
+            display: flex; 
+            align-items: center; 
+            padding: 20px 25px; 
+            border-bottom: 1px solid var(--border-soft);
+            {% if entry.rank == 1 %}
+                background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), transparent);
+            {% elif entry.rank == 2 %}
+                background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), transparent);
+            {% elif entry.rank == 3 %}
+                background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), transparent);
+            {% endif %}
+            transition: background 0.3s ease;
+        " onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" 
+           onmouseout="this.style.background='{% if entry.rank == 1 %}linear-gradient(90deg, rgba(255, 215, 0, 0.15), transparent){% elif entry.rank == 2 %}linear-gradient(90deg, rgba(192, 192, 192, 0.15), transparent){% elif entry.rank == 3 %}linear-gradient(90deg, rgba(205, 127, 50, 0.15), transparent){% else %}transparent{% endif %}'">
+            
+            <!-- Ранг -->
+            <div style="width: 60px; text-align: center; font-size: 1.5em; font-weight: bold; 
+                {% if entry.rank == 1 %}color: #FFD700;
+                {% elif entry.rank == 2 %}color: #C0C0C0;
+                {% elif entry.rank == 3 %}color: #CD7F32;
+                {% else %}color: var(--text-muted);{% endif %}">
+                {% if entry.rank == 1 %}🥇
+                {% elif entry.rank == 2 %}🥈
+                {% elif entry.rank == 3 %}🥉
+                {% else %}{{ entry.rank }}{% endif %}
+            </div>
+            
+            <!-- Аватар и никнейм -->
+            <div style="flex: 1; display: flex; align-items: center; gap: 15px; min-width: 0;">
+                {% if entry.avatar_url %}
+                <img src="{{ entry.avatar_url }}" alt="{{ entry.nickname }}" 
+                     style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border-mid); object-fit: cover;">
+                {% else %}
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: white; font-weight: bold;">
+                    {{ entry.nickname[0]|upper }}
+                </div>
+                {% endif %}
+                <div style="min-width: 0;">
+                    <div style="font-size: 1.1em; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ entry.nickname }}
+                    </div>
+                    <div style="font-size: 0.85em; color: var(--text-muted);">
+                        Уровень {{ entry.level }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div style="display: flex; gap: 30px; align-items: center;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.3em; font-weight: bold; color: var(--accent-1);">{{ entry.total_solved }}</div>
+                    <div style="font-size: 0.75em; color: var(--text-muted);">Задач</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.3em; font-weight: bold; color: var(--accent-2);">{{ entry.mock_exams_passed }}</div>
+                    <div style="font-size: 0.75em; color: var(--text-muted);">Пробников</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.3em; font-weight: bold; color: #10b981;">{{ entry.score }}</div>
+                    <div style="font-size: 0.75em; color: var(--text-muted);">Рейтинг</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+    </div>
+    {% else %}
+    <!-- Пустое состояние -->
+    <div style="text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
+        <div style="font-size: 4em; margin-bottom: 20px;">🏆</div>
+        <h3 style="color: var(--text-main); margin-bottom: 10px;">Таблица лидеров пуста</h3>
+        <p style="color: var(--text-muted);">Станьте первым! Решайте задачи и проходите тесты, чтобы попасть в рейтинг.</p>
+    </div>
+    {% endif %}
+
+    <!-- Информация о рейтинге -->
+    <div style="margin-top: 40px; padding: 25px; background: rgba(59, 130, 246, 0.05); border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
+        <h3 style="color: var(--accent-2); margin-bottom: 15px;">ℹ️ Как работает рейтинг?</h3>
+        <ul style="color: var(--text-muted); line-height: 1.8; padding-left: 20px;">
+            <li>За каждую правильно решенную задачу вы получаете <strong style="color: var(--text-main);">10 XP × уровень сложности</strong></li>
+            <li>За успешное прохождение пробника (≥80%) — <strong style="color: var(--text-main);">+100 к рейтингу</strong></li>
+            <li>За завершение адаптивного теста — <strong style="color: var(--text-main);">+50 к рейтингу</strong></li>
+            <li>Бонус за максимальную сложность решенной задачи — <strong style="color: var(--text-main);">+20 × уровень</strong></li>
+            <li>Каждые 100 XP повышают ваш уровень (максимум 10)</li>
+        </ul>
+        <p style="color: var(--text-soft); margin-top: 15px; font-size: 0.9em;">
+            💡 <strong>Совет:</strong> Решайте задачи высокой сложности и проходите пробники, чтобы быстрее подняться в рейтинге!
+        </p>
+    </div>
+
+    <!-- Кнопка назад -->
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="/" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
+           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
+            ← На главную
+        </a>
+    </div>
+
+</div>
+{% endblock %}

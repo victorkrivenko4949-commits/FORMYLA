@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body { font-family: Arial; padding: 40px; background: #0f172a; color: #e2e8f0; }
+        .task { background: #1e293b; padding: 30px; border-radius: 12px; margin-bottom: 20px; }
+        h2 { color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <h1>Идеальная задача с корнями</h1>
+    
+    <div class="task">
+        <h2>Условие:</h2>
+        <p>Упростите выражение: \( \sqrt{50} + \sqrt{8} - \sqrt{18} \)</p>
+    </div>
+    
+    <div class="task">
+        <h2>Ответ:</h2>
+        <p>\( 4\sqrt{2} \)</p>
+    </div>
+    
+    <div class="task">
+        <h2>Решение:</h2>
+        <p>1. Разложим подкоренные выражения на множители:
+   \( \sqrt{50} = \sqrt{25 \cdot 2} = 5\sqrt{2} \)
+   \( \sqrt{8} = \sqrt{4 \cdot 2} = 2\sqrt{2} \)
+   \( \sqrt{18} = \sqrt{9 \cdot 2} = 3\sqrt{2} \)
+2. Подставим в исходное выражение:
+   \( 5\sqrt{2} + 2\sqrt{2} - 3\sqrt{2} \)
+3. Приведём подобные слагаемые:
+   \( (5 + 2 - 3)\sqrt{2} = 4\sqrt{2} \)</p>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

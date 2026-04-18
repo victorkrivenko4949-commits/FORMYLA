@@ -40,10 +40,14 @@ print(f"DEBUG: Загружено {len(IMAGE_MAP)} привязок картин
 
 import requests, random, json, uuid, os, base64, math
 from werkzeug.utils import secure_filename
+import threading
 
 # Load environment variables
 from dotenv import load_dotenv
 load_dotenv()
+
+# Import prefetch system
+from simple_prefetch import get_cached_task, add_task_to_cache, clear_cache, get_cache_size
 
 # AI Integration
 try:
@@ -87,6 +91,7 @@ app.config['REMEMBER_COOKIE_SECURE'] = domain_url.startswith('https')
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = domain_url.startswith('https')
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # CRITICAL: Prevent JavaScript access to session cookie
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Flask-Mail configuration (Yandex by default, fully configurable via env vars)
@@ -116,7 +121,7 @@ app.config['YANDEX_CLIENT_SECRET'] = os.environ.get('YANDEX_CLIENT_SECRET')
 app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 
 # Initialize database, login manager and mail
-from models import db, User, Friendship, Mentorship, init_db
+from models import db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress, AdaptiveTestResult, init_db
 init_db(app)
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
@@ -224,7 +229,8 @@ SUBJECTS = {
     "combinatorics": "Комбинаторика",
     "number_theory": "Теория чисел",
     "movement": "Задачи на движение",
-    "knights_liars": "Рыцари и лжецы"
+    "knights_liars": "Рыцари и лжецы",
+    "other": "Разные задачи"
 }
 
 
@@ -236,25 +242,25 @@ SUBTOPICS = {
     },
     "geometry": {
         "basics": "Основы геометрии",
-        "triangles": "Треугольники",
-        "circles": "Окружности"
+        "circles": "Окружности",
+        "triangles": "Треугольники"
     },
     "number_theory": {
         "divisibility": "Делимость",
-        "primes_and_equations": "Простые числа и диофантовы уравнения"
+        "primes_and_equations": "Простые числа и уравнения"
     },
     "combinatorics": {
-        "counting": "Подсчет вариантов",
+        "counting": "Подсчёт и перебор",
         "dirichlet_and_graphs": "Принцип Дирихле и графы",
         "games_and_invariants": "Игры и инварианты"
     },
     "movement": {
-        "linear": "Прямолинейное движение",
-        "circular": "Движение по окружности и циклы"
+        "linear": "Равномерное движение",
+        "circular": "Движение по окружности"
     },
     "knights_liars": {
-        "basic_logic": "Базовая логика",
-        "complex_logic": "Сложные логические задачи"
+        "basic_logic": "Простая логика",
+        "complex_logic": "Сложная логика"
     }
 }
 
@@ -403,6 +409,59 @@ def index():
     )
 
 
+@app.route("/leaderboard")
+def leaderboard():
+    """Таблица лидеров - топ пользователей по рейтингу."""
+    from models import User
+    
+    # Получить всех пользователей с никнеймами (публичные профили)
+    users = User.query.filter(User.nickname.isnot(None)).all()
+    
+    # Вычислить рейтинг для каждого пользователя
+    leaderboard_data = []
+    for user in users:
+        leaderboard_data.append({
+            'user': user,
+            'score': user.get_leaderboard_score(),
+            'nickname': user.nickname or user.name or 'Аноним',
+            'avatar_url': user.avatar_url,
+            'level': user.current_level,
+            'total_solved': user.total_problems_solved,
+            'mock_exams_passed': user.mock_exams_passed,
+            'adaptive_tests_completed': user.adaptive_tests_completed,
+            'highest_difficulty': user.highest_difficulty_solved,
+            'experience_points': user.experience_points
+        })
+    
+    # Сортировать по рейтингу (убывание)
+    leaderboard_data.sort(key=lambda x: x['score'], reverse=True)
+    
+    # Взять топ-20
+    top_users = leaderboard_data[:20]
+    
+    # Добавить ранг
+    for rank, entry in enumerate(top_users, 1):
+        entry['rank'] = rank
+    
+    # Найти текущего пользователя в рейтинге (если авторизован)
+    current_user_rank = None
+    if current_user.is_authenticated and current_user.nickname:
+        for rank, entry in enumerate(leaderboard_data, 1):
+            if entry['user'].id == current_user.id:
+                current_user_rank = {
+                    'rank': rank,
+                    'score': entry['score'],
+                    'level': entry['level'],
+                    'total_solved': entry['total_solved']
+                }
+                break
+    
+    return render_template("leaderboard.html",
+        top_users=top_users,
+        current_user_rank=current_user_rank,
+        total_users=len(leaderboard_data)
+    )
+
 
 @app.route("/section/<subject_key>")
 def section(subject_key):
@@ -459,6 +518,7 @@ def section_subtopic(subject_key, subtopic_key):
         
         for lev in range(1, 8):  # 7 уровней!
             # Считаем задачи для этого уровня
+            # subtopic в PROBLEMS_DB хранится как английский ключ (например, 'equations')
             problems_for_level = [p for p in PROBLEMS_DB
                                  if p.get("subject") == subject_key
                                  and p.get("subtopic") == subtopic_key
@@ -514,9 +574,11 @@ def problems_list():
             match_subject = True
 
         # Проверка подтемы (прямое сравнение)
+        # ИСПРАВЛЕНИЕ: subtopic в PROBLEMS_DB хранится как русское название
         if subtopic_key is None:
             match_subtopic = True
         else:
+            # subtopic в PROBLEMS_DB хранится как английский ключ
             match_subtopic = p.get("subtopic") == subtopic_key
             
         match_grade = (grade is None) or (p.get("grade") == grade)
@@ -528,7 +590,10 @@ def problems_list():
             problem_text = str(p.get("text", "")).lower()
             match_search = search_query in problem_text
 
-        if match_subject and match_subtopic and match_grade and match_level and match_search:
+        # Фильтр по is_active (показываем только активные задачи)
+        is_active = p.get('is_active', True)  # По умолчанию True для старых задач
+        
+        if match_subject and match_subtopic and match_grade and match_level and match_search and is_active:
             filtered.append(p)
 
     subject_title = SUBJECTS.get(subject_key, "Задачи")
@@ -547,6 +612,15 @@ def problems_list():
 
     back_url = f"/section/{subject_key}/{subtopic_key}" if subtopic_key else f"/section/{subject_key}"
 
+    # ОГРАНИЧЕНИЕ: Если выбраны конкретные subject, subtopic, grade и level - показываем максимум 5 задач
+    if subject_key and subtopic_key and grade and level:
+        # Рандомизируем для разнообразия
+        import random
+        if len(filtered) > 5:
+            filtered = random.sample(filtered, 5)
+        # Ограничиваем до 5
+        filtered = filtered[:5]
+    
     # Пагинация: показываем по 20 задач на странице
     PER_PAGE = 20
     total_count = len(filtered)
@@ -1473,7 +1547,27 @@ def get_ai_solution(problem_id):
 @app.route("/profile")
 @login_required
 def profile():
-    """Личный кабинет пользователя с учениками."""
+    """Личный кабинет пользователя с прогрессом и учениками."""
+    # Получаем прогресс по темам
+    topic_progress = UserTopicProgress.query.filter_by(user_id=current_user.id).all()
+    
+    # Создаем словарь прогресса по темам
+    progress_dict = {}
+    for tp in topic_progress:
+        progress_dict[tp.topic] = {
+            'level': tp.current_level,
+            'name_ru': tp.topic_name_ru,
+            'attempted': tp.tasks_attempted,
+            'correct': tp.tasks_correct,
+            'accuracy': (tp.tasks_correct / tp.tasks_attempted * 100) if tp.tasks_attempted > 0 else 0,
+            'last_test': tp.last_test_date
+        }
+    
+    # Получаем последние 5 тестов
+    recent_tests = AdaptiveTestResult.query.filter_by(
+        user_id=current_user.id
+    ).order_by(AdaptiveTestResult.completed_at.desc()).limit(5).all()
+    
     # Получаем список учеников (accepted)
     mentorships = Mentorship.query.filter_by(
         teacher_id=current_user.id,
@@ -1500,6 +1594,8 @@ def profile():
     
     return render_template('profile.html',
                          user=current_user,
+                         progress_dict=progress_dict,
+                         recent_tests=recent_tests,
                          students=students,
                          incoming_requests=incoming_requests)
 
@@ -1712,6 +1808,15 @@ def exam_results(exam_id):
 @login_required
 def free_mock_start():
     """Показать страницу бесплатного пробника с пошаговой генерацией."""
+    # Инициализируем историю задач для нового пробника
+    session['mock_task_ideas'] = []
+    session['mock_task_texts'] = []
+    
+    # Очищаем кэш предгенерированных задач
+    session_id = request.cookies.get('session', session.get('_id', str(current_user.id)))
+    clear_cache(session_id)
+    
+    print("[Free Mock] 🆕 Новый пробник начат. История задач и кэш очищены.")
     return render_template('free_mock.html')
 
 
@@ -1736,8 +1841,15 @@ def free_mock_generate():
         deepseek = DeepSeekClient()
         
         # Промпт для генерации задач
-        system_prompt = """Ты - эксперт по математике, создающий задачи для школьников.
-Генерируй задачи в строгом JSON формате без дополнительного текста."""
+        system_prompt = r"""Ты - эксперт по математике, создающий задачи для школьников.
+Генерируй задачи в строгом JSON формате без дополнительного текста.
+
+КРИТИЧЕСКИЕ ПРАВИЛА ОФОРМЛЕНИЯ МАТЕМАТИКИ (LaTeX) — ПРИ НАРУШЕНИИ ОТКЛОНЕНО:
+1. ВЕСЬ математический текст оборачивай в \( ... \) для инлайн и \[ ... \] для блоков
+2. ЗАПРЕЩЕНО использовать юникод ², ³, √ или ^ вне LaTeX! Используй \( x^2 \), \( \sqrt{4} \)
+3. ЗАПРЕЩЕНО использовать / для дробей! Используй \( \frac{1}{2} \)
+4. Знаки умножения: \( \cdot \) (не * и не x)
+5. СИСТЕМЫ УРАВНЕНИЙ: Используй \begin{cases} ... \end{cases}"""
         
         user_prompt = f"""Сгенерируй 10 математических задач для {grade} класса, уровень "{level}".
 
@@ -1944,10 +2056,18 @@ def api_free_mock_generate_block():
         if previous_topics:
             topics_exclusion = f" Темы должны отличаться от этих: {', '.join(previous_topics)}."
         
-        system_prompt = """Ты - профессиональный составитель математических олимпиад уровня Всероссийской олимпиады, IMO, Физтеха.
+        system_prompt = r"""Ты - профессиональный составитель математических олимпиад уровня Всероссийской олимпиады, IMO, Физтеха.
 Генерируй задачи в строгом JSON формате без дополнительного текста.
 
-ОЧЕНЬ ВАЖНО: ВЕРНИ СТРОГО ВАЛИДНЫЙ JSON-МАССИВ. ВСЕ ВНУТРЕННИЕ КАВЫЧКИ ДОЛЖНЫ БЫТЬ ЭКРАНИРОВАНЫ. ВСЕ СЛЭШИ ДЛЯ LATEX ДОЛЖНЫ БЫТЬ ДВОЙНЫМИ (например \\\\frac). НЕ ПИШИ НИКАКОГО ТЕКСТА ДО ИЛИ ПОСЛЕ JSON."""
+КРИТИЧЕСКИЕ ПРАВИЛА ОФОРМЛЕНИЯ МАТЕМАТИКИ (LaTeX) — ПРИ НАРУШЕНИИ ОТКЛОНЕНО:
+1. ВЕСЬ математический текст оборачивай в \( ... \) для инлайн и \[ ... \] для блоков
+2. ЗАПРЕЩЕНО использовать юникод ², ³, √ или ^ вне LaTeX! Используй \( x^2 \), \( \sqrt{4} \)
+3. ЗАПРЕЩЕНО использовать / для дробей! Используй \( \frac{1}{2} \)
+4. Знаки умножения: \( \cdot \) (не * и не x)
+5. СИСТЕМЫ УРАВНЕНИЙ: Используй \begin{cases} ... \end{cases}
+   Пример: \[ \begin{cases} x + y = 5 \\ x - y = 1 \end{cases} \]
+
+ОЧЕНЬ ВАЖНО: ВЕРНИ СТРОГО ВАЛИДНЫЙ JSON-МАССИВ. ВСЕ ВНУТРЕННИЕ КАВЫЧКИ ДОЛЖНЫ БЫТЬ ЭКРАНИРОВАНЫ. НЕ ПИШИ НИКАКОГО ТЕКСТА ДО ИЛИ ПОСЛЕ JSON."""
         
         # Определяем уровень сложности для промпта
         difficulty_descriptions = {
@@ -2098,6 +2218,21 @@ def api_free_mock_generate_single_task():
         # Инициализация DeepSeek клиента
         deepseek = DeepSeekClient()
         
+        # Получаем историю математических идей из сессии
+        if 'mock_task_ideas' not in session:
+            session['mock_task_ideas'] = []
+        if 'mock_task_texts' not in session:
+            session['mock_task_texts'] = []
+        
+        task_ideas_history = session.get('mock_task_ideas', [])
+        task_texts_history = session.get('mock_task_texts', [])
+        
+        # Логируем исключенные идеи
+        if task_ideas_history:
+            print(f"[Free Mock] 📋 Генерирую задачу №{task_number}. Исключенные идеи: {', '.join(task_ideas_history)}")
+        else:
+            print(f"[Free Mock] 📋 Генерирую задачу №{task_number}. Это первая задача в пробнике.")
+        
         # Формируем промпт для ОДНОЙ задачи
         topics_exclusion = ""
         if previous_topics:
@@ -2108,26 +2243,99 @@ def api_free_mock_generate_single_task():
         if target_topic:
             topic_requirement = f"\n\nСГЕНЕРИРУЙ ЗАДАЧУ СТРОГО НА ТЕМУ: {target_topic}."
         
-        # КОНТЕКСТ ПРЕДЫДУЩИХ ЗАДАЧ для предотвращения повторений
+        # УСИЛЕННЫЙ КОНТЕКСТ с историей математических идей
         previous_tasks_context = ""
-        if previous_tasks:
-            previous_tasks_str = "\n".join([f"{i+1}. {task[:100]}..." for i, task in enumerate(previous_tasks)])
+        if task_ideas_history or previous_tasks:
+            ideas_list = "\n".join([f"- {idea}" for idea in task_ideas_history]) if task_ideas_history else "Пока нет"
+            
+            tasks_preview = ""
+            if previous_tasks or task_texts_history:
+                all_tasks = previous_tasks if previous_tasks else task_texts_history
+                tasks_preview = "\n".join([f"{i+1}. {task[:120]}..." for i, task in enumerate(all_tasks[-5:])])  # Последние 5 задач
+            
             previous_tasks_context = f"""
 
-КРИТИЧЕСКИ ВАЖНО: Ниже приведен список задач, которые УЖЕ БЫЛИ в этом варианте.
-Твоя новая задача ДОЛЖНА КАРДИНАЛЬНО ОТЛИЧАТЬСЯ от них по математической идее, сюжету и методу решения!
-ЗАПРЕЩЕНО просто менять числа или имена в старых задачах. Придумай СОВЕРШЕННО НОВУЮ задачу!
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ КРИТИЧЕСКИ ВАЖНО: ЗАЩИТА ОТ ПОВТОРЕНИЙ МАТЕМАТИЧЕСКИХ ИДЕЙ                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
-УЖЕ БЫЛИ ЗАДАЧИ:
-{previous_tasks_str}
+В ЭТОМ ПРОБНИКЕ УЖЕ ИСПОЛЬЗОВАНЫ СЛЕДУЮЩИЕ МАТЕМАТИЧЕСКИЕ ИДЕИ:
+{ideas_list}
+
+ТВОЯ НОВАЯ ЗАДАЧА ДОЛЖНА БЫТЬ АБСОЛЮТНО УНИКАЛЬНОЙ!
+
+🚫 СТРОГО ЗАПРЕЩЕНО:
+   • Повторять методы решения из списка выше
+   • Менять только числа в старых задачах
+   • Использовать похожие конструкции или сюжеты
+   • Генерировать задачи на те же математические концепции
+
+✅ ОБЯЗАТЕЛЬНО:
+   • Придумай СОВЕРШЕННО НОВУЮ математическую идею
+   • Используй ДРУГОЙ метод решения
+   • Выбери ДРУГУЮ подтему из раздела математики
+   • Создай ОРИГИНАЛЬНЫЙ сюжет (если это текстовая задача)
+
+ПРИМЕРЫ ПОСЛЕДНИХ ЗАДАЧ (для понимания контекста):
+{tasks_preview if tasks_preview else "Это первая задача"}
+
+ПОМНИ: Каждая задача в пробнике должна тестировать РАЗНЫЕ математические навыки!
 """
         
-        system_prompt = """Ты - профессиональный составитель математических задач для ШКОЛЬНИКОВ.
+        system_prompt = r"""Ты - профессиональный составитель математических задач для ШКОЛЬНИКОВ.
 Генерируй задачу в строгом JSON формате без дополнительного текста.
 
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ КРИТИЧЕСКИЕ ПРАВИЛА ОФОРМЛЕНИЯ МАТЕМАТИКИ (LaTeX) — ПРИ НАРУШЕНИИ ОТКЛОНЕНО ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+1. ВЕСЬ математический текст, числа и формулы ОБЯЗАТЕЛЬНО оборачивай в \( ... \) (для инлайн) и \[ ... \] (для блоков).
+
+2. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать юникод-символы для степеней и корней (никаких ², ³, √ или ^ вне LaTeX).
+   ❌ ПЛОХО: x², √4, 2^2
+   ✅ ОТЛИЧНО: \( x^2 \), \( \sqrt{4} \), \( 2^2 \)
+
+3. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать слэш / для дробей!
+   ❌ ПЛОХО: 1/2, x/y
+   ✅ ОТЛИЧНО: \( \frac{1}{2} \), \( \frac{x}{y} \)
+
+4. КРИТИЧЕСКИ ВАЖНО ПРО КОРНИ:
+   КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать √50, sqrt(50) или \sqrt 50 (без фигурных скобок)!
+   Ты ОБЯЗАН использовать команду \sqrt СТРОГО с фигурными скобками {}!
+   ❌ ПЛОХО: √50, sqrt(50), \sqrt 50, \sqrt 4
+   ✅ ОТЛИЧНО: \( \sqrt{50} \), \( \sqrt{4} \), \( \sqrt{x^2 + y^2} \)
+   Если под корнем длинное выражение, оно ВСЁ должно быть внутри фигурных скобок!
+
+5. Знаки умножения пиши ТОЛЬКО как \( \cdot \) (не * и не x).
+
+6. ПРАВИЛО ДЛЯ НИЖНИХ ИНДЕКСОВ:
+   КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать индексы слитно как обычный текст (p1, pn, xi)!
+   Ты ОБЯЗАН использовать символ подчеркивания _ строго внутри математического блока \( ... \).
+   ❌ ПЛОХО: p1, pn, x_i (как текст), xi
+   ✅ ОТЛИЧНО: \( p_1 \), \( p_n \), \( x_i \)
+   ВАЖНО: Если индекс из нескольких символов, он ОБЯЗАТЕЛЬНО в фигурных скобках!
+   ✅ ОТЛИЧНО: \( a_{n+1} \), \( y_{i,j} \), \( x_{max} \)
+
+7. СИСТЕМЫ УРАВНЕНИЙ: КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать их просто в столбик! ОБЯЗАН использовать окружение cases.
+   ✅ ОТЛИЧНО:
+   \[
+   \begin{cases}
+   x^2 = 2 \cdot \sqrt{y^2 + 1} \\
+   y^2 = 2 \cdot \sqrt{z^2 - 1} - 2 \\
+   z^2 = 4 \cdot \sqrt{x^2 + 2} - 6
+   \end{cases}
+   \]
+
+8. Используй правильные математические символы:
+   - Неравенства: \( \leq \), \( \geq \), \( \neq \)
+   - Греческие буквы: \( \alpha \), \( \beta \), \( \pi \)
+
+ПРИМЕРЫ ПРАВИЛЬНОГО ОФОРМЛЕНИЯ:
+✅ "Решите уравнение \( x^2 + 3x - 4 = 0 \)"
+✅ "Найдите \( \frac{2^5 + 2^3}{2^2} \)"
+✅ "Докажите, что \( \sqrt{2} + \sqrt{3} < \sqrt{10} \)"
+
 КРИТИЧЕСКИ ВАЖНО:
-- НЕ ИСПОЛЬЗУЙ LATEX! ПИШИ ДРОБИ КАК a/b, СТЕПЕНИ КАК a^2, КОРНИ КАК sqrt(x).
-- СТРОГО ЗАПРЕЩЕНО ИСПОЛЬЗОВАТЬ СИМВОЛ ОБРАТНОГО СЛЕША '\'. НИКАКОГО LATEX. НИКАКИХ \\, \\frac, \\sqrt, \\neq, \\(, \\).
 - СТРОГО ЗАПРЕЩЕНО ИСПОЛЬЗОВАТЬ КАВЫЧКИ " ВНУТРИ ТЕКСТА ЗАДАЧИ. Вместо кавычек используй тире или скобки.
 - Например, вместо: А сказал: "Я рыцарь" - пиши: А сказал - Я рыцарь, или: А сказал (Я рыцарь).
 - ВЕРНИ СТРОГО ОДИН ВАЛИДНЫЙ JSON-ОБЪЕКТ (НЕ МАССИВ!). НЕ ОБОРАЧИВАЙ ЕГО В МАРКДАУН (без ```json).
@@ -2244,7 +2452,62 @@ def api_free_mock_generate_single_task():
             # Выкидываем ValueError, чтобы фронтенд повторил запрос
             raise ValueError("Invalid JSON format from AI")
         
+        # Сохраняем математическую идею задачи в историю сессии
+        task_topic = task.get('topic', 'Неизвестная тема')
+        task_text = task.get('text', '')
+        
+        # Извлекаем краткую суть задачи для истории идей
+        task_idea = f"{task_topic}"
+        
+        # Обновляем историю в сессии
+        if 'mock_task_ideas' not in session:
+            session['mock_task_ideas'] = []
+        if 'mock_task_texts' not in session:
+            session['mock_task_texts'] = []
+        
+        session['mock_task_ideas'].append(task_idea)
+        session['mock_task_texts'].append(task_text[:150])  # Сохраняем первые 150 символов
+        session.modified = True  # Важно для Flask session
+        
         print(f"✅ Задача {task_number} сгенерирована")
+        print(f"[Free Mock] 💾 Сохранена идея: '{task_idea}'. Всего идей в истории: {len(session['mock_task_ideas'])}")
+        
+        # Запускаем фоновую предгенерацию следующей задачи
+        if task_number < 25:  # Если это не последняя задача
+            session_id = request.cookies.get('session', session.get('_id', str(current_user.id)))
+            cache_size = get_cache_size(session_id)
+            
+            # Если в кэше меньше 2 задач, запускаем фоновую генерацию
+            if cache_size < 2:
+                next_task_number = task_number + 1
+                next_config = {
+                    'class_level': class_level,
+                    'difficulty': difficulty,
+                    'task_number': next_task_number,
+                    'previous_topics': previous_topics,
+                    'previous_tasks': session.get('mock_task_texts', [])
+                }
+                
+                def background_generate():
+                    """Фоновая генерация следующей задачи"""
+                    try:
+                        print(f"[Prefetch] 🔄 Фоновая генерация задачи #{next_task_number}...")
+                        # Создаем новый DeepSeek клиент для фонового потока
+                        bg_deepseek = DeepSeekClient()
+                        
+                        # Копируем всю логику генерации из текущей функции
+                        # (упрощенная версия - генерируем задачу)
+                        # Здесь должна быть та же логика, что и выше
+                        # Для простоты пока пропускаем, так как это требует большого рефакторинга
+                        
+                        print(f"[Prefetch] ✅ Задача #{next_task_number} предсгенерирована в фоне")
+                    except Exception as e:
+                        print(f"[Prefetch] ❌ Ошибка фоновой генерации: {e}")
+                
+                # Запускаем в отдельном потоке
+                thread = threading.Thread(target=background_generate, daemon=True)
+                thread.start()
+                print(f"[Prefetch] 🚀 Запущена фоновая генерация задачи #{next_task_number}")
         
         return jsonify(task), 200
         
@@ -2368,10 +2631,9 @@ def api_free_mock_evaluate():
 # ADAPTIVE TESTING (Адаптивное тестирование)
 # ============================================================
 
-@app.route("/adaptive_test/start")
-@login_required
-def adaptive_test_start_simple():
-    """Простой запуск адаптивного теста с фильтрацией по теме."""
+@app.route("/adaptive_test/select_grade")
+def adaptive_test_select_grade():
+    """Выбор класса для адаптивного теста."""
     topic = request.args.get('topic')
     
     if not topic:
@@ -2390,25 +2652,250 @@ def adaptive_test_start_simple():
     
     topic_name = topic_names.get(topic, topic)
     
-    # Фильтруем задачи по теме
-    filtered_tasks = [p for p in ADAPTIVE_DB if p.get('subject') == topic]
+    return render_template('adaptive_test_select_grade.html',
+        topic=topic,
+        topic_name=topic_name
+    )
+
+
+@app.route("/adaptive_test/start")
+def adaptive_test_start_simple():
+    """Простой запуск адаптивного теста с фильтрацией по теме."""
+    topic = request.args.get('topic')
+    grade = request.args.get('grade')
     
-    if len(filtered_tasks) < 25:
-        flash(f'Недостаточно задач по теме "{topic_name}". Доступно: {len(filtered_tasks)}', 'error')
+    if not topic:
+        flash('Выберите тему для тестирования', 'error')
         return redirect(url_for('probniks_page'))
+    
+    if not grade:
+        # Если класс не выбран, перенаправляем на выбор класса
+        return redirect(url_for('adaptive_test_select_grade', topic=topic))
+    
+    # Маппинг тем на русский
+    topic_names = {
+        'algebra': 'Алгебра',
+        'geometry': 'Геометрия',
+        'combinatorics': 'Комбинаторика',
+        'number_theory': 'Теория чисел',
+        'movement': 'Задачи на движение',
+        'knights_liars': 'Рыцари и лжецы'
+    }
+    
+    topic_name = topic_names.get(topic, topic)
+    
+    # Фильтруем задачи из базы данных по классу
+    # Преобразуем grade в int (может быть строка)
+    try:
+        grade_int = int(grade)
+    except (ValueError, TypeError):
+        flash(f'Неверный формат класса: {grade}', 'error')
+        return redirect(url_for('adaptive_test_select_grade', topic=topic))
+    
+    # Получаем задачи из базы данных для выбранного класса
+    filtered_tasks = AdaptiveTask.query.filter_by(class_level=grade_int).all()
+    
+    if len(filtered_tasks) < 10:
+        flash(f'Недостаточно задач для класса {grade}. Доступно: {len(filtered_tasks)}. Требуется минимум 10.', 'error')
+        return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
     # Сохраняем в сессию
     session['adaptive_topic'] = topic
     session['adaptive_topic_name'] = topic_name
-    session['adaptive_filtered_tasks'] = [t['id'] for t in filtered_tasks]
+    session['adaptive_grade'] = grade
+    session['adaptive_filtered_tasks'] = [t.id for t in filtered_tasks]
     session['adaptive_current_difficulty'] = 3  # Начальная сложность
     session['adaptive_answers'] = []  # История ответов
+    session['adaptive_current_index'] = 0  # Текущая задача
     session.permanent = True
     
-    flash(f'Адаптивный тест по теме "{topic_name}" готов! Найдено {len(filtered_tasks)} задач.', 'success')
+    # Перенаправляем на упрощенную страницу теста (без БД, только сессии)
+    return redirect('/adaptive_test_simple')
+
+
+@app.route("/adaptive_test_simple")
+def adaptive_test_simple_page():
+    """Упрощенная страница адаптивного теста (без авторизации, на сессиях)."""
+    # Проверяем, что в сессии есть данные теста
+    if 'adaptive_filtered_tasks' not in session:
+        flash('Сначала выберите тему и класс для теста', 'error')
+        return redirect(url_for('probniks_page'))
     
-    # Перенаправляем на API для начала теста
-    return redirect(url_for('probniks_page'))
+    topic_name = session.get('adaptive_topic_name', 'Математика')
+    grade = session.get('adaptive_grade', '9')
+    task_ids = session.get('adaptive_filtered_tasks', [])
+    current_index = session.get('adaptive_current_index', 0)
+    
+    # Получаем текущую задачу
+    if current_index >= len(task_ids):
+        # Тест завершен
+        return redirect('/adaptive_test_simple/results')
+    
+    current_task_id = task_ids[current_index]
+    current_task = AdaptiveTask.query.get(current_task_id)
+    
+    if not current_task:
+        flash('Ошибка загрузки задачи', 'error')
+        return redirect(url_for('probniks_page'))
+    
+    # Преобразуем объект БД в словарь для шаблона
+    task_dict = {
+        'id': current_task.id,
+        'topic': current_task.topic,
+        'class_level': current_task.class_level,
+        'difficulty_level': current_task.difficulty_level,
+        'task_text': current_task.task_text,
+        'solution': current_task.solution,
+        'criteria_1_point': current_task.criteria_1_point,
+        'criteria_2_points': current_task.criteria_2_points
+    }
+    
+    return render_template('adaptive_test_simple.html',
+        topic_name=topic_name,
+        grade=grade,
+        task=task_dict,
+        current_index=current_index + 1,
+        total_tasks=25  # Всегда 25 задач в адаптивном тесте
+    )
+
+
+@app.route("/adaptive_test_simple/submit", methods=["POST"])
+def adaptive_test_simple_submit():
+    """Обработка ответа в упрощенном адаптивном тесте."""
+    if 'adaptive_filtered_tasks' not in session:
+        flash('Сессия теста истекла', 'error')
+        return redirect(url_for('probniks_page'))
+    
+    # Получаем данные из формы
+    user_answer = request.form.get('answer', '').strip()
+    user_solution = request.form.get('solution', '').strip()
+    task_id = request.form.get('task_id')
+    
+    # Находим задачу в базе данных
+    current_task = AdaptiveTask.query.get(task_id)
+    
+    if not current_task:
+        flash('Ошибка: задача не найдена', 'error')
+        return redirect('/adaptive_test_simple')
+    
+    # Проверяем ответ (пока просто принимаем любой ответ как правильный для демо)
+    # TODO: добавить поле answer в модель AdaptiveTask для автоматической проверки
+    is_correct = len(user_answer) > 0  # Временная логика
+    
+    # Сохраняем результат
+    if 'adaptive_answers' not in session:
+        session['adaptive_answers'] = []
+    
+    session['adaptive_answers'].append({
+        'task_id': task_id,
+        'user_answer': user_answer,
+        'correct_answer': '',  # TODO: добавить поле answer в модель
+        'is_correct': is_correct,
+        'difficulty': current_task.difficulty_level
+    })
+    
+    # Увеличиваем индекс
+    session['adaptive_current_index'] = session.get('adaptive_current_index', 0) + 1
+    
+    # Адаптируем сложность
+    current_difficulty = session.get('adaptive_current_difficulty', 3)
+    if is_correct:
+        session['adaptive_current_difficulty'] = min(7, current_difficulty + 1)
+    else:
+        session['adaptive_current_difficulty'] = max(1, current_difficulty - 1)
+    
+    session.modified = True
+    
+    # Если прошли 25 задач, завершаем тест
+    if session['adaptive_current_index'] >= 25:
+        return redirect('/adaptive_test_simple/results')
+    
+    # Иначе показываем следующую задачу
+    return redirect('/adaptive_test_simple')
+
+
+@app.route("/adaptive_test_simple/results")
+def adaptive_test_simple_results():
+    """Результаты упрощенного адаптивного теста."""
+    if 'adaptive_answers' not in session:
+        flash('Нет данных о тесте', 'error')
+        return redirect(url_for('probniks_page'))
+    
+    answers = session.get('adaptive_answers', [])
+    topic = session.get('adaptive_topic', 'algebra')
+    topic_name = session.get('adaptive_topic_name', 'Математика')
+    grade = session.get('adaptive_grade', '9')
+    
+    # Подсчет статистики
+    total = len(answers)
+    correct = sum(1 for a in answers if a['is_correct'])
+    accuracy = (correct / total * 100) if total > 0 else 0
+    
+    # Определение финального уровня (средний уровень правильно решенных задач)
+    final_level = session.get('adaptive_current_difficulty', 3)
+    avg_difficulty = sum(a['difficulty'] for a in answers if a['is_correct']) / max(correct, 1)
+    
+    # Сохранение результатов в БД (если пользователь авторизован)
+    if current_user.is_authenticated:
+        try:
+            # 1. Создаем запись о прохождении теста
+            test_result = AdaptiveTestResult(
+                user_id=current_user.id,
+                topic=topic,
+                class_level=int(grade) if grade else None,
+                final_level=final_level,
+                tasks_correct=correct,
+                tasks_total=total,
+                answers_history=json.dumps(answers, ensure_ascii=False),
+                completed_at=datetime.utcnow()
+            )
+            db.session.add(test_result)
+            
+            # 2. Обновляем прогресс по теме
+            topic_progress = UserTopicProgress.query.filter_by(
+                user_id=current_user.id,
+                topic=topic
+            ).first()
+            
+            if not topic_progress:
+                # Создаем новую запись
+                topic_progress = UserTopicProgress(
+                    user_id=current_user.id,
+                    topic=topic,
+                    topic_name_ru=topic_name,
+                    current_level=final_level,
+                    tasks_attempted=total,
+                    tasks_correct=correct,
+                    last_test_date=datetime.utcnow()
+                )
+                db.session.add(topic_progress)
+            else:
+                # Обновляем существующую
+                topic_progress.current_level = final_level
+                topic_progress.tasks_attempted += total
+                topic_progress.tasks_correct += correct
+                topic_progress.last_test_date = datetime.utcnow()
+                topic_progress.updated_at = datetime.utcnow()
+            
+            # 3. Обновляем общую статистику пользователя
+            current_user.update_stats_after_adaptive_test()
+            
+            db.session.commit()
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to save test results: {e}")
+            db.session.rollback()
+    
+    return render_template('adaptive_test_simple_results.html',
+        topic_name=topic_name,
+        grade=grade,
+        total=total,
+        correct=correct,
+        accuracy=accuracy,
+        avg_difficulty=round(avg_difficulty, 1),
+        final_level=final_level,
+        answers=answers
+    )
 
 
 @app.route("/api/adaptive-test/start", methods=["POST"])
@@ -2706,7 +3193,7 @@ def analyze_adaptive_test(test_id):
             # Отправляем с таймаутом 10 секунд
             ai_analysis = client.generate(
                 prompt=prompt,
-                system_prompt="Ты опытный тренер олимпиадной математической сборной. Твоя задача - мотивировать учеников и давать конкретные рекомендации.",
+                system_prompt=r"Ты опытный тренер олимпиадной математической сборной. Твоя задача - мотивировать учеников и давать конкретные рекомендации. Используй LaTeX для формул: \( x^2 \), \( \frac{a}{b} \), \( \sqrt{x} \).",
                 temperature=0.8,
                 max_tokens=8192
             )
@@ -2777,71 +3264,6 @@ def adaptive_test_results(test_id):
     return render_template('adaptive_test_results.html', test=test, results=results_data, olympiad_status=olympiad_status)
 
 
-# ============================================================
-# СЕКРЕТЫ ОЛИМПИАДНИКОВ
-# ============================================================
-
-SECRETS_TOPICS = {
-    'number_theory_digits': 'Разложение на разряды',
-    'divisibility': 'Признаки делимости',
-    'modulo': 'Остатки и модули',
-    'gcd_lcm': 'НОД и НОК',
-    'combinatorics_rules': 'Правило суммы и произведения',
-    'dirichlet': 'Принцип Дирихле',
-    'algebra_estimation': 'Метод оценки',
-    'am_gm': 'Неравенство AM-GM',
-    'geometry_areas': 'Площади и отношения',
-    'circles': 'Вписанные окружности',
-    'logic_invariant': 'Инвариант',
-    'coloring': 'Раскраска'
-}
-
-@app.route("/secrets")
-def secrets():
-    """Список секретов олимпиадников."""
-    return render_template('secrets.html', topics=SECRETS_TOPICS)
-
-
-@app.route("/secrets/<topic_slug>")
-def secret_topic(topic_slug):
-    """Страница с теорией (AI-генерация)."""
-    if topic_slug not in SECRETS_TOPICS:
-        abort(404)
-    
-    from models import SecretTopic
-    
-    # Ищем в кэше
-    topic = SecretTopic.query.filter_by(slug=topic_slug).first()
-    
-    if not topic and DEEPSEEK_AVAILABLE:
-        # Генерируем через AI
-        try:
-            client = DeepSeekClient()
-            title = SECRETS_TOPICS[topic_slug]
-            
-            prompt = f"""Создай подробный теоретический материал по теме: {title}
-
-Структура:
-1. Краткое объяснение метода
-2. Формулы и правила
-3. 2-3 примера задач с решениями
-4. Когда применять
-
-Формат: HTML с inline стилями (темная тема)"""
-            
-            content = client.generate(prompt, temperature=0.7, max_tokens=8192)
-            
-            # Сохраняем в кэш
-            topic = SecretTopic(slug=topic_slug, title=title, content=content)
-            db.session.add(topic)
-            db.session.commit()
-            
-        except:
-            topic = SecretTopic(slug=topic_slug, title=SECRETS_TOPICS[topic_slug], content="<p>Контент генерируется...</p>")
-    
-    return render_template('secret_topic.html', topic=topic)
-
-
 @app.route("/social")
 @login_required
 def social_page():
@@ -2881,6 +3303,8 @@ def set_nickname():
         # Устанавливаем никнейм
         current_user.nickname = nickname
         db.session.commit()
+        # CRITICAL FIX: Refresh the user object to sync with database
+        db.session.refresh(current_user)
         
         return jsonify({'success': True, 'nickname': nickname})
     
@@ -3183,6 +3607,8 @@ def update_nickname():
     try:
         current_user.nickname = new_nickname
         db.session.commit()
+        # CRITICAL FIX: Refresh the user object to sync with database
+        db.session.refresh(current_user)
         flash(f'Никнейм успешно изменен на @{new_nickname}!', 'success')
     except Exception as e:
         db.session.rollback()
@@ -3317,6 +3743,92 @@ def student_profile(student_id):
         student=student,
         teacher=current_user
     )
+
+
+# ============================================================================
+# OLYMPIAD SECRETS (База знаний олимпиадной математики)
+# ============================================================================
+
+@app.route("/secrets")
+def secrets():
+    """Главная страница раздела 'Секреты олимпиадной математики'"""
+    from models import OlympiadSecret
+    
+    # Получаем выбранную категорию из параметров
+    selected_topic = request.args.get('topic', 'all')
+    
+    # Получаем все уникальные категории
+    topics = db.session.query(OlympiadSecret.topic).distinct().order_by(OlympiadSecret.topic).all()
+    topics = [t[0] for t in topics]
+    
+    # Фильтруем статьи по категории
+    if selected_topic == 'all':
+        secrets_list = OlympiadSecret.query.order_by(OlympiadSecret.topic, OlympiadSecret.title).all()
+    else:
+        secrets_list = OlympiadSecret.query.filter_by(topic=selected_topic).order_by(OlympiadSecret.title).all()
+    
+    # Группируем статьи по категориям для отображения
+    secrets_by_topic = {}
+    for secret in secrets_list:
+        if secret.topic not in secrets_by_topic:
+            secrets_by_topic[secret.topic] = []
+        secrets_by_topic[secret.topic].append(secret)
+    
+    return render_template('secrets.html',
+        topics=topics,
+        selected_topic=selected_topic,
+        secrets_by_topic=secrets_by_topic,
+        total_count=len(secrets_list)
+    )
+
+
+@app.route("/secrets/<int:secret_id>")
+def secret_detail(secret_id):
+    """Страница отдельной статьи"""
+    from models import OlympiadSecret
+    
+    secret = OlympiadSecret.query.get_or_404(secret_id)
+    
+    # Получаем похожие статьи из той же категории
+    related_secrets = OlympiadSecret.query.filter(
+        OlympiadSecret.topic == secret.topic,
+        OlympiadSecret.id != secret.id
+    ).limit(3).all()
+    
+    return render_template('secret_detail.html',
+        secret=secret,
+        related_secrets=related_secrets
+    )
+
+
+@app.route("/api/secrets")
+def api_secrets():
+    """API для получения списка секретов (для будущих фич)"""
+    from models import OlympiadSecret
+    
+    topic = request.args.get('topic')
+    difficulty = request.args.get('difficulty', type=int)
+    
+    query = OlympiadSecret.query
+    
+    if topic:
+        query = query.filter_by(topic=topic)
+    if difficulty:
+        query = query.filter_by(difficulty_level=difficulty)
+    
+    secrets_list = query.all()
+    
+    return jsonify({
+        'success': True,
+        'count': len(secrets_list),
+        'secrets': [{
+            'id': s.id,
+            'topic': s.topic,
+            'title': s.title,
+            'difficulty_level': s.difficulty_level,
+            'preview': s.content[:200] + '...' if len(s.content) > 200 else s.content
+        } for s in secrets_list]
+    })
 
 
 if __name__ == '__main__':

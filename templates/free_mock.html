@@ -379,6 +379,30 @@ function renderTask(task, taskNum) {
     document.getElementById('loading-spinner').style.display = 'none';
     document.getElementById('task-block').style.display = 'block';
     
+    // Рендерим математику с помощью KaTeX
+    function renderKaTeX() {
+        if (window.renderMathInElement) {
+            renderMathInElement(container, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ],
+                throwOnError: false,
+                strict: false
+            });
+            console.log('✓ KaTeX rendered task', taskNum);
+        } else {
+            // KaTeX еще не загружен, ждем
+            console.log('⏳ Waiting for KaTeX...');
+            setTimeout(renderKaTeX, 200);
+        }
+    }
+    
+    // Запускаем рендеринг
+    setTimeout(renderKaTeX, 100);
+    
     // Обновляем прогресс
     updateProgress(taskNum);
     

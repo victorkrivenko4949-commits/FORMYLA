@@ -108,6 +108,67 @@
         </p>
     </div>
 
+    <!-- Прогресс по темам -->
+    {% if progress_dict %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+            📈 Мой прогресс по темам
+        </h2>
+        
+        <div style="display: grid; gap: 15px;">
+            {% for topic_key, progress in progress_dict.items() %}
+            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="color: var(--text-main); font-weight: 600;">{{ progress.name_ru }}</div>
+                    <div style="padding: 4px 12px; background: {% if progress.level >= 5 %}#10b981{% elif progress.level >= 3 %}#f59e0b{% else %}#ef4444{% endif %}; color: white; border-radius: 12px; font-size: 14px; font-weight: 600;">
+                        Уровень {{ progress.level }}/7
+                    </div>
+                </div>
+                
+                <div style="width: 100%; height: 8px; background: rgba(100, 116, 139, 0.3); border-radius: 4px; overflow: hidden;">
+                    <div style="width: {{ (progress.level / 7 * 100)|round }}%; height: 100%; background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); transition: width 0.3s;"></div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; color: var(--text-muted);">
+                    <span>Решено: {{ progress.correct }}/{{ progress.attempted }} ({{ progress.accuracy|round }}%)</span>
+                    {% if progress.last_test %}
+                    <span>{{ progress.last_test.strftime('%d.%m.%Y') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- История тестов -->
+    {% if recent_tests %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+            📝 Последние тесты
+        </h2>
+        
+        <div style="display: grid; gap: 12px;">
+            {% for test in recent_tests %}
+            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="color: var(--text-main); font-weight: 600;">Класс {{ test.class_level }}</div>
+                        <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                            {{ test.completed_at.strftime('%d.%m.%Y %H:%M') if test.completed_at else 'Н/Д' }}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: var(--accent-2); font-weight: 600; font-size: 18px;">{{ test.tasks_correct }}/{{ test.tasks_total }}</div>
+                        <div style="color: var(--text-muted); font-size: 13px;">Уровень: {{ test.final_level }}/7</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- AI Профиль -->
     {% if user.onboarding_completed %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
@@ -166,7 +227,7 @@
             <a href="/" onclick="document.getElementById('tutorBtn')?.click(); return false;" style="padding: 15px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: var(--radius-sm); text-align: center; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.3s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
                 💬 Открыть тьютора
             </a>
-            <a href="/" style="padding: 15px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; text-decoration: none; border-radius: var(--radius-sm); text-align: center; border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'">
+            <a href="/probniks" style="padding: 15px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; text-decoration: none; border-radius: var(--radius-sm); text-align: center; border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'">
                 📝 Написать пробник
             </a>
         </div>

@@ -8,6 +8,7 @@
 
 <div class="cards-grid">
     {% for key, title in subjects.items() %}
+        {% if key != 'other' %}
         <a href="{{ url_for('section', subject_key=key) }}" class="card">
             <h2 class="card-title">{{ title }}</h2>
             <p class="card-text">
@@ -28,6 +29,7 @@
                 {% endif %}
             </p>
         </a>
+        {% endif %}
     {% endfor %}
 </div>
 
