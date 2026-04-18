@@ -27,20 +27,6 @@
     </div>
     {% endif %}
     
-    {% if p.get("image") %}
-    <div style="text-align:center; margin:16px 0;">
-        <img src="{{ p.image }}" alt="Рисунок к задаче"
-             style="max-width:480px; width:100%; height:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fff;">
-    </div>
-    {% elif p.get("image_filename") %}
-    <div class="problem-image mt-4 mb-4" style="text-align:center; margin:16px 0;">
-        <img src="{{ url_for('static', filename='images/problems/' + p.image_filename) }}"
-             class="max-w-full rounded-lg border border-slate-600 shadow-md"
-             style="max-width:480px; width:100%; height:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fff;"
-             alt="Чертёж к задаче">
-    </div>
-    {% endif %}
-    
     {% if p.answer %}
     <div style="margin-bottom: 20px;">
         <span style="color: #00cc66; font-weight: 600; font-size: 15px;">Ответ:</span>
