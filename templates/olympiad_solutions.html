@@ -19,6 +19,14 @@
         {{ p.text | safe }}
     </div>
     
+    {% if p.image %}
+    <div class="task-image-container" style="margin: 15px 0; text-align: center;">
+        <img src="{{ url_for('static', filename='images/olympiad_tasks/' + p.image) }}"
+             alt="Чертеж к задаче"
+             style="max-width: 100%; max-height: 400px; border-radius: 8px;">
+    </div>
+    {% endif %}
+    
     {% if p.get("image") %}
     <div style="text-align:center; margin:16px 0;">
         <img src="{{ p.image }}" alt="Рисунок к задаче"

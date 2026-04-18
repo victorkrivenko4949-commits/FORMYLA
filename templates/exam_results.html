@@ -32,6 +32,14 @@
             {{ result.problem.text }}
         </div>
         
+        {% if result.problem.image %}
+        <div class="task-image-container" style="margin: 15px 0; text-align: center;">
+            <img src="{{ url_for('static', filename='images/olympiad_tasks/' + result.problem.image) }}"
+                 alt="Чертеж к задаче"
+                 style="max-width: 100%; max-height: 400px; border-radius: 8px;">
+        </div>
+        {% endif %}
+        
         <div style="display: grid; gap: 15px; margin-bottom: 15px;">
             <div>
                 <span style="color: var(--text-muted);">Ваш ответ:</span>
@@ -60,3 +68,4 @@
 
 </div>
 {% endblock %}
+
