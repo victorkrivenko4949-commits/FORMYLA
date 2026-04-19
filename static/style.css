@@ -302,12 +302,17 @@ button:hover {
     /* HEADER И НАВИГАЦИЯ */
     .header {
         flex-wrap: wrap;
-        padding: 12px 15px;
-        gap: 10px;
+        padding: 10px 12px;
+        gap: 8px;
+        min-height: auto;
+    }
+    
+    .logo {
+        font-size: 20px !important;
     }
     
     .logo img {
-        height: 32px;
+        height: 28px !important;
     }
     
     /* Скрываем поиск и авторизацию на мобильных для экономии места */
@@ -320,7 +325,7 @@ button:hover {
         width: 100%;
         justify-content: center;
         margin-left: 0 !important;
-        margin-top: 10px;
+        margin-top: 8px;
     }
     
     /* Навигация - выпадающее меню */
@@ -386,17 +391,18 @@ button:hover {
     
     /* ОСНОВНОЙ КОНТЕНТ */
     .main {
-        padding: 20px 15px 50px;
+        padding: 15px 12px 40px;
     }
     
     .page-title {
-        font-size: 32px;
-        margin-bottom: 15px;
+        font-size: 28px;
+        margin-bottom: 12px;
+        margin-top: 10px;
     }
     
     .page-subtitle {
-        font-size: 15px;
-        margin-bottom: 20px;
+        font-size: 14px;
+        margin-bottom: 18px;
     }
     
     /* КАРТОЧКИ В ОДНУ КОЛОНКУ */
