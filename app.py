@@ -3020,12 +3020,35 @@ def check_adaptive_answer():
         # Ограничиваем score в диапазоне [-1, 2]
         score = max(-1, min(2, score))
         
-        # Обновляем уровень сложности в сессии
+        # НОВАЯ ЛОГИКА АДАПТИВНОСТИ С СТРИКАМИ
         current_difficulty = session.get('adaptive_current_difficulty', 3)
-        new_level = current_difficulty + score
-        new_level = max(1, min(7, new_level))  # Держим в диапазоне [1, 7]
+        partial_streak = session.get('partial_correct_streak', 0)
         
+        if score == 2:
+            # Идеально - мгновенно повышаем уровень
+            new_level = min(7, current_difficulty + 1)
+            partial_streak = 0  # Сбрасываем стрик
+            
+        elif score == 1:
+            # Частично верно - увеличиваем стрик
+            partial_streak += 1
+            
+            if partial_streak >= 2:
+                # Два частичных ответа подряд - повышаем уровень
+                new_level = min(7, current_difficulty + 1)
+                partial_streak = 0  # Сбрасываем стрик после повышения
+            else:
+                # Остаемся на текущем уровне для закрепления
+                new_level = current_difficulty
+                
+        else:  # score <= 0
+            # Неверно - снижаем уровень
+            new_level = max(1, current_difficulty - 1)
+            partial_streak = 0  # Сбрасываем стрик
+        
+        # Сохраняем обновленные значения в сессию
         session['adaptive_current_difficulty'] = new_level
+        session['partial_correct_streak'] = partial_streak
         
         # Сохраняем результат в историю ответов
         if 'adaptive_answers' not in session:
