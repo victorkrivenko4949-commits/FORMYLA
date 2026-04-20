@@ -2690,7 +2690,9 @@ def adaptive_test_start_simple():
         'roots': ['корн', 'квадратн'],
         'powers': ['степен'],
         'complex': ['комплексн'],
-        'optimization': ['оптимизац']
+        'optimization': ['оптимизац'],
+        'movement': ['движен'],  # Задачи на движение (если будут добавлены)
+        'knights_liars': ['рыцар', 'лжец']  # Рыцари и лжецы (если будут добавлены)
     }
     
     # Получаем ключевые слова для выбранной темы
@@ -2731,7 +2733,10 @@ def adaptive_test_start_simple():
         filtered_tasks = AdaptiveTask.query.filter_by(class_level=grade_int).all()
     
     if len(filtered_tasks) < 10:
-        flash(f'Недостаточно задач для класса {grade}. Доступно: {len(filtered_tasks)}. Требуется минимум 10.', 'error')
+        if len(filtered_tasks) == 0:
+            flash(f'К сожалению, задач по теме "{topic_name}" для {grade} класса пока нет в базе данных. Попробуйте выбрать другую тему или класс.', 'error')
+        else:
+            flash(f'Недостаточно задач по теме "{topic_name}" для {grade} класса. Доступно: {len(filtered_tasks)}. Требуется минимум 10.', 'error')
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
     # Сохраняем в сессию
