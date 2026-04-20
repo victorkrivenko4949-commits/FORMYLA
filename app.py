@@ -2814,6 +2814,234 @@ def adaptive_test_simple_submit():
     return redirect('/adaptive_test_simple')
 
 
+@app.route("/api/check_adaptive_answer", methods=["POST"])
+def check_adaptive_answer():
+    """
+    API endpoint для проверки ответа через DeepSeek AI.
+    Возвращает JSON с оценкой и фидбеком.
+    """
+    if 'adaptive_filtered_tasks' not in session:
+        return jsonify({
+            'status': 'error',
+            'message': 'Сессия теста истекла'
+        }), 400
+    
+    try:
+        # Получаем данные из запроса
+        data = request.get_json()
+        task_id = data.get('task_id')
+        user_answer = data.get('user_answer', '').strip()
+        user_solution = data.get('user_solution', '').strip()
+        
+        if not task_id or not user_answer:
+            return jsonify({
+                'status': 'error',
+                'message': 'Не указан ID задачи или ответ'
+            }), 400
+        
+        # Находим задачу в базе данных
+        from models import AdaptiveTask
+        current_task = AdaptiveTask.query.get(task_id)
+        
+        if not current_task:
+            return jsonify({
+                'status': 'error',
+                'message': 'Задача не найдена'
+            }), 404
+        
+        # Получаем правильный ответ (если есть поле answer в модели)
+        correct_answer = getattr(current_task, 'answer', '') or getattr(current_task, 'correct_answer', 'не указан')
+        
+        # Проверяем доступность DeepSeek
+        score = 1  # По умолчанию нейтральная оценка
+        feedback = "Ваш ответ принят."
+        
+        if DEEPSEEK_AVAILABLE:
+            try:
+                # Формируем промпт для DeepSeek
+                system_prompt = """Ты — справедливое жюри математической олимпиады.
+Твоя задача: оценить решение ученика и дать конструктивный фидбек.
+
+ВАЖНО: Ответ должен быть СТРОГО в формате JSON (БЕЗ markdown маркеров ```json):
+{
+  "score": X,
+  "feedback": "текст разбора"
+}
+
+СТРОГИЕ ПРАВИЛА ОЦЕНИВАНИЯ (score):
+
+1. СРАВНЕНИЕ ОТВЕТОВ:
+   - Ответ пользователя (`user_answer`) приходит в формате LaTeX (например, `\\sqrt{31}`, `\\frac{1}{2}`, `2.5`)
+   - Сравнивай МАТЕМАТИЧЕСКОЕ ЗНАЧЕНИЕ, а не текстовое совпадение
+   - Десятичные дроби через точку (20.23) и запятую (20,23) - это ОДНО И ТО ЖЕ число
+   - `\\frac{1}{2}` = `0.5` = `0,5` - это одно и то же
+   - `\\sqrt{4}` = `2` - это одно и то же
+   - Игнорируй пробелы, лишние скобки, незначительные форматирования
+   - Главное - математическая суть числа
+
+2. СИСТЕМА БАЛЛОВ (СТРОГИЕ ПРАВИЛА):
+   
+   score = 2 (ИДЕАЛЬНО, +2 уровня):
+   - Итоговый ответ математически ЭКВИВАЛЕНТЕН правильному
+   - КРИТИЧЕСКИ ВАЖНО: Если ответ ученика математически эквивалентен правильному ответу, ты ОБЯЗАН поставить score: 2
+   - ПРИМЕРЫ ЭКВИВАЛЕНТНОСТИ (ВСЕ это score: 2):
+     * Ученик ввел "15", ожидалось "x=15" → score: 2
+     * Ученик ввел "x=3", ожидалось "3" → score: 2
+     * Ученик ввел "1/2", ожидалось "0.5" → score: 2
+     * Ученик ввел "0.5", ожидалось "1/2" → score: 2
+     * Ученик ввел "15", ожидалось "15.0" → score: 2
+     * Ученик ввел "3", ожидалось "x=3" → score: 2
+   - СТРОГО ЗАПРЕЩЕНО снижать балл за:
+     * Отсутствие "x=", "y=", "z=" или других переменных
+     * Пробелы, скобки, форматирование
+     * Другой формат записи верного числа (дробь vs десятичная)
+     * Отсутствие решения при правильном ответе
+   - ЗОЛОТОЕ ПРАВИЛО: Если числовое значение совпадает - это ВСЕГДА score: 2, независимо от оформления!
+   
+   score = 1 (ЧАСТИЧНО ВЕРНО, +1 уровень):
+   - Итоговый ответ СОВПАДАЕТ, НО в решении есть ЯВНАЯ вычислительная ошибка (например, 2+2=5)
+   - Итоговый ответ СОВПАДАЕТ, НО ответ не сокращен до конца (например, 2/4 вместо 1/2) И это было требованием
+   - Итоговый ответ НЕ совпадает, НО в решении есть правильная идея/метод и ход мыслей верный
+   - ВАЖНО: Просто отсутствие решения при правильном ответе - это НЕ повод для score: 1, это score: 2!
+   
+   score = -1 (НЕВЕРНО, -1 уровень):
+   - Итоговый ответ НЕ совпадает И решение неверное (или отсутствует)
+   - Грубая концептуальная ошибка
+   
+   ЗОЛОТОЕ ПРАВИЛО: Никогда не придирайся к оформлению. Если суть числа верная - это всегда score: 2!
+
+3. ПРАВИЛА ДЛЯ FEEDBACK:
+   
+   ОБЯЗАТЕЛЬНО:
+   - Если итоговый ответ СОВПАЛ с правильным, начинай с: "Ответ верный!" или "Итоговый ответ правильный!"
+   - НИКОГДА не пиши "Ответ неверный", если числа совпали
+   - Четко разделяй оценку ответа и оценку решения
+   
+   Примеры правильных формулировок:
+   - "Ответ верный! Молодец!" (score: 2) - когда ответ совпал, даже если решения нет
+   - "Ответ правильный! Число 15 - это верный результат." (score: 2) - когда ученик ввел "15", а ожидалось "x=15"
+   - "Ответ верный! 0.5 и 1/2 - это одно и то же число." (score: 2) - когда формат отличается
+   - "Ответ правильный, но в решении есть вычислительная ошибка: \\( 2+3=6 \\) должно быть \\( 2+3=5 \\)." (score: 1) - только если есть ЯВНАЯ ошибка в вычислениях
+   - "Идея решения верная, но в итоговом ответе ошибка из-за..." (score: 1) - когда ответ не совпал, но метод правильный
+   - "К сожалению, ответ неверный. Правильный ответ: ..." (score: -1) - только когда ответ действительно не совпал
+   
+   ЗАПОМНИ: Если ответ математически верный - это ВСЕГДА score: 2, независимо от оформления!
+
+4. ФОРМАТИРОВАНИЕ FEEDBACK:
+   - Используй LaTeX для формул: \\( формула \\) (строчные), \\[ формула \\] (блочные)
+   - НЕ экранируй слеши дополнительно (пиши \\(, а не \\\\()
+   - ОБЯЗАТЕЛЬНО используй переносы строк (\\n) для структурирования текста
+   - Перед каждым новым шагом решения ставь перенос строки (например, перед "1. В числителе..." и "2. В знаменателе...")
+   - Блочные формулы оборачивай строго в \\[ и \\], они будут отображаться с отступами
+   - Форматируй текст красиво, как в хорошем учебнике
+   - Будь конструктивным и понятным школьнику
+   - НЕ оборачивай JSON в markdown блоки"""
+
+                user_prompt = f"""Задача: {current_task.task_text}
+
+Правильный ответ: {correct_answer}
+
+Ответ ученика: {user_answer}
+
+Решение ученика: {user_solution if user_solution else 'не предоставлено'}
+
+Оцени решение и дай фидбек в формате JSON."""
+
+                # Вызываем DeepSeek
+                ai_client = DeepSeekClient()
+                ai_response = ai_client.generate(
+                    prompt=user_prompt,
+                    system_prompt=system_prompt,
+                    temperature=0.3,
+                    max_tokens=1000
+                )
+                
+                # Парсим JSON-ответ
+                try:
+                    # Очищаем ответ от markdown маркеров
+                    import re
+                    cleaned_response = ai_response.strip()
+                    
+                    # Удаляем ```json и ``` если есть
+                    cleaned_response = re.sub(r'```json\s*', '', cleaned_response)
+                    cleaned_response = re.sub(r'```\s*$', '', cleaned_response)
+                    cleaned_response = cleaned_response.strip()
+                    
+                    # Извлекаем JSON из ответа
+                    json_match = re.search(r'\{[^{}]*"score"[^{}]*"feedback"[^{}]*\}', cleaned_response, re.DOTALL)
+                    if json_match:
+                        json_str = json_match.group()
+                        ai_data = json.loads(json_str)
+                        score = int(ai_data.get('score', 1))
+                        feedback = ai_data.get('feedback', 'Ответ проверен.')
+                    else:
+                        # Fallback: если JSON не найден, пробуем распарсить всю строку
+                        ai_data = json.loads(cleaned_response)
+                        score = int(ai_data.get('score', 1))
+                        feedback = ai_data.get('feedback', 'Ответ проверен.')
+                        
+                except (json.JSONDecodeError, ValueError) as e:
+                    print(f"[WARNING] Failed to parse AI response as JSON: {e}")
+                    print(f"[DEBUG] AI response was: {ai_response[:200]}")
+                    # Используем весь ответ как feedback
+                    feedback = ai_response[:500]
+                    
+            except Exception as e:
+                print(f"[ERROR] DeepSeek API error: {e}")
+                feedback = "AI-проверка временно недоступна. Ваш ответ принят."
+        
+        # Ограничиваем score в диапазоне [-1, 2]
+        score = max(-1, min(2, score))
+        
+        # Обновляем уровень сложности в сессии
+        current_difficulty = session.get('adaptive_current_difficulty', 3)
+        new_level = current_difficulty + score
+        new_level = max(1, min(7, new_level))  # Держим в диапазоне [1, 7]
+        
+        session['adaptive_current_difficulty'] = new_level
+        
+        # Сохраняем результат в историю ответов
+        if 'adaptive_answers' not in session:
+            session['adaptive_answers'] = []
+        
+        session['adaptive_answers'].append({
+            'task_id': task_id,
+            'user_answer': user_answer,
+            'user_solution': user_solution,
+            'correct_answer': correct_answer,
+            'score': score,
+            'feedback': feedback,
+            'difficulty': current_task.difficulty_level
+        })
+        
+        # Увеличиваем индекс текущей задачи
+        current_index = session.get('adaptive_current_index', 0)
+        session['adaptive_current_index'] = current_index + 1
+        
+        session.modified = True
+        
+        # Проверяем, это последняя задача?
+        is_last_task = (current_index + 1) >= 25
+        
+        return jsonify({
+            'status': 'success',
+            'score': score,
+            'feedback': feedback,
+            'new_level': new_level,
+            'is_last_task': is_last_task,
+            'current_index': current_index + 1
+        })
+        
+    except Exception as e:
+        print(f"[ERROR] check_adaptive_answer: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': f'Ошибка сервера: {str(e)}'
+        }), 500
+
+
 @app.route("/adaptive_test_simple/results")
 def adaptive_test_simple_results():
     """Результаты упрощенного адаптивного теста."""
@@ -2826,14 +3054,19 @@ def adaptive_test_simple_results():
     topic_name = session.get('adaptive_topic_name', 'Математика')
     grade = session.get('adaptive_grade', '9')
     
-    # Подсчет статистики
+    # Подсчет статистики с учетом новых полей score
     total = len(answers)
-    correct = sum(1 for a in answers if a['is_correct'])
+    
+    # Считаем правильные ответы: score >= 1 считается как правильный
+    correct = sum(1 for a in answers if a.get('score', a.get('is_correct', 0)) >= 1)
     accuracy = (correct / total * 100) if total > 0 else 0
     
-    # Определение финального уровня (средний уровень правильно решенных задач)
+    # Определение финального уровня
     final_level = session.get('adaptive_current_difficulty', 3)
-    avg_difficulty = sum(a['difficulty'] for a in answers if a['is_correct']) / max(correct, 1)
+    
+    # Средняя сложность правильно решенных задач (score >= 1)
+    correct_tasks = [a for a in answers if a.get('score', a.get('is_correct', 0)) >= 1]
+    avg_difficulty = sum(a['difficulty'] for a in correct_tasks) / max(len(correct_tasks), 1)
     
     # Сохранение результатов в БД (если пользователь авторизован)
     if current_user.is_authenticated:
@@ -2887,6 +3120,7 @@ def adaptive_test_simple_results():
             db.session.rollback()
     
     return render_template('adaptive_test_simple_results.html',
+        topic=topic,
         topic_name=topic_name,
         grade=grade,
         total=total,
