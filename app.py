@@ -2721,7 +2721,6 @@ def adaptive_test_simple_page():
         flash('Сначала выберите тему и класс для теста', 'error')
         return redirect(url_for('probniks_page'))
     
-    topic_name = session.get('adaptive_topic_name', 'Математика')
     grade = session.get('adaptive_grade', '9')
     task_ids = session.get('adaptive_filtered_tasks', [])
     current_index = session.get('adaptive_current_index', 0)
@@ -2749,6 +2748,9 @@ def adaptive_test_simple_page():
         'criteria_1_point': current_task.criteria_1_point,
         'criteria_2_points': current_task.criteria_2_points
     }
+    
+    # ИСПРАВЛЕНИЕ: Берем тему из ТЕКУЩЕЙ задачи, а не из сессии
+    topic_name = current_task.topic
     
     return render_template('adaptive_test_simple.html',
         topic_name=topic_name,
