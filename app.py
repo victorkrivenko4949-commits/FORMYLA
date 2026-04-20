@@ -2672,28 +2672,53 @@ def adaptive_test_start_simple():
         # Если класс не выбран, перенаправляем на выбор класса
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
-    # Маппинг тем на русский
+    # Маппинг тем: короткий ключ -> полное название в БД
+    topic_mapping = {
+        'algebra': ['Алгебраические выражения', 'Рациональные дроби', 'Квадратичная функция',
+                    'Уравнения и неравенства с одной переменной', 'Системы уравнений'],
+        'geometry': ['Геометрия: треугольники и параллельные прямые', 'Геометрия: четырехугольники и площади',
+                     'Геометрия: окружность и векторы'],
+        'combinatorics': ['Элементы комбинаторики и теории вероятностей', 'Комбинаторика и вероятность'],
+        'number_theory': ['Натуральные числа и действия с ними', 'Делимость чисел',
+                          'Положительные и отрицательные числа', 'Рациональные числа и действия с ними'],
+        'functions': ['Функции и графики', 'Квадратичная функция', 'Показательная и логарифмическая функции',
+                      'Производная и её применение', 'Тригонометрия'],
+        'equations': ['Линейные уравнения', 'Линейные уравнения и системы', 'Квадратные уравнения',
+                      'Показательные и логарифмические уравнения']
+    }
+    
+    # Получаем список тем для фильтрации
+    topic_filters = topic_mapping.get(topic, [])
+    
+    # Название темы для отображения
     topic_names = {
         'algebra': 'Алгебра',
         'geometry': 'Геометрия',
         'combinatorics': 'Комбинаторика',
         'number_theory': 'Теория чисел',
-        'movement': 'Задачи на движение',
-        'knights_liars': 'Рыцари и лжецы'
+        'functions': 'Функции',
+        'equations': 'Уравнения'
     }
     
     topic_name = topic_names.get(topic, topic)
     
-    # Фильтруем задачи из базы данных по классу
-    # Преобразуем grade в int (может быть строка)
+    # Преобразуем grade в int
     try:
         grade_int = int(grade)
     except (ValueError, TypeError):
         flash(f'Неверный формат класса: {grade}', 'error')
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
-    # Получаем задачи из базы данных для выбранного класса
-    filtered_tasks = AdaptiveTask.query.filter_by(class_level=grade_int).all()
+    # Фильтруем задачи по классу И по теме
+    if topic_filters:
+        # Если есть фильтр по теме - используем его
+        filtered_tasks = AdaptiveTask.query.filter(
+            AdaptiveTask.class_level == grade_int,
+            AdaptiveTask.topic.in_(topic_filters)
+        ).all()
+    else:
+        # Если фильтра нет - берем все задачи класса
+        filtered_tasks = AdaptiveTask.query.filter_by(class_level=grade_int).all()
     
     if len(filtered_tasks) < 10:
         flash(f'Недостаточно задач для класса {grade}. Доступно: {len(filtered_tasks)}. Требуется минимум 10.', 'error')
