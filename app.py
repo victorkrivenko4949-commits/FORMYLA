@@ -4579,6 +4579,227 @@ def admin_seed_secrets():
         }), 500
 
 
+# ============================================================================
+# DAILY QUEST ROUTES
+# ============================================================================
+
+@app.route('/daily')
+@login_required
+def daily_quest_main():
+    """Главная страница Daily Quest"""
+    from services.daily_quest_service import get_today_quest, get_quest_tasks
+    from services.streak_service import get_streak_stats
+    
+    # Получаем или создаём квест на сегодня
+    quest = get_today_quest(current_user.id)
+    
+    if not quest:
+        flash('Не удалось создать Daily Quest. Попробуйте позже.', 'error')
+        return redirect(url_for('index'))
+    
+    # Получаем задачи квеста
+    tasks = get_quest_tasks(quest)
+    
+    # Получаем статистику streak
+    streak_stats = get_streak_stats(current_user.id)
+    
+    return render_template('daily.html',
+                         quest=quest,
+                         tasks=tasks,
+                         streak_stats=streak_stats)
+
+
+@app.route('/daily/task/<int:task_index>')
+@login_required
+def daily_quest_task(task_index):
+    """Страница решения задачи из Daily Quest"""
+    from services.daily_quest_service import get_today_quest, get_quest_tasks
+    from datetime import date
+    
+    # Получаем квест на сегодня
+    quest = get_today_quest(current_user.id)
+    
+    if not quest:
+        flash('Daily Quest не найден', 'error')
+        return redirect(url_for('daily_quest_main'))
+    
+    # Получаем задачи
+    tasks = get_quest_tasks(quest)
+    
+    # Проверяем индекс
+    if task_index < 0 or task_index >= len(tasks):
+        flash('Задача не найдена', 'error')
+        return redirect(url_for('daily_quest_main'))
+    
+    task = tasks[task_index]
+    
+    # Проверяем, не решена ли уже эта задача
+    # (можно добавить отдельную таблицу для отслеживания решённых задач в квесте)
+    
+    return render_template('daily_task.html',
+                         quest=quest,
+                         task=task,
+                         task_index=task_index,
+                         total_tasks=len(tasks))
+
+
+@app.route('/daily/task/<int:task_index>/submit', methods=['POST'])
+@login_required
+def daily_quest_submit(task_index):
+    """Отправка ответа на задачу Daily Quest"""
+    from services.daily_quest_service import get_today_quest, get_quest_tasks, complete_quest_task
+    from services.mastery_service import update_mastery_after_task
+    from services.streak_service import update_streak_after_quest
+    from utils.math_answer_utils import compare_math_answers
+    
+    # Получаем квест
+    quest = get_today_quest(current_user.id)
+    
+    if not quest:
+        return jsonify({'success': False, 'error': 'Quest not found'}), 404
+    
+    # Получаем задачи
+    tasks = get_quest_tasks(quest)
+    
+    if task_index < 0 or task_index >= len(tasks):
+        return jsonify({'success': False, 'error': 'Invalid task index'}), 400
+    
+    task = tasks[task_index]
+    
+    # Получаем ответ пользователя
+    user_answer = request.json.get('answer', '').strip()
+    
+    if not user_answer:
+        return jsonify({'success': False, 'error': 'Answer is required'}), 400
+    
+    # Проверяем ответ
+    correct_answer = task.get('answer', '')
+    is_correct = compare_math_answers(user_answer, correct_answer)
+    
+    # Обновляем квест
+    xp_earned = 20 if is_correct else 0
+    
+    if is_correct:
+        complete_quest_task(quest, task_index, is_correct, xp_earned)
+        
+        # Обновляем мастерство по теме
+        topic = task.get('topic', '')
+        grade = task.get('grade', 7)
+        difficulty = task.get('difficulty', 3)
+        
+        if topic:
+            update_mastery_after_task(current_user.id, topic, grade, is_correct, difficulty)
+        
+        # Обновляем XP пользователя
+        current_user.experience_points += xp_earned
+        db.session.commit()
+        
+        # Проверяем, завершён ли квест
+        if quest.completed_count >= quest.total_count:
+            # Обновляем streak
+            update_streak_after_quest(current_user.id)
+    
+    # Генерируем AI-фидбек
+    ai_feedback = ""
+    if DEEPSEEK_AVAILABLE:
+        try:
+            client = DeepSeekClient()
+            prompt = f"""Задача: {task.get('text', '')}
+
+Правильный ответ: {correct_answer}
+Ответ ученика: {user_answer}
+Результат: {'Правильно' if is_correct else 'Неправильно'}
+
+Дай краткий комментарий (2-3 предложения) на русском языке."""
+            
+            ai_feedback = client.get_completion(prompt, max_tokens=200)
+        except Exception as e:
+            app.logger.error(f"AI feedback error: {e}")
+            ai_feedback = "Отличная работа!" if is_correct else "Попробуй ещё раз!"
+    else:
+        ai_feedback = "Правильно! +20 XP" if is_correct else "Неправильно. Попробуй ещё раз!"
+    
+    return jsonify({
+        'success': True,
+        'is_correct': is_correct,
+        'correct_answer': correct_answer if not is_correct else None,
+        'xp_earned': xp_earned,
+        'ai_feedback': ai_feedback,
+        'quest_completed': quest.completed_count >= quest.total_count,
+        'total_xp': quest.xp_earned
+    })
+
+
+@app.route('/daily/complete')
+@login_required
+def daily_quest_complete():
+    """Экран завершения Daily Quest"""
+    from services.daily_quest_service import get_today_quest
+    from services.streak_service import get_streak_stats
+    from datetime import date
+    
+    # Получаем квест на сегодня
+    quest = get_today_quest(current_user.id)
+    
+    if not quest or quest.completed_count < quest.total_count:
+        flash('Daily Quest ещё не завершён', 'warning')
+        return redirect(url_for('daily_quest_main'))
+    
+    # Получаем статистику streak
+    streak_stats = get_streak_stats(current_user.id)
+    
+    # Генерируем AI-комментарий по результатам дня
+    ai_summary = ""
+    if DEEPSEEK_AVAILABLE:
+        try:
+            client = DeepSeekClient()
+            prompt = f"""Пользователь завершил Daily Quest:
+- Решено задач: {quest.completed_count}/{quest.total_count}
+- Заработано XP: {quest.xp_earned}
+- Текущий streak: {streak_stats['current_streak']} дней
+
+Напиши мотивирующий комментарий на русском (2-3 предложения)."""
+            
+            ai_summary = client.get_completion(prompt, max_tokens=200)
+        except Exception as e:
+            app.logger.error(f"AI summary error: {e}")
+            ai_summary = "Отличная работа! Продолжай в том же духе! 🔥"
+    else:
+        ai_summary = f"Поздравляем! Ты завершил Daily Quest и заработал {quest.xp_earned} XP! 🎉"
+    
+    return render_template('daily_complete.html',
+                         quest=quest,
+                         streak_stats=streak_stats,
+                         ai_summary=ai_summary)
+
+
+@app.route('/api/daily/status')
+@login_required
+def daily_quest_status():
+    """API: Статус Daily Quest (для виджета)"""
+    from services.daily_quest_service import get_today_quest
+    from services.streak_service import get_streak_stats
+    
+    quest = get_today_quest(current_user.id)
+    streak_stats = get_streak_stats(current_user.id)
+    
+    if not quest:
+        return jsonify({
+            'exists': False,
+            'streak': streak_stats['current_streak']
+        })
+    
+    return jsonify({
+        'exists': True,
+        'completed': quest.completed_count,
+        'total': quest.total_count,
+        'xp_earned': quest.xp_earned,
+        'is_complete': quest.completed_count >= quest.total_count,
+        'streak': streak_stats['current_streak'],
+        'freeze_available': streak_stats['freeze_available']
+    })
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
 
