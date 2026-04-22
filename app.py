@@ -1718,6 +1718,16 @@ def profile():
         user_id=current_user.id
     ).order_by(AdaptiveTestResult.completed_at.desc()).limit(5).all()
     
+    # Вычисляем статистику по адаптивным тестам
+    all_tests = AdaptiveTestResult.query.filter_by(user_id=current_user.id).all()
+    test_stats = {
+        'total_tests': len(all_tests),
+        'avg_level': round(sum(t.final_level for t in all_tests) / len(all_tests), 1) if all_tests else 0,
+        'max_level': max((t.final_level for t in all_tests), default=0),
+        'total_correct': sum(t.tasks_correct for t in all_tests),
+        'total_tasks': sum(t.tasks_total for t in all_tests)
+    }
+    
     # Получаем список учеников (accepted)
     mentorships = Mentorship.query.filter_by(
         teacher_id=current_user.id,
@@ -1746,6 +1756,7 @@ def profile():
                          user=current_user,
                          progress_dict=progress_dict,
                          recent_tests=recent_tests,
+                         test_stats=test_stats,
                          students=students,
                          incoming_requests=incoming_requests)
 
@@ -3236,13 +3247,13 @@ def check_adaptive_answer():
 
 Оцени решение и дай фидбек в формате JSON."""
 
-                # Вызываем DeepSeek
+                # Вызываем DeepSeek с увеличенным max_tokens для длинных ответов
                 ai_client = DeepSeekClient()
                 ai_response = ai_client.generate(
                     prompt=user_prompt,
                     system_prompt=system_prompt,
                     temperature=0.3,
-                    max_tokens=1000
+                    max_tokens=1500  # Увеличено для детального разбора с LaTeX (timeout=90 уже в классе)
                 )
                 
                 # Парсим JSON-ответ
@@ -3290,9 +3301,18 @@ def check_adaptive_answer():
                     score = 1  # Нейтральная оценка
                     
             except Exception as e:
-                print(f"[ERROR] DeepSeek API error: {e}")
+                print("="*70)
+                print(f"[CRITICAL ERROR] DeepSeek API FAILED")
+                print(f"Error Type: {type(e).__name__}")
+                print(f"Error Message: {e}")
+                print("="*70)
                 import traceback
                 traceback.print_exc()
+                print("="*70)
+                print(f"[DEBUG] Task text: {current_task.task_text[:100]}...")
+                print(f"[DEBUG] User answer: {user_answer}")
+                print(f"[DEBUG] Correct answer: {correct_answer}")
+                print("="*70)
                 feedback = "AI-проверка временно недоступна. Ваш ответ принят."
                 score = 1  # Нейтральная оценка при ошибке API
         
@@ -4449,6 +4469,114 @@ def api_secrets():
             'preview': s.content[:200] + '...' if len(s.content) > 200 else s.content
         } for s in secrets_list]
     })
+
+
+# ============================================================
+# ADMIN ROUTES (Protected)
+# ============================================================
+
+@app.route("/admin/seed-secrets", methods=["POST"])
+def admin_seed_secrets():
+    """
+    Защищенный одноразовый роут для наполнения таблицы OlympiadSecret на продакшене.
+    
+    Требует токен из переменной окружения SEED_ADMIN_TOKEN.
+    Токен передается через заголовок X-Admin-Token ИЛИ query-параметр ?token=
+    
+    Query параметры:
+        - token: Админ-токен (альтернатива заголовку)
+        - force: Если "1", очищает таблицу перед импортом
+    
+    Returns:
+        JSON: {
+            "status": "success" | "error" | "skipped",
+            "inserted": int,
+            "skipped": int,
+            "total": int,
+            "message": str
+        }
+    """
+    import hmac
+    import traceback
+    from utils.seed_secrets_utils import seed_secrets_from_json, get_secrets_stats
+    
+    # Проверка наличия токена в переменных окружения
+    expected_token = os.environ.get('SEED_ADMIN_TOKEN')
+    if not expected_token:
+        return jsonify({
+            'status': 'error',
+            'message': 'SEED_ADMIN_TOKEN not configured on server'
+        }), 503
+    
+    # Получаем токен из заголовка или query-параметра
+    provided_token = request.headers.get('X-Admin-Token') or request.args.get('token')
+    
+    if not provided_token:
+        return jsonify({
+            'status': 'error',
+            'message': 'Admin token required. Provide via X-Admin-Token header or ?token= parameter'
+        }), 403
+    
+    # Безопасное сравнение токенов (защита от timing attacks)
+    if not hmac.compare_digest(expected_token, provided_token):
+        app.logger.warning(f"[SECURITY] Invalid admin token attempt from {request.remote_addr}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid admin token'
+        }), 403
+    
+    # Проверка параметра force
+    force = request.args.get('force') == '1'
+    
+    try:
+        # Вызываем функцию сидирования
+        result = seed_secrets_from_json(json_file='secrets_dump.json', force=force)
+        
+        if not result['success']:
+            return jsonify({
+                'status': 'error',
+                'message': result.get('error', 'Unknown error'),
+                'inserted': 0,
+                'skipped': 0,
+                'total': 0
+            }), 500
+        
+        # Если таблица уже была заполнена и force=False
+        if result['inserted'] == 0 and result['skipped'] > 0 and not force:
+            return jsonify({
+                'status': 'skipped',
+                'message': 'Table already populated. Use ?force=1 to override.',
+                'inserted': 0,
+                'skipped': result['skipped'],
+                'total': result['total']
+            }), 200
+        
+        # Получаем финальную статистику
+        stats = get_secrets_stats()
+        
+        app.logger.info(f"[ADMIN] Secrets seeded successfully by {request.remote_addr}: {result['inserted']} inserted")
+        
+        return jsonify({
+            'status': 'success',
+            'message': result.get('message', 'Secrets imported successfully'),
+            'inserted': result['inserted'],
+            'skipped': result['skipped'],
+            'total': result['total'],
+            'stats': stats
+        }), 200
+        
+    except Exception as e:
+        app.logger.error(f"[ADMIN] Seed secrets failed: {e}")
+        traceback.print_exc()
+        db.session.rollback()
+        
+        return jsonify({
+            'status': 'error',
+            'message': f'Internal server error: {str(e)}',
+            'inserted': 0,
+            'skipped': 0,
+            'total': 0
+        }), 500
 
 
 if __name__ == '__main__':

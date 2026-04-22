@@ -307,6 +307,100 @@
         {% endif %}
     </div>
 
+    <!-- 📊 ИСТОРИЯ АДАПТИВНЫХ ТЕСТОВ -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+            📊 История адаптивных тестов
+        </h2>
+        
+        {% if test_stats.total_tests > 0 %}
+        <!-- Сводная статистика -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <div style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(59, 130, 246, 0.3); text-align: center;">
+                <div style="font-size: 2em; font-weight: 700; color: var(--accent-1); margin-bottom: 5px;">
+                    {{ test_stats.total_tests }}
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.9em;">Всего тестов</div>
+            </div>
+            
+            <div style="background: rgba(251, 191, 36, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(251, 191, 36, 0.3); text-align: center;">
+                <div style="font-size: 2em; font-weight: 700; color: #fbbf24; margin-bottom: 5px;">
+                    {{ test_stats.avg_level }}/7
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.9em;">Средний уровень</div>
+            </div>
+            
+            <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(34, 197, 94, 0.3); text-align: center;">
+                <div style="font-size: 2em; font-weight: 700; color: #22c55e; margin-bottom: 5px;">
+                    {{ test_stats.max_level }}/7
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.9em;">Рекордный уровень</div>
+            </div>
+        </div>
+        
+        <!-- Список последних тестов -->
+        <h3 style="color: var(--text-main); margin-bottom: 15px; font-size: 1.2em;">Последние тесты:</h3>
+        <div style="display: grid; gap: 15px;">
+            {% for test in recent_tests %}
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: var(--radius-sm); border-left: 4px solid {% if test.final_level >= 6 %}#22c55e{% elif test.final_level >= 4 %}#fbbf24{% else %}#3b82f6{% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                    <div>
+                        <div style="color: var(--text-main); font-weight: 600; font-size: 1.1em; margin-bottom: 5px;">
+                            {{ test.topic or 'Адаптивный тест' }} - Класс {{ test.class_level or '?' }}
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.9em;">
+                            {{ test.completed_at.strftime('%d.%m.%Y в %H:%M') if test.completed_at else 'Дата неизвестна' }}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: {% if test.final_level >= 6 %}#22c55e{% elif test.final_level >= 4 %}#fbbf24{% else %}#3b82f6{% endif %}; font-weight: 700; font-size: 1.3em;">
+                            {% for i in range(test.final_level) %}⭐{% endfor %} {{ test.final_level }}/7
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="color: var(--text-soft);">
+                        <span style="color: var(--text-muted);">Результат:</span>
+                        <span style="color: {% if (test.tasks_correct / test.tasks_total * 100) >= 80 %}#22c55e{% elif (test.tasks_correct / test.tasks_total * 100) >= 60 %}#fbbf24{% else %}#ef4444{% endif %}; font-weight: 600;">
+                            {{ test.tasks_correct }}/{{ test.tasks_total }} верно ({{ (test.tasks_correct / test.tasks_total * 100)|round(0)|int }}%)
+                        </span>
+                    </div>
+                    <div style="color: var(--text-soft);">
+                        <span style="color: var(--text-muted);">Получено:</span>
+                        <span style="color: #fbbf24; font-weight: 600;">+50 XP</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if test_stats.total_tests > 5 %}
+        <div style="text-align: center; margin-top: 20px;">
+            <p style="color: var(--text-muted); font-size: 0.9em;">
+                Показаны последние 5 тестов из {{ test_stats.total_tests }}
+            </p>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Заглушка если тестов нет -->
+        <div style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 4em; margin-bottom: 15px; opacity: 0.5;">📝</div>
+            <h3 style="color: var(--text-main); margin-bottom: 10px;">Вы еще не проходили адаптивных тестов</h3>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">
+                Пройдите адаптивный тест, чтобы определить свой уровень и получить персонализированные рекомендации!
+            </p>
+            <a href="{{ url_for('adaptive_test_simple') }}"
+               style="display: inline-block; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: transform 0.2s;"
+               onmouseover="this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.transform='translateY(0)'">
+                🚀 Пройти первый тест
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
     <!-- Действия -->
     <div style="text-align: center; margin-top: 40px;">
         <a href="{{ url_for('index') }}" 
