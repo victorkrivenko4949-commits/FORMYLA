@@ -536,6 +536,100 @@ class AdaptiveTestResult(db.Model):
         return f'<AdaptiveTestResult user_id={self.user_id}, topic={self.topic}, level={self.final_level}>'
 
 
+class DailyQuest(db.Model):
+    """Ежедневные задачи (Daily Quest)"""
+    __tablename__ = 'daily_quests'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False, index=True)  # Дата квеста
+    
+    # Задачи (JSON массив ID задач)
+    task_ids = db.Column(db.Text, nullable=False)  # JSON: [id1, id2, id3, id4, id5]
+    
+    # Прогресс
+    completed_count = db.Column(db.Integer, default=0)  # Решено задач
+    total_count = db.Column(db.Integer, default=5)  # Всего задач
+    
+    # Награды
+    xp_earned = db.Column(db.Integer, default=0)  # Заработано XP
+    
+    # AI комментарий
+    ai_comment = db.Column(db.Text)  # Почему именно эти задачи
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)  # Когда завершён
+    
+    # Связь
+    user = db.relationship('User', backref=db.backref('daily_quests', lazy='dynamic'))
+    
+    # Уникальность: один квест на пользователя в день
+    __table_args__ = (db.UniqueConstraint('user_id', 'date', name='_user_date_uc'),)
+    
+    def __repr__(self):
+        return f'<DailyQuest user_id={self.user_id}, date={self.date}, progress={self.completed_count}/{self.total_count}>'
+
+
+class UserStreak(db.Model):
+    """Streak система (как в Duolingo)"""
+    __tablename__ = 'user_streaks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
+    
+    # Streak данные
+    current_streak = db.Column(db.Integer, default=0)  # Текущая серия дней
+    longest_streak = db.Column(db.Integer, default=0)  # Рекорд
+    last_active_date = db.Column(db.Date)  # Последний активный день
+    
+    # Freeze (заморозка streak)
+    freeze_available = db.Column(db.Integer, default=1)  # Доступно заморозок (1 в месяц)
+    freeze_used_at = db.Column(db.Date)  # Когда использована последняя заморозка
+    
+    # Метаданные
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Связь
+    user = db.relationship('User', backref=db.backref('streak', uselist=False))
+    
+    def __repr__(self):
+        return f'<UserStreak user_id={self.user_id}, current={self.current_streak}, longest={self.longest_streak}>'
+
+
+class TopicMastery(db.Model):
+    """Мастерство по темам (для подбора Daily Quest)"""
+    __tablename__ = 'topic_mastery'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Тема
+    topic = db.Column(db.String(100), nullable=False)  # Название темы
+    grade = db.Column(db.Integer, nullable=False)  # Класс
+    
+    # Статистика
+    solved = db.Column(db.Integer, default=0)  # Решено задач
+    attempts = db.Column(db.Integer, default=0)  # Попыток всего
+    avg_level = db.Column(db.Float, default=3.0)  # Средний уровень решённых задач
+    
+    # Мастерство (0.0 - 1.0)
+    mastery = db.Column(db.Float, default=0.0)  # Уровень владения темой
+    
+    # Метаданные
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Связь
+    user = db.relationship('User', backref=db.backref('topic_mastery', lazy='dynamic'))
+    
+    # Уникальность: одна запись на тему+класс для пользователя
+    __table_args__ = (db.UniqueConstraint('user_id', 'topic', 'grade', name='_user_topic_grade_uc'),)
+    
+    def __repr__(self):
+        return f'<TopicMastery user_id={self.user_id}, topic={self.topic}, mastery={self.mastery:.2f}>'
+
+
 def init_db(app):
     """Инициализация базы данных"""
     db.init_app(app)
