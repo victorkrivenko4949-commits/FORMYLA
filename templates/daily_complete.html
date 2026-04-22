@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Quest завершён! - FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}">
+<style>
+/* Confetti Animation */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: #38ef7d;
+    position: absolute;
+    animation: confetti-fall 3s linear infinite;
+}
+
+@keyframes confetti-fall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+.completion-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.completion-hero {
+    margin-bottom: 3rem;
+    animation: scaleIn 0.8s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.completion-icon {
+    font-size: 8rem;
+    margin-bottom: 1rem;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.completion-title {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.completion-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(56, 239, 125, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    animation: slideUp 0.8s ease;
+    animation-fill-mode: both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.2s; }
+.stat-card:nth-child(2) { animation-delay: 0.4s; }
+.stat-card:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #38ef7d;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-summary-card {
+    background: linear-gradient(135deg, rgba(17, 153, 142, 0.2), rgba(56, 239, 125, 0.2));
+    border: 2px solid rgba(56, 239, 125, 0.5);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    animation: fadeIn 1s ease 0.8s;
+    animation-fill-mode: both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.ai-summary-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #38ef7d;
+    margin-bottom: 1rem;
+}
+
+.ai-summary-text {
+    font-size: 1.1rem;
+    color: #fff;
+    line-height: 1.8;
+}
+
+.streak-celebration {
+    background: rgba(255, 100, 0, 0.1);
+    border: 2px solid rgba(255, 100, 0, 0.5);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    animation: streakPulse 2s ease infinite;
+}
+
+@keyframes streakPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 100, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 100, 0, 0.6);
+    }
+}
+
+.streak-flame-big {
+    font-size: 5rem;
+    filter: drop-shadow(0 0 30px rgba(255, 100, 0, 0.8));
+}
+
+.streak-number-big {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(56, 239, 125, 0.8);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    padding: 1rem 2rem;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-primary-action {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(56, 239, 125, 0.3);
+}
+
+.btn-primary-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(56, 239, 125, 0.5);
+}
+
+.btn-secondary-action {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary-action:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+    .completion-icon {
+        font-size: 5rem;
+    }
+
+    .completion-title {
+        font-size: 2rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-action {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="completion-container">
+    <!-- Confetti Container -->
+    <div id="confettiContainer"></div>
+
+    <!-- Hero Section -->
+    <div class="completion-hero">
+        <div class="completion-icon">🎉</div>
+        <h1 class="completion-title">Поздравляем!</h1>
+        <p class="completion-subtitle">Ты завершил Daily Quest!</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">✓</div>
+            <div class="stat-value">{{ quest.completed_count }}</div>
+            <div class="stat-label">Задач решено</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">💎</div>
+            <div class="stat-value">{{ quest.xp_earned }}</div>
+            <div class="stat-label">XP заработано</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">{{ streak_stats.current_streak }}</div>
+            <div class="stat-label">Дней подряд</div>
+        </div>
+    </div>
+
+    <!-- Streak Celebration -->
+    {% if streak_stats.current_streak > 1 %}
+    <div class="streak-celebration">
+        <div class="streak-flame-big">🔥</div>
+        <p class="streak-number-big">{{ streak_stats.current_streak }} дней подряд!</p>
+        <p style="color: rgba(255, 255, 255, 0.8); margin-top: 1rem;">
+            {% if streak_stats.current_streak >= 7 %}
+            🏆 Неделя подряд! Невероятно!
+            {% elif streak_stats.current_streak >= 3 %}
+            💪 Отличная серия! Продолжай!
+            {% else %}
+            🚀 Так держать!
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- AI Summary -->
+    <div class="ai-summary-card">
+        <div class="ai-summary-title">🤖 Комментарий AI</div>
+        <div class="ai-summary-text">{{ ai_summary|safe }}</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{{ url_for('index') }}" class="btn-action btn-primary-action">
+            🏠 На главную
+        </a>
+        <a href="{{ url_for('profile') }}" class="btn-action btn-secondary-action">
+            👤 Мой профиль
+        </a>
+        <button onclick="shareResults()" class="btn-action btn-secondary-action">
+            📤 Поделиться
+        </button>
+    </div>
+</div>
+
+<script>
+// Confetti Animation
+function createConfetti() {
+    const container = document.getElementById('confettiContainer');
+    const colors = ['#38ef7d', '#11998e', '#ffd700', '#ff6b6b', '#4ecdc4'];
+    
+    for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = Math.random() * 3 + 's';
+        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        container.appendChild(confetti);
+    }
+    
+    // Remove confetti after animation
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 5000);
+}
+
+// Share Results
+function shareResults() {
+    const text = `🎉 Я завершил Daily Quest на FORMYLA!\n💎 Заработано: {{ quest.xp_earned }} XP\n🔥 Streak: {{ streak_stats.current_streak }} дней`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'FORMYLA Daily Quest',
+            text: text
+        }).catch(err => console.log('Share cancelled'));
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Результаты скопированы в буфер обмена!');
+        });
+    }
+}
+
+// Trigger confetti on load
+window.addEventListener('load', () => {
+    createConfetti();
+    
+    // Play celebration sound if available
+    // const audio = new Audio('/static/sounds/celebration.mp3');
+    // audio.play().catch(() => {});
+});
+</script>
+{% endblock %}

@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Задача {{ task_index + 1 }} - Daily Quest - FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="daily-task-container">
+    <!-- Header -->
+    <div class="task-header-section">
+        <a href="{{ url_for('daily_quest_main') }}" class="back-button">← Назад к квесту</a>
+        <div class="task-progress-mini">
+            <span>Задача {{ task_index + 1 }} из {{ total_tasks }}</span>
+        </div>
+    </div>
+
+    <!-- Task Card -->
+    <div class="task-content-card">
+        <div class="task-meta">
+            <span class="task-topic-badge">{{ task.topic }}</span>
+            <span class="task-difficulty-badge">Уровень {{ task.difficulty }}</span>
+        </div>
+
+        <div class="task-text">
+            {{ task.text|safe }}
+        </div>
+
+        <!-- Answer Input -->
+        <div class="answer-section">
+            <label for="userAnswer" class="answer-label">Ваш ответ:</label>
+            <input type="text" 
+                   id="userAnswer" 
+                   class="answer-input" 
+                   placeholder="Введите ответ"
+                   autocomplete="off">
+            
+            <button onclick="submitAnswer()" id="submitBtn" class="submit-button">
+                ✓ Проверить
+            </button>
+        </div>
+
+        <!-- Feedback Section -->
+        <div id="feedbackSection" class="feedback-section" style="display: none;">
+            <div id="feedbackContent"></div>
+        </div>
+    </div>
+
+    <!-- AI Tutor Widget (reuse from exam) -->
+    <div class="ai-tutor-hint">
+        <p>💡 Нужна подсказка? Используй AI-тьютора!</p>
+        <button onclick="openAITutor()" class="ai-tutor-button">
+            🤖 Открыть AI-тьютора
+        </button>
+    </div>
+</div>
+
+<!-- AI Tutor Modal (if available) -->
+{% include 'tutor_widget.html' ignore missing %}
+
+<script>
+const taskIndex = {{ task_index }};
+const taskId = {{ task.id }};
+
+async function submitAnswer() {
+    const answerInput = document.getElementById('userAnswer');
+    const answer = answerInput.value.trim();
+    
+    if (!answer) {
+        alert('Пожалуйста, введите ответ');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Проверяем...';
+    
+    try {
+        const response = await fetch(`/daily/task/${taskIndex}/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ answer: answer })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showFeedback(data);
+        } else {
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            submitBtn.disabled = false;
+            submitBtn.textContent = '✓ Проверить';
+        }
+    } catch (error) {
+        console.error('Error submitting answer:', error);
+        alert('Ошибка отправки ответа');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '✓ Проверить';
+    }
+}
+
+function showFeedback(data) {
+    const feedbackSection = document.getElementById('feedbackSection');
+    const feedbackContent = document.getElementById('feedbackContent');
+    
+    let html = '';
+    
+    if (data.is_correct) {
+        html = `
+            <div class="feedback-correct">
+                <div class="feedback-icon">✓</div>
+                <h3>Правильно!</h3>
+                <p class="xp-earned">+${data.xp_earned} XP</p>
+                <div class="ai-feedback">${data.ai_feedback}</div>
+                ${data.quest_completed ? 
+                    '<p class="quest-complete-notice">🎉 Квест завершён! Бонус: +100 XP</p>' : 
+                    ''}
+            </div>
+        `;
+        
+        // Redirect after delay
+        setTimeout(() => {
+            if (data.quest_completed) {
+                window.location.href = '/daily/complete';
+            } else {
+                window.location.href = '/daily';
+            }
+        }, 3000);
+    } else {
+        html = `
+            <div class="feedback-incorrect">
+                <div class="feedback-icon">✗</div>
+                <h3>Неправильно</h3>
+                <p>Правильный ответ: <strong>${data.correct_answer}</strong></p>
+                <div class="ai-feedback">${data.ai_feedback}</div>
+                <button onclick="tryAgain()" class="try-again-button">Попробовать ещё раз</button>
+            </div>
+        `;
+    }
+    
+    feedbackContent.innerHTML = html;
+    feedbackSection.style.display = 'block';
+    
+    // Scroll to feedback
+    feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function tryAgain() {
+    const feedbackSection = document.getElementById('feedbackSection');
+    feedbackSection.style.display = 'none';
+    
+    const answerInput = document.getElementById('userAnswer');
+    answerInput.value = '';
+    answerInput.focus();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = false;
+    submitBtn.textContent = '✓ Проверить';
+}
+
+function openAITutor() {
+    // Open AI tutor modal if available
+    if (typeof showTutorWidget === 'function') {
+        showTutorWidget();
+    } else {
+        alert('AI-тьютор временно недоступен');
+    }
+}
+
+// Allow Enter key to submit
+document.getElementById('userAnswer').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        submitAnswer();
+    }
+});
+</script>
+
+<style>
+.daily-task-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.task-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.back-button {
+    color: #38ef7d;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    transform: translateX(-5px);
+}
+
+.task-progress-mini {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.task-content-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.task-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.task-topic-badge,
+.task-difficulty-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.task-topic-badge {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #fff;
+}
+
+.task-difficulty-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.task-text {
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.answer-section {
+    margin-bottom: 2rem;
+}
+
+.answer-label {
+    display: block;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.answer-input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.answer-input:focus {
+    outline: none;
+    border-color: #38ef7d;
+    box-shadow: 0 0 20px rgba(56, 239, 125, 0.3);
+}
+
+.submit-button {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(56, 239, 125, 0.4);
+}
+
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.feedback-section {
+    margin-top: 2rem;
+    animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.feedback-correct,
+.feedback-incorrect {
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.feedback-correct {
+    background: rgba(56, 239, 125, 0.1);
+    border: 2px solid rgba(56, 239, 125, 0.5);
+}
+
+.feedback-incorrect {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.5);
+}
+
+.feedback-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.feedback-correct .feedback-icon {
+    color: #38ef7d;
+}
+
+.feedback-incorrect .feedback-icon {
+    color: #ef4444;
+}
+
+.feedback-correct h3 {
+    color: #38ef7d;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.feedback-incorrect h3 {
+    color: #ef4444;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.xp-earned {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #38ef7d;
+    margin-bottom: 1rem;
+}
+
+.ai-feedback {
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+.quest-complete-notice {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+.try-again-button {
+    margin-top: 1rem;
+    padding: 0.8rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.try-again-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.ai-tutor-hint {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+}
+
+.ai-tutor-hint p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+}
+
+.ai-tutor-button {
+    padding: 0.8rem 2rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-tutor-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 768px) {
+    .daily-task-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .task-content-card {
+        padding: 1.5rem;
+    }
+
+    .task-text {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
