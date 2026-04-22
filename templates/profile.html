@@ -108,6 +108,51 @@
         </p>
     </div>
 
+    <!-- Daily Quest Streak Widget -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+            🔥 Daily Quest Streak
+        </h2>
+        
+        <div id="streakWidget" style="text-align: center; padding: 20px;">
+            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8));">🔥</div>
+            <div style="font-size: 3rem; font-weight: 900; color: #38ef7d; margin-bottom: 0.5rem;">
+                <span id="currentStreak">0</span> дней
+            </div>
+            <div style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
+                Рекорд: <span id="longestStreak" style="color: #ffd700; font-weight: 600;">0</span> дней
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <a href="{{ url_for('daily_quest_main') }}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s ease;">
+                    📝 Перейти к задачам дня
+                </a>
+            </div>
+        </div>
+        
+        <!-- Daily Quest History (last 7 days) -->
+        <div style="margin-top: 2rem;">
+            <h3 style="color: var(--text-main); font-size: 1.2em; margin-bottom: 1rem;">История последних 7 дней</h3>
+            <div id="questHistory" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem;">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Mastery Radar Chart -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+            📊 Мастерство по темам
+        </h2>
+        
+        <div style="max-width: 500px; margin: 0 auto;">
+            <canvas id="masteryRadar"></canvas>
+        </div>
+        
+        <div id="masteryLegend" style="margin-top: 2rem; display: grid; gap: 0.5rem;">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
     <!-- Прогресс по темам -->
     {% if progress_dict %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
@@ -422,6 +467,9 @@
 
 </div>
 
+<!-- Chart.js for Radar Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <script>
 function showNicknameForm() {
     document.getElementById('nickname-display').style.display = 'none';
@@ -439,5 +487,108 @@ function hideNicknameForm() {
     document.getElementById('nickname-display').style.display = 'flex';
     document.getElementById('nickname-form').style.display = 'none';
 }
+
+// Load Daily Quest Streak Data
+async function loadStreakData() {
+    try {
+        const response = await fetch('/api/daily/status');
+        const data = await response.json();
+        
+        if (data.exists) {
+            document.getElementById('currentStreak').textContent = data.streak || 0;
+        }
+        
+        // Load streak stats from backend (would need new endpoint)
+        // For now, use the current streak
+        document.getElementById('longestStreak').textContent = data.streak || 0;
+        
+    } catch (error) {
+        console.error('Error loading streak data:', error);
+    }
+}
+
+// Load Topic Mastery Data and Create Radar Chart
+async function loadMasteryData() {
+    try {
+        // This would need a new API endpoint to get mastery data
+        // For now, create a sample radar chart
+        const ctx = document.getElementById('masteryRadar');
+        
+        if (!ctx) return;
+        
+        // Sample data - in production, fetch from /api/mastery endpoint
+        const masteryData = {
+            labels: ['Алгебра', 'Геометрия', 'Комбинаторика', 'Теория чисел', 'Логика'],
+            datasets: [{
+                label: 'Мастерство',
+                data: [0.7, 0.5, 0.8, 0.6, 0.4], // 0-1 scale
+                backgroundColor: 'rgba(56, 239, 125, 0.2)',
+                borderColor: 'rgba(56, 239, 125, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(56, 239, 125, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(56, 239, 125, 1)'
+            }]
+        };
+        
+        new Chart(ctx, {
+            type: 'radar',
+            data: masteryData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 1,
+                        ticks: {
+                            stepSize: 0.2,
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            backdropColor: 'transparent'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        pointLabels: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Create legend
+        const legendHTML = masteryData.labels.map((label, index) => {
+            const value = (masteryData.datasets[0].data[index] * 100).toFixed(0);
+            const color = value >= 80 ? '#22c55e' : value >= 60 ? '#fbbf24' : '#ef4444';
+            return `
+                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                    <span style="color: rgba(255, 255, 255, 0.8);">${label}</span>
+                    <span style="color: ${color}; font-weight: 600;">${value}%</span>
+                </div>
+            `;
+        }).join('');
+        
+        document.getElementById('masteryLegend').innerHTML = legendHTML;
+        
+    } catch (error) {
+        console.error('Error loading mastery data:', error);
+    }
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadStreakData();
+    loadMasteryData();
+});
 </script>
 {% endblock %}
