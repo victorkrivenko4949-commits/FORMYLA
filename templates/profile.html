@@ -90,12 +90,8 @@
                         </div>
                     </div>
                     {% if not yandex_account %}
-                    <a href="{{ url_for('link_yandex') }}"
-                       style="padding: 8px 16px; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; transition: transform 0.2s;"
-                       onmouseover="this.style.transform='translateY(-2px)'"
-                       onmouseout="this.style.transform='translateY(0)'">
-                        Привязать
-                    </a>
+                    <div id="yandex-link-loading" style="color: var(--text-muted); font-size: 13px;">Загрузка...</div>
+                    <div id="yandex-link-container" style="display: none;"></div>
                     {% else %}
                     <span style="color: #86efac; font-weight: 600;">✓ Подключено</span>
                     {% endif %}
@@ -589,6 +585,78 @@ async function loadMasteryData() {
 document.addEventListener('DOMContentLoaded', function() {
     loadStreakData();
     loadMasteryData();
+    initYandexLinkWidget();
 });
+
+// Yandex ID linking widget (same flow as login)
+function initYandexLinkWidget() {
+    const container = document.getElementById('yandex-link-container');
+    const loading = document.getElementById('yandex-link-loading');
+    if (!container) return;  // Already linked
+
+    const clientId = "{{ config.YANDEX_CLIENT_ID if config.YANDEX_CLIENT_ID else '' }}";
+    if (!clientId) {
+        if (loading) loading.textContent = 'Yandex OAuth не настроен';
+        return;
+    }
+
+    const domain = "{{ config.DOMAIN_URL if config.DOMAIN_URL else 'http://localhost:5000' }}";
+
+    window.onload_yandex_link = function() {
+        window.YaAuthSuggest.init(
+            {
+                client_id: clientId,
+                response_type: "token",
+                redirect_uri: domain + "/yandex_receiver"
+            },
+            domain,
+            {
+                view: "button",
+                parentId: "yandex-link-container",
+                buttonView: "main",
+                buttonTheme: "dark",
+                buttonSize: "m",
+                buttonBorderRadius: 8
+            }
+        )
+        .then(result => {
+            if (loading) loading.style.display = 'none';
+            container.style.display = 'flex';
+            return result.handler();
+        })
+        .then(data => {
+            // Set linking mode before sending token
+            fetch('/link_yandex', { method: 'GET', redirect: 'manual' });
+            
+            fetch('/auth/yandex/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    access_token: data.access_token,
+                    linking_mode: true
+                })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    window.location.href = result.redirect_url || '/profile';
+                } else {
+                    alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+                }
+            });
+        })
+        .catch(err => {
+            console.log('Yandex link cancelled:', err);
+            if (loading) loading.style.display = 'none';
+            container.style.display = 'flex';
+        });
+    };
+
+    // Load Yandex SDK
+    const script = document.createElement('script');
+    script.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
+    script.onload = window.onload_yandex_link;
+    document.head.appendChild(script);
+}
 </script>
 {% endblock %}

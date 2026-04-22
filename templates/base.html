@@ -55,6 +55,20 @@
         </a>
 
         <nav class="nav">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('daily_quest_main') }}" class="daily-link">
+                <span class="daily-icon">🔥</span>
+                Задачи дня
+                {% set dq = current_user.today_quest() %}
+                {% if dq and dq.completed_count >= dq.total_count %}
+                  <span class="daily-badge done">✓</span>
+                {% elif dq %}
+                  <span class="daily-badge">{{ dq.completed_count }}/{{ dq.total_count }}</span>
+                {% else %}
+                  <span class="daily-badge new">NEW</span>
+                {% endif %}
+            </a>
+            {% endif %}
             <a href="{{ url_for('index') }}">Темы</a>
             <a href="{{ url_for('olympiads') }}">Олимпиады</a>
             <a href="/practice">Написать олимпиаду</a>

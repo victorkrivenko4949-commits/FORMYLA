@@ -1499,7 +1499,8 @@ def yandex_login():
         from models import OAuthAccount
         
         # Проверяем, это linking или обычный вход
-        is_linking = session.pop('linking_mode', False)
+        # Поддерживаем как session flag, так и JSON параметр (для виджета на профиле)
+        is_linking = session.pop('linking_mode', False) or data.get('linking_mode', False)
         
         if is_linking and current_user.is_authenticated:
             # РЕЖИМ ПРИВЯЗКИ: добавляем Яндекс к существующему аккаунту
@@ -4623,6 +4624,7 @@ def daily_quest_main():
     """Главная страница Daily Quest"""
     from services.daily_quest_service import get_today_quest, get_quest_tasks
     from services.streak_service import get_streak_stats
+    from markupsafe import Markup
     
     # Получаем или создаём квест на сегодня
     quest = get_today_quest(current_user.id)
@@ -4630,6 +4632,20 @@ def daily_quest_main():
     if not quest:
         flash('Не удалось создать Daily Quest. Попробуйте позже.', 'error')
         return redirect(url_for('index'))
+    
+    # Конвертируем markdown ai_comment → HTML
+    if quest.ai_comment:
+        try:
+            import markdown as md_lib
+            ai_comment_html = Markup(md_lib.markdown(quest.ai_comment, extensions=['nl2br']))
+        except ImportError:
+            # Fallback: простая замена **text** → <strong>text</strong>
+            import re
+            text = quest.ai_comment
+            text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+            text = text.replace('\n\n', '</p><p>').replace('\n', '<br>')
+            ai_comment_html = Markup(f'<p>{text}</p>')
+        quest.ai_comment = ai_comment_html
     
     # Получаем задачи квеста
     tasks = get_quest_tasks(quest)

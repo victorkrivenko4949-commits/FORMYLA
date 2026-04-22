@@ -479,3 +479,62 @@ input, textarea, [contenteditable] {
     .caps-toggle-btn { width: 100%; }
 }
 
+/* ── Daily Quest Navbar Link ── */
+.daily-link {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px !important;
+    border-radius: 8px;
+    background: linear-gradient(135deg,
+                rgba(17,153,142,0.2),
+                rgba(56,239,125,0.2));
+    border: 1px solid rgba(56,239,125,0.35) !important;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: #fff !important;
+    font-weight: 600;
+}
+
+.daily-link:hover {
+    background: linear-gradient(135deg,
+                rgba(17,153,142,0.4),
+                rgba(56,239,125,0.4)) !important;
+    box-shadow: 0 0 14px rgba(56,239,125,0.5);
+    text-decoration: none;
+}
+
+.daily-icon {
+    animation: flame-flicker-nav 2s ease-in-out infinite alternate;
+}
+
+@keyframes flame-flicker-nav {
+    0%   { filter: drop-shadow(0 0 3px #f97316); }
+    100% { filter: drop-shadow(0 0 6px #fbbf24); }
+}
+
+.daily-badge {
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: #38ef7d;
+    color: #000;
+    line-height: 1.4;
+}
+
+.daily-badge.done {
+    background: #11998e;
+    color: #fff;
+}
+
+.daily-badge.new {
+    background: #f97316;
+    color: #fff;
+    animation: pulse-new 1.5s infinite;
+}
+
+@keyframes pulse-new {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.12); }
+}

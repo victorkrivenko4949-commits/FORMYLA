@@ -120,6 +120,17 @@ class User(UserMixin, db.Model):
         score += self.highest_difficulty_solved * 20
         return score
     
+    def today_quest(self):
+        """Получить Daily Quest на сегодня (для navbar)"""
+        from datetime import date
+        try:
+            return DailyQuest.query.filter_by(
+                user_id=self.id,
+                date=date.today()
+            ).first()
+        except Exception:
+            return None
+
     def __repr__(self):
         return f'<User {self.email}>'
 
