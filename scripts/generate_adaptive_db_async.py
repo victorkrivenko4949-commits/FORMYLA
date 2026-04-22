@@ -1,0 +1,282 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Асинхронный скрипт для генерации базы адаптивных задач через DeepSeek API
+Генерирует 175 задач (25 тем × 7 уровней сложности) для 7 класса
+Использует 30 параллельных потоков для ускорения
+"""
+
+import os
+import sys
+import json
+import asyncio
+import aiohttp
+from pathlib import Path
+
+# Исправление кодировки для Windows
+if sys.platform == 'win32':
+    import codecs
+    if hasattr(sys.stdout, 'buffer'):
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
+# Добавляем корневую директорию в путь для импорта
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from dotenv import load_dotenv
+load_dotenv()
+
+# Матрица тем для 7 класса (25 тем)
+TEST_MATRIX_7_CLASS = {
+    1: "Вычисления с дробями и десятичными числами",
+    2: "Свойства степеней",
+    3: "Линейные уравнения",
+    4: "Алгебраические тождества",
+    5: "Задачи на движение",
+    6: "Совместная работа",
+    7: "Проценты и смеси",
+    8: "Сюжетные задачи на составление уравнений",
+    9: "Признаки делимости",
+    10: "Деление с остатком",
+    11: "НОД и НОК",
+    12: "Последняя цифра степени",
+    13: "Диофантовы уравнения",
+    14: "Рыцари и лжецы",
+    15: "Взвешивания и переливания",
+    16: "Игры из двух лиц",
+    17: "Принцип Дирихле",
+    18: "Правила умножения и сложения",
+    19: "Перестановки и размещения",
+    20: "Графы (основы)",
+    21: "Раскраски",
+    22: "Углы и параллельные прямые",
+    23: "Разрезания и замощения",
+    24: "Периметры и площади",
+    25: "Признаки равенства треугольников"
+}
+
+# Настройки API
+DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
+USE_OPENROUTER = os.environ.get('USE_OPENROUTER', 'false').lower() in ['true', '1', 't', 'yes']
+
+if USE_OPENROUTER:
+    API_URL = "https://openrouter.ai/api/v1/chat/completions"
+    MODEL = "deepseek/deepseek-chat"
+else:
+    API_URL = "https://api.deepseek.com/v1/chat/completions"
+    MODEL = "deepseek-chat"
+
+# Путь к файлу с данными
+DATA_DIR = Path(__file__).parent.parent / 'data'
+DATA_DIR.mkdir(exist_ok=True)
+OUTPUT_FILE = DATA_DIR / 'adaptive_7.json'
+
+# Глобальные счетчики и блокировка
+file_lock = asyncio.Lock()
+stats = {
+    'generated': 0,
+    'skipped': 0,
+    'failed': 0
+}
+
+
+def load_existing_tasks():
+    """Загружает существующие задачи из файла"""
+    if OUTPUT_FILE.exists():
+        try:
+            with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"⚠️  Ошибка при загрузке существующих задач: {e}")
+            return {}
+    return {}
+
+
+async def save_task(task_key, task_data):
+    """Сохраняет одну задачу в файл (потокобезопасно)"""
+    async with file_lock:
+        # Загружаем текущие данные
+        tasks = load_existing_tasks()
+        # Добавляем новую задачу
+        tasks[task_key] = task_data
+        # Сохраняем
+        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+            json.dump(tasks, f, ensure_ascii=False, indent=2)
+
+
+async def generate_task(session, semaphore, step, level, topic):
+    """Генерирует одну задачу через DeepSeek API (асинхронно)"""
+    
+    async with semaphore:  # Ограничиваем до 30 одновременных запросов
+        task_key = f"step_{step}_level_{level}"
+        
+        # Описание уровней сложности
+        difficulty_desc = {
+            1: "чуть сложнее обычной школьной программы",
+            2: "школьная олимпиада",
+            3: "муниципальная олимпиада",
+            4: "региональная олимпиада (начальный уровень)",
+            5: "региональная олимпиада",
+            6: "заключительный этап ВсОШ (начальный уровень)",
+            7: "финал ВсОШ"
+        }
+        
+        prompt = f"""Сгенерируй ОРИГИНАЛЬНУЮ математическую задачу для 7 класса.
+
+Тема: {topic}
+Уровень сложности: {level} ({difficulty_desc.get(level, 'средний')})
+
+СТРОГИЕ ТРЕБОВАНИЯ:
+1. Ответ должен быть СТРОГИМ ЧИСЛОМ (без единиц измерения, например: '42' или '-5.5' или '0.75')
+2. Математика строго в формате LaTeX
+3. Задача должна быть ОРИГИНАЛЬНОЙ, не копируй известные задачи
+4. Условие должно быть четким и понятным школьнику 7 класса
+5. Решение должно быть подробным, с пояснениями каждого шага
+
+ВАЖНО ДЛЯ JSON: Все обратные слеши в LaTeX-коде должны быть ЭКРАНИРОВАНЫ двойным слешем!
+Пиши \\\\frac вместо \\frac, \\\\sqrt вместо \\sqrt, \\\\( вместо \\(, \\\\[ вместо \\[
+Если напишешь один слеш, парсер JSON сломается!
+
+ФОРМАТ ОТВЕТА - строго валидный JSON (БЕЗ markdown маркеров ```json):
+{{
+  "text": "условие задачи с LaTeX формулами",
+  "answer": "число",
+  "solution": "подробное решение с LaTeX формулами"
+}}
+
+ВАЖНО: НЕ оборачивай JSON в markdown блоки!"""
+
+        headers = {
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": MODEL,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.8,
+            "max_tokens": 2000
+        }
+        
+        try:
+            async with session.post(API_URL, headers=headers, json=payload, timeout=aiohttp.ClientTimeout(total=90)) as response:
+                response.raise_for_status()
+                data = await response.json()
+                content = data['choices'][0]['message']['content'].strip()
+                
+                # Очищаем от markdown маркеров
+                import re
+                content = re.sub(r'```json\s*', '', content)
+                content = re.sub(r'```\s*$', '', content)
+                content = content.strip()
+                
+                # Парсим JSON
+                task_data = json.loads(content)
+                
+                # Проверяем наличие обязательных полей
+                if not all(key in task_data for key in ['text', 'answer', 'solution']):
+                    raise ValueError("Отсутствуют обязательные поля в ответе API")
+                
+                task = {
+                    "step": step,
+                    "level": level,
+                    "topic": topic,
+                    "text": task_data['text'],
+                    "answer": task_data['answer'],
+                    "solution": task_data['solution']
+                }
+                
+                # Сохраняем задачу
+                await save_task(task_key, task)
+                stats['generated'] += 1
+                print(f"✅ Тема {step}/25, Уровень {level}/7: успешно")
+                return True
+                
+        except aiohttp.ClientError as e:
+            stats['failed'] += 1
+            print(f"❌ Тема {step}/25, Уровень {level}/7: ошибка API - {e}")
+            return False
+        except json.JSONDecodeError as e:
+            stats['failed'] += 1
+            print(f"❌ Тема {step}/25, Уровень {level}/7: ошибка парсинга JSON - {e}")
+            return False
+        except Exception as e:
+            stats['failed'] += 1
+            print(f"❌ Тема {step}/25, Уровень {level}/7: неожиданная ошибка - {e}")
+            return False
+
+
+async def main():
+    """Основная асинхронная функция генерации"""
+    
+    if not DEEPSEEK_API_KEY:
+        print("❌ ОШИБКА: DEEPSEEK_API_KEY не найден в переменных окружения!")
+        print("   Создайте файл .env и добавьте: DEEPSEEK_API_KEY=your_key_here")
+        return
+    
+    print("="*60)
+    print("🚀 Асинхронный генератор адаптивных задач для 7 класса")
+    print("="*60)
+    print(f"📊 Всего будет сгенерировано: 25 тем × 7 уровней = 175 задач")
+    print(f"⚡ Параллельных потоков: 30")
+    print(f"🔑 API: {'OpenRouter' if USE_OPENROUTER else 'DeepSeek'}")
+    print(f"💾 Файл: {OUTPUT_FILE}")
+    print("="*60)
+    
+    # Загружаем существующие задачи
+    existing_tasks = load_existing_tasks()
+    print(f"📂 Загружено существующих задач: {len(existing_tasks)}")
+    
+    # Собираем список задач для генерации
+    tasks_to_generate = []
+    for step in range(1, 26):
+        for level in range(1, 8):
+            task_key = f"step_{step}_level_{level}"
+            if task_key not in existing_tasks:
+                tasks_to_generate.append((step, level, TEST_MATRIX_7_CLASS[step]))
+            else:
+                stats['skipped'] += 1
+    
+    print(f"🔄 Задач к генерации: {len(tasks_to_generate)}")
+    print("="*60)
+    
+    if not tasks_to_generate:
+        print("✅ Все задачи уже сгенерированы!")
+        return
+    
+    # Создаем семафор для ограничения до 30 одновременных запросов
+    semaphore = asyncio.Semaphore(30)
+    
+    # Создаем асинхронную сессию
+    async with aiohttp.ClientSession() as session:
+        # Запускаем все задачи параллельно
+        tasks = [
+            generate_task(session, semaphore, step, level, topic)
+            for step, level, topic in tasks_to_generate
+        ]
+        
+        # Ждем завершения всех задач
+        await asyncio.gather(*tasks)
+    
+    # Итоговая статистика
+    print("\n" + "="*60)
+    print("📊 ИТОГОВАЯ СТАТИСТИКА:")
+    print(f"   ✅ Сгенерировано: {stats['generated']}")
+    print(f"   ⏭️  Пропущено (уже были): {stats['skipped']}")
+    print(f"   ❌ Ошибок: {stats['failed']}")
+    
+    final_tasks = load_existing_tasks()
+    print(f"   📦 Всего в базе: {len(final_tasks)}/175")
+    print("="*60)
+    
+    if len(final_tasks) == 175:
+        print("🎉 ВСЕ ЗАДАЧИ СГЕНЕРИРОВАНЫ!")
+    else:
+        print(f"⚠️  Осталось сгенерировать: {175 - len(final_tasks)} задач")
+        print("   Запустите скрипт еще раз для повторной попытки")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
