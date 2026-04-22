@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Задачи дня - FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="daily-quest-container">
+    <!-- Streak Display -->
+    <div class="streak-display">
+        <div class="streak-flame">
+            <span class="flame-icon">🔥</span>
+            <span class="streak-number">{{ streak_stats.current_streak }}</span>
+        </div>
+        <div class="streak-text">
+            <p class="streak-label">Дней подряд</p>
+            {% if streak_stats.freeze_available > 0 %}
+            <p class="freeze-info">❄️ Заморозка доступна</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- AI Intro Card -->
+    <div class="ai-intro-card">
+        <div class="ai-avatar">🤖</div>
+        <div class="ai-message">
+            {{ quest.ai_comment|safe }}
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="quest-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (quest.completed_count / quest.total_count * 100)|int }}%"></div>
+        </div>
+        <p class="progress-text">{{ quest.completed_count }} / {{ quest.total_count }} задач</p>
+    </div>
+
+    <!-- Task Stepper -->
+    <div class="task-stepper">
+        {% for i in range(quest.total_count) %}
+        <div class="step {% if i < quest.completed_count %}completed{% elif i == quest.completed_count %}current{% else %}locked{% endif %}">
+            <div class="step-circle">
+                {% if i < quest.completed_count %}
+                <span class="check-icon">✓</span>
+                {% else %}
+                <span class="step-number">{{ i + 1 }}</span>
+                {% endif %}
+            </div>
+            {% if i < quest.total_count - 1 %}
+            <div class="step-line"></div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Task Preview Cards -->
+    <div class="tasks-preview">
+        {% for i, task in enumerate(tasks) %}
+        <div class="task-card {% if i < quest.completed_count %}completed{% elif i == quest.completed_count %}active{% else %}locked{% endif %}">
+            <div class="task-header">
+                <span class="task-number">Задача {{ i + 1 }}</span>
+                {% if i < quest.completed_count %}
+                <span class="task-status completed">✓ Решена</span>
+                {% elif i == quest.completed_count %}
+                <span class="task-status current">Текущая</span>
+                {% else %}
+                <span class="task-status locked">🔒 Заблокирована</span>
+                {% endif %}
+            </div>
+            <div class="task-info">
+                <p class="task-topic">{{ task.topic }}</p>
+                <p class="task-difficulty">Уровень {{ task.difficulty }}</p>
+            </div>
+            {% if i <= quest.completed_count %}
+            <a href="{{ url_for('daily_quest_task', task_index=i) }}" class="task-button">
+                {% if i < quest.completed_count %}
+                Просмотреть
+                {% else %}
+                Решить
+                {% endif %}
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Action Button -->
+    <div class="action-section">
+        {% if quest.completed_count >= quest.total_count %}
+        <a href="{{ url_for('daily_quest_complete') }}" class="btn-primary btn-large">
+            🎉 Посмотреть результаты
+        </a>
+        {% elif quest.completed_count == 0 %}
+        <a href="{{ url_for('daily_quest_task', task_index=0) }}" class="btn-primary btn-large">
+            🚀 Начать
+        </a>
+        {% else %}
+        <a href="{{ url_for('daily_quest_task', task_index=quest.completed_count) }}" class="btn-primary btn-large">
+            ⚡ Продолжить
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- XP Info -->
+    <div class="xp-info">
+        <p>💎 Заработано: <strong>{{ quest.xp_earned }} XP</strong></p>
+        <p class="xp-bonus">Бонус за все 5 задач: <strong>+100 XP</strong></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/daily.js') }}"></script>
+{% endblock %}
