@@ -8,7 +8,7 @@
 
 <div class="cards-grid">
     {% for key, title in subjects.items() %}
-        <a href="{{ url_for('adaptive_test_select_grade', topic=key) }}" class="card">
+        <a href="{{ url_for('section', subject_key=key) }}" class="card">
             <h2 class="card-title">{{ title }}</h2>
             <p class="card-text">
                 {% if key == 'algebra' %}

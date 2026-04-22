@@ -110,6 +110,14 @@
                 
             </div>
             
+            <!-- AI Комментарий (если есть) -->
+            {% if result.ai_comment %}
+            <div style="background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: 10px; border-left: 3px solid var(--accent-2); margin-bottom: 15px;">
+                <div style="color: var(--accent-2); font-weight: 600; margin-bottom: 5px; font-size: 0.9em;">💬 Комментарий AI:</div>
+                <div style="color: var(--text-soft); line-height: 1.6; font-size: 0.95em;">{{ result.ai_comment }}</div>
+            </div>
+            {% endif %}
+            
             <!-- Решение (только для неправильных ответов) -->
             {% if not result.is_correct %}
                 <div style="background: rgba(239, 68, 68, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #ef4444;">

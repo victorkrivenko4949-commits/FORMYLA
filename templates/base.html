@@ -42,12 +42,7 @@
             <img src="/static/logo.png" alt="FORMYLA" height="40">
         </a>
 
-        <!-- Burger Menu Button (Mobile Only) -->
-        <button class="hamburger" id="hamburgerBtn" style="display: none;" onclick="toggleMobileMenu()">
-            <span id="hamburgerIcon">☰</span>
-        </button>
-
-        <nav class="nav" id="mainNav">
+        <nav class="nav">
             <a href="{{ url_for('index') }}">Темы</a>
             <a href="{{ url_for('olympiads') }}">Олимпиады</a>
             <a href="/practice">Написать олимпиаду</a>
@@ -124,6 +119,11 @@ MathJax = {
         
         const userAnswer = inputEl.value.trim();
         
+        // DEBUG: Логирование для отладки
+        console.log("=== ФРОНТЕНД ПРОВЕРКА ===");
+        console.log("Problem ID:", problemId);
+        console.log("Введенный ответ:", userAnswer);
+        
         if (!userAnswer) {
             feedbackEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Введите ответ</span>';
             return;
@@ -144,6 +144,12 @@ MathJax = {
             });
             
             const data = await response.json();
+            
+            // DEBUG: Логирование ответа сервера
+            console.log("Ответ сервера:", data);
+            console.log("Правильный ответ из БД:", data.correct_answer);
+            console.log("Результат проверки:", data.correct);
+            console.log("========================");
             
             if (data.correct) {
                 feedbackEl.innerHTML = '<span style="color: #10b981; font-weight: 600;">✅ Верно! Отличная работа!</span>';
@@ -167,38 +173,6 @@ MathJax = {
             console.error('Error:', error);
         }
     }
-    </script>
-    
-    <!-- Mobile Menu Toggle Script -->
-    <script>
-    function toggleMobileMenu() {
-        const nav = document.getElementById('mainNav');
-        const icon = document.getElementById('hamburgerIcon');
-        
-        nav.classList.toggle('active');
-        
-        // Меняем иконку
-        if (nav.classList.contains('active')) {
-            icon.textContent = '✕';
-        } else {
-            icon.textContent = '☰';
-        }
-    }
-    
-    // Закрываем меню при клике на ссылку
-    document.addEventListener('DOMContentLoaded', function() {
-        const navLinks = document.querySelectorAll('.nav a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    const nav = document.getElementById('mainNav');
-                    const icon = document.getElementById('hamburgerIcon');
-                    nav.classList.remove('active');
-                    icon.textContent = '☰';
-                }
-            });
-        });
-    });
     </script>
     
     <!-- AI Тьютор виджет -->

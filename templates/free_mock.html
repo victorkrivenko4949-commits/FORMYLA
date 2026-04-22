@@ -363,13 +363,17 @@ function renderTask(task, taskNum) {
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
                     Ваш ответ:
                 </label>
-                <input type="text" 
-                       id="current-answer" 
+                <math-field
+                       id="current-answer"
                        placeholder="Введите ответ"
-                       style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; caret-color: var(--accent-2);"
+                       style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; --caret-color: var(--accent-2);"
                        onfocus="this.style.borderColor='var(--accent-2)'"
                        onblur="this.style.borderColor='var(--border-mid)'"
                        onkeypress="if(event.key==='Enter') nextTask()">
+                </math-field>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
+                    💡 Кликните на поле для вызова виртуальной клавиатуры с √, дробями и степенями
+                </p>
             </div>
             
         </div>
@@ -660,6 +664,36 @@ window.addEventListener('DOMContentLoaded', function() {
         console.log('ℹ️ Сохраненного прогресса нет');
     }
 });
+</script>
+
+<!-- MathLive для ввода математических формул -->
+<script src="https://unpkg.com/mathlive"></script>
+<script>
+// Настройка MathLive для поля ответа (динамически создаваемого)
+function setupMathField() {
+    const mathField = document.getElementById('current-answer');
+    if (mathField && mathField.tagName === 'MATH-FIELD') {
+        // Настройки виртуальной клавиатуры
+        mathField.setOptions({
+            virtualKeyboardMode: 'onfocus',
+            virtualKeyboards: 'numeric symbols greek',
+            smartFence: true,
+            smartMode: true
+        });
+    }
+}
+
+// Вызываем настройку при каждом рендере новой задачи
+// Добавляем observer для отслеживания изменений DOM
+const observer = new MutationObserver(function(mutations) {
+    setupMathField();
+});
+
+// Наблюдаем за контейнером задач
+const taskContainer = document.getElementById('current-task-container');
+if (taskContainer) {
+    observer.observe(taskContainer, { childList: true, subtree: true });
+}
 </script>
 
 {% endblock %}

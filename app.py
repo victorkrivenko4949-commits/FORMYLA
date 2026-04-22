@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
+from utils.math_answer_utils import compare_math_answers
+from utils.rating_utils import add_xp_for_task, add_xp_for_adaptive_test, add_xp_for_mock_exam, get_xp_for_next_level
+from utils.answer_evaluator import check_answers_batch
 from olympiads import OLYMPIADS_DB as _RAW_DB
 try:
     from olympiads import OLYMPIADS_INFO
@@ -294,7 +297,10 @@ def get_olympiad_by_slug(slug):
 
 def generate_variant(olympiad_slug, grade, round_key):
     
-    print(f"DEBUG generate: slug={olympiad_slug!r}, grade={grade!r}, round={round_key!r}")
+    print("=" * 70)
+    print("=== DEBUG ГЕНЕРАЦИЯ ВАРИАНТА ОЛИМПИАДЫ ===")
+    print(f"Запрошено: Олимпиада='{olympiad_slug}', Класс={grade}, Этап='{round_key}'")
+    print(f"Всего записей в _RAW_DB: {len(_RAW_DB)}")
 
     # Фильтруем варианты
     variants = [
@@ -303,14 +309,28 @@ def generate_variant(olympiad_slug, grade, round_key):
         and v.get("grade") == grade
         and (not round_key or v.get("round") == round_key)
     ]
+    print(f"Найдено вариантов с точным совпадением (олимпиада+класс+этап): {len(variants)}")
+    
     if not variants:
         variants = [
             v for v in _RAW_DB
             if v.get("olympiad") == olympiad_slug
             and v.get("grade") == grade
         ]
+        print(f"Найдено вариантов без учета этапа (олимпиада+класс): {len(variants)}")
+    
     if not variants:
-        return []
+        print("❌ ОШИБКА: Не найдено ни одного варианта для точной комбинации!")
+        print(f"Пробуем FALLBACK: ищем любые задачи олимпиады '{olympiad_slug}'...")
+        
+        # FALLBACK: берем любые задачи этой олимпиады (любой класс)
+        variants = [v for v in _RAW_DB if v.get("olympiad") == olympiad_slug]
+        print(f"Найдено вариантов олимпиады (любой класс): {len(variants)}")
+        
+        if not variants:
+            print(f"❌ КРИТИЧЕСКАЯ ОШИБКА: В БД вообще нет задач для олимпиады '{olympiad_slug}'!")
+            print("=" * 70)
+            return []
 
     # Собираем все задачи из подходящих вариантов
     source = []
@@ -319,8 +339,12 @@ def generate_variant(olympiad_slug, grade, round_key):
             source.append({**p, "olympiad": v["olympiad"], "grade": v["grade"]})
 
     if not source:
+        print("❌ ОШИБКА: Не найдено ни одной задачи в вариантах!")
+        print("=" * 70)
         return []
 
+    print(f"✓ Собрано задач из вариантов: {len(source)}")
+    
     # Выбираем 5 задач с нарастающей сложностью (имитация реальной олимпиады)
     # Группируем задачи по уровню сложности
     by_difficulty = {}
@@ -350,51 +374,160 @@ def generate_variant(olympiad_slug, grade, round_key):
     if len(selected) < 5:
         remaining = [p for p in source if p not in selected]
         if remaining:
-            selected.extend(random.sample(remaining, min(5 - len(selected), len(remaining))))
+            needed = 5 - len(selected)
+            available = len(remaining)
+            to_add = min(needed, available)
+            print(f"Дополняем вариант: нужно {needed}, доступно {available}, добавляем {to_add}")
+            selected.extend(random.sample(remaining, to_add))
     
     # Ограничиваем до 5 задач
     selected = selected[:5]
-    modified = []
+    
+    # КРИТИЧЕСКАЯ ПРОВЕРКА: если задач меньше 3, генерация невозможна
+    if len(selected) < 3:
+        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА: Недостаточно задач для генерации ({len(selected)} < 3)")
+        print("Возвращаем пустой список")
+        print("=" * 70)
+        return []
+    
+    print(f"✓ Отобрано задач для варианта: {len(selected)}")
+    print(f"Начинаем модификацию задач через AI...")
+    
+    # Формируем список исходных задач для промпта
+    tasks_text = ""
+    for i, p in enumerate(selected, 1):
+        tasks_text += f"\n--- ЗАДАЧА {i} ---\n{p['text']}\n"
+    
+    prompt = f"""Ты — составитель олимпиадных вариантов по математике (ВсОШ, {round_key or 'отборочный'} этап, {grade} класс).
+Твоя задача — модифицировать {len(selected)} олимпиадных задач, сохранив их глубокую математическую идею.
 
+ИСХОДНЫЕ ЗАДАЧИ:{tasks_text}
 
+ПРАВИЛА ГЕНЕРАЦИИ:
+1. Задачи должны быть на уровне реальных олимпиад (но с измененными числами и сюжетом).
+2. НЕ пиши слова "Задача 1", "10.1", "XXXVIII Всероссийская олимпиада" внутри текста условия! Условие должно содержать ТОЛЬКО сам математический текст.
+3. Каждая задача должна быть полностью независимой.
+4. Все формулы, переменные и геометрические обозначения пиши строго в LaTeX (например, $x^2$, $\\triangle ABC$, $\\angle BOC$, $\\omega$).
+5. ОБЯЗАТЕЛЬНОЕ РАСПРЕДЕЛЕНИЕ ТЕМ ДЛЯ {len(selected)} ЗАДАЧ (ты должен строго соблюдать этот порядок):
+   - 1-я задача: Логика, принцип Дирихле или Инварианты.
+   - 2-я задача: Алгебра (неравенства, многочлены, функции).
+   - 3-я задача: Комбинаторика или Графы (турниры, раскраски, пути).
+   - 4-я задача: Теория чисел (делимость, простые числа, остатки, диофантовы уравнения).
+   - 5-я задача: ПЯТАЯ ЗАДАЧА ОБЯЗАНА БЫТЬ ПО ГЕОМЕТРИИ. Если ты не сгенерируешь геометрическую задачу (с углами, отрезками, треугольниками или окружностями, с использованием LaTeX для точек $A$, $B$, $C$, $D$), твой ответ будет отклонен. Запрещено использовать рыцарей, лжецов, числа и уравнения в пятой задаче — только чистая планиметрия!
 
-    for p in selected:
-        prompt = f"""Вот олимпиадная задача по математике:
-{p['text']}
+МАТЕМАТИЧЕСКОЕ ФОРМАТИРОВАНИЕ (LATEX STRICT MODE):
+Все числа, переменные, углы, степени и формулы ДОЛЖНЫ быть обернуты в $...$ (inline LaTeX).
+КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО:
+1. Использовать юникод-символы степеней (², ³). Вместо них пиши $x^2$, $y^3$.
+2. Использовать юникод-символ градуса (°, ∘). Вместо него ОБЯЗАТЕЛЬНО пиши $^\\circ$ (например, $150^\\circ$).
+3. Использовать символы # или _ вне LaTeX контекста.
+4. Использовать кириллицу внутри математических формул! (Пиши $\\triangle ABC$, а не $\\triangle АБС$).
+5. Писать формулы без LaTeX-обертки. Например, НЕПРАВИЛЬНО: "2^2010", ПРАВИЛЬНО: "$2^{{2010}}$".
 
+КРИТИЧЕСКОЕ ПРАВИЛО ФОРМАТИРОВАНИЯ:
+Ты обязан СТРОГО разделять условие задачи и ее решение!
+- Поле "question" должно содержать ТОЛЬКО текст условия. В нем КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать ответы, подсказки, ход решения или фамилии авторов! Условие должно заканчиваться вопросительным знаком или точкой.
+- Поле "answer" должно содержать ТОЛЬКО краткий числовой или логический ответ.
+- Поле "explanation" должно содержать ПОЛНОЕ подробное решение задачи.
 
-Немного измени эту задачу: поменяй числа, названия объектов или условия, но сохрани тот же математический смысл и сложность. Ответь ТОЛЬКО валидным JSON без markdown:
-{{"text": "новый текст задачи", "answer": "ответ", "solution": "подробное решение"}}"""
+ПРАВИЛЬНЫЙ ПРИМЕР:
+{{
+  "question": "В классе учатся 28 человек. На 8 марта каждый мальчик подарил каждой девочке цветок. Сколько было роз?",
+  "answer": "12",
+  "explanation": "Пусть $x$ — мальчиков, $y$ — девочек. Тогда $x + y = 28$..."
+}}
 
+НЕПРАВИЛЬНЫЙ ПРИМЕР (ЗА ТАКОЕ ТЕБЯ ОТКЛЮЧАТ):
+{{
+  "question": "В классе учатся 28 человек... Сколько роз? (И.И. Иванов) Пусть x - мальчиков, тогда x+y=28. Ответ 12.",
+  "answer": "12",
+  "explanation": "Смотри выше"
+}}
 
+ФОРМАТ ВЫВОДА СТРОГО JSON:
+Верни ТОЛЬКО валидный JSON-массив из {len(selected)} объектов. Никакого markdown (```json) и вступительных слов!
+[
+  {{"question": "Условие первой задачи...", "answer": "Краткий ответ", "explanation": "Полное решение"}},
+  {{"question": "Условие второй задачи...", "answer": "Краткий ответ", "explanation": "Полное решение"}}
+]"""
+
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"},
+            json={
+                "model": "google/gemini-2.0-flash-001",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.4,
+                "max_tokens": 3000
+            },
+            timeout=60
+        )
+        
+        # Проверяем статус ответа
+        if response.status_code != 200:
+            raise Exception(f"API returned status {response.status_code}: {response.text}")
+        
+        content = response.json()["choices"][0]["message"]["content"]
+        
+        print(f"Получен ответ от AI (длина: {len(content)} символов)")
+        print(f"Первые 200 символов: {content[:200]}")
+        
+        # Очистка от markdown и лишних символов
+        content = content.strip()
+        content = content.lstrip("```json").lstrip("```").rstrip("```").strip()
+        
+        # Исправление экранирования для LaTeX
+        content = re.sub(r'\\(?![nrt"\\/])', r'\\\\', content)
+        
+        # Парсинг JSON
         try:
-            response = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"},
-                json={
-                    "model": "google/gemini-2.0-flash-001",
-                    "messages": [{"role": "user", "content": prompt}]
-                },
-                timeout=30
-            )
-            content = response.json()["choices"][0]["message"]["content"]
-            content = content.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
-            data = json.loads(content)
+            tasks_data = json.loads(content)
+        except json.JSONDecodeError as json_err:
+            print(f"❌ ОШИБКА ПАРСИНГА JSON: {json_err}")
+            print(f"Сырой ответ AI (первые 500 символов):")
+            print(content[:500])
+            print("...")
+            print(f"Последние 200 символов:")
+            print(content[-200:])
+            raise
+        
+        # Проверяем, что получили список
+        if not isinstance(tasks_data, list):
+            raise Exception(f"AI вернул не массив, а {type(tasks_data)}: {tasks_data}")
+        
+        if len(tasks_data) < len(selected):
+            print(f"⚠️ ВНИМАНИЕ: AI вернул только {len(tasks_data)} задач вместо {len(selected)}")
+        
+        # Создаем модифицированные задачи
+        modified = []
+        for i, (original, task_data) in enumerate(zip(selected, tasks_data)):
             modified.append({
-                "id": p["id"],
-                "subject": p.get("subject"),
+                "id": original["id"] + i * 10000,  # Уникальный ID
+                "subject": original.get("subject"),
                 "grade": grade,
-                "difficulty": p.get("difficulty"),
-                "title": p.get("title", "Задача"),
-                "text": data["text"],
-                "answer": data["answer"],
-                "solution": data["solution"],
-                "original_id": p["id"]
+                "difficulty": original.get("difficulty"),
+                "title": f"Задача {i+1}",
+                "text": task_data.get("question", task_data.get("text", "")),
+                "answer": task_data.get("answer", ""),
+                "solution": task_data.get("explanation", task_data.get("solution", "")),
+                "original_id": original["id"]
             })
-        except Exception:
-            modified.append(p)
+        
+        print(f"✓ AI успешно модифицировал {len(modified)} задач")
+        
+    except Exception as e:
+        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА при генерации через AI:")
+        print(f"   Тип ошибки: {type(e).__name__}")
+        print(f"   Сообщение: {e}")
+        import traceback
+        traceback.print_exc()
+        print("Используем исходные задачи без модификации")
+        modified = selected
 
 
+    print(f"✓ Модификация завершена. Итого задач в варианте: {len(modified)}")
+    print("=" * 70)
     return modified
 
 
@@ -685,7 +818,12 @@ def check_answer():
     """API для проверки ответа пользователя."""
     data = request.get_json()
     problem_id = data.get("problem_id")
-    user_answer = data.get("user_answer", "").strip().lower()
+    user_answer = data.get("user_answer", "").strip()
+    
+    print("\n" + "=" * 60)
+    print("=== DEBUG /api/check_answer ===")
+    print(f"Problem ID: {problem_id}")
+    print(f"User answer from request: '{user_answer}'")
     
     if not problem_id:
         return jsonify({"error": "problem_id required"}), 400
@@ -696,28 +834,64 @@ def check_answer():
         problem = next((p for p in _RAW_DB if p.get("id") == problem_id), None)
     
     if not problem:
+        print(f"ERROR: Problem {problem_id} not found in database!")
+        print("=" * 60 + "\n")
         return jsonify({"error": "Problem not found"}), 404
     
-    # Получаем правильный ответ и нормализуем его
-    correct_answer = str(problem.get("answer", "")).strip().lower()
+    # Получаем правильный ответ
+    correct_answer = str(problem.get("answer", "")).strip()
     solution = problem.get("solution", "Решение отсутствует")
     
-    # Проверяем ответ
-    is_correct = (user_answer == correct_answer)
+    print(f"Problem found: {problem.get('title', 'No title')[:50]}...")
+    print(f"Correct answer from DB: '{correct_answer}'")
+    print(f"Problem answer field type: {type(problem.get('answer'))}")
     
-    # Если ответ верный, сохраняем в сессию
+    # Проверяем ответ с умной нормализацией
+    is_correct = compare_math_answers(user_answer, correct_answer)
+    
+    print(f"Final result: is_correct = {is_correct}")
+    print("=" * 60 + "\n")
+    
+    # Подготовка данных для ответа
+    response_data = {
+        "correct": is_correct,
+        "solution": solution,
+        "correct_answer": problem.get("answer", "")
+    }
+    
+    # Если ответ верный, сохраняем в сессию и начисляем XP
     if is_correct:
         solved_problems = session.get('solved_problems', [])
         if problem_id not in solved_problems:
             solved_problems.append(problem_id)
             session['solved_problems'] = solved_problems
             session.modified = True
+        
+        # Начисляем XP если пользователь авторизован
+        if current_user.is_authenticated:
+            task_difficulty = problem.get('difficulty', 1)
+            
+            # Начисляем XP за задачу
+            xp_result = add_xp_for_task(current_user, task_difficulty)
+            
+            # Получаем прогресс до следующего уровня
+            progress = get_xp_for_next_level(current_user)
+            
+            # Сохраняем изменения в БД
+            db.session.commit()
+            
+            # Добавляем информацию об XP в ответ
+            response_data.update({
+                "xp_gained": xp_result['xp_gained'],
+                "bonus_xp": xp_result['bonus_xp'],
+                "total_xp": xp_result['total_xp'],
+                "level_up": xp_result['level_up'],
+                "new_level": xp_result['new_level'],
+                "progress_percent": progress['progress_percentage'],
+                "xp_needed": progress['xp_needed']
+            })
     
-    return jsonify({
-        "correct": is_correct,
-        "solution": solution,
-        "correct_answer": problem.get("answer", "")
-    })
+    return jsonify(response_data)
 
 
 @app.route("/practice")
@@ -731,74 +905,49 @@ def probniks_page():
     return render_template('probniks.html', title="Пробники", active_page="probniks")
 
 
-
-
-def generate_practice():
-    slug = request.form.get("olympiad")
-    grade = request.form.get("grade", type=int)
-    round_key = request.form.get("round")
-
-
-    print(f"DEBUG: slug={slug}, grade={grade}, round={round_key}")
-
-
-    if not slug or not grade:
-        print(f"DEBUG: slug={slug}, grade={grade}, round={round_key}")
-
-        abort(400)
-
-
-    problems = generate_variant(slug, grade, round_key)
-    print(f"DEBUG: problems count = {len(problems)}")
-
-
-    if not problems:
-        print("DEBUG: abort 404 - нет задач")
-        abort(404)
-
-
-    variant_id = str(uuid.uuid4())[:8]
-    VARIANTS[variant_id] = {
-        "olympiad": slug,
-        "olympiad_title": get_olympiad_by_slug(slug).get("title", slug) if get_olympiad_by_slug(slug) else slug,
-        "grade": grade,
-        "round": round_key,
-        "round_title": ROUNDS.get(round_key, round_key),
-        "problems": problems
-    }
-    print(f"DEBUG: variant_id={variant_id}, redirecting...")
-    return redirect(f"/practice/{variant_id}")
-
-
 @app.route("/practice/generate", methods=["POST"])
 def generate_practice():
-    slug = request.form.get("olympiad")
-    grade = request.form.get("grade", type=int)
-    round_key = request.form.get("round")
+    """Генерация варианта олимпиады."""
+    try:
+        slug = request.form.get("olympiad")
+        grade = request.form.get("grade", type=int)
+        round_key = request.form.get("round")
 
-    print(f"DEBUG: slug={slug}, grade={grade}, round={round_key}")
+        print(f"DEBUG: slug={slug}, grade={grade}, round={round_key}")
 
-    if not slug or not grade:
-        abort(400)
+        if not slug or not grade:
+            flash('Пожалуйста, заполните все поля формы', 'error')
+            return redirect(url_for('practice'))
 
-    problems = generate_variant(slug, grade, round_key)
-    print(f"DEBUG: problems={len(problems)}")
+        problems = generate_variant(slug, grade, round_key)
+        print(f"DEBUG: Получено задач от generate_variant: {len(problems)}")
 
-    if not problems:
-        print("DEBUG: abort 404 - задач нет")
-        abort(404)
+        if not problems:
+            print("DEBUG: Генерация вернула пустой список")
+            flash(f'К сожалению, для олимпиады "{slug}", класса {grade} и этапа "{round_key}" пока нет задач в базе данных. Попробуйте другую комбинацию.', 'warning')
+            return redirect(url_for('practice'))
 
-    variant_id = str(uuid.uuid4())[:8]
-    VARIANTS[variant_id] = {
-        "olympiad": slug,
-        "olympiad_title": get_olympiad_by_slug(slug).get("title", slug) if get_olympiad_by_slug(slug) else slug,
-        "grade": grade,
-        "round": round_key,
-        "round_title": ROUNDS.get(round_key, round_key),
-        "problems": problems
-    }
-    print(f"DEBUG: variant_id={variant_id}")
-    return redirect(f"/practice/{variant_id}")
+
+        variant_id = str(uuid.uuid4())[:8]
+        VARIANTS[variant_id] = {
+            "olympiad": slug,
+            "olympiad_title": get_olympiad_by_slug(slug).get("title", slug) if get_olympiad_by_slug(slug) else slug,
+            "grade": grade,
+            "round": round_key,
+            "round_title": ROUNDS.get(round_key, round_key),
+            "problems": problems
+        }
+        print(f"DEBUG: variant_id={variant_id}, redirecting...")
+        return redirect(f"/practice/{variant_id}")
+        
+    except Exception as e:
+        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА в /practice/generate:")
+        print(f"   Тип: {type(e).__name__}")
+        print(f"   Сообщение: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Произошла ошибка при генерации варианта. Попробуйте еще раз или выберите другую комбинацию.', 'error')
+        return redirect(url_for('practice'))
 
 
 
@@ -825,10 +974,11 @@ def submit_solution(variant_id):
     
     for p in variant["problems"]:
         problem_id = p["id"]
-        user_answer = request.form.get(f"ans_{problem_id}", "").strip().lower()
-        correct_answer = str(p.get("answer", "")).strip().lower()
+        user_answer = request.form.get(f"ans_{problem_id}", "").strip()
+        correct_answer = str(p.get("answer", "")).strip()
         
-        is_correct = (user_answer == correct_answer)
+        # Проверяем ответ с умной нормализацией
+        is_correct = compare_math_answers(user_answer, correct_answer)
         if is_correct:
             correct_count += 1
         
@@ -1980,30 +2130,41 @@ def free_mock_submit():
     
     tasks = app.free_mock_cache[test_id]
     
-    # Проверяем ответы (ИСПРАВЛЕНО: используем task['id'] вместо порядкового номера)
-    results = []
-    correct_count = 0
-    
+    # Подготавливаем данные для батч-проверки через LLM
+    answers_data = []
     for task in tasks:
         task_id = task.get('id', '')
-        # Получаем ответ пользователя по ID задачи
         user_answer = request.form.get(f'answer_{task_id}', '').strip()
         correct_answer = str(task.get('answer', '')).strip()
         
-        # Нормализация ответов (убираем пробелы, приводим к нижнему регистру, заменяем запятую на точку)
-        user_answer_normalized = user_answer.lower().replace(' ', '').replace(',', '.')
-        correct_answer_normalized = correct_answer.lower().replace(' ', '').replace(',', '.')
+        answers_data.append({
+            'user_answer': user_answer,
+            'correct_answer': correct_answer,
+            'question_text': task.get('text', '')
+        })
+    
+    # Проверяем все ответы одним батч-запросом к LLM
+    print(f"🤖 Проверка {len(answers_data)} ответов через DeepSeek AI...")
+    llm_results = check_answers_batch(answers_data)
+    
+    # Формируем результаты
+    results = []
+    correct_count = 0
+    
+    for task, llm_result in zip(tasks, llm_results):
+        task_id = task.get('id', '')
+        user_answer = request.form.get(f'answer_{task_id}', '').strip()
         
-        is_correct = user_answer_normalized == correct_answer_normalized
-        
+        is_correct = llm_result['is_correct']
         if is_correct:
             correct_count += 1
         
         results.append({
             'task': task,
             'user_answer': user_answer,
-            'correct_answer': correct_answer,
+            'correct_answer': task.get('answer', ''),
             'is_correct': is_correct,
+            'ai_comment': llm_result.get('comment', ''),
             'solution': task.get('solution', 'Решение не предоставлено')
         })
     
@@ -2011,6 +2172,20 @@ def free_mock_submit():
     
     grade = session.get('free_mock_grade', 'N/A')
     level = session.get('free_mock_level', 'N/A')
+    
+    # Начисляем XP за пробник если пользователь авторизован
+    mock_xp_bonus = 0
+    level_up = False
+    new_level = current_user.current_level
+    
+    if current_user.is_authenticated:
+        xp_result = add_xp_for_mock_exam(current_user, score)
+        mock_xp_bonus = xp_result['xp_gained']
+        level_up = xp_result['level_up']
+        new_level = xp_result['new_level']
+        
+        # Сохраняем изменения в БД
+        db.session.commit()
     
     # Очищаем сессию
     session.pop('free_mock_tasks', None)
@@ -2023,7 +2198,10 @@ def free_mock_submit():
                          correct_count=correct_count,
                          total_count=len(tasks),
                          grade=grade,
-                         level=level)
+                         level=level,
+                         mock_xp_bonus=mock_xp_bonus,
+                         level_up=level_up,
+                         new_level=new_level)
 
 
 # ============================================================
@@ -2071,11 +2249,11 @@ def api_free_mock_generate_block():
         
         # Определяем уровень сложности для промпта
         difficulty_descriptions = {
-            "1": "базовый (простые вычисления, стандартные формулы)",
-            "2": "легкий (задачи на понимание концепций, простые уравнения)",
-            "3": "средний (комбинированные задачи, требующие нескольких шагов)",
-            "4": "сложный (нестандартные подходы, олимпиадные приемы)",
-            "5": "олимпиадный (высокий уровень абстракции, продвинутые методы)"
+            "1": "БАЗОВЫЙ - обычная школьная программа, прямое применение одной формулы",
+            "2": "ЛЕГКИЙ - школьная программа + один небольшой логический шаг",
+            "3": "СРЕДНИЙ - уровень школьного этапа олимпиады, требует сообразительности",
+            "4": "СЛОЖНЫЙ - уровень муниципального этапа, логическая цепочка из 3-4 шагов",
+            "5": "ОЛИМПИАДНЫЙ - уровень регионального этапа, глубокие доказательства"
         }
         difficulty_desc = difficulty_descriptions.get(str(difficulty), "средний")
         
@@ -2112,8 +2290,23 @@ def api_free_mock_generate_block():
 1. Задачи НЕ должны гуглиться. Придумывай новые оригинальные формулировки.
 2. Ответ должен быть однозначным числом или кратким выражением (не более 10 символов).
 3. Решение должно быть подробным, но структурированным (4-6 предложений).
-4. Каждая задача должна быть из РАЗНЫХ тем математики.
+4. Каждая задача должна быть из РАЗНЫХ тем математики. Все задачи в ответе должны иметь УНИКАЛЬНЫЕ значения в поле "topic".
 5. Уровень сложности ВСЕХ задач должен строго соответствовать {difficulty}.
+
+ОБЯЗАТЕЛЬНАЯ САМОПРОВЕРКА (ВЫПОЛНЯТЬ ДЛЯ КАЖДОЙ ЗАДАЧИ):
+Перед тем как добавить задачу в итоговый JSON, ты ОБЯЗАН:
+1. ПРОВЕРИТЬ РЕШАЕМОСТЬ: Попробуй решить задачу сам. Если данных не хватает, есть противоречие или ответ получается дробным там, где должны быть целые люди/предметы — ОТБРОСЬ ЭТУ ЗАДАЧУ и придумай новую!
+2. ПРОВЕРИТЬ КЛАСС И СЛОЖНОСТЬ: Задача должна СТРОГО соответствовать заявленному классу (например, {class_level} класс не знает логарифмов и синусов).
+
+КАЛИБРОВКА УРОВНЕЙ СЛОЖНОСТИ (СТРОГО СОБЛЮДАТЬ):
+- УРОВЕНЬ 1 (Базовый): Обычная школьная программа. Прямое применение одной формулы или базового правила. Никаких олимпиадных подвохов.
+- УРОВЕНЬ 2 (Легкий): Школьная программа + один небольшой логический шаг.
+- УРОВЕНЬ 3 (Средний): Уровень школьного (первого) этапа олимпиады. Требует сообразительности, но решается стандартными методами.
+- УРОВЕНЬ 4 (Сложный): Уровень муниципального этапа олимпиады. Требует построения логической цепочки из 3-4 шагов.
+- УРОВЕНЬ 5 (Олимпиадный): Уровень регионального этапа олимпиады. Глубокая задача на доказательство, теорию чисел, инварианты или сложную геометрию.
+
+Ты должен генерировать задачи СТРОГО уровня {difficulty} ({difficulty_desc}).
+Если выбран уровень 1-2, КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО давать олимпиадные задачи!
 
 Верни СТРОГО валидный JSON-массив из 5 объектов в формате:
 [
@@ -2552,11 +2745,8 @@ def api_free_mock_evaluate():
             correct_answer = str(task.get('answer', '')).strip()
             user_answer = str(user_answer).strip()
             
-            # Нормализация ответов
-            user_answer_normalized = user_answer.lower().replace(' ', '').replace(',', '.')
-            correct_answer_normalized = correct_answer.lower().replace(' ', '').replace(',', '.')
-            
-            is_correct = user_answer_normalized == correct_answer_normalized
+            # Проверяем ответ с умной нормализацией
+            is_correct = compare_math_answers(user_answer, correct_answer)
             
             if is_correct:
                 correct_count += 1
@@ -2672,6 +2862,13 @@ def adaptive_test_start_simple():
         # Если класс не выбран, перенаправляем на выбор класса
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
+    # Преобразуем grade в int СРАЗУ (до использования в проверках)
+    try:
+        grade_int = int(grade)
+    except (ValueError, TypeError):
+        flash(f'Неверный формат класса: {grade}', 'error')
+        return redirect(url_for('adaptive_test_select_grade', topic=topic))
+    
     # Маппинг тем: короткий ключ -> ключевые слова для поиска в названии темы
     topic_keywords = {
         'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
@@ -2695,6 +2892,14 @@ def adaptive_test_start_simple():
         'knights_liars': ['рыцар', 'лжец']  # Рыцари и лжецы (если будут добавлены)
     }
     
+    # ФИКС БАГА 1: Специальный маппинг для 5 класса
+    # В 5 классе задачи записаны как "математика", "олимпиадные" и т.д.
+    # Для "Алгебры" в 5 классе ищем задачи по более широким критериям
+    if grade_int == 5 and topic == 'algebra':
+        print(f"[ADAPTIVE FIX] 5 класс + Алгебра → расширенный поиск по математике")
+        topic_keywords['algebra'] = ['математик', 'числ', 'выражен', 'уравнен', 'задач',
+                                      'вычислен', 'арифметик', 'олимпиад']
+    
     # Получаем ключевые слова для выбранной темы
     keywords = topic_keywords.get(topic, [])
     
@@ -2710,17 +2915,13 @@ def adaptive_test_start_simple():
     
     topic_name = topic_names.get(topic, topic)
     
-    # Преобразуем grade в int
-    try:
-        grade_int = int(grade)
-    except (ValueError, TypeError):
-        flash(f'Неверный формат класса: {grade}', 'error')
-        return redirect(url_for('adaptive_test_select_grade', topic=topic))
-    
-    # Фильтруем задачи по классу И по теме
+    # Фильтруем задачи по классу И по теме (ИСКЛЮЧАЕМ ПОМЕЧЕННЫЕ ЗАДАЧИ)
     if keywords:
         # Если есть ключевые слова - фильтруем по ним
-        all_tasks = AdaptiveTask.query.filter_by(class_level=grade_int).all()
+        all_tasks = AdaptiveTask.query.filter_by(
+            class_level=grade_int,
+            is_flagged=False  # ФИЛЬТР КАЧЕСТВА: исключаем помеченные задачи
+        ).all()
         
         # Фильтруем задачи, где название темы содержит хотя бы одно ключевое слово
         filtered_tasks = []
@@ -2729,8 +2930,11 @@ def adaptive_test_start_simple():
             if any(keyword.lower() in topic_lower for keyword in keywords):
                 filtered_tasks.append(task)
     else:
-        # Если фильтра нет - берем все задачи класса
-        filtered_tasks = AdaptiveTask.query.filter_by(class_level=grade_int).all()
+        # Если фильтра нет - берем все задачи класса (кроме помеченных)
+        filtered_tasks = AdaptiveTask.query.filter_by(
+            class_level=grade_int,
+            is_flagged=False  # ФИЛЬТР КАЧЕСТВА: исключаем помеченные задачи
+        ).all()
     
     if len(filtered_tasks) < 10:
         if len(filtered_tasks) == 0:
@@ -2765,13 +2969,50 @@ def adaptive_test_simple_page():
     task_ids = session.get('adaptive_filtered_tasks', [])
     current_index = session.get('adaptive_current_index', 0)
     
-    # Получаем текущую задачу
-    if current_index >= len(task_ids):
-        # Тест завершен
+    # Проверяем завершение теста
+    if current_index >= 25:
+        # Тест завершен (25 задач)
         return redirect('/adaptive_test_simple/results')
     
-    current_task_id = task_ids[current_index]
-    current_task = AdaptiveTask.query.get(current_task_id)
+    # ФИКС БАГА 2: Получаем текущий уровень сложности из сессии
+    current_difficulty = session.get('adaptive_current_difficulty', 3)
+    
+    print(f"[ADAPTIVE DEBUG] Загрузка задачи #{current_index + 1}, требуемый уровень: {current_difficulty}")
+    
+    # Фильтруем задачи по текущему уровню сложности
+    available_tasks = AdaptiveTask.query.filter(
+        AdaptiveTask.id.in_(task_ids),
+        AdaptiveTask.difficulty_level == current_difficulty
+    ).all()
+    
+    # Если задач нужного уровня нет, берем ближайший уровень
+    if not available_tasks:
+        print(f"[ADAPTIVE WARNING] Нет задач уровня {current_difficulty}, ищем ближайший...")
+        # Пробуем соседние уровни
+        for offset in [1, -1, 2, -2]:
+            fallback_level = current_difficulty + offset
+            if 1 <= fallback_level <= 7:
+                available_tasks = AdaptiveTask.query.filter(
+                    AdaptiveTask.id.in_(task_ids),
+                    AdaptiveTask.difficulty_level == fallback_level
+                ).all()
+                if available_tasks:
+                    print(f"[ADAPTIVE] Используем уровень {fallback_level} вместо {current_difficulty}")
+                    break
+    
+    # Если все еще нет задач, берем любую из списка
+    if not available_tasks:
+        print(f"[ADAPTIVE ERROR] Не найдено задач нужного уровня, берем любую из пула")
+        if current_index < len(task_ids):
+            current_task = AdaptiveTask.query.get(task_ids[current_index])
+        else:
+            flash('Ошибка: закончились задачи', 'error')
+            return redirect('/adaptive_test_simple/results')
+    else:
+        # Выбираем случайную задачу из доступных нужного уровня
+        import random
+        current_task = random.choice(available_tasks)
+        print(f"[ADAPTIVE] Выбрана задача ID={current_task.id}, уровень={current_task.difficulty_level}")
     
     if not current_task:
         flash('Ошибка загрузки задачи', 'error')
@@ -2797,7 +3038,8 @@ def adaptive_test_simple_page():
         grade=grade,
         task=task_dict,
         current_index=current_index + 1,
-        total_tasks=25  # Всегда 25 задач в адаптивном тесте
+        total_tasks=25,  # Всегда 25 задач в адаптивном тесте
+        current_level=current_difficulty  # ФИКС БАГА 2: Передаем текущий уровень для отображения
     )
 
 
@@ -3009,33 +3251,50 @@ def check_adaptive_answer():
                     import re
                     cleaned_response = ai_response.strip()
                     
-                    # Удаляем ```json и ``` если есть
+                    print(f"[DEBUG] Raw AI response (first 300 chars): {ai_response[:300]}")
+                    
+                    # Агрессивная очистка от markdown
                     cleaned_response = re.sub(r'```json\s*', '', cleaned_response)
-                    cleaned_response = re.sub(r'```\s*$', '', cleaned_response)
+                    cleaned_response = re.sub(r'```\s*', '', cleaned_response)
                     cleaned_response = cleaned_response.strip()
                     
+                    print(f"[DEBUG] Cleaned response (first 300 chars): {cleaned_response[:300]}")
+                    
                     # Извлекаем JSON из ответа
-                    json_match = re.search(r'\{[^{}]*"score"[^{}]*"feedback"[^{}]*\}', cleaned_response, re.DOTALL)
+                    # Ищем самый внешний JSON объект с полями score и feedback
+                    json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*"score"[^{}]*"feedback"[^{}]*\}', cleaned_response, re.DOTALL)
                     if json_match:
                         json_str = json_match.group()
+                        print(f"[DEBUG] Extracted JSON: {json_str[:200]}")
                         ai_data = json.loads(json_str)
                         score = int(ai_data.get('score', 1))
                         feedback = ai_data.get('feedback', 'Ответ проверен.')
                     else:
-                        # Fallback: если JSON не найден, пробуем распарсить всю строку
+                        # Fallback: пробуем распарсить всю строку
+                        print(f"[DEBUG] No JSON match found, trying to parse entire response")
                         ai_data = json.loads(cleaned_response)
                         score = int(ai_data.get('score', 1))
                         feedback = ai_data.get('feedback', 'Ответ проверен.')
+                    
+                    print(f"[DEBUG] Parsed score: {score}, feedback length: {len(feedback)}")
+                    
+                    # КРИТИЧНО: НЕ заменяем слеши - они нужны для LaTeX!
+                    # Просто убеждаемся, что feedback - это строка
+                    feedback = str(feedback)
                         
                 except (json.JSONDecodeError, ValueError) as e:
-                    print(f"[WARNING] Failed to parse AI response as JSON: {e}")
-                    print(f"[DEBUG] AI response was: {ai_response[:200]}")
-                    # Используем весь ответ как feedback
-                    feedback = ai_response[:500]
+                    print(f"[ERROR] Failed to parse AI response as JSON: {e}")
+                    print(f"[DEBUG] Full AI response: {ai_response}")
+                    # При ошибке парсинга используем нейтральный feedback
+                    feedback = "Ваш ответ принят. AI-проверка временно недоступна."
+                    score = 1  # Нейтральная оценка
                     
             except Exception as e:
                 print(f"[ERROR] DeepSeek API error: {e}")
+                import traceback
+                traceback.print_exc()
                 feedback = "AI-проверка временно недоступна. Ваш ответ принят."
+                score = 1  # Нейтральная оценка при ошибке API
         
         # Ограничиваем score в диапазоне [-1, 2]
         score = max(-1, min(2, score))
@@ -3116,6 +3375,47 @@ def check_adaptive_answer():
         }), 500
 
 
+@app.route("/api/report_task/<int:task_id>", methods=["POST"])
+def report_task(task_id):
+    """API для жалоб на некорректные задачи."""
+    try:
+        # Находим задачу
+        task = AdaptiveTask.query.get(task_id)
+        
+        if not task:
+            return jsonify({
+                'status': 'error',
+                'message': 'Задача не найдена'
+            }), 404
+        
+        # Увеличиваем счетчик жалоб
+        task.reports_count = (task.reports_count or 0) + 1
+        
+        # Если жалоб >= 3, автоматически помечаем задачу как некорректную
+        if task.reports_count >= 3:
+            task.is_flagged = True
+            task.flagged_reason = f'Автоматически помечена после {task.reports_count} жалоб от пользователей'
+            print(f"[QUALITY CONTROL] Задача ID={task_id} автоматически помечена после {task.reports_count} жалоб")
+        
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Спасибо за сообщение! Мы проверим эту задачу.',
+            'reports_count': task.reports_count,
+            'is_flagged': task.is_flagged
+        })
+        
+    except Exception as e:
+        print(f"[ERROR] report_task: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': f'Ошибка сервера: {str(e)}'
+        }), 500
+
+
 @app.route("/adaptive_test_simple/results")
 def adaptive_test_simple_results():
     """Результаты упрощенного адаптивного теста."""
@@ -3184,14 +3484,24 @@ def adaptive_test_simple_results():
                 topic_progress.last_test_date = datetime.utcnow()
                 topic_progress.updated_at = datetime.utcnow()
             
-            # 3. Обновляем общую статистику пользователя
-            current_user.update_stats_after_adaptive_test()
+            # 3. Обновляем общую статистику пользователя и начисляем XP
+            xp_result = add_xp_for_adaptive_test(current_user)
+            adaptive_xp_bonus = xp_result['xp_gained']
+            level_up = xp_result['level_up']
+            new_level = xp_result['new_level']
             
             db.session.commit()
             
         except Exception as e:
             print(f"[ERROR] Failed to save test results: {e}")
             db.session.rollback()
+            adaptive_xp_bonus = 0
+            level_up = False
+            new_level = current_user.current_level if current_user.is_authenticated else 1
+    else:
+        adaptive_xp_bonus = 0
+        level_up = False
+        new_level = 1
     
     return render_template('adaptive_test_simple_results.html',
         topic=topic,
@@ -3202,7 +3512,10 @@ def adaptive_test_simple_results():
         accuracy=accuracy,
         avg_difficulty=round(avg_difficulty, 1),
         final_level=final_level,
-        answers=answers
+        answers=answers,
+        adaptive_xp_bonus=adaptive_xp_bonus,
+        level_up=level_up,
+        new_level=new_level
     )
 
 
@@ -3330,10 +3643,9 @@ def submit_adaptive_answer(test_id):
     if not problem:
         return jsonify({'error': 'Задача не найдена в базе'}), 404
     
-    # Проверяем ответ
-    correct_answer = str(problem.get('answer', '')).strip().lower()
-    user_answer_normalized = user_answer.lower()
-    is_correct = (user_answer_normalized == correct_answer)
+    # Проверяем ответ с умной нормализацией
+    correct_answer = str(problem.get('answer', '')).strip()
+    is_correct = compare_math_answers(user_answer, correct_answer)
     
     # Обновляем запись задачи
     current_problem_record.user_answer = user_answer

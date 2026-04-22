@@ -49,6 +49,13 @@ static/uploads/*
 # Logs
 *.log
 
+# Temporary files and reports
+bad_tasks_report.json
+grade5_deficit_report.json
+*_RAW.jsonl
+*_TEMP.jsonl
+*.jsonl.backup
+
 # Generated data
 data/
 *.jsonl

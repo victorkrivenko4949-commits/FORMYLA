@@ -55,6 +55,7 @@ def import_tasks():
                     topic=task_data['topic'],
                     task_text=task_data['question'],
                     solution=task_data['explanation'],
+                    correct_answer=str(task_data['answer']),  # КРИТИЧНО: Заполняем ответ!
                     # criteria_1_point и criteria_2_points оставляем пустыми
                     # они используются для оценивания, но у нас есть answer
                     criteria_1_point=f"Краткий ответ: {task_data['answer']}",

@@ -458,6 +458,12 @@ class AdaptiveTask(db.Model):
     criteria_1_point = db.Column(db.Text, nullable=False)  # Критерий на 1 балл
     criteria_2_points = db.Column(db.Text, nullable=False)  # Критерий на 2 балла
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    correct_answer = db.Column(db.String(500))  # Правильный ответ для автопроверки
+    
+    # СИСТЕМА КОНТРОЛЯ КАЧЕСТВА
+    is_flagged = db.Column(db.Boolean, default=False, index=True)  # Помечена как некорректная
+    reports_count = db.Column(db.Integer, default=0)  # Количество жалоб от пользователей
+    flagged_reason = db.Column(db.String(500))  # Причина пометки (от AI или пользователя)
     
     def to_dict(self):
         """Конвертация в словарь для JSON"""

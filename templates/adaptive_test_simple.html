@@ -25,14 +25,23 @@
         
         <!-- Условие задачи -->
         <div style="margin-bottom: 30px;">
-            <h3 style="color: var(--accent-2); margin-bottom: 15px;">📋 Условие:</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: var(--accent-2); margin: 0;">📋 Условие:</h3>
+                <button type="button" id="reportBtn" onclick="reportTask({{ task.id }})"
+                        style="padding: 8px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
+                        onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='#ef4444'"
+                        onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
+                    <span>🚩</span>
+                    <span>Сообщить об ошибке</span>
+                </button>
+            </div>
             <div style="color: var(--text-main); font-size: 1.1em; line-height: 1.8;">
-                {{ task.task_text | safe }}
+                {{ task.task_text | replace('\\n', '<br>') | safe }}
             </div>
         </div>
 
         <!-- Форма ответа -->
-        <form method="POST" action="/adaptive_test_simple/submit" enctype="multipart/form-data">
+        <form id="answerForm" enctype="multipart/form-data">
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-muted); margin-bottom: 15px; font-weight: 500;">
                     Ваш ответ:
@@ -52,10 +61,14 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                <!-- Text Input (для математических задач) -->
-                <input type="text" name="answer" required
-                       style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px;"
-                       placeholder="Введите ответ...">
+                <!-- MathLive Input (для математических задач) -->
+                <math-field id="user_answer" name="answer"
+                           virtual-keyboard-mode="onfocus"
+                           virtual-keyboard-theme="dark"
+                           class="math-input-field"></math-field>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
+                    💡 Кликните на поле для вызова виртуальной клавиатуры с √, дробями и степенями
+                </p>
                 {% endif %}
             </div>
 
@@ -63,26 +76,44 @@
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
                     Ход решения (опционально):
                 </label>
-                <textarea name="solution" rows="4"
-                          style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; resize: vertical;"
-                          placeholder="Опишите, как вы решали задачу..."></textarea>
+                <math-field id="solution_text" name="solution"
+                           virtual-keyboard-mode="manual"
+                           virtual-keyboard-theme="dark"
+                           class="math-solution-field"
+                           style="width: 100%; min-height: 120px; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; resize: vertical; display: block;">
+                </math-field>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
+                    💡 Кликните на поле и нажмите кнопку "🔢" справа внизу для вызова математической клавиатуры
+                </p>
             </div>
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
                     📸 Фото решения из тетради (опционально):
                 </label>
-                <input type="file" name="solution_photo" accept="image/*" capture="environment"
-                       style="width: 100%; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; cursor: pointer;">
+                <div style="position: relative;">
+                    <input type="file" id="photoInput" name="solution_photo" accept="image/*" capture="environment"
+                           style="display: none;">
+                    <button type="button" onclick="document.getElementById('photoInput').click()"
+                            style="width: 100%; padding: 20px; background: rgba(59, 130, 246, 0.1); border: 2px dashed var(--accent-1); border-radius: var(--radius-sm); color: var(--accent-1); font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;"
+                            onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'; this.style.borderColor='var(--accent-2)'"
+                            onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'; this.style.borderColor='var(--accent-1)'">
+                        <span style="font-size: 24px;">📷</span>
+                        <span id="photoButtonText">Сфотографировать / Загрузить решение</span>
+                    </button>
+                    <p id="photoFileName" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">
+                        ✅ Файл выбран: <span id="fileName"></span>
+                    </p>
+                </div>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 Загрузите фото вашего решения из тетради для более детальной проверки
+                    💡 На телефоне откроется камера, на компьютере - выбор файла
                 </p>
             </div>
 
             <input type="hidden" name="task_id" value="{{ task.id }}">
 
             <div style="display: flex; gap: 15px; justify-content: center;">
-                <button type="submit" 
+                <button type="submit" id="submitBtn"
                         style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
@@ -98,18 +129,160 @@
             </div>
         </form>
 
+        <!-- Лоадер AI проверки -->
+        <div id="aiLoader" style="display: none; text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 2px dashed var(--accent-1); margin-top: 30px;">
+            <div class="spinner" style="width: 50px; height: 50px; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: var(--accent-1); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <p style="color: var(--text-main); font-size: 1.2em; font-weight: 600; margin-bottom: 10px;">
+                🤖 AI проверяет ваше решение...
+            </p>
+            <p style="font-size: 0.9em; color: var(--text-muted);">
+                Это может занять 5-10 секунд
+            </p>
+        </div>
+
+        <!-- Блок результата -->
+        <div id="resultBlock" style="display: none; margin-top: 30px;">
+            <!-- Вердикт -->
+            <div id="verdict"></div>
+            
+            <!-- Фидбек от AI -->
+            <div id="feedbackBlock" style="margin-top: 30px; padding: 25px; background: rgba(15, 23, 42, 0.6); border-radius: 12px; border: 1px solid var(--border-soft);">
+                <h4 style="color: var(--accent-2); margin-bottom: 15px; font-size: 1.1em;">📝 Разбор от AI-тьютора:</h4>
+                <div id="feedbackText" class="ai-feedback-text" style="color: var(--text-main); line-height: 1.8; font-size: 1em;"></div>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+                <button id="nextTaskBtn" onclick="goToNextTask()"
+                        style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
+                    Следующая задача →
+                </button>
+                <button id="finishBtn" onclick="finishTest()" style="display: none; padding: 15px 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(34, 197, 94, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(34, 197, 94, 0.3)'">
+                    Завершить тест ✓
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <!-- Информация -->
     <div style="background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
         <p style="color: var(--text-muted); line-height: 1.6; margin: 0; font-size: 0.9em;">
             💡 <strong style="color: var(--text-main);">Адаптивный алгоритм:</strong> 
-            Если вы ответите правильно, следующая задача будет сложнее. 
-            Если неправильно — проще. Система определит ваш истинный уровень!
+            AI-тьютор проверит ваше решение и даст оценку (+2, +1, или -1 уровень). 
+            Следующая задача будет соответствовать вашему новому уровню!
         </p>
     </div>
 
 </div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.verdict-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+    border: 2px solid #22c55e;
+    padding: 20px;
+    border-radius: 12px;
+    color: #22c55e;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.verdict-partial {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
+    border: 2px solid #fbbf24;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fbbf24;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.verdict-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+    border: 2px solid #ef4444;
+    padding: 20px;
+    border-radius: 12px;
+    color: #ef4444;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.level-badge {
+    margin-top: 10px;
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+/* Стили для блока AI-фидбека */
+.ai-feedback-text {
+    line-height: 1.8 !important;
+}
+
+/* Отступы для блочных формул (KaTeX генерирует .katex-display) */
+.ai-feedback-text .katex-display {
+    margin: 1.5em 0 !important;
+}
+
+/* Отступы для параграфов в фидбеке */
+.ai-feedback-text p {
+    margin: 1em 0;
+}
+
+/* Стили для MathLive поля ввода */
+.math-input-field {
+    width: 100%;
+    padding: 15px;
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 2px solid var(--border-mid) !important;
+    border-radius: var(--radius-sm);
+    font-size: 20px !important;
+    min-height: 60px;
+    cursor: text;
+    transition: border-color 0.3s;
+}
+
+.math-input-field:focus {
+    border-color: var(--accent-1) !important;
+    outline: none;
+}
+
+/* Стили для MathLive поля решения */
+.math-solution-field {
+    width: 100%;
+    padding: 15px;
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 2px solid var(--border-mid) !important;
+    border-radius: var(--radius-sm);
+    font-size: 16px !important;
+    min-height: 120px;
+    cursor: text;
+    transition: border-color 0.3s;
+    line-height: 1.6 !important;
+}
+
+.math-solution-field:focus {
+    border-color: var(--accent-1) !important;
+    outline: none;
+}
+
+/* Курсор в MathLive */
+.math-input-field::part(content),
+.math-solution-field::part(content) {
+    color: var(--text-main);
+    caret-color: var(--accent-1);
+}
+</style>
 
 <script>
 // Рендеринг LaTeX формул через KaTeX
@@ -121,6 +294,251 @@ document.addEventListener("DOMContentLoaded", function() {
                 {left: "\\[", right: "\\]", display: true}
             ],
             throwOnError: false
+        });
+    }
+});
+
+// Функция для отправки жалобы на задачу
+async function reportTask(taskId) {
+    if (!confirm('Вы уверены, что хотите сообщить об ошибке в этой задаче? Мы проверим её и исправим.')) {
+        return;
+    }
+    
+    const reportBtn = document.getElementById('reportBtn');
+    const originalHTML = reportBtn.innerHTML;
+    reportBtn.disabled = true;
+    reportBtn.innerHTML = '<span>⏳</span><span>Отправка...</span>';
+    
+    try {
+        const response = await fetch(`/api/report_task/${taskId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            reportBtn.innerHTML = '<span>✅</span><span>Спасибо!</span>';
+            reportBtn.style.background = 'rgba(34, 197, 94, 0.1)';
+            reportBtn.style.color = '#22c55e';
+            reportBtn.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+            
+            alert(result.message);
+        } else {
+            throw new Error(result.message || 'Ошибка отправки');
+        }
+    } catch (error) {
+        console.error('Error reporting task:', error);
+        alert('Ошибка при отправке жалобы. Попробуйте позже.');
+        reportBtn.disabled = false;
+        reportBtn.innerHTML = originalHTML;
+    }
+}
+
+// Обработчик выбора файла
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name;
+    if (fileName) {
+        document.getElementById('fileName').textContent = fileName;
+        document.getElementById('photoFileName').style.display = 'block';
+        document.getElementById('photoButtonText').textContent = 'Изменить фото';
+    }
+});
+
+// Обработчик отправки формы
+document.getElementById('answerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Собираем данные формы
+    const formData = new FormData(this);
+    
+    // Получаем ответ из MathLive (в формате LaTeX)
+    const mathField = document.getElementById('user_answer');
+    let userAnswer = '';
+    
+    if (mathField) {
+        // Если это MathLive поле, получаем LaTeX
+        userAnswer = mathField.getValue('latex');
+    } else {
+        // Fallback для обычного input (для задач с вариантами ответов)
+        userAnswer = formData.get('answer');
+    }
+    
+    // Получаем решение из MathLive поля (если используется)
+    const solutionField = document.getElementById('solution_text');
+    let userSolution = '';
+    
+    if (solutionField) {
+        // Получаем текст решения в формате LaTeX
+        userSolution = solutionField.getValue('latex-expanded') || solutionField.getValue('latex') || '';
+    } else {
+        userSolution = formData.get('solution') || '';
+    }
+    
+    const data = {
+        task_id: formData.get('task_id'),
+        user_answer: userAnswer,
+        user_solution: userSolution
+    };
+    
+    // Проверяем, что ответ введен
+    if (!data.user_answer || data.user_answer.trim() === '') {
+        alert('Пожалуйста, введите ответ!');
+        return;
+    }
+    
+    // Показываем лоадер
+    showLoader();
+    
+    try {
+        // Отправляем AJAX-запрос
+        const response = await fetch('/api/check_adaptive_answer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        // Скрываем лоадер
+        hideLoader();
+        
+        if (result.status === 'success') {
+            // Показываем результат
+            showResult(result);
+        } else {
+            // Показываем ошибку
+            alert('Ошибка: ' + (result.message || 'Неизвестная ошибка'));
+            // Возвращаем форму
+            document.getElementById('answerForm').style.display = 'block';
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        hideLoader();
+        alert('Ошибка соединения с сервером. Попробуйте еще раз.');
+        document.getElementById('answerForm').style.display = 'block';
+    }
+});
+
+function showLoader() {
+    document.getElementById('answerForm').style.display = 'none';
+    document.getElementById('aiLoader').style.display = 'block';
+    document.getElementById('submitBtn').disabled = true;
+}
+
+function hideLoader() {
+    document.getElementById('aiLoader').style.display = 'none';
+}
+
+function showResult(result) {
+    const resultBlock = document.getElementById('resultBlock');
+    const verdict = document.getElementById('verdict');
+    const feedbackText = document.getElementById('feedbackText');
+    
+    // Формируем вердикт
+    let verdictHTML = '';
+    if (result.score === 2) {
+        verdictHTML = `
+            <div class="verdict-success">
+                ✅ Верно! +2 уровня
+                <div class="level-badge">Новый уровень: ${result.new_level}/7</div>
+            </div>
+        `;
+    } else if (result.score === 1) {
+        verdictHTML = `
+            <div class="verdict-partial">
+                ⚠️ Частично верно. +1 уровень
+                <div class="level-badge">Новый уровень: ${result.new_level}/7</div>
+            </div>
+        `;
+    } else {
+        verdictHTML = `
+            <div class="verdict-error">
+                ❌ Неверно. -1 уровень
+                <div class="level-badge">Новый уровень: ${result.new_level}/7</div>
+            </div>
+        `;
+    }
+    
+    verdict.innerHTML = verdictHTML;
+    
+    // Обрабатываем feedback: заменяем все варианты переносов строк на <br>
+    let formattedFeedback = result.feedback;
+    // Заменяем экранированные \n (из JSON)
+    formattedFeedback = formattedFeedback.replace(/\\n/g, '<br>');
+    // Заменяем обычные переносы строк
+    formattedFeedback = formattedFeedback.replace(/\n/g, '<br>');
+    feedbackText.innerHTML = formattedFeedback;
+    
+    // Показать кнопку завершения, если это последняя задача
+    if (result.is_last_task) {
+        document.getElementById('nextTaskBtn').style.display = 'none';
+        document.getElementById('finishBtn').style.display = 'block';
+    }
+    
+    resultBlock.style.display = 'block';
+    
+    // Рендерим LaTeX в фидбеке через KaTeX
+    if (window.renderMathInElement) {
+        renderMathInElement(feedbackText, {
+            delimiters: [
+                {left: "\\(", right: "\\)", display: false},
+                {left: "\\[", right: "\\]", display: true}
+            ],
+            throwOnError: false
+        });
+    }
+    
+    // АВТОПЕРЕКЛЮЧЕНИЕ ОТКЛЮЧЕНО - ученик переходит вручную по кнопке "Следующая задача"
+    // Это дает время изучить решение без спешки
+}
+
+function goToNextTask() {
+    window.location.href = '/adaptive_test_simple';
+}
+
+function finishTest() {
+    window.location.href = '/adaptive_test_simple/results';
+}
+</script>
+
+<!-- MathLive для ввода математических формул -->
+<script src="https://unpkg.com/mathlive"></script>
+<script>
+// Настройка MathLive после загрузки
+document.addEventListener('DOMContentLoaded', function() {
+    // Настройка поля ответа
+    const mathField = document.getElementById('user_answer');
+    if (mathField) {
+        mathField.setOptions({
+            virtualKeyboardMode: 'onfocus',
+            virtualKeyboards: 'numeric symbols greek',
+            smartFence: true,
+            smartMode: true
+        });
+    }
+    
+    // Настройка поля решения
+    const solutionField = document.getElementById('solution_text');
+    if (solutionField) {
+        solutionField.setOptions({
+            virtualKeyboardMode: 'manual', // Клавиатура по кнопке, а не автоматически
+            virtualKeyboards: 'numeric symbols greek',
+            smartFence: true,
+            smartMode: true,
+            mathModeSpace: '\\,', // Пробел в математическом режиме
+            removeExtraneousParentheses: false
+        });
+        
+        // Добавляем кнопку вызова клавиатуры
+        solutionField.addEventListener('focus', function() {
+            // Показываем подсказку о кнопке клавиатуры
+            console.log('Solution field focused - use keyboard button to show virtual keyboard');
         });
     }
 });

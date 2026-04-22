@@ -183,10 +183,23 @@ function updateRounds() {
     }
 }
 
-document.querySelector(".practice-form").addEventListener("submit", function() {
-    document.querySelector(".btn-text").style.display = "none";
-    document.querySelector(".btn-loading").style.display = "inline";
-    document.querySelector(".btn-generate").disabled = true;
+document.querySelector(".practice-form").addEventListener("submit", function(e) {
+    console.log("=== ФОРМА ОТПРАВЛЯЕТСЯ ===");
+    console.log("Олимпиада:", document.querySelector('[name="olympiad"]').value);
+    console.log("Класс:", document.querySelector('[name="grade"]').value);
+    console.log("Этап:", document.querySelector('[name="round"]').value);
+    
+    // Показываем индикатор загрузки
+    const btnText = document.querySelector(".btn-text");
+    const btnLoading = document.querySelector(".btn-loading");
+    const btnGenerate = document.querySelector(".btn-generate");
+    
+    if (btnText) btnText.style.display = "none";
+    if (btnLoading) btnLoading.style.display = "inline";
+    if (btnGenerate) btnGenerate.disabled = true;
+    
+    // НЕ блокируем отправку формы - пусть она идет на сервер
+    // e.preventDefault(); // ← НЕ ИСПОЛЬЗУЕМ!
 });
 </script>
 {% endblock %}
