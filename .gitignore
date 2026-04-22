@@ -61,3 +61,5 @@ data/
 *.jsonl
 *.bak
 checkpoint.json
+
+.render_token_TEMP.txt
