@@ -19,12 +19,12 @@
     <!-- Task Card -->
     <div class="task-content-card">
         <div class="task-meta">
-            <span class="task-topic-badge">{{ task.topic }}</span>
-            <span class="task-difficulty-badge">Уровень {{ task.difficulty }}</span>
+            <span class="task-topic-badge">{{ task.get('subject', task.get('topic', 'Математика')) }}</span>
+            <span class="task-difficulty-badge">Уровень {{ task.get('difficulty', 3) }}</span>
         </div>
 
         <div class="task-text">
-            {{ task.text|safe }}
+            {{ task.get('text', '')|safe }}
         </div>
 
         <!-- Answer Input -->
@@ -61,7 +61,7 @@
 
 <script>
 const taskIndex = {{ task_index }};
-const taskId = {{ task.id }};
+const taskId = {{ task.get('id', 0) }};
 
 async function submitAnswer() {
     const answerInput = document.getElementById('userAnswer');

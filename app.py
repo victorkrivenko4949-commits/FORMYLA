@@ -1428,7 +1428,10 @@ def yandex_login_start():
     redirect_uri = f"{domain}/yandex_receiver"
     
     if not client_id:
-        flash('Яндекс OAuth не настроен', 'error')
+        flash('Яндекс OAuth не настроен на сервере. Обратитесь к администратору.', 'error')
+        # Если пользователь залогинен — возвращаем на профиль, иначе на логин
+        if current_user.is_authenticated:
+            return redirect(url_for('profile'))
         return redirect(url_for('login'))
     
     # Редирект на Яндекс OAuth

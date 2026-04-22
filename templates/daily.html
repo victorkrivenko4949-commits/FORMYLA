@@ -58,7 +58,8 @@
 
     <!-- Task Preview Cards -->
     <div class="tasks-preview">
-        {% for i, task in enumerate(tasks) %}
+        {% for task in tasks %}
+        {% set i = loop.index0 %}
         <div class="task-card {% if i < quest.completed_count %}completed{% elif i == quest.completed_count %}active{% else %}locked{% endif %}">
             <div class="task-header">
                 <span class="task-number">Задача {{ i + 1 }}</span>
@@ -71,8 +72,8 @@
                 {% endif %}
             </div>
             <div class="task-info">
-                <p class="task-topic">{{ task.topic }}</p>
-                <p class="task-difficulty">Уровень {{ task.difficulty }}</p>
+                <p class="task-topic">{{ task.get('subject', task.get('topic', 'Математика')) }}</p>
+                <p class="task-difficulty">Уровень {{ task.get('difficulty', 3) }}</p>
             </div>
             {% if i <= quest.completed_count %}
             <a href="{{ url_for('daily_quest_task', task_index=i) }}" class="task-button">

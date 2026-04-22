@@ -23,9 +23,10 @@ logger = logging.getLogger(__name__)
 def get_tasks_from_db(topic: str, grade: int, difficulty: int, exclude_ids: List[int] = None) -> List[Dict]:
     """
     Получить задачи из базы данных по теме, классу и сложности.
+    PROBLEMS_DB — список словарей с полями: id, subject, subtopic, grade, difficulty, text, answer
     
     Args:
-        topic: Название темы
+        topic: Название темы (subject или subtopic)
         grade: Класс (5-11)
         difficulty: Уровень сложности (1-7)
         exclude_ids: Список ID задач для исключения
@@ -38,33 +39,108 @@ def get_tasks_from_db(topic: str, grade: int, difficulty: int, exclude_ids: List
     if exclude_ids is None:
         exclude_ids = []
     
-    # Фильтруем задачи
+    # Нормализуем тему для сравнения
+    topic_lower = topic.lower()
+    
+    # Маппинг русских названий тем → английские subject/subtopic
+    TOPIC_MAP = {
+        'алгебра': ['algebra'],
+        'геометрия': ['geometry'],
+        'комбинаторика': ['combinatorics'],
+        'теория чисел': ['number_theory', 'number theory'],
+        'логика': ['logic'],
+        'движение': ['movement', 'kl_movement'],
+        'арифметика': ['arithmetic'],
+    }
+    
+    # Получаем английские эквиваленты темы
+    english_topics = TOPIC_MAP.get(topic_lower, [topic_lower])
+    
+    # Фильтруем задачи (PROBLEMS_DB — список)
     matching_tasks = []
     
-    for task_id, task in PROBLEMS_DB.items():
+    for task in PROBLEMS_DB:
+        task_id = task.get('id')
+        
         # Пропускаем уже решённые
         if task_id in exclude_ids:
             continue
         
-        # Проверяем соответствие
-        task_topic = task.get('topic', '')
+        task_subject = task.get('subject', '').lower()
+        task_subtopic = task.get('subtopic', '').lower()
         task_grade = task.get('grade', 0)
         task_difficulty = task.get('difficulty', 3)
         
-        # Гибкое сравнение темы (может быть подстрока)
-        if topic.lower() in task_topic.lower() and task_grade == grade:
-            # Допускаем ±1 уровень сложности
-            if abs(task_difficulty - difficulty) <= 1:
-                matching_tasks.append({
-                    'id': task_id,
-                    'topic': task_topic,
-                    'grade': task_grade,
-                    'difficulty': task_difficulty,
-                    'text': task.get('text', ''),
-                    'answer': task.get('answer', '')
-                })
+        # Проверяем соответствие класса
+        if task_grade != grade:
+            continue
+        
+        # Проверяем соответствие темы (гибкое)
+        topic_match = False
+        for eng_topic in english_topics:
+            if eng_topic in task_subject or eng_topic in task_subtopic:
+                topic_match = True
+                break
+        # Также проверяем прямое вхождение
+        if not topic_match:
+            if topic_lower in task_subject or topic_lower in task_subtopic:
+                topic_match = True
+        
+        if not topic_match:
+            continue
+        
+        # Допускаем ±1 уровень сложности
+        if abs(task_difficulty - difficulty) <= 1:
+            matching_tasks.append({
+                'id': task_id,
+                'topic': task.get('subject', topic),
+                'subtopic': task.get('subtopic', ''),
+                'grade': task_grade,
+                'difficulty': task_difficulty,
+                'text': task.get('text', ''),
+                'answer': task.get('answer', '')
+            })
     
     return matching_tasks
+
+
+def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
+    """
+    Fallback: генерировать квест из случайных задач PROBLEMS_DB.
+    Используется когда нет данных о мастерстве (новый пользователь).
+    """
+    from app import PROBLEMS_DB
+    
+    if not PROBLEMS_DB:
+        logger.error("PROBLEMS_DB is empty, cannot generate quest")
+        return None
+    
+    # Берём 5 случайных задач из PROBLEMS_DB
+    sample_size = min(5, len(PROBLEMS_DB))
+    selected = random.sample(PROBLEMS_DB, sample_size)
+    
+    task_ids = [t['id'] for t in selected]
+    ai_comment = "🎯 **Твои задачи на сегодня**\n\n📚 Подобраны случайные задачи для начала. Пройди адаптивный тест, чтобы получать персонализированные задачи!\n\nРешай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"
+    
+    quest = DailyQuest(
+        user_id=user_id,
+        date=today,
+        task_ids=json.dumps(task_ids),
+        completed_count=0,
+        total_count=len(task_ids),
+        xp_earned=0,
+        ai_comment=ai_comment
+    )
+    
+    db.session.add(quest)
+    try:
+        db.session.commit()
+        logger.info(f"Generated random quest for user {user_id} with {len(task_ids)} tasks")
+        return quest
+    except Exception as e:
+        logger.error(f"Error creating random quest: {e}")
+        db.session.rollback()
+        return None
 
 
 def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Optional[DailyQuest]:
@@ -121,20 +197,10 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
     medium_topics = get_medium_topics(user_id, min_mastery=0.6, max_mastery=0.8, limit=5)
     strong_topics = get_strong_topics(user_id, threshold=0.8, limit=5)
     
-    # Если нет данных о мастерстве, используем случайные темы
+    # Если нет данных о мастерстве, используем случайные задачи из PROBLEMS_DB напрямую
     if not weak_topics and not medium_topics and not strong_topics:
-        logger.warning(f"No mastery data for user {user_id}, using random topics")
-        # Создаём базовый набор тем
-        default_topics = [
-            ('Алгебра', user_grade, 0.3),
-            ('Геометрия', user_grade, 0.3),
-            ('Комбинаторика', user_grade, 0.3),
-            ('Теория чисел', user_grade, 0.3),
-            ('Логика', user_grade, 0.3)
-        ]
-        weak_topics = default_topics[:3]
-        medium_topics = default_topics[3:4]
-        strong_topics = default_topics[4:5]
+        logger.warning(f"No mastery data for user {user_id}, picking random tasks from PROBLEMS_DB")
+        return _generate_random_quest(user_id, today)
     
     # Собираем задачи
     selected_tasks = []
@@ -318,6 +384,7 @@ def get_today_quest(user_id: int) -> Optional[DailyQuest]:
 def get_quest_tasks(quest: DailyQuest) -> List[Dict]:
     """
     Получить полные данные задач для квеста.
+    PROBLEMS_DB — список, поиск по id.
     
     Args:
         quest: DailyQuest объект
@@ -328,12 +395,14 @@ def get_quest_tasks(quest: DailyQuest) -> List[Dict]:
     from app import PROBLEMS_DB
     
     task_ids = json.loads(quest.task_ids)
-    tasks = []
     
+    # Строим индекс id→task для быстрого поиска
+    task_index = {task['id']: task for task in PROBLEMS_DB if 'id' in task}
+    
+    tasks = []
     for task_id in task_ids:
-        if task_id in PROBLEMS_DB:
-            task = PROBLEMS_DB[task_id].copy()
-            task['id'] = task_id
+        if task_id in task_index:
+            task = task_index[task_id].copy()
             tasks.append(task)
     
     return tasks
