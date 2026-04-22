@@ -477,6 +477,14 @@ class AdaptiveTask(db.Model):
     reports_count = db.Column(db.Integer, default=0)  # Количество жалоб от пользователей
     flagged_reason = db.Column(db.String(500))  # Причина пометки (от AI или пользователя)
     
+    # АДАПТИВНАЯ КАЛИБРОВКА СЛОЖНОСТИ
+    attempts_count = db.Column(db.Integer, default=0)  # Всего попыток решения
+    solves_count = db.Column(db.Integer, default=0)  # Успешных решений
+    actual_solve_rate = db.Column(db.Float, default=None)  # Реальный % решивших (обновляется еженедельно)
+    suggested_level = db.Column(db.Integer, default=None)  # Предложенный уровень (если расходится с difficulty_level)
+    needs_reclassification = db.Column(db.Boolean, default=False, index=True)  # Требует переклассификации
+    last_calibrated_at = db.Column(db.DateTime, default=None)  # Когда последний раз калибровалась
+    
     def to_dict(self):
         """Конвертация в словарь для JSON"""
         return {
