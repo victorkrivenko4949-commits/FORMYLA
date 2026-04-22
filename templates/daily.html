@@ -3,109 +3,146 @@
 {% block title %}Задачи дня — FORMYLA{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}?v={{ asset_version }}">
 {% endblock %}
 
 {% block content %}
-<div class="daily-container">
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
 
-  <!-- Hero с streak -->
-  <section class="daily-hero">
-    <div class="streak-flame">🔥</div>
-    <div class="streak-number">{{ streak_stats.current_streak }}</div>
-    <div class="streak-label">дней подряд</div>
-    <div class="streak-meta">
+  <!-- Streak Hero -->
+  <div style="text-align: center; margin-bottom: 32px;">
+    <div style="font-size: 64px; filter: drop-shadow(0 0 20px rgba(249,115,22,0.8)); animation: flame-flicker 2s ease-in-out infinite alternate; display: inline-block;">🔥</div>
+    <div style="font-size: 72px; font-weight: 900; background: linear-gradient(135deg, #11998e, #38ef7d); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1; margin: 8px 0;">{{ streak_stats.current_streak }}</div>
+    <div style="font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6);">дней подряд</div>
+    <div style="margin-top: 12px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
       {% if streak_stats.freeze_available %}
-        <span class="freeze-badge">❄️ Заморозка доступна</span>
+      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);">❄️ Заморозка доступна</span>
       {% endif %}
-      <span class="longest-badge">🏆 Рекорд: {{ streak_stats.longest_streak }}</span>
+      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);">🏆 Рекорд: {{ streak_stats.longest_streak }}</span>
     </div>
-  </section>
+  </div>
 
-  <!-- AI-интро -->
-  <section class="ai-intro-card">
-    <div class="ai-avatar">🤖</div>
-    <div class="ai-text">
-      <h3>Твои задачи на сегодня</h3>
-      <div class="ai-body">{{ quest.ai_comment | safe }}</div>
+  <!-- AI Intro -->
+  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); border-left: 4px solid #38ef7d; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start;">
+    <div style="font-size: 36px; flex-shrink: 0; line-height: 1;">🤖</div>
+    <div>
+      <div style="color: #38ef7d; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px;">Твои задачи на сегодня</div>
+      <div style="color: var(--text-soft); line-height: 1.6;">{{ quest.ai_comment | safe }}</div>
     </div>
-  </section>
+  </div>
 
-  <!-- Прогресс -->
-  <section class="progress-section">
-    <div class="progress-label">
+  <!-- Progress -->
+  <div style="margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.8);">
       <span>Прогресс</span>
-      <span>{{ quest.completed_count }} / {{ quest.total_count }} задач</span>
+      <span style="color: #38ef7d;">{{ quest.completed_count }} / {{ quest.total_count }} задач</span>
     </div>
-    <div class="progress-bar">
+    <div style="width: 100%; height: 8px; background: rgba(20,30,45,0.8); border-radius: 4px; overflow: hidden;">
       {% if quest.total_count > 0 %}
-      <div class="progress-fill" style="width: {{ ((quest.completed_count / quest.total_count) * 100)|int }}%"></div>
-      {% else %}
-      <div class="progress-fill" style="width: 0%"></div>
+      <div style="width: {{ ((quest.completed_count / quest.total_count) * 100)|int }}%; height: 100%; background: linear-gradient(90deg, #11998e, #38ef7d); box-shadow: 0 0 12px rgba(56,239,125,0.5); transition: width 0.5s ease; border-radius: 4px;"></div>
       {% endif %}
     </div>
-  </section>
+  </div>
 
-  <!-- Сетка задач -->
-  <section class="tasks-grid">
-    {% for task in tasks %}
-    {% set i = loop.index0 %}
-    {% set subject = task.get('subject', task.get('topic', 'math')) %}
-    {% set topic_ru = {
-      'algebra': 'Алгебра',
-      'geometry': 'Геометрия',
-      'combinatorics': 'Комбинаторика',
-      'number_theory': 'Теория чисел',
-      'logic': 'Логика',
-      'movement': 'Задачи на движение',
-      'kl_movement': 'Задачи на движение',
-      'arithmetic': 'Арифметика'
-    }.get(subject, subject) %}
-    {% set lvl = task.get('difficulty', 3) %}
-    <article class="task-card {% if i < quest.completed_count %}done{% elif i == quest.completed_count %}current{% else %}locked{% endif %}">
-      <div class="task-number">{{ loop.index }}</div>
-      <div class="task-header">
-        <span class="task-topic">{{ topic_ru }}</span>
-        <span class="task-level">
-          {% for s in range(lvl) %}★{% endfor %}{% for s in range(7 - lvl) %}☆{% endfor %}
-        </span>
-      </div>
-      <div class="task-preview">
-        {{ task.get('text', '')[:120] }}{% if task.get('text', '')|length > 120 %}…{% endif %}
-      </div>
-      <div class="task-action">
-        {% if i < quest.completed_count %}
-          <span class="status-done">✅ Решено</span>
-        {% elif i == quest.completed_count %}
-          <a href="{{ url_for('daily_quest_task', task_index=i) }}" class="btn-solve">🚀 Решить задачу</a>
-        {% else %}
-          <span class="status-locked">🔒 Откроется после задачи {{ i }}</span>
-        {% endif %}
-      </div>
-    </article>
-    {% endfor %}
-  </section>
+  <!-- Task Cards (exam.html pattern) -->
+  {% for task in tasks %}
+  {% set i = loop.index0 %}
+  {% set subject = task.get('subject', task.get('topic', 'math')) %}
+  {% set topic_ru = {
+    'algebra': 'Алгебра',
+    'geometry': 'Геометрия',
+    'combinatorics': 'Комбинаторика',
+    'number_theory': 'Теория чисел',
+    'logic': 'Логика',
+    'movement': 'Задачи на движение',
+    'kl_movement': 'Задачи на движение',
+    'arithmetic': 'Арифметика'
+  }.get(subject, subject) %}
+  {% set lvl = task.get('difficulty', 3) %}
+  {% set is_done = i < quest.completed_count %}
+  {% set is_current = i == quest.completed_count %}
+  {% set is_locked = i > quest.completed_count %}
 
-  <!-- Награды -->
-  <section class="rewards-card">
-    <div class="reward-item">
-      <span class="reward-icon">💎</span>
-      <span>Заработано: <strong>{{ quest.xp_earned }} XP</strong></span>
+  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid {% if is_done %}rgba(56,239,125,0.4){% elif is_current %}#38ef7d{% else %}var(--border-soft){% endif %}; margin-bottom: 24px; {% if is_locked %}opacity: 0.45;{% endif %} {% if is_current %}box-shadow: 0 0 24px rgba(56,239,125,0.25);{% endif %}">
+
+    <!-- Task Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #11998e, #38ef7d); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 15px; flex-shrink: 0;">{{ loop.index }}</div>
+        <div>
+          <div style="color: #38ef7d; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">{{ topic_ru }}</div>
+          <div style="color: #fbbf24; font-size: 13px; letter-spacing: -1px;">{% for s in range(lvl) %}★{% endfor %}{% for s in range(7 - lvl) %}☆{% endfor %}</div>
+        </div>
+      </div>
+      {% if is_done %}
+      <span style="color: #38ef7d; font-weight: 600; font-size: 14px;">✅ Решено</span>
+      {% elif is_current %}
+      <span style="color: #38ef7d; font-size: 13px; font-weight: 600; animation: pulse-badge 2s ease-in-out infinite;">● Текущая</span>
+      {% else %}
+      <span style="color: rgba(255,255,255,0.4); font-size: 13px;">🔒 Заблокировано</span>
+      {% endif %}
     </div>
-    <div class="reward-item">
-      <span class="reward-icon">🎁</span>
-      <span>Бонус за все 5: <strong>+100 XP</strong></span>
+
+    <!-- Task Text (same as exam.html — MathJax renders \( \) automatically) -->
+    <div style="color: var(--text-soft); line-height: 1.8; margin-bottom: 20px; font-size: 15px;">
+      {{ task.get('text', '') }}
+    </div>
+
+    <!-- Action -->
+    {% if is_current %}
+    <a href="{{ url_for('daily_quest_task', task_index=i) }}"
+       style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-weight: 700; border-radius: 10px; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(56,239,125,0.4); transition: all 0.25s ease;"
+       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(56,239,125,0.6)'"
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(56,239,125,0.4)'">
+      🚀 Решить задачу
+    </a>
+    {% elif is_done %}
+    <a href="{{ url_for('daily_quest_task', task_index=i) }}"
+       style="display: inline-block; padding: 10px 20px; background: rgba(56,239,125,0.1); color: #38ef7d; font-weight: 600; border-radius: 8px; text-decoration: none; font-size: 14px; border: 1px solid rgba(56,239,125,0.3);">
+      📖 Посмотреть
+    </a>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- Rewards -->
+  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
+    <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.85); font-size: 15px;">
+      <span style="font-size: 22px;">💎</span>
+      <span>Заработано: <strong style="color: #38ef7d;">{{ quest.xp_earned }} XP</strong></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.85); font-size: 15px;">
+      <span style="font-size: 22px;">🎁</span>
+      <span>Бонус за все 5: <strong style="color: #38ef7d;">+100 XP</strong></span>
     </div>
     {% if quest.completed_count >= quest.total_count %}
-    <div class="reward-item">
-      <a href="{{ url_for('daily_quest_complete') }}" class="btn-start">🎉 Результаты</a>
-    </div>
+    <a href="{{ url_for('daily_quest_complete') }}"
+       style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-weight: 700; border-radius: 10px; text-decoration: none;">
+      🎉 Результаты
+    </a>
     {% endif %}
-  </section>
+  </div>
 
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/daily.js') }}?v=3"></script>
+<style>
+@keyframes flame-flicker {
+    0%   { filter: drop-shadow(0 0 10px #f97316); transform: scale(1); }
+    100% { filter: drop-shadow(0 0 25px #fbbf24); transform: scale(1.05); }
+}
+@keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+}
+</style>
+
+<script>
+// Trigger MathJax re-render for task texts
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise();
+    }
+});
+</script>
+
 {% endblock %}
