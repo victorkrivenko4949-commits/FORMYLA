@@ -59,6 +59,21 @@
     'arithmetic': 'Арифметика'
   }.get(subject, subject) %}
   {% set lvl = task.get('difficulty', 3) %}
+  {% set level_label = {
+    1: 'Базовый',
+    2: 'Школьный',
+    3: 'Олимпиада (школа)',
+    4: 'Муниципальный',
+    5: 'Региональный',
+    6: 'Всерос финал',
+    7: 'IMO / ELITE'
+  }.get(lvl, 'Уровень ' ~ lvl) %}
+  {% set level_color = {
+    1: '#22c55e', 2: '#22c55e',
+    3: '#fbbf24', 4: '#f97316',
+    5: '#f97316', 6: '#ef4444',
+    7: '#ec4899'
+  }.get(lvl, '#38ef7d') %}
   {% set is_done = i < quest.completed_count %}
   {% set is_current = i == quest.completed_count %}
   {% set is_locked = i > quest.completed_count %}
@@ -71,7 +86,7 @@
         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #11998e, #38ef7d); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 15px; flex-shrink: 0;">{{ loop.index }}</div>
         <div>
           <div style="color: #38ef7d; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">{{ topic_ru }}</div>
-          <div style="color: #fbbf24; font-size: 13px; letter-spacing: -1px;">{% for s in range(lvl) %}★{% endfor %}{% for s in range(7 - lvl) %}☆{% endfor %}</div>
+          <span style="display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: {{ level_color }}22; color: {{ level_color }}; font-weight: 700; border: 1px solid {{ level_color }}44; margin-top: 4px;">{{ level_label }}</span>
         </div>
       </div>
       {% if is_done %}
