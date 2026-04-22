@@ -108,6 +108,7 @@ def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
     """
     Fallback: генерировать квест из случайных задач PROBLEMS_DB.
     Используется когда нет данных о мастерстве (новый пользователь).
+    Для новичков — уровень сложности 2-3 (НЕ 7!).
     """
     from app import PROBLEMS_DB
     
@@ -115,9 +116,18 @@ def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
         logger.error("PROBLEMS_DB is empty, cannot generate quest")
         return None
     
-    # Берём 5 случайных задач из PROBLEMS_DB
-    sample_size = min(5, len(PROBLEMS_DB))
-    selected = random.sample(PROBLEMS_DB, sample_size)
+    # Для новичков берём задачи уровня 2-3 (стартовый уровень)
+    STARTING_LEVEL = 3
+    beginner_tasks = [t for t in PROBLEMS_DB if t.get('difficulty', 3) <= STARTING_LEVEL]
+    
+    if len(beginner_tasks) < 5:
+        beginner_tasks = PROBLEMS_DB  # Fallback если мало задач нужного уровня
+    
+    # Берём 5 случайных задач из подходящих
+    sample_size = min(5, len(beginner_tasks))
+    selected = random.sample(beginner_tasks, sample_size)
+    
+    logger.info(f"Random quest for user {user_id}: levels={[t.get('difficulty',3) for t in selected]}")
     
     task_ids = [t['id'] for t in selected]
     ai_comment = "🎯 **Твои задачи на сегодня**\n\n📚 Подобраны случайные задачи для начала. Пройди адаптивный тест, чтобы получать персонализированные задачи!\n\nРешай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"

@@ -480,37 +480,40 @@ input, textarea, [contenteditable] {
 }
 
 /* ── Daily Quest Navbar Link ── */
+.daily-nav-link,
 .daily-link {
     display: inline-flex !important;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px !important;
-    border-radius: 8px;
+    padding: 6px 14px !important;
+    margin-right: 8px;
     background: linear-gradient(135deg,
-                rgba(17,153,142,0.2),
-                rgba(56,239,125,0.2));
-    border: 1px solid rgba(56,239,125,0.35) !important;
-    transition: all 0.2s ease;
-    text-decoration: none;
+                rgba(249,115,22,0.25),
+                rgba(56,239,125,0.25)) !important;
+    border: 1px solid rgba(249,115,22,0.5) !important;
+    border-radius: 8px !important;
     color: #fff !important;
-    font-weight: 600;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
 }
 
+.daily-nav-link:hover,
 .daily-link:hover {
-    background: linear-gradient(135deg,
-                rgba(17,153,142,0.4),
-                rgba(56,239,125,0.4)) !important;
-    box-shadow: 0 0 14px rgba(56,239,125,0.5);
+    box-shadow: 0 0 16px rgba(249,115,22,0.6) !important;
+    transform: translateY(-1px);
     text-decoration: none;
 }
 
+.daily-flame,
 .daily-icon {
-    animation: flame-flicker-nav 2s ease-in-out infinite alternate;
+    animation: flame-nav 1.8s ease-in-out infinite alternate;
+    display: inline-block;
 }
 
-@keyframes flame-flicker-nav {
-    0%   { filter: drop-shadow(0 0 3px #f97316); }
-    100% { filter: drop-shadow(0 0 6px #fbbf24); }
+@keyframes flame-nav {
+    0%   { filter: drop-shadow(0 0 3px #f97316); transform: scale(1); }
+    100% { filter: drop-shadow(0 0 8px #fbbf24); transform: scale(1.08); }
 }
 
 .daily-badge {
@@ -537,4 +540,23 @@ input, textarea, [contenteditable] {
 @keyframes pulse-new {
     0%, 100% { transform: scale(1); }
     50%       { transform: scale(1.12); }
+}
+
+/* ── Daily Quest btn-solve ── */
+.btn-solve {
+    display: inline-block;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #000 !important;
+    font-weight: 700;
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(56,239,125,0.4);
+    transition: all 0.25s ease;
+}
+
+.btn-solve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(56,239,125,0.6);
+    text-decoration: none;
 }

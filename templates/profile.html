@@ -2,6 +2,10 @@
 
 {% block title %}Профиль - FORMYLA{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mastery.css') }}?v=1">
+{% endblock %}
+
 {% block content %}
 <div class="container" style="max-width: 800px; margin: 50px auto; padding: 0 20px;">
     
@@ -134,20 +138,90 @@
         </div>
     </div>
 
-    <!-- Topic Mastery Radar Chart -->
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
-        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            📊 Мастерство по темам
-        </h2>
-        
-        <div style="max-width: 500px; margin: 0 auto;">
-            <canvas id="masteryRadar"></canvas>
+    <!-- SVG gradient for rings -->
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#11998e"/>
+          <stop offset="100%" stop-color="#38ef7d"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <!-- Mastery Dashboard -->
+    <section class="mastery-dashboard">
+      <header class="mastery-header">
+        <h2>📊 Твой уровень по темам</h2>
+        <div class="mastery-summary">
+          <span class="overall-level">{{ overall_level }}</span>
+          <span class="overall-label">общий уровень</span>
         </div>
-        
-        <div id="masteryLegend" style="margin-top: 2rem; display: grid; gap: 0.5rem;">
-            <!-- Will be populated by JavaScript -->
+      </header>
+
+      {% if mastery_list %}
+      <!-- Радар-диаграмма -->
+      <div class="radar-container">
+        <canvas id="masteryRadar"
+                data-mastery='{{ mastery_list_json | tojson }}'
+                width="400" height="400"></canvas>
+      </div>
+
+      <!-- Сетка карточек тем -->
+      <div class="mastery-grid">
+        {% for topic in mastery_list %}
+        <article class="mastery-card" data-level="{{ topic.level_category }}">
+          <div class="mastery-ring-wrapper">
+            <svg class="mastery-ring" viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="42" />
+              <circle class="ring-fill" cx="50" cy="50" r="42"
+                      stroke-dasharray="{{ (264 * topic.mastery)|int }} 264"
+                      transform="rotate(-90 50 50)" />
+            </svg>
+            <div class="ring-content">
+              <div class="ring-icon">{{ topic.icon }}</div>
+              <div class="ring-percent">{{ (topic.mastery * 100)|int }}%</div>
+            </div>
+          </div>
+          <div class="mastery-info">
+            <h3 class="mastery-topic">{{ topic.name_ru }}</h3>
+            <div class="mastery-level-badge">{{ topic.level_label }}</div>
+            <div class="mastery-trend">
+              {% if topic.trend > 0 %}
+                <span class="trend-up">↗️ +{{ topic.trend }}% за неделю</span>
+              {% elif topic.trend < 0 %}
+                <span class="trend-down">↘️ {{ topic.trend }}% за неделю</span>
+              {% else %}
+                <span class="trend-flat">➡️ без изменений</span>
+              {% endif %}
+            </div>
+            <div class="mastery-stats">
+              <span>Решено: <strong>{{ topic.solved }}</strong></span>
+              <span>Ср. уровень: <strong>{{ topic.avg_level }}</strong></span>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <!-- AI-рекомендация -->
+      <aside class="mastery-ai-tip">
+        <div class="tip-icon">🎯</div>
+        <div class="tip-content">
+          <h4>Рекомендация AI</h4>
+          <p>{{ ai_recommendation | safe }}</p>
         </div>
-    </div>
+      </aside>
+
+      {% else %}
+      <div style="text-align:center; padding: 40px; color: rgba(255,255,255,0.5);">
+        <div style="font-size:3rem; margin-bottom:1rem;">📊</div>
+        <p>Пройди адаптивный тест, чтобы увидеть свой уровень по темам!</p>
+        <a href="{{ url_for('adaptive_test_simple') }}" style="display:inline-block; margin-top:1rem; padding:10px 24px; background:linear-gradient(135deg,#11998e,#38ef7d); color:#000; border-radius:8px; font-weight:700; text-decoration:none;">
+          🚀 Пройти тест
+        </a>
+      </div>
+      {% endif %}
+    </section>
 
     <!-- Прогресс по темам -->
     {% if progress_dict %}
@@ -503,82 +577,9 @@ async function loadStreakData() {
     }
 }
 
-// Load Topic Mastery Data and Create Radar Chart
-async function loadMasteryData() {
-    try {
-        // This would need a new API endpoint to get mastery data
-        // For now, create a sample radar chart
-        const ctx = document.getElementById('masteryRadar');
-        
-        if (!ctx) return;
-        
-        // Sample data - in production, fetch from /api/mastery endpoint
-        const masteryData = {
-            labels: ['Алгебра', 'Геометрия', 'Комбинаторика', 'Теория чисел', 'Логика'],
-            datasets: [{
-                label: 'Мастерство',
-                data: [0.7, 0.5, 0.8, 0.6, 0.4], // 0-1 scale
-                backgroundColor: 'rgba(56, 239, 125, 0.2)',
-                borderColor: 'rgba(56, 239, 125, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(56, 239, 125, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(56, 239, 125, 1)'
-            }]
-        };
-        
-        new Chart(ctx, {
-            type: 'radar',
-            data: masteryData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 1,
-                        ticks: {
-                            stepSize: 0.2,
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            backdropColor: 'transparent'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        pointLabels: {
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-        
-        // Create legend
-        const legendHTML = masteryData.labels.map((label, index) => {
-            const value = (masteryData.datasets[0].data[index] * 100).toFixed(0);
-            const color = value >= 80 ? '#22c55e' : value >= 60 ? '#fbbf24' : '#ef4444';
-            return `
-                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
-                    <span style="color: rgba(255, 255, 255, 0.8);">${label}</span>
-                    <span style="color: ${color}; font-weight: 600;">${value}%</span>
-                </div>
-            `;
-        }).join('');
-        
-        document.getElementById('masteryLegend').innerHTML = legendHTML;
-        
-    } catch (error) {
-        console.error('Error loading mastery data:', error);
-    }
+// Mastery radar is handled by static/js/mastery_radar.js
+function loadMasteryData() {
+    // No-op: radar chart is rendered via mastery_radar.js using data-mastery attribute
 }
 
 // Load data on page load

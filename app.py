@@ -70,6 +70,11 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-DO-NOT-USE-IN-PROD
 if app.secret_key == 'dev-secret-key-DO-NOT-USE-IN-PRODUCTION-12345':
     print("⚠️  WARNING: Using default SECRET_KEY! Set SECRET_KEY environment variable in production!")
 
+# Asset versioning for cache busting
+import time as _time
+_asset_version = str(int(_time.time()))
+app.jinja_env.globals['asset_version'] = _asset_version
+
 # DEBUG: Проверка переменных окружения
 print("="*60)
 print("DEBUG: Доступные переменные окружения:")
@@ -1787,13 +1792,82 @@ def profile():
         if teacher:
             incoming_requests.append({'mentorship': m, 'teacher': teacher})
     
+    # ── Mastery Dashboard ──
+    from models import TopicMastery
+    
+    TOPIC_META = {
+        'algebra':       {'name_ru': 'Алгебра',        'icon': '➗'},
+        'geometry':      {'name_ru': 'Геометрия',      'icon': '📐'},
+        'combinatorics': {'name_ru': 'Комбинаторика',  'icon': '🧩'},
+        'logic':         {'name_ru': 'Логика',         'icon': '🧠'},
+        'number_theory': {'name_ru': 'Теория чисел',   'icon': '🔢'},
+        'arithmetic':    {'name_ru': 'Арифметика',     'icon': '🧮'},
+        'kl_movement':   {'name_ru': 'Задачи на движение', 'icon': '🚂'},
+    }
+    
+    def get_level_label(mastery):
+        if mastery < 0.2:  return 'Новичок'
+        if mastery < 0.4:  return 'Ученик'
+        if mastery < 0.6:  return 'Практик'
+        if mastery < 0.85: return 'Мастер'
+        return 'Чемпион'
+    
+    def get_level_category(mastery):
+        if mastery < 0.3:  return 'weak'
+        if mastery < 0.6:  return 'medium'
+        if mastery < 0.85: return 'strong'
+        return 'champion'
+    
+    mastery_rows = TopicMastery.query.filter_by(user_id=current_user.id).all()
+    mastery_list = []
+    for row in mastery_rows:
+        meta = TOPIC_META.get(row.topic, {'name_ru': row.topic, 'icon': '📚'})
+        mastery_list.append({
+            'topic': row.topic,
+            'name_ru': meta['name_ru'],
+            'icon': meta['icon'],
+            'mastery': round(row.mastery, 3),
+            'solved': row.solved,
+            'avg_level': round(row.avg_level, 1),
+            'trend': 0,  # TODO: compute weekly trend
+            'level_category': get_level_category(row.mastery),
+            'level_label': get_level_label(row.mastery),
+        })
+    mastery_list.sort(key=lambda x: -x['mastery'])
+    
+    # Overall level (average mastery → 1-10 scale)
+    if mastery_list:
+        avg_mastery = sum(m['mastery'] for m in mastery_list) / len(mastery_list)
+        overall_level = max(1, min(10, round(avg_mastery * 10)))
+    else:
+        overall_level = 1
+    
+    # AI recommendation (simple rule-based, no API call to avoid latency)
+    ai_recommendation = ''
+    if mastery_list:
+        weakest = mastery_list[-1]
+        ai_recommendation = (
+            f"Сосредоточься на теме <strong>{weakest['name_ru']}</strong> — "
+            f"твой уровень {int(weakest['mastery']*100)}%. "
+            f"Реши 5 задач уровня {int(weakest['avg_level'])+1} для быстрого роста."
+        )
+    else:
+        ai_recommendation = "Пройди адаптивный тест, чтобы получить персональные рекомендации!"
+    
+    # JSON for radar chart
+    mastery_list_json = [{'name': m['name_ru'], 'value': m['mastery']} for m in mastery_list]
+    
     return render_template('profile.html',
                          user=current_user,
                          progress_dict=progress_dict,
                          recent_tests=recent_tests,
                          test_stats=test_stats,
                          students=students,
-                         incoming_requests=incoming_requests)
+                         incoming_requests=incoming_requests,
+                         mastery_list=mastery_list,
+                         mastery_list_json=mastery_list_json,
+                         overall_level=overall_level,
+                         ai_recommendation=ai_recommendation)
 
 
 # ============================================================
@@ -4762,7 +4836,7 @@ def daily_quest_submit(task_index):
 
 Дай краткий комментарий (2-3 предложения) на русском языке."""
             
-            ai_feedback = client.get_completion(prompt, max_tokens=200)
+            ai_feedback = client.generate(prompt, max_tokens=200)
         except Exception as e:
             app.logger.error(f"AI feedback error: {e}")
             ai_feedback = "Отличная работа!" if is_correct else "Попробуй ещё раз!"
@@ -4810,7 +4884,7 @@ def daily_quest_complete():
 
 Напиши мотивирующий комментарий на русском (2-3 предложения)."""
             
-            ai_summary = client.get_completion(prompt, max_tokens=200)
+            ai_summary = client.generate(prompt, max_tokens=200)
         except Exception as e:
             app.logger.error(f"AI summary error: {e}")
             ai_summary = "Отличная работа! Продолжай в том же духе! 🔥"

@@ -77,9 +77,9 @@
         {% if i < quest.completed_count %}
           <span class="status-done">✅ Решено</span>
         {% elif i == quest.completed_count %}
-          <a href="{{ url_for('daily_quest_task', task_index=i) }}" class="btn-start">🚀 Решить</a>
+          <a href="{{ url_for('daily_quest_task', task_index=i) }}" class="btn-solve">🚀 Решить задачу</a>
         {% else %}
-          <span class="status-locked">🔒 Заблокировано</span>
+          <span class="status-locked">🔒 Откроется после задачи {{ i }}</span>
         {% endif %}
       </div>
     </article>
