@@ -2081,6 +2081,7 @@ def free_mock_start():
     # Инициализируем историю задач для нового пробника
     session['mock_task_ideas'] = []
     session['mock_task_texts'] = []
+    session['mock_task_subtopics'] = []  # Очищаем историю подтем для уникальности
     
     # Очищаем кэш предгенерированных задач
     session_id = request.cookies.get('session', session.get('_id', str(current_user.id)))
@@ -2518,7 +2519,9 @@ def api_free_mock_generate_single_task():
         difficulty = data.get('difficulty')
         task_number = data.get('task_number', 1)
         previous_topics = data.get('previous_topics', [])
+        previous_subtopics = data.get('previous_subtopics', [])  # НОВЫЙ: список использованных подтем
         target_topic = data.get('target_topic')  # НОВЫЙ ПАРАМЕТР для баланса тем
+        target_subtopic = data.get('target_subtopic')  # НОВЫЙ: конкретная подтема для генерации
         previous_tasks = data.get('previous_tasks', [])  # КОНТЕКСТ ПРЕДЫДУЩИХ ЗАДАЧ
         
         if not class_level or not difficulty:
@@ -2551,10 +2554,27 @@ def api_free_mock_generate_single_task():
         if previous_topics:
             topics_exclusion = f" Тема должна отличаться от этих: {', '.join(previous_topics)}."
         
+        # СТРОГОЕ ТРЕБОВАНИЕ ПО ПОДТЕМЕ (уникальность в пробнике)
+        subtopics_exclusion = ""
+        if previous_subtopics:
+            from services.topic_taxonomy import SUBTOPIC_NAMES_RU
+            subtopic_names = [SUBTOPIC_NAMES_RU.get(s, s) for s in previous_subtopics]
+            subtopics_exclusion = (
+                f"\n\nКРИТИЧЕСКИ ВАЖНО: Задача должна быть на УНИКАЛЬНУЮ подтему. "
+                f"Уже использованные подтемы (НЕ ПОВТОРЯТЬ): {', '.join(subtopic_names)}. "
+                f"Придумай задачу на ДРУГУЮ подтему, которой ещё не было!"
+            )
+        
         # СТРОГОЕ ТРЕБОВАНИЕ ПО ТЕМЕ (если указана)
         topic_requirement = ""
         if target_topic:
             topic_requirement = f"\n\nСГЕНЕРИРУЙ ЗАДАЧУ СТРОГО НА ТЕМУ: {target_topic}."
+        
+        # СТРОГОЕ ТРЕБОВАНИЕ ПО ПОДТЕМЕ (если указана)
+        if target_subtopic:
+            from services.topic_taxonomy import SUBTOPIC_NAMES_RU
+            subtopic_name = SUBTOPIC_NAMES_RU.get(target_subtopic, target_subtopic)
+            topic_requirement += f"\n\nПОДТЕМА ЗАДАЧИ: {subtopic_name}. Задача должна быть именно на эту подтему."
         
         # УСИЛЕННЫЙ КОНТЕКСТ с историей математических идей
         previous_tasks_context = ""
@@ -2676,7 +2696,7 @@ def api_free_mock_generate_single_task():
 
 ТРЕБУЕМЫЙ УРОВЕНЬ СЛОЖНОСТИ: {difficulty} - {difficulty_desc}
 
-Это задача {task_number}/25.{topics_exclusion}{topic_requirement}{previous_tasks_context}
+Это задача {task_number}/25.{topics_exclusion}{subtopics_exclusion}{topic_requirement}{previous_tasks_context}
 
 ПРАВИЛА:
 1. Задача НЕ должна гуглиться. Придумай новую оригинальную формулировку.
@@ -2780,6 +2800,19 @@ def api_free_mock_generate_single_task():
         
         session['mock_task_ideas'].append(task_idea)
         session['mock_task_texts'].append(task_text[:150])  # Сохраняем первые 150 символов
+        
+        # Сохраняем subtopic для обеспечения уникальности подтем
+        if 'mock_task_subtopics' not in session:
+            session['mock_task_subtopics'] = []
+        # Определяем subtopic по теме задачи
+        from services.topic_taxonomy import get_subtopics_for_topic
+        task_subtopics = get_subtopics_for_topic(task_topic)
+        if task_subtopics:
+            # Используем детерминированный выбор на основе номера задачи
+            subtopic_idx = (task_number - 1) % len(task_subtopics)
+            task_subtopic = task_subtopics[subtopic_idx]
+            session['mock_task_subtopics'].append(task_subtopic)
+        
         session.modified = True  # Важно для Flask session
         
         print(f"✅ Задача {task_number} сгенерирована")
@@ -2798,6 +2831,7 @@ def api_free_mock_generate_single_task():
                     'difficulty': difficulty,
                     'task_number': next_task_number,
                     'previous_topics': previous_topics,
+                    'previous_subtopics': session.get('mock_task_subtopics', []),
                     'previous_tasks': session.get('mock_task_texts', [])
                 }
                 

@@ -464,6 +464,7 @@ class AdaptiveTask(db.Model):
     class_level = db.Column(db.Integer, nullable=False, index=True)  # Класс (5, 6, 7, etc.)
     difficulty_level = db.Column(db.Integer, nullable=False, index=True)  # Уровень сложности 1-7
     topic = db.Column(db.String(200), nullable=False, index=True)  # Тема из матрицы 25 тем
+    subtopic = db.Column(db.String(100), nullable=True, index=True)  # Подтема для уникальности в пробнике
     task_text = db.Column(db.Text, nullable=False)  # Условие задачи (с LaTeX)
     solution = db.Column(db.Text, nullable=False)  # Полное авторское решение
     criteria_1_point = db.Column(db.Text, nullable=False)  # Критерий на 1 балл
