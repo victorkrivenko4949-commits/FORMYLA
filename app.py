@@ -157,6 +157,37 @@ login_manager.login_message = 'Пожалуйста, войдите для до�
 
 mail = Mail(app)
 
+# Flask-APScheduler for Daily Quest cron jobs
+from flask_apscheduler import APScheduler
+
+class Config:
+    SCHEDULER_API_ENABLED = True
+    SCHEDULER_TIMEZONE = "Europe/Moscow"
+
+app.config.from_object(Config())
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+
+# Daily Quest Streak Reset Job (runs at 00:00 MSK)
+@scheduler.task('cron', id='daily_streak_reset', hour=0, minute=0)
+def daily_streak_reset_job():
+    """Reset streaks at midnight MSK"""
+    with app.app_context():
+        from services.streak_service import check_and_reset_streaks
+        try:
+            check_and_reset_streaks()
+            app.logger.info("✓ Daily streak reset completed")
+        except Exception as e:
+            app.logger.error(f"✗ Daily streak reset failed: {e}")
+
+# Start scheduler
+try:
+    scheduler.start()
+    print("✓ APScheduler started - Daily Quest cron jobs active")
+except Exception as e:
+    print(f"⚠️  APScheduler failed to start: {e}")
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
