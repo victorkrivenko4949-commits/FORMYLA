@@ -31,13 +31,18 @@
             </div>
             
             <div style="margin-bottom: 15px;">
-                <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">Ваш ответ:</label>
-                <input type="text" name="answer_{{ item.task_id }}" placeholder="Введите ответ" style="width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2);">
+                <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">
+                    Ваш ответ:
+                    <button type="button" class="caps-toggle-btn" onclick="toggleCapsLock()" style="margin-left: 10px; font-size: 12px; padding: 4px 10px;">
+                        <span class="icon">⇧</span> CAPS
+                    </button>
+                </label>
+                <input type="text" name="answer_{{ item.task_id }}" class="answer-input" placeholder="Введите ответ" style="width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2);">
             </div>
             
             <div style="margin-bottom: 15px;">
                 <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">Ход решения (текст):</label>
-                <textarea name="solution_{{ item.task_id }}" placeholder="Опишите как вы решали задачу..." style="width: 100%; min-height: 120px; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2); resize: vertical;"></textarea>
+                <textarea name="solution_{{ item.task_id }}" class="solution-input" placeholder="Опишите как вы решали задачу..." style="width: 100%; min-height: 120px; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2); resize: vertical;"></textarea>
             </div>
             
             <div>

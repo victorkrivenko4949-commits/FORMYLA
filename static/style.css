@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --bg-main: #0f172a;
     --bg-soft: #111827;
     --bg-elevated: #172033;
@@ -52,7 +52,7 @@ a {
 }
 
 /* =========================================
-   ЯДЕРНОЕ ПРАВИЛО ПРОТИВ ЧЕРНОГО ТЕКСТА
+   РЇР”Р•Р РќРћР• РџР РђР’РР›Рћ РџР РћРўРР’ Р§Р•Р РќРћР“Рћ РўР•РљРЎРўРђ
    ========================================= */
 .force-white,
 .force-white * {
@@ -242,7 +242,7 @@ button:hover {
     opacity: 0.98;
 }
 
-/* КАРТОЧКА ЗАДАЧИ НА СТРАНИЦЕ РЕШЕНИЯ */
+/* РљРђР РўРћР§РљРђ Р—РђР”РђР§Р РќРђ РЎРўР РђРќРР¦Р• Р Р•РЁР•РќРРЇ */
 .problem-card {
     background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(17, 24, 39, 0.98) 100%);
     border: 1px solid var(--border-soft);
@@ -268,7 +268,7 @@ button:hover {
     padding: 18px;
     margin-top: 20px;
     border-radius: 14px;
-    background: rgba(34, 197, 94, 0.1); /* Легкий зеленый фон */
+    background: rgba(34, 197, 94, 0.1); /* Р›РµРіРєРёР№ Р·РµР»РµРЅС‹Р№ С„РѕРЅ */
     border: 1px solid rgba(34, 197, 94, 0.22);
     font-size: 17px;
 }
@@ -277,7 +277,7 @@ button:hover {
     padding: 18px;
     margin-top: 16px;
     border-radius: 14px;
-    background: rgba(56, 189, 248, 0.08); /* Легкий синий фон */
+    background: rgba(56, 189, 248, 0.08); /* Р›РµРіРєРёР№ СЃРёРЅРёР№ С„РѕРЅ */
     border: 1px solid rgba(56, 189, 248, 0.18);
     font-size: 17px;
 }
@@ -306,9 +306,9 @@ button:hover {
     .problem-text, .answer, .solution { font-size: 16px; }
 }
 
-/* Адаптивная верстка для мобильных */
+/* РђРґР°РїС‚РёРІРЅР°СЏ РІРµСЂСЃС‚РєР° РґР»СЏ РјРѕР±РёР»СЊРЅС‹С… */
 @media (max-width: 768px) {
-    /* Навигация */
+    /* РќР°РІРёРіР°С†РёСЏ */
     .header {
         flex-wrap: wrap;
         padding: 10px 15px;
@@ -348,7 +348,7 @@ button:hover {
         border-color: var(--accent-2);
     }
     
-    /* Hamburger кнопка */
+    /* Hamburger РєРЅРѕРїРєР° */
     .hamburger {
         display: block !important;
         background: none;
@@ -359,12 +359,12 @@ button:hover {
         padding: 8px;
     }
     
-    /* Карточки в одну колонку */
+    /* РљР°СЂС‚РѕС‡РєРё РІ РѕРґРЅСѓ РєРѕР»РѕРЅРєСѓ */
     .cards-grid {
         grid-template-columns: 1fr !important;
     }
     
-    /* AI-тьютор на всю ширину */
+    /* AI-С‚СЊСЋС‚РѕСЂ РЅР° РІСЃСЋ С€РёСЂРёРЅСѓ */
     #tutorChat {
         width: 100vw !important;
         height: 100vh !important;
@@ -378,7 +378,7 @@ button:hover {
         right: 10px !important;
     }
     
-    /* Крупнее шрифты и кнопки */
+    /* РљСЂСѓРїРЅРµРµ С€СЂРёС„С‚С‹ Рё РєРЅРѕРїРєРё */
     body {
         font-size: 16px;
     }
@@ -393,3 +393,89 @@ button:hover {
         padding: 12px;
     }
 }
+
+
+/* ============================================================
+   CAPS LOCK TOGGLE BUTTON
+   ============================================================ */
+
+.caps-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid var(--border-mid);
+    border-radius: 8px;
+    color: var(--text-soft);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    min-width: 80px;
+    gap: 6px;
+}
+
+.caps-toggle-btn:hover {
+    background: rgba(30, 41, 59, 1);
+    border-color: var(--accent-2);
+    color: var(--text-main);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.caps-toggle-btn:active {
+    transform: translateY(0);
+}
+
+.caps-toggle-btn.active {
+    background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+    border-color: #38ef7d;
+    color: #000;
+    font-weight: 700;
+    box-shadow: 0 0 20px rgba(56, 239, 125, 0.5);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.caps-toggle-btn.active:hover {
+    background: linear-gradient(135deg, #4fffb0 0%, #1ac9b8 100%);
+    transform: translateY(-2px);
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(56, 239, 125, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(56, 239, 125, 0.8); }
+}
+
+/* Неоновый caret */
+input, textarea, [contenteditable] {
+    caret-color: #38ef7d;
+}
+
+.answer-input, .solution-input, .math-input {
+    caret-color: #11998e;
+}
+
+.input-with-caps {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.input-with-caps input, .input-with-caps textarea {
+    flex: 1;
+    min-width: 200px;
+}
+
+@media (max-width: 768px) {
+    .caps-toggle-btn { padding: 10px 14px; font-size: 13px; min-width: 70px; }
+}
+
+@media (max-width: 480px) {
+    .input-with-caps { flex-direction: column; }
+    .input-with-caps input, .input-with-caps textarea { width: 100%; }
+    .caps-toggle-btn { width: 100%; }
+}
+
