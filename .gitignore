@@ -29,6 +29,8 @@ instance/
 
 # Environment
 .env
+.env.*
+!.env.example
 .venv
 
 # IDEs
@@ -48,6 +50,7 @@ static/uploads/*
 
 # Logs
 *.log
+logs/
 
 # Temporary files and reports
 bad_tasks_report.json
@@ -62,4 +65,15 @@ data/
 *.bak
 checkpoint.json
 
+# Render temp
 .render_token_TEMP.txt
+
+# Database files (never commit these!)
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets (never commit these!)
+*secret*
+*.key
+secrets_local*

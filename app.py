@@ -236,6 +236,10 @@ def add_security_headers(response):
             response.headers['Expires'] = '0'
     except Exception:
         pass  # current_user может быть недоступен вне request context
+    # Базовые security headers для всех ответов
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
+    response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
     return response
 
 
