@@ -4152,103 +4152,16 @@ def search_users():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route("/api/social/friends/request", methods=["POST"])
-@login_required
-def send_friend_request():
-    """Отправить заявку в друзья"""
-    try:
-        data = request.get_json()
-        to_user_id = data.get('user_id')
-        
-        if not to_user_id:
-            return jsonify({'success': False, 'error': 'User ID required'}), 400
-        
-        # Проверка существования пользователя
-        to_user = User.query.get(to_user_id)
-        if not to_user:
-            return jsonify({'success': False, 'error': 'User not found'}), 404
-        
-        # Создаем заявку (с проверкой на себя и дубликаты)
-        friendship = Friendship.create_friendship_request(current_user.id, to_user_id)
-        db.session.add(friendship)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'friendship_id': friendship.id,
-            'status': friendship.status
-        })
-    
-    except ValueError as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 400
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@app.route("/api/social/friends/respond", methods=["POST"])
-@login_required
-def respond_friend_request():
-    """Принять или отклонить заявку в друзья"""
-    try:
-        data = request.get_json()
-        friendship_id = data.get('friendship_id')
-        action = data.get('action')  # 'accept' or 'reject'
-        
-        if not friendship_id or action not in ['accept', 'reject']:
-            return jsonify({'success': False, 'error': 'Invalid parameters'}), 400
-        
-        friendship = Friendship.query.get(friendship_id)
-        if not friendship:
-            return jsonify({'success': False, 'error': 'Friendship not found'}), 404
-        
-        # Проверка прав (только получатель может принять/отклонить)
-        if friendship.user_1_id != current_user.id and friendship.user_2_id != current_user.id:
-            return jsonify({'success': False, 'error': 'Not authorized'}), 403
-        
-        if action == 'accept':
-            friendship.accept()
-        else:
-            friendship.reject()
-        
-        db.session.commit()
-        
-        return jsonify({'success': True, 'status': friendship.status})
-    
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
 @app.route("/api/social/friends/list")
 @login_required
 def list_friends():
-    """Получить список друзей"""
+    """Получить список друзей (legacy API)"""
     try:
-        # Получаем все дружбы где пользователь участвует
-        friendships = Friendship.query.filter(
-            db.or_(
-                Friendship.user_1_id == current_user.id,
-                Friendship.user_2_id == current_user.id
-            ),
-            Friendship.status == 'accepted'
-        ).all()
-        
-        friends = []
-        for f in friendships:
-            other_user_id = f.get_other_user_id(current_user.id)
-            other_user = User.query.get(other_user_id)
-            if other_user:
-                friends.append({
-                    'id': other_user.id,
-                    'nickname': other_user.nickname,
-                    'name': other_user.name,
-                    'avatar_url': other_user.avatar_url
-                })
-        
-        return jsonify({'success': True, 'friends': friends})
-    
+        friends = current_user.get_friends()
+        return jsonify({'success': True, 'friends': [
+            {'id': u.id, 'nickname': u.nickname, 'name': u.name, 'avatar_url': u.avatar_url}
+            for u in friends
+        ]})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -4982,6 +4895,157 @@ def daily_quest_status():
         'streak': streak_stats['current_streak'],
         'freeze_available': streak_stats['freeze_available']
     })
+
+
+# ============================================================================
+# FRIENDSHIP SYSTEM ROUTES
+# ============================================================================
+
+def _make_notif(uid, ntype, sender_id):
+    """Create a notification."""
+    from models import Notification
+    n = Notification(user_id=uid, type=ntype, from_user_id=sender_id)
+    db.session.add(n)
+    try:
+        db.session.commit()
+    except Exception as e:
+        app.logger.error(f"Notif error: {e}")
+        db.session.rollback()
+
+
+@app.route('/friends/request/<int:uid>', methods=['POST'])
+@login_required
+def send_friend_request(uid):
+    """Send a friend request."""
+    from models import Friendship
+    if uid == current_user.id:
+        return jsonify({'error': 'Нельзя добавить себя'}), 400
+    person = User.query.get_or_404(uid)
+    st = current_user.friendship_status_with(uid)
+    if st == 'friends':
+        return jsonify({'error': 'Уже друзья'}), 409
+    if st == 'pending_sent':
+        return jsonify({'error': 'Запрос уже отправлен'}), 409
+    if st == 'blocked':
+        return jsonify({'error': 'Недоступно'}), 403
+    if st == 'pending_received':
+        existing = Friendship.query.filter_by(
+            requester_id=uid, addressee_id=current_user.id, status='pending'
+        ).first()
+        if existing:
+            existing.accept()
+            db.session.commit()
+            current_user.experience_points = (current_user.experience_points or 0) + 10
+            person.experience_points = (person.experience_points or 0) + 10
+            db.session.commit()
+            _make_notif(person.id, 'friend_accepted', current_user.id)
+            return jsonify({'status': 'friends', 'message': 'Теперь вы друзья! +10 XP'})
+    f = Friendship(requester_id=current_user.id, addressee_id=uid, status='pending')
+    db.session.add(f)
+    db.session.commit()
+    _make_notif(person.id, 'friend_request', current_user.id)
+    nm = person.name or person.email
+    return jsonify({'status': 'pending_sent', 'message': f'Запрос отправлен {nm}'})
+
+
+@app.route('/friends/accept/<int:rid>', methods=['POST'])
+@login_required
+def accept_friend_request(rid):
+    """Accept a friend request."""
+    from models import Friendship
+    f = Friendship.query.get_or_404(rid)
+    if f.addressee_id != current_user.id:
+        abort(403)
+    if f.status != 'pending':
+        return jsonify({'error': 'Запрос уже обработан'}), 409
+    f.accept()
+    db.session.commit()
+    sender = User.query.get(f.requester_id)
+    current_user.experience_points = (current_user.experience_points or 0) + 10
+    if sender:
+        sender.experience_points = (sender.experience_points or 0) + 10
+    db.session.commit()
+    _make_notif(f.requester_id, 'friend_accepted', current_user.id)
+    nm = sender.name or sender.email if sender else 'Пользователь'
+    return jsonify({'status': 'friends', 'message': f'{nm} теперь ваш друг! +10 XP'})
+
+
+@app.route('/friends/decline/<int:rid>', methods=['POST'])
+@login_required
+def decline_friend_request(rid):
+    """Decline a friend request."""
+    from models import Friendship
+    f = Friendship.query.get_or_404(rid)
+    if f.addressee_id != current_user.id:
+        abort(403)
+    f.decline()
+    db.session.commit()
+    return jsonify({'status': 'declined'})
+
+
+@app.route('/friends/cancel/<int:rid>', methods=['POST'])
+@login_required
+def cancel_friend_request(rid):
+    """Cancel own pending friend request."""
+    from models import Friendship
+    f = Friendship.query.get_or_404(rid)
+    if f.requester_id != current_user.id:
+        abort(403)
+    db.session.delete(f)
+    db.session.commit()
+    return jsonify({'status': 'cancelled'})
+
+
+@app.route('/friends/remove/<int:uid>', methods=['POST'])
+@login_required
+def remove_friend(uid):
+    """Remove a friend."""
+    from models import Friendship
+    f = Friendship.query.filter(
+        db.or_(
+            db.and_(Friendship.requester_id == current_user.id,
+                    Friendship.addressee_id == uid),
+            db.and_(Friendship.requester_id == uid,
+                    Friendship.addressee_id == current_user.id),
+        ),
+        Friendship.status == 'accepted'
+    ).first_or_404()
+    db.session.delete(f)
+    db.session.commit()
+    return jsonify({'status': 'removed'})
+
+
+@app.route('/friends')
+@login_required
+def friends_page():
+    """Friends list page."""
+    return render_template('friends.html',
+        friends=current_user.get_friends(),
+        incoming=current_user.incoming_friend_requests(),
+        outgoing=current_user.outgoing_friend_requests()
+    )
+
+
+@app.route('/notifications')
+@login_required
+def notifications_page():
+    """Notifications page."""
+    from models import Notification
+    notifs = Notification.query.filter_by(
+        user_id=current_user.id
+    ).order_by(Notification.created_at.desc()).limit(50).all()
+    # Mark all as read
+    Notification.query.filter_by(user_id=current_user.id, read=False).update({'read': True})
+    db.session.commit()
+    return render_template('notifications.html', notifications=notifs)
+
+
+@app.route('/api/notifications/count')
+@login_required
+def notifications_count():
+    """API: unread notifications count."""
+    count = current_user.unread_notifications_count()
+    return jsonify({'count': count})
 
 
 if __name__ == '__main__':
