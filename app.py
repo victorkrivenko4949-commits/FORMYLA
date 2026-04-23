@@ -3435,47 +3435,71 @@ def check_adaptive_answer():
                 
                 # Парсим JSON-ответ
                 try:
-                    # Очищаем ответ от markdown маркеров
                     import re
-                    cleaned_response = ai_response.strip()
-                    
-                    print(f"[DEBUG] Raw AI response (first 300 chars): {ai_response[:300]}")
-                    
-                    # Агрессивная очистка от markdown
-                    cleaned_response = re.sub(r'```json\s*', '', cleaned_response)
-                    cleaned_response = re.sub(r'```\s*', '', cleaned_response)
-                    cleaned_response = cleaned_response.strip()
-                    
-                    print(f"[DEBUG] Cleaned response (first 300 chars): {cleaned_response[:300]}")
-                    
-                    # Извлекаем JSON из ответа
-                    # Ищем самый внешний JSON объект с полями score и feedback
-                    json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*"score"[^{}]*"feedback"[^{}]*\}', cleaned_response, re.DOTALL)
-                    if json_match:
-                        json_str = json_match.group()
-                        print(f"[DEBUG] Extracted JSON: {json_str[:200]}")
-                        ai_data = json.loads(json_str)
-                        score = int(ai_data.get('score', 1))
-                        feedback = ai_data.get('feedback', 'Ответ проверен.')
-                    else:
-                        # Fallback: пробуем распарсить всю строку
-                        print(f"[DEBUG] No JSON match found, trying to parse entire response")
-                        ai_data = json.loads(cleaned_response)
-                        score = int(ai_data.get('score', 1))
-                        feedback = ai_data.get('feedback', 'Ответ проверен.')
-                    
+
+                    def _safe_json_parse(raw: str):
+                        """
+                        Парсит JSON с LaTeX внутри строк.
+                        DeepSeek возвращает \\( \\[ \\frac и т.д. - они невалидны в JSON.
+                        Стратегия: найти JSON-объект, экранировать одиночные \\ внутри строк.
+                        """
+                        # 1. Убираем markdown-обёртки
+                        s = re.sub(r'```json\s*', '', raw.strip())
+                        s = re.sub(r'```\s*', '', s).strip()
+
+                        # 2. Пробуем распарсить как есть
+                        try:
+                            return json.loads(s)
+                        except json.JSONDecodeError:
+                            pass
+
+                        # 3. Экранируем одиночные \ которые не являются валидными JSON-escape
+                        # Валидные: \\ \" \/ \b \f \n \r \t \uXXXX
+                        # Невалидные (LaTeX): \( \) \[ \] \f \c \t (если не \t) и т.д.
+                        # Заменяем одиночный \ на \\ только внутри JSON-строк
+                        def fix_backslashes(m):
+                            content = m.group(0)
+                            # Заменяем \ которые не являются частью валидного escape
+                            fixed = re.sub(
+                                r'\\(?!["\\/bfnrtu])',
+                                r'\\\\',
+                                content
+                            )
+                            return fixed
+
+                        # Находим все JSON-строки (между кавычками) и фиксим в них слеши
+                        s_fixed = re.sub(r'"(?:[^"\\]|\\.)*"', fix_backslashes, s, flags=re.DOTALL)
+
+                        try:
+                            return json.loads(s_fixed)
+                        except json.JSONDecodeError:
+                            pass
+
+                        # 4. Последний шанс: вытащить score и feedback регулярками
+                        score_m = re.search(r'"score"\s*:\s*(-?\d+)', s)
+                        feedback_m = re.search(r'"feedback"\s*:\s*"(.*?)"(?=\s*[,}])', s, re.DOTALL)
+                        if score_m:
+                            fb = feedback_m.group(1) if feedback_m else 'Ответ проверен.'
+                            # Убираем экранирование для отображения
+                            fb = fb.replace('\\n', '\n').replace('\\"', '"')
+                            return {'score': int(score_m.group(1)), 'feedback': fb}
+
+                        raise json.JSONDecodeError("Cannot parse AI response", s, 0)
+
+                    ai_data = _safe_json_parse(ai_response)
+                    score = max(-1, min(2, int(ai_data.get('score', 1))))
+                    feedback = str(ai_data.get('feedback', 'Ответ проверен.'))
                     print(f"[DEBUG] Parsed score: {score}, feedback length: {len(feedback)}")
-                    
-                    # КРИТИЧНО: НЕ заменяем слеши - они нужны для LaTeX!
-                    # Просто убеждаемся, что feedback - это строка
-                    feedback = str(feedback)
                         
                 except (json.JSONDecodeError, ValueError) as e:
                     print(f"[ERROR] Failed to parse AI response as JSON: {e}")
-                    print(f"[DEBUG] Full AI response: {ai_response}")
-                    # При ошибке парсинга используем нейтральный feedback
-                    feedback = "Ваш ответ принят. AI-проверка временно недоступна."
-                    score = 1  # Нейтральная оценка
+                    # Fallback: показываем правильный ответ из БД
+                    feedback = (
+                        f"AI-разбор временно недоступен.\n\n"
+                        f"Правильный ответ: **{correct_answer}**\n\n"
+                        f"Решение:\n{current_task.solution[:600] if current_task.solution else 'см. учебник'}"
+                    )
+                    score = 0  # Нейтральная оценка — не меняем уровень
                     
             except Exception as e:
                 print("="*70)
@@ -3558,6 +3582,7 @@ def check_adaptive_answer():
             'score': score,
             'feedback': feedback,
             'new_level': new_level,
+            'current_level': current_difficulty,
             'is_last_task': is_last_task,
             'current_index': current_index + 1
         })

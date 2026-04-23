@@ -442,38 +442,65 @@ function showResult(result) {
     
     // Формируем вердикт
     let verdictHTML = '';
+    const prevLevel = result.new_level - (result.score === 2 ? 1 : 0);
+    const levelChanged = result.new_level !== result.current_level;
+
     if (result.score === 2) {
         verdictHTML = `
             <div class="verdict-success">
-                ✅ Верно! +2 уровня
-                <div class="level-badge">Новый уровень: ${result.new_level}/7</div>
+                ✅ Верно! +1 уровень
+                <div class="level-badge">Уровень: ${result.new_level}/7</div>
             </div>
         `;
     } else if (result.score === 1) {
+        // Partial: уровень может не измениться (streak < 2) или повыситься (streak >= 2)
+        const levelText = result.new_level > (result.current_level || result.new_level)
+            ? `+1 уровень (2 частичных подряд!)`
+            : `уровень не изменился`;
         verdictHTML = `
             <div class="verdict-partial">
-                ⚠️ Частично верно. +1 уровень
-                <div class="level-badge">Новый уровень: ${result.new_level}/7</div>
+                ⚠️ Частично верно — ${levelText}
+                <div class="level-badge">Уровень: ${result.new_level}/7</div>
+            </div>
+        `;
+    } else if (result.score === 0) {
+        verdictHTML = `
+            <div class="verdict-partial">
+                ℹ️ Ответ принят — уровень не изменился
+                <div class="level-badge">Уровень: ${result.new_level}/7</div>
             </div>
         `;
     } else {
         verdictHTML = `
             <div class="verdict-error">
-                ❌ Неверно. -1 уровень
-                <div class="level-badge">Новый уровень: ${result.new_level}/7</div>
+                ❌ Неверно — -1 уровень
+                <div class="level-badge">Уровень: ${result.new_level}/7</div>
             </div>
         `;
     }
-    
+
     verdict.innerHTML = verdictHTML;
-    
-    // Обрабатываем feedback: заменяем все варианты переносов строк на <br>
+
+    // Обрабатываем feedback: заменяем переносы строк на <br>, рендерим KaTeX
     let formattedFeedback = result.feedback;
-    // Заменяем экранированные \n (из JSON)
     formattedFeedback = formattedFeedback.replace(/\\n/g, '<br>');
-    // Заменяем обычные переносы строк
     formattedFeedback = formattedFeedback.replace(/\n/g, '<br>');
+    // Жирный текст **...**
+    formattedFeedback = formattedFeedback.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     feedbackText.innerHTML = formattedFeedback;
+
+    // Рендерим KaTeX в блоке feedback после вставки HTML
+    if (window.renderMathInElement) {
+        renderMathInElement(feedbackText, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+            ],
+            throwOnError: false
+        });
+    }
     
     // Показать кнопку завершения, если это последняя задача
     if (result.is_last_task) {
