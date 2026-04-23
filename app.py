@@ -3080,6 +3080,14 @@ def adaptive_test_start_simple():
         topic_keywords['algebra'] = ['математик', 'числ', 'выражен', 'уравнен', 'задач',
                                       'вычислен', 'арифметик', 'олимпиад']
     
+    # Маппинг тем для 6 класса (задачи хранятся с полными русскими названиями)
+    if grade_int == 6:
+        from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+        grade6_kw = get_keywords_for_grade_topic(6, topic)
+        if grade6_kw:
+            topic_keywords[topic] = grade6_kw
+            print(f"[ADAPTIVE FIX] 6 класс + {topic} → ключевые слова: {grade6_kw}")
+    
     # Получаем ключевые слова для выбранной темы
     keywords = topic_keywords.get(topic, [])
     
