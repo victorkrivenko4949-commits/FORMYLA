@@ -224,6 +224,21 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+@app.after_request
+def add_security_headers(response):
+    """Запрет кэширования страниц для авторизованных пользователей.
+    Предотвращает показ чужого профиля при нажатии F5 / кнопки Назад.
+    """
+    try:
+        if current_user.is_authenticated:
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+    except Exception:
+        pass  # current_user может быть недоступен вне request context
+    return response
+
+
 # ============================================================
 # Автоопределение формата olympiads.py и группировка
 # ============================================================
