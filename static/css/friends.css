@@ -165,123 +165,137 @@
 .btn-cancel:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
 
 /* ══════════════════════════════════════════
-   КАРТОЧКИ ДРУЗЕЙ — кликабельные
+   КАРТОЧКИ ДРУЗЕЙ — кликабельные (горизонтальный layout)
 ══════════════════════════════════════════ */
 .friends-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* Вся карточка — ссылка */
 .friend-card {
   position: relative;
   background: rgba(20, 30, 45, 0.7);
-  border: 1px solid rgba(56, 239, 125, 0.12);
+  border: 1px solid rgba(56, 239, 125, 0.15);
   border-radius: 16px;
-  padding: 20px 16px 16px;
+  padding: 16px 20px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  text-decoration: none;
+  gap: 16px;
   cursor: pointer;
   transition: all 0.25s ease;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  list-style: none;
 }
 
 .friend-card:hover {
-  border-color: rgba(56, 239, 125, 0.35);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 32px rgba(56, 239, 125, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(56, 239, 125, 0.25);
+  border-color: rgba(56, 239, 125, 0.5);
 }
 
-.friend-card .fc-avatar {
-  width: 64px;
-  height: 64px;
+.friend-card:hover .fc-name {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Аватар-ссылка */
+.fc-avatar-link {
+  flex-shrink: 0;
+  display: block;
+  text-decoration: none;
+}
+
+.fc-avatar {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(56, 239, 125, 0.3);
+  display: block;
 }
 
-.friend-card .fc-avatar-ph {
-  width: 64px;
-  height: 64px;
+.fc-avatar-ph {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: linear-gradient(135deg, #11998e, #38ef7d);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   color: #0a0f19;
   border: 2px solid rgba(56, 239, 125, 0.3);
 }
 
-.friend-card .fc-name {
-  font-size: 14px;
+/* Тело карточки */
+.fc-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fc-name-link {
+  text-decoration: none;
+}
+
+.fc-name {
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
-  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%;
-}
-
-.friend-card .fc-nick {
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  margin: -4px 0 0;
-}
-
-.friend-card .fc-stats {
-  font-size: 12px;
-  color: rgba(255,255,255,0.5);
-  text-align: center;
-}
-
-.friend-card .fc-level {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 12px;
-  color: #a5b4fc;
-  font-weight: 600;
-}
-
-/* Кнопки действий внутри карточки — НЕ открывают профиль */
-.friend-card .fc-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 4px;
-  width: 100%;
-}
-
-.friend-card .fc-btn {
-  flex: 1;
-  min-height: 34px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: none;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.friend-card .fc-btn-remove {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  color: #fca5a5;
+.fc-nick {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin: 2px 0 4px;
 }
 
-.friend-card .fc-btn-remove:hover {
-  background: rgba(239, 68, 68, 0.22);
+.fc-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  flex-wrap: wrap;
+}
+
+/* Кнопки действий — НЕ открывают профиль (stopPropagation) */
+.fc-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.fc-btn {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(20, 30, 45, 0.9);
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-btn-remove {
+  color: rgba(255,255,255,0.5);
+}
+
+.fc-btn-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
 }
 
 /* ── Поиск ── */
@@ -420,8 +434,13 @@
    MOBILE
 ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .friends-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .friend-card {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .fc-stats {
+    gap: 6px;
   }
 
   .requests-grid {
@@ -443,8 +462,24 @@
   }
 }
 
-@media (max-width: 400px) {
-  .friends-grid {
-    grid-template-columns: 1fr;
+/* Touch-устройства: убираем hover, добавляем active tap-feedback */
+@media (hover: none) {
+  .friend-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(56, 239, 125, 0.15);
+  }
+
+  .friend-card:hover .fc-name {
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: #fff;
+    background-clip: unset;
+  }
+
+  .friend-card:active {
+    transform: scale(0.98);
+    opacity: 0.88;
+    transition: transform 0.1s ease, opacity 0.1s ease;
   }
 }

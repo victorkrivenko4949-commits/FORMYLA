@@ -76,19 +76,33 @@
     {% if friends %}
     <div class="friends-grid" id="friends-grid">
       {% for f in friends %}
-      <a href="{{ url_for('public_profile', user_id=f.id) }}" class="friend-card" id="fc-{{ f.id }}">
-        {% if f.avatar_url %}
-          <img src="{{ f.avatar_url }}" alt="avatar" class="fc-avatar">
-        {% else %}
-          <div class="fc-avatar-ph">{{ (f.name or f.email)[0].upper() }}</div>
-        {% endif %}
-        <div class="fc-name">{{ f.name or f.email }}</div>
-        {% if f.nickname %}<div class="fc-nick">@{{ f.nickname }}</div>{% endif %}
-        <div class="fc-level">⭐ {{ f.current_level }} ур. · {{ f.experience_points }} XP</div>
-        <div class="fc-actions">
-          <button class="fc-btn fc-btn-remove" data-uid="{{ f.id }}" onclick="removeFriend(event, this)">✕ Удалить</button>
+      <article class="friend-card" id="fc-{{ f.id }}"
+               onclick="window.location.href='{{ url_for('public_profile', user_id=f.id) }}'">
+        <a href="{{ url_for('public_profile', user_id=f.id) }}"
+           class="fc-avatar-link" onclick="event.stopPropagation()">
+          {% if f.avatar_url %}
+            <img src="{{ f.avatar_url }}" alt="avatar" class="fc-avatar">
+          {% else %}
+            <div class="fc-avatar-ph">{{ (f.name or f.email)[0].upper() }}</div>
+          {% endif %}
+        </a>
+        <div class="fc-body">
+          <a href="{{ url_for('public_profile', user_id=f.id) }}"
+             class="fc-name-link" onclick="event.stopPropagation()">
+            <div class="fc-name">{{ f.name or f.email }}</div>
+          </a>
+          {% if f.nickname %}<div class="fc-nick">@{{ f.nickname }}</div>{% endif %}
+          <div class="fc-stats">
+            <span>🔥 {{ f.streak.current_streak if f.streak else 0 }}</span>
+            <span>⭐ Ур. {{ f.current_level }}</span>
+            <span>💎 {{ f.experience_points }} XP</span>
+          </div>
         </div>
-      </a>
+        <div class="fc-actions" onclick="event.stopPropagation()">
+          <button class="fc-btn fc-btn-remove" data-uid="{{ f.id }}"
+                  onclick="removeFriend(event, this)" title="Удалить из друзей">✕</button>
+        </div>
+      </article>
       {% endfor %}
     </div>
     {% else %}
