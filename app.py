@@ -155,6 +155,32 @@ except Exception as e:
     print(f"[AUTO-MIGRATION] Warning: {e}")
     # Continue anyway - app should still work
 
+# AUTO-MIGRATION: Add difficulty calibration columns to adaptive_tasks
+try:
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        if 'adaptive_tasks' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('adaptive_tasks')]
+            new_cols = {
+                'subtopic': 'VARCHAR(100)',
+                'attempts_count': 'INTEGER DEFAULT 0',
+                'solves_count': 'INTEGER DEFAULT 0',
+                'actual_solve_rate': 'REAL',
+                'suggested_level': 'INTEGER',
+                'needs_reclassification': 'BOOLEAN DEFAULT 0',
+                'last_calibrated_at': 'DATETIME',
+            }
+            for col_name, col_type in new_cols.items():
+                if col_name not in columns:
+                    db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {col_name} {col_type}"))
+                    db.session.commit()
+                    print(f"[AUTO-MIGRATION] ✓ Column '{col_name}' added to adaptive_tasks")
+                else:
+                    print(f"[AUTO-MIGRATION] ✓ Column '{col_name}' already exists")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] adaptive_tasks Warning: {e}")
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
