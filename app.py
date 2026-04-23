@@ -3482,6 +3482,11 @@ def check_adaptive_answer():
                             fb = feedback_m.group(1) if feedback_m else 'Ответ проверен.'
                             # Убираем экранирование для отображения
                             fb = fb.replace('\\n', '\n').replace('\\"', '"')
+                            # Восстанавливаем LaTeX команды которые Python интерпретировал как escape
+                            # \t → tab, \f → form feed, \s → \s (не escape, но на всякий случай)
+                            import re as _re
+                            # Заменяем одинарные слеши перед LaTeX командами на двойные
+                            fb = _re.sub(r'(?<!\\)\\(text|frac|sqrt|cdot|sum|prod|int|lim|left|right|binom|gcd|overline|underline|vec|hat|bar|tilde|dot|ddot|pmod|bmod|geq|leq|neq|approx|equiv|times|div|pm|infty|alpha|beta|gamma|delta|theta|lambda|mu|pi|sigma|phi|omega)', r'\\\\\1', fb)
                             return {'score': int(score_m.group(1)), 'feedback': fb}
 
                         raise json.JSONDecodeError("Cannot parse AI response", s, 0)
