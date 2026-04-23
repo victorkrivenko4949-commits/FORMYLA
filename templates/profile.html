@@ -94,8 +94,15 @@
                         </div>
                     </div>
                     {% if not yandex_account %}
-                    <div id="yandex-link-loading" style="color: var(--text-muted); font-size: 13px;">Загрузка...</div>
-                    <div id="yandex-link-container" style="display: none;"></div>
+                    <a href="{{ url_for('yandex_login_start') }}"
+                       style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+                              background:linear-gradient(135deg,#fc0,#f90);color:#000;
+                              font-weight:600;font-size:13px;border-radius:10px;
+                              text-decoration:none;transition:opacity 0.2s;"
+                       onmouseover="this.style.opacity='0.85'"
+                       onmouseout="this.style.opacity='1'">
+                      🔗 Привязать Яндекс ID
+                    </a>
                     {% else %}
                     <span style="color: #86efac; font-weight: 600;">✓ Подключено</span>
                     {% endif %}
@@ -586,7 +593,7 @@ function loadMasteryData() {
 document.addEventListener('DOMContentLoaded', function() {
     loadStreakData();
     loadMasteryData();
-    initYandexLinkWidget();
+    // initYandexLinkWidget() — заменено на простую ссылку /yandex_login
 });
 
 // Yandex ID linking widget (same flow as login)
