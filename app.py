@@ -3534,16 +3534,10 @@ def check_adaptive_answer():
             print(f"[ADAPTIVE] Score=2: Повышаем уровень {current_difficulty} → {new_level}")
             
         elif score == 1:
-            # Частично верно - увеличиваем стрик
-            partial_streak += 1
-            
-            if partial_streak >= 2:
-                # Два частичных ответа подряд - повышаем уровень
-                new_level = min(7, current_difficulty + 1)
-                partial_streak = 0  # Сбрасываем стрик после повышения
-            else:
-                # Остаемся на текущем уровне для закрепления
-                new_level = current_difficulty
+            # Частично верно - уровень НЕ меняется (фикс: было +1 при стрике >= 2)
+            new_level = current_difficulty
+            partial_streak = 0  # Сбрасываем стрик
+            print(f"[ADAPTIVE] Score=1: Уровень без изменений {current_difficulty}")
                 
         else:  # score <= 0
             # Неверно - снижаем уровень
