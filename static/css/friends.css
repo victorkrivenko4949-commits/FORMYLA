@@ -1,0 +1,450 @@
+/* ═══════════════════════════════════════════════════════
+   FRIENDS PAGE — styles
+   Цвета: #0a0f19 фон, #11998e→#38ef7d акцент
+═══════════════════════════════════════════════════════ */
+
+.friends-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+/* ── Hero ── */
+.friends-hero {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.friends-hero h1 {
+  font-size: 32px;
+  font-weight: 900;
+  background: linear-gradient(90deg, #38ef7d, #11998e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px;
+}
+
+.friends-hero p {
+  color: rgba(255,255,255,0.5);
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ── Секции ── */
+.friends-section {
+  margin-bottom: 28px;
+}
+
+.friends-section h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count-badge {
+  background: rgba(56, 239, 125, 0.15);
+  border: 1px solid rgba(56, 239, 125, 0.3);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 13px;
+  color: #38ef7d;
+  font-weight: 600;
+}
+
+/* ── Сетка запросов ── */
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.request-card {
+  background: rgba(20, 30, 45, 0.7);
+  border: 1px solid rgba(56, 239, 125, 0.12);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.req-avatar .avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(56, 239, 125, 0.3);
+}
+
+.avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0a0f19;
+}
+
+.req-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.req-info h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.req-nick {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin: 0 0 2px;
+}
+
+.req-stats {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+}
+
+.req-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-accept, .btn-decline, .btn-cancel {
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-accept {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  color: #0a0f19;
+}
+
+.btn-accept:hover { box-shadow: 0 4px 16px rgba(56,239,125,0.35); transform: translateY(-1px); }
+
+.btn-decline {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.btn-decline:hover { background: rgba(239, 68, 68, 0.25); transform: translateY(-1px); }
+
+.btn-cancel {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.5);
+}
+
+.btn-cancel:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+
+/* ══════════════════════════════════════════
+   КАРТОЧКИ ДРУЗЕЙ — кликабельные
+══════════════════════════════════════════ */
+.friends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+/* Вся карточка — ссылка */
+.friend-card {
+  position: relative;
+  background: rgba(20, 30, 45, 0.7);
+  border: 1px solid rgba(56, 239, 125, 0.12);
+  border-radius: 16px;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.friend-card:hover {
+  border-color: rgba(56, 239, 125, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(56, 239, 125, 0.12);
+}
+
+.friend-card .fc-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(56, 239, 125, 0.3);
+}
+
+.friend-card .fc-avatar-ph {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0a0f19;
+  border: 2px solid rgba(56, 239, 125, 0.3);
+}
+
+.friend-card .fc-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.friend-card .fc-nick {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin: -4px 0 0;
+}
+
+.friend-card .fc-stats {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+}
+
+.friend-card .fc-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+/* Кнопки действий внутри карточки — НЕ открывают профиль */
+.friend-card .fc-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.friend-card .fc-btn {
+  flex: 1;
+  min-height: 34px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.friend-card .fc-btn-remove {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.friend-card .fc-btn-remove:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+/* ── Поиск ── */
+.friends-search-wrap {
+  margin-bottom: 24px;
+}
+
+.friends-search-wrap input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(20, 30, 45, 0.7);
+  border: 1px solid rgba(56, 239, 125, 0.2);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.friends-search-wrap input:focus {
+  border-color: rgba(56, 239, 125, 0.5);
+}
+
+.friends-search-wrap input::placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+.search-results {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(20, 30, 45, 0.7);
+  border: 1px solid rgba(56, 239, 125, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.search-result-item .sr-avatar-ph {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.search-result-item .sr-info {
+  flex: 1;
+}
+
+.search-result-item .sr-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.search-result-item .sr-nick {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+
+.search-result-item .sr-btn {
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  color: #0a0f19;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.search-result-item .sr-btn:hover {
+  box-shadow: 0 4px 16px rgba(56,239,125,0.35);
+  transform: translateY(-1px);
+}
+
+/* ── Toast ── */
+.friends-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 9999;
+  pointer-events: none;
+  animation: ftIn 0.3s ease;
+}
+
+.friends-toast-ok  { background: rgba(34,197,94,0.9);  color:#fff; border:1px solid rgba(56,239,125,0.5); }
+.friends-toast-err { background: rgba(239,68,68,0.9);  color:#fff; border:1px solid rgba(239,68,68,0.5); }
+
+@keyframes ftIn {
+  from { opacity:0; transform:translateX(-50%) translateY(10px); }
+  to   { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+
+/* ── Пустое состояние ── */
+.friends-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: rgba(255,255,255,0.35);
+}
+
+.friends-empty .fe-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.friends-empty p {
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════
+   MOBILE
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .friends-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .requests-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .request-card {
+    flex-wrap: wrap;
+  }
+
+  .req-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .btn-accept, .btn-decline, .btn-cancel {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .friends-grid {
+    grid-template-columns: 1fr;
+  }
+}

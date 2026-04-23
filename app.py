@@ -5048,6 +5048,97 @@ def notifications_count():
     return jsonify({'count': count})
 
 
+@app.route('/user/<int:user_id>')
+@login_required
+def public_profile(user_id):
+    """Публичный профиль пользователя."""
+    # Если смотришь на себя — редирект на /profile
+    if user_id == current_user.id:
+        return redirect(url_for('profile'))
+
+    target = User.query.get_or_404(user_id)
+
+    # Статус дружбы
+    friendship_status = current_user.friendship_status_with(user_id)
+
+    # Pending request id (нужен для кнопки "Отменить")
+    pending_request_id = None
+    if friendship_status == 'pending_sent':
+        from models import Friendship
+        fr = Friendship.query.filter_by(
+            requester_id=current_user.id,
+            addressee_id=user_id,
+            status='pending'
+        ).first()
+        if fr:
+            pending_request_id = fr.id
+    elif friendship_status == 'pending_received':
+        from models import Friendship
+        fr = Friendship.query.filter_by(
+            requester_id=user_id,
+            addressee_id=current_user.id,
+            status='pending'
+        ).first()
+        if fr:
+            pending_request_id = fr.id
+
+    # Друзья цели
+    target_friends = target.get_friends()
+
+    # Общие друзья
+    my_friend_ids = set(f.id for f in current_user.get_friends())
+    mutual_friends = [f for f in target_friends if f.id in my_friend_ids]
+
+    # Mastery по темам
+    from models import TopicMastery
+    TOPIC_META = {
+        'algebra':       {'name_ru': 'Алгебра',        'icon': '➗'},
+        'geometry':      {'name_ru': 'Геометрия',      'icon': '📐'},
+        'combinatorics': {'name_ru': 'Комбинаторика',  'icon': '🧩'},
+        'logic':         {'name_ru': 'Логика',         'icon': '🧠'},
+        'number_theory': {'name_ru': 'Теория чисел',   'icon': '🔢'},
+        'arithmetic':    {'name_ru': 'Арифметика',     'icon': '🧮'},
+        'kl_movement':   {'name_ru': 'Движение',       'icon': '🚂'},
+    }
+
+    mastery_records = TopicMastery.query.filter_by(user_id=user_id).all()
+    mastery_data = []
+    for rec in mastery_records:
+        meta = TOPIC_META.get(rec.topic, {'name_ru': rec.topic, 'icon': '📚'})
+        mastery_data.append({
+            'topic': rec.topic,
+            'name_ru': meta['name_ru'],
+            'icon': meta['icon'],
+            'mastery': rec.mastery,
+            'solved': rec.solved,
+            'attempts': rec.attempts,
+            'avg_level': rec.avg_level,
+        })
+    mastery_data.sort(key=lambda x: x['mastery'], reverse=True)
+
+    # Последние тесты
+    recent_tests = AdaptiveTestResult.query.filter_by(
+        user_id=user_id
+    ).order_by(AdaptiveTestResult.completed_at.desc()).limit(5).all()
+
+    # Streak
+    from models import UserStreak
+    streak = UserStreak.query.filter_by(user_id=user_id).first()
+
+    return render_template(
+        'public_profile.html',
+        target=target,
+        friendship_status=friendship_status,
+        pending_request_id=pending_request_id,
+        mutual_friends=mutual_friends,
+        target_friends=target_friends,
+        mastery_data=mastery_data,
+        recent_tests=recent_tests,
+        streak=streak,
+        topic_meta=TOPIC_META,
+    )
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
 

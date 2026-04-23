@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}{{ target.name or 'Пользователь' }} — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/public_profile.css') }}?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+<div class="pp-page">
+
+  <!-- ══ HERO ══ -->
+  <div class="pp-hero">
+    <div class="pp-hero-inner">
+
+      <div class="pp-avatar-wrap">
+        {% if target.avatar_url %}
+          <img src="{{ target.avatar_url }}" alt="avatar" class="pp-avatar">
+        {% else %}
+          <div class="pp-avatar-placeholder">{{ (target.name or target.email)[0].upper() }}</div>
+        {% endif %}
+        <div class="pp-level-badge">{{ target.current_level }}</div>
+      </div>
+
+      <div class="pp-hero-info">
+        <h1 class="pp-name">{{ target.name or 'Пользователь' }}</h1>
+        {% if target.nickname %}<p class="pp-nick">@{{ target.nickname }}</p>{% endif %}
+        <p class="pp-joined">На FORMYLA с {{ target.created_at.strftime('%B %Y') if target.created_at else '—' }}</p>
+        {% if streak and streak.current_streak > 0 %}
+        <div class="pp-streak">
+          🔥 <strong>{{ streak.current_streak }}</strong> дней подряд
+          {% if streak.longest_streak > streak.current_streak %} · рекорд {{ streak.longest_streak }}{% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="pp-actions" id="pp-actions">
+        {% if friendship_status == 'none' %}
+          <button class="pp-btn pp-btn-primary" data-uid="{{ target.id }}" onclick="ppAddFriend(this)">➕ Добавить в друзья</button>
+        {% elif friendship_status == 'pending_sent' %}
+          <button class="pp-btn pp-btn-secondary" data-rid="{{ pending_request_id }}" onclick="ppCancelRequest(this)">⏳ Запрос отправлен · Отменить</button>
+        {% elif friendship_status == 'pending_received' %}
+          <button class="pp-btn pp-btn-primary" data-rid="{{ pending_request_id }}" onclick="ppAcceptRequest(this)">✅ Принять запрос</button>
+          <button class="pp-btn pp-btn-danger" data-rid="{{ pending_request_id }}" onclick="ppDeclineRequest(this)">❌ Отклонить</button>
+        {% elif friendship_status == 'friends' %}
+          <span class="pp-friends-badge">👥 Вы друзья</span>
+          <button class="pp-btn pp-btn-ghost" data-uid="{{ target.id }}" onclick="ppRemoveFriend(this)">Удалить из друзей</button>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ СТАТИСТИКА ══ -->
+  <div class="pp-stats-grid">
+    <div class="pp-stat-card">
+      <div class="pp-stat-value">{{ target.experience_points or 0 }}</div>
+      <div class="pp-stat-label">XP</div>
+    </div>
+    <div class="pp-stat-card">
+      <div class="pp-stat-value">{{ target.total_problems_solved or 0 }}</div>
+      <div class="pp-stat-label">Задач решено</div>
+    </div>
+    <div class="pp-stat-card">
+      <div class="pp-stat-value">{{ target.mock_exams_passed or 0 }}</div>
+      <div class="pp-stat-label">Пробников</div>
+    </div>
+    <div class="pp-stat-card">
+      <div class="pp-stat-value">{{ target.friends_count() }}</div>
+      <div class="pp-stat-label">Друзей</div>
+    </div>
+  </div>
+
+  <div class="pp-body">
+
+    <!-- ══ MASTERY ══ -->
+    {% if mastery_data %}
+    <section class="pp-section">
+      <h2 class="pp-section-title">📊 Мастерство по темам</h2>
+      <div class="pp-mastery-list">
+        {% for m in mastery_data %}
+        <div class="pp-mastery-row">
+          <div class="pp-mastery-label">
+            <span class="pp-mastery-icon">{{ m.icon }}</span>
+            <span class="pp-mastery-name">{{ m.name_ru }}</span>
+          </div>
+          <div class="pp-mastery-bar-wrap">
+            <div class="pp-mastery-bar" style="width:{{ (m.mastery * 100)|round|int }}%"></div>
+          </div>
+          <div class="pp-mastery-pct">{{ (m.mastery * 100)|round|int }}%</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- ══ ПОСЛЕДНИЕ ТЕСТЫ ══ -->
+    {% if recent_tests %}
+    <section class="pp-section">
+      <h2 class="pp-section-title">🧪 Последние тесты</h2>
+      <div class="pp-tests-list">
+        {% for t in recent_tests %}
+        <div class="pp-test-row">
+          <div class="pp-test-info">
+            <span class="pp-test-topic">{{ t.topic or '—' }}</span>
+            <span class="pp-test-grade">{{ t.class_level }} класс</span>
+          </div>
+          <div class="pp-test-result">
+            <span class="pp-test-score">{{ t.tasks_correct }}/{{ t.tasks_total }}</span>
+            <span class="pp-test-level">Уровень {{ t.final_level }}</span>
+          </div>
+          <div class="pp-test-date">
+            {{ t.completed_at.strftime('%d.%m') if t.completed_at else '—' }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- ══ ОБЩИЕ ДРУЗЬЯ ══ -->
+    {% if mutual_friends %}
+    <section class="pp-section">
+      <h2 class="pp-section-title">🤝 Общие друзья <span class="pp-count-badge">{{ mutual_friends|length }}</span></h2>
+      <div class="pp-mutual-grid">
+        {% for f in mutual_friends %}
+        <a href="{{ url_for('public_profile', user_id=f.id) }}" class="pp-mutual-card">
+          {% if f.avatar_url %}
+            <img src="{{ f.avatar_url }}" alt="avatar" class="pp-mutual-avatar">
+          {% else %}
+            <div class="pp-mutual-avatar-ph">{{ (f.name or f.email)[0].upper() }}</div>
+          {% endif %}
+          <span class="pp-mutual-name">{{ f.name or f.email }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- ══ ВСЕ ДРУЗЬЯ ══ -->
+    {% if target_friends %}
+    <section class="pp-section">
+      <h2 class="pp-section-title">👥 Друзья <span class="pp-count-badge">{{ target_friends|length }}</span></h2>
+      <div class="pp-mutual-grid">
+        {% for f in target_friends %}
+        <a href="{{ url_for('public_profile', user_id=f.id) }}" class="pp-mutual-card">
+          {% if f.avatar_url %}
+            <img src="{{ f.avatar_url }}" alt="avatar" class="pp-mutual-avatar">
+          {% else %}
+            <div class="pp-mutual-avatar-ph">{{ (f.name or f.email)[0].upper() }}</div>
+          {% endif %}
+          <span class="pp-mutual-name">{{ f.name or f.email }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+  </div><!-- /pp-body -->
+</div><!-- /pp-page -->
+
+<!-- Toast уведомление -->
+<div id="pp-toast" class="pp-toast" style="display:none"></div>
+
+<script>
+function ppShowToast(msg, ok) {
+  var t = document.getElementById('pp-toast');
+  t.textContent = msg;
+  t.className = 'pp-toast ' + (ok ? 'pp-toast-ok' : 'pp-toast-err');
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 3000);
+}
+
+function ppFetch(url, cb) {
+  fetch(url, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){ return r.json(); })
+    .then(cb)
+    .catch(function(){ ppShowToast('Ошибка сети', false); });
+}
+
+function ppAddFriend(btn) {
+  var uid = btn.dataset.uid;
+  ppFetch('/friends/request/' + uid, function(d) {
+    if (d.status === 'friends' || d.status === 'pending_sent') {
+      ppShowToast(d.message || 'Запрос отправлен', true);
+      var wrap = document.getElementById('pp-actions');
+      wrap.innerHTML = '<span class="pp-friends-badge">⏳ Запрос отправлен</span>';
+    } else {
+      ppShowToast(d.error || 'Ошибка', false);
+    }
+  });
+}
+
+function ppCancelRequest(btn) {
+  var rid = btn.dataset.rid;
+  ppFetch('/friends/cancel/' + rid, function(d) {
+    ppShowToast('Запрос отменён', true);
+    var wrap = document.getElementById('pp-actions');
+    wrap.innerHTML = '<button class="pp-btn pp-btn-primary" data-uid="{{ target.id }}" onclick="ppAddFriend(this)">➕ Добавить в друзья</button>';
+  });
+}
+
+function ppAcceptRequest(btn) {
+  var rid = btn.dataset.rid;
+  ppFetch('/friends/accept/' + rid, function(d) {
+    ppShowToast(d.message || 'Теперь вы друзья!', true);
+    var wrap = document.getElementById('pp-actions');
+    wrap.innerHTML = '<span class="pp-friends-badge">👥 Вы друзья</span><button class="pp-btn pp-btn-ghost" data-uid="{{ target.id }}" onclick="ppRemoveFriend(this)">Удалить из друзей</button>';
+  });
+}
+
+function ppDeclineRequest(btn) {
+  var rid = btn.dataset.rid;
+  ppFetch('/friends/decline/' + rid, function(d) {
+    ppShowToast('Запрос отклонён', true);
+    var wrap = document.getElementById('pp-actions');
+    wrap.innerHTML = '';
+  });
+}
+
+function ppRemoveFriend(btn) {
+  if (!confirm('Удалить из друзей?')) return;
+  var uid = btn.dataset.uid;
+  ppFetch('/friends/remove/' + uid, function(d) {
+    ppShowToast('Удалён из друзей', true);
+    var wrap = document.getElementById('pp-actions');
+    wrap.innerHTML = '<button class="pp-btn pp-btn-primary" data-uid="' + uid + '" onclick="ppAddFriend(this)">➕ Добавить в друзья</button>';
+  });
+}
+</script>
+{% endblock %}
