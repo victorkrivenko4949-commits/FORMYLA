@@ -120,6 +120,62 @@ class User(UserMixin, db.Model):
         score += self.highest_difficulty_solved * 20
         return score
     
+    def get_friends(self):
+        """Все принятые друзья (с двух сторон)."""
+        sent = Friendship.query.filter_by(requester_id=self.id, status='accepted').all()
+        received = Friendship.query.filter_by(addressee_id=self.id, status='accepted').all()
+        friend_ids = [f.addressee_id for f in sent] + [f.requester_id for f in received]
+        return User.query.filter(User.id.in_(friend_ids)).all() if friend_ids else []
+
+    def is_friend_with(self, other_id):
+        return Friendship.query.filter(
+            db.or_(
+                db.and_(Friendship.requester_id == self.id,
+                        Friendship.addressee_id == other_id,
+                        Friendship.status == 'accepted'),
+                db.and_(Friendship.requester_id == other_id,
+                        Friendship.addressee_id == self.id,
+                        Friendship.status == 'accepted'),
+            )
+        ).first() is not None
+
+    def friendship_status_with(self, other_id):
+        """Returns: none | pending_sent | pending_received | friends | declined | blocked"""
+        f = Friendship.query.filter(
+            db.or_(
+                db.and_(Friendship.requester_id == self.id, Friendship.addressee_id == other_id),
+                db.and_(Friendship.requester_id == other_id, Friendship.addressee_id == self.id),
+            )
+        ).first()
+        if not f:
+            return 'none'
+        if f.status == 'accepted':
+            return 'friends'
+        if f.status in ('declined', 'blocked'):
+            return f.status
+        return 'pending_sent' if f.requester_id == self.id else 'pending_received'
+
+    def incoming_friend_requests(self):
+        return Friendship.query.filter_by(
+            addressee_id=self.id, status='pending'
+        ).order_by(Friendship.created_at.desc()).all()
+
+    def outgoing_friend_requests(self):
+        return Friendship.query.filter_by(
+            requester_id=self.id, status='pending'
+        ).order_by(Friendship.created_at.desc()).all()
+
+    def friends_count(self):
+        return Friendship.query.filter(
+            db.or_(
+                db.and_(Friendship.requester_id == self.id, Friendship.status == 'accepted'),
+                db.and_(Friendship.addressee_id == self.id, Friendship.status == 'accepted'),
+            )
+        ).count()
+
+    def unread_notifications_count(self):
+        return Notification.query.filter_by(user_id=self.id, read=False).count()
+
     def today_quest(self):
         """Получить Daily Quest на сегодня (для navbar)"""
         from datetime import date
@@ -325,70 +381,63 @@ class AdaptiveTestProblem(db.Model):
 
 
 class Friendship(db.Model):
-    """Модель дружбы между пользователями"""
+    """Двусторонняя дружба с подтверждением (как ВКонтакте)"""
     __tablename__ = 'friendships'
     
     id = db.Column(db.Integer, primary_key=True)
-    user_1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    user_2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    status = db.Column(db.String(20), default='pending', nullable=False)  # pending, accepted, rejected
+    requester_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    addressee_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    # Статусы: pending | accepted | declined | blocked
+    status = db.Column(db.String(20), nullable=False, default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    accepted_at = db.Column(db.DateTime, nullable=True)
     
-    # Уникальность: нельзя дважды отправить заявку одной и той же паре
-    # Используем CHECK constraint чтобы user_1_id всегда был меньше user_2_id
+    requester = db.relationship('User', foreign_keys=[requester_id],
+                                backref='sent_friend_requests')
+    addressee = db.relationship('User', foreign_keys=[addressee_id],
+                                backref='received_friend_requests')
+    
     __table_args__ = (
-        db.UniqueConstraint('user_1_id', 'user_2_id', name='_friendship_unique'),
-        db.CheckConstraint('user_1_id < user_2_id', name='_user_order_check'),
+        db.UniqueConstraint('requester_id', 'addressee_id', name='_friendship_unique'),
     )
     
-    # Связи
-    user_1 = db.relationship('User', foreign_keys=[user_1_id], backref=db.backref('friendships_as_user1', lazy='dynamic'))
-    user_2 = db.relationship('User', foreign_keys=[user_2_id], backref=db.backref('friendships_as_user2', lazy='dynamic'))
-    
-    @staticmethod
-    def normalize_user_ids(user_id_a, user_id_b):
-        """Нормализация ID: меньший всегда первый"""
-        return (min(user_id_a, user_id_b), max(user_id_a, user_id_b))
-    
-    @staticmethod
-    def get_friendship(user_id_a, user_id_b):
-        """Получить дружбу между двумя пользователями"""
-        user_1_id, user_2_id = Friendship.normalize_user_ids(user_id_a, user_id_b)
-        return Friendship.query.filter_by(user_1_id=user_1_id, user_2_id=user_2_id).first()
-    
-    @staticmethod
-    def create_friendship_request(from_user_id, to_user_id):
-        """Создать заявку в друзья"""
-        if from_user_id == to_user_id:
-            raise ValueError("Cannot add yourself as a friend")
-        
-        user_1_id, user_2_id = Friendship.normalize_user_ids(from_user_id, to_user_id)
-        
-        # Проверяем существующую дружбу
-        existing = Friendship.query.filter_by(user_1_id=user_1_id, user_2_id=user_2_id).first()
-        if existing:
-            raise ValueError(f"Friendship already exists with status: {existing.status}")
-        
-        friendship = Friendship(user_1_id=user_1_id, user_2_id=user_2_id, status='pending')
-        return friendship
-    
     def accept(self):
-        """Принять заявку в друзья"""
         self.status = 'accepted'
-        self.updated_at = datetime.utcnow()
+        self.accepted_at = datetime.utcnow()
     
-    def reject(self):
-        """Отклонить заявку в друзья"""
-        self.status = 'rejected'
-        self.updated_at = datetime.utcnow()
-    
-    def get_other_user_id(self, current_user_id):
-        """Получить ID другого пользователя в дружбе"""
-        return self.user_2_id if self.user_1_id == current_user_id else self.user_1_id
+    def decline(self):
+        self.status = 'declined'
     
     def __repr__(self):
-        return f'<Friendship {self.user_1_id}<->{self.user_2_id} ({self.status})>'
+        return f'<Friendship {self.requester_id}->{self.addressee_id} ({self.status})>'
+
+
+class Notification(db.Model):
+    """Уведомления пользователей"""
+    __tablename__ = 'notifications'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+                        nullable=False, index=True)
+    type = db.Column(db.String(50), nullable=False)  # friend_request | friend_accepted | ...
+    from_user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+                             nullable=True)
+    data = db.Column(db.Text, nullable=True)  # JSON extra data
+    read = db.Column(db.Boolean, default=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    user = db.relationship('User', foreign_keys=[user_id],
+                           backref=db.backref('notifications', lazy='dynamic'))
+    from_user = db.relationship('User', foreign_keys=[from_user_id])
+    
+    def __repr__(self):
+        return f'<Notification {self.type} for user {self.user_id}>'
 
 
 class Mentorship(db.Model):
