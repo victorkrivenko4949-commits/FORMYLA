@@ -97,22 +97,30 @@
         </div>
 
     {% else %}
-        {# AI-generated solution (current state for all 3990 problems) #}
+        {# AI-generated solution — show behind a button, offer official archive if available #}
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
             <span style="background:#1a1a2e; color:#7986cb; border:1px solid #3949ab; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
                 🤖 Разбор от AI-тьютора
             </span>
             <span style="color:#666; font-size:12px;">не авторское решение</span>
-            {% if combo.source_url %}
-            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
-               style="color:#7986cb; font-size:12px; text-decoration:underline; margin-left:4px;">
-                официальный архив ↗
-            </a>
-            {% endif %}
         </div>
+
+        {% if combo.source_url %}
+        {# Has official archive — show button that opens modal #}
+        <button onclick="showSolutionModal('{{ combo.source_url | e }}', '{{ (combo.source_name or 'Официальный архив') | e }}', 'ai-solution-{{ loop.index }}')"
+                style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:linear-gradient(135deg,#3949ab,#7986cb); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity 0.2s; margin-bottom:12px;"
+                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            📖 Показать разбор
+        </button>
+        <div id="ai-solution-{{ loop.index }}" style="display:none; color:#ccc; font-size:15px; line-height:1.7; white-space:pre-wrap; background:#1a1a2e; padding:20px; border-radius:10px; border-left:3px solid #3949ab;">
+            {{ p.solution | default('Решение не найдено') | safe }}
+        </div>
+        {% else %}
+        {# No official archive — show AI solution directly #}
         <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1a1a2e; padding: 20px; border-radius: 10px; border-left: 3px solid #3949ab;">
             {{ p.solution | default('Решение не найдено') | safe }}
         </div>
+        {% endif %}
     {% endif %}
 
     {# Manual review flag #}
@@ -129,4 +137,54 @@
         Выбрать другой пробник
     </a>
 </div>
+
+<!-- Modal overlay for official archive -->
+<div id="solution-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#1a1a2e; border:1px solid #3949ab; border-radius:16px; padding:32px; max-width:520px; width:90%; box-shadow:0 10px 40px rgba(57,73,171,0.4); position:relative;">
+        <h3 style="color:#7986cb; font-size:1.3em; margin:0 0 16px 0;">📚 Официальное решение доступно</h3>
+        <p style="color:#ccc; margin:0 0 12px 0; line-height:1.6;">
+            Для этой задачи есть авторское решение от жюри олимпиады. Рекомендуем смотреть его — оно точнее AI-разбора.
+        </p>
+        <p id="modal-source-name" style="color:#81c784; font-weight:600; margin:0 0 24px 0;"></p>
+        <div style="display:flex; flex-wrap:wrap; gap:12px;">
+            <a id="modal-archive-link" href="#" target="_blank" rel="noopener noreferrer"
+               style="display:inline-flex; align-items:center; gap:6px; padding:12px 20px; background:linear-gradient(135deg,#2d6a4f,#4caf50); color:#fff; border-radius:10px; font-weight:600; font-size:14px; text-decoration:none; transition:opacity 0.2s;"
+               onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                🔗 Открыть официальный архив →
+            </a>
+            <button id="modal-show-ai-btn" onclick=""
+                    style="padding:12px 20px; background:rgba(57,73,171,0.3); color:#7986cb; border:1px solid #3949ab; border-radius:10px; font-size:14px; cursor:pointer; transition:opacity 0.2s;"
+                    onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                🤖 Всё равно показать AI-разбор
+            </button>
+            <button onclick="closeSolutionModal()"
+                    style="padding:12px 20px; background:rgba(255,255,255,0.05); color:#888; border:1px solid #333; border-radius:10px; font-size:14px; cursor:pointer;">
+                Закрыть
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSolutionModal(archiveUrl, sourceName, solutionDivId) {
+    document.getElementById('modal-source-name').textContent = sourceName;
+    document.getElementById('modal-archive-link').href = archiveUrl;
+    document.getElementById('modal-show-ai-btn').onclick = function() {
+        closeSolutionModal();
+        var div = document.getElementById(solutionDivId);
+        if (div) div.style.display = 'block';
+    };
+    var overlay = document.getElementById('solution-modal-overlay');
+    overlay.style.display = 'flex';
+}
+
+function closeSolutionModal() {
+    document.getElementById('solution-modal-overlay').style.display = 'none';
+}
+
+// Close on overlay click
+document.getElementById('solution-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeSolutionModal();
+});
+</script>
 {% endblock %}
