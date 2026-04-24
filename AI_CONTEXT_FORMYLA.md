@@ -99,9 +99,9 @@ MAIL_USERNAME=kr1venkovictor@yandex.ru
 MAIL_PASSWORD=ktxfblhgcrlryncy
 
 # Yandex OAuth
-YANDEX_CLIENT_ID=f4cd6d13f99b474181aa80975472800c
-YANDEX_CLIENT_SECRET=292a5d9da4734d669c0ea9f1b00c9462
-DOMAIN_URL=http://localhost:5000
+YANDEX_CLIENT_ID=<set_in_render_dashboard>
+YANDEX_CLIENT_SECRET=<set_in_render_dashboard>
+DOMAIN_URL=https://formyla-com.onrender.com
 
 # Flask
 SECRET_KEY=(автогенерация)
