@@ -7,18 +7,34 @@
 <p class="page-subtitle">
     {{ combo.year }} год, {{ combo.grade }} класс — {{ combo.round_title | default('') }}
 </p>
-<p style="color: #888; margin-bottom: 30px;">Ответы и подробные решения</p>
+<p style="color: #888; margin-bottom: 20px;">Ответы и подробные решения</p>
+
+{# ── Source badge at combo level ── #}
+{% if combo.source_url and combo.source_name %}
+<div style="display:flex; align-items:center; gap:10px; background:#1a2a1a; border:1px solid #2d5a2d; border-radius:10px; padding:14px 20px; margin-bottom:28px;">
+    <span style="font-size:20px;">📚</span>
+    <div>
+        <span style="color:#4caf50; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.5px;">Официальный архив</span>
+        <div style="margin-top:4px;">
+            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
+               style="color:#81c784; font-size:14px; text-decoration:underline; word-break:break-all;">
+                {{ combo.source_name }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% for p in combo.problems %}
 <div style="background: #25252b; padding: 25px 30px; margin-bottom: 25px; border-radius: 12px;">
     <span style="background: #005bb5; color: #fff; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;">
         Задача {{ p.num }}
     </span>
-    
+
     <div style="color: #e0e0e0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; margin: 20px 0; padding-bottom: 20px; border-bottom: 1px solid #333;">
         {{ p.text | safe }}
     </div>
-    
+
     {% if p.get("image") %}
     <div style="text-align:center; margin:16px 0;">
         <img src="{{ p.image }}" alt="Рисунок к задаче"
@@ -32,20 +48,79 @@
              alt="Чертёж к задаче">
     </div>
     {% endif %}
-    
+
     {% if p.answer %}
     <div style="margin-bottom: 20px;">
         <span style="color: #00cc66; font-weight: 600; font-size: 15px;">Ответ:</span>
         <span style="color: #e0e0e0; margin-left: 10px; font-size: 15px;">{{ p.answer | safe }}</span>
     </div>
     {% endif %}
-    
-    <div style="color: #ffaa00; font-weight: 600; margin-bottom: 12px; font-size: 15px;">
-        Подробное решение:
+
+    {# ── Solution block: official vs AI ── #}
+    {% if p.get("solution_verified") and p.get("official_solution") %}
+        {# Official verified solution #}
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="background:#1b4332; color:#4caf50; border:1px solid #2d6a4f; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+                ✅ Авторское решение
+            </span>
+            {% if p.get("source_url") %}
+            <a href="{{ p.source_url }}" target="_blank" rel="noopener noreferrer"
+               style="color:#81c784; font-size:12px; text-decoration:underline;">
+                источник ↗
+            </a>
+            {% elif combo.source_url %}
+            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
+               style="color:#81c784; font-size:12px; text-decoration:underline;">
+                {{ combo.source_name | truncate(60) }} ↗
+            </a>
+            {% endif %}
+        </div>
+        <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1a2a1a; padding: 20px; border-radius: 10px; border-left: 3px solid #4caf50;">
+            {{ p.official_solution | safe }}
+        </div>
+
+    {% elif p.get("official_solution") %}
+        {# Found but low confidence — show with caution badge #}
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="background:#2a2a1a; color:#ffcc02; border:1px solid #665500; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+                ⚠️ Решение (требует проверки)
+            </span>
+            {% if combo.source_url %}
+            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
+               style="color:#ffd54f; font-size:12px; text-decoration:underline;">
+                архив ↗
+            </a>
+            {% endif %}
+        </div>
+        <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1e1e10; padding: 20px; border-radius: 10px; border-left: 3px solid #ffcc02;">
+            {{ p.official_solution | safe }}
+        </div>
+
+    {% else %}
+        {# AI-generated solution (current state for all 3990 problems) #}
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="background:#1a1a2e; color:#7986cb; border:1px solid #3949ab; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+                🤖 Разбор от AI-тьютора
+            </span>
+            <span style="color:#666; font-size:12px;">не авторское решение</span>
+            {% if combo.source_url %}
+            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
+               style="color:#7986cb; font-size:12px; text-decoration:underline; margin-left:4px;">
+                официальный архив ↗
+            </a>
+            {% endif %}
+        </div>
+        <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1a1a2e; padding: 20px; border-radius: 10px; border-left: 3px solid #3949ab;">
+            {{ p.solution | default('Решение не найдено') | safe }}
+        </div>
+    {% endif %}
+
+    {# Manual review flag #}
+    {% if p.get("needs_manual_review") %}
+    <div style="margin-top:10px; color:#888; font-size:12px; font-style:italic;">
+        ⚑ Отмечено для ручной проверки
     </div>
-    <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1a1a2e; padding: 20px; border-radius: 10px;">
-        {{ p.solution | default('Решение не найдено') | safe }}
-    </div>
+    {% endif %}
 </div>
 {% endfor %}
 
