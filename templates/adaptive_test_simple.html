@@ -453,13 +453,10 @@ function showResult(result) {
             </div>
         `;
     } else if (result.score === 1) {
-        // Partial: уровень может не измениться (streak < 2) или повыситься (streak >= 2)
-        const levelText = result.new_level > (result.current_level || result.new_level)
-            ? `+1 уровень (2 частичных подряд!)`
-            : `уровень не изменился`;
+        // Partial: уровень НЕ меняется (фикс: убрана логика стрика)
         verdictHTML = `
             <div class="verdict-partial">
-                ⚠️ Частично верно — ${levelText}
+                ⚠️ Частично верно — уровень без изменений
                 <div class="level-badge">Уровень: ${result.new_level}/7</div>
             </div>
         `;

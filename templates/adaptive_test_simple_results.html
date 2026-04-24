@@ -104,11 +104,13 @@
                         background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;
                     {% endif %}">
                     {% if answer.score == 2 %}
-                        ✅ +2 уровня
+                        ✅ Верно! +1 уровень
                     {% elif answer.score == 1 %}
-                        ⚠️ +1 уровень
+                        ⚠️ Частично — уровень без изменений
+                    {% elif answer.score == 0 %}
+                        ℹ️ Принято — уровень без изменений
                     {% else %}
-                        ❌ -1 уровень
+                        ❌ Неверно — -1 уровень
                     {% endif %}
                 </div>
             </div>

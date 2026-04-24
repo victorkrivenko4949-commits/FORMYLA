@@ -3107,6 +3107,14 @@ def adaptive_test_start_simple():
             topic_keywords[topic] = grade6_kw
             print(f"[ADAPTIVE FIX] 6 класс + {topic} → ключевые слова: {grade6_kw}")
     
+    # Маппинг тем для 7 класса
+    if grade_int == 7:
+        from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+        grade7_kw = get_keywords_for_grade_topic(7, topic)
+        if grade7_kw:
+            topic_keywords[topic] = grade7_kw
+            print(f"[ADAPTIVE FIX] 7 класс + {topic} → ключевые слова: {grade7_kw}")
+    
     # Получаем ключевые слова для выбранной темы
     keywords = topic_keywords.get(topic, [])
     
@@ -3394,7 +3402,7 @@ def check_adaptive_answer():
    
    ⚠️ ПОВТОРЯЮ: ПРАВИЛЬНЫЙ ОТВЕТ = ОБЯЗАТЕЛЬНО score: 2. ЭТО НЕ ОБСУЖДАЕТСЯ!
    
-   score = 1 (ЧАСТИЧНО ВЕРНО, +1 уровень):
+   score = 1 (ЧАСТИЧНО ВЕРНО, уровень без изменений):
    - Итоговый ответ СОВПАДАЕТ, НО в решении есть ЯВНАЯ вычислительная ошибка (например, 2+2=5)
    - Итоговый ответ СОВПАДАЕТ, НО ответ не сокращен до конца (например, 2/4 вместо 1/2) И это было требованием
    - Итоговый ответ НЕ совпадает, НО в решении есть правильная идея/метод и ход мыслей верный
@@ -3538,8 +3546,13 @@ def check_adaptive_answer():
                 print(f"[DEBUG] User answer: {user_answer}")
                 print(f"[DEBUG] Correct answer: {correct_answer}")
                 print("="*70)
-                feedback = "AI-проверка временно недоступна. Ваш ответ принят."
-                score = 1  # Нейтральная оценка при ошибке API
+                # Fallback: показываем правильный ответ из БД вместо пустого сообщения
+                feedback = (
+                    f"AI-проверка временно недоступна.\n\n"
+                    f"**Правильный ответ:** {correct_answer}\n\n"
+                    + (f"**Решение:**\n{current_task.solution[:800]}" if current_task.solution else "")
+                )
+                score = 0  # Нейтральная оценка — уровень не меняется
         
         # Ограничиваем score в диапазоне [-1, 2]
         score = max(-1, min(2, score))
