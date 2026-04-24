@@ -3457,7 +3457,7 @@ def check_adaptive_answer():
                     prompt=user_prompt,
                     system_prompt=system_prompt,
                     temperature=0.3,
-                    max_tokens=1500  # Увеличено для детального разбора с LaTeX (timeout=90 уже в классе)
+                    max_tokens=4096  # Достаточно для детального разбора с LaTeX (timeout=90 уже в классе)
                 )
                 
                 # Парсим JSON-ответ
@@ -4873,7 +4873,7 @@ def daily_quest_submit(task_index):
 
 Дай краткий комментарий (2-3 предложения) на русском языке."""
             
-            ai_feedback = client.generate(prompt, max_tokens=200)
+            ai_feedback = client.generate(prompt, max_tokens=1000)
         except Exception as e:
             app.logger.error(f"AI feedback error: {e}")
             ai_feedback = "Отличная работа!" if is_correct else "Попробуй ещё раз!"
@@ -4921,7 +4921,7 @@ def daily_quest_complete():
 
 Напиши мотивирующий комментарий на русском (2-3 предложения)."""
             
-            ai_summary = client.generate(prompt, max_tokens=200)
+            ai_summary = client.generate(prompt, max_tokens=1000)
         except Exception as e:
             app.logger.error(f"AI summary error: {e}")
             ai_summary = "Отличная работа! Продолжай в том же духе! 🔥"
