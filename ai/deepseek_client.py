@@ -503,54 +503,63 @@ class DeepSeekClient:
         print(f">>> Messages count: {len(messages)}, Vision: {use_vision_model}", flush=True)
         logger.info(f"Sending {len(messages)} messages to AI (vision={use_vision_model})")
         
-        try:
-            # Выбираем модель и API в зависимости от наличия изображения
-            if use_vision_model:
-                # Используем OpenRouter с GPT-4o-mini для изображений
-                api_url = "https://openrouter.ai/api/v1/chat/completions"
-                model = "openai/gpt-4o-mini"
-                api_key = os.environ.get('OPENROUTER_API_KEY', self.api_key)
-            else:
-                # Используем DeepSeek для текста
-                api_url = self.base_url
-                model = "deepseek-chat"
-                api_key = self.api_key
-            
-            # Отправляем всю историю в AI
+        def _call_api(api_url, model, api_key, msgs):
             payload = {
                 "model": model,
-                "messages": messages,
+                "messages": msgs,
                 "temperature": 0.7,
                 "max_tokens": 8192
             }
-            
             headers = {
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
             }
-            
-            response = requests.post(
-                api_url,
-                headers=headers,
-                json=payload,
-                timeout=self.timeout
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
+            resp = requests.post(api_url, headers=headers, json=payload, timeout=self.timeout)
+            if resp.status_code == 200:
+                data = resp.json()
                 if 'choices' in data and len(data['choices']) > 0:
-                    content = data['choices'][0]['message']['content']
-                    logger.info(f"Tutor response generated for user {user.id}")
-                    return content
-            
-            raise DeepSeekAPIError(f"API error: {response.status_code}")
-            
+                    return data['choices'][0]['message']['content']
+            raise DeepSeekAPIError(f"API error: {resp.status_code}")
+
+        try:
+            if use_vision_model:
+                # Пробуем OpenRouter с vision
+                openrouter_key = os.environ.get('OPENROUTER_API_KEY')
+                if openrouter_key:
+                    try:
+                        content = _call_api(
+                            "https://openrouter.ai/api/v1/chat/completions",
+                            "openai/gpt-4o-mini",
+                            openrouter_key,
+                            messages
+                        )
+                        logger.info(f"Tutor response generated for user {user.id} (vision)")
+                        return content
+                    except Exception as vision_err:
+                        logger.warning(f"Vision API failed ({vision_err}), falling back to text-only")
+                else:
+                    logger.warning("OPENROUTER_API_KEY not set, falling back to text-only DeepSeek")
+
+                # Fallback: убираем изображение, оставляем только текст
+                text_messages = []
+                for msg in messages:
+                    if isinstance(msg.get('content'), list):
+                        # Извлекаем только текстовую часть
+                        text_parts = [p['text'] for p in msg['content'] if p.get('type') == 'text']
+                        text_messages.append({"role": msg['role'], "content": ' '.join(text_parts)})
+                    else:
+                        text_messages.append(msg)
+                messages = text_messages
+                logger.info(f"Sending {len(messages)} messages to AI (vision=False, fallback)")
+
+            # Используем DeepSeek для текста
+            content = _call_api(self.base_url, "deepseek-chat", self.api_key, messages)
             logger.info(f"Tutor response generated for user {user.id}")
-            return response
-            
+            return content
+
         except Exception as e:
             logger.error(f"Error in tutor chat: {e}")
-            return "Извините, возникла ошибка. Попробуйте еще раз!"
+            return "Извините, возникла ошибка при обращении к AI. Попробуйте ещё раз!"
     
     def grade_exam(self, exam_tasks: list) -> Dict[str, Any]:
         """
