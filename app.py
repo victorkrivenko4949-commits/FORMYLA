@@ -3147,8 +3147,9 @@ def adaptive_test_start_simple():
         'powers': ['степен'],
         'complex': ['комплексн'],
         'optimization': ['оптимизац'],
-        'movement': ['движен'],  # Задачи на движение (если будут добавлены)
-        'knights_liars': ['рыцар', 'лжец']  # Рыцари и лжецы (если будут добавлены)
+        'movement':      ['движен', 'текстовые задачи', 'совместная работа'],
+        'kl_movement':   ['движен', 'текстовые задачи', 'совместная работа', 'логика', 'инвариант', 'рыцар', 'лжец'],
+        'knights_liars': ['рыцар', 'лжец', 'логика']
     }
     
     # ФИКС БАГА 1: Специальный маппинг для 5 класса
@@ -3159,21 +3160,12 @@ def adaptive_test_start_simple():
         topic_keywords['algebra'] = ['математик', 'числ', 'выражен', 'уравнен', 'задач',
                                       'вычислен', 'арифметик', 'олимпиад']
     
-    # Маппинг тем для 6 класса (задачи хранятся с полными русскими названиями)
-    if grade_int == 6:
-        from services.adaptive_topic_mapping import get_keywords_for_grade_topic
-        grade6_kw = get_keywords_for_grade_topic(6, topic)
-        if grade6_kw:
-            topic_keywords[topic] = grade6_kw
-            print(f"[ADAPTIVE FIX] 6 класс + {topic} → ключевые слова: {grade6_kw}")
-    
-    # Маппинг тем для 7 класса
-    if grade_int == 7:
-        from services.adaptive_topic_mapping import get_keywords_for_grade_topic
-        grade7_kw = get_keywords_for_grade_topic(7, topic)
-        if grade7_kw:
-            topic_keywords[topic] = grade7_kw
-            print(f"[ADAPTIVE FIX] 7 класс + {topic} → ключевые слова: {grade7_kw}")
+    # Маппинг тем для всех классов (задачи хранятся с полными русскими названиями)
+    from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+    grade_kw = get_keywords_for_grade_topic(grade_int, topic)
+    if grade_kw:
+        topic_keywords[topic] = grade_kw
+        print(f"[ADAPTIVE FIX] {grade_int} класс + {topic} → ключевые слова: {grade_kw}")
     
     # Получаем ключевые слова для выбранной темы
     keywords = topic_keywords.get(topic, [])
