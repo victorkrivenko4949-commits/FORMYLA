@@ -181,6 +181,55 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] adaptive_tasks Warning: {e}")
 
+# AUTO-MIGRATION: Create tutor_calls table for AI-тьютор v2 logging
+try:
+    with app.app_context():
+        db.session.execute(text("""
+            CREATE TABLE IF NOT EXISTS tutor_calls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER NOT NULL,
+                user_answer TEXT,
+                raw_response TEXT,
+                extracted_solution TEXT,
+                status TEXT,
+                validation_errors TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """))
+        db.session.commit()
+        print("[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] tutor_calls Warning: {e}")
+
+
+def _log_tutor_call(task_id: int, user_answer: str, result: dict):
+    """Логирует вызов AI-тьютора v2 в таблицу tutor_calls."""
+    try:
+        db.session.execute(
+            text("""
+                INSERT INTO tutor_calls
+                    (task_id, user_answer, raw_response,
+                     extracted_solution, status, validation_errors)
+                VALUES (:task_id, :user_answer, :raw_response,
+                        :extracted_solution, :status, :validation_errors)
+            """),
+            {
+                'task_id': task_id,
+                'user_answer': str(user_answer or ''),
+                'raw_response': result.get('raw_response', '')[:8000],
+                'extracted_solution': result.get('solution', '')[:4000],
+                'status': result.get('status', ''),
+                'validation_errors': ','.join(result.get('errors', [])),
+            }
+        )
+        db.session.commit()
+    except Exception as log_err:
+        import logging as _logging
+        _logging.getLogger(__name__).warning(
+            f"[tutor_calls] Failed to log: {log_err}"
+        )
+
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -3540,6 +3589,31 @@ def check_adaptive_answer():
                     score = max(-1, min(2, int(ai_data.get('score', 1))))
                     feedback = str(ai_data.get('feedback', 'Ответ проверен.'))
                     print(f"[DEBUG] Parsed score: {score}, feedback length: {len(feedback)}")
+
+                    # ── AI-тьютор v2: если ответ НЕВЕРНЫЙ — заменяем feedback ──
+                    # Паттерн think→distill: передаёт solution из БД, без галлюцинаций
+                    if score == -1:
+                        try:
+                            from services.ai_tutor_v2 import tutor_explain
+                            tutor_result = tutor_explain(
+                                task=current_task,
+                                user_answer=user_answer,
+                                ai_client=ai_client,
+                            )
+                            feedback = tutor_result['solution']
+                            _log_tutor_call(
+                                task_id=current_task.id,
+                                user_answer=user_answer,
+                                result=tutor_result,
+                            )
+                            print(f"[tutor_v2] status={tutor_result['status']}, "
+                                  f"errors={tutor_result['errors']}, "
+                                  f"feedback_len={len(feedback)}")
+                        except Exception as tutor_err:
+                            app.logger.warning(
+                                f"[tutor_v2] Failed, keeping old feedback: {tutor_err}"
+                            )
+                            # Оставляем старый feedback — не ломаем основной поток
                         
                 except (json.JSONDecodeError, ValueError) as e:
                     print(f"[ERROR] Failed to parse AI response as JSON: {e}")
