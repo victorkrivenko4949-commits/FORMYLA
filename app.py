@@ -4713,6 +4713,173 @@ def api_secrets():
 # ADMIN ROUTES (Protected)
 # ============================================================
 
+# ── AI-тьютор v2: дашборд и управление задачами ─────────────
+
+@app.route("/admin/tutor_stats")
+def admin_tutor_stats():
+    """Дашборд AI-тьютора v2: статистика вызовов, fallback, битые задачи."""
+    # Простая защита: только для пользователя с email Виктора
+    # (или любого залогиненного — расширить при необходимости)
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+
+    # CSV-экспорт
+    if request.args.get('export') == 'csv':
+        rows = db.session.execute(text("""
+            SELECT tc.id, tc.task_id, tc.user_answer, tc.status,
+                   tc.validation_errors, tc.created_at,
+                   at.topic, at.class_level, at.correct_answer
+            FROM tutor_calls tc
+            LEFT JOIN adaptive_tasks at ON at.id = tc.task_id
+            ORDER BY tc.created_at DESC
+            LIMIT 5000
+        """)).fetchall()
+        import csv, io
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(['id','task_id','user_answer','status','errors',
+                    'created_at','topic','class_level','correct_answer'])
+        for r in rows:
+            w.writerow(list(r))
+        from flask import Response
+        return Response(
+            buf.getvalue(),
+            mimetype='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=tutor_calls.csv'}
+        )
+
+    # ── Общая статистика за 7 дней ──
+    stats = db.session.execute(text("""
+        SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN status='ok'       THEN 1 ELSE 0 END) as ok,
+            SUM(CASE WHEN status='fallback' THEN 1 ELSE 0 END) as fallback,
+            SUM(CASE WHEN status='no_solution_tag' THEN 1 ELSE 0 END) as no_tag
+        FROM tutor_calls
+        WHERE created_at > datetime('now', '-7 days')
+    """)).fetchone()
+
+    total = stats.total or 0
+    ok_pct   = round(stats.ok   / total * 100) if total else 0
+    fall_pct = round(stats.fallback / total * 100) if total else 0
+
+    # ── Топ задач с fallback за 30 дней ──
+    top_problem_tasks = db.session.execute(text("""
+        SELECT
+            tc.task_id,
+            COUNT(*) as fails,
+            GROUP_CONCAT(DISTINCT tc.validation_errors) as errors,
+            at.topic,
+            at.class_level,
+            at.correct_answer,
+            at.is_flagged,
+            at.reports_count
+        FROM tutor_calls tc
+        LEFT JOIN adaptive_tasks at ON at.id = tc.task_id
+        WHERE tc.status = 'fallback'
+          AND tc.created_at > datetime('now', '-30 days')
+        GROUP BY tc.task_id
+        ORDER BY fails DESC
+        LIMIT 50
+    """)).fetchall()
+
+    problem_count = len(top_problem_tasks)
+
+    # ── Распределение ошибок ──
+    error_distribution = db.session.execute(text("""
+        SELECT
+            validation_errors,
+            COUNT(*) as cnt
+        FROM tutor_calls
+        WHERE validation_errors != ''
+          AND validation_errors IS NOT NULL
+        GROUP BY validation_errors
+        ORDER BY cnt DESC
+        LIMIT 20
+    """)).fetchall()
+
+    # ── Все помеченные задачи ──
+    flagged_tasks = AdaptiveTask.query.filter_by(is_flagged=True)\
+        .order_by(AdaptiveTask.reports_count.desc()).all()
+
+    return render_template(
+        'admin_tutor_stats.html',
+        stats=stats,
+        ok_pct=ok_pct,
+        fall_pct=fall_pct,
+        problem_count=problem_count,
+        top_problem_tasks=top_problem_tasks,
+        error_distribution=error_distribution,
+        flagged_tasks=flagged_tasks,
+    )
+
+
+@app.route("/admin/toggle_task_flag/<int:task_id>", methods=["POST"])
+def admin_toggle_task_flag(task_id):
+    """Поставить / снять флаг is_flagged на задаче."""
+    if not current_user.is_authenticated:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+    try:
+        data = request.get_json() or {}
+        flag = bool(data.get('flag', True))
+        task = AdaptiveTask.query.get_or_404(task_id)
+        task.is_flagged = flag
+        if flag:
+            task.flagged_reason = data.get(
+                'reason',
+                f'Помечена вручную через дашборд тьютора'
+            )
+        else:
+            task.flagged_reason = None
+        db.session.commit()
+        return jsonify({'status': 'ok', 'task_id': task_id, 'is_flagged': flag})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+# ── Пометить задачу 1650 как битую (запускается один раз при старте) ──
+try:
+    with app.app_context():
+        _task_1650 = AdaptiveTask.query.get(1650)
+        if _task_1650 and not _task_1650.is_flagged:
+            _task_1650.is_flagged = True
+            _task_1650.flagged_reason = (
+                'Условие/ответ противоречивы. Ответ в БД=18, '
+                'но математически правильный=0 (таких n не существует). '
+                'Требуется проверка источника задачи.'
+            )
+            db.session.commit()
+            print("[QUALITY CONTROL] Задача #1650 помечена как битая (is_flagged=True)")
+        elif _task_1650 and _task_1650.is_flagged:
+            print("[QUALITY CONTROL] Задача #1650 уже помечена")
+except Exception as _e:
+    print(f"[QUALITY CONTROL] Warning marking task 1650: {_e}")
+
+
+# ── Авто-скрипт: помечаем задачи с >= 3 fallback за 7 дней ──
+try:
+    with app.app_context():
+        _problem_tasks = db.session.execute(text("""
+            SELECT task_id, COUNT(*) as fails
+            FROM tutor_calls
+            WHERE status='fallback'
+              AND created_at > datetime('now', '-7 days')
+            GROUP BY task_id
+            HAVING fails >= 3
+        """)).fetchall()
+        for _row in _problem_tasks:
+            _t = AdaptiveTask.query.get(_row.task_id)
+            if _t and not _t.is_flagged:
+                _t.is_flagged = True
+                _t.flagged_reason = (
+                    f'auto: {_row.fails} fallback за 7 дней (tutor_v2)'
+                )
+                print(f"[QUALITY CONTROL] Авто-помечена задача #{_row.task_id} ({_row.fails} fallback)")
+        db.session.commit()
+except Exception as _e:
+    print(f"[QUALITY CONTROL] Auto-flag warning: {_e}")
+
+
 @app.route("/admin/seed-secrets", methods=["POST"])
 def admin_seed_secrets():
     """

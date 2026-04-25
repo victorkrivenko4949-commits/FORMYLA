@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд AI-тьютора — FORMYLA Admin</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; color: #f8fafc; }
+        .subtitle { color: #94a3b8; margin-bottom: 32px; font-size: 0.95rem; }
+        .subtitle a { color: #6366f1; text-decoration: none; }
+
+        /* ── Big numbers ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        .kpi-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .kpi-card .num {
+            font-size: 2.4rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .kpi-card .label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kpi-ok   .num { color: #22c55e; }
+        .kpi-fall .num { color: #f59e0b; }
+        .kpi-total .num { color: #6366f1; }
+        .kpi-prob .num { color: #ef4444; }
+
+        /* ── Section ── */
+        .section { margin-bottom: 40px; }
+        .section h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #334155;
+        }
+
+        /* ── Table ── */
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: #1e293b;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid #334155;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1e293b;
+            vertical-align: middle;
+        }
+        tr:hover td { background: #1e293b; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-red   { background: rgba(239,68,68,0.15); color: #f87171; }
+        .badge-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .badge-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .badge-blue  { background: rgba(99,102,241,0.15); color: #818cf8; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.8; }
+        .btn-flag   { background: rgba(239,68,68,0.15); color: #f87171; }
+        .btn-unflag { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .btn-csv    { background: #6366f1; color: white; padding: 8px 20px; font-size: 0.9rem; }
+
+        /* ── Progress bar ── */
+        .bar-wrap { background: #334155; border-radius: 4px; height: 8px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; }
+        .bar-ok   { background: #22c55e; }
+        .bar-fall { background: #f59e0b; }
+
+        /* ── Empty state ── */
+        .empty { text-align: center; padding: 40px; color: #475569; font-size: 0.95rem; }
+
+        /* ── Alert ── */
+        .alert {
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📊 Дашборд AI-тьютора v2</h1>
+<p class="subtitle">
+    Статистика вызовов тьютора · 
+    <a href="/">← На главную</a> · 
+    <a href="/admin/tutor_stats?export=csv" class="btn btn-csv" style="margin-left:8px;">⬇ CSV</a>
+</p>
+
+{% if not stats or stats.total == 0 %}
+<div class="alert">
+    ⚠️ Данных пока нет — тьютор ещё не вызывался за последние 7 дней.
+    Это нормально если деплой только что произошёл.
+</div>
+{% endif %}
+
+<!-- ── KPI ── -->
+<div class="kpi-grid">
+    <div class="kpi-card kpi-total">
+        <div class="num">{{ stats.total or 0 }}</div>
+        <div class="label">Вызовов за 7 дней</div>
+    </div>
+    <div class="kpi-card kpi-ok">
+        <div class="num">{{ ok_pct }}%</div>
+        <div class="label">OK rate</div>
+    </div>
+    <div class="kpi-card kpi-fall">
+        <div class="num">{{ fall_pct }}%</div>
+        <div class="label">Fallback rate</div>
+    </div>
+    <div class="kpi-card kpi-prob">
+        <div class="num">{{ problem_count }}</div>
+        <div class="label">Задач с проблемами</div>
+    </div>
+</div>
+
+<!-- ── Progress bar ── -->
+{% if stats and stats.total > 0 %}
+<div class="section">
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+        <span style="font-size:0.85rem; color:#94a3b8;">OK</span>
+        <div class="bar-wrap" style="flex:1;">
+            <div class="bar-fill bar-ok" style="width:{{ ok_pct }}%;"></div>
+        </div>
+        <span style="font-size:0.85rem; color:#22c55e;">{{ stats.ok or 0 }}</span>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <span style="font-size:0.85rem; color:#94a3b8;">Fallback</span>
+        <div class="bar-wrap" style="flex:1;">
+            <div class="bar-fill bar-fall" style="width:{{ fall_pct }}%;"></div>
+        </div>
+        <span style="font-size:0.85rem; color:#f59e0b;">{{ stats.fallback or 0 }}</span>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Top problem tasks ── -->
+<div class="section">
+    <h2>🔴 Задачи с наибольшим числом fallback (за 30 дней)</h2>
+    {% if top_problem_tasks %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID задачи</th>
+                <th>Тема</th>
+                <th>Класс</th>
+                <th>Ответ в БД</th>
+                <th>Fallback</th>
+                <th>Жалоб</th>
+                <th>Ошибки валидации</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in top_problem_tasks %}
+            <tr id="row-{{ row.task_id }}">
+                <td><code style="color:#818cf8;">#{{ row.task_id }}</code></td>
+                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    {{ row.topic or '—' }}
+                </td>
+                <td>{{ row.class_level or '—' }}</td>
+                <td><code style="color:#fbbf24;">{{ row.correct_answer or '—' }}</code></td>
+                <td>
+                    <span class="badge {% if row.fails >= 5 %}badge-red{% elif row.fails >= 2 %}badge-amber{% else %}badge-blue{% endif %}">
+                        {{ row.fails }}
+                    </span>
+                </td>
+                <td>{{ row.reports or 0 }}</td>
+                <td style="max-width:220px; font-size:0.78rem; color:#94a3b8;">
+                    {{ row.errors or '—' }}
+                </td>
+                <td>
+                    {% if row.is_flagged %}
+                    <span class="badge badge-red">🚩 Помечена</span>
+                    {% else %}
+                    <span class="badge badge-green">✅ Активна</span>
+                    {% endif %}
+                </td>
+                <td style="white-space:nowrap;">
+                    {% if row.is_flagged %}
+                    <button class="btn btn-unflag" onclick="toggleFlag({{ row.task_id }}, false)">
+                        ✅ Снять флаг
+                    </button>
+                    {% else %}
+                    <button class="btn btn-flag" onclick="toggleFlag({{ row.task_id }}, true)">
+                        🚩 Пометить
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">🎉 Нет задач с fallback за последние 30 дней</div>
+    {% endif %}
+</div>
+
+<!-- ── Error distribution ── -->
+<div class="section">
+    <h2>📋 Распределение ошибок валидации</h2>
+    {% if error_distribution %}
+    <table>
+        <thead>
+            <tr>
+                <th>Код ошибки</th>
+                <th>Количество</th>
+                <th>Доля</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set total_errs = error_distribution | sum(attribute='cnt') %}
+            {% for row in error_distribution %}
+            <tr>
+                <td><code style="color:#818cf8;">{{ row.validation_errors or '(пусто)' }}</code></td>
+                <td>{{ row.cnt }}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="bar-wrap" style="width:120px;">
+                            <div class="bar-fill bar-fall" style="width:{{ (row.cnt / total_errs * 100) | int }}%;"></div>
+                        </div>
+                        <span style="font-size:0.8rem; color:#94a3b8;">
+                            {{ (row.cnt / total_errs * 100) | round(1) }}%
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">Нет данных об ошибках</div>
+    {% endif %}
+</div>
+
+<!-- ── Flagged tasks ── -->
+<div class="section">
+    <h2>🚩 Все помеченные задачи (is_flagged=True)</h2>
+    {% if flagged_tasks %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Тема</th>
+                <th>Класс</th>
+                <th>Сложность</th>
+                <th>Ответ</th>
+                <th>Жалоб</th>
+                <th>Причина</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in flagged_tasks %}
+            <tr id="row-flagged-{{ task.id }}">
+                <td><code style="color:#818cf8;">#{{ task.id }}</code></td>
+                <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    {{ task.topic }}
+                </td>
+                <td>{{ task.class_level }}</td>
+                <td>{{ task.difficulty_level }}/7</td>
+                <td><code style="color:#fbbf24;">{{ task.correct_answer or '—' }}</code></td>
+                <td>{{ task.reports_count or 0 }}</td>
+                <td style="max-width:200px; font-size:0.78rem; color:#94a3b8;">
+                    {{ task.flagged_reason or '—' }}
+                </td>
+                <td style="white-space:nowrap;">
+                    <button class="btn btn-unflag" onclick="toggleFlag({{ task.id }}, false)">
+                        ✅ Снять флаг
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">Нет помеченных задач</div>
+    {% endif %}
+</div>
+
+<script>
+async function toggleFlag(taskId, flag) {
+    const action = flag ? 'flag' : 'unflag';
+    const confirm_msg = flag
+        ? `Пометить задачу #${taskId} как некорректную? Она будет скрыта из теста.`
+        : `Снять флаг с задачи #${taskId}? Она снова появится в тесте.`;
+    if (!confirm(confirm_msg)) return;
+
+    try {
+        const resp = await fetch(`/admin/toggle_task_flag/${taskId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({flag: flag})
+        });
+        const data = await resp.json();
+        if (data.status === 'ok') {
+            // Обновляем строку без перезагрузки
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.message || 'неизвестная'));
+        }
+    } catch(e) {
+        alert('Ошибка сети: ' + e);
+    }
+}
+</script>
+
+</body>
+</html>
