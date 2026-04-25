@@ -1239,6 +1239,17 @@ def olympiad_solution(combo_id):
     if patch_count > 0:
         print(f"[RUNTIME PATCH] Удалено 'см. рисунок' из {patch_count} полей в combo_id={combo.get('id')} (solutions)")
 
+    # Build specific source URL (e.g. olimpiada.ru with year+grade+round for vsosh)
+    try:
+        from services.olimpiada_url import get_combo_source_url
+        specific_url = get_combo_source_url(combo)
+        if specific_url and specific_url != combo.get('source_url'):
+            # Inject specific URL into a copy so we don't mutate global data
+            combo = dict(combo)
+            combo['source_url'] = specific_url
+    except Exception as _url_err:
+        pass  # Keep original source_url on any error
+
     return render_template('olympiad_solutions.html',
         olympiad=olympiad,
         combo=combo
