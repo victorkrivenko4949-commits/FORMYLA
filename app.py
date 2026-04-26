@@ -363,7 +363,6 @@ SUBJECTS = {
     "number_theory": "Теория чисел",
     "movement": "Задачи на движение",
     "knights_liars": "Рыцари и лжецы",
-    "other": "Разные задачи"
 }
 
 
@@ -1729,7 +1728,18 @@ def tutor_send():
             content=message + (" [📎 Прикреплено изображение]" if image_data else "")
         )
         db.session.add(user_msg)
-        db.session.commit()
+        # Retry commit to handle 'database is locked' from APScheduler contention
+        import time as _t
+        for _i in range(5):
+            try:
+                db.session.commit()
+                break
+            except Exception as _ce:
+                if 'database is locked' in str(_ce).lower() and _i < 4:
+                    db.session.rollback()
+                    _t.sleep(0.3 * (_i + 1))
+                else:
+                    raise
         
         # Получаем историю для ЭТОГО агента (не смешиваем с другими)
         history = ChatMessage.query.filter_by(
@@ -1757,7 +1767,16 @@ def tutor_send():
             content=response
         )
         db.session.add(ai_msg)
-        db.session.commit()
+        for _i2 in range(5):
+            try:
+                db.session.commit()
+                break
+            except Exception as _ce2:
+                if 'database is locked' in str(_ce2).lower() and _i2 < 4:
+                    db.session.rollback()
+                    _t.sleep(0.3 * (_i2 + 1))
+                else:
+                    raise
         
         return jsonify({
             'user_message': user_msg.to_dict(),

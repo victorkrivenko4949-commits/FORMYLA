@@ -1,13 +1,597 @@
 {% extends "base.html" %}
-{% block title %}Подписка{% endblock %}
+{% block title %}Тарифы — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Subscribe page styles ── */
+.subscribe-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+}
+
+.subscribe-hero {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.subscribe-hero h1 {
+    font-size: 2.4em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #38ef7d 0%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+}
+
+.subscribe-hero .subtitle {
+    font-size: 1.1em;
+    color: var(--text-soft, #94a3b8);
+    margin-bottom: 8px;
+}
+
+.beta-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(56,239,125,0.15), rgba(56,189,248,0.15));
+    border: 1px solid rgba(56,239,125,0.4);
+    color: #38ef7d;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ── Plan cards ── */
+.plans-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+@media (max-width: 640px) {
+    .plans-grid { grid-template-columns: 1fr; }
+}
+
+.plan-card {
+    background: var(--bg-card, rgba(15,23,42,0.8));
+    border: 1px solid var(--border-soft, rgba(255,255,255,0.08));
+    border-radius: 20px;
+    padding: 32px 28px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+
+.plan-card.premium {
+    border-color: rgba(56,239,125,0.4);
+    background: linear-gradient(135deg,
+        rgba(15,23,42,0.95) 0%,
+        rgba(17,153,142,0.08) 100%);
+    box-shadow: 0 0 40px rgba(56,239,125,0.08);
+}
+
+.plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #38ef7d, #11998e);
+    color: #0f172a;
+    font-size: 0.75em;
+    font-weight: 800;
+    padding: 4px 16px;
+    border-radius: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.plan-name {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--text-main, #f1f5f9);
+    margin-bottom: 8px;
+}
+
+.plan-price {
+    margin-bottom: 24px;
+}
+
+.plan-price .amount {
+    font-size: 2.8em;
+    font-weight: 800;
+    color: var(--text-main, #f1f5f9);
+    line-height: 1;
+}
+
+.plan-price .currency {
+    font-size: 1.2em;
+    color: var(--text-soft, #94a3b8);
+    margin-left: 4px;
+}
+
+.plan-price .period {
+    font-size: 0.9em;
+    color: var(--text-muted, #64748b);
+    display: block;
+    margin-top: 4px;
+}
+
+.plan-price.free-price .amount {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.plan-price.premium-price .amount {
+    background: linear-gradient(135deg, #38ef7d, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.95em;
+    color: var(--text-soft, #94a3b8);
+    line-height: 1.4;
+}
+
+.plan-features li .feat-icon {
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+    margin-top: 1px;
+}
+
+.plan-features li.highlight {
+    color: var(--text-main, #f1f5f9);
+    font-weight: 500;
+}
+
+.plan-features li.highlight .feat-icon {
+    color: #38ef7d;
+}
+
+.plan-features li.dimmed .feat-icon {
+    color: #475569;
+}
+
+/* ── Buttons ── */
+.btn-plan {
+    width: 100%;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-align: center;
+    display: block;
+    text-decoration: none;
+}
+
+.btn-plan-free {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-muted, #64748b);
+    border: 1px solid var(--border-soft, rgba(255,255,255,0.08));
+    cursor: default;
+}
+
+.btn-plan-premium {
+    background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+    color: #0f172a;
+    box-shadow: 0 4px 20px rgba(56,239,125,0.3);
+}
+
+.btn-plan-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(56,239,125,0.4);
+}
+
+.btn-plan-premium:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-plan-current {
+    background: rgba(56,189,248,0.1);
+    color: #38bdf8;
+    border: 1px solid rgba(56,189,248,0.3);
+    cursor: default;
+}
+
+/* ── Yearly block ── */
+.yearly-block {
+    background: var(--bg-card, rgba(15,23,42,0.8));
+    border: 1px solid rgba(56,239,125,0.2);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.yearly-block .yearly-info h3 {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--text-main, #f1f5f9);
+    margin-bottom: 4px;
+}
+
+.yearly-block .yearly-info p {
+    font-size: 0.9em;
+    color: var(--text-soft, #94a3b8);
+    margin: 0;
+}
+
+.yearly-block .yearly-price {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.yearly-block .yearly-price .price-main {
+    font-size: 1.8em;
+    font-weight: 800;
+    color: #38ef7d;
+}
+
+.yearly-block .yearly-price .price-sub {
+    font-size: 0.8em;
+    color: var(--text-muted, #64748b);
+    display: block;
+}
+
+.yearly-block .btn-yearly {
+    padding: 10px 24px;
+    background: rgba(56,239,125,0.1);
+    border: 1px solid rgba(56,239,125,0.3);
+    color: #38ef7d;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.yearly-block .btn-yearly:hover {
+    background: rgba(56,239,125,0.2);
+}
+
+/* ── FAQ ── */
+.faq-section {
+    margin-bottom: 40px;
+}
+
+.faq-section h2 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--text-main, #f1f5f9);
+    margin-bottom: 20px;
+}
+
+.faq-item {
+    background: var(--bg-card, rgba(15,23,42,0.8));
+    border: 1px solid var(--border-soft, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.faq-question {
+    padding: 16px 20px;
+    font-weight: 600;
+    color: var(--text-main, #f1f5f9);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+.faq-question:hover { background: rgba(255,255,255,0.03); }
+
+.faq-answer {
+    padding: 0 20px 16px;
+    color: var(--text-soft, #94a3b8);
+    font-size: 0.95em;
+    line-height: 1.6;
+    display: none;
+}
+
+.faq-item.open .faq-answer { display: block; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-arrow { transition: transform 0.2s; }
+
+/* ── Success message ── */
+.success-msg {
+    display: none;
+    background: linear-gradient(135deg, rgba(56,239,125,0.1), rgba(17,153,142,0.1));
+    border: 1px solid rgba(56,239,125,0.3);
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: center;
+    color: #38ef7d;
+    font-weight: 600;
+    font-size: 1.1em;
+    margin-bottom: 24px;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<h1 class="page-title">Подписка FORMYLA</h1>
-<p class="page-subtitle">Получи полный доступ ко всем решениям от ИИ.</p>
+<div class="subscribe-page">
 
-<div class="card" style="margin-top: 20px;">
-  <h2>Премиум доступ</h2>
-  <p>Стоимость: 10 рублей в месяц.</p>
-  <button class="btn-primary" style="margin-top: 10px;">Оформить подписку</button>
+    <!-- Hero -->
+    <div class="subscribe-hero">
+        <h1>Выберите тариф</h1>
+        <p class="subtitle">Разблокируй полный потенциал математики с FORMYLA</p>
+        <span class="beta-badge">🎁 Бета-доступ: Premium бесплатно до запуска оплаты</span>
+    </div>
+
+    <!-- Success message (shown after activation) -->
+    <div class="success-msg" id="successMsg">
+        ✅ Premium активирован! Перезагружаем страницу...
+    </div>
+
+    <!-- Plan cards -->
+    <div class="plans-grid">
+
+        <!-- Free plan -->
+        <div class="plan-card">
+            <div class="plan-name">Бесплатный</div>
+            <div class="plan-price free-price">
+                <span class="amount">0</span><span class="currency">₽</span>
+                <span class="period">навсегда</span>
+            </div>
+            <ul class="plan-features">
+                <li class="highlight">
+                    <span class="feat-icon">✅</span>
+                    <span>20 задач в день</span>
+                </li>
+                <li class="highlight">
+                    <span class="feat-icon">✅</span>
+                    <span>3 AI-разбора в день</span>
+                </li>
+                <li>
+                    <span class="feat-icon">✅</span>
+                    <span>Все темы 5–11 класс</span>
+                </li>
+                <li>
+                    <span class="feat-icon">✅</span>
+                    <span>Адаптивный тест</span>
+                </li>
+                <li class="dimmed">
+                    <span class="feat-icon">—</span>
+                    <span>История тестов: 7 дней</span>
+                </li>
+                <li class="dimmed">
+                    <span class="feat-icon">—</span>
+                    <span>AI-разборы: базовые (2000 токенов)</span>
+                </li>
+                <li class="dimmed">
+                    <span class="feat-icon">—</span>
+                    <span>Статистика: базовая</span>
+                </li>
+            </ul>
+
+            {% if current_plan == 'free' %}
+            <button class="btn-plan btn-plan-current" disabled>
+                ✓ Текущий план
+            </button>
+            {% else %}
+            <button class="btn-plan btn-plan-free" disabled>
+                Бесплатный
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Premium plan -->
+        <div class="plan-card premium">
+            <div class="plan-badge">⭐ РЕКОМЕНДУЕМ</div>
+            <div class="plan-name">Premium</div>
+            <div class="plan-price premium-price">
+                <span class="amount">390</span><span class="currency">₽</span>
+                <span class="period">в месяц · сейчас бесплатно</span>
+            </div>
+            <ul class="plan-features">
+                <li class="highlight">
+                    <span class="feat-icon">🚀</span>
+                    <span>Безлимит задач (до 500/день)</span>
+                </li>
+                <li class="highlight">
+                    <span class="feat-icon">🤖</span>
+                    <span>Безлимит AI-разборов (до 200/мес)</span>
+                </li>
+                <li class="highlight">
+                    <span class="feat-icon">⚡</span>
+                    <span>Расширенные AI-разборы (8000 токенов)</span>
+                </li>
+                <li class="highlight">
+                    <span class="feat-icon">📊</span>
+                    <span>История тестов навсегда</span>
+                </li>
+                <li class="highlight">
+                    <span class="feat-icon">📈</span>
+                    <span>Полная статистика прогресса</span>
+                </li>
+                <li class="highlight">
+                    <span class="feat-icon">🎯</span>
+                    <span>Приоритетный AI (быстрее)</span>
+                </li>
+                <li class="highlight">
+                    <span class="feat-icon">🏆</span>
+                    <span>Все темы 5–11 класс</span>
+                </li>
+            </ul>
+
+            {% if current_plan in ('premium_monthly', 'premium_yearly') %}
+            <button class="btn-plan btn-plan-current" disabled>
+                ✓ Текущий план
+                {% if plan_expires_at %}
+                · до {{ plan_expires_at }}
+                {% endif %}
+            </button>
+            {% elif current_user.is_authenticated %}
+            <button class="btn-plan btn-plan-premium" id="activateBtn"
+                    onclick="activatePremium('premium_monthly')">
+                🎁 Попробовать Premium бесплатно
+            </button>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn-plan btn-plan-premium">
+                🚀 Войти и получить Premium
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Yearly block -->
+    <div class="yearly-block">
+        <div class="yearly-info">
+            <h3>💎 Годовой тариф — 2 месяца в подарок</h3>
+            <p>Оплати год и получи 12 месяцев по цене 10 — экономия 780₽</p>
+        </div>
+        <div class="yearly-price">
+            <span class="price-main">3900₽</span>
+            <span class="price-sub">325₽/мес · вместо 390₽</span>
+        </div>
+        {% if current_user.is_authenticated and current_plan not in ('premium_monthly', 'premium_yearly') %}
+        <button class="btn-yearly" onclick="activatePremium('premium_yearly')">
+            Выбрать годовой
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq-section">
+        <h2>Частые вопросы</h2>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                Когда появится оплата?
+                <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+                Мы запускаем оплату через ЮKassa в ближайшее время. Пока платформа в бета-режиме —
+                Premium доступен бесплатно всем пользователям. После запуска оплаты у тебя будет
+                время перейти на платный тариф.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                Можно ли отменить подписку?
+                <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+                Да, в любой момент. После отмены доступ к Premium сохраняется до конца
+                оплаченного периода. Данные не удаляются.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                Что значит "soft limit" для Premium?
+                <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+                Soft limit — это честное использование (fair use). Для задач: до 500 в день,
+                для AI-разборов: до 200 в месяц. Это защита от автоматизированного злоупотребления,
+                а не реальное ограничение для обычного ученика.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                Мои данные сохранятся при смене тарифа?
+                <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+                Да. История тестов, прогресс по темам и статистика не удаляются.
+                При переходе с Premium на Free история старше 7 дней скрывается,
+                но не удаляется — при возврате на Premium она снова станет доступна.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Payment block (hidden until payment enabled) -->
+    {% if payment_enabled %}
+    <div style="background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; padding: 24px; margin-bottom: 40px;">
+        <h3 style="color: var(--text-main); margin-bottom: 16px;">💳 Способ оплаты</h3>
+        <!-- ЮKassa payment form will go here -->
+        <p style="color: var(--text-soft);">Оплата через ЮKassa — карты Visa, Mastercard, МИР, СБП</p>
+    </div>
+    {% endif %}
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function activatePremium(plan) {
+    const btn = document.getElementById('activateBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Активируем...';
+    }
+
+    fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: plan })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('successMsg').style.display = 'block';
+            setTimeout(() => location.reload(), 1800);
+        } else {
+            alert('Ошибка: ' + (data.message || 'Попробуйте ещё раз'));
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '🎁 Попробовать Premium бесплатно';
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Ошибка сети. Попробуйте ещё раз.');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '🎁 Попробовать Premium бесплатно';
+        }
+    });
+}
+
+function toggleFaq(el) {
+    const item = el.closest('.faq-item');
+    item.classList.toggle('open');
+}
+</script>
 {% endblock %}

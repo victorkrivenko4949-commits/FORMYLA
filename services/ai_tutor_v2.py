@@ -240,7 +240,12 @@ def validate_solution(sol: str, correct_answer: str) -> list:
 # ГЛАВНАЯ ФУНКЦИЯ
 # ---------------------------------------------------------------------------
 
-def tutor_explain(task, user_answer: Optional[str], ai_client) -> dict:
+def tutor_explain(
+    task,
+    user_answer: Optional[str],
+    ai_client,
+    max_tokens: int = 3000,
+) -> dict:
     """
     Главная функция AI-тьютора v2.
 
@@ -248,6 +253,7 @@ def tutor_explain(task, user_answer: Optional[str], ai_client) -> dict:
         task:        объект AdaptiveTask
         user_answer: ответ ученика (строка или None)
         ai_client:   экземпляр DeepSeekClient из ai/deepseek_client.py
+        max_tokens:  максимум токенов (2000 для Free, 8000 для Premium)
 
     Returns:
         dict с ключами:
@@ -263,7 +269,7 @@ def tutor_explain(task, user_answer: Optional[str], ai_client) -> dict:
             prompt=user_prompt,
             system_prompt=SYSTEM_PROMPT,
             temperature=0.2,   # низкая — меньше фантазий
-            max_tokens=3000,
+            max_tokens=max_tokens,
         )
     except Exception as e:
         logger.error(f'[tutor_v2] DeepSeek call failed for task {task.id}: {e}')

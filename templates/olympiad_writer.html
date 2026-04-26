@@ -1,0 +1,760 @@
+{% extends "base.html" %}
+
+{% block title %}Написать олимпиаду — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Olympiad Writer ─────────────────────────────────────────── */
+.ow-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+}
+
+.ow-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.ow-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #38ef7d, #11998e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.ow-header p {
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+/* ── Selector card ───────────────────────────────────────────── */
+.ow-selector {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+}
+
+.ow-selector h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.ow-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+    .ow-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ow-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.ow-field select {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: #e2e8f0;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.ow-field select:focus {
+    outline: none;
+    border-color: #38ef7d;
+}
+
+.ow-field select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ow-generate-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #38ef7d, #11998e);
+    border: none;
+    border-radius: 12px;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ow-generate-btn:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.ow-generate-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Loading state ───────────────────────────────────────────── */
+.ow-loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    margin-bottom: 28px;
+}
+
+.ow-loading.active {
+    display: block;
+}
+
+.ow-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #334155;
+    border-top-color: #38ef7d;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.ow-loading p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+}
+
+.ow-loading .ow-loading-tip {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-top: 8px;
+}
+
+/* ── Task card ───────────────────────────────────────────────── */
+.ow-task-card {
+    display: none;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+
+.ow-task-card.active {
+    display: block;
+}
+
+.ow-task-header {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ow-task-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ow-badge {
+    background: rgba(56, 239, 125, 0.15);
+    border: 1px solid rgba(56, 239, 125, 0.3);
+    color: #38ef7d;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.ow-badge.difficulty {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+}
+
+.ow-task-body {
+    padding: 24px;
+}
+
+.ow-task-text {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #e2e8f0;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #0f172a;
+    border-radius: 12px;
+    border-left: 4px solid #38ef7d;
+}
+
+/* ── Answer section ──────────────────────────────────────────── */
+.ow-answer-section {
+    margin-bottom: 20px;
+}
+
+.ow-answer-section h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+}
+
+.ow-answer-input-row {
+    display: flex;
+    gap: 10px;
+}
+
+.ow-answer-input {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: #e2e8f0;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.ow-answer-input:focus {
+    outline: none;
+    border-color: #38ef7d;
+}
+
+.ow-check-btn {
+    padding: 10px 20px;
+    background: #38ef7d;
+    border: none;
+    border-radius: 10px;
+    color: #0f172a;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.ow-check-btn:hover {
+    opacity: 0.85;
+}
+
+.ow-answer-result {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: none;
+}
+
+.ow-answer-result.correct {
+    background: rgba(56, 239, 125, 0.1);
+    border: 1px solid rgba(56, 239, 125, 0.3);
+    color: #38ef7d;
+    display: block;
+}
+
+.ow-answer-result.wrong {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    display: block;
+}
+
+/* ── Solution section ────────────────────────────────────────── */
+.ow-solution-section {
+    margin-top: 20px;
+}
+
+.ow-solution-toggle {
+    background: none;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: #94a3b8;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ow-solution-toggle:hover {
+    border-color: #38ef7d;
+    color: #38ef7d;
+}
+
+.ow-solution-body {
+    display: none;
+    margin-top: 16px;
+    padding: 20px;
+    background: #0f172a;
+    border-radius: 12px;
+    border-left: 4px solid #6366f1;
+    color: #cbd5e1;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+.ow-solution-body.active {
+    display: block;
+}
+
+.ow-key-idea {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+    color: #a5b4fc;
+    font-size: 0.85rem;
+}
+
+.ow-key-idea strong {
+    color: #818cf8;
+}
+
+/* ── Actions ─────────────────────────────────────────────────── */
+.ow-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.ow-next-btn {
+    flex: 1;
+    padding: 12px;
+    background: linear-gradient(135deg, #38ef7d, #11998e);
+    border: none;
+    border-radius: 10px;
+    color: #0f172a;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-size: 0.95rem;
+}
+
+.ow-next-btn:hover {
+    opacity: 0.85;
+}
+
+/* ── Error card ──────────────────────────────────────────────── */
+.ow-error {
+    display: none;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 20px 24px;
+    color: #ef4444;
+    margin-bottom: 28px;
+}
+
+.ow-error.active {
+    display: block;
+}
+
+.ow-error h3 {
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* ── Attempts badge ──────────────────────────────────────────── */
+.ow-attempts-info {
+    font-size: 0.78rem;
+    color: #64748b;
+    text-align: right;
+    margin-top: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ow-page">
+
+    <div class="ow-header">
+        <h1>✍️ Написать олимпиаду</h1>
+        <p>ИИ генерирует новую задачу в стиле выбранной олимпиады — бесконечный поток практики</p>
+    </div>
+
+    <!-- Selector -->
+    <div class="ow-selector">
+        <h2>Выберите олимпиаду</h2>
+        <div class="ow-form-row">
+            <div class="ow-field">
+                <label>Олимпиада</label>
+                <select id="sel-olympiad" onchange="onOlympiadChange()">
+                    <option value="">— выберите —</option>
+                    {% for slug, info in available_olympiads.items() %}
+                    <option value="{{ slug }}">{{ info.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="ow-field">
+                <label>Этап</label>
+                <select id="sel-round" disabled onchange="onRoundChange()">
+                    <option value="">— сначала олимпиаду —</option>
+                </select>
+            </div>
+            <div class="ow-field">
+                <label>Класс</label>
+                <select id="sel-grade" disabled>
+                    <option value="">— сначала этап —</option>
+                </select>
+            </div>
+        </div>
+        <button class="ow-generate-btn" id="gen-btn" onclick="generateTask()" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            Сгенерировать задачу
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="ow-loading" id="ow-loading">
+        <div class="ow-spinner"></div>
+        <p>ИИ составляет задачу в стиле олимпиады...</p>
+        <p class="ow-loading-tip">Обычно занимает 5–15 секунд</p>
+    </div>
+
+    <!-- Error -->
+    <div class="ow-error" id="ow-error">
+        <h3>⚠️ Не удалось сгенерировать задачу</h3>
+        <p id="ow-error-msg">Попробуйте ещё раз.</p>
+    </div>
+
+    <!-- Task card -->
+    <div class="ow-task-card" id="ow-task-card">
+        <div class="ow-task-header">
+            <div class="ow-task-meta">
+                <span class="ow-badge" id="badge-olympiad">ВсОШ</span>
+                <span class="ow-badge" id="badge-round">Заключительный</span>
+                <span class="ow-badge" id="badge-grade">9 класс</span>
+                <span class="ow-badge" id="badge-topic">Тема</span>
+                <span class="ow-badge difficulty" id="badge-difficulty">Сложность ★★★</span>
+            </div>
+        </div>
+
+        <div class="ow-task-body">
+            <!-- Условие -->
+            <div class="ow-task-text" id="task-text">
+                Условие задачи появится здесь...
+            </div>
+
+            <!-- Ввод ответа -->
+            <div class="ow-answer-section">
+                <h3>Ваш ответ</h3>
+                <div class="ow-answer-input-row">
+                    <input
+                        type="text"
+                        class="ow-answer-input"
+                        id="answer-input"
+                        placeholder="Введите ответ..."
+                        onkeydown="if(event.key==='Enter') checkAnswer()"
+                    >
+                    <button class="ow-check-btn" onclick="checkAnswer()">Проверить</button>
+                </div>
+                <div class="ow-answer-result" id="answer-result"></div>
+            </div>
+
+            <!-- Решение -->
+            <div class="ow-solution-section">
+                <button class="ow-solution-toggle" onclick="toggleSolution()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <span id="solution-toggle-text">Показать решение</span>
+                </button>
+                <div class="ow-solution-body" id="solution-body">
+                    <div id="solution-text"></div>
+                    <div class="ow-key-idea" id="key-idea-block" style="display:none">
+                        <strong>💡 Ключевая идея:</strong> <span id="key-idea-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="ow-actions">
+                <button class="ow-next-btn" onclick="generateTask()">
+                    ➡️ Следующая задача
+                </button>
+            </div>
+
+            <div class="ow-attempts-info" id="attempts-info"></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Данные олимпиад из сервера ────────────────────────────────
+const OLYMPIAD_DATA = {{ available_olympiads | tojson }};
+
+// ── Текущая задача ────────────────────────────────────────────
+let currentTask = null;
+let solutionVisible = false;
+
+// ── Каскадные селекторы ───────────────────────────────────────
+function onOlympiadChange() {
+    const slug = document.getElementById('sel-olympiad').value;
+    const roundSel = document.getElementById('sel-round');
+    const gradeSel = document.getElementById('sel-grade');
+    const genBtn = document.getElementById('gen-btn');
+
+    roundSel.innerHTML = '<option value="">— выберите этап —</option>';
+    gradeSel.innerHTML = '<option value="">— сначала этап —</option>';
+    roundSel.disabled = !slug;
+    gradeSel.disabled = true;
+    genBtn.disabled = true;
+
+    if (!slug) return;
+
+    const rounds = OLYMPIAD_DATA[slug]?.rounds || {};
+    for (const [key, info] of Object.entries(rounds)) {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = info.title;
+        roundSel.appendChild(opt);
+    }
+}
+
+function onRoundChange() {
+    const slug = document.getElementById('sel-olympiad').value;
+    const roundKey = document.getElementById('sel-round').value;
+    const gradeSel = document.getElementById('sel-grade');
+    const genBtn = document.getElementById('gen-btn');
+
+    gradeSel.innerHTML = '<option value="">— выберите класс —</option>';
+    gradeSel.disabled = !roundKey;
+    genBtn.disabled = true;
+
+    if (!slug || !roundKey) return;
+
+    const grades = OLYMPIAD_DATA[slug]?.rounds[roundKey]?.grades || [];
+    for (const g of grades) {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = `${g} класс`;
+        gradeSel.appendChild(opt);
+    }
+
+    gradeSel.onchange = () => {
+        genBtn.disabled = !gradeSel.value;
+    };
+}
+
+// ── Генерация задачи ──────────────────────────────────────────
+async function generateTask() {
+    const slug = document.getElementById('sel-olympiad').value;
+    const roundKey = document.getElementById('sel-round').value;
+    const grade = document.getElementById('sel-grade').value;
+
+    if (!slug || !roundKey || !grade) {
+        alert('Пожалуйста, выберите олимпиаду, этап и класс.');
+        return;
+    }
+
+    // Показываем загрузку
+    setLoading(true);
+    hideTask();
+    hideError();
+
+    try {
+        const resp = await fetch('/api/olympiad/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                olympiad_slug: slug,
+                round_key: roundKey,
+                class_level: parseInt(grade),
+            }),
+        });
+
+        const data = await resp.json();
+
+        if (data.success && data.task) {
+            showTask(data.task, slug, roundKey, grade, data.attempts);
+        } else {
+            showError(data.error || 'Не удалось сгенерировать задачу. Попробуйте ещё раз.');
+        }
+    } catch (err) {
+        showError('Ошибка сети. Проверьте соединение и попробуйте снова.');
+        console.error('Generate error:', err);
+    } finally {
+        setLoading(false);
+    }
+}
+
+// ── UI helpers ────────────────────────────────────────────────
+function setLoading(active) {
+    document.getElementById('ow-loading').classList.toggle('active', active);
+    document.getElementById('gen-btn').disabled = active;
+}
+
+function hideTask() {
+    document.getElementById('ow-task-card').classList.remove('active');
+}
+
+function hideError() {
+    document.getElementById('ow-error').classList.remove('active');
+}
+
+function showError(msg) {
+    document.getElementById('ow-error-msg').textContent = msg;
+    document.getElementById('ow-error').classList.add('active');
+}
+
+function showTask(task, slug, roundKey, grade, attempts) {
+    currentTask = task;
+    solutionVisible = false;
+
+    // Badges
+    const olympiadTitle = OLYMPIAD_DATA[slug]?.title || slug;
+    const roundTitle = OLYMPIAD_DATA[slug]?.rounds[roundKey]?.title || roundKey;
+    document.getElementById('badge-olympiad').textContent = olympiadTitle;
+    document.getElementById('badge-round').textContent = roundTitle;
+    document.getElementById('badge-grade').textContent = `${grade} класс`;
+    document.getElementById('badge-topic').textContent = task.topic || 'Математика';
+    document.getElementById('badge-difficulty').textContent =
+        '★'.repeat(task.difficulty || 3) + '☆'.repeat(5 - (task.difficulty || 3));
+
+    // Task text
+    document.getElementById('task-text').innerHTML = task.task_text || '';
+
+    // Reset answer
+    document.getElementById('answer-input').value = '';
+    document.getElementById('answer-result').className = 'ow-answer-result';
+    document.getElementById('answer-result').textContent = '';
+
+    // Solution
+    document.getElementById('solution-body').classList.remove('active');
+    document.getElementById('solution-toggle-text').textContent = 'Показать решение';
+    document.getElementById('solution-text').innerHTML = task.solution || '';
+
+    // Key idea
+    const keyIdeaBlock = document.getElementById('key-idea-block');
+    if (task.key_idea) {
+        document.getElementById('key-idea-text').textContent = task.key_idea;
+        keyIdeaBlock.style.display = 'block';
+    } else {
+        keyIdeaBlock.style.display = 'none';
+    }
+
+    // Attempts info
+    const attemptsEl = document.getElementById('attempts-info');
+    if (attempts > 1) {
+        attemptsEl.textContent = `Задача сгенерирована за ${attempts} попытки`;
+    } else {
+        attemptsEl.textContent = '';
+    }
+
+    // Show card
+    document.getElementById('ow-task-card').classList.add('active');
+
+    // Re-render KaTeX
+    if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.getElementById('ow-task-card'), {
+            delimiters: [
+                { left: '\\(', right: '\\)', display: false },
+                { left: '\\[', right: '\\]', display: true },
+            ],
+            throwOnError: false,
+        });
+    }
+
+    // Scroll to task
+    document.getElementById('ow-task-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Проверка ответа ───────────────────────────────────────────
+function checkAnswer() {
+    if (!currentTask) return;
+
+    const userAnswer = document.getElementById('answer-input').value.trim().toLowerCase();
+    const correctAnswer = (currentTask.correct_answer || '').trim().toLowerCase();
+
+    const resultEl = document.getElementById('answer-result');
+
+    if (!userAnswer) {
+        resultEl.className = 'ow-answer-result wrong';
+        resultEl.textContent = 'Введите ответ.';
+        return;
+    }
+
+    // Простое сравнение (нормализуем пробелы и регистр)
+    const normalize = s => s.replace(/\s+/g, ' ').trim().toLowerCase();
+    const isCorrect = normalize(userAnswer) === normalize(correctAnswer);
+
+    if (isCorrect) {
+        resultEl.className = 'ow-answer-result correct';
+        resultEl.textContent = '✅ Верно! Отличная работа!';
+    } else {
+        resultEl.className = 'ow-answer-result wrong';
+        resultEl.textContent = `❌ Неверно. Правильный ответ: ${currentTask.correct_answer}`;
+    }
+}
+
+// ── Показать/скрыть решение ───────────────────────────────────
+function toggleSolution() {
+    solutionVisible = !solutionVisible;
+    const body = document.getElementById('solution-body');
+    const toggleText = document.getElementById('solution-toggle-text');
+
+    body.classList.toggle('active', solutionVisible);
+    toggleText.textContent = solutionVisible ? 'Скрыть решение' : 'Показать решение';
+
+    if (solutionVisible && typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.getElementById('solution-body'), {
+            delimiters: [
+                { left: '\\(', right: '\\)', display: false },
+                { left: '\\[', right: '\\]', display: true },
+            ],
+            throwOnError: false,
+        });
+    }
+}
+</script>
+{% endblock %}

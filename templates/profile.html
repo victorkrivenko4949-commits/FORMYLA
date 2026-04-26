@@ -67,6 +67,105 @@
         </div>
     </div>
 
+    <!-- ── Подписка ── -->
+    {% include 'partials/upgrade_banner.html' %}
+
+    {% if subscription %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+            💎 Текущий план
+        </h2>
+
+        <!-- Название плана и дата -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(30,41,59,0.6); border-radius: 12px; border: 1px solid var(--border-soft); margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                {% if subscription.plan.is_premium %}
+                <span style="font-size: 1.8em;">⭐</span>
+                <div>
+                    <div style="font-weight: 700; color: #38ef7d; font-size: 1.1em;">{{ subscription.plan.display_name }}</div>
+                    {% if subscription.plan.expires_at %}
+                    <div style="color: var(--text-muted); font-size: 0.85em;">
+                        Действует до: {{ subscription.plan.expires_at[:10] if subscription.plan.expires_at else '' }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <span style="font-size: 1.8em;">🆓</span>
+                <div>
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 1.1em;">{{ subscription.plan.display_name }}</div>
+                    <div style="color: var(--text-muted); font-size: 0.85em;">Базовый доступ</div>
+                </div>
+                {% endif %}
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="/subscribe" style="padding: 8px 16px; background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; font-size: 0.85em; font-weight: 600; text-decoration: none;">
+                    Изменить тариф
+                </a>
+                {% if subscription.plan.is_premium %}
+                <button onclick="cancelSubscription()" style="padding: 8px 16px; background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; font-size: 0.85em; cursor: pointer;">
+                    Отменить
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Использование сегодня -->
+        <h3 style="color: var(--text-soft); font-size: 1em; font-weight: 600; margin-bottom: 14px;">📊 Использование сегодня</h3>
+
+        <!-- Задачи -->
+        {% if subscription.tasks.limit %}
+        <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: var(--text-soft); font-size: 0.9em;">📚 Задачи</span>
+                <span style="color: var(--text-main); font-size: 0.9em; font-weight: 600;">
+                    {{ subscription.tasks.used }} / {{ subscription.tasks.limit }}
+                </span>
+            </div>
+            <div style="background: rgba(255,255,255,0.06); border-radius: 6px; height: 8px; overflow: hidden;">
+                <div style="height: 100%; width: {{ subscription.tasks.pct or 0 }}%; background: linear-gradient(90deg, #38bdf8, #3b82f6); border-radius: 6px; transition: width 0.4s;"></div>
+            </div>
+        </div>
+        {% else %}
+        <div style="margin-bottom: 16px; display: flex; justify-content: space-between; padding: 10px 14px; background: rgba(56,239,125,0.06); border-radius: 8px; border: 1px solid rgba(56,239,125,0.15);">
+            <span style="color: var(--text-soft); font-size: 0.9em;">📚 Задачи сегодня</span>
+            <span style="color: #38ef7d; font-size: 0.9em; font-weight: 600;">{{ subscription.tasks.used }} (безлимит)</span>
+        </div>
+        {% endif %}
+
+        <!-- AI-разборы -->
+        {% if subscription.ai_today.limit %}
+        <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: var(--text-soft); font-size: 0.9em;">🤖 AI-разборы сегодня</span>
+                <span style="color: var(--text-main); font-size: 0.9em; font-weight: 600;">
+                    {{ subscription.ai_today.used }} / {{ subscription.ai_today.limit }}
+                </span>
+            </div>
+            <div style="background: rgba(255,255,255,0.06); border-radius: 6px; height: 8px; overflow: hidden;">
+                <div style="height: 100%; width: {{ subscription.ai_today.pct or 0 }}%; background: linear-gradient(90deg, #38ef7d, #11998e); border-radius: 6px; transition: width 0.4s;"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- AI-разборы за месяц (для Premium) -->
+        {% if subscription.ai_month.limit %}
+        <div style="margin-bottom: 4px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: var(--text-soft); font-size: 0.9em;">🤖 AI-разборы в этом месяце</span>
+                <span style="color: var(--text-main); font-size: 0.9em; font-weight: 600;">
+                    {{ subscription.ai_month.used }} / {{ subscription.ai_month.limit }}
+                </span>
+            </div>
+            <div style="background: rgba(255,255,255,0.06); border-radius: 6px; height: 8px; overflow: hidden;">
+                <div style="height: 100%; width: {{ subscription.ai_month.pct or 0 }}%; background: linear-gradient(90deg, #a78bfa, #7c3aed); border-radius: 6px; transition: width 0.4s;"></div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+    {% endif %}
+    <!-- ── /Подписка ── -->
+
     <!-- Привязанные аккаунты -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
@@ -665,6 +764,23 @@ function initYandexLinkWidget() {
     script.src = 'https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js';
     script.onload = window.onload_yandex_link;
     document.head.appendChild(script);
+}
+</script>
+
+<script>
+function cancelSubscription() {
+    if (!confirm('Отменить подписку? Доступ сохранится до конца оплаченного периода.')) return;
+    fetch('/api/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (data.message || 'Попробуйте ещё раз'));
+            }
+        })
+        .catch(() => alert('Ошибка сети'));
 }
 </script>
 {% endblock %}

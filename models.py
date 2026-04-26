@@ -699,6 +699,29 @@ class TopicMastery(db.Model):
         return f'<TopicMastery user_id={self.user_id}, topic={self.topic}, mastery={self.mastery:.2f}>'
 
 
+class OlympiadGenerationLog(db.Model):
+    """Лог генерации олимпиадных задач (для аналитики качества)."""
+    __tablename__ = 'olympiad_generation_log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    olympiad_slug = db.Column(db.String(100), nullable=False)
+    round_key = db.Column(db.String(100), nullable=False)
+    class_level = db.Column(db.Integer, nullable=False)
+    attempts = db.Column(db.Integer, default=1)
+    success = db.Column(db.Integer, default=0)  # 1 / 0
+    errors_json = db.Column(db.Text, nullable=True)  # JSON лог попыток
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('olympiad_gen_logs', lazy='dynamic'))
+
+    def __repr__(self):
+        return (
+            f'<OlympiadGenerationLog {self.olympiad_slug}/{self.round_key}'
+            f'/класс {self.class_level} success={self.success}>'
+        )
+
+
 def init_db(app):
     """Инициализация базы данных"""
     db.init_app(app)
