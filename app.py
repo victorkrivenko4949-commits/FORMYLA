@@ -86,9 +86,17 @@ print(f"MAIL_PASSWORD = {'ЕСТЬ' if os.environ.get('MAIL_PASSWORD') else 'Н�
 print(f"DEEPSEEK_API_KEY = {'ЕСТЬ' if os.environ.get('DEEPSEEK_API_KEY') else 'НЕТ'}")
 print("="*60)
 
-# Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formyla.db'
+# Database configuration -- supports SQLite (local) and PostgreSQL (production)
+_database_url = os.environ.get('DATABASE_URL', 'sqlite:///formyla.db')
+# Render provides postgres:// but SQLAlchemy requires postgresql://
+if _database_url.startswith('postgres://'):
+    _database_url = _database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = _database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 
 # Flask-Login configuration (долгоживущие cookie)
 from datetime import timedelta, datetime
@@ -465,6 +473,11 @@ def generate_variant(olympiad_slug, grade, round_key):
     source = []
     for v in variants:
         for p in v.get("problems", []):
+            t = p.get("text", "")
+            if not t or len(t) > 1500:
+                continue
+            if any(x in t for x in ["XXXVII", "XXXVIII", "XXXIX", "XL "]):
+                continue
             source.append({**p, "olympiad": v["olympiad"], "grade": v["grade"]})
 
     if not source:
@@ -520,6 +533,14 @@ def generate_variant(olympiad_slug, grade, round_key):
         return []
     
     print(f"✓ Отобрано задач для варианта: {len(selected)}")
+    # Применяем fix_latex к каждой задаче перед возвратом
+    try:
+        from services.task_validator import fix_latex
+        for p in selected:
+            if p.get('text'):
+                p['text'] = fix_latex(p['text'])
+    except Exception as e:
+        print(f"fix_latex error: {e}")
     print(f"Начинаем модификацию задач через AI...")
     
     # Формируем список исходных задач для промпта
