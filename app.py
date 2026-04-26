@@ -4829,6 +4829,67 @@ def admin_toggle_task_flag(task_id):
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
+@app.route("/admin/fix_latex_rac", methods=["GET", "POST"])
+def admin_fix_latex_rac():
+    """
+    Admin endpoint: диагностика и починка битого LaTeX '$ rac{' → '$\\frac{'.
+    GET  → показывает сколько задач с битым LaTeX
+    POST → применяет починку
+    """
+    # Простая защита: только если залогинен
+    if not current_user.is_authenticated:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
+    try:
+        from sqlalchemy import text as sa_text
+
+        # Диагностика: считаем задачи с ' rac{'
+        result_count = db.session.execute(
+            sa_text("SELECT COUNT(*) FROM adaptive_tasks WHERE task_text LIKE '% rac{%'")
+        ).fetchone()[0]
+
+        result_sol = db.session.execute(
+            sa_text("SELECT COUNT(*) FROM adaptive_tasks WHERE solution LIKE '% rac{%'")
+        ).fetchone()[0]
+
+        if request.method == 'GET':
+            # Показываем примеры
+            examples = db.session.execute(
+                sa_text("SELECT id, SUBSTR(task_text, 1, 200) FROM adaptive_tasks WHERE task_text LIKE '% rac{%' LIMIT 5")
+            ).fetchall()
+            return jsonify({
+                'status': 'ok',
+                'broken_task_text': result_count,
+                'broken_solution': result_sol,
+                'examples': [{'id': r[0], 'preview': r[1]} for r in examples],
+                'message': f'Найдено {result_count} задач с битым LaTeX. POST на этот URL для починки.'
+            })
+
+        # POST → применяем починку
+        if result_count == 0 and result_sol == 0:
+            return jsonify({'status': 'ok', 'fixed': 0, 'message': 'Битых задач не найдено'})
+
+        # Починка task_text
+        db.session.execute(
+            sa_text("UPDATE adaptive_tasks SET task_text = REPLACE(task_text, ' rac{', '\\frac{') WHERE task_text LIKE '% rac{%'")
+        )
+        # Починка solution
+        db.session.execute(
+            sa_text("UPDATE adaptive_tasks SET solution = REPLACE(solution, ' rac{', '\\frac{') WHERE solution LIKE '% rac{%'")
+        )
+        db.session.commit()
+
+        return jsonify({
+            'status': 'ok',
+            'fixed_task_text': result_count,
+            'fixed_solution': result_sol,
+            'message': f'Починено {result_count} задач в task_text и {result_sol} в solution'
+        })
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 # ── Пометить задачу 1650 как битую (запускается один раз при старте) ──
 try:
     with app.app_context():
