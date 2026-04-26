@@ -88,15 +88,18 @@ print("="*60)
 
 # Database configuration -- supports SQLite (local) and PostgreSQL (production)
 _database_url = os.environ.get('DATABASE_URL', 'sqlite:///formyla.db')
-# Render provides postgres:// but SQLAlchemy requires postgresql://
+# Render provides postgres:// or postgresql:// but psycopg3 needs postgresql+psycopg://
 if _database_url.startswith('postgres://'):
-    _database_url = _database_url.replace('postgres://', 'postgresql://', 1)
+    _database_url = _database_url.replace('postgres://', 'postgresql+psycopg://', 1)
+elif _database_url.startswith('postgresql://') and '+psycopg' not in _database_url:
+    _database_url = _database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
     'pool_recycle': 300,
 }
+print(f'[DB] Using: ' + _database_url.split('@')[0] + '@***')
 
 # Flask-Login configuration (долгоживущие cookie)
 from datetime import timedelta, datetime
