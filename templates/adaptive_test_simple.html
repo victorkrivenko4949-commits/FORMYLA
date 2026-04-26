@@ -35,8 +35,8 @@
                     <span>Сообщить об ошибке</span>
                 </button>
             </div>
-            <div style="color: var(--text-main); font-size: 1.1em; line-height: 1.8;">
-                {{ task.task_text | replace('\\n', '<br>') | safe }}
+            <div style="color: var(--text-main); font-size: 1.1em; line-height: 1.8;" id="taskTextBlock">
+                {{ task.task_text | safe }}
             </div>
         </div>
 
@@ -285,18 +285,20 @@
 </style>
 
 <script>
-// Рендеринг LaTeX формул через KaTeX
-document.addEventListener("DOMContentLoaded", function() {
+// ФИКС: ждём загрузки KaTeX (defer) перед рендером
+// base.html уже рендерит через onload, этот блок — для динамического контента
+var _katexDelimiters = [
+    {left: '$$', right: '$$', display: true},
+    {left: '$', right: '$', display: false},
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+];
+
+function renderKatexSafe(element) {
     if (window.renderMathInElement) {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: "\\(", right: "\\)", display: false},
-                {left: "\\[", right: "\\]", display: true}
-            ],
-            throwOnError: false
-        });
+        renderMathInElement(element, {delimiters: _katexDelimiters, throwOnError: false});
     }
-});
+}
 
 // Функция для отправки жалобы на задачу
 async function reportTask(taskId) {
@@ -480,24 +482,14 @@ function showResult(result) {
 
     // Обрабатываем feedback: заменяем переносы строк на <br>, рендерим KaTeX
     let formattedFeedback = result.feedback;
-    formattedFeedback = formattedFeedback.replace(/\\n/g, '<br>');
+    // ФИКС: JSON уже декодирует \n в реальный перенос строки — убираем двойной backslash
     formattedFeedback = formattedFeedback.replace(/\n/g, '<br>');
     // Жирный текст **...**
-    formattedFeedback = formattedFeedback.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    formattedFeedback = formattedFeedback.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
     feedbackText.innerHTML = formattedFeedback;
 
     // Рендерим KaTeX в блоке feedback после вставки HTML
-    if (window.renderMathInElement) {
-        renderMathInElement(feedbackText, {
-            delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\(', right: '\\)', display: false},
-                {left: '\\[', right: '\\]', display: true}
-            ],
-            throwOnError: false
-        });
-    }
+    renderKatexSafe(feedbackText);
     
     // Показать кнопку завершения, если это последняя задача
     if (result.is_last_task) {
@@ -506,17 +498,6 @@ function showResult(result) {
     }
     
     resultBlock.style.display = 'block';
-    
-    // Рендерим LaTeX в фидбеке через KaTeX
-    if (window.renderMathInElement) {
-        renderMathInElement(feedbackText, {
-            delimiters: [
-                {left: "\\(", right: "\\)", display: false},
-                {left: "\\[", right: "\\]", display: true}
-            ],
-            throwOnError: false
-        });
-    }
     
     // АВТОПЕРЕКЛЮЧЕНИЕ ОТКЛЮЧЕНО - ученик переходит вручную по кнопке "Следующая задача"
     // Это дает время изучить решение без спешки
