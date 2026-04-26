@@ -18,7 +18,16 @@ from datetime import datetime
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 APPLY = '--apply' in sys.argv
-DB_PATH = "instance/formyla.db"
+
+# Поддержка разных путей (локально и на Render)
+for _path in ['instance/formyla.db', '/var/data/formyla.db', 'formyla.db']:
+    if os.path.exists(_path):
+        DB_PATH = _path
+        print(f"БД: {DB_PATH}")
+        break
+else:
+    print("ОШИБКА: БД не найдена!")
+    sys.exit(1)
 
 conn = sqlite3.connect(DB_PATH)
 conn.row_factory = sqlite3.Row
