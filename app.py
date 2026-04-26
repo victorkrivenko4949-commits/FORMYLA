@@ -52,9 +52,6 @@ load_dotenv()
 # Import prefetch system
 from simple_prefetch import get_cached_task, add_task_to_cache, clear_cache, get_cache_size
 
-# Subscription feature guards
-from routes.decorators import require_feature, require_admin
-
 # AI Integration
 try:
     from ai.deepseek_client import DeepSeekClient, DeepSeekAPIError
@@ -68,52 +65,6 @@ app = Flask(__name__)
 # CRITICAL: SECRET_KEY must be consistent across restarts to maintain session integrity
 # Using a fallback that's consistent for development, but MUST be set in production
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-DO-NOT-USE-IN-PRODUCTION-12345')
-
-# ── Flask-Limiter: защита от абьюза ──────────────────────────────────────────
-try:
-    from flask_limiter import Limiter
-    from flask_limiter.util import get_remote_address
-
-    def _get_user_key():
-        """Rate limit key: user_id для авторизованных, IP для остальных."""
-        try:
-            from flask_login import current_user as _cu
-            if _cu.is_authenticated:
-                return f'user:{_cu.id}'
-        except Exception:
-            pass
-        return get_remote_address()
-
-    limiter = Limiter(
-        key_func=_get_user_key,
-        app=app,
-        default_limits=[],          # Без глобального лимита — только явные
-        storage_uri='memory://',    # In-memory (достаточно для одного воркера)
-    )
-    LIMITER_AVAILABLE = True
-    print('[LIMITER] Flask-Limiter initialized (memory backend)')
-
-    # Return JSON on rate limit exceeded (instead of HTML 429 page)
-    @app.errorhandler(429)
-    def ratelimit_handler(e):
-        return jsonify({
-            'error': 'rate_limit_exceeded',
-            'message': f'Слишком много запросов. Подождите немного и попробуйте снова.',
-            'retry_after': str(e.description),
-        }), 429
-
-except ImportError:
-    LIMITER_AVAILABLE = False
-    print('[LIMITER] Flask-Limiter not available — rate limiting disabled')
-
-    # Заглушка чтобы декораторы не падали
-    class _NoopLimiter:
-        def limit(self, *a, **kw):
-            def decorator(f): return f
-            return decorator
-        def exempt(self, f): return f
-    limiter = _NoopLimiter()
-# ─────────────────────────────────────────────────────────────────────────────
 
 # Validate SECRET_KEY is set properly
 if app.secret_key == 'dev-secret-key-DO-NOT-USE-IN-PRODUCTION-12345':
@@ -138,14 +89,6 @@ print("="*60)
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formyla.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# WAL mode + busy_timeout to prevent "database is locked" with APScheduler
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'connect_args': {
-        'timeout': 30,           # wait up to 30s for lock
-        'check_same_thread': False,
-    },
-    'pool_pre_ping': True,
-}
 
 # Flask-Login configuration (долгоживущие cookie)
 from datetime import timedelta, datetime
@@ -188,27 +131,6 @@ app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 # Initialize database, login manager and mail
 from models import db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress, AdaptiveTestResult, init_db
 init_db(app)
-
-# Enable WAL mode for SQLite to prevent "database is locked" with APScheduler
-# WAL allows concurrent reads while writing — critical for multi-threaded Flask
-try:
-    from sqlalchemy import event as _sa_event
-    from sqlalchemy.engine import Engine as _Engine
-    import sqlite3 as _sqlite3
-
-    @_sa_event.listens_for(_Engine, 'connect')
-    def _set_sqlite_pragma(dbapi_conn, connection_record):
-        if isinstance(dbapi_conn, _sqlite3.Connection):
-            cursor = dbapi_conn.cursor()
-            cursor.execute('PRAGMA journal_mode=WAL')
-            cursor.execute('PRAGMA busy_timeout=30000')
-            cursor.execute('PRAGMA synchronous=NORMAL')
-            cursor.execute('PRAGMA foreign_keys=ON')
-            cursor.close()
-
-    print('[DB] SQLite WAL mode + busy_timeout=30s configured')
-except Exception as _wal_err:
-    print(f'[DB] WAL mode setup warning: {_wal_err}')
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
 # This runs on every startup to ensure database schema is up to date
@@ -1767,8 +1689,6 @@ def tutor_history():
 
 @app.route("/api/tutor/send", methods=["POST"])
 @login_required
-@limiter.limit("10/minute")
-@require_feature('ai_explanation')
 def tutor_send():
     """Отправить сообщение тьютору (специализированному агенту)."""
     if not DEEPSEEK_AVAILABLE:
@@ -1845,38 +1765,15 @@ def tutor_send():
         })
         
     except Exception as e:
-        import traceback as _tb
-        _trace = _tb.format_exc()
-        _err_type = type(e).__name__
-        _err_msg = str(e)
-
-        # Detailed log for admin
-        app.logger.error(
-            f"[TUTOR] {_err_type}: {_err_msg[:300]}\n{_trace[:1000]}"
-        )
-        print(f"[TUTOR ERROR] {_err_type}: {_err_msg[:200]}", flush=True)
-
-        # User-friendly message based on error type
-        if 'database is locked' in _err_msg.lower():
-            user_msg = 'Сервер перегружен. Попробуйте через несколько секунд.'
-        elif '429' in _err_msg or 'rate' in _err_msg.lower():
-            user_msg = 'Превышен лимит запросов к AI. Подождите минуту.'
-        elif '401' in _err_msg or 'unauthorized' in _err_msg.lower():
-            user_msg = 'Ошибка авторизации AI. Администратор уведомлён.'
-        elif 'timeout' in _err_msg.lower() or 'timed out' in _err_msg.lower():
-            user_msg = 'AI не ответил вовремя. Попробуйте ещё раз.'
-        elif 'connection' in _err_msg.lower():
-            user_msg = 'Нет связи с AI. Проверьте интернет и попробуйте снова.'
-        else:
-            user_msg = f'Ошибка AI ({_err_type}). Попробуйте ещё раз.'
-
-        return jsonify({'error': user_msg}), 500
+        print(f"Ошибка чата: {e}", flush=True)
+        app.logger.error(f"AI Tutor error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Ошибка AI: {str(e)}'}), 500
 
 
 @app.route("/api/tutor/hint/<int:problem_id>", methods=["POST"])
 @login_required
-@limiter.limit("10/minute")
-@require_feature('ai_explanation')
 def get_ai_hint(problem_id):
     """Получить наводящую подсказку от AI для конкретной задачи."""
     if not DEEPSEEK_AVAILABLE:
@@ -1910,8 +1807,6 @@ def get_ai_hint(problem_id):
 
 @app.route("/api/tutor/solution/<int:problem_id>", methods=["POST"])
 @login_required
-@limiter.limit("10/minute")
-@require_feature('ai_explanation')
 def get_ai_solution(problem_id):
     """Получить полное решение от AI для конкретной задачи."""
     if not DEEPSEEK_AVAILABLE:
@@ -1942,94 +1837,6 @@ def get_ai_solution(problem_id):
     except Exception as e:
         app.logger.error(f"AI Solution error: {e}")
         return jsonify({'error': f'Ошибка генерации решения: {str(e)}'}), 500
-
-
-# ── Subscription routes ───────────────────────────────────────────────────────
-
-PAYMENT_ENABLED = False  # Включить когда подключим ЮKassa
-
-
-@app.route("/subscribe")
-def subscribe_page():
-    """Страница выбора тарифа."""
-    from services.subscription import get_subscription_service
-    sub_service = get_subscription_service()
-
-    current_plan = 'free'
-    plan_expires_at = None
-
-    if current_user.is_authenticated:
-        plan_info = sub_service.get_user_plan(current_user.id)
-        current_plan = plan_info['plan']
-        expires_raw = plan_info.get('expires_at')
-        if expires_raw:
-            try:
-                from datetime import datetime as _dt
-                dt = _dt.fromisoformat(str(expires_raw))
-                plan_expires_at = dt.strftime('%d.%m.%Y')
-            except Exception:
-                plan_expires_at = str(expires_raw)[:10]
-
-    return render_template(
-        'subscribe.html',
-        current_plan=current_plan,
-        plan_expires_at=plan_expires_at,
-        payment_enabled=PAYMENT_ENABLED,
-    )
-
-
-@app.route("/api/subscribe", methods=["POST"])
-@login_required
-def api_subscribe():
-    """Активировать Premium (бета — без оплаты)."""
-    if PAYMENT_ENABLED:
-        return jsonify({'success': False, 'message': 'Оплата ещё не подключена'}), 503
-
-    data = request.get_json() or {}
-    plan = data.get('plan', 'premium_monthly')
-
-    # Разрешаем только известные планы
-    allowed_plans = ('premium_monthly', 'premium_yearly')
-    if plan not in allowed_plans:
-        return jsonify({'success': False, 'message': 'Неизвестный тариф'}), 400
-
-    try:
-        from services.subscription import get_subscription_service
-        sub_service = get_subscription_service()
-        result = sub_service.activate_premium(
-            user_id=current_user.id,
-            plan=plan,
-            is_beta=True,
-        )
-        return jsonify({
-            'success': True,
-            'message': f'{result["display_name"]} активирован!',
-            'expires_at': result['expires_at'],
-            'plan': result['plan'],
-        })
-    except Exception as e:
-        app.logger.error(f'[api_subscribe] Error: {e}')
-        return jsonify({'success': False, 'message': f'Ошибка: {str(e)}'}), 500
-
-
-@app.route("/api/cancel", methods=["POST"])
-@login_required
-def api_cancel_subscription():
-    """Отменить подписку."""
-    try:
-        from services.subscription import get_subscription_service
-        sub_service = get_subscription_service()
-        cancelled = sub_service.cancel_subscription(current_user.id)
-        if cancelled:
-            return jsonify({'success': True, 'message': 'Подписка отменена. Доступ сохраняется до конца периода.'})
-        else:
-            return jsonify({'success': False, 'message': 'Активная подписка не найдена'}), 404
-    except Exception as e:
-        app.logger.error(f'[api_cancel] Error: {e}')
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-
-# ─────────────────────────────────────────────────────────────────────────────
 
 
 @app.route("/profile")
@@ -2154,11 +1961,6 @@ def profile():
     
     # JSON for radar chart
     mastery_list_json = [{'name': m['name_ru'], 'value': m['mastery']} for m in mastery_list]
-
-    # ── Subscription data for profile ──
-    from services.subscription import get_subscription_service as _get_sub_svc
-    _sub_svc = _get_sub_svc()
-    subscription_display = _sub_svc.get_usage_for_display(current_user.id)
     
     return render_template('profile.html',
                          user=current_user,
@@ -2170,8 +1972,7 @@ def profile():
                          mastery_list=mastery_list,
                          mastery_list_json=mastery_list_json,
                          overall_level=overall_level,
-                         ai_recommendation=ai_recommendation,
-                         subscription=subscription_display)
+                         ai_recommendation=ai_recommendation)
 
 
 # ============================================================
@@ -3565,8 +3366,6 @@ def adaptive_test_simple_submit():
 
 
 @app.route("/api/check_adaptive_answer", methods=["POST"])
-@limiter.limit("30/minute")
-@require_feature('task')
 def check_adaptive_answer():
     """
     API endpoint для проверки ответа через DeepSeek AI.
@@ -3788,14 +3587,10 @@ def check_adaptive_answer():
                     if score == -1:
                         try:
                             from services.ai_tutor_v2 import tutor_explain
-                            from services.subscription import get_subscription_service as _get_sub
-                            _sub_svc = _get_sub()
-                            _plan = _sub_svc.get_user_plan(current_user.id) if current_user.is_authenticated else {'ai_max_tokens': 2000}
                             tutor_result = tutor_explain(
                                 task=current_task,
                                 user_answer=user_answer,
                                 ai_client=ai_client,
-                                max_tokens=_plan.get('ai_max_tokens', 2000),
                             )
                             feedback = tutor_result['solution']
                             _log_tutor_call(
@@ -5011,55 +4806,6 @@ def admin_tutor_stats():
     )
 
 
-# ── Admin: Subscription management ──────────────────────────────────────────
-
-@app.route("/admin/grant_premium/<int:user_id>")
-def admin_grant_premium(user_id):
-    """Выдать Premium вручную (только для администратора)."""
-    if not current_user.is_authenticated or current_user.id != 1:
-        return redirect(url_for('login'))
-
-    try:
-        from services.subscription import get_subscription_service
-        sub_service = get_subscription_service()
-        result = sub_service.activate_premium(
-            user_id=user_id,
-            plan='premium_monthly',
-            is_beta=True,
-        )
-        flash(f'Premium выдан пользователю {user_id} до {result["expires_at"][:10]}', 'success')
-    except Exception as e:
-        flash(f'Ошибка: {e}', 'error')
-
-    return redirect(url_for('admin_tutor_stats'))
-
-
-@app.route("/admin/usage")
-def admin_usage():
-    """Топ-20 пользователей по использованию за последние 30 дней."""
-    if not current_user.is_authenticated or current_user.id != 1:
-        return redirect(url_for('login'))
-
-    from services.subscription import get_subscription_service
-    sub_service = get_subscription_service()
-    top_users = sub_service.get_top_users_by_usage(days=30, limit=20)
-
-    # Итоги
-    total_ai = sum(u['total_ai'] for u in top_users)
-    total_tasks = sum(u['total_tasks'] for u in top_users)
-    total_cost = sum(u['total_cost'] for u in top_users)
-
-    return render_template(
-        'admin_usage.html',
-        top_users=top_users,
-        total_ai=total_ai,
-        total_tasks=total_tasks,
-        total_cost=round(total_cost, 4),
-    )
-
-# ─────────────────────────────────────────────────────────────────────────────
-
-
 @app.route("/admin/toggle_task_flag/<int:task_id>", methods=["POST"])
 def admin_toggle_task_flag(task_id):
     """Поставить / снять флаг is_flagged на задаче."""
@@ -5768,171 +5514,6 @@ def public_profile(user_id):
         topic_meta=TOPIC_META,
     )
 
-
-# ─── Раздел "Написать олимпиады" ─────────────────────────────────────────────
-
-@app.route("/olympiads/write")
-@login_required
-def olympiad_writer():
-    """Страница выбора олимпиады/этапа/класса для генерации задачи."""
-    from services.olympiad_generator import get_available_olympiads_for_writer
-    available = get_available_olympiads_for_writer(OLYMPIADS_DB)
-    return render_template(
-        "olympiad_writer.html",
-        available_olympiads=available,
-    )
-
-
-@app.route("/api/olympiad/generate", methods=["POST"])
-@login_required
-@limiter.limit("10 per minute")
-def api_olympiad_generate():
-    """
-    API: Генерация новой олимпиадной задачи.
-
-    POST JSON:
-        {
-            "olympiad_slug": "vsosh",
-            "round_key": "final",
-            "class_level": 9
-        }
-
-    Returns JSON:
-        {
-            "success": bool,
-            "task": {
-                "task_text": str,
-                "correct_answer": str,
-                "solution": str,
-                "topic": str,
-                "difficulty": int,
-                "key_idea": str
-            } | null,
-            "attempts": int,
-            "error": str | null
-        }
-    """
-    if not DEEPSEEK_AVAILABLE:
-        return jsonify({
-            'success': False,
-            'task': None,
-            'attempts': 0,
-            'error': 'AI-генерация временно недоступна',
-        }), 503
-
-    data = request.get_json(silent=True) or {}
-    olympiad_slug = data.get('olympiad_slug', '').strip()
-    round_key = data.get('round_key', '').strip()
-    class_level_raw = data.get('class_level')
-
-    # Валидация входных данных
-    if not olympiad_slug or not round_key or class_level_raw is None:
-        return jsonify({
-            'success': False,
-            'task': None,
-            'attempts': 0,
-            'error': 'Необходимо указать olympiad_slug, round_key и class_level',
-        }), 400
-
-    try:
-        class_level = int(class_level_raw)
-        if not 5 <= class_level <= 11:
-            raise ValueError("Класс вне диапазона 5-11")
-    except (ValueError, TypeError):
-        return jsonify({
-            'success': False,
-            'task': None,
-            'attempts': 0,
-            'error': f'Некорректный класс: {class_level_raw}. Допустимо 5-11.',
-        }), 400
-
-    # Находим название олимпиады и этапа
-    olympiad_name = olympiad_slug
-    round_name = round_key
-    for combo in OLYMPIADS_DB:
-        if combo.get('olympiad') == olympiad_slug:
-            olympiad_name = combo.get('olympiad_title', olympiad_slug)
-            if combo.get('round') == round_key:
-                round_name = combo.get('round_title', round_key)
-                break
-
-    # Генерируем задачу
-    from services.olympiad_generator import generate_olympiad_task
-    result = generate_olympiad_task(
-        olympiad_slug=olympiad_slug,
-        olympiad_name=olympiad_name,
-        round_key=round_key,
-        round_name=round_name,
-        class_level=class_level,
-        olympiads_db=OLYMPIADS_DB,
-        max_retries=3,
-        user_id=current_user.id if current_user.is_authenticated else None,
-    )
-
-    if result['success']:
-        return jsonify({
-            'success': True,
-            'task': result['task'],
-            'attempts': result['attempts'],
-            'error': None,
-        })
-    else:
-        return jsonify({
-            'success': False,
-            'task': None,
-            'attempts': result['attempts'],
-            'error': (
-                result['last_errors'][0]
-                if result['last_errors']
-                else 'Не удалось сгенерировать задачу'
-            ),
-        }), 500
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TEMPORARY: One-time DB upload endpoint for Render persistent disk migration
-# REMOVE AFTER USE!
-@app.route('/admin/upload-db', methods=['POST'])
-def upload_db():
-    """
-    Temporary endpoint to upload SQLite DB to Render persistent disk.
-    Protected by DB_UPLOAD_TOKEN env variable.
-    DELETE THIS ENDPOINT AFTER MIGRATION IS COMPLETE.
-    """
-    import shutil
-    upload_token = os.environ.get('DB_UPLOAD_TOKEN', '')
-    if not upload_token:
-        return jsonify({'error': 'DB_UPLOAD_TOKEN not set on server'}), 403
-
-    provided_token = request.headers.get('X-Upload-Token', '')
-    if not provided_token or provided_token != upload_token:
-        return jsonify({'error': 'Unauthorized'}), 403
-
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
-
-    f = request.files['file']
-    if not f.filename.endswith('.db'):
-        return jsonify({'error': 'Only .db files allowed'}), 400
-
-    db_path = os.path.join(app.instance_path, 'formyla.db')
-    backup_path = db_path + '.backup_before_upload'
-
-    # Backup existing DB if present
-    if os.path.exists(db_path):
-        shutil.copy2(db_path, backup_path)
-
-    f.save(db_path)
-    size = os.path.getsize(db_path)
-    return jsonify({
-        'success': True,
-        'db_path': db_path,
-        'size_bytes': size,
-        'size_mb': round(size / 1024 / 1024, 2),
-        'backup': backup_path if os.path.exists(backup_path) else None,
-    })
-# END TEMPORARY ENDPOINT
-# ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
