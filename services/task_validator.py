@@ -1,5 +1,6 @@
 import re
 import json
+import difflib
 import logging
 from typing import Optional
 
@@ -26,6 +27,28 @@ RUSSIAN_MATH_WORDS = [
     'НОД', 'НОК', 'tg', 'ctg', 'arctg', 'arcctg',
 ]
 
+
+
+
+def is_plagiarism(generated_text: str, examples: list, threshold: float = 0.65):
+    """
+    Checks similarity between generated_text and any of the examples.
+    Returns (True, similarity) if similarity > threshold.
+    """
+    if not examples:
+        return False, 0.0
+
+    max_sim = 0.0
+    for example in examples:
+        gen_norm = re.sub(r'\d+', 'N', generated_text.lower())
+        gen_norm = re.sub(r'\s+', ' ', gen_norm).strip()
+        ex_norm = re.sub(r'\d+', 'N', str(example).lower())
+        ex_norm = re.sub(r'\s+', ' ', ex_norm).strip()
+
+        similarity = difflib.SequenceMatcher(None, gen_norm, ex_norm).ratio()
+        max_sim = max(max_sim, similarity)
+
+    return max_sim > threshold, max_sim
 
 def has_index_confusion(task_text: str) -> tuple:
     """
@@ -144,6 +167,9 @@ def fix_latex(text: str) -> str:
     if not text:
         return text
 
+    for u,l in [(chr(8730),r"\\sqrt"),(chr(8805),r"\\geq"),(chr(8804),r"\\leq"),(chr(8800),r"\\neq"),(chr(178),"2"),(chr(179),"3")]:
+        text=text.replace(u,l)
+
     # Сначала исправляем $$...$$ -> \[...\] (до одиночных $)
     text = re.sub(
         r'\$\$([^\$]{1,1000}?)\$\$',
@@ -250,7 +276,7 @@ def _extract_json_from_response(raw_response: str) -> Optional[dict]:
     return None
 
 
-def validate_generated_task(raw_response: str) -> dict:
+def validate_generated_task(raw_response: str, few_shot_texts=None) -> dict:
     """
     Парсит ответ LLM, валидирует структуру, фиксит LaTeX.
 
@@ -346,6 +372,61 @@ def validate_generated_task(raw_response: str) -> dict:
                 f'Условие содержит запрещённое слово: "{forbidden}"'
             )
             return {'valid': False, 'task': data, 'errors': errors}
+
+
+    # Минимальная длина решения
+    solution_text = str(data.get('solution', ''))
+    if len(solution_text.strip()) < 200:
+        errors.append(
+            f'Решение слишком короткое ({len(solution_text)} символов). '
+            f'Минимум 200, желательно 500+.'
+        )
+        return {'valid': False, 'task': data, 'errors': errors}
+
+    # Ответ не должен быть размытым
+    answer_text = str(data.get('correct_answer', '')).strip().lower()
+    vague_answers = [
+        'зависит', 'любой', 'любое', 'не определено',
+        'неизвестно', 'может быть разным', 'нет ответа'
+    ]
+    for vague in vague_answers:
+        if vague in answer_text:
+            errors.append(
+                f'Ответ размытый ("{answer_text[:50]}"). Нужен конкретный ответ.'
+            )
+            return {'valid': False, 'task': data, 'errors': errors}
+
+
+    # Проверяем плагиат относительно few-shot примеров
+    if few_shot_texts:
+        is_plag, sim = is_plagiarism(data['task_text'], few_shot_texts)
+        if is_plag:
+            errors.append(
+                f'Задача слишком похожа на пример из БД '
+                f'(схожесть {sim:.0%}). Нужна оригинальная.'
+            )
+            return {'valid': False, 'task': data, 'errors': errors}
+
+    # Проверяем упоминание авторов задач (признак копирования)
+    author_patterns = [
+        r'[А-ЯA-Z]\.\s*[А-ЯA-Z][а-яa-z]+',  # А. Храбров
+        r'автор', r'составитель',
+    ]
+    for pat in author_patterns:
+        if re.search(pat, data['task_text']):
+            errors.append(
+                'Условие содержит имя автора — признак копирования реальной задачи.'
+            )
+            return {'valid': False, 'task': data, 'errors': errors}
+
+    # Проверяем unicode-математику вместо LaTeX
+    unicode_math = re.findall(r'[√≥≤≠∈∑∫⩽⩾∀∃∩∪]', data['task_text'])
+    if len(unicode_math) >= 3:
+        errors.append(
+            'Условие содержит unicode-matematiku vmesto LaTeX. '
+            'Ispolzujte: \\sqrt, \\geq, \\leq, \\neq, \\in, \\sum, \\int.'
+        )
+        return {'valid': False, 'task': data, 'errors': errors}
 
     # Добавляем key_idea если отсутствует
     if 'key_idea' not in data or not data.get('key_idea'):

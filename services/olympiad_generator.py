@@ -99,6 +99,39 @@ OLYMPIAD_WRITER_PROMPT = """Ты — составитель олимпиадны
    ✅ ВСЕГДА в LaTeX: \\(10^{{100}}\\), \\(2^{{31}}\\), \\(10^9\\)
    ❌ НИКОГДА не пиши 10100, 231, 109 — это читается как обычные числа, а не степени
 
+
+6. TY SOZDAYOSH NOVUYU ORIGINALNUYU ZADACHU - ne kopiyu!
+
+Primery vyshe - eto OBRAZCY STILYA, TEMY I UROVNYA SLOZHNOSTI.
+Oni NE DLYA KOPIROVANIYA.
+
+TVOYA ZADACHA:
+1. Izuchi primery - pojmi TEMU
+2. Pojmi SLOZHNOST (kakoj klass, kakoj etap)
+3. Pojmi STIL FORMULIROVKI (kratkij, strogij)
+4. PRIDUMAJ NOVUYU zadachu toj zhe temy i slozhnosti
+
+ZAPRESHCHENO:
+- Kopirovat formulirovku primera slovo v slovo
+- Menyat tolko chisla v primere (eto plagiat)
+- Ispolzovat te zhe obekty chto v primere
+
+RAZRESHENO:
+- Zaimstvovat IDEYU metoda (naprimer razbieniena pary)
+- Ispolzovat tu zhe temu (naprimer delimost na 7)
+- Sokhraniyat uroven slozhnosti
+
+KRITERII KACHESTVA:
+1. KORREKTNOST: u zadachi SUSHCHESTVUET odnoznachnyj otvet
+2. RESHAEMOST: reshenie umeshchaetsya v 5-15 shagov
+3. OTVET: konkretnoe chislo, formula, ili yavnoe opisanie
+   NE 'zavisit ot...', NE 'mozhet byt lyubym'
+4. RESHENIE: polnoe poshagovoe obyasnenie, minimum 200 simvolov
+
+PERED VYDACHEJ ZADACHI:
+- Myslennno reshi ee sam
+- Prover chto otvet sovpadaet s tem chto napishesh
+
 ═══════════════════════════════════════════════════════
 ФОРМАТ ОТВЕТА — строго JSON, без markdown блоков:
 
@@ -200,7 +233,7 @@ def get_few_shot_examples(
     round_key: str,
     class_level: int,
     olympiads_db: list,
-    limit: int = 7
+    limit: int = 2
 ) -> str:
     """
     Берёт N случайных задач этого этапа/класса из OLYMPIADS_DB.
@@ -293,10 +326,21 @@ def generate_olympiad_task(
     # Импортируем здесь чтобы избежать циклических импортов
     from services.task_validator import validate_generated_task
 
-    # Получаем few-shot примеры
+    # Получаем few-shot примеры (limit=2 для снижения плагиата)
     examples = get_few_shot_examples(
         olympiad_slug, round_key, class_level, olympiads_db
     )
+    # Извлекаем тексты задач для проверки плагиата
+    few_shot_raw = []
+    for combo in olympiads_db:
+        if (combo.get('olympiad') == olympiad_slug
+                and str(combo.get('grade', '')) == str(class_level)):
+            for prob in combo.get('problems', []):
+                t = prob.get('text', '').strip()
+                if t and len(t) > 30:
+                    few_shot_raw.append(t)
+    import random as _random
+    few_shot_texts = _random.sample(few_shot_raw, min(20, len(few_shot_raw)))
 
     prompt = OLYMPIAD_WRITER_PROMPT.format(
         olympiad_name=olympiad_name,
@@ -322,7 +366,7 @@ def generate_olympiad_task(
 
     for attempt in range(1, max_retries + 1):
         # Растущая температура для разнообразия при перегенерации
-        temperature = 0.6 + (attempt - 1) * 0.15
+        temperature = 1.0 + (attempt - 1) * 0.10
 
         logger.info(
             f"Генерация задачи: {olympiad_slug}/{round_key}/класс {class_level}, "
@@ -350,7 +394,7 @@ def generate_olympiad_task(
             })
             continue
 
-        result = validate_generated_task(raw_response)
+        result = validate_generated_task(raw_response, few_shot_texts=few_shot_texts)
 
         attempts_log.append({
             'attempt': attempt,

@@ -129,5 +129,21 @@ document.querySelector(".submit-form").addEventListener("submit", function() {
     document.querySelector(".btn-submit").disabled = true;
 });
 </script>
+<script>
+window.addEventListener('load', function() {
+  if (typeof renderMathInElement === 'undefined') return;
+  document.querySelectorAll('.problem-text').forEach(function(el) {
+    renderMathInElement(el, {
+      delimiters: [
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '$$', right: '$$', display: true}
+      ],
+      throwOnError: false
+    });
+  });
+});
+</script>
 {% endblock %}
 
