@@ -5608,7 +5608,7 @@ def migrate_push_data():
             return jsonify({'error': f'model for table {table} not found'}), 404
 
         if wipe:
-            db.session.query(Model).delete()
+            db.session.execute(text(f'TRUNCATE TABLE "{table}" CASCADE'))
             db.session.commit()
 
         col_names = {c.name for c in Model.__table__.columns}
