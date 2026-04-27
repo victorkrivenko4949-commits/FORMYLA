@@ -5557,9 +5557,109 @@ def public_profile(user_id):
         topic_meta=TOPIC_META,
     )
 
+# === ВРЕМЕННЫЙ ENDPOINT ДЛЯ МИГРАЦИИ SQLite -> Postgres ===
+# Удалить после успешной миграции!
+MIGRATE_SECRET = os.environ.get('MIGRATE_SECRET', 'formyla-migrate-2026')
+
+@app.route('/api/migrate/tables', methods=['GET'])
+def migrate_list_tables():
+    """Список таблиц и количество строк в Postgres."""
+    secret = request.args.get('secret', '')
+    if secret != MIGRATE_SECRET:
+        return jsonify({'error': 'unauthorized'}), 403
+    result = {}
+    try:
+        from sqlalchemy import inspect as sa_inspect, text
+        inspector = sa_inspect(db.engine)
+        for table_name in inspector.get_table_names():
+            cnt = db.session.execute(text(f'SELECT COUNT(*) FROM "{table_name}"')).scalar()
+            result[table_name] = cnt
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    return jsonify(result)
+
+@app.route('/api/migrate/push', methods=['POST'])
+def migrate_push_data():
+    """Принимает данные таблицы и вставляет в Postgres."""
+    data = request.get_json(force=True)
+    secret = data.get('secret', '')
+    if secret != MIGRATE_SECRET:
+        return jsonify({'error': 'unauthorized'}), 403
+
+    table = data.get('table')
+    rows = data.get('rows', [])
+    wipe = data.get('wipe', False)
+
+    if not table or not rows:
+        return jsonify({'error': 'table and rows required'}), 400
+
+    try:
+        from sqlalchemy import text
+
+        # Получаем модель по имени таблицы
+        Model = None
+        for mp in db.Model.registry.mappers:
+            cls = mp.class_
+            if getattr(cls, '__tablename__', None) == table:
+                Model = cls
+                break
+
+        if not Model:
+            return jsonify({'error': f'model for table {table} not found'}), 404
+
+        if wipe:
+            db.session.query(Model).delete()
+            db.session.commit()
+
+        col_names = {c.name for c in Model.__table__.columns}
+        ok = 0
+        fail = 0
+        errors = []
+
+        for r in rows:
+            filtered = {k: v for k, v in r.items() if k in col_names}
+            try:
+                db.session.add(Model(**filtered))
+                ok += 1
+            except Exception:
+                db.session.rollback()
+                filtered.pop('id', None)
+                try:
+                    db.session.add(Model(**filtered))
+                    ok += 1
+                except Exception as e2:
+                    db.session.rollback()
+                    fail += 1
+                    if len(errors) < 5:
+                        errors.append(str(e2)[:200])
+
+        db.session.commit()
+
+        # Обновляем sequence
+        try:
+            for col in Model.__table__.columns:
+                if col.primary_key and col.autoincrement:
+                    seq = f"{table}_{col.name}_seq"
+                    max_val = db.session.execute(
+                        text(f'SELECT COALESCE(MAX("{col.name}"), 0) FROM "{table}"')
+                    ).scalar()
+                    if max_val and max_val > 0:
+                        db.session.execute(
+                            text(f"SELECT setval('{seq}', :val, true)"),
+                            {'val': max_val}
+                        )
+                        db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        return jsonify({'ok': ok, 'fail': fail, 'errors': errors})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+# === КОНЕЦ ENDPOINT МИГРАЦИИ ===
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
-
- 
 
