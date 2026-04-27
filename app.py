@@ -5561,6 +5561,32 @@ def public_profile(user_id):
 # Удалить после успешной миграции!
 MIGRATE_SECRET = os.environ.get('MIGRATE_SECRET', 'formyla-migrate-2026')
 
+@app.route('/api/migrate/alter', methods=['POST'])
+def migrate_alter_columns():
+    """Выполняет ALTER TABLE для расширения колонок."""
+    data = request.get_json(force=True)
+    secret = data.get('secret', '')
+    if secret != MIGRATE_SECRET:
+        return jsonify({'error': 'unauthorized'}), 403
+    try:
+        from sqlalchemy import text
+        alters = [
+            'ALTER TABLE adaptive_tasks ALTER COLUMN correct_answer TYPE TEXT',
+            'ALTER TABLE adaptive_tasks ALTER COLUMN flagged_reason TYPE TEXT',
+        ]
+        results = []
+        for sql in alters:
+            try:
+                db.session.execute(text(sql))
+                db.session.commit()
+                results.append(f'OK: {sql}')
+            except Exception as e:
+                db.session.rollback()
+                results.append(f'ERR: {sql} -> {str(e)[:100]}')
+        return jsonify({'results': results})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/migrate/tables', methods=['GET'])
 def migrate_list_tables():
     """Список таблиц и количество строк в Postgres."""
