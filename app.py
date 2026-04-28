@@ -291,6 +291,27 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] guest columns Warning: {e}")
 
+# AUTO-MIGRATION: Fix friendships table (old schema had user_1_id/user_2_id, new has requester_id/addressee_id)
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_fr
+        _inspector_fr = _inspect_fr(db.engine)
+        if 'friendships' in _inspector_fr.get_table_names():
+            _fr_cols = [col['name'] for col in _inspector_fr.get_columns('friendships')]
+            if 'user_1_id' in _fr_cols and 'requester_id' not in _fr_cols:
+                # Old schema — drop and recreate (table is likely empty or small)
+                db.session.execute(text("DROP TABLE friendships"))
+                db.session.commit()
+                db.create_all()
+                print("[AUTO-MIGRATION] ✓ Recreated friendships table with new schema")
+            else:
+                print("[AUTO-MIGRATION] ✓ friendships table schema OK")
+        else:
+            db.create_all()
+            print("[AUTO-MIGRATION] ✓ Created friendships table")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] friendships Warning: {e}")
+
 
 def _log_tutor_call(task_id: int, user_answer: str, result: dict):
     """Логирует вызов AI-тьютора v2 в таблицу tutor_calls."""
