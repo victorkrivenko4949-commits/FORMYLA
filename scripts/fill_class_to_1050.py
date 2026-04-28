@@ -150,7 +150,7 @@ def call_api(prompt):
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.85,
-        "max_tokens": 2000,
+        "max_tokens": 3000,
     }
     resp = requests.post(API_URL, headers=headers, json=payload, timeout=60)
     resp.raise_for_status()

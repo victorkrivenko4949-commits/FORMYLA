@@ -45,7 +45,7 @@
                         </div>
                         
                         <!-- Текст задачи -->
-                        <div style="color: var(--text-soft); line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap;">{{ task.text }}</div>
+                        <div class="task-math-text" style="color: var(--text-soft); line-height: 1.8; margin-bottom: 20px; white-space: pre-wrap;">{{ task.text | safe }}</div>
                         
                         <!-- Поле для ответа (ИСПРАВЛЕНО: используем task.id) -->
                         <div style="margin-top: 20px;">

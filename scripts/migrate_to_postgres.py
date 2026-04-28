@@ -81,38 +81,15 @@ except Exception as e:
     print(f'ОШИБКА: {e}')
     sys.exit(1)
 
-# --- Порядок таблиц (родительские таблицы первыми!) ---
-# Точный порядок: сначала таблицы без FK, потом зависимые
-EXACT_ORDER = [
-    'users',                    # 1. Базовая таблица
-    'secret_topics',            # 2. Без FK
-    'olympiad_secrets',         # 3. Без FK
-    'topic_mastery',            # 4. FK -> users
-    'user_streaks',             # 5. FK -> users
-    'user_topic_progress',      # 6. FK -> users
-    'daily_quests',             # 7. FK -> users
-    'chat_messages',            # 8. FK -> users
-    'notifications',            # 9. FK -> users
-    'oauth_accounts',           # 10. FK -> users
-    'friendships',              # 11. FK -> users
-    'mentorships',              # 12. FK -> users
-    'adaptive_tasks',           # 13. Без FK
-    'adaptive_tests',           # 14. FK -> users
-    'adaptive_test_results',    # 15. FK -> users, adaptive_tests
-    'adaptive_test_problems',   # 16. FK -> adaptive_tests
-    'mock_exams',               # 17. FK -> users
-    'mock_exam_tasks',          # 18. FK -> mock_exams
-    'olympiad_generation_log',  # 19. Без FK
-    'subscriptions',            # 20. FK -> users
-    'tutor_calls',              # 21. FK -> users
-    'usage_daily',              # 22. FK -> users
-]
+# --- Порядок таблиц ---
+priority = ['user', 'topic', 'category', 'tag',
+            'article', 'olympiad', 'problem']
 
 def prio(t):
-    try:
-        return EXACT_ORDER.index(t)
-    except ValueError:
-        return 999
+    for i, p in enumerate(priority):
+        if p in t.lower():
+            return i
+    return 999
 
 ordered = sorted(sqlite_tables, key=prio)
 

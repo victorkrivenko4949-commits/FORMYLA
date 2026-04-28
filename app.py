@@ -62,13 +62,26 @@ except ImportError:
 
 
 app = Flask(__name__)
-# CRITICAL: SECRET_KEY must be consistent across restarts to maintain session integrity
-# Using a fallback that's consistent for development, but MUST be set in production
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-DO-NOT-USE-IN-PRODUCTION-12345')
 
-# Validate SECRET_KEY is set properly
-if app.secret_key == 'dev-secret-key-DO-NOT-USE-IN-PRODUCTION-12345':
-    print("⚠️  WARNING: Using default SECRET_KEY! Set SECRET_KEY environment variable in production!")
+# ── SECURITY: SECRET_KEY ──────────────────────────────────────────
+# В production (Render) SECRET_KEY ОБЯЗАН быть задан в Environment.
+# Без него все сессии подписываются одним ключом → утечка аккаунтов.
+_secret = os.environ.get('SECRET_KEY')
+_is_production = bool(os.environ.get('RENDER') or os.environ.get('DATABASE_URL'))
+
+if _secret:
+    app.secret_key = _secret
+elif _is_production:
+    # НА ПРОДЕ БЕЗ SECRET_KEY — КРИТИЧЕСКАЯ ОШИБКА
+    raise RuntimeError(
+        "🔴 CRITICAL: SECRET_KEY не задан в production!\n"
+        "   Установи в Render → Environment → SECRET_KEY = <случайная строка 64 символа>\n"
+        "   Генерация: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+else:
+    # Только для локальной разработки — стабильный ключ
+    app.secret_key = 'dev-secret-key-LOCAL-ONLY-NOT-FOR-PRODUCTION'
+    print("⚠️  WARNING: Используется дефолтный SECRET_KEY (только для локальной разработки!)")
 
 # Asset versioning for cache busting
 import time as _time
@@ -106,10 +119,11 @@ from datetime import timedelta, datetime
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Постоянные сессии на 30 дней
 domain_url = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
-app.config['REMEMBER_COOKIE_SECURE'] = domain_url.startswith('https')
+_is_https = domain_url.startswith('https') or _is_production
+app.config['REMEMBER_COOKIE_SECURE'] = _is_https
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = domain_url.startswith('https')
+app.config['SESSION_COOKIE_SECURE'] = _is_https
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # CRITICAL: Prevent JavaScript access to session cookie
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
@@ -288,6 +302,7 @@ def load_user(user_id):
 def add_security_headers(response):
     """Запрет кэширования страниц для авторизованных пользователей.
     Предотвращает показ чужого профиля при нажатии F5 / кнопки Назад.
+    Также добавляет Vary: Cookie чтобы CDN/proxy не кешировали ответы между пользователями.
     """
     try:
         if current_user.is_authenticated:
@@ -296,6 +311,11 @@ def add_security_headers(response):
             response.headers['Expires'] = '0'
     except Exception:
         pass  # current_user может быть недоступен вне request context
+
+    # Vary: Cookie — КРИТИЧЕСКИ ВАЖНО для Render/Cloudflare/CDN
+    # Без этого CDN может закешировать ответ одного пользователя и отдать другому
+    response.headers.setdefault('Vary', 'Cookie')
+
     # Базовые security headers для всех ответов
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
@@ -1944,13 +1964,14 @@ def profile():
     from models import TopicMastery
     
     TOPIC_META = {
-        'algebra':       {'name_ru': 'Алгебра',        'icon': '➗'},
-        'geometry':      {'name_ru': 'Геометрия',      'icon': '📐'},
-        'combinatorics': {'name_ru': 'Комбинаторика',  'icon': '🧩'},
-        'logic':         {'name_ru': 'Логика',         'icon': '🧠'},
-        'number_theory': {'name_ru': 'Теория чисел',   'icon': '🔢'},
-        'arithmetic':    {'name_ru': 'Арифметика',     'icon': '🧮'},
-        'kl_movement':   {'name_ru': 'Задачи на движение', 'icon': '🚂'},
+        'algebra':        {'name_ru': 'Алгебра',            'icon': '➗'},
+        'geometry':       {'name_ru': 'Геометрия',          'icon': '📐'},
+        'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': '🧩'},
+        'logic':          {'name_ru': 'Логика',             'icon': '🧠'},
+        'number_theory':  {'name_ru': 'Числа',              'icon': '🔢'},
+        'text_problems':  {'name_ru': 'Текст. задачи',      'icon': '📝'},
+        'arithmetic':     {'name_ru': 'Арифметика',         'icon': '🧮'},
+        'kl_movement':    {'name_ru': 'Задачи на движение',  'icon': '🚂'},
     }
     
     def get_level_label(mastery):
@@ -1967,42 +1988,59 @@ def profile():
         return 'champion'
     
     mastery_rows = TopicMastery.query.filter_by(user_id=current_user.id).all()
+    mastery_by_topic = {row.topic: row for row in mastery_rows}
+
+    # Build mastery_list with ALL topics from TOPIC_META (so radar always has all axes)
     mastery_list = []
-    for row in mastery_rows:
-        meta = TOPIC_META.get(row.topic, {'name_ru': row.topic, 'icon': '📚'})
+    for topic_key, meta in TOPIC_META.items():
+        row = mastery_by_topic.get(topic_key)
+        if row:
+            mastery_val = round(row.mastery, 3)
+            solved = row.solved
+            avg_level = round(row.avg_level, 1)
+        else:
+            mastery_val = 0.0
+            solved = 0
+            avg_level = 0.0
         mastery_list.append({
-            'topic': row.topic,
+            'topic': topic_key,
             'name_ru': meta['name_ru'],
             'icon': meta['icon'],
-            'mastery': round(row.mastery, 3),
-            'solved': row.solved,
-            'avg_level': round(row.avg_level, 1),
+            'mastery': mastery_val,
+            'solved': solved,
+            'avg_level': avg_level,
             'trend': 0,  # TODO: compute weekly trend
-            'level_category': get_level_category(row.mastery),
-            'level_label': get_level_label(row.mastery),
+            'level_category': get_level_category(mastery_val),
+            'level_label': get_level_label(mastery_val),
         })
-    mastery_list.sort(key=lambda x: -x['mastery'])
-    
-    # Overall level (average mastery → 1-10 scale)
-    if mastery_list:
-        avg_mastery = sum(m['mastery'] for m in mastery_list) / len(mastery_list)
+    # Sort: tested topics first (by mastery desc), then untested
+    mastery_list.sort(key=lambda x: (-1 if x['mastery'] > 0 else 0, -x['mastery']))
+
+    # Overall level (average mastery of tested topics → 1-10 scale)
+    tested = [m for m in mastery_list if m['mastery'] > 0]
+    if tested:
+        avg_mastery = sum(m['mastery'] for m in tested) / len(tested)
         overall_level = max(1, min(10, round(avg_mastery * 10)))
     else:
         overall_level = 1
-    
+
     # AI recommendation (simple rule-based, no API call to avoid latency)
     ai_recommendation = ''
-    if mastery_list:
-        weakest = mastery_list[-1]
+    if tested:
+        weakest = min(tested, key=lambda m: m['mastery'])
         ai_recommendation = (
             f"Сосредоточься на теме <strong>{weakest['name_ru']}</strong> — "
             f"твой уровень {int(weakest['mastery']*100)}%. "
             f"Реши 5 задач уровня {int(weakest['avg_level'])+1} для быстрого роста."
         )
+    elif mastery_list:
+        # User has no tested topics — suggest starting
+        untested_names = ', '.join(m['name_ru'] for m in mastery_list[:3])
+        ai_recommendation = f"Пройди адаптивный тест по одной из тем: {untested_names}!"
     else:
         ai_recommendation = "Пройди адаптивный тест, чтобы получить персональные рекомендации!"
-    
-    # JSON for radar chart
+
+    # JSON for radar chart — always all topics for full hexagonal shape
     mastery_list_json = [{'name': m['name_ru'], 'value': m['mastery']} for m in mastery_list]
     
     return render_template('profile.html',
@@ -5511,29 +5549,45 @@ def public_profile(user_id):
     # Mastery по темам
     from models import TopicMastery
     TOPIC_META = {
-        'algebra':       {'name_ru': 'Алгебра',        'icon': '➗'},
-        'geometry':      {'name_ru': 'Геометрия',      'icon': '📐'},
-        'combinatorics': {'name_ru': 'Комбинаторика',  'icon': '🧩'},
-        'logic':         {'name_ru': 'Логика',         'icon': '🧠'},
-        'number_theory': {'name_ru': 'Теория чисел',   'icon': '🔢'},
-        'arithmetic':    {'name_ru': 'Арифметика',     'icon': '🧮'},
-        'kl_movement':   {'name_ru': 'Движение',       'icon': '🚂'},
+        'algebra':        {'name_ru': 'Алгебра',            'icon': '➗'},
+        'geometry':       {'name_ru': 'Геометрия',          'icon': '📐'},
+        'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': '🧩'},
+        'logic':          {'name_ru': 'Логика',             'icon': '🧠'},
+        'number_theory':  {'name_ru': 'Числа',              'icon': '🔢'},
+        'text_problems':  {'name_ru': 'Текст. задачи',      'icon': '📝'},
+        'arithmetic':     {'name_ru': 'Арифметика',         'icon': '🧮'},
+        'kl_movement':    {'name_ru': 'Движение',           'icon': '🚂'},
     }
 
     mastery_records = TopicMastery.query.filter_by(user_id=user_id).all()
+    mastery_by_topic = {rec.topic: rec for rec in mastery_records}
+
+    # Build mastery_data with ALL topics from TOPIC_META (so radar always has all axes)
     mastery_data = []
-    for rec in mastery_records:
-        meta = TOPIC_META.get(rec.topic, {'name_ru': rec.topic, 'icon': '📚'})
-        mastery_data.append({
-            'topic': rec.topic,
-            'name_ru': meta['name_ru'],
-            'icon': meta['icon'],
-            'mastery': rec.mastery,
-            'solved': rec.solved,
-            'attempts': rec.attempts,
-            'avg_level': rec.avg_level,
-        })
-    mastery_data.sort(key=lambda x: x['mastery'], reverse=True)
+    for topic_key, meta in TOPIC_META.items():
+        rec = mastery_by_topic.get(topic_key)
+        if rec:
+            mastery_data.append({
+                'topic': topic_key,
+                'name_ru': meta['name_ru'],
+                'icon': meta['icon'],
+                'mastery': rec.mastery,
+                'solved': rec.solved,
+                'attempts': rec.attempts,
+                'avg_level': rec.avg_level,
+            })
+        else:
+            mastery_data.append({
+                'topic': topic_key,
+                'name_ru': meta['name_ru'],
+                'icon': meta['icon'],
+                'mastery': 0.0,
+                'solved': 0,
+                'attempts': 0,
+                'avg_level': 0.0,
+            })
+    # Sort: tested topics first (by mastery desc), then untested
+    mastery_data.sort(key=lambda x: (-1 if x['mastery'] > 0 else 0, -x['mastery']))
 
     # Последние тесты
     recent_tests = AdaptiveTestResult.query.filter_by(
@@ -5560,32 +5614,6 @@ def public_profile(user_id):
 # === ВРЕМЕННЫЙ ENDPOINT ДЛЯ МИГРАЦИИ SQLite -> Postgres ===
 # Удалить после успешной миграции!
 MIGRATE_SECRET = os.environ.get('MIGRATE_SECRET', 'formyla-migrate-2026')
-
-@app.route('/api/migrate/alter', methods=['POST'])
-def migrate_alter_columns():
-    """Выполняет ALTER TABLE для расширения колонок."""
-    data = request.get_json(force=True)
-    secret = data.get('secret', '')
-    if secret != MIGRATE_SECRET:
-        return jsonify({'error': 'unauthorized'}), 403
-    try:
-        from sqlalchemy import text
-        alters = [
-            'ALTER TABLE adaptive_tasks ALTER COLUMN correct_answer TYPE TEXT',
-            'ALTER TABLE adaptive_tasks ALTER COLUMN flagged_reason TYPE TEXT',
-        ]
-        results = []
-        for sql in alters:
-            try:
-                db.session.execute(text(sql))
-                db.session.commit()
-                results.append(f'OK: {sql}')
-            except Exception as e:
-                db.session.rollback()
-                results.append(f'ERR: {sql} -> {str(e)[:100]}')
-        return jsonify({'results': results})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/migrate/tables', methods=['GET'])
 def migrate_list_tables():
