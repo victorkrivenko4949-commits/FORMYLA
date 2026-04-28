@@ -116,8 +116,8 @@ print(f'[DB] Using: ' + _database_url.split('@')[0] + '@***')
 
 # Flask-Login configuration (долгоживущие cookie)
 from datetime import timedelta, datetime
-app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=30)
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Постоянные сессии на 30 дней
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=365)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)  # Постоянные сессии на 365 дней
 domain_url = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 _is_https = domain_url.startswith('https') or _is_production
 app.config['REMEMBER_COOKIE_SECURE'] = _is_https
@@ -154,7 +154,7 @@ app.config['YANDEX_CLIENT_SECRET'] = os.environ.get('YANDEX_CLIENT_SECRET')
 app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 
 # Initialize database, login manager and mail
-from models import db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress, AdaptiveTestResult, init_db
+from models import db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress, AdaptiveTestResult, TestResult, UserProgress, init_db
 init_db(app)
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
@@ -225,6 +225,56 @@ try:
         print("[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready")
 except Exception as e:
     print(f"[AUTO-MIGRATION] tutor_calls Warning: {e}")
+
+# AUTO-MIGRATION: Add needs_review columns to adaptive_tasks for AI-тьютор self-check
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_nr
+        _inspector_nr = _inspect_nr(db.engine)
+        if 'adaptive_tasks' in _inspector_nr.get_table_names():
+            _cols_nr = [col['name'] for col in _inspector_nr.get_columns('adaptive_tasks')]
+            _new_review_cols = {
+                'needs_review': 'BOOLEAN DEFAULT 0',
+                'llm_suggested_answer': 'TEXT',
+                'llm_suggested_solution': 'TEXT',
+                'review_reason': 'TEXT',
+                'review_flagged_at': 'TIMESTAMP',
+            }
+            for _col_name, _col_type in _new_review_cols.items():
+                if _col_name not in _cols_nr:
+                    db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {_col_name} {_col_type}"))
+                    db.session.commit()
+                    print(f"[AUTO-MIGRATION] ✓ Column '{_col_name}' added to adaptive_tasks")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] needs_review columns Warning: {e}")
+
+# AUTO-MIGRATION: Add guest access columns to users
+try:
+    with app.app_context():
+        # --- Guest access columns ---
+        try:
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN is_guest BOOLEAN DEFAULT 0"))
+            db.session.commit()
+            print("[migration] Added is_guest to users")
+        except Exception:
+            db.session.rollback()
+
+        try:
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN device_id VARCHAR(64)"))
+            db.session.commit()
+            print("[migration] Added device_id to users")
+        except Exception:
+            db.session.rollback()
+
+        # --- preferred_grade for Daily Quest ---
+        try:
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN preferred_grade INTEGER"))
+            db.session.commit()
+            print("[migration] Added preferred_grade to users")
+        except Exception:
+            db.session.rollback()
+except Exception as e:
+    print(f"[AUTO-MIGRATION] guest columns Warning: {e}")
 
 
 def _log_tutor_call(task_id: int, user_answer: str, result: dict):
@@ -298,12 +348,85 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+def _generate_device_id():
+    """Генерация уникального device_id"""
+    return str(uuid.uuid4())
+
+
+def ensure_guest_user(device_id):
+    """Создаёт или находит гостевого пользователя по device_id"""
+    user = User.query.filter_by(device_id=device_id, is_guest=True).first()
+    if user:
+        return user
+    
+    # Генерируем уникальный никнейм
+    import random
+    suffix = random.randint(1000, 9999)
+    nickname = f"Гость-{suffix}"
+    # Убедимся что никнейм уникален
+    while User.query.filter_by(nickname=nickname).first():
+        suffix = random.randint(1000, 9999)
+        nickname = f"Гость-{suffix}"
+    
+    guest = User(
+        email=f"guest_{device_id[:8]}@formyla.local",
+        nickname=nickname,
+        is_guest=True,
+        device_id=device_id
+    )
+    db.session.add(guest)
+    db.session.commit()
+    return guest
+
+
+@app.before_request
+def ensure_device_and_session():
+    """Гарантирует наличие device_id и пользователя в сессии"""
+    # Пропускаем статические файлы
+    if request.path.startswith('/static/'):
+        return
+    
+    # 1. Получаем или создаём device_id
+    device_id = session.get('device_id')
+    if not device_id:
+        device_id = request.cookies.get('formyla_device_id')
+    if not device_id:
+        device_id = _generate_device_id()
+    
+    session['device_id'] = device_id
+    
+    # 2. Если пользователь не авторизован — создаём гостя
+    if not current_user.is_authenticated:
+        guest = ensure_guest_user(device_id)
+        login_user(guest, remember=True)
+        session.permanent = True
+        session['user_id'] = guest.id
+    else:
+        # Обновляем device_id у текущего пользователя если нужно
+        if not current_user.device_id:
+            current_user.device_id = device_id
+            db.session.commit()
+        session['user_id'] = current_user.id
+
+
 @app.after_request
 def add_security_headers(response):
     """Запрет кэширования страниц для авторизованных пользователей.
     Предотвращает показ чужого профиля при нажатии F5 / кнопки Назад.
     Также добавляет Vary: Cookie чтобы CDN/proxy не кешировали ответы между пользователями.
     """
+    # Устанавливаем device_id cookie на 10 лет
+    device_id = session.get('device_id')
+    if device_id:
+        response.set_cookie(
+            'formyla_device_id',
+            device_id,
+            max_age=10 * 365 * 24 * 3600,  # 10 лет
+            httponly=True,
+            samesite='Lax',
+            secure=request.is_secure
+        )
+
     try:
         if current_user.is_authenticated:
             response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private, max-age=0'
@@ -351,9 +474,9 @@ else:
             }
         groups[key]["problems"].append({
             "num": len(groups[key]["problems"]) + 1,
-            "text": task.get("text", ""),
-            "answer": task.get("answer", ""),
-            "solution": task.get("solution", ""),
+            "text": task.get("text", "") or task.get("statement", ""),
+            "answer": task.get("answer", "") or task.get("current_answer", ""),
+            "solution": task.get("solution", "") or task.get("current_solution", ""),
         })
     COMBOS = []
     for i, combo in enumerate(groups.values(), start=1):
@@ -363,6 +486,35 @@ else:
 
 print(f"Пробников всего: {len(COMBOS)}, с задачами: {sum(1 for c in COMBOS if c.get('problems'))}")
 print(f"Адаптивный тест: загружено {len(ADAPTIVE_DB)} задач из adaptive_data")
+
+# Обогащаем OLYMPIADS_INFO данными из COMBOS (grades, rounds, full_title)
+_oi_map = {}
+for combo in COMBOS:
+    slug = combo.get('olympiad', '')
+    if not slug:
+        continue
+    if slug not in _oi_map:
+        _oi_map[slug] = {
+            'slug': slug,
+            'title': combo.get('olympiad_title', slug),
+            'full_title': combo.get('olympiad_title', slug),
+            'grades': set(),
+            'rounds': {},
+        }
+    g = combo.get('grade')
+    if g:
+        _oi_map[slug]['grades'].add(int(g))
+    rnd = combo.get('round', '')
+    rnd_title = combo.get('round_title', rnd)
+    if rnd and rnd not in _oi_map[slug]['rounds']:
+        _oi_map[slug]['rounds'][rnd] = rnd_title
+
+# Финализируем: конвертируем set -> sorted list
+for info in _oi_map.values():
+    info['grades'] = sorted(info['grades'])
+
+OLYMPIADS_INFO = list(_oi_map.values())
+print(f"OLYMPIADS_INFO: {len(OLYMPIADS_INFO)} олимпиад с grades/rounds")
 
 # Привязываем картинки к задачам
 if IMAGE_MAP:
@@ -720,8 +872,14 @@ def leaderboard():
     """Таблица лидеров - топ пользователей по рейтингу."""
     from models import User
     
+    # Заблокированные пользователи (не показываем в таблице лидеров)
+    BLOCKED_USER_IDS = {4}  # ID 4 = "писюн"
+    
     # Получить всех пользователей с никнеймами (публичные профили)
-    users = User.query.filter(User.nickname.isnot(None)).all()
+    users = User.query.filter(
+        User.nickname.isnot(None),
+        ~User.id.in_(BLOCKED_USER_IDS)
+    ).all()
     
     # Вычислить рейтинг для каждого пользователя
     leaderboard_data = []
@@ -1967,11 +2125,9 @@ def profile():
         'algebra':        {'name_ru': 'Алгебра',            'icon': '➗'},
         'geometry':       {'name_ru': 'Геометрия',          'icon': '📐'},
         'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': '🧩'},
-        'logic':          {'name_ru': 'Логика',             'icon': '🧠'},
-        'number_theory':  {'name_ru': 'Числа',              'icon': '🔢'},
-        'text_problems':  {'name_ru': 'Текст. задачи',      'icon': '📝'},
-        'arithmetic':     {'name_ru': 'Арифметика',         'icon': '🧮'},
-        'kl_movement':    {'name_ru': 'Задачи на движение',  'icon': '🚂'},
+        'number_theory':  {'name_ru': 'Теория чисел',       'icon': '🔢'},
+        'kl_movement':    {'name_ru': 'Задачи на движение', 'icon': '🚂'},
+        'knights_liars':  {'name_ru': 'Рыцари и лжецы',     'icon': '🧠'},
     }
     
     def get_level_label(mastery):
@@ -3484,14 +3640,78 @@ def check_adaptive_answer():
         # Получаем правильный ответ (если есть поле answer в модели)
         correct_answer = getattr(current_task, 'answer', '') or getattr(current_task, 'correct_answer', 'не указан')
         
+        # ── Определяем тип задачи: доказательство или числовой ответ ──
+        _ca_lower = (correct_answer or '').strip().lower()
+        _task_lower = (current_task.task_text or '').lower()
+        is_proof_task = (
+            _ca_lower in ('доказательство', 'доказать', 'proof', '')
+            or 'докажите' in _task_lower
+            or 'доказать' in _task_lower
+            or 'покажите, что' in _task_lower
+            or 'покажите что' in _task_lower
+            or 'обоснуйте' in _task_lower
+        )
+        
         # Проверяем доступность DeepSeek
         score = 1  # По умолчанию нейтральная оценка
         feedback = "Ваш ответ принят."
         
         if DEEPSEEK_AVAILABLE:
             try:
-                # Формируем промпт для DeepSeek
-                system_prompt = """Ты — проверяющий математических задач платформы FORMYLA.
+                # ── Выбираем промпт в зависимости от типа задачи ──
+                if is_proof_task:
+                    # ПРОМПТ ДЛЯ ЗАДАЧ-ДОКАЗАТЕЛЬСТВ
+                    system_prompt = """Ты — проверяющий математических доказательств платформы FORMYLA.
+
+ЗАДАЧА УЧЕНИКА — ДОКАЗАТЬ УТВЕРЖДЕНИЕ. Это НЕ задача с числовым ответом.
+Ученик должен предоставить логическое рассуждение (доказательство).
+
+АЛГОРИТМ ПРОВЕРКИ:
+1. Прочитай условие задачи — пойми, ЧТО нужно доказать.
+2. Прочитай эталонное решение (если есть) — пойми ИДЕЮ доказательства.
+3. Прочитай решение ученика — проверь его ЛОГИКУ.
+4. ВАЖНО: у доказательства может быть МНОГО правильных путей. Ученик НЕ обязан повторять эталон.
+
+КРИТИЧЕСКИ ВАЖНО:
+✅ Утверждение в задаче ВЕРНО (иначе его не просили бы доказывать). НЕ ПЫТАЙСЯ опровергнуть его!
+✅ Оценивай ЛОГИКУ рассуждений ученика, а не совпадение с эталоном
+✅ Если ученик привёл корректное доказательство (пусть другим методом) — это score: 2
+✅ Если идея верная, но есть пробелы в логике — это score: 1
+❌ ЗАПРЕЩЕНО утверждать, что доказываемое утверждение ложно
+❌ ЗАПРЕЩЕНО приводить "контрпримеры" к утверждению, которое нужно доказать
+❌ ЗАПРЕЩЕНО отвергать верное доказательство из-за отличия от эталона
+
+СИСТЕМА БАЛЛОВ:
+score = 2 (ВЕРНО, +1 уровень):
+  - Доказательство логически корректно и полно
+  - Все ключевые шаги обоснованы
+  - Допускаются мелкие стилистические недочёты
+
+score = 1 (ЧАСТИЧНО, уровень без изменений):
+  - Идея доказательства верная, но есть логические пробелы
+  - Не все случаи рассмотрены
+  - Есть верные шаги, но доказательство неполное
+
+score = -1 (НЕВЕРНО, -1 уровень):
+  - Доказательство содержит грубую логическую ошибку
+  - Ученик не понял, что нужно доказать
+  - Решение пустое или не относится к задаче
+
+ФОРМАТ ОТВЕТА — СТРОГО JSON (БЕЗ markdown маркеров):
+{
+  "score": X,
+  "feedback": "текст разбора"
+}
+
+ПРАВИЛА ДЛЯ FEEDBACK:
+- Используй LaTeX: \\( формула \\) для inline, \\[ формула \\] для display
+- Будь конструктивным и понятным школьнику
+- Если доказательство верное — похвали и отметь ключевую идею
+- Если есть ошибки — укажи конкретно где и почему
+- НЕ оборачивай JSON в markdown блоки"""
+                else:
+                    # ПРОМПТ ДЛЯ ЗАДАЧ С ЧИСЛОВЫМ ОТВЕТОМ (оригинальный)
+                    system_prompt = """Ты — проверяющий математических задач платформы FORMYLA.
 У тебя ЕСТЬ правильный ответ из базы данных. Твоя задача: сравнить ответ ученика с КАНОНИЧЕСКИМ ответом и дать конструктивный фидбек.
 
 КРИТИЧЕСКИ ВАЖНО:
@@ -3581,7 +3801,17 @@ def check_adaptive_answer():
    - Будь конструктивным и понятным школьнику
    - НЕ оборачивай JSON в markdown блоки"""
 
-                user_prompt = f"""Задача: {current_task.task_text}
+                if is_proof_task:
+                    _etalon_sol = (current_task.solution or "")[:2000]
+                    user_prompt = ""
+                    user_prompt += "\u0417\u0430\u0434\u0430\u0447\u0430 (\u0414\u041e\u041a\u0410\u0417\u0410\u0422\u0415\u041b\u042c\u0421\u0422\u0412\u041e): " + current_task.task_text + "\n\n"
+                    user_prompt += "\u042d\u0442\u0430\u043b\u043e\u043d\u043d\u043e\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0438\u0437 \u0411\u0414:\n" + (_etalon_sol if _etalon_sol else "(\u043d\u0435 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e)") + "\n\n"
+                    user_prompt += "\u0420\u0435\u0448\u0435\u043d\u0438\u0435 \u0443\u0447\u0435\u043d\u0438\u043a\u0430: " + user_answer + "\n"
+                    if user_solution:
+                        user_prompt += "\u041f\u043e\u0434\u0440\u043e\u0431\u043d\u043e\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u0435:\n" + user_solution + "\n"
+                    user_prompt += "\n\u041e\u0446\u0435\u043d\u0438 \u0434\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u043e \u0438 \u0434\u0430\u0439 \u0444\u0438\u0434\u0431\u0435\u043a \u0432 \u0444\u043e\u0440\u043c\u0430\u0442\u0435 JSON."
+                else:
+                    user_prompt = f"""Задача: {current_task.task_text}
 
 Правильный ответ: {correct_answer}
 
@@ -3663,8 +3893,8 @@ def check_adaptive_answer():
                     feedback = str(ai_data.get('feedback', 'Ответ проверен.'))
                     print(f"[DEBUG] Parsed score: {score}, feedback length: {len(feedback)}")
 
-                    # ── AI-тьютор v2: если ответ НЕВЕРНЫЙ — заменяем feedback ──
-                    # Паттерн think→distill: передаёт solution из БД, без галлюцинаций
+                    # ── AI-тьютор v2: если ответ НЕВЕРНЫЙ — тьютор решает сам ──
+                    # Тьютор самостоятельно решает задачу и может исправить БД-ответ
                     if score == -1:
                         try:
                             from services.ai_tutor_v2 import tutor_explain
@@ -3673,7 +3903,12 @@ def check_adaptive_answer():
                                 user_answer=user_answer,
                                 ai_client=ai_client,
                             )
+                            # Используем разбор и ответ ОТ LLM, а не из БД
                             feedback = tutor_result['solution']
+                            # FIX: override score if tutor says user is correct
+                            if tutor_result.get('user_correct'):
+                                score = 2
+                                print(f'[tutor_v2] Score overridden to 2 (tutor says correct)')
                             _log_tutor_call(
                                 task_id=current_task.id,
                                 user_answer=user_answer,
@@ -3681,6 +3916,8 @@ def check_adaptive_answer():
                             )
                             print(f"[tutor_v2] status={tutor_result['status']}, "
                                   f"errors={tutor_result['errors']}, "
+                                  f"needs_review={tutor_result.get('needs_review', False)}, "
+                                  f"llm_answer={tutor_result.get('answer', '?')}, "
                                   f"feedback_len={len(feedback)}")
                         except Exception as tutor_err:
                             app.logger.warning(
@@ -4910,6 +5147,78 @@ def admin_toggle_task_flag(task_id):
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
+# ── Админ-страница: задачи с расхождением LLM vs БД ─────────────
+
+@app.route("/admin/needs_review")
+def admin_needs_review():
+    """Список задач, где AI-тьютор нашёл расхождение с БД-ответом."""
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+
+    tasks = db.session.execute(text("""
+        SELECT id, class_level, topic, task_text,
+               correct_answer AS db_answer,
+               llm_suggested_answer,
+               llm_suggested_solution,
+               review_reason,
+               review_flagged_at
+        FROM adaptive_tasks
+        WHERE needs_review = 1
+        ORDER BY review_flagged_at DESC
+        LIMIT 100
+    """)).fetchall()
+
+    return render_template('admin_needs_review.html', tasks=tasks)
+
+
+@app.route("/admin/needs_review/action/<int:task_id>", methods=["POST"])
+def admin_needs_review_action(task_id):
+    """Обработка действий админа по задачам needs_review."""
+    if not current_user.is_authenticated:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
+    try:
+        data = request.get_json() or {}
+        action = data.get('action', '')
+        task = AdaptiveTask.query.get_or_404(task_id)
+
+        if action == 'accept_llm':
+            # Принять ответ LLM — заменить correct_answer
+            if task.llm_suggested_answer:
+                task.correct_answer = task.llm_suggested_answer
+            if task.llm_suggested_solution:
+                task.solution = task.llm_suggested_solution
+            task.needs_review = False
+            task.review_reason = None
+            task.review_flagged_at = None
+            db.session.commit()
+            return jsonify({'status': 'ok', 'action': 'accept_llm', 'task_id': task_id})
+
+        elif action == 'keep_old':
+            # Оставить старый ответ — просто снять флаг
+            task.needs_review = False
+            task.llm_suggested_answer = None
+            task.llm_suggested_solution = None
+            task.review_reason = None
+            task.review_flagged_at = None
+            db.session.commit()
+            return jsonify({'status': 'ok', 'action': 'keep_old', 'task_id': task_id})
+
+        elif action == 'delete_task':
+            # Пометить задачу как битую
+            task.is_flagged = True
+            task.flagged_reason = f'Удалена через needs_review: {task.review_reason or "нет причины"}'
+            task.needs_review = False
+            db.session.commit()
+            return jsonify({'status': 'ok', 'action': 'delete_task', 'task_id': task_id})
+
+        else:
+            return jsonify({'status': 'error', 'message': f'Unknown action: {action}'}), 400
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 @app.route("/admin/fix_latex_rac", methods=["GET", "POST"])
 def admin_fix_latex_rac():
     """
@@ -5122,6 +5431,30 @@ def admin_seed_secrets():
 # DAILY QUEST ROUTES
 # ============================================================================
 
+@app.route('/api/set_grade', methods=['POST'])
+@login_required
+def api_set_grade():
+    """API: Установить предпочтительный класс для Daily Quest"""
+    data = request.get_json(silent=True) or {}
+    grade = data.get('grade')
+
+    if grade is None:
+        return jsonify({'success': False, 'error': 'Не указан класс'}), 400
+
+    try:
+        grade = int(grade)
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': 'Класс должен быть числом'}), 400
+
+    if grade not in range(5, 12):  # 5-11
+        return jsonify({'success': False, 'error': 'Класс должен быть от 5 до 11'}), 400
+
+    current_user.preferred_grade = grade
+    db.session.commit()
+
+    return jsonify({'success': True, 'grade': grade})
+
+
 @app.route('/daily')
 @login_required
 def daily_quest_main():
@@ -5129,6 +5462,15 @@ def daily_quest_main():
     from services.daily_quest_service import get_today_quest, get_quest_tasks
     from services.streak_service import get_streak_stats
     from markupsafe import Markup
+    
+    # Если класс не выбран — показываем страницу выбора
+    if not current_user.preferred_grade:
+        return render_template('daily.html',
+                             quest=None,
+                             tasks=[],
+                             streak_stats={'current_streak': 0, 'longest_streak': 0, 'freeze_available': False},
+                             need_grade_selection=True,
+                             preferred_grade=None)
     
     # Получаем или создаём квест на сегодня
     quest = get_today_quest(current_user.id)
@@ -5160,7 +5502,9 @@ def daily_quest_main():
     return render_template('daily.html',
                          quest=quest,
                          tasks=tasks,
-                         streak_stats=streak_stats)
+                         streak_stats=streak_stats,
+                         need_grade_selection=False,
+                         preferred_grade=current_user.preferred_grade)
 
 
 @app.route('/daily/task/<int:task_index>')
@@ -5505,6 +5849,115 @@ def notifications_count():
     return jsonify({'count': count})
 
 
+@app.route('/u/<nickname>')
+@login_required
+def profile_by_nickname(nickname):
+    """Профиль пользователя по никнейму (SPA-стиль)."""
+    target = User.query.filter_by(nickname=nickname).first()
+    if not target:
+        flash('Пользователь не найден', 'error')
+        return redirect(url_for('friends_page'))
+    # Свой профиль — редирект на /profile
+    if target.id == current_user.id:
+        return redirect(url_for('profile'))
+    return render_template('profile_view.html', nickname=nickname)
+
+
+@app.route('/api/profile/<nickname>')
+@login_required
+def api_profile_view(nickname):
+    """API: данные профиля друга (JSON) для SPA-просмотра."""
+    from models import UserStreak, UserTopicProgress, TestResult, UserProgress
+    from datetime import datetime, timedelta, date
+
+    target = User.query.filter_by(nickname=nickname).first()
+    if not target:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+
+    # Свой профиль — всегда доступен
+    is_self = (target.id == current_user.id)
+
+    if not is_self:
+        # Проверка дружбы
+        if not current_user.is_friend_with(target.id):
+            return jsonify({'error': 'Доступ запрещён — вы не друзья'}), 403
+
+    # --- Streak ---
+    streak_obj = UserStreak.query.filter_by(user_id=target.id).first()
+    streak_data = {
+        'current': streak_obj.current_streak if streak_obj else 0,
+        'longest': streak_obj.longest_streak if streak_obj else 0,
+    }
+
+    # --- Общий рейтинг (XP / level) ---
+    rating_data = {
+        'experience_points': target.experience_points or 0,
+        'current_level': target.current_level or 1,
+        'total_problems_solved': target.total_problems_solved or 0,
+    }
+
+    # --- Прогресс по темам (UserTopicProgress) ---
+    topic_rows = UserTopicProgress.query.filter_by(user_id=target.id).all()
+    progress_by_topic = []
+    for tp in topic_rows:
+        accuracy = round(tp.tasks_correct / tp.tasks_attempted * 100) if tp.tasks_attempted else 0
+        progress_by_topic.append({
+            'topic': tp.topic,
+            'topic_name_ru': tp.topic_name_ru or tp.topic,
+            'current_level': tp.current_level,
+            'tasks_attempted': tp.tasks_attempted,
+            'tasks_correct': tp.tasks_correct,
+            'accuracy': accuracy,
+        })
+    progress_by_topic.sort(key=lambda x: -x['tasks_attempted'])
+
+    # --- Heatmap активности за 30 дней ---
+    today = date.today()
+    since = today - timedelta(days=29)
+    results_30d = TestResult.query.filter(
+        TestResult.user_id == target.id,
+        TestResult.created_at >= datetime.combine(since, datetime.min.time())
+    ).all()
+
+    # Группируем по дате
+    activity_map = {}
+    for r in results_30d:
+        day_str = r.created_at.strftime('%Y-%m-%d') if r.created_at else None
+        if day_str:
+            activity_map[day_str] = activity_map.get(day_str, 0) + 1
+
+    activity_30d = []
+    for i in range(30):
+        d = since + timedelta(days=i)
+        ds = d.strftime('%Y-%m-%d')
+        activity_30d.append({'date': ds, 'count': activity_map.get(ds, 0)})
+
+    # --- Последние результаты (20 штук) ---
+    recent_rows = TestResult.query.filter_by(user_id=target.id)\
+        .order_by(TestResult.created_at.desc()).limit(20).all()
+    recent_results = []
+    for r in recent_rows:
+        recent_results.append({
+            'test_type': r.test_type,
+            'topic': r.topic,
+            'difficulty': r.difficulty,
+            'is_correct': r.is_correct,
+            'time_spent_sec': r.time_spent_sec,
+            'created_at': r.created_at.isoformat() if r.created_at else None,
+        })
+
+    return jsonify({
+        'nickname': target.nickname,
+        'name': target.name,
+        'avatar_url': target.avatar_url,
+        'streak': streak_data,
+        'rating': rating_data,
+        'progress_by_topic': progress_by_topic,
+        'activity_30d': activity_30d,
+        'recent_results': recent_results,
+    })
+
+
 @app.route('/user/<int:user_id>')
 @login_required
 def public_profile(user_id):
@@ -5552,11 +6005,9 @@ def public_profile(user_id):
         'algebra':        {'name_ru': 'Алгебра',            'icon': '➗'},
         'geometry':       {'name_ru': 'Геометрия',          'icon': '📐'},
         'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': '🧩'},
-        'logic':          {'name_ru': 'Логика',             'icon': '🧠'},
-        'number_theory':  {'name_ru': 'Числа',              'icon': '🔢'},
-        'text_problems':  {'name_ru': 'Текст. задачи',      'icon': '📝'},
-        'arithmetic':     {'name_ru': 'Арифметика',         'icon': '🧮'},
-        'kl_movement':    {'name_ru': 'Движение',           'icon': '🚂'},
+        'number_theory':  {'name_ru': 'Теория чисел',       'icon': '🔢'},
+        'kl_movement':    {'name_ru': 'Задачи на движение', 'icon': '🚂'},
+        'knights_liars':  {'name_ru': 'Рыцари и лжецы',     'icon': '🧠'},
     }
 
     mastery_records = TopicMastery.query.filter_by(user_id=user_id).all()
@@ -5712,6 +6163,210 @@ def migrate_push_data():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 # === КОНЕЦ ENDPOINT МИГРАЦИИ ===
+
+
+# ============================================================
+# API: Персистентные никнеймы и результаты тестов
+# ============================================================
+
+@app.route('/api/save_test_result', methods=['POST'])
+def api_save_test_result():
+    """Сохранение результата теста в БД"""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        user_id = None
+        device_id = session.get('device_id')
+        
+        if current_user.is_authenticated:
+            user_id = current_user.id
+        else:
+            return jsonify({'error': 'User not authenticated'}), 401
+        
+        # Создаём запись результата
+        result = TestResult(
+            user_id=user_id,
+            device_id=device_id,
+            test_type=data.get('test_type', 'practice'),
+            class_level=data.get('class_level'),
+            topic=data.get('topic'),
+            task_id=data.get('task_id'),
+            difficulty=data.get('difficulty'),
+            is_correct=data.get('is_correct', False),
+            user_answer=str(data.get('user_answer', '')) if data.get('user_answer') is not None else None,
+            time_spent_sec=data.get('time_spent_sec'),
+            rating_delta=data.get('rating_delta'),
+            rating_after=data.get('rating_after')
+        )
+        db.session.add(result)
+        
+        # Обновляем агрегированный прогресс
+        topic = data.get('topic')
+        class_level = data.get('class_level')
+        if topic and class_level:
+            progress = UserProgress.query.filter_by(
+                user_id=user_id,
+                topic=topic,
+                class_level=class_level
+            ).first()
+            
+            if not progress:
+                progress = UserProgress(
+                    user_id=user_id,
+                    topic=topic,
+                    class_level=class_level
+                )
+                db.session.add(progress)
+            
+            progress.tasks_attempted = (progress.tasks_attempted or 0) + 1
+            if data.get('is_correct'):
+                progress.tasks_solved = (progress.tasks_solved or 0) + 1
+            if data.get('difficulty'):
+                progress.current_difficulty = data['difficulty']
+            if data.get('rating_after'):
+                progress.rating = data['rating_after']
+            progress.last_activity = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'result_id': result.id
+        })
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error saving test result: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@app.route('/api/profile', methods=['GET'])
+def api_get_profile():
+    """Загрузка профиля пользователя"""
+    try:
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Not authenticated'}), 401
+        
+        user = current_user
+        
+        # Агрегированный прогресс
+        progress_list = UserProgress.query.filter_by(user_id=user.id).all()
+        
+        # Последние результаты (до 50)
+        recent_results = TestResult.query.filter_by(user_id=user.id)\
+            .order_by(TestResult.created_at.desc())\
+            .limit(50).all()
+        
+        # Статистика
+        total_attempted = sum(p.tasks_attempted or 0 for p in progress_list)
+        total_solved = sum(p.tasks_solved or 0 for p in progress_list)
+        
+        return jsonify({
+            'success': True,
+            'profile': {
+                'id': user.id,
+                'nickname': user.nickname,
+                'email': user.email if not user.is_guest else None,
+                'is_guest': user.is_guest,
+                'device_id': user.device_id,
+                'total_problems_solved': user.total_problems_solved,
+                'current_level': user.current_level,
+                'experience_points': user.experience_points,
+                'created_at': user.created_at.isoformat() if user.created_at else None
+            },
+            'progress': [p.to_dict() for p in progress_list],
+            'recent_results': [r.to_dict() for r in recent_results],
+            'stats': {
+                'total_attempted': total_attempted,
+                'total_solved': total_solved,
+                'accuracy': round(total_solved / total_attempted * 100, 1) if total_attempted > 0 else 0,
+                'topics_studied': len(progress_list)
+            }
+        })
+    except Exception as e:
+        app.logger.error(f"Error loading profile: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@app.route('/api/set_nickname', methods=['POST'])
+def api_set_nickname():
+    """Установка никнейма пользователя"""
+    try:
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Not authenticated'}), 401
+        
+        data = request.get_json(silent=True)
+        if not data or not data.get('nickname'):
+            return jsonify({'error': 'Nickname is required'}), 400
+        
+        nickname = data['nickname'].strip()
+        
+        # Валидация
+        if len(nickname) < 2 or len(nickname) > 50:
+            return jsonify({'error': 'Никнейм должен быть от 2 до 50 символов'}), 400
+        
+        # Проверка уникальности
+        existing = User.query.filter_by(nickname=nickname).first()
+        if existing and existing.id != current_user.id:
+            return jsonify({'error': 'Этот никнейм уже занят'}), 409
+        
+        current_user.nickname = nickname
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'nickname': nickname
+        })
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error setting nickname: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+# ============================================================
+# ПОДПИСКА / SUBSCRIBE
+# ============================================================
+
+@app.route('/subscribe')
+@login_required
+def subscribe_page():
+    """Страница выбора тарифа."""
+    current_plan = current_user.current_plan or 'free'
+    plan_expires_at = getattr(current_user, 'plan_expires_at', None)
+    if plan_expires_at:
+        plan_expires_at = str(plan_expires_at)[:10]
+    return render_template('subscribe.html',
+                           current_plan=current_plan,
+                           plan_expires_at=plan_expires_at)
+
+
+@app.route('/api/subscribe', methods=['POST'])
+@login_required
+def api_subscribe():
+    """API активации Premium (демо — без оплаты)."""
+    data = request.get_json() or {}
+    plan = data.get('plan', 'premium_monthly')
+
+    if plan not in ('premium_monthly', 'premium_yearly'):
+        return jsonify({'error': 'Неизвестный тариф'}), 400
+
+    from datetime import timedelta
+    if plan == 'premium_monthly':
+        expires = datetime.utcnow() + timedelta(days=30)
+    else:
+        expires = datetime.utcnow() + timedelta(days=365)
+
+    current_user.current_plan = plan
+    current_user.plan_expires_at = expires
+    db.session.commit()
+
+    return jsonify({
+        'ok': True,
+        'plan': plan,
+        'expires_at': str(expires)[:10],
+        'message': 'Premium активирован!'
+    })
 
 
 if __name__ == '__main__':

@@ -439,11 +439,9 @@ async function getAIHint(problemId) {
             const htmlContent = protectAndRenderMarkdown(data.hint);
             content.innerHTML = htmlContent;
             
-            // Then render MathJax formulas
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise([content]).catch((err) => {
-                    console.warn('MathJax rendering error:', err.message);
-                });
+            // Then render KaTeX formulas
+            if (typeof reRenderMath === 'function') {
+                reRenderMath(content);
             }
         }
         
@@ -491,11 +489,9 @@ async function getAISolution(problemId) {
             const htmlContent = protectAndRenderMarkdown(data.solution);
             content.innerHTML = htmlContent;
             
-            // Then render MathJax formulas for the entire container
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise([container]).catch((err) => {
-                    console.warn('MathJax rendering error:', err.message);
-                });
+            // Then render KaTeX formulas for the entire container
+            if (typeof reRenderMath === 'function') {
+                reRenderMath(container);
             }
         }
         

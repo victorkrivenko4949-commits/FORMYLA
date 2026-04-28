@@ -336,10 +336,8 @@ async function loadChatHistory(agentType) {
             });
         }
         
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            window.MathJax.typesetPromise([container]).catch((err) => {
-                console.warn('MathJax batch rendering error:', err.message);
-            });
+        if (typeof reRenderMath === 'function') {
+            reRenderMath(container);
         }
         
         scrollChatToBottom();
@@ -462,10 +460,8 @@ function addMessageToChat(role, content, scroll = true) {
     
     container.appendChild(msgDiv);
     
-    if (window.MathJax && window.MathJax.typesetPromise) {
-        window.MathJax.typesetPromise([msgDiv]).catch((err) => {
-            console.warn('MathJax rendering error:', err.message);
-        });
+    if (typeof reRenderMath === 'function') {
+        reRenderMath(msgDiv);
     }
     
     if (scroll) scrollChatToBottom();

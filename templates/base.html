@@ -26,8 +26,8 @@
               delimiters: [
                 {left: '$$', right: '$$', display: true},
                 {left: '$', right: '$', display: false},
-                {left: '\\\\(', right: '\\\\)', display: false},
-                {left: '\\\\[', right: '\\\\]', display: true}
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
               ],
               throwOnError: false
             }); console.log('✓ KaTeX auto-render completed');"></script>
@@ -133,15 +133,22 @@
     <main class="main">
         {% block content %}{% endblock %}
     </main>
+    <!-- Global KaTeX re-render helper (replaces MathJax.typesetPromise) -->
     <script>
-MathJax = {
-  tex: {
-    inlineMath: [['\\(', '\\)']],
-    displayMath: [['\\[', '\\]']],
-  }
-};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    function reRenderMath(element) {
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(element || document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        }
+    }
+    </script>
     
     <script>
     async function checkAnswer(problemId) {
@@ -221,6 +228,7 @@ MathJax = {
     <script src="{{ url_for('static', filename='js/paywall.js') }}?v={{ asset_version }}"></script>
     <!-- API wrapper с автоматическим перехватом 403 -->
     <script src="{{ url_for('static', filename='js/api.js') }}?v={{ asset_version }}"></script>
+    <script src="{{ url_for('static', filename='js/profile_sync.js') }}?v={{ asset_version }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

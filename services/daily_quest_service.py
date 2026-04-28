@@ -109,6 +109,7 @@ def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
     Fallback: генерировать квест из случайных задач PROBLEMS_DB.
     Используется когда нет данных о мастерстве (новый пользователь).
     Для новичков — уровень сложности 2-3 (НЕ 7!).
+    Фильтрует по preferred_grade пользователя.
     """
     from app import PROBLEMS_DB
     
@@ -116,12 +117,25 @@ def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
         logger.error("PROBLEMS_DB is empty, cannot generate quest")
         return None
     
+    # Получаем preferred_grade пользователя
+    user = User.query.get(user_id)
+    user_grade = user.preferred_grade if user and user.preferred_grade else None
+    
+    # Фильтруем по классу если задан
+    pool = PROBLEMS_DB
+    if user_grade:
+        grade_pool = [t for t in pool if t.get('grade') == user_grade]
+        if len(grade_pool) >= 5:
+            pool = grade_pool
+        else:
+            logger.warning(f"Not enough tasks for grade {user_grade}, using all tasks")
+    
     # Для новичков берём задачи уровня 2-3 (стартовый уровень)
     STARTING_LEVEL = 3
-    beginner_tasks = [t for t in PROBLEMS_DB if t.get('difficulty', 3) <= STARTING_LEVEL]
+    beginner_tasks = [t for t in pool if t.get('difficulty', 3) <= STARTING_LEVEL]
     
     if len(beginner_tasks) < 5:
-        beginner_tasks = PROBLEMS_DB  # Fallback если мало задач нужного уровня
+        beginner_tasks = pool  # Fallback если мало задач нужного уровня
     
     # Берём 5 случайных задач из подходящих
     sample_size = min(5, len(beginner_tasks))
@@ -195,12 +209,8 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
         logger.error(f"User {user_id} not found")
         return None
     
-    # Определяем класс пользователя (из онбординга или по умолчанию)
-    user_grade = 7  # По умолчанию
-    if user.recommended_topics:
-        # Пытаемся извлечь класс из рекомендованных тем
-        # Предполагаем формат "topic_grade7" или подобный
-        pass
+    # Определяем класс пользователя (preferred_grade или по умолчанию 7)
+    user_grade = user.preferred_grade if user.preferred_grade else 7
     
     # Получаем темы разного уровня
     weak_topics = get_weak_topics(user_id, threshold=0.6, limit=10)

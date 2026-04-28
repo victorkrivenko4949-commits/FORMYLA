@@ -1,0 +1,277 @@
+/* ===== Profile View — Dark Theme ===== */
+
+/* --- Loading / Error --- */
+.pv-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    color: #a0a0c0;
+    font-size: 1.1rem;
+    gap: 1rem;
+}
+.pv-spinner {
+    width: 40px; height: 40px;
+    border: 4px solid rgba(56,239,125,.15);
+    border-top-color: #38ef7d;
+    border-radius: 50%;
+    animation: pv-spin .7s linear infinite;
+}
+@keyframes pv-spin { to { transform: rotate(360deg); } }
+
+.pv-error {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: #e0e0e0;
+}
+.pv-error-icon { font-size: 3rem; margin-bottom: .5rem; }
+.pv-error p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+.pv-btn {
+    display: inline-block;
+    padding: .6rem 1.4rem;
+    background: linear-gradient(135deg, #38ef7d, #11998e);
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity .2s;
+}
+.pv-btn:hover { opacity: .85; }
+
+/* --- Header --- */
+.pv-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.pv-avatar-wrap { flex-shrink: 0; }
+.pv-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #38ef7d;
+    background: #252545;
+}
+.pv-info { flex: 1; min-width: 0; }
+.pv-nickname {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 .15rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pv-name {
+    font-size: .95rem;
+    color: #8888aa;
+    margin: 0 0 .8rem;
+}
+.pv-stats-row {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+}
+.pv-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 56px;
+}
+.pv-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #38ef7d;
+}
+.pv-stat-label {
+    font-size: .75rem;
+    color: #8888aa;
+    margin-top: 2px;
+}
+
+/* --- Sections --- */
+.pv-section {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.pv-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e0e0f0;
+    margin: 0 0 1rem;
+}
+.pv-empty {
+    color: #666688;
+    font-size: .95rem;
+    text-align: center;
+    padding: 1rem 0;
+}
+
+/* --- Topics Progress Bars --- */
+.pv-topics { display: flex; flex-direction: column; gap: .75rem; }
+.pv-topic-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.pv-topic-name {
+    width: 140px;
+    flex-shrink: 0;
+    font-size: .85rem;
+    color: #c0c0d8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pv-topic-bar-wrap {
+    flex: 1;
+    height: 18px;
+    background: #252545;
+    border-radius: 9px;
+    overflow: hidden;
+    position: relative;
+}
+.pv-topic-bar {
+    height: 100%;
+    border-radius: 9px;
+    background: linear-gradient(90deg, #11998e, #38ef7d);
+    transition: width .6s ease;
+    min-width: 2px;
+}
+.pv-topic-pct {
+    width: 44px;
+    text-align: right;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #a0a0c0;
+    flex-shrink: 0;
+}
+.pv-topic-detail {
+    font-size: .7rem;
+    color: #666688;
+    width: 80px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* --- Heatmap --- */
+.pv-heatmap {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+}
+.pv-hm-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: #252545;
+    position: relative;
+    cursor: default;
+    transition: transform .15s;
+}
+.pv-hm-cell:hover { transform: scale(1.2); z-index: 2; }
+.pv-hm-cell[data-level="1"] { background: rgba(56,239,125,.2); }
+.pv-hm-cell[data-level="2"] { background: rgba(56,239,125,.4); }
+.pv-hm-cell[data-level="3"] { background: rgba(56,239,125,.6); }
+.pv-hm-cell[data-level="4"] { background: rgba(56,239,125,.85); }
+
+.pv-hm-cell .pv-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0d0d1a;
+    color: #e0e0f0;
+    font-size: .72rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,.4);
+}
+.pv-hm-cell:hover .pv-tooltip { display: block; }
+
+.pv-heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: .72rem;
+    color: #666688;
+    justify-content: flex-end;
+}
+.pv-hm-legend-box {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+/* --- Recent Results --- */
+.pv-recent { display: flex; flex-direction: column; gap: .5rem; }
+.pv-result-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .55rem .75rem;
+    background: #252545;
+    border-radius: 10px;
+    font-size: .85rem;
+}
+.pv-result-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+}
+.pv-result-topic {
+    flex: 1;
+    color: #c0c0d8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pv-result-diff {
+    color: #8888aa;
+    font-size: .78rem;
+    flex-shrink: 0;
+}
+.pv-result-time {
+    color: #666688;
+    font-size: .75rem;
+    flex-shrink: 0;
+    width: 50px;
+    text-align: right;
+}
+.pv-result-date {
+    color: #555570;
+    font-size: .72rem;
+    flex-shrink: 0;
+    width: 80px;
+    text-align: right;
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+    .pv-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+        padding: 1.2rem 1rem;
+    }
+    .pv-stats-row { justify-content: center; }
+    .pv-nickname { font-size: 1.25rem; }
+    .pv-avatar { width: 64px; height: 64px; }
+    .pv-topic-name { width: 100px; font-size: .78rem; }
+    .pv-topic-detail { display: none; }
+    .pv-heatmap { grid-template-columns: repeat(6, 1fr); gap: 3px; }
+    .pv-result-date { display: none; }
+    .pv-section { padding: 1rem; }
+}

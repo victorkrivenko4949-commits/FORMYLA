@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile_view.css') }}?v=1">
+{% endblock %}
+
+{% block content %}
+<div id="profile-view-app" data-nickname="{{ nickname }}">
+
+    <!-- Загрузка -->
+    <div id="pv-loading" class="pv-loading">
+        <div class="pv-spinner"></div>
+        <p>Загрузка профиля…</p>
+    </div>
+
+    <!-- Ошибка -->
+    <div id="pv-error" class="pv-error" style="display:none;">
+        <div class="pv-error-icon">😕</div>
+        <p id="pv-error-msg"></p>
+        <a href="{{ url_for('friends_page') }}" class="pv-btn">← К друзьям</a>
+    </div>
+
+    <!-- Контент профиля -->
+    <div id="pv-content" style="display:none;">
+
+        <!-- Header: аватар, никнейм, статы -->
+        <section class="pv-header">
+            <div class="pv-avatar-wrap">
+                <img id="pv-avatar" src="" alt="avatar" class="pv-avatar">
+            </div>
+            <div class="pv-info">
+                <h1 id="pv-nickname" class="pv-nickname"></h1>
+                <p id="pv-name" class="pv-name"></p>
+                <div class="pv-stats-row">
+                    <div class="pv-stat">
+                        <span class="pv-stat-value" id="pv-level">—</span>
+                        <span class="pv-stat-label">Уровень</span>
+                    </div>
+                    <div class="pv-stat">
+                        <span class="pv-stat-value" id="pv-xp">—</span>
+                        <span class="pv-stat-label">XP</span>
+                    </div>
+                    <div class="pv-stat">
+                        <span class="pv-stat-value" id="pv-solved">—</span>
+                        <span class="pv-stat-label">Решено</span>
+                    </div>
+                    <div class="pv-stat">
+                        <span class="pv-stat-value" id="pv-streak">—</span>
+                        <span class="pv-stat-label">🔥 Streak</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Прогресс по темам -->
+        <section class="pv-section">
+            <h2 class="pv-section-title">📊 Прогресс по темам</h2>
+            <div id="pv-topics" class="pv-topics"></div>
+            <p id="pv-topics-empty" class="pv-empty" style="display:none;">Нет данных по темам</p>
+        </section>
+
+        <!-- Heatmap 30 дней -->
+        <section class="pv-section">
+            <h2 class="pv-section-title">🗓 Активность за 30 дней</h2>
+            <div id="pv-heatmap" class="pv-heatmap"></div>
+        </section>
+
+        <!-- Последние задачи -->
+        <section class="pv-section">
+            <h2 class="pv-section-title">📝 Последние задачи</h2>
+            <div id="pv-recent" class="pv-recent"></div>
+            <p id="pv-recent-empty" class="pv-empty" style="display:none;">Нет решённых задач</p>
+        </section>
+
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/profile_view.js') }}?v=1"></script>
+{% endblock %}

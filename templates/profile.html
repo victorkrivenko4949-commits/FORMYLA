@@ -67,6 +67,42 @@
         </div>
     </div>
 
+    <!-- ── Выбор класса ── -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="margin: 0 0 4px; font-size: 1.1em; color: var(--text-main);">📚 Мой класс</h3>
+          <p style="margin: 0; color: var(--text-muted); font-size: 0.85em;">Задачи дня и адаптивный тест подбираются под твой класс</p>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          {% for g in range(5, 12) %}
+          <button onclick="setMyGrade({{ g }}, this)"
+                  style="width: 44px; height: 44px; border-radius: 10px; border: 2px solid {% if user.preferred_grade == g %}#38ef7d{% else %}var(--border-soft){% endif %}; background: {% if user.preferred_grade == g %}rgba(56,239,125,0.15){% else %}transparent{% endif %}; color: {% if user.preferred_grade == g %}#38ef7d{% else %}var(--text-soft){% endif %}; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                  onmouseover="this.style.borderColor='#38ef7d'" onmouseout="if({{ user.preferred_grade or 0 }}!=={{ g }})this.style.borderColor='var(--border-soft)'">
+            {{ g }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <script>
+    function setMyGrade(grade, btn) {
+      fetch('/api/set_grade', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({grade: grade})
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert(data.error || 'Ошибка');
+        }
+      });
+    }
+    </script>
+
     <!-- ── Подписка ── -->
     {% include 'partials/upgrade_banner.html' %}
 
@@ -257,7 +293,14 @@
     <!-- Mastery Dashboard -->
     <section class="mastery-dashboard">
       <header class="mastery-header">
-        <h2>📊 Твой уровень по темам</h2>
+        <h2>📊 Результаты адаптивного теста
+          {% if user.current_plan and user.current_plan != 'free' %}
+            <span style="font-size: 0.6em; color: #fbbf24; font-weight: 400;">⭐ платная версия</span>
+          {% else %}
+            <span style="font-size: 0.6em; color: #94a3b8; font-weight: 400;">(бесплатная версия)</span>
+            <a href="/subscribe" style="font-size: 0.5em; margin-left: 8px; padding: 4px 14px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; border-radius: 20px; text-decoration: none; font-weight: 600; white-space: nowrap;">🚀 Перейти на Premium</a>
+          {% endif %}
+        </h2>
         <div class="mastery-summary">
           <span class="overall-level">{{ overall_level }}</span>
           <span class="overall-label">общий уровень</span>

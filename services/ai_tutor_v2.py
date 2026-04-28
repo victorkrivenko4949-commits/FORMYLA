@@ -1,239 +1,217 @@
+# -*- coding: utf-8 -*-
 """
-AI-тьютор v2: паттерн think → distill.
+AI-тьютор v2: тьютор САМОСТОЯТЕЛЬНО решает задачу.
 
-Разделяет внутренние рассуждения модели (<thinking>) и чистый
-вывод для ученика (<solution>).  Использует существующий
-DeepSeekClient из ai/deepseek_client.py — не дублирует HTTP-логику.
+Ключевое изменение: тьютор решает задачу с нуля и доверяет
+своему решению, а не БД-эталону. Если решение расходится
+с БД — помечает задачу как needs_review.
 
 Подключается к эндпоинту /api/check_adaptive_answer в app.py.
 """
 
+import json
 import re
 import logging
 from typing import Optional
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# SYSTEM PROMPT
+# SYSTEM PROMPT — тьютор решает задачу САМ
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """Ты — математический тьютор на платформе FORMYLA для школьников 5–11 классов.
+SYSTEM_PROMPT = """Ты — AI-тьютор по математике на платформе FORMYLA. Помогаешь школьникам разбирать задачи адаптивного теста.
 
-ГЛАВНОЕ ПРАВИЛО:
-Тебе ДАНО правильный ответ из официальной базы данных.
-НЕ оспаривай его. НЕ предлагай альтернативы. НЕ выражай сомнений.
+═══ ГЛАВНОЕ ПРАВИЛО ═══
 
-╔══════════════════════════════════════════════════════╗
-║  ОБЯЗАТЕЛЬНЫЙ ФОРМАТ ОТВЕТА — НАРУШЕНИЕ НЕДОПУСТИМО  ║
-╚══════════════════════════════════════════════════════╝
+ТЫ САМОСТОЯТЕЛЬНО РЕШАЕШЬ ЗАДАЧУ С НУЛЯ.
+Ответ из БД — это ПОДСКАЗКА, а не истина.
 
-Твой ответ ДОЛЖЕН содержать ОБА тега в точности как показано:
+Если БД-ответ противоречит твоему решению:
+- ДОВЕРЯЙ СВОЕМУ РЕШЕНИЮ (если оно математически строгое и проверено).
+- Покажи ученику ПРАВИЛЬНЫЙ разбор и СВОЙ ответ.
+- Не упоминай ученику что в БД был другой ответ — это его запутает.
+- Помечай задачу для пересмотра через служебное поле needs_review в JSON-ответе.
 
-<thinking>
-[Здесь свободно размышляй, проверяй выкладки, сомневайся.
- Этот блок ученик НЕ УВИДИТ.]
-</thinking>
+ТЫ ИМЕЕШЬ ПРАВО ПРОТИВОРЕЧИТЬ БД. Это твоя ОБЯЗАННОСТЬ как учителя. Ученик заслуживает правильный ответ.
 
-<solution>
-[Здесь ЧИСТОЕ финальное объяснение для ученика.
- Уверенный тон. Пошагово. 3–8 шагов максимум.
- Формулы: \\( ... \\) inline, \\[ ... \\] display.
- Последняя строка ОБЯЗАТЕЛЬНО: **Ответ: {ОТВЕТ_ИЗ_БД}**]
-</solution>
+═══ АЛГОРИТМ РАБОТЫ ═══
 
-ЕСЛИ ТЫ НЕ НАПИШЕШЬ ОБА ТЕГА — ОТВЕТ БУДЕТ ОТКЛОНЁН СИСТЕМОЙ.
+1. Прочитай условие задачи внимательно.
+2. РЕШИ задачу сам, шаг за шагом, не подглядывая в БД-ответ.
+3. Сравни свой ответ с БД-ответом (поле expected_answer).
+4. Сравни ответ ученика (поле user_answer) со СВОИМ ответом (не с БД).
+5. Сформируй разбор, как будто БД-ответа не существует.
 
-╔══════════════════════════════════════════════════════╗
-║  ОСОБЫЙ СЛУЧАЙ: ПРОТИВОРЕЧИВАЯ ЗАДАЧА                ║
-╚══════════════════════════════════════════════════════╝
+═══ ФОРМАТ ОТВЕТА — СТРОГО JSON ═══
 
-Если в <thinking> ты убедился, что условие задачи противоречиво
-(например, два условия несовместимы) — в <solution> напиши:
+{
+  "my_solution": "<твоё пошаговое решение>",
+  "my_answer": "<твой итоговый ответ>",
+  "user_correct": true или false,
+  "explanation_for_student": "<доброжелательный разбор для ученика: где он ошибся, как правильно. НЕ упоминай БД и расхождения с ней>",
+  "needs_review": true или false,
+  "review_reason": "<если needs_review=true: краткое техническое объяснение для админа, почему БД-ответ неверный. Иначе пустая строка>",
+  "confidence": 0.95
+}
 
-<solution>
-Разбор этой задачи требует помощи учителя.
+═══ КОГДА СОМНЕВАЕШЬСЯ ═══
 
-**Ответ: {ОТВЕТ_ИЗ_БД}**
-</solution>
+Если задача неоднозначна или у тебя confidence < 0.7:
+- needs_review = true
+- review_reason = "неоднозначная формулировка / несколько трактовок"
+- В explanation_for_student покажи СВОЮ трактовку и решение, без упоминания альтернатив.
 
-НЕ пытайся натянуть решение силой. Лучше честный fallback.
+═══ СТИЛЬ ОБЪЯСНЕНИЯ ═══
 
-╔══════════════════════════════════════════════════════╗
-║  СТРОГО ЗАПРЕЩЕНО в блоке <solution>:                ║
-╚══════════════════════════════════════════════════════╝
-- слова: «возможно», «вероятно», «скорее всего», «наверное»
-- фразы: «проверим: может быть...», «а что если...», «не уверен»
-- упоминание альтернативных ответов
-- любая фраза «Ответ: X» где X ≠ ответ из БД
-"""
+- Доброжелательно, как живой учитель.
+- LaTeX в формате: \\( формула \\) для inline, \\[ формула \\] для display.
+- 3-7 шагов в решении.
+- Без морализаторства и "ты молодец что попробовал".
+
+Никакого текста вне JSON. Никаких ```json блоков. Только чистый JSON."""
 
 # ---------------------------------------------------------------------------
 # USER PROMPT TEMPLATE
 # ---------------------------------------------------------------------------
 
-USER_TEMPLATE = """УСЛОВИЕ ЗАДАЧИ:
+USER_TEMPLATE = """Задача:
 {task_text}
 
-ПРАВИЛЬНЫЙ ОТВЕТ (из официальной БД, не оспаривай):
-{correct_answer}
-{solution_block}
-ОТВЕТ УЧЕНИКА: {user_answer}
+Ответ из БД (используй только для пометки needs_review):
+{expected_answer}
 
-Объясни ученику почему его ответ неверный и как правильно решить задачу.
+Ответ ученика: {user_answer}
 
-ОБЯЗАТЕЛЬНО используй структуру (оба тега обязательны!):
-<thinking>
-[твои рассуждения — ученик не увидит]
-</thinking>
-
-<solution>
-[чистое объяснение для ученика]
-**Ответ: {correct_answer}**
-</solution>
-
-НАПОМИНАНИЕ: в <solution> запрещены слова «возможно», «вероятно», «скорее всего».
-Если задача противоречива — напиши в <solution> только: «Разбор требует помощи учителя. **Ответ: {correct_answer}**»
-"""
+Реши задачу сам и верни строго JSON."""
 
 
 def build_prompt(task, user_answer: Optional[str]) -> str:
     """
-    Собирает user-промпт для DeepSeek.
+    Собирает user-промпт для LLM.
 
     task — объект AdaptiveTask с полями:
         task_text, correct_answer, solution,
-        и опционально official_solution_latex (от Comet-импорта).
+        и опционально official_solution_latex.
     user_answer — ответ ученика (может быть None).
     """
-    # Приоритет: official_solution_latex (авторское) > solution (LLM-сгенерированное)
-    sol = getattr(task, 'official_solution_latex', None) \
-          or getattr(task, 'solution', None)
-
-    if sol and sol.strip():
-        solution_block = (
-            "\nРЕШЕНИЕ ИЗ БД (опирайся на него, переформулируй для ученика):\n"
-            + sol.strip()[:1500]  # ограничиваем длину
-            + "\n"
-        )
-    else:
-        solution_block = ""
-
     correct = getattr(task, 'correct_answer', None) or 'не указан'
     text = getattr(task, 'task_text', '') or ''
 
     return USER_TEMPLATE.format(
         task_text=text,
-        correct_answer=correct,
-        solution_block=solution_block,
+        expected_answer=correct,
         user_answer=user_answer or '(не дан)',
     )
 
 
 # ---------------------------------------------------------------------------
-# ПАРСИНГ И ВАЛИДАЦИЯ
+# ПАРСИНГ JSON-ОТВЕТА
 # ---------------------------------------------------------------------------
 
-# Запрещённые паттерны в финальном <solution>
-# Правило: ловим ГАЛЛЮЦИНАЦИИ, а не математические методы.
-#
-# РАЗРЕШЕНО (не ловим):
-#   "проверим случай 1", "проверим: если A — рыцарь"  → разбор случаев
-#   "возможно только одно значение"                    → математический вывод
-#   "рассмотрим случай А"                              → метод доказательства
-#
-# ЗАПРЕЩЕНО (ловим):
-#   "проверим: может быть n=6?"                        → гадание
-#   "возможно, правильный ответ 72"                    → неуверенность в ответе
-#   "ответ: 18 или 72"                                 → несколько ответов
-_FORBIDDEN = [
-    # Гадание: "проверим: может/а может/что если/вдруг"
-    # НО НЕ "проверим: если A — рыцарь" (разбор случаев)
-    (r'проверим[,:]?\s*(?:может\b(?!\s+быть\s+только)|а\s+может|что\s+если|вдруг)',
-     'hedging_guess'),
-
-    # Неуверенность в ответе: "возможно, правильный/ответ/это <число>"
-    # НО НЕ "возможно только", "возможны следующие варианты"
-    (r'возможно[,\s]+(?:правильный|ответ\s+равен|это\s+\d)',
-     'uncertainty_answer'),
-
-    # Прямая неуверенность: "вероятно, ответ/правильный"
-    (r'вероятно[,\s]+(?:правильный|ответ|это)',
-     'uncertainty_veroyatno'),
-
-    # "скорее всего, ответ/правильный"
-    (r'скорее\s+всего[,\s]+(?:ответ|это|правильный)',
-     'uncertainty_skoree'),
-
-    # Прямое сомнение
-    (r'\bне\s+уверен',
-     'uncertainty_direct'),
-
-    # Несколько альтернативных числовых ответов: "ответ: 18 или 72"
-    (r'(?:ответ|answer)[:\s]+\d+\s+или\s+\d+',
-     'multiple_answers'),
-]
-
-
-def extract_solution(raw: str) -> tuple:
+def _safe_parse_json(raw: str) -> Optional[dict]:
     """
-    Извлекает блок <solution>...</solution> из сырого ответа модели.
-
-    Поддерживает:
-    - Нормальный случай: <solution>...</solution>
-    - Незакрытый тег: <solution>... (до конца строки)
-    - Markdown-вариант: ```solution ... ```
-
-    Возвращает (text: str, status: str).
-    status = 'ok' | 'no_solution_tag'
+    Парсит JSON-ответ от LLM, обрабатывая типичные проблемы:
+    - markdown-обёртки ```json ... ```
+    - LaTeX-слеши внутри строк
     """
-    # 1. Нормальный случай: открывающий и закрывающий теги
-    m = re.search(
-        r'<solution>(.*?)</solution>',
-        raw,
-        flags=re.DOTALL | re.IGNORECASE,
-    )
+    # 1. Убираем markdown-обёртки
+    s = re.sub(r'```json\s*', '', raw.strip())
+    s = re.sub(r'```\s*', '', s).strip()
+
+    # 2. Пробуем распарсить как есть
+    try:
+        return json.loads(s)
+    except json.JSONDecodeError:
+        pass
+
+    # 3. Экранируем одиночные \ которые не являются валидными JSON-escape
+    def fix_backslashes(m):
+        content = m.group(0)
+        fixed = re.sub(
+            r'\\(?!["\\/bfnrtu])',
+            r'\\\\',
+            content
+        )
+        return fixed
+
+    s_fixed = re.sub(r'"(?:[^"\\]|\\.)*"', fix_backslashes, s, flags=re.DOTALL)
+
+    try:
+        return json.loads(s_fixed)
+    except json.JSONDecodeError:
+        pass
+
+    # 4. Последний шанс: ищем JSON-объект в тексте
+    m = re.search(r'\{.*\}', s, flags=re.DOTALL)
     if m:
-        return m.group(1).strip(), 'ok'
+        try:
+            return json.loads(m.group(0))
+        except json.JSONDecodeError:
+            pass
+        # Пробуем с фиксом слешей
+        fixed_obj = re.sub(r'"(?:[^"\\]|\\.)*"', fix_backslashes, m.group(0), flags=re.DOTALL)
+        try:
+            return json.loads(fixed_obj)
+        except json.JSONDecodeError:
+            pass
 
-    # 2. Незакрытый тег: берём всё после <solution>
-    m2 = re.search(
-        r'<solution>(.*)',
-        raw,
-        flags=re.DOTALL | re.IGNORECASE,
-    )
-    if m2:
-        text = m2.group(1).strip()
-        # Убираем возможный </thinking> хвост если он попал
-        text = re.sub(r'</thinking>.*', '', text, flags=re.DOTALL | re.IGNORECASE).strip()
-        if len(text) > 50:  # минимальная длина осмысленного ответа
-            return text, 'ok'
-
-    return raw.strip(), 'no_solution_tag'
+    return None
 
 
-def validate_solution(sol: str, correct_answer: str) -> list:
+def _validate_tutor_response(data: dict) -> list:
     """
-    Проверяет solution на запрещённые паттерны и совпадение ответа с БД.
-
-    Возвращает список кодов ошибок (пустой = всё ок).
+    Проверяет что JSON-ответ содержит все обязательные поля.
+    Возвращает список ошибок (пустой = всё ок).
     """
-    errs = []
-    low = sol.lower()
+    required_fields = [
+        'my_solution', 'my_answer', 'user_correct',
+        'explanation_for_student', 'needs_review',
+    ]
+    errors = []
+    for field in required_fields:
+        if field not in data:
+            errors.append(f'missing_field_{field}')
 
-    for pattern, code in _FORBIDDEN:
-        if re.search(pattern, low):
-            errs.append(code)
+    return errors
 
-    # Проверяем что финальный «Ответ: X» совпадает с БД
-    m = re.search(r'\*\*ответ[:\s*]+([^\n*]+)', low)
-    if m and correct_answer:
-        claimed = re.sub(r'[\s$\\*]', '', m.group(1))
-        ref = re.sub(r'[\s$\\*]', '', str(correct_answer).lower())
-        if ref and ref not in claimed and claimed not in ref:
-            errs.append('answer_mismatch_with_db')
 
-    return errs
+# ---------------------------------------------------------------------------
+# ПОМЕТКА ЗАДАЧИ ДЛЯ ПЕРЕСМОТРА
+# ---------------------------------------------------------------------------
+
+def mark_for_review(task_id: int, llm_answer: str, llm_solution: str, reason: str):
+    """
+    Помечает задачу в БД как needs_review.
+    Вызывается когда LLM нашёл расхождение с БД-ответом.
+    """
+    try:
+        from models import db
+        from sqlalchemy import text
+
+        db.session.execute(
+            text("""
+                UPDATE adaptive_tasks
+                SET needs_review = 1,
+                    llm_suggested_answer = :llm_answer,
+                    llm_suggested_solution = :llm_solution,
+                    review_reason = :reason,
+                    review_flagged_at = :now
+                WHERE id = :task_id
+            """),
+            {
+                'task_id': task_id,
+                'llm_answer': str(llm_answer)[:2000],
+                'llm_solution': str(llm_solution)[:5000],
+                'reason': str(reason)[:1000],
+                'now': datetime.utcnow().isoformat(),
+            }
+        )
+        db.session.commit()
+        logger.info(f'[tutor_v2] Task {task_id} marked needs_review: {reason[:100]}')
+    except Exception as e:
+        logger.error(f'[tutor_v2] Failed to mark task {task_id} for review: {e}')
 
 
 # ---------------------------------------------------------------------------
@@ -244,23 +222,29 @@ def tutor_explain(
     task,
     user_answer: Optional[str],
     ai_client,
-    max_tokens: int = 3000,
+    max_tokens: int = 4000,
 ) -> dict:
     """
     Главная функция AI-тьютора v2.
+
+    Тьютор САМОСТОЯТЕЛЬНО решает задачу и сравнивает с БД.
+    Если расхождение — помечает задачу needs_review.
 
     Args:
         task:        объект AdaptiveTask
         user_answer: ответ ученика (строка или None)
         ai_client:   экземпляр DeepSeekClient из ai/deepseek_client.py
-        max_tokens:  максимум токенов (2000 для Free, 8000 для Premium)
+        max_tokens:  максимум токенов
 
     Returns:
         dict с ключами:
-            solution      — текст для показа ученику
-            status        — 'ok' | 'fallback'
-            errors        — список кодов ошибок валидации
-            raw_response  — полный ответ модели (для логов)
+            solution          — текст разбора для показа ученику
+            answer            — ответ от LLM (НЕ из БД!)
+            user_correct      — совпадает ли ответ ученика с LLM
+            status            — 'ok' | 'fallback'
+            errors            — список кодов ошибок валидации
+            raw_response      — полный ответ модели (для логов)
+            needs_review      — True если LLM нашёл расхождение с БД
     """
     user_prompt = build_prompt(task, user_answer)
 
@@ -268,29 +252,62 @@ def tutor_explain(
         raw = ai_client.generate(
             prompt=user_prompt,
             system_prompt=SYSTEM_PROMPT,
-            temperature=0.2,   # низкая — меньше фантазий
+            temperature=0.3,
             max_tokens=max_tokens,
         )
     except Exception as e:
         logger.error(f'[tutor_v2] DeepSeek call failed for task {task.id}: {e}')
         return _fallback(task, errors=['api_error'], raw='')
 
-    sol, status = extract_solution(raw)
-    errs = validate_solution(sol, getattr(task, 'correct_answer', ''))
+    # Парсим JSON-ответ
+    data = _safe_parse_json(raw)
+    if not data:
+        logger.warning(f'[tutor_v2] JSON parse failed for task {task.id}')
+        return _fallback(task, errors=['json_parse_error'], raw=raw)
 
-    if status != 'ok' or errs:
+    # Валидируем поля
+    errs = _validate_tutor_response(data)
+    if errs:
         logger.warning(
-            f'[tutor_v2] Validation failed for task {task.id}: '
-            f'status={status}, errors={errs}'
+            f'[tutor_v2] Validation failed for task {task.id}: errors={errs}'
         )
-        return _fallback(task, errors=errs or ['no_solution_tag'], raw=raw)
+        return _fallback(task, errors=errs, raw=raw)
 
-    logger.info(f'[tutor_v2] OK for task {task.id}')
+    # Извлекаем данные
+    my_solution = str(data.get('my_solution', ''))
+    my_answer = str(data.get('my_answer', ''))
+    user_correct = bool(data.get('user_correct', False))
+    explanation = str(data.get('explanation_for_student', ''))
+    needs_review = bool(data.get('needs_review', False))
+    review_reason = str(data.get('review_reason', ''))
+    confidence = float(data.get('confidence', 0.5))
+
+    # Если LLM нашёл расхождение — помечаем задачу в БД
+    if needs_review:
+        mark_for_review(
+            task_id=task.id,
+            llm_answer=my_answer,
+            llm_solution=my_solution,
+            reason=review_reason,
+        )
+
+    logger.info(
+        f'[tutor_v2] OK for task {task.id}: '
+        f'my_answer={my_answer!r}, needs_review={needs_review}, '
+        f'confidence={confidence}'
+    )
+
     return {
-        'solution':     sol,
-        'status':       'ok',
-        'errors':       [],
-        'raw_response': raw,
+        'solution':       explanation,
+        'answer':         my_answer,
+        'my_solution':    my_solution,
+        'user_correct':   user_correct,
+        'status':         'ok',
+        'errors':         [],
+        'raw_response':   raw,
+        'needs_review':   needs_review,
+        'review_reason':  review_reason,
+        'confidence':     confidence,
     }
 
 
@@ -303,8 +320,14 @@ def _fallback(task, errors: list, raw: str) -> dict:
         f"Попробуй решить её позже или обратись к учителю."
     )
     return {
-        'solution':     text,
-        'status':       'fallback',
-        'errors':       errors,
-        'raw_response': raw,
+        'solution':      text,
+        'answer':        correct,
+        'my_solution':   '',
+        'user_correct':  False,
+        'status':        'fallback',
+        'errors':        errors,
+        'raw_response':  raw,
+        'needs_review':  False,
+        'review_reason': '',
+        'confidence':    0.0,
     }

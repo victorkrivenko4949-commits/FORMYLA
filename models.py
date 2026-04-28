@@ -38,6 +38,17 @@ class User(UserMixin, db.Model):
     adaptive_tests_completed = db.Column(db.Integer, default=0)  # Адаптивных тестов завершено
     highest_difficulty_solved = db.Column(db.Integer, default=0)  # Максимальная сложность решенной задачи
     
+    # Subscription / Plan
+    current_plan = db.Column(db.Text, default='free', server_default='free')
+    plan_expires_at = db.Column(db.DateTime, nullable=True)
+    
+    # Guest access
+    is_guest = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
+    device_id = db.Column(db.String(64), nullable=True, index=True)
+    
+    # Daily Quest — preferred grade (5-11)
+    preferred_grade = db.Column(db.Integer, nullable=True, default=None)
+    
     # Relationships
     topic_progress = db.relationship('UserTopicProgress', backref='user', lazy=True, cascade='all, delete-orphan')
     test_results = db.relationship('AdaptiveTestResult', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -720,6 +731,75 @@ class OlympiadGenerationLog(db.Model):
             f'<OlympiadGenerationLog {self.olympiad_slug}/{self.round_key}'
             f'/класс {self.class_level} success={self.success}>'
         )
+
+
+class TestResult(db.Model):
+    """Детальная история результатов тестов"""
+    __tablename__ = 'test_results_detail'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    device_id = db.Column(db.String(64), nullable=True)
+    test_type = db.Column(db.String(50), nullable=False)  # adaptive, mock, daily, practice
+    class_level = db.Column(db.Integer, nullable=True)
+    topic = db.Column(db.String(200), nullable=True)
+    task_id = db.Column(db.Integer, nullable=True)
+    difficulty = db.Column(db.Integer, nullable=True)
+    is_correct = db.Column(db.Boolean, nullable=False)
+    user_answer = db.Column(db.Text, nullable=True)
+    time_spent_sec = db.Column(db.Integer, nullable=True)
+    rating_delta = db.Column(db.Float, nullable=True)
+    rating_after = db.Column(db.Float, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    user = db.relationship('User', backref=db.backref('detailed_results', lazy='dynamic'))
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'test_type': self.test_type,
+            'class_level': self.class_level,
+            'topic': self.topic,
+            'task_id': self.task_id,
+            'difficulty': self.difficulty,
+            'is_correct': self.is_correct,
+            'user_answer': self.user_answer,
+            'time_spent_sec': self.time_spent_sec,
+            'rating_delta': self.rating_delta,
+            'rating_after': self.rating_after,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class UserProgress(db.Model):
+    """Агрегированный прогресс пользователя по темам"""
+    __tablename__ = 'user_progress'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    topic = db.Column(db.String(200), nullable=False)
+    class_level = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Float, default=1000.0)
+    tasks_solved = db.Column(db.Integer, default=0)
+    tasks_attempted = db.Column(db.Integer, default=0)
+    current_difficulty = db.Column(db.Integer, default=1)
+    last_activity = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        db.PrimaryKeyConstraint('user_id', 'topic', 'class_level'),
+    )
+    
+    user = db.relationship('User', backref=db.backref('progress_entries', lazy='dynamic'))
+    
+    def to_dict(self):
+        return {
+            'topic': self.topic,
+            'class_level': self.class_level,
+            'rating': self.rating,
+            'tasks_solved': self.tasks_solved,
+            'tasks_attempted': self.tasks_attempted,
+            'current_difficulty': self.current_difficulty,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None
+        }
 
 
 def init_db(app):

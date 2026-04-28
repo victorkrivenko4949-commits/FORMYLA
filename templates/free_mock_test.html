@@ -163,18 +163,14 @@
     // Инициализация прогресса
     updateProgress();
     
-    // Рендеринг MathJax для математических формул
-    // Ждем полной загрузки MathJax
+    // Рендеринг KaTeX для математических формул
     function renderMath() {
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            MathJax.typesetPromise().then(() => {
-                console.log('✓ MathJax rendered all formulas');
-            }).catch((err) => {
-                console.error('MathJax rendering error:', err);
-            });
+        if (typeof reRenderMath === 'function') {
+            reRenderMath(document.body);
+            console.log('✓ KaTeX rendered all formulas');
         } else {
-            // Если MathJax еще не загружен, ждем
-            console.log('Waiting for MathJax to load...');
+            // Если KaTeX еще не загружен, ждем
+            console.log('Waiting for KaTeX to load...');
             setTimeout(renderMath, 100);
         }
     }

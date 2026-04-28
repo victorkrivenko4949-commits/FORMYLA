@@ -9,21 +9,6 @@
 </p>
 <p style="color: #888; margin-bottom: 20px;">Ответы и подробные решения</p>
 
-{# ── Source badge at combo level ── #}
-{% if combo.source_url and combo.source_name %}
-<div style="display:flex; align-items:center; gap:10px; background:#1a2a1a; border:1px solid #2d5a2d; border-radius:10px; padding:14px 20px; margin-bottom:28px;">
-    <span style="font-size:20px;">📚</span>
-    <div>
-        <span style="color:#4caf50; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.5px;">Официальный архив</span>
-        <div style="margin-top:4px;">
-            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
-               style="color:#81c784; font-size:14px; text-decoration:underline; word-break:break-all;">
-                {{ combo.source_name }}
-            </a>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 {% for p in combo.problems %}
 <div style="background: #25252b; padding: 25px 30px; margin-bottom: 25px; border-radius: 12px;">
@@ -97,30 +82,21 @@
         </div>
 
     {% else %}
-        {# AI-generated solution — show behind a button, offer official archive if available #}
+        {# Решение из базы данных #}
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="background:#1a1a2e; color:#7986cb; border:1px solid #3949ab; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
-                🤖 Разбор от AI-тьютора
+            <span style="background:#1b2a4a; color:#64b5f6; border:1px solid #1565c0; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
+                📖 Решение
             </span>
-            <span style="color:#666; font-size:12px;">не авторское решение</span>
         </div>
 
-        {% if combo.source_url %}
-        {# Has official archive — show button that opens modal #}
-        <button onclick="showSolutionModal('{{ combo.source_url | e }}', '{{ (combo.source_name or 'Официальный архив') | e }}', 'ai-solution-{{ loop.index }}')"
-                style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:linear-gradient(135deg,#3949ab,#7986cb); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity 0.2s; margin-bottom:12px;"
+        <button onclick="var el=document.getElementById('solution-{{ loop.index }}'); el.style.display = el.style.display==='none' ? 'block' : 'none'; this.style.display='none';"
+                style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:linear-gradient(135deg,#1565c0,#64b5f6); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity 0.2s; margin-bottom:12px;"
                 onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
             📖 Показать разбор
         </button>
-        <div id="ai-solution-{{ loop.index }}" style="display:none; color:#ccc; font-size:15px; line-height:1.7; white-space:pre-wrap; background:#1a1a2e; padding:20px; border-radius:10px; border-left:3px solid #3949ab;">
+        <div id="solution-{{ loop.index }}" style="display:none; color:#ccc; font-size:15px; line-height:1.7; white-space:pre-wrap; background:#1a1a2e; padding:20px; border-radius:10px; border-left:3px solid #64b5f6;">
             {{ p.solution | default('Решение не найдено') | safe }}
         </div>
-        {% else %}
-        {# No official archive — show AI solution directly #}
-        <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1a1a2e; padding: 20px; border-radius: 10px; border-left: 3px solid #3949ab;">
-            {{ p.solution | default('Решение не найдено') | safe }}
-        </div>
-        {% endif %}
     {% endif %}
 
     {# Manual review flag #}
