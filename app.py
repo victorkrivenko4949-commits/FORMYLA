@@ -273,6 +273,21 @@ try:
             print("[migration] Added preferred_grade to users")
         except Exception:
             db.session.rollback()
+
+        # --- current_plan and plan_expires_at for subscriptions ---
+        try:
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN current_plan TEXT DEFAULT 'free'"))
+            db.session.commit()
+            print("[migration] Added current_plan to users")
+        except Exception:
+            db.session.rollback()
+
+        try:
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN plan_expires_at TIMESTAMP"))
+            db.session.commit()
+            print("[migration] Added plan_expires_at to users")
+        except Exception:
+            db.session.rollback()
 except Exception as e:
     print(f"[AUTO-MIGRATION] guest columns Warning: {e}")
 
@@ -385,28 +400,38 @@ def ensure_device_and_session():
     # Пропускаем статические файлы
     if request.path.startswith('/static/'):
         return
-    
-    # 1. Получаем или создаём device_id
-    device_id = session.get('device_id')
-    if not device_id:
-        device_id = request.cookies.get('formyla_device_id')
-    if not device_id:
-        device_id = _generate_device_id()
-    
-    session['device_id'] = device_id
-    
-    # 2. Если пользователь не авторизован — создаём гостя
-    if not current_user.is_authenticated:
-        guest = ensure_guest_user(device_id)
-        login_user(guest, remember=True)
-        session.permanent = True
-        session['user_id'] = guest.id
-    else:
-        # Обновляем device_id у текущего пользователя если нужно
-        if not current_user.device_id:
-            current_user.device_id = device_id
-            db.session.commit()
-        session['user_id'] = current_user.id
+
+    try:
+        # 1. Получаем или создаём device_id
+        device_id = session.get('device_id')
+        if not device_id:
+            device_id = request.cookies.get('formyla_device_id')
+        if not device_id:
+            device_id = _generate_device_id()
+
+        session['device_id'] = device_id
+
+        # 2. Если пользователь не авторизован — создаём гостя
+        if not current_user.is_authenticated:
+            guest = ensure_guest_user(device_id)
+            login_user(guest, remember=True)
+            session.permanent = True
+            session['user_id'] = guest.id
+        else:
+            # Обновляем device_id у текущего пользователя если нужно
+            try:
+                if not current_user.device_id:
+                    current_user.device_id = device_id
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
+            session['user_id'] = current_user.id
+    except Exception as e:
+        # If guest user creation fails (e.g. missing columns), just continue
+        # The user will be anonymous but the app won't crash
+        import logging
+        logging.getLogger(__name__).warning(f"ensure_device_and_session error: {e}")
+        db.session.rollback()
 
 
 @app.after_request
