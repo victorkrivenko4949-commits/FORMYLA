@@ -978,7 +978,7 @@ def leaderboard():
         leaderboard_data.append({
             'user': user,
             'score': user.get_leaderboard_score(),
-            'nickname': user.nickname or user.name or 'Аноним',
+            'nickname': user.display_name,
             'avatar_url': user.avatar_url,
             'level': user.current_level,
             'total_solved': user.total_problems_solved,
