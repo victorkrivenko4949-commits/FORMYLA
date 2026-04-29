@@ -13,7 +13,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}?v={{ asset_version }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v=2">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     {% block extra_css %}{% endblock %}
@@ -163,6 +163,173 @@
         </div>
     </header>
 
+    <!-- ═══════════════════════════════════════════════
+         MOBILE DRAWER MENU (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer">
+        <!-- Drawer header -->
+        <div class="drawer-header">
+            <span class="drawer-logo">FORMYLA</span>
+            <button class="drawer-close" onclick="closeDrawer()" aria-label="Закрыть">✕</button>
+        </div>
+
+        <!-- User info -->
+        {% if current_user.is_authenticated %}
+        <div class="drawer-user">
+            <div class="drawer-user-info">
+                <div class="drawer-avatar">👤</div>
+                <div>
+                    <div class="drawer-username">{{ current_user.username }}</div>
+                    <div class="drawer-user-sub">{{ current_user.email or '' }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Search -->
+        <div class="drawer-search">
+            <form action="/problems" method="get">
+                <input type="text" name="q" placeholder="🔍 Поиск задач..."
+                       value="{{ request.args.get('q', '') }}">
+                <button type="submit">Найти</button>
+            </form>
+        </div>
+
+        <!-- Navigation links -->
+        <nav class="drawer-nav">
+            <div class="drawer-section-title">Главное</div>
+            <a href="{{ url_for('daily_quest_main') }}" class="drawer-link">
+                <span class="drawer-link-icon">🔥</span>
+                Задачи дня
+                {% if current_user.is_authenticated %}
+                {% set dq = current_user.today_quest() %}
+                {% if dq and dq.completed_count >= dq.total_count %}
+                  <span class="drawer-daily-badge done">✓</span>
+                {% elif dq %}
+                  <span class="drawer-daily-badge progress">{{ dq.completed_count }}/{{ dq.total_count }}</span>
+                {% else %}
+                  <span class="drawer-daily-badge new">NEW</span>
+                {% endif %}
+                {% endif %}
+            </a>
+            <a href="{{ url_for('index') }}" class="drawer-link">
+                <span class="drawer-link-icon">📐</span>
+                Темы
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Тренировка</div>
+            <a href="/probniks" class="drawer-link">
+                <span class="drawer-link-icon">📊</span>
+                Проверка по темам
+            </a>
+            <a href="{{ url_for('secrets') }}" class="drawer-link">
+                <span class="drawer-link-icon">🗝️</span>
+                Секреты
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Олимпиады</div>
+            <a href="{{ url_for('olympiads') }}" class="drawer-link">
+                <span class="drawer-link-icon">📖</span>
+                Каталог олимпиад
+            </a>
+            <a href="/practice" class="drawer-link">
+                <span class="drawer-link-icon">✍️</span>
+                Написать олимпиаду
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Сообщество</div>
+            <a href="{{ url_for('leaderboard') }}" class="drawer-link">
+                <span class="drawer-link-icon">🏆</span>
+                Лидеры
+            </a>
+            <a href="/friends" class="drawer-link">
+                <span class="drawer-link-icon">🤝</span>
+                Друзья
+            </a>
+
+            {% if current_user.is_authenticated %}
+            <div class="drawer-divider"></div>
+            <a href="#" class="drawer-link" onclick="closeDrawer(); setTimeout(function(){ document.getElementById('tutorBtn')?.click(); }, 300); return false;">
+                <span class="drawer-link-icon">💬</span>
+                AI Тьютор
+            </a>
+            {% endif %}
+
+            <div class="drawer-divider"></div>
+            <a href="/about" class="drawer-link">
+                <span class="drawer-link-icon">ℹ️</span>
+                О сайте
+            </a>
+
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('profile') }}" class="drawer-link">
+                <span class="drawer-link-icon">👤</span>
+                Профиль
+            </a>
+            {% endif %}
+        </nav>
+
+        <!-- Footer: auth actions -->
+        <div class="drawer-footer">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}" class="drawer-link">
+                <span class="drawer-link-icon">🚪</span>
+                Выйти
+            </a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="drawer-link" style="color: #38bdf8;">
+                <span class="drawer-link-icon">🚀</span>
+                Войти / Регистрация
+            </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════
+         BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="{{ url_for('index') }}" class="bottom-nav-item" data-path="/">
+            <span class="bottom-nav-icon">🏠</span>
+            <span class="bottom-nav-label">Главная</span>
+        </a>
+        <a href="{{ url_for('daily_quest_main') }}" class="bottom-nav-item" data-path="/daily*">
+            <span class="bottom-nav-icon">🔥</span>
+            <span class="bottom-nav-label">Задачи дня</span>
+            {% if current_user.is_authenticated %}
+            {% set dq_bottom = current_user.today_quest() %}
+            {% if dq_bottom and dq_bottom.completed_count >= dq_bottom.total_count %}
+              <span class="bottom-nav-badge done">✓</span>
+            {% elif dq_bottom and dq_bottom.completed_count > 0 %}
+              <span class="bottom-nav-badge">{{ dq_bottom.completed_count }}</span>
+            {% endif %}
+            {% endif %}
+        </a>
+        <a href="{{ url_for('olympiads') }}" class="bottom-nav-item" data-path="/olympiads*,/practice*">
+            <span class="bottom-nav-icon">🏆</span>
+            <span class="bottom-nav-label">Олимпиады</span>
+        </a>
+        <a href="{{ url_for('leaderboard') }}" class="bottom-nav-item" data-path="/leaderboard*,/friends*">
+            <span class="bottom-nav-icon">👥</span>
+            <span class="bottom-nav-label">Рейтинг</span>
+        </a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('profile') }}" class="bottom-nav-item" data-path="/profile*">
+            <span class="bottom-nav-icon">👤</span>
+            <span class="bottom-nav-label">Профиль</span>
+        </a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="bottom-nav-item" data-path="/login*,/register*">
+            <span class="bottom-nav-icon">🚀</span>
+            <span class="bottom-nav-label">Войти</span>
+        </a>
+        {% endif %}
+    </nav>
+
     <main class="main">
         {% block content %}{% endblock %}
     </main>
@@ -255,8 +422,8 @@
     <script src="{{ url_for('static', filename='js/caps_lock.js') }}"></script>
     <!-- Mastery Radar Chart -->
     <script src="{{ url_for('static', filename='js/mastery_radar.js') }}?v={{ asset_version }}"></script>
-    <!-- Мобильная навигация (бургер-меню) -->
-    <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
+    <!-- Мобильная навигация (drawer + bottom nav) -->
+    <script src="{{ url_for('static', filename='js/mobile_nav.js') }}?v=2"></script>
     <!-- Dropdown навигация -->
     <script src="{{ url_for('static', filename='js/nav.js') }}?v={{ asset_version }}"></script>
     <!-- Paywall модалка (должна быть до api.js) -->
