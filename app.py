@@ -6533,108 +6533,118 @@ def about_page():
 
 @app.route('/api/support', methods=['POST'])
 def submit_support():
-    data = request.json or {}
-
-    message = (data.get('message') or '').strip()
-    if not (5 <= len(message) <= 4000):
-        return jsonify({'error': 'сообщение 5-4000 символов'}), 400
-
-    category = data.get('category', 'other')
-    if category not in ('bug', 'suggestion', 'question', 'other'):
-        category = 'other'
-
-    email = (data.get('email') or '').strip() or None
-    if email and '@' not in email:
-        return jsonify({'error': 'некорректный email'}), 400
-
-    # Rate-limit
-    user_id = None
-    if current_user.is_authenticated:
-        user_id = current_user.id
-    rl_key = f'u:{user_id}' if user_id else f'ip:{request.remote_addr}'
-    import time as _time_rl
-    now = _time_rl.time()
-    bucket = _SUPPORT_RATE_LIMIT.setdefault(rl_key, [])
-    bucket[:] = [t for t in bucket if now - t < 3600]
-    if len(bucket) >= 5:
-        return jsonify({'error': 'слишком много обращений, '
-                                  'попробуйте через час'}), 429
-    bucket.append(now)
-
-    # Получить nickname из БД если залогинен
-    nickname = None
-    if user_id:
-        try:
-            nickname = current_user.nickname or current_user.display_name
-        except Exception:
-            pass
-
-    page_url = (data.get('page_url') or '')[:500]
-    user_agent = (request.headers.get('User-Agent') or '')[:500]
-    ip = (request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
-          or request.remote_addr)
-
-    # 1. Сохранить в БД
-    from sqlalchemy import text as _text_support
     try:
-        result_row = db.session.execute(_text_support('''
-            INSERT INTO support_messages
-            (user_id, user_nickname, user_email, category,
-             message, page_url, user_agent, ip)
-            VALUES (:user_id, :nickname, :email, :category,
-                    :message, :page_url, :user_agent, :ip)
-            RETURNING id
-        '''), {
+        data = request.json or {}
+
+        message_text = (data.get('message') or '').strip()
+        if not (5 <= len(message_text) <= 4000):
+            return jsonify({'error': 'сообщение 5-4000 символов'}), 400
+
+        category = data.get('category', 'other')
+        if category not in ('bug', 'suggestion', 'question', 'other'):
+            category = 'other'
+
+        email = (data.get('email') or '').strip() or None
+        if email and '@' not in email:
+            return jsonify({'error': 'некорректный email'}), 400
+
+        # Rate-limit
+        user_id = None
+        if current_user.is_authenticated:
+            user_id = current_user.id
+        rl_key = f'u:{user_id}' if user_id else f'ip:{request.remote_addr}'
+        import time as _time_rl
+        now = _time_rl.time()
+        bucket = _SUPPORT_RATE_LIMIT.setdefault(rl_key, [])
+        bucket[:] = [t for t in bucket if now - t < 3600]
+        if len(bucket) >= 5:
+            return jsonify({'error': 'слишком много обращений, '
+                                      'попробуйте через час'}), 429
+        bucket.append(now)
+
+        # Получить nickname из БД если залогинен
+        nickname = None
+        if user_id:
+            try:
+                nickname = current_user.nickname or current_user.display_name
+            except Exception:
+                pass
+
+        page_url = (data.get('page_url') or '')[:500]
+        user_agent = (request.headers.get('User-Agent') or '')[:500]
+        ip = (request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+              or request.remote_addr)
+
+        # 1. Сохранить в БД
+        from sqlalchemy import text as _text_support
+        _params = {
             'user_id': user_id,
             'nickname': nickname,
             'email': email,
             'category': category,
-            'message': message,
+            'message': message_text,
             'page_url': page_url,
             'user_agent': user_agent,
             'ip': ip,
-        }).fetchone()
-        new_id = result_row[0]
-    except Exception:
-        # SQLite не поддерживает RETURNING — fallback
-        db.session.execute(_text_support('''
-            INSERT INTO support_messages
-            (user_id, user_nickname, user_email, category,
-             message, page_url, user_agent, ip)
-            VALUES (:user_id, :nickname, :email, :category,
-                    :message, :page_url, :user_agent, :ip)
-        '''), {
-            'user_id': user_id,
-            'nickname': nickname,
-            'email': email,
-            'category': category,
-            'message': message,
-            'page_url': page_url,
-            'user_agent': user_agent,
-            'ip': ip,
-        })
-        db.session.commit()
-        row = db.session.execute(
-            _text_support('SELECT MAX(id) FROM support_messages')
-        ).fetchone()
-        new_id = row[0] if row else 0
+        }
 
-    # 2. Отправить email владельцу
-    ok, err = send_support_email(
-        mail,
-        nickname=nickname, email=email, category=category,
-        message=message, page_url=page_url,
-        user_agent=user_agent, ip=ip, ticket_id=new_id,
-    )
+        try:
+            result_row = db.session.execute(_text_support('''
+                INSERT INTO support_messages
+                (user_id, user_nickname, user_email, category,
+                 message, page_url, user_agent, ip)
+                VALUES (:user_id, :nickname, :email, :category,
+                        :message, :page_url, :user_agent, :ip)
+                RETURNING id
+            '''), _params).fetchone()
+            new_id = result_row[0]
+            db.session.commit()
+        except Exception as insert_err:
+            db.session.rollback()
+            # SQLite не поддерживает RETURNING — fallback
+            try:
+                db.session.execute(_text_support('''
+                    INSERT INTO support_messages
+                    (user_id, user_nickname, user_email, category,
+                     message, page_url, user_agent, ip)
+                    VALUES (:user_id, :nickname, :email, :category,
+                            :message, :page_url, :user_agent, :ip)
+                '''), _params)
+                db.session.commit()
+                row = db.session.execute(
+                    _text_support('SELECT MAX(id) FROM support_messages')
+                ).fetchone()
+                new_id = row[0] if row else 0
+            except Exception as fallback_err:
+                db.session.rollback()
+                import logging
+                logging.error(f'[support] DB insert failed: {insert_err} / {fallback_err}')
+                return jsonify({'error': 'ошибка сохранения, попробуйте позже'}), 500
 
-    db.session.execute(_text_support(
-        '''UPDATE support_messages
-           SET email_sent=:ok, email_error=:err
-           WHERE id=:id'''
-    ), {'ok': ok, 'err': err, 'id': new_id})
-    db.session.commit()
+        # 2. Отправить email владельцу
+        ok, err = send_support_email(
+            mail,
+            nickname=nickname, email=email, category=category,
+            message=message_text, page_url=page_url,
+            user_agent=user_agent, ip=ip, ticket_id=new_id,
+        )
 
-    return jsonify({'ok': True, 'id': new_id})
+        try:
+            db.session.execute(_text_support(
+                '''UPDATE support_messages
+                   SET email_sent=:ok, email_error=:err
+                   WHERE id=:id'''
+            ), {'ok': ok, 'err': err, 'id': new_id})
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        return jsonify({'ok': True, 'id': new_id})
+
+    except Exception as e:
+        import logging
+        logging.exception('[support] Unexpected error')
+        return jsonify({'error': 'внутренняя ошибка сервера'}), 500
 
 
 if __name__ == '__main__':

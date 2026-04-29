@@ -175,15 +175,16 @@ form.addEventListener('submit', async (e) => {
       credentials: 'include',
       body: JSON.stringify(data),
     });
-    const j = await r.json();
-    if (r.ok) {
+    let j;
+    try { j = await r.json(); } catch (_) { j = {}; }
+    if (r.ok && j.ok) {
       result.textContent = '✅ Спасибо! Мы получили ваше ' +
                             'сообщение и ответим как можно скорее.';
       result.className = 'form-result ok';
       form.reset();
       counter.textContent = '0';
     } else {
-      result.textContent = '❌ ' + (j.error || 'Ошибка отправки');
+      result.textContent = '❌ ' + (j.error || 'Ошибка отправки (код ' + r.status + ')');
       result.className = 'form-result err';
     }
   } catch (err) {
