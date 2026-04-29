@@ -4,6 +4,7 @@ from flask_mail import Mail, Message
 from utils.math_answer_utils import compare_math_answers
 from utils.rating_utils import add_xp_for_task, add_xp_for_adaptive_test, add_xp_for_mock_exam, get_xp_for_next_level
 from utils.answer_evaluator import check_answers_batch
+from utils.olympiad_days import split_problems_by_day
 from olympiads import OLYMPIADS_DB as _RAW_DB
 try:
     from olympiads import OLYMPIADS_INFO
