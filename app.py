@@ -270,7 +270,7 @@ try:
     with app.app_context():
         # --- Guest access columns ---
         try:
-            db.session.execute(db.text("ALTER TABLE users ADD COLUMN is_guest BOOLEAN DEFAULT 0"))
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN is_guest BOOLEAN NOT NULL DEFAULT FALSE"))
             db.session.commit()
             print("[migration] Added is_guest to users")
         except Exception:
