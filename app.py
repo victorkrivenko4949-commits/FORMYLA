@@ -364,6 +364,34 @@ login_manager.login_message = 'Пожалуйста, войдите для до�
 
 mail = Mail(app)
 
+# ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
+@app.errorhandler(500)
+def internal_error(e):
+    """Global 500 error handler - shows traceback instead of blank page"""
+    import traceback
+    tb = traceback.format_exc()
+    app.logger.error(f"500 Internal Server Error: {e}\n{tb}")
+    return f"<h1>Internal Server Error</h1><pre>{e}\n{tb}</pre>", 500
+
+# ── HEALTH CHECK ──────────────────────────────────────────────────
+@app.route('/health')
+def health_check():
+    """Diagnostic endpoint"""
+    import sys
+    info = {
+        'status': 'ok',
+        'python': sys.version,
+        'db_type': 'postgresql' if _database_url.startswith('postgresql') else 'sqlite',
+    }
+    try:
+        from sqlalchemy import text as _t
+        result = db.session.execute(_t("SELECT 1")).fetchone()
+        info['db_connected'] = True
+    except Exception as ex:
+        info['db_connected'] = False
+        info['db_error'] = str(ex)
+    return jsonify(info)
+
 # Flask-APScheduler for Daily Quest cron jobs
 from flask_apscheduler import APScheduler
 
