@@ -329,6 +329,62 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] friendships Warning: {e}")
 
+# AUTO-MIGRATION: Create support_messages table for feedback form
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_sm, text as _text_sm
+        _inspector_sm = _inspect_sm(db.engine)
+        if 'support_messages' not in _inspector_sm.get_table_names():
+            _is_pg_sm = _database_url.startswith('postgresql')
+            if _is_pg_sm:
+                db.session.execute(_text_sm("""
+                    CREATE TABLE IF NOT EXISTS support_messages (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        user_nickname VARCHAR(64),
+                        user_email VARCHAR(255),
+                        category VARCHAR(32),
+                        message TEXT NOT NULL,
+                        page_url TEXT,
+                        user_agent TEXT,
+                        ip VARCHAR(64),
+                        email_sent BOOLEAN DEFAULT false,
+                        email_error TEXT,
+                        status VARCHAR(16) DEFAULT 'new',
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        resolved_at TIMESTAMP
+                    )
+                """))
+                db.session.execute(_text_sm("""
+                    CREATE INDEX IF NOT EXISTS idx_support_status
+                    ON support_messages(status)
+                """))
+            else:
+                db.session.execute(_text_sm("""
+                    CREATE TABLE IF NOT EXISTS support_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        user_nickname VARCHAR(64),
+                        user_email VARCHAR(255),
+                        category VARCHAR(32),
+                        message TEXT NOT NULL,
+                        page_url TEXT,
+                        user_agent TEXT,
+                        ip VARCHAR(64),
+                        email_sent BOOLEAN DEFAULT 0,
+                        email_error TEXT,
+                        status VARCHAR(16) DEFAULT 'new',
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        resolved_at DATETIME
+                    )
+                """))
+            db.session.commit()
+            print("[AUTO-MIGRATION] ✓ Created support_messages table")
+        else:
+            print("[AUTO-MIGRATION] ✓ support_messages table already exists")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] support_messages Warning: {e}")
+
 
 def _log_tutor_call(task_id: int, user_answer: str, result: dict):
     """Логирует вызов AI-тьютора v2 в таблицу tutor_calls."""
@@ -6458,6 +6514,127 @@ def api_subscribe():
         'expires_at': str(expires)[:10],
         'message': 'Premium активирован!'
     })
+
+
+# ═══════════════════════════════════════════════════════════════════
+# СТРАНИЦА "О САЙТЕ" + ФОРМА ПОДДЕРЖКИ С EMAIL-УВЕДОМЛЕНИЯМИ
+# ═══════════════════════════════════════════════════════════════════
+
+from services.telegram_notify import send_support_email
+
+# Простой rate-limit: один user ≤ 5 обращений за час
+_SUPPORT_RATE_LIMIT = {}  # in-memory, для prod лучше Redis
+
+
+@app.route('/about')
+def about_page():
+    return render_template('about.html')
+
+
+@app.route('/api/support', methods=['POST'])
+def submit_support():
+    data = request.json or {}
+
+    message = (data.get('message') or '').strip()
+    if not (5 <= len(message) <= 4000):
+        return jsonify({'error': 'сообщение 5-4000 символов'}), 400
+
+    category = data.get('category', 'other')
+    if category not in ('bug', 'suggestion', 'question', 'other'):
+        category = 'other'
+
+    email = (data.get('email') or '').strip() or None
+    if email and '@' not in email:
+        return jsonify({'error': 'некорректный email'}), 400
+
+    # Rate-limit
+    user_id = None
+    if current_user.is_authenticated:
+        user_id = current_user.id
+    rl_key = f'u:{user_id}' if user_id else f'ip:{request.remote_addr}'
+    import time as _time_rl
+    now = _time_rl.time()
+    bucket = _SUPPORT_RATE_LIMIT.setdefault(rl_key, [])
+    bucket[:] = [t for t in bucket if now - t < 3600]
+    if len(bucket) >= 5:
+        return jsonify({'error': 'слишком много обращений, '
+                                  'попробуйте через час'}), 429
+    bucket.append(now)
+
+    # Получить nickname из БД если залогинен
+    nickname = None
+    if user_id:
+        try:
+            nickname = current_user.nickname or current_user.display_name
+        except Exception:
+            pass
+
+    page_url = (data.get('page_url') or '')[:500]
+    user_agent = (request.headers.get('User-Agent') or '')[:500]
+    ip = (request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+          or request.remote_addr)
+
+    # 1. Сохранить в БД
+    from sqlalchemy import text as _text_support
+    try:
+        result_row = db.session.execute(_text_support('''
+            INSERT INTO support_messages
+            (user_id, user_nickname, user_email, category,
+             message, page_url, user_agent, ip)
+            VALUES (:user_id, :nickname, :email, :category,
+                    :message, :page_url, :user_agent, :ip)
+            RETURNING id
+        '''), {
+            'user_id': user_id,
+            'nickname': nickname,
+            'email': email,
+            'category': category,
+            'message': message,
+            'page_url': page_url,
+            'user_agent': user_agent,
+            'ip': ip,
+        }).fetchone()
+        new_id = result_row[0]
+    except Exception:
+        # SQLite не поддерживает RETURNING — fallback
+        db.session.execute(_text_support('''
+            INSERT INTO support_messages
+            (user_id, user_nickname, user_email, category,
+             message, page_url, user_agent, ip)
+            VALUES (:user_id, :nickname, :email, :category,
+                    :message, :page_url, :user_agent, :ip)
+        '''), {
+            'user_id': user_id,
+            'nickname': nickname,
+            'email': email,
+            'category': category,
+            'message': message,
+            'page_url': page_url,
+            'user_agent': user_agent,
+            'ip': ip,
+        })
+        db.session.commit()
+        row = db.session.execute(
+            _text_support('SELECT MAX(id) FROM support_messages')
+        ).fetchone()
+        new_id = row[0] if row else 0
+
+    # 2. Отправить email владельцу
+    ok, err = send_support_email(
+        mail,
+        nickname=nickname, email=email, category=category,
+        message=message, page_url=page_url,
+        user_agent=user_agent, ip=ip, ticket_id=new_id,
+    )
+
+    db.session.execute(_text_support(
+        '''UPDATE support_messages
+           SET email_sent=:ok, email_error=:err
+           WHERE id=:id'''
+    ), {'ok': ok, 'err': err, 'id': new_id})
+    db.session.commit()
+
+    return jsonify({'ok': True, 'id': new_id})
 
 
 if __name__ == '__main__':

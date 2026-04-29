@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}О сайте — FORMYLA{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ asset_version }}">
+{% endblock %}
+{% block content %}
+
+<div class="about-page">
+
+  <section class="about-hero">
+    <h1 class="about-title">FORMYLA</h1>
+    <p class="about-subtitle">
+      Платформа подготовки к математическим олимпиадам
+    </p>
+  </section>
+
+  <section class="about-section">
+    <h2>🎯 Что это?</h2>
+    <p>FORMYLA — бесплатная платформа для школьников 5-11
+       классов, готовящихся к математическим олимпиадам:
+       от школьного этапа ВсОШ до заключительного.</p>
+  </section>
+
+  <section class="about-section">
+    <h2>📚 Разделы сайта</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🧠</span>
+        <h3>Адаптивный тест</h3>
+        <p>Подбор задач под твой уровень. Уровни 1-7 —
+           от школьной программы до заключительного этапа.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏆</span>
+        <h3>Олимпиады</h3>
+        <p>Каталог задач прошлых олимпиад с решениями:
+           ВсОШ, Турнир городов, Эйлер.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">✍️</span>
+        <h3>Написать олимпиаду</h3>
+        <p>Режим реальной олимпиады с таймером и
+           проверкой решений AI-тьютором.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <h3>AI-тьютор</h3>
+        <p>Пошаговое объяснение каждой задачи. Тьютор
+           решает сам и даёт честную оценку.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">👥</span>
+        <h3>Друзья</h3>
+        <p>Добавляй друзей, смотри их прогресс,
+           серии и результаты.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Радар навыков</h3>
+        <p>Карта твоих сильных и слабых тем.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <h2>📈 Цифры</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">3500+</div>
+        <div class="stat-label">задач в адаптивном тесте</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">8000+</div>
+        <div class="stat-label">олимпиадных задач</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">5-11</div>
+        <div class="stat-label">классы</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">7</div>
+        <div class="stat-label">уровней сложности</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <h2>📣 Telegram-канал</h2>
+    <p>Новости проекта, разборы задач и анонсы
+       обновлений — в нашем канале:</p>
+    <a href="https://t.me/FormylaMaths" target="_blank"
+       class="tg-btn">
+      <span>📨</span> @FormylaMaths
+    </a>
+  </section>
+
+  <!-- ═══ ФОРМА ПОДДЕРЖКИ ═══ -->
+  <section class="about-section support-section">
+    <h2>💬 Связаться с нами</h2>
+    <p>Нашли баг? Есть идея? Не получается решить?
+       Напиши нам — ответим в Telegram-канале или на
+       почту, если оставишь её.</p>
+
+    <form id="support-form" class="support-form">
+      <div class="form-row">
+        <label>Тип обращения</label>
+        <select name="category" required>
+          <option value="bug">🐛 Баг / ошибка</option>
+          <option value="suggestion">💡 Идея / предложение</option>
+          <option value="question">❓ Вопрос</option>
+          <option value="other" selected>✉️ Другое</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Email <span class="muted">(необязательно)</span></label>
+        <input type="email" name="email"
+               placeholder="чтобы мы могли ответить">
+      </div>
+
+      <div class="form-row">
+        <label>Сообщение</label>
+        <textarea name="message" required minlength="5"
+                  maxlength="4000" rows="6"
+                  placeholder="Опиши проблему или идею..."></textarea>
+        <div class="char-count">
+          <span id="char-current">0</span> / 4000
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">
+        Отправить
+      </button>
+
+      <div id="support-result" class="form-result"></div>
+    </form>
+  </section>
+
+  <section class="about-section">
+    <h2>👨‍💻 Автор</h2>
+    <p>Виктор Кривенко ·
+       <a href="https://t.me/FormylaMaths" target="_blank">
+         @FormylaMaths</a></p>
+    <p class="about-version">Версия 1.0 · Апрель 2026</p>
+  </section>
+
+</div>
+
+<script>
+const form = document.getElementById('support-form');
+const ta = form.querySelector('textarea[name="message"]');
+const counter = document.getElementById('char-current');
+const result = document.getElementById('support-result');
+
+ta.addEventListener('input', () => {
+  counter.textContent = ta.value.length;
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  result.textContent = 'Отправка...';
+  result.className = 'form-result loading';
+
+  const data = {
+    category: form.category.value,
+    email: form.email.value.trim(),
+    message: ta.value.trim(),
+    page_url: window.location.href,
+  };
+
+  try {
+    const r = await fetch('/api/support', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    const j = await r.json();
+    if (r.ok) {
+      result.textContent = '✅ Спасибо! Мы получили ваше ' +
+                            'сообщение и ответим как можно скорее.';
+      result.className = 'form-result ok';
+      form.reset();
+      counter.textContent = '0';
+    } else {
+      result.textContent = '❌ ' + (j.error || 'Ошибка отправки');
+      result.className = 'form-result err';
+    }
+  } catch (err) {
+    result.textContent = '❌ Нет соединения. Попробуйте позже.';
+    result.className = 'form-result err';
+  }
+});
+</script>
+
+{% endblock %}
