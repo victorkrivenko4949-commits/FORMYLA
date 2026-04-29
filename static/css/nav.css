@@ -1,0 +1,174 @@
+/* FORMYLA - Navigation Dropdowns */
+
+/* Dropdown container */
+.nav-dropdown {
+  position: relative;
+}
+
+/* Toggle button */
+.nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-soft, #94a3b8);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 8px;
+  transition: color 0.18s, background 0.18s;
+  white-space: nowrap;
+}
+
+.nav-toggle:hover,
+.nav .nav-item:hover {
+  color: #ffffff;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.nav-toggle.active,
+.nav .nav-item.active {
+  color: #a78bfa;
+}
+
+/* Chevron */
+.chev {
+  font-size: 10px;
+  opacity: 0.6;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.nav-dropdown.open .chev {
+  transform: rotate(180deg);
+}
+
+/* Dropdown menu */
+.nav-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 220px;
+  background: rgba(20, 20, 36, 0.98);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  backdrop-filter: blur(16px);
+  z-index: 200;
+}
+
+.nav-dropdown.open .nav-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-menu a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: var(--text-soft, #94a3b8);
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.nav-menu a:hover {
+  background: rgba(124, 58, 237, 0.15);
+  color: #e2e8f0;
+}
+
+.nav-menu a.active {
+  color: #a78bfa;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+/* Nav item (flat links like Tutor, About) */
+.nav .nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-soft, #94a3b8);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px 10px;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: color 0.18s, background 0.18s;
+  white-space: nowrap;
+}
+
+/* Daily pill override */
+.nav-pill {
+  white-space: nowrap;
+}
+
+/* Mobile: dropdowns become accordion */
+@media (max-width: 768px) {
+  .nav-dropdown {
+    width: 80%;
+  }
+
+  .nav-toggle {
+    width: 100%;
+    justify-content: center;
+    font-size: 18px;
+    padding: 14px 24px;
+    min-height: 52px;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 12px;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    color: #e2e8f0;
+  }
+
+  .nav-menu {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: rgba(30, 30, 50, 0.5);
+    margin-top: 4px;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    display: none;
+    padding: 4px;
+    border-radius: 10px;
+    min-width: unset;
+    width: 100%;
+  }
+
+  .nav-dropdown.open .nav-menu {
+    display: block;
+  }
+
+  .nav-menu a {
+    font-size: 17px;
+    padding: 12px 20px;
+    justify-content: center;
+  }
+
+  .nav .nav-item {
+    width: 80%;
+    justify-content: center;
+    font-size: 18px;
+    padding: 14px 24px;
+    min-height: 52px;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 12px;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    color: #e2e8f0;
+    text-align: center;
+  }
+}

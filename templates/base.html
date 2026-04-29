@@ -12,6 +12,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}?v={{ asset_version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v=1">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -62,7 +63,8 @@
         </button>
 
         <nav class="nav" id="navLinks">
-            <a href="{{ url_for('daily_quest_main') }}" class="daily-nav-link nav-link">
+            <!-- Задачи дня -->
+            <a href="{{ url_for('daily_quest_main') }}" class="daily-nav-link nav-link nav-pill">
                 <span class="daily-flame">🔥</span>
                 <span class="daily-text">Задачи дня</span>
                 {% if current_user.is_authenticated %}
@@ -76,22 +78,50 @@
                 {% endif %}
                 {% endif %}
             </a>
-            <a href="{{ url_for('index') }}">Темы</a>
-            <a href="{{ url_for('olympiads') }}">Олимпиады</a>
-            <a href="/practice">Написать олимпиаду</a>
-            <a href="/probniks">Пробники</a>
-            <a href="{{ url_for('secrets') }}">Секреты</a>
-            <a href="{{ url_for('leaderboard') }}" style="display: flex; align-items: center; gap: 6px;">
-                🏆 Лидеры
-            </a>
+
+            <!-- 📚 Тренировка (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    📚 Тренировка <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="{{ url_for('index') }}">📐 Темы</a>
+                    <a href="/probniks">📝 Пробники</a>
+                    <a href="{{ url_for('secrets') }}">🗝️ Секреты</a>
+                </div>
+            </div>
+
+            <!-- 🏆 Олимпиады (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🏆 Олимпиады <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="{{ url_for('olympiads') }}">📖 Каталог</a>
+                    <a href="/practice">✍️ Написать олимпиаду</a>
+                </div>
+            </div>
+
+            <!-- 💬 Тьютор (плоская ссылка) -->
             {% if current_user.is_authenticated %}
-            <a href="#" onclick="document.getElementById('tutorBtn')?.click(); return false;" style="display: flex; align-items: center; gap: 6px;">
-                💬 AI-Тьютор
+            <a href="#" class="nav-item" onclick="document.getElementById('tutorBtn')?.click(); return false;">
+                💬 Тьютор
             </a>
             {% endif %}
-            <a href="/about" class="nav-item" style="display: flex; align-items: center; gap: 6px;">
-                ℹ️ О сайте
-            </a>
+
+            <!-- 👥 Сообщество (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    👥 Сообщество <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="{{ url_for('leaderboard') }}">🏆 Лидеры</a>
+                    <a href="/friends">🤝 Друзья</a>
+                </div>
+            </div>
+
+            <!-- ℹ️ О сайте (плоская ссылка) -->
+            <a href="/about" class="nav-item">ℹ️ О сайте</a>
         </nav>
         
         <!-- Форма поиска -->
@@ -227,6 +257,8 @@
     <script src="{{ url_for('static', filename='js/mastery_radar.js') }}?v={{ asset_version }}"></script>
     <!-- Мобильная навигация (бургер-меню) -->
     <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
+    <!-- Dropdown навигация -->
+    <script src="{{ url_for('static', filename='js/nav.js') }}?v={{ asset_version }}"></script>
     <!-- Paywall модалка (должна быть до api.js) -->
     <script src="{{ url_for('static', filename='js/paywall.js') }}?v={{ asset_version }}"></script>
     <!-- API wrapper с автоматическим перехватом 403 -->
