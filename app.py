@@ -5077,7 +5077,7 @@ def student_profile(student_id):
     
     # Тесты
     all_tests = AdaptiveTestResult.query.filter_by(user_id=friend.id).order_by(
-        AdaptiveTestResult.created_at.desc()
+        AdaptiveTestResult.completed_at.desc()
     ).limit(10).all()
     
     # Мастерство по темам
