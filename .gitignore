@@ -77,3 +77,11 @@ checkpoint.json
 *secret*
 *.key
 secrets_local*
+
+# Cleanup trash
+_TRASH_*/
+_audit_cleanup.csv
+_git_tracked.txt
+_run_audit.py
+_do_cleanup.py
+*.bak
