@@ -966,9 +966,9 @@ def leaderboard():
     # Заблокированные пользователи (не показываем в таблице лидеров)
     BLOCKED_USER_IDS = {4}  # ID 4 = "писюн"
     
-    # Получить всех пользователей с никнеймами (публичные профили)
+    # Получить всех реальных пользователей (не гостей, не заблокированных)
     users = User.query.filter(
-        User.nickname.isnot(None),
+        User.is_guest == False,
         ~User.id.in_(BLOCKED_USER_IDS)
     ).all()
     
