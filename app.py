@@ -171,8 +171,9 @@ try:
             # Add agent_type column if it doesn't exist
             if 'agent_type' not in columns:
                 print("[AUTO-MIGRATION] Adding 'agent_type' column to chat_messages...")
-                db.engine.execute(text("ALTER TABLE chat_messages ADD COLUMN agent_type VARCHAR(50) DEFAULT 'general' NOT NULL"))
-                db.engine.execute(text("CREATE INDEX IF NOT EXISTS ix_chat_messages_agent_type ON chat_messages (agent_type)"))
+                db.session.execute(text("ALTER TABLE chat_messages ADD COLUMN agent_type VARCHAR(50) DEFAULT 'general' NOT NULL"))
+                db.session.execute(text("CREATE INDEX IF NOT EXISTS ix_chat_messages_agent_type ON chat_messages (agent_type)"))
+                db.session.commit()
                 print("[AUTO-MIGRATION] ✓ Column 'agent_type' added successfully!")
             else:
                 print("[AUTO-MIGRATION] ✓ Column 'agent_type' already exists")
@@ -209,18 +210,33 @@ except Exception as e:
 # AUTO-MIGRATION: Create tutor_calls table for AI-тьютор v2 logging
 try:
     with app.app_context():
-        db.session.execute(text("""
-            CREATE TABLE IF NOT EXISTS tutor_calls (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id INTEGER NOT NULL,
-                user_answer TEXT,
-                raw_response TEXT,
-                extracted_solution TEXT,
-                status TEXT,
-                validation_errors TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """))
+        _is_pg = _database_url.startswith('postgresql')
+        if _is_pg:
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS tutor_calls (
+                    id SERIAL PRIMARY KEY,
+                    task_id INTEGER NOT NULL,
+                    user_answer TEXT,
+                    raw_response TEXT,
+                    extracted_solution TEXT,
+                    status TEXT,
+                    validation_errors TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+        else:
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS tutor_calls (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    task_id INTEGER NOT NULL,
+                    user_answer TEXT,
+                    raw_response TEXT,
+                    extracted_solution TEXT,
+                    status TEXT,
+                    validation_errors TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
         db.session.commit()
         print("[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready")
 except Exception as e:
