@@ -144,7 +144,8 @@ def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
     logger.info(f"Random quest for user {user_id}: levels={[t.get('difficulty',3) for t in selected]}")
     
     task_ids = [t['id'] for t in selected]
-    ai_comment = "🎯 **Твои задачи на сегодня**\n\n📚 Подобраны случайные задачи для начала. Пройди адаптивный тест, чтобы получать персонализированные задачи!\n\nРешай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"
+    grade_label = f" ({user_grade} класс)" if user_grade else ""
+    ai_comment = f"🎯 **Твои задачи на сегодня**{grade_label}\n\n📚 Подобраны случайные задачи для начала. Пройди адаптивный тест, чтобы получать персонализированные задачи!\n\nРешай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"
     
     quest = DailyQuest(
         user_id=user_id,
@@ -228,6 +229,8 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
     
     # 1. Три задачи по слабым темам
     for i, (topic, grade, mastery) in enumerate(weak_topics[:3]):
+        # Используем preferred_grade пользователя вместо grade из мастерства
+        task_grade = user_grade
         mastery_obj = TopicMastery.query.filter_by(
             user_id=user_id,
             topic=topic,
@@ -235,7 +238,10 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
         ).first()
         
         avg_level = int(mastery_obj.avg_level) if mastery_obj else 3
-        tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+        tasks = get_tasks_from_db(topic, task_grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+        # Fallback: если нет задач для preferred_grade, пробуем оригинальный grade
+        if not tasks and task_grade != grade:
+            tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
         
         if tasks:
             task = random.choice(tasks)
@@ -250,6 +256,7 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
     # 2. Одна задача средней сложности
     if medium_topics:
         topic, grade, mastery = random.choice(medium_topics)
+        task_grade = user_grade
         mastery_obj = TopicMastery.query.filter_by(
             user_id=user_id,
             topic=topic,
@@ -257,7 +264,9 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
         ).first()
         
         avg_level = int(mastery_obj.avg_level) + 1 if mastery_obj else 4
-        tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+        tasks = get_tasks_from_db(topic, task_grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+        if not tasks and task_grade != grade:
+            tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
         
         if tasks:
             task = random.choice(tasks)
@@ -272,6 +281,7 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
     # 3. Одна задача-челлендж по сильной теме
     if strong_topics:
         topic, grade, mastery = random.choice(strong_topics)
+        task_grade = user_grade
         mastery_obj = TopicMastery.query.filter_by(
             user_id=user_id,
             topic=topic,
@@ -279,7 +289,9 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
         ).first()
         
         avg_level = int(mastery_obj.avg_level) + 1 if mastery_obj else 5
-        tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+        tasks = get_tasks_from_db(topic, task_grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+        if not tasks and task_grade != grade:
+            tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
         
         if tasks:
             task = random.choice(tasks)
@@ -296,6 +308,7 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
         # Берём случайную тему из слабых
         if weak_topics:
             topic, grade, mastery = random.choice(weak_topics)
+            task_grade = user_grade
             mastery_obj = TopicMastery.query.filter_by(
                 user_id=user_id,
                 topic=topic,
@@ -303,7 +316,9 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
             ).first()
             
             avg_level = int(mastery_obj.avg_level) if mastery_obj else 3
-            tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+            tasks = get_tasks_from_db(topic, task_grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
+            if not tasks and task_grade != grade:
+                tasks = get_tasks_from_db(topic, grade, avg_level, exclude_ids=[t['id'] for t in selected_tasks])
             
             if tasks:
                 task = random.choice(tasks)
@@ -324,7 +339,7 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
         # Можно вернуть None или продолжить с меньшим количеством
     
     # Генерируем AI-комментарий
-    ai_comment = generate_ai_intro(task_distribution)
+    ai_comment = generate_ai_intro(task_distribution, user_grade)
     
     # Создаём DailyQuest
     quest = DailyQuest(
@@ -349,12 +364,13 @@ def generate_daily_quest(user_id: int, force_regenerate: bool = False) -> Option
         return None
 
 
-def generate_ai_intro(task_distribution: List[Dict]) -> str:
+def generate_ai_intro(task_distribution: List[Dict], user_grade: int = 7) -> str:
     """
     Сгенерировать AI-интро для Daily Quest.
     
     Args:
         task_distribution: Список задач с типами и темами
+        user_grade: Класс пользователя (5-11)
         
     Returns:
         Текст комментария
@@ -363,7 +379,7 @@ def generate_ai_intro(task_distribution: List[Dict]) -> str:
     medium_count = sum(1 for t in task_distribution if t['type'] == 'medium')
     challenge_count = sum(1 for t in task_distribution if t['type'] == 'challenge')
     
-    intro = "🎯 **Твои задачи на сегодня**\n\n"
+    intro = f"🎯 **Твои задачи на сегодня** ({user_grade} класс)\n\n"
     
     if weak_count > 0:
         weak_topics = [t['topic'] for t in task_distribution if t['type'] == 'weak']
