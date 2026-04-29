@@ -62,14 +62,20 @@ def send_friend_request(user_id):
             _create_notification(target.id, 'friend_accepted', current_user.id)
             return jsonify({'status': 'friends', 'message': 'Теперь вы друзья! +10 XP'})
 
-    f = Friendship(requester_id=current_user.id, addressee_id=user_id, status='pending')
+    # Мгновенная дружба — без подтверждения
+    f = Friendship(requester_id=current_user.id, addressee_id=user_id, status='accepted')
+    f.accepted_at = datetime.utcnow()
     db.session.add(f)
+
+    # +10 XP обоим
+    current_user.experience_points = (current_user.experience_points or 0) + 10
+    target.experience_points = (target.experience_points or 0) + 10
     db.session.commit()
 
-    _create_notification(target.id, 'friend_request', current_user.id)
+    _create_notification(target.id, 'friend_accepted', current_user.id)
 
-    name = target.name or target.email
-    return jsonify({'status': 'pending_sent', 'message': f'Запрос отправлен {name}'})
+    name = target.nickname or target.name or target.email
+    return jsonify({'status': 'friends', 'message': f'Вы и {name} теперь друзья! +10 XP'})
 
 
 @friends_bp.route('/friends/accept/<int:request_id>', methods=['POST'])
@@ -91,4 +97,7 @@ def accept_friend_request(request_id):
         requester.experience_points = (requester.experience_points or 0) + 10
     db.session.commit()
 
-    _create_notification(f.requ
+    _create_notification(f.requester_id, 'friend_accepted', current_user.id)
+
+    name = requester.nickname or requester.name or requester.email if requester else ''
+    return jsonify({'status': 'friends', 'message': f'{name} теперь ваш друг! +10 XP'})

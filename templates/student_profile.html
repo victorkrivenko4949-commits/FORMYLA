@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Профиль ученика - FORMYLA{% endblock %}
+{% block title %}Профиль друга - FORMYLA{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 800px; margin: 50px auto; padding: 0 20px;">
@@ -11,20 +11,20 @@
            style="display: inline-block; color: var(--accent-2); text-decoration: none; padding: 10px 20px; border: 1px solid var(--accent-2); border-radius: var(--radius-sm); transition: all 0.3s;"
            onmouseover="this.style.background='rgba(56, 189, 248, 0.1)'"
            onmouseout="this.style.background='transparent'">
-            ← Назад к списку учеников
+            ← Назад к друзьям
         </a>
     </div>
     
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            👤 Профиль ученика
+            👤 {{ student.nickname or student.name or 'Друг' }}
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
-            {{ student.email }}
+            🏆 {{ student.experience_points or 0 }} XP · Уровень {{ student.current_level or 1 }} · Решено {{ student.total_problems_solved or 0 }} задач
         </p>
     </div>
 
-    <!-- Информация об ученике -->
+    <!-- Информация о друге -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
             📊 Информация
@@ -57,7 +57,7 @@
         </div>
     </div>
 
-    <!-- AI Профиль ученика -->
+    <!-- AI Профиль -->
     {% if student.onboarding_completed %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-1); margin-bottom: 20px; font-size: 1.5em;">
@@ -100,6 +100,31 @@
         {% endif %}
     </div>
     {% endif %}
+
+    <!-- Статистика -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
+            📈 Статистика
+        </h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+            <div style="text-align: center; padding: 20px; background: rgba(56, 189, 248, 0.08); border-radius: 12px;">
+                <div style="font-size: 2em; font-weight: 800; color: var(--accent-2);">{{ student.total_problems_solved or 0 }}</div>
+                <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Задач решено</div>
+            </div>
+            <div style="text-align: center; padding: 20px; background: rgba(139, 92, 246, 0.08); border-radius: 12px;">
+                <div style="font-size: 2em; font-weight: 800; color: var(--accent-1);">{{ student.current_level or 1 }}</div>
+                <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Уровень</div>
+            </div>
+            <div style="text-align: center; padding: 20px; background: rgba(56, 239, 125, 0.08); border-radius: 12px;">
+                <div style="font-size: 2em; font-weight: 800; color: #38ef7d;">{{ student.experience_points or 0 }}</div>
+                <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">XP</div>
+            </div>
+            <div style="text-align: center; padding: 20px; background: rgba(245, 158, 11, 0.08); border-radius: 12px;">
+                <div style="font-size: 2em; font-weight: 800; color: #fbbf24;">{{ student.adaptive_tests_completed or 0 }}</div>
+                <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Тестов пройдено</div>
+            </div>
+        </div>
+    </div>
 
     <!-- Действия -->
     <div style="text-align: center; margin-top: 40px;">

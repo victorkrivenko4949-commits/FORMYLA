@@ -2241,29 +2241,14 @@ def profile():
         'total_tasks': sum(t.tasks_total for t in all_tests)
     }
     
-    # Получаем список учеников (accepted)
-    mentorships = Mentorship.query.filter_by(
-        teacher_id=current_user.id,
-        status='accepted'
-    ).all()
+    # Получаем список друзей (accepted friendships)
+    friends_list = current_user.get_friends() if hasattr(current_user, 'get_friends') else []
     
-    students = []
-    for m in mentorships:
-        student = User.query.get(m.student_id)
-        if student:
-            students.append(student)
+    # Для совместимости с шаблоном — передаём как students
+    students = friends_list
     
-    # Получаем входящие заявки (где я - ученик)
-    pending_requests = Mentorship.query.filter_by(
-        student_id=current_user.id,
-        status='pending'
-    ).all()
-    
+    # Входящие заявки в друзья (не используется при мгновенной дружбе, но оставим для совместимости)
     incoming_requests = []
-    for m in pending_requests:
-        teacher = User.query.get(m.teacher_id)
-        if teacher:
-            incoming_requests.append({'mentorship': m, 'teacher': teacher})
     
     # ── Mastery Dashboard ──
     from models import TopicMastery
@@ -4955,53 +4940,58 @@ def update_nickname():
 @app.route("/add_student", methods=["POST"])
 @login_required
 def add_student():
-    """Добавление ученика по nickname"""
-    student_nickname = request.form.get('nickname', '').strip()
+    """Добавление друга по nickname (мгновенная дружба)"""
+    friend_nickname = request.form.get('nickname', '').strip()
     
     # Убираем @ если пользователь ввел
-    if student_nickname.startswith('@'):
-        student_nickname = student_nickname[1:]
+    if friend_nickname.startswith('@'):
+        friend_nickname = friend_nickname[1:]
     
-    if not student_nickname:
-        flash('Введите никнейм ученика', 'error')
+    if not friend_nickname:
+        flash('Введите никнейм друга', 'error')
         return redirect(url_for('profile'))
     
     # Ищем пользователя по nickname (case-insensitive)
-    student = User.query.filter(User.nickname.ilike(student_nickname)).first()
+    friend = User.query.filter(User.nickname.ilike(friend_nickname)).first()
     
-    if not student:
-        flash(f'Пользователь @{student_nickname} не найден', 'error')
+    if not friend:
+        flash(f'Пользователь @{friend_nickname} не найден', 'error')
         return redirect(url_for('profile'))
     
-    if student.id == current_user.id:
+    if friend.id == current_user.id:
         flash('Нельзя добавить самого себя', 'error')
         return redirect(url_for('profile'))
     
-    # Проверяем существующую связь
-    existing = Mentorship.query.filter_by(
-        teacher_id=current_user.id,
-        student_id=student.id
+    # Проверяем существующую дружбу
+    existing = Friendship.query.filter(
+        db.or_(
+            db.and_(Friendship.requester_id == current_user.id,
+                    Friendship.addressee_id == friend.id),
+            db.and_(Friendship.requester_id == friend.id,
+                    Friendship.addressee_id == current_user.id),
+        )
     ).first()
     
     if existing:
-        if existing.status == 'pending':
-            flash('Заявка уже отправлена, ожидает подтверждения', 'warning')
-        elif existing.status == 'accepted':
-            flash('Этот ученик уже добавлен', 'info')
+        if existing.status == 'accepted':
+            flash(f'@{friend.nickname} уже в друзьях', 'info')
         else:
-            flash('Заявка была отклонена ранее', 'error')
+            flash(f'@{friend.nickname} уже в друзьях', 'info')
         return redirect(url_for('profile'))
     
-    # Создаем заявку
+    # Мгновенная дружба
     try:
-        mentorship = Mentorship(
-            teacher_id=current_user.id,
-            student_id=student.id,
-            status='pending'  # Требует подтверждения от ученика
+        friendship = Friendship(
+            requester_id=current_user.id,
+            addressee_id=friend.id,
+            status='accepted'
         )
-        db.session.add(mentorship)
+        friendship.accepted_at = datetime.utcnow()
+        db.session.add(friendship)
+        current_user.experience_points = (current_user.experience_points or 0) + 10
+        friend.experience_points = (friend.experience_points or 0) + 10
         db.session.commit()
-        flash(f'Заявка отправлена пользователю @{student.nickname}. Ожидайте подтверждения.', 'success')
+        flash(f'Вы и @{friend.nickname} теперь друзья! +10 XP', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Ошибка при добавлении: {str(e)}', 'error')
@@ -5057,26 +5047,40 @@ def reject_request(mentorship_id):
 @app.route("/student/<int:student_id>")
 @login_required
 def student_profile(student_id):
-    """Просмотр профиля ученика"""
-    # Проверяем права доступа
-    mentorship = Mentorship.query.filter_by(
-        teacher_id=current_user.id,
-        student_id=student_id,
-        status='accepted'
+    """Просмотр профиля друга — показывает ВСЮ информацию"""
+    # Проверяем дружбу
+    is_friend = Friendship.query.filter(
+        db.or_(
+            db.and_(Friendship.requester_id == current_user.id,
+                    Friendship.addressee_id == student_id),
+            db.and_(Friendship.requester_id == student_id,
+                    Friendship.addressee_id == current_user.id),
+        ),
+        Friendship.status == 'accepted'
     ).first()
     
-    if not mentorship:
-        flash('У вас нет доступа к этому профилю', 'error')
+    if not is_friend:
+        flash('Этот пользователь не в ваших друзьях', 'error')
         return redirect(url_for('profile'))
     
-    student = User.query.get_or_404(student_id)
+    friend = User.query.get_or_404(student_id)
     
-    # Собираем статистику ученика
-    # (здесь можно добавить подсчет решенных задач, тестов и т.д.)
+    # Собираем полную статистику друга
+    from models import AdaptiveTestResult, TopicMastery
+    
+    # Тесты
+    all_tests = AdaptiveTestResult.query.filter_by(user_id=friend.id).order_by(
+        AdaptiveTestResult.created_at.desc()
+    ).limit(10).all()
+    
+    # Мастерство по темам
+    mastery_data = TopicMastery.query.filter_by(user_id=friend.id).all()
     
     return render_template('student_profile.html',
-        student=student,
-        teacher=current_user
+        student=friend,
+        teacher=current_user,
+        tests=all_tests,
+        mastery=mastery_data
     )
 
 
@@ -5888,12 +5892,16 @@ def send_friend_request(uid):
             db.session.commit()
             _make_notif(person.id, 'friend_accepted', current_user.id)
             return jsonify({'status': 'friends', 'message': 'Теперь вы друзья! +10 XP'})
-    f = Friendship(requester_id=current_user.id, addressee_id=uid, status='pending')
+    # Мгновенная дружба — без подтверждения
+    f = Friendship(requester_id=current_user.id, addressee_id=uid, status='accepted')
+    f.accepted_at = datetime.utcnow()
     db.session.add(f)
+    current_user.experience_points = (current_user.experience_points or 0) + 10
+    person.experience_points = (person.experience_points or 0) + 10
     db.session.commit()
-    _make_notif(person.id, 'friend_request', current_user.id)
-    nm = person.name or person.email
-    return jsonify({'status': 'pending_sent', 'message': f'Запрос отправлен {nm}'})
+    _make_notif(person.id, 'friend_accepted', current_user.id)
+    nm = person.nickname or person.name or person.email
+    return jsonify({'status': 'friends', 'message': f'Вы и {nm} теперь друзья! +10 XP'})
 
 
 @app.route('/friends/accept/<int:rid>', methods=['POST'])

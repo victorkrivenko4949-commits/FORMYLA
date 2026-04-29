@@ -536,22 +536,22 @@
     </div>
     {% endif %}
 
-    <!-- Мои ученики -->
+    <!-- Мои друзья -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px;">
-        <h3 style="color: var(--text-main); margin-bottom: 20px;">👨‍🎓 Мои ученики</h3>
+        <h3 style="color: var(--text-main); margin-bottom: 20px;">🤝 Мои друзья</h3>
         
-        <!-- Форма добавления -->
+        <!-- Форма добавления друга -->
         <form action="{{ url_for('add_student') }}" method="POST" style="margin-bottom: 20px;">
             <div style="display: flex; gap: 10px;">
-                <input type="text" name="nickname" placeholder="Введите никнейм (например, @ivan)" required
+                <input type="text" name="nickname" placeholder="Введите никнейм друга (например, @ivan)" required
                        style="flex: 1; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main);">
                 <button type="submit" class="btn-primary" style="padding: 12px 24px;">
-                    Добавить
+                    Добавить друга
                 </button>
             </div>
         </form>
         
-        <!-- Список учеников -->
+        <!-- Список друзей -->
         {% if students %}
         <div style="display: grid; gap: 10px; margin-top: 15px;">
             {% for student in students %}
@@ -559,14 +559,16 @@
                style="display: block; padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: 8px; text-decoration: none; border: 1px solid var(--border-soft); transition: all 0.3s;"
                onmouseover="this.style.background='rgba(30, 41, 59, 0.8)'; this.style.borderColor='var(--accent-2)'"
                onmouseout="this.style.background='rgba(30, 41, 59, 0.6)'; this.style.borderColor='var(--border-soft)'">
-                <div style="color: var(--text-main); font-weight: 600;">{{ student.name or student.email }}</div>
-                <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">{{ student.email }}</div>
+                <div style="color: var(--text-main); font-weight: 600;">@{{ student.nickname or student.name or student.email }}</div>
+                <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                    🏆 {{ student.experience_points or 0 }} XP · Уровень {{ student.current_level or 1 }}
+                </div>
             </a>
             {% endfor %}
         </div>
         {% else %}
         <p style="color: var(--text-muted); text-align: center; padding: 20px;">
-            У вас пока нет учеников. Добавьте первого!
+            У вас пока нет друзей. Добавьте первого по никнейму!
         </p>
         {% endif %}
     </div>
