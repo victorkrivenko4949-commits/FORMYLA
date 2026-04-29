@@ -13,9 +13,9 @@ def send_support_email(mail_instance, *, nickname, email, category,
     import os
     from flask_mail import Message
 
-    owner_email = os.environ.get('MAIL_USERNAME')
+    owner_email = os.environ.get('SUPPORT_NOTIFY_EMAIL') or os.environ.get('MAIL_USERNAME')
     if not owner_email:
-        return False, 'MAIL_USERNAME не настроен'
+        return False, 'SUPPORT_NOTIFY_EMAIL / MAIL_USERNAME не настроен'
 
     cat_labels = {
         'bug': '🐛 Баг',
