@@ -1,3 +1,5 @@
+import re
+import markdown as md_lib
 from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
@@ -63,6 +65,8 @@ except ImportError:
 
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 # ── SECURITY: SECRET_KEY ──────────────────────────────────────────
 # В production (Render) SECRET_KEY ОБЯЗАН быть задан в Environment.
@@ -586,6 +590,10 @@ def add_security_headers(response):
     # Без этого CDN может закешировать ответ одного пользователя и отдать другому
     response.headers.setdefault('Vary', 'Cookie')
 
+    # UTF-8 charset для всех HTML-ответов (фикс символов ∠°≠ → ?)
+    if response.content_type and 'text/html' in response.content_type:
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+
     # Базовые security headers для всех ответов
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
@@ -798,12 +806,23 @@ def generate_variant(olympiad_slug, grade, round_key):
             t = p.get("text", "")
             if not t or len(t) > 1500:
                 continue
+            # ФИКС: отсекаем заглушки/стабы короче 80 символов
+            if len(t) < 80:
+                continue
             if any(x in t for x in ["XXXVII", "XXXVIII", "XXXIX", "XL "]):
+                continue
+            # ФИКС: отсекаем плейсхолдеры типа "(вариант N)", "см. №"
+            if re.search(r'\(вариант\s*\d+\)', t, re.IGNORECASE):
+                continue
+            if re.search(r'см\.\s*№', t):
+                continue
+            if re.search(r'^Аналогичная задача', t):
                 continue
             source.append({**p, "olympiad": v["olympiad"], "grade": v["grade"]})
 
     if not source:
-        print("❌ ОШИБКА: Не найдено ни одной задачи в вариантах!")
+        print("❌ ОШИБКА: Не найдено ни одной валидной задачи в вариантах!")
+        print("   (все задачи отфильтрованы: < 80 символов или заглушки)")
         print("=" * 70)
         return []
 
@@ -974,13 +993,20 @@ def generate_variant(olympiad_slug, grade, round_key):
         # Создаем модифицированные задачи
         modified = []
         for i, (original, task_data) in enumerate(zip(selected, tasks_data)):
+            generated_text = task_data.get("question", task_data.get("text", ""))
+            
+            # ВАЛИДАЦИЯ: если AI вернул заглушку — используем оригинал
+            if len(generated_text) < 50:
+                print(f"⚠️ Задача {i+1}: AI вернул слишком короткий текст ({len(generated_text)} chars), используем оригинал")
+                generated_text = original.get("text", generated_text)
+            
             modified.append({
                 "id": original["id"] + i * 10000,  # Уникальный ID
                 "subject": original.get("subject"),
                 "grade": grade,
                 "difficulty": original.get("difficulty"),
                 "title": f"Задача {i+1}",
-                "text": task_data.get("question", task_data.get("text", "")),
+                "text": generated_text,
                 "answer": task_data.get("answer", ""),
                 "solution": task_data.get("explanation", task_data.get("solution", "")),
                 "original_id": original["id"]
@@ -1429,12 +1455,156 @@ def generate_practice():
 
 
 
+# ── Список LaTeX-команд для авто-обнаружения ─────────────────────────────────
+_LATEX_COMMANDS = (
+    'sqrt|frac|dfrac|tfrac|binom|sum|prod|int|lim|log|ln|sin|cos|tan|tg|ctg'
+    '|arcsin|arccos|arctan|text|mathrm|mathbf|mathbb|operatorname'
+    '|leq|geq|neq|le|ge|ne|pm|mp|times|cdot|div|equiv|approx|sim'
+    '|alpha|beta|gamma|delta|epsilon|varepsilon|zeta|eta|theta|iota|kappa|lambda'
+    '|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|varphi|chi|psi|omega'
+    '|infty|partial|nabla|forall|exists|notin|subset|supset|cup|cap'
+    '|lfloor|rfloor|lceil|rceil|langle|rangle|ldots|cdots|vdots|ddots'
+    '|overline|underline|hat|tilde|vec|bar|dot|triangle|angle'
+)
+
+def _fix_latex_parens(text):
+    """
+    Исправляет \\sqrt(...) → \\sqrt{...} и аналогичные.
+    Многие задачи из OCR имеют скобки вместо фигурных скобок.
+    """
+    # \sqrt(...) → \sqrt{...}
+    text = re.sub(r'\\(sqrt|frac|text|mathrm|mathbf|mathbb|overline|underline|hat|tilde|vec)\(([^)]*)\)', r'\\\1{\2}', text)
+    return text
+
+def _wrap_bare_latex(text):
+    """
+    Находит голые LaTeX-команды (без $...$) и оборачивает их.
+    Также оборачивает выражения с ^{ и _{ (результат fix_plain_math).
+    Работает даже если часть текста уже размечена $...$.
+    Разбивает текст на сегменты: внутри $ и вне $, обрабатывает только внешние.
+    """
+    if not text:
+        return text
+    # Нужна обработка если есть \ или ^{ или _{
+    if '\\' not in text and '^{' not in text and '_{' not in text:
+        return text
+
+    # Исправляем \sqrt(...) → \sqrt{...} ВЕЗДЕ
+    text = _fix_latex_parens(text)
+
+    # Если нет $ и нет \( — весь текст "голый", оборачиваем всё
+    if '$' not in text and '\\(' not in text:
+        # Оборачиваем \commands
+        text = re.sub(
+            r'(\\(?:' + _LATEX_COMMANDS + r')(?:\{[^}]*\})*(?:\s*[_^]\s*(?:\{[^}]*\}|[a-zA-Z0-9]))*)',
+            r'$\1$',
+            text
+        )
+        # Оборачиваем выражения с ^{} и _{} (от fix_plain_math)
+        text = re.sub(
+            r'([a-zA-Z][a-zA-Z0-9]*(?:[\^_]\{\d+\})+(?:\s*[+\-*/=<>\s]+\s*[a-zA-Z][a-zA-Z0-9]*(?:[\^_]\{\d+\})+)*)',
+            r'$\1$',
+            text
+        )
+        return text
+
+    # Смешанный формат: разбиваем на сегменты "внутри $" и "вне $"
+    # Паттерн: $...$ или $$...$$ или \(...\) или \[...\]
+    math_pattern = re.compile(
+        r'(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\])'
+    )
+    parts = math_pattern.split(text)
+
+    # parts[0], parts[2], parts[4]... — вне math
+    # parts[1], parts[3], parts[5]... — внутри math (не трогаем)
+    bare_re = re.compile(
+        r'(\\(?:' + _LATEX_COMMANDS + r')(?:\{[^}]*\})*(?:\s*[_^]\s*(?:\{[^}]*\}|[a-zA-Z0-9]))*)'
+    )
+    # Regex для выражений с ^{ или _{ (от fix_plain_math: x^{2}, y_{1})
+    power_re = re.compile(
+        r'([a-zA-Z][a-zA-Z0-9]*(?:[\^_]\{\d+\})+(?:\s*[+\-*/=<>\s]+\s*[a-zA-Z][a-zA-Z0-9]*(?:[\^_]\{\d+\})+)*)'
+    )
+    for i in range(0, len(parts), 2):
+        # Оборачиваем голые \commands только в сегментах ВНЕ math
+        parts[i] = bare_re.sub(r'$\1$', parts[i])
+        # Оборачиваем выражения с ^{} и _{} (от fix_plain_math)
+        parts[i] = power_re.sub(r'$\1$', parts[i])
+
+    text = ''.join(parts)
+    return text
+
+
+# ── Markdown → HTML парсер для текста задач ──────────────────────────────────
+def render_task_text(text):
+    """
+    Парсит Markdown → HTML.
+    1. Оборачивает голые LaTeX-команды в $...$
+    2. Защищает math от Markdown-эскейпинга
+    3. Парсит Markdown → HTML
+    4. Восстанавливает math
+    Placeholder формат: XMATHX0XENDX — не содержит __, *, _ чтобы Markdown не тронул.
+    """
+    if not text:
+        return ''
+
+    # 0a. Исправление plain-text математики (OCR-артефакты: x2 → x^2)
+    from utils.math_text_fixer import fix_plain_math
+    text = fix_plain_math(text)
+
+    # 0b. Авто-обёртка голых LaTeX-команд в $...$
+    text = _wrap_bare_latex(text)
+
+    # 1. Защитить math-выражения от Markdown
+    placeholders = {}
+    _counter = [0]
+
+    def _protect(m):
+        key = f'XMATHX{_counter[0]}XENDX'
+        placeholders[key] = m.group(0)
+        _counter[0] += 1
+        return key
+
+    # Сначала display math $$...$$
+    text = re.sub(r'\$\$[\s\S]+?\$\$', _protect, text)
+    # Потом inline $...$
+    text = re.sub(r'\$[^\$\n]+?\$', _protect, text)
+    # И \[...\] / \(...\)
+    text = re.sub(r'\\\[[\s\S]+?\\\]', _protect, text)
+    text = re.sub(r'\\\([\s\S]+?\\\)', _protect, text)
+
+    # 2. Парсить Markdown
+    try:
+        html = md_lib.markdown(
+            text,
+            extensions=['nl2br', 'tables']
+        )
+    except Exception:
+        # Fallback: просто заменяем переносы строк
+        html = text.replace('\n', '<br>')
+
+    # 3. Вернуть math-выражения
+    for key, val in placeholders.items():
+        html = html.replace(key, val)
+
+    return html
+
+
 @app.route("/practice/<variant_id>")
 def practice_variant(variant_id):
     variant = VARIANTS.get(variant_id)
     if not variant:
         abort(404)
-    return render_template("practice_variant.html", variant=variant, variant_id=variant_id)
+    # Парсим Markdown в текстах задач
+    tasks_rendered = [
+        render_task_text(p.get('text', ''))
+        for p in variant.get('problems', [])
+    ]
+    return render_template(
+        "practice_variant.html",
+        variant=variant,
+        variant_id=variant_id,
+        tasks_rendered=tasks_rendered
+    )
 
 
 
@@ -2050,20 +2220,30 @@ def tutor_send():
         hint_mode = data.get('hint_mode', True)
         image_data = None
     else:
-        # FormData с файлом
+        # FormData с файлами (multiple)
         message = request.form.get('message', '').strip()
         agent_type = request.form.get('agent_type', 'general')
         hint_mode = request.form.get('hint_mode', 'true').lower() == 'true'
         
-        # Обработка файла
+        # Обработка файлов (поддержка multiple)
+        import base64
         image_data = None
-        if 'file' in request.files:
-            file = request.files['file']
-            if file and file.filename:
-                import base64
-                image_data = base64.b64encode(file.read()).decode('utf-8')
+        
+        # Поддержка нового формата (multiple files под ключом 'files')
+        files = [f for f in request.files.getlist('files') if f and f.filename]
+        # Fallback: старый формат (single file под ключом 'file')
+        if not files and 'file' in request.files:
+            f = request.files['file']
+            if f and f.filename:
+                files = [f]
+        
+        if files:
+            # Берём первый файл для vision API (DeepSeek/OpenRouter поддерживает 1 изображение)
+            first_file = files[0]
+            if first_file and first_file.filename:
+                image_data = base64.b64encode(first_file.read()).decode('utf-8')
     
-    if not message:
+    if not message and not image_data:
         return jsonify({'error': 'Сообщение пустое'}), 400
     
     try:
@@ -2099,9 +2279,11 @@ def tutor_send():
         
         # Получаем ответ от AI с учетом типа агента, режима и изображения
         client = DeepSeekClient()
+        # Если текст пустой но есть фото — подставляем дефолтный запрос
+        effective_message = message if message else "Реши/объясни эту задачу по фото"
         response = client.chat_with_tutor(
             current_user,
-            message,
+            effective_message,
             history_list,
             agent_type=agent_type,
             hint_mode=hint_mode,
@@ -3655,12 +3837,13 @@ def adaptive_test_simple_page():
         return redirect(url_for('probniks_page'))
     
     # Преобразуем объект БД в словарь для шаблона
+    from utils.math_text_fixer import fix_bare_latex
     task_dict = {
         'id': current_task.id,
         'topic': current_task.topic,
         'class_level': current_task.class_level,
         'difficulty_level': current_task.difficulty_level,
-        'task_text': current_task.task_text,
+        'task_text': fix_bare_latex(current_task.task_text or ''),
         'solution': current_task.solution,
         'criteria_1_point': current_task.criteria_1_point,
         'criteria_2_points': current_task.criteria_2_points
