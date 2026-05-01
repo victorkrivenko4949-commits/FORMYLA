@@ -762,6 +762,90 @@ ROUNDS = {
 def get_olympiad_by_slug(slug):
     return next((o for o in OLYMPIADS_INFO if o.get("slug") == slug), None)
 
+# ── Баланс тем в варианте ─────────────────────────────────────────────────────
+TOPICS_POOL = [
+    'algebra', 'geometry', 'number_theory',
+    'combinatorics', 'logic', 'inequalities',
+]
+
+# Ключевые слова для определения темы задачи из текста
+_TOPIC_KEYWORDS = {
+    'geometry': [
+        'треугольник', 'окружност', 'угол', 'отрезок', 'прямая', 'перпендикуляр',
+        'параллел', 'биссектрис', 'медиан', 'высот', 'вписан', 'описан',
+        'четырёхугольник', 'четырехугольник', 'диагональ', 'площад', 'периметр',
+        'трапеци', 'ромб', 'квадрат', 'прямоугольник', 'хорд', 'касательн',
+        'triangle', 'angle', 'circle', 'ABC', 'BCD',
+    ],
+    'number_theory': [
+        'делит', 'остаток', 'простое число', 'простых чисел', 'НОД', 'НОК',
+        'делимост', 'цифр', 'разряд', 'десятичн', 'натуральн', 'целое число',
+        'целых чисел', 'чётн', 'нечётн', 'кратн', 'модул',
+    ],
+    'combinatorics': [
+        'сколько способов', 'сколькими способами', 'расстановк', 'раскраск',
+        'перестановк', 'сочетан', 'размещен', 'граф', 'вершин', 'ребр',
+        'турнир', 'шахматн', 'клетк', 'доск', 'фишк', 'Дирихле',
+    ],
+    'algebra': [
+        'уравнен', 'неравенств', 'многочлен', 'корн', 'функци', 'последовательност',
+        'прогресси', 'система', 'выражен', 'упрост', 'разлож', 'формул',
+        'квадратн', 'линейн', 'степен',
+    ],
+    'logic': [
+        'рыцар', 'лжец', 'взвешиван', 'переливан', 'стратеги', 'игр',
+        'выигр', 'проигр', 'ход', 'монет', 'фальшив',
+    ],
+}
+
+
+def _detect_topic(text):
+    """Определяет тему задачи по ключевым словам в тексте."""
+    text_lower = text.lower()
+    scores = {}
+    for topic, keywords in _TOPIC_KEYWORDS.items():
+        score = sum(1 for kw in keywords if kw.lower() in text_lower)
+        if score > 0:
+            scores[topic] = score
+    if scores:
+        return max(scores, key=scores.get)
+    return 'algebra'  # default
+
+
+def _plan_topics(count):
+    """Возвращает список тем для задач варианта с гарантированным балансом."""
+    if count >= 7:
+        planned = ['algebra', 'geometry', 'number_theory', 'combinatorics']
+        remaining = count - 4
+    elif count >= 6:
+        planned = ['algebra', 'geometry', 'number_theory']
+        remaining = count - 3
+    elif count >= 5:
+        planned = ['algebra', 'geometry']
+        remaining = count - 2
+    else:
+        planned = []
+        remaining = count
+
+    available = [t for t in TOPICS_POOL if t not in planned]
+    random.shuffle(available)
+    for _ in range(remaining):
+        if available:
+            planned.append(available.pop(0))
+        else:
+            # Все темы использованы — берём случайную из пула (допускаем повтор)
+            planned.append(random.choice([t for t in TOPICS_POOL if planned.count(t) < 2]))
+
+    return planned
+
+
+def _extract_numbers(text):
+    """Извлекает все числа > 3 из текста (для проверки уникальности)."""
+    clean = re.sub(r'\\[a-zA-Z]+', '', text)
+    numbers = re.findall(r'\b\d+\b', clean)
+    return [int(n) for n in numbers if int(n) > 3]
+
+
 def generate_variant(olympiad_slug, grade, round_key):
     
     print("=" * 70)
@@ -787,93 +871,74 @@ def generate_variant(olympiad_slug, grade, round_key):
         print(f"Найдено вариантов без учета этапа (олимпиада+класс): {len(variants)}")
     
     if not variants:
-        print("❌ ОШИБКА: Не найдено ни одного варианта для точной комбинации!")
+        print("ОШИБКА: Не найдено ни одного варианта для точной комбинации!")
         print(f"Пробуем FALLBACK: ищем любые задачи олимпиады '{olympiad_slug}'...")
-        
-        # FALLBACK: берем любые задачи этой олимпиады (любой класс)
         variants = [v for v in _RAW_DB if v.get("olympiad") == olympiad_slug]
         print(f"Найдено вариантов олимпиады (любой класс): {len(variants)}")
         
         if not variants:
-            print(f"❌ КРИТИЧЕСКАЯ ОШИБКА: В БД вообще нет задач для олимпиады '{olympiad_slug}'!")
+            print(f"КРИТИЧЕСКАЯ ОШИБКА: В БД вообще нет задач для олимпиады '{olympiad_slug}'!")
             print("=" * 70)
             return []
 
-    # Собираем все задачи из подходящих вариантов
+    # Собираем все задачи из подходящих вариантов с определением темы
     source = []
     for v in variants:
         for p in v.get("problems", []):
             t = p.get("text", "")
-            if not t or len(t) > 1500:
-                continue
-            # ФИКС: отсекаем заглушки/стабы короче 80 символов
-            if len(t) < 80:
+            if not t or len(t) > 1500 or len(t) < 80:
                 continue
             if any(x in t for x in ["XXXVII", "XXXVIII", "XXXIX", "XL "]):
                 continue
-            # ФИКС: отсекаем плейсхолдеры типа "(вариант N)", "см. №"
             if re.search(r'\(вариант\s*\d+\)', t, re.IGNORECASE):
                 continue
             if re.search(r'см\.\s*№', t):
                 continue
             if re.search(r'^Аналогичная задача', t):
                 continue
-            source.append({**p, "olympiad": v["olympiad"], "grade": v["grade"]})
+            topic = _detect_topic(t)
+            source.append({**p, "olympiad": v["olympiad"], "grade": v["grade"], "topic": topic})
 
     if not source:
-        print("❌ ОШИБКА: Не найдено ни одной валидной задачи в вариантах!")
-        print("   (все задачи отфильтрованы: < 80 символов или заглушки)")
+        print("ОШИБКА: Не найдено ни одной валидной задачи в вариантах!")
         print("=" * 70)
         return []
 
-    print(f"✓ Собрано задач из вариантов: {len(source)}")
-    
-    # Выбираем 5 задач с нарастающей сложностью (имитация реальной олимпиады)
-    # Группируем задачи по уровню сложности
-    by_difficulty = {}
+    print(f"Собрано задач из вариантов: {len(source)}")
+
+    # ── БАЛАНС ТЕМ: выбираем задачи по плану ──
+    task_count = 5
+    topics_plan = _plan_topics(task_count)
+    print(f"План тем: {topics_plan}")
+
+    # Группируем задачи по теме (с уникальным индексом)
+    for idx, p in enumerate(source):
+        p['_idx'] = idx  # уникальный индекс для отслеживания
+    by_topic = {}
     for p in source:
-        diff = p.get("difficulty", 3)  # По умолчанию средний уровень
-        if diff not in by_difficulty:
-            by_difficulty[diff] = []
-        by_difficulty[diff].append(p)
-    
+        tp = p.get('topic', 'algebra')
+        by_topic.setdefault(tp, []).append(p)
+
     selected = []
-    # Пытаемся выбрать задачи разных уровней: 1-2 легкие, 2-3 средние, 1-2 сложные
-    target_distribution = [
-        (1, 2, 1),  # 1 задача уровня 1-2
-        (3, 4, 2),  # 2 задачи уровня 3-4
-        (5, 6, 1),  # 1 задача уровня 5-6
-        (7, 10, 1)  # 1 задача уровня 7+
-    ]
-    
-    for min_diff, max_diff, count in target_distribution:
-        candidates = []
-        for d in range(min_diff, max_diff + 1):
-            candidates.extend(by_difficulty.get(d, []))
+    used_idxs = set()
+    for topic in topics_plan:
+        candidates = [p for p in by_topic.get(topic, []) if p['_idx'] not in used_idxs]
+        if not candidates:
+            # Fallback: любая неиспользованная задача
+            candidates = [p for p in source if p['_idx'] not in used_idxs]
         if candidates:
-            selected.extend(random.sample(candidates, min(count, len(candidates))))
-    
-    # Если не набрали 5 задач, дополняем случайными
-    if len(selected) < 5:
-        remaining = [p for p in source if p not in selected]
-        if remaining:
-            needed = 5 - len(selected)
-            available = len(remaining)
-            to_add = min(needed, available)
-            print(f"Дополняем вариант: нужно {needed}, доступно {available}, добавляем {to_add}")
-            selected.extend(random.sample(remaining, to_add))
-    
-    # Ограничиваем до 5 задач
-    selected = selected[:5]
-    
-    # КРИТИЧЕСКАЯ ПРОВЕРКА: если задач меньше 3, генерация невозможна
+            chosen = random.choice(candidates)
+            selected.append(chosen)
+            used_idxs.add(chosen['_idx'])
+
+    # КРИТИЧЕСКАЯ ПРОВЕРКА
     if len(selected) < 3:
-        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА: Недостаточно задач для генерации ({len(selected)} < 3)")
-        print("Возвращаем пустой список")
+        print(f"ОШИБКА: Недостаточно задач для генерации ({len(selected)} < 3)")
         print("=" * 70)
         return []
     
-    print(f"✓ Отобрано задач для варианта: {len(selected)}")
+    print(f"Отобрано задач для варианта: {len(selected)}")
+    print(f"Темы: {[p.get('topic') for p in selected]}")
     # Применяем fix_latex к каждой задаче перед возвратом
     try:
         from services.task_validator import fix_latex
@@ -883,64 +948,68 @@ def generate_variant(olympiad_slug, grade, round_key):
     except Exception as e:
         print(f"fix_latex error: {e}")
     print(f"Начинаем модификацию задач через AI...")
+
+    # Собираем числа из оригиналов для валидации
+    original_numbers_per_task = []
+    for p in selected:
+        original_numbers_per_task.append(set(_extract_numbers(p.get('text', ''))))
     
     # Формируем список исходных задач для промпта
     tasks_text = ""
     for i, p in enumerate(selected, 1):
-        tasks_text += f"\n--- ЗАДАЧА {i} ---\n{p['text']}\n"
+        topic_label = p.get('topic', 'unknown')
+        tasks_text += f"\n--- ЗАДАЧА {i} (тема: {topic_label}) ---\n{p['text']}\n"
     
-    prompt = f"""Ты — составитель олимпиадных вариантов по математике (ВсОШ, {round_key or 'отборочный'} этап, {grade} класс).
-Твоя задача — модифицировать {len(selected)} олимпиадных задач, сохранив их глубокую математическую идею.
+    prompt = f"""Ты — составитель олимпиадных вариантов по математике ({round_key or 'отборочный'} этап, {grade} класс).
+
+ЗАДАНИЕ: Перепиши {len(selected)} задач. Сохрани математический МЕТОД, но ПОЛНОСТЬЮ замени:
+- ВСЕ числа (ни одно число из оригинала не должно остаться!)
+- ВСЕ имена персонажей (используй: Петя, Вася, Маша, Аня, Коля, Даша, Лена)
+- Контекст/сюжет (другие декорации)
+- Формулировку (перепиши своими словами)
 
 ИСХОДНЫЕ ЗАДАЧИ:{tasks_text}
 
-ПРАВИЛА ГЕНЕРАЦИИ:
-1. Задачи должны быть на уровне реальных олимпиад (но с измененными числами и сюжетом).
-2. НЕ пиши слова "Задача 1", "10.1", "XXXVIII Всероссийская олимпиада" внутри текста условия! Условие должно содержать ТОЛЬКО сам математический текст.
-3. Каждая задача должна быть полностью независимой.
-4. Все формулы, переменные и геометрические обозначения пиши строго в LaTeX (например, $x^2$, $\\triangle ABC$, $\\angle BOC$, $\\omega$).
-5. ОБЯЗАТЕЛЬНОЕ РАСПРЕДЕЛЕНИЕ ТЕМ ДЛЯ {len(selected)} ЗАДАЧ (ты должен строго соблюдать этот порядок):
-   - 1-я задача: Логика, принцип Дирихле или Инварианты.
-   - 2-я задача: Алгебра (неравенства, многочлены, функции).
-   - 3-я задача: Комбинаторика или Графы (турниры, раскраски, пути).
-   - 4-я задача: Теория чисел (делимость, простые числа, остатки, диофантовы уравнения).
-   - 5-я задача: ПЯТАЯ ЗАДАЧА ОБЯЗАНА БЫТЬ ПО ГЕОМЕТРИИ. Если ты не сгенерируешь геометрическую задачу (с углами, отрезками, треугольниками или окружностями, с использованием LaTeX для точек $A$, $B$, $C$, $D$), твой ответ будет отклонен. Запрещено использовать рыцарей, лжецов, числа и уравнения в пятой задаче — только чистая планиметрия!
+ОБЯЗАТЕЛЬНЫЕ ИЗМЕНЕНИЯ В КАЖДОЙ ЗАДАЧЕ:
+1. ЧИСЛА: Замени ВСЕ числа на другие. Если было 43 — поставь 67. Если было 5 — поставь 7.
+   Ответ должен остаться "красивым" (целое число или простая дробь).
+2. ИМЕНА: Никаких сказочных персонажей (Алиса, Шляпник, Буратино). Только обычные русские имена.
+3. КОНТЕКСТ: Если задача про часы — сделай про поезда. Про школу — сделай про магазин.
+4. ФОРМУЛИРОВКА: Перепиши каждое предложение своими словами.
 
-МАТЕМАТИЧЕСКОЕ ФОРМАТИРОВАНИЕ (LATEX STRICT MODE):
-Все числа, переменные, углы, степени и формулы ДОЛЖНЫ быть обернуты в $...$ (inline LaTeX).
-КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО:
-1. Использовать юникод-символы степеней (², ³). Вместо них пиши $x^2$, $y^3$.
-2. Использовать юникод-символ градуса (°, ∘). Вместо него ОБЯЗАТЕЛЬНО пиши $^\\circ$ (например, $150^\\circ$).
-3. Использовать символы # или _ вне LaTeX контекста.
-4. Использовать кириллицу внутри математических формул! (Пиши $\\triangle ABC$, а не $\\triangle АБС$).
-5. Писать формулы без LaTeX-обертки. Например, НЕПРАВИЛЬНО: "2^2010", ПРАВИЛЬНО: "$2^{{2010}}$".
+ФОРМАТИРОВАНИЕ LaTeX (КРИТИЧНО — ЧИТАЙ ВНИМАТЕЛЬНО):
+- Каждая переменная в $...$: $x$, $y$, $n$
+- Степени: $x^2$, $a^{{10}}$ (НЕ x2, a10!)
+- Индексы: $a_1$, $x_{{12}}$
+- Углы: $\\angle ABC = 60^\\circ$ (НЕ юникод ∠ °)
+- Треугольники: $\\triangle ABC$
+- Дроби: $\\frac{{a}}{{b}}$ (НЕ \\frac a b, НЕ a/b)
+- Корни: $\\sqrt{{n}}$, $\\sqrt{{a+b}}$ (НЕ \\sqrtn, НЕ \\sqrt n!)
+  ВАЖНО: после \\sqrt ВСЕГДА фигурные скобки: \\sqrt{{...}}
+  ❌ НЕПРАВИЛЬНО: \\sqrta, \\sqrt a, \\sqrtab
+  ✅ ПРАВИЛЬНО: \\sqrt{{a}}, \\sqrt{{a+b}}, \\sqrt{{ab}}
+- Display: $$y^2 - 1 = a^2(x^2 - 1)$$
+- Знаки: $\\geq$, $\\leq$, $\\neq$ (НЕ юникод ≥ ≤ ≠)
+- НИ ОДНОГО голого числа/переменной без $!
 
-КРИТИЧЕСКОЕ ПРАВИЛО ФОРМАТИРОВАНИЯ:
-Ты обязан СТРОГО разделять условие задачи и ее решение!
-- Поле "question" должно содержать ТОЛЬКО текст условия. В нем КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать ответы, подсказки, ход решения или фамилии авторов! Условие должно заканчиваться вопросительным знаком или точкой.
-- Поле "answer" должно содержать ТОЛЬКО краткий числовой или логический ответ.
-- Поле "explanation" должно содержать ПОЛНОЕ подробное решение задачи.
+САМОПРОВЕРКА ПЕРЕД ВЫДАЧЕЙ JSON:
+1. Все \\sqrt имеют {{}} после себя? (\\sqrt{{x}}, НЕ \\sqrtx)
+2. Все \\frac имеют два {{}} аргумента? (\\frac{{a}}{{b}})
+3. Все переменные в $...$?
+4. Нет юникод-символов математики (∠°≠≡△√≤≥)?
+Если хоть один ответ "нет" — ПЕРЕПИШИ question.
 
-ПРАВИЛЬНЫЙ ПРИМЕР:
-{{
-  "question": "В классе учатся 28 человек. На 8 марта каждый мальчик подарил каждой девочке цветок. Сколько было роз?",
-  "answer": "12",
-  "explanation": "Пусть $x$ — мальчиков, $y$ — девочек. Тогда $x + y = 28$..."
-}}
-
-НЕПРАВИЛЬНЫЙ ПРИМЕР (ЗА ТАКОЕ ТЕБЯ ОТКЛЮЧАТ):
-{{
-  "question": "В классе учатся 28 человек... Сколько роз? (И.И. Иванов) Пусть x - мальчиков, тогда x+y=28. Ответ 12.",
-  "answer": "12",
-  "explanation": "Смотри выше"
-}}
-
-ФОРМАТ ВЫВОДА СТРОГО JSON:
-Верни ТОЛЬКО валидный JSON-массив из {len(selected)} объектов. Никакого markdown (```json) и вступительных слов!
+ФОРМАТ ОТВЕТА — строго JSON-массив (без markdown):
 [
-  {{"question": "Условие первой задачи...", "answer": "Краткий ответ", "explanation": "Полное решение"}},
-  {{"question": "Условие второй задачи...", "answer": "Краткий ответ", "explanation": "Полное решение"}}
-]"""
+  {{"question": "Условие задачи...", "answer": "Краткий ответ", "explanation": "Полное решение", "topic": "тема"}},
+  ...
+]
+
+Поле "question" — ТОЛЬКО условие (без решения, без "Ответ:", без авторов).
+Поле "answer" — краткий ответ.
+Поле "explanation" — полное пошаговое решение.
+Поле "topic" — тема задачи (algebra/geometry/number_theory/combinatorics/logic).
+"""
 
     try:
         response = requests.post(
@@ -949,59 +1018,68 @@ def generate_variant(olympiad_slug, grade, round_key):
             json={
                 "model": "google/gemini-2.0-flash-001",
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.4,
-                "max_tokens": 3000
+                "temperature": 0.75,
+                "max_tokens": 4000
             },
-            timeout=60
+            timeout=90
         )
         
-        # Проверяем статус ответа
         if response.status_code != 200:
             raise Exception(f"API returned status {response.status_code}: {response.text}")
         
         content = response.json()["choices"][0]["message"]["content"]
         
         print(f"Получен ответ от AI (длина: {len(content)} символов)")
-        print(f"Первые 200 символов: {content[:200]}")
         
-        # Очистка от markdown и лишних символов
+        # Очистка от markdown
         content = content.strip()
-        content = content.lstrip("```json").lstrip("```").rstrip("```").strip()
-        
-        # Исправление экранирования для LaTeX
-        content = re.sub(r'\\(?![nrt"\\/])', r'\\\\', content)
+        if content.startswith('```'):
+            content = re.sub(r'^```\w*\n?', '', content)
+            content = re.sub(r'\n?```$', '', content)
+            content = content.strip()
         
         # Парсинг JSON
         try:
             tasks_data = json.loads(content)
-        except json.JSONDecodeError as json_err:
-            print(f"❌ ОШИБКА ПАРСИНГА JSON: {json_err}")
-            print(f"Сырой ответ AI (первые 500 символов):")
-            print(content[:500])
-            print("...")
-            print(f"Последние 200 символов:")
-            print(content[-200:])
-            raise
+        except json.JSONDecodeError:
+            # Попытка извлечь JSON из текста
+            match = re.search(r'\[[\s\S]*\]', content)
+            if match:
+                tasks_data = json.loads(match.group(0))
+            else:
+                raise
         
-        # Проверяем, что получили список
         if not isinstance(tasks_data, list):
-            raise Exception(f"AI вернул не массив, а {type(tasks_data)}: {tasks_data}")
+            raise Exception(f"AI вернул не массив, а {type(tasks_data)}")
         
         if len(tasks_data) < len(selected):
-            print(f"⚠️ ВНИМАНИЕ: AI вернул только {len(tasks_data)} задач вместо {len(selected)}")
+            print(f"AI вернул только {len(tasks_data)} задач вместо {len(selected)}")
         
-        # Создаем модифицированные задачи
+        # Создаем модифицированные задачи с ВАЛИДАЦИЕЙ ЧИСЕЛ
         modified = []
+        numbers_warnings = 0
         for i, (original, task_data) in enumerate(zip(selected, tasks_data)):
             generated_text = task_data.get("question", task_data.get("text", ""))
             
             # ВАЛИДАЦИЯ: если AI вернул заглушку — используем оригинал
             if len(generated_text) < 50:
-                print(f"⚠️ Задача {i+1}: AI вернул слишком короткий текст ({len(generated_text)} chars), используем оригинал")
+                print(f"Задача {i+1}: слишком короткий текст, используем оригинал")
                 generated_text = original.get("text", generated_text)
             
+            # ВАЛИДАЦИЯ ЧИСЕЛ: проверяем что числа поменялись
+            if i < len(original_numbers_per_task):
+                orig_nums = original_numbers_per_task[i]
+                new_nums = set(_extract_numbers(generated_text))
+                trivial = {4, 5, 6, 7, 8, 9, 10, 100}
+                overlap = (orig_nums & new_nums) - trivial
+                if overlap:
+                    numbers_warnings += 1
+                    print(f"Задача {i+1}: совпадающие числа с оригиналом: {overlap}")
+            
+            topic = task_data.get("topic", selected[i].get("topic", ""))
+            
             modified.append({
-                "id": original["id"] + i * 10000,  # Уникальный ID
+                "id": original.get("id", i) + i * 10000,
                 "subject": original.get("subject"),
                 "grade": grade,
                 "difficulty": original.get("difficulty"),
@@ -1009,22 +1087,35 @@ def generate_variant(olympiad_slug, grade, round_key):
                 "text": generated_text,
                 "answer": task_data.get("answer", ""),
                 "solution": task_data.get("explanation", task_data.get("solution", "")),
-                "original_id": original["id"]
+                "topic": topic,
+                "original_id": original.get("id")
             })
         
-        print(f"✓ AI успешно модифицировал {len(modified)} задач")
+        if numbers_warnings:
+            print(f"ВНИМАНИЕ: {numbers_warnings}/{len(modified)} задач имеют совпадающие числа с оригиналом")
+        print(f"AI успешно модифицировал {len(modified)} задач")
         
     except Exception as e:
-        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА при генерации через AI:")
-        print(f"   Тип ошибки: {type(e).__name__}")
-        print(f"   Сообщение: {e}")
+        print(f"ОШИБКА при генерации через AI: {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()
         print("Используем исходные задачи без модификации")
-        modified = selected
+        modified = []
+        for i, p in enumerate(selected):
+            modified.append({
+                "id": p.get("id", i) + i * 10000,
+                "subject": p.get("subject"),
+                "grade": grade,
+                "difficulty": p.get("difficulty"),
+                "title": f"Задача {i+1}",
+                "text": p.get("text", ""),
+                "answer": p.get("answer", ""),
+                "solution": "",
+                "topic": p.get("topic", ""),
+                "original_id": p.get("id")
+            })
 
-
-    print(f"✓ Модификация завершена. Итого задач в варианте: {len(modified)}")
+    print(f"Модификация завершена. Итого задач: {len(modified)}")
     print("=" * 70)
     return modified
 
@@ -1589,21 +1680,38 @@ def render_task_text(text):
     return html
 
 
+# Маппинг тем на русские названия для UI
+_TOPIC_LABELS_RU = {
+    'algebra': 'Алгебра',
+    'geometry': 'Геометрия',
+    'number_theory': 'Теория чисел',
+    'combinatorics': 'Комбинаторика',
+    'logic': 'Логика',
+    'inequalities': 'Неравенства',
+}
+
 @app.route("/practice/<variant_id>")
 def practice_variant(variant_id):
     variant = VARIANTS.get(variant_id)
     if not variant:
         abort(404)
     # Парсим Markdown в текстах задач
+    problems = variant.get('problems', [])
     tasks_rendered = [
         render_task_text(p.get('text', ''))
-        for p in variant.get('problems', [])
+        for p in problems
+    ]
+    # Собираем темы для UI-пилюль
+    topics_list = [
+        _TOPIC_LABELS_RU.get(p.get('topic', ''), '')
+        for p in problems
     ]
     return render_template(
         "practice_variant.html",
         variant=variant,
         variant_id=variant_id,
-        tasks_rendered=tasks_rendered
+        tasks_rendered=tasks_rendered,
+        topics_list=topics_list,
     )
 
 
@@ -6507,6 +6615,38 @@ def migrate_push_data():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+@app.route('/api/migrate/export', methods=['GET'])
+def migrate_export_table():
+    """Export table rows as JSON (paginated). Usage: ?secret=...&table=adaptive_task&offset=0&limit=500"""
+    secret = request.args.get('secret', '')
+    if secret != MIGRATE_SECRET:
+        return jsonify({'error': 'unauthorized'}), 403
+    table = request.args.get('table', 'adaptive_task')
+    offset = int(request.args.get('offset', 0))
+    limit = min(int(request.args.get('limit', 500)), 2000)
+    try:
+        from sqlalchemy import text
+        rows_raw = db.session.execute(
+            text(f'SELECT * FROM "{table}" ORDER BY id LIMIT :lim OFFSET :off'),
+            {'lim': limit, 'off': offset}
+        )
+        columns = list(rows_raw.keys())
+        rows = []
+        for r in rows_raw:
+            row_dict = {}
+            for i, col in enumerate(columns):
+                val = r[i]
+                if isinstance(val, (bytes,)):
+                    val = val.decode('utf-8', errors='replace')
+                elif hasattr(val, 'isoformat'):
+                    val = val.isoformat()
+                row_dict[col] = val
+            rows.append(row_dict)
+        total = db.session.execute(text(f'SELECT COUNT(*) FROM "{table}"')).scalar()
+        return jsonify({'table': table, 'total': total, 'offset': offset, 'limit': limit, 'count': len(rows), 'columns': columns, 'rows': rows})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # === КОНЕЦ ENDPOINT МИГРАЦИИ ===
 
 
