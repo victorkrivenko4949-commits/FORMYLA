@@ -84,7 +84,6 @@ class Stage2Rewrite:
             prompt=user_prompt,
             system_prompt=STAGE2_SYSTEM,
             temperature=temperature,
-            max_tokens=2000,
         )
 
     def _parse_json(self, raw: str) -> dict:

@@ -70,7 +70,7 @@ class DeepSeekClient:
         prompt: str,
         system_prompt: str = "",
         temperature: float = 0.3,
-        max_tokens: int = 8192
+        max_tokens: Optional[int] = None
     ) -> str:
         """
         Generate text using DeepSeek API with retry logic.
@@ -79,7 +79,7 @@ class DeepSeekClient:
             prompt: User prompt
             system_prompt: System prompt (optional)
             temperature: Sampling temperature (0.0-2.0)
-            max_tokens: Maximum tokens to generate (default: 8192)
+            max_tokens: Maximum tokens to generate (None = no limit, API default)
             
         Returns:
             Generated text
@@ -96,8 +96,9 @@ class DeepSeekClient:
             "model": self.model,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": max_tokens
         }
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
         
         headers = {
             "Authorization": f"Bearer {self.api_key}",

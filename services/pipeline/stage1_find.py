@@ -101,7 +101,6 @@ class Stage1Find:
             prompt=user_prompt,
             system_prompt=STAGE1_SYSTEM,
             temperature=temperature,
-            max_tokens=1500,
         )
 
     def _parse_json(self, raw: str) -> dict:

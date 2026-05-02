@@ -92,13 +92,10 @@ class Stage4Latex:
             rewritten_text=rewritten.rewritten_text,
             previous_errors_block=errors_block,
         )
-        # GeminiClient.generate() signature:
-        # generate(prompt, system_prompt="", temperature=0.3, max_tokens=4000)
         return self.llm.generate(
             prompt=user_prompt,
             system_prompt=STAGE4_SYSTEM,
             temperature=temperature,
-            max_tokens=2500,
         )
 
     def _parse_json(self, raw: str) -> dict:
