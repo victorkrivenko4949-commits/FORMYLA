@@ -6896,6 +6896,23 @@ def api_subscribe():
     })
 
 
+@app.route('/api/cancel_subscription', methods=['POST'])
+@login_required
+def api_cancel_subscription():
+    """API отмены подписки Premium."""
+    if current_user.current_plan in (None, 'free'):
+        return jsonify({'error': 'У вас нет активной подписки'}), 400
+
+    current_user.current_plan = 'free'
+    current_user.plan_expires_at = None
+    db.session.commit()
+
+    return jsonify({
+        'ok': True,
+        'message': 'Подписка отменена. Вы переведены на бесплатный тариф.'
+    })
+
+
 # ═══════════════════════════════════════════════════════════════════
 # СТРАНИЦА "О САЙТЕ" + ФОРМА ПОДДЕРЖКИ С EMAIL-УВЕДОМЛЕНИЯМИ
 # ═══════════════════════════════════════════════════════════════════

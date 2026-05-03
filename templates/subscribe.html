@@ -456,6 +456,11 @@
                 · до {{ plan_expires_at }}
                 {% endif %}
             </button>
+            <button class="btn-plan btn-cancel" id="cancelBtn"
+                    onclick="cancelSubscription()"
+                    style="margin-top:12px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.3); cursor:pointer;">
+                ✕ Отменить подписку
+            </button>
             {% elif current_user.is_authenticated %}
             <button class="btn-plan btn-plan-premium" id="activateBtn"
                     onclick="activatePremium('premium_monthly')">
@@ -568,11 +573,11 @@ function activatePremium(plan) {
     })
     .then(r => r.json())
     .then(data => {
-        if (data.success) {
+        if (data.ok) {
             document.getElementById('successMsg').style.display = 'block';
             setTimeout(() => location.reload(), 1800);
         } else {
-            alert('Ошибка: ' + (data.message || 'Попробуйте ещё раз'));
+            alert('Ошибка: ' + (data.error || data.message || 'Попробуйте ещё раз'));
             if (btn) {
                 btn.disabled = false;
                 btn.textContent = '🎁 Попробовать Premium бесплатно';
@@ -585,6 +590,42 @@ function activatePremium(plan) {
         if (btn) {
             btn.disabled = false;
             btn.textContent = '🎁 Попробовать Premium бесплатно';
+        }
+    });
+}
+
+function cancelSubscription() {
+    if (!confirm('Вы уверены, что хотите отменить подписку Premium?')) return;
+
+    const btn = document.getElementById('cancelBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Отменяем...';
+    }
+
+    fetch('/api/cancel_subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            alert(data.message || 'Подписка отменена.');
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Попробуйте ещё раз'));
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '✕ Отменить подписку';
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Ошибка сети. Попробуйте ещё раз.');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '✕ Отменить подписку';
         }
     });
 }
