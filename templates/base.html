@@ -19,10 +19,9 @@
     {% block extra_css %}{% endblock %}
     
     <!-- KaTeX for math rendering -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <!-- ФИКС: onload гарантирует что KaTeX уже загружен перед авторендером -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"
             onload="renderMathInElement(document.body, {
               delimiters: [
                 {left: '$$', right: '$$', display: true},
@@ -30,7 +29,18 @@
                 {left: '\\(', right: '\\)', display: false},
                 {left: '\\[', right: '\\]', display: true}
               ],
-              throwOnError: false
+              throwOnError: false,
+              strict: false,
+              trust: true,
+              macros: {
+                '\\\\N': '\\\\mathbb{N}',
+                '\\\\Z': '\\\\mathbb{Z}',
+                '\\\\Q': '\\\\mathbb{Q}',
+                '\\\\R': '\\\\mathbb{R}',
+                '\\\\floor': '\\\\left\\\\lfloor #1 \\\\right\\\\rfloor',
+                '\\\\ceil':  '\\\\left\\\\lceil  #1 \\\\right\\\\rceil',
+                '\\\\abs':   '\\\\left| #1 \\\\right|'
+              }
             }); console.log('✓ KaTeX auto-render completed');"></script>
     
     <!-- Marked.js for Markdown rendering -->

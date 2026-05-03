@@ -160,7 +160,12 @@ app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 
 # Initialize database, login manager and mail
 from models import db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress, AdaptiveTestResult, TestResult, UserProgress, init_db
+from models import OlympiadVariant, OlympiadTask, OlympiadTaskAttempt
 init_db(app)
+
+# Flask-Migrate (Alembic) for safe schema migrations
+from flask_migrate import Migrate
+migrate = Migrate(app, db, directory='alembic_migrations')
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
 # This runs on every startup to ensure database schema is up to date
@@ -3755,8 +3760,13 @@ def adaptive_test_select_grade():
         'combinatorics': 'Комбинаторика',
         'number_theory': 'Теория чисел',
         'movement': 'Задачи на движение',
+        'kl_movement': 'Задачи на движение',
         'knights_liars': 'Рыцари и лжецы'
     }
+    
+    # kl_movement → movement (алиас)
+    if topic == 'kl_movement':
+        topic = 'movement'
     
     topic_name = topic_names.get(topic, topic)
     
@@ -3789,26 +3799,21 @@ def adaptive_test_start_simple():
     
     # Маппинг тем: короткий ключ -> ключевые слова для поиска в названии темы
     topic_keywords = {
-        'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
+        'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул',
+                    'уравнен', 'неравенств', 'систем', 'дроб', 'процент',
+                    'пропорц', 'отношен', 'прогресс', 'корн', 'квадратн',
+                    'степен', 'комплексн', 'оптимизац', 'функци', 'график',
+                    'парабол', 'показательн', 'логарифм', 'производн',
+                    'тригономет', 'интеграл', 'первообразн'],
         'geometry': ['геометрия', 'треугольник', 'четырехугольник', 'окружность', 'вектор',
-                     'площад', 'стереометр', 'многогранник', 'тела вращения', 'объем'],
+                     'площад', 'стереометр', 'многогранник', 'тела вращения', 'объем',
+                     'координат'],
         'combinatorics': ['комбинатор', 'вероятност', 'перестановк', 'размещен', 'сочетан'],
         'number_theory': ['натуральн', 'делимост', 'положительн', 'отрицательн', 'рациональн',
-                          'числ', 'НОД', 'НОК'],
-        'functions': ['функци', 'график', 'парабол', 'показательн', 'логарифм', 'производн',
-                      'тригономет', 'интеграл', 'первообразн'],
-        'equations': ['уравнен', 'неравенств', 'систем'],
-        'fractions': ['дроб'],
-        'percentages': ['процент'],
-        'proportions': ['пропорц', 'отношен'],
-        'progressions': ['прогресс'],
-        'roots': ['корн', 'квадратн'],
-        'powers': ['степен'],
-        'complex': ['комплексн'],
-        'optimization': ['оптимизац'],
-        'movement':      ['движен', 'текстовые задачи', 'совместная работа'],
-        'kl_movement':   ['движен', 'текстовые задачи', 'совместная работа', 'логика', 'инвариант', 'рыцар', 'лжец'],
-        'knights_liars': ['рыцар', 'лжец', 'логика']
+                          'числ', 'НОД', 'НОК', 'теория чисел'],
+        'movement':      ['движен', 'скорост', 'км/ч', 'м/с', 'навстречу',
+                          'поезд', 'велосипед', 'автомобил', 'пешеход', 'катер', 'лодк'],
+        'knights_liars': ['рыцар', 'лжец', 'логика', 'инвариант']
     }
     
     # ФИКС БАГА 1: Специальный маппинг для 5 класса
@@ -3835,9 +3840,24 @@ def adaptive_test_start_simple():
         'geometry': 'Геометрия',
         'combinatorics': 'Комбинаторика',
         'number_theory': 'Теория чисел',
+        'movement': 'Задачи на движение',
+        'kl_movement': 'Задачи на движение',
+        'knights_liars': 'Рыцари и лжецы',
         'functions': 'Функции',
-        'equations': 'Уравнения'
+        'equations': 'Уравнения',
+        'fractions': 'Дроби',
+        'percentages': 'Проценты',
+        'proportions': 'Пропорции',
+        'progressions': 'Прогрессии',
+        'roots': 'Корни',
+        'powers': 'Степени',
+        'complex': 'Комплексные числа',
+        'optimization': 'Оптимизация',
     }
+    
+    # kl_movement → movement (алиас)
+    if topic == 'kl_movement':
+        topic = 'movement'
     
     topic_name = topic_names.get(topic, topic)
     
@@ -3855,6 +3875,37 @@ def adaptive_test_start_simple():
             topic_lower = task.topic.lower()
             if any(keyword.lower() in topic_lower for keyword in keywords):
                 filtered_tasks.append(task)
+        
+        # ФИКС: Если по названию темы ничего не нашли (например, "движение" для 9 класса),
+        # ищем по СОДЕРЖИМОМУ задачи (task_text)
+        if len(filtered_tasks) < 10 and topic in ('movement', 'knights_liars'):
+            import re as _re
+            if topic == 'movement':
+                content_re = _re.compile(
+                    r'скорост\w*\s+\d|км/ч|м/с|навстречу|вдогонку|'
+                    r'из\s+пункта|из\s+города|выехал|отправил|'
+                    r'расстояни\w+\s+между|весь\s+путь|'
+                    r'по\s+течени|против\s+течени|собственн\w+\s+скорост|'
+                    r'велосипедист|пешеход|мотоциклист|катер|лодк',
+                    _re.IGNORECASE
+                )
+            else:  # knights_liars
+                content_re = _re.compile(
+                    r'рыцар|лжец|правд\w+\s+и\s+ложь|остров\w+\s+\w+\s+жител|'
+                    r'говорит\s+правду|всегда\s+лж|инвариант|чётност',
+                    _re.IGNORECASE
+                )
+            
+            content_filtered = []
+            for task in all_tasks:
+                task_text = (task.task_text or '').lower()
+                matches = len(content_re.findall(task_text))
+                if matches >= 2:  # Минимум 2 совпадения чтобы избежать ложных срабатываний
+                    content_filtered.append(task)
+            
+            if len(content_filtered) >= 10:
+                filtered_tasks = content_filtered
+                print(f"[ADAPTIVE] Fallback to content search: found {len(filtered_tasks)} tasks for {topic}/{grade_int}")
     else:
         # Если фильтра нет - берем все задачи класса (кроме помеченных)
         filtered_tasks = AdaptiveTask.query.filter_by(
@@ -3957,8 +4008,8 @@ def adaptive_test_simple_page():
         'criteria_2_points': current_task.criteria_2_points
     }
     
-    # ИСПРАВЛЕНИЕ: Берем тему из ТЕКУЩЕЙ задачи, а не из сессии
-    topic_name = current_task.topic
+    # Берем тему из СЕССИИ (что выбрал пользователь), а не из задачи
+    topic_name = session.get('adaptive_topic_name', current_task.topic)
     
     return render_template('adaptive_test_simple.html',
         topic_name=topic_name,

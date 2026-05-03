@@ -1,17 +1,67 @@
 {% extends "base.html" %}
 
+{% block title %}{{ variant.olympiad_title }} — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/olympiad_print.css') }}?v=1">
+{% endblock %}
+
 {% block content %}
-<div class="variant-page">
-    <div class="variant-header">
-        <h1>{{ variant.olympiad_title }}</h1>
-        <div class="variant-meta">
-            <span>{{ variant.grade }} класс</span>
-            <span>{{ variant.round_title }}</span>
-            <span class="variant-id">Вариант #{{ variant_id }}</span>
+<div class="olymp-page">
+
+    <!-- ═══ ШАПКА ═══ -->
+    <div class="olymp-header">
+        <div class="olymp-meta">
+            <span class="olymp-badge grade">{{ variant.grade }} класс</span>
+            <span class="olymp-badge level">{{ variant.round_title }}</span>
+            <span class="olymp-badge variant">Вариант #{{ variant_id }}</span>
         </div>
-        <p class="variant-note">Реши все задачи на бумаге, затем сфотографируй и отправь на проверку.</p>
+
+        <h1 class="olymp-title">{{ variant.olympiad_title }}</h1>
+
+        <p class="olymp-instruction">
+            Реши все задачи на бумаге, затем сфотографируй и отправь на проверку.
+        </p>
+
+        <!-- ═══ ПЛАШКА УНИКАЛЬНОСТИ ═══ -->
+        <div class="olymp-uniqueness">
+            <span class="uniq-icon">🔄</span>
+            <div class="uniq-text">
+                <strong>Уникальные задачи</strong>
+                <span>
+                    Сгенерированы на основе архива олимпиадных задач 2015–2025.
+                    Условия изменены — задачи нигде не публиковались
+                    и не могут быть найдены в интернете.
+                </span>
+            </div>
+        </div>
+
+        <!-- ═══ КНОПКИ ДЕЙСТВИЙ ═══ -->
+        <div class="olymp-actions no-print">
+            <button class="btn-pdf" onclick="printOlymp()">
+                🖨️ Распечатать / Скачать PDF
+            </button>
+            <button class="btn-share" onclick="shareOlymp()">
+                📤 Поделиться
+            </button>
+        </div>
+
+        <!-- ═══ СОСТАВ ВАРИАНТА (темы) ═══ -->
+        {% if topics_list is defined and topics_list %}
+        {% set shown = [] %}
+        <div class="variant-topics no-print">
+            <span class="topics-label">Темы:</span>
+            {% for topic in topics_list %}
+            {% if topic and topic not in shown %}
+            <span class="topic-pill">{{ topic }}</span>
+            {% if shown.append(topic) %}{% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
+    <!-- ═══ ЗАДАЧИ ═══ -->
     <form method="POST" action="/practice/{{ variant_id }}/submit"
           enctype="multipart/form-data" class="submit-form" id="variantForm">
 
@@ -35,15 +85,22 @@
                     </h2>
             {% endif %}
 
-            <div class="problem-card">
-                <div class="problem-header">
-                    <div class="problem-number">Задача {{ loop.index }}</div>
+            <div class="task-block" id="task-{{ loop.index }}">
+                <div class="task-header">
+                    <span class="task-num">ЗАДАЧА {{ loop.index }}</span>
                     {% if p.image_url %}
                     <span class="has-image-badge">📐 С рисунком</span>
                     {% endif %}
                 </div>
 
-                <div class="problem-text">{{ p.text | replace('\n', '<br>') | safe }}</div>
+                <!-- Текст задачи (Markdown уже распарсен в роуте) -->
+                <div class="task-body katex-content">
+                    {% if tasks_rendered is defined and tasks_rendered[loop.index0] is defined %}
+                        {{ tasks_rendered[loop.index0] | safe }}
+                    {% else %}
+                        {{ p.text | replace('\n', '<br>') | safe }}
+                    {% endif %}
+                </div>
 
                 {% if p.image_url %}
                 <div class="problem-image">
@@ -51,21 +108,29 @@
                 </div>
                 {% endif %}
 
-                {# ── Кнопка загрузки фото для КАЖДОЙ задачи ── #}
-                <div class="upload-task">
-                    <label class="upload-task-label" for="solution_{{ loop.index }}">
-                        📷 Решение задачи {{ loop.index }}
-                    </label>
-                    <div class="upload-task-area" id="uploadArea_{{ loop.index }}">
-                        <input type="file" name="solution_{{ loop.index }}" id="solution_{{ loop.index }}"
-                               accept="image/*" class="file-input"
-                               onchange="onFileSelected(this, {{ loop.index }})">
-                        <button type="button" class="btn-upload-task"
-                                onclick="document.getElementById('solution_{{ loop.index }}').click()">
-                            Выбрать фото
-                        </button>
-                        <span class="file-name-task" id="fileName_{{ loop.index }}"></span>
+                {# ── Поле загрузки фото ── #}
+                <div class="task-submit no-print">
+                    <div class="submit-label">
+                        📸 Решение задачи {{ loop.index }}
                     </div>
+                    <label class="photo-upload-btn" for="solution_{{ loop.index }}">
+                        <input type="file"
+                               name="solution_{{ loop.index }}"
+                               id="solution_{{ loop.index }}"
+                               accept="image/*"
+                               capture="environment"
+                               onchange="previewPhoto(this, {{ loop.index }})">
+                        <span class="upload-icon">📷</span>
+                        <span class="upload-text">Выбрать фото</span>
+                    </label>
+                    <div class="photo-preview" id="preview-{{ loop.index }}"></div>
+                </div>
+
+                {# ── Поле ввода ответа ── #}
+                <div class="answer-section no-print">
+                    <label class="answer-label" for="ans_{{ p.id }}">✏️ Ответ</label>
+                    <input type="text" name="ans_{{ p.id }}" id="ans_{{ p.id }}"
+                           class="answer-input" placeholder="Введите ответ...">
                 </div>
             </div>
         {% endfor %}
@@ -73,186 +138,24 @@
             </div>{# закрываем последний .day-group #}
         {% endif %}
 
-        <button type="submit" class="btn-submit" id="submitBtn">
-            <span class="btn-text">Отправить на проверку</span>
-            <span class="btn-loading" style="display:none">Проверяем... (~20 сек)</span>
-        </button>
+        <div class="olymp-footer no-print">
+            <button type="submit" class="btn-submit-all" id="submitBtn">
+                <span class="btn-text">✅ Отправить на проверку</span>
+                <span class="btn-loading" style="display:none">Проверяем... (~20 сек)</span>
+            </button>
+        </div>
     </form>
+
 </div>
+{% endblock %}
 
-<style>
-.variant-page { max-width: 800px; margin: 40px auto; padding: 0 20px; }
-.variant-header { margin-bottom: 40px; }
-.variant-header h1 { font-size: 2rem; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
-.variant-meta { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
-.variant-meta span {
-    background: #1e293b;
-    color: #7dd3fc;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    border: 1px solid #334155;
-}
-.variant-meta .variant-id { color: #94a3b8; }
-.variant-note { color: #94a3b8; font-size: 0.95rem; }
-
-/* День */
-.day-group { margin-bottom: 30px; }
-.day-header {
-    margin: 30px 0 16px 0;
-    padding: 0;
-}
-.day-header:first-child { margin-top: 0; }
-.day-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #7c3aed, #6366f1);
-    color: #fff;
-    padding: 6px 18px;
-    border-radius: 20px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-}
-
-/* Карточка задачи */
-.problem-card {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
-}
-.problem-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-.problem-number {
-    color: #86efac;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.has-image-badge {
-    color: #fbbf24;
-    font-size: 0.8rem;
-    background: rgba(251, 191, 36, 0.1);
-    padding: 2px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(251, 191, 36, 0.2);
-}
-.problem-text {
-    color: #e2e8f0;
-    line-height: 1.7;
-    font-size: 1rem;
-    margin-bottom: 16px;
-}
-.problem-image {
-    margin: 16px 0;
-    text-align: center;
-}
-.problem-image img {
-    max-width: 100%;
-    max-height: 400px;
-    border-radius: 8px;
-    border: 1px solid #334155;
-}
-
-/* Загрузка фото для каждой задачи */
-.upload-task {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #334155;
-}
-.upload-task-label {
-    display: block;
-    color: #94a3b8;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-.upload-task-area {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-.file-input { display: none; }
-.btn-upload-task {
-    background: #334155;
-    color: #f1f5f9;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background 0.2s;
-}
-.btn-upload-task:hover { background: #475569; }
-.file-name-task {
-    color: #86efac;
-    font-size: 0.85rem;
-}
-.file-name-task.has-file {
-    padding: 4px 10px;
-    background: rgba(134, 239, 172, 0.1);
-    border-radius: 6px;
-}
-
-/* Кнопка отправки */
-.btn-submit {
-    width: 100%;
-    background: linear-gradient(135deg, #86efac, #7dd3fc);
-    color: #0f172a;
-    border: none;
-    padding: 16px;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 24px;
-    transition: opacity 0.2s;
-}
-.btn-submit:hover { opacity: 0.9; }
-.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-</style>
-
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/olympiad_latex.js') }}?v=1" defer></script>
 <script>
-function onFileSelected(input, taskNum) {
-    const nameEl = document.getElementById('fileName_' + taskNum);
-    if (input.files[0]) {
-        nameEl.textContent = '✓ ' + input.files[0].name;
-        nameEl.classList.add('has-file');
-    } else {
-        nameEl.textContent = '';
-        nameEl.classList.remove('has-file');
-    }
-}
-
 document.getElementById('variantForm').addEventListener('submit', function() {
     document.querySelector('.btn-text').style.display = 'none';
     document.querySelector('.btn-loading').style.display = 'inline';
-    document.querySelector('.btn-submit').disabled = true;
-});
-</script>
-
-<script>
-// KaTeX rendering for math formulas
-window.addEventListener('load', function() {
-    if (typeof renderMathInElement === 'undefined') return;
-    document.querySelectorAll('.problem-text').forEach(function(el) {
-        renderMathInElement(el, {
-            delimiters: [
-                {left: '\\(', right: '\\)', display: false},
-                {left: '\\[', right: '\\]', display: true},
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false}
-            ],
-            throwOnError: false
-        });
-    });
+    document.querySelector('.btn-submit-all').disabled = true;
 });
 </script>
 {% endblock %}
