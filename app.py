@@ -37,12 +37,6 @@ except ImportError:
     IMAGE_MAP = {}
 
 print(f"DEBUG: Загружено {len(IMAGE_MAP)} привязок картинок из problem_images.py")
-try:
-    from problem_images import IMAGE_MAP
-except ImportError:
-    IMAGE_MAP = {}
-
-print(f"DEBUG: Загружено {len(IMAGE_MAP)} привязок картинок из problem_images.py")
 
 import requests, random, json, uuid, os, base64, math
 from werkzeug.utils import secure_filename
@@ -425,6 +419,10 @@ login_manager.login_message = 'Пожалуйста, войдите для до�
 
 mail = Mail(app)
 
+# ── REGISTER BLUEPRINTS ───────────────────────────────────────────
+from routes.daily_olympiad import daily_olympiad_bp
+app.register_blueprint(daily_olympiad_bp)
+
 # ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
 @app.errorhandler(500)
 def internal_error(e):
@@ -677,7 +675,7 @@ if IMAGE_MAP:
         combo_id = combo.get('id')
         for problem in combo.get('problems', []):
             prob_num = problem.get('num')
-            img_key = f"{combo_id}_{prob_num}"
+            img_key = (combo_id, prob_num)
             if img_key in IMAGE_MAP:
                 problem['image'] = IMAGE_MAP[img_key]
 
@@ -1133,13 +1131,13 @@ def index():
 
 @app.route("/leaderboard")
 def leaderboard():
-    """Таблица лидеров - топ пользователей по рейтингу."""
+    """Таблица лидеров - все зарегистрированные пользователи по рейтингу."""
     from models import User
     
     # Заблокированные пользователи (не показываем в таблице лидеров)
     BLOCKED_USER_IDS = {4}  # ID 4 = "писюн"
     
-    # Получить всех реальных пользователей (не гостей, не заблокированных)
+    # Получить всех зарегистрированных пользователей (не гостей, не заблокированных)
     users = User.query.filter(
         User.is_guest == False,
         ~User.id.in_(BLOCKED_USER_IDS)
@@ -1164,8 +1162,8 @@ def leaderboard():
     # Сортировать по рейтингу (убывание)
     leaderboard_data.sort(key=lambda x: x['score'], reverse=True)
     
-    # Взять топ-20
-    top_users = leaderboard_data[:20]
+    # Показываем ВСЕХ зарегистрированных пользователей
+    top_users = leaderboard_data
     
     # Добавить ранг
     for rank, entry in enumerate(top_users, 1):
@@ -1854,7 +1852,7 @@ def olympiad_open():
             num = p.get('num')
             img = IMAGE_MAP.get((combo.get('id'), num))
             if img:
-                p['image'] = f'/static/images/problems/{img}'
+                p['image'] = img
     
     # RUNTIME PATCH: Удаление фразы "см. рисунок" для обхода клиентского кеша
     patch_count = 0
@@ -1895,7 +1893,7 @@ def olympiad_solution(combo_id):
             num = p.get('num')
             img = IMAGE_MAP.get((combo.get('id'), num))
             if img:
-                p['image'] = f'/static/images/problems/{img}'
+                p['image'] = img
     
     # RUNTIME PATCH: Удаление фразы "см. рисунок" для обхода клиентского кеша
     patch_count = 0
@@ -2003,7 +2001,7 @@ def send_auth_email(recipient_email, code):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Passwordless вход - шаг 1: ввод email."""
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and not current_user.is_guest:
         return redirect(url_for('index'))
     
     if request.method == "POST":
@@ -2102,7 +2100,7 @@ def login():
 @app.route("/verify-code", methods=["GET", "POST"])
 def verify_code():
     """Passwordless вход - шаг 2: проверка кода."""
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and not current_user.is_guest:
         return redirect(url_for('index'))
     
     email = session.get('verify_email')
@@ -2148,12 +2146,15 @@ def verify_code():
 
 
 @app.route("/logout")
-@login_required
 def logout():
     """Выход пользователя."""
     logout_user()
-    flash('Вы вышли из системы', 'success')
-    return redirect(url_for('index'))
+    session.clear()
+    resp = redirect(url_for('index'))
+    # Удаляем remember_me cookie (с учётом secure/samesite флагов для production)
+    resp.delete_cookie('remember_token', path='/', samesite='Lax')
+    resp.delete_cookie('formyla_device_id', path='/', samesite='Lax')
+    return resp
 
 
 @app.route("/yandex_login")

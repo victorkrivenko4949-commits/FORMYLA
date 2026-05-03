@@ -1,0 +1,172 @@
+/* Daily Olympiad - FORMYLA */
+:root {
+  --do-bg: #0f172a;
+  --do-card: #1e293b;
+  --do-border: #334155;
+  --do-border-mid: #475569;
+  --do-text: #e2e8f0;
+  --do-text-soft: #94a3b8;
+  --do-text-muted: #64748b;
+  --do-accent: #38ef7d;
+  --do-accent-muted: #10b981;
+  --do-warning: #f59e0b;
+  --do-success: #38ef7d;
+  --do-error: #ef4444;
+  --do-radius: 16px;
+  --do-radius-sm: 10px;
+  --do-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  --do-ring-gold: #fbbf24;
+  --do-ring-green: #38ef7d;
+  --do-ring-blue: #3b82f6;
+  --do-ring-gray: #64748b;
+}
+
+/* === Section 1: Base === */
+.do-page { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+.do-screen { display: none; }
+.do-screen.active { display: block; }
+.do-header { text-align: center; margin-bottom: 24px; }
+.do-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #38ef7d, #11998e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.do-header p { color: var(--do-text-soft); font-size: 0.95rem; }
+
+/* === Section 2: Cards and Forms === */
+.do-card {
+  background: var(--do-card);
+  border: 1px solid var(--do-border);
+  border-radius: var(--do-radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.do-card-title { font-size: 1rem; font-weight: 700; color: var(--do-text); margin-bottom: 16px; }
+.do-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.do-field label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--do-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.do-field select {
+  width: 100%;
+  background: var(--do-bg);
+  border: 1px solid var(--do-border);
+  border-radius: var(--do-radius-sm);
+  color: var(--do-text);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  appearance: none;
+  transition: border-color 0.2s;
+}
+.do-field select:focus-visible { outline: 2px solid var(--do-accent); outline-offset: 2px; }
+.do-field select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* === Section 3: Buttons === */
+.do-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.do-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.do-btn:focus-visible { outline: 2px solid var(--do-accent); outline-offset: 2px; }
+.do-btn-primary { width: 100%; background: linear-gradient(135deg, #38ef7d, #11998e); color: #0f172a; }
+.do-btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.do-btn-secondary { background: var(--do-border); color: var(--do-text); }
+.do-btn-secondary:hover:not(:disabled) { background: var(--do-border-mid); }
+.do-btn-finish { width: 100%; margin-top: 20px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; }
+.do-btn-back { background: none; border: 1px solid var(--do-border-mid); color: var(--do-text-soft); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+.do-btn-report { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; }
+.do-info { background: rgba(56,239,125,0.08); border: 1px solid rgba(56,239,125,0.3); border-radius: var(--do-radius-sm); padding: 12px 16px; color: var(--do-text-soft); font-size: 0.9rem; margin-bottom: 16px; }
+.do-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--do-radius-sm); padding: 12px 16px; color: #fca5a5; font-size: 0.9rem; margin-bottom: 16px; }
+.do-stats-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+.do-stat { text-align: center; }
+.do-stat span { display: block; font-size: 1.5rem; font-weight: 800; color: var(--do-accent); }
+.do-stat small { color: var(--do-text-muted); font-size: 0.8rem; }
+.do-link { color: var(--do-accent-muted); font-size: 0.85rem; text-decoration: none; display: block; margin-top: 12px; }
+.do-link:hover { text-decoration: underline; }
+.do-history-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--do-border); font-size: 0.85rem; color: #cbd5e1; }
+.do-history-score { font-weight: 700; color: var(--do-accent); }
+
+/* === Section 6: Screen 2 - Solving === */
+.do-solve-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: var(--do-card); border-radius: 12px; flex-wrap: wrap; }
+.do-timer { color: var(--do-warning); font-weight: 600; font-size: 0.9rem; }
+.do-nav-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+.do-dot { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--do-border-mid); background: var(--do-bg); color: var(--do-text-soft); font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.do-dot:focus-visible { outline: 2px solid var(--do-accent); outline-offset: 2px; }
+.do-dot.current { border-color: var(--do-accent); color: var(--do-accent); background: rgba(56,239,125,0.1); }
+.do-dot.filled { border-color: var(--do-ring-blue); color: var(--do-ring-blue); }
+.do-problem-card { background: var(--do-card); border: 1px solid var(--do-border); border-radius: var(--do-radius); padding: 24px; margin-bottom: 16px; }
+.do-problem-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.do-problem-header span { color: var(--do-text); font-weight: 600; }
+.do-problem-text { color: #cbd5e1; line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px; }
+.do-answer-section { margin-bottom: 16px; }
+.do-answer-section label { display: block; color: var(--do-text-soft); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+.do-input { width: 100%; background: var(--do-bg); border: 1px solid var(--do-border); border-radius: var(--do-radius-sm); color: var(--do-text); padding: 10px 14px; font-size: 1rem; box-sizing: border-box; }
+.do-input:focus-visible { outline: 2px solid var(--do-accent); outline-offset: 2px; }
+.do-textarea { width: 100%; background: var(--do-bg); border: 1px solid var(--do-border); border-radius: var(--do-radius-sm); color: var(--do-text); padding: 10px 14px; font-size: 0.95rem; resize: vertical; min-height: 80px; box-sizing: border-box; }
+.do-textarea:focus-visible { outline: 2px solid var(--do-accent); outline-offset: 2px; }
+.do-solution-section summary { color: var(--do-text-muted); cursor: pointer; font-size: 0.9rem; margin-bottom: 8px; }
+.do-save-status { font-size: 0.8rem; color: var(--do-text-muted); margin-top: 8px; text-align: right; min-height: 1.2em; }
+.do-save-status.saving { animation: pulse 1s infinite; }
+.do-save-status.saved { color: var(--do-accent-muted); animation: fadeout 2s forwards; }
+.do-save-status.offline { color: var(--do-warning); font-weight: 700; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes fadeout { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0.3} }
+.do-nav-buttons { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.do-hotkeys { text-align: center; font-size: 0.75rem; color: var(--do-text-muted); margin-top: 8px; }
+
+/* === Section 7: Screen 3 - Results === */
+.do-score-circle-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto 20px; }
+.do-score-svg { width: 100%; height: 100%; }
+.do-score-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+.do-score-text span { display: block; font-size: 1.8rem; font-weight: 800; color: var(--do-text); }
+.do-score-text small { color: var(--do-text-soft); font-size: 0.85rem; }
+[data-score-range="gold"] #scoreRing { stroke: var(--do-ring-gold); }
+[data-score-range="green"] #scoreRing { stroke: var(--do-ring-green); }
+[data-score-range="blue"] #scoreRing { stroke: var(--do-ring-blue); }
+[data-score-range="gray"] #scoreRing { stroke: var(--do-ring-gray); }
+.do-streak-badge { text-align: center; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); border-radius: 20px; padding: 8px 16px; color: #fbbf24; font-weight: 600; font-size: 0.9rem; margin: 0 auto 20px; display: table; }
+.do-results-list { margin-bottom: 24px; }
+.do-result-card { background: var(--do-card); border: 1px solid var(--do-border); border-radius: var(--do-radius-sm); padding: 16px; margin-bottom: 12px; }
+.do-result-card[data-correct="true"] { border-left: 4px solid var(--do-success); }
+.do-result-card[data-correct="false"] { border-left: 4px solid var(--do-warning); }
+.do-result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.do-result-header span { font-weight: 600; color: var(--do-text); }
+.do-result-badge { font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 12px; }
+.do-result-badge.ok { background: rgba(56,239,125,0.15); color: var(--do-accent); }
+.do-result-badge.fail { background: rgba(245,158,11,0.15); color: var(--do-warning); }
+.do-result-text { color: var(--do-text-soft); font-size: 0.9rem; line-height: 1.6; margin-bottom: 8px; }
+.do-result-answers { font-size: 0.9rem; color: var(--do-text-soft); margin-bottom: 8px; }
+.do-result-answers strong { color: var(--do-text); }
+.do-result-solution summary { color: var(--do-accent-muted); cursor: pointer; font-size: 0.85rem; }
+.do-solution-content { color: var(--do-text-soft); line-height: 1.7; margin-top: 8px; padding: 12px; background: var(--do-bg); border-radius: 8px; }
+.do-result-actions { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; }
+.do-watermark { text-align: center; color: rgba(148,163,184,0.15); font-size: 0.75rem; padding: 20px 0; position: relative; }
+
+/* === Section 8: Utilities === */
+@media (max-width: 640px) {
+  .do-form-row { grid-template-columns: 1fr; }
+  .do-solve-header { font-size: 0.85rem; }
+  .do-nav-buttons { flex-direction: column; }
+  .do-result-actions { flex-direction: column; }
+}
+@media print {
+  .do-watermark { color: rgba(0,0,0,0.8); font-size: 1rem; font-weight: 700; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms; animation-iteration-count: 1; transition-duration: 0.01ms; }
+}

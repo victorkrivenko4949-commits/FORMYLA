@@ -16,24 +16,18 @@
 </div>
 
 {% for p in problems %}
-<div style="background: #25252b; padding: 20px 25px; margin-bottom: 15px; border-radius: 12px;">
+<div style="background: #25252b; padding: 20px 25px; margin-bottom: 15px; border-radius: 12px; max-width: 900px;">
     <span style="background: #005bb5; color: #fff; padding: 4px 14px; border-radius: 8px; font-weight: 600;">
         Задача {{ p.num }}
     </span>
-    <div style="color: #e0e0e0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; margin-top: 12px;">
+    <div style="color: #e0e0e0; font-size: 16px; line-height: 1.8; margin-top: 12px;">
         {{ p.text | safe }}
     </div>
     {% if p.get("image") %}
-    <div style="text-align:center; margin:16px 0;">
-        <img src="{{ p.image }}" alt="Рисунок к задаче"
-             style="max-width:480px; width:100%; height:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fff;">
-    </div>
-    {% elif p.get("image_filename") %}
-    <div class="problem-image mt-4 mb-4" style="text-align:center; margin:16px 0;">
-        <img src="{{ url_for('static', filename='images/problems/' + p.image_filename) }}"
-             class="max-w-full rounded-lg border border-slate-600 shadow-md"
-             style="max-width:480px; width:100%; height:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fff;"
-             alt="Чертёж к задаче">
+    <div class="problem-image" style="text-align:center; margin:16px 0;">
+        <img src="{{ url_for('static', filename=p.image) }}" alt="Иллюстрация к задаче"
+             loading="lazy"
+             style="max-width:560px; width:100%; height:auto; border-radius:10px; padding:12px; background:#ffffff; box-shadow: 0 2px 12px rgba(0,0,0,0.15);">
     </div>
     {% endif %}
 </div>

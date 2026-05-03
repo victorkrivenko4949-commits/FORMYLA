@@ -19,6 +19,14 @@
         {{ problem.text | safe }}
     </div>
 
+    {% if problem.image %}
+    <div class="problem-image">
+        <img src="{{ url_for('static', filename=problem.image) }}"
+             alt="Иллюстрация к задаче"
+             loading="lazy">
+    </div>
+    {% endif %}
+
     {% if is_solved %}
     <!-- Задача уже решена -->
     <div class="reveal-block" style="background: #10b981; border-color: #10b981; padding: 15px; border-radius: 12px; margin-top: 20px;">
@@ -187,6 +195,17 @@
     background: #0d1826;
     border-left: 3px solid #334155;
     border-radius: 8px;
+}
+
+.problem-image {
+    margin: 16px 0;
+    text-align: center;
+}
+.problem-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .reveal-block {

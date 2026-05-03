@@ -136,7 +136,7 @@
 
         <!-- Авторизация -->
         <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
-            {% if current_user.is_authenticated %}
+            {% if current_user.is_authenticated and not current_user.is_guest %}
                 <!-- Авторизованный пользователь -->
                 <a href="{{ url_for('profile') }}"
                    style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
@@ -265,7 +265,7 @@
                 О сайте
             </a>
 
-            {% if current_user.is_authenticated %}
+            {% if current_user.is_authenticated and not current_user.is_guest %}
             <a href="{{ url_for('profile') }}" class="drawer-link">
                 <span class="drawer-link-icon">👤</span>
                 Профиль
@@ -275,7 +275,7 @@
 
         <!-- Footer: auth actions -->
         <div class="drawer-footer">
-            {% if current_user.is_authenticated %}
+            {% if current_user.is_authenticated and not current_user.is_guest %}
             <a href="{{ url_for('logout') }}" class="drawer-link">
                 <span class="drawer-link-icon">🚪</span>
                 Выйти
@@ -317,7 +317,7 @@
             <span class="bottom-nav-icon">👥</span>
             <span class="bottom-nav-label">Рейтинг</span>
         </a>
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated and not current_user.is_guest %}
         <a href="{{ url_for('profile') }}" class="bottom-nav-item" data-path="/profile*">
             <span class="bottom-nav-icon">👤</span>
             <span class="bottom-nav-label">Профиль</span>

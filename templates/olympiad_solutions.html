@@ -11,26 +11,20 @@
 
 
 {% for p in combo.problems %}
-<div style="background: #25252b; padding: 25px 30px; margin-bottom: 25px; border-radius: 12px;">
+<div style="background: #25252b; padding: 25px 30px; margin-bottom: 25px; border-radius: 12px; max-width: 900px;">
     <span style="background: #005bb5; color: #fff; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;">
         Задача {{ p.num }}
     </span>
 
-    <div style="color: #e0e0e0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; margin: 20px 0; padding-bottom: 20px; border-bottom: 1px solid #333;">
+    <div style="color: #e0e0e0; font-size: 16px; line-height: 1.8; margin: 20px 0; padding-bottom: 20px; border-bottom: 1px solid #333;">
         {{ p.text | safe }}
     </div>
 
     {% if p.get("image") %}
-    <div style="text-align:center; margin:16px 0;">
-        <img src="{{ p.image }}" alt="Рисунок к задаче"
-             style="max-width:480px; width:100%; height:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fff;">
-    </div>
-    {% elif p.get("image_filename") %}
-    <div class="problem-image mt-4 mb-4" style="text-align:center; margin:16px 0;">
-        <img src="{{ url_for('static', filename='images/problems/' + p.image_filename) }}"
-             class="max-w-full rounded-lg border border-slate-600 shadow-md"
-             style="max-width:480px; width:100%; height:auto; border:1px solid #ddd; border-radius:8px; padding:8px; background:#fff;"
-             alt="Чертёж к задаче">
+    <div class="problem-image" style="text-align:center; margin:16px 0;">
+        <img src="{{ url_for('static', filename=p.image) }}" alt="Иллюстрация к задаче"
+             loading="lazy"
+             style="max-width:560px; width:100%; height:auto; border-radius:10px; padding:12px; background:#ffffff; box-shadow: 0 2px 12px rgba(0,0,0,0.15);">
     </div>
     {% endif %}
 
@@ -60,7 +54,7 @@
             </a>
             {% endif %}
         </div>
-        <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1a2a1a; padding: 20px; border-radius: 10px; border-left: 3px solid #4caf50;">
+        <div style="color: #ccc; font-size: 15px; line-height: 1.8; background: #1a2a1a; padding: 20px; border-radius: 10px; border-left: 3px solid #4caf50;">
             {{ p.official_solution | safe }}
         </div>
 
@@ -77,7 +71,7 @@
             </a>
             {% endif %}
         </div>
-        <div style="color: #ccc; font-size: 15px; line-height: 1.7; white-space: pre-wrap; background: #1e1e10; padding: 20px; border-radius: 10px; border-left: 3px solid #ffcc02;">
+        <div style="color: #ccc; font-size: 15px; line-height: 1.8; background: #1e1e10; padding: 20px; border-radius: 10px; border-left: 3px solid #ffcc02;">
             {{ p.official_solution | safe }}
         </div>
 
@@ -94,7 +88,7 @@
                 onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
             📖 Показать разбор
         </button>
-        <div id="solution-{{ loop.index }}" style="display:none; color:#ccc; font-size:15px; line-height:1.7; white-space:pre-wrap; background:#1a1a2e; padding:20px; border-radius:10px; border-left:3px solid #64b5f6;">
+        <div id="solution-{{ loop.index }}" style="display:none; color:#ccc; font-size:15px; line-height:1.8; background:#1a1a2e; padding:20px; border-radius:10px; border-left:3px solid #64b5f6;">
             {{ p.solution | default('Решение не найдено') | safe }}
         </div>
     {% endif %}
