@@ -12,8 +12,7 @@ from services.openrouter_client import openrouter
 
 logger = logging.getLogger(__name__)
 
-MODEL = "anthropic/claude-opus-4.1"
-TEMPERATURE = 0.3
+from config.models import ANALYZER_MODEL as MODEL, ANALYZER_TEMPERATURE as TEMPERATURE
 CACHE_DAYS = 30
 
 

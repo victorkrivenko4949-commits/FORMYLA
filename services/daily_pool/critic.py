@@ -10,8 +10,7 @@ from services.openrouter_client import openrouter
 
 logger = logging.getLogger(__name__)
 
-MODEL = "anthropic/claude-opus-4.1"
-TEMPERATURE = 0.2
+from config.models import CRITIC_MODEL as MODEL, CRITIC_TEMPERATURE as TEMPERATURE
 AVG_THRESHOLD = 8.5
 MIN_THRESHOLD = 7
 

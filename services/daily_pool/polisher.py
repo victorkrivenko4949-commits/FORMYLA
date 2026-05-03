@@ -11,8 +11,7 @@ from services.openrouter_client import openrouter
 
 logger = logging.getLogger(__name__)
 
-MODEL = "openai/gpt-4o"
-TEMPERATURE = 0.2
+from config.models import POLISHER_MODEL as MODEL, POLISHER_TEMPERATURE as TEMPERATURE
 
 SYSTEM_MSG = """Ты — редактор-корректор олимпиадных задач. Твоя задача — финальная полировка текста: исправить LaTeX, улучшить формулировки, убрать лишнее. НЕ менять математическое содержание."""
 

@@ -13,9 +13,9 @@ from services.openrouter_client import openrouter
 
 logger = logging.getLogger(__name__)
 
-MODEL = "openai/text-embedding-3-large"
-SIMILARITY_THRESHOLD = 0.85
-LOOKBACK_DAYS = 365
+from config.models import EMBEDDER_MODEL as MODEL
+from config.models import SIMILARITY_THRESHOLD, LOOKBACK_DAYS
+
 EMBEDDING_DIM = 3072
 
 

@@ -11,11 +11,11 @@ from services.openrouter_client import openrouter
 
 logger = logging.getLogger(__name__)
 
-MODELS = {
-    "A": "openai/o1-pro",
-    "B": "openai/o3",
-}
-TEMPERATURE = 0.1
+from config.models import SOLVER_MODEL, SOLVER_TEMPERATURE
+
+# Single model (no A/B split for MVP)
+MODEL = SOLVER_MODEL
+TEMPERATURE = SOLVER_TEMPERATURE
 
 
 def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> dict:
@@ -24,7 +24,7 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
 
     Returns: {answer, solution, confidence, is_correct, is_well_posed}
     """
-    model = MODELS.get(stack, MODELS["A"])
+    model = MODEL
 
     prompt = f"""Реши следующую олимпиадную задачу. Покажи полное решение.
 

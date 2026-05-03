@@ -6900,7 +6900,7 @@ def api_subscribe():
 @login_required
 def api_cancel_subscription():
     """API отмены подписки Premium."""
-    if current_user.current_plan in (None, 'free'):
+    if not current_user.current_plan or current_user.current_plan == 'free':
         return jsonify({'error': 'У вас нет активной подписки'}), 400
 
     current_user.current_plan = 'free'

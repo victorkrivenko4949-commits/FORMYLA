@@ -9,8 +9,7 @@ from services.openrouter_client import openrouter
 
 logger = logging.getLogger(__name__)
 
-MODEL = "openai/gpt-5"
-TEMPERATURE = 0.8
+from config.models import GENERATOR_MODEL as MODEL, GENERATOR_TEMPERATURE as TEMPERATURE
 
 
 def generate_problem(analysis: dict, position: int, existing_in_variant: list = None,

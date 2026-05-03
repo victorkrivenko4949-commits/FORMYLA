@@ -23,26 +23,26 @@ logger = logging.getLogger(__name__)
 
 # Model-specific rate limits (requests per minute)
 DEFAULT_RPM = {
+    "anthropic/claude-sonnet-4.5": 40,
+    "deepseek/deepseek-chat": 60,
+    "openai/o4-mini": 30,
+    "openai/text-embedding-3-large": 200,
+    # Legacy (kept for compatibility)
     "anthropic/claude-opus-4.1": 20,
-    "openai/gpt-5": 30,
-    "openai/o1-pro": 10,
-    "openai/o3": 15,
     "openai/gpt-4o": 60,
     "openai/gpt-4o-mini": 100,
-    "anthropic/claude-sonnet-4.5": 40,
-    "openai/text-embedding-3-large": 200,
 }
 
 # Pricing per 1M tokens (input/output) for cost tracking
 MODEL_PRICING = {
+    "anthropic/claude-sonnet-4.5": (3.0, 15.0),
+    "deepseek/deepseek-chat": (0.27, 1.10),
+    "openai/o4-mini": (1.10, 4.40),
+    "openai/text-embedding-3-large": (0.13, 0.0),
+    # Legacy
     "anthropic/claude-opus-4.1": (15.0, 75.0),
-    "openai/gpt-5": (10.0, 30.0),
-    "openai/o1-pro": (150.0, 600.0),
-    "openai/o3": (100.0, 400.0),
     "openai/gpt-4o": (2.5, 10.0),
     "openai/gpt-4o-mini": (0.15, 0.6),
-    "anthropic/claude-sonnet-4.5": (3.0, 15.0),
-    "openai/text-embedding-3-large": (0.13, 0.0),
 }
 
 CIRCUIT_BREAKER_THRESHOLD = 10

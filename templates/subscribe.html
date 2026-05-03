@@ -449,7 +449,7 @@
                 </li>
             </ul>
 
-            {% if current_plan in ('premium_monthly', 'premium_yearly') %}
+            {% if current_plan and current_plan != 'free' %}
             <button class="btn-plan btn-plan-current" disabled>
                 ✓ Текущий план
                 {% if plan_expires_at %}
