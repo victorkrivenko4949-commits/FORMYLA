@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Solver service: independently solves a problem and verifies the answer.
-Uses o1-pro (Stack A) or o3 (Stack B).
+Model configured via config/models.py (default: o4-mini).
 """
 import json
 import logging

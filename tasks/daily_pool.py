@@ -19,6 +19,13 @@ from celery import Celery, states
 
 logger = logging.getLogger(__name__)
 
+# Import pipeline config
+from config.models import (
+    AVAILABLE_OLYMPIADS, TIER_PREGEN, TIER_LAZY,
+    MAX_GENERATE_RETRIES, MAX_META_RETRIES,
+    MONTHLY_BUDGET_HARD_STOP, DEFAULT_STACK,
+)
+
 # Celery app configuration
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 celery_app = Celery("daily_pool", broker=REDIS_URL, backend=REDIS_URL)
@@ -33,8 +40,20 @@ celery_app.conf.update(
     worker_concurrency=2,
 )
 
-MAX_GENERATE_RETRIES = 3
-MAX_META_RETRIES = 2
+
+def _check_budget():
+    """Check if monthly budget allows new generation. Returns (ok, spent)."""
+    from app import app
+    with app.app_context():
+        from models import db
+        row = db.session.execute(
+            db.text("""
+                SELECT COALESCE(SUM(cost_usd), 0) FROM generation_costs
+                WHERE created_at >= date('now', 'start of month')
+            """)
+        ).fetchone()
+        spent = float(row[0]) if row else 0.0
+        return spent < MONTHLY_BUDGET_HARD_STOP, spent
 
 
 @celery_app.task(bind=True, name="daily_pool.generate_variant")
@@ -45,14 +64,25 @@ def generate_variant_task(self, olympiad_slug: str, grade: int,
     Generate a complete 5-problem variant for a given combination.
 
     Args:
-        olympiad_slug: e.g. "vsosh"
+        olympiad_slug: must be in AVAILABLE_OLYMPIADS (MVP: vsosh only)
         grade: e.g. 9
         round_name: e.g. "regional"
         variant_date: ISO date string e.g. "2025-06-01"
-        stack: "A" or "B" (model selection for solver)
+        stack: always "A" for now (kept for future experiments)
 
     Returns: dict with variant_id, status, problems, costs
     """
+    # Validate olympiad is in scope
+    if olympiad_slug not in AVAILABLE_OLYMPIADS:
+        raise ValueError(f"Olympiad '{olympiad_slug}' not in AVAILABLE_OLYMPIADS")
+
+    # Budget guard
+    budget_ok, spent = _check_budget()
+    if not budget_ok:
+        raise RuntimeError(
+            f"Monthly budget exceeded: ${spent:.2f} >= ${MONTHLY_BUDGET_HARD_STOP}"
+        )
+
     from app import app
 
     with app.app_context():
