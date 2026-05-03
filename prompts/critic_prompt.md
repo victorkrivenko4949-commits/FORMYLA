@@ -53,12 +53,17 @@
 4. РЕШАЕМОСТЬ (solvability):
    10 = решение элегантное, корректное, полное
    7 = решение верное, но можно улучшить
-   4 = есть пробелы в решении или неоднозначность
+   4 = есть пробелы в решении
    1 = решение неверное или задача нерешаема
+
+5. ОДНОЗНАЧНОСТЬ (unambiguity):
+   10 = условие допускает единственную интерпретацию, ответ единственный
+   7 = мелкая неточность в формулировке, но ответ всё равно однозначен
+   4 = возможны 2 интерпретации условия
+   1 = условие допускает множество трактовок, ответ неоднозначен
 
 Также проверь:
 - Нет ли математических ошибок в условии
-- Однозначен ли ответ
 - Корректен ли LaTeX (только \( \) и \[ \])
 - Нет ли лишней информации в условии
 
@@ -68,18 +73,19 @@
     "originality": число,
     "difficulty_match": число,
     "style_match": число,
-    "solvability": число
+    "solvability": число,
+    "unambiguity": число
   },
-  "avg": число (среднее 4 оценок, округлить до 1 знака),
-  "min": число (минимальная из 4),
+  "avg": число (среднее 5 оценок, округлить до 1 знака),
+  "min": число (минимальная из 5),
   "verdict": "approve" или "reject",
   "issues": ["список проблем, если есть"],
   "suggestions": ["как улучшить, если reject"],
-  "latex_ok": true/false,
-  "answer_unambiguous": true/false
+  "latex_ok": true/false
 }
 
 Порог: avg >= 8.5 И min >= 7 → "approve", иначе "reject".
+Если latex_ok == false → автоматический "reject" независимо от оценок.
 ```
 
 ## Few-shot Example
@@ -91,15 +97,15 @@ Output for a good problem:
     "originality": 8,
     "difficulty_match": 9,
     "style_match": 9,
-    "solvability": 10
+    "solvability": 10,
+    "unambiguity": 9
   },
   "avg": 9.0,
   "min": 8,
   "verdict": "approve",
   "issues": [],
   "suggestions": [],
-  "latex_ok": true,
-  "answer_unambiguous": true
+  "latex_ok": true
 }
 ```
 
@@ -110,9 +116,10 @@ Output for a rejected problem:
     "originality": 6,
     "difficulty_match": 5,
     "style_match": 8,
-    "solvability": 7
+    "solvability": 7,
+    "unambiguity": 8
   },
-  "avg": 6.5,
+  "avg": 6.8,
   "min": 5,
   "verdict": "reject",
   "issues": ["Задача слишком простая для позиции 4", "Идея тривиальна"],
