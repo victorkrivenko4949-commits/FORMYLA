@@ -83,6 +83,40 @@
 }
 ```
 
+## Few-shot Examples
+
+### Example 1: APPROVE (good variant)
+Variant: difficulties 4, 5, 6, 7, 9. Themes: algebra, geometry, combinatorics, number_theory, logic.
+```json
+{
+  "verdict": "approve",
+  "theme_diversity": true,
+  "difficulty_progression": true,
+  "style_consistency": true,
+  "no_overlaps": true,
+  "balance_ok": true,
+  "issues": [],
+  "reject_positions": [],
+  "suggestions": []
+}
+```
+
+### Example 2: REJECT (problem 3 same difficulty as problem 5)
+Variant: difficulties 4, 6, 9, 7, 9. Themes: algebra, geometry, algebra, number_theory, combinatorics.
+```json
+{
+  "verdict": "reject",
+  "theme_diversity": false,
+  "difficulty_progression": false,
+  "style_consistency": true,
+  "no_overlaps": true,
+  "balance_ok": true,
+  "issues": ["Задача 3 (сложность 9) сложнее задачи 4 (сложность 7) — нарушена прогрессия", "Задачи 1 и 3 обе на алгебру — дублирование темы"],
+  "reject_positions": [3],
+  "suggestions": ["Заменить задачу 3 на комбинаторику или логику со сложностью 6-7"]
+}
+```
+
 ## Decision Logic (in code)
 
 - verdict == "approve" -> save variant with status='approved'

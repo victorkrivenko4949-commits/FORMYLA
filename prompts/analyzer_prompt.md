@@ -71,11 +71,11 @@
   },
   "forbidden_topics": ["интегралы", "производные"],
   "predicted_variant": [
-    {"position": 1, "theme": "алгебра", "idea": "уравнение с параметром", "difficulty": 4, "answer_type": "число"},
-    {"position": 2, "theme": "комбинаторика", "idea": "подсчёт комбинаций", "difficulty": 5, "answer_type": "число"},
-    {"position": 3, "theme": "геометрия", "idea": "вписанные окружности", "difficulty": 6, "answer_type": "число"},
-    {"position": 4, "theme": "теория чисел", "idea": "делимость", "difficulty": 7, "answer_type": "доказательство+ответ"},
-    {"position": 5, "theme": "комбинаторика", "idea": "оптимизация", "difficulty": 8, "answer_type": "доказательство"}
+    {"position": 1, "theme": "алгебра", "subtopic": "уравнения с параметром", "idea": "квадратное уравнение с целыми корнями", "difficulty": 4, "answer_type": "number", "expected_techniques": ["дискриминант", "теорема Виета"]},
+    {"position": 2, "theme": "комбинаторика", "subtopic": "подсчёт", "idea": "количество путей на клетчатой доске", "difficulty": 5, "answer_type": "number", "expected_techniques": ["формула сочетаний", "рекурсия"]},
+    {"position": 3, "theme": "геометрия", "subtopic": "вписанные и описанные окружности", "idea": "радиус вписанной через площадь", "difficulty": 6, "answer_type": "number", "expected_techniques": ["формула Герона", "свойства касательных"]},
+    {"position": 4, "theme": "теория чисел", "subtopic": "делимость", "idea": "остатки при делении на простое", "difficulty": 7, "answer_type": "proof", "expected_techniques": ["малая теорема Ферма", "индукция"]},
+    {"position": 5, "theme": "комбинаторика", "subtopic": "оптимизация", "idea": "минимакс на графе", "difficulty": 8, "answer_type": "proof", "expected_techniques": ["оценка + пример", "принцип крайнего"]}
   ]
 }
 ```

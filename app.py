@@ -2281,6 +2281,8 @@ def yandex_login():
         if avatar_url and not user.avatar_url:
             user.avatar_url = avatar_url
         
+        # Пользователь вошёл через OAuth — он больше не гость
+        user.is_guest = False
         from datetime import datetime
         user.last_login = datetime.utcnow()
         db.session.commit()
