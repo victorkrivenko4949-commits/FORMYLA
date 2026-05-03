@@ -4,7 +4,7 @@ Dataclasses для передачи данных между этапами па�
 """
 from dataclasses import dataclass, field
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -66,7 +66,7 @@ class PipelineResult:
     source_problem: int = 0
     author: Optional[str] = None
     stages_log: List[dict] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class PipelineError(Exception):

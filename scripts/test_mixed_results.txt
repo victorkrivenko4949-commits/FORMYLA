@@ -1,0 +1,21 @@
+[PASS] mixed: $ + bare leq
+  IN:  V $\triangle ABC$ ugol $A = 60$. Dokazhite chto $AB \leq AC$.
+  OUT: <p>V $\triangle ABC$ ugol $A = 60$. Dokazhite chto $AB \leq AC$.</p>
+
+[PASS] mixed: $ + bare sqrt outside
+  IN:  Najdite $x$ esli \sqrt{x+1} = 5.
+  OUT: <p>Najdite $x$ esli $\sqrt{x+1}$ = 5.</p>
+
+[PASS] fully bare
+  IN:  Neravenstvo \sqrt(x+7) \leq 0.
+  OUT: <p>Neravenstvo $\sqrt{x+7}$ $\leq$ 0.</p>
+
+[PASS] fully wrapped
+  IN:  V $\triangle ABC$ storony $AB = 5$ i $BC = 7$.
+  OUT: <p>V $\triangle ABC$ storony $AB = 5$ i $BC = 7$.</p>
+
+[PASS] bare with backslash-paren
+  IN:  Dokazhite \(n^2\) delitsya na \leq 4.
+  OUT: <p>Dokazhite \(n^2\) delitsya na $\leq$ 4.</p>
+
+ALL TESTS PASSED

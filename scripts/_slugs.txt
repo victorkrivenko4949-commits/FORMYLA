@@ -1,0 +1,10 @@
+euler
+formula_unity
+kurchatov
+lomonosov
+phystech
+pvg
+spbgu
+turgor
+vsosh
+vysshaya_proba

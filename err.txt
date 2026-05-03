@@ -1,0 +1,3 @@
+2026-05-01 02:37:27,773 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-01 02:37:27,774 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-05-01 02:37:27,774 - apscheduler.scheduler - INFO - Scheduler started

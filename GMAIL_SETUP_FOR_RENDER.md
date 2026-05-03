@@ -33,7 +33,7 @@ MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USE_TLS=True
 MAIL_USE_SSL=False
-MAIL_USERNAME=victor.krivenko.4949@gmail.com
+MAIL_USERNAME=smnlvrk@gmail.com
 MAIL_PASSWORD=abcdefghijklmnop  ← ПАРОЛЬ ПРИЛОЖЕНИЯ (без пробелов!)
 ```
 

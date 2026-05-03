@@ -1,0 +1,25 @@
+[PASS] # header
+  IN:  # Zadacha 1
+Find $x^2 + 3x$.
+  OUT: <h1>Zadacha 1</h1>
+<p>Find $x^2 + 3x$.</p>
+
+[PASS] sqrt LaTeX
+  IN:  Compute $\sqrt{45 - \sqrt{2023 - \sqrt{45 + \sqrt{2023}}}}$
+  OUT: <p>Compute $\sqrt{45 - \sqrt{2023 - \sqrt{45 + \sqrt{2023}}}}$</p>
+
+[PASS] display math
+  IN:  Solve:
+$$x^2 + \frac{1}{x^2} = 7$$
+  OUT: <p>Solve:<br />
+$$x^2 + \frac{1}{x^2} = 7$$</p>
+
+[PASS] bold/italic
+  IN:  **Important**: find *all* solutions
+  OUT: <p><strong>Important</strong>: find <em>all</em> solutions</p>
+
+[PASS] backslash-paren
+  IN:  Prove that \(n^3 - n\) is divisible by 6
+  OUT: <p>Prove that \(n^3 - n\) is divisible by 6</p>
+
+ALL TESTS PASSED
