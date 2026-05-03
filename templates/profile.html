@@ -667,9 +667,21 @@
         {% endif %}
     </div>
 
+    <!-- Отмена подписки -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(239,68,68,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px; text-align: center;">
+        <h3 style="color: var(--text-main); margin-bottom: 12px;">💳 Управление подпиской</h3>
+        <p style="color: var(--text-soft); margin-bottom: 16px;">
+            Текущий тариф: <strong style="color: #38ef7d;">{{ current_user.current_plan or 'free' }}</strong>
+        </p>
+        <button id="cancelSubBtn" onclick="cancelSubscription()"
+                style="padding: 12px 28px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: all 0.2s;">
+            ✕ Отменить подписку
+        </button>
+    </div>
+
     <!-- Действия -->
     <div style="text-align: center; margin-top: 40px;">
-        <a href="{{ url_for('index') }}" 
+        <a href="{{ url_for('index') }}"
            style="display: inline-block; color: var(--text-soft); text-decoration: none; padding: 12px 24px; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); transition: all 0.3s; margin-right: 10px;"
            onmouseover="this.style.borderColor='var(--accent-2)'; this.style.color='var(--accent-2)'"
            onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
@@ -677,7 +689,7 @@
             🏠 На главную
         </a>
         
-        <a href="{{ url_for('logout') }}" 
+        <a href="{{ url_for('logout') }}"
            style="display: inline-block; color: var(--text-soft); text-decoration: none; padding: 12px 24px; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); transition: all 0.3s;"
            onmouseover="this.style.borderColor='#ef4444'; this.style.color='#fca5a5'"
            onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
@@ -814,18 +826,21 @@ function initYandexLinkWidget() {
 
 <script>
 function cancelSubscription() {
-    if (!confirm('Отменить подписку? Доступ сохранится до конца оплаченного периода.')) return;
-    fetch('/api/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+    if (!confirm('Вы уверены, что хотите отменить подписку Premium?')) return;
+    var btn = document.getElementById('cancelSubBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Отменяем...'; }
+    fetch('/api/cancel_subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
         .then(r => r.json())
         .then(data => {
-            if (data.success) {
-                alert(data.message);
+            if (data.ok) {
+                alert(data.message || 'Подписка отменена.');
                 location.reload();
             } else {
-                alert('Ошибка: ' + (data.message || 'Попробуйте ещё раз'));
+                alert('Ошибка: ' + (data.error || 'Попробуйте ещё раз'));
+                if (btn) { btn.disabled = false; btn.textContent = '✕ Отменить подписку'; }
             }
         })
-        .catch(() => alert('Ошибка сети'));
+        .catch(() => { alert('Ошибка сети'); if (btn) { btn.disabled = false; btn.textContent = '✕ Отменить подписку'; } });
 }
 </script>
 {% endblock %}
