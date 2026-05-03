@@ -3884,6 +3884,8 @@ def adaptive_test_start_simple():
     session['adaptive_current_difficulty'] = 3  # Начальная сложность
     session['adaptive_answers'] = []  # История ответов
     session['adaptive_current_index'] = 0  # Текущая задача
+    session['adaptive_current_task_id'] = None  # Текущая задача (для persist on reload)
+    session['adaptive_shown_task_ids'] = []  # Уже показанные задачи (без повторов)
     session.permanent = True
     
     # Перенаправляем на упрощенную страницу теста (без БД, только сессии)
@@ -3910,42 +3912,66 @@ def adaptive_test_simple_page():
     # ФИКС БАГА 2: Получаем текущий уровень сложности из сессии
     current_difficulty = session.get('adaptive_current_difficulty', 3)
     
-    print(f"[ADAPTIVE DEBUG] Загрузка задачи #{current_index + 1}, требуемый уровень: {current_difficulty}")
+    # ФИКС: Проверяем, есть ли уже выбранная задача для текущего индекса (persist on reload)
+    current_task_id = session.get('adaptive_current_task_id')
+    current_task = None
     
-    # Фильтруем задачи по текущему уровню сложности
-    available_tasks = AdaptiveTask.query.filter(
-        AdaptiveTask.id.in_(task_ids),
-        AdaptiveTask.difficulty_level == current_difficulty
-    ).all()
+    if current_task_id:
+        # Задача уже выбрана для этого шага — используем её (не меняем при перезагрузке)
+        current_task = AdaptiveTask.query.get(current_task_id)
+        if current_task:
+            print(f"[ADAPTIVE] Повторная загрузка задачи #{current_index + 1}, ID={current_task.id} (из сессии)")
     
-    # Если задач нужного уровня нет, берем ближайший уровень
-    if not available_tasks:
-        print(f"[ADAPTIVE WARNING] Нет задач уровня {current_difficulty}, ищем ближайший...")
-        # Пробуем соседние уровни
-        for offset in [1, -1, 2, -2]:
-            fallback_level = current_difficulty + offset
-            if 1 <= fallback_level <= 7:
-                available_tasks = AdaptiveTask.query.filter(
-                    AdaptiveTask.id.in_(task_ids),
-                    AdaptiveTask.difficulty_level == fallback_level
-                ).all()
-                if available_tasks:
-                    print(f"[ADAPTIVE] Используем уровень {fallback_level} вместо {current_difficulty}")
-                    break
-    
-    # Если все еще нет задач, берем любую из списка
-    if not available_tasks:
-        print(f"[ADAPTIVE ERROR] Не найдено задач нужного уровня, берем любую из пула")
-        if current_index < len(task_ids):
-            current_task = AdaptiveTask.query.get(task_ids[current_index])
+    # Если задача не найдена в сессии — выбираем новую
+    if not current_task:
+        print(f"[ADAPTIVE DEBUG] Выбор новой задачи #{current_index + 1}, требуемый уровень: {current_difficulty}")
+        
+        # Фильтруем задачи по текущему уровню сложности
+        available_tasks = AdaptiveTask.query.filter(
+            AdaptiveTask.id.in_(task_ids),
+            AdaptiveTask.difficulty_level == current_difficulty
+        ).all()
+        
+        # Исключаем уже показанные задачи
+        shown_ids = set(session.get('adaptive_shown_task_ids', []))
+        available_tasks = [t for t in available_tasks if t.id not in shown_ids]
+        
+        # Если задач нужного уровня нет, берем ближайший уровень
+        if not available_tasks:
+            print(f"[ADAPTIVE WARNING] Нет задач уровня {current_difficulty}, ищем ближайший...")
+            # Пробуем соседние уровни
+            for offset in [1, -1, 2, -2]:
+                fallback_level = current_difficulty + offset
+                if 1 <= fallback_level <= 7:
+                    available_tasks = AdaptiveTask.query.filter(
+                        AdaptiveTask.id.in_(task_ids),
+                        AdaptiveTask.difficulty_level == fallback_level
+                    ).all()
+                    available_tasks = [t for t in available_tasks if t.id not in shown_ids]
+                    if available_tasks:
+                        print(f"[ADAPTIVE] Используем уровень {fallback_level} вместо {current_difficulty}")
+                        break
+        
+        # Если все еще нет задач, берем любую из списка
+        if not available_tasks:
+            print(f"[ADAPTIVE ERROR] Не найдено задач нужного уровня, берем любую из пула")
+            if current_index < len(task_ids):
+                current_task = AdaptiveTask.query.get(task_ids[current_index])
+            else:
+                flash('Ошибка: закончились задачи', 'error')
+                return redirect('/adaptive_test_simple/results')
         else:
-            flash('Ошибка: закончились задачи', 'error')
-            return redirect('/adaptive_test_simple/results')
-    else:
-        # Выбираем случайную задачу из доступных нужного уровня
-        import random
-        current_task = random.choice(available_tasks)
-        print(f"[ADAPTIVE] Выбрана задача ID={current_task.id}, уровень={current_task.difficulty_level}")
+            # Выбираем случайную задачу из доступных нужного уровня
+            import random
+            current_task = random.choice(available_tasks)
+            print(f"[ADAPTIVE] Выбрана задача ID={current_task.id}, уровень={current_task.difficulty_level}")
+        
+        # Сохраняем выбранную задачу в сессию (persist on reload)
+        if current_task:
+            session['adaptive_current_task_id'] = current_task.id
+            shown_ids.add(current_task.id)
+            session['adaptive_shown_task_ids'] = list(shown_ids)
+            session.modified = True
     
     if not current_task:
         flash('Ошибка загрузки задачи', 'error')
@@ -4014,6 +4040,9 @@ def adaptive_test_simple_submit():
     
     # Увеличиваем индекс
     session['adaptive_current_index'] = session.get('adaptive_current_index', 0) + 1
+    
+    # Очищаем текущую задачу из сессии — следующий запрос выберет новую
+    session.pop('adaptive_current_task_id', None)
     
     # Адаптируем сложность
     current_difficulty = session.get('adaptive_current_difficulty', 3)
@@ -4441,6 +4470,9 @@ score = -1 (НЕВЕРНО, -1 уровень):
         # Увеличиваем индекс текущей задачи
         current_index = session.get('adaptive_current_index', 0)
         session['adaptive_current_index'] = current_index + 1
+        
+        # Очищаем текущую задачу — следующий запрос выберет новую
+        session.pop('adaptive_current_task_id', None)
         
         session.modified = True
         
