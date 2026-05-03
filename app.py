@@ -3782,6 +3782,10 @@ def adaptive_test_start_simple():
     topic = request.args.get('topic')
     grade = request.args.get('grade')
     
+    # kl_movement → movement (алиас) — СРАЗУ, до любых проверок
+    if topic == 'kl_movement':
+        topic = 'movement'
+    
     if not topic:
         flash('Выберите тему для тестирования', 'error')
         return redirect(url_for('probniks_page'))
