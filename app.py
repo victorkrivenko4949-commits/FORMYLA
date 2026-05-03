@@ -3839,6 +3839,9 @@ def adaptive_test_start_simple():
         'geometry': 'Геометрия',
         'combinatorics': 'Комбинаторика',
         'number_theory': 'Теория чисел',
+        'movement': 'Задачи на движение',
+        'kl_movement': 'Задачи на движение',
+        'knights_liars': 'Рыцари и лжецы',
         'functions': 'Функции',
         'equations': 'Уравнения'
     }
