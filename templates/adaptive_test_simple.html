@@ -504,10 +504,13 @@ function showResult(result) {
 }
 
 function goToNextTask() {
+    // Очищаем сохранённый ввод для текущей задачи
+    if (window._clearTaskStorage) window._clearTaskStorage();
     window.location.href = '/adaptive_test_simple';
 }
 
 function finishTest() {
+    if (window._clearTaskStorage) window._clearTaskStorage();
     window.location.href = '/adaptive_test_simple/results';
 }
 </script>
@@ -515,8 +518,12 @@ function finishTest() {
 <!-- MathLive для ввода математических формул -->
 <script src="https://unpkg.com/mathlive"></script>
 <script>
-// Настройка MathLive после загрузки
+// Настройка MathLive после загрузки + автосохранение в localStorage
 document.addEventListener('DOMContentLoaded', function() {
+    const taskId = '{{ task.id }}';
+    const STORAGE_KEY_ANSWER = 'adaptive_answer_' + taskId;
+    const STORAGE_KEY_SOLUTION = 'adaptive_solution_' + taskId;
+    
     // Настройка поля ответа
     const mathField = document.getElementById('user_answer');
     if (mathField) {
@@ -526,26 +533,52 @@ document.addEventListener('DOMContentLoaded', function() {
             smartFence: true,
             smartMode: true
         });
+        
+        // Восстанавливаем сохранённый ответ из localStorage
+        const savedAnswer = localStorage.getItem(STORAGE_KEY_ANSWER);
+        if (savedAnswer) {
+            mathField.setValue(savedAnswer);
+        }
+        
+        // Автосохранение при каждом изменении
+        mathField.addEventListener('input', function() {
+            try {
+                localStorage.setItem(STORAGE_KEY_ANSWER, mathField.getValue('latex'));
+            } catch(e) {}
+        });
     }
     
     // Настройка поля решения
     const solutionField = document.getElementById('solution_text');
     if (solutionField) {
         solutionField.setOptions({
-            virtualKeyboardMode: 'manual', // Клавиатура по кнопке, а не автоматически
+            virtualKeyboardMode: 'manual',
             virtualKeyboards: 'numeric symbols greek',
             smartFence: true,
             smartMode: true,
-            mathModeSpace: '\\,', // Пробел в математическом режиме
+            mathModeSpace: '\\,',
             removeExtraneousParentheses: false
         });
         
-        // Добавляем кнопку вызова клавиатуры
-        solutionField.addEventListener('focus', function() {
-            // Показываем подсказку о кнопке клавиатуры
-            console.log('Solution field focused - use keyboard button to show virtual keyboard');
+        // Восстанавливаем сохранённое решение из localStorage
+        const savedSolution = localStorage.getItem(STORAGE_KEY_SOLUTION);
+        if (savedSolution) {
+            solutionField.setValue(savedSolution);
+        }
+        
+        // Автосохранение при каждом изменении
+        solutionField.addEventListener('input', function() {
+            try {
+                localStorage.setItem(STORAGE_KEY_SOLUTION, solutionField.getValue('latex'));
+            } catch(e) {}
         });
     }
+    
+    // Очищаем localStorage после успешной отправки (при переходе к следующей задаче)
+    window._clearTaskStorage = function() {
+        localStorage.removeItem(STORAGE_KEY_ANSWER);
+        localStorage.removeItem(STORAGE_KEY_SOLUTION);
+    };
 });
 </script>
 {% endblock %}
