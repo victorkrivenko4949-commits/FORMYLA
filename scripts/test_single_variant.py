@@ -104,11 +104,11 @@ def main():
                 solve_time = round(time.time() - t0, 1)
                 solve_cost = solver_result.get("_cost", 0)
                 total_cost += solve_cost
-                report["solver_match"] = solver_result.get("answers_match", False)
+                report["solver_match"] = solver_result.get("is_correct", False)
                 report["solver_confidence"] = solver_result.get("confidence", "?")
                 logger.info(f"  Solved ({solve_time}s, ${solve_cost:.4f}) match={report['solver_match']}")
 
-                if not solver_result.get("answers_match"):
+                if not solver_result.get("is_correct"):
                     logger.warning("  Solver disagrees, retrying...")
                     continue
 
@@ -165,10 +165,10 @@ def main():
             db.session.execute(
                 db.text("""
                     INSERT INTO daily_problems
-                        (variant_id, position, problem_text, solution_text, answer,
-                         topic, subtopic, difficulty, method, idea_summary, status)
+                        (variant_id, position, text, solution, answer,
+                         topic, difficulty, status)
                     VALUES (:vid, :pos, :stmt, :sol, :ans,
-                            :topic, :subtopic, :diff, :method, :idea, 'approved')
+                            :topic, :diff, 'approved')
                 """),
                 dict(
                     vid=variant_id, pos=pos,
@@ -176,10 +176,7 @@ def main():
                     sol=problem["solution"],
                     ans=problem["answer"],
                     topic=problem.get("topic", ""),
-                    subtopic=problem.get("method", ""),
                     diff=problem.get("difficulty", 5),
-                    method=problem.get("method", ""),
-                    idea=problem.get("idea_summary", ""),
                 )
             )
             db.session.commit()

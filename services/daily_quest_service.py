@@ -105,48 +105,83 @@ def get_tasks_from_db(topic: str, grade: int, difficulty: int, exclude_ids: List
     return matching_tasks
 
 
+def _get_olympiad_tasks_for_grade(user_grade: int, count: int = 5) -> List[Dict]:
+    """
+    Получить олимпиадные задачи из COMBOS для указанного класса.
+    Это реальные задачи ВсОШ, Турнира городов, Эйлера — гораздо сложнее PROBLEMS_DB.
+    """
+    from app import COMBOS
+    
+    all_problems = []
+    for combo in COMBOS:
+        combo_grade = combo.get('grade', 0)
+        # Берём задачи для класса пользователя ±1
+        if abs(int(combo_grade) - user_grade) <= 1:
+            for p in combo.get('problems', []):
+                text = p.get('text', '')
+                if text and len(text) >= 50:
+                    all_problems.append({
+                        'id': combo.get('id', 0) * 100 + p.get('num', 1),
+                        'topic': combo.get('olympiad', 'olympiad'),
+                        'subject': combo.get('olympiad_title', 'Олимпиада'),
+                        'subtopic': combo.get('round_title', ''),
+                        'grade': int(combo_grade),
+                        'difficulty': 6,  # Олимпиадный уровень
+                        'text': text,
+                        'answer': p.get('answer', ''),
+                        'solution': p.get('solution', ''),
+                        'olympiad_title': combo.get('olympiad_title', ''),
+                        'year': combo.get('year', ''),
+                    })
+    
+    if len(all_problems) >= count:
+        return random.sample(all_problems, count)
+    elif all_problems:
+        return random.sample(all_problems, min(count, len(all_problems)))
+    return []
+
+
 def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
     """
-    Fallback: генерировать квест из случайных задач PROBLEMS_DB.
-    Используется когда нет данных о мастерстве (новый пользователь).
-    Для новичков — уровень сложности 2-3 (НЕ 7!).
+    Генерирует квест из ОЛИМПИАДНЫХ задач (COMBOS) — реальные задачи ВсОШ, ТГ, Эйлер.
     Фильтрует по preferred_grade пользователя.
+    Если олимпиадных задач нет — fallback на PROBLEMS_DB.
     """
     from app import PROBLEMS_DB
     
-    if not PROBLEMS_DB:
-        logger.error("PROBLEMS_DB is empty, cannot generate quest")
-        return None
-    
     # Получаем preferred_grade пользователя
     user = User.query.get(user_id)
-    user_grade = user.preferred_grade if user and user.preferred_grade else None
+    user_grade = user.preferred_grade if user and user.preferred_grade else 9
     
-    # Фильтруем по классу если задан
-    pool = PROBLEMS_DB
-    if user_grade:
-        grade_pool = [t for t in pool if t.get('grade') == user_grade]
-        if len(grade_pool) >= 5:
-            pool = grade_pool
-        else:
-            logger.warning(f"Not enough tasks for grade {user_grade}, using all tasks")
+    # Сначала пробуем олимпиадные задачи (они сложнее!)
+    selected = _get_olympiad_tasks_for_grade(user_grade, 5)
     
-    # Для новичков берём задачи уровня 4-5 (олимпиадный уровень)
-    STARTING_LEVEL = 5
-    beginner_tasks = [t for t in pool if t.get('difficulty', 3) <= STARTING_LEVEL and t.get('difficulty', 3) >= 3]
+    if len(selected) >= 3:
+        logger.info(f"Olympiad quest for user {user_id}, grade {user_grade}: {len(selected)} tasks")
+    else:
+        # Fallback на PROBLEMS_DB если олимпиадных мало
+        logger.warning(f"Not enough olympiad tasks for grade {user_grade}, using PROBLEMS_DB")
+        pool = PROBLEMS_DB
+        if user_grade:
+            grade_pool = [t for t in pool if t.get('grade') == user_grade]
+            if len(grade_pool) >= 5:
+                pool = grade_pool
+        
+        # Берём задачи уровня 5-7 (максимальная сложность)
+        hard_tasks = [t for t in pool if t.get('difficulty', 3) >= 5]
+        if len(hard_tasks) < 5:
+            hard_tasks = [t for t in pool if t.get('difficulty', 3) >= 4]
+        if len(hard_tasks) < 5:
+            hard_tasks = pool
+        
+        sample_size = min(5, len(hard_tasks))
+        selected = random.sample(hard_tasks, sample_size)
     
-    if len(beginner_tasks) < 5:
-        beginner_tasks = pool  # Fallback если мало задач нужного уровня
-    
-    # Берём 5 случайных задач из подходящих
-    sample_size = min(5, len(beginner_tasks))
-    selected = random.sample(beginner_tasks, sample_size)
-    
-    logger.info(f"Random quest for user {user_id}: levels={[t.get('difficulty',3) for t in selected]}")
+    logger.info(f"Quest for user {user_id}: {len(selected)} tasks selected")
     
     task_ids = [t['id'] for t in selected]
     grade_label = f" ({user_grade} класс)" if user_grade else ""
-    ai_comment = f"🎯 **Твои задачи на сегодня**{grade_label}\n\n📚 Подобраны случайные задачи для начала. Пройди адаптивный тест, чтобы получать персонализированные задачи!\n\nРешай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"
+    ai_comment = f"🎯 **Твои олимпиадные задачи на сегодня**{grade_label}\n\n🏆 Подобраны задачи из реальных олимпиад (ВсОШ, Турнир городов, Эйлер). Пиши решение — ИИ-тьютор проверит!\n\nРешай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"
     
     quest = DailyQuest(
         user_id=user_id,
@@ -421,7 +456,7 @@ def get_today_quest(user_id: int) -> Optional[DailyQuest]:
 def get_quest_tasks(quest: DailyQuest) -> List[Dict]:
     """
     Получить полные данные задач для квеста.
-    PROBLEMS_DB — список, поиск по id.
+    Ищет в PROBLEMS_DB и в COMBOS (олимпиадные задачи).
     
     Args:
         quest: DailyQuest объект
@@ -429,18 +464,40 @@ def get_quest_tasks(quest: DailyQuest) -> List[Dict]:
     Returns:
         List задач с полными данными
     """
-    from app import PROBLEMS_DB
+    from app import PROBLEMS_DB, COMBOS
     
     task_ids = json.loads(quest.task_ids)
     
-    # Строим индекс id→task для быстрого поиска
+    # Строим индекс id→task для PROBLEMS_DB
     task_index = {task['id']: task for task in PROBLEMS_DB if 'id' in task}
+    
+    # Строим индекс для олимпиадных задач (combo_id * 100 + num)
+    olympiad_index = {}
+    for combo in COMBOS:
+        combo_id = combo.get('id', 0)
+        for p in combo.get('problems', []):
+            oid = combo_id * 100 + p.get('num', 1)
+            olympiad_index[oid] = {
+                'id': oid,
+                'topic': combo.get('olympiad', ''),
+                'subject': combo.get('olympiad_title', 'Олимпиада'),
+                'subtopic': combo.get('round_title', ''),
+                'grade': combo.get('grade', 9),
+                'difficulty': 6,
+                'text': p.get('text', ''),
+                'answer': p.get('answer', ''),
+                'solution': p.get('solution', ''),
+                'olympiad_title': combo.get('olympiad_title', ''),
+                'year': combo.get('year', ''),
+            }
     
     tasks = []
     for task_id in task_ids:
         if task_id in task_index:
             task = task_index[task_id].copy()
             tasks.append(task)
+        elif task_id in olympiad_index:
+            tasks.append(olympiad_index[task_id])
     
     return tasks
 
