@@ -1,106 +1,148 @@
 {% extends "base.html" %}
-{% block title %}О сайте — FORMYLA{% endblock %}
+{% block title %}О проекте FORMYLA{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ asset_version }}">
 {% endblock %}
 {% block content %}
-
 <div class="about-page">
 
   <section class="about-hero">
     <h1 class="about-title">FORMYLA</h1>
-    <p class="about-subtitle">
-      Платформа подготовки к математическим олимпиадам
-    </p>
+    <p class="about-subtitle">Единственная в России ИИ-платформа для подготовки к математическим олимпиадам с 7 специализированными агентами</p>
   </section>
 
   <section class="about-section">
-    <h2>🎯 Что это?</h2>
-    <p>FORMYLA — бесплатная платформа для школьников 5-11
-       классов, готовящихся к математическим олимпиадам:
-       от школьного этапа ВсОШ до заключительного.</p>
-  </section>
-
-  <section class="about-section">
-    <h2>📚 Разделы сайта</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-icon">🧠</span>
-        <h3>Адаптивный тест</h3>
-        <p>Подбор задач под твой уровень. Уровни 1-7 —
-           от школьной программы до заключительного этапа.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🏆</span>
-        <h3>Олимпиады</h3>
-        <p>Каталог задач прошлых олимпиад с решениями:
-           ВсОШ, Турнир городов, Эйлер.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">✍️</span>
-        <h3>Написать олимпиаду</h3>
-        <p>Режим реальной олимпиады с таймером и
-           проверкой решений AI-тьютором.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🤖</span>
-        <h3>AI-тьютор</h3>
-        <p>Пошаговое объяснение каждой задачи. Тьютор
-           решает сам и даёт честную оценку.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">👥</span>
-        <h3>Друзья</h3>
-        <p>Добавляй друзей, смотри их прогресс,
-           серии и результаты.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">📊</span>
-        <h3>Радар навыков</h3>
-        <p>Карта твоих сильных и слабых тем.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="about-section">
-    <h2>📈 Цифры</h2>
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-num">3500+</div>
-        <div class="stat-label">задач в адаптивном тесте</div>
+      <div class="stat-card"><div class="stat-num">3500+</div><div class="stat-label">задач в адаптивном тесте</div></div>
+      <div class="stat-card"><div class="stat-num">8000+</div><div class="stat-label">олимпиадных задач</div></div>
+      <div class="stat-card"><div class="stat-num">7</div><div class="stat-label">ИИ-агентов по темам</div></div>
+      <div class="stat-card"><div class="stat-num">5–11</div><div class="stat-label">классы</div></div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <h2>🎯 Как это работает</h2>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-number">1</div><h3>Пройди диагностику</h3><p>Адаптивный тест определит твой уровень и слабые темы за 10–15 минут.</p></div>
+      <div class="step-card"><div class="step-number">2</div><h3>Решай задачи дня</h3><p>Каждый день ты получаешь задачи, подобранные лично под твои пробелы.</p></div>
+      <div class="step-card"><div class="step-number">3</div><h3>Готовься с ИИ-тьютором</h3><p>7 агентов по темам разбирают задачи, дают подсказки и объясняют шаг за шагом.</p></div>
+      <div class="step-card"><div class="step-number">4</div><h3>Выходи на олимпиады</h3><p>База ВсОШ, Турнира городов, Эйлера — тренируйся на реальных задачах прошлых лет.</p></div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <h2>⚡ Почему FORMYLA — единственная в своём роде в РФ</h2>
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr><th>Возможность</th><th class="highlight-col">FORMYLA</th><th>Khanmigo</th><th>Photomath</th><th>Учи.ру</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Работает в РФ без VPN</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td>частично</td><td class="check">✓</td></tr>
+          <tr><td>Русский язык</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td>частично</td><td class="check">✓</td></tr>
+          <tr><td>7 специализированных ИИ-агентов</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+          <tr><td>База олимпиад РФ (ВсОШ, ТГ, Эйлер)</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
+          <tr><td>Адаптивные задачи под слабые темы</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
+          <tr><td>Радар навыков ученика</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+          <tr><td>Родитель видит прогресс ребёнка</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
+          <tr><td>Цена в месяц</td><td class="highlight-col"><strong>390 ₽</strong></td><td>~400 ₽</td><td>~950 ₽</td><td>990 ₽</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <h2>👨‍🎓 Для кого FORMYLA</h2>
+    <div class="features-grid">
+      <div class="feature-card"><span class="feature-icon">📚</span><h3>Ученикам 5–7 класса</h3><p>Школьный этап ВсОШ, мат. раскраски, игры, «Рыцари и лжецы». Развитие логики в формате, который не скучно.</p></div>
+      <div class="feature-card"><span class="feature-icon">🏆</span><h3>Ученикам 8–11 класса</h3><p>Муниципальный, региональный и заключительный этапы. Турнир городов, Эйлер, Сириус. Готовься с ИИ-наставником.</p></div>
+      <div class="feature-card"><span class="feature-icon">👨‍👩‍👦</span><h3>Родителям</h3><p>Добавляйся «в друзья» к ребёнку: смотри прогресс, слабые темы и серии решённых задач в реальном времени.</p></div>
+      <div class="feature-card"><span class="feature-icon">👩‍🏫</span><h3>Учителям</h3><p>Готовая база задач с решениями. Используй FORMYLA как кружок подготовки к олимпиадам.</p></div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <h2>🤖 Наши ИИ-агенты</h2>
+    <div class="features-grid agents-grid">
+      <div class="feature-card agent-card"><span class="feature-icon">📐</span><h3>Алгебра</h3><p>Уравнения, неравенства, выражения.</p></div>
+      <div class="feature-card agent-card"><span class="feature-icon">📏</span><h3>Геометрия</h3><p>Планиметрия, углы, площади, фигуры.</p></div>
+      <div class="feature-card agent-card"><span class="feature-icon">🔢</span><h3>Теория чисел</h3><p>Делимость, остатки, простые числа.</p></div>
+      <div class="feature-card agent-card"><span class="feature-icon">🎲</span><h3>Комбинаторика</h3><p>Подсчёт, перебор, логика конструкций.</p></div>
+      <div class="feature-card agent-card"><span class="feature-icon">🚀</span><h3>Задачи на движение</h3><p>Встречное движение, догонка, скорость.</p></div>
+      <div class="feature-card agent-card"><span class="feature-icon">🧩</span><h3>Логика</h3><p>Рыцари и лжецы, раскраски, мат. игры.</p></div>
+      <div class="feature-card agent-card"><span class="feature-icon">🏅</span><h3>Агент-наставник</h3><p>Советы по стратегии олимпиад, план подготовки, психология экзамена.</p></div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <h2>💎 Тарифы</h2>
+    <div class="plans-row">
+      <div class="plan-box plan-free">
+        <h3>Free</h3>
+        <div class="plan-price-tag">0 ₽ / навсегда</div>
+        <ul>
+          <li>3 задачи дня</li>
+          <li>1 олимпиадный вариант в неделю</li>
+          <li>10 сообщений ИИ-тьютору в день</li>
+          <li>Базовый Радар навыков</li>
+          <li>Сообщество и Telegram-канал</li>
+        </ul>
+        <a href="/login" class="plan-btn plan-btn-free">Начать бесплатно</a>
       </div>
-      <div class="stat-card">
-        <div class="stat-num">8000+</div>
-        <div class="stat-label">олимпиадных задач</div>
+      <div class="plan-box plan-pro">
+        <div class="plan-badge-pro">⭐ PRO</div>
+        <h3>Pro</h3>
+        <div class="plan-price-tag">390 ₽ / месяц</div>
+        <ul>
+          <li>Безлимит задач и олимпиад</li>
+          <li>Безлимит сообщений ИИ-тьютору</li>
+          <li>Все 7 специализированных агентов</li>
+          <li>Полный Радар навыков + еженедельный анализ</li>
+          <li>Родительский доступ к прогрессу</li>
+          <li>Проверка фото решений</li>
+          <li>Приоритетная поддержка</li>
+        </ul>
+        <a href="/subscribe" class="plan-btn plan-btn-pro">Оформить Pro</a>
       </div>
-      <div class="stat-card">
-        <div class="stat-num">5-11</div>
-        <div class="stat-label">классы</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">7</div>
-        <div class="stat-label">уровней сложности</div>
+    </div>
+    <p class="guarantee">🛡️ <strong>Гарантия возврата</strong> — Не понравилось в первые 7 дней? Вернём деньги без вопросов.</p>
+  </section>
+
+  <section class="about-section founder-section">
+    <h2>👋 История проекта</h2>
+    <div class="founder-card">
+      <div class="founder-avatar">V</div>
+      <div class="founder-text">
+        <p><strong>Привет, я Виктор — основатель FORMYLA</strong></p>
+        <p>Мне 14 лет, и я сам готовился к олимпиадам по математике. Мне надоело переключаться между десятком сайтов: где-то задачи, где-то разборы, где-то ИИ, но на английском.</p>
+        <p>Я собрал FORMYLA — место, где всё в одном интерфейсе: адаптивный тест, задачи под слабые темы, разборы от 7 ИИ-агентов и полная база олимпиад РФ. То, что я хотел видеть сам.</p>
       </div>
     </div>
   </section>
 
   <section class="about-section">
-    <h2>📣 Telegram-канал</h2>
-    <p>Новости проекта, разборы задач и анонсы
-       обновлений — в нашем канале:</p>
-    <a href="https://t.me/FormylaMaths" target="_blank"
-       class="tg-btn">
-      <span>📨</span> @FormylaMaths
-    </a>
+    <h2>❓ Частые вопросы</h2>
+    <div class="faq-list">
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Для какого класса подходит FORMYLA? <span class="faq-arrow">▼</span></div><div class="faq-a">Для учеников 5–11 классов. Задачи адаптируются под уровень — от школьного этапа до заключительного.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Нужен ли VPN? <span class="faq-arrow">▼</span></div><div class="faq-a">Нет. FORMYLA работает в России без VPN, все серверы в РФ.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Чем FORMYLA отличается от ChatGPT? <span class="faq-arrow">▼</span></div><div class="faq-a">FORMYLA — это не просто чат. Это 7 специализированных агентов, адаптивный тест, база 8000+ олимпиадных задач и система отслеживания прогресса.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Можно ли отменить подписку? <span class="faq-arrow">▼</span></div><div class="faq-a">Да, в любой момент из профиля. После отмены доступ сохраняется до конца оплаченного периода.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Как родители могут следить за прогрессом? <span class="faq-arrow">▼</span></div><div class="faq-a">Добавьте ребёнка «в друзья» по никнейму — вы увидите его Радар навыков, серии и результаты тестов.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Безопасно ли ИИ для ребёнка? <span class="faq-arrow">▼</span></div><div class="faq-a">Да. Наши агенты работают только в контексте математики и не отвечают на посторонние темы.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что если ребёнку не подошло? <span class="faq-arrow">▼</span></div><div class="faq-a">Гарантия возврата 7 дней. Напишите нам — вернём деньги без вопросов.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Есть ли мобильное приложение? <span class="faq-arrow">▼</span></div><div class="faq-a">Пока нет, но сайт полностью адаптирован под мобильные устройства. Приложение в планах на 2026.</div></div>
+    </div>
   </section>
 
-  <!-- ═══ ФОРМА ПОДДЕРЖКИ ═══ -->
+  <section class="about-section">
+    <h2>📬 Присоединяйся</h2>
+    <p>Подписывайся на наш Telegram-канал — там задачи дня, разборы олимпиад и анонсы новых фич.</p>
+    <a href="https://t.me/FormylaMaths" target="_blank" class="tg-btn">📨 @FormylaMaths</a>
+  </section>
+
   <section class="about-section support-section">
     <h2>💬 Связаться с нами</h2>
-    <p>Нашли баг? Есть идея? Не получается решить?
-       Напиши нам — ответим в Telegram-канале или на
-       почту, если оставишь её.</p>
-
+    <p>Нашли баг? Есть идея? Не получается решить? Напиши нам — ответим в Telegram-канале или на почту.</p>
     <form id="support-form" class="support-form">
       <div class="form-row">
         <label>Тип обращения</label>
@@ -111,86 +153,39 @@
           <option value="other" selected>✉️ Другое</option>
         </select>
       </div>
-
       <div class="form-row">
         <label>Email <span class="muted">(необязательно)</span></label>
-        <input type="email" name="email"
-               placeholder="чтобы мы могли ответить">
+        <input type="email" name="email" placeholder="чтобы мы могли ответить">
       </div>
-
       <div class="form-row">
         <label>Сообщение</label>
-        <textarea name="message" required minlength="5"
-                  maxlength="4000" rows="6"
-                  placeholder="Опиши проблему или идею..."></textarea>
-        <div class="char-count">
-          <span id="char-current">0</span> / 4000
-        </div>
+        <textarea name="message" required minlength="5" maxlength="4000" rows="6" placeholder="Опиши проблему или идею..."></textarea>
+        <div class="char-count"><span id="char-current">0</span> / 4000</div>
       </div>
-
-      <button type="submit" class="submit-btn">
-        Отправить
-      </button>
-
+      <button type="submit" class="submit-btn">Отправить</button>
       <div id="support-result" class="form-result"></div>
     </form>
-  </section>
-
-  <section class="about-section">
-    <h2>👨‍💻 Автор</h2>
-    <p>Виктор Кривенко ·
-       <a href="https://t.me/FormylaMaths" target="_blank">
-         @FormylaMaths</a></p>
-    <p class="about-version">Версия 1.0 · Апрель 2026</p>
   </section>
 
 </div>
 
 <script>
-const form = document.getElementById('support-form');
+const form = document.getElementById("support-form");
 const ta = form.querySelector('textarea[name="message"]');
-const counter = document.getElementById('char-current');
-const result = document.getElementById('support-result');
-
-ta.addEventListener('input', () => {
-  counter.textContent = ta.value.length;
-});
-
-form.addEventListener('submit', async (e) => {
+const counter = document.getElementById("char-current");
+const result = document.getElementById("support-result");
+ta.addEventListener("input", () => { counter.textContent = ta.value.length; });
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  result.textContent = 'Отправка...';
-  result.className = 'form-result loading';
-
-  const data = {
-    category: form.category.value,
-    email: form.email.value.trim(),
-    message: ta.value.trim(),
-    page_url: window.location.href,
-  };
-
+  result.textContent = "Отправка...";
+  result.className = "form-result loading";
+  const data = { category: form.category.value, email: form.email.value.trim(), message: ta.value.trim(), page_url: window.location.href };
   try {
-    const r = await fetch('/api/support', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      credentials: 'include',
-      body: JSON.stringify(data),
-    });
-    let j;
-    try { j = await r.json(); } catch (_) { j = {}; }
-    if (r.ok && j.ok) {
-      result.textContent = '✅ Спасибо! Мы получили ваше ' +
-                            'сообщение и ответим как можно скорее.';
-      result.className = 'form-result ok';
-      form.reset();
-      counter.textContent = '0';
-    } else {
-      result.textContent = '❌ ' + (j.error || 'Ошибка отправки (код ' + r.status + ')');
-      result.className = 'form-result err';
-    }
-  } catch (err) {
-    result.textContent = '❌ Нет соединения. Попробуйте позже.';
-    result.className = 'form-result err';
-  }
+    const r = await fetch("/api/support", { method: "POST", headers: {"Content-Type": "application/json"}, credentials: "include", body: JSON.stringify(data) });
+    let j; try { j = await r.json(); } catch (_) { j = {}; }
+    if (r.ok && j.ok) { result.textContent = "✅ Спасибо! Мы получили ваше сообщение."; result.className = "form-result ok"; form.reset(); counter.textContent = "0"; }
+    else { result.textContent = "❌ " + (j.error || "Ошибка отправки"); result.className = "form-result err"; }
+  } catch (err) { result.textContent = "❌ Нет соединения. Попробуйте позже."; result.className = "form-result err"; }
 });
 </script>
 

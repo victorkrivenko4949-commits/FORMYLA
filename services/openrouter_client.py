@@ -114,7 +114,7 @@ class OpenRouterClient:
     """OpenRouter API client with rate limiting, retry, circuit breaker."""
 
     def __init__(self, api_key: str = None, base_url: str = None):
-        self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY", "")
+        self.api_key = (api_key or os.environ.get("OPENROUTER_API_KEY", "")).strip()
         self.base_url = base_url or "https://openrouter.ai/api/v1"
         self.rate_limiter = RateLimiter()
         self.circuit_breaker = CircuitBreaker()

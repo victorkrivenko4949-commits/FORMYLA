@@ -6,6 +6,7 @@ import json
 import logging
 
 from services.openrouter_client import openrouter
+from services.daily_pool.json_utils import parse_json_with_latex as _parse_json_with_latex
 
 logger = logging.getLogger(__name__)
 
@@ -106,8 +107,8 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
             content = content.split("```json")[1].split("```")[0]
         elif "```" in content:
             content = content.split("```")[1].split("```")[0]
-        data = json.loads(content.strip())
-    except json.JSONDecodeError as e:
+        data = _parse_json_with_latex(content.strip())
+    except (json.JSONDecodeError, ValueError) as e:
         logger.error(f"[Generator] JSON parse error: {e}")
         raise ValueError(f"Generator returned invalid JSON: {content[:200]}")
 

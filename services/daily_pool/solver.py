@@ -8,6 +8,7 @@ import logging
 import re
 
 from services.openrouter_client import openrouter
+from services.daily_pool.json_utils import parse_json_with_latex
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +69,18 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
             content = content.split("```json")[1].split("```")[0]
         elif "```" in content:
             content = content.split("```")[1].split("```")[0]
-        data = json.loads(content.strip())
-    except json.JSONDecodeError:
-        logger.error(f"[Solver] JSON parse error: {content[:200]}")
-        raise ValueError("Solver returned invalid JSON")
+        data = parse_json_with_latex(content.strip())
+    except (json.JSONDecodeError, Exception):
+        # Last resort: extract answer from raw text
+        logger.warning(f"[Solver] JSON parse failed, extracting answer from text")
+        answer_match = re.search(r'"answer"\s*:\s*"([^"]*)"', content)
+        data = dict(
+            solution=content[:2000],
+            answer=answer_match.group(1) if answer_match else "",
+            confidence=0.6,
+            verification="JSON parse failed, extracted from raw",
+            is_well_posed=True,
+        )
 
     # Check well-posedness
     if not data.get("is_well_posed", True):

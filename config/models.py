@@ -42,27 +42,34 @@ EMBEDDER_MODEL = os.getenv("EMBEDDER_MODEL", "openai/text-embedding-3-large")
 
 AVAILABLE_OLYMPIADS = ["vsosh"]
 
-# Pre-generated nightly (cron): most popular combos
-# NOTE: Archive only has vsosh grades 9-11 (school/municipal/regional/final)
-# Grades 5-8 will be added when archive data is available
+# Pre-generated nightly (cron): combos with 100+ archived problems
+# 6 combos x 30 days = 180 variants/month
 TIER_PREGEN = [
     (9, "regional"),
+    (9, "final"),
     (10, "regional"),
+    (10, "final"),
     (11, "regional"),
+    (11, "final"),
+]
+
+# Generated on-demand via /api/olympiad/daily (55-65 archived problems each)
+TIER_LAZY = [
     (9, "municipal"),
     (10, "municipal"),
     (11, "municipal"),
 ]
 
-# Generated on-demand via /api/olympiad/daily (remaining combos)
-TIER_LAZY = [
+# Not enough data for generation (20 problems each) - show "coming soon"
+TIER_DISABLED = [
     (9, "school"),
     (10, "school"),
     (11, "school"),
-    (9, "final"),
-    (10, "final"),
-    (11, "final"),
 ]
+
+# Grades 5-8: exist in olympiads.py (253 problems) but have olympiad_slug=None
+# Need manual tagging before enabling. Show "coming soon" in UI.
+GRADES_DISABLED = [5, 6, 7, 8]
 
 # ─── Budget Controls ───────────────────────────────────────────────────────────
 

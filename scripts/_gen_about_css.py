@@ -1,4 +1,11 @@
-/* ═══════════════════════════════════════════════════════
+#!/usr/bin/env python3
+"""Generate updated about.css for FORMYLA."""
+import pathlib
+
+BASE = pathlib.Path(__file__).resolve().parent.parent
+out = BASE / "static" / "css" / "about.css"
+
+css = """/* ═══════════════════════════════════════════════════════
    СТРАНИЦА "О САЙТЕ" — FORMYLA v2
    ═══════════════════════════════════════════════════════ */
 
@@ -259,7 +266,7 @@
   border-bottom: 1px solid rgba(148, 163, 184, 0.06);
 }
 .plan-box ul li::before {
-  content: "\2713 ";
+  content: "\\2713 ";
   color: #38ef7d;
   margin-right: 8px;
 }
@@ -458,3 +465,7 @@
 .form-result.loading { color: #94a3b8; }
 
 .about-version { margin-top: 8px; font-size: 13px; color: #475569; }
+"""
+
+out.write_text(css, encoding='utf-8')
+print(f"Written CSS to {out}")
