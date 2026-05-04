@@ -5946,6 +5946,18 @@ def api_set_grade():
     return jsonify({'success': True, 'grade': grade})
 
 
+@app.route('/daily/regenerate', methods=['POST'])
+@login_required
+def daily_quest_regenerate():
+    """Принудительная перегенерация Daily Quest (новые олимпиадные задачи)."""
+    from services.daily_quest_service import generate_daily_quest
+    quest = generate_daily_quest(current_user.id, force_regenerate=True)
+    if quest:
+        return redirect(url_for('daily_quest_main'))
+    flash('Не удалось перегенерировать квест', 'error')
+    return redirect(url_for('daily_quest_main'))
+
+
 @app.route('/daily')
 @login_required
 def daily_quest_main():
