@@ -98,7 +98,8 @@ def get_tasks_from_db(topic: str, grade: int, difficulty: int, exclude_ids: List
                 'grade': task_grade,
                 'difficulty': task_difficulty,
                 'text': task.get('text', ''),
-                'answer': task.get('answer', '')
+                'answer': task.get('answer', ''),
+                'solution': task.get('solution', '')
             })
     
     return matching_tasks
@@ -130,9 +131,9 @@ def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
         else:
             logger.warning(f"Not enough tasks for grade {user_grade}, using all tasks")
     
-    # Для новичков берём задачи уровня 2-3 (стартовый уровень)
-    STARTING_LEVEL = 3
-    beginner_tasks = [t for t in pool if t.get('difficulty', 3) <= STARTING_LEVEL]
+    # Для новичков берём задачи уровня 4-5 (олимпиадный уровень)
+    STARTING_LEVEL = 5
+    beginner_tasks = [t for t in pool if t.get('difficulty', 3) <= STARTING_LEVEL and t.get('difficulty', 3) >= 3]
     
     if len(beginner_tasks) < 5:
         beginner_tasks = pool  # Fallback если мало задач нужного уровня

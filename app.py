@@ -6055,15 +6055,17 @@ def daily_quest_submit(task_index):
     
     task = tasks[task_index]
     
-    # Получаем ответ пользователя
+    # Получаем ответ и решение пользователя
     user_answer = request.json.get('answer', '').strip()
+    user_solution = request.json.get('solution', '').strip()
     
-    if not user_answer:
-        return jsonify({'success': False, 'error': 'Answer is required'}), 400
+    if not user_answer and not user_solution:
+        return jsonify({'success': False, 'error': 'Answer or solution is required'}), 400
     
     # Проверяем ответ
     correct_answer = task.get('answer', '')
-    is_correct = compare_math_answers(user_answer, correct_answer)
+    correct_solution = task.get('solution', '')
+    is_correct = compare_math_answers(user_answer, correct_answer) if user_answer else False
     
     # Обновляем квест
     xp_earned = 20 if is_correct else 0
@@ -6072,7 +6074,7 @@ def daily_quest_submit(task_index):
         complete_quest_task(quest, task_index, is_correct, xp_earned)
         
         # Обновляем мастерство по теме
-        topic = task.get('topic', '')
+        topic = task.get('topic', task.get('subject', ''))
         grade = task.get('grade', 7)
         difficulty = task.get('difficulty', 3)
         
@@ -6088,25 +6090,49 @@ def daily_quest_submit(task_index):
             # Обновляем streak
             update_streak_after_quest(current_user.id)
     
-    # Генерируем AI-фидбек
+    # Генерируем AI-фидбек с полной проверкой решения
     ai_feedback = ""
     if DEEPSEEK_AVAILABLE:
         try:
             client = DeepSeekClient()
-            prompt = f"""Задача: {task.get('text', '')}
+            solution_part = ""
+            if user_solution:
+                solution_part = f"\n\nРешение ученика:\n{user_solution}"
+            
+            prompt = f"""Ты — ИИ-тьютор по олимпиадной математике. Проверь решение ученика.
+
+Задача: {task.get('text', '')}
 
 Правильный ответ: {correct_answer}
-Ответ ученика: {user_answer}
-Результат: {'Правильно' if is_correct else 'Неправильно'}
+{f"Эталонное решение: {correct_solution}" if correct_solution else ""}
 
-Дай краткий комментарий (2-3 предложения) на русском языке."""
+Ответ ученика: {user_answer}
+{solution_part}
+
+Результат проверки ответа: {'✅ Правильно' if is_correct else '❌ Неправильно'}
+
+Дай подробный разбор на русском языке:
+1. Если решение написано — оцени ход рассуждений, укажи ошибки или подтверди правильность.
+2. Если ответ неправильный — объясни, как нужно было решать (кратко, 3-5 предложений).
+3. Если ответ правильный — похвали и дай совет для подобных задач.
+Формат: Markdown."""
             
-            ai_feedback = client.generate(prompt, max_tokens=1000)
+            ai_feedback = client.generate(prompt, max_tokens=1500)
         except Exception as e:
             app.logger.error(f"AI feedback error: {e}")
-            ai_feedback = "Отличная работа!" if is_correct else "Попробуй ещё раз!"
+            if is_correct:
+                ai_feedback = "✅ Отличная работа! Ответ верный."
+            else:
+                ai_feedback = f"❌ К сожалению, ответ неверный. Правильный ответ: {correct_answer}"
+                if correct_solution:
+                    ai_feedback += f"\n\n**Решение:**\n{correct_solution}"
     else:
-        ai_feedback = "Правильно! +20 XP" if is_correct else "Неправильно. Попробуй ещё раз!"
+        if is_correct:
+            ai_feedback = "✅ Правильно! +20 XP"
+        else:
+            ai_feedback = f"❌ Неправильно. Правильный ответ: {correct_answer}"
+            if correct_solution:
+                ai_feedback += f"\n\n**Решение:**\n{correct_solution}"
     
     return jsonify({
         'success': True,

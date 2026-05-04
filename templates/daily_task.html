@@ -30,11 +30,18 @@
         <!-- Answer Input -->
         <div class="answer-section">
             <label for="userAnswer" class="answer-label">Ваш ответ:</label>
-            <input type="text" 
-                   id="userAnswer" 
-                   class="answer-input" 
-                   placeholder="Введите ответ"
+            <input type="text"
+                   id="userAnswer"
+                   class="answer-input"
+                   placeholder="Введите краткий ответ (число, выражение)"
                    autocomplete="off">
+            
+            <label for="userSolution" class="answer-label" style="margin-top: 16px;">Решение (необязательно, но ИИ-тьютор проверит):</label>
+            <textarea id="userSolution"
+                      class="answer-input"
+                      placeholder="Опишите ход решения... ИИ-тьютор даст подробный разбор"
+                      rows="5"
+                      style="resize: vertical; min-height: 100px; font-family: inherit;"></textarea>
             
             <button onclick="submitAnswer()" id="submitBtn" class="submit-button">
                 ✓ Проверить
@@ -65,7 +72,9 @@ const taskId = {{ task.get('id', 0) }};
 
 async function submitAnswer() {
     const answerInput = document.getElementById('userAnswer');
+    const solutionInput = document.getElementById('userSolution');
     const answer = answerInput.value.trim();
+    const solution = solutionInput ? solutionInput.value.trim() : '';
     
     if (!answer) {
         alert('Пожалуйста, введите ответ');
@@ -74,7 +83,7 @@ async function submitAnswer() {
     
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ Проверяем...';
+    submitBtn.textContent = '⏳ ИИ-тьютор проверяет...';
     
     try {
         const response = await fetch(`/daily/task/${taskIndex}/submit`, {
@@ -82,7 +91,7 @@ async function submitAnswer() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ answer: answer })
+            body: JSON.stringify({ answer: answer, solution: solution })
         });
         
         const data = await response.json();

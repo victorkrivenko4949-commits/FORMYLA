@@ -165,10 +165,10 @@ def main():
             db.session.execute(
                 db.text("""
                     INSERT INTO daily_problems
-                        (variant_id, position, statement, solution, answer,
-                         topic, difficulty, method, idea_summary, status)
+                        (variant_id, position, problem_text, solution_text, answer,
+                         topic, subtopic, difficulty, method, idea_summary, status)
                     VALUES (:vid, :pos, :stmt, :sol, :ans,
-                            :topic, :diff, :method, :idea, 'approved')
+                            :topic, :subtopic, :diff, :method, :idea, 'approved')
                 """),
                 dict(
                     vid=variant_id, pos=pos,
@@ -176,6 +176,7 @@ def main():
                     sol=problem["solution"],
                     ans=problem["answer"],
                     topic=problem.get("topic", ""),
+                    subtopic=problem.get("method", ""),
                     diff=problem.get("difficulty", 5),
                     method=problem.get("method", ""),
                     idea=problem.get("idea_summary", ""),
