@@ -1,6 +1,6 @@
 # CRITIC PROMPT
 # Model: anthropic/claude-opus-4.1 | Temperature: 0.2
-# Purpose: Score problem quality on 4 dimensions
+# Purpose: Score problem quality on 6 dimensions
 # Input: Problem + solution + answer + analysis context
 # Output: JSON with scores and verdict
 # Threshold: avg >= 8.5 AND min >= 7 to pass
@@ -9,7 +9,7 @@
 
 ## System Message
 
-Ты — строгий рецензент олимпиадных задач. Оцени качество задачи по 4 критериям от 1 до 10. Будь объективен и требователен.
+Ты — строгий рецензент олимпиадных задач. Оцени качество задачи по 6 критериям от 1 до 10. Будь объективен и требователен.
 
 ## User Message Template
 
@@ -30,7 +30,7 @@
 {style_notes}
 
 ═══════════════════════════════════════════════════════
-Оцени задачу по 4 критериям (1-10 каждый):
+Оцени задачу по 6 критериям (1-10 каждый):
 
 1. ОРИГИНАЛЬНОСТЬ (originality):
    10 = абсолютно новая идея, не встречалась в олимпиадах
@@ -57,10 +57,21 @@
    1 = решение неверное или задача нерешаема
 
 5. ОДНОЗНАЧНОСТЬ (unambiguity):
-   10 = условие допускает единственную интерпретацию, ответ единственный
+   10 = условие допускает единственную интерпретацию, ответ единственный,
+        КАЖДЫЙ параметр из условия используется в решении
    7 = мелкая неточность в формулировке, но ответ всё равно однозначен
-   4 = возможны 2 интерпретации условия
+   4 = возможны 2 интерпретации условия ИЛИ есть лишние/неиспользуемые данные
    1 = условие допускает множество трактовок, ответ неоднозначен
+   ВАЖНО: Проверь что КАЖДЫЙ параметр, число и условие из формулировки
+   задачи действительно используется в решении. Если какой-то параметр
+   не влияет на ответ — это признак некорректной задачи (score <= 4).
+
+6. ФОРМАТ ОТВЕТА (format_valid):
+   10 = ответ — конкретное число или математическое выражение
+   7 = ответ — множество конкретных значений
+   1 = ответ — текст, доказательство, "Да/Нет", "Доказано"
+   ⚠️ АВТОМАТИЧЕСКИЙ REJECT если format_valid < 7:
+   Задачи на доказательство, "верно ли", "покажите что" — ЗАПРЕЩЕНЫ.
 
 Также проверь:
 - Нет ли математических ошибок в условии
@@ -74,10 +85,11 @@
     "difficulty_match": число,
     "style_match": число,
     "solvability": число,
-    "unambiguity": число
+    "unambiguity": число,
+    "format_valid": число
   },
-  "avg": число (среднее 5 оценок, округлить до 1 знака),
-  "min": число (минимальная из 5),
+  "avg": число (среднее 6 оценок, округлить до 1 знака),
+  "min": число (минимальная из 6),
   "verdict": "approve" или "reject",
   "issues": ["список проблем, если есть"],
   "suggestions": ["как улучшить, если reject"],
@@ -86,6 +98,7 @@
 
 Порог: avg >= 8.5 И min >= 7 → "approve", иначе "reject".
 Если latex_ok == false → автоматический "reject" независимо от оценок.
+Если format_valid < 7 → автоматический "reject" (задачи-доказательства запрещены).
 ```
 
 ## Few-shot Example
@@ -98,9 +111,10 @@ Output for a good problem:
     "difficulty_match": 9,
     "style_match": 9,
     "solvability": 10,
-    "unambiguity": 9
+    "unambiguity": 9,
+    "format_valid": 10
   },
-  "avg": 9.0,
+  "avg": 9.2,
   "min": 8,
   "verdict": "approve",
   "issues": [],
@@ -109,7 +123,7 @@ Output for a good problem:
 }
 ```
 
-Output for a rejected problem:
+Output for a rejected problem (too easy):
 ```json
 {
   "scores": {
@@ -117,14 +131,34 @@ Output for a rejected problem:
     "difficulty_match": 5,
     "style_match": 8,
     "solvability": 7,
-    "unambiguity": 8
+    "unambiguity": 8,
+    "format_valid": 10
   },
-  "avg": 6.8,
+  "avg": 7.3,
   "min": 5,
   "verdict": "reject",
   "issues": ["Задача слишком простая для позиции 4", "Идея тривиальна"],
   "suggestions": ["Усложнить условие добавлением ограничения", "Использовать менее стандартный метод"],
-  "latex_ok": true,
-  "answer_unambiguous": true
+  "latex_ok": true
+}
+```
+
+Output for a proof problem (auto-reject):
+```json
+{
+  "scores": {
+    "originality": 8,
+    "difficulty_match": 8,
+    "style_match": 9,
+    "solvability": 9,
+    "unambiguity": 7,
+    "format_valid": 1
+  },
+  "avg": 7.0,
+  "min": 1,
+  "verdict": "reject",
+  "issues": ["Задача требует доказательства — запрещённый тип", "Ответ 'Доказано' не является числом"],
+  "suggestions": ["Переформулировать как задачу с числовым ответом"],
+  "latex_ok": true
 }
 ```
