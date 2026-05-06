@@ -130,6 +130,23 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 Если используешь число-год в условии (например, "найдите все натуральные x: x² - y! = N"), число N должно быть равно {current_year} или {current_year}±1. ЗАПРЕЩЕНО использовать 2023, 2024 в варианте {current_year} года.
 
 ═══════════════════════════════════════════════════
+🔢 ОГРАНИЧЕНИЕ НА ПОВТОР СЮЖЕТНЫХ КОНСТАНТ (v2.2)
+═══════════════════════════════════════════════════
+Сюжетные числа-константы (год варианта {current_year}, {current_year}-1, {current_year}+1, а также любые "круглые" числа вида 2025, 2026, 2027) можно использовать МАКСИМУМ В ОДНОЙ задаче из 5 в варианте.
+Если в списке "ЗАДАЧИ, КОТОРЫЕ УЖЕ ЕСТЬ В ЭТОМ ВАРИАНТЕ" уже встречается такая константа — ОБЯЗАН использовать в этой задаче ДРУГИЕ числа:
+  • простые числа (47, 113, 257),
+  • степени (2^k, 3^k),
+  • комбинаторные константы (n!, C(n,k)),
+  • произвольные натуральные числа, подходящие к идее задачи.
+
+═══════════════════════════════════════════════════
+🎨 СТРОГОЕ ПРАВИЛО РАЗНООБРАЗИЯ ТЕМ (v2.2)
+═══════════════════════════════════════════════════
+В одном варианте из 5 задач КАЖДАЯ тема встречается РОВНО ОДИН РАЗ.
+Канонический набор тем варианта: алгебра, геометрия, теория чисел, комбинаторика, логика/игры/инварианты.
+Если выше в блоке "СТРОГО ЗАПРЕЩЕНО ГЕНЕРИРОВАТЬ ЗАДАЧУ ПО ТЕМАМ, УЖЕ ВЗЯТЫМ В ЭТОМ ВАРИАНТЕ" уже указана твоя целевая тема — СМЕНИ тему на одну из НЕвзятых из канонического списка, при этом сохрани сложность и стилистику позиции.
+
+═══════════════════════════════════════════════════
 ✏️ LaTeX (КРИТИЧНО — иначе KaTeX не отрендерит)
 ═══════════════════════════════════════════════════
 - ВСЕГДА \\frac{{a}}{{b}}, НИКОГДА rac{{a}}{{b}} (без обратного слэша — баг!).
@@ -200,13 +217,21 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
         if not data.get(field):
             raise ValueError(f"Generator missing field: {field}")
 
-    # NEW (generator v2): post-process LaTeX bugs in returned strings
+    # NEW (generator v2 / v2.2): post-process LaTeX bugs in returned strings
     def _fix_latex(s):
         if not isinstance(s, str):
             return s
         before = s
-        # rac{...}{...}  not preceded by '\\f' or alpha/backslash -> \\frac
+        # rac{...} not preceded by '\\f' or alpha/backslash -> \\frac{...}
         s = re.sub(r'(?<![\\A-Za-z])rac\{', r'\\frac{', s)
+        # v2.2: inom{...}{...} not preceded by '\\b' -> \\binom{...}{...}
+        s = re.sub(r'(?<![\\A-Za-z])inom\{', r'\\binom{', s)
+        # v2.2: qrt{...} not preceded by '\\s' -> \\sqrt{...}
+        s = re.sub(r'(?<![\\A-Za-z])qrt\{', r'\\sqrt{', s)
+        # v2.2: broken \\right (matches "ight)" "ight]" "ight}" "ight.") not preceded by '\\r'
+        s = re.sub(r'(?<![\\A-Za-z])ight([\)\]\}\.])', r'\\right\1', s)
+        # v2.2: broken \\left (matches "eft(" "eft[" "eft\\{") not preceded by '\\l'
+        s = re.sub(r'(?<![\\A-Za-z])eft([\(\[\\])', r'\\left\1', s)
         # standalone degree symbol -> ^\\circ
         s = s.replace('°', '^\\circ')
         if s != before:
