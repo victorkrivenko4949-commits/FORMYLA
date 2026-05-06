@@ -24,7 +24,10 @@ ANALYZER_TEMPERATURE = 0.3
 GENERATOR_MODEL = os.getenv("GENERATOR_MODEL", "deepseek/deepseek-chat")
 GENERATOR_TEMPERATURE = 0.8
 
-SOLVER_MODEL = os.getenv("SOLVER_MODEL", "openai/o4-mini")
+# Switched from openai/o4-mini → anthropic/claude-sonnet-4.5
+# Reason: OpenAI endpoints return HTTP 403 unsupported_country (RU IP).
+# claude-3.5-sonnet ID is deprecated on OpenRouter (no endpoints), use claude-sonnet-4.5.
+SOLVER_MODEL = os.getenv("SOLVER_MODEL", "anthropic/claude-sonnet-4.5")
 SOLVER_TEMPERATURE = 0.1
 
 CRITIC_MODEL = os.getenv("CRITIC_MODEL", "anthropic/claude-sonnet-4.5")
