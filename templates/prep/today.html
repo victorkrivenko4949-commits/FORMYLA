@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+{% block title %}Задачи на сегодня &mdash; FORMYLA{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/prep.css') }}?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;margin:0 auto;padding:20px 20px 60px;">
+
+<!-- Sticky header -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <a href="{{ url_for('prep.plan_detail', plan_id=plan.id) }}" style="color:#8b5cf6;text-decoration:none;font-weight:600;font-size:.9rem;">&larr; К плану</a>
+    <div style="font-weight:700;color:#fff;font-size:1.1rem;">
+        Задачи на сегодня &mdash;
+        <span id="progressText" style="color:#22d3a6;">{{ day.completed_count }}/{{ day.total_problems }}</span>
+    </div>
+    <div style="color:#94a3b8;font-size:.85rem;">До олимпиады: {{ plan.days_remaining }} дн.</div>
+</div>
+
+<!-- Progress dots -->
+<div id="progressDots" style="display:flex;justify-content:center;gap:10px;margin-bottom:28px;">
+    {% for p in problems %}
+    <div class="pdot" data-idx="{{ loop.index0 }}"
+         style="width:16px;height:16px;border-radius:50%;cursor:pointer;transition:all .2s;
+         background:{{ '#22d3a6' if p.id in completed_ids else '#334155' }};"
+         onclick="showProblem({{ loop.index0 }})"></div>
+    {% endfor %}
+</div>
+
+<!-- Problem cards -->
+{% for p in problems %}
+<div class="problem-slide" id="problem-{{ loop.index0 }}" style="display:{{ 'block' if loop.first else 'none' }};animation:wizFadeIn .3s ease;">
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:28px;">
+        <!-- Topic badge -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <span style="background:#0f172a;color:#8b5cf6;padding:4px 12px;border-radius:6px;font-size:.8rem;font-weight:600;">{{ p.topic }}</span>
+            <span style="background:#0f172a;color:#f59e0b;padding:4px 12px;border-radius:6px;font-size:.8rem;font-weight:600;">Сложность {{ p.difficulty }}</span>
+            <span style="background:#0f172a;color:#64748b;padding:4px 12px;border-radius:6px;font-size:.8rem;font-weight:600;">Задача {{ loop.index }}/{{ problems|length }}</span>
+        </div>
+
+        <!-- Task text -->
+        <div style="color:#e2e8f0;font-size:1.05rem;line-height:1.7;margin-bottom:24px;min-height:120px;" class="task-text">
+            {{ p.task_text }}
+        </div>
+
+        <!-- Answer/Solution area -->
+        <div id="answer-area-{{ loop.index0 }}">
+            {% if p.id in completed_ids %}
+            <div style="padding:12px 16px;border-radius:10px;background:rgba(34,211,166,.1);border:1px solid #22d3a6;color:#22d3a6;font-weight:600;">
+                ✅ Уже решено
+            </div>
+            {% else %}
+            <!-- Mode toggle -->
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <button class="mode-btn active" id="mode-answer-{{ loop.index0 }}"
+                        onclick="setMode({{ loop.index0 }}, 'answer')"
+                        style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#8b5cf6;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;">
+                    ✏️ Краткий ответ
+                </button>
+                <button class="mode-btn" id="mode-solution-{{ loop.index0 }}"
+                        onclick="setMode({{ loop.index0 }}, 'solution')"
+                        style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#64748b;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;">
+                    📝 Полное решение
+                </button>
+            </div>
+
+            <!-- Short answer mode -->
+            <div id="input-mode-answer-{{ loop.index0 }}">
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <input type="text" id="input-{{ loop.index0 }}" placeholder="Введи ответ..."
+                           style="flex:1;padding:12px 16px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;font-size:1rem;"
+                           onkeydown="if(event.key==='Enter')submitSolution({{ loop.index0 }},{{ p.id }})">
+                    <button class="prep-btn prep-btn-primary" onclick="submitSolution({{ loop.index0 }},{{ p.id }})" style="flex-shrink:0;">
+                        Проверить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Full solution mode (hidden by default) -->
+            <div id="input-mode-solution-{{ loop.index0 }}" style="display:none;">
+                <textarea id="solution-input-{{ loop.index0 }}" placeholder="Напиши полное решение задачи...&#10;&#10;Можно использовать LaTeX: $x^2 + y^2 = z^2$&#10;Или просто текст с формулами."
+                          style="width:100%;min-height:160px;padding:14px 16px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;font-size:.95rem;line-height:1.6;resize:vertical;font-family:inherit;"
+                          rows="6"></textarea>
+                <div style="display:flex;gap:10px;margin-top:10px;justify-content:flex-end;">
+                    <button class="prep-btn prep-btn-secondary" onclick="skipProblem({{ loop.index0 }},{{ p.id }})" style="font-size:.85rem;">
+                        ⏭️ Пропустить
+                    </button>
+                    <button class="prep-btn prep-btn-primary" onclick="submitSolution({{ loop.index0 }},{{ p.id }})" id="submit-btn-{{ loop.index0 }}">
+                        🔍 Проверить решение
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feedback area -->
+            <div id="feedback-{{ loop.index0 }}" style="margin-top:12px;min-height:24px;"></div>
+            {% endif %}
+        </div>
+
+        <!-- Solution (hidden until checked) -->
+        <div id="solution-{{ loop.index0 }}" style="display:none;margin-top:16px;padding:16px;background:#0f172a;border-radius:10px;border:1px solid #334155;">
+            <div style="color:#8b5cf6;font-weight:700;margin-bottom:8px;">📖 Эталонное решение:</div>
+            <div style="color:#cbd5e1;font-size:.9rem;line-height:1.6;" class="task-text">{{ p.solution }}</div>
+        </div>
+    </div>
+
+    <!-- Nav between problems -->
+    <div style="display:flex;justify-content:space-between;margin-top:16px;">
+        {% if not loop.first %}
+        <button class="prep-btn prep-btn-secondary" onclick="showProblem({{ loop.index0 - 1 }})">← Предыдущая</button>
+        {% else %}<div></div>{% endif %}
+        {% if not loop.last %}
+        <button class="prep-btn prep-btn-secondary" onclick="showProblem({{ loop.index0 + 1 }})">Следующая →</button>
+        {% else %}<div></div>{% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<!-- Day complete screen -->
+<div id="dayComplete" style="display:none;text-align:center;padding:40px 20px;">
+    <div style="font-size:4rem;margin-bottom:16px;">🎉</div>
+    <h2 style="color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 12px;">День завершён!</h2>
+    <p style="color:#94a3b8;font-size:1.05rem;margin:0 0 24px;" id="dayResultText"></p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="{{ url_for('prep.plan_detail', plan_id=plan.id) }}" class="prep-btn prep-btn-primary">📅 К календарю</a>
+        <a href="{{ url_for('prep.dashboard') }}" class="prep-btn prep-btn-secondary">🏠 На дашборд</a>
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const planId = {{ plan.id }};
+const totalProblems = {{ problems|length }};
+const completedIds = new Set({{ completed_ids|tojson }});
+const modes = {};  // idx -> 'answer' | 'solution'
+const attempts = {};
+let currentIdx = 0;
+let dayScore = {{ day.day_score }};
+
+function showProblem(idx) {
+    document.querySelectorAll('.problem-slide').forEach(el => el.style.display = 'none');
+    const el = document.getElementById('problem-' + idx);
+    if (el) { el.style.display = 'block'; currentIdx = idx; }
+    const inp = document.getElementById('input-' + idx);
+    if (inp && !inp.disabled) setTimeout(() => inp.focus(), 100);
+    updateDots();
+}
+
+function updateDots() {
+    document.querySelectorAll('.pdot').forEach(dot => {
+        const idx = parseInt(dot.dataset.idx);
+        if (completedIds.size > idx) dot.style.background = '#22d3a6';
+        if (idx === currentIdx) { dot.style.transform = 'scale(1.3)'; dot.style.boxShadow = '0 0 8px #8b5cf6'; }
+        else { dot.style.transform = ''; dot.style.boxShadow = ''; }
+    });
+}
+
+function setMode(idx, mode) {
+    modes[idx] = mode;
+    const answerDiv = document.getElementById('input-mode-answer-' + idx);
+    const solutionDiv = document.getElementById('input-mode-solution-' + idx);
+    const btnAnswer = document.getElementById('mode-answer-' + idx);
+    const btnSolution = document.getElementById('mode-solution-' + idx);
+
+    if (mode === 'solution') {
+        if (answerDiv) answerDiv.style.display = 'none';
+        if (solutionDiv) solutionDiv.style.display = 'block';
+        if (btnAnswer) { btnAnswer.style.color = '#64748b'; btnAnswer.style.background = '#0f172a'; }
+        if (btnSolution) { btnSolution.style.color = '#8b5cf6'; btnSolution.style.background = 'rgba(139,92,246,.1)'; }
+        const ta = document.getElementById('solution-input-' + idx);
+        if (ta) setTimeout(() => ta.focus(), 100);
+    } else {
+        if (answerDiv) answerDiv.style.display = 'block';
+        if (solutionDiv) solutionDiv.style.display = 'none';
+        if (btnAnswer) { btnAnswer.style.color = '#8b5cf6'; btnAnswer.style.background = 'rgba(139,92,246,.1)'; }
+        if (btnSolution) { btnSolution.style.color = '#64748b'; btnSolution.style.background = '#0f172a'; }
+        const inp = document.getElementById('input-' + idx);
+        if (inp) setTimeout(() => inp.focus(), 100);
+    }
+}
+
+async function skipProblem(idx, problemId) {
+    const feedback = document.getElementById('feedback-' + idx);
+    if (!feedback) return;
+
+    feedback.innerHTML = '<span style="color:#94a3b8;">Пропускаем...</span>';
+    try {
+        const resp = await fetch(`/prep/${planId}/today/complete/${problemId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({skip: true})
+        });
+        const data = await resp.json();
+        completedIds.add(problemId);
+        dayScore = data.day_score;
+        document.getElementById('progressText').textContent = `${completedIds.size}/${totalProblems}`;
+
+        feedback.innerHTML = '<span style="color:#f59e0b;">⏭️ Пропущено</span>';
+        disableInputs(idx);
+        showSolution(idx);
+        updateDots();
+
+        if (data.day_complete) {
+            setTimeout(() => showDayComplete(), 1500);
+        } else {
+            setTimeout(() => { if (currentIdx < totalProblems - 1) showProblem(currentIdx + 1); }, 2000);
+        }
+    } catch(e) {
+        feedback.innerHTML = '<span style="color:#ef4444;">Ошибка сети</span>';
+    }
+}
+
+async function submitSolution(idx, problemId) {
+    const feedback = document.getElementById('feedback-' + idx);
+    if (!feedback) return;
+
+    const mode = modes[idx] || 'answer';
+    let userAnswer = '';
+    let userSolution = '';
+
+    if (mode === 'solution') {
+        const ta = document.getElementById('solution-input-' + idx);
+        userSolution = ta ? ta.value.trim() : '';
+        if (!userSolution) {
+            feedback.innerHTML = '<span style="color:#f59e0b;">⚠️ Напиши решение</span>';
+            return;
+        }
+    } else {
+        const inp = document.getElementById('input-' + idx);
+        userAnswer = inp ? inp.value.trim() : '';
+        if (!userAnswer) {
+            feedback.innerHTML = '<span style="color:#f59e0b;">⚠️ Введи ответ</span>';
+            return;
+        }
+    }
+
+    attempts[problemId] = (attempts[problemId] || 0) + 1;
+
+    // Show loading
+    const submitBtn = document.getElementById('submit-btn-' + idx);
+    feedback.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:#94a3b8;">
+        <div style="width:18px;height:18px;border:2px solid #8b5cf6;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>
+        ${mode === 'solution' ? 'AI проверяет решение...' : 'Проверяем...'}
+    </div>`;
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+        const resp = await fetch(`/prep/${planId}/today/complete/${problemId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                user_answer: userAnswer,
+                user_solution: userSolution,
+            })
+        });
+        const data = await resp.json();
+        if (submitBtn) submitBtn.disabled = false;
+
+        const fb = data.feedback || {};
+        const isCorrect = data.is_correct;
+
+        if (isCorrect) {
+            // ✅ Correct
+            completedIds.add(problemId);
+            dayScore = data.day_score;
+            document.getElementById('progressText').textContent = `${completedIds.size}/${totalProblems}`;
+
+            let html = '<div style="padding:12px 16px;border-radius:10px;background:rgba(34,211,166,.1);border:1px solid #22d3a6;">';
+            html += '<div style="color:#22d3a6;font-weight:700;font-size:1.05rem;margin-bottom:4px;">✅ Верно!</div>';
+            if (fb.message) html += `<div style="color:#94a3b8;font-size:.9rem;">${escHtml(fb.message)}</div>`;
+            if (fb.score !== undefined) html += `<div style="color:#f59e0b;font-size:.85rem;margin-top:4px;">Баллы: ${fb.score}/2</div>`;
+            html += '</div>';
+            feedback.innerHTML = html;
+
+            disableInputs(idx);
+            showSolution(idx);
+            updateDots();
+
+            if (data.day_complete) {
+                setTimeout(() => showDayComplete(), 2000);
+            } else {
+                setTimeout(() => { if (currentIdx < totalProblems - 1) showProblem(currentIdx + 1); }, 2500);
+            }
+        } else if (fb.verdict === 'partial') {
+            // 🟡 Partial
+            let html = '<div style="padding:12px 16px;border-radius:10px;background:rgba(245,158,11,.1);border:1px solid #f59e0b;">';
+            html += '<div style="color:#f59e0b;font-weight:700;font-size:1.05rem;margin-bottom:4px;">🟡 Частично верно (1/2)</div>';
+            if (fb.message) html += `<div style="color:#cbd5e1;font-size:.9rem;margin-bottom:6px;">${escHtml(fb.message)}</div>`;
+            if (fb.errors && fb.errors.length) {
+                html += '<div style="color:#ef4444;font-size:.85rem;">Ошибки: ' + fb.errors.map(e => escHtml(e)).join('; ') + '</div>';
+            }
+            if (fb.hint) html += `<div style="color:#8b5cf6;font-size:.85rem;margin-top:4px;">💡 ${escHtml(fb.hint)}</div>`;
+            html += '</div>';
+
+            if (attempts[problemId] >= 2) {
+                // Mark as completed after 2 attempts
+                completedIds.add(problemId);
+                document.getElementById('progressText').textContent = `${completedIds.size}/${totalProblems}`;
+                disableInputs(idx);
+                showSolution(idx);
+                updateDots();
+            }
+            feedback.innerHTML = html;
+        } else {
+            // ❌ Wrong
+            let html = '<div style="padding:12px 16px;border-radius:10px;background:rgba(239,68,68,.1);border:1px solid #ef4444;">';
+            html += '<div style="color:#ef4444;font-weight:700;font-size:1.05rem;margin-bottom:4px;">❌ Неверно</div>';
+            if (fb.message) html += `<div style="color:#cbd5e1;font-size:.9rem;margin-bottom:6px;">${escHtml(fb.message)}</div>`;
+            if (fb.errors && fb.errors.length) {
+                html += '<div style="color:#ef4444;font-size:.85rem;">Ошибки: ' + fb.errors.map(e => escHtml(e)).join('; ') + '</div>';
+            }
+            if (fb.hint) html += `<div style="color:#8b5cf6;font-size:.85rem;margin-top:4px;">💡 ${escHtml(fb.hint)}</div>`;
+            if (fb.correct_answer) html += `<div style="color:#64748b;font-size:.85rem;margin-top:4px;">Правильный ответ: ${escHtml(fb.correct_answer)}</div>`;
+            html += '</div>';
+
+            if (attempts[problemId] >= 2) {
+                completedIds.add(problemId);
+                document.getElementById('progressText').textContent = `${completedIds.size}/${totalProblems}`;
+                disableInputs(idx);
+                showSolution(idx);
+                updateDots();
+                if (data.day_complete) {
+                    setTimeout(() => showDayComplete(), 2000);
+                }
+            } else {
+                html += '<div style="color:#94a3b8;font-size:.82rem;margin-top:8px;">Попытка ' + attempts[problemId] + '/2. Попробуй ещё!</div>';
+            }
+            feedback.innerHTML = html;
+        }
+
+        // Re-render math in feedback
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(feedback);
+        }
+
+    } catch(e) {
+        if (submitBtn) submitBtn.disabled = false;
+        feedback.innerHTML = '<span style="color:#ef4444;">Ошибка сети. Попробуй ещё раз.</span>';
+    }
+}
+
+function disableInputs(idx) {
+    const inp = document.getElementById('input-' + idx);
+    const ta = document.getElementById('solution-input-' + idx);
+    const modeA = document.getElementById('mode-answer-' + idx);
+    const modeS = document.getElementById('mode-solution-' + idx);
+    if (inp) inp.disabled = true;
+    if (ta) ta.disabled = true;
+    if (modeA) modeA.disabled = true;
+    if (modeS) modeS.disabled = true;
+}
+
+function showSolution(idx) {
+    const sol = document.getElementById('solution-' + idx);
+    if (sol) {
+        sol.style.display = 'block';
+        if (typeof renderMathInElement === 'function') renderMathInElement(sol);
+    }
+}
+
+function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+function showDayComplete() {
+    document.querySelectorAll('.problem-slide').forEach(el => el.style.display = 'none');
+    const dc = document.getElementById('dayComplete');
+    dc.style.display = 'block';
+    document.getElementById('dayResultText').textContent =
+        `Ты решил ${dayScore} из ${totalProblems} задач. Отлично!`;
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'TEXTAREA') return;  // Don't intercept in textarea
+    if (e.key === 'ArrowRight' && currentIdx < totalProblems - 1) showProblem(currentIdx + 1);
+    if (e.key === 'ArrowLeft' && currentIdx > 0) showProblem(currentIdx - 1);
+});
+
+// Re-render math
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof renderMathInElement === 'function') {
+        document.querySelectorAll('.task-text').forEach(el => renderMathInElement(el));
+    }
+    updateDots();
+});
+</script>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}

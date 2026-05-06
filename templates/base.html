@@ -99,6 +99,10 @@
                 <div class="nav-menu">
                     <a href="{{ url_for('olympiads') }}">📖 Каталог</a>
                     <a href="/practice">✍️ Написать олимпиаду</a>
+                    <a href="/olympiad-prep">🎯 Подготовка к олимпиадам</a>
+                    {% if current_user.is_authenticated %}
+                    <a href="/prep">📅 Мои планы подготовки</a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -231,6 +235,16 @@
 
             <div class="drawer-divider"></div>
             <div class="drawer-section-title">Олимпиады</div>
+            <a href="/olympiad-prep" class="drawer-link">
+                <span class="drawer-link-icon">🎯</span>
+                Подготовка к олимпиадам
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="/prep" class="drawer-link">
+                <span class="drawer-link-icon">📅</span>
+                Мои планы подготовки
+            </a>
+            {% endif %}
             <a href="{{ url_for('olympiads') }}" class="drawer-link">
                 <span class="drawer-link-icon">📖</span>
                 Каталог олимпиад

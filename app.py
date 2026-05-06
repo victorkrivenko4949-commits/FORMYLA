@@ -423,6 +423,30 @@ mail = Mail(app)
 from routes.daily_olympiad import daily_olympiad_bp
 app.register_blueprint(daily_olympiad_bp)
 
+try:
+    from routes.prep import prep_bp
+    app.register_blueprint(prep_bp)
+    print("[BP] prep_bp registered (/prep)")
+except Exception as _e:
+    print(f"[BP] prep_bp NOT registered: {_e}")
+
+try:
+    from routes.olympiad_prep import olympiad_prep_bp
+    app.register_blueprint(olympiad_prep_bp)
+    print("[BP] olympiad_prep_bp registered (/olympiad-prep)")
+except Exception as _e:
+    print(f"[BP] olympiad_prep_bp NOT registered: {_e}")
+
+try:
+    from routes.account import account_bp
+    app.register_blueprint(account_bp)
+    print("[BP] account_bp registered (/account)")
+except Exception as _e:
+    print(f"[BP] account_bp NOT registered: {_e}")
+
+# Limit upload size to 5 MB (for solution photos)
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+
 # ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
 @app.errorhandler(500)
 def internal_error(e):
@@ -2178,21 +2202,11 @@ def yandex_login_start():
 
 @app.route("/yandex_receiver")
 def yandex_receiver():
-    """Техническая страница для Яндекс OAuth виджета."""
-    html = f'''<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8" />
-    <title>Ожидание...</title>
-    <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js"></script>
-</head>
-<body>
-    <script>
-        window.YaSendSuggestToken("{app.config['DOMAIN_URL']}");
-    </script>
-</body>
-</html>'''
-    return html
+    """
+    OAuth callback page: parses #access_token from URL fragment and POSTs it
+    to /auth/yandex/login for server-side processing.
+    """
+    return render_template('yandex_receiver.html')
 
 
 @app.route("/link_yandex")

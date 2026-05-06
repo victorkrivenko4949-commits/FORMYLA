@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Создать план подготовки — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/prep.css') }}?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+<div class="wiz-wrap">
+    <div class="wiz-back">
+        <a href="{{ url_for('prep.dashboard') }}">← Моя подготовка</a>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="wiz-steps" role="tablist">
+        <div class="wiz-step-dot active" id="dot-1" role="tab" aria-label="Шаг 1">1</div>
+        <div class="wiz-step-line" id="line-1"></div>
+        <div class="wiz-step-dot" id="dot-2" role="tab" aria-label="Шаг 2">2</div>
+        <div class="wiz-step-line" id="line-2"></div>
+        <div class="wiz-step-dot" id="dot-3" role="tab" aria-label="Шаг 3">3</div>
+        <div class="wiz-step-line" id="line-3"></div>
+        <div class="wiz-step-dot" id="dot-4" role="tab" aria-label="Шаг 4">4</div>
+    </div>
+
+    <!-- ═══ Step 1: Choose olympiad ═══ -->
+    <div class="wiz-block active" id="step-1" role="tabpanel" aria-labelledby="dot-1">
+        <h2 class="wiz-title">🏆 Выбери олимпиаду</h2>
+        <p class="wiz-subtitle">К какой олимпиаде ты хочешь подготовиться?</p>
+
+        <div class="wiz-oly-grid">
+            {% for o in olympiads %}
+            <div class="wiz-oly-card" data-slug="{{ o.slug }}" data-name="{{ o.name }}"
+                 data-short="{{ o.short_name }}" data-color="{{ o.color_hex }}"
+                 data-stages='{{ o.stages_list | tojson }}'
+                 data-grades='{{ o.grades_list | tojson }}'
+                 onclick="selectOlympiad(this)" tabindex="0"
+                 aria-label="{{ o.name }}">
+                <div style="font-size:1.8rem;">🏅</div>
+                <div class="wiz-oly-name">{{ o.short_name }}</div>
+                <div class="wiz-oly-grades">{{ o.grades_display }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="wiz-nav">
+            <div></div>
+            <button class="wiz-nav-btn next" id="btn-next-1" disabled onclick="goToStep(2)" aria-label="Далее">
+                Далее →
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══ Step 2: Choose stage ═══ -->
+    <div class="wiz-block" id="step-2" role="tabpanel" aria-labelledby="dot-2">
+        <h2 class="wiz-title">📋 Выбери этап</h2>
+        <p class="wiz-subtitle">К какому этапу олимпиады готовишься?</p>
+
+        <div class="wiz-stages" id="stages-list">
+            <!-- Filled by JS -->
+        </div>
+
+        <div class="wiz-nav">
+            <button class="wiz-nav-btn back" onclick="goToStep(1)" aria-label="Назад">← Назад</button>
+            <button class="wiz-nav-btn next" id="btn-next-2" disabled onclick="goToStep(3)" aria-label="Далее">
+                Далее →
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══ Step 3: Baseline ═══ -->
+    <div class="wiz-block" id="step-3" role="tabpanel" aria-labelledby="dot-3">
+        <h2 class="wiz-title">📊 Определи свой уровень</h2>
+        <p class="wiz-subtitle">Как определить твои сильные и слабые стороны?</p>
+
+        <div class="wiz-baseline-opts">
+            <div class="wiz-baseline-card {{ '' if has_radar else 'disabled' }}"
+                 data-baseline="radar" onclick="selectBaseline(this)" tabindex="0"
+                 aria-label="Использовать Радар">
+                <div class="wiz-baseline-icon">✅</div>
+                <div class="wiz-baseline-title">Использовать мой Радар</div>
+                <div class="wiz-baseline-desc">
+                    {% if has_radar %}
+                    Твои текущие навыки:
+                    {% for topic, skill in user_radar.items() %}
+                        {{ topic_names.get(topic, topic) }}: {{ skill }}%{{ ', ' if not loop.last else '' }}
+                    {% endfor %}
+                    {% else %}
+                    У тебя пока нет данных Радара. Пройди адаптивный тест.
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="wiz-baseline-card" data-baseline="adaptive_test"
+                 onclick="selectBaseline(this)" tabindex="0"
+                 aria-label="Пройти адаптивный тест">
+                <div class="wiz-baseline-icon">🧪</div>
+                <div class="wiz-baseline-title">Пройти адаптивный тест</div>
+                <div class="wiz-baseline-desc">
+                    25 задач, ~30 минут. AI точно определит твой уровень по 6 темам. Рекомендуется!
+                </div>
+            </div>
+        </div>
+
+        <div class="wiz-nav">
+            <button class="wiz-nav-btn back" onclick="goToStep(2)" aria-label="Назад">← Назад</button>
+            <button class="wiz-nav-btn next" id="btn-next-3" disabled onclick="goToStep(4)" aria-label="Далее">
+                Далее →
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══ Step 4: Confirm ═══ -->
+    <div class="wiz-block" id="step-4" role="tabpanel" aria-labelledby="dot-4">
+        <h2 class="wiz-title">🚀 Подтверждение</h2>
+        <p class="wiz-subtitle">Проверь параметры и создай план!</p>
+
+        <div class="wiz-summary">
+            <div class="wiz-summary-row">
+                <span class="wiz-summary-label">Олимпиада</span>
+                <span class="wiz-summary-value" id="sum-olympiad">—</span>
+            </div>
+            <div class="wiz-summary-row">
+                <span class="wiz-summary-label">Этап</span>
+                <span class="wiz-summary-value" id="sum-stage">—</span>
+            </div>
+            <div class="wiz-summary-row">
+                <span class="wiz-summary-label">Дата олимпиады</span>
+                <span class="wiz-summary-value" id="sum-date">—</span>
+            </div>
+            <div class="wiz-summary-row">
+                <span class="wiz-summary-label">Дней подготовки</span>
+                <span class="wiz-summary-value" id="sum-days">—</span>
+            </div>
+            <div class="wiz-summary-row">
+                <span class="wiz-summary-label">Задач в день</span>
+                <span class="wiz-summary-value" id="sum-tasks">5</span>
+            </div>
+            <div class="wiz-summary-row">
+                <span class="wiz-summary-label">Baseline</span>
+                <span class="wiz-summary-value" id="sum-baseline">Радар</span>
+            </div>
+        </div>
+
+        <div class="wiz-motivation">
+            <p>💪 За <span id="mot-days">—</span> дней ты можешь улучшить Радар в среднем на 35–50 пунктов. Пошли!</p>
+        </div>
+
+        <div class="wiz-nav">
+            <button class="wiz-nav-btn back" onclick="goToStep(3)" aria-label="Назад">← Назад</button>
+            <button class="wiz-nav-btn submit" onclick="submitPlan()" aria-label="Создать план">
+                🚀 Создать план
+            </button>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div class="wiz-loader" id="wiz-loader">
+        <div class="wiz-loader-spinner"></div>
+        <p style="color:#94a3b8;">Создаём персональный план...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/prep.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}{{ olympiad.name }} — Подготовка | FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Olympiad Prep: Detail ────────────────────────────────── */
+.opd-back {
+    padding: 24px 20px 0;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.opd-back a {
+    color: #8b5cf6;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .9rem;
+    transition: color .2s;
+}
+.opd-back a:hover { color: #a78bfa; }
+
+.opd-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+.opd-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    flex-shrink: 0;
+    border: 2px solid var(--accent);
+}
+.opd-logo img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+.opd-title-block h1 {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 6px;
+}
+.opd-title-block .opd-short {
+    color: #64748b;
+    font-size: .9rem;
+    font-weight: 500;
+}
+
+/* Content sections */
+.opd-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.opd-section {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 24px;
+}
+.opd-section h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 14px;
+}
+.opd-section p,
+.opd-section li {
+    color: #cbd5e1;
+    font-size: .95rem;
+    line-height: 1.65;
+}
+
+/* Stages */
+.opd-stages {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.opd-stages li {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.opd-stage-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0f172a;
+    font-size: .8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.opd-stage-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.opd-stage-name {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #fff;
+}
+.opd-stage-date {
+    font-size: .82rem;
+    font-weight: 400;
+    color: #94a3b8;
+}
+
+/* Grades badges */
+.opd-grades {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.opd-grade-badge {
+    background: #0f172a;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: .85rem;
+    padding: 6px 14px;
+    border-radius: 8px;
+}
+
+/* Official link */
+.opd-official {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #8b5cf6;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: .95rem;
+    transition: color .2s;
+}
+.opd-official:hover { color: #a78bfa; }
+
+/* ── Personal plan section ─────────────────────────────── */
+.opd-plan-section {
+    background: linear-gradient(135deg, rgba(34,211,166,.10), rgba(139,92,246,.08));
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 28px 24px;
+}
+.opd-plan-section h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 16px;
+}
+
+/* Active plan card */
+.opd-plan-active {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.opd-plan-info {
+    flex: 1;
+    min-width: 200px;
+}
+.opd-plan-stage {
+    color: #22d3a6;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 6px;
+}
+.opd-plan-meta {
+    color: #94a3b8;
+    font-size: .88rem;
+    line-height: 1.6;
+}
+.opd-plan-meta strong {
+    color: #cbd5e1;
+}
+.opd-plan-progress {
+    width: 100%;
+    max-width: 280px;
+    height: 8px;
+    background: #0f172a;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+.opd-plan-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #22d3a6, #8b5cf6);
+    border-radius: 4px;
+    transition: width .4s ease;
+}
+.opd-plan-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.opd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: .95rem;
+    text-decoration: none;
+    transition: all .2s;
+    border: none;
+    cursor: pointer;
+}
+.opd-btn-primary {
+    background: linear-gradient(135deg, #22d3a6, #1ab394);
+    color: #0f172a;
+}
+.opd-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34,211,166,.3);
+}
+.opd-btn-secondary {
+    background: transparent;
+    border: 1px solid #334155;
+    color: #cbd5e1;
+    font-size: .85rem;
+    padding: 8px 16px;
+}
+.opd-btn-secondary:hover {
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+/* CTA for new plan */
+.opd-plan-cta {
+    text-align: center;
+}
+.opd-plan-cta p {
+    color: #94a3b8;
+    font-size: .95rem;
+    margin: 0 0 18px;
+    line-height: 1.6;
+}
+
+/* Login prompt */
+.opd-login-prompt {
+    text-align: center;
+}
+.opd-login-prompt p {
+    color: #94a3b8;
+    font-size: .95rem;
+    margin: 0 0 14px;
+}
+.opd-login-link {
+    color: #8b5cf6;
+    font-weight: 600;
+    text-decoration: none;
+}
+.opd-login-link:hover { color: #a78bfa; }
+
+/* Streak badge */
+.opd-streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(245,158,11,.15);
+    color: #f59e0b;
+    font-weight: 700;
+    font-size: .82rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+
+@media (max-width: 640px) {
+    .opd-header { flex-direction: column; align-items: center; text-align: center; padding-top: 20px; }
+    .opd-title-block h1 { font-size: 1.3rem; }
+    .opd-section { padding: 18px; }
+    .opd-plan-active { flex-direction: column; text-align: center; }
+    .opd-plan-actions { width: 100%; }
+    .opd-btn { width: 100%; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="opd-back">
+    <a href="{{ url_for('olympiad_prep.index') }}">← Все олимпиады</a>
+</div>
+
+<div class="opd-header" style="--accent: {{ olympiad.color_hex }};">
+    <div class="opd-logo" style="--accent: {{ olympiad.color_hex }};">
+        {% if olympiad.logo_path %}
+            <img src="{{ olympiad.logo_path }}" alt="{{ olympiad.short_name }}"
+                 onerror="this.style.display='none'; this.parentElement.textContent='🏅';">
+        {% else %}
+            🏅
+        {% endif %}
+    </div>
+    <div class="opd-title-block">
+        <h1>{{ olympiad.name }}</h1>
+        <span class="opd-short">{{ olympiad.short_name }} · {{ olympiad.grades_display }}</span>
+    </div>
+</div>
+
+<div class="opd-content" style="--accent: {{ olympiad.color_hex }};">
+    <!-- Описание -->
+    <div class="opd-section">
+        <h2>📖 Описание</h2>
+        <p>{{ olympiad.description }}</p>
+    </div>
+
+    <!-- Этапы -->
+    {% if olympiad.stages_list %}
+    <div class="opd-section">
+        <h2>📋 Этапы олимпиады</h2>
+        <ul class="opd-stages">
+            {% for stage in olympiad.stages_list %}
+            <li>
+                <span class="opd-stage-num">{{ loop.index }}</span>
+                <div class="opd-stage-info">
+                    {% if stage is mapping %}
+                        <span class="opd-stage-name">{{ stage.name }}</span>
+                        {% if stage.date_range %}
+                        <span class="opd-stage-date">📅 {{ stage.date_range }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="opd-stage-name">{{ stage }}</span>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Классы -->
+    <div class="opd-section">
+        <h2>🎓 Классы участников</h2>
+        <div class="opd-grades">
+            {% for g in olympiad.grades_list %}
+            <span class="opd-grade-badge">{{ g }} класс</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Официальный сайт -->
+    {% if olympiad.official_url %}
+    <div class="opd-section">
+        <h2>🔗 Официальный сайт</h2>
+        <a href="{{ olympiad.official_url }}" target="_blank" rel="noopener" class="opd-official">
+            {{ olympiad.official_url }} ↗
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Персональный план подготовки -->
+    <div class="opd-plan-section">
+        <h2>🎯 Персональный план подготовки</h2>
+
+        {% if user_plan %}
+        {# ── User has an active/paused plan ── #}
+        <div class="opd-plan-active">
+            <div class="opd-plan-info">
+                <div class="opd-plan-stage">
+                    {{ user_plan.target_stage }}
+                    {% if user_plan.current_streak >= 3 %}
+                    <span class="opd-streak-badge">🔥 {{ user_plan.current_streak }} дн.</span>
+                    {% endif %}
+                </div>
+                <div class="opd-plan-meta">
+                    День <strong>{{ user_plan.days_elapsed }}</strong> из <strong>{{ user_plan.days_total }}</strong>
+                    · Осталось <strong>{{ user_plan.days_remaining }}</strong> дн.<br>
+                    Завершено дней: <strong>{{ user_plan.completed_days_count }}</strong>
+                    {% if user_plan.status == 'paused' %}
+                    · <span style="color:#f59e0b;">⏸ На паузе</span>
+                    {% endif %}
+                </div>
+                <div class="opd-plan-progress">
+                    <div class="opd-plan-progress-bar" style="width: {{ user_plan.progress_pct }}%;"></div>
+                </div>
+            </div>
+            <div class="opd-plan-actions">
+                <a href="{{ url_for('prep.today_problems', plan_id=user_plan.id) }}" class="opd-btn opd-btn-primary">
+                    ▶ Задачи на сегодня
+                </a>
+                <a href="{{ url_for('prep.plan_detail', plan_id=user_plan.id) }}" class="opd-btn opd-btn-secondary">
+                    📊 Детали плана
+                </a>
+            </div>
+        </div>
+
+        {% elif current_user.is_authenticated %}
+        {# ── Logged in but no plan yet ── #}
+        <div class="opd-plan-cta">
+            <p>AI составит индивидуальный план подготовки к {{ olympiad.short_name }} с учётом твоего уровня и сроков.</p>
+            <a href="{{ url_for('prep.new_plan_form') }}?olympiad={{ olympiad.slug }}" class="opd-btn opd-btn-primary">
+                🚀 Создать план подготовки
+            </a>
+        </div>
+
+        {% else %}
+        {# ── Not logged in ── #}
+        <div class="opd-login-prompt">
+            <p>Войди, чтобы создать персональный план подготовки к {{ olympiad.short_name }}.</p>
+            <a href="{{ url_for('login') }}" class="opd-login-link">Войти →</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

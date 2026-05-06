@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Подготовка к олимпиадам — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Olympiad Prep: Index ─────────────────────────────────── */
+.op-hero {
+    text-align: center;
+    padding: 48px 20px 32px;
+}
+.op-hero h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 12px;
+}
+.op-hero h1 span { color: #22d3a6; }
+.op-hero p {
+    color: #94a3b8;
+    font-size: 1.05rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Grid */
+.op-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+/* Card */
+.op-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+}
+.op-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--card-accent, #22d3a6);
+    border-radius: 16px 16px 0 0;
+}
+.op-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--card-accent, #22d3a6);
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+}
+
+.op-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.op-card-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+}
+.op-card-logo img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+.op-card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+}
+.op-card-short {
+    font-size: .8rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.op-card-desc {
+    color: #94a3b8;
+    font-size: .9rem;
+    line-height: 1.55;
+    flex: 1;
+}
+
+.op-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.op-tag {
+    background: #0f172a;
+    color: #cbd5e1;
+    font-size: .78rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.op-card-btn {
+    display: inline-block;
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .9rem;
+    color: #fff;
+    background: var(--card-accent, #22d3a6);
+    text-decoration: none;
+    transition: opacity .2s;
+}
+.op-card-btn:hover { opacity: .85; }
+
+/* Calendar link */
+.op-calendar-link {
+    text-align: center;
+    padding: 0 20px 40px;
+}
+.op-calendar-link a {
+    color: #8b5cf6;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border-bottom: 2px dashed #8b5cf6;
+    padding-bottom: 2px;
+    transition: color .2s;
+}
+.op-calendar-link a:hover { color: #a78bfa; }
+
+@media (max-width: 640px) {
+    .op-hero h1 { font-size: 1.5rem; }
+    .op-grid { grid-template-columns: 1fr; gap: 16px; padding: 0 12px 40px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="op-hero">
+    <h1>🏆 Подготовка к <span>олимпиадам</span></h1>
+    <p>Выбери олимпиаду — мы поможем подготовиться. Разборы задач, этапы, советы и персональный план.</p>
+</section>
+
+<div class="op-grid">
+    {% for o in olympiads %}
+    <div class="op-card" style="--card-accent: {{ o.color_hex }};">
+        <div class="op-card-header">
+            <div class="op-card-logo">
+                {% if o.logo_path %}
+                    <img src="{{ o.logo_path }}" alt="{{ o.short_name }}" onerror="this.style.display='none'; this.parentElement.textContent='🏅';">
+                {% else %}
+                    🏅
+                {% endif %}
+            </div>
+            <div>
+                <div class="op-card-title">{{ o.name }}</div>
+                <div class="op-card-short">{{ o.short_name }}</div>
+            </div>
+        </div>
+
+        <div class="op-card-desc">
+            {{ o.description[:160] }}{% if o.description|length > 160 %}…{% endif %}
+        </div>
+
+        <div class="op-card-meta">
+            <span class="op-tag">📚 {{ o.grades_display }}</span>
+            {% for stage in o.stages_list[:2] %}
+                <span class="op-tag">{{ stage.name if stage is mapping else stage }}</span>
+            {% endfor %}
+            {% if o.stages_list|length > 2 %}
+                <span class="op-tag">+{{ o.stages_list|length - 2 }}</span>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('olympiad_prep.detail', slug=o.slug) }}" class="op-card-btn">
+            Подробнее →
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="op-calendar-link">
+    <a href="{{ url_for('olympiad_prep.calendar') }}">📅 Календарь олимпиад России</a>
+</div>
+{% endblock %}

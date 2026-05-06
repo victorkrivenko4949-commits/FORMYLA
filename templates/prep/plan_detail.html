@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}{{ plan.olympiad.short_name }} &middot; {{ plan.target_stage }} &mdash; FORMYLA{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/prep.css') }}?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:24px 20px 60px;">
+
+<!-- Breadcrumbs -->
+<div style="margin-bottom:20px;">
+    <a href="{{ url_for('prep.dashboard') }}" style="color:#8b5cf6;text-decoration:none;font-weight:600;font-size:.9rem;">&#x1F3AF; &#x041C;&#x043E;&#x044F; &#x043F;&#x043E;&#x0434;&#x0433;&#x043E;&#x0442;&#x043E;&#x0432;&#x043A;&#x0430;</a>
+    <span style="color:#64748b;margin:0 8px;">&rarr;</span>
+    <span style="color:#cbd5e1;font-size:.9rem;">{{ plan.olympiad.short_name }} &middot; {{ plan.target_stage }}</span>
+</div>
+
+<!-- Hero -->
+<div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:28px;margin-bottom:24px;">
+    <h1 style="font-size:1.6rem;font-weight:800;color:#fff;margin:0 0 6px;">{{ plan.olympiad.name }}</h1>
+    <div style="color:#94a3b8;font-size:.95rem;margin-bottom:16px;">{{ plan.target_stage }}</div>
+    <div style="font-size:1.1rem;color:#22d3a6;font-weight:700;margin-bottom:16px;" id="countdown-timer">
+        &#x0414;&#x043E; &#x043E;&#x043B;&#x0438;&#x043C;&#x043F;&#x0438;&#x0430;&#x0434;&#x044B;: <strong>{{ plan.days_remaining }}</strong> &#x0434;&#x043D;&#x0435;&#x0439;
+    </div>
+    <div class="prep-progress" style="height:12px;margin-bottom:8px;">
+        <div class="prep-progress-fill" style="width:{{ plan.progress_pct }}%;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <span style="color:#94a3b8;font-size:.85rem;">{{ plan.progress_pct }}% &#x043F;&#x0440;&#x043E;&#x0439;&#x0434;&#x0435;&#x043D;&#x043E;</span>
+        <span class="prep-card-status {{ plan.status }}">
+            {{ '&#x25B6; &#x0410;&#x043A;&#x0442;&#x0438;&#x0432;&#x0435;&#x043D;' if plan.status == 'active' else '&#x23F8; &#x041F;&#x0430;&#x0443;&#x0437;&#x0430;' if plan.status == 'paused' else plan.status }}
+        </span>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+        <a href="{{ url_for('prep.today_problems', plan_id=plan.id) }}" class="prep-btn prep-btn-primary" style="font-size:.95rem;padding:12px 24px;">
+            &#x1F4C5; &#x0417;&#x0430;&#x0434;&#x0430;&#x0447;&#x0438; &#x043D;&#x0430; &#x0441;&#x0435;&#x0433;&#x043E;&#x0434;&#x043D;&#x044F; &rarr;
+        </a>
+        {% if plan.status == 'active' %}
+        <button class="prep-btn prep-btn-secondary" onclick="fetch('/prep/{{ plan.id }}/pause',{method:'POST'}).then(()=>location.reload())">&#x23F8; &#x041F;&#x0430;&#x0443;&#x0437;&#x0430;</button>
+        {% elif plan.status == 'paused' %}
+        <button class="prep-btn prep-btn-secondary" onclick="fetch('/prep/{{ plan.id }}/resume',{method:'POST'}).then(()=>location.reload())">&#x25B6; &#x041F;&#x0440;&#x043E;&#x0434;&#x043E;&#x043B;&#x0436;&#x0438;&#x0442;&#x044C;</button>
+        {% endif %}
+        <button class="prep-btn prep-btn-danger" onclick="if(confirm('&#x0423;&#x0434;&#x0430;&#x043B;&#x0438;&#x0442;&#x044C; &#x043F;&#x043B;&#x0430;&#x043D;?'))fetch('/prep/{{ plan.id }}',{method:'DELETE'}).then(()=>location.href='/prep/')">&#x1F5D1;</button>
+    </div>
+</div>
+
+<!-- Radar -->
+<div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:24px;margin-bottom:24px;">
+    <h2 class="prep-section-title" style="padding:0;">&#x1F4CA; &#x0422;&#x0432;&#x043E;&#x0439; &#x043F;&#x0440;&#x043E;&#x0433;&#x0440;&#x0435;&#x0441;&#x0441; &mdash; &#x0420;&#x0430;&#x0434;&#x0430;&#x0440;</h2>
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <canvas id="radarChart" width="360" height="280" style="max-width:100%;"></canvas>
+        <div style="flex:1;min-width:200px;">
+            {% set bl = plan.baseline_radar_dict %}
+            {% set cr = plan.current_radar_dict %}
+            {% for t in ['algebra','geometry','combinatorics','number_theory','movement','knights_liars'] %}
+            {% set d = (cr.get(t,50) - bl.get(t,50))|int %}
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(51,65,85,.4);font-size:.88rem;">
+                <span style="color:#cbd5e1;">{{ topic_names.get(t, t) }}</span>
+                <span style="color:{{ '#22d3a6' if d > 0 else '#ef4444' if d < 0 else '#64748b' }};font-weight:600;">
+                    {{ ('+' ~ d) if d > 0 else d }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Calendar -->
+<div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:24px;margin-bottom:24px;">
+    <h2 class="prep-section-title" style="padding:0;">&#x1F4C5; &#x041A;&#x0430;&#x043B;&#x0435;&#x043D;&#x0434;&#x0430;&#x0440;&#x044C; &#x043F;&#x043E;&#x0434;&#x0433;&#x043E;&#x0442;&#x043E;&#x0432;&#x043A;&#x0438;</h2>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:8px;">
+        <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x041F;&#x043D;</span>
+        <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x0412;&#x0442;</span>
+        <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x0421;&#x0440;</span>
+        <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x0427;&#x0442;</span>
+        <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x041F;&#x0442;</span>
+        <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x0421;&#x0431;</span>
+        <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x0412;&#x0441;</span>
+    </div>
+    <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+</div>
+
+<!-- Stats -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
+    <div class="prep-tip"><div class="prep-tip-icon">&#x1F4C8;</div><h3>&#x0420;&#x0435;&#x0448;&#x0435;&#x043D;&#x043E; &#x0437;&#x0430;&#x0434;&#x0430;&#x0447;</h3><p style="font-size:1.4rem;font-weight:800;color:#22d3a6;">{{ total_solved }}</p></div>
+    <div class="prep-tip"><div class="prep-tip-icon">&#x2B50;</div><h3>Variant-&#x0434;&#x043D;&#x0438;</h3><p style="font-size:1.4rem;font-weight:800;color:#8b5cf6;">{{ variant_days_done }}/{{ variant_days_total }}</p></div>
+    <div class="prep-tip"><div class="prep-tip-icon">&#x2705;</div><h3>&#x0414;&#x043D;&#x0435;&#x0439; &#x0432;&#x044B;&#x043F;&#x043E;&#x043B;&#x043D;&#x0435;&#x043D;&#x043E;</h3><p style="font-size:1.4rem;font-weight:800;color:#22d3a6;">{{ completed_days }}</p></div>
+    <div class="prep-tip"><div class="prep-tip-icon">&#x1F3AF;</div><h3>&#x0421;&#x0440;&#x0435;&#x0434;&#x043D;&#x0438;&#x0439; score</h3><p style="font-size:1.4rem;font-weight:800;color:#f59e0b;">{{ avg_score }}/{{ plan.daily_task_count }}</p></div>
+</div>
+
+</div>
+
+<!-- Day modal -->
+<div id="dayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:28px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;">
+        <h3 id="modalTitle" style="color:#fff;margin:0 0 16px;font-size:1.1rem;"></h3>
+        <div id="modalContent" style="color:#cbd5e1;font-size:.9rem;"></div>
+        <button onclick="document.getElementById('dayModal').style.display='none'" class="prep-btn prep-btn-secondary" style="margin-top:16px;">&#x0417;&#x0430;&#x043A;&#x0440;&#x044B;&#x0442;&#x044C;</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calendar data
+const daysData = {{ days_json|safe }};
+const planId = {{ plan.id }};
+
+// Build calendar grid
+(function buildCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    if (!grid || !daysData.length) return;
+
+    // Find first day's weekday (0=Mon in ISO)
+    const firstDate = new Date(daysData[0].date);
+    let startDow = firstDate.getDay(); // 0=Sun
+    startDow = startDow === 0 ? 6 : startDow - 1; // Convert to 0=Mon
+
+    // Add empty cells for alignment
+    for (let i = 0; i < startDow; i++) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'aspect-ratio:1;';
+        grid.appendChild(empty);
+    }
+
+    daysData.forEach(d => {
+        const cell = document.createElement('div');
+        const colors = {completed:'#22d3a6', today:'#f59e0b', upcoming:'#334155', missed:'#ef4444'};
+        const bg = d.is_variant ? '#8b5cf6' : (colors[d.status] || '#334155');
+        cell.style.cssText = `aspect-ratio:1;background:${bg};border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:.7rem;color:#fff;position:relative;min-height:36px;transition:transform .15s;`;
+        cell.innerHTML = `<span style="font-weight:700;">${d.day_num}</span><span style="font-size:.6rem;opacity:.8;">${d.day_score}/${d.problem_count}</span>`;
+        if (d.is_variant) cell.innerHTML = '&#x2B50;' + cell.innerHTML;
+        if (d.status === 'today') cell.style.animation = 'pulse 2s infinite';
+        cell.title = `${d.date} \u00B7 ${d.status}`;
+        cell.onclick = () => openDayModal(d.id, d.date);
+        cell.onmouseenter = () => cell.style.transform = 'scale(1.1)';
+        cell.onmouseleave = () => cell.style.transform = '';
+        grid.appendChild(cell);
+    });
+})();
+
+async function openDayModal(dayId, dateStr) {
+    const modal = document.getElementById('dayModal');
+    const title = document.getElementById('modalTitle');
+    const content = document.getElementById('modalContent');
+    title.textContent = dateStr;
+    content.innerHTML = '<p style="color:#94a3b8;">&#x0417;&#x0430;&#x0433;&#x0440;&#x0443;&#x0437;&#x043A;&#x0430;...</p>';
+    modal.style.display = 'flex';
+    try {
+        const resp = await fetch(`/prep/${planId}/day/${dayId}`);
+        const data = await resp.json();
+        let html = '';
+        data.problems.forEach((p, i) => {
+            const done = (data.day.completed_problem_ids || []).includes(p.id);
+            html += `<div style="padding:10px 0;border-bottom:1px solid #334155;">
+                <div style="font-weight:600;color:${done?'#22d3a6':'#fff'};margin-bottom:4px;">${done?'&#x2705;':'&#x2B1C;'} &#x0417;&#x0430;&#x0434;&#x0430;&#x0447;&#x0430; ${i+1} (&#x0441;&#x043B;. ${p.difficulty})</div>
+                <div style="font-size:.85rem;color:#94a3b8;">${p.task_text.substring(0,200)}${p.task_text.length>200?'...':''}</div>
+            </div>`;
+        });
+        content.innerHTML = html || '<p style="color:#94a3b8;">&#x041D;&#x0435;&#x0442; &#x0437;&#x0430;&#x0434;&#x0430;&#x0447;</p>';
+        if (typeof renderMathInElement === 'function') renderMathInElement(content);
+    } catch(e) { content.innerHTML = '<p style="color:#ef4444;">&#x041E;&#x0448;&#x0438;&#x0431;&#x043A;&#x0430; &#x0437;&#x0430;&#x0433;&#x0440;&#x0443;&#x0437;&#x043A;&#x0438;</p>'; }
+}
+
+// Radar chart
+(function drawRadar() {
+    const canvas = document.getElementById('radarChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    const bl = {{ plan.baseline_radar|safe }};
+    const cr = {{ plan.current_radar|safe }};
+    const labels = ['&#x0410;&#x043B;&#x0433;&#x0435;&#x0431;&#x0440;&#x0430;','&#x0413;&#x0435;&#x043E;&#x043C;&#x0435;&#x0442;&#x0440;&#x0438;&#x044F;','&#x041A;&#x043E;&#x043C;&#x0431;&#x0438;&#x043D;&#x0430;&#x0442;&#x043E;&#x0440;&#x0438;&#x043A;&#x0430;','&#x0422;&#x0435;&#x043E;&#x0440;&#x0438;&#x044F; &#x0447;&#x0438;&#x0441;&#x0435;&#x043B;','&#x0414;&#x0432;&#x0438;&#x0436;&#x0435;&#x043D;&#x0438;&#x0435;','&#x0420;&#x044B;&#x0446;&#x0430;&#x0440;&#x0438;'];
+    const keys = ['algebra','geometry','combinatorics','number_theory','movement','knights_liars'];
+    new Chart(canvas, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Baseline', data: keys.map(k => bl[k]||50), borderColor: '#64748b', backgroundColor: 'rgba(100,116,139,.1)', pointRadius: 3 },
+                { label: '&#x0421;&#x0435;&#x0439;&#x0447;&#x0430;&#x0441;', data: keys.map(k => cr[k]||50), borderColor: '#22d3a6', backgroundColor: 'rgba(34,211,166,.15)', pointRadius: 4 },
+            ]
+        },
+        options: {
+            scales: { r: { min: 0, max: 100, ticks: { display: false }, grid: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 11 } } } },
+            plugins: { legend: { labels: { color: '#94a3b8' } } },
+            responsive: true, maintainAspectRatio: false,
+        }
+    });
+})();
+</script>
+<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}</style>
+{% endblock %}

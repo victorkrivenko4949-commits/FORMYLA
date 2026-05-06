@@ -48,6 +48,9 @@ class User(UserMixin, db.Model):
     
     # Daily Quest — preferred grade (5-11)
     preferred_grade = db.Column(db.Integer, nullable=True, default=None)
+
+    # ML training consent (152-FZ): user opted in to share solutions for ML
+    ml_training_consent = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
     
     # Relationships
     topic_progress = db.relationship('UserTopicProgress', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -815,6 +818,260 @@ class UserProgress(db.Model):
             'current_difficulty': self.current_difficulty,
             'last_activity': self.last_activity.isoformat() if self.last_activity else None
         }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OLYMPIAD PREP SYSTEM (PrepPlan / PrepDay / OlympiadPrep / TaskSolution)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class OlympiadPrep(db.Model):
+    """Каталог олимпиад для подготовки (ВсОШ, Турнир городов, etc.)."""
+    __tablename__ = 'olympiad_prep'
+
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(200), nullable=False)
+    short_name = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    grades = db.Column(db.Text, nullable=True)              # JSON list of int
+    stages = db.Column(db.Text, nullable=True)              # JSON list of stage names
+    official_url = db.Column(db.String(500), nullable=True)
+    logo_path = db.Column(db.String(500), nullable=True)
+    color_hex = db.Column(db.String(20), default='#22d3a6')
+    sort_order = db.Column(db.Integer, default=0, index=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False, server_default='1')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @property
+    def grades_list(self):
+        import json
+        try:
+            return json.loads(self.grades) if self.grades else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @property
+    def stages_list(self):
+        import json
+        try:
+            return json.loads(self.stages) if self.stages else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def __repr__(self):
+        return f'<OlympiadPrep {self.slug} id={self.id}>'
+
+
+class PrepPlan(db.Model):
+    """Персональный план подготовки пользователя к олимпиаде."""
+    __tablename__ = 'prep_plans'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    olympiad_id = db.Column(db.Integer, db.ForeignKey('olympiad_prep.id'), nullable=False, index=True)
+    target_stage = db.Column(db.String(100), nullable=True)
+    target_grade = db.Column(db.Integer, nullable=True)  # User can prep for higher grade
+    start_date = db.Column(db.Date, nullable=False)
+    target_date = db.Column(db.Date, nullable=False)
+    baseline_radar = db.Column(db.Text, nullable=True)   # JSON {topic: 0..100}
+    current_radar = db.Column(db.Text, nullable=True)    # JSON {topic: 0..100}
+    daily_task_count = db.Column(db.Integer, default=5)
+    status = db.Column(db.String(20), default='active', index=True)  # active|paused|completed|expired
+    current_streak = db.Column(db.Integer, default=0)
+    longest_streak = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('prep_plans', lazy='dynamic'))
+    olympiad = db.relationship('OlympiadPrep', backref=db.backref('plans', lazy='dynamic'))
+    days = db.relationship('PrepDay', backref='plan', lazy='dynamic',
+                           cascade='all, delete-orphan', order_by='PrepDay.date')
+
+    @property
+    def baseline_radar_dict(self):
+        import json
+        try:
+            return json.loads(self.baseline_radar) if self.baseline_radar else {}
+        except (json.JSONDecodeError, TypeError):
+            return {}
+
+    @baseline_radar_dict.setter
+    def baseline_radar_dict(self, value):
+        import json
+        self.baseline_radar = json.dumps(value, ensure_ascii=False)
+
+    @property
+    def current_radar_dict(self):
+        import json
+        try:
+            return json.loads(self.current_radar) if self.current_radar else {}
+        except (json.JSONDecodeError, TypeError):
+            return {}
+
+    @current_radar_dict.setter
+    def current_radar_dict(self, value):
+        import json
+        self.current_radar = json.dumps(value, ensure_ascii=False)
+
+    @property
+    def days_total(self):
+        return (self.target_date - self.start_date).days
+
+    @property
+    def days_elapsed(self):
+        from datetime import date as _date
+        today = _date.today()
+        if today < self.start_date:
+            return 0
+        if today > self.target_date:
+            return self.days_total
+        return (today - self.start_date).days
+
+    @property
+    def progress_pct(self):
+        total = self.days_total
+        if total <= 0:
+            return 100
+        return min(100, round(self.days_elapsed / total * 100))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'olympiad_id': self.olympiad_id,
+            'olympiad_slug': self.olympiad.slug if self.olympiad else None,
+            'olympiad_name': self.olympiad.name if self.olympiad else None,
+            'target_stage': self.target_stage,
+            'target_grade': self.target_grade,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'target_date': self.target_date.isoformat() if self.target_date else None,
+            'baseline_radar': self.baseline_radar_dict,
+            'current_radar': self.current_radar_dict,
+            'daily_task_count': self.daily_task_count,
+            'status': self.status,
+            'current_streak': self.current_streak,
+            'longest_streak': self.longest_streak,
+            'progress_pct': self.progress_pct,
+            'days_total': self.days_total,
+            'days_elapsed': self.days_elapsed,
+        }
+
+    def __repr__(self):
+        return f'<PrepPlan id={self.id} user={self.user_id} olympiad={self.olympiad_id} status={self.status}>'
+
+
+class PrepDay(db.Model):
+    """День в персональном плане подготовки."""
+    __tablename__ = 'prep_days'
+
+    id = db.Column(db.Integer, primary_key=True)
+    plan_id = db.Column(db.Integer, db.ForeignKey('prep_plans.id'), nullable=False, index=True)
+    date = db.Column(db.Date, nullable=False, index=True)
+    target_topics = db.Column(db.Text, nullable=True)         # JSON list of topics
+    problem_ids = db.Column(db.Text, nullable=True)           # JSON list of AdaptiveTask ids
+    completed_problem_ids = db.Column(db.Text, default='[]')  # JSON list
+    day_score = db.Column(db.Integer, default=0)              # # correct
+    status = db.Column(db.String(20), default='upcoming', index=True)  # upcoming|today|completed|missed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @property
+    def target_topics_list(self):
+        import json
+        try:
+            return json.loads(self.target_topics) if self.target_topics else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @property
+    def problem_ids_list(self):
+        import json
+        try:
+            return json.loads(self.problem_ids) if self.problem_ids else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @property
+    def completed_problem_ids_list(self):
+        import json
+        try:
+            return json.loads(self.completed_problem_ids) if self.completed_problem_ids else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @property
+    def total_problems(self):
+        return len(self.problem_ids_list)
+
+    @property
+    def completed_count(self):
+        return len(self.completed_problem_ids_list)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'plan_id': self.plan_id,
+            'date': self.date.isoformat() if self.date else None,
+            'target_topics': self.target_topics_list,
+            'problem_ids': self.problem_ids_list,
+            'completed_problem_ids': self.completed_problem_ids_list,
+            'completed_count': self.completed_count,
+            'total_problems': self.total_problems,
+            'day_score': self.day_score,
+            'status': self.status,
+        }
+
+    def __repr__(self):
+        return f'<PrepDay id={self.id} plan={self.plan_id} date={self.date} status={self.status}>'
+
+
+class BrokenTaskLog(db.Model):
+    """Лог отбракованных задач для разных surface (planner, daily, etc.)."""
+    __tablename__ = 'broken_task_log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, nullable=False, index=True)
+    surface = db.Column(db.String(50), nullable=False, index=True)
+    reasons = db.Column(db.Text, nullable=True)
+    hits = db.Column(db.Integer, default=1)
+    detected_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return f'<BrokenTaskLog task={self.task_id} surface={self.surface} hits={self.hits}>'
+
+
+class TaskSolution(db.Model):
+    """Сохранённое решение задачи пользователем (для ML dataset + истории)."""
+    __tablename__ = 'task_solutions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('adaptive_tasks.id'), nullable=False, index=True)
+    plan_id = db.Column(db.Integer, db.ForeignKey('prep_plans.id'), nullable=True, index=True)
+    day_id = db.Column(db.Integer, db.ForeignKey('prep_days.id'), nullable=True, index=True)
+
+    # Solution content
+    user_answer = db.Column(db.Text, nullable=True)           # short answer text
+    user_solution = db.Column(db.Text, nullable=True)         # full text solution
+    original_photo_url = db.Column(db.String(500), nullable=True)  # R2 URL of handwritten photo
+    photo_hash = db.Column(db.String(64), nullable=True, index=True)  # SHA256 dedupe
+
+    # OCR pipeline
+    ocr_raw_output = db.Column(db.Text, nullable=True)        # Raw OCR JSON
+    ocr_corrected = db.Column(db.Text, nullable=True)         # User-corrected LaTeX
+    was_corrected = db.Column(db.Boolean, default=False)
+
+    # Evaluation
+    is_correct = db.Column(db.Boolean, nullable=True)
+    feedback_json = db.Column(db.Text, nullable=True)         # DeepSeek feedback
+
+    # ML dataset
+    consent_for_training = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
+    quality_score = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    user = db.relationship('User', backref=db.backref('task_solutions', lazy='dynamic'))
+    task = db.relationship('AdaptiveTask', backref=db.backref('solutions', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<TaskSolution id={self.id} user={self.user_id} task={self.task_id}>'
 
 
 def init_db(app):

@@ -1,0 +1,167 @@
+/* ── Prep Module: Персональная подготовка к олимпиадам ──────────────────────── */
+
+/* ── Dashboard ─────────────────────────────────────────────────────────────── */
+.prep-hero { text-align: center; padding: 48px 20px 32px; }
+.prep-hero h1 { font-size: 2rem; font-weight: 800; color: #fff; margin: 0 0 10px; }
+.prep-hero p { color: #94a3b8; font-size: 1.05rem; max-width: 560px; margin: 0 auto 24px; line-height: 1.6; }
+
+.prep-cta {
+    display: inline-block; padding: 14px 32px; border-radius: 12px;
+    font-weight: 700; font-size: 1rem; color: #fff;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    text-decoration: none; box-shadow: 0 0 24px rgba(139,92,246,.3);
+    transition: transform .2s, box-shadow .2s; border: none; cursor: pointer;
+}
+.prep-cta:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(139,92,246,.5); }
+
+.prep-section { max-width: 1200px; margin: 0 auto 40px; padding: 0 20px; }
+.prep-section-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin: 0 0 16px; }
+
+/* Plan cards grid */
+.prep-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* Plan card */
+.prep-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 16px;
+    padding: 24px; display: flex; flex-direction: column; gap: 14px;
+    transition: transform .2s, border-color .2s;
+}
+.prep-card:hover { transform: translateY(-3px); border-color: #8b5cf6; }
+.prep-card-header { display: flex; align-items: center; gap: 12px; }
+.prep-card-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.prep-card-info { flex: 1; }
+.prep-card-title { font-size: 1.05rem; font-weight: 700; color: #fff; }
+.prep-card-stage { font-size: .82rem; color: #64748b; font-weight: 500; }
+.prep-card-status { font-size: .75rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+.prep-card-status.active { background: rgba(34,211,166,.15); color: #22d3a6; }
+.prep-card-status.paused { background: rgba(245,158,11,.15); color: #f59e0b; }
+
+/* Progress bar */
+.prep-progress { background: #0f172a; border-radius: 8px; height: 8px; overflow: hidden; }
+.prep-progress-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #22d3a6, #8b5cf6); transition: width .5s ease; }
+
+/* Countdown */
+.prep-countdown { text-align: center; padding: 8px 0; }
+.prep-countdown-num { font-size: 2rem; font-weight: 800; color: #22d3a6; line-height: 1; }
+.prep-countdown-label { font-size: .82rem; color: #64748b; margin-top: 2px; }
+
+/* Stats */
+.prep-stats { display: flex; justify-content: space-between; gap: 8px; }
+.prep-stat { font-size: .82rem; color: #94a3b8; }
+.prep-stat strong { color: #cbd5e1; }
+
+/* Card actions */
+.prep-card-actions { display: flex; gap: 10px; margin-top: auto; }
+.prep-btn { display: inline-block; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: .85rem; color: #fff; text-decoration: none; border: none; cursor: pointer; transition: opacity .2s; text-align: center; flex: 1; }
+.prep-btn:hover { opacity: .85; }
+.prep-btn-primary { background: #22d3a6; }
+.prep-btn-secondary { background: #334155; }
+.prep-btn-danger { background: #ef4444; }
+
+/* Empty state */
+.prep-empty { text-align: center; padding: 60px 20px; }
+.prep-empty-icon { font-size: 4rem; margin-bottom: 16px; }
+.prep-empty p { color: #94a3b8; font-size: 1rem; max-width: 400px; margin: 0 auto 24px; line-height: 1.6; }
+
+/* Completed cards (smaller) */
+.prep-grid-sm { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.prep-card-sm { padding: 18px; gap: 10px; }
+.prep-card-sm .prep-card-title { font-size: .95rem; }
+
+/* Tips */
+.prep-tips { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.prep-tip { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+.prep-tip-icon { font-size: 1.5rem; margin-bottom: 8px; }
+.prep-tip h3 { font-size: .95rem; font-weight: 700; color: #fff; margin: 0 0 6px; }
+.prep-tip p { font-size: .85rem; color: #94a3b8; margin: 0; line-height: 1.5; }
+
+/* ── Wizard ────────────────────────────────────────────────────────────────── */
+.wiz-wrap { max-width: 800px; margin: 0 auto; padding: 32px 20px 60px; }
+.wiz-back { margin-bottom: 20px; }
+.wiz-back a { color: #8b5cf6; text-decoration: none; font-weight: 600; font-size: .9rem; }
+.wiz-back a:hover { color: #a78bfa; }
+
+/* Step indicator */
+.wiz-steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 32px; align-items: center; }
+.wiz-step-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; border: 2px solid #334155; color: #64748b; background: #0f172a; transition: all .3s; }
+.wiz-step-dot.active { border-color: #8b5cf6; color: #fff; background: #8b5cf6; }
+.wiz-step-dot.done { border-color: #22d3a6; color: #0f172a; background: #22d3a6; }
+.wiz-step-line { width: 40px; height: 2px; background: #334155; }
+.wiz-step-line.done { background: #22d3a6; }
+
+/* Step blocks */
+.wiz-block { display: none; animation: wizFadeIn .3s ease; }
+.wiz-block.active { display: block; }
+@keyframes wizFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.wiz-title { font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0 0 8px; text-align: center; }
+.wiz-subtitle { color: #94a3b8; font-size: .95rem; text-align: center; margin: 0 0 24px; }
+
+/* Olympiad selection grid */
+.wiz-oly-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.wiz-oly-card { background: #1e293b; border: 2px solid #334155; border-radius: 14px; padding: 18px; cursor: pointer; transition: border-color .2s, box-shadow .2s; text-align: center; }
+.wiz-oly-card:hover { border-color: #64748b; }
+.wiz-oly-card.selected { border-color: #22d3a6; box-shadow: 0 0 16px rgba(34,211,166,.2); }
+.wiz-oly-card .wiz-oly-name { font-size: .95rem; font-weight: 700; color: #fff; margin: 8px 0 4px; }
+.wiz-oly-card .wiz-oly-grades { font-size: .78rem; color: #64748b; }
+
+/* Stage selection */
+.wiz-stages { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.wiz-stage-item { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 14px; transition: border-color .2s; }
+.wiz-stage-item:hover { border-color: #64748b; }
+.wiz-stage-item.selected { border-color: #8b5cf6; box-shadow: 0 0 12px rgba(139,92,246,.15); }
+.wiz-stage-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #64748b; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.wiz-stage-item.selected .wiz-stage-radio { border-color: #8b5cf6; }
+.wiz-stage-item.selected .wiz-stage-radio::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: #8b5cf6; }
+.wiz-stage-name { font-weight: 600; color: #fff; font-size: .95rem; }
+.wiz-stage-date { font-size: .82rem; color: #94a3b8; }
+
+/* Baseline options */
+.wiz-baseline-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.wiz-baseline-card { background: #1e293b; border: 2px solid #334155; border-radius: 14px; padding: 24px; cursor: pointer; text-align: center; transition: border-color .2s; }
+.wiz-baseline-card:hover { border-color: #64748b; }
+.wiz-baseline-card.selected { border-color: #22d3a6; box-shadow: 0 0 12px rgba(34,211,166,.15); }
+.wiz-baseline-card.disabled { opacity: .5; cursor: not-allowed; }
+.wiz-baseline-icon { font-size: 2rem; margin-bottom: 10px; }
+.wiz-baseline-title { font-weight: 700; color: #fff; font-size: .95rem; margin-bottom: 6px; }
+.wiz-baseline-desc { font-size: .82rem; color: #94a3b8; line-height: 1.5; }
+
+/* Summary */
+.wiz-summary { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 24px; }
+.wiz-summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(51,65,85,.4); }
+.wiz-summary-row:last-child { border-bottom: none; }
+.wiz-summary-label { color: #94a3b8; font-size: .9rem; }
+.wiz-summary-value { color: #fff; font-weight: 600; font-size: .9rem; }
+
+.wiz-motivation { background: linear-gradient(135deg, rgba(139,92,246,.1), rgba(34,211,166,.08)); border: 1px dashed #8b5cf6; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px; }
+.wiz-motivation p { color: #cbd5e1; font-size: .95rem; margin: 0; line-height: 1.6; }
+
+/* Wizard nav */
+.wiz-nav { display: flex; justify-content: space-between; gap: 12px; }
+.wiz-nav-btn { padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: .95rem; border: none; cursor: pointer; transition: opacity .2s; }
+.wiz-nav-btn:hover { opacity: .85; }
+.wiz-nav-btn.next { background: #8b5cf6; color: #fff; margin-left: auto; }
+.wiz-nav-btn.next:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+.wiz-nav-btn.back { background: #334155; color: #cbd5e1; }
+.wiz-nav-btn.submit { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; box-shadow: 0 0 20px rgba(139,92,246,.3); font-size: 1.05rem; padding: 14px 36px; }
+
+/* Loader */
+.wiz-loader { display: none; text-align: center; padding: 40px; }
+.wiz-loader.active { display: block; }
+.wiz-loader-spinner { width: 40px; height: 40px; border: 3px solid #334155; border-top-color: #8b5cf6; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .prep-hero h1 { font-size: 1.5rem; }
+    .prep-grid { grid-template-columns: 1fr; padding: 0 12px; }
+    .prep-tips { grid-template-columns: 1fr; }
+    .wiz-wrap { padding: 20px 12px 40px; }
+    .wiz-oly-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .wiz-baseline-opts { grid-template-columns: 1fr; }
+    .wiz-title { font-size: 1.2rem; }
+    .wiz-step-line { width: 20px; }
+}

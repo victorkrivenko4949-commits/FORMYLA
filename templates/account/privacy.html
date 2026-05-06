@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Приватность - FORMYLA{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/privacy.css') }}?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+<div class="privacy-page" style="max-width:800px;margin:0 auto;padding:24px 20px 60px;">
+
+<nav style="font-size:.85rem;color:#64748b;margin-bottom:20px;">
+    <a href="/" style="color:#8b5cf6;text-decoration:none;">Главная</a>
+    <span style="margin:0 6px;">&rarr;</span>
+    <a href="{{ url_for('profile') }}" style="color:#8b5cf6;text-decoration:none;">Профиль</a>
+    <span style="margin:0 6px;">&rarr;</span>
+    <span style="color:#94a3b8;">Приватность</span>
+</nav>
+
+<h1 style="color:#fff;font-size:1.8rem;font-weight:800;margin:0 0 8px;">&#x1F512; Приватность и данные</h1>
+<p style="color:#94a3b8;margin:0 0 32px;font-size:1.05rem;">Управляй тем, как FORMYLA использует твои данные.</p>
+
+<!-- Section 1: ML Consent -->
+<div class="privacy-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+            <h3 style="color:#fff;font-size:1.1rem;margin:0 0 8px;">&#x1F916; Улучшение AI-тьютора</h3>
+            <p style="color:#94a3b8;font-size:.88rem;margin:0;line-height:1.6;">
+                Разрешаешь ли ты использовать твои анонимизированные решения и фотографии
+                для обучения нашей модели распознавания рукописи?
+            </p>
+        </div>
+        <label class="toggle-switch">
+            <input type="checkbox" id="mlConsentToggle"
+                   {% if current_user.ml_training_consent %}checked{% endif %}
+                   onchange="toggleConsent(this.checked)">
+            <span class="toggle-track"></span>
+        </label>
+    </div>
+
+    <div id="consentStatus" style="margin-top:10px;font-size:.82rem;font-weight:600;">
+        {% if current_user.ml_training_consent %}
+        <span style="color:#22d3a6;">&#x2705; Согласие дано</span>
+        {% else %}
+        <span style="color:#64748b;">&#x274C; Согласие не дано</span>
+        {% endif %}
+    </div>
+
+    <details style="margin-top:16px;">
+        <summary style="color:#8b5cf6;cursor:pointer;font-size:.9rem;font-weight:600;">Что это значит?</summary>
+        <ul style="color:#94a3b8;font-size:.85rem;line-height:1.8;margin-top:8px;padding-left:20px;">
+            <li>&#x2705; Мы анонимизируем данные: удаляем имя, email, школу.</li>
+            <li>&#x2705; Используем только для обучения модели FORMYLA.</li>
+            <li>&#x2705; НЕ передаём третьим лицам.</li>
+            <li>&#x2705; Ты можешь отозвать согласие в любой момент.</li>
+            <li>&#x1F4D6; <a href="/privacy#ml" style="color:#8b5cf6;">Полная политика приватности</a></li>
+        </ul>
+    </details>
+</div>
+
+<!-- Section 2: My Data -->
+<div class="privacy-card">
+    <h3 style="color:#fff;font-size:1.1rem;margin:0 0 16px;">&#x1F4CA; Что у меня собрано</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+        <div class="stat-box">
+            <div class="stat-value">{{ stats.solutions_count }}</div>
+            <div class="stat-label">Решений задач</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ stats.photos_count }}</div>
+            <div class="stat-label">Фотографий рукописи</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ stats.plans_count }}</div>
+            <div class="stat-label">Планов подготовки</div>
+        </div>
+    </div>
+    <button class="btn-secondary" disabled title="Скоро" style="opacity:.5;cursor:not-allowed;">
+        &#x1F4E5; Скачать мои данные (JSON) &mdash; скоро
+    </button>
+</div>
+
+<!-- Section 3: Danger Zone -->
+<div class="privacy-card danger-zone">
+    <h3 style="color:#ef4444;font-size:1.1rem;margin:0 0 8px;">&#x26A0;&#xFE0F; Удаление аккаунта</h3>
+    <p style="color:#94a3b8;font-size:.88rem;margin:0 0 16px;line-height:1.5;">
+        Удалит: профиль, все решения, фотографии, планы подготовки.
+        Исключит из будущих обучений модели. <strong style="color:#ef4444;">Отменить нельзя.</strong>
+    </p>
+    <button class="btn-danger" id="deleteAccountBtn">
+        &#x1F5D1;&#xFE0F; Удалить аккаунт навсегда
+    </button>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:32px;max-width:420px;width:90%;text-align:center;">
+        <h3 style="color:#fff;font-size:1.3rem;margin:0 0 12px;">Ты уверен?</h3>
+        <p style="color:#94a3b8;font-size:.9rem;margin:0 0 20px;">
+            Чтобы подтвердить, введи слово <code style="background:#0f172a;padding:2px 8px;border-radius:4px;color:#ef4444;font-weight:700;">DELETE</code>
+        </p>
+        <input type="text" id="confirmInput" placeholder="DELETE"
+               style="width:100%;padding:12px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#fff;font-size:1rem;text-align:center;margin-bottom:16px;">
+        <div style="display:flex;gap:12px;justify-content:center;">
+            <button class="btn-secondary" id="cancelDelete">Отмена</button>
+            <button class="btn-danger" id="confirmDelete" disabled>Удалить навсегда</button>
+        </div>
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function toggleConsent(checked) {
+    const status = document.getElementById('consentStatus');
+    try {
+        const resp = await fetch('/account/ml-consent', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({consent: checked})
+        });
+        if (resp.ok) {
+            status.innerHTML = checked
+                ? '<span style="color:#22d3a6;">&#x2705; Согласие дано</span>'
+                : '<span style="color:#64748b;">&#x274C; Согласие отозвано</span>';
+        } else {
+            document.getElementById('mlConsentToggle').checked = !checked;
+            status.innerHTML = '<span style="color:#ef4444;">Ошибка сохранения</span>';
+        }
+    } catch(e) {
+        document.getElementById('mlConsentToggle').checked = !checked;
+        status.innerHTML = '<span style="color:#ef4444;">Ошибка сети</span>';
+    }
+}
+
+// Delete modal
+const modal = document.getElementById('deleteModal');
+const confirmInput = document.getElementById('confirmInput');
+const confirmBtn = document.getElementById('confirmDelete');
+
+document.getElementById('deleteAccountBtn').onclick = () => {
+    modal.style.display = 'flex';
+    confirmInput.value = '';
+    confirmBtn.disabled = true;
+};
+document.getElementById('cancelDelete').onclick = () => {
+    modal.style.display = 'none';
+};
+modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+confirmInput.addEventListener('input', () => {
+    confirmBtn.disabled = confirmInput.value.trim() !== 'DELETE';
+});
+
+confirmBtn.onclick = async () => {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Удаляем...';
+    try {
+        const resp = await fetch('/account/delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({confirm: 'DELETE'})
+        });
+        if (resp.ok) {
+            window.location.href = '/?deleted=1';
+        } else {
+            const data = await resp.json();
+            alert(data.error || 'Ошибка удаления');
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Удалить навсегда';
+        }
+    } catch(e) {
+        alert('Ошибка сети');
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Удалить навсегда';
+    }
+};
+</script>
+{% endblock %}

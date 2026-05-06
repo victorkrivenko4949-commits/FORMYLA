@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>Авторизация через Яндекс...</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #e2e8f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .box { text-align: center; padding: 40px; max-width: 480px; }
+        .spinner { display: inline-block; width: 48px; height: 48px; border: 4px solid rgba(56, 189, 248, 0.2); border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 24px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        h1 { font-size: 1.4rem; margin: 0 0 12px; color: #fff; font-weight: 600; }
+        p { color: #94a3b8; margin: 8px 0; font-size: 0.95rem; }
+        .err { color: #fca5a5; }
+        a { color: #38bdf8; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="spinner"></div>
+        <h1 id="title">Авторизация через Яндекс...</h1>
+        <p id="msg">Подождите, обрабатываем данные...</p>
+        <p id="errMsg" class="err" style="display:none;"></p>
+        <p id="backLink" style="display:none;"><a href="/profile">← Вернуться в профиль</a></p>
+    </div>
+    <script>
+    (function() {
+        function setError(text) {
+            document.getElementById('title').textContent = '❌ Ошибка авторизации';
+            document.getElementById('msg').style.display = 'none';
+            var e = document.getElementById('errMsg');
+            e.style.display = 'block';
+            e.textContent = text;
+            document.getElementById('backLink').style.display = 'block';
+            document.querySelector('.spinner').style.display = 'none';
+        }
+
+        // Парсим access_token из URL fragment (#access_token=XXX&...)
+        var hash = window.location.hash || '';
+        if (hash.charAt(0) === '#') hash = hash.substring(1);
+        var params = {};
+        hash.split('&').forEach(function(pair) {
+            var idx = pair.indexOf('=');
+            if (idx > 0) params[decodeURIComponent(pair.substring(0, idx))] = decodeURIComponent(pair.substring(idx + 1));
+        });
+
+        var accessToken = params['access_token'];
+        var oauthError = params['error'];
+
+        if (oauthError) {
+            setError('Яндекс вернул ошибку: ' + oauthError + (params['error_description'] ? ' — ' + params['error_description'] : ''));
+            return;
+        }
+
+        if (!accessToken) {
+            setError('Не получен access_token от Яндекса. Проверьте настройки OAuth-приложения в кабинете Яндекс ID.');
+            return;
+        }
+
+        // Отправляем токен на сервер для обработки
+        fetch('/auth/yandex/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'same-origin',
+            body: JSON.stringify({access_token: accessToken})
+        })
+        .then(function(r) { return r.json().then(function(d) { return {status: r.status, data: d}; }); })
+        .then(function(res) {
+            if (res.status === 200 && res.data.success) {
+                document.getElementById('title').textContent = '✓ ' + (res.data.message || 'Готово');
+                document.getElementById('msg').textContent = 'Перенаправляем...';
+                window.location.href = res.data.redirect_url || '/profile';
+            } else {
+                setError(res.data.error || ('HTTP ' + res.status));
+            }
+        })
+        .catch(function(err) {
+            setError('Сетевая ошибка: ' + err.message);
+        });
+    })();
+    </script>
+</body>
+</html>
