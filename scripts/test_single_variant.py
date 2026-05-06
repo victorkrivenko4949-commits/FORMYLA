@@ -86,6 +86,8 @@ def main():
 
             report = dict(position=pos, retries=0)
             t_gen = time.time()
+            accepted = False
+            problem = None
 
             for attempt in range(5):
                 report["retries"] = attempt
@@ -160,20 +162,27 @@ def main():
                 problem["statement"] = polished.get("statement", problem["statement"])
                 problem["solution"] = polished.get("solution", problem["solution"])
                 problem["answer"] = polished.get("answer", problem["answer"])
+                accepted = True
                 break
 
             timings[f"problem_{pos}"] = round(time.time() - t_gen, 1)
-            problems.append(problem)
+            report["accepted"] = accepted
             quality_reports.append(report)
 
+            # NEW (v2.1): if all 5 attempts rejected — keep last problem in DB but mark as 'failed'
+            if not accepted:
+                logger.error(f"  ❌ Problem {pos}: all 5 attempts rejected, marking as 'failed'")
+            problems.append(problem if problem is not None else {"statement": "[no_problem]", "solution": "", "answer": "", "topic": "", "difficulty": 0})
+
             # Save to DB
+            problem_status = 'approved' if accepted else 'failed'
             db.session.execute(
                 db.text("""
                     INSERT INTO daily_problems
                         (variant_id, position, text, solution, answer,
                          topic, difficulty, status)
                     VALUES (:vid, :pos, :stmt, :sol, :ans,
-                            :topic, :diff, 'approved')
+                            :topic, :diff, :status)
                 """),
                 dict(
                     vid=variant_id, pos=pos,
@@ -182,6 +191,7 @@ def main():
                     ans=problem["answer"],
                     topic=problem.get("topic", ""),
                     diff=problem.get("difficulty", 5),
+                    status=problem_status,
                 )
             )
             db.session.commit()

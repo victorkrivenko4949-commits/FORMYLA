@@ -37,6 +37,19 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
     style_notes = json.dumps(analysis.get("style_notes", {}), ensure_ascii=False)
     forbidden = ", ".join(analysis.get("forbidden_topics", []))
 
+    # NEW (v2.1): override answer_type if analyzer suggested any proof-like value.
+    # Old cached analyses may contain "proof", "proof_or_construction", "find_all" etc.
+    raw_answer_type = (spec.get("answer_type") or "").lower()
+    PROOF_TOKENS = ("proof", "construction", "find_all", "verify", "show", "prove")
+    if any(tok in raw_answer_type for tok in PROOF_TOKENS):
+        logger.warning(
+            f"[Generator] pos={position}: override answer_type "
+            f"'{raw_answer_type}' -> 'number_or_formula' (FIX 3 enforcement)"
+        )
+        effective_answer_type = "number_or_formula"
+    else:
+        effective_answer_type = raw_answer_type or "number"
+
     existing_text = ""
     if existing_in_variant:
         for i, p in enumerate(existing_in_variant, 1):
@@ -74,7 +87,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
   Подтема: {spec.get('subtopic', '')}
   Идея: {spec.get('idea', '')}
   Сложность: {spec.get('difficulty', 5)}/10
-  Тип ответа: {spec.get('answer_type', 'number')}
+  Тип ответа: {effective_answer_type} (ОБЯЗАТЕЛЬНО число / формула / множество значений; НЕ доказательство!)
   Ожидаемые методы: {', '.join(spec.get('expected_techniques', []))}
 
 СТИЛЬ ОЛИМПИАДЫ:

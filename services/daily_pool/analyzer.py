@@ -203,6 +203,15 @@ def _build_prompt(title, grade, round_key, count, tasks_block):
   "style_notes": {{"formality": "...", "language_features": ["..."], "unique_traits": ["..."]}},
   "forbidden_topics": ["..."],
   "predicted_variant": [
-    {{"position": 1, "theme": "алгебра", "subtopic": "...", "idea": "...", "difficulty": N, "answer_type": "number|formula|proof", "expected_techniques": ["..."]}}
+    {{"position": 1, "theme": "алгебра", "subtopic": "...", "idea": "...", "difficulty": N, "answer_type": "number|formula|set", "expected_techniques": ["..."]}}
   ]
-}}"""
+}}
+
+⛔ ЖЁСТКИЕ ПРАВИЛА для predicted_variant:
+1. answer_type ОБЯЗАН быть один из: "number", "formula", "set" (множество значений / пары / список).
+   ЗАПРЕЩЕНО: "proof", "proof_or_*", "*_or_proof", "construction", "find_all" (только если ответ — конкретное множество).
+   Даже если в архиве задачи требуют доказательства — в predicted_variant давай только числовые/формульные ответы.
+2. ВСЕ темы в predicted_variant должны быть РАЗНЫМИ (5 уникальных тем для 5 позиций, 10 уникальных для 10).
+   Не ставь две позиции "геометрия" подряд. Распределяй: алгебра, геометрия, комбинаторика, теория чисел, логика/игры/инварианты.
+3. Если архив содержит мало числовых задач — придумай аналогичные числовые формулировки для тех же тем.
+"""
