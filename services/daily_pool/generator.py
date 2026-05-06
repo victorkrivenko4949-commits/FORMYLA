@@ -4,6 +4,8 @@ Generator service: creates a single olympiad problem using GPT-5.
 """
 import json
 import logging
+import re
+from datetime import date
 
 from services.openrouter_client import openrouter
 from services.daily_pool.json_utils import parse_json_with_latex as _parse_json_with_latex
@@ -14,7 +16,7 @@ from config.models import GENERATOR_MODEL as MODEL, GENERATOR_TEMPERATURE as TEM
 
 
 def generate_problem(analysis: dict, position: int, existing_in_variant: list = None,
-                     recent_problems: list = None) -> dict:
+                     recent_problems: list = None, variant_date: str = None) -> dict:
     """
     Generate a single problem for the given position.
 
@@ -45,10 +47,25 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
         for p in recent_problems[:5]:
             recent_text += f"  - {p[:120]}...\n"
 
+    # NEW (generator v2): variant_date + current_year + forbidden topics from existing
+    variant_date_str = variant_date or date.today().isoformat()
+    try:
+        current_year = int(variant_date_str[:4])
+    except (ValueError, TypeError):
+        current_year = date.today().year
+    existing_topics = []
+    if existing_in_variant:
+        for p in existing_in_variant:
+            t = (p.get("topic") or "").strip()
+            if t and t not in existing_topics:
+                existing_topics.append(t)
+    forbidden_topics_str = ", ".join(existing_topics) if existing_topics else "нет"
+
     prompt = f"""ПРОФИЛЬ ОЛИМПИАДЫ:
   Олимпиада: {analysis.get('olympiad', '')}
   Класс: {analysis.get('grade', '')}
   Этап: {analysis.get('round', '')}
+  Дата варианта: {variant_date_str} (текущий год = {current_year})
 
 ЗАДАНИЕ: Создай задачу для ПОЗИЦИИ {position} из 5.
 
@@ -63,20 +80,69 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 СТИЛЬ ОЛИМПИАДЫ:
 {style_notes}
 
-ЗАПРЕЩЁННЫЕ ТЕМЫ: {forbidden or 'нет'}
+ЗАПРЕЩЁННЫЕ ТЕМЫ (общие для олимпиады): {forbidden or 'нет'}
 
-ЗАДАЧИ, КОТОРЫЕ УЖЕ ЕСТЬ В ЭТОМ ВАРИАНТЕ:
+⛔ СТРОГО ЗАПРЕЩЕНО ГЕНЕРИРОВАТЬ ЗАДАЧУ ПО ТЕМАМ, УЖЕ ВЗЯТЫМ В ЭТОМ ВАРИАНТЕ: {forbidden_topics_str}
+(Это не намёк — каждая тема варианта должна быть уникальной. 5 задач = 5 разных тем.)
+
+ЗАДАЧИ, КОТОРЫЕ УЖЕ ЕСТЬ В ЭТОМ ВАРИАНТЕ (для контекста):
 {existing_text or '  (пока нет)'}
 
 ПОСЛЕДНИЕ ЗАДАЧИ НА ЭТУ ТЕМУ (не повторять идеи):
 {recent_text or '  (нет данных)'}
 
+═══════════════════════════════════════════════════
+⛔ ЗАПРЕЩЁННЫЕ ТИПЫ ЗАДАЧ (автоматический reject):
+═══════════════════════════════════════════════════
+- Задачи на доказательство. Запрещённые глаголы: "Докажите", "Покажите", "Обоснуйте", "Установите", "Проверьте, что", "Верно ли", "Является ли", "Найдите и докажите".
+- Задачи без конкретного числового или формульного ответа.
+- Задачи, где ответ — текстовое обоснование ("Да", "Нет", "Существует").
+
+Ответ (answer) ОБЯЗАН быть:
+  ✅ Число (целое, дробь): "42", "\\(\\frac{{7}}{{3}}\\)"
+  ✅ Выражение: "\\(2\\sqrt{{3}}\\)", "\\(60^\\circ\\)"
+  ✅ Множество значений / пары: "1, 2, 5", "\\((45, 2)\\)"
+  ❌ НЕ "Доказано", НЕ "Да/Нет", НЕ текстовое описание
+
+═══════════════════════════════════════════════════
+🎯 КАЛИБРОВКА СЛОЖНОСТИ
+═══════════════════════════════════════════════════
+Это РЕГИОНАЛЬНЫЙ этап ВСОШ для {analysis.get('grade', '?')} класса. Целевая сложность 6–8/10.
+ЗАПРЕЩЕНО: тривиальные школьные задачи уровня "подставь в формулу корней", "примени теорему Виета в одну строчку".
+Задача ДОЛЖНА требовать нетривиальной идеи, комбинации методов или аккуратного перебора случаев.
+
+═══════════════════════════════════════════════════
+📅 ГОД В УСЛОВИИ
+═══════════════════════════════════════════════════
+Если используешь число-год в условии (например, "найдите все натуральные x: x² - y! = N"), число N должно быть равно {current_year} или {current_year}±1. ЗАПРЕЩЕНО использовать 2023, 2024 в варианте {current_year} года.
+
+═══════════════════════════════════════════════════
+✏️ LaTeX (КРИТИЧНО — иначе KaTeX не отрендерит)
+═══════════════════════════════════════════════════
+- ВСЕГДА \\frac{{a}}{{b}}, НИКОГДА rac{{a}}{{b}} (без обратного слэша — баг!).
+- ВСЕГДА \\sqrt, \\cdot, \\angle, \\pmod, \\equiv — все команды с обратным слэшем.
+- Углы: \\(60^\\circ\\), НЕ "60°" (символ ° KaTeX не понимает).
+- Inline-математика: \\( ... \\). Display-математика: \\[ ... \\].
+- ЗАПРЕЩЕНО $...$, $$...$$.
+- Каждый \\frac имеет ровно два {{}} после: \\frac{{числитель}}{{знаменатель}}.
+
+═══════════════════════════════════════════════════
+🔬 SELF-CHECK ПЕРЕД ВЫДАЧЕЙ JSON
+═══════════════════════════════════════════════════
+Прежде чем вернуть JSON, мысленно проверь:
+1. Условие НЕ содержит логических противоречий.
+   ⚠️ Пример бага: "точка C на ω₁, точка D на ω₂, отрезок CD касается обеих окружностей" — противоречие, потому что точка касания определяется однозначно, а не выбирается произвольно.
+2. ВСЕ данные в условии используются в решении. Если параметр r₁, r₂ не влияет на ответ — это ошибка условия (либо нужно добавить условие, использующее их, либо убрать упоминание).
+3. Ответ — конкретное число / формула / множество, не текст и не доказательство.
+4. LaTeX: каждый \\frac, \\sqrt, \\angle, \\circ начинается с обратного слэша.
+5. Сложность соответствует позиции и регион. этапу 9 класса (6-8/10).
+
 Думай шаг за шагом:
-1. Придумай ОРИГИНАЛЬНУЮ математическую идею
-2. Оберни её в условие в стиле этой олимпиады
-3. Реши задачу полностью
-4. Убедись что ответ однозначный
-5. Проверь что сложность соответствует позиции
+1. Придумай ОРИГИНАЛЬНУЮ математическую идею (не из стандартного школьного набора).
+2. Оберни её в условие в стиле этой олимпиады.
+3. Реши задачу полностью.
+4. Прогон self-check (5 пунктов выше).
+5. Если хоть один пункт self-check провалился — переработай задачу или верни {{"status": "reject", "reason": "..."}}.
 
 Верни ТОЛЬКО валидный JSON:
 {{
@@ -98,7 +164,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
             {"role": "user", "content": prompt}
         ],
         temperature=TEMPERATURE,
-        max_tokens=4096,
+        max_tokens=6144,
     )
 
     content = result["content"]
@@ -120,6 +186,23 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
     for field in required:
         if not data.get(field):
             raise ValueError(f"Generator missing field: {field}")
+
+    # NEW (generator v2): post-process LaTeX bugs in returned strings
+    def _fix_latex(s):
+        if not isinstance(s, str):
+            return s
+        before = s
+        # rac{...}{...}  not preceded by '\\f' or alpha/backslash -> \\frac
+        s = re.sub(r'(?<![\\A-Za-z])rac\{', r'\\frac{', s)
+        # standalone degree symbol -> ^\\circ
+        s = s.replace('°', '^\\circ')
+        if s != before:
+            logger.warning(f"[Generator] LaTeX post-fix applied (pos={position})")
+        return s
+
+    for k in ("statement", "solution", "answer"):
+        if k in data:
+            data[k] = _fix_latex(data[k])
 
     # Attach cost info
     data["_usage"] = result["usage"]

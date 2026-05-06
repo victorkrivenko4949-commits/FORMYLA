@@ -32,7 +32,7 @@ from app import app
 OLYMPIAD = "vsosh"
 GRADE = 9
 ROUND = "regional"
-VARIANT_DATE = "2026-05-05"
+VARIANT_DATE = "2026-05-06"
 STACK = "A"
 
 
@@ -87,12 +87,16 @@ def main():
             report = dict(position=pos, retries=0)
             t_gen = time.time()
 
-            for attempt in range(3):
+            for attempt in range(5):
                 report["retries"] = attempt
 
                 # Generate
                 t0 = time.time()
-                problem = generate_problem(analysis, pos, problems)
+                try:
+                    problem = generate_problem(analysis, pos, problems, variant_date=VARIANT_DATE)
+                except (ValueError, Exception) as e:
+                    logger.warning(f"  Generator error (attempt {attempt+1}): {e}")
+                    continue
                 gen_time = round(time.time() - t0, 1)
                 gen_cost = problem.get("_cost", 0)
                 total_cost += gen_cost
@@ -106,7 +110,8 @@ def main():
                 total_cost += solve_cost
                 report["solver_match"] = solver_result.get("is_correct", False)
                 report["solver_confidence"] = solver_result.get("confidence", "?")
-                logger.info(f"  Solved ({solve_time}s, ${solve_cost:.4f}) match={report['solver_match']}")
+                report["cross_verify_status"] = solver_result.get("cross_verify_status")
+                logger.info(f"  Solved ({solve_time}s, ${solve_cost:.4f}) match={report['solver_match']} cv={report['cross_verify_status']}")
 
                 if not solver_result.get("is_correct"):
                     logger.warning("  Solver disagrees, retrying...")
@@ -220,7 +225,7 @@ def main():
             print(f"    Answer: {p.get('answer','')}")
             print(f"    Topic: {p.get('topic','')} | Difficulty: {p.get('difficulty','?')}/10")
             print(f"    Critic: avg={r.get('critic_avg',0)} min={r.get('critic_min',0)} latex={r.get('critic_latex_ok')}")
-            print(f"    Solver match: {r.get('solver_match')} confidence={r.get('solver_confidence')}")
+            print(f"    Solver match: {r.get('solver_match')} confidence={r.get('solver_confidence')} cross_verify={r.get('cross_verify_status')}")
             print(f"    Similarity: {r.get('max_similarity',0):.3f}")
             print(f"    Polish changes: {r.get('polisher_changes',[])}")
             print(f"    Retries: {r.get('retries',0)}")
