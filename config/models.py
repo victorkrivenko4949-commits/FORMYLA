@@ -21,13 +21,24 @@ import os
 ANALYZER_MODEL = os.getenv("ANALYZER_MODEL", "anthropic/claude-sonnet-4.5")
 ANALYZER_TEMPERATURE = 0.3
 
-GENERATOR_MODEL = os.getenv("GENERATOR_MODEL", "deepseek/deepseek-chat")
+# v2.3: switched from deepseek-chat → claude-opus-4.7 (quality > cost).
+# Fallback chain on 404/"No endpoints found" (probed and verified 2026-05-06):
+#   primary: claude-opus-4.7  (claude-opus-latest is NOT a valid ID on OpenRouter,
+#                              substituted with claude-opus-4.1 as fallback 1)
+GENERATOR_MODEL = os.getenv("GENERATOR_MODEL", "anthropic/claude-opus-4.7")
+GENERATOR_FALLBACKS = [
+    "anthropic/claude-opus-4.1",
+    "anthropic/claude-sonnet-4.5",
+]
 GENERATOR_TEMPERATURE = 0.8
 
-# Switched from openai/o4-mini → anthropic/claude-sonnet-4.5
-# Reason: OpenAI endpoints return HTTP 403 unsupported_country (RU IP).
-# claude-3.5-sonnet ID is deprecated on OpenRouter (no endpoints), use claude-sonnet-4.5.
+# Switched from openai/o4-mini → anthropic/claude-sonnet-4.5 (RU IP block 403 on OpenAI).
+# v2.3: dual solver — independent verification with majority vote (>= 1 of 2 agreeing).
 SOLVER_MODEL = os.getenv("SOLVER_MODEL", "anthropic/claude-sonnet-4.5")
+SOLVER_MODELS = [
+    "anthropic/claude-sonnet-4.5",
+    "google/gemini-2.5-pro",
+]
 SOLVER_TEMPERATURE = 0.1
 
 CRITIC_MODEL = os.getenv("CRITIC_MODEL", "anthropic/claude-sonnet-4.5")

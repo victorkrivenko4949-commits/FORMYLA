@@ -13,19 +13,82 @@ from services.daily_pool.json_utils import parse_json_with_latex
 logger = logging.getLogger(__name__)
 
 from config.models import SOLVER_MODEL, SOLVER_TEMPERATURE
+try:
+    from config.models import SOLVER_MODELS as _SOLVER_MODELS
+except ImportError:
+    _SOLVER_MODELS = [SOLVER_MODEL]
 
-# Single model (no A/B split for MVP)
+# Default single model kept for back-compat callers
 MODEL = SOLVER_MODEL
 TEMPERATURE = SOLVER_TEMPERATURE
 
 
 def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> dict:
-    """
-    Solve the problem independently and compare with expected answer.
+    """v2.3: dual-solver with majority vote.
 
-    Returns: {answer, solution, confidence, is_correct, is_well_posed}
+    Calls each model in SOLVER_MODELS independently and returns a single dict
+    where is_correct = True iff at least one solver agrees with the generator's
+    expected answer. Per-model details are attached under "_solvers".
+    Costs are summed in "_cost".
     """
-    model = MODEL
+    models_to_try = list(_SOLVER_MODELS) if _SOLVER_MODELS else [MODEL]
+    per_model_results = []
+    total_cost = 0.0
+    aggregate_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    any_match = False
+    best_data = None
+    best_conf = -1.0
+    for model in models_to_try:
+        try:
+            single = _verify_with_model(statement, expected_answer, stack, model)
+        except Exception as e:
+            logger.warning(f"[Solver] model {model} failed: {e}")
+            per_model_results.append({"model": model, "error": str(e)[:200]})
+            continue
+        per_model_results.append({
+            "model": model,
+            "is_correct": single.get("is_correct"),
+            "confidence": single.get("confidence"),
+            "answer": single.get("answer", "")[:200],
+        })
+        total_cost += single.get("_cost", 0.0)
+        for k in ("prompt_tokens", "completion_tokens", "total_tokens"):
+            aggregate_usage[k] += single.get("_usage", {}).get(k, 0)
+        if single.get("is_correct"):
+            any_match = True
+        # remember best (highest confidence) for legacy fields
+        conf = float(single.get("confidence") or 0)
+        if conf > best_conf:
+            best_conf = conf
+            best_data = single
+
+    if best_data is None:
+        # all models failed: synthesize a "no verification" record
+        return {
+            "answer": "", "solution": "", "confidence": 0,
+            "is_correct": False, "is_well_posed": True,
+            "_usage": aggregate_usage, "_cost": total_cost,
+            "_solvers": per_model_results,
+        }
+
+    # Disagreement diagnostics
+    correct_count = sum(1 for r in per_model_results if r.get("is_correct"))
+    if 0 < correct_count < len(per_model_results):
+        logger.warning(
+            f"[Solver] disagreement: {correct_count}/{len(per_model_results)} "
+            f"agree -> majority vote any_match={any_match}"
+        )
+
+    best_data["is_correct"] = any_match
+    best_data["_cost"] = total_cost
+    best_data["_usage"] = aggregate_usage
+    best_data["_solvers"] = per_model_results
+    return best_data
+
+
+def _verify_with_model(statement: str, expected_answer: str, stack: str,
+                       model: str) -> dict:
+    """Single-model verify (extracted from original verify_problem)."""
 
     prompt = f"""Реши следующую олимпиадную задачу. Покажи полное решение.
 
@@ -108,7 +171,10 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
     data["_cost"] = result["cost_usd"]
 
     openrouter.log_cost_to_db('solve', model, result['usage'], result['cost_usd'])
-    logger.info(f"[Solver] stack={stack} correct={is_correct} conf={confidence} ${result['cost_usd']:.4f}")
+    logger.info(
+        f"[Solver:{model}] stack={stack} correct={is_correct} "
+        f"conf={confidence} ${result['cost_usd']:.4f}"
+    )
     return data
 
 

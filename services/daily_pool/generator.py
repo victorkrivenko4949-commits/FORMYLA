@@ -12,7 +12,177 @@ from services.daily_pool.json_utils import parse_json_with_latex as _parse_json_
 
 logger = logging.getLogger(__name__)
 
-from config.models import GENERATOR_MODEL as MODEL, GENERATOR_TEMPERATURE as TEMPERATURE
+from config.models import (
+    GENERATOR_MODEL as MODEL,
+    GENERATOR_TEMPERATURE as TEMPERATURE,
+)
+try:
+    from config.models import GENERATOR_FALLBACKS as _FALLBACKS
+except ImportError:
+    _FALLBACKS = []
+
+# v2.3: nominal topic vocabulary for diversity check.
+# All variants of the same topic name → one canonical key.
+TOPIC_NORMALIZE = {
+    # number theory
+    "теория чисел": "number_theory",
+    "теория_чисел": "number_theory",
+    "number theory": "number_theory",
+    "number_theory": "number_theory",
+    "теория чисел и алгебра": "number_theory",
+    "арифметика": "number_theory",
+    # geometry
+    "геометрия": "geometry",
+    "geometry": "geometry",
+    "планиметрия": "geometry",
+    "стереометрия": "geometry",
+    # algebra
+    "алгебра": "algebra",
+    "algebra": "algebra",
+    "уравнения": "algebra",
+    "неравенства": "algebra",
+    "функциональные уравнения": "algebra",
+    # combinatorics
+    "комбинаторика": "combinatorics",
+    "combinatorics": "combinatorics",
+    "графы": "combinatorics",
+    # logic / games / invariants
+    "логика": "logic_games",
+    "logic": "logic_games",
+    "игры": "logic_games",
+    "инварианты": "logic_games",
+    "logic_games": "logic_games",
+    "логика/игры/инварианты": "logic_games",
+}
+
+PROOF_ANSWER_MARKERS = (
+    "докажите", "докажем", "докажу", "покажем", "покажите", "доказано",
+    "существует", "не существует", "верно", "неверно",
+)
+
+
+def _normalize_topic(t: str) -> str:
+    if not t:
+        return ""
+    key = t.strip().lower()
+    return TOPIC_NORMALIZE.get(key, key)
+
+
+def _has_year_constants(text: str, current_year: int) -> bool:
+    """Return True if text contains any of the year-spam constants."""
+    if not text:
+        return False
+    candidates = {str(current_year), str(current_year - 1), str(current_year + 1),
+                  "2025", "2026", "2027"}
+    for c in candidates:
+        # word-boundary match so "20262" won't trigger
+        if re.search(r"(?<!\d)" + c + r"(?!\d)", text):
+            return True
+    return False
+
+
+def _is_proof_answer(answer: str) -> bool:
+    """Detect text-based proof answers."""
+    if not answer:
+        return True
+    a = answer.strip().lower()
+    if not a:
+        return True
+    # heuristic: contains proof marker words AND no digits/LaTeX expression
+    has_marker = any(m in a for m in PROOF_ANSWER_MARKERS)
+    has_concrete = bool(re.search(r"\d|\\(frac|sqrt|binom|pi|infty)|[+\-*/=]", answer))
+    return has_marker and not has_concrete
+
+
+def _has_dirty_latex(text: str) -> bool:
+    """Detect broken LaTeX commands not preceded by their backslash."""
+    if not text:
+        return False
+    patterns = [
+        r"(?<![\\A-Za-z])rac\{",
+        r"(?<![\\A-Za-z])inom\{",
+        r"(?<![\\A-Za-z])qrt\{",
+        r"(?<![\\A-Za-z])ight[\)\]\}\.]",
+        r"(?<![\\A-Za-z])eft[\(\[\\]",
+    ]
+    return any(re.search(p, text) for p in patterns)
+
+
+def validate_generated_problem(problem: dict, existing_in_variant: list,
+                                current_year: int) -> None:
+    """v2.3: programmatic post-parse validation.
+
+    Raises ValueError with a stable error code prefix so the retry-guard can
+    log structured reasons.
+    """
+    if not problem:
+        raise ValueError("empty_problem")
+
+    statement = problem.get("statement") or ""
+    answer = problem.get("answer") or ""
+    solution = problem.get("solution") or ""
+    topic = problem.get("topic") or ""
+
+    # D) length sanity
+    if len(statement) < 50:
+        raise ValueError(f"length_anomaly: statement too short ({len(statement)} chars)")
+    if len(statement) > 2000:
+        raise ValueError(f"length_anomaly: statement too long ({len(statement)} chars)")
+
+    # E) latex dirty
+    for field_name, field_val in (("statement", statement),
+                                   ("solution", solution),
+                                   ("answer", answer)):
+        if _has_dirty_latex(field_val):
+            raise ValueError(f"latex_dirty: broken LaTeX cmd in {field_name}")
+
+    # C) proof-answer (FIX 3 backstop)
+    if _is_proof_answer(answer):
+        raise ValueError(f"proof_answer: answer looks like proof text: {answer[:80]!r}")
+
+    # B) topic duplicate (normalized)
+    if existing_in_variant:
+        norm_topic = _normalize_topic(topic)
+        if norm_topic:
+            for ex in existing_in_variant:
+                if _normalize_topic(ex.get("topic", "")) == norm_topic:
+                    raise ValueError(f"topic_duplicate: '{topic}' (normalized '{norm_topic}') already used")
+
+    # A) year-constant spam: only block if any prior problem already used such a constant
+    if existing_in_variant and _has_year_constants(statement, current_year):
+        for ex in existing_in_variant:
+            ex_stmt = ex.get("statement", "") or ""
+            if _has_year_constants(ex_stmt, current_year):
+                raise ValueError(
+                    "year_constant_already_used: another problem in this variant "
+                    f"already uses {current_year}/2025/2026/2027 in statement"
+                )
+
+
+def _chat_with_fallback(messages: list, **kwargs):
+    """v2.3: try GENERATOR_MODEL, fall back through GENERATOR_FALLBACKS on
+    HTTP 4xx 'No endpoints found' / model-id errors. Other errors propagate."""
+    chain = [MODEL] + list(_FALLBACKS)
+    last_err = None
+    for m in chain:
+        try:
+            res = openrouter.chat(model=m, messages=messages, **kwargs)
+            res["_model_used"] = m
+            if m != MODEL:
+                logger.warning(f"[Generator] fallback model used: {m} (primary {MODEL} failed)")
+            return res
+        except Exception as e:
+            msg = str(e)
+            last_err = e
+            # only fallback on model-id/availability problems, not on other errors
+            if ("No endpoints found" in msg
+                or "is not a valid model ID" in msg
+                or "HTTP 404" in msg
+                or "HTTP 400" in msg):
+                logger.warning(f"[Generator] model {m} unavailable: {msg[:120]}; trying fallback")
+                continue
+            raise
+    raise last_err if last_err else RuntimeError("Generator exhausted all fallbacks")
 
 
 def generate_problem(analysis: dict, position: int, existing_in_variant: list = None,
@@ -187,8 +357,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 
 Если не можешь — верни: {{"status": "reject", "reason": "..."}}"""
 
-    result = openrouter.chat(
-        model=MODEL,
+    result = _chat_with_fallback(
         messages=[
             {"role": "system", "content": "Ты — составитель олимпиадных задач мирового уровня. LaTeX ТОЛЬКО через \\( \\) и \\[ \\]. Язык: русский."},
             {"role": "user", "content": prompt}
@@ -196,6 +365,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
         temperature=TEMPERATURE,
         max_tokens=6144,
     )
+    model_used = result.get("_model_used", MODEL)
 
     content = result["content"]
     try:
@@ -246,6 +416,11 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
     data["_usage"] = result["usage"]
     data["_cost"] = result["cost_usd"]
 
-    openrouter.log_cost_to_db('generate', MODEL, result['usage'], result['cost_usd'])
-    logger.info(f"[Generator] pos={position} topic={data.get('topic','')} ${result['cost_usd']:.4f}")
+    openrouter.log_cost_to_db('generate', model_used, result['usage'], result['cost_usd'])
+    # v2.3: programmatic post-parse validation (raises ValueError -> retry-guard)
+    validate_generated_problem(data, existing_in_variant or [], current_year)
+    logger.info(
+        f"[Generator] pos={position} topic={data.get('topic','')} "
+        f"model={model_used} ${result['cost_usd']:.4f}"
+    )
     return data

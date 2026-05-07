@@ -89,7 +89,9 @@ def main():
             accepted = False
             problem = None
 
-            for attempt in range(5):
+            # v2.3: bumped from 5 -> 10 because validator now triggers
+            # programmatic retries on dup-topic / year-spam / latex-dirty / proof.
+            for attempt in range(10):
                 report["retries"] = attempt
 
                 # Generate
@@ -97,7 +99,11 @@ def main():
                 try:
                     problem = generate_problem(analysis, pos, problems, variant_date=VARIANT_DATE)
                 except (ValueError, Exception) as e:
-                    logger.warning(f"  Generator error (attempt {attempt+1}): {e}")
+                    logger.warning(f"  Generator REJECTED (attempt {attempt+1}): {e}")
+                    problem = None
+                    continue
+                if problem is None:
+                    logger.warning(f"  Generator returned None (attempt {attempt+1})")
                     continue
                 gen_time = round(time.time() - t0, 1)
                 gen_cost = problem.get("_cost", 0)
@@ -172,7 +178,10 @@ def main():
             # NEW (v2.1): if all 5 attempts rejected — keep last problem in DB but mark as 'failed'
             if not accepted:
                 logger.error(f"  ❌ Problem {pos}: all 5 attempts rejected, marking as 'failed'")
-            problems.append(problem if problem is not None else {"statement": "[no_problem]", "solution": "", "answer": "", "topic": "", "difficulty": 0})
+            # v2.3 fix: ensure problem is a dict for both append and INSERT
+            if problem is None:
+                problem = {"statement": "[no_problem]", "solution": "", "answer": "", "topic": "", "difficulty": 0}
+            problems.append(problem)
 
             # Save to DB
             problem_status = 'approved' if accepted else 'failed'
@@ -186,9 +195,9 @@ def main():
                 """),
                 dict(
                     vid=variant_id, pos=pos,
-                    stmt=problem["statement"],
-                    sol=problem["solution"],
-                    ans=problem["answer"],
+                    stmt=problem.get("statement", "[no_problem]"),
+                    sol=problem.get("solution", ""),
+                    ans=problem.get("answer", ""),
                     topic=problem.get("topic", ""),
                     diff=problem.get("difficulty", 5),
                     status=problem_status,

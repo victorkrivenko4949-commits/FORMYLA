@@ -105,6 +105,10 @@ def _run_analysis(olympiad_slug: str, grade: int, round_key: str) -> dict:
         logger.error(f"[Analyzer] Failed to parse JSON: {e}\nContent: {content[:200]}")
         raise
 
+    # v2.3: enforce a hard 5-topic template for vsosh/9/regional
+    # to guarantee diversity even if model returned duplicate themes.
+    analysis = _enforce_predicted_variant_template(analysis, olympiad_slug, grade, round_key)
+
     # Save to cache
     expires_at = datetime.now(timezone.utc) + timedelta(days=CACHE_DAYS)
     analysis_json = json.dumps(analysis, ensure_ascii=False)
@@ -215,3 +219,46 @@ def _build_prompt(title, grade, round_key, count, tasks_block):
    Не ставь две позиции "геометрия" подряд. Распределяй: алгебра, геометрия, комбинаторика, теория чисел, логика/игры/инварианты.
 3. Если архив содержит мало числовых задач — придумай аналогичные числовые формулировки для тех же тем.
 """
+
+
+# v2.3: hardcoded predicted_variant templates for combos where we want
+# guaranteed topic diversity. Each theme is canonical; idea is a hint
+# that the generator may rephrase.
+_HARDCODED_TEMPLATES = {
+    ("vsosh", 9, "regional"): [
+        {"position": 1, "theme": "алгебра",        "subtopic": "уравнения/неравенства",     "idea": "Нетривиальная замена / параметр / функциональное уравнение", "difficulty": 6, "answer_type": "number", "expected_techniques": ["замена переменной", "оценка"]},
+        {"position": 2, "theme": "геометрия",      "subtopic": "планиметрия",               "idea": "Свойства окружностей / биссектрис / подобия / гомотетии",     "difficulty": 7, "answer_type": "number", "expected_techniques": ["вписанная окружность", "степень точки"]},
+        {"position": 3, "theme": "теория чисел",   "subtopic": "делимость/сравнения",        "idea": "Сравнения по модулю / квадратичные вычеты / порядок элемента", "difficulty": 7, "answer_type": "number", "expected_techniques": ["сравнения", "теорема Эйлера"]},
+        {"position": 4, "theme": "комбинаторика", "subtopic": "подсчёт/двойной подсчёт",    "idea": "Биекция / двойной подсчёт / включение-исключение",            "difficulty": 8, "answer_type": "formula", "expected_techniques": ["биекция", "оценка снизу+конструкция"]},
+        {"position": 5, "theme": "логика/игры/инварианты", "subtopic": "инвариант/полуинвариант", "idea": "Инвариант, экстремальный принцип или стратегия в игре", "difficulty": 8, "answer_type": "number", "expected_techniques": ["инвариант", "крайний случай"]},
+    ],
+}
+
+
+def _enforce_predicted_variant_template(analysis: dict, slug: str, grade, round_key: str) -> dict:
+    """Override predicted_variant with a hardcoded 5-unique-themes template
+    for combos in _HARDCODED_TEMPLATES; otherwise return analysis unchanged."""
+    key = (slug, int(grade), round_key)
+    template = _HARDCODED_TEMPLATES.get(key)
+    if not template:
+        return analysis
+
+    original = analysis.get("predicted_variant") or []
+    # Detect topic duplicates in the original to log why we override
+    themes = [(p.get("theme") or "").strip().lower() for p in original]
+    has_dup = len(themes) != len(set(themes)) or len(themes) < 5
+    if has_dup:
+        logger.warning(
+            f"[Analyzer] {slug}/{grade}/{round_key}: model gave themes={themes}, "
+            f"overriding with v2.3 hardcoded 5-unique-theme template"
+        )
+    else:
+        logger.info(f"[Analyzer] {slug}/{grade}/{round_key}: applying v2.3 template (forced)")
+    analysis["predicted_variant"] = list(template)
+    # Also wipe forbidden_topics that might collide with our 5 canonical themes
+    forbidden = analysis.get("forbidden_topics") or []
+    canonical = {"алгебра", "геометрия", "теория чисел", "комбинаторика", "логика", "игры", "инварианты", "логика/игры/инварианты"}
+    cleaned = [t for t in forbidden if (t or "").strip().lower() not in canonical]
+    if len(cleaned) != len(forbidden):
+        analysis["forbidden_topics"] = cleaned
+    return analysis
