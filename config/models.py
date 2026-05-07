@@ -34,11 +34,17 @@ GENERATOR_TEMPERATURE = 0.8
 
 # Switched from openai/o4-mini → anthropic/claude-sonnet-4.5 (RU IP block 403 on OpenAI).
 # v2.3: dual solver — independent verification with majority vote (>= 1 of 2 agreeing).
+# v2.4: triple solver — added deepseek-chat as third independent voice.
+#       Majority logic in solver.py uses MAJORITY_THRESHOLD (>= 2 of 3 agreeing).
 SOLVER_MODEL = os.getenv("SOLVER_MODEL", "anthropic/claude-sonnet-4.5")
 SOLVER_MODELS = [
     "anthropic/claude-sonnet-4.5",
     "google/gemini-2.5-pro",
+    "deepseek/deepseek-chat",
 ]
+# Number of solvers that must agree with the generator's answer for is_correct=True.
+# v2.3 used "any_match" (>=1). v2.4 raises bar to majority (>=2).
+SOLVER_MAJORITY_THRESHOLD = 2
 SOLVER_TEMPERATURE = 0.1
 
 CRITIC_MODEL = os.getenv("CRITIC_MODEL", "anthropic/claude-sonnet-4.5")

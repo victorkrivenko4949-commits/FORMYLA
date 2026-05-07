@@ -78,6 +78,30 @@ def main():
         variant_id = row[0]
         logger.info(f"  Variant ID: {variant_id}")
 
+        # v2.4: persistent log of every critic+solver attempt
+        # (separate table to avoid touching daily_problems schema)
+        db.session.execute(db.text("""
+            CREATE TABLE IF NOT EXISTS critic_attempts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                variant_id INTEGER NOT NULL,
+                position INTEGER NOT NULL,
+                attempt_num INTEGER NOT NULL,
+                solver_match INTEGER,
+                solver_correct_count INTEGER,
+                solver_total INTEGER,
+                solver_per_model TEXT,
+                critic_avg REAL,
+                critic_min REAL,
+                critic_verdict TEXT,
+                critic_scores TEXT,
+                critic_full_json TEXT,
+                problem_text TEXT,
+                problem_answer TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """))
+        db.session.commit()
+
         # Step 3: Generate 5 problems
         for pos in range(1, 6):
             logger.info(f"\n============================================================")
@@ -137,6 +161,41 @@ def main():
                 report["critic_latex_ok"] = critic_result.get("latex_ok", False)
                 report["critic_verdict"] = critic_result.get("verdict", "?")
                 logger.info(f"  Critic ({critic_time}s, ${critic_cost:.4f}) avg={report['critic_avg']} verdict={report['critic_verdict']}")
+
+                # v2.4: persist EVERY critic attempt to critic_attempts table
+                try:
+                    db.session.execute(db.text("""
+                        INSERT INTO critic_attempts
+                            (variant_id, position, attempt_num,
+                             solver_match, solver_correct_count, solver_total,
+                             solver_per_model,
+                             critic_avg, critic_min, critic_verdict,
+                             critic_scores, critic_full_json,
+                             problem_text, problem_answer)
+                        VALUES (:vid, :pos, :att,
+                                :sm, :scc, :st, :spm,
+                                :cavg, :cmin, :cv,
+                                :cs, :cfj,
+                                :pt, :pa)
+                    """), dict(
+                        vid=variant_id, pos=pos, att=attempt + 1,
+                        sm=1 if solver_result.get("is_correct") else 0,
+                        scc=solver_result.get("_correct_count"),
+                        st=solver_result.get("_total_solvers"),
+                        spm=json.dumps(solver_result.get("_solvers", []), ensure_ascii=False),
+                        cavg=critic_result.get("avg", 0),
+                        cmin=critic_result.get("min", 0),
+                        cv=critic_result.get("verdict", "?"),
+                        cs=json.dumps(critic_result.get("scores", {}), ensure_ascii=False),
+                        cfj=json.dumps({k: v for k, v in critic_result.items()
+                                        if k not in ("_usage",)}, ensure_ascii=False, default=str),
+                        pt=problem.get("statement", "")[:5000],
+                        pa=problem.get("answer", "")[:500],
+                    ))
+                    db.session.commit()
+                except Exception as e:
+                    logger.warning(f"  [persist] critic_attempts insert failed: {e}")
+                    db.session.rollback()
 
                 if critic_result["verdict"] != "approve":
                     logger.warning("  Critic rejected, retrying...")

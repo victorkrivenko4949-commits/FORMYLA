@@ -17,6 +17,10 @@ try:
     from config.models import SOLVER_MODELS as _SOLVER_MODELS
 except ImportError:
     _SOLVER_MODELS = [SOLVER_MODEL]
+try:
+    from config.models import SOLVER_MAJORITY_THRESHOLD as _MAJ
+except ImportError:
+    _MAJ = 1  # back-compat: any_match
 
 # Default single model kept for back-compat callers
 MODEL = SOLVER_MODEL
@@ -24,18 +28,18 @@ TEMPERATURE = SOLVER_TEMPERATURE
 
 
 def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> dict:
-    """v2.3: dual-solver with majority vote.
+    """v2.4: triple-solver with majority threshold.
 
     Calls each model in SOLVER_MODELS independently and returns a single dict
-    where is_correct = True iff at least one solver agrees with the generator's
-    expected answer. Per-model details are attached under "_solvers".
-    Costs are summed in "_cost".
+    where is_correct = True iff at least SOLVER_MAJORITY_THRESHOLD solvers
+    agree with the generator's expected answer (default: 2 of 3).
+    Per-model details under "_solvers". Costs summed in "_cost".
     """
     models_to_try = list(_SOLVER_MODELS) if _SOLVER_MODELS else [MODEL]
     per_model_results = []
     total_cost = 0.0
     aggregate_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
-    any_match = False
+    correct_count = 0
     best_data = None
     best_conf = -1.0
     for model in models_to_try:
@@ -55,7 +59,7 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
         for k in ("prompt_tokens", "completion_tokens", "total_tokens"):
             aggregate_usage[k] += single.get("_usage", {}).get(k, 0)
         if single.get("is_correct"):
-            any_match = True
+            correct_count += 1
         # remember best (highest confidence) for legacy fields
         conf = float(single.get("confidence") or 0)
         if conf > best_conf:
@@ -63,7 +67,6 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
             best_data = single
 
     if best_data is None:
-        # all models failed: synthesize a "no verification" record
         return {
             "answer": "", "solution": "", "confidence": 0,
             "is_correct": False, "is_well_posed": True,
@@ -71,18 +74,20 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
             "_solvers": per_model_results,
         }
 
-    # Disagreement diagnostics
-    correct_count = sum(1 for r in per_model_results if r.get("is_correct"))
-    if 0 < correct_count < len(per_model_results):
+    n_models = len([r for r in per_model_results if "error" not in r])
+    majority_match = correct_count >= _MAJ
+    if 0 < correct_count < n_models:
         logger.warning(
-            f"[Solver] disagreement: {correct_count}/{len(per_model_results)} "
-            f"agree -> majority vote any_match={any_match}"
+            f"[Solver] disagreement: {correct_count}/{n_models} agree, "
+            f"threshold={_MAJ} -> majority_match={majority_match}"
         )
 
-    best_data["is_correct"] = any_match
+    best_data["is_correct"] = majority_match
     best_data["_cost"] = total_cost
     best_data["_usage"] = aggregate_usage
     best_data["_solvers"] = per_model_results
+    best_data["_correct_count"] = correct_count
+    best_data["_total_solvers"] = n_models
     return best_data
 
 
