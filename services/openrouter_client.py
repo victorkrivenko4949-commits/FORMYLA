@@ -24,26 +24,35 @@ logger = logging.getLogger(__name__)
 # Model-specific rate limits (requests per minute)
 DEFAULT_RPM = {
     "anthropic/claude-sonnet-4.5": 40,
+    "anthropic/claude-opus-4.7": 15,
+    "anthropic/claude-opus-4.1": 20,
     "deepseek/deepseek-chat": 60,
+    "google/gemini-2.5-pro": 30,
     "openai/o4-mini": 30,
     "openai/text-embedding-3-large": 200,
     # Legacy (kept for compatibility)
-    "anthropic/claude-opus-4.1": 20,
     "openai/gpt-4o": 60,
     "openai/gpt-4o-mini": 100,
 }
 
-# Pricing per 1M tokens (input/output) for cost tracking
+# Pricing per 1M tokens (input/output) for cost tracking.
+# v2.5 hotfix: added opus-4.7 + gemini-2.5-pro because generator/arbiter calls
+# were logging $0.0000 due to missing pricing entries.  Numbers below match
+# OpenRouter list pricing as of 2026-05; if/when official anthropic opus-4.7
+# pricing is published, replace the placeholder.
 MODEL_PRICING = {
     "anthropic/claude-sonnet-4.5": (3.0, 15.0),
+    "anthropic/claude-opus-4.7": (15.0, 75.0),   # placeholder; mirror opus-4.1 until verified
+    "anthropic/claude-opus-4.1": (15.0, 75.0),
     "deepseek/deepseek-chat": (0.27, 1.10),
+    "google/gemini-2.5-pro": (1.25, 5.0),
     "openai/o4-mini": (1.10, 4.40),
     "openai/text-embedding-3-large": (0.13, 0.0),
     # Legacy
-    "anthropic/claude-opus-4.1": (15.0, 75.0),
     "openai/gpt-4o": (2.5, 10.0),
     "openai/gpt-4o-mini": (0.15, 0.6),
 }
+_PRICING_PLACEHOLDER_WARNED = set()
 
 CIRCUIT_BREAKER_THRESHOLD = 10
 CIRCUIT_BREAKER_PAUSE_SEC = 300

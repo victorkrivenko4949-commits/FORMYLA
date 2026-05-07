@@ -57,6 +57,14 @@ except Exception:
     DEBATE_MAX_TOKENS = 12000
     DEBATE_ENABLED = True
 
+# v2.5 hotfix B3: models that empirically refuse to honor JSON-only output on
+# long olympiad reasoning.  For these we skip the json.loads attempt entirely
+# and parse the response in free-form mode (extract verdict tokens + answer).
+_FREEFORM_FIRST_MODELS = {
+    "google/gemini-2.5-pro",
+    "google/gemini-2.0-pro",
+}
+
 
 # ── Prompts ─────────────────────────────────────────────────────────────────
 
@@ -169,10 +177,74 @@ Return ONLY a valid JSON object:
 
 # ── Low-level helpers ───────────────────────────────────────────────────────
 
+def _extract_freeform_fields(raw: str) -> Dict[str, Any]:
+    r"""Best-effort field extraction when JSON parsing is unavailable.
+
+    Pulls common fields used by R2 / arbiter prompts:
+      verdict / final_verdict, revised_answer / my_answer / correct_answer,
+      revised_solution / my_solution, reasoning, confidence.
+
+    Strategy: regex against ``"key"\s*:\s*"value"`` patterns first; if the
+    response is plain prose, fall back to the first ``\boxed{...}`` for
+    the answer and the AGREE/DISAGREE/CORRECT/WRONG meta-token for verdict.
+    """
+    data: Dict[str, Any] = {}
+    patterns = {
+        "verdict": r'"verdict"\s*:\s*"([^"]+)"',
+        "final_verdict": r'"final_verdict"\s*:\s*"([^"]+)"',
+        "revised_answer": r'"revised_answer"\s*:\s*"((?:[^"\\]|\\.)*)"',
+        "my_answer": r'"my_answer"\s*:\s*"((?:[^"\\]|\\.)*)"',
+        "correct_answer": r'"correct_answer"\s*:\s*"((?:[^"\\]|\\.)*)"',
+        "reasoning": r'"reasoning"\s*:\s*"((?:[^"\\]|\\.)*)"',
+        "equivalence_check": r'"equivalence_check"\s*:\s*"((?:[^"\\]|\\.)*)"',
+        "override_reason": r'"override_reason"\s*:\s*"((?:[^"\\]|\\.)*)"',
+    }
+    for key, pat in patterns.items():
+        m = re.search(pat, raw, re.DOTALL)
+        if m:
+            # un-escape \" and \\ in extracted value
+            val = m.group(1).replace('\\"', '"').replace('\\\\', '\\')
+            data[key] = val
+
+    # Verdict meta-token fallback (works even on totally non-JSON responses)
+    if not data.get("verdict") and not data.get("final_verdict"):
+        tok = _extract_token(raw, ("AGREE_WITH_GENERATOR", "DISAGREE",
+                                    "CORRECT", "WRONG"))
+        if tok:
+            if tok in ("CORRECT", "WRONG"):
+                data["final_verdict"] = tok
+            else:
+                data["verdict"] = tok
+
+    # Answer fallback: first \boxed{...}
+    if not (data.get("revised_answer") or data.get("my_answer") or
+            data.get("correct_answer")):
+        m = re.search(r'\\boxed\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}', raw)
+        if m:
+            data["revised_answer"] = "\\boxed{" + m.group(1) + "}"
+
+    # Confidence fallback (numeric)
+    m = re.search(r'"confidence"\s*:\s*([0-9.]+)', raw)
+    if m:
+        try:
+            data["confidence"] = float(m.group(1))
+        except ValueError:
+            pass
+
+    return data
+
+
 def _call_json(model: str, prompt: str, temperature: float, max_tokens: int,
                system: str) -> Dict[str, Any]:
     """Call the LLM, parse JSON robustly. Returns a dict that includes raw
-    content under ``_raw`` and ``_cost``/``_usage`` from the API."""
+    content under ``_raw`` and ``_cost``/``_usage`` from the API.
+
+    v2.5 hotfix: for models in ``_FREEFORM_FIRST_MODELS`` (e.g. gemini-2.5-pro)
+    we skip the json.loads attempt entirely and use the free-form extractor,
+    because empirically those models never honor JSON-only output for long
+    olympiad reasoning -- the JSON path always fell back anyway, wasting an
+    extra parse cycle and emitting a noisy WARN per debate.
+    """
     msgs = [
         {"role": "system", "content": system},
         {"role": "user", "content": prompt},
@@ -182,19 +254,27 @@ def _call_json(model: str, prompt: str, temperature: float, max_tokens: int,
         temperature=temperature, max_tokens=max_tokens,
     )
     raw = res["content"]
-    body = raw
-    if "```json" in body:
-        body = body.split("```json", 1)[1].split("```", 1)[0]
-    elif "```" in body:
-        body = body.split("```", 1)[1].split("```", 1)[0]
-    try:
-        data = parse_json_with_latex(body.strip())
-        if not isinstance(data, dict):
-            raise ValueError("not a dict")
-    except Exception as e:
-        logger.warning(f"[Debate:{model}] JSON parse failed ({e}); "
-                       f"falling back to free-form extraction")
-        data = {"_parse_error": str(e)[:200]}
+
+    # B3: gemini-style free-form-first path
+    if model in _FREEFORM_FIRST_MODELS:
+        data = _extract_freeform_fields(raw)
+        data["_freeform_path"] = True
+    else:
+        body = raw
+        if "```json" in body:
+            body = body.split("```json", 1)[1].split("```", 1)[0]
+        elif "```" in body:
+            body = body.split("```", 1)[1].split("```", 1)[0]
+        try:
+            data = parse_json_with_latex(body.strip())
+            if not isinstance(data, dict):
+                raise ValueError("not a dict")
+        except Exception as e:
+            logger.warning(f"[Debate:{model}] JSON parse failed ({e}); "
+                           f"falling back to free-form extraction")
+            data = _extract_freeform_fields(raw)
+            data["_parse_error"] = str(e)[:200]
+
     data["_raw"] = raw
     data["_cost"] = res.get("cost_usd", 0.0)
     data["_usage"] = res.get("usage", {})

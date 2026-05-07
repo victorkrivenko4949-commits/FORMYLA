@@ -112,6 +112,13 @@ MONTHLY_BUDGET_HARD_STOP = float(os.getenv("POOL_BUDGET_HARD_STOP", "500"))
 # ─── Pipeline Settings ─────────────────────────────────────────────────────────
 
 MAX_GENERATE_RETRIES = 3
+# v2.5 hotfix B1: hard cap on TOTAL attempts per position (generator + critic
+# loop). Previously test_single_variant.py used range(10) and tasks/daily_pool
+# used MAX_GENERATE_RETRIES=3 inconsistently. This single knob is now used by
+# BOTH paths.  After exhausting the cap on the primary topic, the pipeline
+# logs a structured ABANDONED record and either (in tasks/daily_pool) inserts
+# a sentinel "[no_problem]" row, or (in test_single_variant) marks accepted=False.
+MAX_ATTEMPTS_PER_POSITION = int(os.getenv("MAX_ATTEMPTS_PER_POSITION", "4"))
 MAX_META_RETRIES = 2
 SIMILARITY_THRESHOLD = 0.85
 LOOKBACK_DAYS = 365

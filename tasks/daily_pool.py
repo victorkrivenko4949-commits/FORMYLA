@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # Import pipeline config
 from config.models import (
     AVAILABLE_OLYMPIADS, TIER_PREGEN, TIER_LAZY,
-    MAX_GENERATE_RETRIES, MAX_META_RETRIES,
+    MAX_GENERATE_RETRIES, MAX_ATTEMPTS_PER_POSITION, MAX_META_RETRIES,
     MONTHLY_BUDGET_HARD_STOP, DEFAULT_STACK,
 )
 
@@ -223,7 +223,7 @@ def _generate_single_problem(analysis, position, existing, stack,
 
     total_cost = 0.0
 
-    for attempt in range(MAX_GENERATE_RETRIES):
+    for attempt in range(MAX_ATTEMPTS_PER_POSITION):
         # Generate
         problem = generate_problem(analysis, position, existing)
         total_cost += problem.get("_cost", 0)
@@ -291,11 +291,19 @@ def _generate_single_problem(analysis, position, existing, stack,
 
         return problem
 
-    # All retries exhausted - use last generated problem anyway
-    logger.error(f"[Pipeline] pos={position}: all retries exhausted, using last attempt")
+    # All retries exhausted - log structured ABANDONED record and force-use
+    # the last attempt (kept as best-effort filler so meta-review still has 5
+    # positions). Downstream meta-reviewer sees `_forced=True` and can flag.
+    logger.error(
+        f"[Generator] Position {position} ABANDONED after "
+        f"{MAX_ATTEMPTS_PER_POSITION} attempts "
+        f"(olympiad={olympiad_slug} grade={grade} round={round_name}); "
+        f"using last attempt as filler with _forced=True"
+    )
     problem["_total_cost"] = total_cost
-    problem["_attempts"] = MAX_GENERATE_RETRIES
+    problem["_attempts"] = MAX_ATTEMPTS_PER_POSITION
     problem["_forced"] = True
+    problem["_abandoned"] = True
     return problem
 
 

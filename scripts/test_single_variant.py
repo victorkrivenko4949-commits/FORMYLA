@@ -35,6 +35,21 @@ ROUND = "regional"
 VARIANT_DATE = "2026-05-06"
 STACK = "A"
 
+# v2.5 sanity-run flag.  When True the script generates a variant exactly as
+# normal but at the end DELETES the just-created daily_variants /
+# daily_problems rows (debate_attempts and critic_attempts are kept for
+# post-mortem).  Use ``--dry-run`` on the CLI or set DRY_RUN=1 in env.
+DRY_RUN = ("--dry-run" in sys.argv) or (os.environ.get("DRY_RUN", "0") == "1")
+if DRY_RUN:
+    logger.info("[dry-run] enabled: variant rows will be DELETED at the end "
+                "(critic_attempts and debate_attempts are kept).")
+# Optional override: --date YYYY-MM-DD (lets us run two sanity variants
+# back-to-back without the unique (slug,grade,round,date,stack) collision).
+for _i, _a in enumerate(sys.argv):
+    if _a == "--date" and _i + 1 < len(sys.argv):
+        VARIANT_DATE = sys.argv[_i + 1]
+        break
+
 
 def main():
     start_time = time.time()
@@ -113,9 +128,13 @@ def main():
             accepted = False
             problem = None
 
-            # v2.3: bumped from 5 -> 10 because validator now triggers
-            # programmatic retries on dup-topic / year-spam / latex-dirty / proof.
-            for attempt in range(10):
+            # v2.5 hotfix B1: hard cap from config.models.MAX_ATTEMPTS_PER_POSITION.
+            # Sanity #1 hit a 7+ retry loop on pos 1 (45 min on a single position)
+            # because old hardcoded range(10) plus strict v2.5 verifier never
+            # converged. Now both this script and tasks/daily_pool.py share the
+            # same env-overridable cap.
+            from config.models import MAX_ATTEMPTS_PER_POSITION as _MAX_ATTEMPTS
+            for attempt in range(_MAX_ATTEMPTS):
                 report["retries"] = attempt
 
                 # Generate
@@ -263,9 +282,12 @@ def main():
             report["accepted"] = accepted
             quality_reports.append(report)
 
-            # NEW (v2.1): if all 5 attempts rejected — keep last problem in DB but mark as 'failed'
+            # v2.5 hotfix B1: structured ABANDONED log when cap exhausted.
             if not accepted:
-                logger.error(f"  ❌ Problem {pos}: all 5 attempts rejected, marking as 'failed'")
+                logger.error(
+                    f"  [Generator] Position {pos} ABANDONED after "
+                    f"{_MAX_ATTEMPTS} attempts; marking as 'failed' filler."
+                )
             # v2.3 fix: ensure problem is a dict for both append and INSERT
             if problem is None:
                 problem = {"statement": "[no_problem]", "solution": "", "answer": "", "topic": "", "difficulty": 0}
@@ -310,6 +332,26 @@ def main():
             dict(s=final_status, c=total_cost, v=variant_id)
         )
         db.session.commit()
+
+        # v2.5 sanity-run cleanup: drop the variant rows so this does not
+        # leak into the production pool.  We KEEP critic_attempts and
+        # debate_attempts for offline analysis (they retain variant_id but
+        # the foreign variant row is gone -- intentional).
+        if DRY_RUN:
+            try:
+                db.session.execute(
+                    db.text("DELETE FROM daily_problems WHERE variant_id = :v"),
+                    dict(v=variant_id),
+                )
+                db.session.execute(
+                    db.text("DELETE FROM daily_variants WHERE id = :v"),
+                    dict(v=variant_id),
+                )
+                db.session.commit()
+                logger.info(f"[dry-run] deleted daily_variants/{variant_id} "
+                            f"and its daily_problems rows; kept telemetry.")
+            except Exception as e:
+                logger.warning(f"[dry-run] cleanup failed: {e}")
 
         total_time = round(time.time() - start_time, 1)
         timings["total"] = total_time

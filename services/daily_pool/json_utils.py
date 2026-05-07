@@ -21,9 +21,15 @@ def parse_json_with_latex(text):
     except json.JSONDecodeError:
         pass
 
-    # Fix: double all single backslashes not followed by valid JSON escape chars
-    # Valid JSON escapes: \\ \" \/ \b \f \n \r \t \uXXXX
-    VALID_ESCAPES = '"\\/bfnrtu'
+    # Fix: double all single backslashes not followed by valid JSON escape chars.
+    # NOTE (v2.5 hotfix): we deliberately EXCLUDE ``b`` and ``f`` from the
+    # allowlist because LaTeX commands like ``\boxed{...}`` and ``\frac{...}``
+    # were being silently interpreted as the JSON escapes ``\b`` (backspace)
+    # and ``\f`` (formfeed), which corrupted output to ``\oxed{...}`` /
+    # ``\rac{...}``.  Within an olympiad math pipeline these legitimate JSON
+    # escapes never occur, so re-doubling them is safe.
+    # Original JSON spec valid escapes: \\ \" \/ \b \f \n \r \t \uXXXX
+    VALID_ESCAPES = '"\\/nrtu'
     fixed = re.sub(
         r'\\(?![' + VALID_ESCAPES + '])',
         r'\\\\',
@@ -31,6 +37,14 @@ def parse_json_with_latex(text):
     )
     try:
         return json.loads(fixed)
+    except json.JSONDecodeError:
+        pass
+
+    # Second pass: also try preserving original text but pre-doubling \b / \f
+    # before parsing in case the model emitted a literal backspace already.
+    text2 = text.replace('\b', r'\\b').replace('\f', r'\\f')
+    try:
+        return json.loads(text2)
     except json.JSONDecodeError:
         pass
 
