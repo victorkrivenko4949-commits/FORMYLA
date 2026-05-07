@@ -46,3 +46,4 @@ propcache==0.4.1
 aiohappyeyeballs==2.6.1
 markdown==3.10.2
 duckduckgo-search==8.0.1
+sympy==1.14.0

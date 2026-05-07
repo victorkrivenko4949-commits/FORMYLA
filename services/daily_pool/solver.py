@@ -128,7 +128,7 @@ def _verify_with_model(statement: str, expected_answer: str, stack: str,
             {"role": "user", "content": prompt}
         ],
         temperature=TEMPERATURE,
-        max_tokens=8192,
+        max_tokens=16000,
     )
 
     content = result["content"]
@@ -184,35 +184,47 @@ def _verify_with_model(statement: str, expected_answer: str, stack: str,
 
 
 def _compare_answers(solver: str, expected: str) -> bool:
-    """Compare two answers with normalization."""
+    """Compare two answers with semantic normalization (sympy when possible).
+
+    Delegates to :mod:`services.daily_pool.answer_normalizer` which understands
+    \\boxed{}, \\dfrac/\\frac/\\tfrac, \\sqrt rationalization, markdown wrappers,
+    comma-separated multi-answer sets, and pure numeric tolerance.
+    """
     if not solver or not expected:
         return False
+    try:
+        from services.daily_pool.answer_normalizer import answers_equal
+    except Exception as e:
+        logger.warning(f"[Solver] answer_normalizer unavailable: {e}; "
+                       f"falling back to legacy comparison")
+        return _legacy_compare(solver, expected)
+    try:
+        return answers_equal(solver, expected)
+    except Exception as e:
+        logger.warning(f"[Solver] answers_equal raised {e}; using legacy")
+        return _legacy_compare(solver, expected)
 
-    # Normalize
+
+def _legacy_compare(solver: str, expected: str) -> bool:
+    """Pre-v2.5 textual comparison kept as a safety fallback."""
     s = _normalize(solver)
     e = _normalize(expected)
-
     if s == e:
         return True
-
-    # Numeric comparison
     try:
         if abs(float(s) - float(e)) < 1e-9:
             return True
     except (ValueError, TypeError):
         pass
-
-    # Set comparison (comma-separated)
     s_parts = sorted(_normalize(p) for p in re.split(r'[,;]', solver) if p.strip())
     e_parts = sorted(_normalize(p) for p in re.split(r'[,;]', expected) if p.strip())
     if s_parts == e_parts and len(s_parts) > 1:
         return True
-
     return False
 
 
 def _normalize(s: str) -> str:
-    """Normalize answer string for comparison."""
+    """Normalize answer string for comparison (legacy — used as fallback)."""
     s = s.strip().lower()
     s = re.sub(r'\s+', '', s)
     s = s.replace('\\(', '').replace('\\)', '')
