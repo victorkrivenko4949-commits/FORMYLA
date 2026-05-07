@@ -47,6 +47,18 @@ SOLVER_MODELS = [
 SOLVER_MAJORITY_THRESHOLD = 2
 SOLVER_TEMPERATURE = 0.1
 
+# ─── Debate (v2.5 tie-breaker) ─────────────────────────────────────────────────
+# When R1 majority is NOT reached (correct_count < SOLVER_MAJORITY_THRESHOLD),
+# the solver triggers a debate round (R2 with peer context) followed by an
+# arbiter that first solves the problem independently (anti-anchoring), then
+# compares its own answer to the generator's. The arbiter's verdict is final.
+ARBITER_MODEL = os.getenv("ARBITER_MODEL", "anthropic/claude-opus-4.7")
+ARBITER_FALLBACK = "anthropic/claude-opus-4.1"
+ARBITER_TEMPERATURE = 0.0
+DEBATE_ENABLED = os.getenv("DEBATE_ENABLED", "1") not in ("0", "false", "False", "")
+DEBATE_R2_TEMPERATURE = 0.1
+DEBATE_MAX_TOKENS = 12000
+
 CRITIC_MODEL = os.getenv("CRITIC_MODEL", "anthropic/claude-sonnet-4.5")
 CRITIC_TEMPERATURE = 0.2
 

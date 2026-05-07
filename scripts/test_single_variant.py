@@ -134,16 +134,45 @@ def main():
                 total_cost += gen_cost
                 logger.info(f"  Generated ({gen_time}s, ${gen_cost:.4f})")
 
-                # Solve
+                # Solve (v2.5: pass generator_solution so debate has full context)
                 t0 = time.time()
-                solver_result = verify_problem(problem["statement"], problem["answer"], STACK)
+                solver_result = verify_problem(
+                    problem["statement"], problem["answer"], STACK,
+                    generator_solution=problem.get("solution", ""),
+                )
                 solve_time = round(time.time() - t0, 1)
                 solve_cost = solver_result.get("_cost", 0)
                 total_cost += solve_cost
                 report["solver_match"] = solver_result.get("is_correct", False)
                 report["solver_confidence"] = solver_result.get("confidence", "?")
                 report["cross_verify_status"] = solver_result.get("cross_verify_status")
-                logger.info(f"  Solved ({solve_time}s, ${solve_cost:.4f}) match={report['solver_match']} cv={report['cross_verify_status']}")
+                # v2.5 debate telemetry
+                report["debate_triggered"] = bool(solver_result.get("_debate_triggered"))
+                report["debate_high_risk"] = bool(solver_result.get("_high_risk"))
+                _deb = solver_result.get("_debate") or {}
+                report["debate_verdict"] = _deb.get("final_verdict")
+                report["debate_r1"] = (
+                    f"{solver_result.get('_correct_count')}/"
+                    f"{solver_result.get('_total_solvers')}"
+                )
+                logger.info(
+                    f"  Solved ({solve_time}s, ${solve_cost:.4f}) "
+                    f"match={report['solver_match']} "
+                    f"cv={report['cross_verify_status']}"
+                )
+                if report["debate_triggered"]:
+                    logger.info(
+                        f"  [Debate] R1={report['debate_r1']} "
+                        f"verdict={report['debate_verdict']} "
+                        f"high_risk={report['debate_high_risk']} "
+                        f"cost=${float(_deb.get('cost') or 0):.4f}"
+                    )
+                if report["debate_high_risk"]:
+                    logger.warning(
+                        f"  [HIGH-RISK] pos={pos}: R1={report['debate_r1']}, "
+                        f"only the arbiter rescued the answer; flag for "
+                        f"meta-review."
+                    )
 
                 if not solver_result.get("is_correct"):
                     logger.warning("  Solver disagrees, retrying...")

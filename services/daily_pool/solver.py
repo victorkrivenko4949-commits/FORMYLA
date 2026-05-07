@@ -27,13 +27,36 @@ MODEL = SOLVER_MODEL
 TEMPERATURE = SOLVER_TEMPERATURE
 
 
-def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> dict:
-    """v2.4: triple-solver with majority threshold.
+def verify_problem(statement: str, expected_answer: str, stack: str = "A",
+                   generator_solution: str = "") -> dict:
+    """v2.4 + v2.5: triple-solver with majority threshold + debate tie-breaker.
 
-    Calls each model in SOLVER_MODELS independently and returns a single dict
-    where is_correct = True iff at least SOLVER_MAJORITY_THRESHOLD solvers
-    agree with the generator's expected answer (default: 2 of 3).
-    Per-model details under "_solvers". Costs summed in "_cost".
+    Calls each model in SOLVER_MODELS independently.  If at least
+    ``SOLVER_MAJORITY_THRESHOLD`` solvers agree with the generator's expected
+    answer, we trust them and skip the debate.  Otherwise (correct_count
+    below threshold) we trigger
+    :func:`services.daily_pool.debate.run_debate` -- a peer-aware R2 round
+    plus an arbiter (claude-opus-4.7 by default) that solves the problem
+    independently and then rules on equivalence.
+
+    The arbiter's verdict is binding: if it returns ``CORRECT``, we mark
+    ``is_correct=True`` even if R1 was 0/3.  The full per-model R1 solutions
+    are passed to the debate so peer cross-checking is possible.
+
+    Args:
+        statement:         problem text.
+        expected_answer:   generator's claimed answer.
+        stack:             A/B experiment label (kept for callers).
+        generator_solution: full solution text from the generator. Optional
+                           but strongly recommended -- the debate uses it as
+                           ground-truth context for peer-revision in R2.
+
+    Returns:
+        Same shape as v2.4 with these additional keys when debate ran:
+            ``_correct_count`` / ``_total_solvers`` (R1 stats),
+            ``_debate_triggered`` (bool),
+            ``_debate``           (full DebateResult dict, or None),
+            ``_high_risk``        (bool, see debate.py for definition).
     """
     models_to_try = list(_SOLVER_MODELS) if _SOLVER_MODELS else [MODEL]
     per_model_results = []
@@ -54,6 +77,9 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
             "is_correct": single.get("is_correct"),
             "confidence": single.get("confidence"),
             "answer": single.get("answer", "")[:200],
+            # v2.5: keep the full solution text so downstream debate can show
+            # peers each other's work.  Truncated to keep memory sane.
+            "solution": (single.get("solution", "") or "")[:8000],
         })
         total_cost += single.get("_cost", 0.0)
         for k in ("prompt_tokens", "completion_tokens", "total_tokens"):
@@ -72,6 +98,7 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
             "is_correct": False, "is_well_posed": True,
             "_usage": aggregate_usage, "_cost": total_cost,
             "_solvers": per_model_results,
+            "_debate_triggered": False, "_debate": None, "_high_risk": False,
         }
 
     n_models = len([r for r in per_model_results if "error" not in r])
@@ -88,7 +115,133 @@ def verify_problem(statement: str, expected_answer: str, stack: str = "A") -> di
     best_data["_solvers"] = per_model_results
     best_data["_correct_count"] = correct_count
     best_data["_total_solvers"] = n_models
+    best_data["_debate_triggered"] = False
+    best_data["_debate"] = None
+    best_data["_high_risk"] = False
+
+    # v2.5 tie-breaker: if R1 majority was NOT reached, run debate.
+    if not majority_match and n_models > 0:
+        try:
+            from services.daily_pool.debate import run_debate, DEBATE_ENABLED
+        except Exception as e:
+            logger.warning(f"[Solver] debate module unavailable: {e}")
+            return best_data
+        if not DEBATE_ENABLED:
+            return best_data
+        logger.info(
+            f"[Solver] R1={correct_count}/{n_models} below threshold "
+            f"{_MAJ}, triggering debate..."
+        )
+        try:
+            debate_result = run_debate(
+                statement=statement,
+                generator_answer=expected_answer,
+                generator_solution=generator_solution or "",
+                r1_results=per_model_results,
+            )
+        except Exception as e:
+            logger.exception(f"[Solver] debate failed: {e}")
+            return best_data
+
+        best_data["_debate_triggered"] = True
+        best_data["_debate"] = debate_result
+        best_data["_high_risk"] = bool(debate_result.get("high_risk"))
+        # Roll up debate cost into the total reported by solver.
+        d_cost = float(debate_result.get("cost", 0.0))
+        best_data["_cost"] = total_cost + d_cost
+        verdict = debate_result.get("final_verdict")
+        # Arbiter is binding.  CORRECT -> we accept generator's answer;
+        # WRONG -> reject; UNCLEAR -> fall back to R1 majority (which was
+        # False here, so the problem is rejected).
+        if verdict == "CORRECT":
+            best_data["is_correct"] = True
+            logger.info(
+                f"[Solver] debate rescued: R1={correct_count}/{n_models} -> "
+                f"arbiter CORRECT (high_risk={best_data['_high_risk']})"
+            )
+        elif verdict == "WRONG":
+            best_data["is_correct"] = False
+            logger.warning(
+                f"[Solver] debate confirms WRONG: "
+                f"correct_answer={debate_result.get('correct_answer','?')[:80]}"
+            )
+        else:
+            # UNCLEAR -- be conservative and keep R1 majority result (False).
+            logger.warning("[Solver] debate UNCLEAR, keeping R1 result")
+        # Try to log the debate attempt to a side table (best-effort).
+        try:
+            _log_debate_attempt(debate_result, statement, expected_answer,
+                                correct_count, n_models)
+        except Exception as e:
+            logger.warning(f"[Solver] debate logging failed: {e}")
+
     return best_data
+
+
+def _log_debate_attempt(debate_result: dict, statement: str,
+                        expected_answer: str,
+                        r1_correct: int, r1_total: int) -> None:
+    """Best-effort persistence of a debate attempt.
+
+    Creates the ``debate_attempts`` table on first call (so we do not need a
+    separate Alembic migration for the v2.5 rollout).  Silently swallows any
+    DB error -- losing telemetry must NOT break verification.
+    """
+    try:
+        from models import db
+    except Exception:
+        return  # not in a Flask app context, skip
+    try:
+        db.session.execute(db.text(
+            "CREATE TABLE IF NOT EXISTS debate_attempts ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+            "statement_excerpt TEXT, "
+            "generator_answer TEXT, "
+            "r1_correct INTEGER, r1_total INTEGER, "
+            "r2_agreement INTEGER, r2_total INTEGER, "
+            "final_verdict TEXT, "
+            "correct_answer TEXT, "
+            "arbiter_model TEXT, "
+            "arbiter_solution TEXT, "
+            "arbiter_self_consistent INTEGER, "
+            "high_risk INTEGER, "
+            "cost_usd REAL, "
+            "elapsed_sec REAL"
+            ")"
+        ))
+        db.session.execute(db.text(
+            "INSERT INTO debate_attempts ("
+            "statement_excerpt, generator_answer, "
+            "r1_correct, r1_total, r2_agreement, r2_total, "
+            "final_verdict, correct_answer, arbiter_model, "
+            "arbiter_solution, arbiter_self_consistent, high_risk, "
+            "cost_usd, elapsed_sec"
+            ") VALUES ("
+            ":se, :ga, :r1c, :r1t, :r2a, :r2t, :fv, :ca, :am, :as_, :asc, "
+            ":hr, :cu, :es)"
+        ), {
+            "se": (statement or "")[:500],
+            "ga": (expected_answer or "")[:500],
+            "r1c": int(r1_correct), "r1t": int(r1_total),
+            "r2a": int(debate_result.get("r2_agreement") or 0),
+            "r2t": int(debate_result.get("r2_total") or 0),
+            "fv": str(debate_result.get("final_verdict", ""))[:30],
+            "ca": str(debate_result.get("correct_answer", ""))[:500],
+            "am": str(debate_result.get("arbiter_model", ""))[:80],
+            "as_": (debate_result.get("arbiter_solution") or "")[:2000],
+            "asc": (1 if debate_result.get("arbiter_self_consistent") else 0),
+            "hr": (1 if debate_result.get("high_risk") else 0),
+            "cu": float(debate_result.get("cost") or 0.0),
+            "es": float(debate_result.get("elapsed") or 0.0),
+        })
+        db.session.commit()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        raise
 
 
 def _verify_with_model(statement: str, expected_answer: str, stack: str,

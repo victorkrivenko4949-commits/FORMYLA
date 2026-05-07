@@ -228,11 +228,23 @@ def _generate_single_problem(analysis, position, existing, stack,
         problem = generate_problem(analysis, position, existing)
         total_cost += problem.get("_cost", 0)
 
-        # Verify with solver
+        # Verify with solver (v2.5: pass generator_solution so the debate
+        # tie-breaker has full author context if R1 is below majority).
         solver_result = verify_problem(
-            problem["statement"], problem["answer"], stack
+            problem["statement"], problem["answer"], stack,
+            generator_solution=problem.get("solution", ""),
         )
         total_cost += solver_result.get("_cost", 0)
+        if solver_result.get("_debate_triggered"):
+            _deb = solver_result.get("_debate") or {}
+            logger.info(
+                f"[Pipeline] pos={position} debate triggered: "
+                f"R1={solver_result.get('_correct_count')}/"
+                f"{solver_result.get('_total_solvers')} "
+                f"verdict={_deb.get('final_verdict')} "
+                f"high_risk={solver_result.get('_high_risk')} "
+                f"cost=${float(_deb.get('cost') or 0):.4f}"
+            )
 
         if not solver_result.get("answers_match"):
             logger.warning(
