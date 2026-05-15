@@ -742,7 +742,11 @@ function showCtxMenu(x, y, m){
 
 function hideCtxMenu(){
   const menu = document.getElementById('msgCtxMenu');
-  if (menu) menu.hidden = true;
+  if (menu){
+    menu.hidden = true;
+    menu.setAttribute('hidden', '');
+    menu.style.display = 'none';
+  }
   _ctxMsg = null;
 }
 
@@ -794,8 +798,14 @@ function startEdit(m){
 function cancelAction(){
   _replyToId = null;
   _editingId = null;
-  document.getElementById('chatActionBar').hidden = true;
-  document.getElementById('chatText').value = '';
+  const bar = document.getElementById('chatActionBar');
+  if (bar){
+    bar.hidden = true;
+    bar.setAttribute('hidden', '');
+    bar.style.display = 'none';
+  }
+  const ta = document.getElementById('chatText');
+  if (ta) ta.value = '';
 }
 
 async function copyMessage(m){
@@ -869,10 +879,26 @@ async function openForward(m){
 }
 
 function closeForward(){
-  document.getElementById('fwdModal').hidden = true;
+  const m = document.getElementById('fwdModal');
+  if (m){
+    m.hidden = true;
+    m.setAttribute('hidden', '');
+    m.style.display = 'none';
+  }
   _fwdMsgId = null;
-  _fwdSelected.clear();
+  if (_fwdSelected && _fwdSelected.clear) _fwdSelected.clear();
 }
+
+// Esc closes overlays
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  const fm = document.getElementById('fwdModal');
+  const cm = document.getElementById('msgCtxMenu');
+  const cab = document.getElementById('chatActionBar');
+  if (fm && !fm.hidden){ closeForward(); e.preventDefault(); return; }
+  if (cm && !cm.hidden){ hideCtxMenu(); e.preventDefault(); return; }
+  if (cab && !cab.hidden){ cancelAction(); e.preventDefault(); return; }
+});
 
 function renderFwdList(){
   const q = (document.getElementById('fwdSearch').value || '').toLowerCase();
@@ -1071,6 +1097,15 @@ async function sendTaskShare(){
 
 /* search */
 document.addEventListener('DOMContentLoaded', () => {
+  // Defensive: ensure all overlays/menus are closed on page load.
+  ['fwdModal', 'msgCtxMenu', 'chatActionBar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el){
+      el.hidden = true;
+      el.setAttribute('hidden', '');
+      el.style.display = 'none';
+    }
+  });
   const s = document.getElementById('convSearch');
   if (s){
     s.addEventListener('input', () => {
