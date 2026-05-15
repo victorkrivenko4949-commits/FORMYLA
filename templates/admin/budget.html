@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Admin: Budget{% endblock %}
+{% block content %}
+<style>
+.abg{max-width:1000px;margin:30px auto;padding:0 20px;color:#e2e8f0}
+.abg h1{font-size:1.8em;margin-bottom:8px}
+.abg .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:20px 0}
+.abg .card{background:rgba(15,23,42,0.6);border:1px solid #334155;border-radius:12px;padding:20px;text-align:center}
+.abg .card .num{font-size:2em;font-weight:700}
+.abg .card .lbl{color:#94a3b8;font-size:0.85em;margin-top:4px}
+.abg .c-spent .num{color:#38ef7d}
+.abg .c-forecast .num{color:#fbbf24}
+.abg .c-target .num{color:#3b82f6}
+.abg .c-alert .num{color:#f97316}
+.abg .c-stop .num{color:#ef4444}
+.abg .c-variants .num{color:#a78bfa}
+.abg .progress-bar{background:#1e293b;border-radius:8px;height:24px;margin:20px 0;position:relative;overflow:hidden}
+.abg .progress-fill{height:100%;border-radius:8px;transition:width 0.5s}
+.abg .progress-markers{position:relative;height:20px;margin-top:-4px}
+.abg .progress-marker{position:absolute;top:0;font-size:0.7em;color:#94a3b8;transform:translateX(-50%)}
+.abg table{width:100%;border-collapse:collapse;margin:20px 0}
+.abg th{text-align:left;padding:10px 12px;border-bottom:2px solid #334155;color:#94a3b8;font-size:0.85em}
+.abg td{padding:8px 12px;border-bottom:1px solid #1e293b}
+.abg .section{margin:30px 0}
+.abg .section h2{font-size:1.2em;margin-bottom:12px;color:#38ef7d}
+.abg .daily-chart{display:flex;align-items:flex-end;gap:4px;height:120px;margin:16px 0}
+.abg .daily-bar{background:linear-gradient(to top,#38ef7d,#11998e);border-radius:4px 4px 0 0;min-width:20px;flex:1;position:relative}
+.abg .daily-bar .bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:0.65em;color:#64748b;white-space:nowrap}
+</style>
+
+<div class="abg">
+  <h1>Budget — {{ month_name }}</h1>
+
+  <div class="cards">
+    <div class="card c-spent">
+      <div class="num">${{ total_spent }}</div>
+      <div class="lbl">Потрачено</div>
+    </div>
+    <div class="card c-forecast">
+      <div class="num">${{ forecast }}</div>
+      <div class="lbl">Прогноз на месяц</div>
+    </div>
+    <div class="card c-target">
+      <div class="num">${{ budget_target }}</div>
+      <div class="lbl">Целевой бюджет</div>
+    </div>
+    <div class="card c-variants">
+      <div class="num">{{ variant_count }}</div>
+      <div class="lbl">Вариантов (${{'%.4f'|format(cost_per_variant)}}/шт)</div>
+    </div>
+    <div class="card">
+      <div class="num">${{ '%.4f'|format(daily_rate) }}</div>
+      <div class="lbl">Средний расход/день</div>
+    </div>
+    <div class="card">
+      <div class="num">{{ waitlist_count }}</div>
+      <div class="lbl">В списке ожидания</div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  {% set pct = (total_spent / budget_hard_stop * 100) if budget_hard_stop > 0 else 0 %}
+  {% set bar_color = '#38ef7d' if total_spent < budget_target else ('#fbbf24' if total_spent < budget_alert else '#ef4444') %}
+  <div class="progress-bar">
+    <div class="progress-fill" style="width:{{ [pct, 100]|min }}%;background:{{ bar_color }}"></div>
+  </div>
+  <div class="progress-markers">
+    {% set t_pct = (budget_target / budget_hard_stop * 100) %}
+    {% set a_pct = (budget_alert / budget_hard_stop * 100) %}
+    <span class="progress-marker" style="left:{{ t_pct }}%">${{ budget_target|int }} target</span>
+    <span class="progress-marker" style="left:{{ a_pct }}%">${{ budget_alert|int }} alert</span>
+    <span class="progress-marker" style="left:100%">${{ budget_hard_stop|int }} stop</span>
+  </div>
+
+  <!-- Daily chart -->
+  <div class="section">
+    <h2>Расход по дням</h2>
+    {% if daily_costs %}
+    {% set max_cost = daily_costs|map(attribute=1)|max %}
+    <div class="daily-chart">
+      {% for day in daily_costs %}
+      {% set h = (day[1] / max_cost * 100) if max_cost > 0 else 0 %}
+      <div class="daily-bar" style="height:{{ [h, 5]|max }}%" title="${{ '%.4f'|format(day[1]) }}">
+        <span class="bar-label">{{ day[0][-5:] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:#64748b">Нет данных за этот месяц</p>
+    {% endif %}
+  </div>
+
+  <!-- Cost breakdown -->
+  <div class="section">
+    <h2>Расход по моделям</h2>
+    <table>
+      <thead>
+        <tr><th>Модель</th><th>Сервис</th><th>Стоимость</th><th>Вызовов</th><th>Токены (in/out)</th></tr>
+      </thead>
+      <tbody>
+        {% for row in costs_by_model %}
+        <tr>
+          <td>{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+          <td>${{ '%.4f'|format(row[2]) }}</td>
+          <td>{{ row[5] }}</td>
+          <td>{{ row[3]|int }} / {{ row[4]|int }}</td>
+        </tr>
+        {% endfor %}
+        {% if not costs_by_model %}
+        <tr><td colspan="5" style="color:#64748b;text-align:center">Нет данных</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Budget limits -->
+  <div class="section">
+    <h2>Лимиты</h2>
+    <table>
+      <thead><tr><th>Параметр</th><th>Значение</th><th>Статус</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Целевой бюджет</td>
+          <td>${{ budget_target }}</td>
+          <td>{% if total_spent < budget_target %}✅ OK{% else %}⚠️ Превышен{% endif %}</td>
+        </tr>
+        <tr>
+          <td>Порог оповещения</td>
+          <td>${{ budget_alert }}</td>
+          <td>{% if total_spent < budget_alert %}✅ OK{% else %}🔶 Внимание{% endif %}</td>
+        </tr>
+        <tr>
+          <td>Жёсткий стоп</td>
+          <td>${{ budget_hard_stop }}</td>
+          <td>{% if total_spent < budget_hard_stop %}✅ OK{% else %}🛑 СТОП{% endif %}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -118,6 +118,8 @@ def _log_to_db(
     """Best-effort write to models.DrawingGeneration."""
     try:
         import hashlib
+        import json as _json
+        from dataclasses import asdict
         from models import db, DrawingGeneration  # local import to avoid cycles
         sha = hashlib.sha256(problem.encode("utf-8")).hexdigest()
 
@@ -127,6 +129,17 @@ def _log_to_db(
                 uid = getattr(current_user, "id", None)
         except Exception:
             pass
+
+        # Serialize critique findings if present.
+        findings_json = None
+        if result and getattr(result, "critique_findings", None):
+            try:
+                findings_json = _json.dumps(
+                    [asdict(f) for f in result.critique_findings],
+                    ensure_ascii=False,
+                )[:10000]
+            except Exception:
+                findings_json = None
 
         row = DrawingGeneration(
             user_id=uid,
@@ -141,6 +154,10 @@ def _log_to_db(
             cost_usd=float(result.cost_usd if result else 0.0),
             image_path=image_path,
             image_size=(len(result.image_bytes) if result else None),
+            critique_rounds=(result.critique_rounds if result else 0),
+            critique_accepted=(result.critique_accepted if result else 0),
+            critique_rejected=(result.critique_rejected if result else 0),
+            critique_findings_json=findings_json,
         )
         db.session.add(row)
         db.session.commit()
@@ -259,6 +276,9 @@ def api_drawing_generate():
         "render_ms": result.render_ms,
         "cache_hit": result.cache_hit,
         "repair_iters": result.repair_iters,
+        "critique_rounds": result.critique_rounds,
+        "critique_accepted": result.critique_accepted,
+        "critique_rejected": result.critique_rejected,
         # Avoid leaking source code by default; admins can read it from
         # DrawingGeneration in the DB.
     })

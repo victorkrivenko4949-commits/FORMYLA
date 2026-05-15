@@ -404,6 +404,33 @@ except Exception as e:
     print(f"[AUTO-MIGRATION] solved_indices Warning: {e}")
 
 
+# CHAT_WA_MIGRATION_V1: WhatsApp-style chat columns (reply/edit/delete/forward)
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _wa_inspect, text as _wa_text
+        _wa_insp = _wa_inspect(db.engine)
+        if 'direct_messages' in _wa_insp.get_table_names():
+            _wa_cols = [c['name'] for c in _wa_insp.get_columns('direct_messages')]
+            for _col, _type in (
+                ('reply_to_id', 'INTEGER NULL'),
+                ('edited_at', 'TIMESTAMP NULL'),
+                ('deleted_at', 'TIMESTAMP NULL'),
+                ('forwarded_from_id', 'INTEGER NULL'),
+            ):
+                if _col not in _wa_cols:
+                    try:
+                        db.session.execute(_wa_text(
+                            f"ALTER TABLE direct_messages ADD COLUMN {_col} {_type}"
+                        ))
+                        db.session.commit()
+                        print(f"[AUTO-MIGRATION] direct_messages.{_col} added")
+                    except Exception as _wa_e:
+                        db.session.rollback()
+                        print(f"[AUTO-MIGRATION] direct_messages.{_col} failed: {_wa_e}")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] WA-chat Warning: {e}")
+
+
 def _log_tutor_call(task_id: int, user_answer: str, result: dict):
     """Логирует вызов AI-тьютора v2 в таблицу tutor_calls."""
     try:
@@ -7040,10 +7067,22 @@ def api_chat_send(friend_id):
     if kind not in ('text', 'task_share'):
         return jsonify({'error': 'Неизвестный тип сообщения'}), 400
 
+    # Reply-to (optional). Validate that the referenced message belongs to this conversation.
+    reply_to_id = payload.get('reply_to_id')
+    try:
+        reply_to_id = int(reply_to_id) if reply_to_id else None
+    except (TypeError, ValueError):
+        reply_to_id = None
+    if reply_to_id:
+        ref = DirectMessage.query.get(reply_to_id)
+        if not ref or {ref.sender_id, ref.recipient_id} != {current_user.id, friend.id}:
+            reply_to_id = None
+
     msg = DirectMessage(
         sender_id=current_user.id,
         recipient_id=friend.id,
         kind=kind,
+        reply_to_id=reply_to_id,
     )
 
     if kind == 'text':
@@ -7093,6 +7132,147 @@ def api_chat_send(friend_id):
         db.session.rollback()
 
     return jsonify({'success': True, 'message': msg.to_dict(viewer_id=current_user.id)})
+
+
+@app.route('/api/chat/message/<int:message_id>/edit', methods=['POST'])
+@login_required
+def api_chat_message_edit(message_id):
+    """Edit a text message. Sender-only, within 24h, not deleted."""
+    from models import DirectMessage
+    from datetime import datetime as _dt, timedelta as _td
+    msg = DirectMessage.query.get(message_id)
+    if not msg:
+        return jsonify({'error': 'Сообщение не найдено'}), 404
+    if msg.sender_id != current_user.id:
+        return jsonify({'error': 'Можно редактировать только свои сообщения'}), 403
+    if msg.kind != 'text':
+        return jsonify({'error': 'Можно редактировать только текстовые сообщения'}), 400
+    if getattr(msg, 'deleted_at', None):
+        return jsonify({'error': 'Удалённое сообщение нельзя редактировать'}), 400
+    if msg.created_at and (_dt.utcnow() - msg.created_at) > _td(hours=24):
+        return jsonify({'error': 'Редактирование возможно в течение 24 часов'}), 400
+
+    data = request.get_json(silent=True) or {}
+    new_body = (data.get('body') or '').strip()
+    if not new_body:
+        return jsonify({'error': 'Текст не может быть пустым'}), 400
+
+    msg.body = new_body[:4000]
+    msg.edited_at = _dt.utcnow()
+    try:
+        db.session.commit()
+    except Exception as _e:
+        db.session.rollback()
+        return jsonify({'error': f'Не удалось сохранить: {_e}'}), 500
+
+    return jsonify({'success': True, 'message': msg.to_dict(viewer_id=current_user.id)})
+
+
+@app.route('/api/chat/message/<int:message_id>/delete', methods=['POST'])
+@login_required
+def api_chat_message_delete(message_id):
+    """Soft-delete a message. Sender-only (or 'delete for me' fallback could be added)."""
+    from models import DirectMessage
+    from datetime import datetime as _dt
+    msg = DirectMessage.query.get(message_id)
+    if not msg:
+        return jsonify({'error': 'Сообщение не найдено'}), 404
+    if msg.sender_id != current_user.id:
+        return jsonify({'error': 'Можно удалять только свои сообщения'}), 403
+    if getattr(msg, 'deleted_at', None):
+        return jsonify({'success': True, 'message': msg.to_dict(viewer_id=current_user.id)})
+
+    msg.deleted_at = _dt.utcnow()
+    # Clear sensitive content. Keep id/created_at for thread continuity.
+    msg.body = None
+    msg.task_id = None
+    msg.task_topic = None
+    msg.task_grade = None
+    msg.task_difficulty = None
+    msg.task_source = None
+    msg.task_url = None
+    msg.task_preview = None
+    try:
+        db.session.commit()
+    except Exception as _e:
+        db.session.rollback()
+        return jsonify({'error': f'Не удалось удалить: {_e}'}), 500
+
+    return jsonify({'success': True, 'message': msg.to_dict(viewer_id=current_user.id)})
+
+
+@app.route('/api/chat/message/<int:message_id>/forward', methods=['POST'])
+@login_required
+def api_chat_message_forward(message_id):
+    """Forward a message to another friend.
+
+    Body: { "to_friend_ids": [int, ...] }
+    """
+    from models import DirectMessage, Notification
+    src = DirectMessage.query.get(message_id)
+    if not src:
+        return jsonify({'error': 'Сообщение не найдено'}), 404
+    # Caller must be a participant of the source conversation.
+    if current_user.id not in (src.sender_id, src.recipient_id):
+        return jsonify({'error': 'Нет доступа к сообщению'}), 403
+    if getattr(src, 'deleted_at', None):
+        return jsonify({'error': 'Удалённое сообщение нельзя переслать'}), 400
+
+    data = request.get_json(silent=True) or {}
+    raw_ids = data.get('to_friend_ids') or []
+    if not isinstance(raw_ids, list) or not raw_ids:
+        return jsonify({'error': 'Укажите получателей'}), 400
+
+    forwarded_origin = src.forwarded_from_id or src.id
+    created = []
+    for raw in raw_ids[:20]:  # cap at 20 forwards per call
+        try:
+            fid = int(raw)
+        except (TypeError, ValueError):
+            continue
+        friend = _ensure_friends(fid)
+        if not friend:
+            continue
+        new_msg = DirectMessage(
+            sender_id=current_user.id,
+            recipient_id=friend.id,
+            kind=src.kind,
+            body=src.body,
+            task_id=src.task_id,
+            task_topic=src.task_topic,
+            task_grade=src.task_grade,
+            task_difficulty=src.task_difficulty,
+            task_source=src.task_source,
+            task_url=src.task_url,
+            task_preview=src.task_preview,
+            forwarded_from_id=forwarded_origin,
+        )
+        db.session.add(new_msg)
+        try:
+            db.session.commit()
+        except Exception as _e:
+            db.session.rollback()
+            print(f"[CHAT-FORWARD] commit failed friend={fid}: {_e}")
+            continue
+
+        try:
+            notif = Notification(
+                user_id=friend.id,
+                type=('chat_task_share' if src.kind == 'task_share' else 'chat_message'),
+                from_user_id=current_user.id,
+                data=json.dumps({'message_id': new_msg.id, 'forwarded': True}),
+            )
+            db.session.add(notif)
+            db.session.commit()
+        except Exception as _ne:
+            print(f"[CHAT-FORWARD] notification failed: {_ne}")
+            db.session.rollback()
+
+        created.append({'friend_id': friend.id, 'message_id': new_msg.id})
+
+    if not created:
+        return jsonify({'error': 'Не удалось переслать ни одному получателю'}), 400
+    return jsonify({'success': True, 'forwarded': created})
 
 
 @app.route('/api/chat/unread_total')

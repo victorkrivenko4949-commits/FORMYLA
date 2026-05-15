@@ -305,7 +305,13 @@ def test_drawing_pipeline_with_mocked_llm(monkeypatch, temp_root,
             "usage": {"prompt_tokens": 100, "completion_tokens": 200},
         }
 
+    # Critic is mocked to "no findings" so the pipeline accepts the
+    # first successful render and stops.
+    def fake_critic(problem, code_arg, png):
+        return [], 0.0
+
     monkeypatch.setattr(ds, "_call_llm", fake_call_llm)
+    monkeypatch.setattr(ds, "_critique_with_gemini", fake_critic)
 
     # --- 1st call: should hit LLM mock, run sandbox, write cache.
     res1 = ds.generate_drawing(problem, app_root=temp_root, use_cache=True)
@@ -348,7 +354,11 @@ def test_drawing_pipeline_self_repair(monkeypatch, temp_root):
             "model": model,
         }
 
+    def fake_critic(problem, code_arg, png):
+        return [], 0.0
+
     monkeypatch.setattr(ds, "_call_llm", fake_call_llm)
+    monkeypatch.setattr(ds, "_critique_with_gemini", fake_critic)
 
     res = ds.generate_drawing(
         "Repair-test problem",
@@ -372,7 +382,11 @@ def test_drawing_pipeline_gives_up_after_max_repairs(monkeypatch, temp_root):
             "model": model,
         }
 
+    def fake_critic(problem, code_arg, png):
+        return [], 0.0
+
     monkeypatch.setattr(ds, "_call_llm", fake_call_llm)
+    monkeypatch.setattr(ds, "_critique_with_gemini", fake_critic)
 
     with pytest.raises(SandboxError):
         ds.generate_drawing(

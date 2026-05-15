@@ -41,11 +41,11 @@
     </div>
 </div>
 
-<!-- Radar -->
-<div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:24px;margin-bottom:24px;">
-    <h2 class="prep-section-title" style="padding:0;">&#x1F4CA; &#x0422;&#x0432;&#x043E;&#x0439; &#x043F;&#x0440;&#x043E;&#x0433;&#x0440;&#x0435;&#x0441;&#x0441; &mdash; &#x0420;&#x0430;&#x0434;&#x0430;&#x0440;</h2>
-    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
-        <canvas id="radarChart" width="360" height="280" style="max-width:100%;"></canvas>
+<!-- Radar (compact) -->
+<div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:14px 18px;margin-bottom:24px;">
+    <h2 class="prep-section-title" style="padding:0;margin:0 0 6px;font-size:1rem;">&#x1F4CA; &#x0422;&#x0432;&#x043E;&#x0439; &#x043F;&#x0440;&#x043E;&#x0433;&#x0440;&#x0435;&#x0441;&#x0441; &mdash; &#x0420;&#x0430;&#x0434;&#x0430;&#x0440;</h2>
+    <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;">
+        <canvas id="radarChart" width="280" height="200" style="max-width:100%;max-height:200px;"></canvas>
         <div style="flex:1;min-width:200px;">
             {% set bl = plan.baseline_radar_dict %}
             {% set cr = plan.current_radar_dict %}
@@ -62,8 +62,8 @@
     </div>
 </div>
 
-<!-- Calendar -->
-<div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:24px;margin-bottom:24px;">
+<!-- Calendar HIDDEN by request -->
+<div id="prepCalendarBlock" style="display:none !important;">
     <h2 class="prep-section-title" style="padding:0;">&#x1F4C5; &#x041A;&#x0430;&#x043B;&#x0435;&#x043D;&#x0434;&#x0430;&#x0440;&#x044C; &#x043F;&#x043E;&#x0434;&#x0433;&#x043E;&#x0442;&#x043E;&#x0432;&#x043A;&#x0438;</h2>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:8px;">
         <span style="color:#64748b;font-size:.75rem;font-weight:600;">&#x041F;&#x043D;</span>
@@ -113,11 +113,18 @@ const planId = {{ plan.id }};
     let startDow = firstDate.getDay(); // 0=Sun
     startDow = startDow === 0 ? 6 : startDow - 1; // Convert to 0=Mon
 
-    // Add empty cells for alignment
+    // Helper: пустая ячейка-плейсхолдер (не отображается, но сохраняет ритм grid'а).
+    // ВАЖНО: НЕ ставим aspect-ratio:1 — иначе пустые слоты «выпучивают» строку
+    // вертикально и создают «дыру» под одиночной ячейкой в последней неделе.
+    const makeFillerCell = () => {
+        const e = document.createElement('div');
+        e.style.cssText = 'min-height:0;height:0;';
+        return e;
+    };
+
+    // Add empty cells for alignment at the START
     for (let i = 0; i < startDow; i++) {
-        const empty = document.createElement('div');
-        empty.style.cssText = 'aspect-ratio:1;';
-        grid.appendChild(empty);
+        grid.appendChild(makeFillerCell());
     }
 
     daysData.forEach(d => {
@@ -134,6 +141,14 @@ const planId = {{ plan.id }};
         cell.onmouseleave = () => cell.style.transform = '';
         grid.appendChild(cell);
     });
+
+    // Дополняем пустыми слотами в КОНЦЕ, чтобы последняя неделя была ровно на 7 ячеек,
+    // а одиночная ячейка вроде "2" в финальной строке не растягивалась во всю ширину.
+    const totalCells = startDow + daysData.length;
+    const trailing = (7 - (totalCells % 7)) % 7;
+    for (let i = 0; i < trailing; i++) {
+        grid.appendChild(makeFillerCell());
+    }
 })();
 
 async function openDayModal(dayId, dateStr) {
@@ -165,7 +180,7 @@ async function openDayModal(dayId, dateStr) {
     if (!canvas || typeof Chart === 'undefined') return;
     const bl = {{ plan.baseline_radar|safe }};
     const cr = {{ plan.current_radar|safe }};
-    const labels = ['&#x0410;&#x043B;&#x0433;&#x0435;&#x0431;&#x0440;&#x0430;','&#x0413;&#x0435;&#x043E;&#x043C;&#x0435;&#x0442;&#x0440;&#x0438;&#x044F;','&#x041A;&#x043E;&#x043C;&#x0431;&#x0438;&#x043D;&#x0430;&#x0442;&#x043E;&#x0440;&#x0438;&#x043A;&#x0430;','&#x0422;&#x0435;&#x043E;&#x0440;&#x0438;&#x044F; &#x0447;&#x0438;&#x0441;&#x0435;&#x043B;','&#x0414;&#x0432;&#x0438;&#x0436;&#x0435;&#x043D;&#x0438;&#x0435;','&#x0420;&#x044B;&#x0446;&#x0430;&#x0440;&#x0438;'];
+    const labels = ['Алгебра','Геометрия','Комбинаторика','Теория чисел','Движение','Рыцари'];
     const keys = ['algebra','geometry','combinatorics','number_theory','movement','knights_liars'];
     new Chart(canvas, {
         type: 'radar',
@@ -173,7 +188,7 @@ async function openDayModal(dayId, dateStr) {
             labels: labels,
             datasets: [
                 { label: 'Baseline', data: keys.map(k => bl[k]||50), borderColor: '#64748b', backgroundColor: 'rgba(100,116,139,.1)', pointRadius: 3 },
-                { label: '&#x0421;&#x0435;&#x0439;&#x0447;&#x0430;&#x0441;', data: keys.map(k => cr[k]||50), borderColor: '#22d3a6', backgroundColor: 'rgba(34,211,166,.15)', pointRadius: 4 },
+                { label: 'Сейчас', data: keys.map(k => cr[k]||50), borderColor: '#22d3a6', backgroundColor: 'rgba(34,211,166,.15)', pointRadius: 4 },
             ]
         },
         options: {
@@ -184,5 +199,11 @@ async function openDayModal(dayId, dateStr) {
     });
 })();
 </script>
-<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}</style>
+<style>
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+/* Календарь скрыт целиком (см. inline display:none на #prepCalendarBlock) */
+#dayModal { display: none !important; }
+/* Радар: жёстко ограничиваем высоту, чтобы не было «пустого поля», даже если Chart.js не загрузился */
+#radarChart { max-height: 220px !important; height: 220px !important; }
+</style>
 {% endblock %}

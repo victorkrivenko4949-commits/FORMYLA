@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Admin: Daily Pool{% endblock %}
+{% block content %}
+<style>
+.adp{max-width:1100px;margin:30px auto;padding:0 20px;color:#e2e8f0}
+.adp h1{font-size:1.8em;margin-bottom:8px}
+.adp .stats{display:flex;gap:16px;margin:16px 0}
+.adp .stat-box{background:rgba(15,23,42,0.6);border:1px solid #334155;border-radius:12px;padding:16px 24px;text-align:center;flex:1}
+.adp .stat-box .num{font-size:2em;font-weight:700}
+.adp .stat-box .lbl{color:#94a3b8;font-size:0.85em}
+.adp .s-approved .num{color:#38ef7d}
+.adp .s-review .num{color:#fbbf24}
+.adp .s-gen .num{color:#3b82f6}
+.adp .date-group{margin:20px 0}
+.adp .date-title{font-size:1.1em;font-weight:600;margin-bottom:8px;color:#38ef7d}
+.adp .var-row{display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(15,23,42,0.4);border:1px solid #1e293b;border-radius:8px;margin-bottom:6px}
+.adp .var-row:hover{border-color:#334155}
+.adp .var-label{flex:1;font-weight:500}
+.adp .var-status{padding:3px 10px;border-radius:6px;font-size:0.8em;font-weight:600}
+.adp .var-status.approved{background:rgba(56,239,125,0.15);color:#38ef7d}
+.adp .var-status.needs_review{background:rgba(251,191,36,0.15);color:#fbbf24}
+.adp .var-status.generating{background:rgba(59,130,246,0.15);color:#3b82f6}
+.adp .var-cost{color:#94a3b8;font-size:0.85em;min-width:70px;text-align:right}
+.adp .var-check{width:18px;height:18px}
+.adp .probs{margin:4px 0 0 30px;font-size:0.85em;color:#94a3b8}
+.adp .prob-item{display:inline-block;margin-right:12px}
+.adp .actions{margin:20px 0;display:flex;gap:12px}
+.adp .btn{padding:10px 24px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.95em}
+.adp .btn-approve{background:linear-gradient(135deg,#38ef7d,#11998e);color:#000}
+.adp .btn-approve:disabled{opacity:0.4;cursor:not-allowed}
+.adp .filter{margin:12px 0;display:flex;gap:12px;align-items:center}
+.adp .filter input{background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:8px 12px;border-radius:8px}
+.adp .filter label{color:#94a3b8;font-size:0.9em}
+</style>
+
+<div class="adp">
+  <h1>Daily Pool — Управление вариантами</h1>
+
+  <div class="stats">
+    <div class="stat-box"><div class="num">{{ total }}</div><div class="lbl">Всего</div></div>
+    <div class="stat-box s-approved"><div class="num">{{ approved }}</div><div class="lbl">Одобрено</div></div>
+    <div class="stat-box s-review"><div class="num">{{ needs_review }}</div><div class="lbl">На проверке</div></div>
+    <div class="stat-box s-gen"><div class="num">{{ generating }}</div><div class="lbl">Генерация</div></div>
+  </div>
+
+  <div class="filter">
+    <label>С:</label><input type="date" id="fStart" value="{{ start }}">
+    <label>По:</label><input type="date" id="fEnd" value="{{ end }}">
+    <button class="btn" onclick="applyFilter()" style="background:#334155;color:#e2e8f0">Фильтр</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-approve" id="btnApproveAll" onclick="approveSelected()" disabled>
+      Одобрить выбранные
+    </button>
+    <label style="color:#94a3b8;display:flex;align-items:center;gap:6px">
+      <input type="checkbox" id="checkAll" onchange="toggleAll(this.checked)"> Выбрать все на проверке
+    </label>
+  </div>
+
+  {% for date_key in tree|sort(reverse=true) %}
+  <div class="date-group">
+    <div class="date-title">{{ date_key }}</div>
+    {% for combo_key, v in tree[date_key].items() %}
+    <div class="var-row">
+      {% if v.status == 'needs_review' %}
+      <input type="checkbox" class="var-check" data-vid="{{ v.id }}" onchange="updateApproveBtn()">
+      {% else %}
+      <span style="width:18px"></span>
+      {% endif %}
+      <span class="var-label">{{ combo_key }}</span>
+      <span class="var-status {{ v.status }}">{{ v.status }}</span>
+      <span class="var-cost">${{ v.cost }}</span>
+    </div>
+    {% if v.id in problems %}
+    <div class="probs">
+      {% for p in problems[v.id] %}
+      <span class="prob-item">P{{ p.position }}: {{ p.topic }} (d={{ p.difficulty }})</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+function applyFilter() {
+  const s = document.getElementById('fStart').value;
+  const e = document.getElementById('fEnd').value;
+  window.location.href = `/admin/daily_pool?start=${s}&end=${e}`;
+}
+
+function toggleAll(checked) {
+  document.querySelectorAll('.var-check').forEach(cb => cb.checked = checked);
+  updateApproveBtn();
+}
+
+function updateApproveBtn() {
+  const checked = document.querySelectorAll('.var-check:checked');
+  document.getElementById('btnApproveAll').disabled = checked.length === 0;
+}
+
+async function approveSelected() {
+  const ids = [...document.querySelectorAll('.var-check:checked')].map(cb => parseInt(cb.dataset.vid));
+  if (!ids.length) return;
+  if (!confirm(`Одобрить ${ids.length} вариант(ов)?`)) return;
+
+  const resp = await fetch('/admin/daily_pool/approve', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({variant_ids: ids})
+  });
+  const data = await resp.json();
+  alert(`Одобрено: ${data.approved}`);
+  location.reload();
+}
+</script>
+{% endblock %}

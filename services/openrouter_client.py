@@ -23,10 +23,12 @@ logger = logging.getLogger(__name__)
 
 # Model-specific rate limits (requests per minute)
 DEFAULT_RPM = {
+    "anthropic/claude-sonnet-4.7": 40,
     "anthropic/claude-sonnet-4.5": 40,
     "anthropic/claude-opus-4.7": 15,
     "anthropic/claude-opus-4.1": 20,
     "deepseek/deepseek-chat": 60,
+    "google/gemini-3.1-pro": 30,
     "google/gemini-2.5-pro": 30,
     "openai/o4-mini": 30,
     "openai/text-embedding-3-large": 200,
@@ -41,10 +43,12 @@ DEFAULT_RPM = {
 # OpenRouter list pricing as of 2026-05; if/when official anthropic opus-4.7
 # pricing is published, replace the placeholder.
 MODEL_PRICING = {
+    "anthropic/claude-sonnet-4.7": (3.0, 15.0),
     "anthropic/claude-sonnet-4.5": (3.0, 15.0),
     "anthropic/claude-opus-4.7": (15.0, 75.0),   # placeholder; mirror opus-4.1 until verified
     "anthropic/claude-opus-4.1": (15.0, 75.0),
     "deepseek/deepseek-chat": (0.27, 1.10),
+    "google/gemini-3.1-pro": (1.25, 5.0),
     "google/gemini-2.5-pro": (1.25, 5.0),
     "openai/o4-mini": (1.10, 4.40),
     "openai/text-embedding-3-large": (0.13, 0.0),

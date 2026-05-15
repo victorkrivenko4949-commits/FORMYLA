@@ -121,7 +121,7 @@
     <div style="font-size: 36px; flex-shrink: 0; line-height: 1;">🤖</div>
     <div>
       <div style="color: #38ef7d; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px;">Твои задачи на сегодня</div>
-      <div style="color: var(--text-soft); line-height: 1.6;">{{ quest.ai_comment | safe }}</div>
+      <div style="color: var(--text-soft); line-height: 1.6;">{{ ai_comment_html if ai_comment_html else (quest.ai_comment | safe) }}</div>
       <form action="/daily/regenerate" method="POST" style="margin-top: 12px;">
         <button type="submit" style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; font-size: 13px; cursor: pointer; transition: all 0.2s;">🔄 Перегенерировать задачи</button>
       </form>
@@ -171,11 +171,10 @@
     5: '#f97316', 6: '#ef4444',
     7: '#ec4899'
   }.get(lvl, '#38ef7d') %}
-  {% set is_done = i < quest.completed_count %}
-  {% set is_current = i == quest.completed_count %}
-  {% set is_locked = i > quest.completed_count %}
+  {# is_done — задача правильно решена ранее. Все остальные доступны для решения. #}
+  {% set is_done = i in (solved_indices or []) %}
 
-  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid {% if is_done %}rgba(56,239,125,0.4){% elif is_current %}#38ef7d{% else %}var(--border-soft){% endif %}; margin-bottom: 24px; {% if is_locked %}opacity: 0.45;{% endif %} {% if is_current %}box-shadow: 0 0 24px rgba(56,239,125,0.25);{% endif %}">
+  <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid {% if is_done %}rgba(56,239,125,0.4){% else %}var(--border-soft){% endif %}; margin-bottom: 24px;">
 
     <!-- Task Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
@@ -188,10 +187,8 @@
       </div>
       {% if is_done %}
       <span style="color: #38ef7d; font-weight: 600; font-size: 14px;">✅ Решено</span>
-      {% elif is_current %}
-      <span style="color: #38ef7d; font-size: 13px; font-weight: 600; animation: pulse-badge 2s ease-in-out infinite;">● Текущая</span>
       {% else %}
-      <span style="color: rgba(255,255,255,0.4); font-size: 13px;">🔒 Заблокировано</span>
+      <span style="color: #38ef7d; font-size: 13px; font-weight: 600;">● Доступна</span>
       {% endif %}
     </div>
 
@@ -201,17 +198,12 @@
     </div>
 
     <!-- Action -->
-    {% if is_current %}
+    {% if not is_done %}
     <a href="{{ url_for('daily_quest_task', task_index=i) }}"
        style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-weight: 700; border-radius: 10px; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(56,239,125,0.4); transition: all 0.25s ease;"
        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(56,239,125,0.6)'"
        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(56,239,125,0.4)'">
       🚀 Решить задачу
-    </a>
-    {% elif is_done %}
-    <a href="{{ url_for('daily_quest_task', task_index=i) }}"
-       style="display: inline-block; padding: 10px 20px; background: rgba(56,239,125,0.1); color: #38ef7d; font-weight: 600; border-radius: 8px; text-decoration: none; font-size: 14px; border: 1px solid rgba(56,239,125,0.3);">
-      📖 Посмотреть
     </a>
     {% endif %}
   </div>

@@ -481,6 +481,12 @@ class DirectMessage(db.Model):
     task_url = db.Column(db.String(400), nullable=True)
     task_preview = db.Column(db.Text, nullable=True)  # короткий текст условия
 
+    # WA-style chat (DM_WA_V1)
+    reply_to_id = db.Column(db.Integer, nullable=True, index=True)
+    edited_at = db.Column(db.DateTime, nullable=True)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+    forwarded_from_id = db.Column(db.Integer, nullable=True, index=True)
+
     is_read = db.Column(db.Boolean, default=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
@@ -489,14 +495,38 @@ class DirectMessage(db.Model):
     recipient = db.relationship('User', foreign_keys=[recipient_id],
                                 backref=db.backref('received_messages', lazy='dynamic'))
 
-    def to_dict(self, viewer_id: int | None = None):
+    def to_dict(self, viewer_id=None):  # DM_WA_V1
+        is_deleted = getattr(self, 'deleted_at', None) is not None
+        is_edited = getattr(self, 'edited_at', None) is not None
+        reply_obj = None
+        reply_to_id = getattr(self, 'reply_to_id', None)
+        if reply_to_id:
+            try:
+                r = DirectMessage.query.get(reply_to_id)
+                if r is not None:
+                    reply_obj = {
+                        'id': r.id,
+                        'sender_id': r.sender_id,
+                        'kind': r.kind,
+                        'body': ('' if getattr(r, 'deleted_at', None) else (r.body or '')),
+                        'deleted': getattr(r, 'deleted_at', None) is not None,
+                    }
+            except Exception:
+                reply_obj = None
         return {
             'id': self.id,
             'sender_id': self.sender_id,
             'recipient_id': self.recipient_id,
             'mine': (viewer_id is not None and self.sender_id == viewer_id),
             'kind': self.kind,
-            'body': self.body,
+            'body': ('' if is_deleted else self.body),
+            'deleted': is_deleted,
+            'edited': is_edited,
+            'edited_at': self.edited_at.isoformat() if (is_edited and self.edited_at) else None,
+            'reply_to_id': reply_to_id,
+            'reply': reply_obj,
+            'forwarded_from_id': getattr(self, 'forwarded_from_id', None),
+            'forwarded': getattr(self, 'forwarded_from_id', None) is not None,
             'task': ({
                 'id': self.task_id,
                 'topic': self.task_topic,
@@ -505,7 +535,7 @@ class DirectMessage(db.Model):
                 'source': self.task_source,
                 'url': self.task_url,
                 'preview': self.task_preview,
-            } if self.kind == 'task_share' else None),
+            } if self.kind == 'task_share' and not is_deleted else None),
             'is_read': self.is_read,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
@@ -1147,6 +1177,49 @@ class TaskSolution(db.Model):
 
     def __repr__(self):
         return f'<TaskSolution id={self.id} user={self.user_id} task={self.task_id}>'
+
+
+class DrawingGeneration(db.Model):
+    """Лог одной генерации чертежа (code-generation pipeline)."""
+    __tablename__ = 'drawing_generations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'),
+        nullable=True, index=True,
+    )
+    problem_sha256 = db.Column(db.String(64), nullable=False, index=True)
+    problem = db.Column(db.Text, nullable=False)
+    generated_code = db.Column(db.Text, nullable=True)
+    model = db.Column(db.String(120), nullable=True)
+    status = db.Column(
+        db.String(20), nullable=False, default='ok', index=True,
+    )  # 'ok' | 'error' | 'rejected' | 'timeout' | 'cache_hit'
+    error = db.Column(db.Text, nullable=True)
+    repair_iters = db.Column(db.Integer, nullable=False, default=0)
+    render_ms = db.Column(db.Integer, nullable=True)
+    cost_usd = db.Column(db.Float, nullable=False, default=0.0)
+    image_path = db.Column(db.String(500), nullable=True)
+    image_size = db.Column(db.Integer, nullable=True)
+    # Gemini-critic stage (added later — nullable for backward compat)
+    critique_rounds = db.Column(db.Integer, nullable=False, default=0)
+    critique_accepted = db.Column(db.Integer, nullable=False, default=0)
+    critique_rejected = db.Column(db.Integer, nullable=False, default=0)
+    critique_findings_json = db.Column(db.Text, nullable=True)
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False, index=True,
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('drawing_generations', lazy='dynamic'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<DrawingGeneration id={self.id} status={self.status} '
+            f'model={self.model} render_ms={self.render_ms}>'
+        )
 
 
 def init_db(app):

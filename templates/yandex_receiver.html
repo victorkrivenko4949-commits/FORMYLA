@@ -69,6 +69,14 @@
                 document.getElementById('title').textContent = '✓ ' + (res.data.message || 'Готово');
                 document.getElementById('msg').textContent = 'Перенаправляем...';
                 window.location.href = res.data.redirect_url || '/profile';
+            } else if (res.status === 409 && res.data && res.data.merge_required) {
+                // Этот Яндекс ID привязан к другому аккаунту → ведём на страницу подтверждения слияния
+                document.getElementById('title').textContent = '⚠️ Нужно объединить аккаунты';
+                document.getElementById('msg').textContent = 'Этот Яндекс ID уже привязан к другому аккаунту FORMYLA. Перенаправляем на подтверждение…';
+                document.querySelector('.spinner').style.display = 'none';
+                setTimeout(function () {
+                    window.location.href = res.data.merge_url || '/account/merge_preview';
+                }, 800);
             } else {
                 setError(res.data.error || ('HTTP ' + res.status));
             }

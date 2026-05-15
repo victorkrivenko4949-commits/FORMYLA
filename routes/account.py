@@ -3,14 +3,16 @@
 Blueprint: Account management (/account)
 
 Endpoints:
-  POST /account/delete       - full account deletion with cascade
-  POST /account/ml-consent   - toggle ML training consent
+  POST /account/delete         - full account deletion with cascade
+  POST /account/ml-consent     - toggle ML training consent
+  GET  /account/merge_preview  - preview merge of two accounts (uses session)
+  POST /account/merge          - perform the merge
 """
 import hashlib
 import logging
 from datetime import datetime
 
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, session, url_for, redirect, flash
 from flask_login import current_user, login_required, logout_user
 
 from models import db, User, PrepPlan, TaskSolution
@@ -177,3 +179,61 @@ def _log_deletion_audit(user_id, email_hash):
         db.session.flush()
     except Exception as e:
         logger.warning(f"Audit log failed: {e}")
+
+
+# ─── Account merge endpoints ───────────────────────────────────────────────
+
+
+@account_bp.route('/merge_preview')
+@login_required
+def merge_preview():
+    src_id = session.get('merge_candidate_source_id')
+    if not src_id:
+        flash('Нет ожидающего слияния аккаунтов.', 'warning')
+        return redirect(url_for('profile'))
+    source = db.session.get(User, int(src_id))
+    if source is None:
+        session.pop('merge_candidate_source_id', None)
+        flash('Аккаунт-источник не найден.', 'error')
+        return redirect(url_for('profile'))
+    try:
+        from services.account_merge import get_merge_preview
+        preview = get_merge_preview(target_user_id=current_user.id, source_user_id=source.id)
+    except Exception as e:
+        logger.error(f"merge_preview failed: {e}")
+        preview = None
+    return render_template(
+        'account/merge_preview.html',
+        target=current_user,
+        source=source,
+        preview=preview,
+    )
+
+
+@account_bp.route('/merge', methods=['POST'])
+@login_required
+def merge_accounts():
+    data = request.get_json(silent=True) or {}
+    if data.get('confirm') != 'MERGE':
+        return jsonify(error='Send confirm=MERGE to proceed'), 400
+    src_id = session.get('merge_candidate_source_id')
+    if not src_id:
+        return jsonify(error='No pending merge in session'), 400
+    if int(src_id) == current_user.id:
+        session.pop('merge_candidate_source_id', None)
+        return jsonify(error='Cannot merge account into itself'), 400
+    try:
+        from services.account_merge import merge_users
+        summary = merge_users(target_user_id=current_user.id, source_user_id=int(src_id))
+    except Exception as e:
+        logger.exception('merge_accounts failed')
+        return jsonify(error=str(e)), 500
+    session.pop('merge_candidate_source_id', None)
+    return jsonify(status='ok', summary=summary, redirect_url=url_for('profile'))
+
+
+@account_bp.route('/merge/cancel', methods=['POST'])
+@login_required
+def merge_cancel():
+    session.pop('merge_candidate_source_id', None)
+    return jsonify(status='cancelled', redirect_url=url_for('profile'))

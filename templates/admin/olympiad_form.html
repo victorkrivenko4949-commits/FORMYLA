@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Редактировать' if olympiad else 'Создать' }} олимпиаду — Админ | FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+.adm-form-wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+}
+.adm-form-wrap h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 24px;
+}
+.adm-back {
+    margin-bottom: 20px;
+}
+.adm-back a {
+    color: #8b5cf6;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .9rem;
+}
+.adm-back a:hover { color: #a78bfa; }
+
+.adm-form {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.adm-field label {
+    display: block;
+    color: #94a3b8;
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.adm-field input[type="text"],
+.adm-field input[type="url"],
+.adm-field input[type="number"],
+.adm-field input[type="color"],
+.adm-field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #fff;
+    font-size: .9rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.adm-field textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+.adm-field input:focus,
+.adm-field textarea:focus {
+    outline: none;
+    border-color: #22d3a6;
+}
+.adm-field .hint {
+    color: #64748b;
+    font-size: .78rem;
+    margin-top: 4px;
+}
+
+.adm-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.adm-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.adm-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #22d3a6;
+}
+.adm-check label {
+    color: #cbd5e1;
+    font-size: .9rem;
+    margin: 0;
+}
+
+.adm-submit {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+.adm-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .95rem;
+    color: #fff;
+    background: #22d3a6;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+.adm-btn:hover { opacity: .85; }
+.adm-btn-secondary {
+    background: #334155;
+}
+
+/* Flash messages */
+.adm-flash {
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: .9rem;
+    font-weight: 500;
+}
+.adm-flash.success { background: rgba(34,211,166,.15); color: #22d3a6; border: 1px solid #22d3a6; }
+.adm-flash.error { background: rgba(239,68,68,.15); color: #ef4444; border: 1px solid #ef4444; }
+
+@media (max-width: 640px) {
+    .adm-row { grid-template-columns: 1fr; }
+    .adm-form { padding: 18px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="adm-form-wrap">
+    <div class="adm-back">
+        <a href="{{ url_for('admin_olympiads.list_olympiads') }}">← Список олимпиад</a>
+    </div>
+
+    <h1>{{ '✏️ Редактировать' if olympiad else '➕ Создать' }} олимпиаду</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="adm-flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <form method="post" class="adm-form"
+          action="{{ url_for('admin_olympiads.edit_olympiad', oid=olympiad.id) if olympiad else url_for('admin_olympiads.create_olympiad') }}">
+
+        <div class="adm-row">
+            <div class="adm-field">
+                <label for="slug">Slug *</label>
+                <input type="text" id="slug" name="slug" required
+                       value="{{ olympiad.slug if olympiad else '' }}"
+                       placeholder="vsosh">
+                <div class="hint">Латиница, дефисы. Уникальный идентификатор.</div>
+            </div>
+            <div class="adm-field">
+                <label for="short_name">Краткое название *</label>
+                <input type="text" id="short_name" name="short_name" required
+                       value="{{ olympiad.short_name if olympiad else '' }}"
+                       placeholder="ВсОШ">
+            </div>
+        </div>
+
+        <div class="adm-field">
+            <label for="name">Полное название *</label>
+            <input type="text" id="name" name="name" required
+                   value="{{ olympiad.name if olympiad else '' }}"
+                   placeholder="Всероссийская олимпиада школьников">
+        </div>
+
+        <div class="adm-field">
+            <label for="description">Описание</label>
+            <textarea id="description" name="description"
+                      placeholder="Описание олимпиады...">{{ olympiad.description if olympiad else '' }}</textarea>
+        </div>
+
+        <div class="adm-row">
+            <div class="adm-field">
+                <label for="grades">Классы</label>
+                <input type="text" id="grades" name="grades"
+                       value="{{ olympiad.grades if olympiad else '[]' }}"
+                       placeholder="5,6,7,8,9,10,11">
+                <div class="hint">Через запятую или JSON: [5,6,7]</div>
+            </div>
+            <div class="adm-field">
+                <label for="stages">Этапы</label>
+                <input type="text" id="stages" name="stages"
+                       value="{{ olympiad.stages if olympiad else '[]' }}"
+                       placeholder="Школьный, Муниципальный">
+                <div class="hint">Через запятую или JSON</div>
+            </div>
+        </div>
+
+        <div class="adm-field">
+            <label for="official_url">Официальный сайт</label>
+            <input type="url" id="official_url" name="official_url"
+                   value="{{ olympiad.official_url if olympiad else '' }}"
+                   placeholder="https://...">
+        </div>
+
+        <div class="adm-row">
+            <div class="adm-field">
+                <label for="logo_path">Путь к логотипу</label>
+                <input type="text" id="logo_path" name="logo_path"
+                       value="{{ olympiad.logo_path if olympiad else '' }}"
+                       placeholder="/static/olympiads/vsosh.svg">
+            </div>
+            <div class="adm-field">
+                <label for="color_hex">Цвет карточки</label>
+                <input type="text" id="color_hex" name="color_hex"
+                       value="{{ olympiad.color_hex if olympiad else '#22d3a6' }}"
+                       placeholder="#22d3a6">
+            </div>
+        </div>
+
+        <div class="adm-row">
+            <div class="adm-field">
+                <label for="sort_order">Порядок сортировки</label>
+                <input type="number" id="sort_order" name="sort_order"
+                       value="{{ olympiad.sort_order if olympiad else 0 }}">
+            </div>
+            <div class="adm-check" style="align-self: end; padding-bottom: 4px;">
+                <input type="checkbox" id="is_active" name="is_active"
+                       {{ 'checked' if (olympiad and olympiad.is_active) or not olympiad else '' }}>
+                <label for="is_active">Активна</label>
+            </div>
+        </div>
+
+        <div class="adm-submit">
+            <button type="submit" class="adm-btn">
+                {{ '💾 Сохранить' if olympiad else '➕ Создать' }}
+            </button>
+            <a href="{{ url_for('admin_olympiads.list_olympiads') }}" class="adm-btn adm-btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
