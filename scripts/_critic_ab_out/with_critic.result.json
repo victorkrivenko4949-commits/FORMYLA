@@ -1,0 +1,33 @@
+{
+  "tag": "with_critic",
+  "ok": true,
+  "critic_enabled_env": "1 ",
+  "critic_enabled_frozen": true,
+  "model": "anthropic/claude-opus-4.7",
+  "render_ms": 75847,
+  "wall_ms": 75847,
+  "cost_usd": 0.169696,
+  "cache_hit": false,
+  "repair_iters": 0,
+  "image_bytes": 46506,
+  "critique_rounds": 0,
+  "critique_accepted": 0,
+  "critique_rejected": 0,
+  "critique_findings": [],
+  "attempts": [
+    {
+      "stage": "sandbox",
+      "iter": 0,
+      "model": "anthropic/claude-opus-4.7",
+      "ok": true
+    },
+    {
+      "stage": "critic",
+      "round": 0,
+      "model": "google/gemini-3.1-pro-preview",
+      "ok": true,
+      "findings_count": 0
+    }
+  ],
+  "problem_first_200": "В остроугольном треугольнике ABC точка H — ортоцентр, точка O — центр описанной окружности. Точка M — середина стороны BC. Известно, что AH = 2·OM. Постройте чертёж: треугольник ABC, отметьте точки H,"
+}

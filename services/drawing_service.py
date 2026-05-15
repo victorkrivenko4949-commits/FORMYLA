@@ -53,7 +53,10 @@ MODEL_PRIMARY = "anthropic/claude-opus-4.7"
 MODEL_FALLBACK = None
 
 # Critic model — vision-capable, geometry-aware.
-MODEL_CRITIC = "google/gemini-3.1-pro"
+# NOTE: in OpenRouter, Gemini 3.1 Pro is currently only exposed as the
+# "-preview" SKU; the bare "google/gemini-3.1-pro" alias returns
+# HTTP 400 "not a valid model ID".
+MODEL_CRITIC = "google/gemini-3.1-pro-preview"
 
 # Critic stage is OFF by default (slow on Render Free Tier where the
 # request timeout is ~100s).  Flip the env var to "1" / "true" to enable.
@@ -381,11 +384,18 @@ def _critique_with_gemini(
     """Returns (findings, cost_usd).  Raises OpenRouterError on transport
     failure — caller decides whether to swallow."""
     messages = _build_critic_messages(problem, code, png_bytes)
+    # IMPORTANT: Gemini 3.x are "thinking" models -- they spend a sizeable
+    # chunk of the completion budget on internal reasoning tokens that are
+    # billed but NOT returned in `content`. Empirically the critic eats
+    # ~2000 reasoning tokens before producing the JSON answer; with
+    # max_tokens=1500 the visible content gets truncated mid-string and
+    # `_parse_critique_response` silently returns []. 6000 leaves headroom
+    # for reasoning + a long findings list and still caps cost at ~$0.04.
     resp = openrouter.chat(
         model=MODEL_CRITIC,
         messages=messages,
         temperature=0.0,
-        max_tokens=1500,
+        max_tokens=6000,
     )
     content = (resp.get("content") or "").strip()
     findings = _parse_critique_response(content)
