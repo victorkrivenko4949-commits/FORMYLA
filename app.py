@@ -501,6 +501,15 @@ try:
 except Exception as _e:
     print(f"[BP] drawing_bp NOT registered: {_e}")
 
+try:
+    from routes.chat_presence import chat_presence_bp, _ensure_table as _ensure_presence_table
+    app.register_blueprint(chat_presence_bp)
+    with app.app_context():
+        _ensure_presence_table()
+    print("[BP] chat_presence_bp registered (/api/chat/*/presence, typing)")
+except Exception as _e:
+    print(f"[BP] chat_presence_bp NOT registered: {_e}")
+
 # Limit upload size to 5 MB (for solution photos)
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 

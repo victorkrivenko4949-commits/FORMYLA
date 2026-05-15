@@ -581,6 +581,39 @@ class Notification(db.Model):
         return f'<Notification {self.type} for user {self.user_id}>'
 
 
+class UserPresence(db.Model):
+    """Онлайн-статус и typing-индикатор пользователя (CHAT_PRESENCE_V1).
+
+    Одна строка на пользователя. ``last_seen`` обновляется при любой
+    активности; ``typing_to_id`` + ``typing_at`` — пока человек печатает.
+    Используется для индикаторов «в сети» и «печатает…» в чате.
+    """
+    __tablename__ = 'user_presence'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+                        primary_key=True)
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow,
+                          nullable=False, index=True)
+    typing_to_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'),
+                             nullable=True)
+    typing_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+    def is_online(self, threshold_seconds: int = 60) -> bool:
+        if not self.last_seen:
+            return False
+        return (datetime.utcnow() - self.last_seen).total_seconds() < threshold_seconds
+
+    def is_typing_to(self, other_id: int, window_seconds: int = 6) -> bool:
+        if self.typing_to_id != other_id or not self.typing_at:
+            return False
+        return (datetime.utcnow() - self.typing_at).total_seconds() < window_seconds
+
+    def __repr__(self):
+        return f'<UserPresence u={self.user_id} seen={self.last_seen}>'
+
+
 class Mentorship(db.Model):
     """Модель отношений учитель-ученик"""
     __tablename__ = 'mentorships'

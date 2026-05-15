@@ -477,7 +477,9 @@
         </div>
         <div>
           <h2>{{ active_friend.name or active_friend.nickname or active_friend.email }}</h2>
-          <div class="sub">Уровень {{ active_friend.current_level }} · {{ active_friend.experience_points }} XP</div>
+          <div class="sub">
+            <span id="presenceLine">Уровень {{ active_friend.current_level }} · {{ active_friend.experience_points }} XP</span>
+          </div>
         </div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
@@ -973,9 +975,32 @@ async function doForward(){
   finally { btn.disabled = false; }
 }
 
+let _lastTypingSentAt = 0;
+let _typingStopTimer = null;
+async function sendTypingPing(isTyping){
+  if (!currentFriendId) return;
+  try {
+    await fetch(`/api/chat/${currentFriendId}/typing`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({typing: !!isTyping})
+    });
+  } catch(_){}
+}
 function onChatKey(e){
+  // throttle: 1 ping per 3s; auto-stop after 4s of silence
+  const now = Date.now();
+  if (now - _lastTypingSentAt > 3000){
+    _lastTypingSentAt = now;
+    sendTypingPing(true);
+  }
+  if (_typingStopTimer) clearTimeout(_typingStopTimer);
+  _typingStopTimer = setTimeout(() => { sendTypingPing(false); _lastTypingSentAt = 0; }, 4000);
   if (e.key === 'Enter' && !e.shiftKey){
     e.preventDefault();
+    if (_typingStopTimer) clearTimeout(_typingStopTimer);
+    sendTypingPing(false);
+    _lastTypingSentAt = 0;
     sendMessage();
   }
 }
@@ -1144,7 +1169,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentFriendId) loadMessages();
     loadConversations();
   }, 12000);
+  // Presence poll (online status + typing) — every 5s
+  if (currentFriendId) refreshPresence();
+  setInterval(() => { if (currentFriendId) refreshPresence(); }, 5000);
 });
+
+function _formatLastSeen(iso){
+  if (!iso) return 'был в сети давно';
+  try {
+    const dt = new Date(iso);
+    const diff = (Date.now() - dt.getTime()) / 1000;
+    if (diff < 60) return 'был только что';
+    if (diff < 3600) return 'был ' + Math.floor(diff/60) + ' мин назад';
+    if (diff < 86400) return 'был ' + Math.floor(diff/3600) + ' ч назад';
+    return 'был ' + Math.floor(diff/86400) + ' д назад';
+  } catch(_) { return ''; }
+}
+async function refreshPresence(){
+  if (!currentFriendId) return;
+  try {
+    const r = await fetch(`/api/chat/${currentFriendId}/presence`);
+    if (!r.ok) return;
+    const p = await r.json();
+    const el = document.getElementById('presenceLine');
+    if (!el) return;
+    if (p.typing){
+      el.innerHTML = '<span style="color:#4aa8ff;">печатает…</span>';
+    } else if (p.online){
+      el.innerHTML = '<span style="color:#4caf50;">● в сети</span>';
+    } else {
+      el.textContent = _formatLastSeen(p.last_seen);
+    }
+  } catch(_){}
+}
 </script>
 
 {% endblock %}
