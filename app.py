@@ -2292,26 +2292,24 @@ def yandex_login():
             existing_oauth = OAuthAccount.query.filter_by(provider='yandex', provider_user_id=provider_user_id).first()
 
             if existing_oauth and existing_oauth.user_id != current_user.id:
-                # КОЛЛИЗИЯ: Я-ID привязан к ДРУГОМУ аккаунту → предложить слияние
-                other_user = User.query.get(existing_oauth.user_id)
-                session['merge_candidate_source_id'] = existing_oauth.user_id
-                session.permanent = True
+                # КОЛЛИЗИЯ: Я-ID привязан к ДРУГОМУ аккаунту →
+                # ПЕРЕПРИВЯЗАТЬ его на текущего пользователя (по требованию).
+                old_user_id = existing_oauth.user_id
+                existing_oauth.user_id = current_user.id
+                try:
+                    db.session.commit()
+                except Exception as _re_link_err:
+                    db.session.rollback()
+                    print(f"[YANDEX] re-link failed: {_re_link_err}")
+                    return jsonify({
+                        "success": False,
+                        "error": "Не удалось перепривязать Яндекс ID. Попробуйте ещё раз."
+                    }), 500
                 return jsonify({
-                    'merge_required': True,
-                    'message': 'Этот Яндекс ID уже используется другим аккаунтом FORMYLA. Чтобы не потерять данные — выполните слияние.',
-                    'other_account': {
-                        'id': other_user.id if other_user else None,
-                        'email': (other_user.email if other_user and other_user.email else 'без email'),
-                        'name': (other_user.name if other_user else None),
-                        'created_at': (other_user.created_at.isoformat() if other_user and getattr(other_user, 'created_at', None) else None),
-                    },
-                    'current_account': {
-                        'id': current_user.id,
-                        'email': current_user.email or 'без email',
-                    },
-                    'merge_url': url_for('account.merge_preview'),
-                }), 409
-
+                    "success": True,
+                    "redirect_url": url_for("profile"),
+                    "message": f"Яндекс ID перепривязан с аккаунта #{old_user_id} на текущий. Теперь вход через Яндекс ведёт в этот аккаунт.",
+                })
             if not existing_oauth:
                 # Создаём новую привязку
                 oauth = OAuthAccount(user_id=current_user.id, provider='yandex', provider_user_id=provider_user_id)
