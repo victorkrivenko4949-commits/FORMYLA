@@ -514,6 +514,159 @@
     if (e.code === "Space") { spaceDown = false; canvasEl.style.cursor = tool === "select" ? "default" : "crosshair"; }
   });
 
+  // ===== WB_SHORTCUTS_V1 =====
+  var wbClipboard = null;
+
+  function _wbClone(o) {
+    try { return JSON.parse(JSON.stringify(o)); } catch (_) { return null; }
+  }
+
+  function _wbOffset(o, dx, dy) {
+    if (!o || typeof o !== "object") return;
+    var ks = ["x","y","x1","y1","x2","y2","cx","cy"];
+    for (var i=0;i<ks.length;i++) {
+      var k = ks[i];
+      if (typeof o[k] === "number") {
+        if (k === "y" || k === "y1" || k === "y2" || k === "cy") o[k] += dy;
+        else o[k] += dx;
+      }
+    }
+    if (Array.isArray(o.points)) {
+      for (var p=0;p<o.points.length;p++) {
+        var pt = o.points[p];
+        if (pt && typeof pt.x === "number") pt.x += dx;
+        if (pt && typeof pt.y === "number") pt.y += dy;
+      }
+    }
+  }
+
+  function _wbGetSel() {
+    if (selectedId == null) return null;
+    for (var i=0;i<state.objects.length;i++) {
+      if (state.objects[i].id === selectedId) return state.objects[i];
+    }
+    return null;
+  }
+
+  function _wbCopy() {
+    var o = _wbGetSel();
+    if (!o) return false;
+    wbClipboard = _wbClone(o);
+    return true;
+  }
+
+  function _wbPaste() {
+    if (!wbClipboard) return false;
+    var clone = _wbClone(wbClipboard);
+    if (!clone) return false;
+    clone.id = uid();
+    _wbOffset(clone, 20, 20);
+    state.objects.push(clone);
+    selectedId = clone.id;
+    pushHistory(); redraw();
+    return true;
+  }
+
+  function _wbCut() {
+    var o = _wbGetSel();
+    if (!o) return false;
+    wbClipboard = _wbClone(o);
+    state.objects = state.objects.filter(function(x){ return x.id !== selectedId; });
+    selectedId = null;
+    pushHistory(); redraw();
+    return true;
+  }
+
+  function _wbDuplicate() {
+    var o = _wbGetSel();
+    if (!o) return false;
+    var clone = _wbClone(o);
+    clone.id = uid();
+    _wbOffset(clone, 20, 20);
+    state.objects.push(clone);
+    selectedId = clone.id;
+    pushHistory(); redraw();
+    return true;
+  }
+
+  function _wbSelectAll() {
+    // Single-select fallback: pick last (top-most) object
+    if (!state.objects.length) return false;
+    selectedId = state.objects[state.objects.length - 1].id;
+    redraw();
+    return true;
+  }
+
+  function _wbNudge(dx, dy) {
+    var o = _wbGetSel();
+    if (!o) return false;
+    moveObj(o, dx, dy);
+    pushHistory(); redraw();
+    return true;
+  }
+
+  function _wbDeselect() {
+    if (selectedId == null) return false;
+    selectedId = null;
+    redraw();
+    return true;
+  }
+
+  function _wbExport() {
+    var btn = document.getElementById("wbExport");
+    if (btn) { btn.click(); return true; }
+    return false;
+  }
+
+  window.addEventListener("keydown", function (e) {
+    if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+    var k = (e.key || "").toLowerCase();
+    var ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && k === "c") { if (_wbCopy()) e.preventDefault(); return; }
+    if (ctrl && k === "x") { if (_wbCut()) e.preventDefault(); return; }
+    if (ctrl && k === "v") { if (_wbPaste()) e.preventDefault(); return; }
+    if (ctrl && k === "d") { if (_wbDuplicate()) e.preventDefault(); return; }
+    if (ctrl && k === "a") { if (_wbSelectAll()) e.preventDefault(); return; }
+    if (ctrl && k === "s") { if (_wbExport()) e.preventDefault(); return; }
+    if (k === "escape") { if (_wbDeselect()) e.preventDefault(); return; }
+    if (k === "arrowleft" || k === "arrowright" || k === "arrowup" || k === "arrowdown") {
+      var step = e.shiftKey ? 10 : 1;
+      var dx = 0, dy = 0;
+      if (k === "arrowleft") dx = -step;
+      else if (k === "arrowright") dx = step;
+      else if (k === "arrowup") dy = -step;
+      else dy = step;
+      if (_wbNudge(dx, dy)) e.preventDefault();
+      return;
+    }
+  });
+
+  // Paste image from system clipboard onto the whiteboard.
+  document.addEventListener("paste", function (e) {
+    if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+    if (!e.clipboardData || !e.clipboardData.items) return;
+    var items = e.clipboardData.items;
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it && it.kind === "file" && it.type && it.type.indexOf("image/") === 0) {
+        var file = it.getAsFile();
+        if (!file) continue;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          var src = ev.target && ev.target.result;
+          if (src && window.WB && typeof window.WB.importImage === "function") {
+            window.WB.importImage(src);
+          }
+        };
+        reader.readAsDataURL(file);
+        e.preventDefault();
+        return;
+      }
+    }
+  });
+  // ===== /WB_SHORTCUTS_V1 =====
+
+
   document.querySelectorAll("#wbToolbar .wb-tool").forEach(b => b.addEventListener("click", () => setTool(b.dataset.tool)));
   document.querySelectorAll(".wb-color").forEach(b => b.addEventListener("click", () => setColor(b.dataset.color)));
   const thickEl = document.getElementById("wbThickness");
