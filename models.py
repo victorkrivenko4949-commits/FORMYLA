@@ -487,6 +487,14 @@ class DirectMessage(db.Model):
     deleted_at = db.Column(db.DateTime, nullable=True)
     forwarded_from_id = db.Column(db.Integer, nullable=True, index=True)
 
+    # Delivery / read receipts (DM_RECEIPTS_V1).  In a 1:1 chat with no
+    # offline queue, "delivered" is set the moment the row is persisted.
+    # "read_at" is set the first time the recipient hits the messages
+    # endpoint for this conversation.  These coexist with `is_read` for
+    # backwards compatibility with older API consumers.
+    delivered_at = db.Column(db.DateTime, nullable=True)
+    read_at = db.Column(db.DateTime, nullable=True)
+
     is_read = db.Column(db.Boolean, default=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
@@ -537,6 +545,10 @@ class DirectMessage(db.Model):
                 'preview': self.task_preview,
             } if self.kind == 'task_share' and not is_deleted else None),
             'is_read': self.is_read,
+            'delivered_at': (self.delivered_at.isoformat()
+                             if getattr(self, 'delivered_at', None) else None),
+            'read_at': (self.read_at.isoformat()
+                        if getattr(self, 'read_at', None) else None),
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 

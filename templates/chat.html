@@ -220,6 +220,14 @@
 .bubble-deleted{ color:var(--text-muted, #94a3b8); font-style:italic; }
 .chat-bubble.mine .bubble-deleted{ color:rgba(255,255,255,.7); }
 .edited-tag{ font-size:.78em; color:inherit; opacity:.7; margin-left:4px; }
+/* Read receipts (CHAT_RECEIPTS_V1).
+   `.sent`      — single tick, just persisted on server (no delivered_at yet)
+   `.delivered` — double tick, grey, recipient hasn't opened the chat
+   `.read`      — double tick, blue/accent, recipient has read */
+.msg-status{ font-size:.85em; margin-left:6px; letter-spacing:-1px;
+             color:rgba(255,255,255,.6); }
+.msg-status.read{ color:#4aa8ff; }
+.chat-bubble.theirs .msg-status{ display:none; }
 .chat-bubble.flash{ animation:bubbleFlash 1.4s ease; }
 @keyframes bubbleFlash{
   0%, 100%{ box-shadow:none; }
@@ -640,7 +648,20 @@ async function loadMessages(){
   }catch(e){ console.error(e); }
 }
 
-function renderMessages(msgs){  /* CHAT_WA_FE_V1 */
+/* Status markup for own messages.
+   sent      — message persisted, recipient hasn't received yet (rare)
+   delivered — message reached server, double grey tick
+   read      — recipient opened the chat, double blue tick
+   This is a no-op for `m.mine === false` because CSS hides .msg-status
+   inside `.chat-bubble.theirs`. */
+function statusHtml(m){
+  if (!m.mine || m.deleted) return '';
+  if (m.read_at)      return '<span class="msg-status read" title="Прочитано">&#10003;&#10003;</span>';
+  if (m.delivered_at) return '<span class="msg-status" title="Доставлено">&#10003;&#10003;</span>';
+  return '<span class="msg-status" title="Отправлено">&#10003;</span>';
+}
+
+function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
   const box = document.getElementById('chatMessages');
   if (!box) return;
   box.innerHTML = '';
@@ -665,7 +686,7 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 */
     if (m.deleted){
       b.innerHTML = forwardedTag + replyHtml +
                     '<i class="bubble-deleted">Сообщение удалено</i>' +
-                    '<span class="ts">' + fmtTime(m.created_at) + '</span>';
+                    '<span class="ts">' + fmtTime(m.created_at) + statusHtml(m) + '</span>';
     } else if (m.kind === 'task_share' && m.task){
       const t = m.task;
       const metaParts = [];
@@ -683,11 +704,11 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 */
       b.innerHTML = forwardedTag + replyHtml +
                     (m.body ? escHtml(m.body) + '<br>' : '') +
                     card +
-                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + '</span>';
+                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>';
     } else {
       b.innerHTML = forwardedTag + replyHtml +
                     escHtml(m.body || '') +
-                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + '</span>';
+                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>';
     }
     attachBubbleMenu(b, m);
     box.appendChild(b);

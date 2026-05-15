@@ -405,6 +405,7 @@ except Exception as e:
 
 
 # CHAT_WA_MIGRATION_V1: WhatsApp-style chat columns (reply/edit/delete/forward)
+# CHAT_RECEIPTS_V1:    delivered_at / read_at (added 2026-05-15)
 try:
     with app.app_context():
         from sqlalchemy import inspect as _wa_inspect, text as _wa_text
@@ -416,6 +417,8 @@ try:
                 ('edited_at', 'TIMESTAMP NULL'),
                 ('deleted_at', 'TIMESTAMP NULL'),
                 ('forwarded_from_id', 'INTEGER NULL'),
+                ('delivered_at', 'TIMESTAMP NULL'),
+                ('read_at', 'TIMESTAMP NULL'),
             ):
                 if _col not in _wa_cols:
                     try:
@@ -7027,11 +7030,14 @@ def api_chat_messages(friend_id):
         )
     ).order_by(DirectMessage.created_at.asc())
     msgs = q.limit(limit).all()
-    # Маркируем входящие как прочитанные
+    # Маркируем входящие как прочитанные.  Помимо булева `is_read` (legacy)
+    # ставим `read_at = now` чтобы фронт мог показать «✓✓ синие» — момент,
+    # когда друг реально открыл диалог (CHAT_RECEIPTS_V1).
     try:
+        now = datetime.utcnow()
         DirectMessage.query.filter_by(
             sender_id=friend.id, recipient_id=current_user.id, is_read=False
-        ).update({'is_read': True})
+        ).update({'is_read': True, 'read_at': now})
         db.session.commit()
     except Exception as _e:
         print(f"[CHAT] failed to mark as read: {_e}")
@@ -7083,6 +7089,10 @@ def api_chat_send(friend_id):
         recipient_id=friend.id,
         kind=kind,
         reply_to_id=reply_to_id,
+        # 1:1 chat with no offline queue: the moment we persist the row,
+        # the message has reached the server, so it is "delivered". The
+        # recipient will flip read_at the next time they open the chat.
+        delivered_at=datetime.utcnow(),
     )
 
     if kind == 'text':
