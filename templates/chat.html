@@ -228,6 +228,28 @@
              color:rgba(255,255,255,.6); }
 .msg-status.read{ color:#4aa8ff; }
 .chat-bubble.theirs .msg-status{ display:none; }
+/* CHAT_REACTIONS_V1 */
+.msg-reactions{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.msg-react-chip{
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 7px; border-radius:11px; font-size:.85em; line-height:1;
+  background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.07);
+  cursor:pointer; user-select:none; transition:all .15s;
+}
+.msg-react-chip:hover{ background:rgba(74,168,255,.22); }
+.msg-react-chip.mine{ background:rgba(74,168,255,.32); border-color:rgba(74,168,255,.55); }
+.chat-bubble.mine .msg-react-chip{ background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.16); }
+.chat-bubble.mine .msg-react-chip.mine{ background:rgba(255,255,255,.42); color:#0b1b2e; }
+.msg-react-chip .count{ font-size:.92em; opacity:.92; }
+.msg-react-bar{
+  display:flex; gap:4px; padding:6px 8px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.msg-react-bar button{
+  width:32px; height:32px; padding:0; border:none; background:transparent;
+  font-size:18px; cursor:pointer; border-radius:8px; transition:transform .12s;
+}
+.msg-react-bar button:hover{ background:rgba(74,168,255,.18); transform:scale(1.15); }
 .chat-bubble.flash{ animation:bubbleFlash 1.4s ease; }
 @keyframes bubbleFlash{
   0%, 100%{ box-shadow:none; }
@@ -511,6 +533,14 @@
 
 <!-- Message context menu (WhatsApp-style) -->
 <div id="msgCtxMenu" class="msg-ctx-menu" hidden>
+  <div class="msg-react-bar">
+    <button data-react="👍"  type="button" title="Нравится">👍</button>
+    <button data-react="❤️"  type="button" title="Сердце">❤️</button>
+    <button data-react="😂"  type="button" title="Смех">😂</button>
+    <button data-react="😮"  type="button" title="Удивление">😮</button>
+    <button data-react="😢"  type="button" title="Грусть">😢</button>
+    <button data-react="🔥"  type="button" title="Огонь">🔥</button>
+  </div>
   <button data-act="reply"    type="button"><span>↩</span>Ответить</button>
   <button data-act="copy"     type="button"><span>📋</span>Копировать</button>
   <button data-act="forward"  type="button"><span>➤</span>Переслать</button>
@@ -656,6 +686,20 @@ async function loadMessages(){
    read      — recipient opened the chat, double blue tick
    This is a no-op for `m.mine === false` because CSS hides .msg-status
    inside `.chat-bubble.theirs`. */
+/* CHAT_REACTIONS_V1: build emoji-chip strip for one message. */
+function reactionsHtml(m){
+  const rs = (m && m.reactions) || [];
+  if (!rs.length || m.deleted) return '';
+  let html = '<div class="msg-reactions" data-mid="' + m.id + '">';
+  for (const r of rs){
+    const cls = 'msg-react-chip' + (r.mine ? ' mine' : '');
+    html += '<span class="' + cls + '" data-emoji="' + escHtml(r.emoji) + '" data-mid="' + m.id + '" title="Снять / поставить">'
+         + '<span class="emoji">' + r.emoji + '</span>'
+         + '<span class="count">' + r.count + '</span></span>';
+  }
+  html += '</div>';
+  return html;
+}
 function statusHtml(m){
   if (!m.mine || m.deleted) return '';
   if (m.read_at)      return '<span class="msg-status read" title="Прочитано">&#10003;&#10003;</span>';
@@ -688,7 +732,8 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
     if (m.deleted){
       b.innerHTML = forwardedTag + replyHtml +
                     '<i class="bubble-deleted">Сообщение удалено</i>' +
-                    '<span class="ts">' + fmtTime(m.created_at) + statusHtml(m) + '</span>';
+                    '<span class="ts">' + fmtTime(m.created_at) + statusHtml(m) + '</span>' +
+                    reactionsHtml(m);
     } else if (m.kind === 'task_share' && m.task){
       const t = m.task;
       const metaParts = [];
@@ -706,11 +751,13 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
       b.innerHTML = forwardedTag + replyHtml +
                     (m.body ? escHtml(m.body) + '<br>' : '') +
                     card +
-                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>';
+                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>' +
+                    reactionsHtml(m);
     } else {
       b.innerHTML = forwardedTag + replyHtml +
                     escHtml(m.body || '') +
-                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>';
+                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>' +
+                    reactionsHtml(m);
     }
     attachBubbleMenu(b, m);
     box.appendChild(b);
@@ -774,8 +821,26 @@ function hideCtxMenu(){
 }
 
 document.addEventListener('click', function(e){
+  // Reaction chip click toggles that emoji on its message.
+  const chip = e.target.closest('.msg-react-chip');
+  if (chip){
+    e.preventDefault();
+    const mid = parseInt(chip.dataset.mid, 10);
+    const emoji = chip.dataset.emoji;
+    if (mid && emoji) toggleReaction(mid, emoji);
+    return;
+  }
   const menu = document.getElementById('msgCtxMenu');
   if (!menu || menu.hidden) return;
+  // Reaction bar in context menu.
+  const rb = e.target.closest('#msgCtxMenu [data-react]');
+  if (rb){
+    const emoji = rb.dataset.react;
+    const m = _ctxMsg;
+    hideCtxMenu();
+    if (m && emoji) toggleReaction(m.id, emoji);
+    return;
+  }
   const btn = e.target.closest('#msgCtxMenu [data-act]');
   if (btn){
     const act = btn.dataset.act;
@@ -791,6 +856,29 @@ document.addEventListener('click', function(e){
   }
   if (!e.target.closest('#msgCtxMenu')) hideCtxMenu();
 });
+
+async function toggleReaction(messageId, emoji){
+  try {
+    const r = await fetch('/api/chat/message/' + messageId + '/react', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({emoji: emoji})
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    // Locally rebuild just the chips for this message.
+    const bubble = document.querySelector('.chat-bubble[data-mid="' + messageId + '"]');
+    if (!bubble) return;
+    const old = bubble.querySelector('.msg-reactions');
+    if (old) old.remove();
+    if (data.reactions && data.reactions.length){
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = reactionsHtml({id: messageId, reactions: data.reactions, deleted: false});
+      const frag = wrapper.firstChild;
+      if (frag) bubble.appendChild(frag);
+    }
+  } catch(_){}
+}
 
 function startReply(m){
   _editingId = null;

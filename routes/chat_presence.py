@@ -19,7 +19,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request, current_app
 from flask_login import login_required, current_user
 
-from models import db, UserPresence, Friendship
+from models import db, UserPresence, MessageReaction, Friendship, DirectMessage
 
 
 chat_presence_bp = Blueprint("chat_presence_bp", __name__)
@@ -27,17 +27,23 @@ chat_presence_bp = Blueprint("chat_presence_bp", __name__)
 
 # ---------- auto-migration ----------------------------------------------------
 
+ALLOWED_EMOJIS = ("👍", "❤️", "😂", "😮", "😢", "🔥")
+
+
 def _ensure_table() -> None:
-    """Create user_presence table if absent. Idempotent."""
+    """Create user_presence + message_reactions tables if absent. Idempotent."""
     try:
         from sqlalchemy import inspect as _inspect
         insp = _inspect(db.engine)
-        if "user_presence" in insp.get_table_names():
-            return
-        UserPresence.__table__.create(bind=db.engine, checkfirst=True)
-        print("[AUTO-MIGRATION] user_presence table created")
+        names = set(insp.get_table_names())
+        if "user_presence" not in names:
+            UserPresence.__table__.create(bind=db.engine, checkfirst=True)
+            print("[AUTO-MIGRATION] user_presence table created")
+        if "message_reactions" not in names:
+            MessageReaction.__table__.create(bind=db.engine, checkfirst=True)
+            print("[AUTO-MIGRATION] message_reactions table created")
     except Exception as exc:  # pragma: no cover
-        print("[AUTO-MIGRATION] user_presence failed: " + repr(exc))
+        print("[AUTO-MIGRATION] chat tables failed: " + repr(exc))
 
 
 # ---------- helpers -----------------------------------------------------------
@@ -120,3 +126,58 @@ def set_typing(friend_id: int):
         return jsonify({"error": "db"}), 500
 
     return jsonify({"ok": True})
+
+
+# ---------- reactions ---------------------------------------------------------
+
+@chat_presence_bp.route("/api/chat/message/<int:message_id>/react", methods=["POST"])
+@login_required
+def react_to_message(message_id: int):
+    """Toggle one emoji reaction on a message.
+
+    Body: {"emoji": "👍"}.  If the reaction already exists for the current
+    user it is removed; otherwise it is added.  Only participants of the
+    conversation may react.
+    """
+    payload = request.get_json(silent=True) or {}
+    emoji = (payload.get("emoji") or "").strip()
+    if emoji not in ALLOWED_EMOJIS:
+        return jsonify({"error": "bad_emoji"}), 400
+
+    msg = DirectMessage.query.get(message_id)
+    if not msg:
+        return jsonify({"error": "not_found"}), 404
+
+    # Only sender or recipient may react.
+    if current_user.id not in (msg.sender_id, msg.recipient_id):
+        return jsonify({"error": "forbidden"}), 403
+
+    try:
+        existing = MessageReaction.query.filter_by(
+            message_id=message_id,
+            user_id=current_user.id,
+            emoji=emoji,
+        ).first()
+        if existing is not None:
+            db.session.delete(existing)
+            action = "removed"
+        else:
+            db.session.add(MessageReaction(
+                message_id=message_id,
+                user_id=current_user.id,
+                emoji=emoji,
+            ))
+            action = "added"
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.warning("react_to_message failed: %r", exc)
+        return jsonify({"error": "db"}), 500
+
+    # Return fresh aggregated reactions for the client to swap in.
+    from models import _aggregate_reactions
+    return jsonify({
+        "ok": True,
+        "action": action,
+        "reactions": _aggregate_reactions(message_id, current_user.id),
+    })

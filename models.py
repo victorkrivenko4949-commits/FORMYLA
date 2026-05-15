@@ -447,6 +447,25 @@ class Friendship(db.Model):
         return f'<Friendship {self.requester_id}->{self.addressee_id} ({self.status})>'
 
 
+def _aggregate_reactions(message_id, viewer_id=None):
+    """Return list of {'emoji': str, 'count': int, 'mine': bool} for a message.
+
+    Defined as a module-level helper so DirectMessage.to_dict() can call it
+    without triggering circular-import issues.
+    """
+    try:
+        rows = MessageReaction.query.filter_by(message_id=message_id).all()
+    except Exception:
+        return []
+    buckets = {}
+    for r in rows:
+        b = buckets.setdefault(r.emoji, {'emoji': r.emoji, 'count': 0, 'mine': False})
+        b['count'] += 1
+        if viewer_id is not None and r.user_id == viewer_id:
+            b['mine'] = True
+    return sorted(buckets.values(), key=lambda x: (-x['count'], x['emoji']))
+
+
 class DirectMessage(db.Model):
     """Личное сообщение между друзьями (1:1 чат).
 
@@ -549,6 +568,7 @@ class DirectMessage(db.Model):
                              if getattr(self, 'delivered_at', None) else None),
             'read_at': (self.read_at.isoformat()
                         if getattr(self, 'read_at', None) else None),
+            'reactions': _aggregate_reactions(self.id, viewer_id),
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -612,6 +632,37 @@ class UserPresence(db.Model):
 
     def __repr__(self):
         return f'<UserPresence u={self.user_id} seen={self.last_seen}>'
+
+
+class MessageReaction(db.Model):
+    """Эмодзи-реакции на сообщения в личке (CHAT_REACTIONS_V1).
+
+    Одна строка на «один эмодзи от одного пользователя на одно сообщение».
+    Уникальный ключ (message_id, user_id, emoji) гарантирует, что повторное
+    нажатие на уже поставленный эмодзи приведёт к его снятию (toggle).
+    """
+    __tablename__ = 'message_reactions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('direct_messages.id', ondelete='CASCADE'),
+                           nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+                        nullable=False, index=True)
+    emoji = db.Column(db.String(16), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('message_id', 'user_id', 'emoji',
+                            name='uq_message_reaction'),
+    )
+
+    user = db.relationship('User', foreign_keys=[user_id])
+
+    def __repr__(self):
+        return (
+            f'<MessageReaction m={self.message_id} u={self.user_id} '
+            f'e={self.emoji!r}>'
+        )
 
 
 class Mentorship(db.Model):
