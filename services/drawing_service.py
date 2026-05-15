@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import ast
 import base64
 import hashlib
 import json
@@ -58,10 +59,31 @@ MODEL_FALLBACK = None
 # HTTP 400 "not a valid model ID".
 MODEL_CRITIC = "google/gemini-3.1-pro-preview"
 
+# Architect model: writes a detailed construction spec BEFORE Claude
+# starts coding.  Same Gemini thinking model -- it spends a lot of
+# tokens on reasoning, which is exactly what we want for "decompose
+# the geometry problem into a step-by-step plan".  Output is plain
+# Russian text, NOT JSON, because it goes into Claude's system context.
+MODEL_ARCHITECT = "google/gemini-3.1-pro-preview"
+
 # Critic stage is OFF by default (slow on Render Free Tier where the
 # request timeout is ~100s).  Flip the env var to "1" / "true" to enable.
 CRITIC_ENABLED = (os.environ.get("DRAWING_CRITIC_ENABLED", "0")
                   .strip().lower() in ("1", "true", "yes", "on"))
+
+# Architect stage: runs BEFORE Claude.  Gemini (thinking) produces a
+# detailed construction spec from the problem text, which is then fed
+# to Claude as additional system context.  Adds ~15-25s and ~$0.05 per
+# request but dramatically improves first-try success on multi-object
+# problems (nine-point circle, inversion, etc.).  Defaults to whatever
+# the critic toggle is set to -- "max quality" mode enables everything.
+_arch_env = os.environ.get("DRAWING_ARCHITECT", "").strip().lower()
+if _arch_env in ("1", "true", "yes", "on"):
+    ARCHITECT_ENABLED = True
+elif _arch_env in ("0", "false", "no", "off"):
+    ARCHITECT_ENABLED = False
+else:
+    ARCHITECT_ENABLED = CRITIC_ENABLED
 
 # Cosmetic critic is a SECOND pass that only looks at label/layout
 # readability AFTER geometry is already clean.  It costs an extra
@@ -77,7 +99,11 @@ elif _cosmetic_env in ("0", "false", "no", "off"):
 else:
     COSMETIC_CRITIC_ENABLED = CRITIC_ENABLED
 
-MAX_REPAIR_ITERS = 2          # for syntax/runtime errors inside one round
+# Repair budget for runtime/sandbox errors inside a single generation
+# round. 4 is empirically enough to cover the long-tail of "Claude forgot
+# a paren / missed a `:` / made a NameError" without burning the wall
+# budget on the rare task where the model is fundamentally confused.
+MAX_REPAIR_ITERS = 4
 MAX_CRITIQUE_ROUNDS = 2       # how many times the critic is consulted
 CACHE_TTL_SEC = 30 * 24 * 3600     # 30 days
 CACHE_DIR_NAME = os.path.join("static", "generated", "cache")
@@ -215,6 +241,81 @@ CRITIC_SYSTEM_PROMPT = (
 )
 
 
+# Architect prompt: thinking model produces a fully-resolved
+# construction spec.  We deliberately ask for plain Russian text in a
+# numbered structure rather than JSON -- Claude reads it as natural
+# language context.  The architect is allowed (and encouraged) to
+# choose concrete numeric values for free parameters.
+ARCHITECT_SYSTEM_PROMPT = (
+    "Ты — архитектор геометрических чертежей. Тебе дают русскоязычное\n"
+    "условие задачи. Твоя задача — НЕ рисовать и НЕ писать код, а выдать\n"
+    "ДЕТАЛЬНОЕ ТЕХНИЧЕСКОЕ ЗАДАНИЕ для отдельного программиста, который\n"
+    "потом напишет matplotlib-код. Программист — отличный кодер, но\n"
+    "посредственный геометр; ему нужны разжёванные инструкции.\n"
+    "\n"
+    "Твой ответ — это PLAIN TEXT на русском (никакого JSON, никаких\n"
+    "markdown-fences). Структура ответа ОБЯЗАТЕЛЬНО такая:\n"
+    "\n"
+    "## 1. КЛАССИФИКАЦИЯ ЗАДАЧИ\n"
+    "Одно предложение: к какому классу относится задача (треугольник\n"
+    "с описанной/вписанной/высотами, две пересекающиеся окружности,\n"
+    "стереометрия и т.п.).\n"
+    "\n"
+    "## 2. ПЕРЕЧЕНЬ ВСЕХ ИМЕНОВАННЫХ ТОЧЕК\n"
+    "Список вида:\n"
+    "  A — вершина треугольника, свободный параметр (начнём с (0, 0))\n"
+    "  B — вершина треугольника, свободный параметр (5, 0)\n"
+    "  C — третья вершина, определяется из условия 'угол A = 60°, AC = 7'\n"
+    "  H — ортоцентр, точка пересечения высот\n"
+    "  H1 — основание высоты из A на BC\n"
+    "  ...\n"
+    "Для свободных параметров (точек/углов/радиусов, которые ты сам\n"
+    "выбираешь) предложи КОНКРЕТНОЕ ЧИСЛЕННОЕ значение, выбранное так,\n"
+    "чтобы все именованные точки на чертеже были ВИЗУАЛЬНО РАЗДЕЛЕНЫ\n"
+    "(никаких 'почти касательных' и 'почти совпадающих' точек).\n"
+    "\n"
+    "## 3. ПОСЛЕДОВАТЕЛЬНОСТЬ ПОСТРОЕНИЯ\n"
+    "Пронумерованный список шагов, в порядке зависимостей:\n"
+    "  1. Зафиксировать координаты A и B как выше.\n"
+    "  2. C = A + 7 * (cos 60°, sin 60°).\n"
+    "  3. Высота из A: вектор перпендикулярный BC, основание H1 на BC.\n"
+    "  4. ...\n"
+    "Для каждой точки явно укажи ФОРМУЛУ её координат через предыдущие.\n"
+    "Если требуется численный метод (пересечение прямой и окружности —\n"
+    "квадратное уравнение, середина дуги — параметризация и т.п.) —\n"
+    "распиши его кратко.\n"
+    "\n"
+    "## 4. ИНВАРИАНТЫ ДЛЯ ПРОВЕРКИ (asserts)\n"
+    "Список условий, которые программист должен зафиксировать как\n"
+    "assert после выполнения построения. Например:\n"
+    "  - |M - B| = |M - C| (M — середина BC)\n"
+    "  - |P - O| = R (P лежит на окружности с центром O и радиусом R)\n"
+    "  - AH ⊥ BC (высота)\n"
+    "  - угол A = 60° (по условию)\n"
+    "Один инвариант — одна строка.\n"
+    "\n"
+    "## 5. ОБЪЕКТЫ ДЛЯ ОТРИСОВКИ\n"
+    "Список того, что должно появиться на чертеже:\n"
+    "  - треугольник ABC (три отрезка AB, BC, CA);\n"
+    "  - описанная окружность с центром O радиуса R;\n"
+    "  - вписанная окружность с центром I радиуса r;\n"
+    "  - высота AH1 (отрезок A-H1);\n"
+    "  - подписи всех именованных точек: A, B, C, H, H1, M, O.\n"
+    "Если в условии явно требуется отметить угол, равенство отрезков,\n"
+    "прямой угол — отметь это здесь же.\n"
+    "\n"
+    "## 6. ЗАМЕТКИ ПО ЧИТАЕМОСТИ\n"
+    "Если предвидишь налегания подписей или другие косметические\n"
+    "проблемы — укажи, в какую сторону смещать конкретные подписи\n"
+    "(например, 'H ставить слева-вверху от точки H, потому что справа\n"
+    "пройдёт высота AH1').\n"
+    "\n"
+    "Будь чёткими и конкретными. Никаких 'выберите подходящее\n"
+    "значение' — выбирай сам и обосновывай. Никакого matplotlib-кода\n"
+    "в ответе — это работа другого специалиста."
+)
+
+
 # Cosmetic critic: a SECOND pass run only after the geometry critic has
 # converged (findings == []).  Its job is the opposite of the main critic
 # above: it MUST ignore mathematics and ONLY look at readability --
@@ -334,6 +435,36 @@ def _extract_code(text: str) -> Optional[str]:
     return None
 
 
+def _ast_check(code: str) -> Optional[str]:
+    """Return None if the snippet parses, otherwise a short, actionable
+    error message with the offending line.  Used as a cheap pre-flight
+    before the heavyweight sandbox so a missing paren can be reported to
+    Claude WITH the right line context instead of just the raw
+    'SyntaxError: was never closed' which is hard to fix blind."""
+    try:
+        ast.parse(code)
+    except SyntaxError as e:
+        lineno = getattr(e, "lineno", None) or 0
+        offset = getattr(e, "offset", None) or 0
+        msg = (e.msg or "syntax error").strip()
+        # Pull a few surrounding lines so Claude can locate the bug.
+        lines = code.splitlines()
+        start = max(0, lineno - 3)
+        end = min(len(lines), lineno + 2)
+        context = []
+        for i in range(start, end):
+            marker = " >>>" if (i + 1) == lineno else "    "
+            context.append("%s %4d | %s" % (marker, i + 1, lines[i]))
+        return (
+            "SyntaxError: " + msg
+            + " (line " + str(lineno) + ", col " + str(offset) + ")\n"
+            + "\n".join(context)
+        )
+    except (ValueError, TypeError) as e:
+        return "ParseError: " + str(e)
+    return None
+
+
 def _problem_hash(problem: str) -> str:
     payload = (MODEL_PRIMARY + "::" + problem.strip()).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
@@ -389,11 +520,76 @@ def _call_llm(messages: list, model: str) -> dict:
     )
 
 
-def _build_initial_messages(problem: str) -> list:
-    return [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": problem.strip()},
-    ]
+def _build_initial_messages(
+    problem: str,
+    architect_spec: Optional[str] = None,
+) -> list:
+    """Build the first prompt for Claude.
+
+    If architect_spec is given, we inject it as an extra system message
+    so Claude sees the construction plan BEFORE the user's problem text.
+    The order matters: system-rules first, architect-spec second (so
+    Claude treats it as authoritative guidance from the project), the
+    actual problem last.
+    """
+    msgs = [{"role": "system", "content": SYSTEM_PROMPT}]
+    if architect_spec:
+        msgs.append({
+            "role": "system",
+            "content": (
+                "Дополнительный контекст: внешний архитектор уже\n"
+                "проанализировал задачу и составил техническое задание\n"
+                "для построения. Используй его как АВТОРИТЕТНЫЙ источник\n"
+                "координат, формул и инвариантов. Если найдёшь в нём\n"
+                "ошибку — исправь, но используй структуру и список\n"
+                "элементов оттуда.\n\n"
+                "--- ТЕХНИЧЕСКОЕ ЗАДАНИЕ АРХИТЕКТОРА ---\n"
+                + architect_spec.strip()
+                + "\n--- КОНЕЦ ТЕХНИЧЕСКОГО ЗАДАНИЯ ---"
+            ),
+        })
+    msgs.append({"role": "user", "content": problem.strip()})
+    return msgs
+
+
+def _get_architect_spec(problem: str) -> Tuple[Optional[str], float]:
+    """Ask the architect model to produce a detailed construction spec.
+
+    Returns: (spec_text or None, cost_usd).  Network/API failures are
+    swallowed -- caller falls back to the no-spec path so the architect
+    is strictly an enhancement, never a single point of failure.
+    """
+    try:
+        resp = openrouter.chat(
+            model=MODEL_ARCHITECT,
+            messages=[
+                {"role": "system", "content": ARCHITECT_SYSTEM_PROMPT},
+                {"role": "user", "content": problem.strip()},
+            ],
+            temperature=0.0,
+            # Architect is a thinking model: it spends ~1500-3000 tokens
+            # on hidden reasoning before producing the spec.  Give it
+            # plenty of headroom so the spec itself isn't truncated.
+            max_tokens=8000,
+        )
+        content = (resp.get("content") or "").strip()
+        cost = float(resp.get("cost_usd") or 0.0)
+        # A useful spec contains at least the section headers we asked
+        # for; if not, treat it as a degraded response and skip.
+        if "ПЕРЕЧЕНЬ" not in content and "ПОСЛЕДОВАТЕЛЬНОСТЬ" not in content:
+            logger.warning(
+                "[drawing] architect returned content without expected "
+                "section headers (%d chars); falling back to no-spec mode",
+                len(content),
+            )
+            return None, cost
+        return content, cost
+    except OpenRouterError as e:
+        logger.warning("[drawing] architect call failed: %s", e)
+        return None, 0.0
+    except Exception as e:  # pragma: no cover
+        logger.warning("[drawing] architect unexpected error: %s", e)
+        return None, 0.0
 
 
 def _build_repair_user_msg(error_text: str) -> dict:
@@ -673,6 +869,22 @@ def _generate_code_until_renders(
 
         last_code = code
 
+        # --- AST pre-flight (cheap, catches forgot-a-paren bugs without
+        # spinning a subprocess; gives Claude the line number so the
+        # repair iteration converges faster). ---
+        ast_err = _ast_check(code)
+        if ast_err is not None:
+            last_error = ast_err
+            attempts.append({
+                "stage": "ast-check",
+                "iter": iteration,
+                "model": chosen_model,
+                "ok": False,
+                "error": last_error[:2000],
+            })
+            messages = messages + [_build_repair_user_msg(last_error)]
+            continue
+
         # --- Sandbox execution ---
         try:
             image_bytes = run_drawing_code(code, timeout=12.0)
@@ -740,7 +952,26 @@ def generate_drawing(
 
     attempts: List[dict] = []
     total_cost = 0.0
-    messages = _build_initial_messages(problem)
+
+    # 1.5) Architect stage (optional): Gemini produces a detailed
+    # construction spec which is then fed to Claude as extra system
+    # context.  Strictly additive -- if the architect call fails we
+    # fall through to the legacy "Claude sees only the problem" path.
+    architect_spec = None
+    if ARCHITECT_ENABLED:
+        arch_started = time.time()
+        architect_spec, arch_cost = _get_architect_spec(problem)
+        total_cost += arch_cost
+        attempts.append({
+            "stage": "architect",
+            "model": MODEL_ARCHITECT,
+            "ok": architect_spec is not None,
+            "cost_usd": round(arch_cost, 6),
+            "wall_ms": int((time.time() - arch_started) * 1000),
+            "spec_chars": (len(architect_spec) if architect_spec else 0),
+        })
+
+    messages = _build_initial_messages(problem, architect_spec=architect_spec)
 
     # 2) First successful render
     image_bytes, code, used_model, messages, cost_added, repair_used = (
