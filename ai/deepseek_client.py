@@ -49,17 +49,12 @@ class DeepSeekClient:
         if not self.api_key:
             raise ValueError("DEEPSEEK_API_KEY not provided and not found in environment")
         
-        # Поддержка OpenRouter как альтернативного провайдера
-        use_openrouter = os.environ.get('USE_OPENROUTER', 'false').lower() in ['true', '1', 't', 'yes']
-        
-        if use_openrouter:
-            self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-            self.model = "deepseek/deepseek-chat"
-            logger.info("🔄 Using OpenRouter as DeepSeek provider")
-        else:
-            self.base_url = "https://api.deepseek.com/v1/chat/completions"
-            self.model = "deepseek-chat"
-            logger.info("🔄 Using official DeepSeek API")
+        # Прямой DeepSeek API (api.deepseek.com).
+        # Маршрутизация через OpenRouter оставлена ТОЛЬКО для vision-фолбэка
+        # (см. _call_api ниже), который использует свой OPENROUTER_API_KEY.
+        self.base_url = "https://api.deepseek.com/v1/chat/completions"
+        self.model = "deepseek-chat"
+        logger.info("🔄 Using official DeepSeek API (direct)")
         
         self.max_retries = 2  # 2 попытки для устойчивости к ошибкам парсинга JSON
         self.base_delay = 2  # seconds
@@ -176,7 +171,132 @@ class DeepSeekClient:
         # All retries exhausted
         logger.error(f"All {self.max_retries} retries exhausted")
         raise DeepSeekAPIError(f"Failed after {self.max_retries} attempts")
-    
+
+    def generate_with_reasoning(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        max_tokens: Optional[int] = 2000,
+        return_reasoning: bool = False,
+        timeout: int = 300,
+    ):
+        """
+        Call DeepSeek's reasoning model (deepseek-reasoner) — chain-of-thought enabled.
+
+        deepseek-reasoner accepts NO temperature/top_p/penalties (they are silently
+        ignored by the API). It returns two fields per choice:
+          - message.reasoning_content  → the model's thought process (CoT)
+          - message.content            → the final answer
+
+        Args:
+            prompt:           User message.
+            system_prompt:    Optional system message.
+            max_tokens:       Cap on FINAL answer tokens (CoT tokens are separate).
+            return_reasoning: If True, returns (content, reasoning_content) tuple.
+                              If False, returns just `content` (str).
+            timeout:          Per-request timeout in seconds (reasoner is slow).
+
+        Raises:
+            DeepSeekAPIError on irrecoverable failure.
+        """
+        # Reasoner model is only available on the official DeepSeek endpoint.
+        # If the client was configured for OpenRouter, point this single call back
+        # to the official API so reasoner works.
+        url = "https://api.deepseek.com/v1/chat/completions"
+        model = "deepseek-reasoner"
+
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        payload = {
+            "model": model,
+            "messages": messages,
+        }
+        if max_tokens is not None:
+            # deepseek-reasoner uses `max_tokens` for the FINAL answer only.
+            payload["max_tokens"] = max_tokens
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        last_err: Optional[Exception] = None
+        # Reasoner is flakier than chat (sometimes returns empty content
+        # because all tokens went to reasoning_content) — use more retries.
+        reasoner_retries = max(self.max_retries, 4)
+        for attempt in range(reasoner_retries):
+            try:
+                logger.info(
+                    f"[reasoner] Attempt {attempt + 1}/{reasoner_retries}: "
+                    f"sending request to {model}"
+                )
+                response = requests.post(url, headers=headers, json=payload,
+                                         timeout=timeout)
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'choices' in data and len(data['choices']) > 0:
+                        msg = data['choices'][0].get('message', {}) or {}
+                        content = msg.get('content') or ''
+                        reasoning = msg.get('reasoning_content') or ''
+                        if not content:
+                            raise ValueError("reasoner: empty content field")
+                        logger.info(
+                            f"[reasoner] ✓ ok (reasoning={len(reasoning)} chars, "
+                            f"content={len(content)} chars)"
+                        )
+                        if return_reasoning:
+                            return content, reasoning
+                        return content
+                    raise ValueError("reasoner: no choices in response")
+
+                if response.status_code == 429:
+                    wait_time = 60
+                    logger.warning(f"[reasoner] 429, waiting {wait_time}s")
+                    time.sleep(wait_time)
+                    continue
+
+                if response.status_code in (500, 502, 503, 504):
+                    wait_time = self.base_delay * (2 ** attempt)
+                    logger.warning(
+                        f"[reasoner] {response.status_code}, waiting {wait_time}s"
+                    )
+                    time.sleep(wait_time)
+                    continue
+
+                if response.status_code == 401:
+                    raise DeepSeekAPIError(
+                        f"reasoner: auth failed: {response.text[:200]}"
+                    )
+
+                # Other 4xx → no retry
+                raise DeepSeekAPIError(
+                    f"reasoner HTTP {response.status_code}: "
+                    f"{response.text[:300]}"
+                )
+
+            except requests.exceptions.Timeout as e:
+                last_err = e
+                wait_time = self.base_delay * (2 ** attempt)
+                logger.warning(f"[reasoner] timeout, waiting {wait_time}s")
+                time.sleep(wait_time)
+            except requests.exceptions.ConnectionError as e:
+                last_err = e
+                wait_time = self.base_delay * (2 ** attempt)
+                logger.warning(f"[reasoner] conn error: {e}, waiting {wait_time}s")
+                time.sleep(wait_time)
+            except ValueError as e:
+                last_err = e
+                wait_time = self.base_delay * (2 ** attempt)
+                logger.warning(f"[reasoner] bad response: {e}, waiting {wait_time}s")
+                time.sleep(wait_time)
+
+        raise DeepSeekAPIError(
+            f"reasoner failed after {reasoner_retries} attempts: {last_err}"
+        )
+
     def analyze_user_background(self, user_text: str) -> Dict[str, Any]:
         """
         Анализирует математический опыт пользователя и дает рекомендации.
@@ -473,30 +593,88 @@ class DeepSeekClient:
         else:
             system_prompt += "\n\nРЕЖИМ РАБОТЫ: Давай ПОЛНОЕ РЕШЕНИЕ с подробными объяснениями. Распиши решение шаг за шагом, объясняя каждый этап."
 
+        # Если в новом сообщении прикреплено изображение — сообщаем модели
+        # явно, что у неё есть vision-возможности и что фото СЕЙЧАС приложено.
+        # Без этого некоторые модели по привычке отвечают «не могу видеть».
+        if image_data:
+            system_prompt += (
+                "\n\nВАЖНО: к ТЕКУЩЕМУ сообщению пользователя ПРИКРЕПЛЕНО ИЗОБРАЖЕНИЕ "
+                "(фото / скриншот условия задачи). Ты МОЖЕШЬ его видеть и анализировать "
+                "через vision-возможности модели. Внимательно прочитай условие на картинке, "
+                "распиши, что увидел, и помоги ученику. НИКОГДА не отвечай «я не могу видеть "
+                "изображения» — это ошибка: фото реально приложено к этому запросу."
+            )
+
         # Формируем историю для контекста
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
-        
-        # Добавляем последние 20 сообщений из истории
-        for msg in chat_history[-20:]:
-            messages.append({
-                "role": msg.get('role', 'user'),
-                "content": msg.get('content', '')
-            })
+
+        # Когда мы шлём фото, нужно ОЧИСТИТЬ историю от прежних ассистент-реплик типа
+        # «я не могу видеть изображения», иначе vision-модель «вживается в роль»
+        # из-за in-context bias и продолжает отвечать «не вижу», даже если новое фото
+        # реально приложено. Также вычищаем плейсхолдеры «[📎 Прикреплено изображение]»,
+        # чтобы у модели не было ложного контекста, что фото уже было.
+        _NEG_PHRASES = (
+            'не могу видеть',
+            'не вижу',
+            'не могу обработать изображ',
+            'работаю только с текст',
+            'работаю с текст',
+            'я не вижу',
+        )
+        if image_data:
+            for msg in chat_history[-20:]:
+                role = msg.get('role', 'user')
+                content = msg.get('content', '') or ''
+                if role == 'assistant' and any(p in content.lower() for p in _NEG_PHRASES):
+                    # Пропускаем «отравленные» ответы прошлых раундов без vision
+                    continue
+                # Убираем плейсхолдеры из user-сообщений
+                if isinstance(content, str):
+                    content = content.replace('[📎 Прикреплено изображение]', '').strip()
+                if not content:
+                    continue
+                messages.append({'role': role, 'content': content})
+        else:
+            for msg in chat_history[-20:]:
+                messages.append({
+                    "role": msg.get('role', 'user'),
+                    "content": msg.get('content', '')
+                })
         
         # Добавляем новое сообщение (с изображением если есть)
         if image_data:
-            # Если есть изображение, используем multimodal формат
-            # DeepSeek не поддерживает vision, поэтому используем OpenRouter с GPT-4o-mini
+            # Определяем MIME-тип по «магическим» байтам base64-картинки.
+            # Это критично: некоторые vision-провайдеры строго проверяют content-type
+            # и тихо отказывают, если объявлен image/jpeg, а пришёл PNG/WebP.
+            mime = "image/jpeg"
+            try:
+                import base64 as _b64
+                head = _b64.b64decode(image_data[:32] + "==", validate=False)[:12]
+                if head.startswith(b"\x89PNG"):
+                    mime = "image/png"
+                elif head.startswith(b"GIF8"):
+                    mime = "image/gif"
+                elif head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+                    mime = "image/webp"
+                elif head.startswith(b"\xff\xd8\xff"):
+                    mime = "image/jpeg"
+                elif head[:4] == b"\x00\x00\x00\x18" or head[:4] == b"\x00\x00\x00\x1c":
+                    mime = "image/heic"
+            except Exception as _mime_err:
+                logger.warning(f"MIME sniff failed, defaulting to image/jpeg: {_mime_err}")
+
+            # Multimodal-формат для vision-моделей через OpenRouter
             messages.append({
                 "role": "user",
                 "content": [
                     {"type": "text", "text": new_message},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}}
+                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_data}"}}
                 ]
             })
             use_vision_model = True
+            logger.info(f"Vision request prepared, mime={mime}, b64_len={len(image_data)}")
         else:
             messages.append({"role": "user", "content": new_message})
             use_vision_model = False
@@ -504,7 +682,7 @@ class DeepSeekClient:
         print(f">>> Messages count: {len(messages)}, Vision: {use_vision_model}", flush=True)
         logger.info(f"Sending {len(messages)} messages to AI (vision={use_vision_model})")
         
-        def _call_api(api_url, model, api_key, msgs):
+        def _call_api(api_url, model, api_key, msgs, is_openrouter=False):
             payload = {
                 "model": model,
                 "messages": msgs,
@@ -515,43 +693,68 @@ class DeepSeekClient:
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
             }
-            resp = requests.post(api_url, headers=headers, json=payload, timeout=self.timeout)
+            # OpenRouter рекомендует слать эти два заголовка — без них некоторые модели
+            # (особенно vision) могут возвращать 4xx или ухудшенный rate-limit.
+            if is_openrouter:
+                headers["HTTP-Referer"] = os.environ.get("DOMAIN_URL", "https://formyla.ru")
+                headers["X-Title"] = "FORMYLA AI Tutor"
+            # Для OpenRouter (vision) используем более короткий таймаут на ОДИН запрос,
+            # чтобы цепочка фолбэков по vision-моделям успела выполниться целиком.
+            _per_call_timeout = 45 if is_openrouter else self.timeout
+            resp = requests.post(api_url, headers=headers, json=payload, timeout=_per_call_timeout)
             if resp.status_code == 200:
                 data = resp.json()
                 if 'choices' in data and len(data['choices']) > 0:
                     return data['choices'][0]['message']['content']
-            raise DeepSeekAPIError(f"API error: {resp.status_code}")
+                raise DeepSeekAPIError(f"API ok but no choices: {str(data)[:200]}")
+            # Пробуем достать тело ошибки для логов / проброса вверх
+            err_body = ''
+            try:
+                err_body = resp.text[:400]
+            except Exception:
+                pass
+            raise DeepSeekAPIError(f"API error: {resp.status_code} body={err_body}")
 
         try:
             if use_vision_model:
-                # Пробуем OpenRouter с vision
                 openrouter_key = os.environ.get('OPENROUTER_API_KEY')
+                vision_models = [
+                    # Более новая и стабильно поддерживающая vision модель
+                    "openai/gpt-4o-mini",
+                    # Запасные варианты на случай отказа основной
+                    "google/gemini-2.0-flash-001",
+                    "anthropic/claude-3.5-sonnet",
+                ]
                 if openrouter_key:
-                    try:
-                        content = _call_api(
-                            "https://openrouter.ai/api/v1/chat/completions",
-                            "openai/gpt-4o-mini",
-                            openrouter_key,
-                            messages
-                        )
-                        logger.info(f"Tutor response generated for user {user.id} (vision)")
-                        return content
-                    except Exception as vision_err:
-                        logger.warning(f"Vision API failed ({vision_err}), falling back to text-only")
+                    last_err = None
+                    for vm in vision_models:
+                        try:
+                            content = _call_api(
+                                "https://openrouter.ai/api/v1/chat/completions",
+                                vm,
+                                openrouter_key,
+                                messages,
+                                is_openrouter=True,
+                            )
+                            logger.info(f"Tutor response generated for user {user.id} (vision={vm})")
+                            return content
+                        except Exception as vision_err:
+                            last_err = vision_err
+                            logger.warning(f"Vision via {vm} failed: {vision_err}")
+                    # Все vision-модели не сработали — возвращаем дружелюбное сообщение
+                    logger.error(f"All vision models failed for user {user.id}: {last_err}")
+                    return (
+                        "🖼️ Не получилось распознать изображение через vision-AI "
+                        f"({type(last_err).__name__ if last_err else 'unknown error'}). "
+                        "Пожалуйста, перепиши условие задачи текстом — я с радостью помогу. "
+                        "Если ошибка повторяется, сообщи администратору, он проверит лимиты OpenRouter."
+                    )
                 else:
-                    logger.warning("OPENROUTER_API_KEY not set, falling back to text-only DeepSeek")
-
-                # Fallback: убираем изображение, оставляем только текст
-                text_messages = []
-                for msg in messages:
-                    if isinstance(msg.get('content'), list):
-                        # Извлекаем только текстовую часть
-                        text_parts = [p['text'] for p in msg['content'] if p.get('type') == 'text']
-                        text_messages.append({"role": msg['role'], "content": ' '.join(text_parts)})
-                    else:
-                        text_messages.append(msg)
-                messages = text_messages
-                logger.info(f"Sending {len(messages)} messages to AI (vision=False, fallback)")
+                    logger.error("OPENROUTER_API_KEY not configured — vision unavailable")
+                    return (
+                        "🖼️ Распознавание фото временно недоступно: на сервере не настроен ключ OpenRouter. "
+                        "Опиши задачу текстом, и я помогу!"
+                    )
 
             # Используем DeepSeek для текста
             content = _call_api(self.base_url, "deepseek-chat", self.api_key, messages)
@@ -562,6 +765,127 @@ class DeepSeekClient:
             logger.error(f"Error in tutor chat: {e}")
             return "Извините, возникла ошибка при обращении к AI. Попробуйте ещё раз!"
     
+    def transcribe_handwritten_solution(self, image_data: str,
+                                        task_text: str = "") -> str:
+        """OCR / transcribe a handwritten student solution from a photo.
+
+        Uses the same OpenRouter vision pipeline as `chat_with_tutor`, but
+        does NOT need a User instance. Returns plain text + LaTeX of what
+        the model could read on the photo. If transcription fails, returns
+        an empty string (caller should fall back to "no solution").
+
+        Args:
+            image_data: base64-encoded image bytes (no data: prefix)
+            task_text: optional task statement, helps the model understand
+                       what the student is solving (math context)
+        """
+        if not image_data:
+            return ""
+        try:
+            import base64 as _b64
+            head = _b64.b64decode(image_data[:32] + "==", validate=False)[:12]
+            mime = "image/jpeg"
+            if head.startswith(b"\x89PNG"):
+                mime = "image/png"
+            elif head.startswith(b"GIF8"):
+                mime = "image/gif"
+            elif head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+                mime = "image/webp"
+            elif head.startswith(b"\xff\xd8\xff"):
+                mime = "image/jpeg"
+        except Exception:
+            mime = "image/jpeg"
+
+        sys_prompt = (
+            "Ты — система распознавания рукописного математического текста "
+            "для российского школьника. На фото рукописное решение задачи "
+            "из тетради. Твоя задача:\n"
+            "1. ВНИМАТЕЛЬНО распознать ВЕСЬ написанный текст и формулы.\n"
+            "2. Выписать ход решения в точности, как ученик его записал, "
+            "не исправляя ошибок ученика.\n"
+            "3. Математические формулы оформить в LaTeX: \\(...\\) "
+            "для строчных, \\[...\\] для блочных.\n"
+            "4. Сохранить переносы строк и нумерацию шагов.\n"
+            "5. НЕ комментировать, НЕ оценивать, НЕ решать заново. "
+            "Только аккуратная транскрипция того, что написано.\n"
+            "Если на фото вообще нет читаемого решения, верни одну строку: "
+            "(на фото не удалось разобрать решение)."
+        )
+        user_text = "Распознай это рукописное решение."
+        if task_text:
+            user_text += (
+                f"\n\nДля контекста, задача: {task_text[:600]}"
+            )
+
+        messages = [
+            {"role": "system", "content": sys_prompt},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": user_text},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:{mime};base64,{image_data}",
+                        },
+                    },
+                ],
+            },
+        ]
+
+        openrouter_key = os.environ.get("OPENROUTER_API_KEY")
+        if not openrouter_key:
+            logger.warning(
+                "OPENROUTER_API_KEY not configured; cannot transcribe photo."
+            )
+            return ""
+
+        vision_models = [
+            "openai/gpt-4o-mini",
+            "google/gemini-2.0-flash-001",
+            "anthropic/claude-3.5-sonnet",
+        ]
+        for vm in vision_models:
+            try:
+                payload = {
+                    "model": vm,
+                    "messages": messages,
+                    "temperature": 0.1,
+                    "max_tokens": 2000,
+                }
+                headers = {
+                    "Authorization": f"Bearer {openrouter_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": os.environ.get(
+                        "DOMAIN_URL", "https://formyla.ru"
+                    ),
+                    "X-Title": "FORMYLA Solution OCR",
+                }
+                resp = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=60,
+                )
+                if resp.status_code != 200:
+                    logger.warning(
+                        f"OCR via {vm} HTTP {resp.status_code}: "
+                        f"{resp.text[:200]}"
+                    )
+                    continue
+                data = resp.json()
+                if "choices" in data and data["choices"]:
+                    text = data["choices"][0]["message"]["content"] or ""
+                    logger.info(
+                        f"OCR via {vm} ok, transcribed_len={len(text)}"
+                    )
+                    return text.strip()
+            except Exception as e:
+                logger.warning(f"OCR via {vm} raised: {e}")
+                continue
+        logger.error("All OCR vision models failed.")
+        return ""
+
     def grade_exam(self, exam_tasks: list) -> Dict[str, Any]:
         """
         Проверка пробника через AI.

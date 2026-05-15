@@ -31,12 +31,11 @@ logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------- config
 
-MODEL_PRIMARY = os.environ.get(
-    "DRAWING_MODEL", "anthropic/claude-sonnet-4.5"
-)
-MODEL_FALLBACK = os.environ.get(
-    "DRAWING_MODEL_FALLBACK", "deepseek/deepseek-chat"
-)
+# Hard-coded per product decision: drawing pipeline runs on the newest Sonnet
+# slug; do NOT make this env-configurable.  Fallback is DeepSeek (cheap) for
+# the rare case the primary slug is unavailable on OpenRouter.
+MODEL_PRIMARY = "anthropic/claude-sonnet-4.7"
+MODEL_FALLBACK = "deepseek/deepseek-chat"
 
 MAX_REPAIR_ITERS = 2
 CACHE_TTL_SEC = 30 * 24 * 3600     # 30 days
