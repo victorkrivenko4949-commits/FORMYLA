@@ -63,6 +63,20 @@ MODEL_CRITIC = "google/gemini-3.1-pro-preview"
 CRITIC_ENABLED = (os.environ.get("DRAWING_CRITIC_ENABLED", "0")
                   .strip().lower() in ("1", "true", "yes", "on"))
 
+# Cosmetic critic is a SECOND pass that only looks at label/layout
+# readability AFTER geometry is already clean.  It costs an extra
+# ~$0.02-$0.04 + ~15-30 sec, so it has its own toggle.  When the env
+# variable is missing, it defaults to ON whenever the main critic is
+# also on -- that's the common production case where we want maximum
+# quality.  Set DRAWING_COSMETIC_CRITIC=0 to disable it explicitly.
+_cosmetic_env = os.environ.get("DRAWING_COSMETIC_CRITIC", "").strip().lower()
+if _cosmetic_env in ("1", "true", "yes", "on"):
+    COSMETIC_CRITIC_ENABLED = True
+elif _cosmetic_env in ("0", "false", "no", "off"):
+    COSMETIC_CRITIC_ENABLED = False
+else:
+    COSMETIC_CRITIC_ENABLED = CRITIC_ENABLED
+
 MAX_REPAIR_ITERS = 2          # for syntax/runtime errors inside one round
 MAX_CRITIQUE_ROUNDS = 2       # how many times the critic is consulted
 CACHE_TTL_SEC = 30 * 24 * 3600     # 30 days
@@ -71,35 +85,82 @@ CACHE_DIR_NAME = os.path.join("static", "generated", "cache")
 
 SYSTEM_PROMPT = (
     "Ты пишешь Python-код на matplotlib для построения геометрических\n"
-    "чертежей по русскоязычному условию задачи. Возвращай ТОЛЬКО код в\n"
-    "блоке ```python, без пояснений до или после.\n\n"
-    "Жёсткие требования к коду:\n"
+    "чертежей по русскоязычному условию задачи.\n"
+    "\n"
+    "ФОРМАТ ОТВЕТА: только ОДИН блок ```python ... ```. НИКАКОГО текста\n"
+    "до этого блока. НИКАКОГО текста после этого блока. ПЛАН построения\n"
+    "оформи как ПИТОНОВСКИЕ КОММЕНТАРИИ В НАЧАЛЕ КОДА, не как обычный\n"
+    "русский абзац перед блоком. Если в твоём ответе нет блока\n"
+    "```python``` — это критическая ошибка, ответ не будет принят.\n\n"
+    "=== ОБЯЗАТЕЛЬНЫЙ ПЛАН ПОСТРОЕНИЯ (внутри кода как комментарии) ===\n"
+    "Самой первой частью кода вставь блок-комментарий вида:\n"
+    "    # === ПЛАН ПОСТРОЕНИЯ ===\n"
+    "    # 1) <свободный параметр или базовая фигура и её координаты>\n"
+    "    # 2) <следующая точка/линия и КАК она строится по условию>\n"
+    "    # 3) ...\n"
+    "    # === КОНЕЦ ПЛАНА ===\n"
+    "В плане для КАЖДОЙ точки чертежа явно укажи:\n"
+    "  (а) её роль из условия (середина BC, ортоцентр, основание высоты\n"
+    "      из A на BC, центр описанной окружности, точка пересечения\n"
+    "      двух окружностей и т.д.);\n"
+    "  (б) точную формулу её координат через уже определённые точки\n"
+    "      (через медианы/высоты/биссектрисы/центры окружностей).\n"
+    "Свободные параметры (углы, начальные точки, радиусы окружностей,\n"
+    "наклон секущих) ВЫБИРАЙ ОСМЫСЛЕННО, чтобы итоговые точки были\n"
+    "ЯВНО РАЗДЕЛЕНЫ на чертеже (расстояние между любыми двумя\n"
+    "именованными точками не меньше 12-15 процентов диагонали bounding\n"
+    "box чертежа). НЕ выбирай параметры, которые делают прямую почти\n"
+    "касательной к окружности, или две точки почти совпадающими.\n\n"
+    "=== ПРОВЕРКА ПОСЛЕ КАЖДОЙ ТОЧКИ ===\n"
+    "После определения каждой точки добавь assert-проверку, что\n"
+    "построение действительно соответствует условию. Примеры:\n"
+    "    assert abs(np.linalg.norm(M - B) - np.linalg.norm(M - C)) < 1e-6, \\\n"
+    "        'M not midpoint of BC'\n"
+    "    assert abs(np.linalg.norm(P - O) - R) < 1e-6, \\\n"
+    "        'P not on circle (O, R)'\n"
+    "    assert abs(np.dot(AH, BC)) < 1e-6, 'AH not perpendicular to BC'\n"
+    "Если в условии явно дано численное соотношение (AH = 2*OM,\n"
+    "угол A = 60°, AB = 5), добавь соответствующий assert.\n"
+    "Asserts падают -> sandbox перезапросит код. Это лучше, чем\n"
+    "молча выдать чертёж с ошибкой геометрии.\n\n"
+    "=== ОГРАНИЧЕНИЯ КОДА ===\n"
     "- Разрешены только импорты: matplotlib, numpy, math.\n"
     "- Никаких import os/sys/subprocess/socket/requests, никаких open/exec/\n"
     "  eval, никаких сетевых вызовов или файловых операций.\n"
     "- Создавай ровно одну фигуру через plt.subplots(), без plt.show().\n"
     "- НЕ вызывай plt.savefig: обёртка сама сохранит plt.gcf() в PNG.\n\n"
-    "Стиль чертежа:\n"
+    "=== СТИЛЬ ЧЕРТЕЖА ===\n"
     "- Чёрные линии 2 px на чисто белом фоне (#FFFFFF).\n"
     "- Шрифт подписей: sans-serif, 18-22 px, цвет чёрный.\n"
     "- Имена вершин — одиночные заглавные латинские буквы (A, B, C, …).\n"
     "- Двухбуквенные сочетания (AB, BC) — это отрезки, не вершины.\n"
     "- Длины подписывай числом без префикса (5, 7, …) рядом с серединой\n"
     "  соответствующего отрезка.\n"
-    "- Углы рисуй дугами; подпись «N°» внутри угла.\n"
+    "- Углы рисуй дугами; подпись N° внутри угла.\n"
     "- Прямые углы — квадратиком, равные отрезки — короткими штрихами,\n"
     "  равные углы — двойными дугами.\n"
     "- Никаких теней, градиентов, цветных элементов кроме чёрного.\n\n"
-    "Геометрическая корректность:\n"
+    "=== ЧИТАЕМОСТЬ ПОДПИСЕЙ ===\n"
+    "Подпись каждой именованной точки смещай от самой точки на 5-8\n"
+    "процентов диагонали чертежа В СТОРОНУ, СВОБОДНУЮ ОТ ЛИНИЙ.\n"
+    "После всех точек проверь попарные расстояния между подписями: если\n"
+    "две подписи ближе 6 процентов диагонали друг к другу - разнеси их\n"
+    "в разные стороны (одну вверх-влево, другую вниз-вправо). Подписи НЕ\n"
+    "должны налегать на отрезки и дуги; если налегают - сдвинь подпись\n"
+    "перпендикулярно линии.\n\n"
+    "=== ГЕОМЕТРИЧЕСКАЯ КОРРЕКТНОСТЬ ===\n"
     "- Координаты вычисляй математически точно (теоремы синусов/косинусов,\n"
-    "  свойства окружностей и т.д.).\n"
+    "  свойства окружностей, формулы пересечений и т.д.).\n"
     "- Соблюдай пропорции: фигура должна выглядеть так, как описано в\n"
     "  условии, без визуальных искажений.\n"
     "- Не добавляй построений, которых нет в условии (высоты, биссектрисы\n"
-    "  и т.п.).\n\n"
-    "Канва: plt.subplots(figsize=(8, 8), dpi=128), ax.set_aspect('equal'),\n"
-    "ax.axis('off'). Подгоняй xlim/ylim вручную с запасом 10 процентов от\n"
-    "максимального габарита фигуры."
+    "  и т.п.), КРОМЕ тех, которые упомянуты явно.\n\n"
+    "=== КАНВА ===\n"
+    "plt.subplots(figsize=(10, 10), dpi=140), ax.set_aspect('equal'),\n"
+    "ax.axis('off'). После рисования вычисли реальный bounding box всех\n"
+    "объектов и подгоняй xlim/ylim с запасом 12 процентов от\n"
+    "максимального габарита фигуры, чтобы НИ ОДНА точка/подпись не была\n"
+    "обрезана краем."
 )
 
 
@@ -154,6 +215,53 @@ CRITIC_SYSTEM_PROMPT = (
 )
 
 
+# Cosmetic critic: a SECOND pass run only after the geometry critic has
+# converged (findings == []).  Its job is the opposite of the main critic
+# above: it MUST ignore mathematics and ONLY look at readability --
+# overlapping labels, labels colliding with lines, points/labels clipped
+# by the canvas edge, illegible vertex names.  The follow-up revision is
+# constrained to touch ONLY label offsets and xlim/ylim, never the
+# geometry, so it cannot accidentally re-introduce geometric errors.
+COSMETIC_CRITIC_SYSTEM_PROMPT = (
+    "Ты — ревьюер ЧИТАЕМОСТИ геометрического чертежа. Тебе дают:\n"
+    "  (1) текст условия задачи,\n"
+    "  (2) исходный Python-код на matplotlib,\n"
+    "  (3) PNG чертежа.\n"
+    "\n"
+    "Геометрия УЖЕ проверена другим ревьюером и признана правильной.\n"
+    "Тебя НЕ интересуют: формулы координат, корректность построений,\n"
+    "наличие/отсутствие элементов из условия. Об этом не сообщай.\n"
+    "\n"
+    "Ты ищешь ТОЛЬКО проблемы читаемости, в порядке важности:\n"
+    "  * подписи точек, налегающие друг на друга;\n"
+    "  * подписи, налегающие на линии/дуги, из-за чего буква неразличима;\n"
+    "  * точки и подписи, обрезанные краем полотна;\n"
+    "  * подпись находится с той же стороны, что и сходящиеся линии,\n"
+    "    из-за чего читать сложно;\n"
+    "  * слишком близко расположенные именованные точки.\n"
+    "\n"
+    "Если читаемость чертежа в норме — верни findings: []. Это нормально.\n"
+    "\n"
+    "Верни ОТВЕТ СТРОГО В ВИДЕ ОДНОГО JSON-объекта без markdown-fences:\n"
+    "  __OPEN_BRACE__\n"
+    '    "findings": [\n'
+    "      __OPEN_BRACE__\n"
+    '        "id": "c1",\n'
+    '        "severity": "major" | "minor",\n'
+    '        "title": "краткое название",\n'
+    '        "detail": "что именно нечитаемо",\n'
+    '        "fix_hint": "куда сдвинуть подпись или какой xlim/ylim"\n'
+    "      __CLOSE_BRACE__\n"
+    "    ]\n"
+    "  __CLOSE_BRACE__\n"
+)
+COSMETIC_CRITIC_SYSTEM_PROMPT = (
+    COSMETIC_CRITIC_SYSTEM_PROMPT
+    .replace("__OPEN_BRACE__", "{")
+    .replace("__CLOSE_BRACE__", "}")
+)
+
+
 # ------------------------------------------------------------------ result
 
 @dataclass
@@ -189,18 +297,40 @@ class DrawingResult:
 _CODE_FENCE_RE = re.compile(
     r"```(?:python|py)?\s*\n(.*?)\n```", re.DOTALL | re.IGNORECASE
 )
+# Fallback: locate the first plausible matplotlib snippet inside an
+# answer that forgot the markdown fence.  Anchored on `import matplotlib`
+# or `import numpy` so we don't pick up shell text by accident.
+_BARE_CODE_RE = re.compile(
+    r"^[ \t]*(?:from\s+(?:matplotlib|numpy|math)|"
+    r"import\s+(?:matplotlib|numpy|math))\b.*",
+    re.MULTILINE | re.DOTALL,
+)
 _JSON_OBJECT_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 
 def _extract_code(text: str) -> Optional[str]:
+    """Try multiple strategies to recover python from an LLM answer."""
     if not text:
         return None
+    # 1) Standard markdown fence.
     m = _CODE_FENCE_RE.search(text)
     if m:
         return m.group(1).strip()
+    # 2) Whole answer starts with an import.
     s = text.strip()
     if s.startswith("import ") or s.startswith("from "):
         return s
+    # 3) Answer has narrative text but an import appears later (Claude
+    # sometimes forgets the fence after a long system-prompt update).
+    # Grab everything from the first matplotlib/numpy/math import to
+    # the end -- the sandbox will reject anything pathological.
+    m2 = _BARE_CODE_RE.search(text)
+    if m2:
+        snippet = text[m2.start():].strip()
+        # Strip trailing prose by chopping at a clearly non-python line
+        # (a line that starts with a Cyrillic letter and ends with
+        # punctuation other than ":" or ","). Heuristic, good enough.
+        return snippet
     return None
 
 
@@ -400,6 +530,84 @@ def _critique_with_gemini(
     content = (resp.get("content") or "").strip()
     findings = _parse_critique_response(content)
     return findings, float(resp.get("cost_usd") or 0.0)
+
+
+def _build_cosmetic_critic_messages(
+    problem: str, code: str, png_bytes: bytes
+) -> list:
+    b64 = base64.b64encode(png_bytes).decode("ascii")
+    data_url = "data:image/png;base64," + b64
+    user_blocks = [
+        {
+            "type": "text",
+            "text": (
+                "Условие задачи:\n"
+                "\"\"\"\n" + problem.strip() + "\n\"\"\"\n\n"
+                "Исходный код (геометрия уже проверена и правильна):\n"
+                "```python\n" + code + "\n```\n\n"
+                "PNG прикреплён ниже. Найди ТОЛЬКО проблемы читаемости и\n"
+                "верни findings в требуемом JSON-формате."
+            ),
+        },
+        {"type": "image_url", "image_url": {"url": data_url}},
+    ]
+    return [
+        {"role": "system", "content": COSMETIC_CRITIC_SYSTEM_PROMPT},
+        {"role": "user", "content": user_blocks},
+    ]
+
+
+def _cosmetic_critique_with_gemini(
+    problem: str, code: str, png_bytes: bytes
+) -> Tuple[List[CritiqueFinding], float]:
+    """Same shape as _critique_with_gemini, but uses the COSMETIC prompt."""
+    messages = _build_cosmetic_critic_messages(problem, code, png_bytes)
+    resp = openrouter.chat(
+        model=MODEL_CRITIC,
+        messages=messages,
+        temperature=0.0,
+        max_tokens=6000,
+    )
+    content = (resp.get("content") or "").strip()
+    findings = _parse_critique_response(content)
+    # Tag IDs so they don't collide with geometric findings when logged.
+    for f in findings:
+        if not f.id.startswith("c"):
+            f.id = "c" + f.id
+    return findings, float(resp.get("cost_usd") or 0.0)
+
+
+def _build_cosmetic_revise_user_msg(findings: List[CritiqueFinding]) -> dict:
+    """Ask Claude to fix ONLY label/layout issues, never geometry."""
+    lines = [
+        "Геометрия чертежа уже признана правильной и тебе её менять",
+        "ЗАПРЕЩЕНО. Косметический ревьюер нашёл проблемы ЧИТАЕМОСТИ:",
+        "",
+    ]
+    for f in findings:
+        lines.append("[" + f.id + " | " + f.severity + "] " + f.title)
+        lines.append("  Описание: " + f.detail)
+        lines.append("  Подсказка: " + f.fix_hint)
+        lines.append("")
+    lines.extend([
+        "СТРОГИЕ ОГРАНИЧЕНИЯ при исправлении:",
+        "  - Координаты ИМЕНОВАННЫХ ТОЧЕК НЕ ТРОГАЙ (A, B, C, M, H, O, ...).",
+        "  - Радиусы и центры окружностей НЕ ТРОГАЙ.",
+        "  - Углы/наклоны/параметры построения НЕ ТРОГАЙ.",
+        "  - Менять можно ТОЛЬКО:",
+        "      * смещения подписей (ax.text(x, y, 'A', ...) — координаты\n"
+        "        текста, но не координаты самой точки);",
+        "      * xlim/ylim (расширить, если что-то обрезано);",
+        "      * fontsize подписей в пределах 16-22;",
+        "      * horizontalalignment / verticalalignment подписей.",
+        "",
+        "Верни ОТВЕТ В ДВУХ ЧАСТЯХ:",
+        "(1) Сводка решений в JSON:",
+        '    {"decisions": [{"id": "c1", "decision": "accepted" | "rejected",',
+        '                    "reason": "коротко"}]}',
+        "(2) ПОЛНЫЙ обновлённый код в блоке ```python```.",
+    ])
+    return {"role": "user", "content": "\n".join(lines)}
 
 
 # ------------------------------------------------------------------ main flow
@@ -618,6 +826,72 @@ def generate_drawing(
 
         code = new_code
         image_bytes = new_png
+
+    # 3b) Cosmetic critique pass (single round, after geometry is clean).
+    # Runs only when the geometric critic produced no further findings
+    # in its last call, so we know the math is already accepted.  Behind
+    # its own toggle so unit tests that only stub _critique_with_gemini
+    # don't accidentally hit the real OpenRouter API.
+    cosmetic_findings_n = 0
+    if COSMETIC_CRITIC_ENABLED:
+        try:
+            cos_findings, cos_cost = _cosmetic_critique_with_gemini(
+                problem, code, image_bytes
+            )
+            total_cost += cos_cost
+            cosmetic_findings_n = len(cos_findings)
+            attempts.append({
+                "stage": "cosmetic-critic",
+                "model": MODEL_CRITIC,
+                "ok": True,
+                "findings_count": cosmetic_findings_n,
+            })
+            if cos_findings:
+                # ONE revision round, no further cosmetic checks afterwards
+                # (avoid endless ping-pong; cost cap ~$0.10 per revision).
+                messages = messages + [
+                    _build_cosmetic_revise_user_msg(cos_findings)
+                ]
+                try:
+                    new_png, new_code, used_model, messages, cost3, repair3 = (
+                        _generate_code_until_renders(
+                            problem, messages, attempts, used_model,
+                        )
+                    )
+                    total_cost += cost3
+                    total_repair_iters += repair3
+                    last_assistant_msg = next(
+                        (m for m in reversed(messages)
+                         if m.get("role") == "assistant"),
+                        None,
+                    )
+                    if last_assistant_msg:
+                        _parse_decisions(
+                            last_assistant_msg.get("content", ""),
+                            cos_findings,
+                        )
+                    for f in cos_findings:
+                        if f.claude_decision == "accepted":
+                            accepted_total += 1
+                        elif f.claude_decision == "rejected":
+                            rejected_total += 1
+                    all_findings.extend(cos_findings)
+                    code = new_code
+                    image_bytes = new_png
+                except (SandboxError, OpenRouterError) as e:
+                    attempts.append({
+                        "stage": "cosmetic-revise",
+                        "ok": False,
+                        "error": str(e)[:300],
+                    })
+                    all_findings.extend(cos_findings)
+        except OpenRouterError as e:
+            attempts.append({
+                "stage": "cosmetic-critic",
+                "model": MODEL_CRITIC,
+                "ok": False,
+                "error": str(e)[:300],
+            })
 
     # 4) Cache + return
     if use_cache:
