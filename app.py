@@ -5426,31 +5426,49 @@ def set_nickname():
 @app.route("/api/social/search-users")
 @login_required
 def search_users():
-    """Поиск пользователей по никнейму"""
+    """Search users by nickname / name / email (SEARCH_USERS_V2)."""
     try:
-        query = request.args.get('q', '').strip()
-        limit = min(int(request.args.get('limit', 10)), 50)  # Максимум 50
-        
+        query = (request.args.get('q', '') or '').strip()
+        limit = min(int(request.args.get('limit', 10) or 10), 50)
+
         if not query or len(query) < 2:
-            return jsonify({'success': False, 'error': 'Query too short (min 2 characters)'}), 400
-        
-        # Поиск по никнейму (LIKE с LIMIT)
-        users = User.query.filter(
-            User.nickname.ilike(f'%{query}%'),
-            User.id != current_user.id  # Исключаем себя
-        ).limit(limit).all()
-        
-        results = [{
-            'id': u.id,
-            'nickname': u.nickname,
-            'name': u.name,
-            'avatar_url': u.avatar_url
-        } for u in users if u.nickname]  # Только с никнеймами
-        
+            return jsonify({'success': False, 'users': [], 'error': 'Query too short (min 2 characters)'}), 400
+
+        like = f"%{query}%"
+        q = User.query.filter(
+            User.id != current_user.id,
+            db.or_(
+                User.nickname.ilike(like),
+                User.name.ilike(like),
+                User.email.ilike(like),
+            ),
+        )
+        # Exclude guest accounts from search results.
+        try:
+            q = q.filter(db.or_(User.is_guest == False, User.is_guest.is_(None)))
+        except Exception:
+            pass
+
+        users = q.limit(limit).all()
+
+        results = []
+        for u in users:
+            results.append({
+                'id': u.id,
+                'nickname': u.nickname or '',
+                'name': u.name or '',
+                'email': u.email or '',
+                'avatar_url': u.avatar_url or '',
+                'display_name': u.display_name,
+            })
+
         return jsonify({'success': True, 'users': results})
-    
+
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import traceback as _tb
+        print("[search_users] error:", e)
+        print(_tb.format_exc())
+        return jsonify({'success': False, 'users': [], 'error': str(e)}), 500
 
 
 @app.route("/api/social/friends/list")

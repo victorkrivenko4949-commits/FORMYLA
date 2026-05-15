@@ -183,12 +183,24 @@ document.getElementById('user-search').addEventListener('input', function() {
           res.innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:13px;padding:8px">Никого не найдено</p>';
           return;
         }
+        // FRIEND_SEARCH_FE_V2
         data.users.forEach(function(u) {
+          var label = u.display_name || u.name || u.nickname || u.email || 'Аноним';
+          var safeLabel = String(label).replace(/[&<>"]/g, function(c){
+            return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];
+          });
+          var initial = (safeLabel[0] || '?').toUpperCase();
+          var avatarHtml = u.avatar_url
+            ? '<img class="sr-avatar" src="' + u.avatar_url + '" alt="">'
+            : '<div class="sr-avatar-ph">' + initial + '</div>';
+          var nickHtml = u.nickname
+            ? '<div class="sr-nick">@' + String(u.nickname).replace(/[<>"]/g,'') + '</div>'
+            : '';
           var div = document.createElement('div');
           div.className = 'search-result-item';
-          div.innerHTML = '<div class="sr-avatar-ph">' + (u.name || u.email)[0].toUpperCase() + '</div>' +
-            '<div class="sr-info"><div class="sr-name">' + (u.name || u.email) + '</div>' +
-            (u.nickname ? '<div class="sr-nick">@' + u.nickname + '</div>' : '') + '</div>' +
+          div.innerHTML = avatarHtml +
+            '<div class="sr-info"><div class="sr-name">' + safeLabel + '</div>' +
+            nickHtml + '</div>' +
             '<button class="sr-btn" data-uid="' + u.id + '" onclick="sendRequest(this)">Добавить</button>';
           res.appendChild(div);
         });
