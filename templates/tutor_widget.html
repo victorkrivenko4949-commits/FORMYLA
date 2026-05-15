@@ -85,12 +85,17 @@
                 <button onclick="toggleTutorPopup()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">×</button>
             </div>
             
-            <!-- iOS-style Toggle переключатель -->
-            <div style="padding: 12px 15px; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between;">
-                <span style="font-size: 14px; color: var(--text-soft);">Давать только подсказки</span>
-                <label class="ios-toggle">
+            <!-- Hint-mode pill toggle (compact glass-pill) -->
+            <div style="padding: 10px 15px; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: flex-end;">
+                <label class="hint-toggle" title="Только подсказки: ИИ не даёт готовое решение, а помогает наводящими вопросами">
+                    <span class="hint-toggle__label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/>
+                        </svg>
+                        💡 Только подсказки
+                    </span>
                     <input type="checkbox" id="hintModeToggle" checked>
-                    <span class="ios-toggle-slider"></span>
+                    <span class="hint-toggle__switch"></span>
                 </label>
             </div>
             
@@ -228,6 +233,63 @@
 
 .ios-toggle input:checked + .ios-toggle-slider:before {
     transform: translateX(22px);
+}
+
+/* ═══ HINT-MODE PILL TOGGLE (glass-pill style) ═══ */
+.hint-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  cursor:pointer;
+  transition:all .25s ease;
+  user-select:none;
+}
+.hint-toggle:hover{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(120,120,255,0.4);
+  box-shadow:0 0 14px rgba(120,120,255,0.25);
+}
+.hint-toggle__label{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:600;
+  color:#e6e8ff;
+  letter-spacing:.2px;
+}
+.hint-toggle input{ display:none; }
+
+.hint-toggle__switch{
+  position:relative;
+  width:36px;
+  height:20px;
+  border-radius:999px;
+  background:#2a2f45;
+  transition:background .25s ease;
+  flex-shrink:0;
+}
+.hint-toggle__switch::before{
+  content:"";
+  position:absolute;
+  top:2px; left:2px;
+  width:16px; height:16px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform .25s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+.hint-toggle input:checked + .hint-toggle__switch{
+  background:linear-gradient(90deg,#4aa8ff,#8b5cf6);
+  box-shadow:0 0 12px rgba(139,92,246,.55);
+}
+.hint-toggle input:checked + .hint-toggle__switch::before{
+  transform:translateX(16px);
 }
 
 #chatMessages::-webkit-scrollbar {
@@ -684,11 +746,21 @@ async function sendToTutor() {
     document.getElementById('typingIndicator').style.display = 'block';
     scrollChatToBottom();
     
+    // Таймаут 180 сек: серверная цепочка из 3 vision-моделей по 45с может занять до ~135с,
+    // плюс запас на сеть. Если совсем ничего не пришло — режем, чтобы UI не висел вечно.
+    let _abort = null;
+    let _timer = null;
     try {
+        if (typeof AbortController !== 'undefined') {
+            _abort = new AbortController();
+            _timer = setTimeout(() => { try { _abort.abort(); } catch(_) {} }, 180000);
+        }
         const response = await fetch('/api/tutor/send', {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: _abort ? _abort.signal : undefined
         });
+        if (_timer) { clearTimeout(_timer); _timer = null; }
 
         document.getElementById('typingIndicator').style.display = 'none';
 
@@ -723,8 +795,17 @@ async function sendToTutor() {
         }
 
     } catch (error) {
+        if (_timer) { try { clearTimeout(_timer); } catch(_) {} }
         document.getElementById('typingIndicator').style.display = 'none';
-        addMessageToChat('assistant', '❌ Ошибка связи. Проверьте интернет и попробуйте ещё раз.');
+        let msg;
+        if (error && (error.name === 'AbortError' || /aborted/i.test(String(error)))) {
+            msg = '⏱️ Запрос длился слишком долго (>3 мин) и был отменён. Попробуй задать вопрос покороче или без фото.';
+        } else if (error && /Failed to fetch|NetworkError|net::|TypeError/i.test(String(error))) {
+            msg = '❌ Не получилось связаться с сервером. Возможно, сервер перезагружается — подожди 5 секунд и попробуй ещё раз.';
+        } else {
+            msg = '❌ Ошибка связи: ' + (error && error.message ? error.message : 'неизвестная') + '. Попробуй ещё раз.';
+        }
+        addMessageToChat('assistant', msg);
         console.error('Tutor fetch error:', error);
     }
 }

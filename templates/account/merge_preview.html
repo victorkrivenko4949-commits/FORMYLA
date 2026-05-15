@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}Объединение аккаунтов — FORMYLA{% endblock %}
+
+{% block content %}
+<div class="merge-wrap">
+  <div class="merge-card">
+    <div class="merge-icon">⚠️</div>
+    <h1 class="merge-title">Этот Яндекс ID уже привязан к другому аккаунту</h1>
+    <p class="merge-lead">
+      Чтобы продолжить, нужно <strong>объединить два аккаунта в один</strong>.
+      Все данные старого аккаунта (прогресс, решения, планы подготовки, дружбы)
+      переедут в твой текущий, а старый аккаунт будет <strong>удалён без возможности восстановления</strong>.
+    </p>
+
+    <div class="merge-grid">
+      <div class="merge-acc keep">
+        <div class="merge-acc-tag">Останется</div>
+        <div class="merge-acc-name">{{ target.name or target.nickname or 'Без имени' }}</div>
+        <div class="merge-acc-email">{{ target.email or 'без email' }}</div>
+        <div class="merge-acc-id">id: {{ target.id }}</div>
+      </div>
+      <div class="merge-arrow">⟵</div>
+      <div class="merge-acc drop">
+        <div class="merge-acc-tag">Будет удалён</div>
+        <div class="merge-acc-name">{{ source.name or source.nickname or 'Без имени' }}</div>
+        <div class="merge-acc-email">{{ source.email or 'без email' }}</div>
+        <div class="merge-acc-id">id: {{ source.id }}</div>
+        {% if source.created_at %}
+        <div class="merge-acc-meta">создан: {{ source.created_at.strftime('%Y-%m-%d') }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if preview and preview.tables %}
+    <details class="merge-details">
+      <summary>Что именно переедет (предпросмотр)</summary>
+      <ul class="merge-rows">
+        {% for k, v in preview.tables.items() %}
+          {% if v is number and v > 0 %}
+          <li><code>{{ k }}</code>: <strong>{{ v }}</strong> записей</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+      <div class="merge-rows-total">Итого строк: <strong>{{ preview._total_rows_moved or 0 }}</strong></div>
+    </details>
+    {% endif %}
+
+    <div class="merge-warn">
+      Действие необратимо. После объединения войти в старый аккаунт будет невозможно.
+    </div>
+
+    <div class="merge-actions">
+      <button type="button" id="merge-cancel" class="merge-btn cancel">Отмена</button>
+      <button type="button" id="merge-confirm" class="merge-btn confirm">
+        Да, объединить и удалить старый
+      </button>
+    </div>
+
+    <div id="merge-status" class="merge-status" role="status"></div>
+  </div>
+</div>
+
+<style>
+.merge-wrap { max-width: 760px; margin: 40px auto; padding: 0 16px; }
+.merge-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid rgba(239, 68, 68, 0.35);
+  border-radius: 18px;
+  padding: 32px;
+  color: #e2e8f0;
+}
+.merge-icon { font-size: 3rem; text-align: center; margin-bottom: 12px; }
+.merge-title { color: #fff; text-align: center; margin: 0 0 16px; font-size: 1.5rem; }
+.merge-lead { color: #cbd5e1; line-height: 1.6; margin: 0 0 24px; }
+.merge-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: stretch;
+  margin: 24px 0;
+}
+.merge-acc {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.merge-acc.keep { border-color: rgba(56, 239, 125, 0.5); background: rgba(34, 197, 94, 0.08); }
+.merge-acc.drop { border-color: rgba(239, 68, 68, 0.55); background: rgba(239, 68, 68, 0.08); }
+.merge-acc-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.5);
+}
+.merge-acc.keep .merge-acc-tag { color: #4ade80; }
+.merge-acc.drop .merge-acc-tag { color: #f87171; }
+.merge-acc-name { font-size: 1.05rem; font-weight: 700; color: #fff; }
+.merge-acc-email { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; word-break: break-all; }
+.merge-acc-id, .merge-acc-meta { color: #64748b; font-size: 0.8rem; margin-top: 6px; }
+.merge-arrow { display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #38bdf8; }
+.merge-details { margin: 16px 0; background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 12px 16px; }
+.merge-details summary { cursor: pointer; color: #38bdf8; font-weight: 600; }
+.merge-rows { margin: 12px 0 0; padding-left: 20px; color: #cbd5e1; font-size: 0.9rem; }
+.merge-rows code { background: rgba(0, 0, 0, 0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }
+.merge-rows-total { color: #94a3b8; font-size: 0.9rem; margin-top: 8px; }
+.merge-warn {
+  margin: 20px 0;
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.12);
+  border-left: 4px solid #ef4444;
+  border-radius: 6px;
+  color: #fecaca;
+  font-size: 0.95rem;
+}
+.merge-actions { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+.merge-btn {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+.merge-btn.cancel { background: rgba(148, 163, 184, 0.15); color: #e2e8f0; border-color: rgba(148, 163, 184, 0.4); }
+.merge-btn.cancel:hover { background: rgba(148, 163, 184, 0.3); }
+.merge-btn.confirm { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; }
+.merge-btn.confirm:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(239, 68, 68, 0.35); }
+.merge-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.merge-status { text-align: center; margin-top: 14px; min-height: 1.4em; color: #94a3b8; font-size: 0.95rem; }
+.merge-status.ok { color: #4ade80; }
+.merge-status.err { color: #fca5a5; }
+@media (max-width: 600px) {
+  .merge-grid { grid-template-columns: 1fr; }
+  .merge-arrow { transform: rotate(90deg); }
+}
+</style>
+
+<script>
+(function () {
+  const statusEl = document.getElementById('merge-status');
+  const btnConfirm = document.getElementById('merge-confirm');
+  const btnCancel = document.getElementById('merge-cancel');
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text || '';
+    statusEl.className = 'merge-status' + (kind ? ' ' + kind : '');
+  }
+
+  btnCancel.addEventListener('click', async function () {
+    btnCancel.disabled = true;
+    btnConfirm.disabled = true;
+    setStatus('Отменяем…');
+    try {
+      const r = await fetch('{{ url_for("account.merge_cancel") }}', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await r.json().catch(function () { return {}; });
+      window.location.href = data.redirect_url || '{{ url_for("profile") }}';
+    } catch (e) {
+      setStatus('Сетевая ошибка: ' + e.message, 'err');
+      btnCancel.disabled = false;
+      btnConfirm.disabled = false;
+    }
+  });
+
+  btnConfirm.addEventListener('click', async function () {
+    if (!window.confirm('Точно объединить аккаунты? Старый аккаунт будет удалён безвозвратно.')) return;
+    btnCancel.disabled = true;
+    btnConfirm.disabled = true;
+    setStatus('Объединяем аккаунты, это может занять несколько секунд…');
+    try {
+      const r = await fetch('{{ url_for("account.merge_accounts") }}', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: 'MERGE' })
+      });
+      const data = await r.json().catch(function () { return {}; });
+      if (r.ok && data.status === 'ok') {
+        const moved = (data.summary && data.summary._total_rows_moved) || 0;
+        setStatus('✓ Готово! Перенесено записей: ' + moved + '. Перенаправляем…', 'ok');
+        setTimeout(function () {
+          window.location.href = data.redirect_url || '{{ url_for("profile") }}';
+        }, 1200);
+      } else {
+        setStatus('Ошибка: ' + (data.error || ('HTTP ' + r.status)), 'err');
+        btnCancel.disabled = false;
+        btnConfirm.disabled = false;
+      }
+    } catch (e) {
+      setStatus('Сетевая ошибка: ' + e.message, 'err');
+      btnCancel.disabled = false;
+      btnConfirm.disabled = false;
+    }
+  });
+})();
+</script>
+{% endblock %}

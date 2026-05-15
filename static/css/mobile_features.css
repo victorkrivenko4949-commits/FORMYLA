@@ -1,0 +1,371 @@
+/* =====================================================================
+   FORMYLA — Mobile fixes for new features
+   - Chat (sidebar→drawer, fullscreen conversation)
+   - Share-with-friend modal (bottom-sheet)
+   - Adaptive test photo buffer UI
+   - AI tutor feedback rendering
+   - Leaderboard
+   - Whiteboard (extra fixes)
+   - Shared-task / problem_detail
+   Loaded globally from base.html.
+   ===================================================================== */
+
+/* ---------- 1. Chat: mobile two-state layout (list ↔ conversation) ----- */
+@media (max-width: 760px) {
+    .chat-wrapper{
+        display:block !important;
+        max-width:100% !important;
+        margin:0 !important;
+        padding:0 !important;
+        min-height:calc(100vh - 60px) !important;
+        position:relative;
+    }
+    .chat-sidebar,
+    .chat-main{
+        position:fixed;
+        left:0; right:0;
+        top:60px;          /* under header */
+        bottom:60px;       /* above mobile bottom nav */
+        max-height:none !important;
+        min-height:0 !important;
+        border-radius:0 !important;
+        border-left:none !important;
+        border-right:none !important;
+        transition: transform .25s ease;
+        z-index:30;
+    }
+    /* Sidebar (list of friends) is visible by default on mobile */
+    .chat-sidebar{
+        transform:translateX(0);
+        z-index:31;
+    }
+    .chat-main{
+        transform:translateX(100%);
+        z-index:32;
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(8px);
+    }
+    /* When .chat-open is added on body → swap visibility */
+    body.chat-open .chat-sidebar{ transform:translateX(-100%); }
+    body.chat-open .chat-main   { transform:translateX(0); }
+
+    /* Bigger tap targets in friends list */
+    .chat-list-item{
+        padding:14px 16px !important;
+        min-height:64px;
+    }
+    .chat-avatar{
+        width:48px !important; height:48px !important;
+    }
+    .chat-list-name{ font-size:15px !important; }
+    .chat-list-preview{ font-size:13px !important; }
+
+    /* Conversation header: back-button + name */
+    .chat-header{
+        padding:10px 12px !important;
+        gap:10px !important;
+        position:sticky; top:0; z-index:3;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(8px);
+    }
+    .chat-header::before{
+        content:"‹";
+        font-size:30px; line-height:1;
+        font-weight:300;
+        color:#4aa8ff;
+        cursor:pointer;
+        padding:0 6px;
+        margin-right:4px;
+    }
+    .chat-header h2{ font-size:15px !important; }
+    .chat-header .sub{ font-size:11px !important; }
+
+    /* Messages: more breathing room */
+    .chat-messages{
+        padding:12px 10px !important;
+        padding-bottom:14px !important;
+    }
+    .chat-bubble{
+        max-width:85% !important;
+        font-size:14.5px !important;
+        padding:10px 14px !important;
+    }
+
+    /* Composer: bigger fixed bar at bottom */
+    .chat-composer{
+        padding:8px 10px !important;
+        gap:6px !important;
+        position:sticky;
+        bottom:0;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(8px);
+        border-top:1px solid rgba(255,255,255,0.06);
+    }
+    .chat-composer textarea{
+        min-height:44px !important;
+        max-height:120px !important;
+        font-size:16px !important;  /* prevent iOS zoom */
+        padding:10px 12px !important;
+        border-radius:22px !important;
+    }
+    .chat-composer .chat-btn{
+        width:44px !important; height:44px !important;
+        flex-shrink:0;
+    }
+
+    /* Hide bottom mobile nav inside chat to give more room */
+    body.chat-open .mobile-bottom-nav{ display:none !important; }
+}
+
+
+/* ---------- 2. Share-with-friend modal: bottom-sheet on mobile -------- */
+@media (max-width: 640px) {
+    /* The overlay container — switch to bottom-sheet alignment */
+    #shareFriendOverlay{
+        align-items:flex-end !important;
+        padding:0 !important;
+    }
+    /* The actual modal box is the first child div of the overlay */
+    #shareFriendOverlay > div{
+        width:100% !important;
+        max-width:100% !important;
+        max-height:88vh !important;
+        border-radius:18px 18px 0 0 !important;
+        animation: sfSlideUp .25s ease-out;
+    }
+    @keyframes sfSlideUp{
+        from{ transform:translateY(100%); }
+        to  { transform:translateY(0); }
+    }
+    #shareFriendOverlay h3{ font-size:1.05em !important; }
+    /* Search input — prevent iOS zoom */
+    #sfSearch, #sfNote{
+        font-size:16px !important;
+        padding:12px 14px !important;
+    }
+    /* Friend rows — bigger tap area */
+    #sfList > div{
+        padding:14px 12px !important;
+        min-height:60px;
+        gap:12px !important;
+    }
+    /* Send button — full width, bigger */
+    #sfSend{
+        width:100% !important;
+        padding:14px !important;
+        font-size:15px !important;
+    }
+    /* Floating Action Button — repositioned above bottom nav */
+    #shareFriendFab{
+        bottom:80px !important;
+        right:14px !important;
+    }
+}
+
+
+/* ---------- 3. Adaptive-test: photo buffer thumbnails ---------------- */
+@media (max-width: 640px) {
+    /* Preview grid: smaller thumbs to fit 3 per row on phones */
+    #photoPreviewList{
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)) !important;
+        gap: 8px !important;
+    }
+    #photoPreviewList > div{
+        position: relative;
+    }
+    #photoPreviewList img{
+        width: 100% !important;
+        height: 90px !important;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    /* Remove "×" button on each thumbnail */
+    #photoPreviewList button{
+        width: 26px !important; height: 26px !important;
+        font-size: 16px !important;
+        top: -6px !important; right: -6px !important;
+        border-radius: 50% !important;
+    }
+    /* "Add photo" big button — already takes 100% width */
+    #photoInput + button,
+    [onclick*="photoInput"]{
+        padding: 16px !important;
+        font-size: 15px !important;
+    }
+    /* Submit / Cancel buttons stack vertically */
+    #answerForm > div:last-child{
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    #answerForm button[type="submit"],
+    #answerForm a{
+        width: 100% !important;
+        font-size: 15px !important;
+        padding: 14px !important;
+    }
+    /* math-field bigger touch targets for typing */
+    math-field{
+        font-size: 16px !important;
+        min-height: 50px !important;
+    }
+}
+
+
+/* ---------- 4. Adaptive-test: AI feedback rendering ------------------ */
+@media (max-width: 640px) {
+    #feedbackBlock,
+    #resultBlock{
+        padding:16px !important;
+        font-size:14.5px !important;
+        line-height:1.55 !important;
+    }
+    #feedbackBlock .katex,
+    #resultBlock .katex{
+        font-size:1em !important;
+    }
+    #feedbackBlock pre,
+    #resultBlock pre{
+        white-space:pre-wrap;
+        word-break:break-word;
+        font-size:13px;
+    }
+    /* Score badge */
+    .score-badge,
+    [class*="score"]{
+        flex-wrap:wrap;
+    }
+}
+
+
+/* ---------- 5. Leaderboard: ensure vertical layout works -------------- */
+@media (max-width: 640px) {
+    .lb-row{
+        flex-wrap:wrap !important;
+        gap:6px !important;
+        padding:12px !important;
+    }
+    .lb-user{
+        flex:1 1 calc(100% - 60px) !important;
+        min-width:0;
+    }
+    .lb-rank{
+        flex:0 0 50px !important;
+        font-size:1.1em !important;
+    }
+    .lb-stats{
+        flex:0 0 100% !important;
+        justify-content:flex-start !important;
+        gap:14px !important;
+        margin-left:60px;
+        padding-top:6px;
+        border-top:1px dashed rgba(255,255,255,.05);
+    }
+    .lb-stats-current{
+        flex-direction:row !important;
+        flex-wrap:wrap !important;
+        gap:14px !important;
+    }
+    .lb-stats-current > div{
+        flex:1 1 calc(50% - 7px) !important;
+        min-width:0;
+    }
+}
+
+
+/* ---------- 6. Whiteboard: extra mobile touch / safe-area ------------ */
+@media (max-width: 640px) {
+    body.board-fullscreen{
+        padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    }
+    body.board-fullscreen .mobile-drawer,
+    body.board-fullscreen .nav-burger{ display:none !important; }
+    .drw-pane-full.board-app{
+        gap:6px !important;
+        padding:6px !important;
+        padding-top: max(6px, env(safe-area-inset-top, 0)) !important;
+        padding-bottom: max(6px, env(safe-area-inset-bottom, 0)) !important;
+    }
+    .top-bar{
+        padding:6px 8px !important;
+        flex-wrap:wrap;
+        gap:6px !important;
+    }
+    .top-bar .actions.zoom{
+        flex-wrap:wrap;
+        justify-content:flex-end;
+    }
+    .side-panel{
+        padding:6px 4px !important;
+        gap:5px !important;
+    }
+    .tool, .icon-btn{
+        width:38px !important; height:38px !important;
+        font-size:14px !important;
+        border-radius:9px !important;
+    }
+    .swatch{
+        width:22px !important; height:22px !important;
+    }
+    .slider--vert{
+        height:80px !important; width:6px !important;
+    }
+    .thickness--vert{ height:100px !important; }
+    .canvas-wrap{ border-radius:12px !important; }
+    .canvas-hud{ font-size:10px !important; padding:3px 8px !important; }
+}
+
+@media (max-width: 420px) {
+    .drw-pane-full.board-app{
+        grid-template-columns: 50px 1fr 50px !important;
+    }
+    .tool, .icon-btn{
+        width:34px !important; height:34px !important;
+        font-size:12px !important;
+    }
+    .swatch{ width:20px !important; height:20px !important; }
+    .top-bar-title{ display:none !important; }
+    /* Hide some less-essential top-bar actions on tiny screens */
+    .top-bar .actions.zoom #wbZoomReset{ display:none; }
+}
+
+
+/* ---------- 7. Shared-task / problem_detail mobile share button ------ */
+@media (max-width: 640px) {
+    .share-friend-btn{
+        width:100%;
+        justify-content:center;
+        padding:12px 16px !important;
+        font-size:14px !important;
+    }
+    .problem-meta{
+        flex-direction:column !important;
+        align-items:stretch !important;
+    }
+    .problem-meta > *{ width:100%; }
+}
+
+
+/* ---------- 8. Tutor widget hint-toggle (pill) on tiny screens ------- */
+@media (max-width: 360px) {
+    .hint-toggle{
+        font-size:12px !important;
+    }
+    .hint-toggle .pill{
+        padding:3px 8px !important;
+        font-size:11px !important;
+    }
+}
+
+
+/* ---------- 9. Generic: prevent iOS auto-zoom on form fields --------- */
+@media (max-width: 760px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="search"],
+    input[type="number"],
+    input[type="password"],
+    textarea,
+    select{
+        font-size:16px !important;
+    }
+}

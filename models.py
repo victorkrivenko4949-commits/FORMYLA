@@ -447,6 +447,76 @@ class Friendship(db.Model):
         return f'<Friendship {self.requester_id}->{self.addressee_id} ({self.status})>'
 
 
+class DirectMessage(db.Model):
+    """Личное сообщение между друзьями (1:1 чат).
+
+    Содержит либо обычный текст, либо «карточку задачи» (kind='task_share').
+    Для шаринга задач — `task_id` (AdaptiveTask.id) и опционально
+    `task_topic`, `task_grade`, `task_difficulty`, `note` (комментарий
+    отправителя). Это позволяет показать красивую карточку в чате
+    без отдельной таблицы share-events.
+    """
+    __tablename__ = 'direct_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    recipient_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    # 'text' — обычное сообщение, 'task_share' — карточка задачи
+    kind = db.Column(db.String(20), nullable=False, default='text')
+    body = db.Column(db.Text, nullable=True)
+
+    # Поля для task_share (могут быть NULL для kind='text')
+    task_id = db.Column(db.Integer, nullable=True, index=True)
+    task_topic = db.Column(db.String(120), nullable=True)
+    task_grade = db.Column(db.Integer, nullable=True)
+    task_difficulty = db.Column(db.Integer, nullable=True)
+    task_source = db.Column(db.String(40), nullable=True)
+    # 'adaptive' | 'olympiad' | 'mock' | 'daily' | 'problem' …
+    task_url = db.Column(db.String(400), nullable=True)
+    task_preview = db.Column(db.Text, nullable=True)  # короткий текст условия
+
+    is_read = db.Column(db.Boolean, default=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    sender = db.relationship('User', foreign_keys=[sender_id],
+                             backref=db.backref('sent_messages', lazy='dynamic'))
+    recipient = db.relationship('User', foreign_keys=[recipient_id],
+                                backref=db.backref('received_messages', lazy='dynamic'))
+
+    def to_dict(self, viewer_id: int | None = None):
+        return {
+            'id': self.id,
+            'sender_id': self.sender_id,
+            'recipient_id': self.recipient_id,
+            'mine': (viewer_id is not None and self.sender_id == viewer_id),
+            'kind': self.kind,
+            'body': self.body,
+            'task': ({
+                'id': self.task_id,
+                'topic': self.task_topic,
+                'grade': self.task_grade,
+                'difficulty': self.task_difficulty,
+                'source': self.task_source,
+                'url': self.task_url,
+                'preview': self.task_preview,
+            } if self.kind == 'task_share' else None),
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
+    def __repr__(self):
+        return (
+            f'<DirectMessage {self.id} '
+            f'{self.sender_id}->{self.recipient_id} ({self.kind})>'
+        )
+
+
 class Notification(db.Model):
     """Уведомления пользователей"""
     __tablename__ = 'notifications'
@@ -654,7 +724,12 @@ class DailyQuest(db.Model):
     
     # AI комментарий
     ai_comment = db.Column(db.Text)  # Почему именно эти задачи
-    
+
+    # Какие задачи (по индексу в task_ids) уже решены ПРАВИЛЬНО.
+    # JSON-массив индексов, например: "[0, 2, 4]".
+    # Используется чтобы запретить повторное решение той же задачи.
+    solved_indices = db.Column(db.Text, default='[]')
+
     # Метаданные
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)  # Когда завершён

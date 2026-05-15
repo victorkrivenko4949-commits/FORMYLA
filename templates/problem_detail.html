@@ -9,8 +9,20 @@
 
 <div class="problem-card">
 
-    <div class="problem-meta">
-        Класс: {{ problem.grade }} &bull; Уровень: {{ problem.difficulty }}
+    <div class="problem-meta" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <span>Класс: {{ problem.grade }} &bull; Уровень: {{ problem.difficulty }}</span>
+        {% if current_user.is_authenticated and not current_user.is_guest %}
+        <button type="button" class="share-friend-btn"
+                data-task-id="{{ problem.id }}"
+                data-task-source="problem"
+                data-task-grade="{{ problem.grade }}"
+                data-task-difficulty="{{ problem.difficulty }}"
+                data-task-url="/problem/{{ problem.id }}"
+                data-task-preview="{{ (problem.title ~ ' — ' ~ (problem.text|striptags))|truncate(280) }}"
+                style="padding: 6px 14px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 999px; font-size: 0.82em; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <span>📨</span><span>Поделиться с другом</span>
+        </button>
+        {% endif %}
     </div>
 
     <h1 class="problem-title">{{ problem.title }}</h1>

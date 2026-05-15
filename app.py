@@ -383,6 +383,26 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] support_messages Warning: {e}")
 
+# AUTO-MIGRATION: Add solved_indices column to daily_quests
+# Used to track per-task completion (so a solved task can't be re-attempted).
+try:
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        if 'daily_quests' in inspector.get_table_names():
+            cols = [c['name'] for c in inspector.get_columns('daily_quests')]
+            if 'solved_indices' not in cols:
+                print("[AUTO-MIGRATION] Adding 'solved_indices' to daily_quests...")
+                db.session.execute(text(
+                    "ALTER TABLE daily_quests ADD COLUMN solved_indices TEXT DEFAULT '[]'"
+                ))
+                db.session.commit()
+                print("[AUTO-MIGRATION] ✓ Column 'solved_indices' added")
+            else:
+                print("[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] solved_indices Warning: {e}")
+
 
 def _log_tutor_call(task_id: int, user_answer: str, result: dict):
     """Логирует вызов AI-тьютора v2 в таблицу tutor_calls."""
@@ -443,6 +463,13 @@ try:
     print("[BP] account_bp registered (/account)")
 except Exception as _e:
     print(f"[BP] account_bp NOT registered: {_e}")
+
+try:
+    from routes.drawing import drawing_bp
+    app.register_blueprint(drawing_bp)
+    print("[BP] drawing_bp registered (/drawing)")
+except Exception as _e:
+    print(f"[BP] drawing_bp NOT registered: {_e}")
 
 # Limit upload size to 5 MB (for solution photos)
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
@@ -2254,20 +2281,55 @@ def yandex_login():
         is_linking = session.pop('linking_mode', False) or data.get('linking_mode', False)
         
         if is_linking and current_user.is_authenticated:
-            # РЕЖИМ ПРИВЯЗКИ: добавляем Яндекс к существующему аккаунту
-            # Проверяем, не привязан ли уже этот Яндекс ID к другому аккаунту
+            # РЕЖИМ ПРИВЯЗКИ: добавляем Яндекс к существующему аккаунту.
+            # ВАЖНО (по требованию): не блокируем пользователя сообщением «уже привязан».
+            # Логика:
+            #   1) Если этот Я-ID НЕ привязан ни к кому — создаём привязку.
+            #   2) Если уже привязан к ТЕКУЩЕМУ аккаунту — просто отвечаем успехом
+            #      (пользователь теперь может попадать в этот же аккаунт двумя способами).
+            #   3) Если привязан к ДРУГОМУ аккаунту — предлагаем слияние (как и раньше),
+            #      потому что иначе мы потеряли бы данные другого пользователя.
             existing_oauth = OAuthAccount.query.filter_by(provider='yandex', provider_user_id=provider_user_id).first()
-            
+
             if existing_oauth and existing_oauth.user_id != current_user.id:
-                return jsonify({'error': 'Этот Яндекс ID уже привязан к другому аккаунту'}), 400
-            
+                # КОЛЛИЗИЯ: Я-ID привязан к ДРУГОМУ аккаунту → предложить слияние
+                other_user = User.query.get(existing_oauth.user_id)
+                session['merge_candidate_source_id'] = existing_oauth.user_id
+                session.permanent = True
+                return jsonify({
+                    'merge_required': True,
+                    'message': 'Этот Яндекс ID уже используется другим аккаунтом FORMYLA. Чтобы не потерять данные — выполните слияние.',
+                    'other_account': {
+                        'id': other_user.id if other_user else None,
+                        'email': (other_user.email if other_user and other_user.email else 'без email'),
+                        'name': (other_user.name if other_user else None),
+                        'created_at': (other_user.created_at.isoformat() if other_user and getattr(other_user, 'created_at', None) else None),
+                    },
+                    'current_account': {
+                        'id': current_user.id,
+                        'email': current_user.email or 'без email',
+                    },
+                    'merge_url': url_for('account.merge_preview'),
+                }), 409
+
             if not existing_oauth:
-                # Создаем новую привязку
+                # Создаём новую привязку
                 oauth = OAuthAccount(user_id=current_user.id, provider='yandex', provider_user_id=provider_user_id)
                 db.session.add(oauth)
                 db.session.commit()
-            
-            return jsonify({'success': True, 'redirect_url': url_for('profile'), 'message': 'Яндекс ID успешно привязан!'})
+                return jsonify({
+                    'success': True,
+                    'redirect_url': url_for('profile'),
+                    'message': 'Яндекс ID успешно привязан! Теперь вы можете входить в этот аккаунт через Яндекс.'
+                })
+
+            # existing_oauth.user_id == current_user.id — уже привязан к текущему пользователю.
+            # Не считаем это ошибкой: возвращаем успех (вход в этот аккаунт через Я-ID уже работает).
+            return jsonify({
+                'success': True,
+                'redirect_url': url_for('profile'),
+                'message': 'Этот Яндекс ID уже привязан к вашему аккаунту — вход через Яндекс уже работает.'
+            })
         
         # РЕЖИМ ВХОДА: обычная авторизация через Яндекс
         # Ищем OAuth аккаунт
@@ -3760,11 +3822,15 @@ def api_free_mock_evaluate():
 def adaptive_test_select_grade():
     """Выбор класса для адаптивного теста."""
     topic = request.args.get('topic')
-    
+
     if not topic:
         flash('Выберите тему для тестирования', 'error')
         return redirect(url_for('probniks_page'))
-    
+
+    # Алиас kl_movement → movement
+    if topic == 'kl_movement':
+        topic = 'movement'
+
     # Маппинг тем на русский
     topic_names = {
         'algebra': 'Алгебра',
@@ -3774,12 +3840,49 @@ def adaptive_test_select_grade():
         'movement': 'Задачи на движение',
         'knights_liars': 'Рыцари и лжецы'
     }
-    
+
     topic_name = topic_names.get(topic, topic)
-    
+
+    # Подсчитываем доступность темы по каждому классу,
+    # чтобы шаблон мог отключить недоступные кнопки.
+    from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+    MIN_TASKS = 10  # должен совпадать с порогом в adaptive_test_start_simple
+    fallback_keywords = {
+        'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
+        'geometry': ['геометрия', 'треугольник', 'четырехугольник', 'окружность',
+                     'вектор', 'площад', 'стереометр', 'многогранник',
+                     'тела вращения', 'объем'],
+        'combinatorics': ['комбинатор', 'вероятност', 'перестановк', 'размещен', 'сочетан'],
+        'number_theory': ['натуральн', 'делимост', 'положительн', 'отрицательн',
+                          'рациональн', 'числ', 'НОД', 'НОК'],
+        'movement': ['движен', 'текстовые задачи', 'совместная работа'],
+        'knights_liars': ['рыцар', 'лжец'],
+    }
+
+    grade_availability = {}
+    for grade_int in (5, 6, 7, 8, 9, 10, 11):
+        kws = get_keywords_for_grade_topic(grade_int, topic) or fallback_keywords.get(topic, [])
+        kws_lower = [k.lower() for k in kws]
+        all_tasks = AdaptiveTask.query.filter_by(
+            class_level=grade_int, is_flagged=False
+        ).all()
+        if not kws_lower:
+            count = len(all_tasks)
+        else:
+            count = sum(
+                1 for t in all_tasks
+                if t.topic and any(k in t.topic.lower() for k in kws_lower)
+            )
+        grade_availability[grade_int] = {
+            'count': count,
+            'available': count >= MIN_TASKS,
+        }
+
     return render_template('adaptive_test_select_grade.html',
         topic=topic,
-        topic_name=topic_name
+        topic_name=topic_name,
+        grade_availability=grade_availability,
+        min_tasks=MIN_TASKS,
     )
 
 
@@ -3893,11 +3996,11 @@ def adaptive_test_start_simple():
             flash(f'Недостаточно задач по теме "{topic_name}" для {grade} класса. Доступно: {len(filtered_tasks)}. Требуется минимум 10.', 'error')
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
-    # Сохраняем в сессию
+    # Сохраняем в сессию (сортируем id по возрастанию для детерминированности теста)
     session['adaptive_topic'] = topic
     session['adaptive_topic_name'] = topic_name
     session['adaptive_grade'] = grade
-    session['adaptive_filtered_tasks'] = [t.id for t in filtered_tasks]
+    session['adaptive_filtered_tasks'] = sorted(t.id for t in filtered_tasks)
     session['adaptive_current_difficulty'] = 3  # Начальная сложность
     session['adaptive_answers'] = []  # История ответов
     session['adaptive_current_index'] = 0  # Текущая задача
@@ -3942,45 +4045,46 @@ def adaptive_test_simple_page():
     # Если задача не найдена в сессии — выбираем новую
     if not current_task:
         print(f"[ADAPTIVE DEBUG] Выбор новой задачи #{current_index + 1}, требуемый уровень: {current_difficulty}")
-        
-        # Фильтруем задачи по текущему уровню сложности
-        available_tasks = AdaptiveTask.query.filter(
-            AdaptiveTask.id.in_(task_ids),
-            AdaptiveTask.difficulty_level == current_difficulty
-        ).all()
-        
-        # Исключаем уже показанные задачи
+
         shown_ids = set(session.get('adaptive_shown_task_ids', []))
-        available_tasks = [t for t in available_tasks if t.id not in shown_ids]
-        
+
+        # ДЕТЕРМИНИРОВАННЫЙ ВЫБОР: для одной и той же темы/класса/индекса
+        # тест всегда показывает одни и те же задачи в одном и том же порядке.
+        # Сортируем по id и берём первую неиспользованную нужного уровня.
+        def _pick_first_at_level(level: int):
+            tasks = AdaptiveTask.query.filter(
+                AdaptiveTask.id.in_(task_ids),
+                AdaptiveTask.difficulty_level == level
+            ).order_by(AdaptiveTask.id.asc()).all()
+            for t in tasks:
+                if t.id not in shown_ids:
+                    return t
+            return None
+
+        current_task = _pick_first_at_level(current_difficulty)
+
         # Если задач нужного уровня нет, берем ближайший уровень
-        if not available_tasks:
+        if current_task is None:
             print(f"[ADAPTIVE WARNING] Нет задач уровня {current_difficulty}, ищем ближайший...")
-            # Пробуем соседние уровни
-            for offset in [1, -1, 2, -2]:
+            for offset in [1, -1, 2, -2, 3, -3]:
                 fallback_level = current_difficulty + offset
                 if 1 <= fallback_level <= 7:
-                    available_tasks = AdaptiveTask.query.filter(
-                        AdaptiveTask.id.in_(task_ids),
-                        AdaptiveTask.difficulty_level == fallback_level
-                    ).all()
-                    available_tasks = [t for t in available_tasks if t.id not in shown_ids]
-                    if available_tasks:
+                    current_task = _pick_first_at_level(fallback_level)
+                    if current_task is not None:
                         print(f"[ADAPTIVE] Используем уровень {fallback_level} вместо {current_difficulty}")
                         break
-        
-        # Если все еще нет задач, берем любую из списка
-        if not available_tasks:
-            print(f"[ADAPTIVE ERROR] Не найдено задач нужного уровня, берем любую из пула")
-            if current_index < len(task_ids):
-                current_task = AdaptiveTask.query.get(task_ids[current_index])
+
+        # Если все еще нет задач, берем любую неиспользованную из пула (по id)
+        if current_task is None:
+            print(f"[ADAPTIVE ERROR] Не найдено задач нужного уровня, берём любую неиспользованную")
+            remaining_ids = [tid for tid in sorted(task_ids) if tid not in shown_ids]
+            if remaining_ids:
+                current_task = AdaptiveTask.query.get(remaining_ids[0])
             else:
                 flash('Ошибка: закончились задачи', 'error')
                 return redirect('/adaptive_test_simple/results')
-        else:
-            # Выбираем случайную задачу из доступных нужного уровня
-            import random
-            current_task = random.choice(available_tasks)
+
+        if current_task:
             print(f"[ADAPTIVE] Выбрана задача ID={current_task.id}, уровень={current_task.difficulty_level}")
         
         # Сохраняем выбранную задачу в сессию (persist on reload)
@@ -3994,14 +4098,17 @@ def adaptive_test_simple_page():
         flash('Ошибка загрузки задачи', 'error')
         return redirect(url_for('probniks_page'))
     
-    # Преобразуем объект БД в словарь для шаблона
-    from utils.math_text_fixer import fix_bare_latex
+    # Преобразуем объект БД в словарь для шаблона.
+    # task_text уже хранится в БД с корректной разметкой MathJax (\\( ... \\))
+    # либо с unicode-символами (°, π, ≤), которые MathJax/HTML рендерит как есть.
+    # Поэтому не пропускаем через fix_bare_latex — старая функция конвертировала
+    # ° → ^{\circ} без обёртки и ломала отображение.
     task_dict = {
         'id': current_task.id,
         'topic': current_task.topic,
         'class_level': current_task.class_level,
         'difficulty_level': current_task.difficulty_level,
-        'task_text': fix_bare_latex(current_task.task_text or ''),
+        'task_text': current_task.task_text or '',
         'solution': current_task.solution,
         'criteria_1_point': current_task.criteria_1_point,
         'criteria_2_points': current_task.criteria_2_points
@@ -4096,7 +4203,27 @@ def check_adaptive_answer():
         task_id = data.get('task_id')
         user_answer = data.get('user_answer', '').strip()
         user_solution = data.get('user_solution', '').strip()
-        
+        # Фото рукописного решения. Поддерживаем 2 варианта:
+        #   - solution_image_b64        — одно фото (legacy)
+        #   - solution_images_b64       — список (несколько фото)
+        # Каждая запись может быть полным data:URL — режем префикс до запятой.
+        raw_images = []
+        single = data.get('solution_image_b64', '') or ''
+        if single:
+            raw_images.append(single)
+        multi = data.get('solution_images_b64') or []
+        if isinstance(multi, list):
+            for it in multi:
+                if isinstance(it, str) and it.strip():
+                    raw_images.append(it)
+
+        def _strip_dataurl(b: str) -> str:
+            return b.split(',', 1)[-1] if b.startswith('data:') else b
+
+        images_b64 = [_strip_dataurl(b) for b in raw_images if b]
+        # Для совместимости со старой переменной ниже:
+        solution_image_b64 = images_b64[0] if images_b64 else ''
+
         if not task_id or not user_answer:
             return jsonify({
                 'status': 'error',
@@ -4112,6 +4239,54 @@ def check_adaptive_answer():
                 'status': 'error',
                 'message': 'Задача не найдена'
             }), 404
+
+        # Если ученик прикрепил фото(-и) рукописного решения — распознаём
+        # каждое через vision-LLM (OpenRouter / mathline pipeline) и
+        # подмешиваем результат в `user_solution`. Это даёт AI-проверке
+        # видеть тетрадное решение, а не только текст из MathLive-поля.
+        if images_b64 and DEEPSEEK_AVAILABLE:
+            try:
+                _ocr_client = DeepSeekClient()
+                transcribed_parts = []
+                for idx, img_b64 in enumerate(images_b64, start=1):
+                    try:
+                        part = _ocr_client.transcribe_handwritten_solution(
+                            image_data=img_b64,
+                            task_text=current_task.task_text or "",
+                        )
+                    except Exception as _one_err:
+                        print(
+                            f"[ADAPTIVE OCR] photo #{idx} failed: {_one_err}"
+                        )
+                        part = ""
+                    if part:
+                        if len(images_b64) > 1:
+                            transcribed_parts.append(
+                                f"--- Фото {idx} из {len(images_b64)} ---\n{part}"
+                            )
+                        else:
+                            transcribed_parts.append(part)
+                    print(
+                        f"[ADAPTIVE OCR] task_id={task_id} photo={idx}/"
+                        f"{len(images_b64)} len={len(part)}"
+                    )
+
+                transcribed = "\n\n".join(transcribed_parts).strip()
+                if transcribed:
+                    header = (
+                        "[Распознанные фото-решения]"
+                        if len(images_b64) > 1
+                        else "[Распознанное фото-решение]"
+                    )
+                    if user_solution:
+                        user_solution = (
+                            f"{user_solution}\n\n{header}\n{transcribed}"
+                        )
+                    else:
+                        user_solution = f"{header}\n{transcribed}"
+            except Exception as _ocr_err:
+                print(f"[ADAPTIVE OCR] failed: {_ocr_err}")
+                # Не падаем — продолжаем без распознанного фото
         
         # Получаем правильный ответ (если есть поле answer в модели)
         correct_answer = getattr(current_task, 'answer', '') or getattr(current_task, 'correct_answer', 'не указан')
@@ -4131,8 +4306,84 @@ def check_adaptive_answer():
         # Проверяем доступность DeepSeek
         score = 1  # По умолчанию нейтральная оценка
         feedback = "Ваш ответ принят."
-        
-        if DEEPSEEK_AVAILABLE:
+
+        # ── БЫСТРАЯ ПРЕД-ПРОВЕРКА: если числа в ответе ученика и в каноне
+        # эквивалентны (с точностью до единиц измерения, формата и пробелов) —
+        # сразу засчитываем как верно, без обращения к AI. Это ловит случаи
+        # вроде "30" vs "30 см²", "1/2" vs "0.5", "−5" vs "-5".
+        def _math_equivalent(user: str, canon: str) -> bool:
+            import re as _re
+            if not user or not canon:
+                return False
+            u = user.strip()
+            c = canon.strip()
+            if not u or not c:
+                return False
+            # Прямое совпадение строк (после lower и удаления пробелов)
+            _norm = lambda s: _re.sub(r"\s+", "", s).lower().replace(",", ".")
+            if _norm(u) == _norm(c):
+                return True
+            # Извлекаем все числа (включая дроби и десятичные)
+            num_re = _re.compile(r"-?\d+(?:[.,]\d+)?(?:/\d+)?")
+            def _to_floats(s):
+                out = []
+                for m in num_re.findall(s):
+                    t = m.replace(",", ".")
+                    try:
+                        if "/" in t:
+                            a, b = t.split("/", 1)
+                            out.append(float(a) / float(b))
+                        else:
+                            out.append(float(t))
+                    except Exception:
+                        pass
+                return out
+            uns = _to_floats(u)
+            cns = _to_floats(c)
+            if not uns or not cns:
+                return False
+            # Если множества чисел совпадают (с точностью 1e-4) — эквивалентно
+            if len(uns) == len(cns):
+                if all(abs(a - b) <= max(1e-4, 1e-3 * max(abs(a), abs(b)))
+                       for a, b in zip(sorted(uns), sorted(cns))):
+                    return True
+            # Если у канона ровно одно число и оно встречается в ответе ученика
+            if len(cns) == 1 and any(
+                abs(x - cns[0]) <= max(1e-4, 1e-3 * max(abs(x), abs(cns[0])))
+                for x in uns
+            ):
+                return True
+            return False
+
+        if (not is_proof_task) and _math_equivalent(user_answer, str(correct_answer or "")):
+            score = 2
+
+            def _safe_truncate(text: str, max_len: int = 1500) -> str:
+                """Trim long solution at a safe boundary that doesn't cut LaTeX."""
+                if not text:
+                    return ""
+                if len(text) <= max_len:
+                    return text
+                # try to cut after the last completed \(..\) or \[..\] inside max_len
+                tail = text[:max_len]
+                for marker in ("\\)", "\\]", ".\n", "\n\n", ". ", "\n"):
+                    idx = tail.rfind(marker)
+                    if idx > max_len * 0.6:
+                        return text[: idx + len(marker)] + " …"
+                return tail + " …"
+
+            sol = _safe_truncate(current_task.solution or "")
+            feedback = (
+                f"Ответ верный! ✅\n\n"
+                f"Правильный ответ: **{correct_answer}**"
+                + (f"\n\n**Решение:**\n{sol}" if sol else "")
+            )
+            print(f"[ADAPTIVE] Quick-check: '{user_answer}' ≡ '{correct_answer}' → score=2")
+            DEEPSEEK_AVAILABLE_LOCAL = False  # пропускаем AI-проверку
+        else:
+            DEEPSEEK_AVAILABLE_LOCAL = DEEPSEEK_AVAILABLE
+
+        if DEEPSEEK_AVAILABLE_LOCAL:
             try:
                 # ── Выбираем промпт в зависимости от типа задачи ──
                 if is_proof_task:
@@ -4274,12 +4525,37 @@ score = -1 (НЕВЕРНО, -1 уровень):
    
    ЗАПОМНИ: Ответ без решения = score: -1! Олимпиада требует обоснование.
 
-4. ФОРМАТИРОВАНИЕ FEEDBACK:
-   - Используй LaTeX для формул: \\( формула \\) (строчные), \\[ формула \\] (блочные)
+4. ФОРМАТИРОВАНИЕ FEEDBACK — КРАЙНЕ ВАЖНО:
+
+   ⚠️ ВСЕ математические выражения ОБЯЗАТЕЛЬНО оборачивай в LaTeX-делимитеры,
+       иначе они отображаются как уродливый ASCII («x^2», «a = 3») —
+       это считается БАГОМ интерфейса.
+
+   ПРАВИЛА LaTeX:
+   - Inline (внутри строки): \\( формула \\)        ← всегда два символа: \\( и \\)
+   - Display (отдельной строкой): \\[ формула \\]   ← для больших уравнений
    - НЕ экранируй слеши дополнительно (пиши \\(, а не \\\\()
+
+   ОБЯЗАТЕЛЬНО оборачивай в \\( ... \\):
+   * Степени:                     x^2  →  \\(x^{2}\\)
+   * Индексы:                     a_1  →  \\(a_{1}\\)
+   * Дроби:                       1/2  →  \\(\\frac{1}{2}\\)
+   * Корни:                       √5   →  \\(\\sqrt{5}\\)
+   * Уравнения / неравенства:     a=3  →  \\(a = 3\\),  x≥0 → \\(x \\ge 0\\),  n≠1 → \\(n \\ne 1\\)
+   * Квадратные ур-я:             (x^2 - 4x + 3)/(x - 1) → \\(\\dfrac{x^2 - 4x + 3}{x - 1}\\)
+   * Любые переменные с числами:  2k+1=7 → \\(2k + 1 = 7\\)
+
+   ЗАПРЕЩЕНО писать в plain text:
+     ❌ «x^2 - 4x + 3»            → ✅ «\\(x^2 - 4x + 3\\)»
+     ❌ «значит a = 1»            → ✅ «значит \\(a = 1\\)»
+     ❌ «при a = 3:»              → ✅ «при \\(a = 3\\):»
+     ❌ «(x^2 - 4x + 3)/(x - 1)»  → ✅ «\\(\\dfrac{x^2 - 4x + 3}{x - 1}\\)»
+
+   ПРОЧИЕ ПРАВИЛА:
    - ОБЯЗАТЕЛЬНО используй переносы строк (\\n) для структурирования текста
-   - Перед каждым новым шагом решения ставь перенос строки (например, перед "1. В числителе..." и "2. В знаменателе...")
-   - Блочные формулы оборачивай строго в \\[ и \\], они будут отображаться с отступами
+   - Перед каждым новым шагом решения ставь перенос строки
+     (например, перед "1. В числителе..." и "2. В знаменателе...")
+   - Используй **жирный** для ключевых слов («Шаг 1:», «Ответ:», «Проверка:»)
    - Форматируй текст красиво, как в хорошем учебнике
    - Будь конструктивным и понятным школьнику
    - НЕ оборачивай JSON в markdown блоки"""
@@ -4441,6 +4717,39 @@ score = -1 (НЕВЕРНО, -1 уровень):
         
         # Ограничиваем score в диапазоне [-1, 2]
         score = max(-1, min(2, score))
+
+        # ── Task 3: явная коммуникация баллов ──
+        # Адаптивный тест: AI-тьютор должен ВСЕГДА проговаривать,
+        # сколько баллов он поставил.
+        #   - Если решение НЕ предоставлено (только ответ) → разрешены лишь +1 / −1.
+        #   - Если решение есть → разрешены +2, +1, −1.
+        _has_solution = bool((user_solution or '').strip())
+        if not _has_solution:
+            # Никаких +2 без решения: даже если ответ совпал, ставим максимум +1.
+            if score == 2:
+                score = 1
+            elif score == 0:
+                score = -1  # 0 трактуем как «нет решения, ответ неубедителен»
+
+        # Префикс с явной оценкой в начале feedback, чтобы ученик видел балл.
+        def _score_badge(s: int, has_solution: bool) -> str:
+            if s == 2:
+                return "🟢 **Оценка тьютора: +2 балла** (верный ответ + корректное решение)"
+            if s == 1:
+                if has_solution:
+                    return "🟡 **Оценка тьютора: +1 балл** (частично верно: либо ответ неточный, либо решение с пробелами)"
+                return "🟡 **Оценка тьютора: +1 балл** (ответ принят, но без решения)"
+            if s == 0:
+                return "⚪ **Оценка тьютора: 0 баллов** (нейтрально, уровень не меняется)"
+            # s == -1
+            if has_solution:
+                return "🔴 **Оценка тьютора: −1 балл** (решение содержит ошибку)"
+            return "🔴 **Оценка тьютора: −1 балл** (нет решения — олимпиада требует обоснование)"
+
+        _badge = _score_badge(score, _has_solution)
+        # Не дублируем, если AI уже сам начал с такой строки
+        if _badge.split(':', 1)[0] not in (feedback or '')[:80]:
+            feedback = f"{_badge}\n\n{feedback or ''}".strip()
         
         # НОВАЯ ЛОГИКА АДАПТИВНОСТИ С СТРИКАМИ
         current_difficulty = session.get('adaptive_current_difficulty', 3)
@@ -4474,14 +4783,16 @@ score = -1 (НЕВЕРНО, -1 уровень):
         if 'adaptive_answers' not in session:
             session['adaptive_answers'] = []
         
+        # ВАЖНО: НЕ сохраняем длинные строки (feedback, user_solution) в сессии,
+        # чтобы не выйти за лимит Flask cookie session (~4KB). Иначе после
+        # 2-3 задач сессия молча перестаёт сохраняться и индекс не растёт.
+        # Полные feedback пользователь видит сразу в JSON-ответе на этот запрос.
         session['adaptive_answers'].append({
             'task_id': task_id,
-            'user_answer': user_answer,
-            'user_solution': user_solution,
-            'correct_answer': correct_answer,
+            'user_answer': (user_answer or '')[:120],
+            'correct_answer': (str(correct_answer) if correct_answer else '')[:120],
             'score': score,
-            'feedback': feedback,
-            'difficulty': current_task.difficulty_level
+            'difficulty': current_task.difficulty_level,
         })
         
         # Увеличиваем индекс текущей задачи
@@ -4568,6 +4879,46 @@ def adaptive_test_simple_results():
     topic = session.get('adaptive_topic', 'algebra')
     topic_name = session.get('adaptive_topic_name', 'Математика')
     grade = session.get('adaptive_grade', '9')
+
+    # Dehydrate feedback from DB for the results page (we don't keep long
+    # feedback strings in the session for cookie-size reasons).
+    if answers:
+        try:
+            ids = [a.get('task_id') for a in answers if a.get('task_id')]
+            tasks_map = {}
+            if ids:
+                rows = AdaptiveTask.query.filter(
+                    AdaptiveTask.id.in_(ids)
+                ).all()
+                tasks_map = {t.id: t for t in rows}
+            for a in answers:
+                tid = a.get('task_id')
+                t = tasks_map.get(int(tid)) if tid else None
+                a['task_text'] = t.task_text if t else ''
+                a['solution'] = t.solution if t else ''
+                # Re-build a short feedback for display using current
+                # quick rules.
+                score = a.get('score', a.get('is_correct', 0))
+                ca = a.get('correct_answer') or (t.correct_answer if t else '')
+                if score >= 2:
+                    a['feedback'] = (
+                        f"Ответ верный! ✅\n\nПравильный ответ: **{ca}**"
+                        + (f"\n\n**Решение:**\n{t.solution}" if t and t.solution else "")
+                    )
+                elif score == 1:
+                    a['feedback'] = (
+                        "Частично верно — уровень не изменился."
+                        + (f"\n\nПравильный ответ: **{ca}**" if ca else "")
+                        + (f"\n\n**Разбор:**\n{t.solution}" if t and t.solution else "")
+                    )
+                else:
+                    a['feedback'] = (
+                        "Ответ не верный."
+                        + (f"\n\nПравильный ответ: **{ca}**" if ca else "")
+                        + (f"\n\n**Разбор:**\n{t.solution}" if t and t.solution else "")
+                    )
+        except Exception as _e:
+            print(f"[ADAPTIVE results] feedback rehydrate failed: {_e}")
     
     # Подсчет статистики с учетом новых полей score
     total = len(answers)
@@ -5954,7 +6305,22 @@ def api_set_grade():
     if grade not in range(5, 12):  # 5-11
         return jsonify({'success': False, 'error': 'Класс должен быть от 5 до 11'}), 400
 
+    old_grade = current_user.preferred_grade
     current_user.preferred_grade = grade
+
+    # Если класс реально изменился — удаляем сегодняшний Daily Quest,
+    # чтобы при следующем заходе на /daily он перегенерировался под новый класс.
+    if old_grade != grade:
+        try:
+            from models import DailyQuest
+            from datetime import date as _date
+            DailyQuest.query.filter_by(
+                user_id=current_user.id,
+                date=_date.today()
+            ).delete(synchronize_session=False)
+        except Exception as _e:
+            app.logger.warning(f"api_set_grade: failed to drop today's quest: {_e}")
+
     db.session.commit()
 
     return jsonify({'success': True, 'grade': grade})
@@ -5991,66 +6357,127 @@ def daily_quest_main():
     
     # Получаем или создаём квест на сегодня
     quest = get_today_quest(current_user.id)
-    
+
     if not quest:
         flash('Не удалось создать Daily Quest. Попробуйте позже.', 'error')
         return redirect(url_for('index'))
+
+    # Защита: если задачи квеста подобраны под ДРУГОЙ класс — перегенерируем.
+    # Например: пользователь сменил класс через дропдаун, или квест был
+    # создан старой версией кода с COMBOS-задачами не того класса.
+    # Делаем это ТОЛЬКО если пользователь ещё не начал решать (completed_count == 0),
+    # чтобы не сбрасывать прогресс посреди дня.
+    try:
+        from services.daily_quest_service import get_quest_tasks as _gqt, generate_daily_quest as _gdq
+        if quest.completed_count == 0 and current_user.preferred_grade:
+            _peek_tasks = _gqt(quest)
+            if _peek_tasks:
+                _user_g = int(current_user.preferred_grade)
+                grades_in_quest = [int(t.get('grade', 0) or 0) for t in _peek_tasks]
+                # Если БОЛЬШИНСТВО задач не строго того же класса — перегенерация.
+                # (Допускаем 1 задачу другого класса как буфер.)
+                wrong_grade_count = sum(1 for g in grades_in_quest if g != _user_g)
+                if wrong_grade_count >= 2:
+                    app.logger.info(
+                        f"daily_quest_main: regenerating quest for user {current_user.id} "
+                        f"— quest grades {grades_in_quest} don't match preferred_grade {_user_g} "
+                        f"(wrong_grade_count={wrong_grade_count})"
+                    )
+                    new_quest = _gdq(current_user.id, force_regenerate=True)
+                    if new_quest:
+                        quest = new_quest
+    except Exception as _re:
+        app.logger.warning(f"daily_quest_main: grade-mismatch regen failed: {_re}")
     
-    # Конвертируем markdown ai_comment → HTML
+    # Конвертируем markdown ai_comment → HTML В ОТДЕЛЬНУЮ ПЕРЕМЕННУЮ.
+    # ВАЖНО: НЕ мутируем ORM-объект quest.ai_comment, иначе SQLAlchemy пометит его dirty
+    # и любой следующий .query.first() триггернёт autoflush → UPDATE daily_quests …
+    # На SQLite это вызывает 'database is locked' при конкуренции с APScheduler.
+    ai_comment_html = None
     if quest.ai_comment:
         try:
             import markdown as md_lib
             ai_comment_html = Markup(md_lib.markdown(quest.ai_comment, extensions=['nl2br']))
         except ImportError:
-            # Fallback: простая замена **text** → <strong>text</strong>
             import re
             text = quest.ai_comment
             text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
             text = text.replace('\n\n', '</p><p>').replace('\n', '<br>')
             ai_comment_html = Markup(f'<p>{text}</p>')
-        quest.ai_comment = ai_comment_html
-    
+
+    # Если перед нами всё-таки висит грязная сессия (другой код выше что-то мутировал) —
+    # сбросим её, чтобы следующая SELECT-операция не упёрлась в autoflush + locked DB.
+    try:
+        if db.session.dirty or db.session.new or db.session.deleted:
+            db.session.rollback()
+    except Exception:
+        pass
+
     # Получаем задачи квеста
     tasks = get_quest_tasks(quest)
-    
-    # Получаем статистику streak
-    streak_stats = get_streak_stats(current_user.id)
-    
+
+    # Получаем статистику streak (ловим 'database is locked' с retry — SQLite + APScheduler)
+    import time as _t_streak
+    streak_stats = None
+    for _i in range(5):
+        try:
+            streak_stats = get_streak_stats(current_user.id)
+            break
+        except Exception as _se:
+            if 'database is locked' in str(_se).lower() and _i < 4:
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
+                _t_streak.sleep(0.3 * (_i + 1))
+                continue
+            raise
+
+    # Список индексов уже решённых задач (для шаблона: «✅ Решено» vs «🚀 Решить»)
+    from services.daily_quest_service import get_solved_indices as _gsi
+    solved_indices = _gsi(quest)
+
     return render_template('daily.html',
                          quest=quest,
                          tasks=tasks,
+                         ai_comment_html=ai_comment_html,
                          streak_stats=streak_stats,
                          need_grade_selection=False,
-                         preferred_grade=current_user.preferred_grade)
+                         preferred_grade=current_user.preferred_grade,
+                         solved_indices=solved_indices)
 
 
 @app.route('/daily/task/<int:task_index>')
 @login_required
 def daily_quest_task(task_index):
     """Страница решения задачи из Daily Quest"""
-    from services.daily_quest_service import get_today_quest, get_quest_tasks
-    from datetime import date
-    
+    from services.daily_quest_service import (
+        get_today_quest, get_quest_tasks, is_task_solved
+    )
+
     # Получаем квест на сегодня
     quest = get_today_quest(current_user.id)
-    
+
     if not quest:
         flash('Daily Quest не найден', 'error')
         return redirect(url_for('daily_quest_main'))
-    
+
     # Получаем задачи
     tasks = get_quest_tasks(quest)
-    
+
     # Проверяем индекс
     if task_index < 0 or task_index >= len(tasks):
         flash('Задача не найдена', 'error')
         return redirect(url_for('daily_quest_main'))
-    
+
     task = tasks[task_index]
-    
-    # Проверяем, не решена ли уже эта задача
-    # (можно добавить отдельную таблицу для отслеживания решённых задач в квесте)
-    
+
+    # Если задача уже решена правильно — на страницу решения не пускаем,
+    # возвращаем пользователя обратно к списку.
+    if is_task_solved(quest, task_index):
+        flash('Эта задача уже решена.', 'info')
+        return redirect(url_for('daily_quest_main'))
+
     return render_template('daily_task.html',
                          quest=quest,
                          task=task,
@@ -6062,23 +6489,34 @@ def daily_quest_task(task_index):
 @login_required
 def daily_quest_submit(task_index):
     """Отправка ответа на задачу Daily Quest"""
-    from services.daily_quest_service import get_today_quest, get_quest_tasks, complete_quest_task
+    from services.daily_quest_service import (
+        get_today_quest, get_quest_tasks, complete_quest_task, is_task_solved
+    )
     from services.mastery_service import update_mastery_after_task
     from services.streak_service import update_streak_after_quest
     from utils.math_answer_utils import compare_math_answers
-    
+
     # Получаем квест
     quest = get_today_quest(current_user.id)
-    
+
     if not quest:
         return jsonify({'success': False, 'error': 'Quest not found'}), 404
-    
+
     # Получаем задачи
     tasks = get_quest_tasks(quest)
-    
+
     if task_index < 0 or task_index >= len(tasks):
         return jsonify({'success': False, 'error': 'Invalid task index'}), 400
-    
+
+    # Защита от повторного решения: если задача уже решена правильно,
+    # не позволяем фарм XP / повторную попытку.
+    if is_task_solved(quest, task_index):
+        return jsonify({
+            'success': False,
+            'error': 'Эта задача уже решена. Повторное решение невозможно.',
+            'already_solved': True,
+        }), 409
+
     task = tasks[task_index]
     
     # Получаем ответ и решение пользователя
@@ -6088,86 +6526,160 @@ def daily_quest_submit(task_index):
     if not user_answer and not user_solution:
         return jsonify({'success': False, 'error': 'Answer or solution is required'}), 400
     
-    # Проверяем ответ
+    # === ШАГ 1. Быстрая локальная сверка ответа с заложенным эталоном ===
     correct_answer = task.get('answer', '')
     correct_solution = task.get('solution', '')
-    is_correct = compare_math_answers(user_answer, correct_answer) if user_answer else False
-    
-    # Обновляем квест
-    xp_earned = 20 if is_correct else 0
-    
-    if is_correct:
-        complete_quest_task(quest, task_index, is_correct, xp_earned)
-        
-        # Обновляем мастерство по теме
-        topic = task.get('topic', task.get('subject', ''))
-        grade = task.get('grade', 7)
-        difficulty = task.get('difficulty', 3)
-        
-        if topic:
-            update_mastery_after_task(current_user.id, topic, grade, is_correct, difficulty)
-        
-        # Обновляем XP пользователя
-        current_user.experience_points += xp_earned
-        db.session.commit()
-        
-        # Проверяем, завершён ли квест
-        if quest.completed_count >= quest.total_count:
-            # Обновляем streak
-            update_streak_after_quest(current_user.id)
-    
-    # Генерируем AI-фидбек с полной проверкой решения
+    local_match = compare_math_answers(user_answer, correct_answer) if user_answer else False
+
+    # === ШАГ 2. ИИ-верификация: даём тьютору право переопределить вердикт ===
+    # База задач может содержать ошибочные эталонные ответы. Поэтому ИИ-тьютор
+    # сам решает задачу, сравнивает свой ответ с заложенным и с ответом ученика,
+    # и выдаёт финальный вердикт. Если эталон ошибочен — мы уважаем правильный
+    # ответ ученика.
     ai_feedback = ""
-    if DEEPSEEK_AVAILABLE:
+    ai_verdict = None  # 'correct' | 'wrong' | None
+    ai_overrode_reference = False
+    actual_correct_answer = correct_answer  # что считать правильным после AI-проверки
+
+    if DEEPSEEK_AVAILABLE and user_answer:
         try:
+            import json as _json
+            import re as _re
             client = DeepSeekClient()
-            solution_part = ""
-            if user_solution:
-                solution_part = f"\n\nРешение ученика:\n{user_solution}"
-            
-            prompt = f"""Ты — ИИ-тьютор по олимпиадной математике. Проверь решение ученика.
+            solution_part = f"\n\nРешение ученика:\n{user_solution}" if user_solution else ""
+            ref_solution_part = f"\nЭталонное решение из базы:\n{correct_solution}" if correct_solution else ""
 
-Задача: {task.get('text', '')}
+            prompt = f"""Ты — ИИ-тьютор по олимпиадной математике. Реши задачу САМ, затем проверь ответ ученика.
 
-Правильный ответ: {correct_answer}
-{f"Эталонное решение: {correct_solution}" if correct_solution else ""}
+ВАЖНО: эталонный ответ из базы задач МОЖЕТ БЫТЬ ОШИБОЧНЫМ. Не доверяй ему слепо — реши задачу сам и сравни.
+
+Задача:
+{task.get('text', '')}
+
+Эталонный ответ из базы: {correct_answer}
+{ref_solution_part}
 
 Ответ ученика: {user_answer}
 {solution_part}
 
-Результат проверки ответа: {'✅ Правильно' if is_correct else '❌ Неправильно'}
+Сделай следующее:
+1. Реши задачу самостоятельно. Найди ИСТИННО правильный ответ.
+2. Сравни истинный ответ с ответом ученика (учитывай эквивалентные формы: 1/2 = 0.5, 70° = 70 и т. п.).
+3. Сравни истинный ответ с эталоном из базы. Если они отличаются — пометь, что эталон ошибочен.
+4. Дай подробный разбор решения ученика на русском.
 
-Дай подробный разбор на русском языке:
-1. Если решение написано — оцени ход рассуждений, укажи ошибки или подтверди правильность.
-2. Если ответ неправильный — объясни, как нужно было решать (кратко, 3-5 предложений).
-3. Если ответ правильный — похвали и дай совет для подобных задач.
-Формат: Markdown."""
-            
-            ai_feedback = client.generate(prompt, max_tokens=1500)
+ПРАВИЛА ФОРМАТИРОВАНИЯ (СТРОГО):
+- Используй обычный Markdown: **жирный текст** через две звёздочки, # заголовки, * списки.
+- НЕ используй \\cdot или \\textbf для выделения текста — только Markdown **звёздочки**.
+- Все формулы оборачивай в \\( ... \\) для inline или \\[ ... \\] для display.
+- Внутри формул используй стандартный LaTeX: \\frac{{a}}{{b}}, \\cdot, \\sqrt{{...}}.
+- НИКОГДА не пиши \\cdot \\cdot вокруг русских слов — это ломает рендеринг.
+
+В САМОМ КОНЦЕ ответа добавь СТРОГО такой блок (без изменений формата):
+
+```json
+{{"true_answer": "<твой правильный ответ>", "student_correct": <true|false>, "reference_was_wrong": <true|false>}}
+```
+
+Где:
+- true_answer — твой правильный ответ к задаче
+- student_correct — true если ответ ученика правильный (эквивалентен истинному)
+- reference_was_wrong — true если эталон из базы не совпадает с истинным ответом
+"""
+
+            ai_raw = client.generate(prompt, max_tokens=2000) or ""
+
+            # Парсим JSON-блок из конца ответа
+            json_match = _re.search(r'\{[^{}]*"student_correct"[^{}]*\}', ai_raw)
+            if json_match:
+                try:
+                    verdict_data = _json.loads(json_match.group(0))
+                    student_correct = bool(verdict_data.get('student_correct', False))
+                    reference_was_wrong = bool(verdict_data.get('reference_was_wrong', False))
+                    true_answer = str(verdict_data.get('true_answer', '')).strip()
+
+                    ai_verdict = 'correct' if student_correct else 'wrong'
+                    if reference_was_wrong and true_answer:
+                        ai_overrode_reference = True
+                        actual_correct_answer = true_answer
+                except Exception as _je:
+                    app.logger.warning(f"daily submit: failed to parse AI verdict JSON: {_je}")
+
+            # В фидбеке прячем технический JSON-блок от пользователя
+            ai_feedback = _re.sub(r'```json\s*\{[^{}]*"student_correct"[^{}]*\}\s*```', '', ai_raw)
+            ai_feedback = _re.sub(r'\{[^{}]*"student_correct"[^{}]*\}', '', ai_feedback).strip()
+
+            # Чиним типичный косяк LLM: \cdot \cdot вокруг русских слов вместо ** **.
+            # Превращаем обратно в Markdown-bold, чтобы фронт корректно отрендерил <strong>.
+            ai_feedback = _re.sub(
+                r'\\cdot\s*\\cdot\s*([^\n\\]+?)\s*\\cdot\s*\\cdot',
+                r'**\1**',
+                ai_feedback
+            )
+            # Также \textbf{...} → **...**
+            ai_feedback = _re.sub(r'\\textbf\{([^{}]+)\}', r'**\1**', ai_feedback)
+
+            if ai_overrode_reference and ai_verdict == 'correct':
+                ai_feedback = (
+                    "ℹ️ *Эталонный ответ в базе задач был ошибочным. Я перепроверил — "
+                    f"твой ответ верный, истинный ответ: **{actual_correct_answer}**.*\n\n"
+                    + ai_feedback
+                )
         except Exception as e:
-            app.logger.error(f"AI feedback error: {e}")
-            if is_correct:
-                ai_feedback = "✅ Отличная работа! Ответ верный."
-            else:
-                ai_feedback = f"❌ К сожалению, ответ неверный. Правильный ответ: {correct_answer}"
-                if correct_solution:
-                    ai_feedback += f"\n\n**Решение:**\n{correct_solution}"
+            app.logger.error(f"AI verdict error: {e}")
+            ai_feedback = ""
+
+    # === ШАГ 3. Финальный вердикт ===
+    # Приоритет: AI-вердикт > локальная сверка.
+    # Если AI явно сказал student_correct=true — засчитываем, даже если local_match=false.
+    # Если AI сказал student_correct=false, а local_match=true — доверяем AI только если
+    # он явно отметил reference_was_wrong (значит он реально перерешал).
+    if ai_verdict == 'correct':
+        is_correct = True
+    elif ai_verdict == 'wrong' and ai_overrode_reference:
+        # AI перерешал, и ответ ученика реально не подходит — даже если совпал с (ошибочным) эталоном
+        is_correct = False
     else:
+        # Нет AI-вердикта (DEEPSEEK недоступен или JSON не распарсился) — fallback на локальную сверку
+        is_correct = local_match
+
+    # === ШАГ 4. Обновляем квест/мастерство/XP ===
+    xp_earned = 20 if is_correct else 0
+
+    if is_correct:
+        complete_quest_task(quest, task_index, is_correct, xp_earned)
+
+        topic = task.get('topic', task.get('subject', ''))
+        grade = task.get('grade', 7)
+        difficulty = task.get('difficulty', 3)
+
+        if topic:
+            update_mastery_after_task(current_user.id, topic, grade, is_correct, difficulty)
+
+        current_user.experience_points += xp_earned
+        db.session.commit()
+
+        if quest.completed_count >= quest.total_count:
+            update_streak_after_quest(current_user.id)
+
+    # === ШАГ 5. Fallback-фидбек, если AI не дал ничего ===
+    if not ai_feedback:
         if is_correct:
             ai_feedback = "✅ Правильно! +20 XP"
         else:
-            ai_feedback = f"❌ Неправильно. Правильный ответ: {correct_answer}"
-            if correct_solution:
+            ai_feedback = f"❌ Неправильно. Правильный ответ: {actual_correct_answer}"
+            if correct_solution and not ai_overrode_reference:
                 ai_feedback += f"\n\n**Решение:**\n{correct_solution}"
-    
+
     return jsonify({
         'success': True,
         'is_correct': is_correct,
-        'correct_answer': correct_answer if not is_correct else None,
+        'correct_answer': actual_correct_answer if not is_correct else None,
         'xp_earned': xp_earned,
         'ai_feedback': ai_feedback,
         'quest_completed': quest.completed_count >= quest.total_count,
-        'total_xp': quest.xp_earned
+        'total_xp': quest.xp_earned,
+        'reference_overridden': ai_overrode_reference,
     })
 
 
@@ -6372,6 +6884,304 @@ def friends_page():
         incoming=current_user.incoming_friend_requests(),
         outgoing=current_user.outgoing_friend_requests()
     )
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DIRECT MESSAGES (chat between friends + task sharing)
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _ensure_friends(other_id: int):
+    """Return User if `other_id` is a friend of current_user, else None."""
+    if not current_user.is_authenticated or other_id == current_user.id:
+        return None
+    if not current_user.is_friend_with(other_id):
+        return None
+    return User.query.get(other_id)
+
+
+@app.route('/chat')
+@app.route('/chat/<int:friend_id>')
+@login_required
+def chat_page(friend_id=None):
+    """Страница чата с друзьями. Слева — список друзей, справа — диалог."""
+    friends = current_user.get_friends()
+    active_friend = None
+    if friend_id:
+        active_friend = next((f for f in friends if f.id == friend_id), None)
+        if active_friend is None:
+            flash('Этот пользователь не в вашем списке друзей', 'error')
+            return redirect(url_for('chat_page'))
+    return render_template(
+        'chat.html',
+        friends=friends,
+        active_friend=active_friend,
+    )
+
+
+@app.route('/api/chat/conversations')
+@login_required
+def api_chat_conversations():
+    """Список друзей + последнее сообщение и кол-во непрочитанных."""
+    from models import DirectMessage
+    friends = current_user.get_friends()
+    items = []
+    for fr in friends:
+        last = (
+            DirectMessage.query
+            .filter(
+                db.or_(
+                    db.and_(DirectMessage.sender_id == current_user.id,
+                            DirectMessage.recipient_id == fr.id),
+                    db.and_(DirectMessage.sender_id == fr.id,
+                            DirectMessage.recipient_id == current_user.id),
+                )
+            )
+            .order_by(DirectMessage.created_at.desc())
+            .first()
+        )
+        unread = DirectMessage.query.filter_by(
+            sender_id=fr.id, recipient_id=current_user.id, is_read=False
+        ).count()
+        items.append({
+            'friend': {
+                'id': fr.id,
+                'name': fr.name or fr.email or 'Без имени',
+                'nickname': fr.nickname,
+                'avatar_url': fr.avatar_url,
+            },
+            'last_message': last.to_dict(viewer_id=current_user.id) if last else None,
+            'unread': unread,
+        })
+    # Сортируем: сначала с новыми сообщениями, потом по последнему сообщению
+    def _sort_key(it):
+        lm = it.get('last_message') or {}
+        return (-(it['unread'] or 0), lm.get('created_at') or '')
+    items.sort(key=_sort_key, reverse=False)
+    items.sort(key=lambda it: (it.get('last_message') or {}).get('created_at') or '',
+               reverse=True)
+    return jsonify({'conversations': items})
+
+
+@app.route('/api/chat/<int:friend_id>/messages')
+@login_required
+def api_chat_messages(friend_id):
+    """Получить сообщения с конкретным другом + пометить непрочитанные."""
+    from models import DirectMessage
+    friend = _ensure_friends(friend_id)
+    if not friend:
+        return jsonify({'error': 'Это не ваш друг'}), 403
+    try:
+        limit = max(1, min(int(request.args.get('limit', 100)), 500))
+    except (TypeError, ValueError):
+        limit = 100
+
+    q = DirectMessage.query.filter(
+        db.or_(
+            db.and_(DirectMessage.sender_id == current_user.id,
+                    DirectMessage.recipient_id == friend.id),
+            db.and_(DirectMessage.sender_id == friend.id,
+                    DirectMessage.recipient_id == current_user.id),
+        )
+    ).order_by(DirectMessage.created_at.asc())
+    msgs = q.limit(limit).all()
+    # Маркируем входящие как прочитанные
+    try:
+        DirectMessage.query.filter_by(
+            sender_id=friend.id, recipient_id=current_user.id, is_read=False
+        ).update({'is_read': True})
+        db.session.commit()
+    except Exception as _e:
+        print(f"[CHAT] failed to mark as read: {_e}")
+        db.session.rollback()
+    return jsonify({
+        'friend': {
+            'id': friend.id,
+            'name': friend.name or friend.email or 'Без имени',
+            'nickname': friend.nickname,
+            'avatar_url': friend.avatar_url,
+        },
+        'messages': [m.to_dict(viewer_id=current_user.id) for m in msgs],
+    })
+
+
+@app.route('/api/chat/<int:friend_id>/send', methods=['POST'])
+@login_required
+def api_chat_send(friend_id):
+    """Отправить сообщение другу.
+
+    Поддерживает два режима:
+      • {"kind": "text", "body": "..."} — обычное сообщение
+      • {"kind": "task_share", "task": {id, source, topic, grade,
+         difficulty, url, preview}, "note": "..."} — поделиться задачей
+    """
+    from models import DirectMessage, Notification
+    friend = _ensure_friends(friend_id)
+    if not friend:
+        return jsonify({'error': 'Это не ваш друг'}), 403
+
+    payload = request.get_json(silent=True) or {}
+    kind = (payload.get('kind') or 'text').strip()
+    if kind not in ('text', 'task_share'):
+        return jsonify({'error': 'Неизвестный тип сообщения'}), 400
+
+    msg = DirectMessage(
+        sender_id=current_user.id,
+        recipient_id=friend.id,
+        kind=kind,
+    )
+
+    if kind == 'text':
+        body = (payload.get('body') or '').strip()
+        if not body:
+            return jsonify({'error': 'Сообщение не может быть пустым'}), 400
+        msg.body = body[:4000]
+    else:
+        task = payload.get('task') or {}
+        try:
+            msg.task_id = int(task.get('id')) if task.get('id') is not None else None
+        except (TypeError, ValueError):
+            msg.task_id = None
+        msg.task_topic = (task.get('topic') or None)
+        try:
+            msg.task_grade = int(task.get('grade')) if task.get('grade') is not None else None
+        except (TypeError, ValueError):
+            msg.task_grade = None
+        try:
+            msg.task_difficulty = int(task.get('difficulty')) if task.get('difficulty') is not None else None
+        except (TypeError, ValueError):
+            msg.task_difficulty = None
+        msg.task_source = (task.get('source') or None)
+        msg.task_url = (task.get('url') or None)
+        preview = (task.get('preview') or '').strip()
+        msg.task_preview = preview[:1200] if preview else None
+        note = (payload.get('note') or '').strip()
+        msg.body = note[:1000] if note else None
+        if not (msg.task_id or msg.task_url or msg.task_preview):
+            return jsonify({'error': 'Карточка задачи пустая'}), 400
+
+    db.session.add(msg)
+    db.session.commit()
+
+    # Уведомление другу
+    try:
+        notif = Notification(
+            user_id=friend.id,
+            type=('chat_task_share' if kind == 'task_share' else 'chat_message'),
+            from_user_id=current_user.id,
+            data=json.dumps({'message_id': msg.id}),
+        )
+        db.session.add(notif)
+        db.session.commit()
+    except Exception as _ne:
+        print(f"[CHAT] notification failed: {_ne}")
+        db.session.rollback()
+
+    return jsonify({'success': True, 'message': msg.to_dict(viewer_id=current_user.id)})
+
+
+@app.route('/api/chat/unread_total')
+@login_required
+def api_chat_unread_total():
+    """Общее число непрочитанных личных сообщений (для бейджа в шапке)."""
+    from models import DirectMessage
+    n = DirectMessage.query.filter_by(
+        recipient_id=current_user.id, is_read=False
+    ).count()
+    return jsonify({'unread': n})
+
+
+@app.route('/api/chat/task-suggestions')
+@login_required
+def api_chat_task_suggestions():
+    """Список задач, которые пользователь может предложить другу в чате.
+
+    Источники:
+      • source=adaptive — последние/любые задачи из таблицы AdaptiveTask
+      • source=recent   — задачи, которые пользователь недавно решал
+                          (берём из adaptive_answers в сессии + AdaptiveTask)
+    """
+    from models import AdaptiveTask
+    source = (request.args.get('source') or 'adaptive').strip()
+    try:
+        limit = max(1, min(int(request.args.get('limit', 20)), 50))
+    except (TypeError, ValueError):
+        limit = 20
+
+    items = []
+
+    if source == 'recent':
+        # Из сессии (адаптивный тест)
+        seen_ids = []
+        for entry in (session.get('adaptive_answers') or []):
+            tid = entry.get('task_id')
+            try:
+                tid_int = int(tid)
+            except (TypeError, ValueError):
+                continue
+            if tid_int not in seen_ids:
+                seen_ids.append(tid_int)
+        # Доп: последние решения из БД, если модель TaskSolution есть
+        try:
+            from models import TaskSolution  # type: ignore
+            recent_solutions = (
+                TaskSolution.query
+                .filter_by(user_id=current_user.id)
+                .order_by(TaskSolution.id.desc())
+                .limit(30)
+                .all()
+            )
+            for ts in recent_solutions:
+                tid = getattr(ts, 'task_id', None)
+                if tid and tid not in seen_ids:
+                    seen_ids.append(tid)
+        except Exception:
+            pass
+        seen_ids = seen_ids[:limit]
+        if seen_ids:
+            tasks = AdaptiveTask.query.filter(AdaptiveTask.id.in_(seen_ids)).all()
+            # Сохраняем порядок
+            by_id = {t.id: t for t in tasks}
+            ordered = [by_id[i] for i in seen_ids if i in by_id]
+        else:
+            ordered = []
+    else:
+        # Просто последние задачи (демо/предложения)
+        ordered = (
+            AdaptiveTask.query
+            .order_by(AdaptiveTask.id.desc())
+            .limit(limit)
+            .all()
+        )
+
+    domain = request.host_url.rstrip('/')
+    for t in ordered:
+        preview = (t.task_text or '').strip()
+        if len(preview) > 500:
+            preview = preview[:500].rstrip() + '…'
+        items.append({
+            'id': t.id,
+            'source': 'adaptive',
+            'topic': getattr(t, 'topic', None),
+            'grade': getattr(t, 'class_level', None),
+            'difficulty': getattr(t, 'difficulty_level', None),
+            'preview': preview,
+            'url': f"{domain}/adaptive_task/{t.id}",
+        })
+
+    return jsonify({'tasks': items})
+
+
+@app.route('/adaptive_task/<int:task_id>')
+@login_required
+def view_shared_adaptive_task(task_id):
+    """Просмотр одной задачи (страница для шаринга с другом).
+
+    Не запускает адаптивный тест — просто показывает условие задачи,
+    решение под катом и предлагает «решить» (запустить адаптивный тест по теме).
+    """
+    from models import AdaptiveTask
+    task = AdaptiveTask.query.get_or_404(task_id)
+    return render_template('shared_task.html', task=task)
 
 
 @app.route('/notifications')

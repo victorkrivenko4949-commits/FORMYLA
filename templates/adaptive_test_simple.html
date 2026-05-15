@@ -25,15 +25,31 @@
         
         <!-- Условие задачи -->
         <div style="margin-bottom: 30px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
                 <h3 style="color: var(--accent-2); margin: 0;">📋 Условие:</h3>
-                <button type="button" id="reportBtn" onclick="reportTask({{ task.id }})"
-                        style="padding: 8px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
-                        onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='#ef4444'"
-                        onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
-                    <span>🚩</span>
-                    <span>Сообщить об ошибке</span>
-                </button>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="share-friend-btn"
+                            data-task-id="{{ task.id }}"
+                            data-task-source="adaptive"
+                            data-task-topic="{{ topic_name }}"
+                            data-task-grade="{{ grade }}"
+                            data-task-difficulty="{{ task.difficulty_level }}"
+                            data-task-url="/adaptive_task/{{ task.id }}"
+                            data-task-preview="{{ task.task_text|striptags|truncate(280) }}"
+                            style="padding: 8px 16px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
+                            onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.borderColor='#8b5cf6'"
+                            onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.borderColor='rgba(139, 92, 246, 0.35)'">
+                        <span>📨</span>
+                        <span>Поделиться с другом</span>
+                    </button>
+                    <button type="button" id="reportBtn" onclick="reportTask({{ task.id }})"
+                            style="padding: 8px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
+                            onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='#ef4444'"
+                            onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
+                        <span>🚩</span>
+                        <span>Сообщить об ошибке</span>
+                    </button>
+                </div>
             </div>
             <div style="color: var(--text-main); font-size: 1.1em; line-height: 1.8;" id="taskTextBlock">
                 {{ task.task_text | safe }}
@@ -89,10 +105,10 @@
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
-                    📸 Фото решения из тетради (опционально):
+                    📸 Фото решения из тетради (можно несколько, опционально):
                 </label>
                 <div style="position: relative;">
-                    <input type="file" id="photoInput" name="solution_photo" accept="image/*" capture="environment"
+                    <input type="file" id="photoInput" name="solution_photo" accept="image/*" capture="environment" multiple
                            style="display: none;">
                     <button type="button" onclick="document.getElementById('photoInput').click()"
                             style="width: 100%; padding: 20px; background: rgba(59, 130, 246, 0.1); border: 2px dashed var(--accent-1); border-radius: var(--radius-sm); color: var(--accent-1); font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;"
@@ -101,12 +117,13 @@
                         <span style="font-size: 24px;">📷</span>
                         <span id="photoButtonText">Сфотографировать / Загрузить решение</span>
                     </button>
+                    <div id="photoPreviewList" style="display: none; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;"></div>
                     <p id="photoFileName" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">
-                        ✅ Файл выбран: <span id="fileName"></span>
+                        ✅ Прикреплено фото: <span id="fileName"></span>
                     </p>
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 На телефоне откроется камера, на компьютере - выбор файла
+                    💡 Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое снимается/распознаётся отдельно (OpenRouter Vision) и подмешивается в решение для AI-тьютора. Лишнее фото можно удалить крестиком.
                 </p>
             </div>
 
@@ -300,6 +317,108 @@ function renderKatexSafe(element) {
     }
 }
 
+/**
+ * Auto-mathify: оборачивает «голые» математические выражения в \(...\),
+ * чтобы KaTeX их отрендерил красиво (степени x², дроби, индексы, неравенства…).
+ *
+ * Работает на сырой строке ДО конвертации \n -> <br>. Уважает уже
+ * существующие LaTeX-делимитеры $...$, $$...$$, \(...\), \[...\]: текст
+ * внутри них не трогается.
+ */
+function autoMathify(raw) {
+    if (!raw) return raw;
+
+    // 1. Сначала «защищаем» уже-обёрнутые куски, заменяя их на токены,
+    //    чтобы regexp'ы не трогали их.
+    const PROTECTED = [];
+    function protect(s, re) {
+        return s.replace(re, (m) => {
+            PROTECTED.push(m);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        });
+    }
+    let s = String(raw);
+    s = protect(s, /\$\$[\s\S]+?\$\$/g);
+    s = protect(s, /\$[^\n$]+?\$/g);
+    s = protect(s, /\\\([\s\S]+?\\\)/g);
+    s = protect(s, /\\\[[\s\S]+?\\\]/g);
+    // Также защищаем существующие LaTeX-команды \frac{}, \sqrt{}, \cdot и т.п.
+    // вместе с их «склейкой» окружающих символов: проще сразу обернуть их.
+    s = s.replace(/(\\(?:frac|sqrt|cdot|sum|prod|int|lim|left|right|binom|gcd|overline|underline|vec|hat|bar|tilde|dot|ddot|pmod|bmod|geq|leq|neq|approx|equiv|times|div|pm|infty|alpha|beta|gamma|delta|theta|lambda|mu|pi|sigma|phi|omega)(?:\{[^{}]*\})*)/g,
+        (m) => {
+            PROTECTED.push(`\\(${m}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 2. Базовые трансформации одиночных токенов:
+    //    x^2 → \(x^{2}\),  a_1 → \(a_{1}\),  x^{n+1} → \(x^{n+1}\)
+    //    Поддерживаем как одиночную цифру/букву после ^, так и {...}.
+    s = s.replace(/([A-Za-zА-Яа-я0-9])\^(\{[^{}]+\}|-?\d+|[A-Za-z])/g,
+        (m, base, exp) => {
+            const e = exp.startsWith('{') ? exp : `{${exp}}`;
+            PROTECTED.push(`\\(${base}^${e}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+    s = s.replace(/([A-Za-z])_(\{[^{}]+\}|\d+|[A-Za-z])/g,
+        (m, base, idx) => {
+            const i = idx.startsWith('{') ? idx : `{${idx}}`;
+            PROTECTED.push(`\\(${base}_${i}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 3. Уравнения / неравенства с переменной с обеих сторон или с числом справа:
+    //    «a = 3», «x ≥ 0», «n ≠ 1», «2k + 1 = 7»
+    s = s.replace(
+        /(?<![\w\\])([A-Za-zα-ωΑ-Ω][\wα-ωΑ-Ω]*(?:\s*[+\-*/]\s*[\wα-ωΑ-Ω\d]+)*)\s*([=≠≤≥<>]|<=|>=|!=)\s*(-?\d+(?:[.,]\d+)?(?:\s*[+\-*/]\s*[\wα-ωΑ-Ω\d]+)*|[A-Za-zα-ωΑ-Ω][\wα-ωΑ-Ω]*(?:\s*[+\-*/]\s*[\wα-ωΑ-Ω\d]+)*)(?![\w\\])/g,
+        (m, lhs, op, rhs) => {
+            // Не трогаем чисто текстовые слова: «равно», «равно 3 балла» и т.п.
+            // Эвристика: оборачиваем только если в lhs или rhs есть math-операция
+            //            или одиночная переменная (1-2 буквы латиницы).
+            const looksMath =
+                /[+\-*/]/.test(lhs) || /[+\-*/]/.test(rhs) ||
+                /^[a-zA-Zα-ωΑ-Ω]{1,2}$/.test(lhs.trim()) ||
+                /^-?\d/.test(rhs.trim());
+            if (!looksMath) return m;
+            const opMap = { '<=':'\\le', '>=':'\\ge', '!=':'\\ne',
+                            '≤':'\\le', '≥':'\\ge', '≠':'\\ne' };
+            const opTex = opMap[op] || op;
+            PROTECTED.push(`\\(${lhs}${opTex}${rhs}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 4. Дроби «вида (числитель)/(знаменатель)»: (x^2 - 4x + 3)/(x - 1) → \frac{...}{...}
+    s = s.replace(/\(([^()]{1,80})\)\s*\/\s*\(([^()]{1,80})\)/g,
+        (m, num, den) => {
+            PROTECTED.push(`\\(\\frac{${num.trim()}}{${den.trim()}}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 5. Простые умножения «2 * x», «a · b» → \(2 \cdot x\)
+    s = s.replace(/(\b[A-Za-z0-9]+)\s*[·∙]\s*([A-Za-z0-9]+\b)/g,
+        (m, a, b) => {
+            PROTECTED.push(`\\(${a} \\cdot ${b}\\)`);
+            return `\u0001${PROTECTED.length - 1}\u0001`;
+        }
+    );
+
+    // 6. Заменяем юникодные степени x² x³ на \(x^{2}\) \(x^{3}\)
+    s = s.replace(/([A-Za-zа-яА-Я0-9])([²³⁴⁵⁶⁷⁸⁹⁰¹])/g, (m, base, sup) => {
+        const map = { '²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁰':'0','¹':'1' };
+        PROTECTED.push(`\\(${base}^{${map[sup]}}\\)`);
+        return `\u0001${PROTECTED.length - 1}\u0001`;
+    });
+
+    // 7. Восстанавливаем защищённые куски.
+    s = s.replace(/\u0001(\d+)\u0001/g, (m, i) => PROTECTED[parseInt(i, 10)] || m);
+
+    return s;
+}
+
 // Функция для отправки жалобы на задачу
 async function reportTask(taskId) {
     if (!confirm('Вы уверены, что хотите сообщить об ошибке в этой задаче? Мы проверим её и исправим.')) {
@@ -339,27 +458,134 @@ async function reportTask(taskId) {
     }
 }
 
-// Обработчик выбора файла
-document.getElementById('photoInput').addEventListener('change', function(e) {
-    const fileName = e.target.files[0]?.name;
-    if (fileName) {
-        document.getElementById('fileName').textContent = fileName;
-        document.getElementById('photoFileName').style.display = 'block';
-        document.getElementById('photoButtonText').textContent = 'Изменить фото';
+// ─── Накопительный буфер фото (несколько последовательных выборов добавляются,
+//     а не перезаписывают друг друга) ───
+const PHOTO_BUFFER = [];   // массив File
+const MAX_PHOTOS = 8;
+
+function renderPhotoBuffer() {
+    const list = document.getElementById('photoPreviewList');
+    const nameEl = document.getElementById('photoFileName');
+    const fileNameSpan = document.getElementById('fileName');
+    const btnText = document.getElementById('photoButtonText');
+
+    list.innerHTML = '';
+
+    if (!PHOTO_BUFFER.length) {
+        list.style.display = 'none';
+        nameEl.style.display = 'none';
+        btnText.textContent = 'Сфотографировать / Загрузить решение';
+        return;
     }
+
+    PHOTO_BUFFER.forEach((f, idx) => {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative; aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid var(--border-mid); background:#0f172a;';
+
+        const img = document.createElement('img');
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+        img.alt = `Фото ${idx + 1}`;
+        const r = new FileReader();
+        r.onload = (ev) => { img.src = ev.target.result; };
+        r.readAsDataURL(f);
+        wrap.appendChild(img);
+
+        const badge = document.createElement('div');
+        badge.textContent = `#${idx + 1}`;
+        badge.style.cssText = 'position:absolute; top:4px; left:4px; background:rgba(0,0,0,0.65); color:#fff; font-size:11px; padding:2px 6px; border-radius:6px; font-weight:600;';
+        wrap.appendChild(badge);
+
+        // Кнопка удаления конкретного фото
+        const rmBtn = document.createElement('button');
+        rmBtn.type = 'button';
+        rmBtn.textContent = '×';
+        rmBtn.title = 'Убрать это фото';
+        rmBtn.style.cssText = 'position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; border:none; background:rgba(239, 68, 68, .85); color:#fff; font-size:14px; font-weight:700; cursor:pointer; line-height:1; padding:0;';
+        rmBtn.onclick = (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            PHOTO_BUFFER.splice(idx, 1);
+            renderPhotoBuffer();
+        };
+        wrap.appendChild(rmBtn);
+
+        list.appendChild(wrap);
+    });
+
+    list.style.display = 'grid';
+    fileNameSpan.textContent = String(PHOTO_BUFFER.length);
+    nameEl.style.display = 'block';
+    btnText.textContent = `+ Добавить ещё фото (сейчас ${PHOTO_BUFFER.length})`;
+}
+
+// При выборе файлов — ДОБАВЛЯЕМ их в буфер (а не заменяем)
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const newFiles = Array.from(e.target.files || []);
+    for (const f of newFiles) {
+        if (PHOTO_BUFFER.length >= MAX_PHOTOS) {
+            alert(`Можно прикрепить не больше ${MAX_PHOTOS} фото.`);
+            break;
+        }
+        // Дедупликация: одинаковое имя+размер не добавляем повторно
+        const dup = PHOTO_BUFFER.some(p => p.name === f.name && p.size === f.size);
+        if (!dup) PHOTO_BUFFER.push(f);
+    }
+    // Сбрасываем value, чтобы повторный выбор того же файла снова срабатывал
+    e.target.value = '';
+    renderPhotoBuffer();
 });
+
+// Утилита: читаем File как base64 (без data: префикса)
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result || '';
+            // result имеет вид "data:image/jpeg;base64,XXXX..."
+            const idx = String(result).indexOf(',');
+            resolve(idx >= 0 ? String(result).slice(idx + 1) : String(result));
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
+}
+
+// Утилита: уменьшаем фото перед отправкой, чтобы не таскать 5+ МБ
+async function compressImage(file, maxDim = 1600, quality = 0.82) {
+    if (!file.type || !file.type.startsWith('image/')) return file;
+    try {
+        const bitmap = await createImageBitmap(file);
+        let { width, height } = bitmap;
+        if (Math.max(width, height) > maxDim) {
+            const k = maxDim / Math.max(width, height);
+            width = Math.round(width * k);
+            height = Math.round(height * k);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, 0, 0, width, height);
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+        if (!blob) return file;
+        return new File([blob], (file.name || 'photo') + '.jpg', { type: 'image/jpeg' });
+    } catch (err) {
+        console.warn('compressImage failed, sending original:', err);
+        return file;
+    }
+}
 
 // Обработчик отправки формы
 document.getElementById('answerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     // Собираем данные формы
     const formData = new FormData(this);
-    
+
     // Получаем ответ из MathLive (в формате LaTeX)
     const mathField = document.getElementById('user_answer');
     let userAnswer = '';
-    
+
     if (mathField) {
         // Если это MathLive поле, получаем LaTeX
         userAnswer = mathField.getValue('latex');
@@ -367,24 +593,48 @@ document.getElementById('answerForm').addEventListener('submit', async function(
         // Fallback для обычного input (для задач с вариантами ответов)
         userAnswer = formData.get('answer');
     }
-    
+
     // Получаем решение из MathLive поля (если используется)
     const solutionField = document.getElementById('solution_text');
     let userSolution = '';
-    
+
     if (solutionField) {
         // Получаем текст решения в формате LaTeX
         userSolution = solutionField.getValue('latex-expanded') || solutionField.getValue('latex') || '';
     } else {
         userSolution = formData.get('solution') || '';
     }
-    
+
+    // Если прикреплены фото(-и) — сжимаем и кодируем каждое в base64.
+    // Берём из накопительного буфера PHOTO_BUFFER (а не из photoInput.files,
+    // т.к. он перезаписывается при каждом новом выборе).
+    let solutionImagesB64 = [];
+    if (typeof PHOTO_BUFFER !== 'undefined' && PHOTO_BUFFER.length) {
+        try {
+            for (const f of PHOTO_BUFFER) {
+                const compressed = await compressImage(f);
+                const b64 = await fileToBase64(compressed);
+                solutionImagesB64.push(b64);
+            }
+            console.log(`[adaptive] ${solutionImagesB64.length} photo(s) attached, total b64 len =`,
+                solutionImagesB64.reduce((s, x) => s + x.length, 0));
+        } catch (err) {
+            console.error('Photo encoding failed:', err);
+            alert('Не удалось прочитать одно из фото. Попробуйте другой файл.');
+            return;
+        }
+    }
+
     const data = {
         task_id: formData.get('task_id'),
         user_answer: userAnswer,
-        user_solution: userSolution
+        user_solution: userSolution,
+        // legacy single-photo поле — для совместимости передаём первое фото
+        solution_image_b64: solutionImagesB64[0] || '',
+        // новое поле — массив со всеми фото
+        solution_images_b64: solutionImagesB64,
     };
-    
+
     // Проверяем, что ответ введен
     if (!data.user_answer || data.user_answer.trim() === '') {
         alert('Пожалуйста, введите ответ!');
@@ -480,12 +730,14 @@ function showResult(result) {
 
     verdict.innerHTML = verdictHTML;
 
-    // Обрабатываем feedback: заменяем переносы строк на <br>, рендерим KaTeX
-    let formattedFeedback = result.feedback;
-    // ФИКС: JSON уже декодирует \n в реальный перенос строки — убираем двойной backslash
-    formattedFeedback = formattedFeedback.replace(/\n/g, '<br>');
-    // Жирный текст **...**
+    // Обрабатываем feedback:
+    // 1) автообёртка голых формул (x^2, a=3, дроби, юникод-степени)
+    // 2) markdown **жирный**
+    // 3) переносы строк → <br>
+    // 4) KaTeX render
+    let formattedFeedback = autoMathify(result.feedback || '');
     formattedFeedback = formattedFeedback.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+    formattedFeedback = formattedFeedback.replace(/\n/g, '<br>');
     feedbackText.innerHTML = formattedFeedback;
 
     // Рендерим KaTeX в блоке feedback после вставки HTML

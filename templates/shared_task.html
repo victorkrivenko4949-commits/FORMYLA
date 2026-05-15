@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Задача #{{ task.id }} — FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+
+    <div style="display: flex; align-items: center; gap: 8px; font-size: .85em; color: var(--text-muted); margin-bottom: 16px;">
+        <a href="/chat" style="color: var(--accent-2); text-decoration: none;">← В чат</a>
+        <span>·</span>
+        <span>Задача из адаптивного теста · #{{ task.id }}</span>
+    </div>
+
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+
+        <!-- Метаданные -->
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 20px;">
+            {% if task.difficulty_level %}
+            <span style="padding: 6px 12px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color:#fff; border-radius: 999px; font-size: .8em; font-weight: 600;">
+                ⭐ L{{ task.difficulty_level }}/7
+            </span>
+            {% endif %}
+            {% if task.class_level %}
+            <span style="padding: 6px 12px; background: rgba(74,168,255,.12); color:#4aa8ff; border:1px solid rgba(74,168,255,.3); border-radius: 999px; font-size: .8em; font-weight: 600;">
+                {{ task.class_level }} класс
+            </span>
+            {% endif %}
+            {% if task.topic %}
+            <span style="padding: 6px 12px; background: rgba(139,92,246,.12); color:#a78bfa; border:1px solid rgba(139,92,246,.3); border-radius: 999px; font-size: .8em; font-weight: 600;">
+                {{ task.topic }}
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Условие -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <h3 style="color: var(--accent-2); margin: 0;">📋 Условие</h3>
+            <button type="button" class="share-friend-btn"
+                    data-task-id="{{ task.id }}"
+                    data-task-source="adaptive"
+                    data-task-topic="{{ task.topic or '' }}"
+                    data-task-grade="{{ task.class_level or '' }}"
+                    data-task-difficulty="{{ task.difficulty_level or '' }}"
+                    data-task-url="/adaptive_task/{{ task.id }}"
+                    data-task-preview="{{ task.task_text|striptags|truncate(280) }}"
+                    style="padding: 8px 16px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <span>📨</span><span>Поделиться с другом</span>
+            </button>
+        </div>
+        <div style="color: var(--text-main); font-size: 1.05em; line-height: 1.8; margin-bottom: 24px;">
+            {{ task.task_text | safe }}
+        </div>
+
+        {% if task.answer %}
+        <details style="margin-bottom: 14px; padding: 14px 18px; background: rgba(34,197,94,.06); border: 1px solid rgba(34,197,94,.2); border-radius: 10px;">
+            <summary style="cursor: pointer; color: #22c55e; font-weight: 600;">✅ Показать ответ</summary>
+            <div style="margin-top: 10px; color: var(--text-main); font-size: 1.05em;">
+                {{ task.answer }}
+            </div>
+        </details>
+        {% endif %}
+
+        {% if task.solution %}
+        <details style="margin-bottom: 14px; padding: 14px 18px; background: rgba(74,168,255,.06); border: 1px solid rgba(74,168,255,.2); border-radius: 10px;">
+            <summary style="cursor: pointer; color: #4aa8ff; font-weight: 600;">📝 Показать решение</summary>
+            <div style="margin-top: 10px; color: var(--text-main); line-height: 1.7;">
+                {{ task.solution | safe }}
+            </div>
+        </details>
+        {% endif %}
+
+        <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/adaptive_test/select_grade?topic={{ task.topic or 'algebra' }}"
+               style="padding: 12px 22px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color:#fff; text-decoration:none; border-radius: 10px; font-weight: 600;">
+                🚀 Начать тренировку по теме
+            </a>
+            <a href="/chat" style="padding: 12px 22px; background: rgba(100,116,139,.2); color: var(--text-main); text-decoration:none; border-radius: 10px; font-weight: 600; border:1px solid var(--border-mid);">
+                💬 В чат
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// MathJax rerender (если используется)
+if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,663 @@
+// FORMYLA Whiteboard - Thalamus-style infinite canvas.
+// Tools: select/pen/eraser/rect/ellipse/line/arrow/text/sticky.
+// Pan: middle-mouse or space+drag. Zoom: ctrl+wheel.
+// Undo/Redo, auto-save to localStorage, export PNG, import image.
+
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "formyla_wb_state_v1";
+  const MAX_HISTORY = 50;
+
+  const canvasEl = document.getElementById("wbCanvas");
+  const wrap = document.getElementById("wbCanvasWrap");
+  const hud = document.getElementById("wbHUD");
+  const status = document.getElementById("wbStatus");
+  const textEditor = document.getElementById("wbTextEditor");
+  if (!canvasEl || !wrap) return;
+  const ctx = canvasEl.getContext("2d");
+
+  let state = { objects: [], nextId: 1 };
+  let view = { x: 0, y: 0, scale: 1 };
+  let tool = "select";
+  let color = "#e6e8ff";
+  let thickness = 3;
+  let selectedId = null;
+  let drag = null;
+  let history = [];
+  let historyIndex = -1;
+  let spaceDown = false;
+  let editingId = null;
+  let saveTimer = 0;
+
+  function uid() { return state.nextId++; }
+  function snap() { return JSON.parse(JSON.stringify(state)); }
+  function pushHistory() {
+    history = history.slice(0, historyIndex + 1);
+    history.push(snap());
+    if (history.length > MAX_HISTORY) history.shift();
+    historyIndex = history.length - 1;
+    scheduleSave();
+  }
+  function apply(s) {
+    state = JSON.parse(JSON.stringify(s));
+    selectedId = null;
+    redraw();
+  }
+  function undo() {
+    if (historyIndex > 0) { historyIndex--; apply(history[historyIndex]); scheduleSave(); }
+  }
+  function redo() {
+    if (historyIndex < history.length - 1) { historyIndex++; apply(history[historyIndex]); scheduleSave(); }
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNow, 400);
+  }
+  function saveNow() {
+    try {
+      const out = JSON.stringify({ objects: state.objects, nextId: state.nextId });
+      localStorage.setItem(STORAGE_KEY, out);
+      if (status) status.textContent = "Сохранено";
+    } catch (e) { console.warn("WB save failed", e); }
+  }
+  function loadSaved() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      if (obj && Array.isArray(obj.objects)) {
+        state.objects = obj.objects;
+        state.nextId = obj.nextId || (state.objects.length + 1);
+      }
+    } catch (e) { console.warn("WB load failed", e); }
+  }
+
+  function screenToWorld(sx, sy) {
+    return { x: (sx - view.x) / view.scale, y: (sy - view.y) / view.scale };
+  }
+  function worldToScreen(wx, wy) {
+    return { x: wx * view.scale + view.x, y: wy * view.scale + view.y };
+  }
+  function eventPos(e) {
+    const r = canvasEl.getBoundingClientRect();
+    const cx = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX);
+    const cy = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY);
+    return { sx: cx - r.left, sy: cy - r.top };
+  }
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const r = wrap.getBoundingClientRect();
+    canvasEl.width = Math.round(r.width * dpr);
+    canvasEl.height = Math.round(r.height * dpr);
+    canvasEl.style.width = r.width + "px";
+    canvasEl.style.height = r.height + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+  window.addEventListener("resize", resize);
+
+  function clearScreen() {
+    const r = wrap.getBoundingClientRect();
+    ctx.save();
+    ctx.fillStyle = "#0f1117";
+    ctx.fillRect(0, 0, r.width, r.height);
+    ctx.restore();
+  }
+  function drawGrid() {
+    const r = wrap.getBoundingClientRect();
+    const step = 40 * view.scale;
+    if (step < 8) return;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.04)";
+    ctx.lineWidth = 1;
+    const offX = ((view.x % step) + step) % step;
+    const offY = ((view.y % step) + step) % step;
+    ctx.beginPath();
+    for (let x = offX; x < r.width; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, r.height); }
+    for (let y = offY; y < r.height; y += step) { ctx.moveTo(0, y); ctx.lineTo(r.width, y); }
+    ctx.stroke();
+    const o = worldToScreen(0, 0);
+    ctx.strokeStyle = "rgba(139,92,246,0.22)";
+    ctx.beginPath();
+    ctx.moveTo(o.x, 0); ctx.lineTo(o.x, r.height);
+    ctx.moveTo(0, o.y); ctx.lineTo(r.width, o.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+  function applyWorld() {
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(dpr * view.scale, 0, 0, dpr * view.scale, dpr * view.x, dpr * view.y);
+  }
+  function resetTr() {
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function redraw() {
+    resetTr();
+    clearScreen();
+    drawGrid();
+    applyWorld();
+    for (const o of state.objects) {
+      drawObj(o, ctx);
+      if (o.id === selectedId) drawSel(o);
+    }
+    if (drag && drag.preview) drawObj(drag.preview, ctx);
+    resetTr();
+    if (hud) hud.textContent = "zoom " + Math.round(view.scale * 100) + "% | объектов: " + state.objects.length;
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2; if (h < 2 * r) r = h / 2;
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+  function wrapText(c, t, maxW) {
+    const out = [];
+    for (const para of String(t || "").split("\n")) {
+      const words = para.split(" ");
+      let line = "";
+      for (const w of words) {
+        const tryLine = line ? line + " " + w : w;
+        if (c.measureText(tryLine).width > maxW && line) { out.push(line); line = w; }
+        else line = tryLine;
+      }
+      if (line) out.push(line);
+      if (!para) out.push("");
+    }
+    return out;
+  }
+  function drawObj(o, c) {
+    c.save();
+    c.lineCap = "round";
+    c.lineJoin = "round";
+    c.strokeStyle = o.color || "#e6e8ff";
+    c.fillStyle = o.color || "#e6e8ff";
+    c.lineWidth = o.thickness || 2;
+    if (o.kind === "pen" || o.kind === "eraser") {
+      if (o.kind === "eraser") { c.globalCompositeOperation = "destination-out"; c.strokeStyle = "#000"; }
+      if (o.points && o.points.length >= 2) {
+        c.beginPath();
+        c.moveTo(o.points[0].x, o.points[0].y);
+        for (let i = 1; i < o.points.length; i++) c.lineTo(o.points[i].x, o.points[i].y);
+        c.stroke();
+      } else if (o.points && o.points.length === 1) {
+        c.beginPath();
+        c.arc(o.points[0].x, o.points[0].y, (o.thickness || 2) / 2, 0, Math.PI * 2);
+        c.fill();
+      }
+    } else if (o.kind === "rect") {
+      c.strokeRect(o.x, o.y, o.w, o.h);
+    } else if (o.kind === "ellipse") {
+      c.beginPath();
+      c.ellipse(o.x + o.w / 2, o.y + o.h / 2, Math.abs(o.w / 2), Math.abs(o.h / 2), 0, 0, Math.PI * 2);
+      c.stroke();
+    } else if (o.kind === "line") {
+      c.beginPath(); c.moveTo(o.x1, o.y1); c.lineTo(o.x2, o.y2); c.stroke();
+    } else if (o.kind === "arrow") {
+      const dx = o.x2 - o.x1, dy = o.y2 - o.y1;
+      const ang = Math.atan2(dy, dx);
+      const head = Math.max(10, (o.thickness || 2) * 3);
+      c.beginPath(); c.moveTo(o.x1, o.y1); c.lineTo(o.x2, o.y2); c.stroke();
+      c.beginPath();
+      c.moveTo(o.x2, o.y2);
+      c.lineTo(o.x2 - head * Math.cos(ang - Math.PI / 7), o.y2 - head * Math.sin(ang - Math.PI / 7));
+      c.lineTo(o.x2 - head * Math.cos(ang + Math.PI / 7), o.y2 - head * Math.sin(ang + Math.PI / 7));
+      c.closePath(); c.fill();
+    } else if (o.kind === "text") {
+      const fs = o.fontSize || 18;
+      c.font = fs + 'px ui-sans-serif, system-ui, "Segoe UI", sans-serif';
+      c.textBaseline = "top";
+      const lines = (o.text || "").split("\n");
+      for (let i = 0; i < lines.length; i++) c.fillText(lines[i], o.x, o.y + i * fs * 1.3);
+    } else if (o.kind === "sticky") {
+      const pad = 12;
+      const fs = o.fontSize || 16;
+      c.fillStyle = o.bg || "#fde68a";
+      c.shadowColor = "rgba(0,0,0,0.35)";
+      c.shadowBlur = 14;
+      c.shadowOffsetY = 4;
+      roundRect(c, o.x, o.y, o.w, o.h, 8);
+      c.fill();
+      c.shadowBlur = 0; c.shadowOffsetY = 0;
+      c.fillStyle = "#1f2937";
+      c.font = fs + 'px ui-sans-serif, system-ui, "Segoe UI", sans-serif';
+      c.textBaseline = "top";
+      const lines = wrapText(c, o.text || "", o.w - pad * 2);
+      for (let i = 0; i < lines.length; i++) c.fillText(lines[i], o.x + pad, o.y + pad + i * fs * 1.35);
+    } else if (o.kind === "image") {
+      if (!o._img) {
+        o._img = new Image();
+        o._img.onload = () => redraw();
+        o._img.src = o.src;
+      }
+      if (o._img.complete) c.drawImage(o._img, o.x, o.y, o.w, o.h);
+    }
+    c.restore();
+  }
+  function drawSel(o) {
+    const b = bbox(o);
+    if (!b) return;
+    ctx.save();
+    ctx.strokeStyle = "#8b5cf6";
+    ctx.lineWidth = 1.5 / view.scale;
+    ctx.setLineDash([6 / view.scale, 4 / view.scale]);
+    const pad = 4 / view.scale;
+    ctx.strokeRect(b.x - pad, b.y - pad, b.w + 2 * pad, b.h + 2 * pad);
+    ctx.restore();
+  }
+  function bbox(o) {
+    if (o.kind === "pen" || o.kind === "eraser") {
+      if (!o.points || !o.points.length) return null;
+      let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity;
+      for (const p of o.points) {
+        if (p.x < a) a = p.x; if (p.y < b) b = p.y;
+        if (p.x > c) c = p.x; if (p.y > d) d = p.y;
+      }
+      return { x: a, y: b, w: c - a, h: d - b };
+    }
+    if (o.kind === "rect" || o.kind === "ellipse" || o.kind === "sticky" || o.kind === "image" || o.kind === "text") {
+      let w = o.w, h = o.h;
+      if (o.kind === "text") {
+        ctx.save();
+        const fs = o.fontSize || 18;
+        ctx.font = fs + 'px ui-sans-serif, system-ui, "Segoe UI", sans-serif';
+        const lines = (o.text || "").split("\n");
+        w = 0;
+        for (const ln of lines) w = Math.max(w, ctx.measureText(ln).width);
+        h = lines.length * fs * 1.3;
+        ctx.restore();
+      }
+      let x = o.x, y = o.y;
+      if (w < 0) { x = o.x + w; w = -w; }
+      if (h < 0) { y = o.y + h; h = -h; }
+      return { x: x, y: y, w: w, h: h };
+    }
+    if (o.kind === "line" || o.kind === "arrow") {
+      return { x: Math.min(o.x1, o.x2), y: Math.min(o.y1, o.y2), w: Math.abs(o.x2 - o.x1), h: Math.abs(o.y2 - o.y1) };
+    }
+    return null;
+  }
+  function hitTest(wx, wy) {
+    for (let i = state.objects.length - 1; i >= 0; i--) {
+      const o = state.objects[i];
+      const b = bbox(o);
+      if (!b) continue;
+      const t = 6 / view.scale;
+      if (wx >= b.x - t && wx <= b.x + b.w + t && wy >= b.y - t && wy <= b.y + b.h + t) return o;
+    }
+    return null;
+  }
+  function moveObj(o, dx, dy) {
+    if (o.kind === "pen" || o.kind === "eraser") {
+      for (const p of o.points) { p.x += dx; p.y += dy; }
+    } else if (o.kind === "rect" || o.kind === "ellipse" || o.kind === "sticky" || o.kind === "image" || o.kind === "text") {
+      o.x += dx; o.y += dy;
+    } else if (o.kind === "line" || o.kind === "arrow") {
+      o.x1 += dx; o.y1 += dy; o.x2 += dx; o.y2 += dy;
+    }
+  }
+
+  function setTool(t) {
+    tool = t;
+    document.querySelectorAll("#wbToolbar .wb-tool").forEach(b => b.classList.toggle("active", b.dataset.tool === t));
+    canvasEl.style.cursor = t === "select" ? "default" :
+      (t === "pen" || t === "eraser") ? "crosshair" :
+      (t === "text" || t === "sticky") ? "text" : "crosshair";
+    if (t !== "select") selectedId = null;
+    redraw();
+  }
+  function setColor(c) {
+    color = c;
+    document.querySelectorAll(".wb-color").forEach(b => b.classList.toggle("active", b.dataset.color === c));
+    if (selectedId) {
+      const o = state.objects.find(x => x.id === selectedId);
+      if (o && o.kind !== "eraser" && o.kind !== "sticky" && o.kind !== "image") {
+        o.color = c; pushHistory(); redraw();
+      }
+    }
+  }
+
+  function onDown(e) {
+    if (e.target !== canvasEl) return;
+    e.preventDefault();
+    if (canvasEl.setPointerCapture) try { canvasEl.setPointerCapture(e.pointerId); } catch (_) {}
+    const p = eventPos(e);
+    const w = screenToWorld(p.sx, p.sy);
+    if (e.button === 1 || spaceDown || e.button === 2) {
+      drag = { kind: "pan", startX: p.sx, startY: p.sy, vx: view.x, vy: view.y };
+      canvasEl.style.cursor = "grabbing";
+      return;
+    }
+    if (tool === "select") {
+      const h = hitTest(w.x, w.y);
+      if (h) { selectedId = h.id; drag = { kind: "move", id: h.id, startX: w.x, startY: w.y }; }
+      else selectedId = null;
+      redraw(); return;
+    }
+    if (tool === "pen" || tool === "eraser") {
+      drag = { kind: "stroke", preview: { id: uid(), kind: tool, color: color, thickness: thickness, points: [{ x: w.x, y: w.y }] } };
+      return;
+    }
+    if (tool === "rect" || tool === "ellipse") {
+      drag = { kind: "shape", preview: { id: uid(), kind: tool, color: color, thickness: thickness, x: w.x, y: w.y, w: 0, h: 0 } };
+      return;
+    }
+    if (tool === "line" || tool === "arrow") {
+      drag = { kind: "segment", preview: { id: uid(), kind: tool, color: color, thickness: thickness, x1: w.x, y1: w.y, x2: w.x, y2: w.y } };
+      return;
+    }
+    if (tool === "text") { openEditor(w.x, w.y, null, "text"); return; }
+    if (tool === "sticky") {
+      const obj = { id: uid(), kind: "sticky", x: w.x, y: w.y, w: 200, h: 140, bg: "#fde68a", color: "#1f2937", text: "", fontSize: 16 };
+      state.objects.push(obj);
+      pushHistory();
+      selectedId = obj.id;
+      openEditor(obj.x, obj.y, obj.id, "sticky");
+      redraw();
+      return;
+    }
+  }
+  function onMove(e) {
+    if (!drag) return;
+    const p = eventPos(e);
+    if (drag.kind === "pan") {
+      view.x = drag.vx + (p.sx - drag.startX);
+      view.y = drag.vy + (p.sy - drag.startY);
+      redraw(); return;
+    }
+    const w = screenToWorld(p.sx, p.sy);
+    if (drag.kind === "stroke") { drag.preview.points.push({ x: w.x, y: w.y }); redraw(); }
+    else if (drag.kind === "shape") { drag.preview.w = w.x - drag.preview.x; drag.preview.h = w.y - drag.preview.y; redraw(); }
+    else if (drag.kind === "segment") { drag.preview.x2 = w.x; drag.preview.y2 = w.y; redraw(); }
+    else if (drag.kind === "move") {
+      const dx = w.x - drag.startX, dy = w.y - drag.startY;
+      drag.startX = w.x; drag.startY = w.y;
+      const o = state.objects.find(x => x.id === drag.id);
+      if (o) moveObj(o, dx, dy);
+      redraw();
+    }
+  }
+  function onUp() {
+    if (!drag) return;
+    if (drag.kind === "pan") { drag = null; canvasEl.style.cursor = tool === "select" ? "default" : "crosshair"; return; }
+    if (drag.kind === "stroke" && drag.preview && drag.preview.points.length >= 1) { state.objects.push(drag.preview); pushHistory(); }
+    else if (drag.kind === "shape" && drag.preview) {
+      if (Math.abs(drag.preview.w) > 2 && Math.abs(drag.preview.h) > 2) {
+        if (drag.preview.w < 0) { drag.preview.x += drag.preview.w; drag.preview.w = -drag.preview.w; }
+        if (drag.preview.h < 0) { drag.preview.y += drag.preview.h; drag.preview.h = -drag.preview.h; }
+        state.objects.push(drag.preview); pushHistory();
+      }
+    } else if (drag.kind === "segment" && drag.preview) {
+      if (Math.hypot(drag.preview.x2 - drag.preview.x1, drag.preview.y2 - drag.preview.y1) > 3) {
+        state.objects.push(drag.preview); pushHistory();
+      }
+    } else if (drag.kind === "move") {
+      pushHistory();
+    }
+    drag = null;
+    redraw();
+  }
+  canvasEl.addEventListener("pointerdown", onDown);
+  canvasEl.addEventListener("pointermove", onMove);
+  canvasEl.addEventListener("pointerup", onUp);
+  canvasEl.addEventListener("pointercancel", onUp);
+  canvasEl.addEventListener("contextmenu", e => e.preventDefault());
+
+  canvasEl.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    const p = eventPos(e);
+    if (e.ctrlKey || e.metaKey) {
+      zoomAt(p.sx, p.sy, e.deltaY > 0 ? 0.9 : 1.1);
+    } else {
+      view.x -= e.deltaX;
+      view.y -= e.deltaY;
+      redraw();
+    }
+  }, { passive: false });
+
+  function zoomAt(sx, sy, f) {
+    const w = screenToWorld(sx, sy);
+    view.scale = Math.min(8, Math.max(0.1, view.scale * f));
+    const s2 = worldToScreen(w.x, w.y);
+    view.x += sx - s2.x;
+    view.y += sy - s2.y;
+    redraw();
+  }
+
+  function openEditor(wx, wy, objId, kind) {
+    const s = worldToScreen(wx, wy);
+    textEditor.style.display = "block";
+    textEditor.style.left = s.x + "px";
+    textEditor.style.top = s.y + "px";
+    if (kind === "sticky") {
+      const obj = state.objects.find(o => o.id === objId);
+      textEditor.style.width = (obj.w * view.scale) + "px";
+      textEditor.style.height = (obj.h * view.scale) + "px";
+      textEditor.style.color = obj.color || "#1f2937";
+      textEditor.style.background = obj.bg || "#fde68a";
+      textEditor.style.fontSize = ((obj.fontSize || 16) * view.scale) + "px";
+      textEditor.value = obj.text || "";
+      editingId = objId;
+    } else {
+      textEditor.style.width = "320px";
+      textEditor.style.height = "60px";
+      textEditor.style.color = color;
+      textEditor.style.background = "transparent";
+      textEditor.style.fontSize = (18 * view.scale) + "px";
+      textEditor.value = "";
+      editingId = { newAt: { x: wx, y: wy } };
+    }
+    setTimeout(function () { textEditor.focus(); }, 30);
+  }
+  function closeEditor(commit) {
+    if (!textEditor || textEditor.style.display === "none") return;
+    const v = textEditor.value;
+    textEditor.style.display = "none";
+    if (commit && editingId) {
+      if (typeof editingId === "object" && editingId.newAt) {
+        if ((v || "").trim()) {
+          state.objects.push({ id: uid(), kind: "text", x: editingId.newAt.x, y: editingId.newAt.y, text: v, color: color, fontSize: 18 });
+          pushHistory();
+        }
+      } else {
+        const o = state.objects.find(x => x.id === editingId);
+        if (o) { o.text = v; pushHistory(); }
+      }
+    }
+    editingId = null;
+    redraw();
+  }
+  textEditor.addEventListener("blur", function () { closeEditor(true); });
+  textEditor.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); closeEditor(false); }
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); closeEditor(true); }
+  });
+  canvasEl.addEventListener("dblclick", function (e) {
+    const p = eventPos(e);
+    const w = screenToWorld(p.sx, p.sy);
+    const h = hitTest(w.x, w.y);
+    if (h && (h.kind === "text" || h.kind === "sticky")) {
+      selectedId = h.id;
+      openEditor(h.x, h.y, h.id, h.kind);
+    }
+  });
+
+  window.addEventListener("keydown", function (e) {
+    if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+    if (e.code === "Space") { spaceDown = true; canvasEl.style.cursor = "grab"; e.preventDefault(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
+    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "y" || (e.shiftKey && e.key.toLowerCase() === "z"))) {
+      e.preventDefault(); redo();
+    }
+    if (e.key === "Delete" || e.key === "Backspace") {
+      if (selectedId !== null) {
+        e.preventDefault();
+        state.objects = state.objects.filter(o => o.id !== selectedId);
+        selectedId = null;
+        pushHistory(); redraw();
+      }
+    }
+    if (!e.ctrlKey && !e.metaKey) {
+      const map = { v: "select", p: "pen", e: "eraser", r: "rect", o: "ellipse", l: "line", a: "arrow", t: "text", s: "sticky" };
+      if (map[e.key.toLowerCase()]) setTool(map[e.key.toLowerCase()]);
+    }
+  });
+  window.addEventListener("keyup", function (e) {
+    if (e.code === "Space") { spaceDown = false; canvasEl.style.cursor = tool === "select" ? "default" : "crosshair"; }
+  });
+
+  document.querySelectorAll("#wbToolbar .wb-tool").forEach(b => b.addEventListener("click", () => setTool(b.dataset.tool)));
+  document.querySelectorAll(".wb-color").forEach(b => b.addEventListener("click", () => setColor(b.dataset.color)));
+  const thickEl = document.getElementById("wbThickness");
+  if (thickEl) thickEl.addEventListener("input", () => { thickness = parseInt(thickEl.value, 10) || 3; });
+
+  document.getElementById("wbUndo").onclick = undo;
+  document.getElementById("wbRedo").onclick = redo;
+  document.getElementById("wbZoomIn").onclick = function () {
+    const r = wrap.getBoundingClientRect();
+    zoomAt(r.width / 2, r.height / 2, 1.2);
+  };
+  document.getElementById("wbZoomOut").onclick = function () {
+    const r = wrap.getBoundingClientRect();
+    zoomAt(r.width / 2, r.height / 2, 1 / 1.2);
+  };
+  document.getElementById("wbZoomReset").onclick = function () {
+    view = { x: 0, y: 0, scale: 1 }; redraw();
+  };
+  document.getElementById("wbFit").onclick = fitToContent;
+
+  function fitToContent() {
+    if (!state.objects.length) { view = { x: 0, y: 0, scale: 1 }; redraw(); return; }
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const o of state.objects) {
+      const b = bbox(o);
+      if (!b) continue;
+      if (b.x < minX) minX = b.x;
+      if (b.y < minY) minY = b.y;
+      if (b.x + b.w > maxX) maxX = b.x + b.w;
+      if (b.y + b.h > maxY) maxY = b.y + b.h;
+    }
+    if (!isFinite(minX)) return;
+    const r = wrap.getBoundingClientRect();
+    const pad = 60;
+    const sx = (r.width - pad * 2) / (maxX - minX || 1);
+    const sy = (r.height - pad * 2) / (maxY - minY || 1);
+    view.scale = Math.min(2, Math.max(0.1, Math.min(sx, sy)));
+    view.x = pad - minX * view.scale;
+    view.y = pad - minY * view.scale;
+    redraw();
+  }
+
+  document.getElementById("wbClear").onclick = function () {
+    if (!state.objects.length) return;
+    if (!confirm("Очистить всю доску? После перезагрузки страницы это не отменить.")) return;
+    state.objects = [];
+    selectedId = null;
+    pushHistory();
+    redraw();
+  };
+
+  document.getElementById("wbExport").onclick = function () {
+    if (!state.objects.length) { alert("Доска пуста"); return; }
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const o of state.objects) {
+      const b = bbox(o);
+      if (!b) continue;
+      if (b.x < minX) minX = b.x;
+      if (b.y < minY) minY = b.y;
+      if (b.x + b.w > maxX) maxX = b.x + b.w;
+      if (b.y + b.h > maxY) maxY = b.y + b.h;
+    }
+    const pad = 24;
+    const w = (maxX - minX) + pad * 2;
+    const h = (maxY - minY) + pad * 2;
+    const tmp = document.createElement("canvas");
+    tmp.width = Math.max(64, Math.ceil(w));
+    tmp.height = Math.max(64, Math.ceil(h));
+    const tctx = tmp.getContext("2d");
+    tctx.fillStyle = "#ffffff";
+    tctx.fillRect(0, 0, tmp.width, tmp.height);
+    tctx.translate(pad - minX, pad - minY);
+    for (const o of state.objects) {
+      if (o.kind === "eraser") continue;
+      drawObj(o, tctx);
+    }
+    tmp.toBlob(function (blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "whiteboard.png"; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, "image/png");
+  };
+
+  const importInput = document.getElementById("wbImportInput");
+  document.getElementById("wbImport").onclick = function () { importInput.click(); };
+  importInput.addEventListener("change", function (e) {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = function (ev) {
+      const src = ev.target.result;
+      const img = new Image();
+      img.onload = function () {
+        const r2 = wrap.getBoundingClientRect();
+        const center = screenToWorld(r2.width / 2, r2.height / 2);
+        const maxDim = 600;
+        let iw = img.naturalWidth, ih = img.naturalHeight;
+        if (Math.max(iw, ih) > maxDim) {
+          const k = maxDim / Math.max(iw, ih);
+          iw = Math.round(iw * k); ih = Math.round(ih * k);
+        }
+        state.objects.push({
+          id: uid(), kind: "image", src: src,
+          x: center.x - iw / 2, y: center.y - ih / 2, w: iw, h: ih
+        });
+        pushHistory();
+        redraw();
+      };
+      img.src = src;
+    };
+    r.readAsDataURL(f);
+    importInput.value = "";
+  });
+
+  // Public API for tab-switch hook
+  window.WB = {
+    resize: resize,
+    redraw: redraw,
+    importImage: function (src) {
+      if (!src) return;
+      const img = new Image();
+      img.onload = function () {
+        const r2 = wrap.getBoundingClientRect();
+        const center = screenToWorld(r2.width / 2, r2.height / 2);
+        const maxDim = 700;
+        let iw = img.naturalWidth, ih = img.naturalHeight;
+        if (Math.max(iw, ih) > maxDim) {
+          const k = maxDim / Math.max(iw, ih);
+          iw = Math.round(iw * k); ih = Math.round(ih * k);
+        }
+        state.objects.push({
+          id: uid(), kind: "image", src: src,
+          x: center.x - iw / 2, y: center.y - ih / 2, w: iw, h: ih
+        });
+        pushHistory();
+        redraw();
+      };
+      img.src = src;
+    },
+  };
+
+  // Boot
+  loadSaved();
+  pushHistory();   // initial snapshot for undo
+  resize();
+})();
