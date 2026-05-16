@@ -299,6 +299,30 @@
     pointer-events:auto;
   }
 }
+/* CHAT_FWDBTN_V1 — visible Forward button inside each bubble */
+.bubble-fwd-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin-top:6px;
+  padding:4px 10px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.12);
+  color:inherit;
+  font-size:.82em;
+  cursor:pointer;
+  font-family:inherit;
+}
+.bubble-fwd-btn:hover{
+  background:rgba(74,168,255,.32);
+  border-color:rgba(74,168,255,.55);
+}
+.chat-bubble.theirs .bubble-fwd-btn{
+  background:rgba(74,168,255,.14);
+  border-color:rgba(74,168,255,.4);
+  color:#cbd5e1;
+}
 .chat-bubble.mine{
   align-self:flex-end;
   background:var(--chat-bubble-mine);
@@ -1052,7 +1076,7 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
                     reactionsHtml(m);
     }
     attachBubbleMenu(b, m);
-    // CHAT_QUICK_V1 — always-visible quick actions (reply/forward) on hover
+    // CHAT_QUICK_V1 — quick actions on hover
     if (!m.deleted){
       const tb = document.createElement('div');
       tb.className = 'bubble-quick';
@@ -1070,6 +1094,19 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
         else if (act === 'react') showCtxMenu(e.clientX, e.clientY, m);
       });
       b.appendChild(tb);
+
+      // CHAT_FWDBTN_V1 — always-visible "Переслать" button inline
+      const fwdBtn = document.createElement('button');
+      fwdBtn.type = 'button';
+      fwdBtn.className = 'bubble-fwd-btn';
+      fwdBtn.innerHTML = '<span>➤</span><span>Переслать</span>';
+      fwdBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        e.preventDefault();
+        openForward(m);
+      });
+      b.appendChild(document.createElement('br'));
+      b.appendChild(fwdBtn);
     }
     box.appendChild(b);
   }
