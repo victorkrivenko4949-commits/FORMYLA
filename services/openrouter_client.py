@@ -166,7 +166,7 @@ class OpenRouterClient:
             self.rate_limiter.wait(model)
 
             try:
-                with httpx.Client(timeout=120.0) as client:
+                with httpx.Client(timeout=300.0) as client:
                     resp = client.post(
                         f"{self.base_url}/chat/completions",
                         headers={

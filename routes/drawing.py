@@ -183,6 +183,18 @@ def api_drawing_generate():
         data = request.get_json(silent=True) or {}
 
     problem = (data.get("problem") or "").strip()
+    # When the user clicks "Regenerate without cache" we want to force
+    # a full pipeline run even if the same problem text has been seen
+    # before.  Accepted as truthy bool/int/string.
+    _raw_bypass = data.get("bypass_cache", False)
+    if isinstance(_raw_bypass, bool):
+        bypass_cache = _raw_bypass
+    elif isinstance(_raw_bypass, (int, float)):
+        bypass_cache = bool(_raw_bypass)
+    elif isinstance(_raw_bypass, str):
+        bypass_cache = _raw_bypass.strip().lower() in ("1", "true", "yes", "on")
+    else:
+        bypass_cache = False
 
     if not problem:
         return jsonify({"error": "Условие задачи не указано."}), 400
@@ -206,7 +218,11 @@ def api_drawing_generate():
     app_root = current_app.root_path
 
     try:
-        result = generate_drawing(problem, app_root=app_root, use_cache=True)
+        result = generate_drawing(
+            problem,
+            app_root=app_root,
+            use_cache=not bypass_cache,
+        )
     except SandboxRejected as e:
         logger.error("[drawing] sandbox rejected: %s", e)
         _log_to_db(problem=problem, status="rejected", error=str(e))

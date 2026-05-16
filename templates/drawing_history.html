@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}История чертежей — FORMYLA{% endblock %}
+
+{% block content %}
+<section class="drw-history-page">
+    <header class="drw-history-header">
+        <h1>📚 Мои чертежи</h1>
+        <p class="muted">Всего: {{ total }}</p>
+        <a href="{{ url_for('drawing.page') if False else '/drawing' }}" class="btn-soft">← К генератору</a>
+    </header>
+
+    {% if items %}
+    <div class="drw-history-grid">
+        {% for it in items %}
+        <article class="drw-history-card" data-id="{{ it.id }}">
+            <a class="drw-history-thumb" href="{{ it.image_url }}" target="_blank" rel="noopener">
+                <img src="{{ it.image_url }}" alt="Чертёж #{{ it.id }}" loading="lazy">
+            </a>
+            <div class="drw-history-body">
+                <p class="drw-history-text" title="{{ it.problem }}">{{ it.problem[:140] }}{% if it.problem|length > 140 %}…{% endif %}</p>
+                <p class="drw-history-meta">
+                    <span>{{ it.created_at[:16].replace('T', ' ') if it.created_at else '' }}</span>
+                    {% if it.cost_usd %}<span>· ${{ '%.3f'|format(it.cost_usd) }}</span>{% endif %}
+                </p>
+                <div class="drw-history-actions">
+                    <button type="button" class="btn-soft drw-history-reuse"
+                            data-problem="{{ it.problem|e }}">
+                        🔁 Повторить
+                    </button>
+                    <button type="button" class="btn-soft drw-history-del"
+                            data-id="{{ it.id }}">
+                        🗑️ Удалить
+                    </button>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    {% if last_page > 1 %}
+    <nav class="drw-history-pager">
+        {% if page > 1 %}
+            <a class="btn-soft" href="?page={{ page - 1 }}">← Назад</a>
+        {% endif %}
+        <span class="muted">Страница {{ page }} из {{ last_page }}</span>
+        {% if page < last_page %}
+            <a class="btn-soft" href="?page={{ page + 1 }}">Вперёд →</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="drw-history-empty">
+        <p>Здесь пока пусто. Сгенерируй первый чертёж — он появится тут.</p>
+        <a href="/drawing" class="btn-soft btn-accent">✨ Создать чертёж</a>
+    </div>
+    {% endif %}
+</section>
+
+<style>
+.drw-history-page{ max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+.drw-history-header{ display:flex; align-items:center; gap:16px; margin-bottom: 24px; flex-wrap: wrap; }
+.drw-history-header h1{ margin: 0; }
+.drw-history-header .muted{ color: var(--muted); margin: 0; }
+.drw-history-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+}
+.drw-history-card{
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.drw-history-thumb{
+    display: block;
+    background: #fff;
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+.drw-history-thumb img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.drw-history-body{ padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.drw-history-text{ margin: 0; font-size: 13px; color: var(--text); line-height: 1.35; min-height: 36px; }
+.drw-history-meta{ margin: 0; font-size: 12px; color: var(--muted); display: flex; gap: 6px; }
+.drw-history-actions{ margin-top: auto; display: flex; gap: 6px; }
+.drw-history-actions .btn-soft{ flex: 1; padding: 6px 8px; font-size: 12px; justify-content: center; }
+.drw-history-pager{ margin-top: 24px; display: flex; gap: 12px; align-items: center; justify-content: center; }
+.drw-history-empty{ text-align: center; padding: 60px 20px; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; }
+.drw-history-empty p{ margin-bottom: 18px; color: var(--muted); }
+</style>
+
+<script>
+(function(){
+    'use strict';
+    // "Repeat": send the user back to /drawing with the problem prefilled
+    // via sessionStorage (no URL pollution).
+    document.querySelectorAll('.drw-history-reuse').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            var p = btn.getAttribute('data-problem') || '';
+            try { sessionStorage.setItem('drw_prefill_problem', p); } catch(e){}
+            window.location.href = '/drawing';
+        });
+    });
+    // Delete
+    document.querySelectorAll('.drw-history-del').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            if (!confirm('Удалить этот чертёж?')) return;
+            var id = btn.getAttribute('data-id');
+            fetch('/api/drawing/history/' + id, { method: 'DELETE' })
+                .then(function(r){ return r.json(); })
+                .then(function(j){
+                    if (j && j.ok) {
+                        var card = btn.closest('.drw-history-card');
+                        if (card) card.remove();
+                    } else {
+                        alert('Не получилось удалить: ' + (j && j.error || 'unknown'));
+                    }
+                })
+                .catch(function(e){ alert('Сетевая ошибка: ' + e); });
+        });
+    });
+})();
+</script>
+{% endblock %}

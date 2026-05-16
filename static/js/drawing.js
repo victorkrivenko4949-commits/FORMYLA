@@ -43,8 +43,98 @@
         loader.hidden  = !busy;
     }
 
+    // ── History strip ────────────────────────────────────────────────────
+    var historyWrap = $('drawingHistoryWrap');
+    var historyList = $('drawingHistoryList');
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function fmtDate(iso) {
+        if (!iso) return '';
+        return iso.replace('T', ' ').slice(0, 16);
+    }
+    function renderHistory(items) {
+        if (!historyWrap || !historyList) return;
+        if (!items || !items.length) {
+            historyWrap.hidden = true;
+            return;
+        }
+        var html = items.slice(0, 5).map(function(it) {
+            var problem = escapeHtml(it.problem || '');
+            var preview = problem.length > 80 ? problem.slice(0, 80) + '…' : problem;
+            return ''
+                + '<div class="drw-strip-card" data-id="' + it.id + '" '
+                + '   data-problem="' + problem + '" '
+                + '   data-img="' + escapeHtml(it.image_url) + '" '
+                + '   title="' + problem + '">'
+                + '  <img src="' + escapeHtml(it.image_url) + '" alt="">'
+                + '  <div class="drw-strip-meta">' + preview + '</div>'
+                + '  <button type="button" class="drw-strip-del" title="Удалить" data-id="' + it.id + '">×</button>'
+                + '</div>';
+        }).join('');
+        historyList.innerHTML = html;
+        historyWrap.hidden = false;
+    }
+    function loadHistory() {
+        if (!historyWrap) return;
+        fetch('/api/drawing/history?limit=5', { credentials: 'same-origin' })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(j) { renderHistory(j && j.items); })
+            .catch(function() {});
+    }
+    if (historyList) {
+        historyList.addEventListener('click', function(e) {
+            var del = e.target.closest('.drw-strip-del');
+            if (del) {
+                e.stopPropagation();
+                if (!confirm('Удалить этот чертёж?')) return;
+                var did = del.getAttribute('data-id');
+                fetch('/api/drawing/history/' + did, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(j) {
+                    if (j && j.ok) loadHistory();
+                    else alert('Не удалось удалить.');
+                })
+                .catch(function() {});
+                return;
+            }
+            var card = e.target.closest('.drw-strip-card');
+            if (!card) return;
+            var problem = card.getAttribute('data-problem') || '';
+            var imgUrl = card.getAttribute('data-img');
+            if (problem) {
+                textArea.value = problem;
+                updateCounter();
+            }
+            if (imgUrl && img) {
+                img.src = imgUrl;
+                if (downloadBtn) downloadBtn.href = imgUrl;
+                resultWrap.hidden = false;
+                resultWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+    // Prefill from sessionStorage (set by /drawing/history page).
+    try {
+        var prefill = sessionStorage.getItem('drw_prefill_problem');
+        if (prefill) {
+            textArea.value = prefill;
+            updateCounter();
+            sessionStorage.removeItem('drw_prefill_problem');
+        }
+    } catch (e) {}
+
+    // Initial load of the history strip.
+    loadHistory();
+
     // ── Submit ───────────────────────────────────────────────────────────
-    function submit() {
+    function submit(bypassCache) {
         hideError();
         var problem = (textArea.value || '').trim();
         if (problem.length < 10) {
@@ -62,7 +152,10 @@
         fetch('/api/drawing/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ problem: problem })
+            body: JSON.stringify({
+                problem: problem,
+                bypass_cache: !!bypassCache
+            })
         })
         .then(function (r) {
             return r.json().then(function (data) {
@@ -110,6 +203,9 @@
 
             resultWrap.hidden = false;
             resultWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Refresh the strip so the new drawing appears immediately.
+            loadHistory();
         })
         .catch(function (err) {
             setBusy(false);
@@ -117,14 +213,27 @@
         });
     }
 
-    btn.addEventListener('click', submit);
-    if (regenBtn) regenBtn.addEventListener('click', submit);
+    btn.addEventListener('click', function () { submit(false); });
+    if (regenBtn) regenBtn.addEventListener('click', function () { submit(false); });
 
-    // Ctrl/Cmd+Enter — quick submit
+    // Two "force-fresh" buttons:
+    //   #regenerateFreshBtn   — inside the result block (post-success)
+    //   #generateFreshTopBtn  — in the main form (always visible)
+    // Both call submit(true) which sets bypass_cache=true on the POST.
+    var regenFreshBtn = $('regenerateFreshBtn');
+    if (regenFreshBtn) {
+        regenFreshBtn.addEventListener('click', function () { submit(true); });
+    }
+    var generateFreshTopBtn = $('generateFreshTopBtn');
+    if (generateFreshTopBtn) {
+        generateFreshTopBtn.addEventListener('click', function () { submit(true); });
+    }
+
+    // Ctrl/Cmd+Enter — quick submit (uses cache)
     textArea.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
-            submit();
+            submit(false);
         }
     });
 })();

@@ -44,6 +44,16 @@ pytestmark = pytest.mark.skipif(
 def _enable_critic(monkeypatch):
     from services import drawing_service as ds
     monkeypatch.setattr(ds, "CRITIC_ENABLED", True)
+    # Architect and cosmetic critic default to the same value as the
+    # main critic at import time.  Since CRITIC_ENABLED is now True by
+    # default, both of these stages may try to hit the real OpenRouter
+    # API during tests.  Disable them explicitly here and stub the
+    # architect call to keep these unit tests hermetic.
+    monkeypatch.setattr(ds, "ARCHITECT_ENABLED", False)
+    monkeypatch.setattr(ds, "COSMETIC_CRITIC_ENABLED", False)
+    monkeypatch.setattr(
+        ds, "_get_architect_spec", lambda problem: (None, 0.0)
+    )
 
 
 @pytest.fixture
