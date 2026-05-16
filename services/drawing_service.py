@@ -66,6 +66,16 @@ MODEL_CRITIC = "google/gemini-3.1-pro-preview"
 # Russian text, NOT JSON, because it goes into Claude's system context.
 MODEL_ARCHITECT = "google/gemini-3.1-pro-preview"
 
+# Brief Expander: runs BEFORE the architect.  Takes the raw student-typed
+# problem text (which is typically just the mathematical statement, e.g.
+# "M -- точка Микеля треугольника ABC" without any "постройте чертёж, ..."
+# part) and rewrites it into a fully-specified construction brief that
+# explicitly enumerates ALL objects to draw and ALL labels to render.
+# This is what the architect/Claude actually needs to do their jobs.
+# Same Gemini thinking model -- the brief expansion benefits from
+# geometric context comprehension.
+MODEL_BRIEF_EXPANDER = "google/gemini-3.1-pro-preview"
+
 # Critic stage is ON by default (locally and on prod with the bumped
 # httpx timeout of 300s).  Set DRAWING_CRITIC_ENABLED=0 to disable
 # (e.g. for the slowest free-tier deployments).
@@ -85,6 +95,19 @@ elif _arch_env in ("0", "false", "no", "off"):
     ARCHITECT_ENABLED = False
 else:
     ARCHITECT_ENABLED = CRITIC_ENABLED
+
+# Brief Expander stage: runs BEFORE the architect.  Converts a terse
+# student-typed problem statement into a fully-specified drawing brief
+# that lists all objects and labels to render.  Adds ~10-20s and
+# ~$0.02-$0.04 per request.  Defaults to the same value as the
+# architect toggle ("max quality" mode enables everything).
+_brief_env = os.environ.get("DRAWING_BRIEF_EXPANDER", "").strip().lower()
+if _brief_env in ("1", "true", "yes", "on"):
+    BRIEF_EXPANDER_ENABLED = True
+elif _brief_env in ("0", "false", "no", "off"):
+    BRIEF_EXPANDER_ENABLED = False
+else:
+    BRIEF_EXPANDER_ENABLED = ARCHITECT_ENABLED
 
 # Cosmetic critic is a SECOND pass that only looks at label/layout
 # readability AFTER geometry is already clean.  It costs an extra
@@ -275,6 +298,75 @@ CRITIC_SYSTEM_PROMPT = (
     CRITIC_SYSTEM_PROMPT
     .replace("__OPEN_BRACE__", "{")
     .replace("__CLOSE_BRACE__", "}")
+)
+
+
+# Brief Expander prompt: turns a terse student-typed problem statement
+# into a fully-specified drawing brief.  Students do not write "постройте
+# чертёж: треугольник, окружность, ..., подпишите ..." -- they just type
+# the mathematical statement.  This stage recovers all the missing
+# construction instructions.
+BRIEF_EXPANDER_SYSTEM_PROMPT = (
+    "Ты — помощник, который превращает ЛАКОНИЧНОЕ условие геометрической\n"
+    "задачи (как его написал бы школьник) в ПОЛНОЕ ЗАДАНИЕ НА ЧЕРТЁЖ,\n"
+    "пригодное для автоматического построения.\n"
+    "\n"
+    "ВХОД: один абзац русского текста — формулировка задачи (например,\n"
+    "  «M — точка Микеля треугольника ABC, построенная на точках X, Y, Z,\n"
+    "  лежащих на сторонах BC, CA, AB.»).\n"
+    "\n"
+    "ВЫХОД: расширенное задание на чертёж в формате PLAIN TEXT (никакого\n"
+    "JSON, никаких markdown-fences). Структура ОБЯЗАТЕЛЬНО такая:\n"
+    "\n"
+    "## ИСХОДНОЕ УСЛОВИЕ\n"
+    "Скопируй сюда исходный текст БЕЗ ИЗМЕНЕНИЙ (как датум — чтобы\n"
+    "следующая стадия видела, что именно прислал ученик).\n"
+    "\n"
+    "## ЧТО НАРИСОВАТЬ\n"
+    "Маркированный список ВСЕХ объектов, которые должны быть на чертеже:\n"
+    "  - геометрические фигуры (треугольник ABC, окружность ω с центром O,\n"
+    "    прямая ℓ и т.п.);\n"
+    "  - все именованные точки (вершины, центры, основания, точки\n"
+    "    пересечения, точки касания, особые точки задачи);\n"
+    "  - все вспомогательные линии (биссектрисы, высоты, медианы,\n"
+    "    серединные перпендикуляры, общие касательные, отрезки от центра\n"
+    "    к основаниям и т.п.);\n"
+    "  - все дуги, отмеченные углы, равные отрезки.\n"
+    "Если в условии упомянут объект, который ОБЫЧНО ВКЛЮЧАЕТ в себя\n"
+    "другие объекты (например, «точка Микеля» подразумевает три\n"
+    "окружности через тройки точек), РАЗВЕРНИ его в полный список.\n"
+    "\n"
+    "## ЧТО ПОДПИСАТЬ\n"
+    "Перечисли ВСЕ именованные точки, которые должны быть подписаны,\n"
+    "и формат подписи (одиночные заглавные буквы для вершин, ω/Ω для\n"
+    "окружностей, греческие буквы для углов и т.п.).\n"
+    "\n"
+    "## СТИЛЬ\n"
+    "Стандартный геометрический чертёж: чёрные сплошные линии 2 px на\n"
+    "белом фоне; ВСПОМОГАТЕЛЬНЫЕ построения пунктиром (перпендикуляры,\n"
+    "медианы, отрезки к точкам пересечения); жирной сплошной — главный\n"
+    "объект задачи (прямая Симсона, общая хорда и т.п., если он есть);\n"
+    "равные отрезки — короткими штрихами, равные углы — двойными дугами;\n"
+    "точки пересечения — кружочком, остальные точки — заполненной точкой.\n"
+    "Подписи sans-serif, 18-22 px, разнесены от точек.\n"
+    "\n"
+    "## КОММЕНТАРИИ\n"
+    "Если в условии есть неоднозначность (например, не указано, какая\n"
+    "из двух точек пересечения окружностей нужна; точка P на «некоторой»\n"
+    "дуге без уточнения), кратко опиши, какое осмысленное предположение\n"
+    "ты делаешь (например: «P берём на дуге BC, не содержащей A, чтобы\n"
+    "основания перпендикуляров попали внутрь сторон»).\n"
+    "\n"
+    "ПРАВИЛА:\n"
+    "- НЕ придумывай новых математических условий, которых нет в исходном\n"
+    "  тексте. Только разворачивай уже сказанное.\n"
+    "- НЕ выбирай конкретные координаты, углы, радиусы — это работа\n"
+    "  следующей стадии (архитектора).\n"
+    "- НЕ пиши Python и не подсказывай реализацию.\n"
+    "- Будь лаконичен: каждый пункт — одна-две строки.\n"
+    "- Если условие УЖЕ детально расписано (содержит фразы «постройте\n"
+    "  чертёж: ..., подпишите ...»), просто аккуратно нормализуй его\n"
+    "  в указанную структуру — не выдумывай ничего нового.\n"
 )
 
 
@@ -613,6 +705,49 @@ def _build_initial_messages(
         })
     msgs.append({"role": "user", "content": problem.strip()})
     return msgs
+
+
+def _expand_brief(problem: str) -> Tuple[Optional[str], float]:
+    """Ask the brief-expander model to convert a terse student-typed
+    problem statement into a fully-specified construction brief.
+
+    Returns: (expanded_text or None, cost_usd).  Like the architect, all
+    network/API failures are swallowed -- caller falls through to using
+    the original problem text directly.  Brief expansion is strictly an
+    enhancement, never a single point of failure.
+    """
+    try:
+        resp = openrouter.chat(
+            model=MODEL_BRIEF_EXPANDER,
+            messages=[
+                {"role": "system", "content": BRIEF_EXPANDER_SYSTEM_PROMPT},
+                {"role": "user", "content": problem.strip()},
+            ],
+            temperature=0.0,
+            # Brief expansion is a small, focused task -- 4K tokens is
+            # more than enough headroom (the actual output is typically
+            # 500-1500 tokens of plain Russian text).
+            max_tokens=4000,
+        )
+        content = (resp.get("content") or "").strip()
+        cost = float(resp.get("cost_usd") or 0.0)
+        # A useful expansion contains at least the section headers we
+        # asked for.  If they're missing the model degraded into free
+        # text -- skip it and fall back to the raw problem.
+        if "ЧТО НАРИСОВАТЬ" not in content:
+            logger.warning(
+                "[drawing] brief-expander returned content without "
+                "expected section headers (%d chars); falling back",
+                len(content),
+            )
+            return None, cost
+        return content, cost
+    except OpenRouterError as e:
+        logger.warning("[drawing] brief-expander call failed: %s", e)
+        return None, 0.0
+    except Exception as e:  # pragma: no cover
+        logger.warning("[drawing] brief-expander unexpected error: %s", e)
+        return None, 0.0
 
 
 def _get_architect_spec(problem: str) -> Tuple[Optional[str], float]:
@@ -1016,6 +1151,37 @@ def generate_drawing(
     attempts: List[dict] = []
     total_cost = 0.0
 
+    # The student-typed problem is preserved verbatim for cache key and
+    # DB logging; `problem_for_pipeline` is what the rest of the pipeline
+    # (architect, Claude, critic) actually sees, and may be enriched by
+    # the brief-expander stage below.
+    problem_for_pipeline = problem
+
+    # 1.25) Brief Expander stage (optional): converts a terse student
+    # statement ("M -- точка Микеля треугольника ABC") into a fully
+    # specified drawing brief that explicitly lists all objects, labels
+    # and style hints.  This is what the architect/Claude really need
+    # to do their jobs.  Strictly additive: any failure falls through
+    # to the legacy "architect sees the raw problem" path.
+    brief = None
+    if BRIEF_EXPANDER_ENABLED:
+        brief_started = time.time()
+        brief, brief_cost = _expand_brief(problem)
+        total_cost += brief_cost
+        attempts.append({
+            "stage": "brief_expander",
+            "model": MODEL_BRIEF_EXPANDER,
+            "ok": brief is not None,
+            "cost_usd": round(brief_cost, 6),
+            "wall_ms": int((time.time() - brief_started) * 1000),
+            "brief_chars": (len(brief) if brief else 0),
+        })
+        if brief:
+            # Feed the expanded brief into the rest of the pipeline.
+            # The architect and Claude will see the full structured
+            # brief instead of the raw one-paragraph student input.
+            problem_for_pipeline = brief
+
     # 1.5) Architect stage (optional): Gemini produces a detailed
     # construction spec which is then fed to Claude as extra system
     # context.  Strictly additive -- if the architect call fails we
@@ -1023,7 +1189,7 @@ def generate_drawing(
     architect_spec = None
     if ARCHITECT_ENABLED:
         arch_started = time.time()
-        architect_spec, arch_cost = _get_architect_spec(problem)
+        architect_spec, arch_cost = _get_architect_spec(problem_for_pipeline)
         total_cost += arch_cost
         attempts.append({
             "stage": "architect",
@@ -1034,12 +1200,14 @@ def generate_drawing(
             "spec_chars": (len(architect_spec) if architect_spec else 0),
         })
 
-    messages = _build_initial_messages(problem, architect_spec=architect_spec)
+    messages = _build_initial_messages(
+        problem_for_pipeline, architect_spec=architect_spec
+    )
 
     # 2) First successful render
     image_bytes, code, used_model, messages, cost_added, repair_used = (
         _generate_code_until_renders(
-            problem, messages, attempts, MODEL_PRIMARY,
+            problem_for_pipeline, messages, attempts, MODEL_PRIMARY,
         )
     )
     total_cost += cost_added
@@ -1055,7 +1223,7 @@ def generate_drawing(
     for round_idx in range(_eff_rounds):
         try:
             findings, critic_cost = _critique_with_gemini(
-                problem, code, image_bytes
+                problem_for_pipeline, code, image_bytes
             )
             total_cost += critic_cost
             attempts.append({
@@ -1085,7 +1253,7 @@ def generate_drawing(
         try:
             new_png, new_code, used_model, messages, cost2, repair2 = (
                 _generate_code_until_renders(
-                    problem, messages, attempts, used_model,
+                    problem_for_pipeline, messages, attempts, used_model,
                 )
             )
         except (SandboxError, OpenRouterError) as e:
@@ -1130,7 +1298,7 @@ def generate_drawing(
     if COSMETIC_CRITIC_ENABLED:
         try:
             cos_findings, cos_cost = _cosmetic_critique_with_gemini(
-                problem, code, image_bytes
+                problem_for_pipeline, code, image_bytes
             )
             total_cost += cos_cost
             cosmetic_findings_n = len(cos_findings)
@@ -1149,7 +1317,7 @@ def generate_drawing(
                 try:
                     new_png, new_code, used_model, messages, cost3, repair3 = (
                         _generate_code_until_renders(
-                            problem, messages, attempts, used_model,
+                            problem_for_pipeline, messages, attempts, used_model,
                         )
                     )
                     total_cost += cost3
