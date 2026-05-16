@@ -1731,10 +1731,43 @@ function toggleSidebarMenu(ev){
   if (!m) return;
   m.hidden = !m.hidden;
 }
-function actNewGroup(){
+async function actNewGroup(){
   const m = document.getElementById('sidebarMenu');
   if (m) m.hidden = true;
-  alert('Группы скоро появятся — следите за обновлениями.');
+  const name = prompt('Название новой группы:');
+  if (!name || !name.trim()) return;
+  // Загружаем друзей чтобы предложить пригласить сразу
+  let friends = [];
+  try {
+    const r = await fetch('/api/chat/conversations');
+    if (r.ok){
+      const d = await r.json();
+      friends = (d.conversations || []).map(c => c.friend).filter(Boolean);
+    }
+  } catch(_) {}
+  let member_ids = [];
+  if (friends.length){
+    const listStr = friends.map((f, i) => (i+1) + ') ' + (f.name || f.nickname || ('id=' + f.id))).join('\n');
+    const picked = prompt('Кого пригласить? Введи номера через запятую (или Enter — без приглашений):\n\n' + listStr);
+    if (picked && picked.trim()){
+      const idxs = picked.split(',').map(x => parseInt(x.trim()) - 1).filter(i => !isNaN(i) && i >= 0 && i < friends.length);
+      member_ids = idxs.map(i => friends[i].id);
+    }
+  }
+  try {
+    const r = await fetch('/api/groups', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name: name.trim(), member_ids: member_ids })
+    });
+    if (!r.ok){
+      const e = await r.json().catch(() => ({}));
+      alert(e.error || 'Не удалось создать группу');
+      return;
+    }
+    const d = await r.json();
+    window.location.href = '/groups/' + d.group_id;
+  } catch(_){ alert('Ошибка соединения'); }
 }
 document.addEventListener('click', function(e){
   const m = document.getElementById('sidebarMenu');

@@ -514,6 +514,13 @@ except Exception as _e:
     print(f"[BP] drawing_diag_bp NOT registered: {_e}")
 
 try:
+    from routes.drawing_history import drawing_history_bp
+    app.register_blueprint(drawing_history_bp)
+    print("[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)")
+except Exception as _e:
+    print(f"[BP] drawing_history_bp NOT registered: {_e}")
+
+try:
     from routes.chat_presence import chat_presence_bp, _ensure_table as _ensure_presence_table
     app.register_blueprint(chat_presence_bp)
     with app.app_context():
@@ -8215,6 +8222,170 @@ def submit_support():
         import logging
         logging.exception('[support] Unexpected error')
         return jsonify({'error': 'внутренняя ошибка сервера'}), 500
+
+
+# ─── CHAT_GROUPS_V1 — group chat endpoints ─────────────────────────────────
+from models import GroupChat, GroupMember, GroupMessage
+
+
+def _is_group_member(group_id, user_id):
+    return GroupMember.query.filter_by(
+        group_id=group_id, user_id=user_id
+    ).first() is not None
+
+
+@app.route('/api/groups', methods=['POST'])
+@login_required
+def api_groups_create():
+    data = request.get_json(silent=True) or {}
+    name = (data.get('name') or '').strip()
+    if not name:
+        return jsonify({'error': 'Имя группы обязательно'}), 400
+    member_ids = data.get('member_ids') or []
+    g = GroupChat(name=name[:120], owner_id=current_user.id)
+    db.session.add(g)
+    db.session.flush()
+    db.session.add(GroupMember(group_id=g.id, user_id=current_user.id, role='owner'))
+    friends_ids = [f.id for f in current_user.get_friends()]
+    for uid in member_ids:
+        try:
+            uid_int = int(uid)
+        except (TypeError, ValueError):
+            continue
+        if uid_int == current_user.id or uid_int not in friends_ids:
+            continue
+        db.session.add(GroupMember(group_id=g.id, user_id=uid_int, role='member'))
+    db.session.commit()
+    return jsonify({'success': True, 'group_id': g.id})
+
+
+@app.route('/api/groups', methods=['GET'])
+@login_required
+def api_groups_list():
+    rows = (
+        db.session.query(GroupChat)
+        .join(GroupMember, GroupMember.group_id == GroupChat.id)
+        .filter(GroupMember.user_id == current_user.id)
+        .order_by(GroupChat.created_at.desc())
+        .all()
+    )
+    items = []
+    for g in rows:
+        last = (
+            GroupMessage.query.filter_by(group_id=g.id)
+            .order_by(GroupMessage.created_at.desc()).first()
+        )
+        items.append({
+            'id': g.id,
+            'name': g.name,
+            'avatar_emoji': g.avatar_emoji or '👥',
+            'last_message': last.body if last else None,
+            'last_at': last.created_at.isoformat() if last and last.created_at else None,
+        })
+    return jsonify({'groups': items})
+
+
+@app.route('/api/groups/<int:group_id>/members', methods=['GET'])
+@login_required
+def api_groups_members(group_id):
+    if not _is_group_member(group_id, current_user.id):
+        return jsonify({'error': 'Вы не в группе'}), 403
+    rows = (
+        db.session.query(GroupMember, User)
+        .join(User, User.id == GroupMember.user_id)
+        .filter(GroupMember.group_id == group_id)
+        .all()
+    )
+    members = [{
+        'id': u.id,
+        'name': u.name or u.nickname or u.email,
+        'role': gm.role,
+    } for gm, u in rows]
+    return jsonify({'members': members})
+
+
+@app.route('/api/groups/<int:group_id>/invite', methods=['POST'])
+@login_required
+def api_groups_invite(group_id):
+    if not _is_group_member(group_id, current_user.id):
+        return jsonify({'error': 'Вы не в группе'}), 403
+    data = request.get_json(silent=True) or {}
+    try:
+        uid = int(data.get('user_id'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'user_id обязателен'}), 400
+    friends_ids = [f.id for f in current_user.get_friends()]
+    if uid not in friends_ids:
+        return jsonify({'error': 'Это не ваш друг'}), 403
+    if _is_group_member(group_id, uid):
+        return jsonify({'success': True, 'note': 'already a member'})
+    db.session.add(GroupMember(group_id=group_id, user_id=uid, role='member'))
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@app.route('/api/groups/<int:group_id>/leave', methods=['POST'])
+@login_required
+def api_groups_leave(group_id):
+    gm = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    if not gm:
+        return jsonify({'error': 'Вы не в группе'}), 404
+    db.session.delete(gm)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@app.route('/api/groups/<int:group_id>/messages', methods=['GET'])
+@login_required
+def api_groups_messages(group_id):
+    if not _is_group_member(group_id, current_user.id):
+        return jsonify({'error': 'Вы не в группе'}), 403
+    rows = (
+        GroupMessage.query.filter_by(group_id=group_id)
+        .order_by(GroupMessage.created_at.asc()).limit(500).all()
+    )
+    senders = {u.id: u for u in User.query.filter(
+        User.id.in_([r.sender_id for r in rows])
+    ).all()} if rows else {}
+    items = [{
+        'id': m.id,
+        'body': m.body,
+        'sender_id': m.sender_id,
+        'sender_name': (senders.get(m.sender_id).name
+                        or senders.get(m.sender_id).nickname
+                        or senders.get(m.sender_id).email)
+                        if senders.get(m.sender_id) else '?',
+        'mine': m.sender_id == current_user.id,
+        'created_at': m.created_at.isoformat() if m.created_at else None,
+    } for m in rows]
+    return jsonify({'messages': items})
+
+
+@app.route('/api/groups/<int:group_id>/send', methods=['POST'])
+@login_required
+def api_groups_send(group_id):
+    if not _is_group_member(group_id, current_user.id):
+        return jsonify({'error': 'Вы не в группе'}), 403
+    data = request.get_json(silent=True) or {}
+    body = (data.get('body') or '').strip()
+    if not body:
+        return jsonify({'error': 'Сообщение пустое'}), 400
+    m = GroupMessage(
+        group_id=group_id, sender_id=current_user.id, body=body[:4000]
+    )
+    db.session.add(m)
+    db.session.commit()
+    return jsonify({'success': True, 'id': m.id})
+
+
+@app.route('/groups/<int:group_id>')
+@login_required
+def group_page(group_id):
+    if not _is_group_member(group_id, current_user.id):
+        from flask import abort
+        abort(404)
+    g = GroupChat.query.get(group_id)
+    return render_template('group_chat.html', group=g)
 
 
 if __name__ == '__main__':

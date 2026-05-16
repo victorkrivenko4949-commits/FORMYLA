@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.gc-wrap{max-width:900px;margin:24px auto;background:rgba(255,255,255,.02);border-radius:14px;display:flex;flex-direction:column;height:calc(100vh - 140px);overflow:hidden}
+.gc-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.gc-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6c5ce7,#4aa8ff);display:flex;align-items:center;justify-content:center;font-size:1.4em}
+.gc-head h2{margin:0;font-size:1.05em;color:#fff}
+.gc-head .sub{color:#94a3b8;font-size:.85em;margin-top:2px}
+.gc-actions{margin-left:auto;display:flex;gap:6px}
+.gc-btn{background:transparent;border:none;color:#94a3b8;font-size:1.05em;cursor:pointer;padding:6px 10px;border-radius:8px}
+.gc-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.gc-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:8px}
+.gc-msg{max-width:75%;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.05);color:#e2e8f0}
+.gc-msg.mine{align-self:flex-end;background:linear-gradient(135deg,#6c5ce7,#4aa8ff);color:#fff}
+.gc-msg .who{font-size:.78em;opacity:.7;margin-bottom:2px}
+.gc-msg.mine .who{display:none}
+.gc-msg .t{font-size:.72em;opacity:.6;margin-top:4px;text-align:right}
+.gc-comp{display:flex;gap:8px;padding:14px;border-top:1px solid rgba(255,255,255,.08)}
+.gc-comp textarea{flex:1;resize:none;min-height:44px;max-height:120px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;padding:10px 12px;font-size:.95em;outline:none}
+.gc-comp button{background:linear-gradient(135deg,#6c5ce7,#4aa8ff);border:none;color:#fff;border-radius:10px;padding:0 18px;font-size:1.1em;cursor:pointer}
+.gc-back{text-decoration:none;color:#94a3b8;font-size:1.4em;padding:4px 8px;border-radius:8px}
+.gc-back:hover{background:rgba(255,255,255,.08);color:#fff}
+.gc-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100}
+.gc-modal{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px;width:90%;max-width:420px;max-height:70vh;display:flex;flex-direction:column;gap:10px}
+.gc-modal h3{margin:0 0 6px;color:#fff}
+.fr-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:#e2e8f0}
+.fr-row:hover{background:rgba(74,168,255,.12)}
+.fr-row .ok{margin-left:auto;color:#4caf50}
+.gc-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.gc-modal button{background:rgba(255,255,255,.08);border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer}
+.gc-modal button.primary{background:linear-gradient(135deg,#6c5ce7,#4aa8ff)}
+.fr-list{overflow-y:auto;flex:1;min-height:200px}
+[hidden]{display:none !important}
+</style>
+
+<div class="gc-wrap">
+  <div class="gc-head">
+    <a href="/chat" class="gc-back" title="Назад">←</a>
+    <div class="gc-av">{{ group.avatar_emoji or '👥' }}</div>
+    <div style="flex:1;min-width:0">
+      <h2>{{ group.name }}</h2>
+      <div class="sub" id="memCount">Загрузка…</div>
+    </div>
+    <div class="gc-actions">
+      <button class="gc-btn" type="button" title="Пригласить" onclick="openInv()">➕</button>
+      <button class="gc-btn" type="button" title="Покинуть" onclick="leaveG()">🚪</button>
+    </div>
+  </div>
+  <div class="gc-msgs" id="msgs"></div>
+  <div class="gc-comp">
+    <textarea id="ta" placeholder="Сообщение в группу… (Enter — отправить)"
+              onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendG();}"></textarea>
+    <button onclick="sendG()">➤</button>
+  </div>
+</div>
+
+<div id="invMod" class="gc-modal-bg" hidden onclick="if(event.target===this) closeInv()">
+  <div class="gc-modal">
+    <h3>Пригласить друга</h3>
+    <div class="fr-list" id="invList">Загрузка…</div>
+    <div class="gc-foot">
+      <button onclick="closeInv()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const GID = {{ group.id }};
+const MEID = {{ current_user.id }};
+
+function fmtT(iso){
+  if(!iso) return '';
+  try{
+    const d = new Date(iso);
+    return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  }catch(_){return ''}
+}
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadM(){
+  try{
+    const r = await fetch('/api/groups/' + GID + '/messages');
+    if(!r.ok) return;
+    const d = await r.json();
+    const box = document.getElementById('msgs');
+    box.innerHTML = '';
+    for(const m of (d.messages || [])){
+      const div = document.createElement('div');
+      div.className = 'gc-msg' + (m.mine ? ' mine' : '');
+      const who = m.mine ? '' : '<div class="who">' + esc(m.sender_name) + '</div>';
+      div.innerHTML = who + esc(m.body) + '<div class="t">' + fmtT(m.created_at) + '</div>';
+      box.appendChild(div);
+    }
+    box.scrollTop = box.scrollHeight;
+  }catch(e){ console.error(e); }
+}
+
+async function loadMem(){
+  try{
+    const r = await fetch('/api/groups/' + GID + '/members');
+    if(!r.ok) return;
+    const d = await r.json();
+    const c = document.getElementById('memCount');
+    if(c) c.textContent = (d.members||[]).length + ' участников';
+  }catch(_){}
+}
+
+async function sendG(){
+  const ta = document.getElementById('ta');
+  const body = (ta.value || '').trim();
+  if(!body) return;
+  try{
+    const r = await fetch('/api/groups/' + GID + '/send', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({body: body})
+    });
+    if(!r.ok){
+      const e = await r.json().catch(()=>({}));
+      alert(e.error || 'Ошибка');
+      return;
+    }
+    ta.value = '';
+    await loadM();
+  }catch(e){ console.error(e); alert('Ошибка соединения'); }
+}
+
+async function leaveG(){
+  if(!confirm('Точно покинуть группу?')) return;
+  try{
+    const r = await fetch('/api/groups/' + GID + '/leave', {method:'POST'});
+    if(r.ok){ window.location.href = '/chat'; }
+  }catch(_){}
+}
+
+async function openInv(){
+  document.getElementById('invMod').hidden = false;
+  try{
+    const [memR, conR] = await Promise.all([
+      fetch('/api/groups/' + GID + '/members'),
+      fetch('/api/chat/conversations')
+    ]);
+    const memD = memR.ok ? await memR.json() : {members:[]};
+    const conD = conR.ok ? await conR.json() : {conversations:[]};
+    const memIds = new Set((memD.members||[]).map(m => m.id));
+    const candidates = (conD.conversations||[])
+      .map(c => c.friend)
+      .filter(f => f && !memIds.has(f.id));
+    const list = document.getElementById('invList');
+    if(!candidates.length){
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8">Нет друзей, которых можно пригласить</div>';
+      return;
+    }
+    list.innerHTML = candidates.map(f =>
+      '<div class="fr-row" onclick="inviteFr(' + f.id + ', this)">'
+      + '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6c5ce7,#4aa8ff);display:flex;align-items:center;justify-content:center">'
+      + esc((f.name||f.nickname||'?')[0].toUpperCase()) + '</div>'
+      + '<div>' + esc(f.name||f.nickname||'?') + '</div>'
+      + '<span class="ok" style="display:none">✓</span>'
+      + '</div>'
+    ).join('');
+  }catch(e){ console.error(e); }
+}
+
+function closeInv(){
+  document.getElementById('invMod').hidden = true;
+  loadMem();
+}
+
+async function inviteFr(uid, row){
+  try{
+    const r = await fetch('/api/groups/' + GID + '/invite', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({user_id: uid})
+    });
+    if(r.ok){
+      const ok = row.querySelector('.ok');
+      if(ok) ok.style.display = '';
+      row.style.opacity = '0.5';
+      row.style.pointerEvents = 'none';
+    } else {
+      const e = await r.json().catch(()=>({}));
+      alert(e.error || 'Ошибка');
+    }
+  }catch(_){ alert('Ошибка соединения'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadM();
+  loadMem();
+  setInterval(loadM, 8000);
+});
+</script>
+
+{% endblock %}

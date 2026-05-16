@@ -1330,6 +1330,54 @@ class DrawingGeneration(db.Model):
         )
 
 
+class GroupChat(db.Model):
+    """CHAT_GROUPS_V1 — group conversation owned by a user."""
+    __tablename__ = 'group_chats'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    avatar_emoji = db.Column(db.String(8), nullable=True, default='👥')
+    owner_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
+class GroupMember(db.Model):
+    """CHAT_GROUPS_V1 — membership in a group chat."""
+    __tablename__ = 'group_members'
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(
+        db.Integer, db.ForeignKey('group_chats.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    role = db.Column(db.String(16), nullable=False, default='member')
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint('group_id', 'user_id', name='_group_member_unique'),
+    )
+
+
+class GroupMessage(db.Model):
+    """CHAT_GROUPS_V1 — single message in a group chat."""
+    __tablename__ = 'group_messages'
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(
+        db.Integer, db.ForeignKey('group_chats.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    sender_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+
 def init_db(app):
     """Инициализация базы данных"""
     db.init_app(app)
