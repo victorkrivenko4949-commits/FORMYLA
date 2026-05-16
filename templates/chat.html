@@ -269,6 +269,32 @@
   font-size:.93em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .bubble-attach.pdf .pdf-size{ font-size:.78em; opacity:.7; }
+/* CHAT_SEARCH_V1 — header button, search bar, highlight */
+.chat-hdr-btn{
+  background:transparent; border:none; color:var(--text-muted);
+  font-size:1.15em; cursor:pointer; padding:6px 10px; border-radius:8px;
+}
+.chat-hdr-btn:hover{ background:rgba(255,255,255,.08); color:#fff; }
+.msg-search-bar{
+  display:flex; align-items:center; gap:8px;
+  padding:8px 14px; background:rgba(74,168,255,.08);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.msg-search-bar input{
+  flex:1; background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1); border-radius:8px;
+  color:#fff; padding:6px 10px; font-size:.95em; outline:none;
+}
+.msg-search-bar input:focus{ border-color:#4aa8ff; }
+.msg-search-bar button{
+  background:rgba(255,255,255,.06); border:none; color:#cbd2dd;
+  width:30px; height:30px; border-radius:6px; cursor:pointer; font-size:1em;
+}
+.msg-search-bar button:hover{ background:rgba(255,255,255,.14); color:#fff; }
+.msg-search-count{ color:var(--text-muted); font-size:.85em; min-width:64px; text-align:center; }
+.search-hit{ background:#fff59d; color:#222; border-radius:3px; padding:0 2px; }
+.search-hit.current{ background:#ff9800; color:#fff; }
+.chat-bubble.search-current-msg{ outline:2px solid #ff9800; outline-offset:2px; }
 /* CHAT_DROP_V1 — drag-n-drop overlay */
 .chat-drop-overlay{
   position:absolute; inset:0;
@@ -545,12 +571,22 @@
           {% if active_friend.avatar_url %}<img src="{{ active_friend.avatar_url }}" alt="">
           {% else %}{{ (active_friend.name or active_friend.email or '?')[0]|upper }}{% endif %}
         </div>
-        <div>
+        <div style="flex:1; min-width:0;">
           <h2>{{ active_friend.name or active_friend.nickname or active_friend.email }}</h2>
           <div class="sub">
             <span id="presenceLine">Уровень {{ active_friend.current_level }} · {{ active_friend.experience_points }} XP</span>
           </div>
         </div>
+        <!-- CHAT_SEARCH_V1 — открытие поиска по сообщениям -->
+        <button class="chat-hdr-btn" type="button" title="Поиск (Ctrl+F)" onclick="openMsgSearch()">🔍</button>
+      </div>
+      <!-- CHAT_SEARCH_V1 — панель поиска -->
+      <div id="msgSearchBar" class="msg-search-bar" hidden>
+        <input type="text" id="msgSearchInput" placeholder="Поиск в этом чате…" autocomplete="off">
+        <span id="msgSearchCount" class="msg-search-count">0 из 0</span>
+        <button type="button" title="Предыдущее" onclick="navMsgSearch(-1)">↑</button>
+        <button type="button" title="Следующее" onclick="navMsgSearch(1)">↓</button>
+        <button type="button" title="Закрыть (Esc)" onclick="closeMsgSearch()">×</button>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div id="chatActionBar" class="chat-action-bar" hidden>
@@ -1411,7 +1447,156 @@ document.addEventListener('DOMContentLoaded', () => {
   // CHAT_DROP_V1 — drag-n-drop files + paste images from clipboard
   initDragAndDrop();
   initPasteHandler();
+  // CHAT_SEARCH_V1 — Ctrl+F shortcut
+  initMsgSearchShortcut();
 });
+
+/* CHAT_SEARCH_V1 — клиентский поиск по сообщениям */
+let _searchHits = [];      // [{el, msgId}]
+let _searchIdx = -1;
+let _searchOrigHtml = new Map(); // bubble.dataset.mid -> original innerHTML
+
+function openMsgSearch(){
+  const bar = document.getElementById('msgSearchBar');
+  if (!bar) return;
+  bar.hidden = false;
+  const inp = document.getElementById('msgSearchInput');
+  if (inp){ inp.value = ''; inp.focus(); }
+  refreshMsgSearch('');
+}
+function closeMsgSearch(){
+  const bar = document.getElementById('msgSearchBar');
+  if (bar) bar.hidden = true;
+  clearMsgSearchHighlight();
+  _searchHits = [];
+  _searchIdx = -1;
+  updateMsgSearchCount();
+}
+function clearMsgSearchHighlight(){
+  // restore original innerHTML of every bubble we touched
+  document.querySelectorAll('.chat-bubble.search-current-msg').forEach(b => {
+    b.classList.remove('search-current-msg');
+  });
+  _searchOrigHtml.forEach((html, mid) => {
+    const b = document.querySelector('.chat-bubble[data-mid="' + mid + '"]');
+    if (b) b.innerHTML = html;
+  });
+  _searchOrigHtml.clear();
+}
+function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function refreshMsgSearch(q){
+  q = (q || '').trim();
+  clearMsgSearchHighlight();
+  _searchHits = [];
+  _searchIdx = -1;
+  if (q.length < 1){
+    updateMsgSearchCount();
+    return;
+  }
+  const re = new RegExp(escapeRegex(q), 'gi');
+  const bubbles = document.querySelectorAll('#chatMessages .chat-bubble');
+  bubbles.forEach(b => {
+    const mid = b.getAttribute('data-mid');
+    // Search only inside text content, ignore the reply-quote, reactions, attachments etc.
+    // We do a simple text-content match, then highlight by replacing the bubble innerHTML
+    // with a version where text-content matches are wrapped. To keep it safe and reversible,
+    // we save the original and re-render on every keystroke.
+    const txt = b.textContent || '';
+    if (!re.test(txt)) return;
+    re.lastIndex = 0;
+    _searchOrigHtml.set(mid, b.innerHTML);
+    // Walk text nodes and wrap matches; this preserves nested elements (reply-quote, img, etc.)
+    highlightTextNodes(b, re);
+    _searchHits.push({ el: b, mid: mid });
+  });
+  if (_searchHits.length){
+    _searchIdx = 0;
+    focusHit(0);
+  }
+  updateMsgSearchCount();
+}
+
+function highlightTextNodes(root, re){
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => {
+      // skip text inside <script>, <style>, and reply-quote (so we don't match the quoted text)
+      const p = n.parentElement;
+      if (!p) return NodeFilter.FILTER_REJECT;
+      if (p.closest('.bubble-reply')) return NodeFilter.FILTER_REJECT;
+      if (p.tagName === 'SCRIPT' || p.tagName === 'STYLE') return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  let cur;
+  while ((cur = walker.nextNode())){ nodes.push(cur); }
+  nodes.forEach(node => {
+    const s = node.nodeValue;
+    re.lastIndex = 0;
+    if (!re.test(s)) return;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    let mm;
+    while ((mm = re.exec(s)) !== null){
+      if (mm.index > last) frag.appendChild(document.createTextNode(s.slice(last, mm.index)));
+      const span = document.createElement('span');
+      span.className = 'search-hit';
+      span.textContent = mm[0];
+      frag.appendChild(span);
+      last = mm.index + mm[0].length;
+      if (mm.index === re.lastIndex) re.lastIndex++;  // avoid infinite loop on zero-length match
+    }
+    if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+
+function navMsgSearch(dir){
+  if (!_searchHits.length) return;
+  // unmark previous "current"
+  document.querySelectorAll('.search-hit.current').forEach(e => e.classList.remove('current'));
+  document.querySelectorAll('.chat-bubble.search-current-msg').forEach(b => b.classList.remove('search-current-msg'));
+  _searchIdx = (_searchIdx + dir + _searchHits.length) % _searchHits.length;
+  focusHit(_searchIdx);
+  updateMsgSearchCount();
+}
+function focusHit(idx){
+  const hit = _searchHits[idx];
+  if (!hit) return;
+  hit.el.classList.add('search-current-msg');
+  // first .search-hit inside this bubble
+  const span = hit.el.querySelector('.search-hit');
+  if (span) span.classList.add('current');
+  hit.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+function updateMsgSearchCount(){
+  const c = document.getElementById('msgSearchCount');
+  if (!c) return;
+  if (!_searchHits.length){ c.textContent = '0 из 0'; return; }
+  c.textContent = (_searchIdx + 1) + ' из ' + _searchHits.length;
+}
+
+function initMsgSearchShortcut(){
+  const inp = document.getElementById('msgSearchInput');
+  if (inp){
+    inp.addEventListener('input', () => refreshMsgSearch(inp.value));
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter'){ e.preventDefault(); navMsgSearch(e.shiftKey ? -1 : 1); }
+      if (e.key === 'Escape'){ e.preventDefault(); closeMsgSearch(); }
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f' && currentFriendId){
+      // Only intercept when the user is inside the chat page
+      if (document.getElementById('chatMain')){
+        e.preventDefault();
+        openMsgSearch();
+      }
+    }
+  });
+}
 
 /* CHAT_DROP_V1 */
 function initDragAndDrop(){
