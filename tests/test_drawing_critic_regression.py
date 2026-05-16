@@ -183,3 +183,48 @@ def test_critic_actually_finds_things_on_broken_drawing():
     # least covered by SOMETHING in the findings list (we don't pin
     # exact wording -- model output drifts).
     assert cost > 0, "cost should be > 0 if the API call really happened"
+
+
+# ============================================================== Bug #3
+# Token-budget hygiene for the MAIN code-generation call.
+#
+# 2026-05-16 incident ("nine-point Euler circle"): _call_llm shipped
+# with max_tokens=2048.  Once we added the QW-1 plan-and-asserts prompt
+# AND the architect spec as system context, Claude's reply is routinely
+# 120-180 lines of Python -- which overflows 2048 tokens.  Anthropic
+# silently truncates mid-line, the AST pre-check fails on every repair
+# iteration with the SAME syntax error, MAX_REPAIR_ITERS exhausts, and
+# the user sees "SandboxRejected".  Raising to 8000 fixed it (verified
+# locally: 4 -> 0 repair iters, $2.02 -> $0.96 on the same task).
+# Anything below 4000 is unsafe with the current prompts.
+
+def test_call_llm_max_tokens_is_long_program_safe():
+    import ast
+    import inspect
+    from services import drawing_service as ds
+
+    src = inspect.getsource(ds._call_llm)
+    tree = ast.parse(src)
+
+    found_values = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        for kw in node.keywords or []:
+            if kw.arg == "max_tokens" and isinstance(kw.value, ast.Constant):
+                if isinstance(kw.value.value, int):
+                    found_values.append(kw.value.value)
+
+    assert found_values, (
+        "could not find a max_tokens=<int> keyword argument in any call "
+        "inside _call_llm"
+    )
+    smallest = min(found_values)
+    assert smallest >= 4000, (
+        "max_tokens=" + str(smallest) + " is unsafe for _call_llm.  With "
+        "the QW-1 plan+asserts prompt plus the architect spec, Claude's "
+        "drawing programmes routinely exceed 2048 tokens and get "
+        "truncated mid-line, causing infinite repair loops on hard "
+        "tasks (see 2026-05-16 nine-point-circle incident).  Use >= 4000 "
+        "(we ship 8000)."
+    )

@@ -511,12 +511,21 @@ def _write_cache(png_path: str, meta_path: str, image_bytes: bytes, code: str):
 
 
 def _call_llm(messages: list, model: str) -> dict:
-    """Return openrouter.chat() result with low temperature, JSON ignored."""
+    """Return openrouter.chat() result with low temperature, JSON ignored.
+
+    NOTE: max_tokens MUST be generous. With the QW-1 plan-and-asserts
+    prompt + the architect spec injected as system context, Claude's
+    output is routinely 120-180 lines of Python.  At max_tokens=2048
+    Anthropic truncates mid-line and the AST pre-check fails forever
+    (see the 2026-05-16 nine-point-circle incident: every repair
+    iteration came back truncated on the same line).  8000 leaves
+    comfortable headroom for the longest realistic drawing programmes.
+    """
     return openrouter.chat(
         model=model,
         messages=messages,
         temperature=0.2,
-        max_tokens=2048,
+        max_tokens=8000,
     )
 
 
