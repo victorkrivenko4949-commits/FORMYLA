@@ -265,6 +265,13 @@
         if (hasImage) {
             payload.image_b64 = attachedImageDataUrl;
         }
+        try {
+            console.log('[drawing] submit',
+                'problem_len=', problem.length,
+                'has_image=', hasImage,
+                'image_b64_len=', hasImage ? attachedImageDataUrl.length : 0,
+                'bypass=', !!bypassCache);
+        } catch (e) {}
 
         fetch('/api/drawing/generate', {
             method: 'POST',

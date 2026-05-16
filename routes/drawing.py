@@ -176,10 +176,13 @@ def drawing_page():
 def api_drawing_generate():
     # Force UTF-8 decoding of the body (defence vs proxy mojibake).
     raw = request.get_data(cache=False, as_text=False) or b""
+    logger.info("[drawing] POST /api/drawing/generate body=%d bytes ct=%s",
+                len(raw), request.headers.get("Content-Type", "?"))
     try:
         text = raw.decode("utf-8")
         data = json.loads(text) if text else {}
-    except Exception:
+    except Exception as _e:
+        logger.warning("[drawing] body decode failed (%s), retrying via flask", _e)
         data = request.get_json(silent=True) or {}
 
     problem = (data.get("problem") or "").strip()
@@ -187,6 +190,11 @@ def api_drawing_generate():
     # we run vision-OCR first and either use it as the problem text or
     # combine it with the typed text below.
     raw_image = data.get("image_b64") or data.get("image") or ""
+    logger.info("[drawing] keys=%s problem_len=%d image_present=%s image_len=%d",
+                list(data.keys()) if isinstance(data, dict) else type(data).__name__,
+                len(problem),
+                bool(raw_image),
+                len(raw_image) if isinstance(raw_image, str) else 0)
     if isinstance(raw_image, str):
         raw_image = raw_image.strip()
     else:
@@ -240,6 +248,8 @@ def api_drawing_generate():
     ocr_used = False
     ocr_text: str | None = None
     if image_bytes is not None:
+        logger.info("[drawing] running OCR on image %d bytes mime=%s",
+                    len(image_bytes), image_mime)
         try:
             from services.drawing_ocr import ocr_problem_image
         except Exception as _e:  # pragma: no cover
@@ -248,6 +258,8 @@ def api_drawing_generate():
         if ocr_problem_image is not None:
             ocr_text, _ocr_cost = ocr_problem_image(image_bytes, mime=image_mime)
             ocr_used = bool(ocr_text)
+            logger.info("[drawing] OCR done used=%s text_len=%d cost=$%.4f",
+                        ocr_used, len(ocr_text or ""), _ocr_cost)
             if ocr_text:
                 if problem:
                     problem = (problem + "\n\n" + ocr_text).strip()
@@ -262,6 +274,11 @@ def api_drawing_generate():
                         "вручную."
                     )
                 }), 400
+    else:
+        if raw_image:
+            logger.warning("[drawing] image_b64 was present but decoded to None "
+                           "(len_b64=%d) — likely too small or invalid base64",
+                           len(raw_image))
 
     if not problem:
         return jsonify({"error": "Условие задачи не указано."}), 400

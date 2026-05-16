@@ -529,8 +529,9 @@ try:
 except Exception as _e:
     print(f"[BP] chat_presence_bp NOT registered: {_e}")
 
-# Limit upload size to 5 MB (for solution photos)
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+# Limit upload size: 12 MB (for solution photos AND drawing-task screenshots
+# that get base64-encoded; raw image cap remains 8 MB on the drawing route).
+app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
 
 # ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
 @app.errorhandler(500)
