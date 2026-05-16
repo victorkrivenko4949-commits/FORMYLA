@@ -270,13 +270,16 @@
 }
 .bubble-attach.pdf .pdf-size{ font-size:.78em; opacity:.7; }
 /* CHAT_SEARCH_V1 — header button, search bar, highlight */
+/* FIX: HTML "hidden" attribute must override display:flex / display:absolute. */
+[hidden]{ display:none !important; }
 .chat-hdr-btn{
   background:transparent; border:none; color:var(--text-muted);
   font-size:1.15em; cursor:pointer; padding:6px 10px; border-radius:8px;
+  flex:0 0 auto;
 }
 .chat-hdr-btn:hover{ background:rgba(255,255,255,.08); color:#fff; }
 .msg-search-bar{
-  display:flex; align-items:center; gap:8px;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   padding:8px 14px; background:rgba(74,168,255,.08);
   border-bottom:1px solid rgba(255,255,255,.08);
 }
