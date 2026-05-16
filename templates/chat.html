@@ -33,8 +33,28 @@
   font-size:1.1em;
   display:flex; align-items:center; gap:10px;
 }
-.chat-sidebar header .count{
+.sidebar-menu-btn{
   margin-left:auto;
+  background:transparent; border:none; color:var(--text-muted);
+  font-size:1.4em; cursor:pointer; padding:0 8px; border-radius:8px;
+  line-height:1;
+}
+.sidebar-menu-btn:hover{ background:rgba(255,255,255,.08); color:#fff; }
+.sidebar-menu{
+  position:absolute; top:54px; right:14px; z-index:60;
+  background:#1e293b; border:1px solid #334155; border-radius:10px;
+  padding:6px; min-width:200px;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+}
+.sidebar-menu button{
+  display:block; width:100%; text-align:left;
+  background:transparent; border:none; color:#e2e8f0;
+  padding:10px 12px; border-radius:6px; cursor:pointer; font-size:.95em;
+}
+.sidebar-menu button:hover{ background:rgba(74,168,255,.18); color:#fff; }
+.chat-sidebar header{ position:relative; }
+.chat-sidebar header .count{
+  margin-right:8px;
   font-size:.85em;
   font-weight:600;
   background:rgba(139,92,246,.18);
@@ -530,6 +550,10 @@
     <header>
       💬 Чат
       <span class="count" id="convCount">{{ friends|length }}</span>
+      <button class="sidebar-menu-btn" type="button" title="Меню" onclick="toggleSidebarMenu(event)">⋯</button>
+      <div id="sidebarMenu" class="sidebar-menu" hidden>
+        <button type="button" onclick="actNewGroup()">👥 Создать группу</button>
+      </div>
     </header>
     <div class="chat-search">
       <input type="text" id="convSearch" placeholder="Поиск друга…">
@@ -1699,6 +1723,26 @@ async function refreshPresence(){
     }
   } catch(_){}
 }
+
+/* CHAT_MENU_V1 — kebab menu in sidebar header */
+function toggleSidebarMenu(ev){
+  if (ev) ev.stopPropagation();
+  const m = document.getElementById('sidebarMenu');
+  if (!m) return;
+  m.hidden = !m.hidden;
+}
+function actNewGroup(){
+  const m = document.getElementById('sidebarMenu');
+  if (m) m.hidden = true;
+  alert('Группы скоро появятся — следите за обновлениями.');
+}
+document.addEventListener('click', function(e){
+  const m = document.getElementById('sidebarMenu');
+  if (!m || m.hidden) return;
+  const btn = document.querySelector('.sidebar-menu-btn');
+  if (m.contains(e.target) || (btn && btn.contains(e.target))) return;
+  m.hidden = true;
+});
 </script>
 
 {% endblock %}
