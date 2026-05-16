@@ -269,6 +269,21 @@
   font-size:.93em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .bubble-attach.pdf .pdf-size{ font-size:.78em; opacity:.7; }
+/* CHAT_DROP_V1 — drag-n-drop overlay */
+.chat-drop-overlay{
+  position:absolute; inset:0;
+  background:rgba(74,168,255,.22);
+  border:2px dashed #4aa8ff;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column;
+  pointer-events:none;
+  z-index:80;
+  color:#fff; font-size:1.15em; font-weight:600;
+  text-shadow:0 1px 6px rgba(0,0,0,.4);
+}
+.chat-drop-overlay .drop-icon{ font-size:2.4em; margin-bottom:10px; }
+.chat-main{ position:relative; }
 .attach-preview{
   display:flex; align-items:center; gap:10px;
   padding:6px 10px; margin:6px 0 0;
@@ -518,6 +533,12 @@
 
   <!-- Main: открытый диалог -->
   <section class="chat-main" id="chatMain">
+    <!-- CHAT_DROP_V1 — visual overlay shown while dragging a file over the chat -->
+    <div id="chatDropOverlay" class="chat-drop-overlay" hidden>
+      <div class="drop-icon">📥</div>
+      <div>Бросьте файл сюда, чтобы прикрепить</div>
+      <div style="font-size:.8em; opacity:.85; margin-top:6px;">Картинки и PDF, до 5 МБ</div>
+    </div>
     {% if active_friend %}
       <div class="chat-header" id="chatHeader">
         <div class="chat-avatar" style="width:36px;height:36px;font-size:.85em;">
@@ -1156,22 +1177,27 @@ function onChatKey(e){
 /* CHAT_ATTACH_V1 — picked but not yet sent attachment (server-side URL). */
 let _pendingAttachment = null;
 
-async function onAttachPicked(ev){
-  const inp = ev.target;
-  const f = inp.files && inp.files[0];
-  inp.value = '';  // allow re-selecting the same file
-  if (!f || !currentFriendId) return;
+/* CHAT_DROP_V1 — upload a File picked from <input>, drag-n-drop or paste. */
+async function uploadAttachmentFile(f){
+  if (!f || !currentFriendId) return false;
   if (f.size > 5 * 1024 * 1024){
     alert('Файл больше 5 МБ');
-    return;
+    return false;
+  }
+  // Accept only image/* or application/pdf (server enforces too, but be polite UX-wise).
+  const isImage = (f.type || '').startsWith('image/');
+  const isPdf   = (f.type === 'application/pdf') || /\.pdf$/i.test(f.name || '');
+  if (!isImage && !isPdf){
+    alert('Поддерживаются только картинки и PDF');
+    return false;
   }
   const bar = document.getElementById('attachPreviewBar');
   const nameEl = document.getElementById('attachPreviewName');
-  if (nameEl) nameEl.textContent = 'Загружаем: ' + f.name + '…';
+  if (nameEl) nameEl.textContent = 'Загружаем: ' + (f.name || 'файл') + '…';
   if (bar) bar.hidden = false;
   try {
     const fd = new FormData();
-    fd.append('file', f);
+    fd.append('file', f, f.name || 'pasted');
     const r = await fetch('/api/chat/' + currentFriendId + '/upload', {
       method: 'POST',
       body: fd,
@@ -1180,16 +1206,25 @@ async function onAttachPicked(ev){
       const err = await r.json().catch(() => ({}));
       alert(err.error || 'Ошибка загрузки');
       cancelAttach();
-      return;
+      return false;
     }
     const data = await r.json();
     _pendingAttachment = data.attachment;
     if (nameEl) nameEl.textContent = '📎 ' + (_pendingAttachment.name || 'file');
+    return true;
   } catch(e){
     console.error(e);
     alert('Ошибка соединения');
     cancelAttach();
+    return false;
   }
+}
+
+async function onAttachPicked(ev){
+  const inp = ev.target;
+  const f = inp.files && inp.files[0];
+  inp.value = '';  // allow re-selecting the same file
+  await uploadAttachmentFile(f);
 }
 
 function cancelAttach(){
@@ -1372,7 +1407,81 @@ document.addEventListener('DOMContentLoaded', () => {
   // Presence poll (online status + typing) — every 5s
   if (currentFriendId) refreshPresence();
   setInterval(() => { if (currentFriendId) refreshPresence(); }, 5000);
+
+  // CHAT_DROP_V1 — drag-n-drop files + paste images from clipboard
+  initDragAndDrop();
+  initPasteHandler();
 });
+
+/* CHAT_DROP_V1 */
+function initDragAndDrop(){
+  const main = document.getElementById('chatMain');
+  const overlay = document.getElementById('chatDropOverlay');
+  if (!main || !overlay) return;
+  let dragDepth = 0;  // proper counter for nested dragenter/leave
+  function show(){ overlay.hidden = false; }
+  function hide(){ overlay.hidden = true; dragDepth = 0; }
+  main.addEventListener('dragenter', (e) => {
+    if (!currentFriendId) return;
+    if (!e.dataTransfer || !Array.from(e.dataTransfer.types || []).includes('Files')) return;
+    e.preventDefault();
+    dragDepth++;
+    show();
+  });
+  main.addEventListener('dragover', (e) => {
+    if (!currentFriendId) return;
+    if (!e.dataTransfer || !Array.from(e.dataTransfer.types || []).includes('Files')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  });
+  main.addEventListener('dragleave', (e) => {
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) hide();
+  });
+  main.addEventListener('drop', async (e) => {
+    if (!currentFriendId) return;
+    if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+    e.preventDefault();
+    hide();
+    const f = e.dataTransfer.files[0];
+    await uploadAttachmentFile(f);
+  });
+  // Also block default browser behaviour for accidental drops outside the chat-main
+  ['dragover', 'drop'].forEach(ev => {
+    window.addEventListener(ev, (e) => {
+      // Only suppress when files are being dragged
+      if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')){
+        e.preventDefault();
+      }
+    });
+  });
+}
+
+function initPasteHandler(){
+  const ta = document.getElementById('chatText');
+  if (!ta) return;
+  ta.addEventListener('paste', async (e) => {
+    if (!currentFriendId) return;
+    if (!e.clipboardData || !e.clipboardData.items) return;
+    for (const item of e.clipboardData.items){
+      if (item.kind === 'file'){
+        const f = item.getAsFile();
+        if (!f) continue;
+        // Only intercept images; let text paste through normally
+        if (!(f.type || '').startsWith('image/')) continue;
+        e.preventDefault();
+        // Give the pasted image a friendlier filename if browser left it blank
+        let pasted = f;
+        if (!f.name || f.name === 'image.png'){
+          const ext = (f.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+          pasted = new File([f], 'pasted-' + Date.now() + '.' + ext, { type: f.type });
+        }
+        await uploadAttachmentFile(pasted);
+        return;
+      }
+    }
+  });
+}
 
 function _formatLastSeen(iso){
   if (!iso) return 'был в сети давно';
