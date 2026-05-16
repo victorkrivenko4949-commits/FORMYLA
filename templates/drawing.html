@@ -14,12 +14,18 @@
         </header>
         <div class="drawing-form glass">
             <label for="problemText" class="dform-label">Условие задачи</label>
-            <textarea id="problemText" rows="6" maxlength="2000"
-                placeholder="Например: В треугольнике ABC угол A = 60°, AB = 5, AC = 7. Точка M — середина BC."
+            <textarea id="problemText" rows="6" maxlength="4000"
+                placeholder="Например: В треугольнике ABC угол A = 60°, AB = 5, AC = 7. Точка M — середина BC.&#10;&#10;Можно вставить скриншот условия: Ctrl+V, перетаскивание или кнопка «📷 Фото»."
                 class="dform-textarea"></textarea>
+            <div id="drwAttachPreview" class="drw-attach-preview" hidden></div>
+            <input type="file" id="drwAttachFile" accept="image/*" hidden>
             <div class="dform-row">
-                <span id="charCounter" class="dform-counter">0 / 2000 символов</span>
+                <span id="charCounter" class="dform-counter">0 / 4000 символов</span>
                 <div class="dform-actions">
+                    <button id="drwAttachBtn" type="button" class="btn-soft"
+                            title="Прикрепить фото / скриншот условия. Текст распознается автоматически.">
+                        📷 Фото
+                    </button>
                     <button id="generateFreshTopBtn" type="button" class="btn-soft"
                             title="Полный прогон пайплайна без использования кэша (медленнее, но качественнее)">
                         🔥 Без кэша
@@ -27,7 +33,7 @@
                     <button id="generateBtn" type="button" class="dform-btn-primary">✨ Сгенерировать чертёж</button>
                 </div>
             </div>
-            <p class="dform-note">Лимит: 10 чертежей в час. Генерация занимает около 60 секунд.</p>
+            <p class="dform-note">Лимит: 10 чертежей в час. Генерация занимает около 60 секунд. Можно прикрепить фото условия (Ctrl+V / перетаскивание / кнопка «📷 Фото»).</p>
         </div>
         <div id="drawingLoader" hidden class="drawing-loader">
             <div class="drawing-spinner"></div>
@@ -163,6 +169,57 @@
 @keyframes drawing-spin{ to{ transform:rotate(360deg); } }
 .drawing-error{ padding:14px 18px; margin-bottom:20px; background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.35); border-radius:10px; color:#fca5a5; }
 .drawing-result-wrap{ padding:20px; border-radius:14px; }
+
+/* ── Photo attach (OCR) ────────────────────────────────────────────── */
+.drw-attach-preview{
+    margin-top:12px;
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:rgba(74,168,255,.06);
+    border:1px solid rgba(74,168,255,.28);
+    border-radius:10px;
+}
+.drw-attach-preview img{
+    width:64px; height:64px;
+    object-fit:cover;
+    border-radius:6px;
+    background:#fff;
+    flex:0 0 auto;
+}
+.drw-attach-preview .drw-attach-info{
+    flex:1 1 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    color:var(--text);
+    font-size:13px;
+    word-break:break-all;
+}
+.drw-attach-preview .drw-attach-rm{
+    flex:0 0 auto;
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:6px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:13px;
+    line-height:1;
+    transition:.15s;
+}
+.drw-attach-preview .drw-attach-rm:hover{
+    color:#fca5a5;
+    border-color:rgba(239,68,68,.45);
+    background:rgba(239,68,68,.08);
+}
+.drawing-form.drw-drop-hover{
+    outline:2px dashed var(--accent-2);
+    outline-offset:-6px;
+    background:rgba(74,168,255,.05);
+}
 
 /* ── History strip (last 5 drawings under the result) ──────────────── */
 .drawing-history-wrap{ padding:20px; border-radius:14px; margin-top:20px; }

@@ -20,8 +20,8 @@
     // ── Character counter ────────────────────────────────────────────────
     function updateCounter() {
         var len = textArea.value.length;
-        counter.textContent = len + ' / 2000 символов';
-        if (len > 2000)        counter.style.color = '#fca5a5';
+        counter.textContent = len + ' / 4000 символов';
+        if (len > 4000)        counter.style.color = '#fca5a5';
         else if (len >= 10)    counter.style.color = '#86efac';
         else                   counter.style.color = '';
     }
@@ -134,28 +134,142 @@
     loadHistory();
 
     // ── Submit ───────────────────────────────────────────────────────────
+    // ── Image attach (photo of the problem) ──────────────────────────────
+    var attachedImageDataUrl = null;   // full data:image/...;base64,...
+    var attachedImageName    = null;
+
+    function setAttachedImage(dataUrl, name) {
+        attachedImageDataUrl = dataUrl || null;
+        attachedImageName    = name || null;
+        var box = document.getElementById('drwAttachPreview');
+        if (!box) return;
+        if (!attachedImageDataUrl) {
+            box.hidden = true;
+            box.innerHTML = '';
+            return;
+        }
+        box.hidden = false;
+        box.innerHTML =
+            '<img src="' + attachedImageDataUrl + '" alt="фото условия" />'
+          + '<div class="drw-attach-info">'
+          +   '<span>📎 ' + (attachedImageName || 'фото условия')
+          +   '</span>'
+          +   '<button type="button" class="drw-attach-rm" '
+          +           'aria-label="Убрать фото">✕</button>'
+          + '</div>';
+        var rm = box.querySelector('.drw-attach-rm');
+        if (rm) rm.addEventListener('click', function () {
+            setAttachedImage(null, null);
+        });
+    }
+
+    function readFileAsDataUrl(file) {
+        return new Promise(function (res, rej) {
+            var fr = new FileReader();
+            fr.onload  = function () { res(fr.result); };
+            fr.onerror = function () { rej(fr.error); };
+            fr.readAsDataURL(file);
+        });
+    }
+
+    function handleImageFile(file) {
+        if (!file) return;
+        if (!file.type || file.type.indexOf('image/') !== 0) {
+            showError('Поддерживаются только изображения (PNG/JPEG/WEBP).');
+            return;
+        }
+        if (file.size > 8 * 1024 * 1024) {
+            showError('Файл больше 8 МБ. Уменьши скриншот.');
+            return;
+        }
+        readFileAsDataUrl(file).then(function (durl) {
+            hideError();
+            setAttachedImage(durl, file.name || ('clip.' +
+                (file.type.split('/')[1] || 'png')));
+        }).catch(function () {
+            showError('Не удалось прочитать файл.');
+        });
+    }
+
+    // File-input button.
+    var fileInput  = document.getElementById('drwAttachFile');
+    var attachBtn  = document.getElementById('drwAttachBtn');
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', function () { fileInput.click(); });
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files && fileInput.files[0]) {
+                handleImageFile(fileInput.files[0]);
+                fileInput.value = '';
+            }
+        });
+    }
+
+    // Ctrl/Cmd+V paste a screenshot directly into the textarea.
+    textArea.addEventListener('paste', function (ev) {
+        var items = ev.clipboardData && ev.clipboardData.items;
+        if (!items) return;
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            if (it && it.kind === 'file' && it.type.indexOf('image/') === 0) {
+                ev.preventDefault();
+                handleImageFile(it.getAsFile());
+                return;
+            }
+        }
+    });
+
+    // Drag-and-drop a file directly onto the textarea / its wrapper.
+    var dropTarget = textArea.closest('.drawing-form') || textArea;
+    ['dragenter', 'dragover'].forEach(function (evt) {
+        dropTarget.addEventListener(evt, function (ev) {
+            if (ev.dataTransfer && Array.prototype.indexOf.call(
+                    ev.dataTransfer.types || [], 'Files') !== -1) {
+                ev.preventDefault();
+                dropTarget.classList.add('drw-drop-hover');
+            }
+        });
+    });
+    ['dragleave', 'drop'].forEach(function (evt) {
+        dropTarget.addEventListener(evt, function (ev) {
+            dropTarget.classList.remove('drw-drop-hover');
+            if (evt === 'drop'
+                && ev.dataTransfer && ev.dataTransfer.files
+                && ev.dataTransfer.files[0]) {
+                ev.preventDefault();
+                handleImageFile(ev.dataTransfer.files[0]);
+            }
+        });
+    });
+
     function submit(bypassCache) {
         hideError();
         var problem = (textArea.value || '').trim();
-        if (problem.length < 10) {
+        var hasImage = !!attachedImageDataUrl;
+        // If a photo is attached, we relax the 10-char minimum on text.
+        if (!hasImage && problem.length < 10) {
             showError('Условие слишком короткое — нужно хотя бы 10 символов.');
             return;
         }
-        if (problem.length > 2000) {
-            showError('Условие слишком длинное — максимум 2000 символов.');
+        if (problem.length > 4000) {
+            showError('Условие слишком длинное — максимум 4000 символов.');
             return;
         }
 
         setBusy(true);
         resultWrap.hidden = true;
 
+        var payload = {
+            problem: problem,
+            bypass_cache: !!bypassCache
+        };
+        if (hasImage) {
+            payload.image_b64 = attachedImageDataUrl;
+        }
+
         fetch('/api/drawing/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                problem: problem,
-                bypass_cache: !!bypassCache
-            })
+            body: JSON.stringify(payload)
         })
         .then(function (r) {
             return r.json().then(function (data) {

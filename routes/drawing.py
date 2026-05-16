@@ -183,6 +183,43 @@ def api_drawing_generate():
         data = request.get_json(silent=True) or {}
 
     problem = (data.get("problem") or "").strip()
+    # Optional photo of the task (data URL or bare base64).  If present
+    # we run vision-OCR first and either use it as the problem text or
+    # combine it with the typed text below.
+    raw_image = data.get("image_b64") or data.get("image") or ""
+    if isinstance(raw_image, str):
+        raw_image = raw_image.strip()
+    else:
+        raw_image = ""
+    image_mime = "image/png"
+    image_bytes: bytes | None = None
+    if raw_image:
+        try:
+            payload = raw_image
+            if payload.startswith("data:"):
+                # data:image/jpeg;base64,XXXX
+                header, _, b64body = payload.partition(",")
+                if ";base64" in header.lower():
+                    payload = b64body
+                # extract MIME if present
+                if header.startswith("data:") and ";" in header:
+                    image_mime = header[5:].split(";", 1)[0] or "image/png"
+            image_bytes = base64.b64decode(payload, validate=False)
+            # 8 MB upper bound to protect Gemini from abuse
+            if len(image_bytes) > 8 * 1024 * 1024:
+                return jsonify({
+                    "error": (
+                        "Изображение слишком большое (макс 8 МБ). "
+                        "Уменьши размер скриншота."
+                    )
+                }), 400
+            if len(image_bytes) < 200:
+                image_bytes = None
+        except Exception as _e:  # noqa: BLE001
+            return jsonify({
+                "error": "Не удалось прочитать изображение (битый base64)."
+            }), 400
+
     # When the user clicks "Regenerate without cache" we want to force
     # a full pipeline run even if the same problem text has been seen
     # before.  Accepted as truthy bool/int/string.
@@ -196,12 +233,42 @@ def api_drawing_generate():
     else:
         bypass_cache = False
 
+    # OCR stage: if a photo was attached we run vision-OCR before we
+    # validate the textual length.  The OCR result is concatenated with
+    # whatever the student typed (typed text wins as the leading part,
+    # since students usually type a comment like "see image" + image).
+    ocr_used = False
+    ocr_text: str | None = None
+    if image_bytes is not None:
+        try:
+            from services.drawing_ocr import ocr_problem_image
+        except Exception as _e:  # pragma: no cover
+            ocr_problem_image = None  # type: ignore[assignment]
+            logger.warning("[drawing] OCR module import failed: %s", _e)
+        if ocr_problem_image is not None:
+            ocr_text, _ocr_cost = ocr_problem_image(image_bytes, mime=image_mime)
+            ocr_used = bool(ocr_text)
+            if ocr_text:
+                if problem:
+                    problem = (problem + "\n\n" + ocr_text).strip()
+                else:
+                    problem = ocr_text
+            elif not problem:
+                return jsonify({
+                    "error": (
+                        "Не удалось распознать условие на фото. "
+                        "Проверь, что текст задачи виден и сделан скриншот "
+                        "достаточного разрешения, или напечатай условие "
+                        "вручную."
+                    )
+                }), 400
+
     if not problem:
         return jsonify({"error": "Условие задачи не указано."}), 400
     if len(problem) < 10:
         return jsonify({"error": "Условие слишком короткое — минимум 10 символов."}), 400
-    if len(problem) > 2000:
-        return jsonify({"error": "Условие слишком длинное — максимум 2000 символов."}), 400
+    if len(problem) > 4000:
+        return jsonify({"error": "Условие слишком длинное — максимум 4000 символов."}), 400
 
     allowed, retry_after = _rate_check()
     if not allowed:
