@@ -507,6 +507,13 @@ except Exception as _e:
     print(f"[BP] drawing_bp NOT registered: {_e}")
 
 try:
+    from routes.drawing_diag import drawing_diag_bp
+    app.register_blueprint(drawing_diag_bp)
+    print("[BP] drawing_diag_bp registered (/api/drawing/diag)")
+except Exception as _e:
+    print(f"[BP] drawing_diag_bp NOT registered: {_e}")
+
+try:
     from routes.chat_presence import chat_presence_bp, _ensure_table as _ensure_presence_table
     app.register_blueprint(chat_presence_bp)
     with app.app_context():
