@@ -419,6 +419,11 @@ try:
                 ('forwarded_from_id', 'INTEGER NULL'),
                 ('delivered_at', 'TIMESTAMP NULL'),
                 ('read_at', 'TIMESTAMP NULL'),
+                # CHAT_ATTACH_V1 — вложения
+                ('attachment_url', 'VARCHAR(400) NULL'),
+                ('attachment_kind', 'VARCHAR(16) NULL'),
+                ('attachment_name', 'VARCHAR(255) NULL'),
+                ('attachment_size', 'INTEGER NULL'),
             ):
                 if _col not in _wa_cols:
                     try:
@@ -7079,7 +7084,7 @@ def api_chat_send(friend_id):
 
     payload = request.get_json(silent=True) or {}
     kind = (payload.get('kind') or 'text').strip()
-    if kind not in ('text', 'task_share'):
+    if kind not in ('text', 'task_share', 'attachment'):
         return jsonify({'error': 'Неизвестный тип сообщения'}), 400
 
     # Reply-to (optional). Validate that the referenced message belongs to this conversation.
@@ -7133,6 +7138,27 @@ def api_chat_send(friend_id):
         if not (msg.task_id or msg.task_url or msg.task_preview):
             return jsonify({'error': 'Карточка задачи пустая'}), 400
 
+    if kind == 'attachment':
+        att = payload.get('attachment') or {}
+        att_url = (att.get('url') or '').strip()
+        att_kind = (att.get('kind') or '').strip()
+        if not att_url or att_kind not in ('image', 'pdf'):
+            return jsonify({'error': 'Вложение пустое или неподдерживаемого типа'}), 400
+        # Server-side ownership check: the URL must point at a file we just
+        # saved under /static/uploads/chat/<current_user.id>/...
+        expected_prefix = '/static/uploads/chat/' + str(current_user.id) + '/'
+        if not att_url.startswith(expected_prefix):
+            return jsonify({'error': 'Чужое вложение'}), 403
+        msg.attachment_url = att_url[:400]
+        msg.attachment_kind = att_kind
+        msg.attachment_name = (att.get('name') or '')[:255] or None
+        try:
+            msg.attachment_size = int(att.get('size')) if att.get('size') is not None else None
+        except (TypeError, ValueError):
+            msg.attachment_size = None
+        caption = (payload.get('body') or payload.get('note') or '').strip()
+        msg.body = caption[:1000] if caption else None
+
     db.session.add(msg)
     db.session.commit()
 
@@ -7151,6 +7177,69 @@ def api_chat_send(friend_id):
         db.session.rollback()
 
     return jsonify({'success': True, 'message': msg.to_dict(viewer_id=current_user.id)})
+
+
+@app.route('/api/chat/<int:friend_id>/upload', methods=['POST'])
+@login_required
+def api_chat_upload(friend_id):
+    """Upload an attachment (image or PDF) for a chat message.
+
+    Validates that *friend_id* is a friend, that the file is JPG/PNG/WEBP/PDF
+    and at most 5 MB. Saves to ``static/uploads/chat/<sender_id>/<uuid>.<ext>``
+    and returns the resulting URL. The client must then call ``api_chat_send``
+    with ``kind='attachment'`` and the URL we returned.
+    """
+    friend = _ensure_friends(friend_id)
+    if not friend:
+        return jsonify({'error': 'Это не ваш друг'}), 403
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'Файл не передан'}), 400
+    f = request.files['file']
+    if not f or not (f.filename or '').strip():
+        return jsonify({'error': 'Файл пустой'}), 400
+
+    ALLOWED_IMG = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
+    ALLOWED_PDF = {'pdf'}
+    MAX_BYTES = 5 * 1024 * 1024
+
+    original_name = os.path.basename(f.filename)[:255]
+    ext = (original_name.rsplit('.', 1)[-1] if '.' in original_name else '').lower()
+    if ext in ALLOWED_IMG:
+        att_kind = 'image'
+    elif ext in ALLOWED_PDF:
+        att_kind = 'pdf'
+    else:
+        return jsonify({'error': 'Разрешены только изображения (jpg/png/webp/gif) и PDF'}), 400
+
+    f.stream.seek(0, os.SEEK_END)
+    size = f.stream.tell()
+    f.stream.seek(0)
+    if size <= 0:
+        return jsonify({'error': 'Файл пустой'}), 400
+    if size > MAX_BYTES:
+        return jsonify({'error': 'Файл больше 5 МБ'}), 400
+
+    folder = os.path.join('static', 'uploads', 'chat', str(current_user.id))
+    os.makedirs(folder, exist_ok=True)
+    name = uuid.uuid4().hex + '.' + ext
+    path = os.path.join(folder, name)
+    try:
+        f.save(path)
+    except Exception as _se:
+        app.logger.warning("chat upload save failed: %r", _se)
+        return jsonify({'error': 'Не удалось сохранить файл'}), 500
+
+    url = '/static/uploads/chat/' + str(current_user.id) + '/' + name
+    return jsonify({
+        'success': True,
+        'attachment': {
+            'url':  url,
+            'kind': att_kind,
+            'name': original_name,
+            'size': size,
+        }
+    })
 
 
 @app.route('/api/chat/message/<int:message_id>/edit', methods=['POST'])

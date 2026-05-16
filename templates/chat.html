@@ -250,6 +250,33 @@
   font-size:18px; cursor:pointer; border-radius:8px; transition:transform .12s;
 }
 .msg-react-bar button:hover{ background:rgba(74,168,255,.18); transform:scale(1.15); }
+/* CHAT_ATTACH_V1 */
+.bubble-attach{ margin-top:6px; }
+.bubble-attach img{
+  max-width:240px; max-height:280px; border-radius:10px;
+  display:block; cursor:zoom-in; background:rgba(0,0,0,.18);
+}
+.bubble-attach.pdf{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px; border-radius:10px;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1);
+  text-decoration:none; color:inherit; max-width:260px;
+}
+.bubble-attach.pdf:hover{ background:rgba(74,168,255,.18); }
+.bubble-attach.pdf .pdf-icon{ font-size:24px; flex-shrink:0; }
+.bubble-attach.pdf .pdf-meta{ overflow:hidden; }
+.bubble-attach.pdf .pdf-name{
+  font-size:.93em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.bubble-attach.pdf .pdf-size{ font-size:.78em; opacity:.7; }
+.attach-preview{
+  display:flex; align-items:center; gap:10px;
+  padding:6px 10px; margin:6px 0 0;
+  background:rgba(74,168,255,.12); border:1px dashed rgba(74,168,255,.4);
+  border-radius:8px; font-size:.9em;
+}
+.attach-preview .remove{ cursor:pointer; opacity:.7; }
+.attach-preview .remove:hover{ opacity:1; color:#f87171; }
 .chat-bubble.flash{ animation:bubbleFlash 1.4s ease; }
 @keyframes bubbleFlash{
   0%, 100%{ box-shadow:none; }
@@ -515,11 +542,18 @@
       </div>
       <div class="chat-composer">
         <button class="chat-btn share" title="Поделиться задачей" onclick="openTaskPicker()">📎</button>
+        <button class="chat-btn share" title="Прикрепить файл (картинка / PDF, до 5 МБ)" onclick="document.getElementById('chatFileInput').click()">🖼</button>
+        <input type="file" id="chatFileInput" accept="image/*,application/pdf" hidden onchange="onAttachPicked(event)">
         <textarea id="chatText" placeholder="Напишите сообщение… (Enter — отправить, Shift+Enter — перенос)"
                   onkeydown="onChatKey(event)"></textarea>
         <button class="chat-btn send" id="chatSendBtn" onclick="sendMessage()" title="Отправить">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
         </button>
+      </div>
+      <div id="attachPreviewBar" class="attach-preview" hidden style="margin-left:14px;margin-right:14px;">
+        <span class="icon">📎</span>
+        <span class="name" id="attachPreviewName">file</span>
+        <span class="remove" onclick="cancelAttach()" title="Отменить">×</span>
       </div>
     {% else %}
       <div class="chat-empty">
@@ -686,6 +720,25 @@ async function loadMessages(){
    read      — recipient opened the chat, double blue tick
    This is a no-op for `m.mine === false` because CSS hides .msg-status
    inside `.chat-bubble.theirs`. */
+/* CHAT_ATTACH_V1: build attachment block for one message. */
+function attachmentHtml(m){
+  const a = m && m.attachment;
+  if (!a || !a.url || m.deleted) return '';
+  if (a.kind === 'image'){
+    return '<div class="bubble-attach"><a href="' + escHtml(a.url) + '" target="_blank" rel="noopener">'
+         + '<img src="' + escHtml(a.url) + '" alt="' + escHtml(a.name || '') + '"></a></div>';
+  }
+  if (a.kind === 'pdf'){
+    const sz = a.size ? (Math.round(a.size / 1024) + ' КБ') : '';
+    return '<a class="bubble-attach pdf" href="' + escHtml(a.url) + '" target="_blank" rel="noopener" download="' + escHtml(a.name || 'file.pdf') + '">'
+         + '<span class="pdf-icon">📄</span>'
+         + '<span class="pdf-meta">'
+         +   '<span class="pdf-name">' + escHtml(a.name || 'file.pdf') + '</span>'
+         +   (sz ? '<span class="pdf-size">' + sz + '</span>' : '')
+         + '</span></a>';
+  }
+  return '';
+}
 /* CHAT_REACTIONS_V1: build emoji-chip strip for one message. */
 function reactionsHtml(m){
   const rs = (m && m.reactions) || [];
@@ -753,9 +806,16 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
                     card +
                     '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>' +
                     reactionsHtml(m);
+    } else if (m.kind === 'attachment' && m.attachment){
+      b.innerHTML = forwardedTag + replyHtml +
+                    (m.body ? escHtml(m.body) + '<br>' : '') +
+                    attachmentHtml(m) +
+                    '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>' +
+                    reactionsHtml(m);
     } else {
       b.innerHTML = forwardedTag + replyHtml +
                     escHtml(m.body || '') +
+                    attachmentHtml(m) +
                     '<span class="ts">' + fmtTime(m.created_at) + editedTag + statusHtml(m) + '</span>' +
                     reactionsHtml(m);
     }
@@ -1093,17 +1153,68 @@ function onChatKey(e){
   }
 }
 
+/* CHAT_ATTACH_V1 — picked but not yet sent attachment (server-side URL). */
+let _pendingAttachment = null;
+
+async function onAttachPicked(ev){
+  const inp = ev.target;
+  const f = inp.files && inp.files[0];
+  inp.value = '';  // allow re-selecting the same file
+  if (!f || !currentFriendId) return;
+  if (f.size > 5 * 1024 * 1024){
+    alert('Файл больше 5 МБ');
+    return;
+  }
+  const bar = document.getElementById('attachPreviewBar');
+  const nameEl = document.getElementById('attachPreviewName');
+  if (nameEl) nameEl.textContent = 'Загружаем: ' + f.name + '…';
+  if (bar) bar.hidden = false;
+  try {
+    const fd = new FormData();
+    fd.append('file', f);
+    const r = await fetch('/api/chat/' + currentFriendId + '/upload', {
+      method: 'POST',
+      body: fd,
+    });
+    if (!r.ok){
+      const err = await r.json().catch(() => ({}));
+      alert(err.error || 'Ошибка загрузки');
+      cancelAttach();
+      return;
+    }
+    const data = await r.json();
+    _pendingAttachment = data.attachment;
+    if (nameEl) nameEl.textContent = '📎 ' + (_pendingAttachment.name || 'file');
+  } catch(e){
+    console.error(e);
+    alert('Ошибка соединения');
+    cancelAttach();
+  }
+}
+
+function cancelAttach(){
+  _pendingAttachment = null;
+  const bar = document.getElementById('attachPreviewBar');
+  if (bar) bar.hidden = true;
+}
+
 async function sendMessage(){
   const ta = document.getElementById('chatText');
   const text = (ta.value || '').trim();
-  if (!text || !currentFriendId) return;
+  if (!currentFriendId) return;
+  if (!text && !_pendingAttachment) return;
   const btn = document.getElementById('chatSendBtn');
   btn.disabled = true;
   try{
     let url, payload;
     if (_editingId){
+      // Editing only supports text bodies; ignore any attachment.
       url = '/api/chat/message/' + _editingId + '/edit';
       payload = { body: text };
+    } else if (_pendingAttachment){
+      url = '/api/chat/' + currentFriendId + '/send';
+      payload = { kind: 'attachment', attachment: _pendingAttachment, body: text };
+      if (_replyToId) payload.reply_to_id = _replyToId;
     } else {
       url = '/api/chat/' + currentFriendId + '/send';
       payload = { kind:'text', body: text };
@@ -1122,6 +1233,7 @@ async function sendMessage(){
     ta.value = '';
     _replyToId = null;
     _editingId = null;
+    cancelAttach();
     document.getElementById('chatActionBar').hidden = true;
     await loadMessages();
     loadConversations();

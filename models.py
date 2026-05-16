@@ -500,6 +500,12 @@ class DirectMessage(db.Model):
     task_url = db.Column(db.String(400), nullable=True)
     task_preview = db.Column(db.Text, nullable=True)  # короткий текст условия
 
+    # CHAT_ATTACH_V1 — вложения (картинка / pdf)
+    attachment_url = db.Column(db.String(400), nullable=True)
+    attachment_kind = db.Column(db.String(16), nullable=True)   # 'image' | 'pdf'
+    attachment_name = db.Column(db.String(255), nullable=True)
+    attachment_size = db.Column(db.Integer, nullable=True)      # bytes
+
     # WA-style chat (DM_WA_V1)
     reply_to_id = db.Column(db.Integer, nullable=True, index=True)
     edited_at = db.Column(db.DateTime, nullable=True)
@@ -569,6 +575,12 @@ class DirectMessage(db.Model):
             'read_at': (self.read_at.isoformat()
                         if getattr(self, 'read_at', None) else None),
             'reactions': _aggregate_reactions(self.id, viewer_id),
+            'attachment': ({
+                'url':  self.attachment_url,
+                'kind': self.attachment_kind,
+                'name': self.attachment_name,
+                'size': self.attachment_size,
+            } if getattr(self, 'attachment_url', None) and not is_deleted else None),
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
