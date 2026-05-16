@@ -53,6 +53,109 @@
 }
 .sidebar-menu button:hover{ background:rgba(74,168,255,.18); color:#fff; }
 .chat-sidebar header{ position:relative; }
+
+/* CHAT_GROUPS_V1 — create-group modal */
+.gc-create-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.55);
+  display:flex; align-items:center; justify-content:center; z-index:200;
+  backdrop-filter:blur(4px);
+}
+.gc-create-card{
+  background:#1e293b; border:1px solid #334155; border-radius:18px;
+  width:92%; max-width:460px; max-height:85vh;
+  display:flex; flex-direction:column;
+  box-shadow:0 24px 70px rgba(0,0,0,.55);
+  overflow:hidden;
+}
+.gc-create-head{
+  display:flex; align-items:center; gap:12px;
+  padding:18px 20px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.gc-create-icon{
+  width:44px; height:44px; border-radius:50%;
+  background:linear-gradient(135deg,#6c5ce7,#4aa8ff);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.4em;
+}
+.gc-create-head h3{ margin:0; color:#fff; font-size:1.1em; }
+.gc-create-sub{ color:#94a3b8; font-size:.85em; margin-top:2px; }
+.gc-create-close{
+  margin-left:auto;
+  background:transparent; border:none; color:#94a3b8;
+  font-size:1.4em; cursor:pointer; padding:4px 10px; border-radius:6px;
+  line-height:1;
+}
+.gc-create-close:hover{ background:rgba(255,255,255,.08); color:#fff; }
+#gcNameInput{
+  margin:16px 20px 0;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12); border-radius:10px;
+  color:#fff; padding:11px 14px; font-size:.98em; outline:none;
+  transition:border-color .15s ease;
+}
+#gcNameInput:focus{ border-color:#4aa8ff; }
+.gc-create-label{
+  color:#94a3b8; font-size:.85em; margin:14px 20px 6px;
+  display:flex; align-items:center; gap:8px;
+}
+.gc-picked{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:22px; padding:0 7px; border-radius:11px;
+  background:#4aa8ff; color:#fff; font-size:.78em; font-weight:600;
+}
+.gc-create-list{
+  flex:1; overflow-y:auto; min-height:160px; max-height:300px;
+  padding:4px 20px 4px;
+}
+.gc-friend-row{
+  display:flex; align-items:center; gap:12px;
+  padding:8px 10px; margin:4px 0;
+  border-radius:10px; cursor:pointer;
+  transition:background .15s ease;
+}
+.gc-friend-row:hover{ background:rgba(74,168,255,.08); }
+.gc-friend-row.selected{ background:rgba(74,168,255,.18); }
+.gc-friend-av{
+  width:34px; height:34px; border-radius:50%;
+  background:linear-gradient(135deg,#6c5ce7,#4aa8ff);
+  color:#fff; font-weight:600;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.95em;
+  flex-shrink:0;
+}
+.gc-friend-name{ color:#e2e8f0; font-size:.95em; flex:1; }
+.gc-friend-check{
+  width:24px; height:24px; border-radius:50%;
+  border:2px solid rgba(255,255,255,.2);
+  color:transparent; font-size:.9em; font-weight:bold;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s ease;
+}
+.gc-friend-row.selected .gc-friend-check{
+  background:#4caf50; border-color:#4caf50; color:#fff;
+}
+.gc-create-foot{
+  display:flex; gap:10px; justify-content:flex-end;
+  padding:16px 20px; border-top:1px solid rgba(255,255,255,.06);
+}
+.gc-btn-cancel,
+.gc-btn-create{
+  border:none; border-radius:10px;
+  padding:10px 22px; font-size:.95em; cursor:pointer;
+  font-weight:500;
+  transition:opacity .15s ease, transform .15s ease;
+}
+.gc-btn-cancel{
+  background:rgba(255,255,255,.08); color:#cbd2dd;
+}
+.gc-btn-cancel:hover{ background:rgba(255,255,255,.14); }
+.gc-btn-create{
+  background:linear-gradient(135deg,#6c5ce7,#4aa8ff);
+  color:#fff;
+}
+.gc-btn-create:hover{ transform:translateY(-1px); }
+.gc-btn-create:disabled{ opacity:.6; cursor:wait; transform:none; }
 .chat-sidebar header .count{
   margin-right:8px;
   font-size:.85em;
@@ -923,6 +1026,14 @@ function attachBubbleMenu(bubble, m){
     e.preventDefault();
     showCtxMenu(e.clientX, e.clientY, m);
   });
+  // CHAT_LEFTCLICK_V1 — left click also opens menu (better UX, no need for right click)
+  bubble.addEventListener('click', function(e){
+    if (m.deleted) return;
+    // Ignore clicks on interactive children (reactions, links inside bubble)
+    if (e.target.closest && e.target.closest('a, button, .msg-react-chip')) return;
+    e.preventDefault();
+    showCtxMenu(e.clientX, e.clientY, m);
+  });
   bubble.addEventListener('touchstart', function(e){
     pressTimer = setTimeout(() => {
       const t = e.touches[0];
@@ -1731,43 +1842,114 @@ function toggleSidebarMenu(ev){
   if (!m) return;
   m.hidden = !m.hidden;
 }
-async function actNewGroup(){
+function actNewGroup(){
   const m = document.getElementById('sidebarMenu');
   if (m) m.hidden = true;
-  const name = prompt('Название новой группы:');
-  if (!name || !name.trim()) return;
-  // Загружаем друзей чтобы предложить пригласить сразу
-  let friends = [];
+  openGroupCreateModal();
+}
+
+let _gcSelected = new Set();
+
+async function openGroupCreateModal(){
+  let modal = document.getElementById('gcCreateModal');
+  if (!modal){
+    modal = document.createElement('div');
+    modal.id = 'gcCreateModal';
+    modal.className = 'gc-create-overlay';
+    modal.onclick = function(e){ if (e.target === modal) closeGroupCreateModal(); };
+    modal.innerHTML = ''
+      + '<div class="gc-create-card">'
+      + '  <div class="gc-create-head">'
+      + '    <div class="gc-create-icon">👥</div>'
+      + '    <div>'
+      + '      <h3>Новая группа</h3>'
+      + '      <div class="gc-create-sub">Дайте название и выберите участников</div>'
+      + '    </div>'
+      + '    <button class="gc-create-close" type="button" onclick="closeGroupCreateModal()">×</button>'
+      + '  </div>'
+      + '  <input id="gcNameInput" type="text" placeholder="Название группы…" maxlength="120">'
+      + '  <div class="gc-create-label">Пригласить друзей <span id="gcPickedCount" class="gc-picked">0</span></div>'
+      + '  <div id="gcFriendList" class="gc-create-list">Загрузка…</div>'
+      + '  <div class="gc-create-foot">'
+      + '    <button type="button" class="gc-btn-cancel" onclick="closeGroupCreateModal()">Отмена</button>'
+      + '    <button type="button" class="gc-btn-create" onclick="submitGroupCreate()">Создать</button>'
+      + '  </div>'
+      + '</div>';
+    document.body.appendChild(modal);
+  }
+  modal.hidden = false;
+  _gcSelected = new Set();
+  updateGcPickedCount();
+  const inp = document.getElementById('gcNameInput');
+  if (inp){ inp.value = ''; setTimeout(() => inp.focus(), 50); }
+  // Загружаем друзей
+  const list = document.getElementById('gcFriendList');
+  list.textContent = 'Загрузка…';
   try {
     const r = await fetch('/api/chat/conversations');
-    if (r.ok){
-      const d = await r.json();
-      friends = (d.conversations || []).map(c => c.friend).filter(Boolean);
+    if (!r.ok){ list.textContent = 'Не удалось загрузить друзей'; return; }
+    const d = await r.json();
+    const friends = (d.conversations || []).map(c => c.friend).filter(Boolean);
+    if (!friends.length){
+      list.innerHTML = '<div style="padding:24px; text-align:center; color:#94a3b8">У вас пока нет друзей. Можно создать пустую группу.</div>';
+      return;
     }
-  } catch(_) {}
-  let member_ids = [];
-  if (friends.length){
-    const listStr = friends.map((f, i) => (i+1) + ') ' + (f.name || f.nickname || ('id=' + f.id))).join('\n');
-    const picked = prompt('Кого пригласить? Введи номера через запятую (или Enter — без приглашений):\n\n' + listStr);
-    if (picked && picked.trim()){
-      const idxs = picked.split(',').map(x => parseInt(x.trim()) - 1).filter(i => !isNaN(i) && i >= 0 && i < friends.length);
-      member_ids = idxs.map(i => friends[i].id);
-    }
+    list.innerHTML = friends.map(f => {
+      const initials = (f.name || f.nickname || '?')[0].toUpperCase();
+      return '<div class="gc-friend-row" data-fid="' + f.id + '" onclick="toggleGcFriend(' + f.id + ', this)">'
+           + '<div class="gc-friend-av">' + escHtml(initials) + '</div>'
+           + '<div class="gc-friend-name">' + escHtml(f.name || f.nickname || ('id=' + f.id)) + '</div>'
+           + '<div class="gc-friend-check">✓</div>'
+           + '</div>';
+    }).join('');
+  } catch(e){ console.error(e); list.textContent = 'Ошибка соединения'; }
+}
+
+function closeGroupCreateModal(){
+  const m = document.getElementById('gcCreateModal');
+  if (m) m.hidden = true;
+}
+
+function toggleGcFriend(uid, row){
+  if (_gcSelected.has(uid)){
+    _gcSelected.delete(uid);
+    row.classList.remove('selected');
+  } else {
+    _gcSelected.add(uid);
+    row.classList.add('selected');
   }
+  updateGcPickedCount();
+}
+
+function updateGcPickedCount(){
+  const c = document.getElementById('gcPickedCount');
+  if (c) c.textContent = _gcSelected.size;
+}
+
+async function submitGroupCreate(){
+  const inp = document.getElementById('gcNameInput');
+  const name = (inp ? inp.value : '').trim();
+  if (!name){ alert('Введите название группы'); inp && inp.focus(); return; }
+  const btn = document.querySelector('.gc-btn-create');
+  if (btn){ btn.disabled = true; btn.textContent = 'Создаём…'; }
   try {
     const r = await fetch('/api/groups', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ name: name.trim(), member_ids: member_ids })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, member_ids: Array.from(_gcSelected) })
     });
     if (!r.ok){
       const e = await r.json().catch(() => ({}));
       alert(e.error || 'Не удалось создать группу');
+      if (btn){ btn.disabled = false; btn.textContent = 'Создать'; }
       return;
     }
     const d = await r.json();
     window.location.href = '/groups/' + d.group_id;
-  } catch(_){ alert('Ошибка соединения'); }
+  } catch(_){
+    alert('Ошибка соединения');
+    if (btn){ btn.disabled = false; btn.textContent = 'Создать'; }
+  }
 }
 document.addEventListener('click', function(e){
   const m = document.getElementById('sidebarMenu');
