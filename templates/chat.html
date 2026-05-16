@@ -253,6 +253,51 @@
   font-size:14px; line-height:1.5;
   word-wrap:break-word; overflow-wrap:anywhere;
   white-space:pre-wrap;
+  position:relative;
+}
+/* CHAT_QUICK_V1 — always-visible reply / forward / react buttons on each bubble */
+.bubble-quick{
+  position:absolute;
+  top:-14px;
+  display:flex; gap:2px;
+  padding:3px 5px;
+  background:#1e293b;
+  border:1px solid #334155;
+  border-radius:999px;
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
+  opacity:0;
+  transform:translateY(4px);
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:5;
+  pointer-events:none;
+}
+.chat-bubble:hover > .bubble-quick,
+.bubble-quick:hover{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+.chat-bubble.mine > .bubble-quick{ right:6px; }
+.chat-bubble.theirs > .bubble-quick{ left:6px; }
+.bubble-quick button{
+  background:transparent; border:none; color:#e2e8f0;
+  width:26px; height:26px; padding:0;
+  border-radius:50%;
+  font-size:13px; line-height:1; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:background .12s ease, transform .12s ease;
+}
+.bubble-quick button:hover{
+  background:rgba(74,168,255,.22);
+  transform:scale(1.12);
+}
+/* On touch devices keep buttons always visible (no hover available). */
+@media (hover: none){
+  .bubble-quick{
+    opacity:1;
+    transform:none;
+    pointer-events:auto;
+  }
 }
 .chat-bubble.mine{
   align-self:flex-end;
@@ -1007,6 +1052,25 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
                     reactionsHtml(m);
     }
     attachBubbleMenu(b, m);
+    // CHAT_QUICK_V1 — always-visible quick actions (reply/forward) on hover
+    if (!m.deleted){
+      const tb = document.createElement('div');
+      tb.className = 'bubble-quick';
+      tb.innerHTML =
+        '<button type="button" title="Ответить" data-q="reply">↩</button>' +
+        '<button type="button" title="Переслать" data-q="forward">↗</button>' +
+        '<button type="button" title="Реакции" data-q="react">😀</button>';
+      tb.addEventListener('click', function(e){
+        e.stopPropagation();
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const act = btn.dataset.q;
+        if (act === 'reply') startReply(m);
+        else if (act === 'forward') openForward(m);
+        else if (act === 'react') showCtxMenu(e.clientX, e.clientY, m);
+      });
+      b.appendChild(tb);
+    }
     box.appendChild(b);
   }
   box.scrollTop = box.scrollHeight;
