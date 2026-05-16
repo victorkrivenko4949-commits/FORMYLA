@@ -1384,3 +1384,27 @@ def init_db(app):
     with app.app_context():
         db.create_all()
         print("✅ База данных инициализирована")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Раздел «Олимпиады» (/olympiads/*) — модели вынесены в models_olympiad.py,
+# чтобы не раздувать этот файл.  Реэкспортируем здесь, чтобы остальной
+# код мог писать `from models import Probnik, OlympiadTask, ...` единообразно.
+#
+# ВАЖНО: импорт обязательно В КОНЦЕ файла, чтобы к моменту регистрации
+# моделей объект `db = SQLAlchemy()` (см. начало этого модуля) уже существовал
+# и не возникло циклического импорта.
+# ──────────────────────────────────────────────────────────────────────────────
+from models_olympiad import (  # noqa: E402  (intentional late import)
+    Probnik,
+    OlympiadTask,
+    TheoryBlock,
+    ProbnikTheory,
+    TaskAttempt,
+    StageAttempt,
+    PROBNIK_TYPES,
+    DIFFICULTY_LEVELS,
+    THEORY_SECTIONS,
+    ATTEMPT_STATUSES,
+    STAGE_RESULTS,
+)
