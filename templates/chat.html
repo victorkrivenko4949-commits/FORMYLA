@@ -1031,6 +1031,8 @@ function attachBubbleMenu(bubble, m){
     if (m.deleted) return;
     // Ignore clicks on interactive children (reactions, links inside bubble)
     if (e.target.closest && e.target.closest('a, button, .msg-react-chip')) return;
+    // Stop propagation so the document-level click-outside listener doesn't immediately close the menu
+    e.stopPropagation();
     e.preventDefault();
     showCtxMenu(e.clientX, e.clientY, m);
   });
