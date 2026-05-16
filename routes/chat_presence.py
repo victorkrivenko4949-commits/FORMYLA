@@ -51,11 +51,15 @@ def _ensure_table() -> None:
 def _are_friends(uid_a: int, uid_b: int) -> bool:
     if uid_a == uid_b:
         return False
+    # Friendship model uses requester_id / addressee_id (not user_id/friend_id).
+    # A friendship exists in either direction once status == 'accepted'.
     f = Friendship.query.filter(
         Friendship.status == "accepted",
         db.or_(
-            db.and_(Friendship.user_id == uid_a, Friendship.friend_id == uid_b),
-            db.and_(Friendship.user_id == uid_b, Friendship.friend_id == uid_a),
+            db.and_(Friendship.requester_id == uid_a,
+                    Friendship.addressee_id == uid_b),
+            db.and_(Friendship.requester_id == uid_b,
+                    Friendship.addressee_id == uid_a),
         ),
     ).first()
     return f is not None

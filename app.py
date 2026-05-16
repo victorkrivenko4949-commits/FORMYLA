@@ -8389,5 +8389,20 @@ def group_page(group_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    # Auto-reloader is disabled by default because long-running endpoints
+    # (e.g. /api/drawing/generate, which runs a 1-3 minute LLM pipeline)
+    # get killed mid-request whenever Werkzeug detects ANY *.py change
+    # in the workspace (including scripts that pytest/scripts touch).
+    # Set FLASK_RELOAD=1 explicitly if you want the dev-time auto-reload
+    # behaviour back; do NOT set it while testing /drawing endpoints.
+    import os
+    _use_reloader = (
+        os.environ.get("FLASK_RELOAD", "0").strip().lower()
+        in ("1", "true", "yes", "on")
+    )
+    app.run(
+        debug=True,
+        port=5001,
+        use_reloader=_use_reloader,
+    )
 
