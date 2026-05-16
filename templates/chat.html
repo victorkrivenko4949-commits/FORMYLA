@@ -299,29 +299,51 @@
     pointer-events:auto;
   }
 }
-/* CHAT_FWDBTN_V1 — visible Forward button inside each bubble */
-.bubble-fwd-btn{
+/* CHAT_INLINEBAR_V1 — WhatsApp-style action bar inside each message */
+.bubble-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+  padding-top:6px;
+  border-top:1px solid rgba(255,255,255,.12);
+}
+.chat-bubble.theirs .bubble-actions{
+  border-top-color:rgba(255,255,255,.08);
+}
+.bubble-act-btn{
   display:inline-flex;
   align-items:center;
   gap:5px;
-  margin-top:6px;
-  padding:4px 10px;
-  border-radius:12px;
+  padding:5px 11px;
+  border-radius:14px;
   border:1px solid rgba(255,255,255,.22);
-  background:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.10);
   color:inherit;
-  font-size:.82em;
+  font-size:.8em;
+  font-weight:500;
   cursor:pointer;
   font-family:inherit;
+  line-height:1.2;
+  transition:background .12s ease, border-color .12s ease, transform .12s ease;
 }
-.bubble-fwd-btn:hover{
+.bubble-act-btn:hover,
+.bubble-act-btn:active{
   background:rgba(74,168,255,.32);
   border-color:rgba(74,168,255,.55);
+  transform:translateY(-1px);
 }
-.chat-bubble.theirs .bubble-fwd-btn{
-  background:rgba(74,168,255,.14);
-  border-color:rgba(74,168,255,.4);
-  color:#cbd5e1;
+.chat-bubble.theirs .bubble-act-btn{
+  background:rgba(74,168,255,.12);
+  border-color:rgba(74,168,255,.35);
+  color:#dbeafe;
+}
+.bubble-act-btn .ba-ico{ font-size:1em; line-height:1; }
+.bubble-act-btn .ba-lbl{ font-size:.95em; }
+@media (max-width: 540px){
+  .bubble-act-btn{ padding:7px 12px; font-size:.85em; }
+  .bubble-act-btn .ba-lbl{ display:none; }
+  .bubble-act-btn .ba-ico{ font-size:1.15em; }
 }
 .chat-bubble.mine{
   align-self:flex-end;
@@ -1095,18 +1117,31 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
       });
       b.appendChild(tb);
 
-      // CHAT_FWDBTN_V1 — always-visible "Переслать" button inline
-      const fwdBtn = document.createElement('button');
-      fwdBtn.type = 'button';
-      fwdBtn.className = 'bubble-fwd-btn';
-      fwdBtn.innerHTML = '<span>➤</span><span>Переслать</span>';
-      fwdBtn.addEventListener('click', function(e){
-        e.stopPropagation();
-        e.preventDefault();
-        openForward(m);
-      });
-      b.appendChild(document.createElement('br'));
-      b.appendChild(fwdBtn);
+      // CHAT_INLINEBAR_V1 — always-visible WhatsApp-style action bar inside bubble
+      const bar = document.createElement('div');
+      bar.className = 'bubble-actions';
+
+      const mkBtn = function(icon, label, handler){
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'bubble-act-btn';
+        btn.innerHTML = '<span class="ba-ico">' + icon + '</span><span class="ba-lbl">' + label + '</span>';
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          e.preventDefault();
+          handler(e);
+        });
+        return btn;
+      };
+
+      bar.appendChild(mkBtn('↩', 'Ответить', function(){ startReply(m); }));
+      bar.appendChild(mkBtn('➤', 'Переслать', function(){ openForward(m); }));
+      bar.appendChild(mkBtn('😀', 'Реакция', function(e){
+        const rect = bar.getBoundingClientRect();
+        showCtxMenu(rect.left, rect.top, m);
+      }));
+
+      b.appendChild(bar);
     }
     box.appendChild(b);
   }
