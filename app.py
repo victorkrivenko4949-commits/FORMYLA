@@ -475,8 +475,8 @@ login_manager.login_message = 'Пожалуйста, войдите для до�
 mail = Mail(app)
 
 # ── REGISTER BLUEPRINTS ───────────────────────────────────────────
-from routes.daily_olympiad import daily_olympiad_bp
-app.register_blueprint(daily_olympiad_bp)
+# NOTE: daily_olympiad blueprint ("Написать олимпиаду", /olympiad/write)
+# removed by request together with the "Написать олимпиаду" section.
 
 try:
     from routes.prep import prep_bp
@@ -799,6 +799,8 @@ UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
+# VARIANTS dict was used by the removed "Написать олимпиаду" routes (/practice*).
+# Kept as a no-op placeholder so any lingering references won't crash at import.
 VARIANTS = {}
 
 
@@ -1597,10 +1599,8 @@ def check_answer():
     return jsonify(response_data)
 
 
-@app.route("/practice")
-def practice():
-    return render_template("practice.html", olympiads=OLYMPIADS_INFO, grades=GRADES, rounds=ROUNDS)
-
+# NOTE: section "Написать олимпиаду" (routes /practice*) removed by request.
+# generate_variant() above is kept for now as dead code in case we revive it.
 
 @app.route("/probniks")
 def probniks_page():
@@ -1608,51 +1608,7 @@ def probniks_page():
     return render_template('probniks.html', title="Пробники", active_page="probniks")
 
 
-@app.route("/practice/generate", methods=["POST"])
-def generate_practice():
-    """Генерация варианта олимпиады."""
-    try:
-        slug = request.form.get("olympiad")
-        grade = request.form.get("grade", type=int)
-        round_key = request.form.get("round")
-
-        print(f"DEBUG: slug={slug}, grade={grade}, round={round_key}")
-
-        if not slug or not grade:
-            flash('Пожалуйста, заполните все поля формы', 'error')
-            return redirect(url_for('practice'))
-
-        problems = generate_variant(slug, grade, round_key)
-        print(f"DEBUG: Получено задач от generate_variant: {len(problems)}")
-
-        if not problems:
-            print("DEBUG: Генерация вернула пустой список")
-            flash(f'К сожалению, для олимпиады "{slug}", класса {grade} и этапа "{round_key}" пока нет задач в базе данных. Попробуйте другую комбинацию.', 'warning')
-            return redirect(url_for('practice'))
-
-
-        variant_id = str(uuid.uuid4())[:8]
-        VARIANTS[variant_id] = {
-            "olympiad": slug,
-            "olympiad_title": get_olympiad_by_slug(slug).get("title", slug) if get_olympiad_by_slug(slug) else slug,
-            "grade": grade,
-            "round": round_key,
-            "round_title": ROUNDS.get(round_key, round_key),
-            "problems": problems
-        }
-        print(f"DEBUG: variant_id={variant_id}, redirecting...")
-        return redirect(f"/practice/{variant_id}")
-        
-    except Exception as e:
-        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА в /practice/generate:")
-        print(f"   Тип: {type(e).__name__}")
-        print(f"   Сообщение: {e}")
-        import traceback
-        traceback.print_exc()
-        flash('Произошла ошибка при генерации варианта. Попробуйте еще раз или выберите другую комбинацию.', 'error')
-        return redirect(url_for('practice'))
-
-
+# NOTE: /practice/generate route removed together with the "Написать олимпиаду" section.
 
 # ── Список LaTeX-команд для авто-обнаружения ─────────────────────────────────
 _LATEX_COMMANDS = (
@@ -1798,71 +1754,8 @@ _TOPIC_LABELS_RU = {
     'inequalities': 'Неравенства',
 }
 
-@app.route("/practice/<variant_id>")
-def practice_variant(variant_id):
-    variant = VARIANTS.get(variant_id)
-    if not variant:
-        abort(404)
-    # Парсим Markdown в текстах задач
-    problems = variant.get('problems', [])
-    tasks_rendered = [
-        render_task_text(p.get('text', ''))
-        for p in problems
-    ]
-    # Собираем темы для UI-пилюль
-    topics_list = [
-        _TOPIC_LABELS_RU.get(p.get('topic', ''), '')
-        for p in problems
-    ]
-    return render_template(
-        "practice_variant.html",
-        variant=variant,
-        variant_id=variant_id,
-        tasks_rendered=tasks_rendered,
-        topics_list=topics_list,
-    )
-
-
-
-@app.route("/practice/<variant_id>/submit", methods=["POST"])
-def submit_solution(variant_id):
-    """Проверка ответов тренировочного варианта."""
-    variant = VARIANTS.get(variant_id)
-    if not variant:
-        abort(404)
-    
-    # Собираем результаты проверки
-    results = []
-    correct_count = 0
-    total_count = len(variant["problems"])
-    
-    for p in variant["problems"]:
-        problem_id = p["id"]
-        user_answer = request.form.get(f"ans_{problem_id}", "").strip()
-        correct_answer = str(p.get("answer", "")).strip()
-        
-        # Проверяем ответ с умной нормализацией
-        is_correct = compare_math_answers(user_answer, correct_answer)
-        if is_correct:
-            correct_count += 1
-        
-        results.append({
-            "problem": p,
-            "user_answer": request.form.get(f"ans_{problem_id}", "").strip(),
-            "correct_answer": p.get("answer", ""),
-            "is_correct": is_correct
-        })
-    
-    # Вычисляем процент успеха
-    success_rate = round((correct_count / total_count * 100)) if total_count > 0 else 0
-    
-    return render_template("practice_result.html",
-        variant=variant,
-        results=results,
-        correct_count=correct_count,
-        total_count=total_count,
-        success_rate=success_rate
-    )
+# NOTE: /practice/<variant_id> and /practice/<variant_id>/submit routes removed
+# together with the "Написать олимпиаду" section.
 
 
 # ============================================================
