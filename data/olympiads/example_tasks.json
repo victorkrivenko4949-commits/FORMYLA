@@ -1,0 +1,47 @@
+[
+  {
+    "probnik_code": "vsosh-9-2027-topic-1",
+    "number": "1.1",
+    "sort_order": 1,
+    "difficulty": "green",
+    "method_primary": "E14",
+    "method_secondary": null,
+    "condition_md": "Докажите, что для всех $n \\in \\mathbb{N}$ выполнено $1 + 2 + \\dots + n = \\dfrac{n(n+1)}{2}$.",
+    "idea_md": "Применим **математическую индукцию** по $n$.",
+    "solution_md": "**База ($n=1$):** $1 = \\tfrac{1 \\cdot 2}{2} = 1$. ✓\n\n**Шаг:** допустим, $1 + 2 + \\dots + n = \\tfrac{n(n+1)}{2}$. Тогда\n$$1 + 2 + \\dots + n + (n+1) = \\tfrac{n(n+1)}{2} + (n+1) = \\tfrac{(n+1)(n+2)}{2}.$$\nЧТД.",
+    "answer": "ч.т.д.",
+    "source_prototype": "ВсОШ-9, школьный этап 2003 г.",
+    "estimated_minutes": 8,
+    "max_score": 7
+  },
+  {
+    "probnik_code": "vsosh-9-2027-topic-1",
+    "number": "1.2",
+    "sort_order": 2,
+    "difficulty": "yellow",
+    "method_primary": "E14",
+    "method_secondary": "F4a",
+    "condition_md": "Докажите, что $2^n > n^2$ для всех $n \\geq 5$.",
+    "idea_md": "Индукция по $n$, начиная с базы $n=5$.",
+    "solution_md": "**База ($n=5$):** $2^5 = 32 > 25 = 5^2$. ✓\n\n**Шаг:** пусть $2^n > n^2$ при $n \\geq 5$. Покажем, что $2^{n+1} > (n+1)^2$.\n$$2^{n+1} = 2 \\cdot 2^n > 2n^2.$$\nДостаточно показать $2n^2 \\geq (n+1)^2 = n^2 + 2n + 1$, то есть $n^2 \\geq 2n + 1$, что верно при $n \\geq 5$. ЧТД.",
+    "answer": "ч.т.д.",
+    "source_prototype": null,
+    "estimated_minutes": 12,
+    "max_score": 7
+  },
+  {
+    "probnik_code": "vsosh-9-2027-stage-1",
+    "number": "Э1.1",
+    "sort_order": 1,
+    "difficulty": "yellow",
+    "method_primary": "F4a",
+    "method_secondary": null,
+    "condition_md": "На столе 25 яблок 5 разных сортов. Докажите, что найдётся 5 яблок одного сорта.",
+    "idea_md": "Принцип Дирихле: 25 объектов в 5 «ящиках» → ящик с $\\geq 5$ объектами.",
+    "solution_md": "Распределим 25 яблок по 5 сортам. Если в каждом сорте $\\leq 4$ яблока, то всего $\\leq 5 \\cdot 4 = 20 < 25$ — противоречие. Значит, в каком-то сорте $\\geq 5$ яблок.",
+    "answer": "ч.т.д.",
+    "source_prototype": "ВсОШ-9, школьный этап 2012 г.",
+    "estimated_minutes": 10,
+    "max_score": 7
+  }
+]

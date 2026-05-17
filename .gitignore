@@ -60,7 +60,11 @@ grade5_deficit_report.json
 *.jsonl.backup
 
 # Generated data
-data/
+# NOTE: use data/* (not data/) so git walks into the dir and per-child exceptions work.
+data/*
+# Exception: olympiad section data files are tracked (small, hand-curated).
+!data/olympiads/
+!data/olympiads/**
 *.jsonl
 *.bak
 checkpoint.json
