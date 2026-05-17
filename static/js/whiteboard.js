@@ -305,18 +305,113 @@
     }
   }
 
+  // Build SVG data-URI cursors so each tool has a distinct, "Thalamus-like" pointer.
+  function svgCursor(svg, hotX, hotY) {
+    const enc = encodeURIComponent(svg)
+      .replace(/'/g, "%27")
+      .replace(/"/g, "%22");
+    return "url(\"data:image/svg+xml;utf8," + enc + "\") " + hotX + " " + hotY + ", crosshair";
+  }
+  function cursorForTool(t, c) {
+    const stroke = (c || color || "#e6e8ff");
+    if (t === "select") return "default";
+    if (t === "pen") {
+      // Pencil: tip at bottom-left (hotspot 2, 30).
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
+          '<g transform="rotate(-45 16 16)">' +
+            '<rect x="13" y="3"  width="6" height="16" fill="#f4d35e" stroke="#1f2937" stroke-width="1.2"/>' +
+            '<rect x="13" y="3"  width="6" height="3"  fill="#e07a5f" stroke="#1f2937" stroke-width="1.2"/>' +
+            '<polygon points="13,19 19,19 16,27" fill="#f5deb3" stroke="#1f2937" stroke-width="1.2"/>' +
+            '<polygon points="14.5,24 17.5,24 16,27" fill="#1f2937"/>' +
+            '<rect x="13" y="6.5" width="6" height="1.2" fill="#1f2937" opacity="0.7"/>' +
+          '</g>' +
+          '<circle cx="2" cy="30" r="1.3" fill="' + stroke + '" stroke="#0b1020" stroke-width="0.7"/>' +
+        '</svg>';
+      return svgCursor(svg, 2, 30);
+    }
+    if (t === "eraser") {
+      // Eraser block, hotspot at tip (4, 28).
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
+          '<g transform="rotate(-30 16 16)">' +
+            '<rect x="6"  y="14" width="20" height="10" rx="1.5" fill="#ff7a90" stroke="#1f2937" stroke-width="1.3"/>' +
+            '<rect x="6"  y="14" width="20" height="4"  rx="1.5" fill="#ffd5dd" stroke="#1f2937" stroke-width="1.3"/>' +
+            '<line x1="12" y1="14" x2="12" y2="24" stroke="#1f2937" stroke-width="0.8" opacity="0.5"/>' +
+            '<line x1="20" y1="14" x2="20" y2="24" stroke="#1f2937" stroke-width="0.8" opacity="0.5"/>' +
+          '</g>' +
+        '</svg>';
+      return svgCursor(svg, 4, 28);
+    }
+    if (t === "rect") {
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
+          '<rect x="6" y="6" width="16" height="12" fill="none" stroke="' + stroke + '" stroke-width="2"/>' +
+          '<circle cx="14" cy="14" r="1.2" fill="' + stroke + '"/>' +
+        '</svg>';
+      return svgCursor(svg, 14, 14);
+    }
+    if (t === "ellipse") {
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
+          '<ellipse cx="14" cy="14" rx="9" ry="6" fill="none" stroke="' + stroke + '" stroke-width="2"/>' +
+          '<circle cx="14" cy="14" r="1.2" fill="' + stroke + '"/>' +
+        '</svg>';
+      return svgCursor(svg, 14, 14);
+    }
+    if (t === "line") {
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
+          '<line x1="4" y1="22" x2="24" y2="6" stroke="' + stroke + '" stroke-width="2.2" stroke-linecap="round"/>' +
+          '<circle cx="14" cy="14" r="1.2" fill="' + stroke + '"/>' +
+        '</svg>';
+      return svgCursor(svg, 14, 14);
+    }
+    if (t === "arrow") {
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
+          '<line x1="4" y1="22" x2="22" y2="6" stroke="' + stroke + '" stroke-width="2.2" stroke-linecap="round"/>' +
+          '<polygon points="22,6 16,7 21,12" fill="' + stroke + '"/>' +
+          '<circle cx="14" cy="14" r="1.2" fill="' + stroke + '"/>' +
+        '</svg>';
+      return svgCursor(svg, 14, 14);
+    }
+    if (t === "text") {
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="28" viewBox="0 0 20 28">' +
+          '<text x="3" y="20" font-family="Georgia, serif" font-size="22" font-weight="700" fill="' + stroke + '" stroke="#0b1020" stroke-width="0.6">T</text>' +
+        '</svg>';
+      return svgCursor(svg, 6, 22);
+    }
+    if (t === "sticky") {
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
+          '<rect x="4" y="5" width="20" height="18" fill="#fde68a" stroke="#1f2937" stroke-width="1.3"/>' +
+          '<polygon points="20,23 24,23 24,19" fill="#f3c969" stroke="#1f2937" stroke-width="1.3"/>' +
+          '<line x1="7"  y1="10" x2="20" y2="10" stroke="#1f2937" stroke-width="1"/>' +
+          '<line x1="7"  y1="14" x2="20" y2="14" stroke="#1f2937" stroke-width="1"/>' +
+          '<line x1="7"  y1="18" x2="16" y2="18" stroke="#1f2937" stroke-width="1"/>' +
+        '</svg>';
+      return svgCursor(svg, 4, 5);
+    }
+    return "crosshair";
+  }
+
+  function applyCursor() {
+    canvasEl.style.cursor = spaceDown ? "grab" : cursorForTool(tool, color);
+  }
+
   function setTool(t) {
     tool = t;
     document.querySelectorAll("#wbToolbar .wb-tool").forEach(b => b.classList.toggle("active", b.dataset.tool === t));
-    canvasEl.style.cursor = t === "select" ? "default" :
-      (t === "pen" || t === "eraser") ? "crosshair" :
-      (t === "text" || t === "sticky") ? "text" : "crosshair";
+    applyCursor();
     if (t !== "select") selectedId = null;
     redraw();
   }
   function setColor(c) {
     color = c;
     document.querySelectorAll(".wb-color").forEach(b => b.classList.toggle("active", b.dataset.color === c));
+    applyCursor();
     if (selectedId) {
       const o = state.objects.find(x => x.id === selectedId);
       if (o && o.kind !== "eraser" && o.kind !== "sticky" && o.kind !== "image") {
@@ -387,7 +482,7 @@
   }
   function onUp() {
     if (!drag) return;
-    if (drag.kind === "pan") { drag = null; canvasEl.style.cursor = tool === "select" ? "default" : "crosshair"; return; }
+    if (drag.kind === "pan") { drag = null; applyCursor(); return; }
     if (drag.kind === "stroke" && drag.preview && drag.preview.points.length >= 1) { state.objects.push(drag.preview); pushHistory(); }
     else if (drag.kind === "shape" && drag.preview) {
       if (Math.abs(drag.preview.w) > 2 && Math.abs(drag.preview.h) > 2) {
@@ -492,7 +587,7 @@
 
   window.addEventListener("keydown", function (e) {
     if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
-    if (e.code === "Space") { spaceDown = true; canvasEl.style.cursor = "grab"; e.preventDefault(); }
+    if (e.code === "Space") { spaceDown = true; applyCursor(); e.preventDefault(); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
     if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "y" || (e.shiftKey && e.key.toLowerCase() === "z"))) {
       e.preventDefault(); redo();
@@ -511,7 +606,7 @@
     }
   });
   window.addEventListener("keyup", function (e) {
-    if (e.code === "Space") { spaceDown = false; canvasEl.style.cursor = tool === "select" ? "default" : "crosshair"; }
+    if (e.code === "Space") { spaceDown = false; applyCursor(); }
   });
 
   // ===== WB_SHORTCUTS_V1 =====
