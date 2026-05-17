@@ -248,6 +248,7 @@
 <script>
 const GID = {{ group.id }};
 const MEID = {{ current_user.id }};
+const IS_OWNER = {{ 'true' if is_owner else 'false' }};
 
 function fmtT(iso){
   if(!iso) return '';
@@ -388,7 +389,10 @@ async function openGroupInfo(){
   try{
     const r = await fetch('/api/groups/' + GID + '/info');
     if(!r.ok){
-      body.innerHTML = '<div class="gi-loading">Не удалось загрузить информацию</div>';
+      let extra = '';
+      try { const ed = await r.json(); if(ed && ed.error) extra = ' — ' + ed.error; }
+      catch(_) {}
+      body.innerHTML = '<div class="gi-loading">Не удалось загрузить информацию (HTTP ' + r.status + ')' + extra + '</div>';
       return;
     }
     const d = await r.json();
@@ -438,6 +442,7 @@ async function openGroupInfo(){
       + '<div class="gi-section">'
       +   '<div class="gi-row action" onclick="closeGroupInfo(); openInv();"><span class="ico">➕</span><span class="lbl">Пригласить друга</span></div>'
       +   '<div class="gi-row action danger" onclick="closeGroupInfo(); leaveG();"><span class="ico">🚪</span><span class="lbl">Покинуть группу</span></div>'
+      +   (IS_OWNER ? '<div class="gi-row action danger" onclick="deleteGFromInfo()"><span class="ico">🗑</span><span class="lbl">Удалить группу</span></div>' : '')
       + '</div>';
   }catch(e){
     console.error(e);
@@ -448,6 +453,21 @@ async function openGroupInfo(){
 function closeGroupInfo(){
   const panel = document.getElementById('giPanel');
   if(panel) panel.hidden = true;
+}
+
+async function deleteGFromInfo(){
+  if(!IS_OWNER) return;
+  if(!confirm('Точно удалить группу? Это действие необратимо — все сообщения и участники будут удалены.')) return;
+  try{
+    const r = await fetch('/api/groups/' + GID, {method:'DELETE'});
+    if(r.ok){
+      window.location.href = '/chat';
+      return;
+    }
+    let msg = 'Ошибка удаления (HTTP ' + r.status + ')';
+    try { const ed = await r.json(); if(ed && ed.error) msg = ed.error; } catch(_){}
+    alert(msg);
+  }catch(e){ console.error(e); alert('Ошибка соединения'); }
 }
 
 document.addEventListener('keydown', (e) => {
