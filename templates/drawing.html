@@ -437,6 +437,8 @@ body.board-fullscreen footer{ display:none !important; }
 })();
 </script>
 
+<link rel="stylesheet" href="{{ url_for('static', filename='css/wb_call.css') }}?v={{ asset_version }}">
 <script src="{{ url_for('static', filename='js/drawing.js') }}?v={{ asset_version }}"></script>
 <script src="{{ url_for('static', filename='js/whiteboard.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/wb_call.js') }}?v={{ asset_version }}"></script>
 {% endblock %}

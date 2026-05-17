@@ -520,6 +520,14 @@ try:
 except Exception as _e:
     print(f"[BP] drawing_history_bp NOT registered: {_e}")
 
+# Whiteboard 1-to-1 video call signalling (WebRTC, no SocketIO).
+try:
+    from routes.wb_call import wb_call_bp
+    app.register_blueprint(wb_call_bp)
+    print("[BP] wb_call_bp registered (/api/wb_call/*)")
+except Exception as _e:
+    print(f"[BP] wb_call_bp NOT registered: {_e}")
+
 try:
     from routes.chat_presence import chat_presence_bp, _ensure_table as _ensure_presence_table
     app.register_blueprint(chat_presence_bp)

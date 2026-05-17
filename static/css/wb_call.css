@@ -1,0 +1,199 @@
+/* =====================================================================
+   FORMYLA Whiteboard — 1-to-1 video call panel
+   Loaded only by templates/drawing.html.  All selectors are scoped under
+   .wb-call-panel / #wbCallPanel so we don't leak into the rest of the UI.
+   ===================================================================== */
+
+#wbCallToggle.icon-btn-call{
+    background:linear-gradient(135deg,#4aa8ff,#8b5cf6);
+    color:#fff;
+    border-color:rgba(255,255,255,.18);
+    box-shadow:0 4px 14px rgba(74,168,255,.30);
+}
+#wbCallToggle.icon-btn-call:hover{
+    transform:translateY(-1px);
+    box-shadow:0 6px 18px rgba(139,92,246,.35);
+}
+
+/* ── Floating panel ────────────────────────────────────────────────── */
+.wb-call-panel{
+    position:absolute;
+    right:14px;
+    bottom:14px;
+    z-index:50;
+    width:280px;
+    background:rgba(15,23,42,.92);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    box-shadow:0 16px 40px rgba(0,0,0,.45);
+    color:#e6e8ee;
+    font-family:inherit;
+    overflow:hidden;
+    user-select:none;
+}
+.wb-call-panel[hidden]{ display:none !important; }
+
+/* Head */
+.wb-call-panel .wbc-head{
+    display:flex; align-items:center; gap:8px;
+    padding:9px 12px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.02);
+}
+.wb-call-panel .wbc-title{
+    font-weight:600;
+    font-size:13.5px;
+    color:#fff;
+}
+.wb-call-panel .wbc-status{
+    margin-left:auto;
+    font-size:11.5px;
+    color:#94a3b8;
+    max-width:130px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.wb-call-panel .wbc-status[data-kind="ok"]   { color:#4ade80; }
+.wb-call-panel .wbc-status[data-kind="warn"] { color:#fbbf24; }
+.wb-call-panel .wbc-status[data-kind="err"]  { color:#f87171; }
+.wb-call-panel .wbc-x{
+    background:transparent; border:none; color:#94a3b8;
+    width:24px; height:24px; line-height:1; font-size:18px;
+    border-radius:6px; cursor:pointer;
+    padding:0; margin-left:4px;
+}
+.wb-call-panel .wbc-x:hover{ background:rgba(255,255,255,.10); color:#fff; }
+
+/* Room code input row */
+.wb-call-panel .wbc-room-row{
+    display:flex; gap:6px;
+    padding:10px 12px;
+}
+.wb-call-panel .wbc-room-row[hidden]{ display:none !important; }
+.wb-call-panel input#wbCallRoom{
+    flex:1; min-width:0;
+    padding:8px 10px;
+    background:rgba(15,23,42,.7);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:8px;
+    color:#fff;
+    font-size:13.5px;
+    outline:none;
+    font-family:inherit;
+}
+.wb-call-panel input#wbCallRoom:focus{
+    border-color:rgba(74,168,255,.55);
+    box-shadow:0 0 0 3px rgba(74,168,255,.15);
+}
+.wb-call-panel .wbc-btn{
+    border:none; cursor:pointer;
+    padding:8px 12px;
+    border-radius:8px;
+    font-weight:600; font-size:13px;
+    color:#fff;
+    font-family:inherit;
+    transition:transform .15s ease, box-shadow .15s ease;
+}
+.wb-call-panel .wbc-btn-primary{
+    background:linear-gradient(135deg,#4aa8ff,#8b5cf6);
+    box-shadow:0 4px 14px rgba(139,92,246,.30);
+}
+.wb-call-panel .wbc-btn-primary:hover{ transform:translateY(-1px); }
+
+/* Video tiles */
+.wb-call-panel .wbc-videos{
+    position:relative;
+    padding:0 10px 10px;
+}
+.wb-call-panel .wbc-videos[hidden]{ display:none !important; }
+.wb-call-panel .wbc-vid{
+    position:relative;
+    width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    background:#0b1020;
+    aspect-ratio: 4 / 3;
+}
+.wb-call-panel .wbc-vid video{
+    width:100%; height:100%;
+    object-fit:cover;
+    background:#0b1020;
+    transform:scaleX(-1);  /* mirror like every video-call client */
+}
+.wb-call-panel .wbc-vid-self{
+    position:absolute;
+    right:18px;
+    bottom:62px;
+    width:30%;
+    min-width:80px;
+    aspect-ratio: 4 / 3;
+    border:1.5px solid rgba(255,255,255,.45);
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,.45);
+    overflow:hidden;
+    z-index:2;
+}
+.wb-call-panel .wbc-vid .wbc-tag{
+    position:absolute;
+    left:6px; bottom:6px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    font-size:10.5px;
+    letter-spacing:.02em;
+}
+.wb-call-panel .wbc-vid-self .wbc-tag{ font-size:9.5px; padding:1px 6px; }
+
+/* Toolbar (mic / cam / leave / copy) */
+.wb-call-panel .wbc-toolbar{
+    display:flex; gap:6px; justify-content:center;
+    padding:0 10px 12px;
+}
+.wb-call-panel .wbc-toolbar[hidden]{ display:none !important; }
+.wb-call-panel .wbc-icon{
+    width:38px; height:38px;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.10);
+    font-size:16px;
+    cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background .15s, transform .15s;
+    line-height:1;
+}
+.wb-call-panel .wbc-icon:hover{
+    background:rgba(255,255,255,.16);
+    transform:translateY(-1px);
+}
+.wb-call-panel .wbc-icon.off{
+    background:rgba(248,113,113,.18);
+    border-color:rgba(248,113,113,.45);
+    color:#fecaca;
+}
+.wb-call-panel .wbc-icon-danger{
+    background:linear-gradient(135deg,#ef4444,#dc2626);
+    border-color:rgba(255,255,255,.15);
+}
+.wb-call-panel .wbc-icon-danger:hover{
+    background:linear-gradient(135deg,#dc2626,#b91c1c);
+}
+
+/* ── Mobile: full-width sheet across the bottom of the canvas ─────── */
+@media (max-width: 640px){
+    .wb-call-panel{
+        right:8px; left:8px;
+        bottom:8px;
+        width:auto;
+        max-width:none;
+    }
+    .wb-call-panel .wbc-videos{ padding:0 8px 8px; }
+    .wb-call-panel .wbc-vid-self{
+        right:14px; bottom:54px;
+        width:33%;
+    }
+    .wb-call-panel .wbc-toolbar{ padding:0 8px 10px; }
+    .wb-call-panel .wbc-icon{ width:42px; height:42px; }
+}
