@@ -528,6 +528,15 @@ try:
 except Exception as _e:
     print(f"[BP] wb_call_bp NOT registered: {_e}")
 
+# Whiteboard group meet (LiveKit-backed, up to 10 participants).
+# Endpoints become 503 if LIVEKIT_* env vars are not set on the server.
+try:
+    from routes.wb_meet import wb_meet_bp
+    app.register_blueprint(wb_meet_bp)
+    print("[BP] wb_meet_bp registered (/api/wb_meet/*)")
+except Exception as _e:
+    print(f"[BP] wb_meet_bp NOT registered: {_e}")
+
 try:
     from routes.chat_presence import chat_presence_bp, _ensure_table as _ensure_presence_table
     app.register_blueprint(chat_presence_bp)

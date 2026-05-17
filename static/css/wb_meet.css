@@ -1,0 +1,234 @@
+/* =====================================================================
+   FORMYLA Whiteboard — Group video meeting (LiveKit) UI
+   Loaded only by templates/drawing.html.  Selectors are scoped under
+   .wb-meet-panel / #wbMeetPanel so we never collide with 1-to-1 call CSS.
+   ===================================================================== */
+
+#wbMeetToggle.icon-btn-meet{
+    background:linear-gradient(135deg,#22c55e,#14b8a6);
+    color:#fff;
+    border-color:rgba(255,255,255,.18);
+    box-shadow:0 4px 14px rgba(34,197,94,.30);
+}
+#wbMeetToggle.icon-btn-meet:hover{
+    transform:translateY(-1px);
+    box-shadow:0 6px 18px rgba(20,184,166,.35);
+}
+
+/* ── Floating panel ────────────────────────────────────────────────── */
+.wb-meet-panel{
+    position:absolute;
+    right:14px;
+    top:60px;             /* below the top-bar */
+    bottom:14px;
+    z-index:55;
+    width:420px;
+    max-width:calc(100vw - 28px);
+    background:rgba(15,23,42,.92);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    box-shadow:0 20px 50px rgba(0,0,0,.55);
+    color:#e6e8ee;
+    font-family:inherit;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+.wb-meet-panel[hidden]{ display:none !important; }
+
+.wb-meet-panel .wbm-head{
+    display:flex; align-items:center; gap:8px;
+    padding:10px 12px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.02);
+    flex-shrink:0;
+}
+.wb-meet-panel .wbm-title{ font-weight:600; font-size:14px; color:#fff; }
+.wb-meet-panel .wbm-status{
+    margin-left:auto; font-size:11.5px; color:#94a3b8;
+    max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.wb-meet-panel .wbm-status[data-kind="ok"]   { color:#4ade80; }
+.wb-meet-panel .wbm-status[data-kind="warn"] { color:#fbbf24; }
+.wb-meet-panel .wbm-status[data-kind="err"]  { color:#f87171; }
+.wb-meet-panel .wbm-x{
+    background:transparent; border:none; color:#94a3b8;
+    width:24px; height:24px; line-height:1; font-size:18px;
+    border-radius:6px; cursor:pointer; padding:0; margin-left:4px;
+}
+.wb-meet-panel .wbm-x:hover{ background:rgba(255,255,255,.10); color:#fff; }
+
+/* ── Join form ─────────────────────────────────────────────────────── */
+.wb-meet-panel .wbm-form{
+    padding:14px;
+    display:flex; flex-direction:column; gap:10px;
+}
+.wb-meet-panel .wbm-form input[type="text"]{
+    width:100%;
+    padding:10px 12px;
+    background:rgba(15,23,42,.7);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:10px;
+    color:#fff;
+    font-size:14px;
+    outline:none;
+    font-family:inherit;
+}
+.wb-meet-panel .wbm-form input[type="text"]:focus{
+    border-color:rgba(34,197,94,.55);
+    box-shadow:0 0 0 3px rgba(34,197,94,.15);
+}
+.wb-meet-panel .wbm-row{
+    display:flex; gap:8px;
+}
+.wb-meet-panel .wbm-row input[type="text"]{ flex:1; min-width:0; }
+.wb-meet-panel .wbm-btn{
+    border:none; cursor:pointer;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:600; font-size:13.5px;
+    color:#fff; font-family:inherit;
+    transition:transform .15s, box-shadow .15s;
+    flex-shrink:0;
+}
+.wb-meet-panel .wbm-btn-primary{
+    background:linear-gradient(135deg,#22c55e,#14b8a6);
+    box-shadow:0 4px 14px rgba(20,184,166,.30);
+}
+.wb-meet-panel .wbm-btn-primary:hover{ transform:translateY(-1px); }
+.wb-meet-panel .wbm-btn-primary:disabled{
+    opacity:.5; cursor:not-allowed; transform:none;
+    background:#475569; box-shadow:none;
+}
+.wb-meet-panel .wbm-hint{
+    font-size:12px; color:#94a3b8;
+    line-height:1.5;
+    padding:6px 0 0;
+}
+.wb-meet-panel .wbm-hint:empty{ display:none; }
+
+/* ── In-call view ──────────────────────────────────────────────────── */
+.wb-meet-panel .wbm-room{
+    flex:1;
+    display:flex; flex-direction:column;
+    min-height:0;
+}
+.wb-meet-panel .wbm-room[hidden]{ display:none !important; }
+
+.wb-meet-panel .wbm-grid{
+    flex:1;
+    padding:8px;
+    display:grid;
+    gap:6px;
+    grid-template-columns: repeat(1, 1fr);
+    grid-auto-rows: minmax(0, 1fr);
+    overflow:hidden;
+    align-content:stretch;
+}
+
+.wb-meet-panel .wbm-tile{
+    position:relative;
+    background:#0b1020;
+    border-radius:10px;
+    overflow:hidden;
+    border:1.5px solid transparent;
+    transition:border-color .15s;
+    min-height:90px;
+    aspect-ratio: 4 / 3;
+}
+.wb-meet-panel .wbm-tile.speaking{
+    border-color:#4ade80;
+    box-shadow:0 0 0 2px rgba(74,222,128,.25);
+}
+.wb-meet-panel .wbm-tile .wbm-video-wrap{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    background:#0b1020;
+}
+.wb-meet-panel .wbm-tile .wbm-video,
+.wb-meet-panel .wbm-tile video{
+    width:100%; height:100%; object-fit:cover;
+    background:#0b1020;
+}
+.wb-meet-panel .wbm-tile-self .wbm-video{
+    transform:scaleX(-1);  /* mirror for self */
+}
+.wb-meet-panel .wbm-tile .wbm-name{
+    position:absolute;
+    left:6px; bottom:6px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    font-size:11px;
+    letter-spacing:.02em;
+}
+.wb-meet-panel .wbm-tile .wbm-mute{
+    position:absolute;
+    right:6px; top:6px;
+    width:24px; height:24px;
+    border-radius:50%;
+    background:rgba(239,68,68,.85);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px;
+}
+
+/* ── In-call toolbar ───────────────────────────────────────────────── */
+.wb-meet-panel .wbm-toolbar{
+    display:flex; gap:8px;
+    justify-content:center;
+    padding:10px 12px;
+    border-top:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.02);
+    flex-shrink:0;
+}
+.wb-meet-panel .wbm-icon{
+    width:40px; height:40px;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.10);
+    font-size:16px;
+    cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background .15s, transform .15s;
+    line-height:1;
+}
+.wb-meet-panel .wbm-icon:hover{
+    background:rgba(255,255,255,.16);
+    transform:translateY(-1px);
+}
+.wb-meet-panel .wbm-icon.off{
+    background:rgba(248,113,113,.18);
+    border-color:rgba(248,113,113,.45);
+    color:#fecaca;
+}
+.wb-meet-panel .wbm-icon.active{
+    background:rgba(34,197,94,.20);
+    border-color:rgba(34,197,94,.45);
+    color:#bbf7d0;
+}
+.wb-meet-panel .wbm-icon-danger{
+    background:linear-gradient(135deg,#ef4444,#dc2626);
+    border-color:rgba(255,255,255,.15);
+}
+.wb-meet-panel .wbm-icon-danger:hover{
+    background:linear-gradient(135deg,#dc2626,#b91c1c);
+}
+
+/* ── Mobile: full-width, smaller tiles ─────────────────────────────── */
+@media (max-width: 640px){
+    .wb-meet-panel{
+        left:8px; right:8px; top:auto;
+        bottom:8px;
+        width:auto;
+        height:70vh;
+        max-height:70vh;
+    }
+    .wb-meet-panel .wbm-grid{ padding:6px; gap:4px; }
+    .wb-meet-panel .wbm-tile{ min-height:70px; }
+    .wb-meet-panel .wbm-icon{ width:44px; height:44px; }
+}
