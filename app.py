@@ -303,6 +303,58 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] group_chats Warning: {e}")
 
+# AUTO-MIGRATION: VsOSh-9 method-bank fields для olympiad_theory / olympiad_tasks.
+# Модели в models_olympiad.py содержат новые колонки (total_count, share_percent,
+# method_codes, year, stage). На локалке SQLite db.create_all() их подхватывает,
+# но на проде Postgres колонки нужно добавить ALTER-ом, иначе любой SELECT
+# по таблицам сыпет UndefinedColumn → 500 на каждой странице.
+try:
+    with app.app_context():
+        _is_pg_olymp = _database_url.startswith('postgresql')
+        _alters_olymp = [
+            ('olympiad_theory', 'total_count',
+             'ALTER TABLE olympiad_theory ADD COLUMN IF NOT EXISTS total_count INTEGER'
+             if _is_pg_olymp else
+             'ALTER TABLE olympiad_theory ADD COLUMN total_count INTEGER'),
+            ('olympiad_theory', 'share_percent',
+             'ALTER TABLE olympiad_theory ADD COLUMN IF NOT EXISTS share_percent DOUBLE PRECISION'
+             if _is_pg_olymp else
+             'ALTER TABLE olympiad_theory ADD COLUMN share_percent REAL'),
+            ('olympiad_tasks', 'method_codes',
+             'ALTER TABLE olympiad_tasks ADD COLUMN IF NOT EXISTS method_codes JSONB'
+             if _is_pg_olymp else
+             'ALTER TABLE olympiad_tasks ADD COLUMN method_codes JSON'),
+            ('olympiad_tasks', 'year',
+             'ALTER TABLE olympiad_tasks ADD COLUMN IF NOT EXISTS year INTEGER'
+             if _is_pg_olymp else
+             'ALTER TABLE olympiad_tasks ADD COLUMN year INTEGER'),
+            ('olympiad_tasks', 'stage',
+             'ALTER TABLE olympiad_tasks ADD COLUMN IF NOT EXISTS stage VARCHAR(20)'
+             if _is_pg_olymp else
+             'ALTER TABLE olympiad_tasks ADD COLUMN stage VARCHAR(20)'),
+        ]
+        from sqlalchemy import inspect as _inspect_olymp
+        _ins_o = _inspect_olymp(db.engine)
+        _existing_o = set(_ins_o.get_table_names())
+        for _tbl, _col, _sql in _alters_olymp:
+            if _tbl not in _existing_o:
+                continue
+            try:
+                _cols = {c['name'] for c in _ins_o.get_columns(_tbl)}
+            except Exception:
+                _cols = set()
+            if _col in _cols:
+                continue
+            try:
+                db.session.execute(db.text(_sql))
+                db.session.commit()
+                print(f"[AUTO-MIGRATION] OK Added {_tbl}.{_col}")
+            except Exception as _e_col:
+                db.session.rollback()
+                print(f"[AUTO-MIGRATION] {_tbl}.{_col} skipped: {_e_col}")
+except Exception as _e_olymp:
+    print(f"[AUTO-MIGRATION] olympiad fields Warning: {_e_olymp}")
+
 # AUTO-MIGRATION: Add guest access columns to users
 try:
     with app.app_context():
