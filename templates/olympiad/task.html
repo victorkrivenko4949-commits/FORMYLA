@@ -291,6 +291,52 @@
 
 {% block extra_js %}
 <script>
+// Fallback: если Alpine.js CDN не загрузился (CSP/блокировка), включаем
+// нативное раскрытие блоков "Идея решения" / "Полное решение".
+(function () {
+    function activateNativeReveal() {
+        document.querySelectorAll('[x-cloak]').forEach(function (el) {
+            el.removeAttribute('x-cloak');
+        });
+        document.querySelectorAll('.oly-reveal').forEach(function (rev) {
+            var head = rev.querySelector('.oly-reveal-head');
+            var body = rev.querySelector('.oly-reveal-body');
+            if (!head || !body) return;
+            body.style.display = 'none';
+            head.addEventListener('click', function () {
+                var isOpen = body.style.display !== 'none';
+                if (isOpen) {
+                    body.style.display = 'none';
+                    rev.setAttribute('data-open', 'false');
+                } else {
+                    body.style.display = 'block';
+                    rev.setAttribute('data-open', 'true');
+                    if (window.renderMathInElement) {
+                        try {
+                            window.renderMathInElement(body, {
+                                delimiters: [
+                                    {left: '$$', right: '$$', display: true},
+                                    {left: '$',  right: '$',  display: false},
+                                    {left: '\\(', right: '\\)', display: false},
+                                    {left: '\\[', right: '\\]', display: true}
+                                ],
+                                throwOnError: false
+                            });
+                        } catch (e) {}
+                    }
+                }
+            });
+        });
+    }
+    setTimeout(function () {
+        if (typeof window.Alpine === 'undefined') {
+            console.warn('[oly] Alpine.js not loaded — using native reveal fallback');
+            activateNativeReveal();
+        }
+    }, 800);
+})();
+</script>
+<script>
 function olympiadTask(cfg) {
     return {
         taskId: cfg.taskId,

@@ -1,0 +1,258 @@
+# -*- coding: utf-8 -*-
+"""
+Auto-seed олимпиадного раздела из JSON-фикстур при пустых таблицах.
+
+Запускается на старте app.py:
+  - Если `olympiad_theory` пуста — грузит data/olympiads/theory_65_methods.json.
+  - Если `olympiad_probniks` пуст — грузит data/olympiads/vsosh_9_2027_probniks.json.
+  - Если `olympiad_tasks` пуст — грузит data/olympiads/vsosh_9_2027_tasks.json.
+
+Это решает проблему «на проде раздел методов/задач пустой», потому что
+импортёр scripts/import_olympiad.py не запускался на Render.
+
+Все ошибки ловятся и логируются, никогда не валят запуск приложения.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from typing import Any, Iterable
+
+
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'olympiads')
+
+THEORY_JSON = os.path.join(DATA_DIR, 'theory_65_methods.json')
+PROBNIKS_JSON = os.path.join(DATA_DIR, 'vsosh_9_2027_probniks.json')
+TASKS_JSON = os.path.join(DATA_DIR, 'vsosh_9_2027_tasks.json')
+
+
+def _load_json(path: str) -> list:
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f) or []
+    except Exception as e:
+        print(f"[OLYMPIAD-SEED] Failed to read {path}: {e}")
+        return []
+
+
+def _safe_section(method_code: str) -> str | None:
+    """Первая буква метода (A..H) определяет секцию каталога."""
+    if not method_code:
+        return None
+    ch = method_code[0].upper()
+    if ch in 'ABCDEFGH':
+        return ch
+    return None
+
+
+def autoseed_olympiad(app, db) -> None:
+    """Главная точка входа. Вызывается из app.py внутри app_context().
+
+    Args:
+        app: Flask application (для логирования).
+        db:  SQLAlchemy() из models.
+    """
+    try:
+        from models_olympiad import (
+            Probnik,
+            OlympiadTask,
+            TheoryBlock,
+        )
+    except Exception as e:
+        print(f"[OLYMPIAD-SEED] Models not available: {e}")
+        return
+
+    try:
+        with app.app_context():
+            _seed_theory(db, TheoryBlock)
+            code_to_probnik = _seed_probniks(db, Probnik)
+            _seed_tasks(db, OlympiadTask, Probnik, code_to_probnik)
+    except Exception as e:
+        # Никогда не должны падать здесь — это not-critical-path.
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        print(f"[OLYMPIAD-SEED] Top-level error: {e}")
+
+
+# ─── Theory ─────────────────────────────────────────────────────────────────
+
+def _seed_theory(db, TheoryBlock) -> None:
+    try:
+        existing = TheoryBlock.query.count()
+    except Exception as e:
+        print(f"[OLYMPIAD-SEED] Cannot query TheoryBlock: {e}")
+        return
+
+    if existing > 0:
+        print(f"[OLYMPIAD-SEED] TheoryBlock: {existing} rows — skipping seed")
+        return
+
+    rows = _load_json(THEORY_JSON)
+    if not rows:
+        print(f"[OLYMPIAD-SEED] No data in {THEORY_JSON} — skipping theory seed")
+        return
+
+    created = 0
+    for item in rows:
+        try:
+            code = item.get('method_code')
+            if not code:
+                continue
+            tb = TheoryBlock(
+                method_code=code,
+                method_name=item.get('method_name') or code,
+                section=item.get('section') or _safe_section(code),
+                definition_md=item.get('definition_md'),
+                main_theorems_md=item.get('main_theorems_md'),
+                typical_techniques_md=item.get('typical_techniques_md'),
+                triggers_md=item.get('triggers_md'),
+                worked_example_md=item.get('worked_example_md'),
+                pitfalls_md=item.get('pitfalls_md'),
+                related_methods=item.get('related_methods') or [],
+                grades=item.get('grades'),
+                recommended_competitions=item.get('recommended_competitions'),
+                difficulty_level=item.get('difficulty_level'),
+                frequency_vsosh_9=item.get('frequency_vsosh_9'),
+                sort_order=item.get('sort_order', 0) or 0,
+            )
+            db.session.add(tb)
+            created += 1
+        except Exception as e:
+            print(f"[OLYMPIAD-SEED] Theory row failed ({item.get('method_code', '?')}): {e}")
+
+    try:
+        db.session.commit()
+        print(f"[OLYMPIAD-SEED] TheoryBlock: created {created} rows")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[OLYMPIAD-SEED] Theory commit failed: {e}")
+
+
+# ─── Probniks ────────────────────────────────────────────────────────────────
+
+def _seed_probniks(db, Probnik) -> dict:
+    """Возвращает {code: probnik_id} для последующей привязки задач."""
+    try:
+        existing = Probnik.query.count()
+    except Exception as e:
+        print(f"[OLYMPIAD-SEED] Cannot query Probnik: {e}")
+        return {}
+
+    if existing > 0:
+        rows = Probnik.query.all()
+        print(f"[OLYMPIAD-SEED] Probnik: {existing} rows — skipping seed")
+        return {p.code: p.id for p in rows}
+
+    items = _load_json(PROBNIKS_JSON)
+    if not items:
+        print(f"[OLYMPIAD-SEED] No data in {PROBNIKS_JSON} — skipping probniks seed")
+        return {}
+
+    created = 0
+    code_to_id: dict = {}
+    for item in items:
+        try:
+            code = item.get('code')
+            if not code:
+                continue
+            p = Probnik(
+                code=code,
+                type=item.get('type', 'topic'),
+                number=item.get('number', 0) or 0,
+                title=item.get('title') or code,
+                description=item.get('description'),
+                competition=item.get('competition', 'ВсОШ'),
+                grade=item.get('grade', 9) or 9,
+                season_year=item.get('season_year', 2027) or 2027,
+                duration_minutes=item.get('duration_minutes'),
+                max_score=item.get('max_score'),
+                threshold_prize=item.get('threshold_prize'),
+                threshold_winner=item.get('threshold_winner'),
+                sort_order=item.get('sort_order', 0) or 0,
+                is_published=bool(item.get('is_published', True)),
+            )
+            db.session.add(p)
+            db.session.flush()
+            code_to_id[code] = p.id
+            created += 1
+        except Exception as e:
+            print(f"[OLYMPIAD-SEED] Probnik row failed ({item.get('code', '?')}): {e}")
+
+    try:
+        db.session.commit()
+        print(f"[OLYMPIAD-SEED] Probnik: created {created} rows")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[OLYMPIAD-SEED] Probnik commit failed: {e}")
+        return {}
+
+    return code_to_id
+
+
+# ─── Tasks ───────────────────────────────────────────────────────────────────
+
+def _seed_tasks(db, OlympiadTask, Probnik, code_to_id: dict) -> None:
+    try:
+        existing = OlympiadTask.query.count()
+    except Exception as e:
+        print(f"[OLYMPIAD-SEED] Cannot query OlympiadTask: {e}")
+        return
+
+    if existing > 0:
+        print(f"[OLYMPIAD-SEED] OlympiadTask: {existing} rows — skipping seed")
+        return
+
+    items = _load_json(TASKS_JSON)
+    if not items:
+        print(f"[OLYMPIAD-SEED] No data in {TASKS_JSON} — skipping tasks seed")
+        return
+
+    # Если probnik'и существовали, но мы не получили карту code→id — построим её.
+    if not code_to_id:
+        try:
+            for p in Probnik.query.all():
+                code_to_id[p.code] = p.id
+        except Exception as e:
+            print(f"[OLYMPIAD-SEED] Cannot rebuild probnik map: {e}")
+            return
+
+    created = 0
+    skipped = 0
+    for item in items:
+        try:
+            probnik_code = item.get('probnik_code')
+            probnik_id = code_to_id.get(probnik_code)
+            if not probnik_id:
+                skipped += 1
+                continue
+            t = OlympiadTask(
+                probnik_id=probnik_id,
+                number=str(item.get('number', '')),
+                sort_order=item.get('sort_order', 0) or 0,
+                difficulty=item.get('difficulty'),
+                method_primary=item.get('method_primary') or 'A1',
+                method_secondary=item.get('method_secondary'),
+                condition_md=item.get('condition_md') or '',
+                idea_md=item.get('idea_md') or '',
+                solution_md=item.get('solution_md') or '',
+                answer=item.get('answer'),
+                source_prototype=item.get('source_prototype'),
+                estimated_minutes=item.get('estimated_minutes'),
+                max_score=item.get('max_score', 7) or 7,
+            )
+            db.session.add(t)
+            created += 1
+        except Exception as e:
+            print(f"[OLYMPIAD-SEED] Task row failed ({item.get('number', '?')}): {e}")
+
+    try:
+        db.session.commit()
+        print(f"[OLYMPIAD-SEED] OlympiadTask: created {created} rows, skipped {skipped}")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[OLYMPIAD-SEED] Task commit failed: {e}")

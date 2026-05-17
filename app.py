@@ -631,6 +631,15 @@ try:
 except Exception as _e:
     print(f"[BP] olympiad_bp NOT registered: {_e}")
 
+# Auto-seed олимпиадного раздела (теория + пробники + задачи) из JSON-фикстур,
+# если соответствующие таблицы пусты. Решает проблему «на проде /olympiads/methods
+# пустой», когда импортёр scripts/import_olympiad.py не запускался на Render.
+try:
+    from services.olympiad_autoseed import autoseed_olympiad
+    autoseed_olympiad(app, db)
+except Exception as _e_seed:
+    print(f"[OLYMPIAD-SEED] Autoseed skipped: {_e_seed}")
+
 # /grade-5 and /grade-6 — тренажёр FORMYLA по школьным классам.
 try:
     from routes.grade import grade_bp
