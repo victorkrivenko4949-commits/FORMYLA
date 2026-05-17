@@ -91,7 +91,17 @@
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'scf-quick-btn';
-            btn.textContent = (it.icon || '💬') + '  ' + it.intent;
+
+            var icon = document.createElement('span');
+            icon.className = 'qr-icon';
+            icon.textContent = it.icon || '💬';
+
+            var label = document.createElement('span');
+            label.className = 'qr-label';
+            label.textContent = it.intent || '';
+
+            btn.appendChild(icon);
+            btn.appendChild(label);
             btn.addEventListener('click', function () { ask(it.intent); });
             grid.appendChild(btn);
         });

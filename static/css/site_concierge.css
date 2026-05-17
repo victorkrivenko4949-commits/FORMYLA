@@ -1,30 +1,29 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   Site Concierge widget
-   Виджет-помощник по сайту FORMYLA (отдельный от ИИ-тьютора).
-   Цвет — фиолетовый (#6c5ce7), чтобы визуально отличаться от зелёного
-   тьютора (#tutorBtn).
+   Site Concierge widget — стилизован под темную палитру FORMYLA.
+   Используем общесайтовые переменные (--bg-card, --accent-1, --accent-2,
+   --text-muted, --border-soft) с fallback-значениями.
    ───────────────────────────────────────────────────────────────────────── */
 
 #siteConciergeRoot {
     position: fixed;
     bottom: 24px;
-    right: 100px;   /* слева от 🤖 тьютора, у которого right: 20px + 60px = ~80px */
+    right: 100px;   /* слева от 🤖 тьютора (right:20px + 60px кнопки) */
     z-index: 999;
     font-family: inherit;
-    color: #1f1f2e;
+    color: var(--text-soft, #e2e8f0);
 }
 
 /* ── FAB ──────────────────────────────────────────────────────────────── */
 .site-concierge-fab {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    border: none;
+    border: 1px solid rgba(147, 51, 234, 0.35);
     cursor: pointer;
-    background: linear-gradient(135deg, #6c5ce7 0%, #5b4cdb 100%);
+    background: linear-gradient(135deg, var(--accent-2, #9333ea) 0%, var(--accent-1, #3b82f6) 100%);
     color: #fff;
-    font-size: 26px;
-    box-shadow: 0 6px 18px rgba(108, 92, 231, 0.45);
+    font-size: 24px;
+    box-shadow: 0 8px 24px rgba(147, 51, 234, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -33,14 +32,14 @@
 }
 .site-concierge-fab:hover {
     transform: scale(1.08);
-    box-shadow: 0 8px 22px rgba(108, 92, 231, 0.6);
+    box-shadow: 0 10px 30px rgba(147, 51, 234, 0.55);
 }
 .site-concierge-fab .scf-tooltip {
     position: absolute;
     bottom: -28px;
     right: 50%;
     transform: translateX(50%);
-    background: #1f1f2e;
+    background: rgba(15, 23, 42, 0.92);
     color: #fff;
     font-size: 12px;
     padding: 4px 10px;
@@ -49,14 +48,10 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
+    border: 1px solid var(--border-soft, #334155);
 }
-.site-concierge-fab:hover .scf-tooltip {
-    opacity: 1;
-}
-.site-concierge-fab.is-open {
-    transform: scale(0.92);
-    opacity: 0.65;
-}
+.site-concierge-fab:hover .scf-tooltip { opacity: 1; }
+.site-concierge-fab.is-open { transform: scale(0.92); opacity: 0.72; }
 
 /* ── Panel ────────────────────────────────────────────────────────────── */
 .site-concierge-panel {
@@ -64,19 +59,20 @@
     bottom: 96px;
     right: 100px;
     width: 380px;
-    height: 500px;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    height: 520px;
+    background: var(--bg-card, rgba(30, 41, 59, 0.85));
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border-radius: var(--radius-lg, 18px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
     display: none;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid rgba(108, 92, 231, 0.18);
+    border: 1px solid var(--border-soft, #334155);
     animation: scfFadeIn 0.18s ease-out;
+    color: var(--text-soft, #e2e8f0);
 }
-.site-concierge-panel.is-open {
-    display: flex;
-}
+.site-concierge-panel.is-open { display: flex; }
 
 @keyframes scfFadeIn {
     from { opacity: 0; transform: translateY(12px); }
@@ -84,9 +80,12 @@
 }
 
 .scf-header {
-    background: linear-gradient(135deg, #6c5ce7 0%, #5b4cdb 100%);
+    background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.22) 0%,
+                rgba(147, 51, 234, 0.22) 100%);
+    border-bottom: 1px solid var(--border-soft, #334155);
     color: #fff;
-    padding: 12px 16px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -96,58 +95,71 @@
     margin: 0;
     font-size: 15px;
     font-weight: 600;
+    background: linear-gradient(135deg, var(--accent-1, #3b82f6), var(--accent-2, #9333ea));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 0.2px;
 }
 .scf-close {
-    background: rgba(255,255,255,0.18);
-    color: #fff;
-    border: none;
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--text-soft, #e2e8f0);
+    border: 1px solid var(--border-soft, #334155);
     width: 28px;
     height: 28px;
-    border-radius: 50%;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s;
+    transition: all 0.15s;
 }
 .scf-close:hover {
-    background: rgba(255,255,255,0.32);
+    background: rgba(148, 163, 184, 0.22);
+    color: #fff;
+    border-color: var(--accent-1, #3b82f6);
 }
 
 .scf-body {
     flex: 1 1 auto;
     overflow-y: auto;
     padding: 14px 14px 8px;
-    background: #f7f7fb;
+    background: transparent;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
+.scf-body::-webkit-scrollbar { width: 6px; }
+.scf-body::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.22);
+    border-radius: 3px;
+}
 
 .scf-msg {
-    max-width: 90%;
+    max-width: 92%;
     padding: 10px 12px;
     border-radius: 12px;
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.5;
     word-wrap: break-word;
 }
 .scf-msg.bot {
-    background: #ffffff;
-    border: 1px solid #eceaf6;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid var(--border-soft, #334155);
     align-self: flex-start;
-    color: #1f1f2e;
+    color: var(--text-soft, #e2e8f0);
 }
 .scf-msg.user {
-    background: linear-gradient(135deg, #6c5ce7 0%, #5b4cdb 100%);
+    background: linear-gradient(135deg, var(--accent-1, #3b82f6) 0%, var(--accent-2, #9333ea) 100%);
     color: #fff;
     align-self: flex-end;
+    border: none;
 }
 .scf-msg.redirect {
-    background: #fff7ed;
-    border: 1px solid #fbbf24;
-    color: #92400e;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
 }
 
 /* Quick replies grid */
@@ -158,9 +170,9 @@
     margin-top: 6px;
 }
 .scf-quick-btn {
-    background: #ffffff;
-    border: 1px solid #d6d2f0;
-    color: #4338ca;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid var(--border-soft, #334155);
+    color: var(--text-soft, #e2e8f0);
     border-radius: 10px;
     padding: 10px 12px;
     cursor: pointer;
@@ -169,16 +181,30 @@
     text-align: left;
     transition: all 0.15s;
     font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+}
+.scf-quick-btn .qr-icon {
+    flex: 0 0 22px;
+    font-size: 18px;
+    line-height: 1;
+}
+.scf-quick-btn .qr-label {
+    flex: 1 1 auto;
+    color: var(--text-soft, #e2e8f0);
 }
 .scf-quick-btn:hover {
-    background: #ede9fe;
-    border-color: #6c5ce7;
+    background: rgba(59, 130, 246, 0.12);
+    border-color: var(--accent-1, #3b82f6);
     transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.18);
 }
 .scf-more {
     background: transparent;
-    border: 1px dashed #b9b3e8;
-    color: #6c5ce7;
+    border: 1px dashed var(--border-soft, #334155);
+    color: var(--text-muted, #94a3b8);
     padding: 8px;
     border-radius: 10px;
     cursor: pointer;
@@ -186,20 +212,25 @@
     margin-top: 6px;
     width: 100%;
     font-family: inherit;
+    transition: all 0.15s;
 }
-.scf-more:hover { background: #ede9fe; }
+.scf-more:hover {
+    color: #fff;
+    border-color: var(--accent-1, #3b82f6);
+    background: rgba(59, 130, 246, 0.08);
+}
 
 /* Suggested action chips (pills) */
 .scf-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 10px;
 }
 .scf-action {
-    background: #ede9fe;
-    color: #4338ca;
-    border: 1px solid #c7bff5;
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.35);
     border-radius: 999px;
     padding: 6px 12px;
     font-size: 12px;
@@ -210,37 +241,41 @@
     gap: 4px;
 }
 .scf-action:hover {
-    background: #6c5ce7;
+    background: linear-gradient(135deg, var(--accent-1, #3b82f6), var(--accent-2, #9333ea));
     color: #fff;
-    border-color: #6c5ce7;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
 }
 
 /* Footer / input */
 .scf-input-row {
-    border-top: 1px solid #ece9f4;
+    border-top: 1px solid var(--border-soft, #334155);
     padding: 10px 12px;
-    background: #ffffff;
+    background: rgba(15, 23, 42, 0.4);
     display: flex;
     gap: 8px;
     align-items: center;
 }
 .scf-input-row input {
     flex: 1 1 auto;
-    border: 1px solid #e0dcf2;
-    background: #f8f7fc;
-    color: #1f1f2e;
+    border: 1px solid var(--border-soft, #334155);
+    background: rgba(15, 23, 42, 0.55);
+    color: var(--text-soft, #e2e8f0);
     border-radius: 10px;
     padding: 10px 12px;
     font-size: 14px;
     outline: none;
     font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
+.scf-input-row input::placeholder { color: var(--text-muted, #94a3b8); }
 .scf-input-row input:focus {
-    border-color: #6c5ce7;
-    background: #fff;
+    border-color: var(--accent-1, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    background: rgba(15, 23, 42, 0.75);
 }
 .scf-send {
-    background: linear-gradient(135deg, #6c5ce7 0%, #5b4cdb 100%);
+    background: linear-gradient(135deg, var(--accent-1, #3b82f6) 0%, var(--accent-2, #9333ea) 100%);
     color: #fff;
     border: none;
     width: 40px;
@@ -253,11 +288,14 @@
     justify-content: center;
     transition: transform 0.15s, box-shadow 0.15s;
 }
-.scf-send:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,92,231,0.4); }
+.scf-send:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(147, 51, 234, 0.4);
+}
 .scf-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .scf-typing {
-    color: #6b7280;
+    color: var(--text-muted, #94a3b8);
     font-style: italic;
     font-size: 13px;
     align-self: flex-start;
@@ -278,42 +316,4 @@
         max-height: 480px;
     }
     .site-concierge-fab .scf-tooltip { display: none; }
-}
-
-/* Dark theme support (если у пользователя установлена тёмная тема через :root) */
-@media (prefers-color-scheme: dark) {
-    .site-concierge-panel {
-        background: #1c1c2a;
-        border-color: #3a3354;
-        color: #e8e6f3;
-    }
-    .scf-body { background: #15151f; }
-    .scf-msg.bot {
-        background: #2a2540;
-        border-color: #3a3354;
-        color: #e8e6f3;
-    }
-    .scf-quick-btn {
-        background: #2a2540;
-        border-color: #3a3354;
-        color: #c4b5fd;
-    }
-    .scf-quick-btn:hover {
-        background: #3a3354;
-        border-color: #6c5ce7;
-    }
-    .scf-input-row {
-        background: #1c1c2a;
-        border-color: #3a3354;
-    }
-    .scf-input-row input {
-        background: #15151f;
-        border-color: #3a3354;
-        color: #e8e6f3;
-    }
-    .scf-action {
-        background: #2a2540;
-        border-color: #3a3354;
-        color: #c4b5fd;
-    }
 }
