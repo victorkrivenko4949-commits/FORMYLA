@@ -63,6 +63,10 @@ class User(UserMixin, db.Model):
     # Onboarding flag: NULL = user hasn't seen the /about onboarding yet.
     # Set to utcnow() on first visit to /about (or first manual dismissal).
     onboarded_at = db.Column(db.DateTime, nullable=True)
+
+    # Telegram Login Widget — связка с Telegram-аккаунтом
+    telegram_id = db.Column(db.String(64), unique=True, nullable=True, index=True)
+    telegram_username = db.Column(db.String(64), nullable=True)
     
     @property
     def display_name(self):

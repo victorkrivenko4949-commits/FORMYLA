@@ -57,8 +57,41 @@ except ImportError:
     DEEPSEEK_AVAILABLE = False
     print("⚠️  DeepSeek client not available. AI recommendations disabled.")
 
+# ─── Sentry SDK (отлов ошибок + perf-трейсинг) ─────────────────────
+# Инициализируется до создания Flask app, чтобы FlaskIntegration перехватил всё.
+_SENTRY_DSN = os.environ.get("SENTRY_DSN", "").strip()
+SENTRY_ENABLED = False
+if _SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+        sentry_sdk.init(
+            dsn=_SENTRY_DSN,
+            integrations=[FlaskIntegration(), SqlalchemyIntegration()],
+            traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+            profiles_sample_rate=float(os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1")),
+            send_default_pii=False,
+            environment=os.environ.get("FLASK_ENV", "production"),
+            release=os.environ.get("RENDER_GIT_COMMIT", "dev"),
+        )
+        SENTRY_ENABLED = True
+        print("✅ Sentry SDK initialized")
+    except Exception as _sentry_err:
+        print(f"⚠️  Sentry init failed: {_sentry_err}")
+else:
+    print("ℹ️  SENTRY_DSN не задан — Sentry отключен.")
+
 
 app = Flask(__name__)
+
+# ─── Cloudflare ProxyFix (доверяем X-Forwarded-* за CF + Render) ───
+try:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=1, x_host=1, x_prefix=1)
+    print("✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)")
+except Exception as _pf_err:
+    print(f"⚠️  ProxyFix not applied: {_pf_err}")
 app.config['JSON_AS_ASCII'] = False
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
@@ -151,6 +184,11 @@ print("="*60)
 app.config['YANDEX_CLIENT_ID'] = os.environ.get('YANDEX_CLIENT_ID')
 app.config['YANDEX_CLIENT_SECRET'] = os.environ.get('YANDEX_CLIENT_SECRET')
 app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
+
+# Telegram Login Widget — bot username (без @) для встраивания в шаблоны
+app.config['TELEGRAM_BOT_USERNAME'] = (os.environ.get('TELEGRAM_BOT_USERNAME') or '').strip()
+# Plausible Analytics — домен сайта в плаусибл-аккаунте (пусто = аналитика выключена)
+app.config['PLAUSIBLE_DOMAIN'] = (os.environ.get('PLAUSIBLE_DOMAIN') or '').strip()
 
 # Initialize database, login manager and mail.
 # ВАЖНО: импортируем ВСЕ модели до init_db(), иначе db.create_all() не
@@ -410,6 +448,25 @@ try:
             db.session.execute(db.text("ALTER TABLE users ADD COLUMN onboarded_at TIMESTAMP"))
             db.session.commit()
             print("[migration] Added onboarded_at to users")
+        except Exception:
+            db.session.rollback()
+
+        # --- Telegram Login Widget: telegram_id (unique) + telegram_username ---
+        for _tg_stmt, _tg_label in (
+            ("ALTER TABLE users ADD COLUMN telegram_id VARCHAR(64)", "telegram_id"),
+            ("ALTER TABLE users ADD COLUMN telegram_username VARCHAR(64)", "telegram_username"),
+        ):
+            try:
+                db.session.execute(db.text(_tg_stmt))
+                db.session.commit()
+                print(f"[migration] Added {_tg_label} to users")
+            except Exception:
+                db.session.rollback()
+        try:
+            db.session.execute(db.text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_telegram_id ON users (telegram_id)"
+            ))
+            db.session.commit()
         except Exception:
             db.session.rollback()
 
@@ -720,6 +777,14 @@ try:
 except Exception as _e:
     print(f"[BP] concierge_bp NOT registered: {_e}")
 
+# /auth/telegram/* — Telegram Login Widget callback.
+try:
+    from routes.telegram_auth import telegram_auth_bp
+    app.register_blueprint(telegram_auth_bp)
+    print("[BP] telegram_auth_bp registered (/auth/telegram/callback)")
+except Exception as _e:
+    print(f"[BP] telegram_auth_bp NOT registered: {_e}")
+
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
 try:
     from services.md_render import md_render as _md_render_filter
@@ -760,6 +825,7 @@ def health_check():
         'status': 'ok',
         'python': sys.version,
         'db_type': 'postgresql' if _database_url.startswith('postgresql') else 'sqlite',
+        'sentry_enabled': SENTRY_ENABLED,
     }
     try:
         from sqlalchemy import text as _t
@@ -769,6 +835,37 @@ def health_check():
         info['db_connected'] = False
         info['db_error'] = str(ex)
     return jsonify(info)
+
+
+# ── SENTRY USER CONTEXT (привязка ошибок к юзеру, без PII) ────────
+if SENTRY_ENABLED:
+    @app.before_request
+    def _sentry_user_context():
+        try:
+            import sentry_sdk as _sdk
+            if current_user.is_authenticated:
+                _sdk.set_user({
+                    "id": current_user.id,
+                    # email/username намеренно НЕ передаём (send_default_pii=False)
+                })
+            else:
+                _sdk.set_user(None)
+        except Exception:
+            pass
+
+
+# ── /debug-sentry: проверка интеграции (запрещено в production) ───
+@app.route('/debug-sentry')
+def trigger_error_for_sentry():
+    """Намеренно бросает исключение, чтобы убедиться что Sentry ловит ошибки.
+
+    Защищено: в production (FLASK_ENV=production) возвращает 404.
+    Использовать только локально или на staging.
+    """
+    if os.environ.get("FLASK_ENV", "production").lower() == "production":
+        abort(404)
+    division_by_zero = 1 / 0  # noqa: F841 — намеренная ошибка для Sentry
+    return "unreachable"
 
 # Flask-APScheduler for Daily Quest cron jobs
 from flask_apscheduler import APScheduler
@@ -915,6 +1012,20 @@ def add_security_headers(response):
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
     response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    # Запрещаем доступ к камере/микрофону/геолокации по умолчанию (явный opt-out)
+    response.headers.setdefault(
+        'Permissions-Policy',
+        'camera=(), microphone=(), geolocation=(), payment=()'
+    )
+    # HSTS — только когда соединение действительно по HTTPS (production behind Cloudflare)
+    try:
+        if request.is_secure or _is_production:
+            response.headers.setdefault(
+                'Strict-Transport-Security',
+                'max-age=31536000; includeSubDomains'
+            )
+    except Exception:
+        pass
     return response
 
 
@@ -2337,8 +2448,22 @@ def verify_code():
             # Успешная авторизация
             user.clear_auth_code()
             from datetime import datetime
+            # Считаем нового юзера тем, у кого ещё нет онбординга
+            _is_new_user = getattr(user, 'onboarded_at', None) is None and getattr(user, 'last_login', None) is None
             user.last_login = datetime.utcnow()
             db.session.commit()
+
+            # Welcome email через Brevo для первого входа
+            if _is_new_user:
+                try:
+                    from services.email_service import send_welcome_email
+                    threading.Thread(
+                        target=send_welcome_email,
+                        args=(user,),
+                        daemon=True,
+                    ).start()
+                except Exception as _we_err:
+                    app.logger.warning(f"Welcome email failed: {_we_err}")
 
             # Вход с долгоживущей сессией (30 дней)
             session.permanent = True  # Делаем сессию постоянной (30 дней)
@@ -2501,18 +2626,20 @@ def yandex_login():
         # Ищем OAuth аккаунт
         oauth = OAuthAccount.query.filter_by(provider='yandex', provider_user_id=provider_user_id).first()
         
+        _yandex_is_new_user = False
         if oauth:
             user = oauth.user
         else:
             # Ищем по email
             user = User.query.filter_by(email=email).first()
-            
+
             if not user:
                 # Создаем нового
                 user = User(email=email, name=name, avatar_url=avatar_url)
                 db.session.add(user)
                 db.session.flush()
-            
+                _yandex_is_new_user = True
+
             # Создаем OAuth связь
             oauth = OAuthAccount(user_id=user.id, provider='yandex', provider_user_id=provider_user_id)
             db.session.add(oauth)
@@ -2528,6 +2655,18 @@ def yandex_login():
         from datetime import datetime
         user.last_login = datetime.utcnow()
         db.session.commit()
+
+        # Welcome email через Brevo — только для впервые созданных пользователей
+        if _yandex_is_new_user:
+            try:
+                from services.email_service import send_welcome_email
+                threading.Thread(
+                    target=send_welcome_email,
+                    args=(user,),
+                    daemon=True,
+                ).start()
+            except Exception as _we_err:
+                app.logger.warning(f"Welcome email failed (yandex): {_we_err}")
         
         # Авторизуем
         session.permanent = True  # Делаем сессию постоянной (30 дней)
