@@ -52,7 +52,15 @@
                 {% endfor %}
             </select>
         </label>
-        <label>Раздел
+        <label>Категория
+            <select name="category">
+                <option value="">все</option>
+                {% for slug, label in allowed_categories %}
+                <option value="{{ slug }}" {% if filters.category == slug %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Раздел (A–H)
             <select name="section">
                 <option value="">все</option>
                 {% for s in allowed_sections %}

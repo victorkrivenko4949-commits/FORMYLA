@@ -365,6 +365,20 @@ try:
             print("[migration] Added share_percent to olympiad_theory")
         except Exception:
             db.session.rollback()
+
+        # --- OlympiadTask: method_codes (JSON), year (Int), stage (String) ---
+        # Используются импортёром scripts/import_vsosh9_methods.py для архива ВсОШ-9.
+        for _stmt, _label in (
+            ("ALTER TABLE olympiad_tasks ADD COLUMN method_codes JSON", "method_codes"),
+            ("ALTER TABLE olympiad_tasks ADD COLUMN year INTEGER", "year"),
+            ("ALTER TABLE olympiad_tasks ADD COLUMN stage VARCHAR(20)", "stage"),
+        ):
+            try:
+                db.session.execute(db.text(_stmt))
+                db.session.commit()
+                print(f"[migration] Added {_label} to olympiad_tasks")
+            except Exception:
+                db.session.rollback()
 except Exception as e:
     print(f"[AUTO-MIGRATION] guest columns Warning: {e}")
 

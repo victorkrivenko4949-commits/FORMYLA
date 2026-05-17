@@ -162,6 +162,17 @@ class OlympiadTask(db.Model):
     estimated_minutes = db.Column(db.Integer, nullable=True)
     max_score = db.Column(db.Integer, nullable=False, default=7, server_default='7')
 
+    # ── ВсОШ-9 импортные поля (xlsx → idempotent) ────────────────────────────
+    # Все коды методов, использованных в задаче (primary + secondary, и шире).
+    # Хранится как JSON-массив строк: ["E14", "F3"].
+    # Включён в дополнение к method_primary/method_secondary, чтобы новый /methods
+    # UI мог фильтровать «есть ли вообще такой код» одним запросом.
+    method_codes = db.Column(db.JSON, nullable=True)
+    # Год тура (2010..2026 для архива ВсОШ-9).
+    year = db.Column(db.Integer, nullable=True, index=True)
+    # Этап олимпиады: 'school' | 'municipal' | 'regional' | 'final'.
+    stage = db.Column(db.String(20), nullable=True, index=True)
+
     probnik = db.relationship('Probnik', back_populates='tasks')
     attempts = db.relationship(
         'TaskAttempt',

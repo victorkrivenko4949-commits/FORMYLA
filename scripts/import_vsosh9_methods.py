@@ -62,6 +62,14 @@ STAGE_PREFIX = {
     'Заключительный':'З',
 }
 
+# Этап → нормализованный slug для OlympiadTask.stage (английская техническая метка).
+STAGE_NORMALIZED = {
+    'Школьный':       'school',
+    'Муниципальный':  'municipal',
+    'Региональный':   'regional',
+    'Заключительный': 'final',
+}
+
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -277,6 +285,23 @@ def import_tasks_sheet(ws) -> dict:
         idea_md = '*Идея решения будет добавлена позже.*'
         solution_md = '*Полное решение будет добавлено позже.*'
 
+        # method_codes — нормализованный JSON-список всех методов (без дублей,
+        # без пустых строк). Используется для фильтра «задачи, в которых
+        # встречается метод X» через JSON contains / Python.
+        codes_list = [method_primary]
+        if method_secondary and method_secondary != method_primary:
+            codes_list.append(method_secondary)
+        # Дополнительные методы могут разделяться запятыми / пробелами / `;`.
+        if method_secondary:
+            for piece in (
+                method_secondary.replace(';', ',').replace('/', ',').split(',')
+            ):
+                piece = piece.strip()
+                if piece and piece not in codes_list:
+                    codes_list.append(piece)
+
+        stage_slug = STAGE_NORMALIZED.get(stage)
+
         if existing is None:
             task = OlympiadTask(
                 probnik_id=probnik.id,
@@ -284,6 +309,9 @@ def import_tasks_sheet(ws) -> dict:
                 sort_order=sort_order,
                 method_primary=method_primary,
                 method_secondary=method_secondary,
+                method_codes=codes_list,
+                year=year,
+                stage=stage_slug,
                 condition_md=condition_md,
                 idea_md=idea_md,
                 solution_md=solution_md,
@@ -294,6 +322,9 @@ def import_tasks_sheet(ws) -> dict:
         else:
             existing.method_primary = method_primary
             existing.method_secondary = method_secondary
+            existing.method_codes = codes_list
+            existing.year = year
+            existing.stage = stage_slug
             existing.sort_order = sort_order
             existing.source_prototype = (
                 f'ВсОШ-9 / {stage} / {year} / №{num_in_stage}'

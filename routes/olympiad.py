@@ -680,21 +680,51 @@ ALLOWED_METHOD_COMPETITIONS = (
 ALLOWED_METHOD_SECTIONS = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
 ALLOWED_METHOD_SORTS = ('frequency', 'level', 'code')
 
+# Категория (русская группа) ← буквенный префикс кода метода.
+# Согласовано с ТЗ: одна категория может склеивать несколько букв.
+LETTER_TO_CATEGORY = {
+    'A': 'algebra',  'C': 'algebra',  'G': 'algebra',
+    'B': 'logic',
+    'D': 'number_theory',
+    'E': 'combinatorics',
+    'F': 'geometry',
+    'H': 'other',
+}
+CATEGORY_LABELS = (
+    ('algebra',       'Алгебра'),
+    ('geometry',      'Геометрия'),
+    ('combinatorics', 'Комбинаторика'),
+    ('number_theory', 'Теория чисел'),
+    ('logic',         'Логика'),
+    ('other',         'Прочее'),
+)
+ALLOWED_METHOD_CATEGORIES = tuple(slug for slug, _ in CATEGORY_LABELS)
+
+
+def _category_for_code(code: str):
+    """Вернуть slug категории по первой букве кода метода (или None)."""
+    if not code:
+        return None
+    return LETTER_TO_CATEGORY.get(code[0].upper())
+
 
 @olympiad_bp.route('/methods', endpoint='methods')
 def methods_catalog():
-    """Каталог теоретических блоков с фильтрами grade/competition/difficulty/section.
+    """Каталог теоретических блоков с фильтрами grade/competition/difficulty/category.
 
     Query params:
         grade        int  5..11
         competition  str  одна из ALLOWED_METHOD_COMPETITIONS
         difficulty   int  1..5
-        section      str  A..H
+        category     str  algebra | geometry | combinatorics | number_theory
+                          | logic | other  (группирует буквы кода метода)
+        section      str  A..H  (legacy; если задан, используется как low-level фильтр)
         sort         str  frequency (default) | level | code
     """
     grade = request.args.get('grade', type=int)
     competition = request.args.get('competition', type=str)
     difficulty = request.args.get('difficulty', type=int)
+    category = request.args.get('category', type=str)
     section = request.args.get('section', type=str)
     sort_key = request.args.get('sort', default='frequency', type=str)
 
@@ -705,6 +735,8 @@ def methods_catalog():
         competition = None
     if difficulty is not None and not (1 <= difficulty <= 5):
         difficulty = None
+    if category and category not in ALLOWED_METHOD_CATEGORIES:
+        category = None
     if section:
         section = section.upper()
         if section not in ALLOWED_METHOD_SECTIONS:
@@ -750,10 +782,19 @@ def methods_catalog():
             if b.recommended_competitions
             and competition in b.recommended_competitions
         ]
+    # Категория — группа букв кода метода. Фильтруем в Python (89 записей, OK).
+    if category:
+        blocks = [b for b in blocks if _category_for_code(b.method_code) == category]
 
     sections = {}
     for b in blocks:
         sections.setdefault(b.section or '?', []).append(b)
+
+    # Группировка по человекочитаемой категории — для шаблона.
+    categories_grouped = {slug: [] for slug, _ in CATEGORY_LABELS}
+    for b in blocks:
+        slug = _category_for_code(b.method_code) or 'other'
+        categories_grouped.setdefault(slug, []).append(b)
 
     total_methods = TheoryBlock.query.count()
 
@@ -773,6 +814,8 @@ def methods_catalog():
     return render_template(
         'olympiad/method.html',
         sections=sections,
+        categories_grouped=categories_grouped,
+        category_labels=CATEGORY_LABELS,
         blocks=blocks,
         block=None,
         related=[],
@@ -783,11 +826,13 @@ def methods_catalog():
             'grade': grade,
             'competition': competition,
             'difficulty': difficulty,
+            'category': category,
             'section': section,
             'sort': sort_key,
         },
         allowed_competitions=ALLOWED_METHOD_COMPETITIONS,
         allowed_sections=ALLOWED_METHOD_SECTIONS,
+        allowed_categories=CATEGORY_LABELS,
     )
 
 
@@ -807,9 +852,12 @@ def method_detail(method_code):
             TheoryBlock.method_code.in_(codes)
         ).all()
 
-    # Связанные задачи (primary или secondary метод = текущему коду).
-    from sqlalchemy import or_
-    linked_tasks = (
+    # Связанные задачи: ищем method_code в JSON-массиве OlympiadTask.method_codes.
+    # Для SQLite используем LIKE-фоллбек по сериализованной строке JSON, а в
+    # Python ещё раз фильтруем точно, чтобы не ловить ложные подстроки.
+    from sqlalchemy import or_, cast, String
+
+    candidates = (
         OlympiadTask.query
         .join(Probnik)
         .filter(
@@ -817,11 +865,23 @@ def method_detail(method_code):
             or_(
                 OlympiadTask.method_primary == method_code,
                 OlympiadTask.method_secondary == method_code,
+                cast(OlympiadTask.method_codes, String).like(f'%"{method_code}"%'),
             ),
         )
         .order_by(Probnik.season_year.desc(), OlympiadTask.sort_order.asc())
         .all()
     )
+
+    # Финальная точная фильтрация: проверяем JSON-массив в Python.
+    linked_tasks = []
+    for t in candidates:
+        codes = t.method_codes or []
+        if (
+            method_code in codes
+            or t.method_primary == method_code
+            or t.method_secondary == method_code
+        ):
+            linked_tasks.append(t)
 
     return render_template('olympiad/method.html',
                            sections=None, block=block, related=related,
