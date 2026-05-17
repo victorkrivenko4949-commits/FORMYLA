@@ -254,10 +254,13 @@ try:
     with app.app_context():
         from sqlalchemy import inspect as _inspect_nr
         _inspector_nr = _inspect_nr(db.engine)
+        _is_pg_nr = _database_url.startswith('postgresql')
+        # Postgres требует BOOLEAN DEFAULT FALSE/TRUE; SQLite принимает 0/1.
+        _bool_default_false = 'BOOLEAN DEFAULT FALSE' if _is_pg_nr else 'BOOLEAN DEFAULT 0'
         if 'adaptive_tasks' in _inspector_nr.get_table_names():
             _cols_nr = [col['name'] for col in _inspector_nr.get_columns('adaptive_tasks')]
             _new_review_cols = {
-                'needs_review': 'BOOLEAN DEFAULT 0',
+                'needs_review': _bool_default_false,
                 'llm_suggested_answer': 'TEXT',
                 'llm_suggested_solution': 'TEXT',
                 'review_reason': 'TEXT',
@@ -265,9 +268,13 @@ try:
             }
             for _col_name, _col_type in _new_review_cols.items():
                 if _col_name not in _cols_nr:
-                    db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {_col_name} {_col_type}"))
-                    db.session.commit()
-                    print(f"[AUTO-MIGRATION] ✓ Column '{_col_name}' added to adaptive_tasks")
+                    try:
+                        db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {_col_name} {_col_type}"))
+                        db.session.commit()
+                        print(f"[AUTO-MIGRATION] ✓ Column '{_col_name}' added to adaptive_tasks")
+                    except Exception as _e_col_nr:
+                        db.session.rollback()
+                        print(f"[AUTO-MIGRATION] adaptive_tasks.{_col_name} skipped: {_e_col_nr}")
 except Exception as e:
     print(f"[AUTO-MIGRATION] needs_review columns Warning: {e}")
 
@@ -6530,16 +6537,23 @@ except Exception as _e:
 
 
 # ── Авто-скрипт: помечаем задачи с >= 3 fallback за 7 дней ──
+# Используем параметр (Python datetime), чтобы запрос работал и на SQLite,
+# и на Postgres (SQLite-функция datetime('now', '-7 days') на PG не существует).
 try:
     with app.app_context():
-        _problem_tasks = db.session.execute(text("""
-            SELECT task_id, COUNT(*) as fails
-            FROM tutor_calls
-            WHERE status='fallback'
-              AND created_at > datetime('now', '-7 days')
-            GROUP BY task_id
-            HAVING fails >= 3
-        """)).fetchall()
+        from datetime import datetime as _dt_now, timedelta as _td_7d
+        _cutoff_7d = _dt_now.utcnow() - _td_7d(days=7)
+        _problem_tasks = db.session.execute(
+            text("""
+                SELECT task_id, COUNT(*) as fails
+                FROM tutor_calls
+                WHERE status='fallback'
+                  AND created_at > :cutoff
+                GROUP BY task_id
+                HAVING COUNT(*) >= 3
+            """),
+            {'cutoff': _cutoff_7d},
+        ).fetchall()
         for _row in _problem_tasks:
             _t = AdaptiveTask.query.get(_row.task_id)
             if _t and not _t.is_flagged:
@@ -6550,6 +6564,7 @@ try:
                 print(f"[QUALITY CONTROL] Авто-помечена задача #{_row.task_id} ({_row.fails} fallback)")
         db.session.commit()
 except Exception as _e:
+    db.session.rollback()
     print(f"[QUALITY CONTROL] Auto-flag warning: {_e}")
 
 
