@@ -16,162 +16,50 @@
     {% if sections is not none %}
     <header class="oly-hero">
         <h1>📚 Каталог методов</h1>
-        <p>Базовые приёмы решения олимпиадных задач, сгруппированные по разделам.</p>
+        <p>Базовые приёмы решения олимпиадных задач.</p>
         {% if blocks is defined %}
         <p class="oly-card-sub" style="margin-top:8px;">
-            Найдено: <strong>{{ blocks|length }}</strong>
-            {% if total_methods is defined and total_methods != blocks|length %} из {{ total_methods }}{% endif %}
+            Всего методов: <strong>{{ blocks|length }}</strong>
         </p>
         {% endif %}
     </header>
 
-    {# Фильтр-форма #}
-    {% if filters is defined %}
-    <form method="GET" class="oly-card" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:16px;">
-        <label>Класс
-            <select name="grade">
-                <option value="">любой</option>
-                {% for g in range(5, 12) %}
-                <option value="{{ g }}" {% if filters.grade == g %}selected{% endif %}>{{ g }} класс</option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Олимпиада
-            <select name="competition">
-                <option value="">любая</option>
-                {% for c in allowed_competitions %}
-                <option value="{{ c }}" {% if filters.competition == c %}selected{% endif %}>{{ c }}</option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Сложность
-            <select name="difficulty">
-                <option value="">любая</option>
-                {% for d in range(1, 6) %}
-                <option value="{{ d }}" {% if filters.difficulty == d %}selected{% endif %}>{{ d }}/5</option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Категория
-            <select name="category">
-                <option value="">все</option>
-                {% for slug, label in allowed_categories %}
-                <option value="{{ slug }}" {% if filters.category == slug %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Раздел (A–H)
-            <select name="section">
-                <option value="">все</option>
-                {% for s in allowed_sections %}
-                <option value="{{ s }}" {% if filters.section == s %}selected{% endif %}>{{ s }}</option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Сортировка
-            <select name="sort">
-                <option value="frequency" {% if filters.sort == 'frequency' %}selected{% endif %}>по частоте на ВсОШ-9</option>
-                <option value="level"     {% if filters.sort == 'level' %}selected{% endif %}>по уровню сложности</option>
-                <option value="code"      {% if filters.sort == 'code' %}selected{% endif %}>по коду</option>
-            </select>
-        </label>
-        <button type="submit" class="oly-btn oly-btn-sm">Применить</button>
-        <a href="{{ url_for('olympiad.methods') }}" class="oly-btn-ghost oly-btn oly-btn-sm">Сброс</a>
-    </form>
-    {% endif %}
-
-    {# ── Inline стили для нового дизайна каталога методов ── #}
+    {# ── Inline стили для упрощённого каталога (одна колонка) ── #}
     <style>
-      .method-card { position: relative; }
-      .method-card .top10-badge {
-        position: absolute; top: 10px; right: 12px;
-        background: linear-gradient(135deg,#f59e0b,#ef4444);
-        color:#fff; font-size:11px; font-weight:700; padding:3px 9px;
-        border-radius:999px; letter-spacing:0.3px;
-        box-shadow: 0 4px 12px rgba(239,68,68,0.25);
-        pointer-events: none;
+      .methods-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 860px;
+        margin: 0 auto;
       }
-      .method-meta-row {
-        display:flex; flex-wrap:wrap; gap:10px 14px;
-        margin: 6px 0 8px; font-size: 13px; color: #94a3b8;
+      .methods-list .oly-card {
+        display: block;
+        padding: 14px 18px;
       }
-      .method-meta-row strong { color:#e2e8f0; font-weight:600; }
-      .freq-bar-wrap {
-        margin-top: 8px; height: 6px; background: rgba(255,255,255,0.07);
-        border-radius: 6px; overflow: hidden;
+      .methods-list .oly-card h3 {
+        margin: 0 0 4px;
+        font-size: 16px;
       }
-      .freq-bar {
-        height: 100%; background: linear-gradient(90deg, #38ef7d, #11998e);
-        border-radius: 6px; transition: width 0.3s ease;
-      }
-      .freq-bar.top10 {
-        background: linear-gradient(90deg, #f59e0b, #ef4444);
-      }
-      .freq-caption { font-size: 11px; color: #64748b; margin-top: 4px; }
     </style>
 
-    {% if sections %}
-        {% if filters and filters.sort == 'frequency' %}
-            {# Flat ranked list по убыванию частотности — для нового дизайна с TOP-10 #}
-            <div class="oly-grid">
-                {% for tb in blocks %}
-                {% set is_top10 = top_10_codes and tb.method_code in top_10_codes %}
-                {% set width_pct = ((tb.total_count or 0) * 100.0 / max_count) if max_count else 0 %}
-                <a class="oly-card method-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
-                    {% if is_top10 %}<span class="top10-badge">🔥 ТОП-10</span>{% endif %}
-                    <h3 style="padding-right: 80px;">
-                        <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
-                        {{ tb.method_name }}
-                    </h3>
-                    <div class="method-meta-row">
-                        {% if tb.section %}<span>Раздел <strong>{{ tb.section }}</strong></span>{% endif %}
-                        {% if tb.total_count %}<span>В <strong>{{ tb.total_count }}</strong> задачах ВсОШ-9</span>{% endif %}
-                        {% if tb.difficulty_level %}<span>Сложность <strong>{{ tb.difficulty_level }}/5</strong></span>{% endif %}
-                    </div>
-                    <div class="freq-bar-wrap">
-                        <div class="freq-bar {% if is_top10 %}top10{% endif %}" style="width: {{ '%.1f'|format(width_pct) }}%;"></div>
-                    </div>
-                    <div class="freq-caption">
-                        {% if tb.share_percent %}
-                            Встречается в <strong>{{ '%.1f'|format(tb.share_percent * 100) }}%</strong> задач ВсОШ-9
-                        {% elif tb.total_count %}
-                            {{ tb.total_count }} задач(и) в банке ВсОШ-9
-                        {% else %}
-                            Данные о частотности скоро появятся
-                        {% endif %}
-                    </div>
-                </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            {# Группировка по разделу — для сортировок 'level' и 'code'. #}
-            {% for section_key, blocks_in_section in sections.items() %}
-            <h2 class="oly-section-title">Раздел {{ section_key }}</h2>
-            <div class="oly-grid">
-                {% for tb in blocks_in_section %}
-                {% set is_top10 = top_10_codes and tb.method_code in top_10_codes %}
-                <a class="oly-card method-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
-                    {% if is_top10 %}<span class="top10-badge">🔥 ТОП-10</span>{% endif %}
-                    <h3 style="padding-right: 80px;">
-                        <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
-                        {{ tb.method_name }}
-                    </h3>
-                    <p class="oly-card-sub" style="margin:4px 0 0;">
-                        {% if tb.grades %}Классы: {{ tb.grades|join(', ') }}{% endif %}
-                        {% if tb.difficulty_level %} · Сложность: {{ tb.difficulty_level }}/5{% endif %}
-                        {% if tb.total_count %} · ВсОШ-9: {{ tb.total_count }} задач{% endif %}
-                    </p>
-                    {% if tb.definition_md %}
-                    <p class="oly-card-sub" style="margin-top:6px;">{{ tb.definition_md[:120] }}{% if tb.definition_md|length > 120 %}…{% endif %}</p>
-                    {% endif %}
-                </a>
-                {% endfor %}
-            </div>
+    {% if blocks %}
+        <div class="methods-list">
+            {% for tb in blocks %}
+            <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
+                <h3>
+                    <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
+                    {{ tb.method_name }}
+                </h3>
+                {% if tb.section %}
+                <p class="oly-card-sub" style="margin:0;">Раздел {{ tb.section }}</p>
+                {% endif %}
+            </a>
             {% endfor %}
-        {% endif %}
+        </div>
     {% else %}
         <div class="oly-card" style="text-align:center; padding: 40px 20px;">
-            <p style="margin:0; color: var(--text-muted);">Под выбранные фильтры ничего не подходит.</p>
+            <p style="margin:0; color: var(--text-muted);">Методы скоро появятся.</p>
         </div>
     {% endif %}
 
