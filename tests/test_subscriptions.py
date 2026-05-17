@@ -48,7 +48,8 @@ class TestPlanLimits:
         assert PLAN_LIMITS['premium_monthly']['price_rub'] == 390
 
     def test_yearly_price(self):
-        assert PLAN_LIMITS['premium_yearly']['price_rub'] == 3900
+        # Pro Год: 2 790 ₽ (скидка 40 % от 4 680 ₽).
+        assert PLAN_LIMITS['premium_yearly']['price_rub'] == 2790
 
 
 # ── Test 1: New user is free ──────────────────────────────────────────────────

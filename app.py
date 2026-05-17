@@ -152,8 +152,16 @@ app.config['YANDEX_CLIENT_ID'] = os.environ.get('YANDEX_CLIENT_ID')
 app.config['YANDEX_CLIENT_SECRET'] = os.environ.get('YANDEX_CLIENT_SECRET')
 app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 
-# Initialize database, login manager and mail
-from models import db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress, AdaptiveTestResult, TestResult, UserProgress, init_db
+# Initialize database, login manager and mail.
+# ВАЖНО: импортируем ВСЕ модели до init_db(), иначе db.create_all() не
+# создаст таблицы для тех моделей, которые подгружаются позже по коду
+# (например, GroupChat/GroupMember/GroupMessage в /api/groups).
+from models import (
+    db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress,
+    AdaptiveTestResult, TestResult, UserProgress,
+    GroupChat, GroupMember, GroupMessage,
+    init_db,
+)
 init_db(app)
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
@@ -263,6 +271,38 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] needs_review columns Warning: {e}")
 
+# AUTO-MIGRATION: Создаём таблицы group_chats / group_members / group_messages
+# на проде, если их ещё нет. На локалке db.create_all() в init_db уже создал
+# их, но на проде Postgres может быть старая БД, где этих таблиц нет.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_grp
+        from models import GroupChat as _GC, GroupMember as _GM, GroupMessage as _GMsg
+        _ins = _inspect_grp(db.engine)
+        _existing = set(_ins.get_table_names())
+        _need = [t for t in ('group_chats', 'group_members', 'group_messages') if t not in _existing]
+        if _need:
+            print(f"[AUTO-MIGRATION] Creating missing group chat tables: {_need}")
+            db.create_all()
+            print(f"[AUTO-MIGRATION] ✓ Group chat tables created")
+        else:
+            print("[AUTO-MIGRATION] ✓ Group chat tables already exist")
+        # Add missing columns to group_chats (avatar_emoji added later)
+        if 'group_chats' in _ins.get_table_names():
+            _cols_gc = {c['name'] for c in _ins.get_columns('group_chats')}
+            if 'avatar_emoji' not in _cols_gc:
+                try:
+                    db.session.execute(db.text(
+                        "ALTER TABLE group_chats ADD COLUMN avatar_emoji VARCHAR(8) DEFAULT '\U0001F465'"
+                    ))
+                    db.session.commit()
+                    print("[AUTO-MIGRATION] OK Added avatar_emoji to group_chats")
+                except Exception as _e_av:
+                    db.session.rollback()
+                    print(f"[AUTO-MIGRATION] avatar_emoji add Warning: {_e_av}")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] group_chats Warning: {e}")
+
 # AUTO-MIGRATION: Add guest access columns to users
 try:
     with app.app_context():
@@ -301,6 +341,14 @@ try:
             db.session.execute(db.text("ALTER TABLE users ADD COLUMN plan_expires_at TIMESTAMP"))
             db.session.commit()
             print("[migration] Added plan_expires_at to users")
+        except Exception:
+            db.session.rollback()
+
+        # --- onboarded_at: marks first visit to /about?onboarding=1 ---
+        try:
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN onboarded_at TIMESTAMP"))
+            db.session.commit()
+            print("[migration] Added onboarded_at to users")
         except Exception:
             db.session.rollback()
 except Exception as e:
@@ -555,6 +603,14 @@ try:
 except Exception as _e:
     print(f"[BP] olympiad_bp NOT registered: {_e}")
 
+# /grade-5 and /grade-6 — тренажёр FORMYLA по школьным классам.
+try:
+    from routes.grade import grade_bp
+    app.register_blueprint(grade_bp)
+    print("[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)")
+except Exception as _e:
+    print(f"[BP] grade_bp NOT registered: {_e}")
+
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
 try:
     from services.md_render import md_render as _md_render_filter
@@ -570,11 +626,21 @@ app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
 # ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
 @app.errorhandler(500)
 def internal_error(e):
-    """Global 500 error handler - shows traceback instead of blank page"""
-    import traceback
-    tb = traceback.format_exc()
-    app.logger.error(f"500 Internal Server Error: {e}\n{tb}")
-    return f"<h1>Internal Server Error</h1><pre>{e}\n{tb}</pre>", 500
+    import traceback, uuid
+    err_id = uuid.uuid4().hex[:8]
+    app.logger.error(f"[{err_id}] 500: {e}\n{traceback.format_exc()}")
+    try:
+        return render_template('errors/500.html', error_id=err_id), 500
+    except Exception:
+        return f"<h1>500 Internal Server Error</h1><p>Code: {err_id}</p>", 500
+
+
+@app.errorhandler(404)
+def not_found(e):
+    try:
+        return render_template('errors/404.html'), 404
+    except Exception:
+        return "<h1>404 Not Found</h1>", 404
 
 # ── HEALTH CHECK ──────────────────────────────────────────────────
 @app.route('/health')
@@ -2164,17 +2230,24 @@ def verify_code():
             from datetime import datetime
             user.last_login = datetime.utcnow()
             db.session.commit()
-            
+
             # Вход с долгоживущей сессией (30 дней)
             session.permanent = True  # Делаем сессию постоянной (30 дней)
             login_user(user, remember=True, duration=None)
             session.pop('verify_email', None)
-            
+
             flash('Добро пожаловать!', 'success')
-            
-            # Редирект на главную или указанную страницу
+
+            # Редирект:
+            #   1) если есть next — туда
+            #   2) если пользователь ещё не прошёл онбординг — /about?onboarding=1
+            #   3) иначе — главная
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('index'))
+            if next_page:
+                return redirect(next_page)
+            if getattr(user, 'onboarded_at', None) is None:
+                return redirect(url_for('about_page', onboarding=1))
+            return redirect(url_for('index'))
         
         flash('Неверный или просроченный код', 'error')
         return render_template('verify_code.html', email=email)
@@ -2350,10 +2423,13 @@ def yandex_login():
         # Авторизуем
         session.permanent = True  # Делаем сессию постоянной (30 дней)
         login_user(user, remember=True)
-        
-        # Редирект на главную страницу
-        redirect_url = url_for('index')
-        
+
+        # Редирект: новым пользователям (onboarded_at IS NULL) — на онбординг
+        if getattr(user, 'onboarded_at', None) is None:
+            redirect_url = url_for('about_page', onboarding=1)
+        else:
+            redirect_url = url_for('index')
+
         return jsonify({'success': True, 'redirect_url': redirect_url})
         
     except Exception as e:
@@ -3802,6 +3878,145 @@ def api_free_mock_evaluate():
 # ADAPTIVE TESTING (Адаптивное тестирование)
 # ============================================================
 
+@app.route("/adaptive_test/select_class")
+def adaptive_test_select_class():
+    """Шаг 1 адаптивного теста: выбор класса (5–11).
+
+    Класс выбирается ПЕРВЫМ, затем пользователь попадает на выбор темы,
+    которая зависит от класса (для 5/6 — школьные домены, для 7+ —
+    классические олимпиадные темы).
+    """
+    return render_template('adaptive_test_select_class.html')
+
+
+@app.route("/adaptive_test/select_topic")
+def adaptive_test_select_topic():
+    """Шаг 2 адаптивного теста: выбор темы под выбранный класс.
+
+    - Для 5 и 6 классов показываем домены из GradeTask (импорт 1600 задач).
+    - Для 7–11 классов — классические темы из AdaptiveTask.
+    """
+    try:
+        grade_int = int(request.args.get('grade', ''))
+    except (ValueError, TypeError):
+        flash('Сначала выберите класс', 'error')
+        return redirect(url_for('adaptive_test_select_class'))
+
+    if grade_int not in (5, 6, 7, 8, 9, 10, 11):
+        flash('Неверный класс', 'error')
+        return redirect(url_for('adaptive_test_select_class'))
+
+    MIN_TASKS = 10
+    topics = []
+
+    if grade_int in (5, 6):
+        # Темы из 1600-задач (GradeTask) — для 5 и 6 классов
+        from models_grade import GradeTask, GRADE_DOMAINS, DOMAIN_LABELS
+        domain_emojis = {
+            'natural_numbers':              '🔢',
+            'fractions_decimals_percent':   '½',
+            'geometry_measurement':         '📐',
+            'combinatorics_school':         '🎲',
+            'logic_olympiad_intro':         '🧠',
+            'divisibility':                 '➗',
+            'fractions_ratio_percent':      '½',
+            'integers_coordinates':         '➕',
+            'geometry_6':                   '📏',
+            'olympiad_logic_combinatorics': '🧩',
+        }
+        for domain in GRADE_DOMAINS.get(grade_int, ()):
+            count = GradeTask.query.filter_by(grade=grade_int, domain=domain).count()
+            topics.append({
+                'name':      DOMAIN_LABELS.get(domain, domain),
+                'emoji':     domain_emojis.get(domain, '📘'),
+                'count':     count,
+                'available': count >= MIN_TASKS,
+                'url':       url_for('adaptive_test_start_grade',
+                                     grade=grade_int, domain=domain),
+            })
+    else:
+        # Классические темы для 7–11 классов — старый адаптивный тест
+        from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+        classic_topics = [
+            ('algebra',       'Алгебра',         '📐'),
+            ('geometry',      'Геометрия',       '📏'),
+            ('combinatorics', 'Комбинаторика',   '🎲'),
+            ('number_theory', 'Теория чисел',    '🔢'),
+            ('kl_movement',   'Задачи на движение', '🚗'),
+            ('knights_liars', 'Рыцари и лжецы',  '⚔️'),
+        ]
+        fallback_keywords = {
+            'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
+            'geometry': ['геометрия', 'треугольник', 'четырехугольник', 'окружность',
+                         'вектор', 'площад', 'стереометр', 'многогранник',
+                         'тела вращения', 'объем'],
+            'combinatorics': ['комбинатор', 'вероятност', 'перестановк', 'размещен', 'сочетан'],
+            'number_theory': ['натуральн', 'делимост', 'положительн', 'отрицательн',
+                              'рациональн', 'числ', 'НОД', 'НОК'],
+            'kl_movement': ['движен', 'текстовые задачи', 'совместная работа'],
+            'knights_liars': ['рыцар', 'лжец'],
+        }
+        all_tasks = AdaptiveTask.query.filter_by(
+            class_level=grade_int, is_flagged=False
+        ).all()
+        for topic_key, topic_name, emoji in classic_topics:
+            internal = 'movement' if topic_key == 'kl_movement' else topic_key
+            kws = get_keywords_for_grade_topic(grade_int, internal) \
+                  or fallback_keywords.get(topic_key, [])
+            kws_lower = [k.lower() for k in kws]
+            if not kws_lower:
+                count = len(all_tasks)
+            else:
+                count = sum(
+                    1 for t in all_tasks
+                    if t.topic and any(k in t.topic.lower() for k in kws_lower)
+                )
+            topics.append({
+                'name':      topic_name,
+                'emoji':     emoji,
+                'count':     count,
+                'available': count >= MIN_TASKS,
+                'url':       url_for('adaptive_test_start_simple',
+                                     topic=topic_key, grade=grade_int),
+            })
+
+    return render_template(
+        'adaptive_test_select_topic.html',
+        grade=grade_int,
+        topics=topics,
+        min_tasks=MIN_TASKS,
+    )
+
+
+@app.route("/adaptive_test/start_grade")
+def adaptive_test_start_grade():
+    """Запуск тренировки для 5/6 класса по выбранному домену (GradeTask).
+
+    Для 5/6 классов используется отдельный банк из 1600 задач (GradeTask),
+    разбитый по школьным доменам. Пока эти задачи проходятся в обычном
+    режиме (страница grade.domain_*) — без полностью адаптивного движка,
+    т.к. он завязан на поля AdaptiveTask.
+    """
+    try:
+        grade_int = int(request.args.get('grade', ''))
+    except (ValueError, TypeError):
+        flash('Сначала выберите класс', 'error')
+        return redirect(url_for('adaptive_test_select_class'))
+
+    domain = request.args.get('domain', '').strip()
+    if grade_int not in (5, 6) or not domain:
+        flash('Неверные параметры теста', 'error')
+        return redirect(url_for('adaptive_test_select_class'))
+
+    from models_grade import GRADE_DOMAINS
+    if domain not in GRADE_DOMAINS.get(grade_int, ()):
+        flash('Тема не найдена для этого класса', 'error')
+        return redirect(url_for('adaptive_test_select_topic', grade=grade_int))
+
+    endpoint = 'grade.domain_5' if grade_int == 5 else 'grade.domain_6'
+    return redirect(url_for(endpoint, domain=domain))
+
+
 @app.route("/adaptive_test/select_grade")
 def adaptive_test_select_grade():
     """Выбор класса для адаптивного теста."""
@@ -4511,38 +4726,30 @@ score = -1 (НЕВЕРНО, -1 уровень):
 
 4. ФОРМАТИРОВАНИЕ FEEDBACK — КРАЙНЕ ВАЖНО:
 
-   ⚠️ ВСЕ математические выражения ОБЯЗАТЕЛЬНО оборачивай в LaTeX-делимитеры,
-       иначе они отображаются как уродливый ASCII («x^2», «a = 3») —
-       это считается БАГОМ интерфейса.
+   ⚠️ ПИШИ МАТЕМАТИКУ ПРОСТЫМ ТЕКСТОМ БЕЗ LaTeX-команд.
+       Никаких backslash-команд внутри feedback (нельзя писать backslash-frac,
+       backslash-sqrt, backslash-left, backslash-right, backslash-dfrac,
+       backslash-(...), backslash-[...], $...$, $$...$$). Любые обратные слеши
+       ВНУТРИ feedback ЗАПРЕЩЕНЫ — они ломают рендеринг.
 
-   ПРАВИЛА LaTeX:
-   - Inline (внутри строки): \\( формула \\)        ← всегда два символа: \\( и \\)
-   - Display (отдельной строкой): \\[ формула \\]   ← для больших уравнений
-   - НЕ экранируй слеши дополнительно (пиши \\(, а не \\\\()
-
-   ОБЯЗАТЕЛЬНО оборачивай в \\( ... \\):
-   * Степени:                     x^2  →  \\(x^{2}\\)
-   * Индексы:                     a_1  →  \\(a_{1}\\)
-   * Дроби:                       1/2  →  \\(\\frac{1}{2}\\)
-   * Корни:                       √5   →  \\(\\sqrt{5}\\)
-   * Уравнения / неравенства:     a=3  →  \\(a = 3\\),  x≥0 → \\(x \\ge 0\\),  n≠1 → \\(n \\ne 1\\)
-   * Квадратные ур-я:             (x^2 - 4x + 3)/(x - 1) → \\(\\dfrac{x^2 - 4x + 3}{x - 1}\\)
-   * Любые переменные с числами:  2k+1=7 → \\(2k + 1 = 7\\)
-
-   ЗАПРЕЩЕНО писать в plain text:
-     ❌ «x^2 - 4x + 3»            → ✅ «\\(x^2 - 4x + 3\\)»
-     ❌ «значит a = 1»            → ✅ «значит \\(a = 1\\)»
-     ❌ «при a = 3:»              → ✅ «при \\(a = 3\\):»
-     ❌ «(x^2 - 4x + 3)/(x - 1)»  → ✅ «\\(\\dfrac{x^2 - 4x + 3}{x - 1}\\)»
+   КАК ЗАПИСЫВАТЬ МАТЕМАТИКУ (используй обычный текст и Unicode):
+   - Степени: x^2, x^n (можно Unicode x²)
+   - Индексы: a_1, a_n (можно Unicode a₁)
+   - Дроби: 1/2, (x+1)/(x-1) — обычной чертой /
+   - Корни: sqrt(5), или "корень из 5"
+   - Сравнения: =, ≠, <, ≤, >, ≥, ≈
+   - Греческие буквы: alpha, beta, pi, theta, lambda — словами
+   - Никаких backslash-команд и LaTeX-делимитеров.
 
    ПРОЧИЕ ПРАВИЛА:
-   - ОБЯЗАТЕЛЬНО используй переносы строк (\\n) для структурирования текста
-   - Перед каждым новым шагом решения ставь перенос строки
-     (например, перед "1. В числителе..." и "2. В знаменателе...")
-   - Используй **жирный** для ключевых слов («Шаг 1:», «Ответ:», «Проверка:»)
-   - Форматируй текст красиво, как в хорошем учебнике
-   - Будь конструктивным и понятным школьнику
-   - НЕ оборачивай JSON в markdown блоки"""
+   - Используй переносы строк для структурирования текста.
+   - Перед каждым новым шагом решения ставь перенос строки.
+   - Используй **жирный** для ключевых слов (Шаг 1:, Ответ:, Проверка:).
+   - Форматируй текст красиво, как в хорошем учебнике.
+   - Будь конструктивным и понятным школьнику.
+   - НЕ оборачивай JSON в markdown-блоки.
+   - Пиши всё на русском языке обычным текстом без LaTeX.
+"""
 
                 if is_proof_task:
                     _etalon_sol = (current_task.solution or "")[:2000]
@@ -4702,18 +4909,83 @@ score = -1 (НЕВЕРНО, -1 уровень):
         # Ограничиваем score в диапазоне [-1, 2]
         score = max(-1, min(2, score))
 
+        # ── Sanitize feedback: убираем LaTeX-команды и делимитеры ──────────
+        # Конвертируем популярные LaTeX-конструкции в человекочитаемый текст,
+        # чтобы разбор от AI-тьютора всегда выглядел нормально, даже если
+        # модель проигнорировала инструкцию «без LaTeX».
+        def _sanitize_feedback_no_latex(s: str) -> str:
+            if not s:
+                return s
+            import re as _re
+            t = s
+            # 1) убираем делимитеры \( \) \[ \] и $$..$$ / $..$
+            t = t.replace("\\(", " ").replace("\\)", " ")
+            t = t.replace("\\[", "\n").replace("\\]", "\n")
+            t = _re.sub(r"\$\$([^$]*)\$\$", r"\1", t, flags=_re.DOTALL)
+            t = _re.sub(r"\$([^$\n]+)\$", r"\1", t)
+            # 2) \frac{a}{b} → (a)/(b)   (и \dfrac, \tfrac)
+            for cmd in ("dfrac", "tfrac", "frac"):
+                pat = r"\\" + cmd + r"\s*\{([^{}]*)\}\s*\{([^{}]*)\}"
+                # повторяем — на случай вложенных
+                for _ in range(4):
+                    new_t = _re.sub(pat, r"(\1)/(\2)", t)
+                    if new_t == t:
+                        break
+                    t = new_t
+            # 3) \sqrt[n]{x} → root_n(x);   \sqrt{x} → sqrt(x)
+            t = _re.sub(r"\\sqrt\s*\[([^\]]*)\]\s*\{([^{}]*)\}", r"root_\1(\2)", t)
+            t = _re.sub(r"\\sqrt\s*\{([^{}]*)\}", r"sqrt(\1)", t)
+            # 4) \left( \right) → ( )
+            t = t.replace("\\left", "").replace("\\right", "")
+            # 5) операторы и символы
+            replacements = {
+                "\\cdot": "·", "\\times": "×", "\\div": "÷", "\\pm": "±",
+                "\\le": "≤", "\\leq": "≤", "\\ge": "≥", "\\geq": "≥",
+                "\\ne": "≠", "\\neq": "≠", "\\approx": "≈", "\\equiv": "≡",
+                "\\infty": "∞", "\\to": "→", "\\Rightarrow": "⇒",
+                "\\Leftrightarrow": "⇔", "\\in": "∈", "\\notin": "∉",
+                "\\subset": "⊂", "\\cup": "∪", "\\cap": "∩",
+                "\\forall": "∀", "\\exists": "∃", "\\sum": "Σ", "\\prod": "∏",
+                "\\int": "∫", "\\lim": "lim", "\\log": "log", "\\ln": "ln",
+                "\\sin": "sin", "\\cos": "cos", "\\tan": "tg", "\\cot": "ctg",
+                "\\alpha": "α", "\\beta": "β", "\\gamma": "γ", "\\delta": "δ",
+                "\\epsilon": "ε", "\\theta": "θ", "\\lambda": "λ", "\\mu": "μ",
+                "\\pi": "π", "\\rho": "ρ", "\\sigma": "σ", "\\tau": "τ",
+                "\\phi": "φ", "\\omega": "ω",
+                "\\overline": "", "\\underline": "", "\\vec": "",
+                "\\hat": "", "\\bar": "", "\\tilde": "",
+                "\\pmod": "mod", "\\bmod": "mod",
+                "\\quad": " ", "\\qquad": "  ", "\\,": " ", "\\;": " ",
+                "\\!": "", "\\:": " ", "\\ ": " ",
+            }
+            for src, dst in replacements.items():
+                t = t.replace(src, dst)
+            # 6) \text{...} → ...
+            t = _re.sub(r"\\text\s*\{([^{}]*)\}", r"\1", t)
+            # 7) убираем оставшиеся одиночные backslash-команды
+            t = _re.sub(r"\\[A-Za-z]+\s*\{([^{}]*)\}", r"\1", t)
+            t = _re.sub(r"\\[A-Za-z]+", "", t)
+            # 8) убираем одиночные фигурные скобки, оставшиеся от LaTeX
+            #    (но НЕ трогаем индексы вида a_{1} — их уже заменили выше)
+            t = _re.sub(r"\{([^{}]*)\}", r"\1", t)
+            # 9) косметика: схлопываем многократные пробелы
+            t = _re.sub(r"[ \t]{2,}", " ", t)
+            t = _re.sub(r"\n{3,}", "\n\n", t)
+            return t.strip()
+
+        try:
+            feedback = _sanitize_feedback_no_latex(feedback)
+        except Exception as _san_err:
+            print(f"[sanitize] feedback cleanup failed: {_san_err}")
+
         # ── Task 3: явная коммуникация баллов ──
         # Адаптивный тест: AI-тьютор должен ВСЕГДА проговаривать,
         # сколько баллов он поставил.
-        #   - Если решение НЕ предоставлено (только ответ) → разрешены лишь +1 / −1.
-        #   - Если решение есть → разрешены +2, +1, −1.
+        # ВАЖНО (правка по запросу пользователя 2026-05-17):
+        # если AI-тьютор поставил +2 — оставляем +2 даже без отдельного поля
+        # «решение». Не понижаем балл просто по факту отсутствия user_solution:
+        # тьютор сам решает, достоин ли ответ +2.
         _has_solution = bool((user_solution or '').strip())
-        if not _has_solution:
-            # Никаких +2 без решения: даже если ответ совпал, ставим максимум +1.
-            if score == 2:
-                score = 1
-            elif score == 0:
-                score = -1  # 0 трактуем как «нет решения, ответ неубедителен»
 
         # Префикс с явной оценкой в начале feedback, чтобы ученик видел балл.
         def _score_badge(s: int, has_solution: bool) -> str:
@@ -8033,6 +8305,18 @@ _SUPPORT_RATE_LIMIT = {}  # in-memory, для prod лучше Redis
 
 @app.route('/about')
 def about_page():
+    # Если авторизованный пользователь ещё не проходил онбординг —
+    # отметить его время первого визита на /about. Не блокируем рендер при ошибке.
+    try:
+        if current_user.is_authenticated and getattr(current_user, 'onboarded_at', None) is None:
+            current_user.onboarded_at = datetime.utcnow()
+            db.session.commit()
+    except Exception as _onb_err:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        app.logger.warning(f"[about] failed to set onboarded_at: {_onb_err}")
     return render_template('about.html')
 
 
@@ -8222,14 +8506,114 @@ def api_groups_members(group_id):
         db.session.query(GroupMember, User)
         .join(User, User.id == GroupMember.user_id)
         .filter(GroupMember.group_id == group_id)
+        .order_by(GroupMember.joined_at.asc())
         .all()
     )
     members = [{
         'id': u.id,
         'name': u.name or u.nickname or u.email,
+        'nickname': u.nickname,
+        'avatar_url': u.avatar_url,
+        'level': u.current_level or 1,
+        'xp': u.experience_points or 0,
         'role': gm.role,
+        'joined_at': gm.joined_at.isoformat() if gm.joined_at else None,
+        'is_me': u.id == current_user.id,
     } for gm, u in rows]
     return jsonify({'members': members})
+
+
+# CHAT_GROUP_INFO_V1 — full group info (meta + members) for the header info panel.
+@app.route('/api/groups/<int:group_id>/info', methods=['GET'])
+@login_required
+def api_groups_info(group_id):
+    """Return group meta and member list for the chat info panel."""
+    if not _is_group_member(group_id, current_user.id):
+        return jsonify({'error': 'Вы не в группе'}), 403
+    g = GroupChat.query.get(group_id)
+    if not g:
+        return jsonify({'error': 'Группа не найдена'}), 404
+    rows = (
+        db.session.query(GroupMember, User)
+        .join(User, User.id == GroupMember.user_id)
+        .filter(GroupMember.group_id == group_id)
+        .order_by(GroupMember.joined_at.asc())
+        .all()
+    )
+    members = [{
+        'id': u.id,
+        'name': u.name or u.nickname or u.email,
+        'nickname': u.nickname,
+        'avatar_url': getattr(u, 'avatar_url', None),
+        'level': getattr(u, 'current_level', None) or 1,
+        'xp': getattr(u, 'experience_points', None) or 0,
+        'role': getattr(gm, 'role', 'member'),
+        'joined_at': gm.joined_at.isoformat() if getattr(gm, 'joined_at', None) else None,
+        'is_me': u.id == current_user.id,
+        'is_owner': u.id == g.owner_id,
+    } for gm, u in rows]
+    # Message count (lightweight aggregate)
+    try:
+        msg_count = GroupMessage.query.filter_by(group_id=group_id).count()
+    except Exception:
+        msg_count = 0
+    owner = User.query.get(g.owner_id)
+    g_av = getattr(g, 'avatar_emoji', None)
+    return jsonify({
+        'group': {
+            'id': g.id,
+            'name': g.name,
+            'avatar_emoji': g_av or '👥',
+            'created_at': g.created_at.isoformat() if g.created_at else None,
+            'owner_id': g.owner_id,
+            'owner_name': (owner.name or owner.nickname or owner.email) if owner else None,
+            'member_count': len(members),
+            'message_count': msg_count,
+        },
+        'members': members,
+    })
+
+
+# CHAT_USER_INFO_V1 — concise public info about a user for the chat header info panel.
+@app.route('/api/users/<int:user_id>/info', methods=['GET'])
+@login_required
+def api_user_info(user_id):
+    """Return brief user info for the personal chat info panel."""
+    u = User.query.get(user_id)
+    if not u:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+    # Friendship state (for context, optional)
+    try:
+        friendship_status = current_user.friendship_status_with(user_id)
+    except Exception:
+        friendship_status = None
+    # Streak (optional)
+    try:
+        from models import UserStreak
+        streak = UserStreak.query.filter_by(user_id=user_id).first()
+        streak_days = streak.current_streak if streak else 0
+    except Exception:
+        streak_days = 0
+    return jsonify({
+        'user': {
+            'id': u.id,
+            'name': u.name or u.nickname or u.email,
+            'nickname': u.nickname,
+            'email': u.email if user_id == current_user.id else None,
+            'avatar_url': u.avatar_url,
+            'level': u.current_level or 1,
+            'xp': u.experience_points or 0,
+            'problems_solved': u.total_problems_solved or 0,
+            'mock_exams_passed': u.mock_exams_passed or 0,
+            'adaptive_tests_completed': u.adaptive_tests_completed or 0,
+            'highest_difficulty_solved': u.highest_difficulty_solved or 0,
+            'created_at': u.created_at.isoformat() if u.created_at else None,
+            'last_login': u.last_login.isoformat() if u.last_login else None,
+            'friendship_status': friendship_status,
+            'streak_days': streak_days,
+            'profile_url': url_for('public_profile', user_id=u.id) if user_id != current_user.id else url_for('profile'),
+        }
+    })
 
 
 @app.route('/api/groups/<int:group_id>/invite', methods=['POST'])
@@ -8260,6 +8644,31 @@ def api_groups_leave(group_id):
         return jsonify({'error': 'Вы не в группе'}), 404
     db.session.delete(gm)
     db.session.commit()
+    return jsonify({'success': True})
+
+
+# CHAT_GROUPS_DELETE_V1 — полное удаление группы (доступно только владельцу).
+# Удаляет саму группу, всех её участников и все сообщения. На уровне БД
+# каскадно удалять помогают FK ON DELETE CASCADE в моделях GroupMember
+# и GroupMessage, но мы дополнительно подчищаем вручную на случай, если
+# Postgres/SQLite пропустит каскад из-за порядка операций.
+@app.route('/api/groups/<int:group_id>', methods=['DELETE'])
+@login_required
+def api_groups_delete(group_id):
+    g = GroupChat.query.get(group_id)
+    if not g:
+        return jsonify({'error': 'Группа не найдена'}), 404
+    if g.owner_id != current_user.id:
+        return jsonify({'error': 'Удалить группу может только владелец'}), 403
+    try:
+        GroupMessage.query.filter_by(group_id=group_id).delete(synchronize_session=False)
+        GroupMember.query.filter_by(group_id=group_id).delete(synchronize_session=False)
+        db.session.delete(g)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"[api_groups_delete] failed for group_id={group_id}: {e}")
+        return jsonify({'error': 'Не удалось удалить группу'}), 500
     return jsonify({'success': True})
 
 
@@ -8313,7 +8722,8 @@ def group_page(group_id):
         from flask import abort
         abort(404)
     g = GroupChat.query.get(group_id)
-    return render_template('group_chat.html', group=g)
+    is_owner = bool(g and g.owner_id == current_user.id)
+    return render_template('group_chat.html', group=g, is_owner=is_owner)
 
 
 if __name__ == '__main__':

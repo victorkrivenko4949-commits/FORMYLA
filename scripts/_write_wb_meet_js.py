@@ -301,6 +301,7 @@ JS = r"""// FORMYLA Whiteboard - group video meeting via LiveKit.
       room.on(lk.RoomEvent.TrackUnsubscribed, function (track, pub, p) { detachTrack(p, pub, track); });
       room.on(lk.RoomEvent.Disconnected, function () {
         setStatus("Связь прервана", "warn");
+        try { window.dispatchEvent(new CustomEvent("wb-meet-leave")); } catch (e) {}
         tearDownView();
       });
       room.on(lk.RoomEvent.ActiveSpeakersChanged, function (speakers) {
@@ -318,6 +319,13 @@ JS = r"""// FORMYLA Whiteboard - group video meeting via LiveKit.
         bindParticipant(room.localParticipant);
         room.participants.forEach(bindParticipant);
         setStatus("В разговоре", "ok");
+        // Notify wb_collab.js that a LiveKit room is ready so it can
+        // hook publishData + DataReceived to broadcast whiteboard ops.
+        try {
+          window.dispatchEvent(new CustomEvent("wb-meet-room", {
+            detail: { room: room, lk: lk, identity: identity, name: displayName, roomId: roomId }
+          }));
+        } catch (e) { console.warn("[wb_meet] dispatch failed:", e); }
         // Auto-enable camera and microphone (user already granted via the prompt).
         return Promise.all([
           room.localParticipant.setMicrophoneEnabled(true).catch(function () {}),
@@ -340,6 +348,9 @@ JS = r"""// FORMYLA Whiteboard - group video meeting via LiveKit.
   }
 
   function leaveRoom() {
+    // Tell wb_collab.js to detach BEFORE we tear down the room object,
+    // otherwise it loses the reference and can't unsubscribe handlers.
+    try { window.dispatchEvent(new CustomEvent("wb-meet-leave")); } catch (e) {}
     var p = room ? room.disconnect() : Promise.resolve();
     p.finally(function () {
       releaseToken();

@@ -1,0 +1,21 @@
+[PASS] bare sqrt
+  IN:  Neravenstvo (\sqrt(x3 - 10x + 7) + 1) |x3 - 18x + 28| \leq 0.
+  OUT: <p>Neravenstvo ($\sqrt(x3$ - 10x + 7) + 1) |x3 - 18x + 28| $\leq$ 0.</p>
+
+[PASS] bare frac
+  IN:  Najdite \frac{a}{b} esli a = 5.
+  OUT: <p>Najdite $\frac{a}{b}$ esli a = 5.</p>
+
+[PASS] already has $
+  IN:  Najdite $\sqrt{45}$ i $\frac{1}{2}$.
+  OUT: <p>Najdite $\sqrt{45}$ i $\frac{1}{2}$.</p>
+
+[PASS] no latex at all
+  IN:  Petya napisal chisla ot 1 do 10.
+  OUT: <p>Petya napisal chisla ot 1 do 10.</p>
+
+[PASS] already has backslash-paren
+  IN:  Dokazhite chto \(n^3 - n\) delitsya na 6.
+  OUT: <p>Dokazhite chto \(n^3 - n\) delitsya na 6.</p>
+
+ALL TESTS PASSED

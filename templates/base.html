@@ -6,7 +6,8 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>{% block title %}FORMYLA{% endblock %}</title>
+    <title>{% block title %}FORMYLA — Подготовка к олимпиадам по математике{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}FORMYLA — онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике: ВсОШ, Ломоносов, Эйлер, Турнир городов. ИИ-тьютор, задачи дня, теория, разборы.{% endblock %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
@@ -15,6 +16,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}?v={{ asset_version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_features.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}?v={{ asset_version }}">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     {% block extra_css %}{% endblock %}
@@ -100,23 +102,33 @@
                 <div class="nav-menu">
                     <a href="{{ url_for('olympiads') }}">📖 Каталог</a>
                     <a href="{{ url_for('olympiad.catalog') }}">🆕 Курсы (ВсОШ-9-2027)</a>
-                    <a href="{{ url_for('olympiad.methods') }}">📚 Теоретические методы</a>
-                    <a href="/olympiad-prep">🎯 Подготовка к олимпиадам</a>
+                    <a href="{{ url_for('olympiad.methods') }}">📚 Каталог методов (89)</a>
+                    <a href="{{ url_for('olympiad_prep.calendar') }}">📅 Календарь олимпиад</a>
                     {% if current_user.is_authenticated %}
-                    <a href="/prep">📅 Мои планы подготовки</a>
                     <a href="{{ url_for('olympiad.my_progress') }}">📈 Мой прогресс</a>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- 📐 Чертёж (плоская ссылка) -->
-            <a href="/drawing" class="nav-item">
-                📐 Чертёж
-            </a>
+            <!-- 🎨 Доска (dropdown: ИИ-чертёж + бесконечная доска + встреча с учителем) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🎨 Доска <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/drawing">📐 ИИ-чертёж по задаче</a>
+                    <a href="/drawing?tab=whiteboard">🖍️ Доска и встреча (камера/звук)</a>
+                    {% if current_user.is_authenticated %}
+                    <a href="/drawing/history">🗂️ История чертежей</a>
+                    {% endif %}
+                </div>
+            </div>
 
-            <!--  Тьютор (плоская ссылка) -->
+            <!--  Тьютор (плоская ссылка, открывает плавающий виджет) -->
             {% if current_user.is_authenticated %}
-            <a href="#" class="nav-item" onclick="document.getElementById('tutorBtn')?.click(); return false;">
+            <a href="javascript:void(0)" class="nav-item"
+               role="button"
+               onclick="event.preventDefault(); var b=document.getElementById('tutorBtn'); if(b){b.click();} return false;">
                 💬 Тьютор
             </a>
             {% endif %}
@@ -244,16 +256,10 @@
 
             <div class="drawer-divider"></div>
             <div class="drawer-section-title">Олимпиады</div>
-            <a href="/olympiad-prep" class="drawer-link">
-                <span class="drawer-link-icon">🎯</span>
-                Подготовка к олимпиадам
-            </a>
-            {% if current_user.is_authenticated %}
-            <a href="/prep" class="drawer-link">
+            <a href="{{ url_for('olympiad_prep.calendar') }}" class="drawer-link">
                 <span class="drawer-link-icon">📅</span>
-                Мои планы подготовки
+                Календарь олимпиад
             </a>
-            {% endif %}
             <a href="{{ url_for('olympiads') }}" class="drawer-link">
                 <span class="drawer-link-icon">📖</span>
                 Каталог олимпиад
@@ -296,7 +302,8 @@
 
             {% if current_user.is_authenticated %}
             <div class="drawer-divider"></div>
-            <a href="#" class="drawer-link" onclick="closeDrawer(); setTimeout(function(){ document.getElementById('tutorBtn')?.click(); }, 300); return false;">
+            <a href="javascript:void(0)" class="drawer-link" role="button"
+               onclick="event.preventDefault(); closeDrawer(); setTimeout(function(){ var b=document.getElementById('tutorBtn'); if(b){b.click();} }, 300); return false;">
                 <span class="drawer-link-icon">💬</span>
                 AI Тьютор
             </a>

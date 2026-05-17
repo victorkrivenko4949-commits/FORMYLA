@@ -15,10 +15,19 @@
             <div style="margin-bottom: 20px;">
                 <div style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 8px;">🤖 AI-Тьютор</div>
                 <div style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
-                    Выберите агента (если ИИ давать более узкое направление, то он СИЛЬНО лучше отвечает)
+                    Просто напишите вопрос — общий агент сам определит тему и подключит профильного помощника. При желании можно выбрать узкого агента вручную.
                 </div>
             </div>
-            
+
+            <!-- Главная кнопка: общий агент-маршрутизатор -->
+            <button class="agent-card agent-card-primary" onclick="selectAgent('general', 'Универсальный агент')" style="padding: 18px 20px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: left; display: flex; align-items: center; gap: 14px; margin-bottom: 14px; color: #fff;">
+                <div style="font-size: 32px;">✨</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Универсальный агент (рекомендуем)</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Сам определит тему задачи и ответит как профильный агент</div>
+                </div>
+            </button>
+
             <!-- Сетка агентов -->
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex: 1; overflow-y: auto;">
                 <!-- Агент по алгебре -->

@@ -1,0 +1,11 @@
+.error-page{max-width:720px;margin:80px auto;padding:40px 24px;text-align:center}
+.error-page .error-code{font-size:120px;line-height:1;margin-bottom:16px;font-weight:800;background:linear-gradient(135deg,#38ef7d,#11998e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.error-page .error-code--danger{background:linear-gradient(135deg,#f87171,#ef4444);-webkit-background-clip:text;background-clip:text}
+.error-page h1{font-size:28px;margin:0 0 12px}
+.error-page p{font-size:17px;color:#94a3b8;margin:0 0 24px}
+.error-page .error-id{font-size:13px;color:#64748b}
+.error-page .error-id code{background:#1e293b;padding:2px 8px;border-radius:4px;color:#e2e8f0}
+.error-page .error-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.error-page .error-btn{display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#38ef7d,#11998e);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;border:none;cursor:pointer}
+.error-page .error-btn--ghost{background:#334155}
+@media (max-width:480px){.error-page{margin:40px auto;padding:24px 16px}.error-page .error-code{font-size:84px}.error-page h1{font-size:22px}}

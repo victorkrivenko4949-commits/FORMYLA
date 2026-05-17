@@ -312,6 +312,234 @@ def task_attempt(task_id):
     })
 
 
+# ─── 5b. Проверка ответа (1-в-1 как Daily Quest) ─────────────────────────────
+
+@olympiad_bp.route('/task/<int:task_id>/submit',
+                   methods=['POST'], endpoint='task_submit')
+@login_required
+def task_submit(task_id):
+    """Проверка ответа ученика на олимпиадную задачу.
+
+    Полный аналог `daily_quest_submit` из app.py:
+      ШАГ 1. Локальная сверка `compare_math_answers`.
+      ШАГ 2. ИИ-верификация (DeepSeek) — с правом переопределить ошибочный эталон.
+      ШАГ 3. Финальный вердикт (AI > локальная сверка).
+      ШАГ 4. При is_correct=True — апдейтим TaskAttempt(status='solved') и XP.
+      ШАГ 5. Fallback-фидбек, если AI не дал ничего.
+
+    Принимает JSON ``{answer, solution}``, возвращает
+    ``{success, is_correct, correct_answer, xp_earned, ai_feedback,
+       reference_overridden}``.
+    """
+    from flask import current_app
+    from flask_login import current_user as _cu
+    from utils.math_answer_utils import compare_math_answers
+
+    task = _get_task_or_404(task_id)
+    payload = request.get_json(silent=True) or {}
+
+    user_answer = (payload.get('answer') or '').strip()
+    user_solution = (payload.get('solution') or '').strip()
+
+    if not user_answer and not user_solution:
+        return jsonify({
+            'success': False,
+            'error': 'Answer or solution is required',
+        }), 400
+
+    # === ШАГ 1. Быстрая локальная сверка ответа с заложенным эталоном ===
+    correct_answer = task.answer or ''
+    correct_solution = task.solution_md or ''
+    local_match = (
+        compare_math_answers(user_answer, correct_answer)
+        if user_answer and correct_answer
+        else False
+    )
+
+    # === ШАГ 2. ИИ-верификация: даём тьютору право переопределить вердикт ===
+    ai_feedback = ""
+    ai_verdict = None  # 'correct' | 'wrong' | None
+    ai_overrode_reference = False
+    actual_correct_answer = correct_answer  # что считать правильным после AI-проверки
+
+    try:
+        from ai.deepseek_client import DeepSeekClient  # noqa: WPS433
+        deepseek_available = True
+    except Exception:  # pragma: no cover — ИИ опционален
+        deepseek_available = False
+
+    if deepseek_available and user_answer:
+        try:
+            import json as _json
+            import re as _re
+            client = DeepSeekClient()
+            solution_part = (
+                f"\n\nРешение ученика:\n{user_solution}" if user_solution else ""
+            )
+            ref_solution_part = (
+                f"\nЭталонное решение из базы:\n{correct_solution}"
+                if correct_solution else ""
+            )
+
+            prompt = f"""Ты — ИИ-тьютор по олимпиадной математике. Реши задачу САМ, затем проверь ответ ученика.
+
+ВАЖНО: эталонный ответ из базы задач МОЖЕТ БЫТЬ ОШИБОЧНЫМ. Не доверяй ему слепо — реши задачу сам и сравни.
+
+Задача:
+{task.condition_md}
+
+Эталонный ответ из базы: {correct_answer}
+{ref_solution_part}
+
+Ответ ученика: {user_answer}
+{solution_part}
+
+Сделай следующее:
+1. Реши задачу самостоятельно. Найди ИСТИННО правильный ответ.
+2. Сравни истинный ответ с ответом ученика (учитывай эквивалентные формы: 1/2 = 0.5, 70° = 70 и т. п.).
+3. Сравни истинный ответ с эталоном из базы. Если они отличаются — пометь, что эталон ошибочен.
+4. Дай подробный разбор решения ученика на русском.
+
+ПРАВИЛА ФОРМАТИРОВАНИЯ (СТРОГО):
+- Используй обычный Markdown: **жирный текст** через две звёздочки, # заголовки, * списки.
+- НЕ используй \\cdot или \\textbf для выделения текста — только Markdown **звёздочки**.
+- Все формулы оборачивай в \\( ... \\) для inline или \\[ ... \\] для display.
+- Внутри формул используй стандартный LaTeX: \\frac{{a}}{{b}}, \\cdot, \\sqrt{{...}}.
+- НИКОГДА не пиши \\cdot \\cdot вокруг русских слов — это ломает рендеринг.
+
+В САМОМ КОНЦЕ ответа добавь СТРОГО такой блок (без изменений формата):
+
+```json
+{{"true_answer": "<твой правильный ответ>", "student_correct": <true|false>, "reference_was_wrong": <true|false>}}
+```
+
+Где:
+- true_answer — твой правильный ответ к задаче
+- student_correct — true если ответ ученика правильный (эквивалентен истинному)
+- reference_was_wrong — true если эталон из базы не совпадает с истинным ответом
+"""
+
+            ai_raw = client.generate(prompt, max_tokens=2000) or ""
+
+            # Парсим JSON-блок из конца ответа
+            json_match = _re.search(
+                r'\{[^{}]*"student_correct"[^{}]*\}', ai_raw
+            )
+            if json_match:
+                try:
+                    verdict_data = _json.loads(json_match.group(0))
+                    student_correct = bool(
+                        verdict_data.get('student_correct', False)
+                    )
+                    reference_was_wrong = bool(
+                        verdict_data.get('reference_was_wrong', False)
+                    )
+                    true_answer = str(
+                        verdict_data.get('true_answer', '')
+                    ).strip()
+
+                    ai_verdict = 'correct' if student_correct else 'wrong'
+                    if reference_was_wrong and true_answer:
+                        ai_overrode_reference = True
+                        actual_correct_answer = true_answer
+                except Exception as _je:
+                    current_app.logger.warning(
+                        f"olympiad task_submit: failed to parse AI verdict JSON: {_je}"
+                    )
+
+            # В фидбеке прячем технический JSON-блок от пользователя
+            ai_feedback = _re.sub(
+                r'```json\s*\{[^{}]*"student_correct"[^{}]*\}\s*```',
+                '', ai_raw,
+            )
+            ai_feedback = _re.sub(
+                r'\{[^{}]*"student_correct"[^{}]*\}',
+                '', ai_feedback,
+            ).strip()
+
+            # Чиним типичный косяк LLM: \cdot \cdot вокруг русских слов вместо ** **.
+            ai_feedback = _re.sub(
+                r'\\cdot\s*\\cdot\s*([^\n\\]+?)\s*\\cdot\s*\\cdot',
+                r'**\1**',
+                ai_feedback,
+            )
+            # Также \textbf{...} → **...**
+            ai_feedback = _re.sub(
+                r'\\textbf\{([^{}]+)\}', r'**\1**', ai_feedback
+            )
+
+            if ai_overrode_reference and ai_verdict == 'correct':
+                ai_feedback = (
+                    "ℹ️ *Эталонный ответ в базе задач был ошибочным. "
+                    "Я перепроверил — твой ответ верный, истинный ответ: "
+                    f"**{actual_correct_answer}**.*\n\n"
+                    + ai_feedback
+                )
+        except Exception as e:
+            current_app.logger.error(f"olympiad task_submit AI verdict error: {e}")
+            ai_feedback = ""
+
+    # === ШАГ 3. Финальный вердикт ===
+    # Приоритет: AI-вердикт > локальная сверка.
+    if ai_verdict == 'correct':
+        is_correct = True
+    elif ai_verdict == 'wrong' and ai_overrode_reference:
+        is_correct = False
+    else:
+        is_correct = local_match
+
+    # === ШАГ 4. XP + отметка TaskAttempt(status='solved') ===
+    xp_earned = 20 if is_correct else 0
+
+    if is_correct:
+        # Обновляем TaskAttempt: status='solved', finished_at=now
+        attempt = TaskAttempt.query.filter_by(
+            user_id=_cu.id, task_id=task.id,
+        ).first()
+        now = datetime.utcnow()
+        if attempt is None:
+            attempt = TaskAttempt(
+                user_id=_cu.id,
+                task_id=task.id,
+                status='solved',
+                started_at=now,
+                finished_at=now,
+            )
+            db.session.add(attempt)
+        else:
+            attempt.status = 'solved'
+            attempt.finished_at = now
+
+        # Начисляем XP, если у модели User есть это поле
+        try:
+            _cu.experience_points = (_cu.experience_points or 0) + xp_earned
+        except Exception:
+            # На случай, если у пользователя нет такого поля — не падаем.
+            pass
+
+        db.session.commit()
+
+    # === ШАГ 5. Fallback-фидбек, если AI не дал ничего ===
+    if not ai_feedback:
+        if is_correct:
+            ai_feedback = "✅ Правильно! +20 XP"
+        else:
+            ai_feedback = (
+                f"❌ Неправильно. Правильный ответ: {actual_correct_answer}"
+            )
+            if correct_solution and not ai_overrode_reference:
+                ai_feedback += f"\n\n**Решение:**\n{correct_solution}"
+
+    return jsonify({
+        'success': True,
+        'is_correct': is_correct,
+        'correct_answer': actual_correct_answer if not is_correct else None,
+        'xp_earned': xp_earned,
+        'ai_feedback': ai_feedback,
+        'reference_overridden': ai_overrode_reference,
+    })
+
+
 # ─── 6. Старт этапного пробника ───────────────────────────────────────────────
 
 @olympiad_bp.route('/stage/<string:code>/start',
@@ -446,19 +674,104 @@ def stage_submit(code):
 
 # ─── 8. Каталог методов (теория) ──────────────────────────────────────────────
 
+ALLOWED_METHOD_COMPETITIONS = (
+    'ВсОШ', 'Ломоносов', 'Курчатов', 'Физтех', 'Высшая проба', 'Турнир городов',
+)
+ALLOWED_METHOD_SECTIONS = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
+ALLOWED_METHOD_SORTS = ('frequency', 'level', 'code')
+
+
 @olympiad_bp.route('/methods', endpoint='methods')
 def methods_catalog():
-    """Каталог теоретических блоков, сгруппированный по разделам A..H."""
-    blocks = (
-        TheoryBlock.query
-        .order_by(asc(TheoryBlock.section), asc(TheoryBlock.method_code))
-        .all()
-    )
+    """Каталог теоретических блоков с фильтрами grade/competition/difficulty/section.
+
+    Query params:
+        grade        int  5..11
+        competition  str  одна из ALLOWED_METHOD_COMPETITIONS
+        difficulty   int  1..5
+        section      str  A..H
+        sort         str  frequency (default) | level | code
+    """
+    grade = request.args.get('grade', type=int)
+    competition = request.args.get('competition', type=str)
+    difficulty = request.args.get('difficulty', type=int)
+    section = request.args.get('section', type=str)
+    sort_key = request.args.get('sort', default='frequency', type=str)
+
+    # Валидация.
+    if grade is not None and not (5 <= grade <= 11):
+        grade = None
+    if competition and competition not in ALLOWED_METHOD_COMPETITIONS:
+        competition = None
+    if difficulty is not None and not (1 <= difficulty <= 5):
+        difficulty = None
+    if section:
+        section = section.upper()
+        if section not in ALLOWED_METHOD_SECTIONS:
+            section = None
+    if sort_key not in ALLOWED_METHOD_SORTS:
+        sort_key = 'frequency'
+
+    query = TheoryBlock.query
+    if section:
+        query = query.filter(TheoryBlock.section == section)
+    if difficulty is not None:
+        query = query.filter(TheoryBlock.difficulty_level == difficulty)
+
+    if sort_key == 'frequency':
+        query = query.order_by(
+            TheoryBlock.frequency_vsosh_9.desc().nullslast(),
+            asc(TheoryBlock.sort_order),
+            asc(TheoryBlock.method_code),
+        )
+    elif sort_key == 'level':
+        query = query.order_by(
+            asc(TheoryBlock.difficulty_level),
+            asc(TheoryBlock.sort_order),
+            asc(TheoryBlock.method_code),
+        )
+    else:  # 'code'
+        query = query.order_by(
+            asc(TheoryBlock.section),
+            asc(TheoryBlock.sort_order),
+            asc(TheoryBlock.method_code),
+        )
+
+    blocks = query.all()
+
+    # JSON-фильтры в Python: SQLite не любит индексы по JSON.
+    if grade is not None:
+        blocks = [b for b in blocks if b.grades and grade in b.grades]
+    if competition:
+        blocks = [
+            b for b in blocks
+            if b.recommended_competitions
+            and competition in b.recommended_competitions
+        ]
+
     sections = {}
     for b in blocks:
         sections.setdefault(b.section or '?', []).append(b)
-    return render_template('olympiad/method.html',
-                           sections=sections, block=None, related=[])
+
+    total_methods = TheoryBlock.query.count()
+
+    return render_template(
+        'olympiad/method.html',
+        sections=sections,
+        blocks=blocks,
+        block=None,
+        related=[],
+        total_methods=total_methods,
+        filters={
+            'grade': grade,
+            'competition': competition,
+            'difficulty': difficulty,
+            'section': section,
+            'sort': sort_key,
+        },
+        allowed_competitions=ALLOWED_METHOD_COMPETITIONS,
+        allowed_sections=ALLOWED_METHOD_SECTIONS,
+    )
 
 
 # ─── 9. Детальная страница метода ─────────────────────────────────────────────

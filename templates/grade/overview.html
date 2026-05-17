@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ grade }} класс — тренажёр FORMYLA{% endblock %}
+{% block extra_css %}{% include 'olympiad/_base_assets.html' ignore missing %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <header class="oly-hero">
+        <h1>🎒 {{ grade }} класс</h1>
+        <p>
+            Тренажёр по школьной математике и вводным олимпиадным темам.
+            Темы строго распределены по программе {{ grade }} класса.
+        </p>
+        <p class="oly-card-sub" style="margin-top:8px;">
+            Всего задач: <strong>{{ total }}</strong>
+        </p>
+    </header>
+
+    <h2 class="oly-section-title">Темы</h2>
+    <div class="oly-grid">
+        {% for s in stats %}
+        <a class="oly-card"
+           href="{{ url_for('grade.domain_' ~ grade, domain=s.domain) }}">
+            <h3>{{ loop.index }}. {{ s.label }}</h3>
+            <p class="oly-card-sub" style="margin:6px 0 0;">
+                Задач: <strong>{{ s.count }}</strong>
+            </p>
+            {% if s.levels %}
+            <p class="oly-card-sub" style="margin:4px 0 0;">
+                По уровням:
+                {%- for lvl in s.levels.keys()|sort %}
+                    {{ lvl }}/7&nbsp;({{ s.levels[lvl] }}){% if not loop.last %},{% endif %}
+                {%- endfor %}
+            </p>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

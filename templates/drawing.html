@@ -418,6 +418,13 @@ body.board-fullscreen footer{ display:none !important; }
       }
   }
   tabs.forEach(b => b.addEventListener("click", () => activate(b.dataset.tab)));
+  // Honor ?tab=whiteboard / ?meet=... — open the board pane on direct link.
+  try {
+    var __p = new URLSearchParams(window.location.search);
+    if (__p.get("tab") === "whiteboard" || __p.has("meet")) {
+      activate("whiteboard");
+    }
+  } catch (e) {}
   window.addEventListener("beforeunload", () => document.body.classList.remove("board-fullscreen"));
   // Bridge: keep .tool--active / .swatch--active in sync with legacy .active class used by whiteboard.js
   const sync = () => {
@@ -443,4 +450,5 @@ body.board-fullscreen footer{ display:none !important; }
 <script src="{{ url_for('static', filename='js/whiteboard.js') }}?v={{ asset_version }}"></script>
 <script src="{{ url_for('static', filename='js/wb_call.js') }}?v={{ asset_version }}"></script>
 <script src="{{ url_for('static', filename='js/wb_meet.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/wb_collab.js') }}?v={{ asset_version }}"></script>
 {% endblock %}

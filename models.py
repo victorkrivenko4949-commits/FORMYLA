@@ -59,6 +59,10 @@ class User(UserMixin, db.Model):
     # Метаданные
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+
+    # Onboarding flag: NULL = user hasn't seen the /about onboarding yet.
+    # Set to utcnow() on first visit to /about (or first manual dismissal).
+    onboarded_at = db.Column(db.DateTime, nullable=True)
     
     @property
     def display_name(self):

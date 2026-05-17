@@ -1,0 +1,2169 @@
+[
+  {
+    "method_code": "A1",
+    "method_name": "Прямые вычисления и арифметика",
+    "section": "A",
+    "grades": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов"
+    ],
+    "difficulty_level": 1,
+    "frequency_vsosh_9": 5,
+    "sort_order": 1,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "A2",
+    "method_name": "Текстовые задачи (общее)",
+    "section": "A",
+    "grades": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 1,
+    "frequency_vsosh_9": 5,
+    "sort_order": 2,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "A2a",
+    "method_name": "Движение",
+    "section": "A",
+    "grades": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Физтех"
+    ],
+    "difficulty_level": 1,
+    "frequency_vsosh_9": 6,
+    "sort_order": 3,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "A2b",
+    "method_name": "Работа и производительность",
+    "section": "A",
+    "grades": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 1,
+    "frequency_vsosh_9": 1,
+    "sort_order": 4,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "A2c",
+    "method_name": "Проценты, концентрации, сплавы",
+    "section": "A",
+    "grades": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Высшая проба",
+      "Ломоносов"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 1,
+    "sort_order": 5,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "B1",
+    "method_name": "Рыцари и лжецы",
+    "section": "B",
+    "grades": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Турнир городов"
+    ],
+    "difficulty_level": 1,
+    "frequency_vsosh_9": 14,
+    "sort_order": 6,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "B2",
+    "method_name": "Симуляция процесса по шагам",
+    "section": "B",
+    "grades": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 3,
+    "sort_order": 7,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "B3",
+    "method_name": "Взвешивания и адаптивные измерения",
+    "section": "B",
+    "grades": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Турнир городов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 2,
+    "sort_order": 8,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "B4",
+    "method_name": "Шляпы и стратегии с информацией",
+    "section": "B",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Турнир городов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 2,
+    "sort_order": 9,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "B5",
+    "method_name": "Переправы и перевозки",
+    "section": "B",
+    "grades": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 2,
+    "sort_order": 10,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "B6",
+    "method_name": "Турниры и линейные порядки",
+    "section": "B",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Физтех"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 1,
+    "sort_order": 11,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "B7",
+    "method_name": "Парная стратегия (доминошки)",
+    "section": "B",
+    "grades": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "recommended_competitions": [
+      "ВсОШ"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 12,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C1",
+    "method_name": "ФСУ и алгебраические тождества",
+    "section": "C",
+    "grades": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов",
+      "Физтех"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 6,
+    "sort_order": 13,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C2",
+    "method_name": "Дискриминант и квадратные уравнения",
+    "section": "C",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Физтех"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 4,
+    "sort_order": 14,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C3",
+    "method_name": "Общий корень многочленов",
+    "section": "C",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 1,
+    "sort_order": 15,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C4",
+    "method_name": "Подстановки и замены переменной",
+    "section": "C",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 16,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C5",
+    "method_name": "Многочлены (общее)",
+    "section": "C",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов",
+      "Физтех"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 6,
+    "sort_order": 17,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C5a",
+    "method_name": "Теорема Виета",
+    "section": "C",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Физтех"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 8,
+    "sort_order": 18,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C5b",
+    "method_name": "Деление многочленов, остатки",
+    "section": "C",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 6,
+    "sort_order": 19,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C6",
+    "method_name": "Многочлены с целыми коэф., теорема о корнях",
+    "section": "C",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Физтех"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 20,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C7",
+    "method_name": "Функциональные уравнения",
+    "section": "C",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Турнир городов"
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 0,
+    "sort_order": 21,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C8",
+    "method_name": "Целая и дробная часть",
+    "section": "C",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Высшая проба"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 1,
+    "sort_order": 22,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "C9",
+    "method_name": "Рекуррентные последовательности",
+    "section": "C",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Курчатов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 3,
+    "sort_order": 23,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D1",
+    "method_name": "Делимость, признаки делимости",
+    "section": "D",
+    "grades": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 5,
+    "sort_order": 24,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D1a",
+    "method_name": "Признаки делимости на 2,3,4,5,8,9,11",
+    "section": "D",
+    "grades": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 1,
+    "frequency_vsosh_9": 1,
+    "sort_order": 25,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D1b",
+    "method_name": "Серия конструкций (бесконечно много примеров)",
+    "section": "D",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ."
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 6,
+    "sort_order": 26,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D2",
+    "method_name": "НОД, НОК, алгоритм Евклида",
+    "section": "D",
+    "grades": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 3,
+    "sort_order": 27,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D3",
+    "method_name": "Сравнения по модулю",
+    "section": "D",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Физтех"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 5,
+    "sort_order": 28,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D4",
+    "method_name": "Бесконечный спуск",
+    "section": "D",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Физтех"
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 0,
+    "sort_order": 29,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D5",
+    "method_name": "Китайская теорема об остатках",
+    "section": "D",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Турнир городов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 30,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D6",
+    "method_name": "Алгебраические тождества в ТЧ",
+    "section": "D",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 31,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D7",
+    "method_name": "LTE (Lifting the Exponent)",
+    "section": "D",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Турнир городов"
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 1,
+    "sort_order": 32,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D8",
+    "method_name": "Анализ остатков по конкретному модулю",
+    "section": "D",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 3,
+    "sort_order": 33,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D9",
+    "method_name": "Простые числа и их распределение",
+    "section": "D",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 1,
+    "sort_order": 34,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D10",
+    "method_name": "p-адическое v_p и формула Лежандра",
+    "section": "D",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Физтех"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 3,
+    "sort_order": 35,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D11",
+    "method_name": "Разложения в столбик, цифровые суммы",
+    "section": "D",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 6,
+    "sort_order": 36,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "D12",
+    "method_name": "Целочисленные оценки",
+    "section": "D",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 14,
+    "sort_order": 37,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E1",
+    "method_name": "Прямой подсчёт и перебор",
+    "section": "E",
+    "grades": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 2,
+    "sort_order": 38,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E2",
+    "method_name": "Биекция и инъекция",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ."
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 39,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E3",
+    "method_name": "Двойной счёт (классика)",
+    "section": "E",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 40,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E4",
+    "method_name": "Принцип Дирихле",
+    "section": "E",
+    "grades": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 6,
+    "sort_order": 41,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E5",
+    "method_name": "Инварианты по модулю",
+    "section": "E",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 9,
+    "sort_order": 42,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E5a",
+    "method_name": "Логарифмы и показательные уравнения",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 43,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E5b",
+    "method_name": "Тригонометрические уравнения",
+    "section": "E",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 44,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E6",
+    "method_name": "Графы (общее)",
+    "section": "E",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 3,
+    "sort_order": 45,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E6a",
+    "method_name": "Чётность функций",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 1,
+    "sort_order": 46,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E6b",
+    "method_name": "Графы: обходы, эйлеровы пути",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Турнир городов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 47,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E6c",
+    "method_name": "Периодичность функций",
+    "section": "E",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 1,
+    "sort_order": 48,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E7",
+    "method_name": "Игры: парные стратегии, чётностные инварианты",
+    "section": "E",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Турнир городов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 6,
+    "sort_order": 49,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E8",
+    "method_name": "Вероятностный метод (Эрдёш)",
+    "section": "E",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ."
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 1,
+    "sort_order": 50,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E9",
+    "method_name": "Экстремальный принцип",
+    "section": "E",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов",
+      "Турнир городов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 7,
+    "sort_order": 51,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E10",
+    "method_name": "Двойной счёт",
+    "section": "E",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 12,
+    "sort_order": 52,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E10a",
+    "method_name": "Корни многочленов в комбинаторике",
+    "section": "E",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Физтех"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 53,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E10b",
+    "method_name": "Двойной счёт через инциденции",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Курчатов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 54,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E11",
+    "method_name": "Циклическое разрезание (равные блоки)",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Турнир городов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 4,
+    "sort_order": 55,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E12",
+    "method_name": "Расстановка ладей с гарантированным выбором",
+    "section": "E",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ."
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 2,
+    "sort_order": 56,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E13",
+    "method_name": "Графы: связность, деревья",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Курчатов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 57,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E14",
+    "method_name": "Оценка + пример (главный жанр ВсОШ)",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 47,
+    "sort_order": 58,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E14a",
+    "method_name": "Алгебраические группировки в оценке",
+    "section": "E",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 59,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "E14b",
+    "method_name": "Явное построение примера (конструкция)",
+    "section": "E",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Высшая проба"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 3,
+    "sort_order": 60,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F1",
+    "method_name": "Треугольники: равенство, подобие, медианы",
+    "section": "F",
+    "grades": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Физтех"
+    ],
+    "difficulty_level": 2,
+    "frequency_vsosh_9": 14,
+    "sort_order": 61,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F2",
+    "method_name": "Окружности: вписанные углы, степень точки",
+    "section": "F",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов",
+      "Физтех"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 14,
+    "sort_order": 62,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F3",
+    "method_name": "Вписанные/описанные 4-угольники",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 19,
+    "sort_order": 63,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F4",
+    "method_name": "Дополнительное построение (общее)",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 6,
+    "sort_order": 64,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F4a",
+    "method_name": "Симметрия, поворот, перенос",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов",
+      "Турнир городов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 11,
+    "sort_order": 65,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F4b",
+    "method_name": "Касательные к окружности",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Курчатов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 1,
+    "sort_order": 66,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F5",
+    "method_name": "Гомотетия и спиральное подобие",
+    "section": "F",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Физтех"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 7,
+    "sort_order": 67,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F6",
+    "method_name": "Площади: двойной подсчёт, средние линии",
+    "section": "F",
+    "grades": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 2,
+    "sort_order": 68,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F7",
+    "method_name": "Векторы и скалярное произведение",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 1,
+    "sort_order": 69,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F8",
+    "method_name": "Комбинаторная геометрия",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Турнир городов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 15,
+    "sort_order": 70,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F9",
+    "method_name": "Координатный метод (общее)",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 71,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F9a",
+    "method_name": "Координаты на плоскости",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Ломоносов",
+      "Высшая проба"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 5,
+    "sort_order": 72,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F9b",
+    "method_name": "Векторы для геометрических задач",
+    "section": "F",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 1,
+    "sort_order": 73,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F10",
+    "method_name": "Тригонометрия в треугольнике",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Ломоносов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 74,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F11",
+    "method_name": "Разрезания и замощения",
+    "section": "F",
+    "grades": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Турнир городов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 6,
+    "sort_order": 75,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F12",
+    "method_name": "Стереометрия (общее)",
+    "section": "F",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 76,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F13",
+    "method_name": "Инцентр, биссектрисы, равные касательные",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Курчатов"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 6,
+    "sort_order": 77,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "F14",
+    "method_name": "Геометрическое место точек (ГМТ)",
+    "section": "F",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ",
+      "Курчатов"
+    ],
+    "difficulty_level": 3,
+    "frequency_vsosh_9": 0,
+    "sort_order": 78,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "G1",
+    "method_name": "AM-GM и средние",
+    "section": "G",
+    "grades": [
+      9,
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Высшая проба",
+      "Физтех"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 3,
+    "sort_order": 79,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "G2",
+    "method_name": "Коши-Буняковский, перегруппировки",
+    "section": "G",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 80,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "G3",
+    "method_name": "Шур и SOS-разложение",
+    "section": "G",
+    "grades": [
+      11
+    ],
+    "recommended_competitions": [
+      "Высшая проба",
+      "Турнир городов"
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 0,
+    "sort_order": 81,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "G4",
+    "method_name": "Йенсен (выпуклые функции)",
+    "section": "G",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 82,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "G5",
+    "method_name": "SOS-расширения",
+    "section": "G",
+    "grades": [
+      11
+    ],
+    "recommended_competitions": [
+      "Турнир городов",
+      "междунар."
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 0,
+    "sort_order": 83,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "G6",
+    "method_name": "Симметричные/циклические неравенства",
+    "section": "G",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "ВсОШ заключ.",
+      "Физтех"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 4,
+    "sort_order": 84,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "G7",
+    "method_name": "Метод касательных, локальные возмущения",
+    "section": "G",
+    "grades": [
+      11
+    ],
+    "recommended_competitions": [
+      "Высшая проба",
+      "междунар."
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 0,
+    "sort_order": 85,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "H1",
+    "method_name": "Пределы и непрерывность",
+    "section": "H",
+    "grades": [
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 86,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "H2",
+    "method_name": "Производные: исследование функций",
+    "section": "H",
+    "grades": [
+      10,
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 1,
+    "sort_order": 87,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "H3",
+    "method_name": "Интегралы и площади",
+    "section": "H",
+    "grades": [
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех",
+      "Высшая проба"
+    ],
+    "difficulty_level": 4,
+    "frequency_vsosh_9": 0,
+    "sort_order": 88,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  },
+  {
+    "method_code": "H4",
+    "method_name": "Ряды и сходимость",
+    "section": "H",
+    "grades": [
+      11
+    ],
+    "recommended_competitions": [
+      "Физтех"
+    ],
+    "difficulty_level": 5,
+    "frequency_vsosh_9": 0,
+    "sort_order": 89,
+    "definition_md": null,
+    "main_theorems_md": null,
+    "typical_techniques_md": null,
+    "triggers_md": null,
+    "worked_example_md": null,
+    "pitfalls_md": null,
+    "related_methods": []
+  }
+]

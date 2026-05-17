@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Тарифы — FORMYLA{% endblock %}
 
 {% block extra_css %}
@@ -490,12 +490,12 @@
     <!-- Yearly block -->
     <div class="yearly-block">
         <div class="yearly-info">
-            <h3>💎 Годовой тариф — 2 месяца в подарок</h3>
-            <p>Оплати год и получи 12 месяцев по цене 10 — экономия 780₽</p>
+            <h3>💎 Годовой тариф — скидка 40 процентов</h3>
+            <p>Оплати год и получи 12 месяцев по цене 10 — экономия 1 890₽</p>
         </div>
         <div class="yearly-price">
-            <span class="price-main">3900₽</span>
-            <span class="price-sub">325₽/мес · вместо 390₽</span>
+            <span class="price-main">2790₽</span>
+            <span class="price-sub">232₽/мес · вместо 390₽</span>
         </div>
         {% if current_user.is_authenticated and current_plan not in ('premium_monthly', 'premium_yearly') %}
         <button class="btn-yearly" onclick="activatePremium('premium_yearly')">

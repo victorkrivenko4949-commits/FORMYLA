@@ -44,7 +44,7 @@ PLAN_LIMITS = {
         'ai_explanations_per_month': 300,
         'ai_max_tokens': 8000,
         'history_days': None,
-        'price_rub': 3900,
+        'price_rub': 2790,
         'duration_days': 365,
         'display_name': 'Premium (год)',
     },

@@ -32,12 +32,87 @@
 
   function uid() { return state.nextId++; }
   function snap() { return JSON.parse(JSON.stringify(state)); }
+
+  // ── Collaborative diff broadcast ───────────────────────────────────
+  // When the user mutates state.objects (add/edit/remove/clear), we
+  // detect the delta against the previous snapshot and forward it via
+  // window.__wbBroadcast (set by static/js/wb_meet.js once the LiveKit
+  // data-channel is up).  Pure local sessions (no meet) never see a
+  // broadcaster and run zero-overhead.
+  //
+  // `_suppressBroadcastDepth` lets us apply REMOTE ops via the very
+  // same path without echoing them back to the room.
+  let _lastSnapshotJSON = null;     // snapshot taken right after the previous pushHistory
+  let _suppressBroadcastDepth = 0;  // >0 means "we are applying a remote op, don't broadcast"
+
+  function _objectsById(arr) {
+    const m = new Map();
+    for (const o of arr) m.set(o.id, o);
+    return m;
+  }
+
+  function _diffAndBroadcast(prevSnap, nextSnap) {
+    if (_suppressBroadcastDepth > 0) return;
+    const fn = window.__wbBroadcast;
+    if (typeof fn !== "function") return;
+    try {
+      const prevObjs = (prevSnap && prevSnap.objects) || [];
+      const nextObjs = (nextSnap && nextSnap.objects) || [];
+      // Detect a wholesale wipe so we can send a compact "clear".
+      if (prevObjs.length > 0 && nextObjs.length === 0) {
+        fn({ op: "clear", nextId: nextSnap.nextId });
+        return;
+      }
+      const prevMap = _objectsById(prevObjs);
+      const nextMap = _objectsById(nextObjs);
+      const adds = [];
+      const updates = [];
+      const removes = [];
+      for (const o of nextObjs) {
+        const prev = prevMap.get(o.id);
+        if (!prev) { adds.push(o); continue; }
+        // Cheap shallow compare via JSON; the WB object schema is tiny.
+        if (JSON.stringify(prev) !== JSON.stringify(o)) updates.push(o);
+      }
+      for (const o of prevObjs) {
+        if (!nextMap.has(o.id)) removes.push(o.id);
+      }
+      // If the delta is suspiciously large (paste / undo across many
+      // objects), fall back to a full snapshot to keep the data-channel
+      // packet count low and ensure remote pairs converge.
+      const totalChanges = adds.length + updates.length + removes.length;
+      if (totalChanges > 30) {
+        fn({ op: "snapshot", state: { objects: nextObjs, nextId: nextSnap.nextId } });
+        return;
+      }
+      if (totalChanges === 0) return;
+      fn({
+        op: "ops",
+        adds: adds,
+        updates: updates,
+        removes: removes,
+        nextId: nextSnap.nextId,
+      });
+    } catch (e) {
+      console.warn("[WB] diff/broadcast failed:", e);
+    }
+  }
+
   function pushHistory() {
     history = history.slice(0, historyIndex + 1);
-    history.push(snap());
+    const fresh = snap();
+    history.push(fresh);
     if (history.length > MAX_HISTORY) history.shift();
     historyIndex = history.length - 1;
     scheduleSave();
+    // Broadcast the diff between the previous committed snapshot and
+    // the new one.  On the very first call _lastSnapshotJSON is null —
+    // we still emit a snapshot so peers that join late get our state.
+    try {
+      const prev = _lastSnapshotJSON ? JSON.parse(_lastSnapshotJSON) : { objects: [], nextId: 1 };
+      _diffAndBroadcast(prev, fresh);
+    } catch (e) { /* never let collab break the UI */ }
+    _lastSnapshotJSON = JSON.stringify(fresh);
   }
   function apply(s) {
     state = JSON.parse(JSON.stringify(s));
@@ -877,10 +952,86 @@
     importInput.value = "";
   });
 
+  // ── Apply a remote operation locally without echoing it back ─────
+  // Used by wb_meet.js when it receives a data packet from another
+  // participant.  We bump _suppressBroadcastDepth so the resulting
+  // pushHistory() does NOT trigger _diffAndBroadcast (otherwise we'd
+  // ping-pong forever).
+  function applyRemoteOp(op) {
+    if (!op || typeof op !== "object") return;
+    _suppressBroadcastDepth++;
+    try {
+      if (op.op === "snapshot" && op.state && Array.isArray(op.state.objects)) {
+        state.objects = JSON.parse(JSON.stringify(op.state.objects));
+        if (typeof op.state.nextId === "number") {
+          state.nextId = Math.max(state.nextId, op.state.nextId);
+        }
+        selectedId = null;
+      } else if (op.op === "clear") {
+        state.objects = [];
+        if (typeof op.nextId === "number") {
+          state.nextId = Math.max(state.nextId, op.nextId);
+        }
+        selectedId = null;
+      } else if (op.op === "ops") {
+        // Last-write-wins: incoming adds replace any local object with
+        // the same id; updates overwrite by id; removes delete by id.
+        const removeSet = new Set(Array.isArray(op.removes) ? op.removes : []);
+        if (removeSet.size) {
+          state.objects = state.objects.filter(function (o) { return !removeSet.has(o.id); });
+          if (removeSet.has(selectedId)) selectedId = null;
+        }
+        const byId = new Map();
+        for (let i = 0; i < state.objects.length; i++) byId.set(state.objects[i].id, i);
+        const upserts = [].concat(
+          Array.isArray(op.adds) ? op.adds : [],
+          Array.isArray(op.updates) ? op.updates : []
+        );
+        for (const incoming of upserts) {
+          if (!incoming || typeof incoming.id === "undefined") continue;
+          const idx = byId.get(incoming.id);
+          // Drop transient cached fields (e.g. _img) from the wire.
+          const clean = JSON.parse(JSON.stringify(incoming));
+          if (typeof idx === "number") {
+            state.objects[idx] = clean;
+          } else {
+            state.objects.push(clean);
+            byId.set(clean.id, state.objects.length - 1);
+          }
+        }
+        if (typeof op.nextId === "number") {
+          state.nextId = Math.max(state.nextId, op.nextId);
+        }
+      } else {
+        return; // unknown op kind
+      }
+      // Commit the remote change to history (so undo still works for
+      // the local user) AND repaint.  pushHistory will detect the
+      // suppression flag and skip the rebroadcast.
+      pushHistory();
+      redraw();
+    } finally {
+      _suppressBroadcastDepth--;
+    }
+  }
+
   // Public API for tab-switch hook
   window.WB = {
     resize: resize,
     redraw: redraw,
+    // ── Collaboration hooks (called by static/js/wb_meet.js) ────────
+    // Return a serialisable copy of the canvas state, used by the
+    // first responder when a newcomer joins the LiveKit room.
+    getSnapshot: function () {
+      return { objects: JSON.parse(JSON.stringify(state.objects)), nextId: state.nextId };
+    },
+    // Apply ONE remote operation (snapshot / clear / ops) locally.
+    applyRemoteOp: applyRemoteOp,
+    // Apply a batch of operations atomically.
+    applyRemoteOps: function (ops) {
+      if (!Array.isArray(ops)) return;
+      for (const op of ops) applyRemoteOp(op);
+    },
     importImage: function (src) {
       if (!src) return;
       const img = new Image();

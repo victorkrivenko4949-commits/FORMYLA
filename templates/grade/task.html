@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Задача {{ task.source_id }} — {{ task.grade }} класс{% endblock %}
+{% block extra_css %}{% include 'olympiad/_base_assets.html' ignore missing %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('grade.domain_' ~ task.grade, domain=task.domain) }}"
+           class="oly-btn-ghost oly-btn oly-btn-sm">← к теме «{{ domain_label }}»</a>
+    </p>
+
+    <header style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 6px;">{{ task.source_id }}</h1>
+        <p class="oly-card-sub" style="margin:0;">
+            {{ task.grade }} класс · {{ domain_label }}
+            {% if task.level %} · уровень {{ task.level }}/7{% endif %}
+            {% if task.topic %} · {{ task.topic }}{% endif %}
+        </p>
+    </header>
+
+    <section class="oly-card">
+        <h2 style="margin-top:0;">📝 Условие</h2>
+        <div class="oly-md">{{ task.statement | md_render }}</div>
+    </section>
+
+    {% if task.solution %}
+    <details class="oly-card" style="margin-top: 16px;">
+        <summary style="cursor: pointer; font-weight: 600;">💡 Показать решение</summary>
+        <div class="oly-md" style="margin-top: 12px;">{{ task.solution | md_render }}</div>
+    </details>
+    {% endif %}
+
+    {% if task.answer %}
+    <details class="oly-card" style="margin-top: 16px;">
+        <summary style="cursor: pointer; font-weight: 600;">✅ Показать ответ</summary>
+        <div class="oly-md" style="margin-top: 12px;">{{ task.answer | md_render }}</div>
+    </details>
+    {% endif %}
+</div>
+{% endblock %}

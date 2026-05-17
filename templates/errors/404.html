@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}404 — FORMYLA{% endblock %}
+{% block content %}
+<section class="error-page">
+  <div class="error-code">404</div>
+  <h1>Страница не найдена</h1>
+  <p>Возможно, ссылка устарела или вы ввели неверный адрес.</p>
+  <div class="error-actions">
+    <a href="{{ url_for('index') }}" class="error-btn">На главную</a>
+  </div>
+</section>
+{% endblock %}

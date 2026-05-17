@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ domain_label }} — {{ grade }} класс{% endblock %}
+{% block extra_css %}{% include 'olympiad/_base_assets.html' ignore missing %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('grade.overview_' ~ grade) }}"
+           class="oly-btn-ghost oly-btn oly-btn-sm">← к темам {{ grade }} класса</a>
+    </p>
+
+    <header class="oly-hero">
+        <h1>{{ domain_label }}</h1>
+        <p class="oly-card-sub">{{ grade }} класс · задач: <strong>{{ tasks|length }}</strong></p>
+    </header>
+
+    {% if available_levels %}
+    <form method="GET" class="oly-card"
+          style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:16px;">
+        <strong>Уровень:</strong>
+        <a href="{{ url_for('grade.domain_' ~ grade, domain=domain) }}"
+           class="oly-btn-ghost oly-btn oly-btn-sm{% if level is none %} oly-btn-active{% endif %}">все</a>
+        {% for lvl in available_levels %}
+        <a href="{{ url_for('grade.domain_' ~ grade, domain=domain, level=lvl) }}"
+           class="oly-btn-ghost oly-btn oly-btn-sm{% if level == lvl %} oly-btn-active{% endif %}">{{ lvl }}/7</a>
+        {% endfor %}
+    </form>
+    {% endif %}
+
+    {% if tasks %}
+    <div class="oly-grid">
+        {% for t in tasks %}
+        <a class="oly-card" href="{{ url_for('grade.task', task_id=t.id) }}">
+            <h3 style="margin:0 0 6px;">
+                <span class="oly-badge oly-badge-topic">#{{ loop.index }}</span>
+                {% if t.level %}<span class="oly-badge">L{{ t.level }}</span>{% endif %}
+            </h3>
+            {% if t.topic %}
+            <p class="oly-card-sub" style="margin:0 0 6px; font-style: italic;">{{ t.topic }}</p>
+            {% endif %}
+            <div class="oly-md">{{ t.statement | md_render }}</div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="oly-card" style="text-align:center; padding: 40px 20px;">
+        <p style="margin:0; color: var(--text-muted);">Под выбранный уровень задач нет.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -32,6 +32,88 @@
 .fr-list{overflow-y:auto;flex:1;min-height:200px}
 [hidden]{display:none !important}
 
+/* CHAT_GROUP_INFO_V1 — clickable header + info side-sheet */
+.gc-head-info{cursor:pointer;transition:background .15s ease}
+.gc-head-info:hover{background:rgba(255,255,255,.04)}
+.gc-head-info:focus-visible{outline:2px solid #4aa8ff;outline-offset:-2px}
+.gi-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:120;
+  display:flex;justify-content:flex-end;
+  backdrop-filter:blur(4px);
+}
+.gi-panel{
+  width:420px;max-width:100%;height:100%;
+  background:#171D33;border-left:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;
+  box-shadow:-10px 0 30px rgba(0,0,0,.4);
+  animation:gi-slide .22s ease;
+}
+@keyframes gi-slide{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.gi-head{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.gi-head h3{margin:0;color:#fff;font-size:1.05em;flex:1}
+.gi-close{
+  background:transparent;border:none;color:#94a3b8;
+  font-size:1.6em;cursor:pointer;padding:2px 10px;border-radius:8px;line-height:1;
+}
+.gi-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.gi-body{flex:1;overflow-y:auto;padding:18px 16px}
+.gi-hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 0 18px}
+.gi-hero-av{
+  width:96px;height:96px;border-radius:50%;
+  background:linear-gradient(135deg,#6c5ce7,#4aa8ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:3em;color:#fff;
+}
+.gi-hero-name{color:#fff;font-size:1.25em;font-weight:600;text-align:center;word-break:break-word}
+.gi-hero-sub{color:#94a3b8;font-size:.88em;text-align:center}
+.gi-section{margin-top:14px}
+.gi-section-title{
+  color:#94a3b8;font-size:.78em;text-transform:uppercase;letter-spacing:.5px;
+  padding:0 4px 8px;font-weight:600;
+}
+.gi-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 8px;border-radius:10px;
+  color:#e2e8f0;font-size:.95em;
+}
+.gi-row .lbl{color:#94a3b8;flex:1}
+.gi-row .val{color:#e2e8f0;font-weight:500;text-align:right;word-break:break-word}
+.gi-row.action{cursor:pointer;transition:background .12s}
+.gi-row.action:hover{background:rgba(74,168,255,.12)}
+.gi-row.danger{color:#ef4444}
+.gi-row.danger:hover{background:rgba(239,68,68,.12)}
+.gi-row .ico{font-size:1.15em;width:22px;text-align:center}
+.gi-mem-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 8px;border-radius:10px;color:#e2e8f0;
+  cursor:pointer;transition:background .12s;
+}
+.gi-mem-row:hover{background:rgba(74,168,255,.12)}
+.gi-mem-av{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#6c5ce7,#4aa8ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9em;color:#fff;font-weight:600;overflow:hidden;
+}
+.gi-mem-av img{width:100%;height:100%;object-fit:cover}
+.gi-mem-meta{flex:1;min-width:0}
+.gi-mem-name{color:#fff;font-size:.95em;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gi-mem-sub{color:#94a3b8;font-size:.78em;margin-top:2px}
+.gi-badge{
+  font-size:.7em;padding:2px 8px;border-radius:10px;
+  background:rgba(74,168,255,.18);color:#7dd3fc;font-weight:500;
+  flex-shrink:0;
+}
+.gi-badge.owner{background:rgba(251,191,36,.18);color:#fbbf24}
+.gi-loading{color:#94a3b8;text-align:center;padding:24px 0;font-size:.9em}
+@media (max-width:520px){
+  .gi-bg{background:rgba(0,0,0,.7)}
+  .gi-panel{width:100%}
+}
+
 /* CHAT_EMOJI_V1 — composer emoji button + popup picker (group chat) */
 .gc-emoji-btn{
   background:rgba(255,193,7,.14); color:#fbbf24;
@@ -111,14 +193,24 @@
 <div class="gc-wrap">
   <div class="gc-head">
     <a href="/chat" class="gc-back" title="Назад">←</a>
-    <div class="gc-av">{{ group.avatar_emoji or '👥' }}</div>
-    <div style="flex:1;min-width:0">
-      <h2>{{ group.name }}</h2>
-      <div class="sub" id="memCount">Загрузка…</div>
+    <!-- CHAT_GROUP_INFO_V1 — header is clickable to open group info panel -->
+    <div class="gc-head-info" role="button" tabindex="0"
+         style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:4px 8px;margin:-4px -4px;border-radius:8px"
+         onclick="openGroupInfo()"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openGroupInfo();}"
+         title="Информация о группе">
+      <div class="gc-av">{{ group.avatar_emoji or '👥' }}</div>
+      <div style="flex:1;min-width:0">
+        <h2>{{ group.name }}</h2>
+        <div class="sub" id="memCount">Загрузка…</div>
+      </div>
     </div>
     <div class="gc-actions">
       <button class="gc-btn" type="button" title="Пригласить" onclick="openInv()">➕</button>
       <button class="gc-btn" type="button" title="Покинуть" onclick="leaveG()">🚪</button>
+      {% if is_owner %}
+      <button class="gc-btn" type="button" title="Удалить группу" onclick="deleteG()" style="color:#ef4444">🗑️</button>
+      {% endif %}
     </div>
   </div>
   <div class="gc-msgs" id="msgs"></div>
@@ -138,6 +230,19 @@
       <button onclick="closeInv()">Закрыть</button>
     </div>
   </div>
+</div>
+
+<!-- CHAT_GROUP_INFO_V1 — group info side-sheet -->
+<div id="giPanel" class="gi-bg" hidden onclick="if(event.target===this) closeGroupInfo()">
+  <aside class="gi-panel" role="dialog" aria-label="Информация о группе">
+    <div class="gi-head">
+      <h3>Информация о группе</h3>
+      <button type="button" class="gi-close" title="Закрыть" onclick="closeGroupInfo()">×</button>
+    </div>
+    <div class="gi-body" id="giBody">
+      <div class="gi-loading">Загрузка…</div>
+    </div>
+  </aside>
 </div>
 
 <script>
@@ -263,6 +368,94 @@ async function inviteFr(uid, row){
     }
   }catch(_){ alert('Ошибка соединения'); }
 }
+
+// CHAT_GROUP_INFO_V1 — group info panel
+function fmtDate(iso){
+  if(!iso) return '—';
+  try{
+    const d = new Date(iso);
+    return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'long', year:'numeric'});
+  }catch(_){ return '—'; }
+}
+
+function escAttr(s){ return esc(s); }
+
+async function openGroupInfo(){
+  const panel = document.getElementById('giPanel');
+  const body  = document.getElementById('giBody');
+  panel.hidden = false;
+  body.innerHTML = '<div class="gi-loading">Загрузка…</div>';
+  try{
+    const r = await fetch('/api/groups/' + GID + '/info');
+    if(!r.ok){
+      body.innerHTML = '<div class="gi-loading">Не удалось загрузить информацию</div>';
+      return;
+    }
+    const d = await r.json();
+    const g = d.group || {};
+    const members = d.members || [];
+    const ownerBadge = (m) => m.is_owner
+      ? '<span class="gi-badge owner">Владелец</span>'
+      : (m.role === 'admin' ? '<span class="gi-badge">Админ</span>' : '');
+    const memberHtml = members.map(m => {
+      const av = m.avatar_url
+        ? '<img src="' + escAttr(m.avatar_url) + '" alt="">'
+        : esc((m.name || '?')[0].toUpperCase());
+      const nameLabel = m.is_me ? esc(m.name) + ' (Вы)' : esc(m.name);
+      const sub = (m.nickname && m.nickname !== m.name)
+        ? '@' + esc(m.nickname) + ' · Уровень ' + (m.level || 1)
+        : 'Уровень ' + (m.level || 1) + ' · ' + (m.xp || 0) + ' XP';
+      const onclick = m.is_me
+        ? 'window.location.href=\'/profile\''
+        : 'window.location.href=\'/user/' + m.id + '\'';
+      return ''
+        + '<div class="gi-mem-row" onclick="' + onclick + '">'
+        +   '<div class="gi-mem-av">' + av + '</div>'
+        +   '<div class="gi-mem-meta">'
+        +     '<div class="gi-mem-name">' + nameLabel + '</div>'
+        +     '<div class="gi-mem-sub">' + sub + '</div>'
+        +   '</div>'
+        +   ownerBadge(m)
+        + '</div>';
+    }).join('');
+    body.innerHTML = ''
+      + '<div class="gi-hero">'
+      +   '<div class="gi-hero-av">' + esc(g.avatar_emoji || '👥') + '</div>'
+      +   '<div class="gi-hero-name">' + esc(g.name || 'Группа') + '</div>'
+      +   '<div class="gi-hero-sub">Группа · ' + (g.member_count || 0) + ' участников</div>'
+      + '</div>'
+      + '<div class="gi-section">'
+      +   '<div class="gi-section-title">О группе</div>'
+      +   '<div class="gi-row"><span class="ico">👑</span><span class="lbl">Владелец</span><span class="val">' + esc(g.owner_name || '—') + '</span></div>'
+      +   '<div class="gi-row"><span class="ico">📅</span><span class="lbl">Создана</span><span class="val">' + fmtDate(g.created_at) + '</span></div>'
+      +   '<div class="gi-row"><span class="ico">💬</span><span class="lbl">Сообщений</span><span class="val">' + (g.message_count || 0) + '</span></div>'
+      +   '<div class="gi-row"><span class="ico">#</span><span class="lbl">ID группы</span><span class="val">' + g.id + '</span></div>'
+      + '</div>'
+      + '<div class="gi-section">'
+      +   '<div class="gi-section-title">' + (g.member_count || members.length) + ' участников</div>'
+      +   memberHtml
+      + '</div>'
+      + '<div class="gi-section">'
+      +   '<div class="gi-row action" onclick="closeGroupInfo(); openInv();"><span class="ico">➕</span><span class="lbl">Пригласить друга</span></div>'
+      +   '<div class="gi-row action danger" onclick="closeGroupInfo(); leaveG();"><span class="ico">🚪</span><span class="lbl">Покинуть группу</span></div>'
+      + '</div>';
+  }catch(e){
+    console.error(e);
+    body.innerHTML = '<div class="gi-loading">Ошибка соединения</div>';
+  }
+}
+
+function closeGroupInfo(){
+  const panel = document.getElementById('giPanel');
+  if(panel) panel.hidden = true;
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    const p = document.getElementById('giPanel');
+    if(p && !p.hidden){ closeGroupInfo(); }
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   loadM();

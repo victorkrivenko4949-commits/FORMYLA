@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Выбор класса — Адаптивный тест — FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.6em; color: var(--text-main); margin-bottom: 15px;">
+            🎓 Выбери свой класс
+        </h1>
+        <p style="font-size: 1.15em; color: var(--text-soft); line-height: 1.6;">
+            Подберём задачи и темы, подходящие именно для твоей программы
+        </p>
+    </div>
+
+    <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.05)); backdrop-filter: blur(12px); padding: 25px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(59, 130, 246, 0.3); margin-bottom: 40px;">
+        <h3 style="color: var(--accent-2); margin-top: 0;">🧭 Как работает тест</h3>
+        <ul style="color: var(--text-main); line-height: 1.9; padding-left: 25px; margin: 0;">
+            <li>Сначала выбираешь <strong>класс</strong> (5–11).</li>
+            <li>Затем выбираешь <strong>тему</strong> — для 5 и 6 классов это разделы школьной программы (натуральные числа, дроби, геометрия, комбинаторика, логика).</li>
+            <li>Дальше идёт адаптивный тест: сложность подстраивается под твои ответы.</li>
+        </ul>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 40px;">
+        {% set grade_emoji = {5: '5️⃣', 6: '6️⃣', 7: '7️⃣', 8: '8️⃣', 9: '9️⃣', 10: '🔟', 11: '1️⃣1️⃣'} %}
+        {% for g in [5, 6, 7, 8, 9, 10, 11] %}
+            <a href="{{ url_for('adaptive_test_select_topic', grade=g) }}"
+               style="display: block; padding: 30px 18px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(139, 92, 246, 0.08)); color: var(--text-main); text-decoration: none; border-radius: var(--radius-lg); text-align: center; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.25s; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);"
+               onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='rgba(56, 189, 248, 0.7)'; this.style.boxShadow='0 8px 22px rgba(56, 189, 248, 0.25)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(56, 189, 248, 0.3)'; this.style.boxShadow='0 4px 14px rgba(0, 0, 0, 0.2)';">
+                <div style="font-size: 2.4em; margin-bottom: 8px;">{{ grade_emoji[g] }}</div>
+                <div style="font-size: 1.15em;">{{ g }} класс</div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div style="text-align: center;">
+        <a href="/probniks"
+           style="display: inline-block; padding: 12px 30px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;"
+           onmouseover="this.style.background='rgba(100, 116, 139, 0.35)'"
+           onmouseout="this.style.background='rgba(100, 116, 139, 0.2)'">
+            ← Назад к проверкам
+        </a>
+    </div>
+
+</div>
+{% endblock %}

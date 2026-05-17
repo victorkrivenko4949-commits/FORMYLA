@@ -379,6 +379,112 @@ class DeepSeekClient:
             logger.error(f"Error analyzing user background: {e}")
             raise DeepSeekAPIError(f"Failed to analyze user background: {e}")
     
+    # Каноничные ключи специализированных агентов (используются роутером).
+    SPECIALIZED_AGENT_TYPES = (
+        'algebra',
+        'geometry',
+        'number_theory',
+        'combinatorics',
+        'movement',
+        'logic',
+        'mentor',
+    )
+
+    def classify_topic(self, message: str, image_present: bool = False) -> str:
+        """
+        Классифицировать тему сообщения пользователя и выбрать
+        одного из специализированных агентов.
+
+        Используется «общим» агентом-маршрутизатором (agent_type='general'),
+        чтобы пользователь не выбирал направление вручную.
+
+        Args:
+            message: текст сообщения пользователя
+            image_present: приложено ли изображение (фото условия)
+
+        Returns:
+            str: одно из значений SPECIALIZED_AGENT_TYPES.
+                 По умолчанию (если LLM не справился) — 'algebra'.
+        """
+        # Если сообщение пустое (например, только картинка без подписи),
+        # дешифруем «реши задачу по фото» — это чаще всего алгебра/геометрия,
+        # но без OCR мы не угадаем. Возвращаем дефолт.
+        text = (message or '').strip()
+        if not text and image_present:
+            return 'algebra'
+        if not text:
+            return 'algebra'
+
+        system_prompt = (
+            "Ты — классификатор математических задач. По тексту сообщения "
+            "ученика определи, к какой ТЕМЕ относится его вопрос, и верни "
+            "РОВНО ОДИН ключ из списка (без кавычек, без пояснений, без "
+            "точки в конце, в нижнем регистре):\n"
+            "- algebra — уравнения, неравенства, системы, многочлены, функции, "
+            "графики, прогрессии, преобразования выражений\n"
+            "- geometry — планиметрия, стереометрия, треугольники, "
+            "окружности, площади, объёмы, векторы, координаты, построения\n"
+            "- number_theory — делимость, НОД/НОК, простые числа, остатки, "
+            "сравнения по модулю, диофантовы уравнения, признаки делимости\n"
+            "- combinatorics — перестановки, размещения, сочетания, принцип "
+            "Дирихле, метод включений-исключений, графы, деревья, подсчёт\n"
+            "- movement — задачи на скорость, время, расстояние, работу, "
+            "производительность, проценты, концентрации\n"
+            "- logic — рыцари и лжецы, взвешивания, переливания, индукция, "
+            "инварианты, раскраски, принцип крайнего, головоломки\n"
+            "- mentor — вопросы про сами олимпиады: стратегия подготовки, "
+            "тайм-менеджмент, апелляции, выбор олимпиад (НЕ решение задач)\n"
+            "\nОтвет — ТОЛЬКО ключ, ничего больше."
+        )
+        user_prompt = f"Сообщение ученика:\n{text[:2000]}"
+
+        try:
+            raw = self.generate(
+                prompt=user_prompt,
+                system_prompt=system_prompt,
+                temperature=0.0,
+                max_tokens=10,
+            )
+        except Exception as e:
+            logger.warning(f"classify_topic: LLM failed ({e}); falling back to 'algebra'")
+            return 'algebra'
+
+        # Нормализуем ответ: вытаскиваем первое валидное ключевое слово.
+        key = (raw or '').strip().lower()
+        # Убираем кавычки/точки/пробелы
+        for ch in ('"', "'", '.', ',', '`'):
+            key = key.replace(ch, '')
+        key = key.strip()
+        # Берём только первое «слово» (на случай если модель добавила хвост)
+        key = key.split()[0] if key else ''
+
+        if key in self.SPECIALIZED_AGENT_TYPES:
+            logger.info(f"[router] classified topic: {key}")
+            return key
+
+        # Иногда модели возвращают синонимы — мягко мапим.
+        synonyms = {
+            'algebra.': 'algebra',
+            'геометрия': 'geometry',
+            'алгебра': 'algebra',
+            'теория': 'number_theory',
+            'numbertheory': 'number_theory',
+            'number-theory': 'number_theory',
+            'комбинаторика': 'combinatorics',
+            'combinatoric': 'combinatorics',
+            'движение': 'movement',
+            'логика': 'logic',
+            'наставник': 'mentor',
+            'олимпиада': 'mentor',
+        }
+        if key in synonyms:
+            mapped = synonyms[key]
+            logger.info(f"[router] synonym '{key}' -> '{mapped}'")
+            return mapped
+
+        logger.warning(f"[router] unknown classification '{raw!r}', defaulting to 'algebra'")
+        return 'algebra'
+
     def get_agent_system_prompt(self, agent_type: str, user) -> str:
         """
         Получить системный промпт для конкретного агента.
@@ -567,26 +673,71 @@ class DeepSeekClient:
 {no_latex_rule}"""
         }
         
-        return prompts.get(agent_type, prompts['mentor'])
-    
+        # Если внезапно пришёл нераспознанный ключ (например, 'general',
+        # хотя 'general' должен быть отмаршрутизирован раньше — но на всякий
+        # случай) — используем алгебру как самый универсальный профиль.
+        return prompts.get(agent_type, prompts['algebra'])
+
     def chat_with_tutor(self, user, new_message: str, chat_history: list, agent_type: str = 'general', hint_mode: bool = True, image_data: str = None) -> str:
         """
         Чат с персональным AI-тьютором (специализированным агентом).
-        
+
+        Если agent_type == 'general' — используется агент-маршрутизатор:
+        DeepSeek сначала классифицирует тему сообщения, затем подставляется
+        системный промпт соответствующего специализированного агента.
+
         Args:
             user: объект User с профилем
             new_message: новое сообщение от пользователя
             chat_history: список последних сообщений [{role, content}, ...]
-            agent_type: тип агента (algebra, geometry, number_theory, combinatorics, movement, logic, mentor)
+            agent_type: тип агента — 'general' (общий маршрутизатор) либо
+                один из: algebra, geometry, number_theory, combinatorics,
+                movement, logic, mentor
             hint_mode: True = давать только подсказки, False = давать полное решение
             image_data: base64-encoded изображение (опционально)
             
         Returns:
             str: ответ тьютора
         """
+        # === Агент-маршрутизатор ===
+        # Если выбран общий агент ('general'), DeepSeek сначала классифицирует
+        # тему сообщения и подменяет agent_type на соответствующий
+        # специализированный ключ. Дальше всё работает как обычно — то есть
+        # ответ генерируется уже под профильным системным промптом, что
+        # сохраняет качество специализированных агентов.
+        routed_from_general = False
+        if agent_type == 'general':
+            try:
+                classified = self.classify_topic(
+                    new_message,
+                    image_present=bool(image_data),
+                )
+            except Exception as e:
+                logger.warning(f"[router] classify_topic raised: {e}; defaulting to 'algebra'")
+                classified = 'algebra'
+            logger.info(f"[router] general -> {classified}")
+            agent_type = classified
+            routed_from_general = True
+
         # Формируем системный промпт для выбранного агента
         system_prompt = self.get_agent_system_prompt(agent_type, user)
-        
+
+        # Если мы пришли сюда через общий маршрутизатор, ослабляем «жёсткое
+        # ограничение» из промпта профильного агента: общий чат не должен
+        # отказываться от смены темы внутри одной сессии. Распознанная тема
+        # — лишь подсказка стиля, а не клетка.
+        if routed_from_general:
+            system_prompt += (
+                "\n\nКОНТЕКСТ МАРШРУТИЗАЦИИ: Этот ответ сгенерирован через "
+                "ОБЩЕГО агента, который автоматически определил тему сообщения "
+                f"как «{agent_type}» и подобрал тебя как профильного помощника. "
+                "Если в следующем сообщении ученик задаст вопрос из другой "
+                "области математики — НЕ отказывайся и НЕ отправляй его в "
+                "«главное меню»: просто ответь по существу, опираясь на свой "
+                "опыт. Жёсткое ограничение про «не моя специализация» "
+                "в этой сессии не применяется."
+            )
+
         # Добавляем инструкцию в зависимости от режима
         if hint_mode:
             system_prompt += "\n\nРЕЖИМ РАБОТЫ: Давай только ПОДСКАЗКИ и наводящие вопросы. НЕ решай задачу до конца. Помоги ученику самому найти решение, задавая правильные вопросы и указывая на ключевые идеи."

@@ -2,36 +2,287 @@
 {% block title %}О проекте FORMYLA{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ asset_version }}">
+<style>
+  /* ── Onboarding banner ── */
+  .onboarding-banner {
+    background: linear-gradient(135deg, rgba(56, 239, 125, 0.18), rgba(17, 153, 142, 0.18));
+    border: 1px solid rgba(56, 239, 125, 0.45);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    color: #e2e8f0;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .onboarding-banner .btn-secondary {
+    background: linear-gradient(135deg, #38ef7d, #11998e);
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: transform 0.15s ease;
+  }
+  .onboarding-banner .btn-secondary:hover { transform: translateY(-2px); }
+
+  /* ── Hero CTA buttons ── */
+  .hero-cta-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .hero-cta {
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .hero-cta-primary {
+    background: linear-gradient(135deg, #38ef7d, #11998e);
+    color: #0f172a;
+  }
+  .hero-cta-secondary {
+    background: rgba(255,255,255,0.06);
+    color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .hero-cta:hover { transform: translateY(-2px); }
+  .hero-description {
+    color: #cbd5e1;
+    font-size: 1rem;
+    line-height: 1.65;
+    max-width: 720px;
+    margin: 18px auto 0;
+  }
+
+  /* ── 3-column plan grid override ── */
+  .plans-row-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 24px;
+  }
+  @media (max-width: 900px) {
+    .plans-row-3 { grid-template-columns: 1fr; }
+  }
+  .plan-year {
+    border-color: rgba(247, 178, 41, 0.45) !important;
+    position: relative;
+  }
+  .plan-badge-discount {
+    position: absolute;
+    top: -12px;
+    right: 16px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  }
+  .plan-year .plan-price-tag {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .plan-price-old {
+    color: #64748b;
+    text-decoration: line-through;
+    font-size: 0.95rem;
+    margin-bottom: -4px;
+    text-align: center;
+  }
+  .plan-price-note {
+    color: #94a3b8;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .plan-trial-hint {
+    color: #38ef7d;
+    font-size: 13px;
+    text-align: center;
+    margin: -8px 0 10px;
+  }
+  .plan-btn-year {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff;
+  }
+  .plan-btn-year:hover { transform: translateY(-2px); }
+
+  /* ── Disclaimer for comparison ── */
+  .comparison-disclaimer {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.55;
+    margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* ── Final CTA section ── */
+  .final-cta {
+    text-align: center;
+    padding: 32px 20px;
+    background: linear-gradient(135deg, rgba(56, 239, 125, 0.08), rgba(124, 58, 237, 0.08));
+    border: 1px solid rgba(56, 239, 125, 0.2);
+    border-radius: 16px;
+  }
+  .final-cta h2 { margin-bottom: 10px; }
+  .final-cta p { color: #cbd5e1; margin-bottom: 22px; }
+  .final-cta-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .final-cta-row .login-link {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .final-cta-row .login-link a {
+    color: #38ef7d;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  /* ── Founder credits ── */
+  .founder-contacts {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+</style>
 {% endblock %}
 {% block content %}
 <div class="about-page">
 
+  {# ── 2.1 Onboarding banner (only after signup) ── #}
+  {% if request.args.get('onboarding') %}
+  <div class="onboarding-banner">
+    <span>🎉 <strong>Добро пожаловать в FORMYLA!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
+    <a href="/" class="btn-secondary">Сразу к тренажёру →</a>
+  </div>
+  {% endif %}
+
+  {# ── 2.2 Hero ── #}
   <section class="about-hero">
     <h1 class="about-title">FORMYLA</h1>
-    <p class="about-subtitle">Единственная в России ИИ-платформа для подготовки к математическим олимпиадам с 7 специализированными агентами</p>
+    <p class="about-subtitle">Подготовка к математическим олимпиадам с персональным ИИ-наставником</p>
+    <p class="hero-description">
+      Адаптивная диагностика, ежедневные задачи под слабые темы и 7 ИИ-агентов,
+      которые объясняют, а не дают ответы. Для учеников 5–11 классов. Без VPN.
+    </p>
+    <div class="hero-cta-row">
+      <a href="/login" class="hero-cta hero-cta-primary">Попробовать бесплатно</a>
+      <a href="#how-it-works" class="hero-cta hero-cta-secondary">Как это работает ↓</a>
+    </div>
   </section>
 
+  {# ── 2.3 Metrics ── #}
   <section class="about-section">
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num">3500+</div><div class="stat-label">задач в адаптивном тесте</div></div>
-      <div class="stat-card"><div class="stat-num">8000+</div><div class="stat-label">олимпиадных задач</div></div>
-      <div class="stat-card"><div class="stat-num">7</div><div class="stat-label">ИИ-агентов по темам</div></div>
-      <div class="stat-card"><div class="stat-num">5–11</div><div class="stat-label">классы</div></div>
+      <div class="stat-card">
+        <div class="stat-num">8 000+</div>
+        <div class="stat-label">олимпиадных задач из реальных туров ВсОШ, Турнира городов, Эйлера и Ломоносова</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3 500+</div>
+        <div class="stat-label">адаптивных задач, подбирающихся под уровень ученика</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">7</div>
+        <div class="stat-label">ИИ-агентов с разными специализациями</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">5–11</div>
+        <div class="stat-label">классы: от первой олимпиады до выпускных туров</div>
+      </div>
     </div>
   </section>
 
-  <section class="about-section">
+  {# ── 2.4 How it works ── #}
+  <section class="about-section" id="how-it-works">
     <h2>🎯 Как это работает</h2>
     <div class="steps-grid">
-      <div class="step-card"><div class="step-number">1</div><h3>Пройди диагностику</h3><p>Адаптивный тест определит твой уровень и слабые темы за 10–15 минут.</p></div>
-      <div class="step-card"><div class="step-number">2</div><h3>Решай задачи дня</h3><p>Каждый день ты получаешь задачи, подобранные лично под твои пробелы.</p></div>
-      <div class="step-card"><div class="step-number">3</div><h3>Готовься с ИИ-тьютором</h3><p>7 агентов по темам разбирают задачи, дают подсказки и объясняют шаг за шагом.</p></div>
-      <div class="step-card"><div class="step-number">4</div><h3>Выходи на олимпиады</h3><p>База ВсОШ, Турнира городов, Эйлера — тренируйся на реальных задачах прошлых лет.</p></div>
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>Пройди диагностику за 10–15 минут</h3>
+        <p>Адаптивный тест из 25 задач с проверкой полных решений нейросетью. Сложность подстраивается: верное решение → +2 уровня, ошибка → −2. На выходе — радар твоих сильных и слабых тем.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>Получай 5 задач в день</h3>
+        <p>Каждое утро ИИ подбирает квест из 5 задач именно по твоим слабым темам и подходящему уровню. За полный квест дня — бонус +100 XP и сохранение стрика.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>Спрашивай у 7 ИИ-агентов</h3>
+        <p>По алгебре, геометрии, теории чисел, комбинаторике, движению, логике и отдельный наставник по стратегии олимпиад. Режим «только подсказки» — агент не даст ответ, поможет дойти самому.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <h3>Тренируйся на реальных олимпиадах</h3>
+        <p>База ВсОШ, Турнира городов, Эйлера, Ломоносова, Высшей пробы, Матпраздника. AI-планировщик строит персональный график подготовки к выбранному этапу.</p>
+      </div>
     </div>
   </section>
 
+  {# ── 2.5 What makes FORMYLA different ── #}
   <section class="about-section">
-    <h2>⚡ Почему FORMYLA — единственная в своём роде в РФ</h2>
+    <h2>⚡ Что делает FORMYLA непохожей</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🎯</span>
+        <h3>Связка, которой нет у других</h3>
+        <p>Не репетитор за деньги, не сухая теория — единственная связка «адаптивный тест + ИИ-наставник + база олимпиад РФ» в одном продукте.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <h3>7 разных агентов вместо одного</h3>
+        <p>Каждый агент знает приёмы своей темы, а не «обо всём сразу». Алгебра, геометрия, теория чисел, комбинаторика и другие — у каждой свой эксперт.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <h3>Режим «только подсказки»</h3>
+        <p>Toggle прямо в чате: ИИ помогает наводящими вопросами, не даёт готовый ответ. Ты учишься, а не списываешь.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📐</span>
+        <h3>Доска и AI-чертежи</h3>
+        <p>Бесконечный холст для черновика + ИИ строит чертёж по тексту задачи. Геометрию больше не надо рисовать вручную.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🇷🇺</span>
+        <h3>Работает без VPN</h3>
+        <p>Серверы в РФ, оплата российскими картами, вход через Яндекс ID. Никаких VPN, иностранных карт и сложностей с доступом.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Радар навыков и Pro-родительский доступ</h3>
+        <p>Видно слабые темы и динамику по дням. Родитель получает свой логин и наблюдает прогресс ребёнка в реальном времени.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── 2.6 Comparison table ── #}
+  <section class="about-section">
+    <h2>📊 Почему FORMYLA — единственная в своём роде в РФ</h2>
     <div class="comparison-table-wrapper">
       <table class="comparison-table">
         <thead>
@@ -49,18 +300,39 @@
         </tbody>
       </table>
     </div>
+    <p class="comparison-disclaimer">
+      *Сравнение составлено на основе публичной информации с сайтов сервисов на май 2026. Khanmigo — на момент проверки недоступен в РФ без VPN. Photomath — мобильное приложение с распознаванием по фото без специализации на олимпиадах. Учи.ру — школьная программа 1–9 классы.
+    </p>
   </section>
 
+  {# ── 2.7 For whom ── #}
   <section class="about-section">
     <h2>👨‍🎓 Для кого FORMYLA</h2>
     <div class="features-grid">
-      <div class="feature-card"><span class="feature-icon">📚</span><h3>Ученикам 5–7 класса</h3><p>Школьный этап ВсОШ, мат. раскраски, игры, «Рыцари и лжецы». Развитие логики в формате, который не скучно.</p></div>
-      <div class="feature-card"><span class="feature-icon">🏆</span><h3>Ученикам 8–11 класса</h3><p>Муниципальный, региональный и заключительный этапы. Турнир городов, Эйлер, Сириус. Готовься с ИИ-наставником.</p></div>
-      <div class="feature-card"><span class="feature-icon">👨‍👩‍👦</span><h3>Родителям</h3><p>Добавляйся «в друзья» к ребёнку: смотри прогресс, слабые темы и серии решённых задач в реальном времени.</p></div>
-      <div class="feature-card"><span class="feature-icon">👩‍🏫</span><h3>Учителям</h3><p>Готовая база задач с решениями. Используй FORMYLA как кружок подготовки к олимпиадам.</p></div>
+      <div class="feature-card">
+        <span class="feature-icon">📚</span>
+        <h3>Ученикам 5–7 класса</h3>
+        <p>Школьный этап ВсОШ, мат. раскраски, игры, «Рыцари и лжецы». Развитие логики в формате, который не скучно.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏆</span>
+        <h3>Ученикам 8–11 класса</h3>
+        <p>Муниципальный, региональный и заключительный этапы. Турнир городов, Эйлер, Сириус. Готовься с ИИ-наставником.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">👨‍👩‍👦</span>
+        <h3>Родителям</h3>
+        <p>Полный родительский доступ на тарифе Pro. Видишь, какие темы ребёнок осилил, где буксует, сколько занимается каждый день. Без слежки — ребёнок знает, что ты подключён, и сам выбирает делиться или нет.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">👩‍🏫</span>
+        <h3>Учителям</h3>
+        <p>8 000+ задач с подробными разборами, отсортированных по темам, классам и уровню. Используй как готовую методичку для кружка или индивидуальных занятий. Бесплатно для учителей — напишите нам в Telegram.</p>
+      </div>
     </div>
   </section>
 
+  {# ── 2.8 AI agents ── #}
   <section class="about-section">
     <h2>🤖 Наши ИИ-агенты</h2>
     <div class="features-grid agents-grid">
@@ -74,9 +346,12 @@
     </div>
   </section>
 
+  {# ── 2.9 Pricing — 3 tiers ── #}
   <section class="about-section">
     <h2>💎 Тарифы</h2>
-    <div class="plans-row">
+    <div class="plans-row plans-row-3">
+
+      {# Free #}
       <div class="plan-box plan-free">
         <h3>Free</h3>
         <div class="plan-price-tag">0 ₽ / навсегда</div>
@@ -84,62 +359,141 @@
           <li>3 задачи дня</li>
           <li>1 олимпиадный вариант в неделю</li>
           <li>10 сообщений ИИ-тьютору в день</li>
-          <li>Базовый Радар навыков</li>
+          <li>Базовый радар навыков</li>
           <li>Сообщество и Telegram-канал</li>
         </ul>
         <a href="/login" class="plan-btn plan-btn-free">Начать бесплатно</a>
       </div>
+
+      {# Pro Month — popular #}
       <div class="plan-box plan-pro">
-        <div class="plan-badge-pro">⭐ PRO</div>
-        <h3>Pro</h3>
-        <div class="plan-price-tag">390 ₽ / месяц</div>
+        <div class="plan-badge-pro">⭐ POPULAR</div>
+        <h3>Pro Месяц</h3>
+        <div class="plan-price-tag">390 ₽ / мес</div>
+        <p class="plan-trial-hint">🎁 Первые 7 дней бесплатно</p>
         <ul>
           <li>Безлимит задач и олимпиад</li>
           <li>Безлимит сообщений ИИ-тьютору</li>
           <li>Все 7 специализированных агентов</li>
-          <li>Полный Радар навыков + еженедельный анализ</li>
+          <li>Полный радар навыков + еженедельный анализ</li>
           <li>Родительский доступ к прогрессу</li>
           <li>Проверка фото решений</li>
           <li>Приоритетная поддержка</li>
         </ul>
-        <a href="/subscribe" class="plan-btn plan-btn-pro">Оформить Pro</a>
+        <a href="/subscribe?plan=premium_monthly" class="plan-btn plan-btn-pro">Попробовать 7 дней бесплатно</a>
       </div>
+
+      {# Pro Year — discount 40% #}
+      <div class="plan-box plan-pro plan-year">
+        <div class="plan-badge-discount">−40%</div>
+        <h3>Pro Год</h3>
+        <p class="plan-price-old">было 4 680 ₽</p>
+        <div class="plan-price-tag">2 790 ₽ / год</div>
+        <p class="plan-price-note">≈ 232 ₽/мес · экономия 1 890 ₽</p>
+        <ul>
+          <li>Всё из Pro Месяц</li>
+          <li>Доступ к новым курсам и методам</li>
+          <li>Эксклюзивные разборы прошедших туров</li>
+          <li>Закрытое сообщество в Telegram</li>
+        </ul>
+        <a href="/subscribe?plan=premium_yearly" class="plan-btn plan-btn-year">Оформить год</a>
+      </div>
+
     </div>
-    <p class="guarantee">🛡️ <strong>Гарантия возврата</strong> — Не понравилось в первые 7 дней? Вернём деньги без вопросов.</p>
+    <p class="guarantee">
+      💎 <strong>Гарантия возврата:</strong> не понравилось в первые 7 дней — напиши в Telegram
+      <a href="https://t.me/FormylaSupport" target="_blank" style="color:#38ef7d;text-decoration:none;">@FormylaSupport</a>,
+      вернём деньги без вопросов и без анкет.
+    </p>
   </section>
 
+  {# ── 2.10 Founder story ── #}
   <section class="about-section founder-section">
     <h2>👋 История проекта</h2>
     <div class="founder-card">
       <div class="founder-avatar">V</div>
       <div class="founder-text">
-        <p><strong>Привет, я Виктор — основатель FORMYLA</strong></p>
-        <p>Мне 14 лет, и я сам готовился к олимпиадам по математике. Мне надоело переключаться между десятком сайтов: где-то задачи, где-то разборы, где-то ИИ, но на английском.</p>
-        <p>Я собрал FORMYLA — место, где всё в одном интерфейсе: адаптивный тест, задачи под слабые темы, разборы от 7 ИИ-агентов и полная база олимпиад РФ. То, что я хотел видеть сам.</p>
+        <p>FORMYLA — не очередной EdTech-стартап, который придумали маркетологи. Это продукт изнутри олимпиадной среды.</p>
+        <p>Меня зовут <strong>Виктор Кривенко</strong>. Я сам готовлюсь к олимпиадам по математике — ВсОШ, Ломоносов, Турнир городов. И я знаю проблему изнутри: чтобы готовиться нормально, надо одновременно держать открытыми 10 вкладок — задачник, разборы, ИИ-чат на английском, ютуб с лекциями, ещё одна тетрадка для чертежей. Это бесит и убивает мотивацию быстрее, чем сами задачи.</p>
+        <p>Я сделал FORMYLA, чтобы всё было в одном месте: адаптивный тест, ежедневные задачи под слабые темы, 7 специализированных ИИ-агентов, база реальных туров олимпиад РФ, доска для чертежей. Это инструмент, которого мне самому не хватало.</p>
+        <p>Над платформой работаю не один — со мной команда консультантов-олимпиадников, которые помогают вычитывать задачи и тренировать ИИ-агентов. Если ты учитель или олимпиадник и хочешь подключиться — напиши в Telegram, всегда рад.</p>
+        <p><em>— Виктор, основатель FORMYLA</em></p>
+        <p class="founder-contacts">
+          📧 <a href="mailto:hello@formyla.ru" style="color:#94a3b8;">hello@formyla.ru</a>
+          · ✈️ <a href="https://t.me/FormylaMaths" target="_blank" style="color:#94a3b8;">@FormylaMaths</a>
+        </p>
       </div>
     </div>
   </section>
 
+  {# ── 2.11 FAQ ── #}
   <section class="about-section">
     <h2>❓ Частые вопросы</h2>
     <div class="faq-list">
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Для какого класса подходит FORMYLA? <span class="faq-arrow">▼</span></div><div class="faq-a">Для учеников 5–11 классов. Задачи адаптируются под уровень — от школьного этапа до заключительного.</div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Нужен ли VPN? <span class="faq-arrow">▼</span></div><div class="faq-a">Нет. FORMYLA работает в России без VPN, все серверы в РФ.</div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Чем FORMYLA отличается от ChatGPT? <span class="faq-arrow">▼</span></div><div class="faq-a">FORMYLA — это не просто чат. Это 7 специализированных агентов, адаптивный тест, база 8000+ олимпиадных задач и система отслеживания прогресса.</div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Можно ли отменить подписку? <span class="faq-arrow">▼</span></div><div class="faq-a">Да, в любой момент из профиля. После отмены доступ сохраняется до конца оплаченного периода.</div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Как родители могут следить за прогрессом? <span class="faq-arrow">▼</span></div><div class="faq-a">Добавьте ребёнка «в друзья» по никнейму — вы увидите его Радар навыков, серии и результаты тестов.</div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Безопасно ли ИИ для ребёнка? <span class="faq-arrow">▼</span></div><div class="faq-a">Да. Наши агенты работают только в контексте математики и не отвечают на посторонние темы.</div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что если ребёнку не подошло? <span class="faq-arrow">▼</span></div><div class="faq-a">Гарантия возврата 7 дней. Напишите нам — вернём деньги без вопросов.</div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Есть ли мобильное приложение? <span class="faq-arrow">▼</span></div><div class="faq-a">Пока нет, но сайт полностью адаптирован под мобильные устройства. Приложение в планах на 2026.</div></div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Для какого класса подходит FORMYLA? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Платформа рассчитана на 5–11 классы. Контент сегментирован по классам и уровням сложности (1–7). Для 5–7 классов — школьный этап ВсОШ, мат. праздник, логические игры. Для 8–11 — муниципальный/региональный этапы, Турнир городов, Эйлер, Сириус. Адаптивный тест сам определит подходящий уровень за 15 минут.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Нужен ли VPN? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Нет. Все серверы в РФ, ИИ-модели работают через российские прокси, оплата через российские карты. Никаких VPN, иностранных аккаунтов или валютных карт не требуется.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Чем FORMYLA отличается от ChatGPT? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">ChatGPT — общий ИИ. FORMYLA — 7 специализированных агентов, дообученных именно на олимпиадных задачах ВсОШ, Турнира городов, Эйлера. Плюс структурированный банк 8000+ задач, адаптивная диагностика, родительский доступ, AI-планировщик подготовки. ChatGPT не подберёт квест на день и не построит план к ВсОШ-2027.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Можно ли отменить подписку? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Да, в любой момент в личном кабинете. Подписка действует до конца оплаченного периода и не продлевается автоматически после отмены. В первые 7 дней — полный возврат без вопросов.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Как родители могут следить за прогрессом? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">На тарифе Pro доступен родительский кабинет: отдельный логин, прикреплённый к аккаунту ребёнка. Видишь радар тем, статистику по дням, серию решённых задач, время в платформе.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Безопасно ли ИИ для ребёнка? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">ИИ-агенты обучены отказывать в ответах не по математике. Все диалоги логируются и доступны родителю на тарифе Pro. Режим «только подсказки» запрещает агенту давать готовое решение — только наводящие вопросы.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что если ребёнку не подошло? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">В первые 7 дней оплаты — полный возврат денег без вопросов через Telegram-поддержку. После — можно отменить подписку и пользоваться бесплатной версией без ограничения по времени.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Есть ли мобильное приложение? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Нативного приложения пока нет, но сайт полностью адаптирован под смартфон. Отдельное приложение для iOS/Android — в планах на 2027 год.</div>
+      </div>
+
     </div>
   </section>
 
+  {# ── 2.12 Final CTA ── #}
+  <section class="about-section">
+    <div class="final-cta">
+      <h2>🚀 Попробуй FORMYLA прямо сейчас</h2>
+      <p>3 задачи в день навсегда бесплатно. Без карты, без VPN, без ограничений по времени.</p>
+      <div class="final-cta-row">
+        <a href="/login" class="hero-cta hero-cta-primary">🚀 Начать бесплатно</a>
+        <span class="login-link">Уже зарегистрирован? <a href="/login">Войти</a></span>
+      </div>
+    </div>
+  </section>
+
+  {# ── Telegram ── #}
   <section class="about-section">
     <h2>📬 Присоединяйся</h2>
     <p>Подписывайся на наш Telegram-канал — там задачи дня, разборы олимпиад и анонсы новых фич.</p>
     <a href="https://t.me/FormylaMaths" target="_blank" class="tg-btn">📨 @FormylaMaths</a>
   </section>
 
+  {# ── Support form (kept from legacy, important infra) ── #}
   <section class="about-section support-section">
     <h2>💬 Связаться с нами</h2>
     <p>Нашли баг? Есть идея? Не получается решить? Напиши нам — ответим в Telegram-канале или на почту.</p>

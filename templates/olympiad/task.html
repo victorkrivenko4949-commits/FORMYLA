@@ -12,7 +12,8 @@
         initialSelfScore: {{ (attempt.self_score if attempt and attempt.self_score is not none else 'null') | safe }},
         initialNote: {{ (attempt.note if attempt and attempt.note else '') | tojson }},
         authenticated: {{ 'true' if current_user.is_authenticated else 'false' }},
-        attemptUrl: '{{ url_for('olympiad.task_attempt', task_id=task.id) }}'
+        attemptUrl: '{{ url_for('olympiad.task_attempt', task_id=task.id) }}',
+        submitUrl: '{{ url_for('olympiad.task_submit', task_id=task.id) }}'
      })"
      x-init="markViewed()">
 
@@ -42,6 +43,41 @@
         <h2 style="margin-top:0;">📜 Условие</h2>
         <div class="oly-md">{{ task.condition_md | md_render }}</div>
     </section>
+
+    <!-- ───── Ввод ответа + решение (1-в-1 как Daily Quest) ───────────── -->
+    {% if task.answer %}
+    <section class="oly-card answer-section">
+        <label for="userAnswer" class="answer-label">Ваш ответ:</label>
+        <input type="text"
+               id="userAnswer"
+               class="answer-input"
+               placeholder="Введите краткий ответ (число, выражение)"
+               autocomplete="off"
+               x-model="userAnswer"
+               @keydown.enter.prevent="submitAnswer()">
+
+        <label for="userSolution" class="answer-label" style="margin-top: 16px;">
+            Решение (необязательно, но ИИ-тьютор проверит):
+        </label>
+        <textarea id="userSolution"
+                  class="answer-input"
+                  placeholder="Опишите ход решения... ИИ-тьютор даст подробный разбор"
+                  rows="5"
+                  style="resize: vertical; min-height: 100px; font-family: inherit;"
+                  x-model="userSolution"></textarea>
+
+        <button @click="submitAnswer()"
+                id="submitBtn"
+                class="submit-button"
+                :disabled="submitting"
+                x-text="submitting ? '⏳ ИИ-тьютор проверяет...' : '✓ Проверить'"></button>
+    </section>
+
+    <!-- Feedback (заполняется JS после submit) -->
+    <section id="feedbackSection" class="feedback-section" x-show="feedbackVisible" x-cloak style="display: none;">
+        <div id="feedbackContent"></div>
+    </section>
+    {% endif %}
 
     <!-- Идея решения (раскрываемая) -->
     <section class="oly-reveal" :data-open="showIdea ? 'true' : 'false'">
@@ -114,7 +150,143 @@
     {% endif %}
 </div>
 
-<style>[x-cloak] { display: none !important; }</style>
+<style>
+[x-cloak] { display: none !important; }
+
+/* ── Стили для answer-section / feedback (портированы из daily_task.html) ── */
+.answer-section {
+    margin-top: 24px;
+}
+.answer-label {
+    display: block;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.answer-input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+.answer-input:focus {
+    outline: none;
+    border-color: #38ef7d;
+    box-shadow: 0 0 20px rgba(56, 239, 125, 0.3);
+}
+.submit-button {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(56, 239, 125, 0.4);
+}
+.submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.feedback-section {
+    margin-top: 2rem;
+    animation: olySlideIn 0.5s ease;
+}
+@keyframes olySlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.feedback-correct,
+.feedback-incorrect {
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+}
+.feedback-correct {
+    background: rgba(56, 239, 125, 0.1);
+    border: 2px solid rgba(56, 239, 125, 0.5);
+}
+.feedback-incorrect {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.5);
+}
+.feedback-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+.feedback-correct .feedback-icon { color: #38ef7d; }
+.feedback-incorrect .feedback-icon { color: #ef4444; }
+.feedback-correct h3 {
+    color: #38ef7d;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+.feedback-incorrect h3 {
+    color: #ef4444;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+.xp-earned {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #38ef7d;
+    margin-bottom: 1rem;
+}
+.ai-feedback {
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    text-align: left;
+}
+.try-again-button {
+    margin-top: 1rem;
+    padding: 0.8rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.try-again-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.correct-answer-block {
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    text-align: left;
+}
+.correct-answer-label {
+    font-weight: 700;
+    color: #fff;
+    margin-right: 8px;
+}
+.correct-answer-math {
+    display: inline-block;
+    color: #fff;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -123,6 +295,7 @@ function olympiadTask(cfg) {
     return {
         taskId: cfg.taskId,
         attemptUrl: cfg.attemptUrl,
+        submitUrl: cfg.submitUrl,
         authenticated: cfg.authenticated,
 
         showIdea: false,
@@ -132,6 +305,12 @@ function olympiadTask(cfg) {
         selfScore: cfg.initialSelfScore,
         note: cfg.initialNote || '',
         saveHint: '',
+
+        // ── Поля для ввода ответа (Daily-Quest-style) ──────────────
+        userAnswer: '',
+        userSolution: '',
+        submitting: false,
+        feedbackVisible: false,
 
         _viewSent: false,
         _noteTimer: null,
@@ -164,7 +343,6 @@ function olympiadTask(cfg) {
         async markViewed() {
             if (this._viewSent) return;
             this._viewSent = true;
-            // Не понижаем статус, если уже выше.
             if (['solved','revealed','attempted'].includes(this.status)) return;
             await this._send({status: 'viewed'});
         },
@@ -181,12 +359,10 @@ function olympiadTask(cfg) {
         },
         async setSelfScore(s) {
             this.selfScore = s;
-            // Если ещё не было статуса выше attempted — оставим как 'attempted'.
             const nextStatus = ['solved','revealed'].includes(this.status) ? this.status : 'attempted';
             await this._send({status: nextStatus, self_score: s});
         },
         async saveNote() {
-            // Debounce: при blur — сразу шлём.
             clearTimeout(this._noteTimer);
             await this._send({status: this.status, note: this.note});
         },
@@ -202,12 +378,11 @@ function olympiadTask(cfg) {
             this._rerenderMath();
         },
 
-        _rerenderMath() {
-            // KaTeX auto-render won't catch newly-shown blocks; re-run on body.
+        _rerenderMath(scope) {
             this.$nextTick(() => {
                 try {
                     if (window.renderMathInElement) {
-                        renderMathInElement(document.body, {
+                        renderMathInElement(scope || document.body, {
                             delimiters: [
                                 {left: '$$', right: '$$', display: true},
                                 {left: '$',  right: '$',  display: false},
@@ -219,6 +394,198 @@ function olympiadTask(cfg) {
                     }
                 } catch (e) {}
             });
+        },
+
+        // ────────────────────────────────────────────────────────────
+        // ВВОД ОТВЕТА / ПРОВЕРКА (1-в-1 как в daily_task.html)
+        // ────────────────────────────────────────────────────────────
+
+        async submitAnswer() {
+            const answer = (this.userAnswer || '').trim();
+            const solution = (this.userSolution || '').trim();
+
+            if (!answer) {
+                alert('Пожалуйста, введите ответ');
+                return;
+            }
+            if (!this.authenticated) {
+                alert('Войдите, чтобы отправить ответ.');
+                return;
+            }
+
+            this.submitting = true;
+            try {
+                const response = await fetch(this.submitUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ answer: answer, solution: solution }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this._renderFeedback(data);
+                    // Если ответ верный — обновляем статус и self_score через attempt API
+                    if (data.is_correct) {
+                        this.status = 'solved';
+                        // self-score ставим равной max_score, если ещё не выставлен
+                        if (this.selfScore == null) this.selfScore = 7;
+                    }
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (err) {
+                console.error('Error submitting answer:', err);
+                alert('Ошибка отправки ответа');
+            } finally {
+                this.submitting = false;
+            }
+        },
+
+        // Нормализация ASCII-«сахара» в TeX внутри одной math-строки.
+        _normalizeMathPiece(s) {
+            if (!s) return s;
+            let out = s;
+            for (let i = 0; i < 4; i++) {
+                const before = out;
+                out = out.replace(/\bsqrt\s*\(([^()]*)\)/g, '\\sqrt{$1}');
+                if (out === before) break;
+            }
+            out = out.replace(/\bcbrt\s*\(([^()]*)\)/g, '\\sqrt[3]{$1}');
+            out = out.replace(/=>/g, '\\Rightarrow ')
+                     .replace(/<=/g, '\\le ')
+                     .replace(/>=/g, '\\ge ')
+                     .replace(/!=/g, '\\ne ')
+                     .replace(/<->/g, '\\leftrightarrow ')
+                     .replace(/->/g, '\\to ');
+            out = out.replace(/\+-/g, '\\pm ').replace(/(?<!\\)\*/g, '\\cdot ');
+            return out;
+        },
+
+        // Готовит correct_answer к показу.
+        _prepareCorrectAnswer(s) {
+            if (s == null) return '';
+            let str = String(s).trim();
+            if (!str) return '';
+            const hasDelims = /\$|\\\(|\\\[/.test(str);
+            const hasCyrillic = /[А-Яа-яЁё]/.test(str);
+            if (!hasDelims && !hasCyrillic &&
+                /[=^_+\-*\/()\[\]]|sqrt|frac|\\\w/.test(str)) {
+                return '\\(' + this._normalizeMathPiece(str) + '\\)';
+            }
+            return this._renderAIMarkdown(str);
+        },
+
+        _renderAIMarkdown(text) {
+            if (text == null) return '';
+            let raw = String(text);
+
+            // 0) Чиним частую ошибку моделей: \cdot \cdot ... \cdot \cdot → **...**
+            raw = raw.replace(/\\cdot\s*\\cdot\s*([^\n]+?)\s*\\cdot\s*\\cdot/g, '**$1**');
+            raw = raw.replace(/(^|\n)\\cdot\s+([^\n]+?)\s+\\cdot(\s|$|:)/g, '$1**$2**$3');
+
+            // 1) Вырезаем все math-блоки и нормализуем их содержимое.
+            const placeholders = [];
+            const self = this;
+            const protect = (re, openLen, closeLen) => {
+                raw = raw.replace(re, (m) => {
+                    const inner = m.slice(openLen, m.length - closeLen);
+                    const fixed = m.slice(0, openLen) + self._normalizeMathPiece(inner) + m.slice(m.length - closeLen);
+                    placeholders.push(fixed);
+                    return `@@MATH${placeholders.length - 1}@@`;
+                });
+            };
+            protect(/\$\$[\s\S]+?\$\$/g, 2, 2);
+            protect(/\\\[[\s\S]+?\\\]/g, 2, 2);
+            protect(/\\\([\s\S]+?\\\)/g, 2, 2);
+            protect(/\$[^\n$]+?\$/g, 1, 1);
+
+            // 1.5) Голая математика в оставшемся тексте.
+            raw = raw.replace(/\bsqrt\(/g, '\\sqrt(')
+                     .replace(/\+-/g, '±')
+                     .replace(/=>/g, '⇒')
+                     .replace(/<=>/g, '⇔')
+                     .replace(/->/g, '→');
+
+            // 2) Косметика «вне формул».
+            raw = raw.replace(/\s*(Случай\s*\d+\s*:)/g, '\n\n$1')
+                     .replace(/\s*(Ответ\s*:)/g, '\n\n$1')
+                     .replace(/\s*(Проверка\s*:)/g, '\n$1');
+
+            let html;
+            if (window.marked) {
+                try {
+                    html = window.marked.parse(raw, { breaks: true, gfm: true });
+                } catch (e) {
+                    html = raw.replace(/\n/g, '<br>');
+                }
+            } else {
+                html = raw.replace(/\n/g, '<br>');
+            }
+            html = html.replace(/@@MATH(\d+)@@/g, (_, i) => placeholders[Number(i)] || '');
+            return html;
+        },
+
+        _renderFeedback(data) {
+            const feedbackSection = document.getElementById('feedbackSection');
+            const feedbackContent = document.getElementById('feedbackContent');
+            if (!feedbackSection || !feedbackContent) return;
+
+            const aiHtml = this._renderAIMarkdown(data.ai_feedback || '');
+            const correctAnswer = this._prepareCorrectAnswer(data.correct_answer);
+
+            let html = '';
+            if (data.is_correct) {
+                html = `
+                    <div class="feedback-correct">
+                        <div class="feedback-icon">✓</div>
+                        <h3>Правильно!</h3>
+                        <p class="xp-earned">+${data.xp_earned} XP</p>
+                        <div class="ai-feedback">${aiHtml}</div>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="feedback-incorrect">
+                        <div class="feedback-icon">✗</div>
+                        <h3>Неправильно</h3>
+                        <div class="correct-answer-block">
+                            <span class="correct-answer-label">Правильный ответ:</span>
+                            <div class="correct-answer-math">${correctAnswer}</div>
+                        </div>
+                        <div class="ai-feedback">${aiHtml}</div>
+                        <button onclick="(window.__olyTryAgain && window.__olyTryAgain())" class="try-again-button">Попробовать ещё раз</button>
+                    </div>
+                `;
+            }
+
+            feedbackContent.innerHTML = html;
+            this.feedbackVisible = true;
+            feedbackSection.style.display = 'block';
+
+            // Глобальный хук для кнопки "Попробовать ещё раз"
+            window.__olyTryAgain = () => this._tryAgain();
+
+            // Re-render KaTeX внутри только что вставленного фидбека
+            this._rerenderMath(feedbackSection);
+
+            // Прокручиваем к фидбеку
+            this.$nextTick(() => {
+                feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        },
+
+        _tryAgain() {
+            this.feedbackVisible = false;
+            const fs = document.getElementById('feedbackSection');
+            if (fs) fs.style.display = 'none';
+            this.userAnswer = '';
+            const inp = document.getElementById('userAnswer');
+            if (inp) inp.focus();
         },
     };
 }

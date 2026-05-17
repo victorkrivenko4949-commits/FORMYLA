@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Ошибка сервера — FORMYLA{% endblock %}
+{% block content %}
+<section class="error-page error-500">
+  <div class="error-code error-code--danger">500</div>
+  <h1>Что-то пошло не так</h1>
+  <p>На сервере произошла внутренняя ошибка. Мы уже получили уведомление и работаем над исправлением.</p>
+  {% if error_id %}
+  <p class="error-id">Код ошибки: <code>{{ error_id }}</code></p>
+  {% endif %}
+  <div class="error-actions">
+    <a href="{{ url_for('index') }}" class="error-btn">← На главную</a>
+    <a href="javascript:location.reload()" class="error-btn error-btn--ghost">🔄 Попробовать снова</a>
+  </div>
+</section>
+{% endblock %}

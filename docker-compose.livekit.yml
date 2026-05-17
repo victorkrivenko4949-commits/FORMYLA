@@ -1,0 +1,12 @@
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: formyla-livekit
+    restart: unless-stopped
+    command: --dev --bind 0.0.0.0
+    ports:
+      - "7880:7880"     # HTTP / WebSocket signalling
+      - "7881:7881"     # TCP fallback (TURN/ICE)
+      - "7882:7882/udp" # WebRTC media (RTP/RTCP)
+    environment:
+      LIVEKIT_KEYS: "devkey: devsecret0123456789abcdef0123456789abcdef"

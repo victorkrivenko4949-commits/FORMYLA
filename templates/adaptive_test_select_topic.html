@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Тема для {{ grade }} класса — Адаптивный тест — FORMYLA{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.4em; color: var(--text-main); margin-bottom: 12px;">
+            🎯 {{ grade }} класс — выбери тему
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft); line-height: 1.6;">
+            Адаптивный тест подберёт уровень сложности под твои ответы
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 40px;">
+        {% for t in topics %}
+            {% if t.available %}
+                <a href="{{ t.url }}"
+                   style="display: block; padding: 22px 20px; background: rgba(56, 189, 248, 0.10); color: var(--text-main); text-decoration: none; border-radius: var(--radius-lg); border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.25s; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);"
+                   onmouseover="this.style.background='rgba(56, 189, 248, 0.20)'; this.style.transform='translateY(-3px)';"
+                   onmouseout="this.style.background='rgba(56, 189, 248, 0.10)'; this.style.transform='translateY(0)';">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <span style="font-size: 1.8em;">{{ t.emoji }}</span>
+                        <span style="font-size: 1.15em; font-weight: 700;">{{ t.name }}</span>
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 0.92em;">
+                        Задач в банке: <strong style="color: var(--accent-2);">{{ t.count }}</strong>
+                    </div>
+                </a>
+            {% else %}
+                <div title="Недостаточно задач (есть {{ t.count }}, нужно ≥ {{ min_tasks }})"
+                     style="display: block; padding: 22px 20px; background: rgba(100, 116, 139, 0.10); color: var(--text-muted); border-radius: var(--radius-lg); border: 1px dashed var(--border-mid); cursor: not-allowed; opacity: 0.6;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <span style="font-size: 1.8em;">{{ t.emoji }}</span>
+                        <span style="font-size: 1.15em; font-weight: 700;">{{ t.name }}</span>
+                    </div>
+                    <div style="font-size: 0.92em;">
+                        Пока недоступно ({{ t.count }} задач)
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{{ url_for('adaptive_test_select_class') }}"
+           style="display: inline-block; padding: 12px 30px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;"
+           onmouseover="this.style.background='rgba(100, 116, 139, 0.35)'"
+           onmouseout="this.style.background='rgba(100, 116, 139, 0.2)'">
+            ← Выбрать другой класс
+        </a>
+    </div>
+
+</div>
+{% endblock %}

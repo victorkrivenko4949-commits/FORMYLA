@@ -210,6 +210,18 @@ class TheoryBlock(db.Model):
     # это совместимый кросс-БД тип (PostgreSQL → JSONB, SQLite → TEXT).
     related_methods = db.Column(db.JSON, nullable=True)
 
+    # ── Каталог методов (добавлены миграцией add_methods_catalog_fields.py) ──
+    # Список классов, для которых актуален метод (например, [5,6,7,8,9]).
+    grades = db.Column(db.JSON, nullable=True)
+    # Список олимпиад, где этот метод чаще встречается ("ВсОШ", "Ломоносов"…).
+    recommended_competitions = db.Column(db.JSON, nullable=True)
+    # Уровень сложности 1..5.
+    difficulty_level = db.Column(db.Integer, nullable=True, index=True)
+    # Частота встречаемости на ВсОШ-9 (0..10).
+    frequency_vsosh_9 = db.Column(db.Integer, nullable=True, index=True)
+    # Порядок отображения в каталоге.
+    sort_order = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
