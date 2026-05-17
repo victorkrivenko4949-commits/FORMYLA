@@ -744,34 +744,47 @@ def methods_catalog():
     if sort_key not in ALLOWED_METHOD_SORTS:
         sort_key = 'frequency'
 
-    query = TheoryBlock.query
-    if section:
-        query = query.filter(TheoryBlock.section == section)
-    if difficulty is not None:
-        query = query.filter(TheoryBlock.difficulty_level == difficulty)
+    def _build_query(use_freq_fields: bool):
+        q = TheoryBlock.query
+        if section:
+            q = q.filter(TheoryBlock.section == section)
+        if difficulty is not None:
+            q = q.filter(TheoryBlock.difficulty_level == difficulty)
 
-    if sort_key == 'frequency':
-        # Сначала по total_count (точные данные xlsx), затем frequency_vsosh_9 как fallback.
-        query = query.order_by(
-            TheoryBlock.total_count.desc().nullslast(),
-            TheoryBlock.frequency_vsosh_9.desc().nullslast(),
-            asc(TheoryBlock.sort_order),
-            asc(TheoryBlock.method_code),
-        )
-    elif sort_key == 'level':
-        query = query.order_by(
-            asc(TheoryBlock.difficulty_level),
-            asc(TheoryBlock.sort_order),
-            asc(TheoryBlock.method_code),
-        )
-    else:  # 'code'
-        query = query.order_by(
-            asc(TheoryBlock.section),
-            asc(TheoryBlock.sort_order),
-            asc(TheoryBlock.method_code),
-        )
+        if sort_key == 'frequency' and use_freq_fields:
+            # Сначала по total_count (точные данные xlsx), затем frequency_vsosh_9 как fallback.
+            q = q.order_by(
+                TheoryBlock.total_count.desc().nullslast(),
+                TheoryBlock.frequency_vsosh_9.desc().nullslast(),
+                asc(TheoryBlock.sort_order),
+                asc(TheoryBlock.method_code),
+            )
+        elif sort_key == 'level':
+            q = q.order_by(
+                asc(TheoryBlock.difficulty_level),
+                asc(TheoryBlock.sort_order),
+                asc(TheoryBlock.method_code),
+            )
+        else:  # 'code' или 'frequency' без новых колонок
+            q = q.order_by(
+                asc(TheoryBlock.section),
+                asc(TheoryBlock.sort_order),
+                asc(TheoryBlock.method_code),
+            )
+        return q
 
-    blocks = query.all()
+    # На проде Postgres колонки total_count/share_percent могут отсутствовать,
+    # если auto-migration не отработала. Тогда любой SELECT с этими колонками
+    # бросает UndefinedColumn → 500. Пробуем безопасный fallback.
+    try:
+        blocks = _build_query(use_freq_fields=True).all()
+    except Exception as _e_freq:
+        db.session.rollback()
+        import logging as _logging
+        _logging.getLogger(__name__).warning(
+            f"[methods_catalog] freq-fields query failed, falling back: {_e_freq}"
+        )
+        blocks = _build_query(use_freq_fields=False).all()
 
     # JSON-фильтры в Python: SQLite не любит индексы по JSON.
     if grade is not None:
@@ -796,20 +809,36 @@ def methods_catalog():
         slug = _category_for_code(b.method_code) or 'other'
         categories_grouped.setdefault(slug, []).append(b)
 
-    total_methods = TheoryBlock.query.count()
+    try:
+        total_methods = TheoryBlock.query.count()
+    except Exception:
+        db.session.rollback()
+        total_methods = len(blocks)
 
     # TOP-10 по абсолютной частотности на ВсОШ-9 (для бейджа «🔥 ТОП-10»).
-    top_10_query = (
-        TheoryBlock.query
-        .filter(TheoryBlock.total_count.isnot(None))
-        .order_by(TheoryBlock.total_count.desc())
-        .limit(10)
-        .all()
-    )
-    top_10_codes = {tb.method_code for tb in top_10_query}
+    # На проде колонка total_count может отсутствовать → fallback к пустому множеству.
+    try:
+        top_10_query = (
+            TheoryBlock.query
+            .filter(TheoryBlock.total_count.isnot(None))
+            .order_by(TheoryBlock.total_count.desc())
+            .limit(10)
+            .all()
+        )
+        top_10_codes = {tb.method_code for tb in top_10_query}
+    except Exception as _e_top:
+        db.session.rollback()
+        import logging as _logging
+        _logging.getLogger(__name__).warning(
+            f"[methods_catalog] top10 query failed: {_e_top}"
+        )
+        top_10_codes = set()
 
     # Максимум total_count — для нормализации прогресс-баров.
-    max_count = max((b.total_count or 0) for b in blocks) if blocks else 0
+    try:
+        max_count = max((getattr(b, 'total_count', None) or 0) for b in blocks) if blocks else 0
+    except Exception:
+        max_count = 0
 
     return render_template(
         'olympiad/method.html',
