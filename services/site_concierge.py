@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-Site Concierge — отдельный AI-помощник по навигации FORMYLA.
+Site Concierge — AI-помощник по сайту FORMYLA.
 
-НЕ путать с ИИ-тьютором (`services/ai_tutor_v2.py`):
-тьютор отвечает на математические задачи, концьерж — только про сайт
-(тарифы, навигация, как начать, тех-поддержка).
-
-Пайплайн ответа:
-  1. Точное / нечёткое совпадение с intent из data/site_kb.json
-     (порог ~80 %, через rapidfuzz если установлен, иначе difflib).
-  2. Иначе — LLM (Claude Sonnet через OpenRouter) с системным
-     промптом, который строго ограничивает скоуп («только про сайт»).
-  3. Математические вопросы → редирект к ИИ-тьютору, не вызываем LLM.
+Архитектура (router-first):
+  1. Точное / нечёткое совпадение с intent_keyword из data/site_kb.json
+     (threshold ~92%, через rapidfuzz если установлен, иначе difflib).
+  2. Иначе — DeepSeek-router: один LLM-вызов классифицирует сообщение и
+     возвращает СТРОГИЙ JSON одного из трёх типов:
+       * {"action": "kb",       "id": "<intent_id>"}              — подходит готовый ответ
+       * {"action": "redirect", "target": "tutor" | "off_topic"}  — мат-задача / не про сайт
+       * {"action": "free",     "answer": "<...>",                — нет KB-кандидата, своя реплика
+                                 "suggested_actions": [...]}
+  3. Если LLM недоступен → консервативный fallback (показываем главные ссылки).
 
 Публичный API:
     answer_site_question(message: str, context: dict) -> dict
         Returns: {
             "answer": str,
             "suggested_actions": [{"label": str, "url": str}, ...],
-            "source": "kb" | "llm" | "redirect",
+            "source": "kb" | "llm_kb" | "llm_free" | "redirect" | "off_topic" | "fallback" | "empty",
             "intent_id": str | None,
         }
 """
@@ -29,7 +29,7 @@ import logging
 import os
 import re
 from functools import lru_cache
-from typing import Iterable, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -64,45 +64,11 @@ def reload_kb() -> None:
     _load_kb.cache_clear()
 
 
-# ── Math-detection (заворачиваем «математику» к тьютору) ─────────────────────
-
-# Эвристика: формула / уравнение / типичные математические запросы.
-_MATH_HINTS = [
-    r'[xyzабвабст]\s*[\+\-=\^]\s*[\d\-]',     # «x+1=…», «a^2-b…»
-    r'\^\s*\d',                               # x^2
-    r'\bуравн[еия]',
-    r'\bнеравенств',
-    r'\bинтегр',
-    r'\bпроизводн',
-    r'\bлогарифм',
-    r'\bкосинус', r'\bсинус', r'\bтангенс',
-    r'\bдробь', r'\bдроб[еья]',
-    r'\bкорен[ьья]\s+(из|кубич|квадратн)',
-    r'\bтреугольн', r'\bокружност[ьи]',
-    r'\bвероятност[ьи]',
-    r'\bпроцент',
-    r'\bдоказа',
-    r'реши(те|)\s+(задач|уравн|неравенств)',
-    r'найди(те|)\s+(значен|корн|сумм|разност)',
-    r'\d+\s*[\+\-\*/=]\s*\d+',                # «12+5» / «3*4»
-]
-_MATH_RE = re.compile('|'.join(_MATH_HINTS), re.IGNORECASE)
-
-# Слова, говорящие что речь про сайт (анти-фолз-позитив математики).
-_SITE_HINTS_RE = re.compile(
-    r'тариф|подписк|оплат|цен[аыу]|стоит|стоимост|'
-    r'тренаж[её]р|сайт|регистрац|акк[ау]нт|профиль|'
-    r'войти|выход|пробник|задани[яе]\s+дн[яе]|настройк|'
-    r'отмен|откат|VPN|карт[аыу]|купить|вернуть|'
-    r'родител|ребен|ребён|класс|grade|выбрать\s+класс',
-    re.IGNORECASE,
-)
-
-
-def _looks_like_math(text: str) -> bool:
-    if _SITE_HINTS_RE.search(text):
-        return False
-    return bool(_MATH_RE.search(text))
+def _find_kb_by_id(intent_id: str) -> Optional[dict]:
+    for entry in _load_kb():
+        if entry.get('id') == intent_id:
+            return entry
+    return None
 
 
 # ── Fuzzy match ──────────────────────────────────────────────────────────────
@@ -121,13 +87,22 @@ def _similarity(a: str, b: str) -> float:
     if not a or not b:
         return 0.0
     if _HAS_RAPIDFUZZ:
-        return float(_rf_fuzz.token_set_ratio(a, b))
-    # Fallback: difflib
+        # ratio() — обычный Левенштейн, требует сходства ВСЕЙ строки.
+        # token_set_ratio даёт 100 даже когда keyword — короткое подмножество фразы,
+        # что для нас плохо: уводит всё в ближайший KB-intent с такой подстрокой.
+        return float(_rf_fuzz.ratio(a, b))
     return SequenceMatcher(None, a, b).ratio() * 100.0
 
 
-def _best_kb_match(message: str, threshold: float = 78.0) -> Optional[dict]:
-    """Найти лучший intent из KB по сходству с сообщением."""
+def _best_kb_match(message: str, threshold: float = 95.0) -> Optional[dict]:
+    """Строгий short-circuit match: срабатывает ТОЛЬКО когда вся фраза
+    пользователя ≈ одному intent-заголовку или одной полной keyword-фразе.
+
+    Все промежуточные / неоднозначные случаи уходят DeepSeek-роутеру, который
+    разбирается лучше, чем substring-match: например, «разбор задач ВсОШ
+    прошлых лет» и «как готовиться к ВсОШ» отличает только LLM, а в KB у обоих
+    есть keyword «всош».
+    """
     if not message:
         return None
     msg = message.strip().lower()
@@ -135,146 +110,198 @@ def _best_kb_match(message: str, threshold: float = 78.0) -> Optional[dict]:
 
     best, best_score = None, 0.0
     for entry in kb:
-        # сначала по самому intent-заголовку
-        score = _similarity(msg, entry.get('intent', ''))
-        # затем по keywords (берём максимум по каждому)
+        # 1) Очень близкое совпадение с самим заголовком intent.
+        score = _similarity(msg, (entry.get('intent') or '').lower())
+        # 2) Точное (или почти точное) совпадение с одной из keyword-фраз.
         for kw in entry.get('keywords') or []:
-            score = max(score, _similarity(msg, kw))
-            # Точное вхождение ключевого слова — даём бонус.
-            if kw.lower() in msg:
-                score = max(score, 92.0)
+            kw_l = kw.lower()
+            score = max(score, _similarity(msg, kw_l))
+            # «keyword-фраза целиком равна сообщению» — берём агрессивно;
+            # «keyword входит как подстрока» — НЕ берём, отдаём LLM.
+            if kw_l == msg:
+                score = max(score, 100.0)
         if score > best_score:
             best, best_score = entry, score
 
     if best and best_score >= threshold:
-        logger.debug('KB match: %s (score=%.1f)', best.get('id'), best_score)
+        logger.debug('KB exact match: %s (score=%.1f)', best.get('id'), best_score)
         return best
     return None
 
 
-# ── LLM fallback ─────────────────────────────────────────────────────────────
+# ── DeepSeek router ──────────────────────────────────────────────────────────
 
-# Хранится в модуле — формируется один раз при импорте.
-_LLM_SYSTEM_PROMPT = """Ты — AI-помощник сайта FORMYLA, российской онлайн-платформы по подготовке к школьным математическим олимпиадам (ВсОШ, Турнир городов, Эйлера, Ломоносова, Высшая проба, Матпраздник).
+_ROUTER_SYSTEM_PROMPT_TEMPLATE = """Ты — диспетчер AI-помощника на сайте FORMYLA, российской онлайн-платформе подготовки к математическим олимпиадам (ВсОШ, Турнир городов, Эйлера, Ломоносова, Высшая проба, Матпраздник).
 
-ТВОЯ ОБЛАСТЬ:
-• Навигация по сайту: где задачи, где пробники, где доска, где тарифы.
-• Подписки и тарифы: Free (5 задач/день), Pro Месяц 390 ₽, Pro Год 2790 ₽ (родительский доступ).
-• Возможности: 7 ИИ-агентов по темам, режим «только подсказки», радар прогресса, AI-чертежи, банк 295 задач ВсОШ-9 по 89 методам.
-• Поддержка: Telegram-бот (ссылка внизу /about), отмена подписки в /subscribe.
+Твоя задача: получив сообщение пользователя, выбрать ОДНО из трёх действий и вернуть СТРОГО валидный JSON БЕЗ markdown-обёртки.
 
-ПРАВИЛА:
-1. Отвечай КРАТКО — 3–5 строк живого текста, без буллетов и заголовков.
-2. Если вопрос ПРО МАТЕМАТИКУ (решить задачу, объяснить теорему) — НЕ решай, ответь «Это вопрос по математике, открой 🤖 ИИ-тьютора в правом нижнем углу — он специально под это» и НИЧЕГО больше.
-3. Если вопрос НЕ ПРО САЙТ FORMYLA и НЕ ПРО МАТЕМАТИКУ — вежливо откажись: «Я помогаю только с сайтом FORMYLA. Попробуй переформулировать».
-4. Если знаешь подходящий раздел сайта, упомяни его и предложи кнопку.
-5. НЕ выдумывай цены, фичи, обещания. Используй только факты из этой инструкции.
+═══════════════════════════════════════════════════════
+ДОСТУПНЫЕ ГОТОВЫЕ ОТВЕТЫ (intent-ы из базы знаний)
+═══════════════════════════════════════════════════════
+{intents_block}
 
-Структура ответа (JSON):
-{
-  "answer": "<3-5 строк, живо, по-человечески>",
-  "suggested_actions": [
-    {"label": "<краткая надпись на кнопке, можно с emoji>", "url": "<относительный URL раздела сайта>"}
-  ]
-}
+═══════════════════════════════════════════════════════
+ТРИ ВОЗМОЖНЫХ ОТВЕТА (выбери ровно один)
+═══════════════════════════════════════════════════════
 
-Допустимые URL: /, /about, /daily, /probniks, /problems, /olympiads, /olympiads/courses, /olympiads/methods, /olympiad-prep, /subscribe, /profile, /drawing, /section/algebra, /section/geometry, /leaderboard, /chat, /friends.
+1) Если вопрос пользователя — про навигацию по сайту FORMYLA и явно ложится в один из intent-ов выше:
+   {{"action": "kb", "id": "<id_intent>"}}
 
-Возвращай СТРОГО валидный JSON, без markdown-обёртки."""
+2) Если вопрос — НЕ про сайт FORMYLA:
+   • Математическая задача / «реши это», «помоги с уравнением», «как доказать», объяснить теорему:
+     {{"action": "redirect", "target": "tutor"}}
+   • Любой посторонний вопрос (погода, новости, политика, языки, болтовня):
+     {{"action": "redirect", "target": "off_topic"}}
+
+3) Если вопрос — про сайт FORMYLA, но НЕ покрывается ни одним intent-ом
+   (например, спрашивают редкую фичу, политику конфиденциальности, как пожаловаться):
+   {{"action": "free",
+     "answer": "<3-5 строк живого текста на русском, БЕЗ markdown, БЕЗ буллетов>",
+     "suggested_actions": [
+       {{"label": "<краткая надпись (можно с emoji)>", "url": "<относительный URL>"}}
+     ]}}
+
+ОГРАНИЧЕНИЯ для action=free:
+   • Не выдумывай цены, фичи, обещания. Опирайся только на факты:
+     – Free: 5 задач в день.
+     – Pro Месяц 390 ₽: безлимит задач, все ИИ-агенты, доска и AI-чертежи.
+     – Pro Год 2790 ₽: всё то же + родительский доступ.
+     – Оплата российскими картами через ЮKassa, без VPN.
+     – 7 ИИ-агентов: алгебра, геометрия, теория чисел, комбинаторика, движение, логика, стратегия.
+     – База: 295 задач ВсОШ-9 за 17 лет, разобранные по 89 методам.
+     – Поддержка — Telegram-бот по ссылке внизу /about.
+   • Допустимые URL: /, /about, /about#pricing, /about#unique, /about#support,
+     /daily, /probniks, /problems, /olympiads, /olympiads/courses, /olympiads/methods,
+     /olympiad-prep, /subscribe, /profile, /drawing, /section/algebra, /section/geometry,
+     /leaderboard, /chat, /friends.
+
+ВСЕГДА возвращай ровно один JSON-объект, без обёрток ```json, без комментариев.
+"""
 
 
-def _llm_answer(message: str, context: dict) -> Optional[dict]:
-    """Спросить у Claude через OpenRouter. Возвращает dict или None."""
+def _build_router_system_prompt() -> str:
+    kb = _load_kb()
+    lines = []
+    for entry in kb:
+        line = f'  • id="{entry.get("id")}" — {entry.get("intent")}'
+        kws = entry.get('keywords') or []
+        if kws:
+            line += f'  (ключевые слова: {", ".join(kws[:6])})'
+        lines.append(line)
+    intents_block = '\n'.join(lines) if lines else '  (KB пуста)'
+    return _ROUTER_SYSTEM_PROMPT_TEMPLATE.format(intents_block=intents_block)
+
+
+@lru_cache(maxsize=1)
+def _cached_router_prompt() -> str:
+    return _build_router_system_prompt()
+
+
+def _strip_json_codeblock(s: str) -> str:
+    s = s.strip()
+    if s.startswith('```'):
+        s = re.sub(r'^```(?:json)?\s*', '', s)
+        s = re.sub(r'\s*```$', '', s)
+    return s.strip()
+
+
+def _deepseek_router(message: str, context: dict) -> Optional[dict]:
+    """Вызов DeepSeek в режиме классификатора. Возвращает разобранный JSON
+    одного из трёх типов (action: kb / redirect / free) либо None при ошибке."""
     try:
-        # Lazy import — чтобы concierge оставался импортируемым даже без LLM ключа.
-        from services.openrouter_client import openrouter  # type: ignore
-    except Exception:
-        try:
-            # Fallback: модуль может экспортировать класс, а не singleton.
-            from services.openrouter_client import OpenRouterClient  # type: ignore
-            openrouter = OpenRouterClient()
-        except Exception as e:
-            logger.warning('OpenRouter client unavailable: %s', e)
-            return None
+        from ai.deepseek_client import DeepSeekClient, DeepSeekAPIError  # type: ignore
+    except Exception as e:
+        logger.warning('DeepSeekClient unavailable: %s', e)
+        return None
 
-    if not getattr(openrouter, 'api_key', '') or not openrouter.api_key:
-        logger.info('OpenRouter API key not set — LLM concierge disabled.')
+    if not os.environ.get('DEEPSEEK_API_KEY'):
+        logger.info('DEEPSEEK_API_KEY not set — concierge LLM router disabled.')
+        return None
+
+    try:
+        client = DeepSeekClient()
+    except Exception as e:
+        logger.warning('Cannot init DeepSeekClient: %s', e)
         return None
 
     current_url = (context or {}).get('current_url') or ''
-    user_msg = message
+    user_msg = message.strip()
     if current_url:
-        user_msg = f"[Текущая страница: {current_url}]\n\nВопрос пользователя: {message}"
-
-    messages = [
-        {"role": "system", "content": _LLM_SYSTEM_PROMPT},
-        {"role": "user",   "content": user_msg},
-    ]
+        user_msg = f'[Текущая страница пользователя: {current_url}]\n\nСообщение: {user_msg}'
 
     try:
-        result = openrouter.chat(
-            model='anthropic/claude-sonnet-4.7',
-            messages=messages,
-            temperature=0.3,
-            max_tokens=600,
-            response_format={"type": "json_object"},
+        raw = client.generate(
+            prompt=user_msg,
+            system_prompt=_cached_router_prompt(),
+            temperature=0.2,
+            max_tokens=500,
         )
+    except DeepSeekAPIError as e:
+        logger.warning('DeepSeek router API error: %s', e)
+        return None
     except Exception as e:
-        logger.warning('LLM call failed: %s', e)
+        logger.warning('DeepSeek router call failed: %s', e)
         return None
 
-    content = (result or {}).get('content') or ''
-    if not content.strip():
+    if not raw or not raw.strip():
         return None
 
-    # Strip потенциальные markdown-обёртки.
-    content = content.strip()
-    if content.startswith('```'):
-        content = re.sub(r'^```(?:json)?\s*', '', content)
-        content = re.sub(r'\s*```$', '', content)
-
+    cleaned = _strip_json_codeblock(raw)
     try:
-        parsed = json.loads(content)
-    except json.JSONDecodeError:
-        # Грубый fallback: достаём как есть.
-        return {
-            "answer": content[:1200],
-            "suggested_actions": [],
-        }
-
-    answer = (parsed.get('answer') or '').strip()
-    actions = parsed.get('suggested_actions') or []
-    safe_actions: list[dict] = []
-    for a in actions[:4]:
-        label = (a.get('label') or '').strip()
-        url = (a.get('url') or '').strip()
-        if label and url and url.startswith('/'):
-            safe_actions.append({"label": label, "url": url})
-
-    if not answer:
+        parsed = json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        logger.warning('Router returned non-JSON: %s | head=%r', e, cleaned[:200])
         return None
-    return {"answer": answer, "suggested_actions": safe_actions}
+
+    action = (parsed.get('action') or '').strip().lower()
+    if action not in ('kb', 'redirect', 'free'):
+        logger.warning('Router unknown action: %r', action)
+        return None
+    return parsed
 
 
 # ── Public API ───────────────────────────────────────────────────────────────
 
-_DEFAULT_REDIRECT_ANSWER = (
-    "Это вопрос по математике, открой 🤖 ИИ-тьютора в правом нижнем углу — "
-    "он специально под решение задач. Я помогаю только с навигацией по сайту."
+_REDIRECT_TUTOR_ANSWER = (
+    "Похоже, это вопрос по математике. Открой 🤖 ИИ-тьютора в правом нижнем углу — "
+    "он специально под решение задач, у него 7 агентов по темам и режим «только подсказки». "
+    "Я помогаю только по сайту FORMYLA."
 )
-_DEFAULT_OFFTOPIC_ANSWER = (
-    "Я помощник по сайту FORMYLA: тарифы, разделы, как начать, как готовиться "
-    "к олимпиадам. Если хотел другое — попробуй переформулировать."
+_OFFTOPIC_ANSWER = (
+    "Я помощник по сайту FORMYLA: тарифы, разделы, как начать, как готовиться к олимпиадам. "
+    "Если хотел другое — попробуй переформулировать вопрос про сам сервис."
 )
+_FALLBACK_ACTIONS = [
+    {"label": "🚀 Задачи дня", "url": "/daily"},
+    {"label": "📖 О сервисе",  "url": "/about"},
+    {"label": "💎 Тарифы",     "url": "/about#pricing"},
+]
+
+
+def _sanitize_actions(raw_actions, max_items: int = 4) -> list:
+    """Оставляем только {label,url} с относительным URL."""
+    out = []
+    for a in (raw_actions or [])[:max_items]:
+        if not isinstance(a, dict):
+            continue
+        label = (a.get('label') or '').strip()
+        url = (a.get('url') or '').strip()
+        if label and url and url.startswith('/'):
+            out.append({"label": label, "url": url})
+    return out
+
+
+def _from_kb_entry(entry: dict, source: str) -> dict:
+    return {
+        "answer": (entry.get('answer') or '').strip(),
+        "suggested_actions": entry.get('suggested_actions') or [],
+        "source": source,
+        "intent_id": entry.get('id'),
+    }
 
 
 def answer_site_question(message: str, context: Optional[dict] = None) -> dict:
-    """Главный публичный entry-point.
-
-    :param message: текст вопроса пользователя.
-    :param context: словарь с метаданными (current_url, user_id и т.п.).
-    :return: dict { answer, suggested_actions, source, intent_id }
-    """
+    """Главный entry-point: KB → DeepSeek-router → fallback."""
     context = context or {}
     message = (message or '').strip()
     if not message:
@@ -285,43 +312,52 @@ def answer_site_question(message: str, context: Optional[dict] = None) -> dict:
             "intent_id": None,
         }
 
-    # 1) Математика → редирект к тьютору.
-    if _looks_like_math(message):
-        return {
-            "answer": _DEFAULT_REDIRECT_ANSWER,
-            "suggested_actions": [],
-            "source": "redirect",
-            "intent_id": None,
-        }
-
-    # 2) Fuzzy match KB.
-    kb_hit = _best_kb_match(message)
+    # 1) Быстрый строгий KB-матч (только при ОЧЕНЬ близком совпадении формулировки).
+    kb_hit = _best_kb_match(message, threshold=95.0)
     if kb_hit:
-        return {
-            "answer": kb_hit.get('answer', '').strip(),
-            "suggested_actions": kb_hit.get('suggested_actions') or [],
-            "source": "kb",
-            "intent_id": kb_hit.get('id'),
-        }
+        return _from_kb_entry(kb_hit, source='kb')
 
-    # 3) LLM fallback.
-    llm_hit = _llm_answer(message, context)
-    if llm_hit:
-        return {
-            "answer": llm_hit.get('answer', '').strip(),
-            "suggested_actions": llm_hit.get('suggested_actions') or [],
-            "source": "llm",
-            "intent_id": None,
-        }
+    # 2) DeepSeek в роли роутера.
+    routed = _deepseek_router(message, context)
+    if routed:
+        action = routed.get('action')
+        if action == 'kb':
+            intent_id = (routed.get('id') or '').strip()
+            entry = _find_kb_by_id(intent_id)
+            if entry:
+                return _from_kb_entry(entry, source='llm_kb')
+            logger.warning('Router pointed to unknown intent id=%r — fallback', intent_id)
+        elif action == 'redirect':
+            target = (routed.get('target') or '').strip()
+            if target == 'tutor':
+                return {
+                    "answer": _REDIRECT_TUTOR_ANSWER,
+                    "suggested_actions": [],
+                    "source": "redirect",
+                    "intent_id": None,
+                }
+            # off_topic или любой иной target
+            return {
+                "answer": _OFFTOPIC_ANSWER,
+                "suggested_actions": [],
+                "source": "off_topic",
+                "intent_id": None,
+            }
+        elif action == 'free':
+            answer_text = (routed.get('answer') or '').strip()
+            actions = _sanitize_actions(routed.get('suggested_actions'))
+            if answer_text:
+                return {
+                    "answer": answer_text,
+                    "suggested_actions": actions,
+                    "source": "llm_free",
+                    "intent_id": None,
+                }
 
-    # 4) Минимальный «безопасный» ответ — топ-фоллбэк к ключевым разделам.
+    # 3) Last resort — статический набор популярных ссылок.
     return {
-        "answer": _DEFAULT_OFFTOPIC_ANSWER,
-        "suggested_actions": [
-            {"label": "🚀 Задачи дня", "url": "/daily"},
-            {"label": "📖 О сервисе", "url": "/about"},
-            {"label": "💎 Тарифы", "url": "/about#pricing"},
-        ],
+        "answer": _OFFTOPIC_ANSWER,
+        "suggested_actions": list(_FALLBACK_ACTIONS),
         "source": "fallback",
         "intent_id": None,
     }
@@ -329,8 +365,7 @@ def answer_site_question(message: str, context: Optional[dict] = None) -> dict:
 
 # ── Top intents (для quick-replies на фронте) ────────────────────────────────
 
-def get_top_intents(limit: int = 10) -> list[dict]:
-    """Список intents для отображения как Quick Replies."""
+def get_top_intents(limit: int = 10) -> list:
     kb = _load_kb()
     items = []
     for entry in kb[:limit]:
