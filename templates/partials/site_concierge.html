@@ -1,0 +1,32 @@
+{# ─────────────────────────────────────────────────────────────────────── #}
+{# Site Concierge — AI-помощник по сайту FORMYLA.                          #}
+{# Включается из base.html. НЕ путать с #tutorBtn — это отдельный виджет.   #}
+{# ─────────────────────────────────────────────────────────────────────── #}
+{% set _is_drawing_board = request.path.startswith('/drawing') and (request.args.get('mode', 'board') == 'board') %}
+{% if not _is_drawing_board %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/site_concierge.css') }}?v={{ asset_version|default('1') }}">
+
+<div id="siteConciergeRoot">
+    <button type="button" class="site-concierge-fab" aria-label="Помощь по сайту">
+        <span aria-hidden="true">💬</span>
+        <span class="scf-tooltip">Помощь</span>
+    </button>
+
+    <section class="site-concierge-panel" role="dialog" aria-label="Помощник FORMYLA">
+        <header class="scf-header">
+            <h3>💬 Помощник FORMYLA</h3>
+            <button type="button" class="scf-close" aria-label="Закрыть">✕</button>
+        </header>
+        <div class="scf-body" role="log" aria-live="polite">
+            {# История и quick-replies рендерятся в JS. #}
+        </div>
+        <div class="scf-input-row">
+            <input type="text" placeholder="Введите вопрос…" maxlength="500" autocomplete="off">
+            <button type="button" class="scf-send" aria-label="Отправить">⏎</button>
+        </div>
+    </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/site_concierge.js') }}?v={{ asset_version|default('1') }}" defer></script>
+{% endif %}

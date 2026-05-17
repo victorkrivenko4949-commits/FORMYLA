@@ -651,6 +651,14 @@ try:
 except Exception as _e:
     print(f"[BP] grade_bp NOT registered: {_e}")
 
+# /api/concierge/* — Site Concierge AI helper (отдельный от ИИ-тьютора).
+try:
+    from routes.concierge import concierge_bp
+    app.register_blueprint(concierge_bp)
+    print("[BP] concierge_bp registered (/api/concierge/ask, /api/concierge/intents)")
+except Exception as _e:
+    print(f"[BP] concierge_bp NOT registered: {_e}")
+
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
 try:
     from services.md_render import md_render as _md_render_filter

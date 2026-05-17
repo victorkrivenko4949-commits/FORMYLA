@@ -498,8 +498,11 @@
     }
     </script>
     
-    <!-- AI Тьютор виджет -->
+    <!-- AI Тьютор виджет (математика) -->
     {% include 'tutor_widget.html' %}
+
+    <!-- Site Concierge — AI-помощник по сайту (UX/навигация). Отдельный от тьютора. -->
+    {% include 'partials/site_concierge.html' %}
     
     <!-- Глобальный Caps Lock для полей ввода -->
     <script src="{{ url_for('static', filename='js/caps_lock.js') }}"></script>
