@@ -318,27 +318,29 @@ except Exception as e:
 try:
     with app.app_context():
         _is_pg_olymp = _database_url.startswith('postgresql')
+        _json_type = 'JSONB' if _is_pg_olymp else 'JSON'
+        _float_type = 'DOUBLE PRECISION' if _is_pg_olymp else 'REAL'
+
+        def _alter(tbl, col, sql_type, default_clause=''):
+            if _is_pg_olymp:
+                return (tbl, col,
+                        f'ALTER TABLE {tbl} ADD COLUMN IF NOT EXISTS {col} {sql_type}{default_clause}')
+            return (tbl, col, f'ALTER TABLE {tbl} ADD COLUMN {col} {sql_type}{default_clause}')
+
         _alters_olymp = [
-            ('olympiad_theory', 'total_count',
-             'ALTER TABLE olympiad_theory ADD COLUMN IF NOT EXISTS total_count INTEGER'
-             if _is_pg_olymp else
-             'ALTER TABLE olympiad_theory ADD COLUMN total_count INTEGER'),
-            ('olympiad_theory', 'share_percent',
-             'ALTER TABLE olympiad_theory ADD COLUMN IF NOT EXISTS share_percent DOUBLE PRECISION'
-             if _is_pg_olymp else
-             'ALTER TABLE olympiad_theory ADD COLUMN share_percent REAL'),
-            ('olympiad_tasks', 'method_codes',
-             'ALTER TABLE olympiad_tasks ADD COLUMN IF NOT EXISTS method_codes JSONB'
-             if _is_pg_olymp else
-             'ALTER TABLE olympiad_tasks ADD COLUMN method_codes JSON'),
-            ('olympiad_tasks', 'year',
-             'ALTER TABLE olympiad_tasks ADD COLUMN IF NOT EXISTS year INTEGER'
-             if _is_pg_olymp else
-             'ALTER TABLE olympiad_tasks ADD COLUMN year INTEGER'),
-            ('olympiad_tasks', 'stage',
-             'ALTER TABLE olympiad_tasks ADD COLUMN IF NOT EXISTS stage VARCHAR(20)'
-             if _is_pg_olymp else
-             'ALTER TABLE olympiad_tasks ADD COLUMN stage VARCHAR(20)'),
+            # method-bank статистика (xlsx-аналитика по ВсОШ-9)
+            _alter('olympiad_theory', 'total_count', 'INTEGER'),
+            _alter('olympiad_theory', 'share_percent', _float_type),
+            # каталог методов (был в migrations/add_methods_catalog_fields.py)
+            _alter('olympiad_theory', 'grades', _json_type),
+            _alter('olympiad_theory', 'recommended_competitions', _json_type),
+            _alter('olympiad_theory', 'difficulty_level', 'INTEGER'),
+            _alter('olympiad_theory', 'frequency_vsosh_9', 'INTEGER'),
+            _alter('olympiad_theory', 'sort_order', 'INTEGER', ' DEFAULT 0'),
+            # связанные поля задач
+            _alter('olympiad_tasks', 'method_codes', _json_type),
+            _alter('olympiad_tasks', 'year', 'INTEGER'),
+            _alter('olympiad_tasks', 'stage', 'VARCHAR(20)'),
         ]
         from sqlalchemy import inspect as _inspect_olymp
         _ins_o = _inspect_olymp(db.engine)

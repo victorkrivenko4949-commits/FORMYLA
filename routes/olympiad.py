@@ -773,18 +773,27 @@ def methods_catalog():
             )
         return q
 
-    # На проде Postgres колонки total_count/share_percent могут отсутствовать,
-    # если auto-migration не отработала. Тогда любой SELECT с этими колонками
-    # бросает UndefinedColumn → 500. Пробуем безопасный fallback.
+    # На проде Postgres колонки total_count/share_percent/grades/... могут
+    # отсутствовать, если auto-migration не отработала. Тогда любой SELECT
+    # через ORM (он выбирает ВСЕ поля модели) бросает UndefinedColumn → 500.
+    # Делаем многоуровневый fallback.
+    import logging as _logging
+    _log = _logging.getLogger(__name__)
     try:
         blocks = _build_query(use_freq_fields=True).all()
     except Exception as _e_freq:
         db.session.rollback()
-        import logging as _logging
-        _logging.getLogger(__name__).warning(
-            f"[methods_catalog] freq-fields query failed, falling back: {_e_freq}"
-        )
-        blocks = _build_query(use_freq_fields=False).all()
+        _log.warning(f"[methods_catalog] freq-fields query failed: {_e_freq}")
+        try:
+            blocks = _build_query(use_freq_fields=False).all()
+        except Exception as _e_orm:
+            db.session.rollback()
+            _log.error(
+                f"[methods_catalog] ORM query failed (missing columns?): {_e_orm}"
+            )
+            # Последний рубеж: пытаемся отдать пустую страницу,
+            # чтобы пользователь увидел оболочку, а не 500.
+            blocks = []
 
     # JSON-фильтры в Python: SQLite не любит индексы по JSON.
     if grade is not None:
