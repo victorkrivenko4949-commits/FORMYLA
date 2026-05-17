@@ -348,6 +348,8 @@ class StageAttempt(db.Model):
     task_scores = db.Column(db.JSON, nullable=True)
     report_md = db.Column(db.Text, nullable=True)
 
+    probnik = db.relationship('Probnik')
+
     def __repr__(self):
         return (
             f"<StageAttempt user_id={self.user_id} probnik_id={self.probnik_id} "

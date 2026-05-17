@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Этап {{ probnik.title }} — FORMYLA{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap"
+     x-data="olympiadStage({
+        probnikCode: '{{ probnik.code }}',
+        attemptId: {{ attempt.id }},
+        startedAt: '{{ attempt.started_at.isoformat() }}Z',
+        durationMinutes: {{ probnik.duration_minutes }},
+        submitUrl: '{{ url_for('olympiad.stage_submit', code=probnik.code) }}',
+        taskNumbers: {{ tasks|map(attribute='number')|list|tojson }}
+     })"
+     x-init="startTicker()">
+
+    <div class="oly-timer">
+        <div>
+            <strong>{{ probnik.title }}</strong>
+            <div style="color: var(--text-muted); font-size: .88em;">Этап #{{ probnik.number }} · макс. {{ probnik.max_score }} баллов</div>
+        </div>
+        <div>
+            <div class="oly-timer-time" :class="{ danger: remaining < 60 }" x-text="formatTime(remaining)"></div>
+            <div style="color: var(--text-muted); font-size: .82em; text-align: right;">осталось</div>
+        </div>
+        <button class="oly-btn" @click="submit(false)" :disabled="submitting">
+            <span x-show="!submitting">🏁 Сдать сейчас</span>
+            <span x-show="submitting" x-cloak>Отправка…</span>
+        </button>
+    </div>
+
+    <p style="color: var(--text-muted);">
+        Решай по порядку. Когда время истечёт — попытка отправится автоматически.
+        После сдачи выстави самооценку 0…7 за каждую задачу.
+    </p>
+
+    <div class="oly-grid">
+        {% for t in tasks %}
+        <a class="oly-card" href="{{ url_for('olympiad.task', task_id=t.id) }}" target="_blank">
+            <h3 style="display:flex; justify-content: space-between; align-items: center; gap:8px;">
+                <span>№{{ t.number }}</span>
+                {% if t.difficulty %}
+                <span class="oly-badge oly-badge-{{ t.difficulty }}">{{ t.difficulty }}</span>
+                {% endif %}
+            </h3>
+            <p class="oly-card-sub">Метод: <strong>{{ t.method_primary }}</strong></p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<style>[x-cloak] { display: none !important; }</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function olympiadStage(cfg) {
+    return {
+        probnikCode: cfg.probnikCode,
+        attemptId: cfg.attemptId,
+        startedAt: new Date(cfg.startedAt),
+        durationMinutes: cfg.durationMinutes,
+        submitUrl: cfg.submitUrl,
+        taskNumbers: cfg.taskNumbers,
+
+        remaining: cfg.durationMinutes * 60,
+        _tid: null,
+        submitting: false,
+
+        startTicker() {
+            this.tick();
+            this._tid = setInterval(() => this.tick(), 1000);
+            // Beforeunload guard
+            window.addEventListener('beforeunload', (e) => {
+                if (this.remaining > 0 && !this.submitting) {
+                    e.preventDefault();
+                    e.returnValue = 'Этап не сдан. Точно покинуть страницу?';
+                }
+            });
+        },
+        tick() {
+            const ms = (new Date() - this.startedAt);
+            const left = Math.round(cfg.durationMinutes * 60 - ms / 1000);
+            this.remaining = Math.max(0, left);
+            if (this.remaining === 0 && !this.submitting) {
+                clearInterval(this._tid);
+                this.submit(true);
+            }
+        },
+        formatTime(s) {
+            const mm = Math.floor(s / 60).toString().padStart(2, '0');
+            const ss = (s % 60).toString().padStart(2, '0');
+            return mm + ':' + ss;
+        },
+        async submit(auto) {
+            if (this.submitting) return;
+            this.submitting = true;
+            clearInterval(this._tid);
+            // На MVP — сдаём без оценок (выставит на report-странице).
+            // На submit-роуте оценки придут отдельным шагом через форму report-страницы,
+            // или этот вызов перенаправит на 'finished' attempt + страницу report.
+            try {
+                const r = await fetch(this.submitUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                    body: JSON.stringify({attempt_id: this.attemptId, scores: {}}),
+                });
+                if (r.ok) {
+                    // Перейдём на «html-версию» сабмита, чтобы получить шаблон отчёта.
+                    window.location.href = this.submitUrl + '?attempt_id=' + this.attemptId;
+                } else {
+                    alert('Не удалось сдать этап. Попробуйте ещё раз.');
+                    this.submitting = false;
+                }
+            } catch (e) {
+                console.error('stage submit failed', e);
+                alert('Сеть недоступна. Попробуйте ещё раз.');
+                this.submitting = false;
+            }
+        },
+    };
+}
+</script>
+{% endblock %}

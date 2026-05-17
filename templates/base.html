@@ -99,9 +99,12 @@
                 </button>
                 <div class="nav-menu">
                     <a href="{{ url_for('olympiads') }}">📖 Каталог</a>
+                    <a href="{{ url_for('olympiad.catalog') }}">🆕 Курсы (ВсОШ-9-2027)</a>
+                    <a href="{{ url_for('olympiad.methods') }}">📚 Теоретические методы</a>
                     <a href="/olympiad-prep">🎯 Подготовка к олимпиадам</a>
                     {% if current_user.is_authenticated %}
                     <a href="/prep">📅 Мои планы подготовки</a>
+                    <a href="{{ url_for('olympiad.my_progress') }}">📈 Мой прогресс</a>
                     {% endif %}
                 </div>
             </div>
@@ -255,6 +258,20 @@
                 <span class="drawer-link-icon">📖</span>
                 Каталог олимпиад
             </a>
+            <a href="{{ url_for('olympiad.catalog') }}" class="drawer-link">
+                <span class="drawer-link-icon">🆕</span>
+                Курсы (ВсОШ-9-2027)
+            </a>
+            <a href="{{ url_for('olympiad.methods') }}" class="drawer-link">
+                <span class="drawer-link-icon">📚</span>
+                Теоретические методы
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('olympiad.my_progress') }}" class="drawer-link">
+                <span class="drawer-link-icon">📈</span>
+                Мой прогресс
+            </a>
+            {% endif %}
             <div class="drawer-divider"></div>
             <div class="drawer-section-title">Чертёж</div>
             <a href="/drawing" class="drawer-link">

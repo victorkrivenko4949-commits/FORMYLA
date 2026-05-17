@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Мой прогресс по олимпиадам — FORMYLA{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <header class="oly-hero">
+        <h1>📈 Мой прогресс</h1>
+        <p>Сводка по задачам, этапным попыткам и самооценке.</p>
+    </header>
+
+    <div class="oly-grid">
+        <div class="oly-card">
+            <h3 style="margin-top:0;">✅ Решено</h3>
+            <p style="font-size: 2em; margin: 0; color: #4ade80;">{{ totals.tasks_solved }}</p>
+        </div>
+        <div class="oly-card">
+            <h3 style="margin-top:0;">🤔 Попыток</h3>
+            <p style="font-size: 2em; margin: 0; color: #facc15;">{{ totals.tasks_attempted }}</p>
+        </div>
+        <div class="oly-card">
+            <h3 style="margin-top:0;">👁 Подсмотрено</h3>
+            <p style="font-size: 2em; margin: 0; color: #f87171;">{{ totals.tasks_revealed }}</p>
+        </div>
+        <div class="oly-card">
+            <h3 style="margin-top:0;">🏁 Этапов сдано</h3>
+            <p style="font-size: 2em; margin: 0; color: #60a5fa;">{{ totals.stages_finished }}</p>
+        </div>
+    </div>
+
+    <h2 class="oly-section-title">Пробники: прогресс</h2>
+    {% if by_probnik %}
+    <table class="oly-table">
+        <thead>
+            <tr>
+                <th>Пробник</th>
+                <th>Решено</th>
+                <th>Попыток</th>
+                <th>Подсмотрено</th>
+                <th>Просмотрено</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in by_probnik %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('olympiad.probnik', code=row.probnik.code) }}">{{ row.probnik.title }}</a>
+                    {% if row.probnik.type == 'topic' %}
+                    <span class="oly-badge oly-badge-topic" style="margin-left:6px;">тема</span>
+                    {% else %}
+                    <span class="oly-badge oly-badge-stage" style="margin-left:6px;">этап</span>
+                    {% endif %}
+                </td>
+                <td><span class="oly-status oly-status-solved">{{ row.solved }}</span></td>
+                <td><span class="oly-status oly-status-attempted">{{ row.attempted }}</span></td>
+                <td><span class="oly-status oly-status-revealed">{{ row.revealed }}</span></td>
+                <td><span class="oly-status oly-status-viewed">{{ row.viewed }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: var(--text-muted);">Открой первый пробник, чтобы здесь появилась статистика.</p>
+    {% endif %}
+
+    <h2 class="oly-section-title">Этапные попытки</h2>
+    {% if stage_attempts %}
+    <table class="oly-table">
+        <thead>
+            <tr>
+                <th>Пробник</th>
+                <th>Дата</th>
+                <th>Баллы</th>
+                <th>Результат</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in stage_attempts %}
+            <tr>
+                <td>
+                    {% if s.probnik_id %}
+                    <a href="{{ url_for('olympiad.stage_submit', code=(s.probnik.code if s.probnik else 'unknown')) }}?attempt_id={{ s.id }}">
+                        {{ s.probnik.title if s.probnik else '—' }}
+                    </a>
+                    {% else %}—{% endif %}
+                </td>
+                <td>{{ s.started_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ s.total_score }}</td>
+                <td>
+                    {% if s.result == 'winner' %}🥇 Победитель
+                    {% elif s.result == 'prize' %}🥈 Призёр
+                    {% elif s.result == 'participant' %}👤 Участник
+                    {% else %}<span style="color:var(--text-muted);">не сдано</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: var(--text-muted);">Этапных попыток пока нет.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -529,6 +529,23 @@ try:
 except Exception as _e:
     print(f"[BP] chat_presence_bp NOT registered: {_e}")
 
+# New /olympiads/* section (next to legacy /olympiads, /olympiads/open, /olympiads/solution/<id>).
+# Catalog of the new section lives at /olympiads/courses until the legacy route is retired.
+try:
+    from routes.olympiad import olympiad_bp
+    app.register_blueprint(olympiad_bp)
+    print("[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)")
+except Exception as _e:
+    print(f"[BP] olympiad_bp NOT registered: {_e}")
+
+# Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
+try:
+    from services.md_render import md_render as _md_render_filter
+    app.jinja_env.filters['md_render'] = _md_render_filter
+    print("[JINJA] filter md_render registered")
+except Exception as _e:
+    print(f"[JINJA] md_render filter NOT registered: {_e}")
+
 # Limit upload size: 12 MB (for solution photos AND drawing-task screenshots
 # that get base64-encoded; raw image cap remains 8 MB on the drawing route).
 app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024

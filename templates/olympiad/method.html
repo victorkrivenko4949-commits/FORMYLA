@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}
+{%- if block -%}
+    Метод {{ block.method_code }} — {{ block.method_name }}
+{%- else -%}
+    Теоретические методы — FORMYLA
+{%- endif -%}
+{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+
+    {# ── 1) CATALOG MODE (sections != None) ──────────────────────────────── #}
+    {% if sections is not none %}
+    <header class="oly-hero">
+        <h1>📚 Теоретические методы</h1>
+        <p>Базовые приёмы решения олимпиадных задач, сгруппированные по разделам.</p>
+    </header>
+
+    {% if sections %}
+        {% for section_key, blocks in sections.items() %}
+        <h2 class="oly-section-title">Раздел {{ section_key }}</h2>
+        <div class="oly-grid">
+            {% for tb in blocks %}
+            <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
+                <h3>
+                    <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
+                    {{ tb.method_name }}
+                </h3>
+                {% if tb.definition_md %}
+                <p class="oly-card-sub">{{ tb.definition_md[:120] }}{% if tb.definition_md|length > 120 %}…{% endif %}</p>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="oly-card" style="text-align:center; padding: 40px 20px;">
+            <p style="margin:0; color: var(--text-muted);">Теоретические блоки появятся после импорта.</p>
+        </div>
+    {% endif %}
+
+    {# ── 2) DETAIL MODE ─────────────────────────────────────────────────── #}
+    {% else %}
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('olympiad.methods') }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к каталогу методов</a>
+    </p>
+
+    <header style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 6px;">
+            <span class="oly-badge oly-badge-topic">{{ block.method_code }}</span>
+            {{ block.method_name }}
+        </h1>
+        {% if block.section %}
+        <p class="oly-card-sub">Раздел: {{ block.section }}</p>
+        {% endif %}
+    </header>
+
+    {% if block.definition_md %}
+    <section class="oly-card">
+        <h2 style="margin-top:0;">📖 Определение</h2>
+        <div class="oly-md">{{ block.definition_md | md_render }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.main_theorems_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🧮 Основные теоремы</h2>
+        <div class="oly-md">{{ block.main_theorems_md | md_render }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.typical_techniques_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🛠 Типовые приёмы</h2>
+        <div class="oly-md">{{ block.typical_techniques_md | md_render }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.triggers_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🎯 Триггеры применения</h2>
+        <div class="oly-md">{{ block.triggers_md | md_render }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.worked_example_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">📝 Разобранный пример</h2>
+        <div class="oly-md">{{ block.worked_example_md | md_render }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.pitfalls_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">⚠ Подводные камни</h2>
+        <div class="oly-md">{{ block.pitfalls_md | md_render }}</div>
+    </section>
+    {% endif %}
+
+    {% if related %}
+    <h2 class="oly-section-title">🔗 Связанные методы</h2>
+    <div class="oly-grid">
+        {% for tb in related %}
+        <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
+            <h3>
+                <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
+                {{ tb.method_name }}
+            </h3>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

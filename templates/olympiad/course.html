@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ competition }} {{ grade }} класс {{ season_year }} — FORMYLA{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <header class="oly-hero">
+        <h1>🎯 {{ competition }} · {{ grade }} класс · сезон {{ season_year - 1 }}/{{ season_year }}</h1>
+        <p>9 тематических + 5 этапных пробников. Пройди по порядку или сразу симулируй этап с таймером.</p>
+    </header>
+
+    <h2 class="oly-section-title">📚 Тематические пробники</h2>
+    {% if topic_probniks %}
+    <div class="oly-grid">
+        {% for p in topic_probniks %}
+        {% set prog = progress_by_probnik.get(p.id) %}
+        <a class="oly-card" href="{{ url_for('olympiad.probnik', code=p.code) }}">
+            <h3>
+                <span class="oly-badge oly-badge-topic">Тема #{{ p.number }}</span>
+                {{ p.title }}
+            </h3>
+            {% if p.description %}
+            <p class="oly-card-sub">{{ p.description }}</p>
+            {% endif %}
+            {% if prog %}
+            <div class="oly-progress" title="Решено {{ prog.solved }}/{{ prog.total }}">
+                <span style="width: {{ (100 * prog.solved // prog.total) if prog.total else 0 }}%"></span>
+            </div>
+            <p class="oly-card-sub" style="margin-top:8px;">
+                Прогресс: <strong>{{ prog.solved }}/{{ prog.total }}</strong>
+            </p>
+            {% else %}
+            <p class="oly-card-sub" style="margin-top:8px;">Задач: {{ p.tasks|length }}</p>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">Тематические пробники появятся после загрузки данных.</p>
+    {% endif %}
+
+    <h2 class="oly-section-title">⏱️ Этапные пробники</h2>
+    {% if stage_probniks %}
+    <div class="oly-grid">
+        {% for p in stage_probniks %}
+        <a class="oly-card" href="{{ url_for('olympiad.probnik', code=p.code) }}">
+            <h3>
+                <span class="oly-badge oly-badge-stage">Этап #{{ p.number }}</span>
+                {{ p.title }}
+            </h3>
+            {% if p.description %}
+            <p class="oly-card-sub">{{ p.description }}</p>
+            {% endif %}
+            <p class="oly-card-sub" style="margin-top:8px;">
+                ⏱ {{ p.duration_minutes }} мин ·
+                🏁 макс. {{ p.max_score }} баллов
+                {% if p.threshold_prize %}· призёр от {{ p.threshold_prize }}{% endif %}
+                {% if p.threshold_winner %}· победитель от {{ p.threshold_winner }}{% endif %}
+            </p>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">Этапные пробники появятся после загрузки данных.</p>
+    {% endif %}
+</div>
+{% endblock %}

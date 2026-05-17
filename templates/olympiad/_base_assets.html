@@ -1,0 +1,8 @@
+{# Shared assets for /olympiads/* templates: CSS + Alpine.js CDN.
+   Include via:
+     {% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+   (extra_js is set per-template to keep page-local scripts in extra_js block).
+#}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/olympiad.css') }}?v={{ asset_version }}">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>

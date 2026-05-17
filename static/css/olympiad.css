@@ -1,0 +1,281 @@
+/* ─── Olympiad section styles ──────────────────────────────────────────────
+   Стили для нового раздела `/olympiads/*`.  Используем существующие CSS-переменные
+   из base.html: --bg-card, --border-soft, --text-soft, --text-muted, --accent-1, --accent-2.
+   ─────────────────────────────────────────────────────────────────────────────*/
+
+.oly-wrap {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 20px;
+}
+
+.oly-hero {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.oly-hero h1 {
+    font-size: 2.2em;
+    margin: 0 0 8px;
+    background: linear-gradient(135deg, var(--accent-1, #3b82f6), var(--accent-2, #9333ea));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.oly-hero p {
+    color: var(--text-muted, #94a3b8);
+    margin: 0;
+}
+
+/* Grids */
+.oly-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+.oly-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+}
+
+/* Cards */
+.oly-card {
+    background: var(--bg-card, rgba(30, 41, 59, 0.6));
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-soft, #334155);
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.oly-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-1, #3b82f6);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
+}
+.oly-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.15em;
+}
+.oly-card-sub {
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.9em;
+    margin: 0;
+}
+
+/* Section heading */
+.oly-section-title {
+    font-size: 1.4em;
+    margin: 32px 0 16px;
+    color: var(--text-soft, #cbd5e1);
+    border-bottom: 1px solid var(--border-soft, #334155);
+    padding-bottom: 8px;
+}
+
+/* Progress bar */
+.oly-progress {
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.oly-progress > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-1, #3b82f6), var(--accent-2, #9333ea));
+    transition: width 0.4s;
+}
+
+/* Badges (difficulty) */
+.oly-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.oly-badge-green  { background: rgba(34,197,94,.15);  color: #4ade80; }
+.oly-badge-yellow { background: rgba(234,179,8,.15);  color: #facc15; }
+.oly-badge-orange { background: rgba(249,115,22,.15); color: #fb923c; }
+.oly-badge-red    { background: rgba(239,68,68,.15);  color: #f87171; }
+.oly-badge-topic  { background: rgba(59,130,246,.15); color: #60a5fa; }
+.oly-badge-stage  { background: rgba(147,51,234,.15); color: #c084fc; }
+
+/* Status pill */
+.oly-status {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.78em;
+    font-weight: 500;
+}
+.oly-status-viewed    { background: rgba(148,163,184,.18); color: #94a3b8; }
+.oly-status-attempted { background: rgba(234,179,8,.18);  color: #facc15; }
+.oly-status-solved    { background: rgba(34,197,94,.18);  color: #4ade80; }
+.oly-status-revealed  { background: rgba(239,68,68,.18);  color: #f87171; }
+
+/* Markdown body */
+.oly-md {
+    line-height: 1.6;
+    color: var(--text-soft, #e2e8f0);
+}
+.oly-md p { margin: 0.6em 0; }
+.oly-md h1, .oly-md h2, .oly-md h3 { margin: 1.2em 0 0.5em; }
+.oly-md code {
+    background: rgba(255,255,255,0.07);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.92em;
+}
+.oly-md pre {
+    background: rgba(0,0,0,0.35);
+    border-radius: 8px;
+    padding: 12px 14px;
+    overflow: auto;
+}
+.oly-md table {
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+.oly-md th, .oly-md td {
+    border: 1px solid var(--border-soft, #334155);
+    padding: 6px 12px;
+}
+.oly-md ul, .oly-md ol { padding-left: 1.6em; }
+
+/* Reveal block (idea / solution) */
+.oly-reveal {
+    margin-top: 24px;
+    border: 1px solid var(--border-soft, #334155);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.oly-reveal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    background: rgba(59,130,246,0.08);
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+}
+.oly-reveal-head:hover { background: rgba(59,130,246,0.14); }
+.oly-reveal-body {
+    padding: 16px 18px 20px;
+    border-top: 1px solid var(--border-soft, #334155);
+}
+.oly-reveal-arrow { transition: transform 0.2s; }
+.oly-reveal[data-open="true"] .oly-reveal-arrow { transform: rotate(180deg); }
+
+/* Buttons */
+.oly-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    background: linear-gradient(135deg, var(--accent-1, #3b82f6), var(--accent-2, #9333ea));
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.oly-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(59,130,246,.3); }
+.oly-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.oly-btn-ghost {
+    background: transparent;
+    border-color: var(--border-soft, #334155);
+    color: var(--text-soft, #cbd5e1);
+}
+.oly-btn-ghost:hover { border-color: var(--accent-1, #3b82f6); color: white; box-shadow: none; }
+.oly-btn-sm { padding: 6px 12px; font-size: 0.88em; }
+
+/* Stage timer */
+.oly-timer {
+    position: sticky;
+    top: 10px;
+    z-index: 10;
+    background: rgba(15,23,42,0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-soft, #334155);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.oly-timer-time {
+    font-size: 1.6em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-1, #60a5fa);
+}
+.oly-timer-time.danger { color: #f87171; animation: oly-pulse 1s infinite; }
+@keyframes oly-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.6; }
+}
+
+/* Self-score row 0..7 */
+.oly-score-row {
+    display: inline-flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.oly-score-row button {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border-soft, #334155);
+    background: transparent;
+    color: var(--text-soft, #cbd5e1);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+.oly-score-row button:hover { border-color: var(--accent-1, #3b82f6); color: white; }
+.oly-score-row button.active {
+    background: linear-gradient(135deg, var(--accent-1, #3b82f6), var(--accent-2, #9333ea));
+    color: white;
+    border-color: transparent;
+}
+
+/* Tables */
+.oly-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+.oly-table th, .oly-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-soft, #334155);
+    text-align: left;
+}
+.oly-table th { color: var(--text-muted, #94a3b8); font-weight: 500; font-size: 0.86em; }
+
+/* Result hero (stage_report) */
+.oly-result-hero {
+    text-align: center;
+    padding: 32px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--border-soft, #334155);
+    background: var(--bg-card, rgba(30,41,59,0.6));
+    margin-bottom: 24px;
+}
+.oly-result-hero .oly-result-score {
+    font-size: 3em;
+    font-weight: 800;
+    margin: 6px 0;
+}
+.oly-result-hero .oly-result-label-winner      { color: #facc15; }
+.oly-result-hero .oly-result-label-prize       { color: #60a5fa; }
+.oly-result-hero .oly-result-label-participant { color: #94a3b8; }

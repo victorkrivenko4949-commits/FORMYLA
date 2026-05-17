@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Задача №{{ task.number }} — {{ probnik.title }}{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap"
+     x-data="olympiadTask({
+        taskId: {{ task.id }},
+        csrf: '',
+        initialStatus: {{ (attempt.status if attempt else 'viewed') | tojson }},
+        initialSelfScore: {{ (attempt.self_score if attempt and attempt.self_score is not none else 'null') | safe }},
+        initialNote: {{ (attempt.note if attempt and attempt.note else '') | tojson }},
+        authenticated: {{ 'true' if current_user.is_authenticated else 'false' }},
+        attemptUrl: '{{ url_for('olympiad.task_attempt', task_id=task.id) }}'
+     })"
+     x-init="markViewed()">
+
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('olympiad.probnik', code=probnik.code) }}"
+           class="oly-btn-ghost oly-btn oly-btn-sm">← к пробнику «{{ probnik.title }}»</a>
+    </p>
+
+    <header style="margin-bottom: 18px;">
+        <h1 style="display:flex; gap:10px; align-items:center; margin: 0 0 6px;">
+            <span>Задача №{{ task.number }}</span>
+            {% if task.difficulty %}
+            <span class="oly-badge oly-badge-{{ task.difficulty }}">{{ task.difficulty }}</span>
+            {% endif %}
+            <span class="oly-badge oly-badge-topic">{{ task.method_primary }}</span>
+            {% if task.method_secondary %}
+            <span class="oly-badge oly-badge-topic" style="opacity:.7;">{{ task.method_secondary }}</span>
+            {% endif %}
+        </h1>
+        {% if task.source_prototype %}
+        <p class="oly-card-sub">Прототип: {{ task.source_prototype }}</p>
+        {% endif %}
+    </header>
+
+    <!-- Условие -->
+    <section class="oly-card">
+        <h2 style="margin-top:0;">📜 Условие</h2>
+        <div class="oly-md">{{ task.condition_md | md_render }}</div>
+    </section>
+
+    <!-- Идея решения (раскрываемая) -->
+    <section class="oly-reveal" :data-open="showIdea ? 'true' : 'false'">
+        <header class="oly-reveal-head" @click="toggleIdea()">
+            <span>💡 Идея решения</span>
+            <span class="oly-reveal-arrow">▾</span>
+        </header>
+        <div class="oly-reveal-body" x-show="showIdea" x-cloak>
+            <div class="oly-md">{{ task.idea_md | md_render }}</div>
+            <p style="margin-top: 16px;">
+                <button class="oly-btn oly-btn-sm" @click="markAttempted()"
+                        :disabled="!authenticated || status === 'solved'">
+                    🤔 Я попробовал(а)
+                </button>
+            </p>
+        </div>
+    </section>
+
+    <!-- Полное решение (раскрываемое) -->
+    <section class="oly-reveal" :data-open="showSolution ? 'true' : 'false'">
+        <header class="oly-reveal-head" @click="toggleSolution()">
+            <span>✅ Полное решение</span>
+            <span class="oly-reveal-arrow">▾</span>
+        </header>
+        <div class="oly-reveal-body" x-show="showSolution" x-cloak>
+            <div class="oly-md">{{ task.solution_md | md_render }}</div>
+            {% if task.answer %}
+            <p style="margin-top: 16px; padding: 12px; background: rgba(34,197,94,.08); border-radius: 8px;">
+                <strong>Ответ:</strong> <span class="oly-md" style="display:inline;">{{ task.answer | md_render }}</span>
+            </p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Self-score + статус -->
+    {% if current_user.is_authenticated %}
+    <section class="oly-card" style="margin-top: 24px;">
+        <h3 style="margin-top:0;">Моя оценка решения (0…7)</h3>
+        <div class="oly-score-row">
+            <template x-for="s in [0,1,2,3,4,5,6,7]" :key="s">
+                <button type="button"
+                        :class="{ active: selfScore === s }"
+                        @click="setSelfScore(s)"
+                        x-text="s"></button>
+            </template>
+        </div>
+
+        <h3 style="margin-top: 18px;">Заметка</h3>
+        <textarea x-model="note"
+                  @blur="saveNote()"
+                  rows="3"
+                  placeholder="Идеи, ошибки, ссылки на теорию..."
+                  style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-soft); background: rgba(255,255,255,.04); color: var(--text-soft); resize: vertical;"></textarea>
+
+        <div style="margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="oly-btn oly-btn-sm" @click="markSolved()" :disabled="status === 'solved'">
+                ✅ Я решил(а)
+            </button>
+            <button class="oly-btn oly-btn-ghost oly-btn-sm" @click="markRevealed()">
+                👁 Подсмотрел(а)
+            </button>
+            <span style="margin-left:auto; color: var(--text-muted); font-size: .9em;"
+                  x-text="saveHint"></span>
+        </div>
+    </section>
+    {% else %}
+    <p style="margin-top: 24px; color: var(--text-muted);">
+        <a href="{{ url_for('login') }}">Войдите</a>, чтобы отмечать прогресс и оставлять заметки.
+    </p>
+    {% endif %}
+</div>
+
+<style>[x-cloak] { display: none !important; }</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function olympiadTask(cfg) {
+    return {
+        taskId: cfg.taskId,
+        attemptUrl: cfg.attemptUrl,
+        authenticated: cfg.authenticated,
+
+        showIdea: false,
+        showSolution: false,
+
+        status: cfg.initialStatus || 'viewed',
+        selfScore: cfg.initialSelfScore,
+        note: cfg.initialNote || '',
+        saveHint: '',
+
+        _viewSent: false,
+        _noteTimer: null,
+
+        async _send(payload) {
+            if (!this.authenticated) return null;
+            try {
+                const r = await fetch(this.attemptUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                    body: JSON.stringify(payload),
+                });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const data = await r.json();
+                if (data && data.attempt) {
+                    this.status = data.attempt.status;
+                    if (data.attempt.self_score !== undefined) this.selfScore = data.attempt.self_score;
+                }
+                this.saveHint = '✓ сохранено';
+                setTimeout(()=>{ this.saveHint=''; }, 1500);
+                return data;
+            } catch (e) {
+                console.error('attempt save failed', e);
+                this.saveHint = '⚠ не удалось сохранить';
+                return null;
+            }
+        },
+
+        async markViewed() {
+            if (this._viewSent) return;
+            this._viewSent = true;
+            // Не понижаем статус, если уже выше.
+            if (['solved','revealed','attempted'].includes(this.status)) return;
+            await this._send({status: 'viewed'});
+        },
+        async markAttempted() {
+            if (this.status === 'solved') return;
+            await this._send({status: 'attempted'});
+        },
+        async markSolved() {
+            await this._send({status: 'solved', self_score: this.selfScore});
+        },
+        async markRevealed() {
+            this.showSolution = true;
+            await this._send({status: 'revealed'});
+        },
+        async setSelfScore(s) {
+            this.selfScore = s;
+            // Если ещё не было статуса выше attempted — оставим как 'attempted'.
+            const nextStatus = ['solved','revealed'].includes(this.status) ? this.status : 'attempted';
+            await this._send({status: nextStatus, self_score: s});
+        },
+        async saveNote() {
+            // Debounce: при blur — сразу шлём.
+            clearTimeout(this._noteTimer);
+            await this._send({status: this.status, note: this.note});
+        },
+
+        toggleIdea() {
+            this.showIdea = !this.showIdea;
+            if (this.showIdea) this.markAttempted();
+            this._rerenderMath();
+        },
+        toggleSolution() {
+            this.showSolution = !this.showSolution;
+            if (this.showSolution) this.markRevealed();
+            this._rerenderMath();
+        },
+
+        _rerenderMath() {
+            // KaTeX auto-render won't catch newly-shown blocks; re-run on body.
+            this.$nextTick(() => {
+                try {
+                    if (window.renderMathInElement) {
+                        renderMathInElement(document.body, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$',  right: '$',  display: false},
+                                {left: '\\(', right: '\\)', display: false},
+                                {left: '\\[', right: '\\]', display: true},
+                            ],
+                            throwOnError: false,
+                        });
+                    }
+                } catch (e) {}
+            });
+        },
+    };
+}
+</script>
+{% endblock %}

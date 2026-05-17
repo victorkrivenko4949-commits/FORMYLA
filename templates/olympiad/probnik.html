@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ probnik.title }} — FORMYLA{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('olympiad.course') }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к курсу</a>
+    </p>
+
+    <header style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 6px;">
+            {% if probnik.type == 'topic' %}
+                <span class="oly-badge oly-badge-topic">Тема #{{ probnik.number }}</span>
+            {% else %}
+                <span class="oly-badge oly-badge-stage">Этап #{{ probnik.number }}</span>
+            {% endif %}
+            {{ probnik.title }}
+        </h1>
+        {% if probnik.description %}
+        <p style="color: var(--text-muted); margin: 0;">{{ probnik.description }}</p>
+        {% endif %}
+
+        {% if probnik.type == 'stage' %}
+        <div style="margin-top: 18px;">
+            <p style="color: var(--text-muted); margin: 0 0 12px;">
+                ⏱ {{ probnik.duration_minutes }} минут · 🏁 макс. {{ probnik.max_score }} баллов
+                {% if probnik.threshold_prize %}· призёр от {{ probnik.threshold_prize }}{% endif %}
+                {% if probnik.threshold_winner %}· победитель от {{ probnik.threshold_winner }}{% endif %}
+            </p>
+            {% if current_user.is_authenticated %}
+            <form method="POST"
+                  action="{{ url_for('olympiad.stage_start', code=probnik.code) }}"
+                  style="display:inline;">
+                <button type="submit" class="oly-btn">▶ Начать этап (с таймером)</button>
+            </form>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="oly-btn">Войти для запуска этапа</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </header>
+
+    <h2 class="oly-section-title">Задачи</h2>
+    {% if tasks %}
+    <div class="oly-grid">
+        {% for t in tasks %}
+        {% set a = attempt_map.get(t.id) %}
+        <a class="oly-card" href="{{ url_for('olympiad.task', task_id=t.id) }}">
+            <h3 style="display:flex; justify-content: space-between; align-items: center; gap:8px;">
+                <span>№{{ t.number }}</span>
+                {% if t.difficulty %}
+                <span class="oly-badge oly-badge-{{ t.difficulty }}">{{ t.difficulty }}</span>
+                {% endif %}
+            </h3>
+            <p class="oly-card-sub">
+                Метод: <strong>{{ t.method_primary }}</strong>
+                {% if t.method_secondary %}· доп. {{ t.method_secondary }}{% endif %}
+            </p>
+            {% if a %}
+            <p style="margin: 10px 0 0;">
+                <span class="oly-status oly-status-{{ a.status }}">{{ a.status }}</span>
+                {% if a.self_score is not none %}
+                <span style="color: var(--text-muted); margin-left: 6px;">{{ a.self_score }}/7</span>
+                {% endif %}
+            </p>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">В пробнике пока нет задач.</p>
+    {% endif %}
+
+    {% if theory_links %}
+    <h2 class="oly-section-title">📚 Рекомендуемая теория</h2>
+    <div class="oly-grid">
+        {% for link in theory_links %}
+        {% set tb = link.theory_block %}
+        <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
+            <h3>
+                <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
+                {{ tb.method_name }}
+            </h3>
+            {% if tb.section %}
+            <p class="oly-card-sub">Раздел: {{ tb.section }}</p>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
