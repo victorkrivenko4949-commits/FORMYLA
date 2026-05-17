@@ -719,7 +719,9 @@ def methods_catalog():
         query = query.filter(TheoryBlock.difficulty_level == difficulty)
 
     if sort_key == 'frequency':
+        # Сначала по total_count (точные данные xlsx), затем frequency_vsosh_9 как fallback.
         query = query.order_by(
+            TheoryBlock.total_count.desc().nullslast(),
             TheoryBlock.frequency_vsosh_9.desc().nullslast(),
             asc(TheoryBlock.sort_order),
             asc(TheoryBlock.method_code),
@@ -755,6 +757,19 @@ def methods_catalog():
 
     total_methods = TheoryBlock.query.count()
 
+    # TOP-10 по абсолютной частотности на ВсОШ-9 (для бейджа «🔥 ТОП-10»).
+    top_10_query = (
+        TheoryBlock.query
+        .filter(TheoryBlock.total_count.isnot(None))
+        .order_by(TheoryBlock.total_count.desc())
+        .limit(10)
+        .all()
+    )
+    top_10_codes = {tb.method_code for tb in top_10_query}
+
+    # Максимум total_count — для нормализации прогресс-баров.
+    max_count = max((b.total_count or 0) for b in blocks) if blocks else 0
+
     return render_template(
         'olympiad/method.html',
         sections=sections,
@@ -762,6 +777,8 @@ def methods_catalog():
         block=None,
         related=[],
         total_methods=total_methods,
+        top_10_codes=top_10_codes,
+        max_count=max_count,
         filters={
             'grade': grade,
             'competition': competition,
@@ -778,16 +795,37 @@ def methods_catalog():
 
 @olympiad_bp.route('/methods/<string:method_code>', endpoint='method_detail')
 def method_detail(method_code):
-    """Один теоретический метод + ссылки на связанные."""
+    """Один теоретический метод + связанные методы + список реальных задач
+    ВсОШ-9, в которых этот метод применяется (по xlsx-импорту).
+    """
     block = _get_theory_or_404(method_code)
 
     related = []
     codes = block.related_methods or []
     if codes:
-        related = TheoryBlock.query.filter(TheoryBlock.method_code.in_(codes)).all()
+        related = TheoryBlock.query.filter(
+            TheoryBlock.method_code.in_(codes)
+        ).all()
+
+    # Связанные задачи (primary или secondary метод = текущему коду).
+    from sqlalchemy import or_
+    linked_tasks = (
+        OlympiadTask.query
+        .join(Probnik)
+        .filter(
+            Probnik.code.like('vsosh-9-archive-%'),
+            or_(
+                OlympiadTask.method_primary == method_code,
+                OlympiadTask.method_secondary == method_code,
+            ),
+        )
+        .order_by(Probnik.season_year.desc(), OlympiadTask.sort_order.asc())
+        .all()
+    )
 
     return render_template('olympiad/method.html',
-                           sections=None, block=block, related=related)
+                           sections=None, block=block, related=related,
+                           linked_tasks=linked_tasks)
 
 
 # ─── 10. Моя сводка прогресса ─────────────────────────────────────────────────

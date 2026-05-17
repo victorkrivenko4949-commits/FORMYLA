@@ -219,6 +219,10 @@ class TheoryBlock(db.Model):
     difficulty_level = db.Column(db.Integer, nullable=True, index=True)
     # Частота встречаемости на ВсОШ-9 (0..10).
     frequency_vsosh_9 = db.Column(db.Integer, nullable=True, index=True)
+    # Точное число задач ВсОШ-9, использующих этот метод (по xlsx-аналитике).
+    total_count = db.Column(db.Integer, nullable=True, index=True)
+    # Доля задач 0..1 (например 0.1356 = метод встречается в 13.56% задач).
+    share_percent = db.Column(db.Float, nullable=True)
     # Порядок отображения в каталоге.
     sort_order = db.Column(db.Integer, nullable=False, default=0, server_default='0')
 

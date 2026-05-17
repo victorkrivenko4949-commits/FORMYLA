@@ -351,6 +351,20 @@ try:
             print("[migration] Added onboarded_at to users")
         except Exception:
             db.session.rollback()
+
+        # --- TheoryBlock: total_count + share_percent (VsOSh-9 method stats) ---
+        try:
+            db.session.execute(db.text("ALTER TABLE olympiad_theory ADD COLUMN total_count INTEGER"))
+            db.session.commit()
+            print("[migration] Added total_count to olympiad_theory")
+        except Exception:
+            db.session.rollback()
+        try:
+            db.session.execute(db.text("ALTER TABLE olympiad_theory ADD COLUMN share_percent REAL"))
+            db.session.commit()
+            print("[migration] Added share_percent to olympiad_theory")
+        except Exception:
+            db.session.rollback()
 except Exception as e:
     print(f"[AUTO-MIGRATION] guest columns Warning: {e}")
 
