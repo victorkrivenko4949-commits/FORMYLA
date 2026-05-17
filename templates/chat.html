@@ -60,6 +60,12 @@
 .sidebar-menu button:hover{ background:rgba(74,168,255,.18); color:#fff; }
 .chat-sidebar header{ position:relative; }
 
+/* CHAT_GROUPS_SIDEBAR_V1 — стили для групп в списке диалогов */
+.chat-list-section{ margin-bottom:4px; }
+.chat-list-section-title{ padding:10px 18px 6px; color:var(--text-muted,#94a3b8); font-size:.72em; text-transform:uppercase; letter-spacing:.6px; font-weight:600; }
+.chat-list-group{ cursor:pointer; }
+.chat-list-group .chat-avatar-group{ background:linear-gradient(135deg,#6c5ce7,#4aa8ff); display:flex; align-items:center; justify-content:center; font-size:1.05em; color:#fff; }
+
 /* CHAT_GROUPS_V1 — create-group modal */
 .gc-create-overlay{
   position:fixed; inset:0; background:rgba(0,0,0,.55);
@@ -242,6 +248,87 @@
 }
 .chat-header h2{ margin:0; font-size:1.05em; color:var(--text-main); }
 .chat-header .sub{ font-size:.82em; color:var(--text-muted); }
+
+/* CHAT_USER_INFO_V1 — clickable header info area + side-sheet (mirrors group info) */
+.chat-hdr-info{
+  cursor:pointer;
+  border-radius:10px;
+  padding:4px 8px; margin:-4px -4px;
+  transition:background .15s ease;
+  display:flex; align-items:center; gap:12px;
+  flex:1; min-width:0;
+}
+.chat-hdr-info:hover{ background:rgba(255,255,255,.06); }
+.chat-hdr-info:focus-visible{ outline:2px solid var(--cv2-accent, #7C5CFF); outline-offset:-2px; }
+.ui-bg{
+  position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:140;
+  display:flex; justify-content:flex-end;
+  backdrop-filter:blur(4px);
+}
+.ui-panel{
+  width:420px; max-width:100%; height:100%;
+  background:var(--chat-bg, #171D33);
+  border-left:1px solid rgba(255,255,255,.08);
+  display:flex; flex-direction:column;
+  box-shadow:-10px 0 30px rgba(0,0,0,.4);
+  animation:ui-slide .22s ease;
+}
+@keyframes ui-slide{ from{ transform:translateX(100%) } to{ transform:translateX(0) } }
+.ui-head{
+  display:flex; align-items:center; gap:10px;
+  padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.08);
+}
+.ui-head h3{ margin:0; color:#fff; font-size:1.05em; flex:1; }
+.ui-close{
+  background:transparent; border:none; color:#94a3b8;
+  font-size:1.6em; cursor:pointer; padding:2px 10px; border-radius:8px; line-height:1;
+}
+.ui-close:hover{ background:rgba(255,255,255,.08); color:#fff; }
+.ui-body{ flex:1; overflow-y:auto; padding:18px 16px; }
+.ui-hero{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  padding:14px 0 18px;
+}
+.ui-hero-av{
+  width:104px; height:104px; border-radius:50%;
+  background:linear-gradient(135deg,#6c5ce7,#4aa8ff);
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.4em; color:#fff; font-weight:600; overflow:hidden;
+}
+.ui-hero-av img{ width:100%; height:100%; object-fit:cover; }
+.ui-hero-name{ color:#fff; font-size:1.3em; font-weight:600; text-align:center; word-break:break-word; }
+.ui-hero-sub{ color:#94a3b8; font-size:.9em; text-align:center; }
+.ui-section{ margin-top:14px; }
+.ui-section-title{
+  color:#94a3b8; font-size:.78em; text-transform:uppercase; letter-spacing:.5px;
+  padding:0 4px 8px; font-weight:600;
+}
+.ui-row{
+  display:flex; align-items:center; gap:12px;
+  padding:10px 8px; border-radius:10px;
+  color:#e2e8f0; font-size:.95em;
+}
+.ui-row .lbl{ color:#94a3b8; flex:1; }
+.ui-row .val{ color:#e2e8f0; font-weight:500; text-align:right; word-break:break-word; }
+.ui-row.action{ cursor:pointer; transition:background .12s; }
+.ui-row.action:hover{ background:rgba(74,168,255,.12); }
+.ui-row .ico{ font-size:1.15em; width:22px; text-align:center; }
+.ui-stats{
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;
+  padding:6px 0;
+}
+.ui-stat{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:10px; padding:10px 12px;
+}
+.ui-stat .v{ color:#fff; font-size:1.25em; font-weight:600; }
+.ui-stat .l{ color:#94a3b8; font-size:.78em; margin-top:2px; }
+.ui-loading{ color:#94a3b8; text-align:center; padding:24px 0; font-size:.9em; }
+@media (max-width:520px){
+  .ui-bg{ background:rgba(0,0,0,.7); }
+  .ui-panel{ width:100%; }
+}
 
 .chat-empty{
   margin:auto; padding:40px; text-align:center; color:var(--text-muted);
@@ -891,18 +978,37 @@
     </div>
     {% if active_friend %}
       <div class="chat-header" id="chatHeader">
-        <div class="chat-avatar" style="width:36px;height:36px;font-size:.85em;">
-          {% if active_friend.avatar_url %}<img src="{{ active_friend.avatar_url }}" alt="">
-          {% else %}{{ (active_friend.name or active_friend.email or '?')[0]|upper }}{% endif %}
-        </div>
-        <div style="flex:1; min-width:0;">
-          <h2>{{ active_friend.name or active_friend.nickname or active_friend.email }}</h2>
-          <div class="sub">
-            <span id="presenceLine">Уровень {{ active_friend.current_level }} · {{ active_friend.experience_points }} XP</span>
+        <!-- CHAT_USER_INFO_V1 — клик по аватару/имени открывает панель информации о собеседнике -->
+        <div class="chat-hdr-info" role="button" tabindex="0"
+             title="Информация о собеседнике"
+             onclick="openUserInfo(event)"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserInfo(event);}">
+          <div class="chat-avatar" style="width:36px;height:36px;font-size:.85em;">
+            {% if active_friend.avatar_url %}<img src="{{ active_friend.avatar_url }}" alt="">
+            {% else %}{{ (active_friend.name or active_friend.email or '?')[0]|upper }}{% endif %}
+          </div>
+          <div style="flex:1; min-width:0;">
+            <h2>{{ active_friend.name or active_friend.nickname or active_friend.email }}</h2>
+            <div class="sub">
+              <span id="presenceLine">Уровень {{ active_friend.current_level }} · {{ active_friend.experience_points }} XP</span>
+            </div>
           </div>
         </div>
         <!-- CHAT_SEARCH_V1 — открытие поиска по сообщениям -->
         <button class="chat-hdr-btn" type="button" title="Поиск (Ctrl+F)" onclick="openMsgSearch()">🔍</button>
+      </div>
+
+      <!-- CHAT_USER_INFO_V1 — side-sheet с информацией о пользователе -->
+      <div id="uiPanel" class="ui-bg" hidden onclick="if(event.target===this) closeUserInfo()">
+        <aside class="ui-panel" role="dialog" aria-label="Информация о собеседнике">
+          <div class="ui-head">
+            <h3>Информация о собеседнике</h3>
+            <button type="button" class="ui-close" title="Закрыть" onclick="closeUserInfo()">×</button>
+          </div>
+          <div class="ui-body" id="uiBody">
+            <div class="ui-loading">Загрузка…</div>
+          </div>
+        </aside>
       </div>
       <!-- CHAT_SEARCH_V1 — панель поиска -->
       <div id="msgSearchBar" class="msg-search-bar" hidden>
@@ -1021,6 +1127,9 @@ let pickerSource = 'adaptive';
         // Back button: tap on chat-header arrow (::before pseudo) — we detect by Y coord
         const h = e.target.closest && e.target.closest('.chat-header');
         if (!h || !isMobile()) return;
+        // CHAT_USER_INFO_V1 — клик внутри блока с инфо о пользователе должен открывать
+        // панель информации, а не возвращать к списку диалогов
+        if (e.target.closest && e.target.closest('.chat-hdr-info')) return;
         const rect = h.getBoundingClientRect();
         // Tap within first 44px of header (where ::before arrow sits) → go back to list
         if (e.clientX - rect.left < 56){
@@ -2226,5 +2335,9 @@ document.addEventListener('click', function(e){
 })();
 </script>
 <script src="{{ url_for('static', filename='js/emoji_picker.js') }}" defer></script>
+<!-- CHAT_USER_INFO_V1 — клик по аватару/имени в шапке чата открывает панель «Информация о собеседнике» -->
+<script src="{{ url_for('static', filename='js/chat_user_info.js') }}" defer></script>
+<!-- CHAT_GROUPS_SIDEBAR_V2 — отображение групп в списке диалогов слева -->
+<script src="{{ url_for('static', filename='js/chat_groups_sidebar.js') }}?v=2" defer></script>
 
 {% endblock %}
