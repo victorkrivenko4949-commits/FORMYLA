@@ -7,10 +7,27 @@
 #siteConciergeRoot {
     position: fixed;
     bottom: 24px;
-    right: 100px;   /* слева от 🤖 тьютора (right:20px + 60px кнопки) */
+    right: 96px;
     z-index: 999;
     font-family: inherit;
     color: var(--text-soft, #e2e8f0);
+}
+
+body.page-chat #siteConciergeRoot,
+body.page-drawing #siteConciergeRoot {
+    right: auto;
+    left: 20px;
+}
+body.page-chat .site-concierge-panel,
+body.page-drawing .site-concierge-panel {
+    right: auto;
+    left: 20px;
+}
+body.page-chat .site-concierge-fab .scf-tooltip,
+body.page-drawing .site-concierge-fab .scf-tooltip {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* ── FAB ──────────────────────────────────────────────────────────────── */
@@ -57,7 +74,7 @@
 .site-concierge-panel {
     position: fixed;
     bottom: 96px;
-    right: 100px;
+    right: 96px;
     width: 380px;
     height: 520px;
     background: var(--bg-card, rgba(30, 41, 59, 0.85));

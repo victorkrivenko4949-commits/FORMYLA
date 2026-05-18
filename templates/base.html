@@ -50,7 +50,7 @@
     {% endif %}
     <script defer src="{{ url_for('static', filename='js/analytics.js') }}?v={{ asset_version }}"></script>
 </head>
-<body>
+<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}">
     <header class="header">
         <a href="{{ url_for('index') }}" class="logo">
             <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
