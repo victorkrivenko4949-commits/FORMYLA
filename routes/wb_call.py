@@ -47,11 +47,15 @@ _LOCK = threading.RLock()
 _ROOMS: Dict[str, "_Room"] = {}
 
 ROOM_TTL_SECONDS = 60 * 30          # 30 minutes of inactivity → drop the room
-# PEER_TTL: было 60с, но если у клиента подвис poll (мобильный — переключение
-# сети, фоновая вкладка) — peer GC'ился, а его место в комнате оставалось
-# «занятым» на стороне другого пира. Поднимаем до 3 минут: за это время
-# клиент успеет восстановиться или явно покинуть комнату через beforeunload.
-PEER_TTL_SECONDS = 180              # 3 минуты без poll → пир считается ушедшим
+# PEER_TTL: основное значение — 90 секунд. Меньше — рискуем GC'нуть «живого»
+# пира при кратковременных лагах polling'а. Больше — на стороне другого пира
+# слишком долго висит «зомби», и партнёр получает 409 room_full при входе.
+PEER_TTL_SECONDS = 90               # 1.5 минуты без poll → пир считается ушедшим
+# Для случая «room_full»: делаем АГРЕССИВНУЮ переоценку — если пир не делал
+# /poll дольше 15с, считаем его зомби и вычищаем перед отказом. Это закрывает
+# самую частую проблему: пользователь обновил страницу, его старый peer ещё
+# числится в комнате, и при повторном join ему отказывают.
+STALE_PEER_THRESHOLD_FOR_JOIN = 15
 MAX_PEERS_PER_ROOM = 2              # 1-на-1 call
 MAX_QUEUE = 200                     # safety: discard old signalling msgs
 
@@ -120,6 +124,27 @@ def join():
         if room is None:
             room = _Room(room_id)
             _ROOMS[room_id] = room
+
+        # Агрессивная очистка перед отказом «комната занята»: если в комнате
+        # лимит достигнут, но кто-то из «занимающих» не делал /poll более
+        # STALE_PEER_THRESHOLD_FOR_JOIN секунд — это зомби от предыдущей
+        # вкладки/обновления страницы, его удаляем здесь же.
+        if len(room.peers) >= MAX_PEERS_PER_ROOM:
+            now = time.time()
+            stale_pids = [
+                pid for pid, p in room.peers.items()
+                if now - p.last_seen > STALE_PEER_THRESHOLD_FOR_JOIN
+            ]
+            for pid in stale_pids:
+                room.peers.pop(pid, None)
+                for other in room.peers.values():
+                    other.queue.append({"from": pid, "msg": {"type": "peer-left"}})
+            if stale_pids:
+                room.last_active = now
+                logger.info(
+                    "[wb_call] join: pruned %d stale peer(s) before slot check in room=%s",
+                    len(stale_pids), room_id,
+                )
 
         if len(room.peers) >= MAX_PEERS_PER_ROOM:
             return jsonify({
