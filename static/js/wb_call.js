@@ -205,10 +205,34 @@
       }));
     }
 
-    // 3) Сами просим камеру+микрофон. Браузер покажет нативный диалог.
+    var videoConstraints = { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 } };
+    var audioConstraints = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+
+    // 3) Главный путь: пробуем сразу видео+аудио (типичный сценарий звонка).
     return navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 } },
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      video: videoConstraints,
+      audio: audioConstraints
+    }).catch(function (err) {
+      // 4) Fallback-логика. Если видео+аудио вместе не получились — пытаемся
+      //    «спасти» звонок, чтобы можно было хотя бы слышать собеседника.
+      //    Это закрывает массовые кейсы:
+      //      * камера занята OBS/Zoom, а микрофон свободен;
+      //      * нет камеры на устройстве (десктоп без вебки);
+      //      * драйвер камеры завис, но звуковая карта работает.
+      var isCameraIssue = err && (
+        err.name === "NotFoundError" ||
+        err.name === "NotReadableError" ||
+        err.name === "OverconstrainedError" ||
+        err.name === "TrackStartError"
+      );
+      if (!isCameraIssue) {
+        // Это не «проблема с камерой» — это отказ доступа целиком, HTTPS и пр.
+        // Пробрасываем ошибку дальше, чтобы пользователь увидел нормальный текст.
+        throw err;
+      }
+      console.warn("[wb_call] video failed (" + err.name + "), retrying audio-only");
+      setStatus("\u041a\u0430\u043c\u0435\u0440\u0430 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430 \u2014 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u043c\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u0441\u043e \u0437\u0432\u0443\u043a\u043e\u043c\u2026", "warn");
+      return navigator.mediaDevices.getUserMedia({ video: false, audio: audioConstraints });
     });
   }
 
@@ -216,7 +240,17 @@
     localStream = stream;
     var v = $("wbCallLocal");
     if (v) v.srcObject = stream;
-    camOn = true; micOn = true;
+    var hasVideo = stream && stream.getVideoTracks().length > 0;
+    var hasAudio = stream && stream.getAudioTracks().length > 0;
+    camOn = hasVideo;
+    micOn = hasAudio;
+    // Подпись на «своём» окошке: если видео нет — показываем «без камеры».
+    var tagSelf = document.querySelector("#wbCallPanel .wbc-vid-self .wbc-tag");
+    if (tagSelf) {
+      tagSelf.textContent = hasVideo
+        ? "\u0412\u044b"
+        : "\u0412\u044b (\u0431\u0435\u0437 \u043a\u0430\u043c\u0435\u0440\u044b)";
+    }
     refreshToggles();
   }
 
@@ -232,6 +266,15 @@
     var mic = $("wbCallMic"); var cam = $("wbCallCam");
     if (mic) { mic.classList.toggle("off", !micOn); mic.textContent = micOn ? "\u{1F3A4}" : "\u{1F507}"; }
     if (cam) { cam.classList.toggle("off", !camOn); cam.textContent = camOn ? "\u{1F4F7}" : "\u{1F6AB}"; }
+    // Если в потоке физически нет видео-трека — отключаем кнопку камеры,
+    // чтобы пользователь не пытался «включить» несуществующее устройство.
+    var hasVideoTrack = localStream && localStream.getVideoTracks().length > 0;
+    if (cam) {
+      cam.disabled = !hasVideoTrack;
+      cam.title = hasVideoTrack
+        ? "\u041a\u0430\u043c\u0435\u0440\u0430"
+        : "\u041a\u0430\u043c\u0435\u0440\u0430 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430";
+    }
   }
 
   function toggleMic() {
