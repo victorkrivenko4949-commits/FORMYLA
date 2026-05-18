@@ -46,3 +46,18 @@ services:
         sync: false
       - key: LIVEKIT_API_SECRET
         sync: false
+      # --- Infrastructure batch (Sentry / Brevo / Telegram / Plausible) ---
+      - key: SENTRY_DSN
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: PLAUSIBLE_DOMAIN
+        sync: false
