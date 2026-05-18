@@ -103,6 +103,20 @@
         '<button type="button" class="wbc-btn wbc-btn-ghost" id="wbCallGen" title="\u0421\u0433\u0435\u043d\u0435\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043d\u043e\u0432\u044b\u0439 \u043a\u043e\u0434">\u{1F3B2}</button>' +
         '<button type="button" class="wbc-btn wbc-btn-primary" id="wbCallStart">\u0412\u043e\u0439\u0442\u0438</button>' +
       '</div>' +
+      '<div class="wbc-invite-row" id="wbCallInviteRow">' +
+        '<button type="button" class="wbc-btn wbc-btn-invite" id="wbCallInvite">' +
+          '\u{1F46B} \u041f\u0440\u0438\u0433\u043b\u0430\u0441\u0438\u0442\u044c \u0434\u0440\u0443\u0433\u0430' +
+        '</button>' +
+      '</div>' +
+      '<div class="wbc-friends-list" id="wbCallFriends" hidden>' +
+        '<div class="wbc-friends-head">' +
+          '<span>\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0434\u0440\u0443\u0433\u0430</span>' +
+          '<button type="button" class="wbc-friends-close" id="wbCallFriendsClose" aria-label="\u0417\u0430\u043a\u0440\u044b\u0442\u044c">\u00d7</button>' +
+        '</div>' +
+        '<div class="wbc-friends-body" id="wbCallFriendsBody">' +
+          '<div class="wbc-friends-loading">\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u043c\u2026</div>' +
+        '</div>' +
+      '</div>' +
       '<div class="wbc-videos" id="wbCallVideos" hidden>' +
         '<div class="wbc-vid">' +
           '<video id="wbCallRemote" autoplay playsinline></video>' +
@@ -116,6 +130,7 @@
       '<div class="wbc-toolbar" id="wbCallToolbar" hidden>' +
         '<button type="button" class="wbc-icon" id="wbCallMic"  title="\u041c\u0438\u043a\u0440\u043e\u0444\u043e\u043d">\u{1F3A4}</button>' +
         '<button type="button" class="wbc-icon" id="wbCallCam"  title="\u041a\u0430\u043c\u0435\u0440\u0430">\u{1F4F7}</button>' +
+        '<button type="button" class="wbc-icon" id="wbCallRetry" title="\u041f\u0435\u0440\u0435\u0437\u0430\u043f\u0440\u043e\u0441\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0443\u043f \u043a \u043a\u0430\u043c\u0435\u0440\u0435 / \u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d\u0443">\u{1F501}</button>' +
         '<button type="button" class="wbc-icon wbc-icon-danger" id="wbCallLeave" title="\u0412\u044b\u0439\u0442\u0438">\u26d4</button>' +
         '<button type="button" class="wbc-icon" id="wbCallCopy" title="\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443">\u{1F517}</button>' +
       '</div>';
@@ -146,8 +161,13 @@
     });
     $("wbCallMic").addEventListener("click", toggleMic);
     $("wbCallCam").addEventListener("click", toggleCam);
+    $("wbCallRetry").addEventListener("click", retryMedia);
     $("wbCallLeave").addEventListener("click", leaveCall);
     $("wbCallCopy").addEventListener("click", copyLink);
+    $("wbCallInvite").addEventListener("click", openFriendsList);
+    $("wbCallFriendsClose").addEventListener("click", function () {
+      $("wbCallFriends").hidden = true;
+    });
 
     // Pre-fill from ?room= or localStorage.
     var params = new URLSearchParams(window.location.search);
@@ -450,6 +470,181 @@
         ? POLL_INTERVAL_ACTIVE_MS
         : POLL_INTERVAL_IDLE_MS;
       pollTimer = setTimeout(pollLoop, interval);
+    });
+  }
+
+  // -- Friends invite -----------------------------------------------------
+  var _friendsCache = null;
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function buildRoomUrl(code) {
+    return window.location.origin + window.location.pathname + "?room=" + encodeURIComponent(code);
+  }
+
+  function openFriendsList() {
+    var box = $("wbCallFriends");
+    var body = $("wbCallFriendsBody");
+    if (!box || !body) return;
+    box.hidden = false;
+
+    // Перед запросом убедимся, что есть валидный код комнаты — иначе ссылку
+    // отправить некуда. Если поле пустое — генерируем код автоматически.
+    var inp = $("wbCallRoom");
+    var rid = inp ? inp.value.trim().replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64) : "";
+    if (!rid || rid.length < 3) {
+      onGenerateClick();
+      rid = inp.value.trim();
+    }
+
+    if (_friendsCache) {
+      renderFriendsList(_friendsCache, rid);
+      return;
+    }
+
+    body.innerHTML = '<div class="wbc-friends-loading">\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u043c\u2026</div>';
+    fetch("/api/social/friends/list", { credentials: "same-origin" })
+      .then(function (r) {
+        if (r.status === 401 || r.status === 403) {
+          body.innerHTML = '<div class="wbc-friends-empty">\u0412\u043e\u0439\u0434\u0438\u0442\u0435 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442, \u0447\u0442\u043e\u0431\u044b \u043f\u0440\u0438\u0433\u043b\u0430\u0448\u0430\u0442\u044c \u0434\u0440\u0443\u0437\u0435\u0439.</div>';
+          throw new Error("auth");
+        }
+        return r.json();
+      })
+      .then(function (data) {
+        if (!data || !data.success) {
+          body.innerHTML = '<div class="wbc-friends-empty">\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0434\u0440\u0443\u0437\u0435\u0439.</div>';
+          return;
+        }
+        _friendsCache = data.friends || [];
+        renderFriendsList(_friendsCache, rid);
+      })
+      .catch(function (e) {
+        if (e && e.message === "auth") return;
+        console.warn("[wb_call] friends list err", e);
+        body.innerHTML = '<div class="wbc-friends-empty">\u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438.</div>';
+      });
+  }
+
+  function renderFriendsList(friends, rid) {
+    var body = $("wbCallFriendsBody");
+    if (!body) return;
+    if (!friends || !friends.length) {
+      body.innerHTML =
+        '<div class="wbc-friends-empty">' +
+          '\u0423 \u0432\u0430\u0441 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0440\u0443\u0437\u0435\u0439. ' +
+          '<a href="/friends" target="_blank" rel="noopener">\u041d\u0430\u0439\u0442\u0438 \u0434\u0440\u0443\u0437\u0435\u0439</a>' +
+        '</div>';
+      return;
+    }
+    var html = '';
+    friends.forEach(function (f) {
+      var name = escapeHtml(f.nickname || f.name || ("ID " + f.id));
+      var avatar = f.avatar_url
+        ? '<img class="wbc-friend-avatar" src="' + escapeHtml(f.avatar_url) + '" alt="">'
+        : '<div class="wbc-friend-avatar wbc-friend-avatar-fallback">' +
+            escapeHtml((name[0] || "?").toUpperCase()) +
+          '</div>';
+      html += '<button type="button" class="wbc-friend-item" data-friend-id="' + f.id + '">' +
+                avatar +
+                '<span class="wbc-friend-name">' + name + '</span>' +
+                '<span class="wbc-friend-invite">\u041f\u0440\u0438\u0433\u043b\u0430\u0441\u0438\u0442\u044c</span>' +
+              '</button>';
+    });
+    body.innerHTML = html;
+    // Делегируем клик: чтобы не перепривязывать после каждого ререндера.
+    body.querySelectorAll(".wbc-friend-item").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var fid = parseInt(btn.getAttribute("data-friend-id"), 10);
+        if (!isNaN(fid)) sendInviteToFriend(fid, rid, btn);
+      });
+    });
+  }
+
+  function sendInviteToFriend(friendId, code, btnEl) {
+    var url = buildRoomUrl(code);
+    var body = "\u{1F4F9} \u041f\u0440\u0438\u0432\u0435\u0442! \u041f\u0440\u0438\u0441\u043e\u0435\u0434\u0438\u043d\u044f\u0439\u0441\u044f \u043a \u0434\u043e\u0441\u043a\u0435 \u0438 \u0432\u0438\u0434\u0435\u043e\u0437\u0432\u043e\u043d\u043a\u0443: " + url +
+               " (\u043a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b: " + code + ")";
+    var label = btnEl ? btnEl.querySelector(".wbc-friend-invite") : null;
+    var prevText = label ? label.textContent : "";
+    if (label) { label.textContent = "\u2026"; }
+    if (btnEl) btnEl.disabled = true;
+
+    fetch("/api/chat/" + friendId + "/send", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "text", body: body })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, status: r.status, data: j }; });
+    }).then(function (r) {
+      if (!r.ok) {
+        if (label) label.textContent = "\u26a0 " + (r.data && r.data.error ? r.data.error : "\u043e\u0448\u0438\u0431\u043a\u0430");
+        if (btnEl) btnEl.disabled = false;
+        return;
+      }
+      if (label) {
+        label.textContent = "\u2713 \u041e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e";
+        label.classList.add("wbc-friend-invite-sent");
+      }
+      setStatus("\u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e \u0432 \u0447\u0430\u0442", "ok");
+      // Через 1.5с возвращаем кнопку в нормальный вид, но оставляем галочку.
+      setTimeout(function () {
+        if (label) label.textContent = "\u2713 \u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0451\u043d";
+        if (btnEl) btnEl.disabled = false;
+      }, 1500);
+    }).catch(function (e) {
+      console.warn("[wb_call] invite err", e);
+      if (label) label.textContent = "\u26a0 \u041e\u0448\u0438\u0431\u043a\u0430";
+      if (btnEl) btnEl.disabled = false;
+    });
+  }
+
+  // -- Retry media (re-ask camera / mic permission) ------------------------
+  function retryMedia() {
+    // Останавливаем текущий поток (если есть) и заново вызываем getUserMedia.
+    // Если разрешения сохранены — браузер вернёт стрим без диалога.
+    // Если пользователь до этого нажимал "Запретить" — диалог появится только
+    // после того как он вручную сбросит блокировку (значок 🔒 в адресной строке).
+    setStatus("\u041f\u0435\u0440\u0435\u0437\u0430\u043f\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u043c \u043a\u0430\u043c\u0435\u0440\u0443/\u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d\u2026");
+    var oldStream = localStream;
+    stopLocalStream();
+    acquireMedia().then(function (stream) {
+      attachLocalStream(stream);
+      // Перепривязываем треки к существующему RTCPeerConnection, чтобы
+      // собеседник сразу увидел/услышал обновлённое устройство.
+      if (pc) {
+        var senders = pc.getSenders();
+        stream.getTracks().forEach(function (newTrack) {
+          var sender = senders.find(function (s) { return s.track && s.track.kind === newTrack.kind; });
+          if (sender) {
+            sender.replaceTrack(newTrack).catch(function (e) {
+              console.warn("[wb_call] replaceTrack err", e);
+            });
+          } else {
+            try { pc.addTrack(newTrack, stream); } catch (e) {}
+          }
+        });
+      }
+      var hasVideo = stream.getVideoTracks().length > 0;
+      setStatus(hasVideo
+        ? "\u041a\u0430\u043c\u0435\u0440\u0430/\u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u044b"
+        : "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0451\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u0437\u0432\u0443\u043a", hasVideo ? "ok" : "warn");
+    }).catch(function (e) {
+      console.warn("[wb_call] retryMedia err", e);
+      var msg = (e && e._userMessage) ||
+                "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u0434\u043e\u0441\u0442\u0443\u043f \u043a \u043a\u0430\u043c\u0435\u0440\u0435/\u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d\u0443. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u0438\u044f \u0432 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0435.";
+      setStatus(msg, "err");
+      // Возвращаем старый поток, чтобы звонок не оборвался.
+      if (oldStream) {
+        localStream = oldStream;
+        var v = $("wbCallLocal");
+        if (v) v.srcObject = oldStream;
+      }
     });
   }
 

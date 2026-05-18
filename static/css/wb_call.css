@@ -120,6 +120,136 @@
     transform:translateY(-1px);
 }
 
+/* Invite-друга */
+.wb-call-panel .wbc-invite-row{
+    padding:0 10px 8px;
+    display:flex;
+}
+.wb-call-panel .wbc-btn-invite{
+    flex:1;
+    height:34px;
+    border:1px dashed rgba(74,168,255,.35);
+    background:rgba(74,168,255,.08);
+    color:#cbd5e1;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.wb-call-panel .wbc-btn-invite:hover{
+    background:rgba(74,168,255,.18);
+    border-color:rgba(74,168,255,.6);
+    color:#fff;
+}
+
+.wb-call-panel .wbc-friends-list{
+    margin:0 10px 10px;
+    background:rgba(15,23,42,.55);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:10px;
+    overflow:hidden;
+    max-height:230px;
+    display:flex;
+    flex-direction:column;
+}
+.wb-call-panel .wbc-friends-list[hidden]{ display:none !important; }
+.wb-call-panel .wbc-friends-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 12px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    font-size:12px;
+    color:#94a3b8;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+}
+.wb-call-panel .wbc-friends-close{
+    background:transparent;
+    border:none;
+    color:#94a3b8;
+    width:22px;
+    height:22px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+}
+.wb-call-panel .wbc-friends-close:hover{
+    background:rgba(255,255,255,.08);
+    color:#fff;
+}
+.wb-call-panel .wbc-friends-body{
+    overflow-y:auto;
+    flex:1;
+}
+.wb-call-panel .wbc-friends-loading,
+.wb-call-panel .wbc-friends-empty{
+    padding:14px 12px;
+    color:#94a3b8;
+    font-size:13px;
+    text-align:center;
+}
+.wb-call-panel .wbc-friends-empty a{
+    color:#7dd3fc;
+    text-decoration:underline;
+}
+
+.wb-call-panel .wbc-friend-item{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid rgba(255,255,255,.04);
+    color:#e2e8f0;
+    cursor:pointer;
+    text-align:left;
+    font-size:13.5px;
+    transition:background .12s ease;
+}
+.wb-call-panel .wbc-friend-item:hover{
+    background:rgba(74,168,255,.10);
+}
+.wb-call-panel .wbc-friend-item:disabled{
+    opacity:.6;
+    cursor:default;
+}
+.wb-call-panel .wbc-friend-avatar{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    object-fit:cover;
+    flex-shrink:0;
+    background:rgba(255,255,255,.06);
+}
+.wb-call-panel .wbc-friend-avatar-fallback{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#cbd5e1;
+    font-weight:600;
+    font-size:13px;
+}
+.wb-call-panel .wbc-friend-name{
+    flex:1;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.wb-call-panel .wbc-friend-invite{
+    color:#7dd3fc;
+    font-size:12px;
+    font-weight:600;
+    flex-shrink:0;
+}
+.wb-call-panel .wbc-friend-invite-sent{
+    color:#86efac;
+}
+
 .wb-call-panel .wbc-btn-primary{
     background:linear-gradient(135deg,#4aa8ff,#8b5cf6);
     box-shadow:0 4px 14px rgba(139,92,246,.30);
