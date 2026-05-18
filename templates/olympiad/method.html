@@ -76,12 +76,12 @@
         </h1>
         <p class="oly-card-sub" style="margin:0;">
             {% if block.section %}Раздел: {{ block.section }}{% endif %}
-            {% if block.grades %} · Классы: {{ block.grades|join(', ') }}{% endif %}
+            {% if block.grades %} · Классы: {% if block.grades is iterable and block.grades is not string %}{{ block.grades|join(', ') }}{% else %}{{ block.grades }}{% endif %}{% endif %}
             {% if block.difficulty_level %} · Сложность: {{ block.difficulty_level }}/5{% endif %}
             {% if block.frequency_vsosh_9 %} · На ВсОШ-9: {{ block.frequency_vsosh_9 }}×{% endif %}
         </p>
         {% if block.recommended_competitions %}
-        <p class="oly-card-sub" style="margin:4px 0 0;">Рекомендуется для: {{ block.recommended_competitions|join(', ') }}</p>
+        <p class="oly-card-sub" style="margin:4px 0 0;">Рекомендуется для: {% if block.recommended_competitions is iterable and block.recommended_competitions is not string %}{{ block.recommended_competitions|join(', ') }}{% else %}{{ block.recommended_competitions }}{% endif %}</p>
         {% endif %}
     </header>
 
@@ -150,7 +150,7 @@
     {% if linked_tasks %}
     <h2 class="oly-section-title">📘 Реальные задачи ВсОШ-9, использующие метод «{{ block.method_code }}»</h2>
     <p class="oly-card-sub" style="margin-bottom: 12px;">
-        Найдено <strong>{{ linked_tasks|length }}</strong> задач в архиве ВсОШ-9 (2010–2026).
+        Найдено <strong>{{ linked_tasks|length }}</strong> задач в архиве ВсОШ-9 (2010).
     </p>
     <div class="oly-grid">
         {% for t in linked_tasks %}

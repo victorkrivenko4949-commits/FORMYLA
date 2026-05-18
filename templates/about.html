@@ -170,7 +170,18 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="about-page">
+<script>
+  // Bug-6 fix: всегда показываем страницу «О сайте» с самого верха, без оффсета
+  // (браузеры могут восстанавливать позицию скролла или сдвигать её при якорях,
+  // из-за чего заголовок-герой оказывался ниже видимой области).
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (_) {}
+  // Если нет hash-якоря — гарантируем скролл к верху страницы.
+  if (!window.location.hash) {
+    window.scrollTo(0, 0);
+    window.addEventListener('load', function () { window.scrollTo(0, 0); }, { once: true });
+  }
+</script>
+<div class="about-page" id="about-top" style="scroll-margin-top: 24px;">
 
   {# ── 2.1 Onboarding banner (only after signup) ── #}
   {% if request.args.get('onboarding') %}

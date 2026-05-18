@@ -370,6 +370,67 @@
     }
     return null;
   }
+
+  // Точечный hit-test для ластика: считаем что объект "задет",
+  // если ЛЮБАЯ его точка/сегмент находится в радиусе r от (wx,wy).
+  function _distSq(ax, ay, bx, by) {
+    const dx = ax - bx, dy = ay - by;
+    return dx*dx + dy*dy;
+  }
+  function _segPointDistSq(px, py, ax, ay, bx, by) {
+    const dx = bx - ax, dy = by - ay;
+    const len2 = dx*dx + dy*dy;
+    if (len2 < 1e-9) return _distSq(px, py, ax, ay);
+    let t = ((px - ax) * dx + (py - ay) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    return _distSq(px, py, ax + t*dx, ay + t*dy);
+  }
+  function eraserHits(wx, wy, radius) {
+    // Возвращает индексы объектов, которые задеты ластиком в точке (wx,wy).
+    const r2 = radius * radius;
+    const hits = [];
+    for (let i = state.objects.length - 1; i >= 0; i--) {
+      const o = state.objects[i];
+      if (o.kind === "eraser") continue; // старые eraser-обводки игнорируем
+      // pen-обводки — проверяем сегменты
+      if (o.kind === "pen") {
+        if (!o.points || !o.points.length) continue;
+        let hit = false;
+        if (o.points.length === 1) {
+          hit = _distSq(wx, wy, o.points[0].x, o.points[0].y) <= r2;
+        } else {
+          for (let k = 1; k < o.points.length; k++) {
+            if (_segPointDistSq(wx, wy, o.points[k-1].x, o.points[k-1].y, o.points[k].x, o.points[k].y) <= r2) {
+              hit = true; break;
+            }
+          }
+        }
+        if (hit) hits.push(i);
+        continue;
+      }
+      // Прямоугольники / эллипсы / стикеры / картинки / текст — bbox
+      const b = bbox(o);
+      if (!b) continue;
+      if (wx >= b.x - radius && wx <= b.x + b.w + radius &&
+          wy >= b.y - radius && wy <= b.y + b.h + radius) {
+        hits.push(i);
+        continue;
+      }
+      // Линии / стрелки — точное расстояние до отрезка
+      if (o.kind === "line" || o.kind === "arrow") {
+        if (_segPointDistSq(wx, wy, o.x1, o.y1, o.x2, o.y2) <= r2) hits.push(i);
+      }
+    }
+    return hits;
+  }
+  function eraseAt(wx, wy, radius) {
+    const idxs = eraserHits(wx, wy, radius);
+    if (!idxs.length) return false;
+    // Удаляем по убыванию индекса
+    idxs.sort((a, b) => b - a);
+    for (const i of idxs) state.objects.splice(i, 1);
+    return true;
+  }
   function moveObj(o, dx, dy) {
     if (o.kind === "pen" || o.kind === "eraser") {
       for (const p of o.points) { p.x += dx; p.y += dy; }
@@ -392,6 +453,11 @@
     if (t === "select") return "default";
     if (t === "pen") {
       // Pencil: tip at bottom-left (hotspot 2, 30).
+      // Карандаш: тело тянется вертикально, кончик грифеля в точке (16, 27).
+      // После rotate(-45 16 16) кончик смещается в нижний-правый угол SVG.
+      // Точный пересчёт: (16, 27) -> (16+11*cos45, 16+11*sin45) ≈ (23.8, 23.8).
+      // Чтобы линия начиналась РОВНО с визуального острия — hotspot = (24, 24).
+      const TIP_X = 24, TIP_Y = 24;
       const svg =
         '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
           '<g transform="rotate(-45 16 16)">' +
@@ -401,9 +467,10 @@
             '<polygon points="14.5,24 17.5,24 16,27" fill="#1f2937"/>' +
             '<rect x="13" y="6.5" width="6" height="1.2" fill="#1f2937" opacity="0.7"/>' +
           '</g>' +
-          '<circle cx="2" cy="30" r="1.3" fill="' + stroke + '" stroke="#0b1020" stroke-width="0.7"/>' +
+          // Цветной маркер прямо под остриём — подтверждает hotspot
+          '<circle cx="' + TIP_X + '" cy="' + TIP_Y + '" r="1.3" fill="' + stroke + '" stroke="#0b1020" stroke-width="0.7"/>' +
         '</svg>';
-      return svgCursor(svg, 2, 30);
+      return svgCursor(svg, TIP_X, TIP_Y);
     }
     if (t === "eraser") {
       // Eraser block, hotspot at tip (4, 28).
@@ -417,6 +484,19 @@
           '</g>' +
         '</svg>';
       return svgCursor(svg, 4, 28);
+    }
+    if (t === "objErase") {
+      // Корзина — ластик «удалить объект целиком», hotspot в центре корзины (16, 18).
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
+          '<rect x="10" y="6" width="12" height="3" rx="1" fill="#ff7a90" stroke="#1f2937" stroke-width="1.2"/>' +
+          '<rect x="14" y="3" width="4"  height="3" rx="0.6" fill="#ff7a90" stroke="#1f2937" stroke-width="1.2"/>' +
+          '<path d="M9 9 L23 9 L21.5 27 Q21.4 28.4 20 28.4 L12 28.4 Q10.6 28.4 10.5 27 Z" fill="#ffe4ea" stroke="#1f2937" stroke-width="1.3"/>' +
+          '<line x1="13" y1="13" x2="13.5" y2="25" stroke="#1f2937" stroke-width="1"/>' +
+          '<line x1="16" y1="13" x2="16"   y2="25" stroke="#1f2937" stroke-width="1"/>' +
+          '<line x1="19" y1="13" x2="18.5" y2="25" stroke="#1f2937" stroke-width="1"/>' +
+        '</svg>';
+      return svgCursor(svg, 16, 18);
     }
     if (t === "rect") {
       const svg =
@@ -512,8 +592,31 @@
       else selectedId = null;
       redraw(); return;
     }
-    if (tool === "pen" || tool === "eraser") {
-      drag = { kind: "stroke", preview: { id: uid(), kind: tool, color: color, thickness: thickness, points: [{ x: w.x, y: w.y }] } };
+    if (tool === "objErase") {
+      // Стереть один объект целиком по клику
+      const h = hitTest(w.x, w.y);
+      if (h) {
+        const idx = state.objects.findIndex(x => x.id === h.id);
+        if (idx >= 0) {
+          state.objects.splice(idx, 1);
+          pushHistory();
+          redraw();
+        }
+      }
+      drag = { kind: "objErase" }; // дальше можно перетаскивать — будем стирать ещё
+      return;
+    }
+    if (tool === "eraser") {
+      // Векторный ластик: удаляем объекты, чьи штрихи попадают под радиус кисти.
+      // Радиус берём из текущей толщины (минимум 12 px в world-координатах).
+      const r = Math.max(12 / view.scale, (thickness || 2) * 4 / view.scale);
+      eraseAt(w.x, w.y, r);
+      redraw();
+      drag = { kind: "erase", radius: r, lastX: w.x, lastY: w.y };
+      return;
+    }
+    if (tool === "pen") {
+      drag = { kind: "stroke", preview: { id: uid(), kind: "pen", color: color, thickness: thickness, points: [{ x: w.x, y: w.y }] } };
       return;
     }
     if (tool === "rect" || tool === "ellipse") {
@@ -547,6 +650,30 @@
     if (drag.kind === "stroke") { drag.preview.points.push({ x: w.x, y: w.y }); redraw(); }
     else if (drag.kind === "shape") { drag.preview.w = w.x - drag.preview.x; drag.preview.h = w.y - drag.preview.y; redraw(); }
     else if (drag.kind === "segment") { drag.preview.x2 = w.x; drag.preview.y2 = w.y; redraw(); }
+    else if (drag.kind === "erase") {
+      // Векторный ластик при перетаскивании: проходим по короткой линии
+      // от прошлой точки до текущей, стираем по точкам с шагом ~radius/2
+      const r = drag.radius;
+      const dx = w.x - drag.lastX, dy = w.y - drag.lastY;
+      const dist = Math.hypot(dx, dy);
+      const step = Math.max(r / 2, 1);
+      const n = Math.max(1, Math.ceil(dist / step));
+      let changed = false;
+      for (let s = 1; s <= n; s++) {
+        const t = s / n;
+        if (eraseAt(drag.lastX + dx * t, drag.lastY + dy * t, r)) changed = true;
+      }
+      drag.lastX = w.x; drag.lastY = w.y;
+      if (changed) redraw();
+    }
+    else if (drag.kind === "objErase") {
+      // Удалить ещё один объект при перетаскивании
+      const h = hitTest(w.x, w.y);
+      if (h) {
+        const idx = state.objects.findIndex(x => x.id === h.id);
+        if (idx >= 0) { state.objects.splice(idx, 1); redraw(); }
+      }
+    }
     else if (drag.kind === "move") {
       const dx = w.x - drag.startX, dy = w.y - drag.startY;
       drag.startX = w.x; drag.startY = w.y;
@@ -569,6 +696,9 @@
       if (Math.hypot(drag.preview.x2 - drag.preview.x1, drag.preview.y2 - drag.preview.y1) > 3) {
         state.objects.push(drag.preview); pushHistory();
       }
+    } else if (drag.kind === "erase" || drag.kind === "objErase") {
+      // Любое стирание попадает в историю одной операцией
+      pushHistory();
     } else if (drag.kind === "move") {
       pushHistory();
     }
@@ -676,7 +806,7 @@
       }
     }
     if (!e.ctrlKey && !e.metaKey) {
-      const map = { v: "select", p: "pen", e: "eraser", r: "rect", o: "ellipse", l: "line", a: "arrow", t: "text", s: "sticky" };
+      const map = { v: "select", p: "pen", e: "eraser", x: "objErase", r: "rect", o: "ellipse", l: "line", a: "arrow", t: "text", s: "sticky" };
       if (map[e.key.toLowerCase()]) setTool(map[e.key.toLowerCase()]);
     }
   });
