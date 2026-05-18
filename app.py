@@ -1012,10 +1012,15 @@ def add_security_headers(response):
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
     response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
-    # Запрещаем доступ к камере/микрофону/геолокации по умолчанию (явный opt-out)
+    # Permissions-Policy:
+    #   * camera/microphone — разрешены на собственном origin (self), потому что
+    #     виджет видеозвонка на доске для рисования (static/js/wb_call.js)
+    #     использует navigator.mediaDevices.getUserMedia(). Без `self` браузер
+    #     не покажет даже диалог разрешения и getUserMedia падает молча.
+    #   * geolocation/payment — выключены (мы их не используем).
     response.headers.setdefault(
         'Permissions-Policy',
-        'camera=(), microphone=(), geolocation=(), payment=()'
+        'camera=(self), microphone=(self), geolocation=(), payment=()'
     )
     # HSTS — только когда соединение действительно по HTTPS (production behind Cloudflare)
     try:

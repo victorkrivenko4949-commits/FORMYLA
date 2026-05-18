@@ -10,22 +10,8 @@
         <p>Структурированная подготовка по тематическим и этапным пробникам.</p>
     </header>
 
-    {# ── Спец-карточка: банк реальных задач ВсОШ-9 за 17 лет ──────────────── #}
+    {# ── Карточка курса ВсОШ-9, сезон 2026/2027 ──────────────────────────── #}
     <div class="oly-grid-2" style="margin-bottom: 16px;">
-        <a class="oly-card" href="{{ url_for('olympiad.methods', sort='frequency') }}"
-           style="background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(239,68,68,0.08));
-                  border: 1px solid rgba(245,158,11,0.35);">
-            <h3 style="margin: 0 0 6px;">📊 ВсОШ-9: 89 методов и 295 задач</h3>
-            <p class="oly-card-sub" style="margin: 0 0 10px;">
-                Полная база реальных задач заключительного, регионального и муниципального
-                этапов ВсОШ по математике для 9 класса за 2010–2026, разобранная по
-                89 методам решения.
-            </p>
-            <p class="oly-card-sub" style="margin: 0; font-weight: 600; color:#fbbf24;">
-                295 задач · 17 лет · 89 методов
-            </p>
-        </a>
-
         <a class="oly-card" href="{{ url_for('olympiad.course') }}">
             <h3 style="margin: 0 0 6px;">🎯 Курс «ВсОШ-9, сезон 2026/2027»</h3>
             <p class="oly-card-sub" style="margin: 0 0 10px;">
@@ -38,17 +24,5 @@
             </p>
         </a>
     </div>
-
-    {% if courses %}
-    <div class="oly-grid-2">
-        {% for c in courses %}
-        <a class="oly-card"
-           href="{{ url_for('olympiad.course') if c.competition == 'ВсОШ' and c.grade == 9 and c.season_year == 2027 else '#' }}">
-            <h3>{{ c.competition }} · {{ c.grade }} класс · сезон {{ c.season_year - 1 }}/{{ c.season_year }}</h3>
-            <p class="oly-card-sub">Пробников опубликовано: <strong>{{ c.probniks_total }}</strong></p>
-        </a>
-        {% endfor %}
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

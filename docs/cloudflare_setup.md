@@ -56,7 +56,8 @@ Flask reads X-Forwarded-For via ProxyFix(x_for=2): we account for CF -> Render -
 - X-Content-Type-Options: nosniff
 - X-Frame-Options: SAMEORIGIN
 - Referrer-Policy: strict-origin-when-cross-origin
-- Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+- Permissions-Policy: camera=(self), microphone=(self), geolocation=(), payment=()
+  (камера/микрофон разрешены на собственном origin для виджета видеозвонка на доске для рисования; геолокация и платежи отключены)
 - Vary: Cookie (prevents CDN cross-user cache leaks)
 - SESSION_COOKIE_SECURE = True when behind HTTPS / RENDER env
 

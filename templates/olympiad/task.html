@@ -47,30 +47,36 @@
     <!-- ───── Ввод ответа + решение (1-в-1 как Daily Quest) ───────────── -->
     {% if task.answer %}
     <section class="oly-card answer-section">
-        <label for="userAnswer" class="answer-label">Ваш ответ:</label>
+        {# ВАЖНО: id'шники намеренно не используются — браузер создаёт по id
+           глобальные переменные (window.userAnswer = <input>), которые ломают
+           x-model в Alpine.js (значение поля становится "[object HTMLInputElement]"). #}
+        <label class="answer-label">Ваш ответ:</label>
         <input type="text"
-               id="userAnswer"
-               class="answer-input"
+               name="user_answer"
+               class="answer-input oly-answer-input"
                placeholder="Введите краткий ответ (число, выражение)"
                autocomplete="off"
                x-model="userAnswer"
                @keydown.enter.prevent="submitAnswer()">
 
-        <label for="userSolution" class="answer-label" style="margin-top: 16px;">
+        <label class="answer-label" style="margin-top: 16px;">
             Решение (необязательно, но ИИ-тьютор проверит):
         </label>
-        <textarea id="userSolution"
-                  class="answer-input"
+        <textarea name="user_solution"
+                  class="answer-input oly-solution-input"
                   placeholder="Опишите ход решения... ИИ-тьютор даст подробный разбор"
                   rows="5"
                   style="resize: vertical; min-height: 100px; font-family: inherit;"
                   x-model="userSolution"></textarea>
 
-        <button @click="submitAnswer()"
-                id="submitBtn"
+        <button type="button"
+                @click="submitAnswer()"
                 class="submit-button"
-                :disabled="submitting"
-                x-text="submitting ? '⏳ ИИ-тьютор проверяет...' : '✓ Проверить'"></button>
+                :disabled="submitting">
+            <span x-show="!submitting">✓ Ответить</span>
+            <span x-show="submitting" x-cloak>⏳ ИИ-тьютор проверяет…</span>
+            <noscript>✓ Ответить</noscript>
+        </button>
     </section>
 
     <!-- Feedback (заполняется JS после submit) -->
@@ -630,7 +636,7 @@ function olympiadTask(cfg) {
             const fs = document.getElementById('feedbackSection');
             if (fs) fs.style.display = 'none';
             this.userAnswer = '';
-            const inp = document.getElementById('userAnswer');
+            const inp = document.querySelector('.oly-answer-input');
             if (inp) inp.focus();
         },
     };

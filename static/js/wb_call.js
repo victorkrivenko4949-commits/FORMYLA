@@ -95,8 +95,12 @@
         '<span id="wbCallStatus" class="wbc-status">\u043d\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e</span>' +
         '<button type="button" class="wbc-x" id="wbCallClose" title="\u0421\u0432\u0435\u0440\u043d\u0443\u0442\u044c">\u00d7</button>' +
       '</div>' +
+      '<div class="wbc-hint" id="wbCallHint">' +
+        '\u041f\u0440\u0438\u0434\u0443\u043c\u0430\u0439\u0442\u0435 \u043a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b \u0438\u043b\u0438 \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u{1F3B2}, \u0438 \u043e\u0442\u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u0435\u0433\u043e \u0441\u043e\u0431\u0435\u0441\u0435\u0434\u043d\u0438\u043a\u0443.' +
+      '</div>' +
       '<div class="wbc-room-row" id="wbCallRoomRow">' +
-        '<input type="text" id="wbCallRoom" placeholder="\u041a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b (\u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: math-42)" maxlength="64" autocomplete="off">' +
+        '<input type="text" id="wbCallRoom" placeholder="\u041a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b (\u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: math-42)" maxlength="64" minlength="3" autocomplete="off" spellcheck="false">' +
+        '<button type="button" class="wbc-btn wbc-btn-ghost" id="wbCallGen" title="\u0421\u0433\u0435\u043d\u0435\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043d\u043e\u0432\u044b\u0439 \u043a\u043e\u0434">\u{1F3B2}</button>' +
         '<button type="button" class="wbc-btn wbc-btn-primary" id="wbCallStart">\u0412\u043e\u0439\u0442\u0438</button>' +
       '</div>' +
       '<div class="wbc-videos" id="wbCallVideos" hidden>' +
@@ -119,8 +123,26 @@
 
     $("wbCallClose").addEventListener("click", function () { showPanel(false); });
     $("wbCallStart").addEventListener("click", onStartClick);
+    $("wbCallGen").addEventListener("click", onGenerateClick);
     $("wbCallRoom").addEventListener("keydown", function (e) {
       if (e.key === "Enter") { e.preventDefault(); onStartClick(); }
+    });
+    $("wbCallRoom").addEventListener("input", function () {
+      // Подсказка-фидбек: показываем валидность ввода в реальном времени.
+      var raw = ($("wbCallRoom").value || "").trim();
+      var clean = raw.replace(/[^A-Za-z0-9_-]/g, "");
+      var hint = $("wbCallHint");
+      if (!hint) return;
+      if (!raw) {
+        hint.textContent = "\u041f\u0440\u0438\u0434\u0443\u043c\u0430\u0439\u0442\u0435 \u043a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b \u0438\u043b\u0438 \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u{1F3B2}, \u0438 \u043e\u0442\u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u0435\u0433\u043e \u0441\u043e\u0431\u0435\u0441\u0435\u0434\u043d\u0438\u043a\u0443.";
+        hint.dataset.kind = "";
+      } else if (clean.length < 3) {
+        hint.textContent = "\u041a\u043e\u0434 \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u043a\u043e\u0440\u043e\u0442\u043a\u0438\u0439 (\u043d\u0443\u0436\u043d\u043e \u22653 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432 a\u2013z, 0\u20139, -, _).";
+        hint.dataset.kind = "warn";
+      } else {
+        hint.textContent = "\u041e\u0442\u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u044d\u0442\u043e\u0442 \u043a\u043e\u0434 \u0441\u043e\u0431\u0435\u0441\u0435\u0434\u043d\u0438\u043a\u0443 \u2014 \u043e\u043d \u0432\u0432\u043e\u0434\u0438\u0442 \u0435\u0433\u043e \u0443 \u0441\u0435\u0431\u044f \u0438 \u043f\u043e\u043f\u0430\u0434\u0430\u0435\u0442 \u0432 \u044d\u0442\u0443 \u0436\u0435 \u043a\u043e\u043c\u043d\u0430\u0442\u0443.";
+        hint.dataset.kind = "ok";
+      }
     });
     $("wbCallMic").addEventListener("click", toggleMic);
     $("wbCallCam").addEventListener("click", toggleCam);
@@ -159,6 +181,31 @@
 
   // -- Media --------------------------------------------------------------
   function acquireMedia() {
+    // 1) Secure-context guard: getUserMedia доступен ТОЛЬКО на https:// или
+    //    на localhost / 127.0.0.1. На http в проде navigator.mediaDevices
+    //    будет undefined, и браузер вообще не покажет диалог разрешения.
+    var isLocalhost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])$/i
+                       .test(location.hostname);
+    var isSecure = (window.isSecureContext === true) ||
+                   location.protocol === "https:" ||
+                   isLocalhost;
+    if (!isSecure) {
+      return Promise.reject(Object.assign(new Error("Insecure context"), {
+        name: "SecurityError",
+        _userMessage: "\u041a\u0430\u043c\u0435\u0440\u0430 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430 \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e HTTPS \u2014 \u043e\u0442\u043a\u0440\u043e\u0439\u0442\u0435 \u0441\u0430\u0439\u0442 \u043f\u043e https://"
+      }));
+    }
+
+    // 2) Не во всех браузерах есть mediaDevices (например, очень старый Safari
+    //    или ограниченные WebView). Покажем явное сообщение, а не падать молча.
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return Promise.reject(Object.assign(new Error("getUserMedia not available"), {
+        name: "NotSupportedError",
+        _userMessage: "\u0411\u0440\u0430\u0443\u0437\u0435\u0440 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 \u0432\u0438\u0434\u0435\u043e\u0437\u0432\u043e\u043d\u043a\u0438 (getUserMedia)"
+      }));
+    }
+
+    // 3) Сами просим камеру+микрофон. Браузер покажет нативный диалог.
     return navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 } },
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
@@ -364,13 +411,38 @@
   }
 
   // -- Public actions -----------------------------------------------------
+  function generateRoomCode() {
+    // Понятные «слова + число» для удобства диктовки голосом.
+    var words = [
+      "math", "alpha", "beta", "delta", "sigma", "lemma", "theta",
+      "graph", "prime", "axis", "vector", "scalar", "proof", "logic"
+    ];
+    var w = words[Math.floor(Math.random() * words.length)];
+    var n = Math.floor(Math.random() * 900) + 100; // 100..999
+    return w + "-" + n;
+  }
+
+  function onGenerateClick() {
+    var inp = $("wbCallRoom");
+    if (!inp) return;
+    inp.value = generateRoomCode();
+    try { inp.dispatchEvent(new Event("input", { bubbles: true })); } catch (e) {}
+    inp.focus();
+    inp.select();
+  }
+
   function onStartClick() {
     var inp = $("wbCallRoom");
     var raw = inp ? inp.value.trim() : "";
     var rid = (raw || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64);
     if (!rid) {
-      setStatus("\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b", "warn");
+      setStatus("\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b \u0438\u043b\u0438 \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u{1F3B2}", "warn");
       if (inp) inp.focus();
+      return;
+    }
+    if (rid.length < 3) {
+      setStatus("\u041a\u043e\u0434 \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u043a\u043e\u0440\u043e\u0442\u043a\u0438\u0439 (\u043c\u0438\u043d. 3 \u0441\u0438\u043c\u0432\u043e\u043b\u0430)", "warn");
+      if (inp) { inp.focus(); inp.select(); }
       return;
     }
     try { localStorage.setItem("wb_call_room_last", rid); } catch (e) {}
@@ -415,9 +487,24 @@
       pollLoop();
     }).catch(function (e) {
       console.warn("[wb_call] join err", e);
-      var msg = (e && e.name === "NotAllowedError")
-        ? "\u0414\u043e\u0441\u0442\u0443\u043f \u043a \u043a\u0430\u043c\u0435\u0440\u0435/\u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d\u0443 \u0437\u0430\u043f\u0440\u0435\u0449\u0451\u043d"
-        : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f";
+      var msg;
+      if (e && e._userMessage) {
+        msg = e._userMessage;
+      } else if (e && (e.name === "NotAllowedError" || e.name === "PermissionDeniedError")) {
+        msg = "\u0414\u043e\u0441\u0442\u0443\u043f \u043a \u043a\u0430\u043c\u0435\u0440\u0435/\u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d\u0443 \u0437\u0430\u043f\u0440\u0435\u0449\u0451\u043d \u2014 \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u0442\u0435 \u0432 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0430 (\u0437\u043d\u0430\u0447\u043e\u043a \u0437\u0430\u043c\u043a\u0430 \u0432 \u0430\u0434\u0440\u0435\u0441\u043d\u043e\u0439 \u0441\u0442\u0440\u043e\u043a\u0435)";
+      } else if (e && e.name === "SecurityError") {
+        msg = "\u041a\u0430\u043c\u0435\u0440\u0430 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430 \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e HTTPS \u2014 \u043e\u0442\u043a\u0440\u043e\u0439\u0442\u0435 \u0441\u0430\u0439\u0442 \u043f\u043e https://";
+      } else if (e && e.name === "NotFoundError") {
+        msg = "\u041a\u0430\u043c\u0435\u0440\u0430 \u0438\u043b\u0438 \u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u044b \u043d\u0430 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0435";
+      } else if (e && e.name === "NotReadableError") {
+        msg = "\u041a\u0430\u043c\u0435\u0440\u0430/\u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d \u0437\u0430\u043d\u044f\u0442\u044b \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u043e\u0439 (Zoom, Skype, OBS\u2026)";
+      } else if (e && e.name === "NotSupportedError") {
+        msg = "\u0411\u0440\u0430\u0443\u0437\u0435\u0440 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 \u0432\u0438\u0434\u0435\u043e\u0437\u0432\u043e\u043d\u043a\u0438";
+      } else if (e && e.name === "OverconstrainedError") {
+        msg = "\u041a\u0430\u043c\u0435\u0440\u0430 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 \u043d\u0443\u0436\u043d\u044b\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438";
+      } else {
+        msg = "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f";
+      }
       setStatus(msg, "err");
       stopLocalStream();
       $("wbCallVideos").hidden = true;
