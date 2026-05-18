@@ -452,15 +452,14 @@
     const stroke = (c || color || "#e6e8ff");
     if (t === "select") return "default";
     if (t === "pen") {
-      // Pencil: tip at bottom-left (hotspot 2, 30).
-      // Карандаш: тело тянется вертикально, кончик грифеля в точке (16, 27).
-      // После rotate(-45 16 16) кончик смещается в нижний-правый угол SVG.
-      // Точный пересчёт: (16, 27) -> (16+11*cos45, 16+11*sin45) ≈ (23.8, 23.8).
-      // Чтобы линия начиналась РОВНО с визуального острия — hotspot = (24, 24).
-      const TIP_X = 24, TIP_Y = 24;
+      // Карандаш: рисуем тело вертикально внутри SVG, кончик грифеля в точке (16, 27).
+      // Поворачиваем на +135° вокруг (16, 16) — карандаш «смотрит» острием в верхний-левый
+      // угол курсора (как обычный writing-cursor). После поворота (16, 27) -> (16-11*cos45, 16-11*sin45) ≈ (8.2, 8.2).
+      // Hotspot ставим точно в визуальный кончик грифеля.
+      const TIP_X = 8, TIP_Y = 8;
       const svg =
         '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
-          '<g transform="rotate(-45 16 16)">' +
+          '<g transform="rotate(135 16 16)">' +
             '<rect x="13" y="3"  width="6" height="16" fill="#f4d35e" stroke="#1f2937" stroke-width="1.2"/>' +
             '<rect x="13" y="3"  width="6" height="3"  fill="#e07a5f" stroke="#1f2937" stroke-width="1.2"/>' +
             '<polygon points="13,19 19,19 16,27" fill="#f5deb3" stroke="#1f2937" stroke-width="1.2"/>' +

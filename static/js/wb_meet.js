@@ -209,40 +209,51 @@
     if ($("wbMeetToggle")) return;
     var actions = document.querySelector("#drw-pane-whiteboard .top-bar .actions.zoom");
     if (!actions) return;
-    var btn = document.createElement("button");
-    btn.id = "wbMeetToggle";
-    btn.className = "icon-btn icon-btn-meet";
-    btn.title = "Групповой звонок (до 10 человек)";
-    btn.type = "button";
-    btn.textContent = "👥";
-    btn.addEventListener("click", function () {
-      ensurePanel();
-      showPanel(true);
-      // Verify the server has LiveKit configured; show a hint if not.
-      fetchConfig().then(function (cfg) {
+
+    // Сначала спрашиваем сервер, настроен ли LiveKit. Если нет — кнопку
+    // вообще не добавляем, чтобы пользователю не показывалась нерабочая
+    // фича. Кнопка появится автоматически после того, как админ выставит
+    // LIVEKIT_URL / LIVEKIT_API_KEY / LIVEKIT_API_SECRET на Render.
+    fetchConfig().then(function (cfg) {
+      if (!cfg || !cfg.enabled) {
+        // Не рисуем кнопку; в консоль кладём подсказку для админа.
+        try {
+          console.info(
+            "[wb_meet] Групповой звонок выключен: на сервере не заданы " +
+            "LIVEKIT_URL / LIVEKIT_API_KEY / LIVEKIT_API_SECRET. " +
+            "См. docs/livekit_setup.md."
+          );
+        } catch (e) {}
+        return;
+      }
+      if ($("wbMeetToggle")) return;
+      var btn = document.createElement("button");
+      btn.id = "wbMeetToggle";
+      btn.className = "icon-btn icon-btn-meet";
+      btn.title = "Групповой звонок (до " + (cfg.max || 10) + " человек)";
+      btn.type = "button";
+      btn.textContent = "👥";
+      btn.addEventListener("click", function () {
+        ensurePanel();
+        showPanel(true);
         var hint = $("wbMeetHint");
-        if (!cfg.enabled) {
-          if (hint) {
-            hint.innerHTML =
-              "⚠ Сервер ещё не подключён к LiveKit Cloud.<br>" +
-              "Админу: задай LIVEKIT_URL, LIVEKIT_API_KEY и LIVEKIT_API_SECRET " +
-              "в Environment на Render — после рестарта кнопка заработает.";
-          }
-          $("wbMeetJoin").disabled = true;
-        } else if (hint) {
+        if (hint) {
           hint.textContent = "Можно пригласить до " + (cfg.max || 10) + " человек.";
-          $("wbMeetJoin").disabled = false;
         }
+        var joinBtn = $("wbMeetJoin");
+        if (joinBtn) joinBtn.disabled = false;
         var inp = $("wbMeetRoom");
         if (inp && !room) inp.focus();
       });
+      var clearBtn = document.getElementById("wbClear");
+      if (clearBtn && clearBtn.parentNode === actions) {
+        actions.insertBefore(btn, clearBtn);
+      } else {
+        actions.appendChild(btn);
+      }
+    }).catch(function () {
+      // Сеть/CORS — тоже не показываем кнопку, чтобы не вводить в заблуждение.
     });
-    var clearBtn = document.getElementById("wbClear");
-    if (clearBtn && clearBtn.parentNode === actions) {
-      actions.insertBefore(btn, clearBtn);
-    } else {
-      actions.appendChild(btn);
-    }
   }
 
   function onJoinClick() {
