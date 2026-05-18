@@ -47,7 +47,11 @@ _LOCK = threading.RLock()
 _ROOMS: Dict[str, "_Room"] = {}
 
 ROOM_TTL_SECONDS = 60 * 30          # 30 minutes of inactivity → drop the room
-PEER_TTL_SECONDS = 60               # 1 minute without poll → consider peer gone
+# PEER_TTL: было 60с, но если у клиента подвис poll (мобильный — переключение
+# сети, фоновая вкладка) — peer GC'ился, а его место в комнате оставалось
+# «занятым» на стороне другого пира. Поднимаем до 3 минут: за это время
+# клиент успеет восстановиться или явно покинуть комнату через beforeunload.
+PEER_TTL_SECONDS = 180              # 3 минуты без poll → пир считается ушедшим
 MAX_PEERS_PER_ROOM = 2              # 1-на-1 call
 MAX_QUEUE = 200                     # safety: discard old signalling msgs
 

@@ -753,9 +753,31 @@
 
   function rejoin() {
     var rid = roomId;
+    var oldPeerId = peerId;
     if (!rid) return;
-    api("join", { room: rid }).then(function (r) {
-      if (!r.ok) { setStatus("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0435\u0440\u0435\u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f", "err"); return; }
+
+    // Сперва аккуратно покидаем «зомби»-peer на сервере (если он там ещё
+    // числится), чтобы не получить 409 room_full на следующем join.
+    var leavePromise = oldPeerId
+      ? api("leave", { room: rid, peer_id: oldPeerId }).catch(function () {})
+      : Promise.resolve();
+
+    leavePromise.then(function () {
+      return api("join", { room: rid });
+    }).then(function (r) {
+      if (!r.ok) {
+        if (r.status === 409) {
+          setStatus(
+            "\u041a\u043e\u043c\u043d\u0430\u0442\u0430 \u0443\u0436\u0435 \u0437\u0430\u043d\u044f\u0442\u0430 (\u043c\u0430\u043a\u0441. 2 \u0443\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u0430). \u041f\u0440\u0438\u0434\u0443\u043c\u0430\u0439\u0442\u0435 \u0434\u0440\u0443\u0433\u043e\u0439 \u043a\u043e\u0434.",
+            "err"
+          );
+        } else if (r.status === 400) {
+          setStatus("\u041d\u0435\u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0439 \u043a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b", "err");
+        } else {
+          setStatus("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0435\u0440\u0435\u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f (\u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0432\u044b\u0439\u0442\u0438 \u0438 \u0432\u043e\u0439\u0442\u0438 \u0437\u0430\u043d\u043e\u0432\u043e)", "err");
+        }
+        return;
+      }
       peerId = r.data.peer_id;
       otherId = (r.data.peers && r.data.peers[0]) || null;
       teardownPc();
@@ -763,8 +785,14 @@
         polite = (peerId > otherId);
         ensurePc();
         if (!polite) tryNegotiate();
+        setStatus("\u0421\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u0435 \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u043e", "ok");
+      } else {
+        setStatus("\u0416\u0434\u0451\u043c \u0441\u043e\u0431\u0435\u0441\u0435\u0434\u043d\u0438\u043a\u0430\u2026 \u041f\u043e\u0434\u0435\u043b\u0438\u0442\u0435\u0441\u044c \u043a\u043e\u0434\u043e\u043c \u0438\u043b\u0438 \u0441\u0441\u044b\u043b\u043a\u043e\u0439 \u{1F517}");
       }
       pollLoop();
+    }).catch(function (e) {
+      console.warn("[wb_call] rejoin err", e);
+      setStatus("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0435\u0440\u0435\u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f \u2014 \u043f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442", "err");
     });
   }
 
