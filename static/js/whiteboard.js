@@ -514,12 +514,10 @@
       return svgCursor(svg, 14, 14);
     }
     if (t === "line") {
-      const svg =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">' +
-          '<line x1="4" y1="22" x2="24" y2="6" stroke="' + stroke + '" stroke-width="2.2" stroke-linecap="round"/>' +
-          '<circle cx="14" cy="14" r="1.2" fill="' + stroke + '"/>' +
-        '</svg>';
-      return svgCursor(svg, 14, 14);
+      // По запросу пользователя — для «прямой линии» используем системный
+      // курсор-стрелку (как у мышки в Windows/macOS). Так визуально понятно,
+      // что инструмент «точно ставит» точки начала и конца отрезка.
+      return "default";
     }
     if (t === "arrow") {
       const svg =
@@ -790,11 +788,14 @@
   });
 
   window.addEventListener("keydown", function (e) {
-    if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+    // Пользователь печатает текст / редактирует поле — не перехватываем шорткаты.
+    var tg = e.target;
+    if (tg && (tg.tagName === "TEXTAREA" || tg.tagName === "INPUT" || tg.tagName === "SELECT" || tg.isContentEditable)) return;
+
     if (e.code === "Space") { spaceDown = true; applyCursor(); e.preventDefault(); }
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) { e.preventDefault(); undo(); return; }
     if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "y" || (e.shiftKey && e.key.toLowerCase() === "z"))) {
-      e.preventDefault(); redo();
+      e.preventDefault(); redo(); return;
     }
     if (e.key === "Delete" || e.key === "Backspace") {
       if (selectedId !== null) {
@@ -804,9 +805,12 @@
         pushHistory(); redraw();
       }
     }
-    if (!e.ctrlKey && !e.metaKey) {
+    // Однобуквенные хоткеи переключения инструмента — только без Ctrl/Cmd,
+    // чтобы Ctrl+V / Ctrl+X не превращались в setTool('select') / setTool('objErase').
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
       const map = { v: "select", p: "pen", e: "eraser", x: "objErase", r: "rect", o: "ellipse", l: "line", a: "arrow", t: "text", s: "sticky" };
-      if (map[e.key.toLowerCase()]) setTool(map[e.key.toLowerCase()]);
+      const tool2 = map[e.key.toLowerCase()];
+      if (tool2) { setTool(tool2); }
     }
   });
   window.addEventListener("keyup", function (e) {
@@ -917,17 +921,29 @@
     return false;
   }
 
+  function _wbIsEditableTarget(t) {
+    if (!t) return false;
+    var tag = t.tagName;
+    if (tag === "TEXTAREA" || tag === "INPUT" || tag === "SELECT") return true;
+    if (t.isContentEditable) return true;
+    return false;
+  }
+
   window.addEventListener("keydown", function (e) {
-    if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+    // Если пользователь печатает текст — не перехватываем горячие клавиши.
+    if (_wbIsEditableTarget(e.target)) return;
     var k = (e.key || "").toLowerCase();
     var ctrl = e.ctrlKey || e.metaKey;
-    if (ctrl && k === "c") { if (_wbCopy()) e.preventDefault(); return; }
-    if (ctrl && k === "x") { if (_wbCut()) e.preventDefault(); return; }
-    if (ctrl && k === "v") { if (_wbPaste()) e.preventDefault(); return; }
-    if (ctrl && k === "d") { if (_wbDuplicate()) e.preventDefault(); return; }
-    if (ctrl && k === "a") { if (_wbSelectAll()) e.preventDefault(); return; }
-    if (ctrl && k === "s") { if (_wbExport()) e.preventDefault(); return; }
-    if (k === "escape") { if (_wbDeselect()) e.preventDefault(); return; }
+
+    // Copy / Cut / Paste / Duplicate / Select-all — всегда preventDefault,
+    // чтобы браузер не делал нативное действие (selection страницы и т.п.).
+    if (ctrl && k === "c") { e.preventDefault(); _wbCopy(); return; }
+    if (ctrl && k === "x") { e.preventDefault(); _wbCut(); return; }
+    if (ctrl && k === "v") { e.preventDefault(); _wbPaste(); return; }
+    if (ctrl && k === "d") { e.preventDefault(); _wbDuplicate(); return; }
+    if (ctrl && k === "a") { e.preventDefault(); _wbSelectAll(); return; }
+    if (ctrl && k === "s") { e.preventDefault(); _wbExport(); return; }
+    if (k === "escape")    { e.preventDefault(); _wbDeselect(); return; }
     if (k === "arrowleft" || k === "arrowright" || k === "arrowup" || k === "arrowdown") {
       var step = e.shiftKey ? 10 : 1;
       var dx = 0, dy = 0;
