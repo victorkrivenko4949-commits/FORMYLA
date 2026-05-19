@@ -46,6 +46,14 @@ wb_call_bp = Blueprint("wb_call", __name__, url_prefix="/api/wb_call")
 _LOCK = threading.RLock()
 _ROOMS: Dict[str, "_Room"] = {}
 
+# Очередь приглашений на видеозвонок для каждого user_id (получателя).
+# Это in-memory pub/sub: отправитель кладёт сюда invite, получатель забирает
+# через GET /api/wb_call/invites/poll и видит всплывающее уведомление.
+# Список tuple'ов: (created_at, payload_dict). Чистится по TTL.
+_INVITES: Dict[int, List[Any]] = {}
+INVITE_TTL_SECONDS = 90             # приглашение «протухает» через 1.5 минуты
+INVITE_MAX_PER_USER = 20            # safety cap чтобы не зафлудили
+
 ROOM_TTL_SECONDS = 60 * 30          # 30 minutes of inactivity → drop the room
 # PEER_TTL: основное значение — 90 секунд. Меньше — рискуем GC'нуть «живого»
 # пира при кратковременных лагах polling'а. Больше — на стороне другого пира
@@ -266,3 +274,139 @@ def status():
             "peer_ttl_seconds": PEER_TTL_SECONDS,
         },
     })
+
+
+# ── Invitations (push-уведомления о звонке) ───────────────────────────────────
+def _invites_gc_locked() -> None:
+    """Удаляем протухшие invite'ы. Caller должен держать _LOCK."""
+    now = time.time()
+    for uid in list(_INVITES.keys()):
+        fresh = [(ts, pl) for (ts, pl) in _INVITES[uid] if now - ts < INVITE_TTL_SECONDS]
+        if fresh:
+            _INVITES[uid] = fresh
+        else:
+            _INVITES.pop(uid, None)
+
+
+@wb_call_bp.route("/invite", methods=["POST"])
+def invite():
+    """Отправить приглашение на звонок другому пользователю.
+
+    POST body: { "friend_id": int, "room": "math-42" }
+    Возвращает {ok: true} или 4xx с ошибкой.
+    Получатель увидит всплывающее уведомление через /invites/poll.
+    """
+    try:
+        from flask_login import current_user
+        from models import db, User, Friendship  # noqa: F401
+    except Exception as e:
+        logger.warning("[wb_call] /invite import err: %s", e)
+        return jsonify({"error": "server_error"}), 500
+
+    if not current_user.is_authenticated:
+        return jsonify({"error": "auth_required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    try:
+        friend_id = int(data.get("friend_id"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "bad_friend_id"}), 400
+    room_id = _normalize_room(data.get("room"))
+    if not room_id:
+        return jsonify({"error": "bad_room"}), 400
+    if friend_id == current_user.id:
+        return jsonify({"error": "cannot_invite_self"}), 400
+
+    # Проверяем, что friend_id действительно друг (двусторонний accepted).
+    try:
+        is_friend = False
+        if hasattr(current_user, "get_friends"):
+            is_friend = any(f.id == friend_id for f in current_user.get_friends())
+        if not is_friend:
+            return jsonify({"error": "not_friends"}), 403
+    except Exception as e:
+        logger.warning("[wb_call] friend check err: %s", e)
+        return jsonify({"error": "server_error"}), 500
+
+    payload = {
+        "from_id": current_user.id,
+        "from_name": getattr(current_user, "nickname", None)
+                     or getattr(current_user, "name", None)
+                     or f"User #{current_user.id}",
+        "from_avatar": getattr(current_user, "avatar_url", None),
+        "room": room_id,
+        "ts": int(time.time()),
+    }
+
+    with _LOCK:
+        _invites_gc_locked()
+        queue = _INVITES.setdefault(friend_id, [])
+        # де-дуп: убираем предыдущие приглашения от того же отправителя в ту же комнату
+        queue[:] = [
+            (ts, pl) for (ts, pl) in queue
+            if not (pl.get("from_id") == current_user.id and pl.get("room") == room_id)
+        ]
+        queue.append((time.time(), payload))
+        if len(queue) > INVITE_MAX_PER_USER:
+            queue[:] = queue[-INVITE_MAX_PER_USER:]
+
+    logger.info("[wb_call] invite from=%s to=%s room=%s",
+                current_user.id, friend_id, room_id)
+    return jsonify({"ok": True})
+
+
+@wb_call_bp.route("/invites/poll", methods=["GET"])
+def invites_poll():
+    """Получить активные приглашения текущего пользователя.
+
+    Возвращает {invites: [{from_id, from_name, from_avatar, room, ts}, ...]}.
+    Приглашения остаются в очереди до явного /invites/dismiss или TTL=90s.
+    Клиент сам разбирается, какие он уже показывал (по from_id+room+ts).
+    """
+    try:
+        from flask_login import current_user
+    except Exception:
+        return jsonify({"invites": []})
+
+    if not current_user.is_authenticated:
+        return jsonify({"invites": []})
+
+    with _LOCK:
+        _invites_gc_locked()
+        queue = _INVITES.get(current_user.id, [])
+        invites = [pl for (_ts, pl) in queue]
+    return jsonify({"invites": invites})
+
+
+@wb_call_bp.route("/invites/dismiss", methods=["POST"])
+def invites_dismiss():
+    """Удалить приглашение из очереди (после того как пользователь нажал
+    Принять/Отклонить — чтобы оно не показывалось повторно после F5)."""
+    try:
+        from flask_login import current_user
+    except Exception:
+        return jsonify({"ok": True})
+
+    if not current_user.is_authenticated:
+        return jsonify({"ok": True})
+
+    data = request.get_json(silent=True) or {}
+    try:
+        from_id = int(data.get("from_id"))
+    except (TypeError, ValueError):
+        from_id = None
+    room = _normalize_room(data.get("room"))
+
+    with _LOCK:
+        queue = _INVITES.get(current_user.id)
+        if queue:
+            queue[:] = [
+                (ts, pl) for (ts, pl) in queue
+                if not (
+                    (from_id is None or pl.get("from_id") == from_id) and
+                    (not room or pl.get("room") == room)
+                )
+            ]
+            if not queue:
+                _INVITES.pop(current_user.id, None)
+    return jsonify({"ok": True})

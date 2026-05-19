@@ -566,37 +566,33 @@
   }
 
   function sendInviteToFriend(friendId, code, btnEl) {
-    var url = buildRoomUrl(code);
-    var body = "\u{1F4F9} \u041f\u0440\u0438\u0432\u0435\u0442! \u041f\u0440\u0438\u0441\u043e\u0435\u0434\u0438\u043d\u044f\u0439\u0441\u044f \u043a \u0434\u043e\u0441\u043a\u0435 \u0438 \u0432\u0438\u0434\u0435\u043e\u0437\u0432\u043e\u043d\u043a\u0443: " + url +
-               " (\u043a\u043e\u0434 \u043a\u043e\u043c\u043d\u0430\u0442\u044b: " + code + ")";
     var label = btnEl ? btnEl.querySelector(".wbc-friend-invite") : null;
-    var prevText = label ? label.textContent : "";
     if (label) { label.textContent = "\u2026"; }
     if (btnEl) btnEl.disabled = true;
 
-    fetch("/api/chat/" + friendId + "/send", {
+    // Шлём приглашение через signalling-канал виджета (push-уведомление).
+    // Если друг сейчас на сайте — у него всплывёт окно «Принять/Отклонить»
+    // в течение ~7 секунд (см. static/js/wb_call_listener.js).
+    fetch("/api/wb_call/invite", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: "text", body: body })
+      body: JSON.stringify({ friend_id: friendId, room: code })
     }).then(function (r) {
       return r.json().then(function (j) { return { ok: r.ok, status: r.status, data: j }; });
     }).then(function (r) {
       if (!r.ok) {
-        if (label) label.textContent = "\u26a0 " + (r.data && r.data.error ? r.data.error : "\u043e\u0448\u0438\u0431\u043a\u0430");
+        var errText = r.data && r.data.error;
+        if (label) label.textContent = "\u26a0 " + (errText || "\u043e\u0448\u0438\u0431\u043a\u0430");
         if (btnEl) btnEl.disabled = false;
         return;
       }
       if (label) {
-        label.textContent = "\u2713 \u041e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e";
+        label.textContent = "\u2713 \u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0451\u043d";
         label.classList.add("wbc-friend-invite-sent");
       }
-      setStatus("\u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e \u0432 \u0447\u0430\u0442", "ok");
-      // Через 1.5с возвращаем кнопку в нормальный вид, но оставляем галочку.
-      setTimeout(function () {
-        if (label) label.textContent = "\u2713 \u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0451\u043d";
-        if (btnEl) btnEl.disabled = false;
-      }, 1500);
+      setStatus("\u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e", "ok");
+      if (btnEl) btnEl.disabled = false;
     }).catch(function (e) {
       console.warn("[wb_call] invite err", e);
       if (label) label.textContent = "\u26a0 \u041e\u0448\u0438\u0431\u043a\u0430";

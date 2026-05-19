@@ -514,6 +514,12 @@
 
     <!-- Site Concierge — AI-помощник по сайту (UX/навигация). Отдельный от тьютора. -->
     {% include 'partials/site_concierge.html' %}
+
+    {% if current_user.is_authenticated %}
+    <!-- Слушатель приглашений на видеозвонок (всплывающее окно у получателя). -->
+    <meta name="x-user-authenticated" content="1">
+    <script src="{{ url_for('static', filename='js/wb_call_listener.js') }}?v={{ asset_version|default('1') }}" defer></script>
+    {% endif %}
     
     <!-- Глобальный Caps Lock для полей ввода -->
     <script src="{{ url_for('static', filename='js/caps_lock.js') }}"></script>
