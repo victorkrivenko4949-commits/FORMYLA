@@ -2031,6 +2031,15 @@ def render_task_text(text):
     from utils.math_text_fixer import fix_plain_math
     text = fix_plain_math(text)
 
+    # 0a2. LaTeX-валидатор: чинит «7^100» → «$7^{100}$», \frac12 → \frac{1}{2},
+    #      cdot→\cdot и т.п. Не зависит от Flask/БД, поэтому импорт ленивый.
+    try:
+        from services.latex_validator import normalize_math_text
+        text = normalize_math_text(text)
+    except Exception:
+        # Никогда не валим рендеринг задачи из-за валидатора.
+        pass
+
     # 0b. Авто-обёртка голых LaTeX-команд в $...$
     text = _wrap_bare_latex(text)
 
@@ -6123,49 +6132,97 @@ def list_teachers():
 # PROFILE AND STUDENT PROGRESS TRACKING
 # ============================================================
 
+def _validate_nickname(raw: str):
+    """Универсальная валидация никнейма.
+
+    Разрешаем Unicode-буквы (включая польские ą ć ę ł ń ó ś ź ż, кириллицу,
+    немецкие умляуты, греческий и т.д.), цифры, дефис, подчёркивание.
+    Возвращает (cleaned: str | None, error: str | None).
+    """
+    import re
+    import unicodedata
+
+    s = (raw or '').strip()
+    if s.startswith('@'):
+        s = s[1:]
+    # Дополнительно вычищаем zero-width и невидимые символы, которые иногда
+    # подсовывает мобильный автокоррект.
+    s = ''.join(ch for ch in s if unicodedata.category(ch)[0] != 'C')
+    s = s.strip()
+
+    if not s:
+        return None, 'Никнейм не может быть пустым'
+    if len(s) < 3:
+        return None, 'Никнейм слишком короткий (минимум 3 символа)'
+    if len(s) > 30:
+        return None, 'Никнейм слишком длинный (максимум 30 символов)'
+
+    # Разрешаем все Unicode-буквы (\w в Python с UNICODE = буквы+цифры+_),
+    # плюс отдельно дефис. Запрещаем пробелы, эмодзи, знаки препинания.
+    # \w в Python re по умолчанию Unicode (PY3) и покрывает польские/русские буквы.
+    if not re.match(r'^[\w\-]+$', s, flags=re.UNICODE):
+        return None, 'Никнейм может содержать только буквы, цифры, дефис и подчёркивание'
+
+    return s, None
+
+
 @app.route("/update_nickname", methods=["POST"])
 @login_required
 def update_nickname():
-    """Обновление nickname пользователя"""
-    import re
-    
-    new_nickname = request.form.get('nickname', '').strip()
-    
-    # Убираем @ если есть
-    if new_nickname.startswith('@'):
-        new_nickname = new_nickname[1:]
-    
-    # Валидация
-    if not new_nickname:
-        flash('Никнейм не может быть пустым', 'error')
+    """Обновление nickname пользователя.
+
+    Принимает и form-data, и JSON. Возвращает либо JSON (для AJAX), либо
+    редирект с flash-сообщением (для классической формы).
+    """
+    wants_json = (
+        request.is_json
+        or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or 'application/json' in (request.headers.get('Accept') or '')
+    )
+
+    raw = None
+    if request.is_json:
+        try:
+            raw = (request.get_json(silent=True) or {}).get('nickname', '')
+        except Exception:
+            raw = ''
+    if raw is None:
+        raw = request.form.get('nickname', '')
+
+    cleaned, err = _validate_nickname(raw)
+    if err:
+        if wants_json:
+            return jsonify({'success': False, 'error': err}), 400
+        flash(err, 'error')
         return redirect(url_for('profile'))
-    
-    if len(new_nickname) < 3 or len(new_nickname) > 50:
-        flash('Никнейм должен быть от 3 до 50 символов', 'error')
-        return redirect(url_for('profile'))
-    
-    # Только буквы, цифры и подчеркивание
-    if not re.match(r'^[a-zA-Z0-9_а-яА-ЯёЁ]+$', new_nickname):
-        flash('Никнейм может содержать только буквы, цифры и подчеркивание', 'error')
-        return redirect(url_for('profile'))
-    
-    # Проверка уникальности
-    existing = User.query.filter(User.nickname.ilike(new_nickname)).first()
+
+    # Проверка уникальности (case-insensitive). Сравниваем по lowercase, чтобы
+    # ilike корректно работал с польскими/кириллическими символами в Postgres
+    # (ilike → ICU collation) и SQLite.
+    existing = User.query.filter(User.nickname.ilike(cleaned)).first()
     if existing and existing.id != current_user.id:
-        flash(f'Никнейм @{new_nickname} уже занят', 'error')
+        msg = f'Никнейм @{cleaned} уже занят'
+        if wants_json:
+            return jsonify({'success': False, 'error': msg}), 409
+        flash(msg, 'error')
         return redirect(url_for('profile'))
-    
-    # Обновляем
+
     try:
-        current_user.nickname = new_nickname
+        current_user.nickname = cleaned
         db.session.commit()
-        # CRITICAL FIX: Refresh the user object to sync with database
         db.session.refresh(current_user)
-        flash(f'Никнейм успешно изменен на @{new_nickname}!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Ошибка при обновлении: {str(e)}', 'error')
-    
+        err_text = f'Ошибка при сохранении: {str(e)}'
+        if wants_json:
+            return jsonify({'success': False, 'error': err_text}), 500
+        flash(err_text, 'error')
+        return redirect(url_for('profile'))
+
+    success_msg = f'Никнейм успешно изменён на @{cleaned}'
+    if wants_json:
+        return jsonify({'success': True, 'nickname': cleaned, 'message': success_msg})
+    flash(success_msg + '!', 'success')
     return redirect(url_for('profile'))
 
 

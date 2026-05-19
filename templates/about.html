@@ -191,19 +191,88 @@
   </div>
   {% endif %}
 
-  {# ── 2.2 Hero ── #}
-  <section class="about-hero">
+  {# ── 2.2 Hero — переписано: фокус на чтение, без CTA «Начать бесплатно» ── #}
+  <section class="about-hero formyla-hero-v2">
     <h1 class="about-title">FORMYLA</h1>
-    <p class="about-subtitle">Подготовка к математическим олимпиадам с персональным ИИ-наставником</p>
+    <p class="about-subtitle">Подготовка к математическим олимпиадам с персональным ИИ-наставником.</p>
     <p class="hero-description">
-      Адаптивная диагностика: 25 задач по каждой из 6 тем — на полное прохождение ~30 минут с возможностью разбить на сессии.
-      Ежедневные задачи под слабые темы и 7 ИИ-агентов, которые объясняют, а не дают ответы. Для учеников 5–11 классов. Без VPN.
+      Платформа для учеников <strong>5–11 классов</strong>: адаптивная диагностика по 6 темам (≈30 минут с возможностью разбить на сессии),
+      ежедневные задачи под слабые места, банк <strong>8 000+ реальных задач ВсОШ, Турнира городов, Эйлера и Ломоносова</strong>,
+      и универсальный ИИ-наставник, который объясняет, а не подсовывает ответ. Без VPN, на русском.
     </p>
+
+    <ol class="hero-flow" aria-label="Как FORMYLA работает за 4 шага">
+      <li class="hero-flow-item">
+        <span class="hero-flow-num">1</span>
+        <div>
+          <strong>Диагностика</strong>
+          <span>25 задач на 6 тем — оцениваем твой уровень и собираем радар сильных и слабых сторон.</span>
+        </div>
+      </li>
+      <li class="hero-flow-item">
+        <span class="hero-flow-num">2</span>
+        <div>
+          <strong>Ежедневные задачи</strong>
+          <span>3–10 задач в день, подобранных алгоритмом под твои пробелы. Каждая с разбором.</span>
+        </div>
+      </li>
+      <li class="hero-flow-item">
+        <span class="hero-flow-num">3</span>
+        <div>
+          <strong>Универсальный ИИ-наставник</strong>
+          <span>Один умный агент: разбирает алгебру, геометрию, теорию чисел, комбинаторику, логику и стратегию олимпиад. Сам определяет тему задачи.</span>
+        </div>
+      </li>
+      <li class="hero-flow-item">
+        <span class="hero-flow-num">4</span>
+        <div>
+          <strong>Реальные олимпиады</strong>
+          <span>Тренируйся на задачах ВсОШ, Турнира городов и Ломоносова прошлых лет — с разборами по 89 методам.</span>
+        </div>
+      </li>
+    </ol>
+
     <div class="hero-cta-row">
-      <a href="/login" class="hero-cta hero-cta-primary">Попробовать бесплатно</a>
-      <a href="#how-it-works" class="hero-cta hero-cta-secondary">Как это работает ↓</a>
+      <a href="#how-it-works" class="hero-cta hero-cta-secondary">Подробнее, как это работает ↓</a>
     </div>
+
+    <p class="hero-foot">
+      После регистрации сразу 3 задачи дня бесплатно — навсегда, без карты и без таймера. Платная подписка появится только когда захочешь больше задач и безлимитный диалог с тьютором.
+    </p>
   </section>
+
+  <style>
+    .formyla-hero-v2 .hero-flow{
+      list-style:none; padding:0; margin:24px auto 12px; max-width:760px;
+      display:grid; gap:12px;
+    }
+    .formyla-hero-v2 .hero-flow-item{
+      display:flex; align-items:flex-start; gap:14px;
+      padding:14px 16px;
+      background:rgba(30,41,59,.55);
+      border:1px solid var(--border-soft, #334155);
+      border-radius:14px;
+      text-align:left;
+    }
+    .formyla-hero-v2 .hero-flow-num{
+      flex-shrink:0; width:34px; height:34px; border-radius:50%;
+      background:linear-gradient(135deg, var(--accent-1, #38bdf8), var(--accent-2, #8b5cf6));
+      color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center;
+      font-size:15px;
+    }
+    .formyla-hero-v2 .hero-flow-item strong{ display:block; color:#e2e8f0; margin-bottom:2px; }
+    .formyla-hero-v2 .hero-flow-item span{ color:#94a3b8; font-size:14px; line-height:1.5; }
+    .formyla-hero-v2 .hero-foot{
+      margin-top:14px; color:#94a3b8; font-size:13px; line-height:1.55;
+      max-width:680px; margin-left:auto; margin-right:auto;
+    }
+    @media (max-width: 640px){
+      .formyla-hero-v2 .hero-flow{ gap:10px; }
+      .formyla-hero-v2 .hero-flow-item{ padding:12px 12px; gap:10px; }
+      .formyla-hero-v2 .hero-flow-num{ width:28px; height:28px; font-size:13px; }
+      .formyla-hero-v2 .hero-flow-item span{ font-size:13.5px; }
+    }
+  </style>
 
   {# ── 2.3 Metrics ── #}
   <section class="about-section">
@@ -221,7 +290,7 @@
         <div class="stat-label">адаптивных задач, подбирающихся под уровень ученика</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num">7</div>
+        <div class="stat-num">1</div>
         <div class="stat-label">ИИ-агентов с разными специализациями</div>
       </div>
       <div class="stat-card">
@@ -352,18 +421,19 @@
     </div>
   </section>
 
-  {# ── 2.8 AI agents ── #}
+  {# ── 2.8 Универсальный ИИ-агент ── #}
   <section class="about-section">
-    <h2>🤖 Наши ИИ-агенты</h2>
-    <div class="features-grid agents-grid">
-      <div class="feature-card agent-card"><span class="feature-icon">📐</span><h3>Алгебра</h3><p>Уравнения, неравенства, выражения.</p></div>
-      <div class="feature-card agent-card"><span class="feature-icon">📏</span><h3>Геометрия</h3><p>Планиметрия, углы, площади, фигуры.</p></div>
-      <div class="feature-card agent-card"><span class="feature-icon">🔢</span><h3>Теория чисел</h3><p>Делимость, остатки, простые числа.</p></div>
-      <div class="feature-card agent-card"><span class="feature-icon">🎲</span><h3>Комбинаторика</h3><p>Подсчёт, перебор, логика конструкций.</p></div>
-      <div class="feature-card agent-card"><span class="feature-icon">🚀</span><h3>Задачи на движение</h3><p>Встречное движение, догонка, скорость.</p></div>
-      <div class="feature-card agent-card"><span class="feature-icon">🧩</span><h3>Логика</h3><p>Рыцари и лжецы, раскраски, мат. игры.</p></div>
-      <div class="feature-card agent-card"><span class="feature-icon">🏅</span><h3>Агент-наставник</h3><p>Советы по стратегии олимпиад, план подготовки, психология экзамена.</p></div>
+    <h2>🤖 Универсальный ИИ-агент</h2>
+    <div class="features-grid agents-grid" style="grid-template-columns: 1fr;">
+      <div class="feature-card agent-card" style="text-align:center;">
+        <span class="feature-icon">✨</span>
+        <h3>Один агент — все темы</h3>
+        <p>Сам определяет тему задачи (алгебра, геометрия, теория чисел, комбинаторика, логика, задачи на движение) и отвечает как профильный эксперт. Помогает с диалогом по стратегии олимпиад. Никогда не говорит «это не моя специализация» — он работает со всем, что есть в школьной и олимпиадной математике 5–11 классов.</p>
+      </div>
     </div>
+    <p style="text-align:center; color:#94a3b8; font-size:13px; margin-top:14px;">
+      Один универсальный помощник вместо десятка узких. Просто опиши задачу или загрузи фото.
+    </p>
   </section>
 
   {# ── 2.9 Pricing — 3 tiers ── #}
@@ -382,7 +452,7 @@
           <li>Базовый радар навыков</li>
           <li>Сообщество и Telegram-канал</li>
         </ul>
-        <a href="/login" class="plan-btn plan-btn-free">Начать бесплатно</a>
+        <a href="/login" class="plan-btn plan-btn-free">Войти и начать</a>
       </div>
 
       {# Pro Month — popular #}
@@ -394,7 +464,7 @@
         <ul>
           <li>Безлимит задач и олимпиад</li>
           <li>Безлимит сообщений ИИ-тьютору</li>
-          <li>Все 7 специализированных агентов</li>
+          <li>Универсальный ИИ-агент без лимитов на темы</li>
           <li>Полный радар навыков + еженедельный анализ</li>
           <li>Родительский доступ к прогрессу</li>
           <li>Проверка фото решений</li>
@@ -478,7 +548,7 @@
 
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Безопасно ли ИИ для ребёнка? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">ИИ-агенты обучены отказывать в ответах не по математике. Все диалоги логируются и доступны родителю на тарифе Pro. Режим «только подсказки» запрещает агенту давать готовое решение — только наводящие вопросы.</div>
+        <div class="faq-a">Универсальный ИИ-агент обучен отвечать только на вопросы по математике и подготовке к олимпиадам. Все диалоги логируются и доступны родителю на тарифе Pro. Режим «только подсказки» запрещает агенту давать готовое решение — только наводящие вопросы.</div>
       </div>
 
       <div class="faq-item">
@@ -494,14 +564,13 @@
     </div>
   </section>
 
-  {# ── 2.12 Final CTA ── #}
+  {# ── 2.12 Final CTA — без кнопки «Начать бесплатно», только «Войти» ── #}
   <section class="about-section">
     <div class="final-cta">
-      <h2>🚀 Попробуй FORMYLA прямо сейчас</h2>
+      <h2>🚀 Готов попробовать?</h2>
       <p>3 задачи в день навсегда бесплатно. Без карты, без VPN, без ограничений по времени.</p>
       <div class="final-cta-row">
-        <a href="/login" class="hero-cta hero-cta-primary">🚀 Начать бесплатно</a>
-        <span class="login-link">Уже зарегистрирован? <a href="/login">Войти</a></span>
+        <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA →</a>
       </div>
     </div>
   </section>

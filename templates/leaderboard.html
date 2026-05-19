@@ -5,6 +5,7 @@
 {% block content %}
 <style>
 /* Leaderboard responsive layout for mobile devices */
+.lb-page-wrap { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
 .lb-row {
     display: flex;
     align-items: center;
@@ -27,6 +28,7 @@
     gap: 15px;
     min-width: 0;
 }
+.lb-user-info { min-width: 0; flex: 1; }
 .lb-stats {
     display: flex;
     gap: 30px;
@@ -34,6 +36,7 @@
 }
 .lb-stat {
     text-align: center;
+    min-width: 0;
 }
 .lb-stat-value {
     font-size: 1.3em;
@@ -44,49 +47,76 @@
     color: var(--text-muted);
 }
 
-/* Mobile: stack vertically */
+/* ── Планшет / маленький десктоп ── */
+@media (max-width: 900px) {
+    .lb-row { padding: 16px 18px; }
+    .lb-stats { gap: 18px; }
+}
+
+/* ── Мобильный (телефоны) ── */
 @media (max-width: 640px) {
+    .lb-page-wrap { margin: 20px auto; padding: 0 12px; }
     .lb-row {
         flex-direction: column;
         align-items: stretch;
-        padding: 16px 14px;
-        gap: 12px;
+        padding: 14px 12px;
+        gap: 10px;
     }
     .lb-rank {
         width: 100%;
         text-align: left;
-        font-size: 1.2em;
+        font-size: 1.05em;
         display: flex;
         align-items: center;
         gap: 8px;
     }
     .lb-user {
         width: 100%;
-        gap: 12px;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+    .lb-user img,
+    .lb-user > div:first-child:not(.lb-user-info) {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.1em !important;
+    }
+    .lb-user-info > div:first-child {
+        font-size: 1em !important;
+        max-width: calc(100vw - 110px);
     }
     .lb-stats {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
         width: 100%;
         padding-top: 8px;
         border-top: 1px dashed var(--border-soft);
     }
-    .lb-stat-value {
-        font-size: 1.1em;
-    }
+    .lb-stat { padding: 4px 2px; }
+    .lb-stat-value { font-size: 1em; }
+    .lb-stat-label { font-size: 0.7em; }
     .lb-stats-current {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 14px !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
     }
-    .lb-user-info {
-        min-width: 0;
-        flex: 1;
+    .lb-stats-current > div > div:first-child {
+        font-size: 1.4em !important;
     }
 }
+
+/* ── Узкие экраны (≤ 380px) ── */
+@media (max-width: 380px) {
+    .lb-page-wrap { padding: 0 8px; }
+    .lb-row { padding: 12px 10px; }
+    .lb-stats { gap: 4px; }
+    .lb-stat-value { font-size: 0.95em; }
+    .lb-stat-label { font-size: 0.65em; }
+    .lb-user-info > div:first-child { font-size: 0.95em !important; }
+}
 </style>
-<div class="container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+<div class="container lb-page-wrap">
     
     <!-- Заголовок -->
     <div style="text-align: center; margin-bottom: 40px;">

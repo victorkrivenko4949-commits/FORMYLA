@@ -12,70 +12,31 @@
         <!-- ЭКРАН 1: Выбор агента -->
         <div id="agentSelectionScreen" style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
             <!-- Заголовок -->
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 18px;">
                 <div style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 8px;">🤖 AI-Тьютор</div>
                 <div style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
-                    Просто напишите вопрос — общий агент сам определит тему и подключит профильного помощника. При желании можно выбрать узкого агента вручную.
+                    Один универсальный агент: сам определяет тему задачи и отвечает как профильный эксперт.
                 </div>
             </div>
 
-            <!-- Главная кнопка: общий агент-маршрутизатор -->
-            <button class="agent-card agent-card-primary" onclick="selectAgent('general', 'Универсальный агент')" style="padding: 18px 20px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: left; display: flex; align-items: center; gap: 14px; margin-bottom: 14px; color: #fff;">
-                <div style="font-size: 32px;">✨</div>
+            <!-- Единственная кнопка: универсальный агент -->
+            <button class="agent-card agent-card-primary" onclick="selectAgent('general', 'Универсальный агент')" style="padding: 22px 22px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: 1px solid var(--border-mid); border-radius: 14px; cursor: pointer; transition: all 0.3s; text-align: left; display: flex; align-items: center; gap: 16px; margin-bottom: 14px; color: #fff;">
+                <div style="font-size: 40px;">✨</div>
                 <div style="flex: 1;">
-                    <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Универсальный агент (рекомендуем)</div>
-                    <div style="font-size: 12px; opacity: 0.9;">Сам определит тему задачи и ответит как профильный агент</div>
+                    <div style="font-weight: 700; font-size: 17px; margin-bottom: 4px;">Универсальный агент</div>
+                    <div style="font-size: 12.5px; opacity: 0.92; line-height: 1.45;">Сам определяет тему задачи и отвечает как профильный эксперт</div>
                 </div>
+                <div style="font-size: 20px; opacity: 0.85;">→</div>
             </button>
 
-            <!-- Сетка агентов -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex: 1; overflow-y: auto;">
-                <!-- Агент по алгебре -->
-                <button class="agent-card" onclick="selectAgent('algebra', 'Агент по алгебре')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">📐</div>
-                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по алгебре</div>
-                </button>
-                
-                <!-- Агент по геометрии -->
-                <button class="agent-card" onclick="selectAgent('geometry', 'Агент по геометрии')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">📏</div>
-                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по геометрии</div>
-                </button>
-                
-                <!-- Агент по теории чисел -->
-                <button class="agent-card" onclick="selectAgent('number_theory', 'Агент по теории чисел')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">🔢</div>
-                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по теории чисел</div>
-                </button>
-                
-                <!-- Агент по комбинаторике -->
-                <button class="agent-card" onclick="selectAgent('combinatorics', 'Агент по комбинаторике')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">🎲</div>
-                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по комбинаторике</div>
-                </button>
-                
-                <!-- Агент по задачам на движение -->
-                <button class="agent-card" onclick="selectAgent('movement', 'Агент по задачам на движение')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">🚀</div>
-                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по задачам на движение</div>
-                </button>
-                
-                <!-- Агент по логике -->
-                <button class="agent-card" onclick="selectAgent('logic', 'Агент по логике')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">🧩</div>
-                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px;">Агент по логике</div>
-                </button>
-                
-                <!-- Агент-наставник -->
-                <button class="agent-card" onclick="selectAgent('mentor', 'Агент-наставник')" style="padding: 20px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-mid); border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center; grid-column: span 2;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">🎓</div>
-                    <div style="font-weight: 600; color: var(--text-main); font-size: 14px; margin-bottom: 4px;">Агент-наставник</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Узнать всё об олимпиадах (советы и стратегия)</div>
-                </button>
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 12px; color: var(--text-muted); font-size: 12.5px; line-height: 1.5; text-align: center; border: 1px dashed var(--border-soft); border-radius: 12px;">
+                💡 Просто опишите задачу или загрузите фото — агент разберётся с темой сам:
+                алгебра, геометрия, теория чисел, комбинаторика, логика, задачи на движение
+                и стратегия олимпиад.
             </div>
-            
+
             <!-- Кнопка закрытия -->
-            <button onclick="toggleTutorPopup()" style="margin-top: 15px; padding: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 14px;">
+            <button onclick="toggleTutorPopup()" style="margin-top: 14px; padding: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 14px;">
                 Закрыть
             </button>
         </div>

@@ -19,6 +19,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# LaTeX-валидатор: чинит «7^100» → «$7^{100}$» и отсекает сломанные задачи
+try:
+    from services.latex_validator import (
+        normalize_math_text as _latex_normalize,
+        is_safe_for_users as _latex_is_safe,
+    )
+except Exception:  # pragma: no cover
+    def _latex_normalize(t):
+        return t
+    def _latex_is_safe(t):
+        return True
+
 
 def get_tasks_from_db(topic: str, grade: int, difficulty: int, exclude_ids: List[int] = None) -> List[Dict]:
     """
@@ -91,17 +103,28 @@ def get_tasks_from_db(topic: str, grade: int, difficulty: int, exclude_ids: List
         
         # Допускаем ±1 уровень сложности
         if abs(task_difficulty - difficulty) <= 1:
+            raw_text = task.get('text', '') or ''
+            raw_solution = task.get('solution', '') or ''
+            # ── LaTeX-валидатор: сразу нормализуем и отбраковываем сломанные ──
+            if not _latex_is_safe(raw_text):
+                logger.warning(
+                    "[DailyQuest] skip task id=%s (LaTeX-validator: unsafe text)",
+                    task_id,
+                )
+                continue
+            safe_text = _latex_normalize(raw_text)
+            safe_solution = _latex_normalize(raw_solution) if raw_solution else ''
             matching_tasks.append({
                 'id': task_id,
                 'topic': task.get('subject', topic),
                 'subtopic': task.get('subtopic', ''),
                 'grade': task_grade,
                 'difficulty': task_difficulty,
-                'text': task.get('text', ''),
+                'text': safe_text,
                 'answer': task.get('answer', ''),
-                'solution': task.get('solution', '')
+                'solution': safe_solution,
             })
-    
+
     return matching_tasks
 
 

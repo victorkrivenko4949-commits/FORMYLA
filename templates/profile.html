@@ -27,23 +27,33 @@
         <div style="display: grid; gap: 15px;">
             <!-- Никнейм с возможностью редактирования -->
             <div style="padding: 12px 0; border-bottom: 1px solid var(--border-soft);">
-                <div id="nickname-display" style="display: flex; justify-content: space-between; align-items: center;">
+                <div id="nickname-display" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                     <span style="color: var(--text-muted);">Никнейм:</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="color: var(--accent-2); font-weight: 600;">
+                        <span id="nickname-current-value" style="color: var(--accent-2); font-weight: 600; word-break: break-word; max-width: 60vw;">
                             {% if user.nickname %}@{{ user.nickname }}{% else %}Не установлен{% endif %}
                         </span>
-                        <button onclick="showNicknameForm()" style="background: none; border: none; color: var(--accent-2); cursor: pointer; font-size: 16px; padding: 4px 8px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+                        <button type="button" onclick="showNicknameForm()" aria-label="Изменить никнейм"
+                                style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); color: var(--accent-2); cursor: pointer; font-size: 15px; padding: 8px 12px; min-width: 40px; min-height: 40px; border-radius: 8px; transition: transform 0.2s, background 0.2s;"
+                                onmouseover="this.style.background='rgba(56, 189, 248, 0.18)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.08)'">
                             ✏️
                         </button>
                     </div>
                 </div>
-                <form id="nickname-form" action="/update_nickname" method="POST" style="display: none;">
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <input type="text" name="nickname" value="{{ user.nickname or '' }}" placeholder="Введите никнейм" required autofocus
-                               style="flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); caret-color: var(--accent-2);">
-                        <button type="submit" class="btn-primary" style="padding: 10px 20px;">Сохранить</button>
-                        <button type="button" onclick="hideNicknameForm()" class="btn-secondary" style="padding: 10px 20px;">Отмена</button>
+                <form id="nickname-form" action="/update_nickname" method="POST" style="display: none;" onsubmit="return submitNicknameAjax(event)">
+                    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                        <input type="text" id="nickname-input" name="nickname" value="{{ user.nickname or '' }}"
+                               placeholder="Например: anna_2010 или Łukasz" required autofocus
+                               autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"
+                               minlength="3" maxlength="30"
+                               style="flex: 1 1 220px; min-width: 0; padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main); caret-color: var(--accent-2); font-size: 16px;">
+                        <button type="submit" id="nickname-save-btn" class="btn-primary" style="padding: 12px 20px; min-height: 44px;">Сохранить</button>
+                        <button type="button" onclick="hideNicknameForm()" class="btn-secondary" style="padding: 12px 20px; min-height: 44px;">Отмена</button>
+                    </div>
+                    <div id="nickname-feedback" role="status" aria-live="polite"
+                         style="display: none; margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4;"></div>
+                    <div style="margin-top: 8px; color: var(--text-muted); font-size: 12.5px; line-height: 1.4;">
+                        3–30 символов. Можно использовать буквы (включая ąćęłńóśźż, кириллицу), цифры, «-» и «_».
                     </div>
                 </form>
             </div>
@@ -708,17 +718,81 @@ function showNicknameForm() {
     document.getElementById('nickname-display').style.display = 'none';
     const form = document.getElementById('nickname-form');
     form.style.display = 'block';
-    // Автофокус на поле ввода
-    const input = form.querySelector('input[name="nickname"]');
+    const fb = document.getElementById('nickname-feedback');
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+    const input = document.getElementById('nickname-input');
     if (input) {
-        input.focus();
-        input.select(); // Выделяем текст для быстрой замены
+        setTimeout(() => {
+            try { input.focus(); input.select(); } catch (e) {}
+        }, 30);
     }
 }
 
 function hideNicknameForm() {
     document.getElementById('nickname-display').style.display = 'flex';
     document.getElementById('nickname-form').style.display = 'none';
+    const fb = document.getElementById('nickname-feedback');
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+}
+
+function _showNicknameFeedback(msg, kind) {
+    const fb = document.getElementById('nickname-feedback');
+    if (!fb) return;
+    fb.textContent = msg;
+    fb.style.display = 'block';
+    if (kind === 'error') {
+        fb.style.background = 'rgba(239, 68, 68, 0.10)';
+        fb.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+        fb.style.color = '#fca5a5';
+    } else {
+        fb.style.background = 'rgba(56, 239, 125, 0.10)';
+        fb.style.border = '1px solid rgba(56, 239, 125, 0.35)';
+        fb.style.color = '#86efac';
+    }
+}
+
+async function submitNicknameAjax(ev) {
+    if (ev) ev.preventDefault();
+    const input = document.getElementById('nickname-input');
+    const btn = document.getElementById('nickname-save-btn');
+    if (!input) return false;
+    const value = (input.value || '').trim();
+    if (!value) {
+        _showNicknameFeedback('Никнейм не может быть пустым', 'error');
+        return false;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = 'Сохраняем…'; }
+    try {
+        const resp = await fetch('/update_nickname', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ nickname: value })
+        });
+        let data = {};
+        try { data = await resp.json(); } catch (e) { data = {}; }
+        if (!resp.ok || data.success === false) {
+            const errMsg = (data && data.error) || 'Не удалось обновить никнейм';
+            _showNicknameFeedback(errMsg, 'error');
+            if (btn) { btn.disabled = false; btn.textContent = 'Сохранить'; }
+            return false;
+        }
+        // Success
+        const newNick = (data && data.nickname) ? data.nickname : value;
+        const display = document.getElementById('nickname-current-value');
+        if (display) display.textContent = '@' + newNick;
+        _showNicknameFeedback('Никнейм сохранён ✓', 'ok');
+        setTimeout(() => { hideNicknameForm(); }, 700);
+    } catch (err) {
+        _showNicknameFeedback('Сеть недоступна. Повторите попытку.', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Сохранить'; }
+    }
+    return false;
 }
 
 // Load Daily Quest Streak Data

@@ -22,7 +22,13 @@ from typing import Any, Iterable
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'olympiads')
 
-THEORY_JSON = os.path.join(DATA_DIR, 'theory_65_methods.json')
+# Полный каталог 89 методов (с метаданными — секции, классы, частоты).
+# Если файл доступен — используется в первую очередь; иначе берётся
+# исторический theory_65_methods.json (полное описание у 65 методов).
+THEORY_JSON_CATALOG_89 = os.path.join(DATA_DIR, 'methods_catalog_89.json')
+THEORY_JSON_LEGACY_65 = os.path.join(DATA_DIR, 'theory_65_methods.json')
+THEORY_JSON = THEORY_JSON_LEGACY_65  # обратная совместимость для тестов
+
 PROBNIKS_JSON = os.path.join(DATA_DIR, 'vsosh_9_2027_probniks.json')
 TASKS_JSON = os.path.join(DATA_DIR, 'vsosh_9_2027_tasks.json')
 
@@ -88,46 +94,80 @@ def _seed_theory(db, TheoryBlock) -> None:
         print(f"[OLYMPIAD-SEED] Cannot query TheoryBlock: {e}")
         return
 
-    if existing > 0:
-        print(f"[OLYMPIAD-SEED] TheoryBlock: {existing} rows — skipping seed")
+    # Берём максимально полный каталог: сначала 89-методов, потом fallback на legacy.
+    rows = _load_json(THEORY_JSON_CATALOG_89)
+    src_path = THEORY_JSON_CATALOG_89
+    if not rows:
+        rows = _load_json(THEORY_JSON_LEGACY_65)
+        src_path = THEORY_JSON_LEGACY_65
+    if not rows:
+        print(f"[OLYMPIAD-SEED] No theory data found ({THEORY_JSON_CATALOG_89} / {THEORY_JSON_LEGACY_65}) — skipping theory seed")
         return
 
-    rows = _load_json(THEORY_JSON)
-    if not rows:
-        print(f"[OLYMPIAD-SEED] No data in {THEORY_JSON} — skipping theory seed")
+    # Если в БД уже есть строки и их не меньше, чем в фикстуре —
+    # пропускаем (ничего ломать не будем). Если же фикстура полнее
+    # (например, на проде только 0/65, а в файле 89) — доливаем upsert-ом.
+    if existing >= len(rows):
+        print(f"[OLYMPIAD-SEED] TheoryBlock: {existing} rows (>= {len(rows)} in fixture) — skipping seed")
         return
+
+    print(f"[OLYMPIAD-SEED] Theory source: {src_path} ({len(rows)} rows; in DB: {existing} → topping up)")
 
     created = 0
+    updated = 0
     for item in rows:
         try:
             code = item.get('method_code')
             if not code:
                 continue
-            tb = TheoryBlock(
-                method_code=code,
-                method_name=item.get('method_name') or code,
-                section=item.get('section') or _safe_section(code),
-                definition_md=item.get('definition_md'),
-                main_theorems_md=item.get('main_theorems_md'),
-                typical_techniques_md=item.get('typical_techniques_md'),
-                triggers_md=item.get('triggers_md'),
-                worked_example_md=item.get('worked_example_md'),
-                pitfalls_md=item.get('pitfalls_md'),
-                related_methods=item.get('related_methods') or [],
-                grades=item.get('grades'),
-                recommended_competitions=item.get('recommended_competitions'),
-                difficulty_level=item.get('difficulty_level'),
-                frequency_vsosh_9=item.get('frequency_vsosh_9'),
-                sort_order=item.get('sort_order', 0) or 0,
-            )
-            db.session.add(tb)
-            created += 1
+            tb = TheoryBlock.query.filter_by(method_code=code).first()
+            if tb is None:
+                tb = TheoryBlock(
+                    method_code=code,
+                    method_name=item.get('method_name') or code,
+                    section=item.get('section') or _safe_section(code),
+                    definition_md=item.get('definition_md'),
+                    main_theorems_md=item.get('main_theorems_md'),
+                    typical_techniques_md=item.get('typical_techniques_md'),
+                    triggers_md=item.get('triggers_md'),
+                    worked_example_md=item.get('worked_example_md'),
+                    pitfalls_md=item.get('pitfalls_md'),
+                    related_methods=item.get('related_methods') or [],
+                    grades=item.get('grades'),
+                    recommended_competitions=item.get('recommended_competitions'),
+                    difficulty_level=item.get('difficulty_level'),
+                    frequency_vsosh_9=item.get('frequency_vsosh_9'),
+                    sort_order=item.get('sort_order', 0) or 0,
+                )
+                db.session.add(tb)
+                created += 1
+            else:
+                # upsert: только заполняем пустые поля, чтобы не затирать редактируемое
+                changed = False
+                if not tb.method_name and item.get('method_name'):
+                    tb.method_name = item['method_name']; changed = True
+                if not tb.section:
+                    tb.section = item.get('section') or _safe_section(code); changed = True
+                for fld in ('definition_md', 'main_theorems_md', 'typical_techniques_md',
+                            'triggers_md', 'worked_example_md', 'pitfalls_md'):
+                    if not getattr(tb, fld, None) and item.get(fld):
+                        setattr(tb, fld, item[fld]); changed = True
+                if (not tb.grades) and item.get('grades'):
+                    tb.grades = item['grades']; changed = True
+                if (not tb.recommended_competitions) and item.get('recommended_competitions'):
+                    tb.recommended_competitions = item['recommended_competitions']; changed = True
+                if tb.difficulty_level is None and item.get('difficulty_level') is not None:
+                    tb.difficulty_level = item['difficulty_level']; changed = True
+                if tb.frequency_vsosh_9 is None and item.get('frequency_vsosh_9') is not None:
+                    tb.frequency_vsosh_9 = item['frequency_vsosh_9']; changed = True
+                if changed:
+                    updated += 1
         except Exception as e:
             print(f"[OLYMPIAD-SEED] Theory row failed ({item.get('method_code', '?')}): {e}")
 
     try:
         db.session.commit()
-        print(f"[OLYMPIAD-SEED] TheoryBlock: created {created} rows")
+        print(f"[OLYMPIAD-SEED] TheoryBlock: created {created} rows, updated {updated} rows")
     except Exception as e:
         db.session.rollback()
         print(f"[OLYMPIAD-SEED] Theory commit failed: {e}")
