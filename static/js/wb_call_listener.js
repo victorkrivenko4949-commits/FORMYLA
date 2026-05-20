@@ -195,20 +195,45 @@
 
   function acceptInvite(inv) {
     var room = inv.room;
-    // Если уже на странице доски — открываем виджет прямо здесь.
-    var onDrawing = /^\/drawing(\/|$|\?)/.test(window.location.pathname);
-    if (onDrawing && window.WB_CALL && typeof window.WB_CALL.open === "function") {
-      window.WB_CALL.open(room);
-      // Триггерим клик по «Войти», чтобы пользователю не пришлось щёлкать ещё раз.
+    var path = window.location.pathname || "";
+
+    // 1) Если мы уже на странице доски (/whiteboard ИЛИ /drawing) —
+    //    открываем виджет звонка прямо здесь и автоматически нажимаем
+    //    «Войти», чтобы пользователю не пришлось ничего кликать.
+    var onBoard =
+      /^\/whiteboard(\/|$|\?)/.test(path) ||
+      /^\/drawing(\/|$|\?)/.test(path);
+
+    if (onBoard && window.WB_CALL && typeof window.WB_CALL.open === "function") {
+      try {
+        window.WB_CALL.open(room);
+      } catch (e) {
+        // Если WB_CALL.open почему-то упал — фолбэк к редиректу.
+        window.location.href = "/whiteboard?room=" + encodeURIComponent(room);
+        return;
+      }
+      // Триггерим клик по «Войти» с небольшой задержкой (даём WB_CALL.open
+      // отрисовать панель и заполнить поле).
       setTimeout(function () {
         var startBtn = document.getElementById("wbCallStart");
-        if (startBtn) startBtn.click();
-      }, 200);
+        if (startBtn) {
+          try { startBtn.click(); } catch (e) {}
+        }
+      }, 250);
       return;
     }
-    // Иначе — переходим на /whiteboard?room=<code> в этой же вкладке.
-    var url = "/whiteboard?room=" + encodeURIComponent(room);
-    window.location.href = url;
+
+    // 2) Мы НЕ на доске → переходим на /whiteboard?room=<code>&auto=1.
+    //    `auto=1` — сигнал для wb_call.js, что нужно не просто открыть
+    //    панель, а сразу зайти в комнату (см. фикс в static/js/wb_call.js).
+    var url = "/whiteboard?room=" + encodeURIComponent(room) + "&auto=1";
+    // Используем assign, а не href — это надёжнее сохраняет историю и
+    // гарантирует полный reload, если мы и так на /whiteboard, но без ?room.
+    try {
+      window.location.assign(url);
+    } catch (e) {
+      window.location.href = url;
+    }
   }
 
   function pollOnce() {

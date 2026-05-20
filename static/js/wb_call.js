@@ -352,6 +352,107 @@
   }
 
   // -- Peer connection ----------------------------------------------------
+  // wbDC: RTCDataChannel для синхронизации доски между двумя пирами.
+  // Контракт сообщений совпадает с wb_collab.js (LiveKit-вариант):
+  //   { v:1, t:"hello", from }                — попросить snapshot
+  //   { v:1, t:"snapshot", state:{objects, nextId} }
+  //   { v:1, t:"op", op:{...} }               — diff-операция доски
+  // Это даёт «бесплатно» синхронизацию рисования в peer-to-peer звонке,
+  // без участия сервера и без задержки HTTP-polling'а.
+  var wbDC = null;
+  var wbDCReceivedSnapshot = false;
+  var wbDCPrevBroadcast = null;
+
+  function _wbDCSend(packet) {
+    if (!wbDC || wbDC.readyState !== "open") return;
+    try { wbDC.send(JSON.stringify(packet)); } catch (e) { /* ignore */ }
+  }
+
+  function _wbDCBindBroadcaster() {
+    // Перехватываем window.__wbBroadcast: whiteboard.js вызывает её при
+    // каждой локальной операции рисования. Делаем это так же, как wb_collab.js,
+    // чтобы оба механизма (LiveKit и наш peer-to-peer) могли сосуществовать.
+    if (window.__wbBroadcast && window.__wbBroadcast.__wb_call_proxy) return;
+    wbDCPrevBroadcast = window.__wbBroadcast || null;
+    var fn = function (op) {
+      // 1) Сначала отдаём предыдущему broadcaster'у (если LiveKit-комната
+      //    тоже активна — пусть и туда летит).
+      try {
+        if (typeof wbDCPrevBroadcast === "function" && wbDCPrevBroadcast !== fn) {
+          wbDCPrevBroadcast(op);
+        }
+      } catch (e) {}
+      // 2) И отправляем через наш data-channel другому пиру.
+      _wbDCSend({ v: 1, t: "op", op: op });
+    };
+    fn.__wb_call_proxy = true;
+    window.__wbBroadcast = fn;
+  }
+
+  function _wbDCUnbindBroadcaster() {
+    if (window.__wbBroadcast && window.__wbBroadcast.__wb_call_proxy) {
+      window.__wbBroadcast = wbDCPrevBroadcast || null;
+    }
+    wbDCPrevBroadcast = null;
+  }
+
+  function _wbDCOnMessage(ev) {
+    var msg;
+    try { msg = JSON.parse(ev.data); } catch (e) { return; }
+    if (!msg || typeof msg !== "object") return;
+
+    if (msg.t === "hello") {
+      // Партнёр запросил начальный снимок доски — отдаём.
+      if (!window.WB || typeof window.WB.getSnapshot !== "function") return;
+      try {
+        var snap = window.WB.getSnapshot();
+        _wbDCSend({ v: 1, t: "snapshot", state: snap });
+      } catch (e) { console.warn("[wb_call] snapshot send failed", e); }
+      return;
+    }
+    if (msg.t === "snapshot") {
+      if (wbDCReceivedSnapshot) return;
+      if (!msg.state || !window.WB || typeof window.WB.applyRemoteOp !== "function") return;
+      try {
+        window.WB.applyRemoteOp({ op: "snapshot", state: msg.state });
+        wbDCReceivedSnapshot = true;
+      } catch (e) { console.warn("[wb_call] apply snapshot failed", e); }
+      return;
+    }
+    if (msg.t === "op" && msg.op) {
+      if (!window.WB || typeof window.WB.applyRemoteOp !== "function") return;
+      try { window.WB.applyRemoteOp(msg.op); }
+      catch (e) { console.warn("[wb_call] apply op failed", e); }
+      return;
+    }
+  }
+
+  function _wbDCWire(channel) {
+    wbDC = channel;
+    wbDCReceivedSnapshot = false;
+    channel.onopen = function () {
+      try { console.debug("[wb_call] data-channel open"); } catch (e) {}
+      _wbDCBindBroadcaster();
+      // Просим у партнёра текущее состояние доски, чтобы догнать его рисунки.
+      // Маленькая задержка — чтобы WB точно был инициализирован.
+      setTimeout(function () {
+        _wbDCSend({ v: 1, t: "hello", from: peerId || "?" });
+      }, 250);
+      // Показываем подпись в статусе панели: «доска синхронизируется».
+      setStatus("\u0412 \u0440\u0430\u0437\u0433\u043e\u0432\u043e\u0440\u0435 \u00b7 \u0434\u043e\u0441\u043a\u0430 \u0441\u0438\u043d\u0445\u0440.", "ok");
+    };
+    channel.onmessage = _wbDCOnMessage;
+    channel.onclose = function () {
+      try { console.debug("[wb_call] data-channel closed"); } catch (e) {}
+      _wbDCUnbindBroadcaster();
+      wbDC = null;
+      wbDCReceivedSnapshot = false;
+    };
+    channel.onerror = function (e) {
+      try { console.warn("[wb_call] data-channel error", e); } catch (_) {}
+    };
+  }
+
   function createPc() {
     var p = new RTCPeerConnection({ iceServers: iceServers() });
 
@@ -373,14 +474,35 @@
     };
     p.onnegotiationneeded = function () { tryNegotiate(); };
 
+    // Принимаем data-channel, который создал другой пир.
+    p.ondatachannel = function (ev) {
+      if (ev && ev.channel && ev.channel.label === "wb-board") {
+        _wbDCWire(ev.channel);
+      }
+    };
+
     if (localStream) {
       localStream.getTracks().forEach(function (t) { p.addTrack(t, localStream); });
     }
     return p;
   }
 
+  // Создаёт data-channel, если мы инициатор (impolite). Вызывается из
+  // tryNegotiate() ДО createOffer, чтобы канал попал в SDP. На polite-стороне
+  // канал придёт сам через ondatachannel.
+  function _wbDCEnsureForInitiator() {
+    if (!pc || polite || wbDC) return;
+    try {
+      var dc = pc.createDataChannel("wb-board", { ordered: true });
+      _wbDCWire(dc);
+    } catch (e) { console.warn("[wb_call] createDataChannel failed", e); }
+  }
+
   function tryNegotiate() {
     if (!pc || !otherId) return;
+    // Если мы инициатор — создаём data-channel ДО createOffer, чтобы он
+    // попал в SDP. Это критично для синхронизации доски.
+    _wbDCEnsureForInitiator();
     (async function () {
       try {
         makingOffer = true;
@@ -462,6 +584,15 @@
 
   function ensurePc() { if (!pc) pc = createPc(); }
   function teardownPc() {
+    // Сначала закрываем data-channel и отвязываем broadcaster — иначе
+    // window.__wbBroadcast останется указывать на dead-канал и доска не
+    // будет работать локально после выхода из звонка.
+    if (wbDC) {
+      try { wbDC.close(); } catch (e) {}
+      wbDC = null;
+    }
+    _wbDCUnbindBroadcaster();
+    wbDCReceivedSnapshot = false;
     if (pc) {
       try { pc.getSenders().forEach(function (s) { try { s.track && s.track.stop(); } catch (e) {} }); } catch (e) {}
       try { pc.close(); } catch (e) {}
@@ -939,9 +1070,28 @@
 
     // Auto-show the panel if the URL has ?room=...  so guests join instantly.
     var params = new URLSearchParams(window.location.search);
-    if (params.get("room")) {
+    var roomFromUrl = params.get("room");
+    if (roomFromUrl) {
       ensurePanel();
       showPanel(true);
+      // Подставляем код комнаты в input.
+      var inp = $("wbCallRoom");
+      if (inp) inp.value = roomFromUrl;
+
+      // Если URL содержит auto=1 (это значит пользователь пришёл по принятому
+      // приглашению друга через wb_call_listener.js) — автоматически нажимаем
+      // «Войти», чтобы не заставлять делать лишний клик. Браузер всё равно
+      // покажет диалог разрешения камеры/микрофона — это нормально и
+      // обязательно (требование getUserMedia).
+      if (params.get("auto") === "1") {
+        // Маленькая задержка — даём панели и стилям отрисоваться.
+        setTimeout(function () {
+          var startBtn = $("wbCallStart");
+          if (startBtn) {
+            try { startBtn.click(); } catch (e) {}
+          }
+        }, 350);
+      }
     }
   }
 
