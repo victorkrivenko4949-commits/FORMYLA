@@ -177,7 +177,13 @@
 
   function ensureTopBarButton() {
     if ($("wbCallToggle")) return;
-    var actions = document.querySelector("#drw-pane-whiteboard .top-bar .actions.zoom");
+    // Ищем тулбар на любой из страниц-доски: старый интегрированный
+    // /drawing?tab=whiteboard (#drw-pane-whiteboard) или новая отдельная
+    // /whiteboard (#wb-pane). Если ни одного нет — кнопка не вставляется.
+    var actions =
+      document.querySelector("#wb-pane .top-bar .actions.zoom") ||
+      document.querySelector("#drw-pane-whiteboard .top-bar .actions.zoom") ||
+      document.querySelector(".drw-pane-full .top-bar .actions.zoom");
     if (!actions) return;
     var btn = document.createElement("button");
     btn.id = "wbCallToggle";

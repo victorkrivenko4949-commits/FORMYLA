@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Доска — FORMYLA{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/wb_call.css') }}?v={{ asset_version }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/wb_meet.css') }}?v={{ asset_version }}">
+{% endblock %}
+
 {% block content %}
 {# ──────────────────────────────────────────────────────────────────────
    Отдельная страница «Доска» (whiteboard) — отделена от «Чертёжа»
@@ -232,4 +237,6 @@ body footer{ display:none !important; }
 
 <script src="{{ url_for('static', filename='js/whiteboard.js') }}?v={{ asset_version }}"></script>
 <script src="{{ url_for('static', filename='js/wb_call.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/wb_meet.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/wb_collab.js') }}?v={{ asset_version }}"></script>
 {% endblock %}
