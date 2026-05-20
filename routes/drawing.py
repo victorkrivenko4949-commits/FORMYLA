@@ -172,6 +172,16 @@ def drawing_page():
     return render_template("drawing.html")
 
 
+@drawing_bp.route("/whiteboard", methods=["GET"])
+def whiteboard_page():
+    """Отдельная страница «Доска» (бесконечный whiteboard) — без AI-генератора.
+
+    Используется как landing для приглашений в видеозвонок:
+    `wb_call_listener.js` редиректит сюда с `?room=<code>`.
+    """
+    return render_template("whiteboard.html")
+
+
 @drawing_bp.route("/api/drawing/generate", methods=["POST"])
 def api_drawing_generate():
     # Force UTF-8 decoding of the body (defence vs proxy mojibake).

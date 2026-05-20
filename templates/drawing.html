@@ -5,8 +5,8 @@
 <div id="drw-pane-generator" class="drw-pane drw-pane-normal">
     <section class="drawing-page-inner">
         <div class="board-tabs board-tabs--inline" role="tablist">
-            <button class="tab tab--active drw-tab" data-tab="generator" role="tab">✨ Сгенерировать чертёж</button>
-            <button class="tab drw-tab" data-tab="whiteboard" role="tab">🎨 Доска</button>
+            <span class="tab tab--active" role="tab" aria-current="page">✨ AI-чертёж</span>
+            <a class="tab" role="tab" href="/whiteboard" title="Перейти на отдельную страницу с доской">🎨 Доска →</a>
         </div>
         <header class="board-header">
             <h1 class="board-title">📐 Чертёж по условию</h1>
@@ -48,8 +48,8 @@
                 <button id="regenerateBtn" type="button" class="btn-soft">🔄 Перегенерировать</button>
                 <button id="regenerateFreshBtn" type="button" class="btn-soft" title="Полный прогон пайплайна, игнорируя кэш">🔥 Без кэша</button>
                 <button type="button" class="btn-soft btn-violet"
-                    onclick="document.querySelector('.drw-tab[data-tab=whiteboard]').click(); setTimeout(() => window.WB && window.WB.importImage(document.getElementById('drawing-result').src), 300);">
-                    🎨 Открыть на доске
+                    onclick="(function(){try{localStorage.setItem('wb_import_pending', document.getElementById('drawing-result').src);}catch(e){} window.location.href='/whiteboard';})();">
+                    🎨 Открыть на доске →
                 </button>
             </div>
             <p id="drawingMeta" class="dform-note"></p>
@@ -66,66 +66,8 @@
     </section>
 </div>
 
-<div id="drw-pane-whiteboard" class="drw-pane drw-pane-full board-app" hidden>
-    <div class="top-bar glass">
-        <div class="board-tabs" role="tablist">
-            <button class="tab drw-tab" data-tab="generator" role="tab">✨ Чертёж</button>
-            <button class="tab tab--active drw-tab" data-tab="whiteboard" role="tab">🎨 Доска</button>
-        </div>
-        <div class="top-bar-title">🎨 Бесконечная доска</div>
-        <div class="actions zoom">
-            <button class="icon-btn" id="wbZoomOut"   title="Уменьшить">−</button>
-            <button class="icon-btn" id="wbZoomReset" title="Сбросить масштаб">100%</button>
-            <button class="icon-btn" id="wbZoomIn"    title="Увеличить">+</button>
-            <button class="icon-btn" id="wbFit"       title="Подогнать">⊟</button>
-            <span class="divider"></span>
-            <button class="icon-btn" id="wbExport" title="Сохранить как PNG">💾</button>
-            <button class="icon-btn" id="wbImport" title="Импортировать">🖼️</button>
-            <input  type="file" hidden id="wbImportInput" accept="image/*">
-            <button class="icon-btn icon-btn--danger" id="wbClear" title="Очистить всё">🗑️</button>
-            <span class="canvas-status"><span id="wbStatus">Готово</span></span>
-        </div>
-    </div>
-
-    <aside id="wbToolbar" class="side-panel side-panel--left glass">
-        <button class="tool tool--active wb-tool" data-tool="select"   title="Рука / выбрать (V)">✋</button>
-        <button class="tool wb-tool"              data-tool="pen"      title="Карандаш (P)">✏️</button>
-        <button class="tool wb-tool"              data-tool="eraser"   title="Ластик — стирает по линии (E)">🩹</button>
-        <button class="tool wb-tool"              data-tool="objErase" title="Стереть объект целиком — клик по фигуре (X)">🗑️</button>
-        <button class="tool wb-tool"              data-tool="rect"     title="Прямоугольник (R)">▭</button>
-        <button class="tool wb-tool"              data-tool="ellipse" title="Эллипс (O)">◯</button>
-        <button class="tool wb-tool"              data-tool="line"    title="Линия (L)">／</button>
-        <button class="tool wb-tool"              data-tool="arrow"   title="Стрелка (A)">→</button>
-        <button class="tool wb-tool"              data-tool="text"    title="Текст (T)">T</button>
-        <button class="tool wb-tool"              data-tool="sticky"  title="Стикер (S)">🗒️</button>
-        <div class="divider divider--h"></div>
-        <button class="icon-btn" id="wbUndo" title="Отменить (Ctrl+Z)">↶</button>
-        <button class="icon-btn" id="wbRedo" title="Повторить (Ctrl+Y)">↷</button>
-    </aside>
-
-    <div id="wbCanvasWrap" class="canvas-wrap">
-        <canvas id="wbCanvas" class="board-canvas"></canvas>
-        <textarea id="wbTextEditor" class="wb-text-editor" rows="3"></textarea>
-        <div id="wbHUD" class="canvas-hud">zoom 100%</div>
-    </div>
-
-    <aside class="side-panel side-panel--right glass">
-        <div class="palette palette--vert">
-            <button class="swatch swatch--active wb-color" data-color="#e6e8ff" style="--c:#e6e8ff" title="Светлый"></button>
-            <button class="swatch wb-color" data-color="#3b82f6" style="--c:#3b82f6" title="Синий"></button>
-            <button class="swatch wb-color" data-color="#8b5cf6" style="--c:#8b5cf6" title="Фиолет"></button>
-            <button class="swatch wb-color" data-color="#22c55e" style="--c:#22c55e" title="Зелёный"></button>
-            <button class="swatch wb-color" data-color="#f59e0b" style="--c:#f59e0b" title="Оранжевый"></button>
-            <button class="swatch wb-color" data-color="#ef4444" style="--c:#ef4444" title="Красный"></button>
-            <button class="swatch wb-color" data-color="#ec4899" style="--c:#ec4899" title="Розовый"></button>
-            <button class="swatch swatch--clear wb-color" data-color="#0f172a" style="--c:#0f172a" title="Тёмный"></button>
-        </div>
-        <div class="divider divider--h"></div>
-        <div class="thickness thickness--vert" title="Толщина линии">
-            <input type="range" id="wbThickness" min="1" max="30" value="3" class="slider slider--vert" orient="vertical">
-        </div>
-    </aside>
-</div>
+{# Блок «доска» удалён со страницы /drawing — он переехал на отдельную страницу /whiteboard.
+   Это полностью разделяет AI-чертёж (генератор картинок) и интерактивную доску. #}
 
 <style>
 :root{
@@ -403,53 +345,20 @@ body.board-fullscreen footer{ display:none !important; }
 
 <script>
 (function(){
-  const tabs = document.querySelectorAll(".drw-tab");
-  const panes = {
-      generator: document.getElementById("drw-pane-generator"),
-      whiteboard: document.getElementById("drw-pane-whiteboard")
-  };
-  function activate(name){
-      tabs.forEach(b => b.classList.toggle("tab--active", b.dataset.tab === name));
-      Object.entries(panes).forEach(([k,p]) => { if(p) p.hidden = (k !== name); });
-      if (name === "whiteboard"){
-          document.body.classList.add("board-fullscreen");
-          if (window.WB) requestAnimationFrame(() => window.WB.resize());
-      } else {
-          document.body.classList.remove("board-fullscreen");
-      }
-  }
-  tabs.forEach(b => b.addEventListener("click", () => activate(b.dataset.tab)));
-  // Honor ?tab=whiteboard / ?meet=... — open the board pane on direct link.
+  // На странице /drawing «доски» больше нет — это отдельный URL /whiteboard.
+  // Если кто-то всё-таки пришёл со старой ссылкой ?tab=whiteboard или
+  // ?room=... / ?meet=... — сразу редиректим на /whiteboard.
   try {
-    var __p = new URLSearchParams(window.location.search);
-    if (__p.get("tab") === "whiteboard" || __p.has("meet")) {
-      activate("whiteboard");
+    var p = new URLSearchParams(window.location.search);
+    if (p.get("tab") === "whiteboard" || p.has("room") || p.has("meet")) {
+      var qs = window.location.search || "";
+      window.location.replace("/whiteboard" + qs);
+      return;
     }
   } catch (e) {}
-  window.addEventListener("beforeunload", () => document.body.classList.remove("board-fullscreen"));
-  // Bridge: keep .tool--active / .swatch--active in sync with legacy .active class used by whiteboard.js
-  const sync = () => {
-      document.querySelectorAll("#wbToolbar .wb-tool").forEach(b => {
-          b.classList.toggle("tool--active", b.classList.contains("active"));
-      });
-      document.querySelectorAll(".wb-color").forEach(b => {
-          b.classList.toggle("swatch--active", b.classList.contains("active"));
-      });
-  };
-  setTimeout(sync, 60);
-  document.addEventListener("click", (e) => {
-      if (e.target.closest && (e.target.closest(".wb-tool") || e.target.closest(".wb-color"))){
-          setTimeout(sync, 0);
-      }
-  });
 })();
 </script>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/wb_call.css') }}?v={{ asset_version }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/wb_meet.css') }}?v={{ asset_version }}">
+{# AI-чертёж — только генератор. Скрипты доски / звонка ушли на /whiteboard. #}
 <script src="{{ url_for('static', filename='js/drawing.js') }}?v={{ asset_version }}"></script>
-<script src="{{ url_for('static', filename='js/whiteboard.js') }}?v={{ asset_version }}"></script>
-<script src="{{ url_for('static', filename='js/wb_call.js') }}?v={{ asset_version }}"></script>
-<script src="{{ url_for('static', filename='js/wb_meet.js') }}?v={{ asset_version }}"></script>
-<script src="{{ url_for('static', filename='js/wb_collab.js') }}?v={{ asset_version }}"></script>
 {% endblock %}

@@ -63,7 +63,10 @@ PEER_TTL_SECONDS = 90               # 1.5 минуты без poll → пир с
 # /poll дольше 15с, считаем его зомби и вычищаем перед отказом. Это закрывает
 # самую частую проблему: пользователь обновил страницу, его старый peer ещё
 # числится в комнате, и при повторном join ему отказывают.
-STALE_PEER_THRESHOLD_FOR_JOIN = 15
+# Снижено с 15 → 8: пользователь обновил страницу и хочет тут же вернуться
+# в комнату. Через 8 секунд без /poll старый peer считается «зомби» и
+# вычищается, чтобы вторая сессия того же юзера могла войти.
+STALE_PEER_THRESHOLD_FOR_JOIN = 8
 MAX_PEERS_PER_ROOM = 2              # 1-на-1 call
 MAX_QUEUE = 200                     # safety: discard old signalling msgs
 
@@ -126,6 +129,11 @@ def join():
     if not room_id:
         return jsonify({"error": "bad_room"}), 400
 
+    # Клиент при reload/повторном входе может прислать свой предыдущий
+    # peer_id (он его держит в localStorage). Это самый надёжный способ
+    # убрать «свой же зомби», который ещё не успел истечь по TTL.
+    prev_peer_id = (data.get("prev_peer_id") or "").strip()[:32] or None
+
     with _LOCK:
         _gc_locked()
         room = _ROOMS.get(room_id)
@@ -133,26 +141,36 @@ def join():
             room = _Room(room_id)
             _ROOMS[room_id] = room
 
-        # Агрессивная очистка перед отказом «комната занята»: если в комнате
-        # лимит достигнут, но кто-то из «занимающих» не делал /poll более
-        # STALE_PEER_THRESHOLD_FOR_JOIN секунд — это зомби от предыдущей
-        # вкладки/обновления страницы, его удаляем здесь же.
-        if len(room.peers) >= MAX_PEERS_PER_ROOM:
-            now = time.time()
-            stale_pids = [
-                pid for pid, p in room.peers.items()
-                if now - p.last_seen > STALE_PEER_THRESHOLD_FOR_JOIN
-            ]
-            for pid in stale_pids:
-                room.peers.pop(pid, None)
-                for other in room.peers.values():
-                    other.queue.append({"from": pid, "msg": {"type": "peer-left"}})
-            if stale_pids:
-                room.last_active = now
-                logger.info(
-                    "[wb_call] join: pruned %d stale peer(s) before slot check in room=%s",
-                    len(stale_pids), room_id,
-                )
+        # ── 1) Самоочистка: если клиент прислал свой прошлый peer_id,
+        #       сразу его дропаем — это однозначно сам пользователь обновил
+        #       страницу, его старый коннект мёртв.
+        if prev_peer_id and prev_peer_id in room.peers:
+            room.peers.pop(prev_peer_id, None)
+            for other in room.peers.values():
+                other.queue.append({"from": prev_peer_id, "msg": {"type": "peer-left"}})
+            logger.info(
+                "[wb_call] join: pruned self-prev peer=%s in room=%s",
+                prev_peer_id, room_id,
+            )
+
+        # ── 2) Агрессивная очистка stale peer'ов, чтобы не упереться в
+        #       «комната занята» из-за вкладки, которая давно умерла. Делаем
+        #       это ВСЕГДА (раньше — только если лимит был достигнут).
+        now = time.time()
+        stale_pids = [
+            pid for pid, p in room.peers.items()
+            if now - p.last_seen > STALE_PEER_THRESHOLD_FOR_JOIN
+        ]
+        for pid in stale_pids:
+            room.peers.pop(pid, None)
+            for other in room.peers.values():
+                other.queue.append({"from": pid, "msg": {"type": "peer-left"}})
+        if stale_pids:
+            room.last_active = now
+            logger.info(
+                "[wb_call] join: pruned %d stale peer(s) in room=%s",
+                len(stale_pids), room_id,
+            )
 
         if len(room.peers) >= MAX_PEERS_PER_ROOM:
             return jsonify({

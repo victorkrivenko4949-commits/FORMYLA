@@ -683,15 +683,28 @@
     joinRoom(rid);
   }
 
+  function _wbPrevPeerKey(rid) { return "wb_call_prev_peer:" + rid; }
+  function _wbGetPrevPeer(rid) {
+    try { return localStorage.getItem(_wbPrevPeerKey(rid)) || null; }
+    catch (e) { return null; }
+  }
+  function _wbSavePrevPeer(rid, pid) {
+    try { localStorage.setItem(_wbPrevPeerKey(rid), pid); } catch (e) {}
+  }
+  function _wbClearPrevPeer(rid) {
+    try { localStorage.removeItem(_wbPrevPeerKey(rid)); } catch (e) {}
+  }
+
   function joinRoom(rid) {
     setStatus("\u0417\u0430\u043f\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u043c \u043a\u0430\u043c\u0435\u0440\u0443\u2026");
+    var prevPeer = _wbGetPrevPeer(rid);
     acquireMedia().then(function (stream) {
       attachLocalStream(stream);
       $("wbCallVideos").hidden = false;
       $("wbCallToolbar").hidden = false;
       $("wbCallRoomRow").hidden = true;
       setStatus("\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u043c\u0441\u044f \u043a \u043a\u043e\u043c\u043d\u0430\u0442\u0435\u2026");
-      return api("join", { room: rid });
+      return api("join", { room: rid, prev_peer_id: prevPeer });
     }).then(function (r) {
       if (!r) return;
       if (!r.ok) {
@@ -708,6 +721,7 @@
       }
       roomId = rid;
       peerId = r.data.peer_id;
+      _wbSavePrevPeer(rid, peerId);
       var peers = r.data.peers || [];
       if (peers.length) {
         otherId = peers[0];
@@ -759,7 +773,8 @@
       : Promise.resolve();
 
     leavePromise.then(function () {
-      return api("join", { room: rid });
+      // Передаём свой прошлый peer_id, чтобы сервер сразу вычистил «зомби».
+      return api("join", { room: rid, prev_peer_id: oldPeerId || _wbGetPrevPeer(rid) });
     }).then(function (r) {
       if (!r.ok) {
         if (r.status === 409) {
@@ -775,6 +790,7 @@
         return;
       }
       peerId = r.data.peer_id;
+      _wbSavePrevPeer(rid, peerId);
       otherId = (r.data.peers && r.data.peers[0]) || null;
       teardownPc();
       if (otherId) {
@@ -795,6 +811,7 @@
   function leaveCall() {
     if (roomId && peerId) {
       api("leave", { room: roomId, peer_id: peerId }).catch(function () {});
+      _wbClearPrevPeer(roomId);
     }
     teardownPc();
     stopLocalStream();

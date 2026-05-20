@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Доска — FORMYLA{% endblock %}
+
+{% block content %}
+{# ──────────────────────────────────────────────────────────────────────
+   Отдельная страница «Доска» (whiteboard) — отделена от «Чертёжа»
+   (страница /drawing, AI-генератор геометрических картинок).
+   Сюда же ведут приглашения в видеозвонок (wb_call_listener.js).
+   ──────────────────────────────────────────────────────────────────── #}
+
+<div id="wb-pane" class="drw-pane drw-pane-full board-app">
+    <div class="top-bar glass">
+        <a href="/drawing" class="wb-back-link" title="К AI-чертежу">← AI-чертёж</a>
+        <div class="top-bar-title">🎨 Бесконечная доска</div>
+        <div class="actions zoom">
+            <button class="icon-btn" id="wbZoomOut"   title="Уменьшить (−)">−</button>
+            <button class="icon-btn" id="wbZoomReset" title="Сбросить масштаб">100%</button>
+            <button class="icon-btn" id="wbZoomIn"    title="Увеличить (+)">+</button>
+            <button class="icon-btn" id="wbFit"       title="Подогнать">⊟</button>
+            <span class="divider"></span>
+            <button class="icon-btn" id="wbExport" title="Сохранить как PNG (Ctrl+S)">💾</button>
+            <button class="icon-btn" id="wbImport" title="Импортировать">🖼️</button>
+            <input  type="file" hidden id="wbImportInput" accept="image/*">
+            <button class="icon-btn icon-btn--danger" id="wbClear" title="Очистить всё">🗑️</button>
+            <span class="canvas-status"><span id="wbStatus">Готово</span></span>
+        </div>
+    </div>
+
+    <aside id="wbToolbar" class="side-panel side-panel--left glass">
+        <button class="tool tool--active wb-tool" data-tool="select"   title="Рука / выбрать (V)">✋</button>
+        <button class="tool wb-tool"              data-tool="pen"      title="Карандаш (P)">✏️</button>
+        <button class="tool wb-tool"              data-tool="eraser"   title="Ластик (E)">🩹</button>
+        <button class="tool wb-tool"              data-tool="objErase" title="Стереть объект (X)">🗑️</button>
+        <button class="tool wb-tool"              data-tool="rect"     title="Прямоугольник (R)">▭</button>
+        <button class="tool wb-tool"              data-tool="ellipse" title="Эллипс (O)">◯</button>
+        <button class="tool wb-tool"              data-tool="line"    title="Линия (L)">／</button>
+        <button class="tool wb-tool"              data-tool="arrow"   title="Стрелка (A)">→</button>
+        <button class="tool wb-tool"              data-tool="text"    title="Текст (T)">T</button>
+        <button class="tool wb-tool"              data-tool="sticky"  title="Стикер (S)">🗒️</button>
+        <div class="divider divider--h"></div>
+        <button class="icon-btn" id="wbUndo" title="Отменить (Ctrl+Z)">↶</button>
+        <button class="icon-btn" id="wbRedo" title="Повторить (Ctrl+Y)">↷</button>
+    </aside>
+
+    <div id="wbCanvasWrap" class="canvas-wrap">
+        <canvas id="wbCanvas" class="board-canvas"></canvas>
+        <textarea id="wbTextEditor" class="wb-text-editor" rows="3"></textarea>
+        <div id="wbHUD" class="canvas-hud">zoom 100%</div>
+    </div>
+
+    <aside class="side-panel side-panel--right glass">
+        <div class="palette palette--vert">
+            <button class="swatch swatch--active wb-color" data-color="#e6e8ff" style="--c:#e6e8ff" title="Светлый"></button>
+            <button class="swatch wb-color" data-color="#3b82f6" style="--c:#3b82f6" title="Синий"></button>
+            <button class="swatch wb-color" data-color="#8b5cf6" style="--c:#8b5cf6" title="Фиолет"></button>
+            <button class="swatch wb-color" data-color="#22c55e" style="--c:#22c55e" title="Зелёный"></button>
+            <button class="swatch wb-color" data-color="#f59e0b" style="--c:#f59e0b" title="Оранжевый"></button>
+            <button class="swatch wb-color" data-color="#ef4444" style="--c:#ef4444" title="Красный"></button>
+            <button class="swatch wb-color" data-color="#ec4899" style="--c:#ec4899" title="Розовый"></button>
+            <button class="swatch swatch--clear wb-color" data-color="#0f172a" style="--c:#0f172a" title="Тёмный"></button>
+        </div>
+        <div class="divider divider--h"></div>
+        <div class="thickness thickness--vert" title="Толщина линии">
+            <input type="range" id="wbThickness" min="1" max="30" value="3" class="slider slider--vert" orient="vertical">
+        </div>
+    </aside>
+</div>
+
+<style>
+:root{
+    --bg-0:#0b0d12; --bg-1:#10131a; --bg-2:#161a23;
+    --accent:#8b5cf6; --accent-2:#4aa8ff;
+    --text:#e6e8ee; --muted:#9aa3b2;
+    --border:rgba(255,255,255,.10);
+    --glass:rgba(255,255,255,.04);
+}
+.glass{
+    background:var(--glass);
+    border:1px solid var(--border);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+}
+
+/* Fullscreen layout — на этой странице ВСЕГДА fullscreen, без табов. */
+body{ overflow:hidden; }
+body .header,
+body .mobile-bottom-nav,
+body footer{ display:none !important; }
+
+.drw-pane-full.board-app{
+    position:fixed; inset:0; z-index:50;
+    display:grid;
+    grid-template-columns:72px 1fr 72px;
+    grid-template-rows:54px 1fr;
+    grid-template-areas:
+        "top  top    top"
+        "left canvas right";
+    background:var(--bg-0);
+    color:var(--text);
+}
+.drw-pane-full .top-bar{
+    grid-area:top;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 14px; gap:14px;
+}
+.drw-pane-full .top-bar-title{
+    font-weight:600;
+    font-size:15px;
+    color:var(--text);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.drw-pane-full .side-panel--left{ grid-area:left; }
+.drw-pane-full .side-panel--right{ grid-area:right; }
+.drw-pane-full .canvas-wrap{ grid-area:canvas; position:relative; }
+.drw-pane-full .side-panel{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:12px 8px;
+}
+.drw-pane-full .tool, .drw-pane-full .icon-btn{
+    width:48px; height:48px;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--border);
+    color:var(--muted);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:18px;
+    transition:.15s;
+}
+.drw-pane-full .tool:hover, .drw-pane-full .icon-btn:hover{
+    border-color:rgba(255,255,255,.20);
+    color:var(--text);
+    background:rgba(255,255,255,.07);
+}
+.drw-pane-full .tool--active{
+    background:rgba(74,168,255,.18);
+    color:#fff;
+    border-color:rgba(74,168,255,.55);
+}
+.drw-pane-full .icon-btn--danger{
+    color:#fca5a5;
+    border-color:rgba(239,68,68,.30);
+}
+.drw-pane-full .icon-btn--danger:hover{
+    color:#ef4444;
+    border-color:rgba(239,68,68,.55);
+    background:rgba(239,68,68,.10);
+}
+.drw-pane-full .divider{
+    width:1px; height:24px; background:var(--border);
+    margin:0 4px;
+}
+.drw-pane-full .divider--h{
+    width:32px; height:1px;
+    margin:8px 0;
+}
+.drw-pane-full .canvas-status{
+    font-size:12px; color:var(--muted);
+    margin-left:8px;
+}
+.drw-pane-full #wbCanvas{
+    width:100%; height:100%;
+    display:block;
+    background:var(--bg-1);
+    cursor:default;
+}
+.drw-pane-full .canvas-hud{
+    position:absolute; top:12px; left:12px;
+    font-size:11px;
+    color:var(--muted);
+    background:rgba(0,0,0,.4);
+    padding:4px 8px;
+    border-radius:6px;
+    pointer-events:none;
+}
+.drw-pane-full .palette--vert{
+    display:flex; flex-direction:column; gap:6px;
+}
+.drw-pane-full .swatch{
+    width:32px; height:32px;
+    border-radius:50%;
+    border:2px solid transparent;
+    background:var(--c);
+    cursor:pointer;
+    transition:.15s;
+}
+.drw-pane-full .swatch:hover{ transform:scale(1.1); }
+.drw-pane-full .swatch--active{ border-color:#fff; box-shadow:0 0 0 2px rgba(255,255,255,.2); }
+.drw-pane-full .swatch--clear{ background:transparent; border:2px dashed var(--muted); }
+.drw-pane-full .slider--vert{
+    -webkit-appearance:slider-vertical;
+    writing-mode:bt-lr;
+    width:8px; height:140px;
+}
+.drw-pane-full .wb-text-editor{
+    position:absolute;
+    display:none;
+    background:rgba(0,0,0,.7);
+    border:1px solid var(--accent-2);
+    border-radius:6px;
+    color:var(--text);
+    padding:8px;
+    font:inherit;
+    font-size:14px;
+    resize:none;
+    outline:none;
+    z-index:10;
+}
+.wb-back-link{
+    color:var(--muted);
+    text-decoration:none;
+    font-size:14px;
+    padding:6px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.03);
+    transition:.15s;
+    white-space:nowrap;
+}
+.wb-back-link:hover{
+    color:var(--text);
+    border-color:rgba(255,255,255,.20);
+    background:rgba(255,255,255,.07);
+}
+
+@media (max-width: 720px){
+    .drw-pane-full.board-app{ grid-template-columns:60px 1fr 60px; grid-template-rows:50px 1fr; }
+    .drw-pane-full .tool, .drw-pane-full .icon-btn{ width:42px; height:42px; font-size:16px; }
+    .drw-pane-full .top-bar-title{ font-size:13px; }
+    .drw-pane-full .actions.zoom{ gap:4px; }
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/whiteboard.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/wb_call.js') }}?v={{ asset_version }}"></script>
+{% endblock %}
