@@ -872,22 +872,67 @@
   function _wbInstallGlobalClick() {
     if (window.__wb_call_global_click) return;
     window.__wb_call_global_click = true;
-    document.addEventListener("click", function (ev) {
+    // Слушаем И click, И pointerdown — на случай если что-то (например,
+    // другой capture-listener на canvas-wrap) перехватывает click до нас.
+    // pointerdown срабатывает раньше click и не отменяется stopPropagation
+    // на родительском элементе, если мы тоже идём в capture-фазе.
+    function handler(ev) {
       var t = ev.target;
       if (!t) return;
       var hit = t.closest && t.closest("#wbCallToggle, [data-wb-call-open]");
       if (hit) {
         ev.preventDefault();
+        ev.stopPropagation();
         _wbOpenPanel();
+      }
+    }
+    document.addEventListener("click", handler, true);
+    document.addEventListener("pointerdown", function (ev) {
+      // pointerdown сам по себе не «активирует» кнопку — используем его
+      // только как диагностический сигнал + как фолбэк, если click потом
+      // не приедет (например, click погасили e.preventDefault на родителе).
+      var t = ev.target;
+      if (!t) return;
+      var hit = t.closest && t.closest("#wbCallToggle, [data-wb-call-open]");
+      if (hit) {
+        try { console.debug("[wb_call] pointerdown on call button"); } catch (e) {}
       }
     }, true);
   }
 
+  // Прямой биндинг: для каждой найденной inline-кнопки [data-wb-call-open]
+  // вешаем onclick напрямую. Это страховка на случай, если в DOM есть
+  // другой capture-listener выше нас, который вызывает stopImmediatePropagation
+  // и не даёт document-делегатору сработать.
+  function _wbBindInlineButtons() {
+    var btns = document.querySelectorAll("[data-wb-call-open]");
+    for (var i = 0; i < btns.length; i++) {
+      var b = btns[i];
+      if (b.__wb_call_bound) continue;
+      b.__wb_call_bound = true;
+      b.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try { console.debug("[wb_call] inline button click"); } catch (e) {}
+        _wbOpenPanel();
+      });
+    }
+  }
+
   function boot() {
+    try { console.debug("[wb_call] boot, readyState=", document.readyState); } catch (e) {}
     // Глобальный делегирующий обработчик ставим в любом случае — даже если
     // на текущей странице кнопки нет. На /whiteboard inline-кнопка в шаблоне
     // имеет [data-wb-call-open], так что клик сработает гарантированно.
     _wbInstallGlobalClick();
+    _wbBindInlineButtons();
+
+    // На случай, если кнопка появится в DOM позже (динамические тулбары) —
+    // ставим лёгкий MutationObserver и перепривязываем новые кнопки.
+    try {
+      var mo = new MutationObserver(function () { _wbBindInlineButtons(); });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    } catch (e) {}
 
     if (!document.getElementById("wbCanvas")) return;
     ensureTopBarButton();
