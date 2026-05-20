@@ -67,7 +67,7 @@ PEER_TTL_SECONDS = 90               # 1.5 минуты без poll → пир с
 # в комнату. Через 8 секунд без /poll старый peer считается «зомби» и
 # вычищается, чтобы вторая сессия того же юзера могла войти.
 STALE_PEER_THRESHOLD_FOR_JOIN = 8
-MAX_PEERS_PER_ROOM = 2              # 1-на-1 call
+MAX_PEERS_PER_ROOM = 8              # group call (mesh WebRTC, up to ~8)
 MAX_QUEUE = 200                     # safety: discard old signalling msgs
 
 
