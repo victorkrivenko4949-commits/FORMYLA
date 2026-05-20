@@ -61,6 +61,16 @@
     if (!p) return;
     p.hidden = !on;
     p.classList.toggle("open", !!on);
+    if (on) {
+      // На всякий случай форсим видимость поверх любого fullscreen-overlay
+      // (например, .drw-pane-full с z-index:50 на /whiteboard).
+      try {
+        p.style.position = "fixed";
+        p.style.right = "14px";
+        p.style.bottom = "14px";
+        p.style.zIndex = "10000";
+      } catch (e) {}
+    }
   }
 
   function iceServers() {
@@ -175,8 +185,22 @@
     if (pre) $("wbCallRoom").value = pre;
   }
 
+  function _wbOpenPanel() {
+    try {
+      ensurePanel();
+      showPanel(true);
+      var inp = $("wbCallRoom");
+      if (inp && !roomId) inp.focus();
+    } catch (e) {
+      console.error("[wb_call] openPanel failed", e);
+    }
+  }
+
   function ensureTopBarButton() {
     if ($("wbCallToggle")) return;
+    // Если в шаблоне уже есть inline-кнопка с [data-wb-call-open] —
+    // динамическую не добавляем, чтобы не было дубля.
+    if (document.querySelector("[data-wb-call-open]")) return;
     // Ищем тулбар на любой из страниц-доски: старый интегрированный
     // /drawing?tab=whiteboard (#drw-pane-whiteboard) или новая отдельная
     // /whiteboard (#wb-pane). Если ни одного нет — кнопка не вставляется.
@@ -191,11 +215,10 @@
     btn.title = "\u0412\u0438\u0434\u0435\u043e\u0437\u0432\u043e\u043d\u043e\u043a (1-\u043d\u0430-1)";
     btn.type = "button";
     btn.textContent = "\u{1F4F9}";
-    btn.addEventListener("click", function () {
-      ensurePanel();
-      showPanel(true);
-      var inp = $("wbCallRoom");
-      if (inp && !roomId) inp.focus();
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      _wbOpenPanel();
     });
     var clearBtn = document.getElementById("wbClear");
     if (clearBtn && clearBtn.parentNode === actions) {
@@ -203,6 +226,8 @@
     } else {
       actions.appendChild(btn);
     }
+    // Глобальный делегирующий обработчик уже навешен в boot()
+    // через _wbInstallGlobalClick().
   }
 
   // -- Media --------------------------------------------------------------
@@ -842,7 +867,26 @@
   });
 
   // -- Boot ---------------------------------------------------------------
+  function _wbInstallGlobalClick() {
+    if (window.__wb_call_global_click) return;
+    window.__wb_call_global_click = true;
+    document.addEventListener("click", function (ev) {
+      var t = ev.target;
+      if (!t) return;
+      var hit = t.closest && t.closest("#wbCallToggle, [data-wb-call-open]");
+      if (hit) {
+        ev.preventDefault();
+        _wbOpenPanel();
+      }
+    }, true);
+  }
+
   function boot() {
+    // Глобальный делегирующий обработчик ставим в любом случае — даже если
+    // на текущей странице кнопки нет. На /whiteboard inline-кнопка в шаблоне
+    // имеет [data-wb-call-open], так что клик сработает гарантированно.
+    _wbInstallGlobalClick();
+
     if (!document.getElementById("wbCanvas")) return;
     ensureTopBarButton();
 
