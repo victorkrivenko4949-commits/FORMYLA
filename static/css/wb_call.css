@@ -4,15 +4,65 @@
    .wb-call-panel / #wbCallPanel so we don't leak into the rest of the UI.
    ===================================================================== */
 
+/* ── Accent call button (📹) — should pop out of the toolbar ───────── */
+.icon-btn.icon-btn-call,
+button.icon-btn-call,
+[data-wb-call-open].icon-btn-call,
 #wbCallToggle.icon-btn-call{
-    background:linear-gradient(135deg,#4aa8ff,#8b5cf6);
-    color:#fff;
-    border-color:rgba(255,255,255,.18);
-    box-shadow:0 4px 14px rgba(74,168,255,.30);
+    background:linear-gradient(135deg,#4aa8ff 0%, #8b5cf6 60%, #ec4899 110%) !important;
+    background-size:200% 200%;
+    color:#fff !important;
+    border:1px solid rgba(255,255,255,.22) !important;
+    box-shadow:
+        0 6px 18px rgba(74,168,255,.35),
+        0 2px 6px rgba(139,92,246,.30),
+        inset 0 1px 0 rgba(255,255,255,.20);
+    position:relative;
+    transition:transform .18s ease, box-shadow .18s ease, background-position .6s ease;
+    animation: wbCallPulse 2.6s ease-in-out infinite;
 }
+.icon-btn.icon-btn-call:hover,
+button.icon-btn-call:hover,
+[data-wb-call-open].icon-btn-call:hover,
 #wbCallToggle.icon-btn-call:hover{
-    transform:translateY(-1px);
-    box-shadow:0 6px 18px rgba(139,92,246,.35);
+    transform:translateY(-1px) scale(1.04);
+    background-position:100% 50%;
+    box-shadow:
+        0 10px 26px rgba(139,92,246,.50),
+        0 4px 12px rgba(74,168,255,.35),
+        inset 0 1px 0 rgba(255,255,255,.30);
+    animation:none;
+}
+.icon-btn.icon-btn-call:active,
+button.icon-btn-call:active,
+[data-wb-call-open].icon-btn-call:active{
+    transform:translateY(0) scale(.98);
+}
+.icon-btn.icon-btn-call::after,
+button.icon-btn-call::after,
+[data-wb-call-open].icon-btn-call::after{
+    content:"";
+    position:absolute;
+    inset:-2px;
+    border-radius:inherit;
+    background:linear-gradient(135deg, rgba(74,168,255,.55), rgba(236,72,153,.45));
+    filter:blur(8px);
+    opacity:.35;
+    z-index:-1;
+    pointer-events:none;
+}
+@keyframes wbCallPulse{
+    0%,100% { box-shadow:
+        0 6px 18px rgba(74,168,255,.35),
+        0 2px 6px rgba(139,92,246,.30),
+        inset 0 1px 0 rgba(255,255,255,.20); }
+    50%     { box-shadow:
+        0 8px 24px rgba(139,92,246,.55),
+        0 3px 10px rgba(236,72,153,.30),
+        inset 0 1px 0 rgba(255,255,255,.25); }
+}
+@media (prefers-reduced-motion: reduce){
+    .icon-btn-call{ animation:none !important; }
 }
 
 /* ── Floating panel ────────────────────────────────────────────────── */
