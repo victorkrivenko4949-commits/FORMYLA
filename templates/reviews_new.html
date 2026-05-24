@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Оставить отзыв — FORMYLA{% endblock %}
+{% block meta_description %}Поделитесь впечатлением о FORMYLA: как помогла подготовка, что понравилось, что хотелось бы улучшить.{% endblock %}
+
+{% block extra_css %}
+<style>
+.rn-wrap { max-width:720px; margin:0 auto; padding:32px 16px 80px; }
+.rn-card { background:#fff; border-radius:16px; padding:28px; box-shadow:0 2px 18px rgba(15,23,42,.06); }
+.rn-title { margin:0 0 6px; font-size:clamp(22px, 3vw, 30px); color:#0f172a; }
+.rn-sub { color:#64748b; font-size:15px; margin-bottom:22px; }
+.rn-form { display:flex; flex-direction:column; gap:14px; }
+.rn-field label { display:block; font-size:14px; color:#0f172a; font-weight:500; margin-bottom:6px; }
+.rn-field input, .rn-field select, .rn-field textarea {
+  width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1;
+  border-radius:10px; font-size:15px; font-family:inherit; background:#fff;
+}
+.rn-field textarea { min-height:140px; resize:vertical; }
+.rn-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.rn-stars { display:flex; gap:6px; align-items:center; }
+.rn-star { font-size:28px; cursor:pointer; color:#cbd5e1; user-select:none; transition:color .15s; }
+.rn-star.on { color:#f59e0b; }
+.rn-stars input[type="radio"] { position:absolute; opacity:0; pointer-events:none; }
+.rn-honey { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+.rn-actions { margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; }
+.rn-submit {
+  background:#22d3a6; color:#0f172a; border:0; padding:12px 22px; border-radius:10px;
+  font-weight:600; font-size:15px; cursor:pointer;
+}
+.rn-submit:hover { background:#1fbf95; }
+.rn-cancel { background:#f1f5f9; color:#0f172a; padding:12px 22px; border-radius:10px; text-decoration:none; font-size:15px; }
+.rn-flash { padding:10px 14px; border-radius:10px; margin-bottom:14px; font-size:14px; }
+.rn-flash.error { background:#fee2e2; color:#7f1d1d; }
+.rn-flash.success { background:#dcfce7; color:#14532d; }
+.rn-meta { color:#94a3b8; font-size:13px; margin-top:8px; }
+.rn-thanks { text-align:center; padding:28px 0; }
+.rn-thanks h2 { margin:0 0 8px; font-size:24px; color:#0f172a; }
+.rn-thanks .emoji { font-size:48px; margin-bottom:12px; }
+@media (max-width:600px) { .rn-row { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rn-wrap">
+  <div class="rn-card">
+
+    {% if submitted %}
+      <div class="rn-thanks">
+        <div class="emoji">🙏</div>
+        <h2>Спасибо за отзыв!</h2>
+        <p style="color:#64748b;">Мы прочитаем его и после проверки опубликуем на сайте.</p>
+        <p style="margin-top:24px;">
+          <a href="/" class="rn-cancel">На главную</a>
+          <a href="/welcome" class="rn-cancel">К пробнику</a>
+        </p>
+      </div>
+    {% else %}
+      <h1 class="rn-title">Оставьте отзыв</h1>
+      <p class="rn-sub">
+        Поделитесь, как FORMYLA помогла вам или ребёнку. После модерации отзыв
+        появится на главной — в карусели у других учеников и родителей.
+      </p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="rn-flash {{ 'error' if cat=='error' else 'success' }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form class="rn-form" method="post" action="{{ url_for('reviews.submit_review') }}" novalidate>
+        {# honeypot — невидимое поле для ботов #}
+        <div class="rn-honey" aria-hidden="true">
+          <label>Сайт (не заполняйте)</label>
+          <input type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="rn-field">
+          <label for="name">Ваше имя</label>
+          <input id="name" name="name" type="text" maxlength="64"
+                 value="{{ form.get('name','') }}"
+                 placeholder="Например, Артём К.">
+        </div>
+
+        <div class="rn-row">
+          <div class="rn-field">
+            <label for="role">Кто вы?</label>
+            <select id="role" name="role">
+              <option value="">— не указывать —</option>
+              {% for r in allowed_roles %}
+                <option value="{{ r }}" {% if form.get('role')==r %}selected{% endif %}>{{ r }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="rn-field">
+            <label for="grade">Класс / возраст (необязательно)</label>
+            <input id="grade" name="grade" type="text" maxlength="16"
+                   value="{{ form.get('grade','') }}" placeholder="9 класс">
+          </div>
+        </div>
+
+        <div class="rn-field">
+          <label>Оценка</label>
+          <div class="rn-stars" id="rn-stars" data-value="{{ form.get('rating', '5') }}">
+            {% for i in range(1,6) %}
+              <span class="rn-star {% if (form.get('rating','5')|int) >= i %}on{% endif %}" data-i="{{ i }}">★</span>
+            {% endfor %}
+            <input type="hidden" name="rating" id="rating-input" value="{{ form.get('rating','5') }}">
+          </div>
+        </div>
+
+        <div class="rn-field">
+          <label for="text">Текст отзыва</label>
+          <textarea id="text" name="text" maxlength="2000" required
+                    placeholder="Что понравилось? Какой был результат? С чем помогла платформа?">{{ form.get('text','') }}</textarea>
+          <div class="rn-meta">Минимум 20 символов. Максимум 2000.</div>
+        </div>
+
+        <div class="rn-actions">
+          <button type="submit" class="rn-submit">Отправить отзыв</button>
+          <a href="/" class="rn-cancel">Отмена</a>
+        </div>
+        <p class="rn-meta">
+          Отправляя форму, вы соглашаетесь с тем, что после модерации отзыв
+          может быть опубликован на сайте (без email/телефона).
+        </p>
+      </form>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+(function(){
+  // Интерактивные звёзды.
+  var wrap = document.getElementById('rn-stars');
+  if (!wrap) return;
+  var hidden = document.getElementById('rating-input');
+  var stars = wrap.querySelectorAll('.rn-star');
+  function paint(n) {
+    stars.forEach(function(s){
+      var i = parseInt(s.getAttribute('data-i'), 10);
+      s.classList.toggle('on', i <= n);
+    });
+  }
+  stars.forEach(function(s){
+    s.addEventListener('click', function(){
+      var n = parseInt(s.getAttribute('data-i'), 10);
+      hidden.value = String(n);
+      paint(n);
+    });
+    s.addEventListener('mouseover', function(){
+      paint(parseInt(s.getAttribute('data-i'), 10));
+    });
+  });
+  wrap.addEventListener('mouseleave', function(){
+    paint(parseInt(hidden.value || '5', 10));
+  });
+})();
+</script>
+{% endblock %}

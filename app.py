@@ -833,6 +833,14 @@ try:
 except Exception as _e:
     print(f"[BP] admin_reviews_bp NOT registered: {_e}")
 
+# /reviews/new — публичная форма отзыва (модерация в /admin/reviews).
+try:
+    from routes.reviews import reviews_bp
+    app.register_blueprint(reviews_bp)
+    print("[BP] reviews_bp registered (/reviews/new, /reviews/thanks)")
+except Exception as _e:
+    print(f"[BP] reviews_bp NOT registered: {_e}")
+
 # Reviews context processor — даёт reviews_global в любом шаблоне,
 # чтобы {% include '_reviews.html' %} работал на /, /about, /subscribe без явного
 # проброса переменной из вьюхи.

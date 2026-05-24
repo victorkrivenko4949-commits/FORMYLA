@@ -47,6 +47,12 @@
       <button class="swiper-button-prev reviews-prev" aria-label="Назад"></button>
       <button class="swiper-button-next reviews-next" aria-label="Вперёд"></button>
     </div>
+
+    <div class="reviews-cta">
+      <a href="/reviews/new" class="reviews-cta__btn" data-track="cta" data-cta-id="leave_review">
+        ✍️ Оставить отзыв
+      </a>
+    </div>
   </div>
 </section>
 
@@ -99,6 +105,13 @@
 .review-stars .is-on { color: #f59e0b; }
 .review-text { color: #334155; font-size: 14px; line-height: 1.55; margin: 0; }
 .reviews-pagination { bottom: 0 !important; }
+.reviews-cta { text-align:center; margin-top:8px; }
+.reviews-cta__btn {
+  display:inline-block; background:#0f172a; color:#fff; padding:12px 24px;
+  border-radius:10px; text-decoration:none; font-weight:600; font-size:15px;
+  transition:background .15s;
+}
+.reviews-cta__btn:hover { background:#1e293b; }
 .swiper-button-prev.reviews-prev, .swiper-button-next.reviews-next { color: #22d3a6; }
 @media (max-width: 600px) {
   .reviews-section { padding: 40px 12px; }
