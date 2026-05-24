@@ -3,16 +3,43 @@
 {% block title %}Адаптивный тест - {{ topic_name }} - FORMYLA{% endblock %}
 
 {% block content %}
+{# YM_GOALS: mock_start — ученик начал адаптивный тест (главный вариант проверки по темам). #}
+<script>if (typeof ym !== 'undefined') { ym(109394525, 'reachGoal', 'mock_start'); }</script>
 <div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
     
     <!-- Заголовок -->
-    <div style="text-align: center; margin-bottom: 30px;">
+    <div style="text-align: center; margin-bottom: 20px;">
         <h1 style="font-size: 2em; color: var(--text-main); margin-bottom: 10px;">
             📚 {{ topic_name }} - Класс {{ grade }}
         </h1>
-        <p style="font-size: 1em; color: var(--text-soft);">
-            Задача {{ current_index }} из 25
+        <p style="font-size: 1em; color: var(--text-soft); margin-bottom: 6px;">
+            Задача {{ current_slot or current_index }} из 25
+            &nbsp;•&nbsp; <span style="color: var(--accent-2);">Отвечено: {{ answered_count or 0 }}/25</span>
         </p>
+    </div>
+
+    <!-- Пагинация по 25 слотам -->
+    <div id="slotsPagination" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 24px; padding: 14px; background: rgba(15, 23, 42, 0.45); border: 1px solid var(--border-soft); border-radius: var(--radius-lg);">
+        {% for s in (slots_summary or []) %}
+            {% set is_current = (s.index == (current_slot or current_index)) %}
+            {% if s.status == 'answered' %}
+                {% set _bg = 'rgba(34,197,94,0.18)' %}{% set _bd = '#22c55e' %}{% set _fg = '#22c55e' %}{% set _title = 'Отвечено' %}
+            {% elif s.status == 'skipped' %}
+                {% set _bg = 'rgba(148,163,184,0.18)' %}{% set _bd = '#94a3b8' %}{% set _fg = '#cbd5e1' %}{% set _title = 'Пропущено' %}
+            {% else %}
+                {% set _bg = 'rgba(59,130,246,0.12)' %}{% set _bd = 'rgba(59,130,246,0.5)' %}{% set _fg = '#93c5fd' %}{% set _title = 'Не отвечено' %}
+            {% endif %}
+            <a href="/adaptive_test_simple?slot={{ s.index }}" title="Слот {{ s.index }} — {{ _title }}"
+               class="slot-chip{% if is_current %} slot-chip-current{% endif %}"
+               style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; font-weight: 700; font-size: 13px; text-decoration: none; background: {{ _bg }}; color: {{ _fg }}; border: 2px solid {% if is_current %}#ffffff{% else %}{{ _bd }}{% endif %}; box-shadow: {% if is_current %}0 0 0 2px var(--accent-1){% else %}none{% endif %}; transition: transform 0.15s, box-shadow 0.15s;">
+                {{ s.index }}
+            </a>
+        {% endfor %}
+    </div>
+    <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; font-size: 0.85em; color: var(--text-muted);">
+        <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#22c55e; margin-right:4px;"></span>отвечено</span>
+        <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#94a3b8; margin-right:4px;"></span>пропущено</span>
+        <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#3b82f6; margin-right:4px;"></span>не отвечено</span>
     </div>
 
     <!-- Карточка задачи -->
@@ -128,22 +155,55 @@
             </div>
 
             <input type="hidden" name="task_id" value="{{ task.id }}">
+            <input type="hidden" name="slot" id="currentSlotInput" value="{{ current_slot or current_index }}">
 
-            <div style="display: flex; gap: 15px; justify-content: center;">
-                <button type="submit" id="submitBtn"
-                        style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
-                    Ответить →
-                </button>
-                
-                <a href="/probniks" 
-                   style="padding: 15px 40px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; border: 1px solid var(--border-mid); transition: all 0.2s; display: inline-block;"
-                   onmouseover="this.style.background='rgba(100, 116, 139, 0.3)'"
-                   onmouseout="this.style.background='rgba(100, 116, 139, 0.2)'">
-                    Завершить тест
-                </a>
+            <!-- Read-only баннер для уже отвеченных слотов -->
+            {% if is_readonly %}
+            <div id="readonlyBanner" style="margin: 10px 0 20px; padding: 14px 18px; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.4); border-radius: var(--radius-sm); color: #86efac; font-size: 0.95em;">
+                ✅ На эту задачу уже отвечен ответ. Поля заблокированы для редактирования.
+                {% if existing_user_answer %}<div style="margin-top:6px; color: var(--text-muted); font-size: 0.9em;">Ваш ответ: <code style="color:#86efac;">{{ existing_user_answer }}</code></div>{% endif %}
             </div>
+            {% endif %}
+
+            <!-- Кнопки навигации и действий -->
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+                <button type="button" id="prevSlotBtn" onclick="goToSlot({{ (current_slot or current_index) - 1 }})"
+                        {% if (current_slot or current_index) <= 1 %}disabled{% endif %}
+                        style="padding: 14px 22px; background: rgba(100, 116, 139, 0.18); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
+                    ← Предыдущая
+                </button>
+
+                {% if is_readonly %}
+                    <!-- Read-only режим: только «Следующая» -->
+                    <button type="button" id="nextSlotBtnRO" onclick="goToSlot({{ (current_slot or current_index) + 1 }})"
+                            {% if (current_slot or current_index) >= 25 %}disabled{% endif %}
+                            style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                        Следующая →
+                    </button>
+                {% else %}
+                    <button type="button" id="skipBtn" onclick="skipCurrentSlot()"
+                            style="padding: 14px 22px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
+                        Пропустить →
+                    </button>
+                    <button type="submit" id="submitBtn"
+                            style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                        Ответить →
+                    </button>
+                {% endif %}
+
+                <button type="button" id="finishBtnTop"
+                        onclick="finishTest()"
+                        {% if not can_finish %}disabled{% endif %}
+                        title="{% if can_finish %}Завершить тест и посмотреть результаты{% else %}Осталось ответить на {{ remaining_to_finish }} задач(и){% endif %}"
+                        style="padding: 14px 22px; background: {% if can_finish %}linear-gradient(135deg, #22c55e, #16a34a){% else %}rgba(100, 116, 139, 0.2){% endif %}; color: {% if can_finish %}white{% else %}var(--text-muted){% endif %}; border: 1px solid {% if can_finish %}#16a34a{% else %}var(--border-mid){% endif %}; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: {% if can_finish %}pointer{% else %}not-allowed{% endif %}; opacity: {% if can_finish %}1{% else %}0.65{% endif %};">
+                    Завершить тест ✓
+                </button>
+            </div>
+            {% if not can_finish %}
+            <p id="finishHint" style="text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px;">
+                Осталось ответить: <strong style="color: var(--accent-2);">{{ remaining_to_finish }}</strong>
+            </p>
+            {% endif %}
         </form>
 
         <!-- Лоадер AI проверки -->
@@ -169,19 +229,20 @@
             </div>
             
             <!-- Кнопки действий -->
-            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+            <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button id="nextTaskBtn" onclick="goToNextTask()"
                         style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
                     Следующая задача →
                 </button>
-                <button id="finishBtn" onclick="finishTest()" style="display: none; padding: 15px 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);"
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(34, 197, 94, 0.4)'"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(34, 197, 94, 0.3)'">
+                <button id="finishBtn" onclick="finishTest()" disabled
+                        title="Кнопка активируется после того, как вы ответите на все 25 задач"
+                        style="display: none; padding: 15px 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: not-allowed; opacity: 0.65; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);">
                     Завершить тест ✓
                 </button>
             </div>
+            <p id="finishBtnHint" style="display:none; text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px;"></p>
         </div>
 
     </div>
@@ -575,9 +636,40 @@ async function compressImage(file, maxDim = 1600, quality = 0.82) {
     }
 }
 
+// ── Read-only режим: если слот уже answered, блокируем форму ────────
+const IS_READONLY = {{ 'true' if is_readonly else 'false' }};
+const CURRENT_SLOT = parseInt('{{ current_slot or current_index }}', 10) || 1;
+
+if (IS_READONLY) {
+    // Отключаем все поля ввода и кнопки сабмита
+    const formEl = document.getElementById('answerForm');
+    if (formEl) {
+        formEl.querySelectorAll('input, math-field, button[type="submit"]').forEach(el => {
+            try {
+                if (el.tagName && el.tagName.toLowerCase() === 'math-field') {
+                    el.setAttribute('readonly', 'true');
+                    el.setAttribute('disabled', 'true');
+                    el.style.opacity = '0.6';
+                    el.style.pointerEvents = 'none';
+                } else {
+                    el.disabled = true;
+                }
+            } catch(e) {}
+        });
+        // Прячем фото-кнопку и форму отправки
+        const photoBtn = formEl.querySelector('button[onclick*="photoInput"]');
+        if (photoBtn) photoBtn.style.display = 'none';
+    }
+}
+
 // Обработчик отправки формы
 document.getElementById('answerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+
+    if (IS_READONLY) {
+        alert('На эту задачу уже отвечен ответ. Перейдите к другой задаче через пагинацию.');
+        return;
+    }
 
     // Собираем данные формы
     const formData = new FormData(this);
@@ -743,27 +835,127 @@ function showResult(result) {
     // Рендерим KaTeX в блоке feedback после вставки HTML
     renderKatexSafe(feedbackText);
     
-    // Показать кнопку завершения, если это последняя задача
-    if (result.is_last_task) {
-        document.getElementById('nextTaskBtn').style.display = 'none';
-        document.getElementById('finishBtn').style.display = 'block';
+    // Запоминаем next_slot для кнопки «Следующая задача»
+    const nextSlot = parseInt(result.next_slot || 0, 10);
+    const canFinish = !!result.can_finish;
+    const remaining = parseInt(result.remaining_to_finish || 0, 10);
+
+    const nextBtn = document.getElementById('nextTaskBtn');
+    const finishBtnInResult = document.getElementById('finishBtn');
+    const finishBtnHint = document.getElementById('finishBtnHint');
+
+    if (nextBtn) {
+        if (nextSlot && nextSlot >= 1 && nextSlot <= 25) {
+            nextBtn.onclick = function() { goToSlot(nextSlot); };
+            nextBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'none';
+        }
     }
-    
+
+    if (finishBtnInResult) {
+        finishBtnInResult.style.display = 'inline-block';
+        if (canFinish) {
+            finishBtnInResult.disabled = false;
+            finishBtnInResult.style.opacity = '1';
+            finishBtnInResult.style.cursor = 'pointer';
+            finishBtnInResult.title = 'Завершить тест и посмотреть результаты';
+            if (finishBtnHint) finishBtnHint.style.display = 'none';
+        } else {
+            finishBtnInResult.disabled = true;
+            finishBtnInResult.style.opacity = '0.65';
+            finishBtnInResult.style.cursor = 'not-allowed';
+            finishBtnInResult.title = 'Осталось ответить на ' + remaining + ' задач(и)';
+            if (finishBtnHint) {
+                finishBtnHint.textContent = 'Осталось ответить: ' + remaining;
+                finishBtnHint.style.display = 'block';
+            }
+        }
+    }
+
+    // Обновляем верхнюю кнопку «Завершить тест» (на случай если ученик
+    // ответил на последнюю задачу прямо сейчас — не нужно перезагружать).
+    const finishBtnTop = document.getElementById('finishBtnTop');
+    if (finishBtnTop) {
+        if (canFinish) {
+            finishBtnTop.disabled = false;
+            finishBtnTop.style.opacity = '1';
+            finishBtnTop.style.cursor = 'pointer';
+            finishBtnTop.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            finishBtnTop.style.color = 'white';
+            finishBtnTop.title = 'Завершить тест и посмотреть результаты';
+        } else {
+            finishBtnTop.disabled = true;
+            finishBtnTop.style.opacity = '0.65';
+            finishBtnTop.style.cursor = 'not-allowed';
+            finishBtnTop.title = 'Осталось ответить на ' + remaining + ' задач(и)';
+        }
+    }
+
     resultBlock.style.display = 'block';
-    
-    // АВТОПЕРЕКЛЮЧЕНИЕ ОТКЛЮЧЕНО - ученик переходит вручную по кнопке "Следующая задача"
-    // Это дает время изучить решение без спешки
+
+    // АВТОПЕРЕКЛЮЧЕНИЕ ОТКЛЮЧЕНО — ученик сам переходит к следующему слоту
+}
+
+function goToSlot(slotNum) {
+    const n = parseInt(slotNum, 10);
+    if (!n || n < 1 || n > 25) return;
+    if (window._clearTaskStorage) window._clearTaskStorage();
+    window.location.href = '/adaptive_test_simple?slot=' + n;
 }
 
 function goToNextTask() {
-    // Очищаем сохранённый ввод для текущей задачи
+    // Legacy-функция: оставлена для обратной совместимости
     if (window._clearTaskStorage) window._clearTaskStorage();
     window.location.href = '/adaptive_test_simple';
 }
 
+async function skipCurrentSlot() {
+    const slotInput = document.getElementById('currentSlotInput');
+    const slot = parseInt(slotInput ? slotInput.value : '0', 10);
+    if (!slot) return;
+    const skipBtn = document.getElementById('skipBtn');
+    if (skipBtn) {
+        skipBtn.disabled = true;
+        skipBtn.textContent = 'Пропускаем…';
+    }
+    try {
+        const r = await fetch('/adaptive_test_simple/skip', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({slot: slot}),
+        });
+        const j = await r.json();
+        if (j && j.status === 'success') {
+            if (window._clearTaskStorage) window._clearTaskStorage();
+            const next = parseInt(j.next_slot || (slot + 1), 10) || (slot + 1);
+            window.location.href = '/adaptive_test_simple?slot=' + Math.min(25, Math.max(1, next));
+        } else {
+            alert((j && j.message) || 'Не удалось пропустить задачу');
+            if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить →'; }
+        }
+    } catch (err) {
+        console.error('skip failed', err);
+        alert('Ошибка сети при пропуске задачи');
+        if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить →'; }
+    }
+}
+
 function finishTest() {
+    // Защита на фронте: если кнопка disabled — не идём дальше
+    const btnTop = document.getElementById('finishBtnTop');
+    const btnInResult = document.getElementById('finishBtn');
+    const blocked = (btnTop && btnTop.disabled) && (!btnInResult || btnInResult.disabled);
+    if (blocked) {
+        const t = (btnTop && btnTop.getAttribute('title'))
+                  || (btnInResult && btnInResult.getAttribute('title'))
+                  || 'Сначала ответьте на все 25 задач';
+        alert(t);
+        return;
+    }
     if (window._clearTaskStorage) window._clearTaskStorage();
-    window.location.href = '/adaptive_test_simple/results';
+    // Идём через серверный gate /finish — он сам проверит answered_count == 25
+    window.location.href = '/adaptive_test_simple/finish';
 }
 </script>
 

@@ -1,6 +1,9 @@
 databases:
   - name: formyla-db
-    plan: free
+    # ВАЖНО: должно совпадать с реальным планом в Render Dashboard.
+    # Текущий план — Pro-8gb (8 GB RAM, 2 CPU, 100 GB). Если поставить меньше,
+    # Blueprint sync попытается даунгрейднуть БД → "Updating Instance" → простой.
+    plan: pro-8gb
     databaseName: formyla
     user: formyla
 
@@ -8,9 +11,11 @@ services:
   - type: web
     name: formyla-com
     env: python
-    plan: free
+    plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --workers 1 --timeout 600 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+    # --timeout 120 — стандарт; --preload — fail-fast если БД недоступна на старте,
+    # вместо подвисания worker'а в psycopg wait_c.
+    startCommand: gunicorn app:app --workers 2 --timeout 120 --graceful-timeout 30 --preload --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:

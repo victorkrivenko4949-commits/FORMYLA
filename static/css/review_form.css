@@ -1,0 +1,39 @@
+/* Review form: пользовательский отзыв о сайте (страница /about). */
+
+.review-stars {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 6px;
+  user-select: none;
+}
+
+.review-stars .rstar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 30px;
+  line-height: 1;
+  padding: 4px 6px;
+  color: #475569;
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+
+.review-stars .rstar:hover {
+  transform: scale(1.12);
+}
+
+.review-stars .rstar.active,
+.review-stars .rstar.hover {
+  color: #f59e0b;
+}
+
+.review-section {
+  border-left: 3px solid rgba(16, 185, 129, 0.45);
+  padding-left: 18px;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.05),
+    transparent 60%
+  );
+  border-radius: 12px;
+}

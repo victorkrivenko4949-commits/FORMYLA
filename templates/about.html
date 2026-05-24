@@ -2,6 +2,7 @@
 {% block title %}О проекте FORMYLA{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ asset_version }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/review_form.css') }}?v={{ asset_version }}">
 <style>
   /* ── Onboarding banner ── */
   .onboarding-banner {
@@ -385,7 +386,7 @@
           <tr><td>Адаптивные задачи под слабые темы</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
           <tr><td>Радар навыков ученика</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
           <tr><td>Родитель видит прогресс ребёнка</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
-          <tr><td>Цена в месяц</td><td class="highlight-col"><strong>390 ₽</strong></td><td>~400 ₽</td><td>~950 ₽</td><td>990 ₽</td></tr>
+          <tr><td>Цена в месяц</td><td class="highlight-col"><strong><del style="opacity:0.55;color:#94a3b8;">390 ₽</del> <span style="color:#38ef7d;">0 ₽</span></strong></td><td>~400 ₽</td><td>~950 ₽</td><td>990 ₽</td></tr>
         </tbody>
       </table>
     </div>
@@ -459,8 +460,8 @@
       <div class="plan-box plan-pro">
         <div class="plan-badge-pro">⭐ POPULAR</div>
         <h3>Pro Месяц</h3>
-        <div class="plan-price-tag">390 ₽ / мес</div>
-        <p class="plan-trial-hint">🎁 Первые 7 дней бесплатно</p>
+        <div class="plan-price-tag"><del style="opacity:0.55;color:#94a3b8;font-weight:600;">390 ₽ / мес</del> <span style="color:#38ef7d;">0 ₽</span></div>
+        <p class="plan-trial-hint" style="color:#38ef7d;font-weight:700;">🎁 Сейчас всё доступно бесплатно</p>
         <ul>
           <li>Безлимит задач и олимпиад</li>
           <li>Безлимит сообщений ИИ-тьютору</li>
@@ -470,30 +471,30 @@
           <li>Проверка фото решений</li>
           <li>Приоритетная поддержка</li>
         </ul>
-        <a href="/subscribe?plan=premium_monthly" class="plan-btn plan-btn-pro">Попробовать 7 дней бесплатно</a>
+        <a href="/subscribe?plan=premium_monthly" class="plan-btn plan-btn-pro">Подключить бесплатно</a>
       </div>
 
       {# Pro Year — discount 40% #}
       <div class="plan-box plan-pro plan-year">
-        <div class="plan-badge-discount">−40%</div>
+        <div class="plan-badge-discount">−100%</div>
         <h3>Pro Год</h3>
-        <p class="plan-price-old">было 4 680 ₽</p>
-        <div class="plan-price-tag">2 790 ₽ / год</div>
-        <p class="plan-price-note">≈ 232 ₽/мес · экономия 1 890 ₽</p>
+        <p class="plan-price-old"><del>было 4 680 ₽</del></p>
+        <div class="plan-price-tag"><del style="opacity:0.55;color:#94a3b8;font-weight:600;">2 790 ₽ / год</del> <span style="color:#38ef7d;">0 ₽</span></div>
+        <p class="plan-price-note" style="color:#38ef7d;font-weight:700;">🎁 Сейчас всё доступно бесплатно</p>
         <ul>
           <li>Всё из Pro Месяц</li>
           <li>Доступ к новым курсам и методам</li>
           <li>Эксклюзивные разборы прошедших туров</li>
           <li>Закрытое сообщество в Telegram</li>
         </ul>
-        <a href="/subscribe?plan=premium_yearly" class="plan-btn plan-btn-year">Оформить год</a>
+        <a href="/subscribe?plan=premium_yearly" class="plan-btn plan-btn-year">Подключить бесплатно</a>
       </div>
 
     </div>
     <p class="guarantee">
-      💎 <strong>Гарантия возврата:</strong> не понравилось в первые 7 дней — напиши в Telegram
+      💎 <strong>Сейчас всё доступно бесплатно.</strong> Цены вернутся, когда мы выйдем из бета-периода — напиши в Telegram
       <a href="https://t.me/FormylaSupport" target="_blank" style="color:#38ef7d;text-decoration:none;">@FormylaSupport</a>,
-      вернём деньги без вопросов и без анкет.
+      если хочешь зафиксировать бесплатный доступ навсегда.
     </p>
   </section>
 
@@ -582,6 +583,36 @@
     <a href="https://t.me/FormylaMaths" target="_blank" class="tg-btn">📨 @FormylaMaths</a>
   </section>
 
+  {# ── Review form: пользовательский отзыв о сайте (приходит на email владельцу) ── #}
+  <section class="about-section review-section">
+    <h2>✍️ Написать отзыв</h2>
+    <p>Понравилось пользоваться FORMYLA? Поставь оценку и оставь пару слов — это очень помогает нам становиться лучше.</p>
+    <form id="review-form" class="support-form">
+      <div class="form-row">
+        <label>Оценка</label>
+        <div id="review-stars" class="review-stars" role="radiogroup" aria-label="Оценка от 1 до 5">
+          <button type="button" class="rstar" data-val="1" aria-label="1 звезда">★</button>
+          <button type="button" class="rstar" data-val="2" aria-label="2 звезды">★</button>
+          <button type="button" class="rstar" data-val="3" aria-label="3 звезды">★</button>
+          <button type="button" class="rstar" data-val="4" aria-label="4 звезды">★</button>
+          <button type="button" class="rstar" data-val="5" aria-label="5 звёзд">★</button>
+        </div>
+        <input type="hidden" name="rating" id="review-rating" value="0">
+      </div>
+      <div class="form-row">
+        <label>Email <span class="muted">(необязательно)</span></label>
+        <input type="email" name="email" placeholder="чтобы мы могли поблагодарить вас лично">
+      </div>
+      <div class="form-row">
+        <label>Ваш отзыв</label>
+        <textarea name="message" required minlength="5" maxlength="4000" rows="6" placeholder="Что понравилось? Что улучшить?"></textarea>
+        <div class="char-count"><span id="review-char-current">0</span> / 4000</div>
+      </div>
+      <button type="submit" class="submit-btn">Отправить отзыв</button>
+      <div id="review-result" class="form-result"></div>
+    </form>
+  </section>
+
   {# ── Support form (kept from legacy, important infra) ── #}
   <section class="about-section support-section">
     <h2>💬 Связаться с нами</h2>
@@ -630,6 +661,69 @@ form.addEventListener("submit", async (e) => {
     else { result.textContent = "❌ " + (j.error || "Ошибка отправки"); result.className = "form-result err"; }
   } catch (err) { result.textContent = "❌ Нет соединения. Попробуйте позже."; result.className = "form-result err"; }
 });
+
+// ── Review form handler ─────────────────────────────────────────────
+(function initReviewForm() {
+  const rForm = document.getElementById("review-form");
+  if (!rForm) return;
+  const rTa = rForm.querySelector('textarea[name="message"]');
+  const rCounter = document.getElementById("review-char-current");
+  const rResult = document.getElementById("review-result");
+  const rRatingInput = document.getElementById("review-rating");
+  const rStars = Array.from(document.querySelectorAll("#review-stars .rstar"));
+
+  rTa.addEventListener("input", () => { rCounter.textContent = rTa.value.length; });
+
+  function paint(n, cls) {
+    rStars.forEach((s, i) => {
+      s.classList.toggle(cls, i < n);
+    });
+  }
+  rStars.forEach((star, idx) => {
+    star.addEventListener("mouseenter", () => paint(idx + 1, "hover"));
+    star.addEventListener("mouseleave", () => paint(0, "hover"));
+    star.addEventListener("click", () => {
+      const val = idx + 1;
+      rRatingInput.value = String(val);
+      paint(val, "active");
+    });
+  });
+
+  rForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    rResult.textContent = "Отправка...";
+    rResult.className = "form-result loading";
+    const payload = {
+      rating: parseInt(rRatingInput.value, 10) || 0,
+      email: rForm.email.value.trim(),
+      message: rTa.value.trim(),
+      page_url: window.location.href,
+    };
+    try {
+      const r = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      let j; try { j = await r.json(); } catch (_) { j = {}; }
+      if (r.ok && j.ok) {
+        rResult.textContent = "✅ Спасибо за отзыв! Мы прочитаем его лично.";
+        rResult.className = "form-result ok";
+        rForm.reset();
+        rRatingInput.value = "0";
+        paint(0, "active");
+        rCounter.textContent = "0";
+      } else {
+        rResult.textContent = "❌ " + (j.error || "Ошибка отправки");
+        rResult.className = "form-result err";
+      }
+    } catch (err) {
+      rResult.textContent = "❌ Нет соединения. Попробуйте позже.";
+      rResult.className = "form-result err";
+    }
+  });
+})();
 </script>
 
 {% endblock %}

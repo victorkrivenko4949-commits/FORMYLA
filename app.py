@@ -140,10 +140,23 @@ elif _database_url.startswith('postgresql://') and '+psycopg' not in _database_u
     _database_url = _database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+_engine_opts = {
     'pool_pre_ping': True,
     'pool_recycle': 300,
+    'pool_size': 5,
+    'max_overflow': 5,
+    'pool_timeout': 10,
 }
+if _database_url.startswith('postgresql'):
+    _engine_opts['connect_args'] = {
+        'connect_timeout': 10,
+        'keepalives': 1,
+        'keepalives_idle': 30,
+        'keepalives_interval': 10,
+        'keepalives_count': 3,
+        'options': '-c statement_timeout=30000',
+    }
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = _engine_opts
 print(f'[DB] Using: ' + _database_url.split('@')[0] + '@***')
 
 # Flask-Login configuration (долгоживущие cookie)
@@ -1554,6 +1567,16 @@ def generate_variant(olympiad_slug, grade, round_key):
     print("=" * 70)
     return modified
 
+
+
+@app.route("/welcome")
+def welcome():
+    """Маркетинговая посадка для холодного трафика.
+
+    Сценарий: реклама / Метрика → /welcome → CTA → /adaptive_test/select_class.
+    Это не главная (/) — её не трогаем, чтобы не сломать UX для залогиненных.
+    """
+    return render_template("welcome.html")
 
 
 @app.route("/")
@@ -4197,49 +4220,33 @@ def adaptive_test_select_topic():
                                      grade=grade_int, domain=domain),
             })
     else:
-        # Классические темы для 7–11 классов — старый адаптивный тест
-        from services.adaptive_topic_mapping import get_keywords_for_grade_topic
-        classic_topics = [
-            ('algebra',       'Алгебра',         '📐'),
-            ('geometry',      'Геометрия',       '📏'),
-            ('combinatorics', 'Комбинаторика',   '🎲'),
-            ('number_theory', 'Теория чисел',    '🔢'),
-            ('kl_movement',   'Задачи на движение', '🚗'),
-            ('knights_liars', 'Рыцари и лжецы',  '⚔️'),
-        ]
-        fallback_keywords = {
-            'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
-            'geometry': ['геометрия', 'треугольник', 'четырехугольник', 'окружность',
-                         'вектор', 'площад', 'стереометр', 'многогранник',
-                         'тела вращения', 'объем'],
-            'combinatorics': ['комбинатор', 'вероятност', 'перестановк', 'размещен', 'сочетан'],
-            'number_theory': ['натуральн', 'делимост', 'положительн', 'отрицательн',
-                              'рациональн', 'числ', 'НОД', 'НОК'],
-            'kl_movement': ['движен', 'текстовые задачи', 'совместная работа'],
-            'knights_liars': ['рыцар', 'лжец'],
-        }
+        # Темы 7–11 классов берём из реестра, где каждой теме сопоставлена
+        # ТОЧНАЯ строка `AdaptiveTask.topic` из БД (без эвристик по keyword-ам).
+        from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
+        registry = ADAPTIVE_TOPICS_BY_GRADE.get(grade_int, [])
         all_tasks = AdaptiveTask.query.filter_by(
             class_level=grade_int, is_flagged=False
         ).all()
-        for topic_key, topic_name, emoji in classic_topics:
-            internal = 'movement' if topic_key == 'kl_movement' else topic_key
-            kws = get_keywords_for_grade_topic(grade_int, internal) \
-                  or fallback_keywords.get(topic_key, [])
-            kws_lower = [k.lower() for k in kws]
-            if not kws_lower:
-                count = len(all_tasks)
-            else:
-                count = sum(
-                    1 for t in all_tasks
-                    if t.topic and any(k in t.topic.lower() for k in kws_lower)
-                )
+        by_topic = {}
+        for t in all_tasks:
+            if t.topic:
+                key = t.topic.strip()
+                by_topic[key] = by_topic.get(key, 0) + 1
+        for entry in registry:
+            count = by_topic.get(entry['db_topic'], 0)
+            # Поддержка алиасов на случай орфо-разночтений в БД.
+            if count == 0:
+                for alias in entry.get('aliases', []) or []:
+                    count = by_topic.get(alias, 0)
+                    if count:
+                        break
             topics.append({
-                'name':      topic_name,
-                'emoji':     emoji,
+                'name':      entry['name'],
+                'emoji':     entry['emoji'],
                 'count':     count,
                 'available': count >= MIN_TASKS,
                 'url':       url_for('adaptive_test_start_simple',
-                                     topic=topic_key, grade=grade_int),
+                                     topic=entry['key'], grade=grade_int),
             })
 
     return render_template(
@@ -4372,6 +4379,13 @@ def adaptive_test_start_simple():
         flash(f'Неверный формат класса: {grade}', 'error')
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
+    # ── НОВЫЙ ПУТЬ: реестр тем 7–11 классов (точное совпадение по db_topic) ──
+    # Для 7–11 классов мы регистрируем темы в services.adaptive_topics_registry
+    # и фильтруем задачи строгим равенством AdaptiveTask.topic == db_topic.
+    # Для 5–6 и устаревших ключей (algebra/geometry/...) остаётся keyword-путь.
+    from services.adaptive_topics_registry import get_topic_entry
+    registry_entry = get_topic_entry(grade_int, topic)
+
     # Маппинг тем: короткий ключ -> ключевые слова для поиска в названии темы
     topic_keywords = {
         'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
@@ -4395,7 +4409,7 @@ def adaptive_test_start_simple():
         'kl_movement':   ['движен', 'текстовые задачи', 'совместная работа'],
         'knights_liars': ['рыцар', 'лжец']
     }
-    
+
     # ФИКС БАГА 1: Специальный маппинг для 5 класса
     # В 5 классе задачи записаны как "математика", "олимпиадные" и т.д.
     # Для "Алгебры" в 5 классе ищем задачи по более широким критериям
@@ -4403,17 +4417,17 @@ def adaptive_test_start_simple():
         print(f"[ADAPTIVE FIX] 5 класс + Алгебра → расширенный поиск по математике")
         topic_keywords['algebra'] = ['математик', 'числ', 'выражен', 'уравнен', 'задач',
                                       'вычислен', 'арифметик', 'олимпиад']
-    
+
     # Маппинг тем для всех классов (задачи хранятся с полными русскими названиями)
     from services.adaptive_topic_mapping import get_keywords_for_grade_topic
     grade_kw = get_keywords_for_grade_topic(grade_int, topic)
     if grade_kw:
         topic_keywords[topic] = grade_kw
         print(f"[ADAPTIVE FIX] {grade_int} класс + {topic} → ключевые слова: {grade_kw}")
-    
+
     # Получаем ключевые слова для выбранной темы
     keywords = topic_keywords.get(topic, [])
-    
+
     # Название темы для отображения
     topic_names = {
         'algebra': 'Алгебра',
@@ -4426,21 +4440,38 @@ def adaptive_test_start_simple():
         'functions': 'Функции',
         'equations': 'Уравнения'
     }
-    
-    topic_name = topic_names.get(topic, topic)
-    
-    # Фильтруем задачи по классу И по теме (ИСКЛЮЧАЕМ ПОМЕЧЕННЫЕ ЗАДАЧИ)
-    if keywords:
+
+    if registry_entry:
+        topic_name = registry_entry['name']
+    else:
+        topic_name = topic_names.get(topic, topic)
+
+    # ── Фильтрация задач ──────────────────────────────────────────────
+    # (1) Если тема зарегистрирована в новом реестре — фильтруем строго по
+    #     AdaptiveTask.topic == db_topic. Это надёжно и не зависит от keyword-эвристик.
+    # (2) Иначе — legacy-путь через keyword'ы (5–6 классы и устаревшие ключи).
+    db_topic_exact = registry_entry['db_topic'] if registry_entry else None
+
+    if registry_entry:
+        candidates = [db_topic_exact] + list(registry_entry.get('aliases', []) or [])
+        filtered_tasks = AdaptiveTask.query.filter(
+            AdaptiveTask.class_level == grade_int,
+            AdaptiveTask.is_flagged == False,  # noqa: E712
+            AdaptiveTask.topic.in_(candidates),
+        ).all()
+        print(f"[ADAPTIVE registry] grade={grade_int} key={topic} "
+              f"db_topic='{db_topic_exact}' → {len(filtered_tasks)} задач")
+    elif keywords:
         # Если есть ключевые слова - фильтруем по ним
         all_tasks = AdaptiveTask.query.filter_by(
             class_level=grade_int,
             is_flagged=False  # ФИЛЬТР КАЧЕСТВА: исключаем помеченные задачи
         ).all()
-        
+
         # Фильтруем задачи, где название темы содержит хотя бы одно ключевое слово
         filtered_tasks = []
         for task in all_tasks:
-            topic_lower = task.topic.lower()
+            topic_lower = (task.topic or '').lower()
             if any(keyword.lower() in topic_lower for keyword in keywords):
                 filtered_tasks.append(task)
     else:
@@ -4461,109 +4492,208 @@ def adaptive_test_start_simple():
     session['adaptive_topic'] = topic
     session['adaptive_topic_name'] = topic_name
     session['adaptive_grade'] = grade
+    # Точная строка темы в БД (None для legacy keyword-пути 5–6 классов).
+    # Используется как дополнительный страховочный фильтр в _adaptive_pick_task_for_slot.
+    session['adaptive_db_topic'] = db_topic_exact
     session['adaptive_filtered_tasks'] = sorted(t.id for t in filtered_tasks)
     session['adaptive_current_difficulty'] = 3  # Начальная сложность
-    session['adaptive_answers'] = []  # История ответов
-    session['adaptive_current_index'] = 0  # Текущая задача
-    session['adaptive_current_task_id'] = None  # Текущая задача (для persist on reload)
-    session['adaptive_shown_task_ids'] = []  # Уже показанные задачи (без повторов)
+
+    # ── НОВАЯ МОДЕЛЬ СЛОТОВ ──────────────────────────────────────────────
+    # Прогресс теста хранится как массив из 25 «слотов». Каждый слот:
+    #   {
+    #     'task_id': int | None,         # назначается лениво при первом показе
+    #     'status':  'pending'|'answered'|'skipped',
+    #     'score':   int | None,          # AI-балл (только для answered)
+    #     'difficulty': int | None,       # уровень задачи, назначенной в слот
+    #     'user_answer': str,             # короткий слепок (для results)
+    #     'correct_answer': str,
+    #     'level_at_assign': int,         # текущий current_level в момент выбора
+    #   }
+    # Адаптация уровня (current_difficulty) меняется только при answered.
+    # Пропуски не влияют на адаптацию. Завершить тест можно только когда
+    # answered_count == 25.
+    session['adaptive_slots'] = [
+        {
+            'task_id': None,
+            'status': 'pending',
+            'score': None,
+            'difficulty': None,
+            'user_answer': '',
+            'correct_answer': '',
+            'level_at_assign': None,
+        }
+        for _ in range(25)
+    ]
+    # ── Legacy-поля сохраняем для обратной совместимости с другими местами,
+    # которые могут читать session['adaptive_answers'] / current_index.
+    session['adaptive_answers'] = []
+    session['adaptive_current_index'] = 0
+    session['adaptive_current_task_id'] = None
+    session['adaptive_shown_task_ids'] = []
     session.permanent = True
-    
+
     # Перенаправляем на упрощенную страницу теста (без БД, только сессии)
     return redirect('/adaptive_test_simple')
 
 
+# ── ХЕЛПЕРЫ ДЛЯ СЛОТОВ ────────────────────────────────────────────────────
+def _adaptive_get_slots():
+    """Возвращает массив слотов из сессии. На случай старых сессий
+    (которые стартовали ДО введения слотов) — лениво инициализирует
+    структуру из старых полей."""
+    slots = session.get('adaptive_slots')
+    if isinstance(slots, list) and len(slots) == 25:
+        return slots
+    # Лениво создаём пустые слоты
+    new_slots = []
+    legacy_answers = session.get('adaptive_answers', []) or []
+    for i in range(25):
+        if i < len(legacy_answers):
+            a = legacy_answers[i] or {}
+            new_slots.append({
+                'task_id': a.get('task_id'),
+                'status': 'answered' if a.get('task_id') else 'pending',
+                'score': a.get('score', a.get('is_correct')),
+                'difficulty': a.get('difficulty'),
+                'user_answer': (a.get('user_answer') or '')[:120],
+                'correct_answer': (a.get('correct_answer') or '')[:120],
+                'level_at_assign': a.get('difficulty'),
+            })
+        else:
+            new_slots.append({
+                'task_id': None, 'status': 'pending', 'score': None,
+                'difficulty': None, 'user_answer': '', 'correct_answer': '',
+                'level_at_assign': None,
+            })
+    session['adaptive_slots'] = new_slots
+    session.modified = True
+    return new_slots
+
+
+def _adaptive_save_slots(slots):
+    session['adaptive_slots'] = slots
+    session.modified = True
+
+
+def _adaptive_answered_count(slots=None):
+    slots = slots if slots is not None else _adaptive_get_slots()
+    return sum(1 for s in slots if s.get('status') == 'answered')
+
+
+def _adaptive_pick_task_for_slot(slot_index, slots, current_difficulty):
+    """Подобрать AdaptiveTask для слота. Не дублирует ранее выбранные задачи.
+    Сохраняет task_id и level_at_assign в слоте."""
+    task_ids = session.get('adaptive_filtered_tasks', []) or []
+    if not task_ids:
+        return None
+
+    # Список уже задействованных task_id (по всем слотам, кроме текущего)
+    used_ids = set()
+    for i, s in enumerate(slots):
+        if i == slot_index:
+            continue
+        tid = s.get('task_id')
+        if tid:
+            used_ids.add(int(tid))
+
+    def _pick_first_at_level(level):
+        rows = AdaptiveTask.query.filter(
+            AdaptiveTask.id.in_(task_ids),
+            AdaptiveTask.difficulty_level == level
+        ).order_by(AdaptiveTask.id.asc()).all()
+        for t in rows:
+            if t.id not in used_ids:
+                return t
+        return None
+
+    picked = _pick_first_at_level(current_difficulty)
+    if picked is None:
+        for offset in (1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6):
+            lvl = current_difficulty + offset
+            if 1 <= lvl <= 7:
+                picked = _pick_first_at_level(lvl)
+                if picked:
+                    break
+    if picked is None:
+        # Любая неиспользованная задача
+        remaining = [tid for tid in sorted(task_ids) if tid not in used_ids]
+        if remaining:
+            picked = AdaptiveTask.query.get(remaining[0])
+
+    if picked:
+        slots[slot_index]['task_id'] = picked.id
+        slots[slot_index]['difficulty'] = picked.difficulty_level
+        slots[slot_index]['level_at_assign'] = current_difficulty
+    return picked
+
+
+def _adaptive_slots_summary(slots):
+    """Возвращает массив из 25 элементов для пагинации в шаблоне:
+       [{'index': 1, 'status': 'answered'|'skipped'|'pending'|'empty'}, ...]
+       'empty' = слот существует, но задача ещё не назначена (ленивая инициализация)."""
+    out = []
+    for i, s in enumerate(slots):
+        st = s.get('status') or 'pending'
+        if st == 'pending' and not s.get('task_id'):
+            st_display = 'empty'
+        else:
+            st_display = st
+        out.append({'index': i + 1, 'status': st_display})
+    return out
+
+
 @app.route("/adaptive_test_simple")
 def adaptive_test_simple_page():
-    """Упрощенная страница адаптивного теста (без авторизации, на сессиях)."""
+    """Упрощенная страница адаптивного теста (без авторизации, на сессиях).
+
+    Поддерживает навигацию по слотам через `?slot=N` (1..25).
+    Если slot не указан — открывается первый pending-слот (или 1-й, если
+    все уже отвечены/пропущены)."""
     # Проверяем, что в сессии есть данные теста
     if 'adaptive_filtered_tasks' not in session:
         flash('Сначала выберите тему и класс для теста', 'error')
         return redirect(url_for('probniks_page'))
-    
+
     grade = session.get('adaptive_grade', '9')
-    task_ids = session.get('adaptive_filtered_tasks', [])
-    current_index = session.get('adaptive_current_index', 0)
-    
-    # Проверяем завершение теста
-    if current_index >= 25:
-        # Тест завершен (25 задач)
-        return redirect('/adaptive_test_simple/results')
-    
-    # ФИКС БАГА 2: Получаем текущий уровень сложности из сессии
+    slots = _adaptive_get_slots()
     current_difficulty = session.get('adaptive_current_difficulty', 3)
-    
-    # ФИКС: Проверяем, есть ли уже выбранная задача для текущего индекса (persist on reload)
-    current_task_id = session.get('adaptive_current_task_id')
+
+    # ── Определяем slot_index из query-параметра или ищем первый pending ──
+    try:
+        requested = int(request.args.get('slot', '0'))
+    except (TypeError, ValueError):
+        requested = 0
+
+    if 1 <= requested <= 25:
+        slot_index = requested - 1
+    else:
+        # Авто-выбор: первый слот со status='pending'
+        slot_index = next(
+            (i for i, s in enumerate(slots) if s.get('status') == 'pending'),
+            0
+        )
+
+    slot = slots[slot_index]
+
+    # ── Если в слоте ещё нет назначенной задачи — назначаем сейчас ──────
     current_task = None
-    
-    if current_task_id:
-        # Задача уже выбрана для этого шага — используем её (не меняем при перезагрузке)
-        current_task = AdaptiveTask.query.get(current_task_id)
-        if current_task:
-            print(f"[ADAPTIVE] Повторная загрузка задачи #{current_index + 1}, ID={current_task.id} (из сессии)")
-    
-    # Если задача не найдена в сессии — выбираем новую
-    if not current_task:
-        print(f"[ADAPTIVE DEBUG] Выбор новой задачи #{current_index + 1}, требуемый уровень: {current_difficulty}")
+    if slot.get('task_id'):
+        current_task = AdaptiveTask.query.get(slot['task_id'])
+        if not current_task:
+            # Задача удалена/отсутствует — переназначаем
+            slot['task_id'] = None
 
-        shown_ids = set(session.get('adaptive_shown_task_ids', []))
+    if not current_task and slot.get('status') in ('pending',):
+        current_task = _adaptive_pick_task_for_slot(slot_index, slots, current_difficulty)
+        _adaptive_save_slots(slots)
+    elif not current_task and slot.get('task_id'):
+        current_task = AdaptiveTask.query.get(slot['task_id'])
 
-        # ДЕТЕРМИНИРОВАННЫЙ ВЫБОР: для одной и той же темы/класса/индекса
-        # тест всегда показывает одни и те же задачи в одном и том же порядке.
-        # Сортируем по id и берём первую неиспользованную нужного уровня.
-        def _pick_first_at_level(level: int):
-            tasks = AdaptiveTask.query.filter(
-                AdaptiveTask.id.in_(task_ids),
-                AdaptiveTask.difficulty_level == level
-            ).order_by(AdaptiveTask.id.asc()).all()
-            for t in tasks:
-                if t.id not in shown_ids:
-                    return t
-            return None
-
-        current_task = _pick_first_at_level(current_difficulty)
-
-        # Если задач нужного уровня нет, берем ближайший уровень
-        if current_task is None:
-            print(f"[ADAPTIVE WARNING] Нет задач уровня {current_difficulty}, ищем ближайший...")
-            for offset in [1, -1, 2, -2, 3, -3]:
-                fallback_level = current_difficulty + offset
-                if 1 <= fallback_level <= 7:
-                    current_task = _pick_first_at_level(fallback_level)
-                    if current_task is not None:
-                        print(f"[ADAPTIVE] Используем уровень {fallback_level} вместо {current_difficulty}")
-                        break
-
-        # Если все еще нет задач, берем любую неиспользованную из пула (по id)
-        if current_task is None:
-            print(f"[ADAPTIVE ERROR] Не найдено задач нужного уровня, берём любую неиспользованную")
-            remaining_ids = [tid for tid in sorted(task_ids) if tid not in shown_ids]
-            if remaining_ids:
-                current_task = AdaptiveTask.query.get(remaining_ids[0])
-            else:
-                flash('Ошибка: закончились задачи', 'error')
-                return redirect('/adaptive_test_simple/results')
-
-        if current_task:
-            print(f"[ADAPTIVE] Выбрана задача ID={current_task.id}, уровень={current_task.difficulty_level}")
-        
-        # Сохраняем выбранную задачу в сессию (persist on reload)
-        if current_task:
-            session['adaptive_current_task_id'] = current_task.id
-            shown_ids.add(current_task.id)
-            session['adaptive_shown_task_ids'] = list(shown_ids)
-            session.modified = True
-    
     if not current_task:
         flash('Ошибка загрузки задачи', 'error')
         return redirect(url_for('probniks_page'))
-    
-    # Преобразуем объект БД в словарь для шаблона.
-    # task_text уже хранится в БД с корректной разметкой MathJax (\\( ... \\))
-    # либо с unicode-символами (°, π, ≤), которые MathJax/HTML рендерит как есть.
-    # Поэтому не пропускаем через fix_bare_latex — старая функция конвертировала
-    # ° → ^{\circ} без обёртки и ломала отображение.
+
+    # ── Готовим словарь задачи для шаблона ─────────────────────────────
     task_dict = {
         'id': current_task.id,
         'topic': current_task.topic,
@@ -4572,77 +4702,148 @@ def adaptive_test_simple_page():
         'task_text': current_task.task_text or '',
         'solution': current_task.solution,
         'criteria_1_point': current_task.criteria_1_point,
-        'criteria_2_points': current_task.criteria_2_points
+        'criteria_2_points': current_task.criteria_2_points,
     }
-    
-    # ИСПРАВЛЕНИЕ: Берем тему из ТЕКУЩЕЙ задачи, а не из сессии
     topic_name = current_task.topic
-    
-    return render_template('adaptive_test_simple.html',
+
+    answered_count = _adaptive_answered_count(slots)
+    can_finish = (answered_count >= 25)
+    is_readonly = slot.get('status') in ('answered',)
+
+    # Сохраняем «текущий слот» для совместимости со старым check_adaptive_answer
+    session['adaptive_current_slot'] = slot_index
+    session['adaptive_current_task_id'] = current_task.id
+    session.modified = True
+
+    return render_template(
+        'adaptive_test_simple.html',
         topic_name=topic_name,
         grade=grade,
         task=task_dict,
-        current_index=current_index + 1,
-        total_tasks=25,  # Всегда 25 задач в адаптивном тесте
-        current_level=current_difficulty  # ФИКС БАГА 2: Передаем текущий уровень для отображения
+        current_index=slot_index + 1,
+        current_slot=slot_index + 1,
+        total_tasks=25,
+        current_level=current_difficulty,
+        slots_summary=_adaptive_slots_summary(slots),
+        slot_status=slot.get('status', 'pending'),
+        is_readonly=is_readonly,
+        answered_count=answered_count,
+        can_finish=can_finish,
+        remaining_to_finish=max(0, 25 - answered_count),
+        existing_score=slot.get('score'),
+        existing_user_answer=slot.get('user_answer', ''),
+        existing_correct_answer=slot.get('correct_answer', ''),
     )
+
+
+@app.route("/adaptive_test_simple/skip", methods=["POST"])
+def adaptive_test_simple_skip():
+    """Помечает текущий слот как 'skipped'. Не отправляет ответ в AI,
+    не меняет current_level. Возвращает JSON со следующим slot-индексом."""
+    if 'adaptive_filtered_tasks' not in session:
+        return jsonify({'status': 'error', 'message': 'Сессия теста истекла'}), 400
+
+    try:
+        payload = request.get_json(silent=True) or {}
+        slot_num = int(payload.get('slot') or request.form.get('slot') or 0)
+    except (TypeError, ValueError):
+        slot_num = 0
+
+    if not (1 <= slot_num <= 25):
+        return jsonify({'status': 'error', 'message': 'Некорректный слот'}), 400
+
+    slots = _adaptive_get_slots()
+    slot_index = slot_num - 1
+    slot = slots[slot_index]
+
+    # Нельзя пропустить уже отвеченный
+    if slot.get('status') == 'answered':
+        return jsonify({
+            'status': 'error',
+            'message': 'На эту задачу уже отвечено — пропуск невозможен'
+        }), 400
+
+    slot['status'] = 'skipped'
+    _adaptive_save_slots(slots)
+
+    # Определяем следующий слот: первый pending после текущего, потом с начала
+    next_slot = None
+    for i in list(range(slot_index + 1, 25)) + list(range(0, slot_index)):
+        if slots[i].get('status') == 'pending':
+            next_slot = i + 1
+            break
+    if next_slot is None:
+        # Все pending кончились — остаёмся на следующем индексе или на текущем
+        next_slot = min(slot_num + 1, 25)
+
+    answered_count = _adaptive_answered_count(slots)
+    return jsonify({
+        'status': 'success',
+        'next_slot': next_slot,
+        'answered_count': answered_count,
+        'can_finish': answered_count >= 25,
+        'remaining_to_finish': max(0, 25 - answered_count),
+    })
+
+
+@app.route("/adaptive_test_simple/finish", methods=["GET", "POST"])
+def adaptive_test_simple_finish():
+    """Завершение теста. Разрешено только если на все 25 задач даны ответы.
+    Если есть pending/skipped — редирект обратно с flash-сообщением."""
+    if 'adaptive_filtered_tasks' not in session:
+        flash('Сессия теста истекла', 'error')
+        return redirect(url_for('probniks_page'))
+
+    slots = _adaptive_get_slots()
+    answered_count = _adaptive_answered_count(slots)
+    if answered_count < 25:
+        # Находим первый pending/skipped слот, чтобы туда вернуть пользователя
+        unfinished = next(
+            (i + 1 for i, s in enumerate(slots) if s.get('status') != 'answered'),
+            1
+        )
+        msg = f'Чтобы завершить тест, нужно ответить на все 25 задач. Осталось: {25 - answered_count}.'
+        if request.method == 'POST':
+            return jsonify({
+                'status': 'error',
+                'message': msg,
+                'next_slot': unfinished,
+                'answered_count': answered_count,
+                'remaining_to_finish': 25 - answered_count,
+            }), 400
+        flash(msg, 'error')
+        return redirect(f'/adaptive_test_simple?slot={unfinished}')
+
+    # ── Все 25 отвечены: переносим слоты в legacy adaptive_answers,
+    # которые читает страница результатов.
+    answers_for_results = []
+    for s in slots:
+        if not s.get('task_id'):
+            continue
+        answers_for_results.append({
+            'task_id': s.get('task_id'),
+            'user_answer': (s.get('user_answer') or '')[:120],
+            'correct_answer': (s.get('correct_answer') or '')[:120],
+            'score': s.get('score', 0),
+            'difficulty': s.get('difficulty'),
+        })
+    session['adaptive_answers'] = answers_for_results
+    session['adaptive_current_index'] = 25
+    session.modified = True
+
+    if request.method == 'POST':
+        return jsonify({'status': 'success', 'redirect': '/adaptive_test_simple/results'})
+    return redirect('/adaptive_test_simple/results')
 
 
 @app.route("/adaptive_test_simple/submit", methods=["POST"])
 def adaptive_test_simple_submit():
-    """Обработка ответа в упрощенном адаптивном тесте."""
+    """[Legacy] Не используется фронтом (ответы идут через
+    /api/check_adaptive_answer). Оставлен на случай прямой отправки формы:
+    просто редиректит на страницу теста."""
     if 'adaptive_filtered_tasks' not in session:
         flash('Сессия теста истекла', 'error')
         return redirect(url_for('probniks_page'))
-    
-    # Получаем данные из формы
-    user_answer = request.form.get('answer', '').strip()
-    user_solution = request.form.get('solution', '').strip()
-    task_id = request.form.get('task_id')
-    
-    # Находим задачу в базе данных
-    current_task = AdaptiveTask.query.get(task_id)
-    
-    if not current_task:
-        flash('Ошибка: задача не найдена', 'error')
-        return redirect('/adaptive_test_simple')
-    
-    # Проверяем ответ (пока просто принимаем любой ответ как правильный для демо)
-    # TODO: добавить поле answer в модель AdaptiveTask для автоматической проверки
-    is_correct = len(user_answer) > 0  # Временная логика
-    
-    # Сохраняем результат
-    if 'adaptive_answers' not in session:
-        session['adaptive_answers'] = []
-    
-    session['adaptive_answers'].append({
-        'task_id': task_id,
-        'user_answer': user_answer,
-        'correct_answer': '',  # TODO: добавить поле answer в модель
-        'is_correct': is_correct,
-        'difficulty': current_task.difficulty_level
-    })
-    
-    # Увеличиваем индекс
-    session['adaptive_current_index'] = session.get('adaptive_current_index', 0) + 1
-    
-    # Очищаем текущую задачу из сессии — следующий запрос выберет новую
-    session.pop('adaptive_current_task_id', None)
-    
-    # Адаптируем сложность
-    current_difficulty = session.get('adaptive_current_difficulty', 3)
-    if is_correct:
-        session['adaptive_current_difficulty'] = min(7, current_difficulty + 1)
-    else:
-        session['adaptive_current_difficulty'] = max(1, current_difficulty - 1)
-    
-    session.modified = True
-    
-    # Если прошли 25 задач, завершаем тест
-    if session['adaptive_current_index'] >= 25:
-        return redirect('/adaptive_test_simple/results')
-    
-    # Иначе показываем следующую задачу
     return redirect('/adaptive_test_simple')
 
 
@@ -4700,6 +4901,45 @@ def check_adaptive_answer():
                 'status': 'error',
                 'message': 'Задача не найдена'
             }), 404
+
+        # ── Определяем slot, к которому относится этот ответ ───────────
+        # Фронт передаёт `slot` (1..25). Если не передал — берём текущий
+        # из сессии или ищем слот с этим task_id.
+        try:
+            slot_num = int(data.get('slot') or 0)
+        except (TypeError, ValueError):
+            slot_num = 0
+
+        _slots = _adaptive_get_slots()
+        if not (1 <= slot_num <= 25):
+            # Совместимость: ищем слот с этим task_id, иначе берём current_slot
+            slot_index_fallback = session.get('adaptive_current_slot')
+            slot_index = None
+            for i, s in enumerate(_slots):
+                if s.get('task_id') and int(s['task_id']) == int(task_id):
+                    slot_index = i
+                    break
+            if slot_index is None and isinstance(slot_index_fallback, int):
+                slot_index = slot_index_fallback
+            if slot_index is None:
+                slot_index = 0
+            slot_num = slot_index + 1
+        else:
+            slot_index = slot_num - 1
+
+        _slot = _slots[slot_index]
+        if _slot.get('status') == 'answered':
+            return jsonify({
+                'status': 'error',
+                'message': 'На эту задачу уже отвечено. Перейдите к другой задаче.',
+                'already_answered': True,
+            }), 400
+
+        # Гарантируем, что в слоте записан правильный task_id (он мог быть
+        # пустым, если слот ленивый и пользователь сразу отправил ответ).
+        if not _slot.get('task_id'):
+            _slot['task_id'] = current_task.id
+            _slot['difficulty'] = current_task.difficulty_level
 
         # Если ученик прикрепил фото(-и) рукописного решения — распознаём
         # каждое через vision-LLM (OpenRouter / mathline pipeline) и
@@ -5293,38 +5533,46 @@ score = -1 (НЕВЕРНО, -1 уровень):
             new_level = max(1, current_difficulty - 1)
             partial_streak = 0  # Сбрасываем стрик
         
-        # Сохраняем обновленные значения в сессию
+        # Сохраняем обновленные значения уровня в сессию.
+        # ВАЖНО: уровень меняется ТОЛЬКО потому что мы ответили на ЭТУ задачу
+        # (пропуски обрабатываются отдельным эндпоинтом и не доходят сюда).
         session['adaptive_current_difficulty'] = new_level
         session['partial_correct_streak'] = partial_streak
-        
-        # Сохраняем результат в историю ответов
-        if 'adaptive_answers' not in session:
-            session['adaptive_answers'] = []
-        
+
+        # ── Обновляем слот ────────────────────────────────────────────
         # ВАЖНО: НЕ сохраняем длинные строки (feedback, user_solution) в сессии,
-        # чтобы не выйти за лимит Flask cookie session (~4KB). Иначе после
-        # 2-3 задач сессия молча перестаёт сохраняться и индекс не растёт.
-        # Полные feedback пользователь видит сразу в JSON-ответе на этот запрос.
-        session['adaptive_answers'].append({
-            'task_id': task_id,
-            'user_answer': (user_answer or '')[:120],
-            'correct_answer': (str(correct_answer) if correct_answer else '')[:120],
-            'score': score,
-            'difficulty': current_task.difficulty_level,
-        })
-        
-        # Увеличиваем индекс текущей задачи
-        current_index = session.get('adaptive_current_index', 0)
-        session['adaptive_current_index'] = current_index + 1
-        
-        # Очищаем текущую задачу — следующий запрос выберет новую
-        session.pop('adaptive_current_task_id', None)
-        
+        # чтобы не выйти за лимит Flask cookie session (~4KB).
+        _slot['task_id'] = current_task.id
+        _slot['status'] = 'answered'
+        _slot['score'] = score
+        _slot['difficulty'] = current_task.difficulty_level
+        _slot['user_answer'] = (user_answer or '')[:120]
+        _slot['correct_answer'] = (str(correct_answer) if correct_answer else '')[:120]
+        _adaptive_save_slots(_slots)
+
+        # Подсчитываем answered_count для фронта
+        answered_count = _adaptive_answered_count(_slots)
+        can_finish = (answered_count >= 25)
+
+        # Определяем «следующий слот»:
+        #   1) первый pending после текущего,
+        #   2) затем первый pending с начала,
+        #   3) если pending нет — следующий по номеру (для read-only просмотра).
+        next_slot = None
+        for i in list(range(slot_index + 1, 25)) + list(range(0, slot_index)):
+            if _slots[i].get('status') == 'pending':
+                next_slot = i + 1
+                break
+        if next_slot is None:
+            next_slot = min(slot_num + 1, 25)
+
         session.modified = True
-        
-        # Проверяем, это последняя задача?
-        is_last_task = (current_index + 1) >= 25
-        
+
+        # Legacy-флаг is_last_task: оставлен для обратной совместимости JS.
+        # Реальное завершение теперь только через /adaptive_test_simple/finish
+        # после answered_count == 25.
+        is_last_task = can_finish
+
         return jsonify({
             'status': 'success',
             'score': score,
@@ -5332,7 +5580,12 @@ score = -1 (НЕВЕРНО, -1 уровень):
             'new_level': new_level,
             'current_level': current_difficulty,
             'is_last_task': is_last_task,
-            'current_index': current_index + 1
+            'can_finish': can_finish,
+            'answered_count': answered_count,
+            'remaining_to_finish': max(0, 25 - answered_count),
+            'next_slot': next_slot,
+            'current_slot': slot_num,
+            'current_index': slot_num,  # backward-compat
         })
         
     except Exception as e:
@@ -5389,10 +5642,40 @@ def report_task(task_id):
 @app.route("/adaptive_test_simple/results")
 def adaptive_test_simple_results():
     """Результаты упрощенного адаптивного теста."""
-    if 'adaptive_answers' not in session:
+    # Гейтинг: завершить тест и попасть на результаты можно только когда
+    # на все 25 задач даны ответы (через эндпоинт /finish или через прямой
+    # переход после последнего ответа).
+    if 'adaptive_filtered_tasks' not in session and 'adaptive_answers' not in session:
         flash('Нет данных о тесте', 'error')
         return redirect(url_for('probniks_page'))
-    
+
+    # Если в сессии есть слоты — собираем answers из них (это новый формат).
+    slots = session.get('adaptive_slots')
+    if isinstance(slots, list) and len(slots) == 25:
+        answered = sum(1 for s in slots if s.get('status') == 'answered')
+        if answered < 25:
+            flash(
+                f'Чтобы увидеть результаты, нужно ответить на все 25 задач. Осталось: {25 - answered}.',
+                'error'
+            )
+            unfinished = next(
+                (i + 1 for i, s in enumerate(slots) if s.get('status') != 'answered'),
+                1
+            )
+            return redirect(f'/adaptive_test_simple?slot={unfinished}')
+        # Перебрасываем слоты в legacy-формат
+        session['adaptive_answers'] = [
+            {
+                'task_id': s.get('task_id'),
+                'user_answer': (s.get('user_answer') or '')[:120],
+                'correct_answer': (s.get('correct_answer') or '')[:120],
+                'score': s.get('score', 0),
+                'difficulty': s.get('difficulty'),
+            }
+            for s in slots if s.get('task_id')
+        ]
+        session.modified = True
+
     answers = session.get('adaptive_answers', [])
     topic = session.get('adaptive_topic', 'algebra')
     topic_name = session.get('adaptive_topic_name', 'Математика')
@@ -6921,6 +7204,12 @@ def api_set_grade():
 @app.route('/daily/regenerate', methods=['POST'])
 @login_required
 def daily_quest_regenerate():
+    # Гейтинг: задачи дня доступны только после адаптивного теста
+    from models import AdaptiveTestResult as _ATR_GATE
+    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
+    if not _has_adaptive:
+        flash('Сначала пройди адаптивный тест — на его основе подбираются задачи дня.', 'info')
+        return redirect(url_for('adaptive_test_select_class'))
     """Принудительная перегенерация Daily Quest (новые олимпиадные задачи)."""
     from services.daily_quest_service import generate_daily_quest
     quest = generate_daily_quest(current_user.id, force_regenerate=True)
@@ -6934,6 +7223,12 @@ def daily_quest_regenerate():
 @login_required
 def daily_quest_main():
     """Главная страница Daily Quest"""
+    # Гейтинг: задачи дня доступны только после адаптивного теста
+    from models import AdaptiveTestResult as _ATR_GATE
+    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
+    if not _has_adaptive:
+        flash('Сначала пройди адаптивный тест — на его основе подбираются задачи дня.', 'info')
+        return redirect(url_for('adaptive_test_select_class'))
     from services.daily_quest_service import get_today_quest, get_quest_tasks
     from services.streak_service import get_streak_stats
     from markupsafe import Markup
@@ -7043,6 +7338,12 @@ def daily_quest_main():
 @login_required
 def daily_quest_task(task_index):
     """Страница решения задачи из Daily Quest"""
+    # Гейтинг: задачи дня доступны только после адаптивного теста
+    from models import AdaptiveTestResult as _ATR_GATE
+    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
+    if not _has_adaptive:
+        flash('Сначала пройди адаптивный тест — на его основе подбираются задачи дня.', 'info')
+        return redirect(url_for('adaptive_test_select_class'))
     from services.daily_quest_service import (
         get_today_quest, get_quest_tasks, is_task_solved
     )
@@ -8615,7 +8916,7 @@ def api_cancel_subscription():
 # СТРАНИЦА "О САЙТЕ" + ФОРМА ПОДДЕРЖКИ С EMAIL-УВЕДОМЛЕНИЯМИ
 # ═══════════════════════════════════════════════════════════════════
 
-from services.telegram_notify import send_support_email
+from services.telegram_notify import send_support_email, send_review_email
 
 # Простой rate-limit: один user ≤ 5 обращений за час
 _SUPPORT_RATE_LIMIT = {}  # in-memory, для prod лучше Redis
@@ -8751,6 +9052,84 @@ def submit_support():
     except Exception as e:
         import logging
         logging.exception('[support] Unexpected error')
+        return jsonify({'error': 'внутренняя ошибка сервера'}), 500
+
+
+# ─── Отзывы пользователей о сайте ──────────────────────────────────────────
+# In-memory rate-limit для /api/feedback: один user/IP ≤ 3 отзыва за час.
+_REVIEW_RATE_LIMIT = {}
+
+
+@app.route('/api/feedback', methods=['POST'])
+def submit_feedback():
+    """Принять отзыв пользователя и отправить его на почту владельцу.
+
+    Тело JSON: {rating: 1..5|null, message: str, email: str|null, page_url: str}
+    Email-получатель: env REVIEW_NOTIFY_EMAIL → fallback victor.krivenko.4949@gmail.com.
+    Никаких записей в БД (чтобы не требовать миграцию). Тикет-id = unix-timestamp.
+    """
+    try:
+        data = request.json or {}
+
+        message_text = (data.get('message') or '').strip()
+        if not (5 <= len(message_text) <= 4000):
+            return jsonify({'error': 'отзыв должен быть 5-4000 символов'}), 400
+
+        rating_raw = data.get('rating')
+        try:
+            rating = int(rating_raw) if rating_raw not in (None, '', 0, '0') else 0
+        except (TypeError, ValueError):
+            rating = 0
+        if rating < 0 or rating > 5:
+            rating = 0
+
+        email = (data.get('email') or '').strip() or None
+        if email and '@' not in email:
+            return jsonify({'error': 'некорректный email'}), 400
+
+        # Rate-limit
+        user_id = current_user.id if current_user.is_authenticated else None
+        rl_key = f'u:{user_id}' if user_id else f'ip:{request.remote_addr}'
+        import time as _trl
+        now = _trl.time()
+        bucket = _REVIEW_RATE_LIMIT.setdefault(rl_key, [])
+        bucket[:] = [t for t in bucket if now - t < 3600]
+        if len(bucket) >= 3:
+            return jsonify({'error': 'слишком много отзывов, '
+                                      'попробуйте через час'}), 429
+        bucket.append(now)
+
+        nickname = None
+        if user_id:
+            try:
+                nickname = current_user.nickname or current_user.display_name
+            except Exception:
+                pass
+
+        page_url = (data.get('page_url') or '')[:500]
+        user_agent = (request.headers.get('User-Agent') or '')[:500]
+        ip = (request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+              or request.remote_addr)
+
+        ticket_id = int(now)
+
+        ok, err = send_review_email(
+            mail,
+            nickname=nickname, email=email, rating=rating,
+            message=message_text, page_url=page_url,
+            user_agent=user_agent, ip=ip, ticket_id=ticket_id,
+        )
+        if not ok:
+            import logging
+            logging.error(f'[feedback] email send failed: {err}')
+            return jsonify({'error': 'не удалось отправить отзыв, '
+                                      'попробуйте позже'}), 502
+
+        return jsonify({'ok': True, 'id': ticket_id})
+
+    except Exception:
+        import logging
+        logging.exception('[feedback] Unexpected error')
         return jsonify({'error': 'внутренняя ошибка сервера'}), 500
 
 
