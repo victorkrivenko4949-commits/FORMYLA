@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}FORMYLA — Узнайте за 25 минут, на каком уровне ребёнок готов к ВсОШ{% endblock %}
+{% block meta_description %}Бесплатный адаптивный тест из 25 задач. Радар сильных/слабых сторон + персональный план подготовки к ВсОШ по математике.{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ asset_version }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}?v={{ asset_version }}">
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="welcome-hero">
+  <div class="welcome-hero__inner">
+    <h1 class="welcome-h1">Узнайте за 25 минут, на каком уровне ребёнок готов к ВсОШ</h1>
+    <p class="welcome-sub">
+      Бесплатный адаптивный тест из 25 задач. Радар сильных и слабых сторон
+      + персональный план подготовки.
+    </p>
+    <a href="/free_mock/setup"
+       class="welcome-cta"
+       data-track="cta"
+       data-cta-id="hero_start_test">
+      Начать бесплатный тест →
+    </a>
+    <div class="welcome-bullets">
+      <span>25 минут</span>
+      <span>без регистрации</span>
+      <span>персональный радар</span>
+    </div>
+  </div>
+</section>
+
+<!-- STAT CARDS -->
+<section class="welcome-stats">
+  <div class="welcome-stats__grid">
+    <div class="stat-card">
+      <div class="stat-card__num">8000+</div>
+      <div class="stat-card__label">олимпиадных задач</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__num">89</div>
+      <div class="stat-card__label">методов решения</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__num">1</div>
+      <div class="stat-card__label">ИИ-тьютор, который всегда рядом</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="welcome-how">
+  <div class="welcome-how__container">
+    <h2 class="welcome-h2">Как это работает</h2>
+    <p class="welcome-lead">Четыре шага от «не понимаю, с чего начать» до уверенного результата на ВсОШ.</p>
+    <div class="welcome-steps">
+      <div class="step">
+        <div class="step__n">1</div>
+        <h3 class="step__t">Бесплатный тест</h3>
+        <p class="step__d">25 задач разной сложности, адаптивных под уровень ребёнка. Без регистрации.</p>
+      </div>
+      <div class="step">
+        <div class="step__n">2</div>
+        <h3 class="step__t">Радар навыков</h3>
+        <p class="step__d">Получаете отчёт: сильные темы зелёным, провалы — красным. Конкретно, без воды.</p>
+      </div>
+      <div class="step">
+        <div class="step__n">3</div>
+        <h3 class="step__t">План на 12 недель</h3>
+        <p class="step__d">ИИ собирает индивидуальный маршрут: теория → разборы → задачи дня → пробники.</p>
+      </div>
+      <div class="step">
+        <div class="step__n">4</div>
+        <h3 class="step__t">Решаете каждый день</h3>
+        <p class="step__d">15-30 минут в день, ИИ-тьютор разъясняет каждый шаг. Прогресс виден в дашборде.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+{% include '_reviews.html' %}
+
+<!-- FAQ -->
+<section class="welcome-faq">
+  <div class="welcome-faq__container">
+    <h2 class="welcome-h2">Частые вопросы</h2>
+
+    <details class="faq-item">
+      <summary>Нужно ли регистрироваться, чтобы пройти тест?</summary>
+      <p>Нет. Стартовать можно сразу — результаты сохраним по сессии. Регистрация потребуется, только если захотите получить план подготовки и продолжить заниматься.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>Для какого класса подходит тест?</summary>
+      <p>Платформа покрывает 5–11 классы. Перед стартом вы укажете класс — задачи подберутся под уровень школьной программы и олимпиадные требования ВсОШ.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>Сколько стоит подписка после теста?</summary>
+      <p>Сам тест и базовый план — бесплатны навсегда. Расширенный доступ (ИИ-тьютор, пробники, разборы) — от 590 ₽/мес. Промокоды и спец-условия — на странице тарифов.</p>
+    </details>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="welcome-finalcta">
+  <h2>Готовы узнать уровень ребёнка?</h2>
+  <p>25 минут — и вы получите радар + первый план занятий. Без обязательств.</p>
+  <a href="/free_mock/setup"
+     class="welcome-cta"
+     data-track="cta"
+     data-cta-id="final_start_test">
+    Пройти бесплатный тест →
+  </a>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  // ── Аналитика ─────────────────────────────────────────────────────────────
+  function track(event, meta) {
+    try {
+      fetch('/api/track', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'same-origin',
+        body: JSON.stringify({event: event, meta: meta || {}, path: location.pathname + location.search}),
+        keepalive: true,
+      });
+    } catch(e) {}
+  }
+  // landing_view
+  track('landing_view', {page: 'welcome'});
+  // cta_click для всех [data-track="cta"]
+  document.querySelectorAll('[data-track="cta"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      track('cta_click', {
+        cta_id: el.getAttribute('data-cta-id') || '',
+        href: el.getAttribute('href') || '',
+        page: 'welcome',
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

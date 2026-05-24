@@ -1,0 +1,146 @@
+/* welcome.css — лендинг /welcome (дополняет about.css) */
+
+.welcome-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #134e4a 100%);
+  color: #fff;
+  padding: 80px 16px 64px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.welcome-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(34,211,166,.18) 0, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(56,189,248,.14) 0, transparent 50%);
+  pointer-events: none;
+}
+.welcome-hero__inner {
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.welcome-h1 {
+  font-size: clamp(28px, 4.4vw, 52px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+}
+.welcome-sub {
+  font-size: clamp(15px, 1.8vw, 19px);
+  color: #cbd5e1;
+  max-width: 760px;
+  margin: 0 auto 32px;
+  line-height: 1.55;
+}
+.welcome-cta {
+  display: inline-block;
+  background: linear-gradient(90deg, #22d3a6, #14b8a6);
+  color: #0f172a !important;
+  font-weight: 700;
+  font-size: 17px;
+  padding: 16px 36px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(34,211,166,.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.welcome-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(34,211,166,.45); }
+.welcome-cta--ghost {
+  background: transparent;
+  color: #fff !important;
+  border: 2px solid rgba(255,255,255,.25);
+  box-shadow: none;
+}
+
+.welcome-bullets {
+  display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+  margin-top: 28px; color: #cbd5e1; font-size: 14px;
+}
+.welcome-bullets span::before { content: '✓ '; color: #22d3a6; font-weight: 700; }
+
+.welcome-stats {
+  background: #f8fafc;
+  padding: 56px 16px;
+}
+.welcome-stats__grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.stat-card {
+  background: #fff; border-radius: 16px; padding: 28px 20px;
+  text-align: center; box-shadow: 0 2px 12px rgba(15,23,42,.06);
+}
+.stat-card__num {
+  font-size: 40px; font-weight: 800; color: #0f172a;
+  background: linear-gradient(90deg, #22d3a6, #14b8a6);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-card__label { color: #64748b; font-size: 14px; margin-top: 6px; }
+
+.welcome-how {
+  padding: 72px 16px;
+  background: #fff;
+}
+.welcome-how__container { max-width: 1100px; margin: 0 auto; }
+.welcome-h2 {
+  font-size: clamp(24px, 3vw, 36px); font-weight: 700; color: #0f172a;
+  text-align: center; margin: 0 0 12px;
+}
+.welcome-lead {
+  text-align: center; color: #64748b; max-width: 680px; margin: 0 auto 40px;
+}
+.welcome-steps {
+  display: grid; gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.step {
+  background: #f8fafc; border-radius: 16px; padding: 24px;
+  border: 1px solid #e2e8f0;
+}
+.step__n {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #22d3a6; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; margin-bottom: 12px;
+}
+.step__t { font-weight: 600; color: #0f172a; margin: 0 0 8px; font-size: 16px; }
+.step__d { color: #64748b; font-size: 14px; line-height: 1.5; margin: 0; }
+
+.welcome-faq {
+  background: #f8fafc; padding: 64px 16px;
+}
+.welcome-faq__container { max-width: 760px; margin: 0 auto; }
+.faq-item {
+  background: #fff; border-radius: 12px; padding: 18px 20px;
+  margin-bottom: 12px; box-shadow: 0 1px 4px rgba(15,23,42,.04);
+}
+.faq-item summary {
+  font-weight: 600; color: #0f172a; cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: '+'; color: #22d3a6; font-size: 22px; font-weight: 300; }
+.faq-item[open] summary::after { content: '−'; }
+.faq-item p { margin: 12px 0 0; color: #475569; font-size: 14px; line-height: 1.6; }
+
+.welcome-finalcta {
+  background: linear-gradient(135deg, #134e4a 0%, #0f172a 100%);
+  color: #fff;
+  padding: 80px 16px;
+  text-align: center;
+}
+.welcome-finalcta h2 {
+  font-size: clamp(24px, 3vw, 36px); font-weight: 700; margin: 0 0 16px;
+}
+.welcome-finalcta p { color: #cbd5e1; max-width: 600px; margin: 0 auto 28px; }
+
+@media (max-width: 600px) {
+  .welcome-hero { padding: 56px 12px 44px; }
+  .welcome-stats { padding: 40px 12px; }
+  .welcome-how { padding: 48px 12px; }
+  .welcome-faq { padding: 48px 12px; }
+  .welcome-finalcta { padding: 56px 12px; }
+}

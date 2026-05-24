@@ -1,0 +1,108 @@
+{# ──────────────────────────────────────────────────────────────────────────
+   Партиал: карусель отзывов (Swiper.js).
+   Подключается на /, /about, /welcome, /subscribe через {% include '_reviews.html' %}.
+   В контексте ожидается переменная `reviews` (список объектов Review).
+   Если она не передана — используем `reviews_global` (заполняется context_processor).
+─────────────────────────────────────────────────────────────────────────── #}
+{% set _reviews = reviews if reviews is defined else reviews_global|default([]) %}
+{% if _reviews and _reviews|length > 0 %}
+<section class="reviews-section" aria-label="Отзывы учеников">
+  <div class="reviews-container">
+    <h2 class="reviews-title">Что говорят ученики и родители</h2>
+    <p class="reviews-subtitle">Реальные истории тех, кто готовится с FORMYLA</p>
+
+    <div class="swiper reviews-swiper">
+      <div class="swiper-wrapper">
+        {% for r in _reviews %}
+          <div class="swiper-slide">
+            <article class="review-card">
+              <div class="review-head">
+                {% if r.avatar_url %}
+                  <img class="review-avatar" src="{{ r.avatar_url }}" alt="{{ r.name }}">
+                {% else %}
+                  <div class="review-avatar review-avatar--placeholder">
+                    {{ (r.name or '?')[:1]|upper }}
+                  </div>
+                {% endif %}
+                <div class="review-head-text">
+                  <div class="review-name">{{ r.name }}</div>
+                  <div class="review-role">
+                    {% if r.role %}{{ r.role }}{% endif %}
+                    {% if r.role and r.grade %} · {% endif %}
+                    {% if r.grade %}{{ r.grade }}{% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="review-stars" aria-label="Оценка {{ r.rating or 5 }} из 5">
+                {% for i in range(1, 6) %}
+                  <span class="review-star {% if i <= (r.rating or 5) %}is-on{% endif %}">★</span>
+                {% endfor %}
+              </div>
+              <p class="review-text">{{ r.text }}</p>
+            </article>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="swiper-pagination reviews-pagination"></div>
+      <button class="swiper-button-prev reviews-prev" aria-label="Назад"></button>
+      <button class="swiper-button-next reviews-next" aria-label="Вперёд"></button>
+    </div>
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+<script>
+(function(){
+  function initReviewsSwiper(){
+    if (!window.Swiper) { setTimeout(initReviewsSwiper, 100); return; }
+    var el = document.querySelector('.reviews-swiper');
+    if (!el || el.__inited) return;
+    el.__inited = true;
+    new Swiper('.reviews-swiper', {
+      slidesPerView: 1,
+      spaceBetween: 16,
+      loop: true,
+      grabCursor: true,
+      autoplay: { delay: 4500, disableOnInteraction: false },
+      pagination: { el: '.reviews-pagination', clickable: true },
+      navigation: { nextEl: '.reviews-next', prevEl: '.reviews-prev' },
+      breakpoints: {
+        640:  { slidesPerView: 2, spaceBetween: 16 },
+        900:  { slidesPerView: 3, spaceBetween: 20 },
+        1200: { slidesPerView: 4, spaceBetween: 20 },
+        1500: { slidesPerView: 5, spaceBetween: 24 },
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReviewsSwiper);
+  } else {
+    initReviewsSwiper();
+  }
+})();
+</script>
+
+<style>
+.reviews-section { padding: 64px 16px; background: #f8fafc; }
+.reviews-container { max-width: 1400px; margin: 0 auto; }
+.reviews-title { font-size: clamp(24px, 3vw, 36px); font-weight: 700; text-align: center; color: #0f172a; margin: 0 0 8px; }
+.reviews-subtitle { text-align: center; color: #64748b; margin: 0 0 32px; font-size: 16px; }
+.reviews-swiper { padding: 8px 4px 48px; position: relative; }
+.review-card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 12px rgba(15,23,42,.06); height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; }
+.review-head { display: flex; gap: 12px; align-items: center; }
+.review-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #e2e8f0; }
+.review-avatar--placeholder { display:flex; align-items:center; justify-content:center; color:#475569; font-weight:700; font-size:18px; }
+.review-name { font-weight: 600; color: #0f172a; font-size: 15px; }
+.review-role { color: #64748b; font-size: 13px; }
+.review-stars { color: #cbd5e1; font-size: 14px; letter-spacing: 2px; }
+.review-stars .is-on { color: #f59e0b; }
+.review-text { color: #334155; font-size: 14px; line-height: 1.55; margin: 0; }
+.reviews-pagination { bottom: 0 !important; }
+.swiper-button-prev.reviews-prev, .swiper-button-next.reviews-next { color: #22d3a6; }
+@media (max-width: 600px) {
+  .reviews-section { padding: 40px 12px; }
+  .review-card { padding: 16px; }
+}
+</style>
+{% endif %}

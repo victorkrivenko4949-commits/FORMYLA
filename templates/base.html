@@ -23,18 +23,82 @@
     
     <!-- KaTeX for math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        /* ─── Глобальный фикс: разделение штриха и показателя степени ───
+           KaTeX рендерит A'^2 так, что штрих и «2» слипаются (визуально как «12»).
+           Добавляем небольшой горизонтальный отступ перед следующей за штрихом
+           супер/подскриптовой группой. Это работает на ВСЁМ сайте, где есть KaTeX. */
+        .katex .mord + .msupsub { margin-left: 0.06em; }
+        /* Когда штрих лежит внутри .msupsub (например через \prime), увеличим разрыв
+           между двумя последовательными .msupsub-блоками. */
+        .katex .msupsub + .msupsub { margin-left: 0.10em; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script>
+        /* Препроцессор LaTeX-исходника:
+           разделяет штрих ' и показатель степени ^N, чтобы они визуально не сливались.
+           Применяется к содержимому каждого $...$ / $$...$$ / \(...\) / \[...\] блока. */
+        window.__formylaFixPrimes = function(src) {
+            if (!src) return src;
+            if (src.indexOf("'") === -1 && src.indexOf("\u2032") === -1 && src.indexOf("\u2033") === -1 && src.indexOf("\u2034") === -1) return src;
+            // a'^N  -> a'{}^{N}    (пустая группа разрывает связку штрих-степень)
+            // a''^N -> a''{}^{N}   ; и т.д. Также для юникодных штрихов ′, ″, ‴.
+            return src.replace(/('+|[\u2032\u2033\u2034]+)\^/g, "$1{}^");
+        };
+
+        // Препроцессор пройдёт по текстовым узлам root и заменит '^ -> '{}^
+        // ТОЛЬКО внутри математических разделителей $...$, $$...$$, \(...\), \[...\].
+        window.__formylaPreprocessNode = function(root) {
+            if (!root || typeof root.querySelectorAll !== 'function') return;
+            try {
+                var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+                var node;
+                while ((node = walker.nextNode())) {
+                    var val = node.nodeValue;
+                    if (!val) continue;
+                    if (val.indexOf("'") === -1 && val.indexOf("\u2032") === -1 && val.indexOf("\u2033") === -1 && val.indexOf("\u2034") === -1) continue;
+                    var out = val
+                        .replace(/(\$\$)([\s\S]+?)\1/g, function(m, d, i) { return d + window.__formylaFixPrimes(i) + d; })
+                        .replace(/(\$)([\s\S]+?)\1/g,   function(m, d, i) { return d + window.__formylaFixPrimes(i) + d; })
+                        .replace(/(\\\()([\s\S]+?)(\\\))/g, function(m, l, i, r) { return l + window.__formylaFixPrimes(i) + r; })
+                        .replace(/(\\\[)([\s\S]+?)(\\\])/g, function(m, l, i, r) { return l + window.__formylaFixPrimes(i) + r; });
+                    if (out !== val) node.nodeValue = out;
+                }
+            } catch (e) { /* tolerate */ }
+        };
+
+        // Monkey-patch: оборачивает оригинальный renderMathInElement так, чтобы
+        // он всегда сначала пропускал текст через препроцессор. Это значит, что
+        // ЛЮБОЙ прямой вызов renderMathInElement(...) на любой странице сайта
+        // получает фикс автоматически — без правок каждой страницы.
+        window.__formylaPatchKatex = function() {
+            if (!window.renderMathInElement || window.__formylaPatched) return;
+            var __orig = window.renderMathInElement;
+            window.renderMathInElement = function(root, opts) {
+                window.__formylaPreprocessNode(root);
+                return __orig.call(this, root, opts);
+            };
+            window.__formylaPatched = true;
+        };
+
+        window.__formylaRenderMath = function(root) {
+            if (!window.renderMathInElement || !root) return;
+            window.__formylaPatchKatex();   // на всякий случай
+            // renderMathInElement уже пропатчен — препроцессор сработает внутри.
+            renderMathInElement(root, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        };
+    </script>
     <!-- ФИКС: onload гарантирует что KaTeX уже загружен перед авторендером -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-            onload="renderMathInElement(document.body, {
-              delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\(', right: '\\)', display: false},
-                {left: '\\[', right: '\\]', display: true}
-              ],
-              throwOnError: false
-            }); console.log('✓ KaTeX auto-render completed');"></script>
+            onload="window.__formylaPatchKatex && window.__formylaPatchKatex(); window.__formylaRenderMath(document.body); console.log('✓ KaTeX auto-render completed (с фиксом штрих/степень)');"></script>
     
     <!-- Marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -49,10 +113,12 @@
     </script>
     {% endif %}
     <script defer src="{{ url_for('static', filename='js/analytics.js') }}?v={{ asset_version }}"></script>
+    <script defer src="{{ url_for('static', filename='js/track.js') }}?v={{ asset_version }}"></script>
 </head>
 <body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}">
     <header class="header">
-        <a href="{{ url_for('index') }}" class="logo">
+        {# Логотип FORMYLA — статичный (без ссылки): клик никуда не ведёт #}
+        <span class="logo" aria-label="FORMYLA" style="cursor: default; pointer-events: none; user-select: none;">
             <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="grad_logo" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -66,7 +132,7 @@
                 <line x1="50" y1="50" x2="65" y2="42" stroke="url(#grad_logo)" stroke-width="4"/>
                 <circle cx="50" cy="50" r="4" fill="#fff"/>
             </svg>
-        </a>
+        </span>
 
         <!-- Бургер-кнопка для мобильных -->
         <button class="nav-burger" onclick="toggleMobileNav()"
@@ -354,10 +420,6 @@
          BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
          ═══════════════════════════════════════════════ -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
-        <a href="{{ url_for('index') }}" class="bottom-nav-item" data-path="/">
-            <span class="bottom-nav-icon">🏠</span>
-            <span class="bottom-nav-label">Главная</span>
-        </a>
         <a href="{{ url_for('daily_quest_main') }}" class="bottom-nav-item" data-path="/daily*">
             <span class="bottom-nav-icon">🔥</span>
             <span class="bottom-nav-label">Задачи дня</span>
@@ -404,7 +466,11 @@
     <!-- Global KaTeX re-render helper (replaces MathJax.typesetPromise) -->
     <script>
     function reRenderMath(element) {
-        if (typeof renderMathInElement === 'function') {
+        // Используем общий хелпер с препроцессором штрих/степень
+        if (typeof window.__formylaRenderMath === 'function') {
+            window.__formylaRenderMath(element || document.body);
+        } else if (typeof renderMathInElement === 'function') {
+            // Фолбэк, если хелпер не успел загрузиться
             renderMathInElement(element || document.body, {
                 delimiters: [
                     {left: '$$', right: '$$', display: true},

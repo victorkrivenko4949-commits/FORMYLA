@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{% if review %}Редактировать отзыв{% else %}Новый отзыв{% endif %} — админка{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;margin:0 auto;padding:24px 16px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+    <h1 style="margin:0;">{% if review %}Редактировать отзыв #{{ review.id }}{% else %}Новый отзыв{% endif %}</h1>
+    <a href="{{ url_for('admin_reviews.list_reviews') }}" style="color:#0f172a;text-decoration:none;">← Назад</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div style="padding:10px 14px;border-radius:8px;margin-bottom:8px;background:#fee2e2;color:#0f172a;">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="post" enctype="multipart/form-data"
+        style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:14px;">
+
+    <label>Имя
+      <input name="name" required maxlength="64"
+             value="{{ review.name if review else '' }}"
+             style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;">
+    </label>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <label>Роль
+        <select name="role" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;">
+          {% set cur_role = review.role if review else '' %}
+          <option value="">— не указана —</option>
+          {% for opt in ['ученик','родитель','преподаватель'] %}
+            <option value="{{ opt }}" {% if cur_role==opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Класс / возраст
+        <input name="grade" maxlength="16"
+               value="{{ review.grade if review else '' }}"
+               placeholder="напр. «9 класс»"
+               style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;">
+      </label>
+    </div>
+
+    <label>Текст отзыва
+      <textarea name="text" required rows="6"
+                style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;font-family:inherit;">{{ review.text if review else '' }}</textarea>
+    </label>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <label>Рейтинг (1–5)
+        <input type="number" name="rating" min="1" max="5"
+               value="{{ review.rating if review else 5 }}"
+               style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;">
+      </label>
+      <label>Сортировка (меньше — выше)
+        <input type="number" name="sort_order"
+               value="{{ review.sort_order if review else 0 }}"
+               style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;">
+      </label>
+    </div>
+
+    <label>Аватар — URL (или загрузите ниже)
+      <input name="avatar_url" maxlength="256"
+             value="{{ review.avatar_url if review else '' }}"
+             placeholder="https://…"
+             style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;">
+    </label>
+
+    <label>Аватар — загрузка файла (png/jpg/webp)
+      <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif"
+             style="width:100%;padding:8px 0;">
+    </label>
+
+    {% if review and review.avatar_url %}
+      <div style="display:flex;align-items:center;gap:8px;color:#64748b;font-size:13px;">
+        Текущий аватар:
+        <img src="{{ review.avatar_url }}" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;">
+      </div>
+    {% endif %}
+
+    <label style="display:flex;gap:8px;align-items:center;">
+      <input type="checkbox" name="is_published" value="1"
+             {% if review and review.is_published %}checked{% endif %}>
+      Опубликовать (показывать в карусели)
+    </label>
+
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button type="submit"
+              style="background:#22d3a6;color:#0f172a;border:none;padding:12px 22px;border-radius:10px;font-weight:600;cursor:pointer;font-size:15px;">
+        💾 Сохранить
+      </button>
+      <a href="{{ url_for('admin_reviews.list_reviews') }}"
+         style="background:#f1f5f9;color:#0f172a;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:500;">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -757,6 +757,15 @@ class AdaptiveTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     class_level = db.Column(db.Integer, nullable=False, index=True)  # Класс (5, 6, 7, etc.)
     difficulty_level = db.Column(db.Integer, nullable=False, index=True)  # Уровень сложности 1-7
+    # Каноническая предметная область: 'algebra' | 'geometry' | 'combinatorics' |
+    # 'number_theory' | 'logic' | 'set_theory'.  Используется как ЕДИНСТВЕННЫЙ
+    # источник истины для фильтра «алгебра/геометрия» в адаптивном тесте —
+    # никакая логика выбора задач не должна полагаться на keyword-парсинг
+    # `topic` для определения предмета.  См. services/subject_classifier.py.
+    subject = db.Column(db.String(20), nullable=True, index=True)
+    # Стабильный идентификатор задачи из исходного датасета (для идемпотентного
+    # переимпорта). Например 'algebra_g9_l3_t1' или 'math_g5_natural_numbers_l1_t0001'.
+    source_id = db.Column(db.String(120), nullable=True, unique=False, index=True)
     topic = db.Column(db.String(200), nullable=False, index=True)  # Тема из матрицы 25 тем
     subtopic = db.Column(db.String(100), nullable=True, index=True)  # Подтема для уникальности в пробнике
     task_text = db.Column(db.Text, nullable=False)  # Условие задачи (с LaTeX)
@@ -785,6 +794,7 @@ class AdaptiveTask(db.Model):
             'id': self.id,
             'class_level': self.class_level,
             'difficulty_level': self.difficulty_level,
+            'subject': self.subject,
             'topic': self.topic,
             'task_text': self.task_text,
             'solution': self.solution,
@@ -1415,4 +1425,13 @@ from models_olympiad import (  # noqa: E402  (intentional late import)
     THEORY_SECTIONS,
     ATTEMPT_STATUSES,
     STAGE_RESULTS,
+)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Analytics events + Reviews — модели в models_analytics.py.
+# Реэкспортируем для удобства: `from models import Event, Review`.
+# ──────────────────────────────────────────────────────────────────────────────
+from models_analytics import (  # noqa: E402  (intentional late import)
+    Event,
+    Review,
 )

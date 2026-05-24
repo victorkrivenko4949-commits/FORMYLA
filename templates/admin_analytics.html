@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}Аналитика — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+.an-wrap { max-width:1400px; margin:0 auto; padding:24px 16px; }
+.an-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.an-title { margin:0; font-size:24px; color:#0f172a; }
+.an-range button { padding:6px 14px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; font-size:14px; margin-left:6px; }
+.an-range button.on { background:#0f172a; color:#fff; border-color:#0f172a; }
+.an-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px; }
+.an-card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.06); min-height:280px; display:flex; flex-direction:column; }
+.an-card h3 { margin:0 0 6px; font-size:16px; color:#0f172a; }
+.an-card .sub { color:#64748b; font-size:12px; margin-bottom:10px; }
+.an-card .chart-wrap { position:relative; flex:1; min-height:220px; }
+.an-card canvas { max-width:100%; }
+.an-empty { color:#94a3b8; font-size:13px; padding:20px 0; text-align:center; }
+@media (max-width:900px) { .an-grid { grid-template-columns:1fr; } }
+table.an-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+table.an-tbl th, table.an-tbl td { padding:6px 8px; border-bottom:1px solid #e2e8f0; text-align:left; }
+table.an-tbl th { color:#64748b; font-weight:600; }
+.an-loading { color:#64748b; font-size:13px; padding:12px 0; }
+.an-stat-row { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:8px; }
+.an-stat { font-size:13px; }
+.an-stat b { color:#0f172a; font-size:18px; display:block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="an-wrap">
+  <div class="an-head">
+    <h1 class="an-title">📊 Аналитика FORMYLA</h1>
+    <div class="an-range">
+      <button data-range="7d" class="on">7 дней</button>
+      <button data-range="30d">30 дней</button>
+      <button data-range="all">Всё время</button>
+    </div>
+  </div>
+
+  <div id="an-loading" class="an-loading">Загрузка данных…</div>
+
+  <div class="an-grid" id="an-grid" style="display:none;">
+
+    <!-- 1. Funnel -->
+    <div class="an-card">
+      <h3>1. Воронка</h3>
+      <div class="sub">landing_view → cta_click → mock_start → mock_complete → signup → daily_done_d1</div>
+      <div class="chart-wrap"><canvas id="ch-funnel"></canvas></div>
+    </div>
+
+    <!-- 2. Sources / UTM -->
+    <div class="an-card">
+      <h3>2. Источники трафика (UTM)</h3>
+      <div class="sub">Уникальные посетители landing по дням × utm_source</div>
+      <div class="chart-wrap"><canvas id="ch-sources"></canvas></div>
+    </div>
+
+    <!-- 3. A/B test -->
+    <div class="an-card">
+      <h3>3. A/B-тест (utm_content)</h3>
+      <div class="sub">Конверсия landing_view → signup по вариантам</div>
+      <div class="chart-wrap" id="ab-wrap">
+        <table class="an-tbl" id="ab-table">
+          <thead><tr><th>Вариант</th><th>Views</th><th>Signups</th><th>CR</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4. DAU/WAU/MAU -->
+    <div class="an-card">
+      <h3>4. DAU / WAU / MAU</h3>
+      <div class="sub">Уникальные активные пользователи (по событиям)</div>
+      <div class="chart-wrap"><canvas id="ch-dwm"></canvas></div>
+    </div>
+
+    <!-- 5. Retention -->
+    <div class="an-card">
+      <h3>5. Retention (когорты по дате регистрации)</h3>
+      <div class="sub">D1 / D3 / D7 / D14 — доля вернувшихся</div>
+      <div class="chart-wrap"><canvas id="ch-retention"></canvas></div>
+    </div>
+
+    <!-- 6. Activation rate -->
+    <div class="an-card">
+      <h3>6. Activation rate</h3>
+      <div class="sub">signup → daily_done_d1 в течение 48ч (по дням)</div>
+      <div class="chart-wrap"><canvas id="ch-activation"></canvas></div>
+    </div>
+
+    <!-- 7. AI usage / cost -->
+    <div class="an-card">
+      <h3>7. AI usage & cost</h3>
+      <div class="sub">Запросы и стоимость (₽) по дням — событие ai_request</div>
+      <div class="chart-wrap"><canvas id="ch-ai"></canvas></div>
+    </div>
+
+    <!-- 8. Top problems -->
+    <div class="an-card">
+      <h3>8. Топ-задач по числу попыток</h3>
+      <div class="sub">attempts + correct_rate</div>
+      <div class="chart-wrap" id="tp-wrap">
+        <table class="an-tbl" id="tp-table">
+          <thead><tr><th>ID</th><th>Тема</th><th>Попыток</th><th>% верных</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  const PALETTE = ['#22d3a6','#6366f1','#f59e0b','#ef4444','#06b6d4','#a855f7','#84cc16','#ec4899','#0ea5e9','#f97316'];
+  let charts = {};
+  let currentRange = '7d';
+
+  function destroyAll(){
+    for (const k in charts){ try { charts[k].destroy(); } catch(e){} }
+    charts = {};
+  }
+
+  function ensureCtx(id){
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return el.getContext('2d');
+  }
+
+  function renderFunnel(data){
+    const ctx = ensureCtx('ch-funnel'); if (!ctx) return;
+    charts.funnel = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.step),
+        datasets: [{
+          label: 'События',
+          data: data.map(d => d.count),
+          backgroundColor: PALETTE[0],
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  }
+
+  function renderSources(rows){
+    const ctx = ensureCtx('ch-sources'); if (!ctx) return;
+    const dates = [...new Set(rows.map(r => r.date))].sort();
+    const sources = [...new Set(rows.map(r => r.utm_source))];
+    const datasets = sources.map((s, i) => ({
+      label: s,
+      data: dates.map(d => {
+        const row = rows.find(r => r.date === d && r.utm_source === s);
+        return row ? row.users : 0;
+      }),
+      backgroundColor: PALETTE[i % PALETTE.length],
+      borderColor: PALETTE[i % PALETTE.length],
+      stack: 'src',
+    }));
+    charts.sources = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: dates, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+      }
+    });
+  }
+
+  function renderAB(rows){
+    const tbody = document.querySelector('#ab-table tbody');
+    if (!tbody) return;
+    if (!rows.length){ tbody.innerHTML = '<tr><td colspan="4" class="an-empty">Нет данных</td></tr>'; return; }
+    tbody.innerHTML = rows.map(r =>
+      `<tr><td>${r.variant}</td><td>${r.views}</td><td>${r.signups}</td><td>${(r.cr*100).toFixed(2)}%</td></tr>`
+    ).join('');
+  }
+
+  function renderDWM(rows){
+    const ctx = ensureCtx('ch-dwm'); if (!ctx) return;
+    charts.dwm = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: rows.map(r => r.date),
+        datasets: [
+          { label: 'DAU', data: rows.map(r => r.dau), borderColor: PALETTE[0], backgroundColor: PALETTE[0]+'33', tension: .3 },
+          { label: 'WAU', data: rows.map(r => r.wau), borderColor: PALETTE[1], backgroundColor: PALETTE[1]+'22', tension: .3 },
+          { label: 'MAU', data: rows.map(r => r.mau), borderColor: PALETTE[2], backgroundColor: PALETTE[2]+'22', tension: .3 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  function renderRetention(rows){
+    const ctx = ensureCtx('ch-retention'); if (!ctx) return;
+    charts.retention = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['D1','D3','D7','D14'],
+        datasets: rows.map((r,i) => ({
+          label: r.cohort,
+          data: [r.d1*100, r.d3*100, r.d7*100, r.d14*100],
+          borderColor: PALETTE[i % PALETTE.length],
+          backgroundColor: 'transparent',
+          tension: .25,
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%' } } }
+      }
+    });
+  }
+
+  function renderActivation(rows){
+    const ctx = ensureCtx('ch-activation'); if (!ctx) return;
+    charts.activation = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: rows.map(r => r.date),
+        datasets: [{
+          label: 'Activation rate',
+          data: rows.map(r => (r.rate*100).toFixed(2)),
+          borderColor: PALETTE[3],
+          backgroundColor: PALETTE[3]+'33',
+          fill: true,
+          tension: .3,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%' } } }
+      }
+    });
+  }
+
+  function renderAI(rows){
+    const ctx = ensureCtx('ch-ai'); if (!ctx) return;
+    charts.ai = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: rows.map(r => r.date),
+        datasets: [
+          { type:'bar', label: 'Запросы', data: rows.map(r => r.requests), backgroundColor: PALETTE[4], yAxisID: 'y' },
+          { type:'line', label: 'Стоимость (₽)', data: rows.map(r => r.cost_rub), borderColor: PALETTE[5], backgroundColor: PALETTE[5]+'33', yAxisID: 'y1', tension: .3 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          y:  { beginAtZero: true, position: 'left',  title: { display: true, text: 'Запросы' } },
+          y1: { beginAtZero: true, position: 'right', title: { display: true, text: '₽' }, grid: { drawOnChartArea: false } },
+        }
+      }
+    });
+  }
+
+  function renderTopProblems(rows){
+    const tbody = document.querySelector('#tp-table tbody');
+    if (!tbody) return;
+    if (!rows.length){ tbody.innerHTML = '<tr><td colspan="4" class="an-empty">Нет данных</td></tr>'; return; }
+    tbody.innerHTML = rows.map(r =>
+      `<tr><td>${r.problem_id}</td><td>${r.topic || '—'}</td><td>${r.attempts}</td><td>${(r.correct_rate*100).toFixed(1)}%</td></tr>`
+    ).join('');
+  }
+
+  async function load(range){
+    const loading = document.getElementById('an-loading');
+    const grid = document.getElementById('an-grid');
+    if (loading) loading.style.display = 'block';
+    if (grid) grid.style.display = 'none';
+    destroyAll();
+    try {
+      const resp = await fetch('/admin/analytics/data?range=' + encodeURIComponent(range), { credentials: 'same-origin' });
+      const data = await resp.json();
+      renderFunnel(data.funnel || []);
+      renderSources(data.sources || []);
+      renderAB(data.ab_test || []);
+      renderDWM(data.dau_wau_mau || []);
+      renderRetention(data.retention || []);
+      renderActivation(data.activation || []);
+      renderAI(data.ai_usage || []);
+      renderTopProblems(data.top_problems || []);
+      if (loading) loading.style.display = 'none';
+      if (grid) grid.style.display = '';
+    } catch (e) {
+      console.error(e);
+      if (loading) loading.textContent = 'Ошибка загрузки: ' + e.message;
+    }
+  }
+
+  document.querySelectorAll('.an-range button').forEach(btn => {
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.an-range button').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      currentRange = btn.getAttribute('data-range') || '7d';
+      load(currentRange);
+    });
+  });
+
+  load(currentRange);
+})();
+</script>
+{% endblock %}

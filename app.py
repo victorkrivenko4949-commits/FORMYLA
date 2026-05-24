@@ -235,6 +235,13 @@ try:
             columns = [col['name'] for col in inspector.get_columns('adaptive_tasks')]
             new_cols = {
                 'subtopic': 'VARCHAR(100)',
+                # Каноническая предметная область задачи (algebra/geometry/…).
+                # Заполняется при импорте из formyla JSON и используется как
+                # ЕДИНСТВЕННЫЙ источник истины для фильтра «алгебра/геометрия».
+                'subject': 'VARCHAR(20)',
+                # Стабильный id задачи из исходного датасета (для идемпотентного
+                # переимпорта). Пример: 'algebra_g9_l3_t1'.
+                'source_id': 'VARCHAR(120)',
                 'attempts_count': 'INTEGER DEFAULT 0',
                 'solves_count': 'INTEGER DEFAULT 0',
                 'actual_solve_rate': 'REAL',
@@ -731,6 +738,15 @@ try:
 except Exception as _e:
     print(f"[BP] wb_meet_bp NOT registered: {_e}")
 
+# /api/handwriting/* — Text→Handwriting helper for the board.
+# Soft-fails when OPENROUTER_API_KEY is absent: the "raw" mode still works.
+try:
+    from routes.handwriting import handwriting_bp
+    app.register_blueprint(handwriting_bp)
+    print("[BP] handwriting_bp registered (/api/handwriting/prepare)")
+except Exception as _e:
+    print(f"[BP] handwriting_bp NOT registered: {_e}")
+
 try:
     from routes.chat_presence import chat_presence_bp, _ensure_table as _ensure_presence_table
     app.register_blueprint(chat_presence_bp)
@@ -785,6 +801,60 @@ try:
 except Exception as _e:
     print(f"[BP] telegram_auth_bp NOT registered: {_e}")
 
+# /api/track + UTM/session middleware (events analytics).
+try:
+    from routes.track import track_bp
+    app.register_blueprint(track_bp)
+    print("[BP] track_bp registered (/api/track + UTM/session middleware)")
+except Exception as _e:
+    print(f"[BP] track_bp NOT registered: {_e}")
+
+# /welcome — холодный лендинг.
+try:
+    from routes.welcome import welcome_bp
+    app.register_blueprint(welcome_bp)
+    print("[BP] welcome_bp registered (/welcome)")
+except Exception as _e:
+    print(f"[BP] welcome_bp NOT registered: {_e}")
+
+# /admin/analytics — дашборд аналитики.
+try:
+    from routes.admin_analytics import admin_analytics_bp
+    app.register_blueprint(admin_analytics_bp)
+    print("[BP] admin_analytics_bp registered (/admin/analytics)")
+except Exception as _e:
+    print(f"[BP] admin_analytics_bp NOT registered: {_e}")
+
+# /admin/reviews — управление отзывами.
+try:
+    from routes.admin_reviews import admin_reviews_bp
+    app.register_blueprint(admin_reviews_bp)
+    print("[BP] admin_reviews_bp registered (/admin/reviews)")
+except Exception as _e:
+    print(f"[BP] admin_reviews_bp NOT registered: {_e}")
+
+# Reviews context processor — даёт reviews_global в любом шаблоне,
+# чтобы {% include '_reviews.html' %} работал на /, /about, /subscribe без явного
+# проброса переменной из вьюхи.
+try:
+    @app.context_processor
+    def _reviews_ctx():
+        try:
+            from models import Review
+            items = (
+                Review.query
+                .filter_by(is_published=True)
+                .order_by(Review.sort_order.asc(), Review.created_at.desc())
+                .limit(20)
+                .all()
+            )
+            return {'reviews_global': items}
+        except Exception:
+            return {'reviews_global': []}
+    print("[CTX] reviews_global context_processor registered")
+except Exception as _e:
+    print(f"[CTX] reviews_global NOT registered: {_e}")
+
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
 try:
     from services.md_render import md_render as _md_render_filter
@@ -792,6 +862,13 @@ try:
     print("[JINJA] filter md_render registered")
 except Exception as _e:
     print(f"[JINJA] md_render filter NOT registered: {_e}")
+
+try:
+    from services.geometry_drawings import inject_geometry_drawings as _inj_geo
+    app.jinja_env.filters['inject_geometry_drawings'] = _inj_geo
+    print("[JINJA] filter inject_geometry_drawings registered")
+except Exception as _e:
+    print(f"[JINJA] inject_geometry_drawings filter NOT registered: {_e}")
 
 # Limit upload size: 12 MB (for solution photos AND drawing-task screenshots
 # that get base64-encoded; raw image cap remains 8 MB on the drawing route).
@@ -1043,6 +1120,21 @@ def add_security_headers(response):
 if _RAW_DB and "problems" in _RAW_DB[0] and isinstance(_RAW_DB[0]["problems"], list):
     # Новый формат — используем как есть
     COMBOS = _RAW_DB
+    # Гарантируем уникальный id у каждого пробника (часть записей в JSON может быть без поля id).
+    # Без этого URL /olympiads/solution/<id> ломается с KeyError: 'id' при поиске по c["id"].
+    _existing_ids = {c["id"] for c in COMBOS if isinstance(c.get("id"), int)}
+    _next_id = (max(_existing_ids) + 1) if _existing_ids else 1
+    _patched = 0
+    for c in COMBOS:
+        if not isinstance(c.get("id"), int):
+            while _next_id in _existing_ids:
+                _next_id += 1
+            c["id"] = _next_id
+            _existing_ids.add(_next_id)
+            _next_id += 1
+            _patched += 1
+    if _patched:
+        print(f"olympiads.py: проставлен id у {_patched} пробников без id")
     print(f"olympiads.py: новый формат, {len(COMBOS)} пробников")
 else:
     # Старый формат — группируем задачи в пробники
@@ -1558,7 +1650,16 @@ def generate_variant(olympiad_slug, grade, round_key):
 
 @app.route("/")
 def index():
-    """Главная страница - список предметов."""
+    """Главная страница - список предметов.
+
+    Незарегистрированные пользователи (анонимные или гости) всегда
+    перенаправляются на страницу входа/регистрации (кнопка "Начать"),
+    чтобы обязательно пройти регистрацию перед использованием сайта.
+    """
+    # Если пользователь не авторизован или вошёл как гость — отправляем на регистрацию
+    if (not current_user.is_authenticated) or getattr(current_user, 'is_guest', False):
+        return redirect(url_for('login'))
+
     solved_count = len(session.get('solved_problems', []))
     return render_template("index.html",
         subjects=SUBJECTS,
@@ -2218,7 +2319,7 @@ def olympiad_open():
 @app.route("/olympiads/solution/<int:combo_id>")
 def olympiad_solution(combo_id):
     """Показ решений пробника."""
-    combo = next((c for c in COMBOS if c["id"] == combo_id), None)
+    combo = next((c for c in COMBOS if c.get("id") == combo_id), None)
     if not combo:
         abort(404)
 
@@ -2831,21 +2932,47 @@ def tutor_send():
         return jsonify({'error': f'Ошибка AI: {str(e)}'}), 500
 
 
+def _find_problem_for_tutor(problem_id):
+    """Найти задачу по id для эндпоинтов /api/tutor/hint и /api/tutor/solution.
+
+    Источники:
+      1. `PROBLEMS_DB` — единственный список, где задачи имеют поле `id`
+         и непустой `text`. Это и есть таблица «темы».
+      2. `_RAW_DB` — пробники (combos). В прошлой версии endpoint'а сюда
+         попадал поиск `p.get("id") == problem_id` и находил combo —
+         у которой `text`/`answer` пустые → AI получал пустой промпт
+         и писал «в условии не указано задание». Не используем.
+
+    Возвращает dict с полями `text`/`answer` или None.
+    Если найденная задача с пустым `text` — считаем её не найденной, чтобы
+    AI не галлюцинировал на пустоте.
+    """
+    problem = next((p for p in PROBLEMS_DB if p.get("id") == problem_id), None)
+    if not problem:
+        return None
+    if not (problem.get("text") or "").strip():
+        # Защита от мусорных записей (у нас сейчас таких 0, но контракт строгий).
+        return None
+    return problem
+
+
 @app.route("/api/tutor/hint/<int:problem_id>", methods=["POST"])
 @login_required
 def get_ai_hint(problem_id):
     """Получить наводящую подсказку от AI для конкретной задачи."""
     if not DEEPSEEK_AVAILABLE:
         return jsonify({'error': 'AI недоступен'}), 503
-    
-    # Ищем задачу в обеих базах
-    problem = next((p for p in PROBLEMS_DB if p.get("id") == problem_id), None)
-    if not problem:
-        problem = next((p for p in _RAW_DB if p.get("id") == problem_id), None)
-    
+
+    # Только PROBLEMS_DB содержит индивидуальные задачи с полем `id`.
+    # `_RAW_DB` — это пробники (combos), у которых на верхнем уровне нет
+    # ни `text`, ни `answer`: задачи лежат внутри combo['problems'][i].
+    # Старый fallback `next((p for p in _RAW_DB if p.get("id") == ...))`
+    # находил combo и подавал AI ПУСТУЮ задачу — отсюда «в условии не
+    # указана задача» (см. tests/test_tutor_solution.py).
+    problem = _find_problem_for_tutor(problem_id)
     if not problem:
         return jsonify({'error': 'Задача не найдена'}), 404
-    
+
     try:
         client = DeepSeekClient()
         hint = client.generate_hint(
@@ -2853,12 +2980,12 @@ def get_ai_hint(problem_id):
             problem_answer=problem.get('answer', ''),
             difficulty=problem.get('difficulty', 1)
         )
-        
+
         return jsonify({
             'hint': hint,
             'problem_id': problem_id
         })
-        
+
     except Exception as e:
         app.logger.error(f"AI Hint error: {e}")
         return jsonify({'error': f'Ошибка генерации подсказки: {str(e)}'}), 500
@@ -2870,15 +2997,11 @@ def get_ai_solution(problem_id):
     """Получить полное решение от AI для конкретной задачи."""
     if not DEEPSEEK_AVAILABLE:
         return jsonify({'error': 'AI недоступен'}), 503
-    
-    # Ищем задачу в обеих базах
-    problem = next((p for p in PROBLEMS_DB if p.get("id") == problem_id), None)
-    if not problem:
-        problem = next((p for p in _RAW_DB if p.get("id") == problem_id), None)
-    
+
+    problem = _find_problem_for_tutor(problem_id)
     if not problem:
         return jsonify({'error': 'Задача не найдена'}), 404
-    
+
     try:
         client = DeepSeekClient()
         solution = client.generate_solution(
@@ -2886,13 +3009,13 @@ def get_ai_solution(problem_id):
             problem_answer=problem.get('answer', ''),
             difficulty=problem.get('difficulty', 1)
         )
-        
+
         return jsonify({
             'solution': solution,
             'answer': problem.get('answer', ''),
             'problem_id': problem_id
         })
-        
+
     except Exception as e:
         app.logger.error(f"AI Solution error: {e}")
         return jsonify({'error': f'Ошибка генерации решения: {str(e)}'}), 500
@@ -3397,7 +3520,19 @@ def free_mock_test():
     tasks = app.free_mock_cache[test_id]
     grade = session.get('free_mock_grade', 'N/A')
     level = session.get('free_mock_level', 'N/A')
-    
+
+    # Аналитика: пользователь приступил к прохождению пробника.
+    try:
+        from routes.track import log_event
+        log_event('mock_start', meta={
+            'test_id': test_id,
+            'grade': grade,
+            'level': level,
+            'tasks_count': len(tasks) if tasks else 0,
+        })
+    except Exception:
+        pass
+
     return render_template('free_mock_test.html',
                          tasks=tasks,
                          grade=grade,
@@ -3478,6 +3613,20 @@ def free_mock_submit():
     session.pop('free_mock_grade', None)
     session.pop('free_mock_level', None)
     
+    # Аналитика: пробник завершён.
+    try:
+        from routes.track import log_event
+        log_event('mock_complete', meta={
+            'test_id': test_id,
+            'grade': grade,
+            'level': level,
+            'score': score,
+            'correct': correct_count,
+            'total': len(tasks),
+        })
+    except Exception:
+        pass
+
     return render_template('free_mock_results.html',
                          results=results,
                          score=score,
@@ -4155,8 +4304,17 @@ def adaptive_test_select_class():
 def adaptive_test_select_topic():
     """Шаг 2 адаптивного теста: выбор темы под выбранный класс.
 
-    - Для 5 и 6 классов показываем домены из GradeTask (импорт 1600 задач).
-    - Для 7–11 классов — классические темы из AdaptiveTask.
+    После полной замены базы (formyla_adaptive_test_final_8394_tasks.json)
+    единым источником истины для тем являются 5 канонических предметов
+    из колонки ``adaptive_tasks.subject``:
+
+        algebra, geometry, number_theory, combinatorics, logic
+
+    Темы строятся одинаково для всех классов 5–11 — каждый предмет
+    представляет собой "bucket", внутри которого адаптивный тест уже
+    использует ``diagnostic_section`` для отслеживания слабых тем.
+    Никаких keyword-веток типа «Задачи на движение» / «Рыцари и лжецы»
+    больше нет — они отсутствуют как `subject` в новом датасете.
     """
     try:
         grade_int = int(request.args.get('grade', ''))
@@ -4171,76 +4329,29 @@ def adaptive_test_select_topic():
     MIN_TASKS = 10
     topics = []
 
-    if grade_int in (5, 6):
-        # Темы из 1600-задач (GradeTask) — для 5 и 6 классов
-        from models_grade import GradeTask, GRADE_DOMAINS, DOMAIN_LABELS
-        domain_emojis = {
-            'natural_numbers':              '🔢',
-            'fractions_decimals_percent':   '½',
-            'geometry_measurement':         '📐',
-            'combinatorics_school':         '🎲',
-            'logic_olympiad_intro':         '🧠',
-            'divisibility':                 '➗',
-            'fractions_ratio_percent':      '½',
-            'integers_coordinates':         '➕',
-            'geometry_6':                   '📏',
-            'olympiad_logic_combinatorics': '🧩',
-        }
-        for domain in GRADE_DOMAINS.get(grade_int, ()):
-            count = GradeTask.query.filter_by(grade=grade_int, domain=domain).count()
-            topics.append({
-                'name':      DOMAIN_LABELS.get(domain, domain),
-                'emoji':     domain_emojis.get(domain, '📘'),
-                'count':     count,
-                'available': count >= MIN_TASKS,
-                'url':       url_for('adaptive_test_start_grade',
-                                     grade=grade_int, domain=domain),
-            })
-    else:
-        # Классические темы для 7–11 классов — старый адаптивный тест
-        from services.adaptive_topic_mapping import get_keywords_for_grade_topic
-        classic_topics = [
-            ('algebra',       'Алгебра',         '📐'),
-            ('geometry',      'Геометрия',       '📏'),
-            ('combinatorics', 'Комбинаторика',   '🎲'),
-            ('number_theory', 'Теория чисел',    '🔢'),
-            ('kl_movement',   'Задачи на движение', '🚗'),
-            ('knights_liars', 'Рыцари и лжецы',  '⚔️'),
-        ]
-        fallback_keywords = {
-            'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
-            'geometry': ['геометрия', 'треугольник', 'четырехугольник', 'окружность',
-                         'вектор', 'площад', 'стереометр', 'многогранник',
-                         'тела вращения', 'объем'],
-            'combinatorics': ['комбинатор', 'вероятност', 'перестановк', 'размещен', 'сочетан'],
-            'number_theory': ['натуральн', 'делимост', 'положительн', 'отрицательн',
-                              'рациональн', 'числ', 'НОД', 'НОК'],
-            'kl_movement': ['движен', 'текстовые задачи', 'совместная работа'],
-            'knights_liars': ['рыцар', 'лжец'],
-        }
-        all_tasks = AdaptiveTask.query.filter_by(
-            class_level=grade_int, is_flagged=False
-        ).all()
-        for topic_key, topic_name, emoji in classic_topics:
-            internal = 'movement' if topic_key == 'kl_movement' else topic_key
-            kws = get_keywords_for_grade_topic(grade_int, internal) \
-                  or fallback_keywords.get(topic_key, [])
-            kws_lower = [k.lower() for k in kws]
-            if not kws_lower:
-                count = len(all_tasks)
-            else:
-                count = sum(
-                    1 for t in all_tasks
-                    if t.topic and any(k in t.topic.lower() for k in kws_lower)
-                )
-            topics.append({
-                'name':      topic_name,
-                'emoji':     emoji,
-                'count':     count,
-                'available': count >= MIN_TASKS,
-                'url':       url_for('adaptive_test_start_simple',
-                                     topic=topic_key, grade=grade_int),
-            })
+    from services.task_selection import count_tasks  # noqa: WPS433
+
+    # 5 канонических предметов из нового датасета.  Порядок:
+    # алгебра → геометрия → теория чисел → комбинаторика → логика.
+    canonical_subjects = [
+        ('algebra',       'Алгебра',        '📐'),
+        ('geometry',      'Геометрия',      '📏'),
+        ('number_theory', 'Теория чисел',   '🔢'),
+        ('combinatorics', 'Комбинаторика',  '🎲'),
+        ('logic',         'Логика',         '🧠'),
+    ]
+
+    for topic_key, topic_name, emoji in canonical_subjects:
+        # Строгий фильтр по subject — НИКАКИХ keyword-парсингов.
+        count = count_tasks(subject=topic_key, grade=grade_int)
+        topics.append({
+            'name':      topic_name,
+            'emoji':     emoji,
+            'count':     count,
+            'available': count >= MIN_TASKS,
+            'url':       url_for('adaptive_test_start_simple',
+                                 topic=topic_key, grade=grade_int),
+        })
 
     return render_template(
         'adaptive_test_select_topic.html',
@@ -4307,33 +4418,37 @@ def adaptive_test_select_grade():
     # Подсчитываем доступность темы по каждому классу,
     # чтобы шаблон мог отключить недоступные кнопки.
     from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+    from services.subject_classifier import url_topic_to_subject, ALL_SUBJECTS  # noqa: WPS433
+    from services.task_selection import count_tasks  # noqa: WPS433
     MIN_TASKS = 10  # должен совпадать с порогом в adaptive_test_start_simple
-    fallback_keywords = {
-        'algebra': ['алгебра', 'выражения', 'одночлен', 'многочлен', 'формул'],
-        'geometry': ['геометрия', 'треугольник', 'четырехугольник', 'окружность',
-                     'вектор', 'площад', 'стереометр', 'многогранник',
-                     'тела вращения', 'объем'],
-        'combinatorics': ['комбинатор', 'вероятност', 'перестановк', 'размещен', 'сочетан'],
-        'number_theory': ['натуральн', 'делимост', 'положительн', 'отрицательн',
-                          'рациональн', 'числ', 'НОД', 'НОК'],
+    non_subject_keywords = {
         'movement': ['движен', 'текстовые задачи', 'совместная работа'],
         'knights_liars': ['рыцар', 'лжец'],
     }
 
+    canonical_subject = url_topic_to_subject(topic)
+
     grade_availability = {}
     for grade_int in (5, 6, 7, 8, 9, 10, 11):
-        kws = get_keywords_for_grade_topic(grade_int, topic) or fallback_keywords.get(topic, [])
-        kws_lower = [k.lower() for k in kws]
-        all_tasks = AdaptiveTask.query.filter_by(
-            class_level=grade_int, is_flagged=False
-        ).all()
-        if not kws_lower:
-            count = len(all_tasks)
+        if canonical_subject in ALL_SUBJECTS:
+            # Каноничный предмет — считаем строго по subject.
+            count = count_tasks(subject=canonical_subject, grade=grade_int)
         else:
-            count = sum(
-                1 for t in all_tasks
-                if t.topic and any(k in t.topic.lower() for k in kws_lower)
+            kws = (
+                get_keywords_for_grade_topic(grade_int, topic)
+                or non_subject_keywords.get(topic, [])
             )
+            kws_lower = [k.lower() for k in kws]
+            if not kws_lower:
+                count = 0
+            else:
+                all_tasks = AdaptiveTask.query.filter_by(
+                    class_level=grade_int, is_flagged=False
+                ).all()
+                count = sum(
+                    1 for t in all_tasks
+                    if t.topic and any(k in t.topic.lower() for k in kws_lower)
+                )
         grade_availability[grade_int] = {
             'count': count,
             'available': count >= MIN_TASKS,
@@ -4428,33 +4543,63 @@ def adaptive_test_start_simple():
     }
     
     topic_name = topic_names.get(topic, topic)
-    
-    # Фильтруем задачи по классу И по теме (ИСКЛЮЧАЕМ ПОМЕЧЕННЫЕ ЗАДАЧИ)
-    if keywords:
-        # Если есть ключевые слова - фильтруем по ним
+
+    # ──────────────────────────────────────────────────────────────────
+    # ПРЕДМЕТНАЯ ОБЛАСТЬ — ЕДИНЫЙ ИСТОЧНИК ИСТИНЫ.
+    #
+    # Если topic — это каноничный предмет (algebra / geometry /
+    # combinatorics / number_theory / logic / set_theory), берём задачи
+    # ТОЛЬКО с этим subject.  Никакой keyword-фильтр и никакой fallback
+    # на другие предметы не имеет права подмешать чужую тему — см.
+    # services/task_selection.py.
+    # ──────────────────────────────────────────────────────────────────
+    from services.subject_classifier import url_topic_to_subject, ALL_SUBJECTS  # noqa: WPS433
+    from services.task_selection import base_query  # noqa: WPS433
+
+    canonical_subject = url_topic_to_subject(topic)
+
+    if canonical_subject in ALL_SUBJECTS:
+        # СТРОГИЙ предметный фильтр.  Уровень не фиксируем — выбор
+        # конкретной задачи произойдёт в adaptive_test_simple_page по
+        # current_difficulty.
+        filtered_tasks = base_query(
+            subject=canonical_subject,
+            grade=grade_int,
+        ).all()
+        print(
+            f"[ADAPTIVE] subject-filter: subject={canonical_subject}, "
+            f"grade={grade_int} → {len(filtered_tasks)} tasks"
+        )
+    elif keywords:
+        # Не-предметная тема (movement, knights_liars, …) — фильтруем
+        # по ключевым словам в topic, но БЕЗ смены предмета.
         all_tasks = AdaptiveTask.query.filter_by(
             class_level=grade_int,
-            is_flagged=False  # ФИЛЬТР КАЧЕСТВА: исключаем помеченные задачи
+            is_flagged=False
         ).all()
-        
-        # Фильтруем задачи, где название темы содержит хотя бы одно ключевое слово
         filtered_tasks = []
         for task in all_tasks:
-            topic_lower = task.topic.lower()
+            topic_lower = (task.topic or "").lower()
             if any(keyword.lower() in topic_lower for keyword in keywords):
                 filtered_tasks.append(task)
     else:
-        # Если фильтра нет - берем все задачи класса (кроме помеченных)
-        filtered_tasks = AdaptiveTask.query.filter_by(
-            class_level=grade_int,
-            is_flagged=False  # ФИЛЬТР КАЧЕСТВА: исключаем помеченные задачи
-        ).all()
+        # Тема неизвестна — НИКАКОГО fallback'а на «все задачи класса»,
+        # это и приводило к смешиванию алгебры/геометрии.
+        filtered_tasks = []
     
     if len(filtered_tasks) < 10:
         if len(filtered_tasks) == 0:
-            flash(f'К сожалению, задач по теме "{topic_name}" для {grade} класса пока нет в базе данных. Попробуйте выбрать другую тему или класс.', 'error')
+            flash(
+                f'К сожалению, задач по теме "{topic_name}" для {grade} класса пока '
+                f'нет в базе данных. Попробуйте выбрать другую тему или класс.',
+                'error',
+            )
         else:
-            flash(f'Недостаточно задач по теме "{topic_name}" для {grade} класса. Доступно: {len(filtered_tasks)}. Требуется минимум 10.', 'error')
+            flash(
+                f'Недостаточно задач по теме "{topic_name}" для {grade} класса. '
+                f'Доступно: {len(filtered_tasks)}. Требуется минимум 10.',
+                'error',
+            )
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
     # Сохраняем в сессию (сортируем id по возрастанию для детерминированности теста)
@@ -4948,9 +5093,12 @@ score = -1 (НЕВЕРНО, -1 уровень):
     - ВАЖНО: score 2 ставится ТОЛЬКО если ответ верный И предоставлено решение (хотя бы краткое).
     - ЗОЛОТОЕ ПРАВИЛО: Если числовое значение совпадает И есть решение - это score: 2!
     
-    score = 1 (ЧАСТИЧНО ВЕРНО, уровень без изменений):
+    score = 1 (ЧАСТИЧНО ВЕРНО, +1 уровень):
     - Итоговый ответ СОВПАДАЕТ, НО в решении есть ЯВНАЯ вычислительная ошибка (например, 2+2=5)
     - Итоговый ответ НЕ совпадает, НО в решении есть правильная идея/метод и ход мыслей верный
+    - Ученик нашёл ЧАСТЬ верных решений / корней / случаев, но не все
+      (например: указал 2 корня уравнения из 4, перечислил часть верных конфигураций) —
+      это ВСЕГДА score = 1, НЕ score = -1.
     - Ответ не сокращен до конца (например, 2/4 вместо 1/2) И это было требованием
     - ПОМНИ: score = 1 это ЧАСТИЧНО правильное решение. Не забывай про эту оценку!
     
@@ -4965,6 +5113,7 @@ score = -1 (НЕВЕРНО, -1 уровень):
     
     НАПОМИНАНИЕ О ШКАЛЕ: Ты оцениваешь из трёх вариантов: -1, +1, +2.
     Не забывай про +1 (частично верно)! Это НЕ только -1 и +2.
+    Если ученик нашёл хотя бы ЧАСТЬ верных корней/решений/случаев — это ВСЕГДА +1, никогда -1.
     
     ЗОЛОТОЕ ПРАВИЛО: Никогда не придирайся к оформлению. Если суть числа верная И есть решение - это score: 2!
 
@@ -5252,11 +5401,11 @@ score = -1 (НЕВЕРНО, -1 уровень):
         # Префикс с явной оценкой в начале feedback, чтобы ученик видел балл.
         def _score_badge(s: int, has_solution: bool) -> str:
             if s == 2:
-                return "🟢 **Оценка тьютора: +2 балла** (верный ответ + корректное решение)"
+                return "🟢 **Оценка тьютора: +2 балла, уровень +2** (верный ответ + корректное решение)"
             if s == 1:
                 if has_solution:
-                    return "🟡 **Оценка тьютора: +1 балл** (частично верно: либо ответ неточный, либо решение с пробелами)"
-                return "🟡 **Оценка тьютора: +1 балл** (ответ принят, но без решения)"
+                    return "🟡 **Оценка тьютора: +1 балл, уровень +1** (частично верно: либо ответ неточный, либо найдена часть решений)"
+                return "🟡 **Оценка тьютора: +1 балл, уровень +1** (ответ принят, но без решения)"
             if s == 0:
                 return "⚪ **Оценка тьютора: 0 баллов** (нейтрально, уровень не меняется)"
             # s == -1
@@ -5276,22 +5425,28 @@ score = -1 (НЕВЕРНО, -1 уровень):
         # Логирование для отладки
         print(f"[ADAPTIVE] Score: {score}, Current level: {current_difficulty}, Streak: {partial_streak}")
         
+        # Шкала ТЗ 2026-05-23:
+        #   +2 -> уровень +2 (полностью верно, автопереход к следующей задаче)
+        #   +1 -> уровень +1 (частично верно — есть верный ход или часть ответа)
+        #    0 -> уровень без изменений (нейтрально, резерв)
+        #   -1 -> уровень -1 (неверно)
+        # Диапазон уровней расширен до [1; 8] — в банке задач 8 уровней.
         if score == 2:
-            # Идеально - мгновенно повышаем уровень
-            new_level = min(7, current_difficulty + 1)
-            partial_streak = 0  # Сбрасываем стрик
-            print(f"[ADAPTIVE] Score=2: Повышаем уровень {current_difficulty} → {new_level}")
-            
+            new_level = min(8, current_difficulty + 2)
+            partial_streak = 0
+            print(f"[ADAPTIVE] Score=+2: уровень {current_difficulty} -> {new_level} (+2)")
         elif score == 1:
-            # Частично верно - уровень НЕ меняется (фикс: было +1 при стрике >= 2)
+            new_level = min(8, current_difficulty + 1)
+            partial_streak = 0
+            print(f"[ADAPTIVE] Score=+1: уровень {current_difficulty} -> {new_level} (+1)")
+        elif score == 0:
             new_level = current_difficulty
-            partial_streak = 0  # Сбрасываем стрик
-            print(f"[ADAPTIVE] Score=1: Уровень без изменений {current_difficulty}")
-                
-        else:  # score <= 0
-            # Неверно - снижаем уровень
+            partial_streak = 0
+            print(f"[ADAPTIVE] Score=0: уровень не меняется {current_difficulty}")
+        else:  # score == -1
             new_level = max(1, current_difficulty - 1)
-            partial_streak = 0  # Сбрасываем стрик
+            partial_streak = 0
+            print(f"[ADAPTIVE] Score=-1: уровень {current_difficulty} -> {new_level} (-1)")
         
         # Сохраняем обновленные значения в сессию
         session['adaptive_current_difficulty'] = new_level
@@ -5810,7 +5965,7 @@ def analyze_adaptive_test(test_id):
             prompt = f"""Ты опытный тренер олимпиадной сборной. Ученик только что прошел адаптивное тестирование (25 задач).
 
 Его итоговый статус: {olympiad_status['status']}
-Финальный уровень: {analysis['final_ability']:.1f}/7.0
+Финальный уровень: {analysis['final_ability']:.1f}/8.0
 Правильных ответов: {analysis['total_correct']} из {analysis['total_problems']} ({analysis['accuracy']:.0f}%)
 
 Сильные разделы: {', '.join(strong_names) if strong_names else 'пока не выявлены'}
@@ -6721,22 +6876,16 @@ def admin_fix_latex_rac():
 
 
 # ── Пометить задачу 1650 как битую (запускается один раз при старте) ──
-try:
-    with app.app_context():
-        _task_1650 = AdaptiveTask.query.get(1650)
-        if _task_1650 and not _task_1650.is_flagged:
-            _task_1650.is_flagged = True
-            _task_1650.flagged_reason = (
-                'Условие/ответ противоречивы. Ответ в БД=18, '
-                'но математически правильный=0 (таких n не существует). '
-                'Требуется проверка источника задачи.'
-            )
-            db.session.commit()
-            print("[QUALITY CONTROL] Задача #1650 помечена как битая (is_flagged=True)")
-        elif _task_1650 and _task_1650.is_flagged:
-            print("[QUALITY CONTROL] Задача #1650 уже помечена")
-except Exception as _e:
-    print(f"[QUALITY CONTROL] Warning marking task 1650: {_e}")
+# ──────────────────────────────────────────────────────────────────
+# DISABLED 2026-05-23: ранее здесь жёстко помечалась задача
+# AdaptiveTask.id == 1650 как битая (legacy-дамп, ответ=18 vs 0).
+# После полной замены базы на формальный дамп 8394 задач
+# (formyla_adaptive_test_final_8394_tasks.json) id=1650 указывает
+# на совершенно другую (валидную) алгебраическую задачу
+# section_gap_g10_l4_01562, поэтому хук неактуален и отключён.
+# Если в будущем понадобится массовая чистка — делайте по source_id,
+# а не по числовому primary key.
+# ──────────────────────────────────────────────────────────────────
 
 
 # ── Авто-скрипт: помечаем задачи с >= 3 fallback за 7 дней ──
