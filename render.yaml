@@ -10,7 +10,13 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --workers 1 --timeout 600 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+    # --preload — единственный fork, экономит ~40–60% RAM (особенно с тяжёлым app.py).
+    # --max-requests + jitter — перезапускает воркер раз в ~500 запросов,
+    #   освобождая память от утечек.
+    # --threads 4 — параллелим I/O запросы без лишних воркеров.
+    startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 120 --graceful-timeout 30 --max-requests 500 --max-requests-jitter 50 --preload --bind 0.0.0.0:$PORT
+    # Render будет дёргать /healthz (лёгкий probe без БД) вместо тяжёлого /.
+    healthCheckPath: /healthz
     envVars:
       - key: DATABASE_URL
         fromDatabase:
