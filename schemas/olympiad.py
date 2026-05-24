@@ -78,7 +78,7 @@ class TaskSchema(_Strict):
     solution_md: str = Field(min_length=1)
     answer: Optional[str] = Field(default=None, max_length=500)
 
-    source_prototype: Optional[str] = Field(default=None, max_length=200)
+    source_prototype: Optional[str] = Field(default=None, max_length=500)
     estimated_minutes: Optional[int] = Field(default=None, ge=0, le=600)
     max_score: int = Field(default=7, ge=0, le=100)
 
