@@ -74,9 +74,6 @@ if _SENTRY_DSN:
             send_default_pii=False,
             environment=os.environ.get("FLASK_ENV", "production"),
             release=os.environ.get("RENDER_GIT_COMMIT", "dev"),
-            # При SIGTERM/SIGKILL не блокируем шатдаун воркера, иначе при OOM
-            # Render отстреливает worker, а Sentry зависает на flush'е.
-            shutdown_timeout=0,
         )
         SENTRY_ENABLED = True
         print("✅ Sentry SDK initialized")
@@ -897,13 +894,6 @@ def not_found(e):
         return "<h1>404 Not Found</h1>", 404
 
 # ── HEALTH CHECK ──────────────────────────────────────────────────
-# Лёгкий probe для Render Health Check (без БД, без шаблонов).
-# В Render Settings → Health Check Path указать /healthz.
-@app.route('/healthz', methods=['GET', 'HEAD'])
-def healthz():
-    return 'ok', 200, {'Content-Type': 'text/plain; charset=utf-8'}
-
-
 @app.route('/health')
 def health_check():
     """Diagnostic endpoint"""
@@ -978,18 +968,12 @@ def daily_streak_reset_job():
         except Exception as e:
             app.logger.error(f"✗ Daily streak reset failed: {e}")
 
-# Start scheduler — только если явно включено через ENV.
-# На веб-воркере Render крон-задачи не нужны (память+двойные запуски при
-# нескольких воркерах). Чтобы включить → RUN_SCHEDULER=1 на отдельном
-# Background Worker сервисе.
-if os.environ.get("RUN_SCHEDULER", "").strip() in ("1", "true", "yes"):
-    try:
-        scheduler.start()
-        print("✓ APScheduler started - Daily Quest cron jobs active")
-    except Exception as e:
-        print(f"⚠️  APScheduler failed to start: {e}")
-else:
-    print("ℹ️  APScheduler skipped (set RUN_SCHEDULER=1 to enable, e.g. on dedicated worker)")
+# Start scheduler
+try:
+    scheduler.start()
+    print("✓ APScheduler started - Daily Quest cron jobs active")
+except Exception as e:
+    print(f"⚠️  APScheduler failed to start: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
