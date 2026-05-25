@@ -922,54 +922,111 @@ def _generate_device_id():
 
 
 def ensure_guest_user(device_id):
-    """Создаёт или находит гостевого пользователя по device_id"""
-    user = User.query.filter_by(device_id=device_id, is_guest=True).first()
-    if user:
-        return user
-    
-    # Генерируем уникальный никнейм
-    import random
-    suffix = random.randint(1000, 9999)
-    nickname = f"Гость-{suffix}"
-    # Убедимся что никнейм уникален
-    while User.query.filter_by(nickname=nickname).first():
+    """Создаёт или находит гостевого пользователя по device_id.
+
+    КРИТИЧЕСКИ ВАЖНО (см. инцидент 2026-05-25):
+    Любой SELECT/INSERT здесь идёт под statement_timeout=3s, чтобы при тормозах
+    Postgres мы НЕ вешали before_request-хук на 30+ секунд (что приводит к
+    crash-loop'у gunicorn worker'ов через SIGKILL/SystemExit).
+    Если БД лагает — отдаём None, пользователь продолжит как аноним.
+    """
+    from sqlalchemy import text as _sql_text
+    try:
+        # Локальный, transaction-scoped statement_timeout — НЕ глобально,
+        # чтобы не сломать долгие админ-запросы.
+        db.session.execute(_sql_text("SET LOCAL statement_timeout = '3s'"))
+    except Exception:
+        # SET LOCAL может упасть только если коннект уже мёртв.
+        db.session.rollback()
+        return None
+
+    try:
+        user = User.query.filter_by(device_id=device_id, is_guest=True).first()
+        if user:
+            return user
+
+        # Генерируем уникальный никнейм
+        import random
         suffix = random.randint(1000, 9999)
         nickname = f"Гость-{suffix}"
-    
-    guest = User(
-        email=f"guest_{device_id[:8]}@formyla.local",
-        nickname=nickname,
-        is_guest=True,
-        device_id=device_id
-    )
-    db.session.add(guest)
-    db.session.commit()
-    return guest
+        # Убедимся что никнейм уникален (но не более 5 попыток — fail-fast)
+        for _ in range(5):
+            if not User.query.filter_by(nickname=nickname).first():
+                break
+            suffix = random.randint(1000, 9999)
+            nickname = f"Гость-{suffix}"
+
+        guest = User(
+            email=f"guest_{device_id[:8]}@formyla.local",
+            nickname=nickname,
+            is_guest=True,
+            device_id=device_id
+        )
+        db.session.add(guest)
+        db.session.commit()
+        return guest
+    except Exception as _e:
+        db.session.rollback()
+        import logging
+        logging.getLogger(__name__).warning(
+            f"ensure_guest_user: DB slow/unavailable, fallback to anonymous: {_e}"
+        )
+        return None
+
+
+# Пути, на которых НЕ нужно лезть в БД из before_request. Любой SQL здесь
+# создаёт риск hang'а на тормозах Postgres → SIGKILL воркера. См. инцидент
+# 2026-05-25: robots.txt/favicon health-check'ом Render'а вешал воркер на
+# psycopg.wait(), worker умирал по SystemExit/SIGKILL → crash loop.
+_SKIP_GUEST_PATHS = (
+    '/static/',
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/healthz',
+    '/health',
+    '/ping',
+)
 
 
 @app.before_request
 def ensure_device_and_session():
-    """Гарантирует наличие device_id и пользователя в сессии"""
-    # Пропускаем статические файлы
-    if request.path.startswith('/static/'):
-        return
+    """Гарантирует наличие device_id и пользователя в сессии.
+
+    Дефенсивная реализация (после инцидента 2026-05-25):
+    - системные пути (robots.txt, favicon, /static, health-check'и) — skip;
+    - device_id всегда вычисляется (не требует БД);
+    - guest-юзер создаётся под коротким statement_timeout (3s); если БД
+      медленная — пользователь работает как аноним, а не падает 500.
+    """
+    path = request.path
+    # 1. Системные пути — без БД, без сессии-логина
+    for _p in _SKIP_GUEST_PATHS:
+        if path.startswith(_p):
+            return
 
     try:
-        # 1. Получаем или создаём device_id
+        # 2. device_id (чисто in-memory / cookie, без БД)
         device_id = session.get('device_id')
         if not device_id:
             device_id = request.cookies.get('formyla_device_id')
         if not device_id:
             device_id = _generate_device_id()
-
         session['device_id'] = device_id
 
-        # 2. Если пользователь не авторизован — создаём гостя
+        # 3. Если не залогинен — пытаемся создать/найти гостя, но НЕ блокируем
+        # запрос если БД лагает.
         if not current_user.is_authenticated:
             guest = ensure_guest_user(device_id)
-            login_user(guest, remember=True)
-            session.permanent = True
-            session['user_id'] = guest.id
+            if guest is not None:
+                try:
+                    login_user(guest, remember=True)
+                    session.permanent = True
+                    session['user_id'] = guest.id
+                except Exception:
+                    # login_user может упасть на сериализации — не критично
+                    pass
+            # Если guest is None — продолжаем как аноним (без login_user)
         else:
             # Обновляем device_id у текущего пользователя если нужно
             try:
@@ -980,11 +1037,15 @@ def ensure_device_and_session():
                 db.session.rollback()
             session['user_id'] = current_user.id
     except Exception as e:
-        # If guest user creation fails (e.g. missing columns), just continue
-        # The user will be anonymous but the app won't crash
+        # Catch-all: что бы ни упало — не возвращаем 500
         import logging
-        logging.getLogger(__name__).warning(f"ensure_device_and_session error: {e}")
-        db.session.rollback()
+        logging.getLogger(__name__).warning(
+            f"ensure_device_and_session error (ignored): {e}"
+        )
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 
 @app.after_request
@@ -1567,6 +1628,17 @@ def generate_variant(olympiad_slug, grade, round_key):
     print("=" * 70)
     return modified
 
+
+
+@app.route("/healthz")
+def healthz():
+    """Lightweight health-check для Render/UptimeRobot/CDN.
+
+    НЕ трогает БД. Возвращает 200 ВСЕГДА. Этот endpoint в списке
+    _SKIP_GUEST_PATHS (see before_request), поэтому даже при тормозах
+    Postgres ответит мгновенно. См. инцидент 2026-05-25.
+    """
+    return ({"status": "ok"}, 200, {"Content-Type": "application/json"})
 
 
 @app.route("/welcome")
