@@ -774,6 +774,18 @@ if os.environ.get('OLYMPIAD_AUTOSEED', '').strip() in ('1', 'true', 'yes', 'on')
 else:
     print("[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)")
 
+# ── VsOsh-9 2027 v4 force-import on boot ─────────────────────────────────────
+# autoseed выше — пуглив: пропускает раздачу, если в Probnik/OlympiadTask уже
+# есть ХОТЯ БЫ одна строка (любой другой олимпиады). Из-за этого v4-задачи
+# курса «ВсОШ-9 2026/2027» не доезжают до прод-БД на Render. Этот блок
+# идемпотентно прогоняет upsert/replace из scripts/import_olympiad на старте.
+# Отключается env-переменной VSOSH9_2027_FORCE_IMPORT=0.
+try:
+    from services.olympiad_v4_force import run_v4_force_import
+    run_v4_force_import(app, db)
+except Exception as _e_v4:
+    print(f"[VSOSH9-V4] hook skipped: {_e_v4}")
+
 # /grade-5 and /grade-6 — тренажёр FORMYLA по школьным классам.
 try:
     from routes.grade import grade_bp
