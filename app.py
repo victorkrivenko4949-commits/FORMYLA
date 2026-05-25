@@ -989,20 +989,9 @@ def ensure_device_and_session():
 
 @app.after_request
 def add_security_headers(response):
-    """Запрет кэширования HTML-страниц на CDN/прокси/браузере.
-
-    Поведение:
-      • Любой HTML-ответ (включая анонимных гостей) помечается no-store.
-        Это нужно, потому что Cloudflare/Render могут кешировать "битую"
-        страницу анонимной сессии (например, во время катящегося деплоя)
-        и потом отдавать её всем новым посетителям без cookies — пока кеш
-        не протухнет. Симптом: после деплоя залогиненные видят сайт, а
-        новые / разлогиненные — пустую страницу "не найдено".
-      • Авторизованные пользователи дополнительно получают Pragma/Expires
-        (чтобы при F5 / кнопке Назад не показывался чужой профиль).
-      • Vary: Cookie сохраняем — если кеш HTML включён где-то на периметре,
-        он не должен путать ответы залогиненных и анонимных.
-      • Static-файлы и API не затрагиваем (см. ниже).
+    """Запрет кэширования страниц для авторизованных пользователей.
+    Предотвращает показ чужого профиля при нажатии F5 / кнопки Назад.
+    Также добавляет Vary: Cookie чтобы CDN/proxy не кешировали ответы между пользователями.
     """
     # Устанавливаем device_id cookie на 10 лет
     device_id = session.get('device_id')
@@ -1016,32 +1005,20 @@ def add_security_headers(response):
             secure=request.is_secure
         )
 
-    # ── ANONYMOUS-CACHE FIX ──
-    # Раньше Cache-Control: no-store ставился только если current_user.is_authenticated.
-    # Для гостей заголовок Cache-Control отсутствовал, и Cloudflare/Render могли
-    # сохранить HTML-ответ на edge. Если в момент кеширования gunicorn-worker был
-    # в восстановлении (миграции, рестарт после deploy), edge зафиксировал пустую
-    # страницу и отдавал её всем анонимам, пока кеш не протухнет.
-    # Теперь любой HTML-ответ (auth + anon) идёт с no-store: edge HTML не хранит,
-    # CSS/JS/картинки кешируются как раньше — для них content_type не text/html.
-    _is_html = bool(response.content_type and 'text/html' in response.content_type)
-    if _is_html:
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private, max-age=0'
-        try:
-            if current_user.is_authenticated:
-                # Для залогиненных дополнительно Pragma/Expires (legacy IE-style,
-                # но Safari/Edge всё ещё уважают при back-forward navigation).
-                response.headers['Pragma'] = 'no-cache'
-                response.headers['Expires'] = '0'
-        except Exception:
-            pass  # current_user может быть недоступен вне request context
+    try:
+        if current_user.is_authenticated:
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+    except Exception:
+        pass  # current_user может быть недоступен вне request context
 
     # Vary: Cookie — КРИТИЧЕСКИ ВАЖНО для Render/Cloudflare/CDN
     # Без этого CDN может закешировать ответ одного пользователя и отдать другому
     response.headers.setdefault('Vary', 'Cookie')
 
     # UTF-8 charset для всех HTML-ответов (фикс символов ∠°≠ → ?)
-    if _is_html:
+    if response.content_type and 'text/html' in response.content_type:
         response.headers['Content-Type'] = 'text/html; charset=utf-8'
 
     # Базовые security headers для всех ответов
@@ -7026,29 +7003,23 @@ def admin_fix_latex_rac():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
-# ── REMOVED: legacy hard-coded flag for AdaptiveTask id=1650 ──
-# Эта блок-проверка существовала до полной замены базы задач на
-# полированный 8394-датасет (см. scripts/import_polished_8394.py).
-# Старая задача с противоречащим условием/ответом (DB=18 vs реальное=0)
-# уже не существует в новой базе — она была удалена при wipe и не имеет
-# аналога в формыла-датасете (тот прошёл полный A+B+C+C2d+F audit-цикл,
-# 25/25 инвариантов PASS).
-#
-# Текущая задача по id=1650 — section_gap_g10_l4_01562 (алгебра, 10 класс,
-# уровень 4, корректное показательное уравнение). Помечать её как битую
-# по integer-id было бы неверно: после wipe + INSERT auto-increment id
-# полностью переназначаются, и привязка к internal id больше не имеет
-# смысла. Используйте source_id (stable string-key из JSON) для любой
-# точечной привязки к конкретной задаче.
-#
-# Если в будущем появится новая ошибка в конкретной задаче — отмечайте
-# её через admin-UI (/admin → flag) или через миграцию по source_id:
-#
-#     task = AdaptiveTask.query.filter_by(source_id="...").first()
-#     if task and not task.is_flagged:
-#         task.is_flagged = True
-#         task.flagged_reason = "..."
-#         db.session.commit()
+# ── Пометить задачу 1650 как битую (запускается один раз при старте) ──
+try:
+    with app.app_context():
+        _task_1650 = AdaptiveTask.query.get(1650)
+        if _task_1650 and not _task_1650.is_flagged:
+            _task_1650.is_flagged = True
+            _task_1650.flagged_reason = (
+                'Условие/ответ противоречивы. Ответ в БД=18, '
+                'но математически правильный=0 (таких n не существует). '
+                'Требуется проверка источника задачи.'
+            )
+            db.session.commit()
+            print("[QUALITY CONTROL] Задача #1650 помечена как битая (is_flagged=True)")
+        elif _task_1650 and _task_1650.is_flagged:
+            print("[QUALITY CONTROL] Задача #1650 уже помечена")
+except Exception as _e:
+    print(f"[QUALITY CONTROL] Warning marking task 1650: {_e}")
 
 
 # ── Авто-скрипт: помечаем задачи с >= 3 fallback за 7 дней ──
