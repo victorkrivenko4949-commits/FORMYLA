@@ -787,6 +787,22 @@
       }
       setStatus("\u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e", "ok");
       if (btnEl) btnEl.disabled = false;
+      // CALL_UNIFIED_V1: после отправки инвайта сам приглашающий тоже идёт
+      // в /call?code=<room>&auto=1 — чтобы обе стороны попали в ОДНУ
+      // mesh-комнату Task-6 (раньше invited попадал в /whiteboard, а
+      // приглашающий оставался в виджете доски: они никогда не видели
+      // друг друга, поэтому всегда показывалось «ждём участников»).
+      try {
+        var callCode = String(code || "").trim();
+        if (callCode) {
+          var callUrl = "/call?code=" + encodeURIComponent(callCode) + "&auto=1";
+          // Маленькая задержка, чтобы пользователь увидел «✓ Приглашён».
+          setTimeout(function () {
+            try { window.location.assign(callUrl); }
+            catch (e) { window.location.href = callUrl; }
+          }, 600);
+        }
+      } catch (e) { /* mute */ }
     }).catch(function (e) {
       console.warn("[wb_call] invite err", e);
       if (label) label.textContent = "\u26a0 \u041e\u0448\u0438\u0431\u043a\u0430";

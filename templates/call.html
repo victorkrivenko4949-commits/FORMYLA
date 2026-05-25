@@ -747,11 +747,19 @@
     document.addEventListener("DOMContentLoaded", () => {
         const params = new URLSearchParams(location.search);
         const code = (params.get("code") || "").trim();
+        const auto = params.get("auto") === "1";
         if (/^\d{4,8}$/.test(code)) {
             codeInput.value = code;
-            // Не запускаем сразу — пусть пользователь нажмёт «Войти», чтобы
-            // дать camera permission prompt в ответ на жест.
-            setStatus("Код подставлен — нажмите «Войти», чтобы подключиться.", "");
+            if (auto) {
+                // Принятое приглашение — запускаем сразу. Camera prompt
+                // браузер покажет, но это допустимо: ученик уже сделал
+                // click на «Принять» в overlay приглашения — это user gesture.
+                setStatus("Подключаемся…", "");
+                startCall(code);
+            } else {
+                // Просто ?code=… без auto — пусть нажмёт «Войти» вручную.
+                setStatus("Код подставлен — нажмите «Войти», чтобы подключиться.", "");
+            }
         }
     });
 })();

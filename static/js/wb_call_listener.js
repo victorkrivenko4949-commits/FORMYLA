@@ -195,40 +195,15 @@
 
   function acceptInvite(inv) {
     var room = inv.room;
-    var path = window.location.pathname || "";
 
-    // 1) Если мы уже на странице доски (/whiteboard ИЛИ /drawing) —
-    //    открываем виджет звонка прямо здесь и автоматически нажимаем
-    //    «Войти», чтобы пользователю не пришлось ничего кликать.
-    var onBoard =
-      /^\/whiteboard(\/|$|\?)/.test(path) ||
-      /^\/drawing(\/|$|\?)/.test(path);
-
-    if (onBoard && window.WB_CALL && typeof window.WB_CALL.open === "function") {
-      try {
-        window.WB_CALL.open(room);
-      } catch (e) {
-        // Если WB_CALL.open почему-то упал — фолбэк к редиректу.
-        window.location.href = "/whiteboard?room=" + encodeURIComponent(room);
-        return;
-      }
-      // Триггерим клик по «Войти» с небольшой задержкой (даём WB_CALL.open
-      // отрисовать панель и заполнить поле).
-      setTimeout(function () {
-        var startBtn = document.getElementById("wbCallStart");
-        if (startBtn) {
-          try { startBtn.click(); } catch (e) {}
-        }
-      }, 250);
-      return;
-    }
-
-    // 2) Мы НЕ на доске → переходим на /whiteboard?room=<code>&auto=1.
-    //    `auto=1` — сигнал для wb_call.js, что нужно не просто открыть
-    //    панель, а сразу зайти в комнату (см. фикс в static/js/wb_call.js).
-    var url = "/whiteboard?room=" + encodeURIComponent(room) + "&auto=1";
-    // Используем assign, а не href — это надёжнее сохраняет историю и
-    // гарантирует полный reload, если мы и так на /whiteboard, но без ?room.
+    // Всегда переходим на /call?code=<room>&auto=1 — это единая mesh-комната
+    // (Task 6), а не «своя доска» как раньше. Обе стороны (приглашающий и
+    // приглашённый) попадают в ОДНУ комнату с тем же кодом, потому что
+    // `room` приходит из invite-payload и идентичен у обеих сторон.
+    //
+    // `auto=1` — флаг для templates/call.html: запустить startCall(code)
+    // сразу при загрузке, не дожидаясь клика «Войти».
+    var url = "/call?code=" + encodeURIComponent(room) + "&auto=1";
     try {
       window.location.assign(url);
     } catch (e) {
