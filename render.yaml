@@ -13,9 +13,13 @@ services:
     env: python
     plan: starter
     buildCommand: pip install -r requirements.txt
-    # --timeout 120 — стандарт; --preload — fail-fast если БД недоступна на старте,
-    # вместо подвисания worker'а в psycopg wait_c.
-    startCommand: gunicorn app:app --workers 2 --timeout 120 --graceful-timeout 30 --preload --bind 0.0.0.0:$PORT
+    # --workers 1 + БЕЗ --preload: на Render plan: starter всего 512 MB RAM,
+    # 2 worker'а × ~250-300 MB упирались в OOM → SIGKILL → 500 на всех тяжёлых
+    # маршрутах (см. логи 2026-05-25 13:10:38: "Worker was sent SIGKILL! Perhaps
+    # out of memory?"). Один worker укладывается в ~300 MB, остаётся запас для
+    # SQLAlchemy connection pool и LiveKit/WebRTC peer-сессий.
+    # --timeout 120 — стандарт для psycopg wait на медленные запросы Postgres.
+    startCommand: gunicorn app:app --workers 1 --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:
