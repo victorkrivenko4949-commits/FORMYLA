@@ -1,0 +1,759 @@
+{% extends "base.html" %}
+
+{% block title %}Видеозвонок по коду — FORMYLA{% endblock %}
+
+{% block content %}
+{# ──────────────────────────────────────────────────────────────────────────
+   FORMYLA · «Видеозвонок по коду» (Task 6).
+
+   Минималистичная страница: один создаёт комнату → получает короткий код
+   (6 цифр) → отправляет код собеседнику → собеседник вводит код и попадает
+   в ту же WebRTC-mesh-комнату (до 8 участников).
+
+   Использует существующий blueprint /api/wb_call/* (см. routes/wb_call.py)
+   — отдельный backend для звонка НЕ нужен.
+
+   STUN-серверы Google публичные. Для прохода через симметричный NAT нужен
+   TURN — задаётся через window.WB_CALL_ICE (см. wb_call.js).
+   ────────────────────────────────────────────────────────────────────────── #}
+
+<div class="container" style="max-width: 1100px; margin: 30px auto; padding: 0 16px;">
+
+    <header style="text-align:center; margin-bottom: 22px;">
+        <h1 style="margin:0 0 6px; font-size: 1.9em; color: var(--text-main);">
+            📹 Видеозвонок по коду
+        </h1>
+        <p style="margin:0; color: var(--text-muted); font-size: 0.95em;">
+            Создайте комнату и поделитесь 6-значным кодом — или введите код,
+            который вам прислали. До 8 участников, всё через ваш браузер (WebRTC).
+        </p>
+    </header>
+
+    <!-- ───── Лобби (до подключения) ───── -->
+    <section id="callLobby" class="call-card">
+        <div class="call-lobby-grid">
+            <!-- Создать -->
+            <div class="call-lobby-col">
+                <h3 style="margin:0 0 10px; color: var(--accent-2);">🆕 Создать комнату</h3>
+                <p style="margin:0 0 14px; color: var(--text-muted); font-size: .9em;">
+                    Сгенерируем уникальный код. Покажите его собеседнику —
+                    он введёт код у себя и сразу окажется в звонке.
+                </p>
+                <button type="button" id="btnCreateRoom" class="call-btn-primary">
+                    Создать код и войти
+                </button>
+            </div>
+
+            <div class="call-lobby-divider">
+                <span>или</span>
+            </div>
+
+            <!-- Войти -->
+            <div class="call-lobby-col">
+                <h3 style="margin:0 0 10px; color: var(--accent-2);">🔢 Войти по коду</h3>
+                <p style="margin:0 0 14px; color: var(--text-muted); font-size: .9em;">
+                    Введите 6-значный код, который вам прислали.
+                </p>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input type="text" id="joinCodeInput"
+                           inputmode="numeric" pattern="[0-9]*"
+                           maxlength="6" placeholder="123456"
+                           autocomplete="off"
+                           class="call-code-input">
+                    <button type="button" id="btnJoinRoom" class="call-btn-secondary">
+                        Войти
+                    </button>
+                </div>
+                <div id="joinError" class="call-error" style="display:none;"></div>
+            </div>
+        </div>
+
+        <p style="margin: 18px 0 0; color: var(--text-muted); font-size: .8em; text-align:center;">
+            💡 Браузер спросит разрешение на камеру и микрофон — это нужно, чтобы вас было видно и слышно.
+        </p>
+    </section>
+
+    <!-- ───── Активный звонок ───── -->
+    <section id="callRoom" class="call-card" style="display:none;">
+        <!-- Шапка с кодом + кнопками -->
+        <header style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom: 14px;">
+            <div>
+                <div style="font-size:.85em; color: var(--text-muted); margin-bottom:4px;">
+                    Код комнаты:
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <code id="roomCodeDisplay"
+                          style="font-size: 1.7em; font-weight: 800; letter-spacing: 4px; color: var(--accent-1); background: rgba(59,130,246,0.1); padding: 6px 14px; border-radius: 10px;">
+                        ------
+                    </code>
+                    <button type="button" id="btnCopyCode" class="call-btn-mini" title="Скопировать код">
+                        📋 Код
+                    </button>
+                    <button type="button" id="btnCopyLink" class="call-btn-mini" title="Скопировать прямую ссылку">
+                        🔗 Ссылка
+                    </button>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div id="callStatusLine" style="font-size:.9em; color: var(--text-muted); margin-bottom:6px;">
+                    Подключение…
+                </div>
+                <button type="button" id="btnHangup" class="call-btn-danger">
+                    ⛔ Завершить звонок
+                </button>
+            </div>
+        </header>
+
+        <!-- Сетка видео -->
+        <div id="videoGrid" class="call-video-grid"></div>
+
+        <!-- Контролы -->
+        <div class="call-controls">
+            <button type="button" id="btnToggleMic" class="call-btn-toggle" data-on="1" title="Микрофон">
+                🎤 Микрофон
+            </button>
+            <button type="button" id="btnToggleCam" class="call-btn-toggle" data-on="1" title="Камера">
+                📷 Камера
+            </button>
+        </div>
+    </section>
+
+</div>
+
+<style>
+.call-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    padding: 28px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.call-lobby-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+@media (max-width: 720px) {
+    .call-lobby-grid {
+        grid-template-columns: 1fr;
+    }
+    .call-lobby-divider {
+        order: 0;
+        padding: 8px 0;
+    }
+}
+
+.call-lobby-col {
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.call-lobby-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: .85em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+}
+.call-lobby-divider::before,
+.call-lobby-divider::after {
+    content: "";
+    flex: 1;
+    border-top: 1px dashed var(--border-mid);
+    margin: 0 6px;
+}
+
+.call-btn-primary,
+.call-btn-secondary,
+.call-btn-danger,
+.call-btn-mini,
+.call-btn-toggle {
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, background .15s;
+}
+
+.call-btn-primary {
+    padding: 13px 22px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+    font-size: 1em;
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+.call-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,0.45); }
+
+.call-btn-secondary {
+    padding: 13px 22px;
+    background: rgba(59,130,246,0.15);
+    color: var(--accent-2);
+    border: 1px solid rgba(59,130,246,0.4);
+    font-size: 1em;
+}
+.call-btn-secondary:hover { background: rgba(59,130,246,0.25); }
+
+.call-btn-danger {
+    padding: 10px 18px;
+    background: rgba(239,68,68,0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.4);
+    font-size: .95em;
+}
+.call-btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+.call-btn-mini {
+    padding: 6px 12px;
+    background: rgba(148,163,184,0.15);
+    color: var(--text-main);
+    border: 1px solid var(--border-mid);
+    font-size: .85em;
+}
+.call-btn-mini:hover { background: rgba(148,163,184,0.25); }
+
+.call-btn-toggle {
+    padding: 10px 18px;
+    background: rgba(34,197,94,0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34,197,94,0.4);
+    font-size: .95em;
+}
+.call-btn-toggle[data-on="0"] {
+    background: rgba(239,68,68,0.15);
+    color: #ef4444;
+    border-color: rgba(239,68,68,0.4);
+    text-decoration: line-through;
+}
+
+.call-code-input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    background: rgba(15,23,42,0.6);
+    border: 2px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    font-size: 1.4em;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-align: center;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+.call-code-input:focus {
+    border-color: var(--accent-1);
+    outline: none;
+}
+
+.call-error {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.35);
+    border-radius: 8px;
+    color: #fca5a5;
+    font-size: .9em;
+}
+
+.call-video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+    min-height: 240px;
+}
+
+.call-video-tile {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: #0f172a;
+    border: 1px solid var(--border-mid);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.call-video-tile video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    background: #000;
+}
+.call-video-tile .tile-name {
+    position: absolute;
+    left: 8px; bottom: 8px;
+    padding: 3px 9px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: .85em;
+    font-weight: 600;
+    border-radius: 6px;
+}
+.call-video-tile .tile-mute {
+    position: absolute;
+    right: 8px; top: 8px;
+    background: rgba(239,68,68,0.85);
+    color: #fff;
+    padding: 3px 8px;
+    font-size: .75em;
+    border-radius: 6px;
+    display: none;
+}
+.call-video-tile.muted .tile-mute { display: block; }
+
+.call-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+</style>
+
+<script>
+/*
+ * FORMYLA · Видеозвонок по коду (Task 6).
+ * ────────────────────────────────────────
+ * Полностью самодостаточный клиент: WebRTC mesh + HTTP-polling сигналинг.
+ * Использует уже существующий REST API /api/wb_call/* (см. routes/wb_call.py).
+ *
+ * Архитектура:
+ *   1. join → получаем свой peer_id + список других peers в комнате
+ *   2. для каждого нового peer создаём RTCPeerConnection, добавляем localStream
+ *   3. через /send отправляем offer/answer/candidate, через /poll принимаем
+ *   4. при leave/unload — /leave, чтобы освободить слот
+ */
+(function () {
+    "use strict";
+
+    if (!("RTCPeerConnection" in window)) {
+        alert("Ваш браузер не поддерживает WebRTC. Откройте страницу в Chrome, Firefox, Safari или Edge.");
+        return;
+    }
+
+    // ── DOM ────────────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    const lobby     = $("callLobby");
+    const roomEl    = $("callRoom");
+    const codeDisp  = $("roomCodeDisplay");
+    const grid      = $("videoGrid");
+    const statusEl  = $("callStatusLine");
+    const joinErr   = $("joinError");
+    const codeInput = $("joinCodeInput");
+
+    // ── State ──────────────────────────────────────────────────────────
+    let ICE = (window.WB_CALL_ICE && window.WB_CALL_ICE.length)
+        ? window.WB_CALL_ICE
+        : [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            { urls: "stun:stun.cloudflare.com:3478" }
+          ];
+
+    let roomCode = null;          // "123456"
+    let peerId   = null;          // мой id (выдаёт сервер)
+    const peers  = {};            // remoteId → { pc, stream, tile, videoEl, polite }
+    let localStream = null;
+    let pollTimer   = 0;
+    let pollInFlight = false;
+
+    // ── Utils ──────────────────────────────────────────────────────────
+    function setStatus(text, kind) {
+        if (!statusEl) return;
+        statusEl.textContent = text || "";
+        statusEl.style.color = (kind === "err") ? "#ef4444"
+                             : (kind === "ok")  ? "#22c55e"
+                             : "var(--text-muted)";
+    }
+
+    function genCode() {
+        // Шестизначный код, без ведущего нуля, чтобы выглядело красиво.
+        let n;
+        do { n = Math.floor(100000 + Math.random() * 900000); } while (String(n).length !== 6);
+        return String(n);
+    }
+
+    function showError(msg) {
+        joinErr.textContent = msg;
+        joinErr.style.display = "block";
+        setTimeout(() => { joinErr.style.display = "none"; }, 5000);
+    }
+
+    // ── Local media ────────────────────────────────────────────────────
+    async function getLocalMedia() {
+        try {
+            const s = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: true
+            });
+            return s;
+        } catch (err) {
+            console.warn("[call] no camera, trying audio only:", err);
+            try {
+                return await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err2) {
+                throw new Error("Не удалось получить доступ к камере/микрофону. Разрешите доступ в настройках браузера.");
+            }
+        }
+    }
+
+    function addTile(id, name, stream, isLocal) {
+        const tile = document.createElement("div");
+        tile.className = "call-video-tile";
+        tile.dataset.peerId = id;
+
+        const v = document.createElement("video");
+        v.autoplay = true;
+        v.playsInline = true;
+        if (isLocal) v.muted = true;
+        v.srcObject = stream || null;
+        tile.appendChild(v);
+
+        const nm = document.createElement("div");
+        nm.className = "tile-name";
+        nm.textContent = name + (isLocal ? " (вы)" : "");
+        tile.appendChild(nm);
+
+        const mu = document.createElement("div");
+        mu.className = "tile-mute";
+        mu.textContent = "🔇";
+        tile.appendChild(mu);
+
+        grid.appendChild(tile);
+        return { tile, videoEl: v };
+    }
+
+    function removeTile(id) {
+        const t = grid.querySelector(`.call-video-tile[data-peer-id="${id}"]`);
+        if (t) t.remove();
+    }
+
+    // ── Signalling ─────────────────────────────────────────────────────
+    async function api(path, body) {
+        const r = await fetch("/api/wb_call/" + path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body || {}),
+            credentials: "same-origin"
+        });
+        if (!r.ok) {
+            const j = await r.json().catch(() => ({}));
+            throw new Error(j.error || ("HTTP " + r.status));
+        }
+        return r.json();
+    }
+
+    async function fetchIceConfig() {
+        try {
+            const resp = await fetch("/api/wb_call/ice", { credentials: "same-origin" });
+            if (resp.ok) {
+                const j = await resp.json();
+                if (j && Array.isArray(j.iceServers) && j.iceServers.length) {
+                    ICE = j.iceServers;
+                    console.log("[call] ICE servers loaded from server, count =", ICE.length);
+                }
+            }
+        } catch (e) {
+            console.warn("[call] /ice fetch failed, using defaults:", e);
+        }
+    }
+
+    async function joinRoom(code) {
+        // Подгружаем актуальный ICE-конфиг (с TURN если задан) до создания peer-connection.
+        await fetchIceConfig();
+        const r = await api("join", { room: code });
+        peerId = r.peer_id;
+        roomCode = code;
+        codeDisp.textContent = code;
+        // Для каждого уже находящегося в комнате — создаём peer и шлём offer.
+        // «polite»: тот, кто пришёл первым, считается impolite (offerer),
+        // новенький — polite (answerer). Нюанс perfect-negotiation.
+        for (const otherId of (r.peers || [])) {
+            await connectToPeer(otherId, /*polite=*/true);
+        }
+        startPolling();
+        setStatus("Подключено · " + (Object.keys(peers).length + 1) + " в комнате", "ok");
+    }
+
+    async function connectToPeer(otherId, polite) {
+        if (peers[otherId]) return peers[otherId];
+
+        const pc = new RTCPeerConnection({ iceServers: ICE });
+        const remoteStream = new MediaStream();
+        const { tile, videoEl } = addTile(otherId, "Собеседник", remoteStream, false);
+        const entry = { pc, stream: remoteStream, tile, videoEl, polite, makingOffer: false, ignoreOffer: false };
+        peers[otherId] = entry;
+
+        // Локальные треки → исходящий поток
+        for (const tr of (localStream ? localStream.getTracks() : [])) {
+            pc.addTrack(tr, localStream);
+        }
+
+        pc.ontrack = (ev) => {
+            ev.streams[0].getTracks().forEach(t => {
+                if (!remoteStream.getTracks().includes(t)) remoteStream.addTrack(t);
+            });
+            videoEl.srcObject = remoteStream;
+        };
+
+        pc.onicecandidate = (ev) => {
+            if (ev.candidate) {
+                api("send", { room: roomCode, from: peerId, to: otherId,
+                              msg: { type: "ice", candidate: ev.candidate } })
+                    .catch(e => console.warn("[call] send ice failed:", e));
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            const s = pc.connectionState;
+            if (s === "failed" || s === "disconnected" || s === "closed") {
+                // Не удаляем сразу — даём шанс на реконнект, но обновляем статус.
+                console.log("[call] peer state:", otherId, s);
+            }
+        };
+
+        // Если мы impolite (первый в комнате), сразу шлём offer.
+        if (!polite) {
+            entry.makingOffer = true;
+            try {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                await api("send", { room: roomCode, from: peerId, to: otherId,
+                                    msg: { type: "offer", sdp: pc.localDescription } });
+            } catch (e) {
+                console.warn("[call] offer failed:", e);
+            } finally {
+                entry.makingOffer = false;
+            }
+        }
+
+        return entry;
+    }
+
+    async function handleSignal(fromId, msg) {
+        let entry = peers[fromId];
+        if (!entry) {
+            // Незнакомый peer присылает нам offer → мы polite-answerer.
+            entry = await connectToPeer(fromId, /*polite=*/true);
+        }
+        const pc = entry.pc;
+
+        try {
+            if (msg.type === "offer") {
+                const offerCollision = entry.makingOffer || pc.signalingState !== "stable";
+                entry.ignoreOffer = !entry.polite && offerCollision;
+                if (entry.ignoreOffer) return;
+
+                await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                await api("send", { room: roomCode, from: peerId, to: fromId,
+                                    msg: { type: "answer", sdp: pc.localDescription } });
+            } else if (msg.type === "answer") {
+                if (pc.signalingState === "have-local-offer") {
+                    await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+                }
+            } else if (msg.type === "ice" && msg.candidate) {
+                try {
+                    await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+                } catch (e) {
+                    if (!entry.ignoreOffer) console.warn("[call] addIce failed:", e);
+                }
+            } else if (msg.type === "peer-left") {
+                closePeer(fromId);
+            } else if (msg.type === "peer-joined") {
+                // Кто-то новый зашёл, пока мы уже сидели в комнате →
+                // мы impolite (offerer), идём к нему первыми.
+                if (!peers[fromId]) {
+                    await connectToPeer(fromId, /*polite=*/false);
+                }
+            }
+        } catch (e) {
+            console.warn("[call] signal err:", e);
+        }
+    }
+
+    function closePeer(id) {
+        const entry = peers[id];
+        if (!entry) return;
+        try { entry.pc.close(); } catch (_) {}
+        removeTile(id);
+        delete peers[id];
+        setStatus("В разговоре · " + (Object.keys(peers).length + 1) + " в комнате", "ok");
+    }
+
+    function startPolling() {
+        if (pollTimer) return;
+        const tick = async () => {
+            if (pollInFlight) return;
+            pollInFlight = true;
+            try {
+                const r = await api("poll", { room: roomCode, peer_id: peerId });
+                for (const m of (r.messages || [])) {
+                    await handleSignal(m.from, m.msg || m);
+                }
+                // Доп. защита: сверяем актуальный список peer'ов из ответа /poll
+                // с локальным — на случай если peer-joined потерялся.
+                const serverPeers = new Set(r.peers || []);
+                for (const id of serverPeers) {
+                    if (id !== peerId && !peers[id]) {
+                        // Новенький, о котором мы ещё не знаем (polite-сторона).
+                        await connectToPeer(id, /*polite=*/false);
+                    }
+                }
+                for (const id of Object.keys(peers)) {
+                    if (!serverPeers.has(id)) closePeer(id);
+                }
+            } catch (e) {
+                console.warn("[call] poll err:", e);
+            } finally {
+                pollInFlight = false;
+            }
+        };
+        tick();
+        pollTimer = setInterval(tick, 1200);
+    }
+
+    function stopPolling() {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = 0; }
+    }
+
+    // ── Boot ───────────────────────────────────────────────────────────
+    async function startCall(code) {
+        try {
+            localStream = await getLocalMedia();
+        } catch (e) {
+            showError(e.message);
+            return;
+        }
+        lobby.style.display = "none";
+        roomEl.style.display = "block";
+
+        // Локальный тайл
+        addTile("__me__", "Вы", localStream, true);
+
+        try {
+            await joinRoom(code);
+        } catch (e) {
+            showError("Не удалось войти в комнату: " + e.message);
+            cleanup();
+            return;
+        }
+
+        // На случай возврата с ?code=...
+        try { history.replaceState(null, "", "/call?code=" + encodeURIComponent(code)); } catch (_) {}
+    }
+
+    function cleanup() {
+        stopPolling();
+        for (const id of Object.keys(peers)) closePeer(id);
+        if (localStream) {
+            localStream.getTracks().forEach(t => { try { t.stop(); } catch (_) {} });
+            localStream = null;
+        }
+        if (peerId && roomCode) {
+            try {
+                const blob = new Blob([JSON.stringify({ room: roomCode, peer_id: peerId })],
+                                      { type: "application/json" });
+                navigator.sendBeacon("/api/wb_call/leave", blob);
+            } catch (_) {}
+        }
+        peerId = null;
+        roomCode = null;
+        grid.innerHTML = "";
+        codeDisp.textContent = "------";
+        lobby.style.display = "block";
+        roomEl.style.display = "none";
+    }
+
+    // ── Wire up UI ─────────────────────────────────────────────────────
+    $("btnCreateRoom").addEventListener("click", () => {
+        startCall(genCode());
+    });
+
+    $("btnJoinRoom").addEventListener("click", () => {
+        const code = (codeInput.value || "").trim();
+        if (!/^\d{4,8}$/.test(code)) {
+            showError("Введите 4–8 цифр кода (обычно 6).");
+            return;
+        }
+        startCall(code);
+    });
+
+    codeInput.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") $("btnJoinRoom").click();
+    });
+
+    $("btnHangup").addEventListener("click", () => {
+        if (confirm("Завершить звонок?")) cleanup();
+    });
+
+    $("btnCopyCode").addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(roomCode || "");
+            setStatus("Код скопирован ✓", "ok");
+            setTimeout(() => setStatus("В разговоре · " + (Object.keys(peers).length + 1) + " в комнате", "ok"), 1500);
+        } catch (_) {
+            alert("Не удалось скопировать. Скопируйте код вручную: " + roomCode);
+        }
+    });
+
+    $("btnCopyLink").addEventListener("click", async () => {
+        const url = location.origin + "/call?code=" + encodeURIComponent(roomCode || "");
+        try {
+            await navigator.clipboard.writeText(url);
+            setStatus("Ссылка скопирована ✓", "ok");
+            setTimeout(() => setStatus("В разговоре · " + (Object.keys(peers).length + 1) + " в комнате", "ok"), 1500);
+        } catch (_) {
+            prompt("Скопируйте ссылку:", url);
+        }
+    });
+
+    $("btnToggleMic").addEventListener("click", function () {
+        const on = this.dataset.on === "1";
+        const next = !on;
+        if (localStream) localStream.getAudioTracks().forEach(t => { t.enabled = next; });
+        this.dataset.on = next ? "1" : "0";
+        this.textContent = next ? "🎤 Микрофон" : "🚫 Микрофон выкл.";
+    });
+
+    $("btnToggleCam").addEventListener("click", function () {
+        const on = this.dataset.on === "1";
+        const next = !on;
+        if (localStream) localStream.getVideoTracks().forEach(t => { t.enabled = next; });
+        this.dataset.on = next ? "1" : "0";
+        this.textContent = next ? "📷 Камера" : "🚫 Камера выкл.";
+    });
+
+    window.addEventListener("beforeunload", () => {
+        if (peerId && roomCode) {
+            try {
+                const blob = new Blob([JSON.stringify({ room: roomCode, peer_id: peerId })],
+                                      { type: "application/json" });
+                navigator.sendBeacon("/api/wb_call/leave", blob);
+            } catch (_) {}
+        }
+    });
+
+    // Авто-вход по ?code=…
+    document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(location.search);
+        const code = (params.get("code") || "").trim();
+        if (/^\d{4,8}$/.test(code)) {
+            codeInput.value = code;
+            // Не запускаем сразу — пусть пользователь нажмёт «Войти», чтобы
+            // дать camera permission prompt в ответ на жест.
+            setStatus("Код подставлен — нажмите «Войти», чтобы подключиться.", "");
+        }
+    });
+})();
+</script>
+{% endblock %}
