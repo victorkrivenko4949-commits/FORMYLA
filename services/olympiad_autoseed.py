@@ -233,6 +233,16 @@ def seed_theory_only(app, db) -> None:
         with app.app_context():
             _seed_theory(db, TheoryBlock)
             _fill_theory_bodies(db, TheoryBlock)
+            # Rich MD-конспекты для 13 методов (E14, F1, F8, B1, F3, F2,
+            # D12, D1, C5a, F4a, E5, A2, E10) — там по ~7 семейств и
+            # ~10 разобранных примеров на метод (раньше отображалось
+            # «мало», потому что seed брал лишь короткие версии из
+            # theory_65/theory_24 JSON).
+            try:
+                from services.olympiad_md_import import import_rich_md_into_theory
+                import_rich_md_into_theory(db, TheoryBlock)
+            except Exception as _e_md:
+                print(f"[THEORY-MD] hook skipped: {_e_md}")
     except Exception as e:
         try:
             db.session.rollback()
