@@ -130,12 +130,99 @@ def fix_theory_placeholders(app, db) -> None:
         print(f"[THEORY-FIX] Top-level error: {e}")
 
 
+# Дополнительные источники полного содержимого методов: эти JSON-файлы
+# содержат definition_md / main_theorems_md / worked_example_md / ... ,
+# тогда как methods_catalog_89.json — только метаданные (название, классы,
+# частоты). Сидер сливает оба источника, чтобы у каждого из 89 методов
+# было как тело конспекта, так и атрибуты.
+THEORY_BODY_SOURCES = (
+    os.path.join(DATA_DIR, 'theory_65_methods.json'),
+    os.path.join(DATA_DIR, 'theory_24_methods.json'),
+)
+
+_BODY_FIELDS = (
+    'definition_md',
+    'main_theorems_md',
+    'typical_techniques_md',
+    'triggers_md',
+    'worked_example_md',
+    'pitfalls_md',
+)
+
+
+def _fill_theory_bodies(db, TheoryBlock) -> None:
+    """Дозаливаем пустые `*_md` поля методов из theory_65 / theory_24 JSON.
+
+    Не трогает поля, у которых УЖЕ есть содержимое (idempotent, safe для
+    ручных правок). Считает {created/updated} только когда реально что-то
+    меняется.
+    """
+    all_rows = []
+    for path in THEORY_BODY_SOURCES:
+        rows = _load_json(path)
+        if rows:
+            print(f"[THEORY-SEED] body source: {path} ({len(rows)} rows)")
+            all_rows.extend(rows)
+    if not all_rows:
+        print("[THEORY-SEED] No body sources found — skipping body fill")
+        return
+
+    by_code: dict = {}
+    for item in all_rows:
+        code = item.get('method_code')
+        if code:
+            # Если код встретился в нескольких файлах — выигрывает первый
+            # непустой definition_md / main_theorems_md.
+            existing = by_code.get(code)
+            if not existing:
+                by_code[code] = item
+            else:
+                # Дозаливаем пустые поля из последующих источников.
+                for fld in _BODY_FIELDS + ('related_methods',):
+                    if not existing.get(fld) and item.get(fld):
+                        existing[fld] = item[fld]
+
+    updated = 0
+    for code, src in by_code.items():
+        try:
+            tb = TheoryBlock.query.filter_by(method_code=code).first()
+            if tb is None:
+                continue  # Сидер каталога должен был создать строку.
+            changed = False
+            for fld in _BODY_FIELDS:
+                cur = getattr(tb, fld, None)
+                if (not cur or not str(cur).strip()) and src.get(fld):
+                    setattr(tb, fld, src[fld])
+                    changed = True
+            if (not tb.related_methods) and src.get('related_methods'):
+                tb.related_methods = src['related_methods']
+                changed = True
+            if changed:
+                updated += 1
+        except Exception as e:
+            print(f"[THEORY-SEED] body fill row failed ({code}): {e}")
+
+    try:
+        db.session.commit()
+        print(f"[THEORY-SEED] Theory bodies filled: {updated} methods updated")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[THEORY-SEED] body commit failed: {e}")
+
+
 def seed_theory_only(app, db) -> None:
-    """Idempotent: засевает ТОЛЬКО таблицу olympiad_theory из
-    methods_catalog_89.json (или legacy 65). Используется на каждом старте
-    БЕЗ env-гейта, чтобы прод-каталог методов не оставался пустым после
-    деплоя. Не трогает Probnik/OlympiadTask (для них autoseed остаётся
-    под флагом OLYMPIAD_AUTOSEED=1).
+    """Idempotent: засевает ТОЛЬКО таблицу olympiad_theory.
+
+    Шаг 1 (`_seed_theory`): метаданные из `methods_catalog_89.json`
+        (название, секция, классы, частоты, sort_order).
+    Шаг 2 (`_fill_theory_bodies`): полные тексты `*_md` из
+        `theory_65_methods.json` + `theory_24_methods.json` (89 методов
+        в сумме — оба файла дополняют друг друга).
+
+    Запускается на каждом старте БЕЗ env-гейта. Не трогает
+    Probnik/OlympiadTask (для них autoseed остаётся под флагом
+    OLYMPIAD_AUTOSEED=1). Идемпотентна: повторные запуски ничего
+    не меняют, кроме случаев, когда были пустые поля.
     """
     try:
         from models_olympiad import TheoryBlock
@@ -145,6 +232,7 @@ def seed_theory_only(app, db) -> None:
     try:
         with app.app_context():
             _seed_theory(db, TheoryBlock)
+            _fill_theory_bodies(db, TheoryBlock)
     except Exception as e:
         try:
             db.session.rollback()
