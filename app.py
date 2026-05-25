@@ -812,6 +812,27 @@ try:
 except Exception as _e_theory_fix:
     print(f"[THEORY-FIX] hook skipped: {_e_theory_fix}")
 
+# ── Secrets auto-seed (idempotent, без env-гейта) ───────────────────────────
+# Засеивает таблицу olympiad_secrets из ./secrets_dump.json при пустой
+# таблице. Раньше этим занимался admin-endpoint /admin/seed-secrets, но
+# его никто не дёргал на проде → раздел /secrets оставался пустым.
+# seed_secrets_from_json с force=False ничего не делает, если таблица
+# уже наполнена — поэтому безопасен на каждом старте.
+try:
+    from utils.seed_secrets_utils import seed_secrets_from_json
+    with app.app_context():
+        _secrets_path = os.path.join(os.path.dirname(__file__), 'secrets_dump.json')
+        _res = seed_secrets_from_json(json_file=_secrets_path, force=False)
+        if _res.get('success'):
+            if _res.get('inserted', 0) > 0:
+                print(f"[SECRETS-SEED] Inserted {_res['inserted']} secrets")
+            else:
+                print(f"[SECRETS-SEED] Already populated ({_res.get('skipped', 0)} rows)")
+        else:
+            print(f"[SECRETS-SEED] skipped: {_res.get('error')}")
+except Exception as _e_secrets:
+    print(f"[SECRETS-SEED] hook skipped: {_e_secrets}")
+
 # /grade-5 and /grade-6 — тренажёр FORMYLA по школьным классам.
 try:
     from routes.grade import grade_bp
