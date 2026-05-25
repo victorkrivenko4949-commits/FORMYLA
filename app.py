@@ -202,6 +202,8 @@ app.config['DOMAIN_URL'] = os.environ.get('DOMAIN_URL', 'http://localhost:5000')
 app.config['TELEGRAM_BOT_USERNAME'] = (os.environ.get('TELEGRAM_BOT_USERNAME') or '').strip()
 # Plausible Analytics — домен сайта в плаусибл-аккаунте (пусто = аналитика выключена)
 app.config['PLAUSIBLE_DOMAIN'] = (os.environ.get('PLAUSIBLE_DOMAIN') or '').strip()
+# Yandex.Metrika — ID счётчика 109394525 (можно переопределить через env YANDEX_METRIKA_ID)
+app.config['YANDEX_METRIKA_ID'] = (os.environ.get('YANDEX_METRIKA_ID') or '109394525').strip()
 
 # Initialize database, login manager and mail.
 # ВАЖНО: импортируем ВСЕ модели до init_db(), иначе db.create_all() не
