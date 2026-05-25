@@ -34,7 +34,12 @@
             {% endif %}
         </h1>
         {% if task.source_prototype %}
-        <p class="oly-card-sub">Прототип: {{ task.source_prototype }}</p>
+        {# Render markdown so that links like [text](url) become clickable.
+           Using <div> (not <p>) because md_render emits a block-level <p>. #}
+        <div class="oly-card-sub oly-md oly-md-inline">
+            <span class="oly-prototype-label">Прототип:</span>
+            {{ task.source_prototype | md_render }}
+        </div>
         {% endif %}
     </header>
 
@@ -44,71 +49,32 @@
         <div class="oly-md">{{ task.condition_md | md_render }}</div>
     </section>
 
-    <!-- ───── Ввод ответа + решение (1-в-1 как Daily Quest) ───────────── -->
-    {% if task.answer %}
-    <section class="oly-card answer-section">
-        {# ВАЖНО: id'шники намеренно не используются — браузер создаёт по id
-           глобальные переменные (window.userAnswer = <input>), которые ломают
-           x-model в Alpine.js (значение поля становится "[object HTMLInputElement]"). #}
-        <label class="answer-label">Ваш ответ:</label>
-        <input type="text"
-               name="user_answer"
-               class="answer-input oly-answer-input"
-               placeholder="Введите краткий ответ (число, выражение)"
-               autocomplete="off"
-               x-model="userAnswer"
-               @keydown.enter.prevent="submitAnswer()">
+    {# По запросу: блоки «Ваш ответ / Решение / Ответить» и «Моя оценка / Заметка
+       / Я решил / Подсмотрел» удалены. Оставлены только аккордеоны
+       «💡 Идея решения» и «✅ Полное решение», свёрнутые по умолчанию. #}
 
-        <label class="answer-label" style="margin-top: 16px;">
-            Решение (необязательно, но ИИ-тьютор проверит):
-        </label>
-        <textarea name="user_solution"
-                  class="answer-input oly-solution-input"
-                  placeholder="Опишите ход решения... ИИ-тьютор даст подробный разбор"
-                  rows="5"
-                  style="resize: vertical; min-height: 100px; font-family: inherit;"
-                  x-model="userSolution"></textarea>
+    {# Открытие/закрытие реализовано универсальным JS-обработчиком в скрипте
+       extra_js (см. ниже). Alpine больше не нужен для этих блоков — это
+       избавляет от зависимости от CDN и от рассинхронизации x-show / data-open. #}
 
-        <button type="button"
-                @click="submitAnswer()"
-                class="submit-button"
-                :disabled="submitting">
-            <span x-show="!submitting">✓ Ответить</span>
-            <span x-show="submitting" x-cloak>⏳ ИИ-тьютор проверяет…</span>
-            <noscript>✓ Ответить</noscript>
-        </button>
-    </section>
-
-    <!-- Feedback (заполняется JS после submit) -->
-    <section id="feedbackSection" class="feedback-section" x-show="feedbackVisible" x-cloak style="display: none;">
-        <div id="feedbackContent"></div>
-    </section>
-    {% endif %}
-
-    <!-- Идея решения (раскрываемая) -->
-    <section class="oly-reveal" :data-open="showIdea ? 'true' : 'false'">
-        <header class="oly-reveal-head" @click="toggleIdea()">
+    <!-- Идея решения (свёрнута по умолчанию, раскрывается по клику) -->
+    <section class="oly-reveal" data-open="false">
+        <header class="oly-reveal-head">
             <span>💡 Идея решения</span>
             <span class="oly-reveal-arrow">▾</span>
         </header>
-        <div class="oly-reveal-body" x-show="showIdea" x-cloak>
+        <div class="oly-reveal-body">
             <div class="oly-md">{{ task.idea_md | md_render }}</div>
-            <p style="margin-top: 16px;">
-                <button class="oly-btn oly-btn-sm" @click="markAttempted()"
-                        :disabled="!authenticated || status === 'solved'">
-                    🤔 Я попробовал(а)
-                </button>
-            </p>
         </div>
     </section>
 
-    <!-- Полное решение (раскрываемое) -->
-    <section class="oly-reveal" :data-open="showSolution ? 'true' : 'false'">
-        <header class="oly-reveal-head" @click="toggleSolution()">
+    <!-- Полное решение (свёрнуто по умолчанию, раскрывается по клику) -->
+    <section class="oly-reveal" data-open="false">
+        <header class="oly-reveal-head">
             <span>✅ Полное решение</span>
             <span class="oly-reveal-arrow">▾</span>
         </header>
-        <div class="oly-reveal-body" x-show="showSolution" x-cloak>
+        <div class="oly-reveal-body">
             <div class="oly-md">{{ task.solution_md | md_render }}</div>
             {% if task.answer %}
             <p style="margin-top: 16px; padding: 12px; background: rgba(34,197,94,.08); border-radius: 8px;">
@@ -117,47 +83,15 @@
             {% endif %}
         </div>
     </section>
-
-    <!-- Self-score + статус -->
-    {% if current_user.is_authenticated %}
-    <section class="oly-card" style="margin-top: 24px;">
-        <h3 style="margin-top:0;">Моя оценка решения (0…7)</h3>
-        <div class="oly-score-row">
-            <template x-for="s in [0,1,2,3,4,5,6,7]" :key="s">
-                <button type="button"
-                        :class="{ active: selfScore === s }"
-                        @click="setSelfScore(s)"
-                        x-text="s"></button>
-            </template>
-        </div>
-
-        <h3 style="margin-top: 18px;">Заметка</h3>
-        <textarea x-model="note"
-                  @blur="saveNote()"
-                  rows="3"
-                  placeholder="Идеи, ошибки, ссылки на теорию..."
-                  style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-soft); background: rgba(255,255,255,.04); color: var(--text-soft); resize: vertical;"></textarea>
-
-        <div style="margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="oly-btn oly-btn-sm" @click="markSolved()" :disabled="status === 'solved'">
-                ✅ Я решил(а)
-            </button>
-            <button class="oly-btn oly-btn-ghost oly-btn-sm" @click="markRevealed()">
-                👁 Подсмотрел(а)
-            </button>
-            <span style="margin-left:auto; color: var(--text-muted); font-size: .9em;"
-                  x-text="saveHint"></span>
-        </div>
-    </section>
-    {% else %}
-    <p style="margin-top: 24px; color: var(--text-muted);">
-        <a href="{{ url_for('login') }}">Войдите</a>, чтобы отмечать прогресс и оставлять заметки.
-    </p>
-    {% endif %}
 </div>
 
 <style>
 [x-cloak] { display: none !important; }
+
+/* «Прототип: <markdown>» в одну строку: md_render выдаёт <p>, делаем его inline. */
+.oly-md-inline > p { display: inline; margin: 0; }
+.oly-md-inline .oly-prototype-label { margin-right: 6px; opacity: .85; }
+.oly-md-inline a { text-decoration: underline; }
 
 /* ── Стили для answer-section / feedback (портированы из daily_task.html) ── */
 .answer-section {
@@ -297,27 +231,28 @@
 
 {% block extra_js %}
 <script>
-// Fallback: если Alpine.js CDN не загрузился (CSP/блокировка), включаем
-// нативное раскрытие блоков "Идея решения" / "Полное решение".
+// Универсальный обработчик раскрытия блоков «Идея решения» / «Полное решение».
+// Работает И с Alpine, И без него: переключает data-open на section, а CSS-правило
+// .oly-reveal[data-open="false"] .oly-reveal-body { display: none } прячет содержимое.
+// При наличии Alpine он сам ставит data-open через :data-open, но если Alpine
+// не загрузился — этот скрипт всё равно даёт пользователю рабочий toggle.
 (function () {
-    function activateNativeReveal() {
-        document.querySelectorAll('[x-cloak]').forEach(function (el) {
-            el.removeAttribute('x-cloak');
-        });
+    function setupReveal() {
         document.querySelectorAll('.oly-reveal').forEach(function (rev) {
+            if (rev.dataset.revealBound === '1') return;
+            rev.dataset.revealBound = '1';
+            // Свёрнуто по умолчанию.
+            if (!rev.hasAttribute('data-open')) {
+                rev.setAttribute('data-open', 'false');
+            }
             var head = rev.querySelector('.oly-reveal-head');
-            var body = rev.querySelector('.oly-reveal-body');
-            if (!head || !body) return;
-            body.style.display = 'none';
+            if (!head) return;
             head.addEventListener('click', function () {
-                var isOpen = body.style.display !== 'none';
-                if (isOpen) {
-                    body.style.display = 'none';
-                    rev.setAttribute('data-open', 'false');
-                } else {
-                    body.style.display = 'block';
-                    rev.setAttribute('data-open', 'true');
-                    if (window.renderMathInElement) {
+                var open = rev.getAttribute('data-open') === 'true';
+                rev.setAttribute('data-open', open ? 'false' : 'true');
+                if (!open) {
+                    var body = rev.querySelector('.oly-reveal-body');
+                    if (body && window.renderMathInElement) {
                         try {
                             window.renderMathInElement(body, {
                                 delimiters: [
@@ -334,12 +269,11 @@
             });
         });
     }
-    setTimeout(function () {
-        if (typeof window.Alpine === 'undefined') {
-            console.warn('[oly] Alpine.js not loaded — using native reveal fallback');
-            activateNativeReveal();
-        }
-    }, 800);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupReveal);
+    } else {
+        setupReveal();
+    }
 })();
 </script>
 <script>
@@ -350,6 +284,8 @@ function olympiadTask(cfg) {
         submitUrl: cfg.submitUrl,
         authenticated: cfg.authenticated,
 
+        // Аккордеоны «Идея решения» и «Полное решение» свёрнуты по умолчанию;
+        // раскрываются по клику пользователя.
         showIdea: false,
         showSolution: false,
 
