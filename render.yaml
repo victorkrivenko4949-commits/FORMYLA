@@ -13,9 +13,14 @@ services:
     env: python
     plan: starter
     buildCommand: pip install -r requirements.txt
-    # --timeout 120 — стандарт; --preload — fail-fast если БД недоступна на старте,
-    # вместо подвисания worker'а в psycopg wait_c.
-    startCommand: gunicorn app:app --workers 2 --timeout 120 --graceful-timeout 30 --preload --bind 0.0.0.0:$PORT
+    # КРИТИЧНО: --workers 1 + БЕЗ --preload.
+    # Render plan: starter = 512 MB RAM. 2 worker'а × ~250-300 MB (matplotlib +
+    # numpy + Sentry + SQLAlchemy + 9773 adaptive_tasks + 1213 probniks) → OOM →
+    # SIGKILL → 502/timeout на ВСЕХ маршрутах.
+    # Историю не повторять: f96cb1c (fix) → 26fa7c5 (revert) → опять 502.
+    # До 7b018a9 этот конфиг работал стабильно месяцами.
+    # --timeout 120 — стандарт для psycopg wait на медленные запросы Postgres.
+    startCommand: gunicorn app:app --workers 1 --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:
