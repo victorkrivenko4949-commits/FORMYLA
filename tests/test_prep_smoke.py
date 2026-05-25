@@ -68,6 +68,17 @@ def app():
     def secrets():
         return 'secrets', 200
 
+    # Стабы для url_for() в base.html
+    for _stub in ('olympiad.catalog', 'olympiad.methods',
+                  'olympiad.my_progress', 'subscribe_page'):
+        try:
+            app.add_url_rule(
+                '/_stub_' + _stub.replace('.', '_'),
+                _stub, lambda: '', methods=['GET'],
+            )
+        except Exception:
+            pass
+
     # Register blueprints
     from routes.prep import prep_bp
     app.register_blueprint(prep_bp)

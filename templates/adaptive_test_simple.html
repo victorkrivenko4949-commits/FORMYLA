@@ -18,29 +18,9 @@
         </p>
     </div>
 
-    <!-- Пагинация по 25 слотам -->
-    <div id="slotsPagination" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 24px; padding: 14px; background: rgba(15, 23, 42, 0.45); border: 1px solid var(--border-soft); border-radius: var(--radius-lg);">
-        {% for s in (slots_summary or []) %}
-            {% set is_current = (s.index == (current_slot or current_index)) %}
-            {% if s.status == 'answered' %}
-                {% set _bg = 'rgba(34,197,94,0.18)' %}{% set _bd = '#22c55e' %}{% set _fg = '#22c55e' %}{% set _title = 'Отвечено' %}
-            {% elif s.status == 'skipped' %}
-                {% set _bg = 'rgba(148,163,184,0.18)' %}{% set _bd = '#94a3b8' %}{% set _fg = '#cbd5e1' %}{% set _title = 'Пропущено' %}
-            {% else %}
-                {% set _bg = 'rgba(59,130,246,0.12)' %}{% set _bd = 'rgba(59,130,246,0.5)' %}{% set _fg = '#93c5fd' %}{% set _title = 'Не отвечено' %}
-            {% endif %}
-            <a href="/adaptive_test_simple?slot={{ s.index }}" title="Слот {{ s.index }} — {{ _title }}"
-               class="slot-chip{% if is_current %} slot-chip-current{% endif %}"
-               style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; font-weight: 700; font-size: 13px; text-decoration: none; background: {{ _bg }}; color: {{ _fg }}; border: 2px solid {% if is_current %}#ffffff{% else %}{{ _bd }}{% endif %}; box-shadow: {% if is_current %}0 0 0 2px var(--accent-1){% else %}none{% endif %}; transition: transform 0.15s, box-shadow 0.15s;">
-                {{ s.index }}
-            </a>
-        {% endfor %}
-    </div>
-    <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; font-size: 0.85em; color: var(--text-muted);">
-        <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#22c55e; margin-right:4px;"></span>отвечено</span>
-        <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#94a3b8; margin-right:4px;"></span>пропущено</span>
-        <span><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#3b82f6; margin-right:4px;"></span>не отвечено</span>
-    </div>
+    {# UI-FIX (Task 1): убрали 25 нумерованных кружков + легенду — навигация
+       по слотам теперь только через кнопки «← Предыдущая» / «Следующая →».
+       Старый код см. git history до 2026-05-25. #}
 
     <!-- Карточка задачи -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
@@ -104,13 +84,17 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                <!-- MathLive Input (для математических задач) -->
+                <!-- MathLive Input (для математических задач).
+                     UI-FIX (Task 3): mode='manual' — клавиатура НЕ открывается
+                     автоматически (нажать кнопку 🔢 справа внизу).
+                     UI-FIX (Task 4): theme='material' — светлая тема без тёмных
+                     палок-разделителей между клавишами. -->
                 <math-field id="user_answer" name="answer"
-                           virtual-keyboard-mode="onfocus"
-                           virtual-keyboard-theme="dark"
+                           virtual-keyboard-mode="manual"
+                           virtual-keyboard-theme="material"
                            class="math-input-field"></math-field>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 Кликните на поле для вызова виртуальной клавиатуры с √, дробями и степенями
+                    💡 Нажмите кнопку «🔢» справа внизу поля, чтобы открыть математическую клавиатуру (√, дроби, степени).
                 </p>
                 {% endif %}
             </div>
@@ -121,7 +105,7 @@
                 </label>
                 <math-field id="solution_text" name="solution"
                            virtual-keyboard-mode="manual"
-                           virtual-keyboard-theme="dark"
+                           virtual-keyboard-theme="material"
                            class="math-solution-field"
                            style="width: 100%; min-height: 120px; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; resize: vertical; display: block;">
                 </math-field>
@@ -971,8 +955,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Настройка поля ответа
     const mathField = document.getElementById('user_answer');
     if (mathField) {
+        // UI-FIX (Task 3+4): manual + material theme (без auto-open и тёмных «палок»).
         mathField.setOptions({
-            virtualKeyboardMode: 'onfocus',
+            virtualKeyboardMode: 'manual',
+            virtualKeyboardTheme: 'material',
             virtualKeyboards: 'numeric symbols greek',
             smartFence: true,
             smartMode: true
@@ -995,8 +981,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Настройка поля решения
     const solutionField = document.getElementById('solution_text');
     if (solutionField) {
+        // UI-FIX (Task 3+4): manual + material theme.
         solutionField.setOptions({
             virtualKeyboardMode: 'manual',
+            virtualKeyboardTheme: 'material',
             virtualKeyboards: 'numeric symbols greek',
             smartFence: true,
             smartMode: true,

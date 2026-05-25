@@ -2997,20 +2997,27 @@ def tutor_send():
         return jsonify({'error': f'Ошибка AI: {str(e)}'}), 500
 
 
+from utils.tutor_lookup import find_problem_for_tutor as _find_problem_for_tutor_impl  # noqa: E402
+
+
+def _find_problem_for_tutor(problem_id):
+    """Module-level helper required by tests/test_tutor_solution.py.
+    Strict lookup in PROBLEMS_DB; returns None for unknown id, empty text,
+    or combo ids that only exist in _RAW_DB.
+    """
+    return _find_problem_for_tutor_impl(PROBLEMS_DB, problem_id)
+
+
 @app.route("/api/tutor/hint/<int:problem_id>", methods=["POST"])
 @login_required
 def get_ai_hint(problem_id):
-    """Получить наводящую подсказку от AI для конкретной задачи."""
+    """AI hint for a specific problem (strict PROBLEMS_DB lookup)."""
     if not DEEPSEEK_AVAILABLE:
-        return jsonify({'error': 'AI недоступен'}), 503
-    
-    # Ищем задачу в обеих базах
-    problem = next((p for p in PROBLEMS_DB if p.get("id") == problem_id), None)
+        return jsonify({'error': 'AI nedostupen'}), 503
+
+    problem = _find_problem_for_tutor(problem_id)
     if not problem:
-        problem = next((p for p in _RAW_DB if p.get("id") == problem_id), None)
-    
-    if not problem:
-        return jsonify({'error': 'Задача не найдена'}), 404
+        return jsonify({'error': '\u0417\u0430\u0434\u0430\u0447\u0430 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u0430'}), 404
     
     try:
         client = DeepSeekClient()
@@ -3033,17 +3040,13 @@ def get_ai_hint(problem_id):
 @app.route("/api/tutor/solution/<int:problem_id>", methods=["POST"])
 @login_required
 def get_ai_solution(problem_id):
-    """Получить полное решение от AI для конкретной задачи."""
+    """AI full solution (strict PROBLEMS_DB lookup)."""
     if not DEEPSEEK_AVAILABLE:
-        return jsonify({'error': 'AI недоступен'}), 503
-    
-    # Ищем задачу в обеих базах
-    problem = next((p for p in PROBLEMS_DB if p.get("id") == problem_id), None)
+        return jsonify({'error': 'AI nedostupen'}), 503
+
+    problem = _find_problem_for_tutor(problem_id)
     if not problem:
-        problem = next((p for p in _RAW_DB if p.get("id") == problem_id), None)
-    
-    if not problem:
-        return jsonify({'error': 'Задача не найдена'}), 404
+        return jsonify({'error': '\u0417\u0430\u0434\u0430\u0447\u0430 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u0430'}), 404
     
     try:
         client = DeepSeekClient()

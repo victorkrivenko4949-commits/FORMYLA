@@ -60,8 +60,15 @@ def app():
     def _ctx():
         return {'asset_version': 'test'}
 
-    # Jinja-фильтр.
+    # Jinja-фильтры (md_render + inject_geometry — оба используются в шаблонах
+    # olympiad/method.html, иначе TemplateRuntimeError).
     app.jinja_env.filters['md_render'] = md_render
+    try:
+        from services.geometry_drawings import inject_geometry_drawings
+        app.jinja_env.filters['inject_geometry'] = inject_geometry_drawings
+    except Exception:
+        # Тест может работать без чертежей — фолбэк: identity-фильтр.
+        app.jinja_env.filters['inject_geometry'] = lambda s, _code=None: s
 
     # Flask-Login.
     login_manager = LoginManager()
@@ -81,6 +88,10 @@ def app():
         'index', 'login', 'logout', 'leaderboard', 'daily_quest_main',
         'olympiads', 'profile', 'secrets', 'subscribe_page',
         'olympiad_prep', 'olympiad_prep.dashboard',
+        # base.html ссылается на эти эндпоинты — добавляем стабы, чтобы
+        # url_for() в шапке не валил тесты с BuildError.
+        'olympiad_prep.calendar', 'olympiad_prep.index',
+        'olympiad_prep.detail',
     ):
         # add_url_rule вместе с endpoint-name; для blueprint-стиля 'a.b'
         # достаточно простой функции, имя URL — уникально.

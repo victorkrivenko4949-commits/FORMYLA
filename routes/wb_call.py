@@ -274,6 +274,33 @@ def poll():
     return jsonify({"messages": messages, "peers": peers})
 
 
+@wb_call_bp.route("/ice", methods=["GET"])
+def ice_config():
+    """Return ICE-server list for RTCPeerConnection.
+
+    Default: public Google + Cloudflare STUN. If env vars TURN_URL /
+    TURN_USERNAME / TURN_CREDENTIAL are set, also include a TURN server
+    (needed for ~10-15% of networks behind symmetric NAT).
+    """
+    import os as _os
+    servers = [
+        {"urls": "stun:stun.l.google.com:19302"},
+        {"urls": "stun:stun1.l.google.com:19302"},
+        {"urls": "stun:stun.cloudflare.com:3478"},
+    ]
+    turn_url = (_os.environ.get("TURN_URL") or "").strip()
+    if turn_url:
+        entry = {"urls": turn_url}
+        un = (_os.environ.get("TURN_USERNAME") or "").strip()
+        cr = (_os.environ.get("TURN_CREDENTIAL") or "").strip()
+        if un:
+            entry["username"] = un
+        if cr:
+            entry["credential"] = cr
+        servers.append(entry)
+    return jsonify({"iceServers": servers})
+
+
 @wb_call_bp.route("/status", methods=["GET"])
 def status():
     """Lightweight debug endpoint: how many rooms / peers in memory."""

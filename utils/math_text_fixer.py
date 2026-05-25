@@ -76,6 +76,9 @@ def fix_plain_math(text):
 
     result = text
 
+    # Step 0: Fix common LaTeX command errors first (\sqrta -> \sqrt{a} etc.)
+    result = fix_latex_commands(result)
+
     # Step 1: Replace unicode math symbols
     for uni_char, latex_cmd in _UNICODE_MAP.items():
         if uni_char in result:
@@ -160,6 +163,71 @@ def _wrap_latex_in_segment(seg):
     # Clean up double spaces
     result = re.sub(r'\s{2,}', ' ', result)
     return result
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# fix_latex_commands — починка распространённых ошибок DeepSeek в LaTeX
+# ──────────────────────────────────────────────────────────────────────────────
+
+def fix_latex_commands(text):
+    r"""Починить типичные ошибки LaTeX-команд из ответов LLM.
+
+    Что чинит:
+      • \sqrta        → \sqrt{a}        (буква без скобок)
+      • \sqrtab       → \sqrt{ab}
+      • \sqrt 45      → \sqrt{45}       (пробел перед аргументом)
+      • \sqrt(x+1)    → \sqrt{x+1}      (круглые скобки вместо фигурных)
+      • \frac a b     → \frac{a}{b}     (два простых аргумента через пробел)
+      • \frac{1}2     → \frac{1}{2}     (второй аргумент не в скобках)
+
+    Идемпотентность: если LaTeX уже правильный (\sqrt{a}, \frac{1}{2}) —
+    функция возвращает текст без изменений.
+
+    None / '' / not-string — пропускаем без падений.
+    """
+    if text is None or text == '':
+        return text
+    if not isinstance(text, str):
+        return text
+
+    s = text
+
+    # 1. \sqrt(x+1) → \sqrt{x+1}.   Скобки могут содержать что угодно
+    #    кроме самих круглых скобок (1 уровень — большинства случаев хватает).
+    s = re.sub(r'\\sqrt\(([^()]+)\)', r'\\sqrt{\1}', s)
+
+    # 2. \sqrt 45  /  \sqrt  abc  → \sqrt{45} / \sqrt{abc}.
+    #    Аргумент: подряд идущие буквы/цифры после одного-нескольких пробелов.
+    s = re.sub(r'\\sqrt\s+([A-Za-z0-9]+)', r'\\sqrt{\1}', s)
+
+    # 3. \sqrta / \sqrtab → \sqrt{a} / \sqrt{ab}.
+    #    Аргумент: буквы/цифры, идущие СРАЗУ за \sqrt без пробела/скобки.
+    #    (Если уже идёт «{» — ничего не делаем, regex не сматчится.)
+    s = re.sub(r'\\sqrt([A-Za-z][A-Za-z0-9]*)', r'\\sqrt{\1}', s)
+    # Числа: \sqrt2 → \sqrt{2}
+    s = re.sub(r'\\sqrt(\d+)', r'\\sqrt{\1}', s)
+
+    # 4. \frac a b → \frac{a}{b}  (оба аргумента — одиночные буквы/цифры).
+    s = re.sub(
+        r'\\frac\s+([A-Za-z0-9]+)\s+([A-Za-z0-9]+)',
+        r'\\frac{\1}{\2}',
+        s,
+    )
+
+    # 5. \frac{1}2 → \frac{1}{2}  (первый аргумент в скобках, второй нет).
+    s = re.sub(
+        r'\\frac(\{[^{}]+\})(\s*)([A-Za-z0-9])(?![A-Za-z0-9{])',
+        lambda m: '\\frac' + m.group(1) + '{' + m.group(3) + '}',
+        s,
+    )
+    # 5b. И симметричный кейс: \frac a{b}
+    s = re.sub(
+        r'\\frac(\s*)([A-Za-z0-9])(\{[^{}]+\})',
+        lambda m: '\\frac{' + m.group(2) + '}' + m.group(3),
+        s,
+    )
+
+    return s
 
 
 # Alias for backward compatibility

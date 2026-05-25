@@ -891,6 +891,18 @@ class DailyQuest(db.Model):
     # Используется чтобы запретить повторное решение той же задачи.
     solved_indices = db.Column(db.Text, default='[]')
 
+    # DQ_ATTEMPTS_V1: счётчик неправильных попыток на каждую задачу.
+    # JSON-словарь {task_index_str: attempts_count}. Например '{"0": 1, "2": 2}'.
+    attempts_map = db.Column(db.Text, default='{}')
+
+    # DQ_ATTEMPTS_V1: индексы задач, заблокированных после исчерпания попыток.
+    # JSON-массив, например '[2, 4]'. Параллелен solved_indices, но для fails.
+    failed_indices = db.Column(db.Text, default='[]')
+
+    # DQ_REGEN_COOLDOWN_V1: когда последний раз пользователь перегенерил квест.
+    # Нужно для cooldown-логики (1 час между регенерациями).
+    last_regenerated_at = db.Column(db.DateTime, nullable=True)
+
     # Метаданные
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)  # Когда завершён

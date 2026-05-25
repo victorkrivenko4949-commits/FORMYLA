@@ -19,6 +19,135 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+# ──────────────────────────────────────────────────────────────────────────────
+# DQ_ATTEMPTS_V1 + DQ_REGEN_COOLDOWN_V1
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Сколько попыток разрешено на одну задачу до её блокировки.
+# 2 = первая попытка + ровно один шанс на ошибку.
+MAX_ATTEMPTS_PER_TASK = 2
+
+
+def _parse_json_field(value, fallback):
+    """Безопасно распарсить JSON-поле модели (может быть None / '' / валидный JSON)."""
+    if not value:
+        return fallback
+    try:
+        return json.loads(value)
+    except (ValueError, TypeError):
+        return fallback
+
+
+def get_attempts_map(quest) -> dict:
+    """Вернуть {task_index: attempts_used} из quest.attempts_map (JSON).
+
+    Ключи в JSON хранятся строками — конвертируем в int для удобства.
+    """
+    raw = _parse_json_field(getattr(quest, 'attempts_map', None), {})
+    if not isinstance(raw, dict):
+        return {}
+    out = {}
+    for k, v in raw.items():
+        try:
+            out[int(k)] = int(v)
+        except (ValueError, TypeError):
+            continue
+    return out
+
+
+def get_attempt_count(quest, task_index: int) -> int:
+    """Сколько неправильных попыток уже было на задаче с этим индексом."""
+    return int(get_attempts_map(quest).get(int(task_index), 0))
+
+
+def get_failed_indices(quest) -> list:
+    """Список индексов задач, заблокированных из-за исчерпания попыток."""
+    raw = _parse_json_field(getattr(quest, 'failed_indices', None), [])
+    if not isinstance(raw, list):
+        return []
+    out = []
+    for x in raw:
+        try:
+            out.append(int(x))
+        except (ValueError, TypeError):
+            continue
+    return out
+
+
+def is_task_locked(quest, task_index: int) -> bool:
+    """True, если задача заблокирована (отвечено неверно MAX раз)."""
+    return int(task_index) in set(get_failed_indices(quest))
+
+
+def _save_attempts_map(quest, m: dict) -> None:
+    """Сериализовать словарь {int: int} в quest.attempts_map (ключи → str)."""
+    quest.attempts_map = json.dumps({str(int(k)): int(v) for k, v in m.items()})
+
+
+def _save_failed_indices(quest, indices) -> None:
+    """Сериализовать список индексов в quest.failed_indices."""
+    quest.failed_indices = json.dumps(sorted(set(int(x) for x in indices)))
+
+
+def register_wrong_attempt(quest, task_index: int) -> dict:
+    """Зарегистрировать неправильную попытку на задаче task_index.
+
+    После MAX_ATTEMPTS_PER_TASK неправильных попыток задача блокируется
+    (добавляется в failed_indices). Метод идемпотентен: на уже заблокированной
+    задаче дальнейшие вызовы просто возвращают текущее состояние.
+
+    Returns:
+        dict с ключами:
+          attempts_used:   сколько было неверных ответов на эту задачу
+          attempts_left:   сколько осталось до блокировки (>= 0)
+          is_locked:       True, если задача уже заблокирована
+          task_index:      эхо
+    """
+    task_index = int(task_index)
+
+    m = get_attempts_map(quest)
+    new_count = m.get(task_index, 0) + 1
+    m[task_index] = new_count
+    _save_attempts_map(quest, m)
+
+    # Если достигли лимита — переносим в failed_indices.
+    is_locked = new_count >= MAX_ATTEMPTS_PER_TASK
+    if is_locked:
+        failed = set(get_failed_indices(quest))
+        failed.add(task_index)
+        _save_failed_indices(quest, failed)
+
+    attempts_left = max(0, MAX_ATTEMPTS_PER_TASK - new_count)
+
+    # ВНИМАНИЕ: не коммитим — это ответственность вызывающего кода
+    # (так удобнее тестировать и батчить изменения).
+    return {
+        'task_index': task_index,
+        'attempts_used': int(new_count),
+        'attempts_left': int(attempts_left),
+        'is_locked': bool(is_locked),
+    }
+
+
+def regenerate_cooldown_remaining(quest, cooldown_seconds: int = 3600) -> int:
+    """Сколько секунд осталось до следующей разрешённой регенерации квеста.
+
+    Если квест никогда не регенерировался (last_regenerated_at is None) →
+    возвращаем 0 (можно регенерить прямо сейчас).
+    Если последнего раза прошло >= cooldown_seconds → 0.
+    Иначе — остаток времени, округлённый вниз, в секундах.
+    """
+    last = getattr(quest, 'last_regenerated_at', None)
+    if last is None:
+        return 0
+    try:
+        elapsed = (datetime.utcnow() - last).total_seconds()
+    except Exception:
+        return 0
+    remaining = int(cooldown_seconds - elapsed)
+    return max(0, remaining)
+
 # LaTeX-валидатор: чинит «7^100» → «$7^{100}$» и отсекает сломанные задачи
 try:
     from services.latex_validator import (
