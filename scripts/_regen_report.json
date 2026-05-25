@@ -1,0 +1,612 @@
+{
+  "manifest": "scripts/diagram_manifest.json",
+  "total": 70,
+  "accepted": [
+    {
+      "id": "method_F1_circumcircle",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F1_circumcircle.png",
+      "size": [
+        826,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            826,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F1_incircle",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F1_incircle.png",
+      "size": [
+        831,
+        563
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            563
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F1_median",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F1_median.png",
+      "size": [
+        831,
+        549
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            549
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F1_altitude",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F1_altitude.png",
+      "size": [
+        831,
+        476
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            476
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F1_isoceles",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F1_isoceles.png",
+      "size": [
+        831,
+        682
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            682
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F1_right_hypotenuse_circle",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F1_right_hypotenuse_circle.png",
+      "size": [
+        1332,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            1332,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F2_two_circles_external",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F2_two_circles_external_tangent.png",
+      "size": [
+        831,
+        544
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            544
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F2_two_circles_internal",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F2_two_circles_internal_tangent.png",
+      "size": [
+        826,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            826,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F2_inscribed_angle",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F2_inscribed_angle.png",
+      "size": [
+        826,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            826,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F2_tangent_from_external",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F2_tangent_from_external_point.png",
+      "size": [
+        831,
+        512
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            512
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F2_intersecting_chords",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F2_intersecting_chords.png",
+      "size": [
+        826,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            826,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F3_cyclic_quadrilateral",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F3_cyclic_quadrilateral.png",
+      "size": [
+        1344,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            1344,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F3_tangential_quadrilateral",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F3_tangential_quadrilateral.png",
+      "size": [
+        831,
+        533
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            533
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F3_parallelogram",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F3_parallelogram.png",
+      "size": [
+        831,
+        464
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            464
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F3_trapezoid",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F3_trapezoid.png",
+      "size": [
+        831,
+        476
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            476
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F8_regular_hexagon",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F8_regular_hexagon.png",
+      "size": [
+        727,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            727,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F8_regular_pentagon",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F8_regular_pentagon.png",
+      "size": [
+        831,
+        794
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            831,
+            794
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_F8_grid_4x4",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/F8_grid_4x4.png",
+      "size": [
+        826,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            826,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_E5_chessboard_4x4",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/E5_chessboard_4x4.png",
+      "size": [
+        826,
+        826
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            826,
+            826
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method_D12_number_line",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/methods/D12_number_line.png",
+      "size": [
+        974,
+        382
+      ],
+      "attempts": [
+        {
+          "i": 0,
+          "pad": 0.18,
+          "ok": true,
+          "issues": [],
+          "size": [
+            974,
+            382
+          ]
+        }
+      ]
+    }
+  ],
+  "rejected": [],
+  "needs_manual_or_api": [
+    {
+      "id": "problem_fu_2018_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2018_g5_fig1.png"
+    },
+    {
+      "id": "problem_fu_2018_g10_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2018_g10_fig1.png"
+    },
+    {
+      "id": "problem_fu_2018_g11_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2018_g11_fig1.png"
+    },
+    {
+      "id": "problem_fu_2019_g5_fig3_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2019_g5_fig3.png"
+    },
+    {
+      "id": "problem_fu_2019_g8_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2019_g8_fig1.png"
+    },
+    {
+      "id": "problem_fu_2019_g9_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2019_g9_fig1.png"
+    },
+    {
+      "id": "problem_fu_2020_g10_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g10_fig1.png"
+    },
+    {
+      "id": "problem_fu_2020_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g5_fig1.png"
+    },
+    {
+      "id": "problem_fu_2020_g5_fig3_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g5_fig3.png"
+    },
+    {
+      "id": "problem_fu_2020_g6_fig2_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g6_fig2.png"
+    },
+    {
+      "id": "problem_fu_2020_g6_fig5_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g6_fig5.png"
+    },
+    {
+      "id": "problem_fu_2020_g7_fig3_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g7_fig3.png"
+    },
+    {
+      "id": "problem_fu_2020_g8_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g8_fig1.png"
+    },
+    {
+      "id": "problem_fu_2020_g8_fig3_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g8_fig3.png"
+    },
+    {
+      "id": "problem_fu_2020_g9_fig2_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2020_g9_fig2.png"
+    },
+    {
+      "id": "problem_fu_2021_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2021_g5_fig1.png"
+    },
+    {
+      "id": "problem_fu_2021_g6_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2021_g6_fig1.png"
+    },
+    {
+      "id": "problem_fu_2023_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2023_g5_fig1.png"
+    },
+    {
+      "id": "problem_fu_2023_g6_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2023_g6_fig1.png"
+    },
+    {
+      "id": "problem_fu_2023_g7_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2023_g7_fig1.png"
+    },
+    {
+      "id": "problem_fu_2023_g10_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2023_g10_fig1.png"
+    },
+    {
+      "id": "problem_fu_2023_g11_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2023_g11_fig1.png"
+    },
+    {
+      "id": "problem_fu_2024_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2024_g5_fig1.png"
+    },
+    {
+      "id": "problem_fu_2024_g5_fig2_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2024_g5_fig2.png"
+    },
+    {
+      "id": "problem_fu_2024_g5_fig3_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2024_g5_fig3.png"
+    },
+    {
+      "id": "problem_fu_2024_g5_fig5_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2024_g5_fig5.png"
+    },
+    {
+      "id": "problem_fu_2024_g6_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2024_g6_fig1.png"
+    },
+    {
+      "id": "problem_fu_2024_g10_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/fu_2024_g10_fig1.png"
+    },
+    {
+      "id": "problem_lomonosov_2011_g7_fig3_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2011_g7_fig3.png"
+    },
+    {
+      "id": "problem_lomonosov_2011_g8_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2011_g8_fig1.png"
+    },
+    {
+      "id": "problem_lomonosov_2011_g9_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2011_g9_fig1.png"
+    },
+    {
+      "id": "problem_lomonosov_2019_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2019_g5_fig1.png"
+    },
+    {
+      "id": "problem_lomonosov_2019_g6_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2019_g6_fig1.png"
+    },
+    {
+      "id": "problem_lomonosov_2020_g7_fig2_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2020_g7_fig2.png"
+    },
+    {
+      "id": "problem_lomonosov_2020_g8_fig2_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2020_g8_fig2.png"
+    },
+    {
+      "id": "problem_lomonosov_2024_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2024_g5_fig1.png"
+    },
+    {
+      "id": "problem_lomonosov_2024_g6_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/lomonosov_2024_g6_fig1.png"
+    },
+    {
+      "id": "problem_pvg_2019_g5_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/pvg_2019_g5_fig1.png"
+    },
+    {
+      "id": "problem_pvg_2019_g6_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/pvg_2019_g6_fig1.png"
+    },
+    {
+      "id": "problem_pvg_2019_g7_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/pvg_2019_g7_fig1.png"
+    },
+    {
+      "id": "problem_pvg_2019_g8_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/pvg_2019_g8_fig1.png"
+    },
+    {
+      "id": "problem_vysshaya_proba_2016_g10_fig2_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/vysshaya_proba_2016_g10_fig2.png"
+    },
+    {
+      "id": "problem_vysshaya_proba_2018_g10_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/vysshaya_proba_2018_g10_fig1.png"
+    },
+    {
+      "id": "problem_vysshaya_proba_2018_g9_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/vysshaya_proba_2018_g9_fig1.png"
+    },
+    {
+      "id": "problem_vysshaya_proba_2019_g7_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/vysshaya_proba_2019_g7_fig1.png"
+    },
+    {
+      "id": "problem_vysshaya_proba_2022_g7_fig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/vysshaya_proba_2022_g7_fig1.png"
+    },
+    {
+      "id": "problem_vysshaya_proba_2025_g7_fig2_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/vysshaya_proba_2025_g7_fig2.png"
+    },
+    {
+      "id": "problem_euler_2026_g8_vfig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/euler_2026_g8_vfig1.png"
+    },
+    {
+      "id": "problem_kurchatov_2015_g9_vfig1_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/kurchatov_2015_g9_vfig1.png"
+    },
+    {
+      "id": "problem_vsosh_2024_g11_vfig5_replacement",
+      "target": "/home/user/workspace/FORMYLA-d27aa25b/static/images/problems/vsosh_2024_g11_vfig5.png"
+    }
+  ],
+  "errors": [],
+  "ts": 1779741360,
+  "apply": true
+}

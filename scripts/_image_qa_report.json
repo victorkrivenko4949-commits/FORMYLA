@@ -1,0 +1,449 @@
+{
+  "root": "static/images/problems",
+  "total": 224,
+  "kopiya_duplicates": [],
+  "kopiya_orphans": [],
+  "kopiya_diverged": [],
+  "blank": [],
+  "tiny": [
+    {
+      "file": "fu_2018_g10_fig1.png",
+      "size": [
+        401,
+        138
+      ]
+    },
+    {
+      "file": "fu_2018_g11_fig1.png",
+      "size": [
+        401,
+        138
+      ]
+    },
+    {
+      "file": "fu_2018_g5_fig1.png",
+      "size": [
+        325,
+        185
+      ]
+    },
+    {
+      "file": "fu_2019_g5_fig3.png",
+      "size": [
+        1437,
+        82
+      ]
+    },
+    {
+      "file": "fu_2019_g8_fig1.png",
+      "size": [
+        1437,
+        83
+      ]
+    },
+    {
+      "file": "fu_2019_g9_fig1.png",
+      "size": [
+        1437,
+        83
+      ]
+    },
+    {
+      "file": "fu_2020_g10_fig1.png",
+      "size": [
+        294,
+        106
+      ]
+    },
+    {
+      "file": "fu_2020_g5_fig1.png",
+      "size": [
+        294,
+        128
+      ]
+    },
+    {
+      "file": "fu_2020_g5_fig3.png",
+      "size": [
+        249,
+        174
+      ]
+    },
+    {
+      "file": "fu_2020_g6_fig2.png",
+      "size": [
+        249,
+        173
+      ]
+    },
+    {
+      "file": "fu_2020_g6_fig5.png",
+      "size": [
+        524,
+        98
+      ]
+    },
+    {
+      "file": "fu_2020_g7_fig3.png",
+      "size": [
+        524,
+        98
+      ]
+    },
+    {
+      "file": "fu_2020_g8_fig1.png",
+      "size": [
+        524,
+        98
+      ]
+    },
+    {
+      "file": "fu_2020_g8_fig3.png",
+      "size": [
+        294,
+        106
+      ]
+    },
+    {
+      "file": "fu_2020_g9_fig2.png",
+      "size": [
+        294,
+        106
+      ]
+    },
+    {
+      "file": "fu_2021_g5_fig1.png",
+      "size": [
+        1087,
+        183
+      ]
+    },
+    {
+      "file": "fu_2021_g6_fig1.png",
+      "size": [
+        1087,
+        182
+      ]
+    },
+    {
+      "file": "fu_2023_g10_fig1.png",
+      "size": [
+        167,
+        305
+      ]
+    },
+    {
+      "file": "fu_2023_g11_fig1.png",
+      "size": [
+        167,
+        304
+      ]
+    },
+    {
+      "file": "fu_2023_g5_fig1.png",
+      "size": [
+        167,
+        167
+      ]
+    },
+    {
+      "file": "fu_2023_g6_fig1.png",
+      "size": [
+        167,
+        166
+      ]
+    },
+    {
+      "file": "fu_2023_g7_fig1.png",
+      "size": [
+        167,
+        167
+      ]
+    },
+    {
+      "file": "fu_2024_g10_fig1.png",
+      "size": [
+        373,
+        173
+      ]
+    },
+    {
+      "file": "fu_2024_g5_fig1.png",
+      "size": [
+        261,
+        81
+      ]
+    },
+    {
+      "file": "fu_2024_g5_fig2.png",
+      "size": [
+        489,
+        80
+      ]
+    },
+    {
+      "file": "fu_2024_g5_fig3.png",
+      "size": [
+        199,
+        199
+      ]
+    },
+    {
+      "file": "fu_2024_g5_fig5.png",
+      "size": [
+        284,
+        182
+      ]
+    },
+    {
+      "file": "fu_2024_g6_fig1.png",
+      "size": [
+        284,
+        182
+      ]
+    },
+    {
+      "file": "lomonosov_2011_g7_fig3.png",
+      "size": [
+        393,
+        192
+      ]
+    },
+    {
+      "file": "lomonosov_2011_g8_fig1.png",
+      "size": [
+        121,
+        243
+      ]
+    },
+    {
+      "file": "lomonosov_2011_g9_fig1.png",
+      "size": [
+        121,
+        243
+      ]
+    },
+    {
+      "file": "lomonosov_2020_g7_fig2.png",
+      "size": [
+        239,
+        167
+      ]
+    },
+    {
+      "file": "lomonosov_2020_g8_fig2.png",
+      "size": [
+        239,
+        167
+      ]
+    },
+    {
+      "file": "lomonosov_2024_g5_fig1.png",
+      "size": [
+        232,
+        190
+      ]
+    },
+    {
+      "file": "lomonosov_2024_g6_fig1.png",
+      "size": [
+        232,
+        190
+      ]
+    },
+    {
+      "file": "pvg_2019_g5_fig1.png",
+      "size": [
+        146,
+        146
+      ]
+    },
+    {
+      "file": "pvg_2019_g6_fig1.png",
+      "size": [
+        146,
+        146
+      ]
+    },
+    {
+      "file": "pvg_2019_g7_fig1.png",
+      "size": [
+        146,
+        146
+      ]
+    },
+    {
+      "file": "pvg_2019_g8_fig1.png",
+      "size": [
+        146,
+        146
+      ]
+    },
+    {
+      "file": "vysshaya_proba_2016_g10_fig2.png",
+      "size": [
+        301,
+        193
+      ]
+    },
+    {
+      "file": "vysshaya_proba_2018_g10_fig1.png",
+      "size": [
+        544,
+        193
+      ]
+    },
+    {
+      "file": "vysshaya_proba_2018_g9_fig1.png",
+      "size": [
+        580,
+        159
+      ]
+    },
+    {
+      "file": "vysshaya_proba_2019_g7_fig1.png",
+      "size": [
+        391,
+        199
+      ]
+    },
+    {
+      "file": "vysshaya_proba_2022_g7_fig1.png",
+      "size": [
+        557,
+        186
+      ]
+    },
+    {
+      "file": "vysshaya_proba_2025_g7_fig2.png",
+      "size": [
+        1377,
+        187
+      ]
+    }
+  ],
+  "extreme_aspect": [
+    {
+      "file": "euler_2026_g8_vfig1.png",
+      "size": [
+        242,
+        1116
+      ],
+      "ar": 4.61
+    },
+    {
+      "file": "fu_2019_g5_fig3.png",
+      "size": [
+        1437,
+        82
+      ],
+      "ar": 17.52
+    },
+    {
+      "file": "fu_2019_g8_fig1.png",
+      "size": [
+        1437,
+        83
+      ],
+      "ar": 17.31
+    },
+    {
+      "file": "fu_2019_g9_fig1.png",
+      "size": [
+        1437,
+        83
+      ],
+      "ar": 17.31
+    },
+    {
+      "file": "fu_2020_g6_fig5.png",
+      "size": [
+        524,
+        98
+      ],
+      "ar": 5.35
+    },
+    {
+      "file": "fu_2020_g7_fig3.png",
+      "size": [
+        524,
+        98
+      ],
+      "ar": 5.35
+    },
+    {
+      "file": "fu_2020_g8_fig1.png",
+      "size": [
+        524,
+        98
+      ],
+      "ar": 5.35
+    },
+    {
+      "file": "fu_2021_g5_fig1.png",
+      "size": [
+        1087,
+        183
+      ],
+      "ar": 5.94
+    },
+    {
+      "file": "fu_2021_g6_fig1.png",
+      "size": [
+        1087,
+        182
+      ],
+      "ar": 5.97
+    },
+    {
+      "file": "fu_2024_g5_fig2.png",
+      "size": [
+        489,
+        80
+      ],
+      "ar": 6.11
+    },
+    {
+      "file": "kurchatov_2015_g9_vfig1.png",
+      "size": [
+        211,
+        1251
+      ],
+      "ar": 5.93
+    },
+    {
+      "file": "lomonosov_2019_g5_fig1.png",
+      "size": [
+        973,
+        206
+      ],
+      "ar": 4.72
+    },
+    {
+      "file": "lomonosov_2019_g6_fig1.png",
+      "size": [
+        973,
+        206
+      ],
+      "ar": 4.72
+    },
+    {
+      "file": "vsosh_2024_g11_vfig5.png",
+      "size": [
+        1061,
+        205
+      ],
+      "ar": 5.18
+    },
+    {
+      "file": "vysshaya_proba_2025_g7_fig2.png",
+      "size": [
+        1377,
+        187
+      ],
+      "ar": 7.36
+    }
+  ],
+  "boundary_touch": [],
+  "errors": []
+}
