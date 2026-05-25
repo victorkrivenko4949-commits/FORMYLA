@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" role="img" aria-label="Подсказка: углы при касательной и параллельных">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="520" height="380" rx="14"/>
+  <circle cx="260.00" cy="252.68" r="138.34" fill="none" stroke="#7E827C" stroke-width="1.4"/>
+  <polygon class="edge" points="235.98,116.44 130.00,300.00 390.00,300.00"/>
+  <line class="aux-dash" x1="390.00" y1="300.00" x2="520.00" y2="300.00"/>
+  <line class="aux" x1="250.19" y1="-7.01" x2="30.19" y2="374.04"/>
+  <polyline class="tick" fill="none" points="188.45,206.76 180.99,211.69 181.52,202.76"/>
+  <polyline class="tick" fill="none" points="145.66,182.05 138.19,186.98 138.73,178.05"/>
+  <line class="aux-dash" x1="140.19" y1="183.51" x2="235.98" y2="116.44"/>
+  <line class="aux-dash" x1="140.19" y1="183.51" x2="130.00" y2="300.00"/>
+  <circle class="dot" cx="235.98" cy="116.44" r="4.00"/>
+  <text class="label" x="235.98" y="100.44" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="130.00" cy="300.00" r="4.00"/>
+  <text class="label" x="114.00" y="314.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="390.00" cy="300.00" r="4.00"/>
+  <text class="label" x="406.00" y="314.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="182.99" cy="208.22" r="4.00"/>
+  <text class="label" x="182.99" y="194.22" text-anchor="middle" dominant-baseline="middle">D</text>
+  <circle class="dot" cx="520.00" cy="300.00" r="4.00"/>
+  <text class="label" x="534.00" y="314.00" text-anchor="middle" dominant-baseline="middle">E</text>
+  <circle class="dot" cx="140.19" cy="183.51" r="4.00"/>
+  <text class="label" x="140.19" y="199.51" text-anchor="middle" dominant-baseline="middle">T</text>
+  <text class="num-aux" x="260.00" y="30.00" text-anchor="middle" dominant-baseline="middle">F1 → F2: углы при параллельных + касательная-хорда</text>
+</svg>

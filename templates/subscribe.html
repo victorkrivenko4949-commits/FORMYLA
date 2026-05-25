@@ -370,6 +370,11 @@
         </button>
     </div>
 
+    <!-- Free-period banner -->
+    <div style="background: linear-gradient(135deg, rgba(56,239,125,0.18), rgba(17,153,142,0.12)); border: 1px solid rgba(56,239,125,0.4); border-radius: 14px; padding: 18px 22px; margin: 0 0 28px; text-align: center; font-size: 1.05em; color:#d1fae5;">
+        🎁 <strong style="color:#38ef7d;">Сейчас всё доступно бесплатно.</strong> Цены вернутся после выхода из бета-периода.
+    </div>
+
     <!-- Plan cards -->
     <div class="plans-grid">
 
@@ -427,8 +432,9 @@
             <div class="plan-badge">⭐ РЕКОМЕНДУЕМ</div>
             <div class="plan-name">Premium</div>
             <div class="plan-price premium-price">
-                <span class="amount">390</span><span class="currency">₽</span>
-                <span class="period">в месяц · сейчас бесплатно</span>
+                <span class="amount" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">390</span><span class="currency" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">₽</span>
+                <span class="amount" style="margin-left:10px;color:#38ef7d;">0</span><span class="currency" style="color:#38ef7d;">₽</span>
+                <span class="period">Сейчас всё доступно бесплатно</span>
             </div>
             <ul class="plan-features">
                 <li class="highlight">
@@ -490,12 +496,12 @@
     <!-- Yearly block -->
     <div class="yearly-block">
         <div class="yearly-info">
-            <h3>💎 Годовой тариф — скидка 40 процентов</h3>
-            <p>Оплати год и получи 12 месяцев по цене 10 — экономия 1 890₽</p>
+            <h3>💎 Годовой тариф — сейчас бесплатно</h3>
+            <p>Сейчас всё доступно бесплатно. После беты — 12 месяцев по цене 10.</p>
         </div>
         <div class="yearly-price">
-            <span class="price-main">2790₽</span>
-            <span class="price-sub">232₽/мес · вместо 390₽</span>
+            <span class="price-main"><del style="opacity:0.55;color:#94a3b8;">2790₽</del> <span style="color:#38ef7d;">0₽</span></span>
+            <span class="price-sub"><del style="opacity:0.55;">232₽/мес</del> · сейчас бесплатно</span>
         </div>
         {% if current_user.is_authenticated and current_plan not in ('premium_monthly', 'premium_yearly') %}
         <button class="btn-yearly" onclick="activatePremium('premium_yearly')">

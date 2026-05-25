@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" role="img" aria-label="F1, zadacha 1.2: isosceles ABC, apex 36, base 72/72">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="400" height="440" rx="14"/>
+  <polygon class="edge" points="200.00,123.01 110.00,400.00 290.00,400.00"/>
+  <line class="tick-eq" x1="156.21" y1="277.21" x2="144.79" y2="273.50"/>
+  <line class="tick-eq" x1="255.21" y1="273.50" x2="243.79" y2="277.21"/>
+  <circle class="dot" cx="200.00" cy="123.01" r="4.00"/>
+  <circle class="dot" cx="110.00" cy="400.00" r="4.00"/>
+  <circle class="dot" cx="290.00" cy="400.00" r="4.00"/>
+  <text class="label" x="200.00" y="101.01" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="label" x="92.00" y="418.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="label" x="308.00" y="418.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <path class="arc" d="M 189.49 155.34 A 34.00 34.00 0 0 0 210.51 155.34"/>
+  <text class="num" x="200.00" y="177.01" text-anchor="middle" dominant-baseline="middle">36&#176;</text>
+  <path class="arc" d="M 136.00 400.00 A 26.00 26.00 0 0 0 118.03 375.27"/>
+  <text class="num" x="143.98" y="375.31" text-anchor="middle" dominant-baseline="middle">72&#176;</text>
+  <path class="arc" d="M 281.97 375.27 A 26.00 26.00 0 1 0 264.00 400.00"/>
+  <text class="num" x="323.98" y="424.69" text-anchor="middle" dominant-baseline="middle">72&#176;</text>
+</svg>

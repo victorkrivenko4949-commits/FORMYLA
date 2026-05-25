@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" role="img" aria-label="F1, zadacha 1.1: triangle ABC, angles 40, 70, 70">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="400" height="440" rx="14"/>
+  <polygon class="edge" points="200.00,152.73 110.00,400.00 290.00,400.00"/>
+  <circle class="dot" cx="200.00" cy="152.73" r="4.00"/>
+  <circle class="dot" cx="110.00" cy="400.00" r="4.00"/>
+  <circle class="dot" cx="290.00" cy="400.00" r="4.00"/>
+  <text class="label" x="200.00" y="130.73" text-anchor="middle" dominant-baseline="middle">A</text>
+  <text class="label" x="92.00" y="418.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <text class="label" x="308.00" y="418.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <path class="arc" d="M 189.06 182.80 A 32.00 32.00 0 0 0 210.94 182.80"/>
+  <text class="num" x="200.00" y="202.73" text-anchor="middle" dominant-baseline="middle">40&#176;</text>
+  <path class="arc" d="M 138.00 400.00 A 28.00 28.00 0 0 0 119.58 373.69"/>
+  <text class="num" x="144.40" y="375.91" text-anchor="middle" dominant-baseline="middle">70&#176;</text>
+  <path class="arc" d="M 280.42 373.69 A 28.00 28.00 0 1 0 262.00 400.00"/>
+  <text class="num" x="324.40" y="424.09" text-anchor="middle" dominant-baseline="middle">70&#176;</text>
+</svg>

@@ -1,0 +1,388 @@
+/* ──────────────────────────────────────────────────────────────────────
+   FORMYLA — Whiteboard «Текст → Рукопись» modal styles.
+   Loaded only on /whiteboard via templates/whiteboard.html.
+   Plays nicely with the existing .drw-pane-full / .glass conventions.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* ── On-demand «Распознать рукопись» button + UI ─────────────────────
+   The ✨ button sits in the toolbar next to the ✍️ handwriting modal
+   trigger. It always glows so the user notices it; while a request is
+   in flight it adds .is-busy and spins. */
+.hwocr-btn {
+  position: relative;
+  background: linear-gradient(180deg, #c084fc 0%, #8b5cf6 100%);
+  color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.45), 0 6px 18px rgba(139, 92, 246, 0.40);
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+}
+.hwocr-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.7), 0 8px 24px rgba(139, 92, 246, 0.55);
+}
+.hwocr-btn::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  animation: hwocrPulse 2.4s ease-in-out infinite;
+  opacity: .35;
+}
+.hwocr-btn.is-busy {
+  opacity: .8;
+  cursor: progress;
+}
+.hwocr-btn.is-busy::after {
+  animation: hwocrSpin .9s linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-top-color: transparent;
+  inset: 4px;
+  border-radius: 50%;
+}
+@keyframes hwocrPulse {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: .85; }
+}
+@keyframes hwocrSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hwocr-spinner {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.92), rgba(91, 33, 182, 0.92));
+  color: #ffffff;
+  font: 600 13px / 1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  border: 1px solid rgba(167, 139, 250, 0.55);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  display: none;
+}
+.hwocr-spinner span {
+  display: inline-block;
+  animation: hwocrBlink 1.1s ease-in-out infinite;
+}
+@keyframes hwocrBlink {
+  0%, 100% { opacity: .65; }
+  50%      { opacity: 1; }
+}
+
+.hwocr-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 70px;
+  z-index: 9999;
+  max-width: 360px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(31, 41, 55, 0.95);
+  color: #f3f4f6;
+  font: 500 13px / 1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  border: 1px solid rgba(75, 85, 99, 0.85);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
+  display: none;
+  pointer-events: none;
+}
+.hwocr-toast.hwocr-toast--good {
+  background: rgba(5, 80, 50, 0.95);
+  border-color: rgba(34, 197, 94, 0.6);
+}
+
+/* ── Lasso selection overlay ────────────────────────────────────────── */
+.hwocr-lasso-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  cursor: crosshair;
+  background: rgba(15, 23, 42, 0.18);
+  touch-action: none;
+}
+.hwocr-lasso-rect {
+  position: absolute;
+  border: 2px dashed #c084fc;
+  background: rgba(192, 132, 252, 0.18);
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) inset;
+}
+.hwocr-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.95), rgba(91, 33, 182, 0.95));
+  color: #ffffff;
+  font: 600 13px / 1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  border: 1px solid rgba(167, 139, 250, 0.7);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+.hwocr-hint b {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin: 0 2px;
+}
+
+/* ── Toolbar accent for the ✍️ trigger ───────────────────────────────
+   The button uses the existing .icon-btn shell from the page; we add
+   a subtle gradient halo so it stands out next to the pen/eraser tools.
+   The class .hw-toolbar-btn is attached at runtime by handwriting_ui.js
+   once the controller has wired up — so the highlight only appears when
+   the feature is actually functional.                                    */
+.drw-pane-full .icon-btn.hw-toolbar-btn,
+.icon-btn.hw-toolbar-btn{
+    background:linear-gradient(180deg,
+        rgba(139, 92, 246, .22),
+        rgba(74, 168, 255, .22));
+    border-color:rgba(139, 92, 246, .55);
+    color:#fff;
+    box-shadow:0 0 0 1px rgba(139, 92, 246, .25) inset,
+               0 4px 14px rgba(139, 92, 246, .18);
+    animation:hwPulse 2.6s ease-in-out 1; /* fire once on mount */
+}
+.drw-pane-full .icon-btn.hw-toolbar-btn:hover,
+.icon-btn.hw-toolbar-btn:hover{
+    background:linear-gradient(180deg,
+        rgba(139, 92, 246, .35),
+        rgba(74, 168, 255, .35));
+    border-color:rgba(139, 92, 246, .80);
+}
+@keyframes hwPulse{
+    0%, 100%{ box-shadow:0 0 0 1px rgba(139, 92, 246, .25) inset,
+                          0 0 0 0 rgba(139, 92, 246, .55); }
+    50%     { box-shadow:0 0 0 1px rgba(139, 92, 246, .25) inset,
+                          0 0 0 10px rgba(139, 92, 246, 0); }
+}
+
+/* Reuse the page palette but fall back to safe defaults so the modal
+   also looks OK if dropped on a different page during development. */
+.hw-modal{
+    --hw-bg:        var(--bg-1, #10131a);
+    --hw-bg-soft:   rgba(255,255,255,.04);
+    --hw-border:    var(--border, rgba(255,255,255,.10));
+    --hw-text:      var(--text, #e6e8ee);
+    --hw-muted:     var(--muted, #9aa3b2);
+    --hw-accent:    var(--accent-2, #4aa8ff);
+    --hw-accent-2:  var(--accent, #8b5cf6);
+    --hw-shadow:    0 24px 60px rgba(0,0,0,.55);
+}
+
+/* ── Backdrop ─────────────────────────────────────────────────────── */
+.hw-modal{
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+}
+.hw-modal[hidden]{ display:none !important; }
+.hw-modal__backdrop{
+    position:absolute; inset:0;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+}
+
+/* ── Panel ────────────────────────────────────────────────────────── */
+.hw-modal__panel{
+    position:relative;
+    width:min(720px, 100%);
+    max-height:calc(100vh - 40px);
+    overflow:auto;
+    background:var(--hw-bg);
+    border:1px solid var(--hw-border);
+    border-radius:14px;
+    padding:18px 20px 16px;
+    box-shadow:var(--hw-shadow);
+    color:var(--hw-text);
+    display:flex; flex-direction:column; gap:12px;
+}
+
+.hw-modal__head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    margin-bottom:2px;
+}
+.hw-modal__title{
+    font-size:16px; font-weight:600;
+    color:var(--hw-text);
+}
+.hw-modal__head .icon-btn{
+    width:32px; height:32px;
+    font-size:18px;
+    background:var(--hw-bg-soft);
+    border:1px solid var(--hw-border);
+    color:var(--hw-muted);
+    border-radius:8px;
+    cursor:pointer;
+}
+.hw-modal__head .icon-btn:hover{
+    color:var(--hw-text);
+    border-color:rgba(255,255,255,.20);
+}
+
+/* ── Fields ───────────────────────────────────────────────────────── */
+.hw-field{
+    display:flex; flex-direction:column; gap:6px;
+    flex:1 1 auto;
+}
+.hw-field--narrow{ flex:0 1 auto; min-width:180px; }
+.hw-field__label{
+    font-size:12px; color:var(--hw-muted);
+    letter-spacing:.02em;
+}
+
+.hw-field textarea,
+.hw-field select,
+.hw-field input[type="text"]{
+    width:100%;
+    background:rgba(255,255,255,.03);
+    color:var(--hw-text);
+    border:1px solid var(--hw-border);
+    border-radius:8px;
+    padding:8px 10px;
+    font:inherit;
+    font-size:14px;
+    resize:vertical;
+    outline:none;
+    transition:border-color .15s;
+}
+.hw-field textarea{ min-height:90px; line-height:1.45; }
+.hw-field textarea:focus,
+.hw-field select:focus,
+.hw-field input:focus{
+    border-color:var(--hw-accent);
+}
+
+.hw-field input[type="range"]{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:6px;
+    background:rgba(255,255,255,.10);
+    border-radius:3px;
+    outline:none;
+}
+.hw-field input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:16px; height:16px;
+    background:var(--hw-accent);
+    border-radius:50%; cursor:pointer;
+    border:2px solid var(--hw-bg);
+}
+.hw-field input[type="range"]::-moz-range-thumb{
+    width:16px; height:16px;
+    background:var(--hw-accent);
+    border-radius:50%; cursor:pointer;
+    border:2px solid var(--hw-bg);
+}
+
+.hw-row{
+    display:flex; flex-wrap:wrap; gap:14px;
+    align-items:flex-start;
+}
+
+/* ── Ink colour picker ────────────────────────────────────────────── */
+.hw-inks{
+    display:flex; gap:8px; flex-wrap:wrap;
+    padding-top:2px;
+}
+.hw-ink{
+    width:28px; height:28px;
+    border-radius:50%;
+    background:var(--c, #1f2937);
+    border:2px solid transparent;
+    box-shadow:0 0 0 1px rgba(255,255,255,.15);
+    cursor:pointer;
+    transition:transform .15s, border-color .15s;
+}
+.hw-ink:hover{ transform:scale(1.10); }
+.hw-ink--active{
+    border-color:#fff;
+    box-shadow:0 0 0 2px rgba(255,255,255,.30);
+}
+
+/* ── Check-boxes ──────────────────────────────────────────────────── */
+.hw-checks{
+    display:flex; flex-direction:column; gap:6px;
+    justify-content:flex-end;
+}
+.hw-check{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--hw-text);
+    cursor:pointer;
+    user-select:none;
+}
+.hw-check input[type="checkbox"]{
+    width:16px; height:16px;
+    accent-color:var(--hw-accent);
+    cursor:pointer;
+}
+
+/* ── Preview canvas ───────────────────────────────────────────────── */
+.hw-preview-wrap{
+    display:flex; flex-direction:column; gap:6px;
+    margin-top:4px;
+}
+.hw-preview-label{
+    font-size:12px; color:var(--hw-muted);
+    letter-spacing:.02em;
+}
+.hw-preview{
+    width:100%;
+    height:170px;
+    display:block;
+    background:#fafaf5;
+    border:1px solid var(--hw-border);
+    border-radius:10px;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.10);
+}
+
+/* ── Action buttons ───────────────────────────────────────────────── */
+.hw-actions{
+    display:flex; justify-content:flex-end; gap:10px;
+    margin-top:4px;
+}
+.hw-modal .btn-soft{
+    background:var(--hw-bg-soft);
+    color:var(--hw-text);
+    border:1px solid var(--hw-border);
+    border-radius:8px;
+    padding:8px 14px;
+    cursor:pointer;
+    font:inherit;
+    font-size:14px;
+    transition:.15s;
+}
+.hw-modal .btn-soft:hover{
+    border-color:rgba(255,255,255,.20);
+    background:rgba(255,255,255,.07);
+}
+.hw-modal .btn-soft:disabled{
+    opacity:.55; cursor:wait;
+}
+.hw-modal .btn-soft.btn-accent{
+    background:linear-gradient(180deg, var(--hw-accent), var(--hw-accent-2));
+    color:#fff;
+    border-color:transparent;
+}
+.hw-modal .btn-soft.btn-accent:hover{
+    filter:brightness(1.07);
+}
+
+/* ── Mobile tweaks ────────────────────────────────────────────────── */
+@media (max-width: 640px){
+    .hw-modal{ padding:8px; }
+    .hw-modal__panel{ padding:14px; gap:10px; }
+    .hw-modal__title{ font-size:15px; }
+    .hw-field textarea{ min-height:72px; font-size:13px; }
+    .hw-preview{ height:130px; }
+    .hw-row{ gap:10px; }
+    .hw-field--narrow{ flex:1 1 100%; min-width:0; }
+}

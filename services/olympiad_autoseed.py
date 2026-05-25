@@ -54,6 +54,82 @@ def _safe_section(method_code: str) -> str | None:
     return None
 
 
+def fix_theory_placeholders(app, db) -> None:
+    """Targeted fix: replace placeholder method names «X (название ждёт текста)»
+    with real names from data/olympiads/methods_catalog_89.json.
+
+    Runs independently of OLYMPIAD_AUTOSEED (idempotent, safe to call on
+    every boot). Only touches rows whose `method_name` literally contains
+    the placeholder marker, so manually edited names are never overwritten.
+    """
+    placeholder = '(название ждёт текста)'
+    try:
+        from models_olympiad import TheoryBlock
+    except Exception as e:
+        print(f"[THEORY-FIX] models_olympiad not available: {e}")
+        return
+
+    try:
+        with app.app_context():
+            try:
+                stub_q = TheoryBlock.query.filter(
+                    TheoryBlock.method_name.like(f'%{placeholder}%')
+                )
+                stub_count = stub_q.count()
+            except Exception as e:
+                print(f"[THEORY-FIX] Cannot query stubs: {e}")
+                return
+
+            if stub_count == 0:
+                print("[THEORY-FIX] No placeholder method names — nothing to do")
+                return
+
+            rows = _load_json(THEORY_JSON_CATALOG_89)
+            if not rows:
+                print(f"[THEORY-FIX] Source JSON missing: {THEORY_JSON_CATALOG_89}")
+                return
+
+            by_code = {
+                str(r.get('method_code')): r for r in rows
+                if r.get('method_code') and r.get('method_name')
+            }
+
+            fixed = 0
+            for tb in stub_q.all():
+                src = by_code.get(tb.method_code)
+                if not src:
+                    continue
+                new_name = src.get('method_name')
+                if not new_name or placeholder in new_name:
+                    continue
+                tb.method_name = new_name
+                # Заодно дозальём метаданные, если они пустые — это безопасно.
+                if not tb.section:
+                    tb.section = src.get('section') or _safe_section(tb.method_code)
+                if (not tb.grades) and src.get('grades'):
+                    tb.grades = src['grades']
+                if (not tb.recommended_competitions) and src.get('recommended_competitions'):
+                    tb.recommended_competitions = src['recommended_competitions']
+                if tb.difficulty_level is None and src.get('difficulty_level') is not None:
+                    tb.difficulty_level = src['difficulty_level']
+                if tb.frequency_vsosh_9 is None and src.get('frequency_vsosh_9') is not None:
+                    tb.frequency_vsosh_9 = src['frequency_vsosh_9']
+                fixed += 1
+
+            try:
+                db.session.commit()
+                print(f"[THEORY-FIX] Renamed {fixed}/{stub_count} placeholder methods")
+            except Exception as e:
+                db.session.rollback()
+                print(f"[THEORY-FIX] Commit failed: {e}")
+    except Exception as e:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        print(f"[THEORY-FIX] Top-level error: {e}")
+
+
 def autoseed_olympiad(app, db) -> None:
     """Главная точка входа. Вызывается из app.py внутри app_context().
 
@@ -104,13 +180,25 @@ def _seed_theory(db, TheoryBlock) -> None:
         print(f"[OLYMPIAD-SEED] No theory data found ({THEORY_JSON_CATALOG_89} / {THEORY_JSON_LEGACY_65}) — skipping theory seed")
         return
 
-    # Если в БД уже есть строки и их не меньше, чем в фикстуре —
-    # пропускаем (ничего ломать не будем). Если же фикстура полнее
-    # (например, на проде только 0/65, а в файле 89) — доливаем upsert-ом.
-    if existing >= len(rows):
-        print(f"[OLYMPIAD-SEED] TheoryBlock: {existing} rows (>= {len(rows)} in fixture) — skipping seed")
+    # Если в БД уже есть строки и их не меньше, чем в фикстуре,
+    # и при этом НИ ОДНА из них не выглядит как skeleton-заглушка
+    # «E14 (название ждёт текста)» — пропускаем (ничего ломать не будем).
+    # Если же заглушки есть — всё равно идём в upsert-цикл, чтобы их
+    # перезаписать настоящими именами из JSON.
+    _placeholder = '(название ждёт текста)'
+    try:
+        stub_count = TheoryBlock.query.filter(
+            TheoryBlock.method_name.like(f'%{_placeholder}%')
+        ).count()
+    except Exception:
+        stub_count = 0
+
+    if existing >= len(rows) and stub_count == 0:
+        print(f"[OLYMPIAD-SEED] TheoryBlock: {existing} rows (>= {len(rows)} in fixture, no stubs) — skipping seed")
         return
 
+    if stub_count:
+        print(f"[OLYMPIAD-SEED] TheoryBlock: found {stub_count} placeholder names — running upsert to fix")
     print(f"[OLYMPIAD-SEED] Theory source: {src_path} ({len(rows)} rows; in DB: {existing} → topping up)")
 
     created = 0
@@ -142,9 +230,17 @@ def _seed_theory(db, TheoryBlock) -> None:
                 db.session.add(tb)
                 created += 1
             else:
-                # upsert: только заполняем пустые поля, чтобы не затирать редактируемое
+                # upsert: только заполняем пустые поля, чтобы не затирать
+                # редактируемое. Исключение: явные skeleton-плейсхолдеры
+                # вида «E14 (название ждёт текста)» считаются пустыми и
+                # принудительно перезаписываются настоящим именем из JSON.
                 changed = False
-                if not tb.method_name and item.get('method_name'):
+                _placeholder = '(название ждёт текста)'
+                _name_is_stub = (
+                    (not tb.method_name)
+                    or (_placeholder in (tb.method_name or ''))
+                )
+                if _name_is_stub and item.get('method_name'):
                     tb.method_name = item['method_name']; changed = True
                 if not tb.section:
                     tb.section = item.get('section') or _safe_section(code); changed = True

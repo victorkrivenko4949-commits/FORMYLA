@@ -172,6 +172,8 @@
 }
 .oly-reveal-arrow { transition: transform 0.2s; }
 .oly-reveal[data-open="true"] .oly-reveal-arrow { transform: rotate(180deg); }
+/* По умолчанию body раскрыт; сворачивается только когда data-open="false". */
+.oly-reveal[data-open="false"] .oly-reveal-body { display: none; }
 
 /* Buttons */
 .oly-btn {

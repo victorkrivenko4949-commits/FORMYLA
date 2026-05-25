@@ -1,0 +1,368 @@
+/* ============================================================
+   FORMYLA · Премиальная страница реальных олимпиадных решений
+   Подключается из:
+     - templates/olympiad_detail.html      (условия)
+     - templates/olympiad_solutions.html   (условия + ответы + решения)
+   Совместима с тёмно-синим стилем сайта и контейнером .main.
+   ============================================================ */
+
+.olymp-page {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 8px 24px 64px;
+    color: var(--text, #e6e8ee);
+}
+
+/* ── Заголовочный блок ────────────────────────────────────── */
+.olymp-page .olymp-hero {
+    margin: 8px 0 28px;
+    padding: 26px 28px;
+    border-radius: 22px;
+    background: linear-gradient(135deg,
+        rgba(15, 23, 42, 0.90),
+        rgba(23, 28, 60, 0.90));
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    box-shadow:
+        0 18px 50px rgba(0, 0, 0, 0.28),
+        inset 0 0 0 1px rgba(56, 189, 248, 0.05);
+}
+
+.olymp-page .olymp-title {
+    margin: 0 0 8px;
+    font-size: 32px;
+    line-height: 1.18;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #f8fafc;
+}
+
+.olymp-page .olymp-meta {
+    margin: 0 0 10px;
+    color: #cbd5e1;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.olymp-page .olymp-meta .olymp-dot {
+    display: inline-block;
+    margin: 0 8px;
+    opacity: 0.55;
+}
+
+.olymp-page .olymp-desc {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+/* ── Информационный блок «Это реальный пробник…» ─────────── */
+.olymp-page .olymp-callout {
+    margin: 0 0 28px;
+    padding: 18px 22px;
+    border-radius: 16px;
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-left: 4px solid #38bdf8;
+    background: linear-gradient(135deg,
+        rgba(15, 23, 42, 0.88),
+        rgba(17, 32, 64, 0.88));
+    color: #cbd5e1;
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.olymp-page .olymp-callout p { margin: 0; }
+
+/* ── Карточка задачи ──────────────────────────────────────── */
+.olymp-page .problem-card {
+    position: relative;
+    background: rgba(36, 36, 44, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 20px;
+    padding: 30px 34px;
+    margin-bottom: 28px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+
+.olymp-page .problem-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 13px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #0284c7, #2563eb);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+}
+
+.olymp-page .problem-text {
+    margin-top: 22px;
+    color: #f8fafc;
+    font-size: 16px;
+    line-height: 1.75;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.olymp-page .problem-text p { margin: 0 0 12px; }
+.olymp-page .problem-text p:last-child { margin-bottom: 0; }
+
+/* Картинка к задаче — оставлена в карточке, но более аккуратная. */
+.olymp-page .problem-image {
+    text-align: center;
+    margin: 18px 0 6px;
+}
+.olymp-page .problem-image img {
+    max-width: 560px;
+    width: 100%;
+    height: auto;
+    border-radius: 14px;
+    padding: 12px;
+    background: #ffffff;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.30);
+}
+
+/* ── Ответ ────────────────────────────────────────────────── */
+.olymp-page .answer-row {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    font-size: 16px;
+    line-height: 1.6;
+    color: #e5e7eb;
+}
+
+.olymp-page .answer-label {
+    color: #22c55e;
+    font-weight: 700;
+    margin-right: 10px;
+    letter-spacing: 0.01em;
+}
+
+.olymp-page .answer-value {
+    color: #f1f5f9;
+}
+
+/* ── Метка типа решения (Авторское / Требует проверки / Решение) ── */
+.olymp-page .solution-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 12px;
+}
+
+.olymp-page .solution-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border: 1px solid transparent;
+}
+.olymp-page .solution-chip::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+    flex-shrink: 0;
+}
+
+.olymp-page .solution-chip--official {
+    background: rgba(27, 67, 50, 0.65);
+    color: #86efac;
+    border-color: rgba(45, 106, 79, 0.85);
+}
+
+.olymp-page .solution-chip--warn {
+    background: rgba(42, 42, 26, 0.85);
+    color: #ffcc02;
+    border-color: rgba(102, 85, 0, 0.85);
+}
+
+.olymp-page .solution-chip--ai {
+    background: rgba(27, 42, 74, 0.85);
+    color: #93c5fd;
+    border-color: rgba(21, 101, 192, 0.85);
+}
+
+.olymp-page .solution-source-link {
+    color: #93c5fd;
+    font-size: 12.5px;
+    text-decoration: underline;
+    text-decoration-color: rgba(147, 197, 253, 0.35);
+    text-underline-offset: 3px;
+}
+.olymp-page .solution-source-link:hover {
+    color: #bfdbfe;
+    text-decoration-color: rgba(191, 219, 254, 0.7);
+}
+
+/* ── Кнопка раскрытия решения ─────────────────────────────── */
+.olymp-page .solution-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 18px 0 14px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    background: linear-gradient(135deg, rgba(14, 116, 144, 0.32), rgba(37, 99, 235, 0.22));
+    color: #e0f2fe;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.06s ease, box-shadow 0.18s ease;
+    box-shadow: 0 6px 18px rgba(14, 116, 144, 0.18);
+}
+.olymp-page .solution-toggle::after {
+    content: "▾";
+    font-size: 12px;
+    line-height: 1;
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+    opacity: 0.85;
+}
+.olymp-page .solution-toggle[aria-expanded="true"]::after {
+    transform: translateY(-1px) rotate(180deg);
+}
+.olymp-page .solution-toggle:hover {
+    background: linear-gradient(135deg, rgba(14, 116, 144, 0.45), rgba(37, 99, 235, 0.34));
+    border-color: rgba(56, 189, 248, 0.7);
+    color: #ffffff;
+    box-shadow: 0 8px 22px rgba(14, 116, 144, 0.28);
+}
+.olymp-page .solution-toggle:active { transform: translateY(1px); }
+.olymp-page .solution-toggle:focus-visible {
+    outline: 2px solid rgba(56, 189, 248, 0.65);
+    outline-offset: 2px;
+}
+
+/* ── Сам блок решения ─────────────────────────────────────── */
+.olymp-page .solution-box {
+    margin-top: 6px;
+    padding: 22px 24px;
+    border-left: 4px solid #38bdf8;
+    border-radius: 14px;
+    background: linear-gradient(135deg,
+        rgba(15, 23, 42, 0.96),
+        rgba(17, 24, 55, 0.96));
+    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.08);
+    color: #e5e7eb;
+    font-size: 16px;
+    line-height: 1.8;
+    overflow-x: auto;
+}
+
+.olymp-page .solution-box.is-collapsed { display: none; }
+
+.olymp-page .solution-box p  { margin: 0 0 12px; }
+.olymp-page .solution-box p:last-child { margin-bottom: 0; }
+.olymp-page .solution-box ul,
+.olymp-page .solution-box ol { margin: 0 0 12px 1.25em; padding: 0; }
+.olymp-page .solution-box li { margin-bottom: 6px; }
+
+/* Варианты левой полоски под тип решения */
+.olymp-page .solution-box--official { border-left-color: #4caf50; }
+.olymp-page .solution-box--warn     { border-left-color: #ffcc02; }
+.olymp-page .solution-box--ai       { border-left-color: #38bdf8; }
+
+/* KaTeX внутри блока решения / условия — не вылетать за края */
+.olymp-page .problem-text .katex-display,
+.olymp-page .solution-box .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 0;
+}
+
+/* ── Маленький флаг ручной проверки ───────────────────────── */
+.olymp-page .manual-review {
+    margin-top: 12px;
+    color: #94a3b8;
+    font-size: 12.5px;
+    font-style: italic;
+}
+
+/* ── Нижние действия (кнопки) ─────────────────────────────── */
+.olymp-page .olymp-actions {
+    text-align: center;
+    margin-top: 44px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+}
+
+.olymp-page .olymp-actions .btn-primary,
+.olymp-page .olymp-actions .btn-secondary {
+    padding: 14px 32px;
+    font-size: 16px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   Адаптивность
+   ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .olymp-page { padding: 4px 18px 56px; }
+    .olymp-page .olymp-hero { padding: 22px 22px; border-radius: 18px; }
+    .olymp-page .olymp-title { font-size: 26px; }
+    .olymp-page .problem-card {
+        padding: 24px 22px;
+        border-radius: 18px;
+        margin-bottom: 22px;
+    }
+    .olymp-page .solution-box {
+        padding: 18px 18px;
+        border-radius: 12px;
+        font-size: 15.5px;
+        line-height: 1.75;
+    }
+    .olymp-page .problem-text,
+    .olymp-page .answer-row { font-size: 15.5px; }
+}
+
+@media (max-width: 600px) {
+    .olymp-page { padding: 0 14px 48px; }
+    .olymp-page .olymp-hero {
+        padding: 18px 18px;
+        border-radius: 16px;
+        margin-bottom: 22px;
+    }
+    .olymp-page .olymp-title { font-size: 22px; }
+    .olymp-page .olymp-meta { font-size: 13.5px; }
+    .olymp-page .olymp-desc { font-size: 13.5px; }
+    .olymp-page .olymp-callout {
+        padding: 14px 16px;
+        border-radius: 14px;
+        font-size: 14px;
+    }
+    .olymp-page .problem-card {
+        padding: 20px 16px;
+        border-radius: 16px;
+        margin-bottom: 18px;
+    }
+    .olymp-page .problem-badge { font-size: 13px; padding: 5px 11px; }
+    .olymp-page .problem-text,
+    .olymp-page .answer-row,
+    .olymp-page .solution-box { font-size: 15px; }
+    .olymp-page .solution-box {
+        padding: 16px 14px;
+        border-radius: 12px;
+        line-height: 1.7;
+    }
+    .olymp-page .solution-toggle { padding: 8px 14px; font-size: 13.5px; }
+    .olymp-page .olymp-actions .btn-primary,
+    .olymp-page .olymp-actions .btn-secondary {
+        padding: 12px 22px;
+        font-size: 15px;
+        width: 100%;
+    }
+}

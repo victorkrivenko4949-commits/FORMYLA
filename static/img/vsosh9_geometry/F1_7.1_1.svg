@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Треугольник ABC, M — середина BC">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon class="edge" points="200.02,45.51 100.00,260.00 380.00,260.00"/>
+  <line class="tick" x1="170.00" y1="264.00" x2="170.00" y2="256.00"/>
+  <line class="tick" x1="310.00" y1="264.00" x2="310.00" y2="256.00"/>
+  <circle class="dot" cx="200.02" cy="45.51" r="4.00"/>
+  <text class="label" x="200.02" y="29.51" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="100.00" cy="260.00" r="4.00"/>
+  <text class="label" x="84.00" y="274.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="380.00" cy="260.00" r="4.00"/>
+  <text class="label" x="396.00" y="274.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="240.00" cy="260.00" r="4.00"/>
+  <text class="label" x="240.00" y="280.00" text-anchor="middle" dominant-baseline="middle">M</text>
+  <circle class="dot" cx="240.00" cy="260.00" r="4.00"/>
+</svg>

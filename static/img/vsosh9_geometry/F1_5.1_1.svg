@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Биссектриса AD делит BC в отношении AB:AC">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon class="edge" points="180.76,50.64 90.00,300.00 390.00,300.00"/>
+  <line class="aux" x1="180.76" y1="50.64" x2="210.00" y2="300.00"/>
+  <path class="arc-aux" d="M 193.76 73.15 A 26.00 26.00 0 0 0 200.68 67.35"/>
+  <path class="arc-aux" d="M 188.52 79.62 A 30.00 30.00 0 0 0 195.76 76.62"/>
+  <text class="num" x="152.29" y="181.48" text-anchor="middle" dominant-baseline="middle">10</text>
+  <text class="num" x="271.59" y="186.89" text-anchor="middle" dominant-baseline="middle">?</text>
+  <text class="num" x="150.00" y="322.00" text-anchor="middle" dominant-baseline="middle">6</text>
+  <text class="num" x="300.00" y="322.00" text-anchor="middle" dominant-baseline="middle">9</text>
+  <circle class="dot" cx="180.76" cy="50.64" r="4.00"/>
+  <text class="label" x="180.76" y="34.64" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="90.00" cy="300.00" r="4.00"/>
+  <text class="label" x="74.00" y="314.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="390.00" cy="300.00" r="4.00"/>
+  <text class="label" x="406.00" y="314.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="210.00" cy="300.00" r="4.00"/>
+  <text class="label" x="210.00" y="320.00" text-anchor="middle" dominant-baseline="middle">D</text>
+</svg>

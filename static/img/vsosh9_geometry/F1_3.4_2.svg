@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Равнобедренные ACE и BCD: AC=AE и BC=BD">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon points="100.00,70.00 100.00,290.00 281.29,194.64" fill="#12A7C8" fill-opacity="0.18" stroke="#12A7C8" stroke-width="1.8"/>
+  <polygon points="420.00,290.00 100.00,290.00 156.31,108.71" fill="#D6C65A" fill-opacity="0.18" stroke="#D6C65A" stroke-width="1.8"/>
+  <polygon class="edge" points="100.00,70.00 420.00,290.00 100.00,290.00"/>
+  <polyline class="edge" fill="none" points="114.00,290.00 114.00,276.00 100.00,276.00"/>
+  <line class="tick" x1="96.00" y1="180.00" x2="104.00" y2="180.00"/>
+  <line class="tick" x1="188.38" y1="135.61" x2="192.91" y2="129.02"/>
+  <line class="tick" x1="262.50" y1="286.00" x2="262.50" y2="294.00"/>
+  <line class="tick" x1="257.50" y1="286.00" x2="257.50" y2="294.00"/>
+  <line class="tick" x1="292.48" y1="197.48" x2="287.95" y2="204.07"/>
+  <line class="tick" x1="288.36" y1="194.64" x2="283.83" y2="201.24"/>
+  <circle class="dot" cx="100.00" cy="70.00" r="4.00"/>
+  <text class="label" x="84.00" y="70.00" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="420.00" cy="290.00" r="4.00"/>
+  <text class="label" x="436.00" y="304.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="100.00" cy="290.00" r="4.00"/>
+  <text class="label" x="84.00" y="304.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="281.29" cy="194.64" r="4.00"/>
+  <text class="label" x="281.29" y="176.64" text-anchor="middle" dominant-baseline="middle">E</text>
+  <circle class="dot" cx="156.31" cy="108.71" r="4.00"/>
+  <text class="label" x="156.31" y="90.71" text-anchor="middle" dominant-baseline="middle">D</text>
+  <circle class="dot" cx="281.29" cy="194.64" r="4.00"/>
+  <circle class="dot" cx="156.31" cy="108.71" r="4.00"/>
+</svg>

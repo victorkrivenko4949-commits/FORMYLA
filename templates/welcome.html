@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}FORMYLA — диагностика готовности к ВсОШ за 25 минут{% endblock %}
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:60px 24px 80px;">
+  <div style="text-align:center;margin-bottom:56px;">
+    <h1 style="font-size:clamp(2em,5vw,3.4em);line-height:1.15;margin:0 0 18px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 60%,#ec4899 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-0.5px;">Узнайте за 25 минут, на каком уровне ребёнок готов к ВсОШ</h1>
+    <p style="font-size:clamp(1.05em,2vw,1.3em);color:rgba(255,255,255,0.8);line-height:1.55;max-width:760px;margin:0 auto 32px;">Адаптивная диагностика по 6 темам математики. Радар сильных/слабых сторон + персональный план подготовки.</p>
+    <a href="/adaptive_test/select_class" data-track="cta" style="display:inline-block;padding:18px 44px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:14px;font-size:1.15em;font-weight:700;box-shadow:0 8px 28px rgba(56,189,248,0.45);transition:transform 0.25s ease,box-shadow 0.25s ease;">🚀 Пройти диагностику бесплатно</a>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px 28px;margin-top:22px;color:rgba(255,255,255,0.7);font-size:0.96em;">
+      <span><span style="color:#38ef7d;font-weight:800;">✓</span> 25 минут</span>
+      <span><span style="color:#38ef7d;font-weight:800;">✓</span> Бесплатно</span>
+      <span><span style="color:#38ef7d;font-weight:800;">✓</span> Радар по 6 темам</span>
+    </div>
+  </div>
+  <h2 style="text-align:center;font-size:1.8em;color:var(--text-main);margin:64px 0 36px;font-weight:700;">Как работает</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;">
+    <div style="background:var(--bg-card,rgba(20,28,45,0.6));backdrop-filter:blur(12px);padding:28px 22px;border-radius:18px;border:1px solid var(--border-soft,rgba(255,255,255,0.08));text-align:center;">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#8b5cf6);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">1</div>
+      <h3 style="margin:0 0 8px;font-size:1.1em;color:var(--text-main);">Регистрация за 30 секунд</h3>
+      <p style="margin:0;color:rgba(255,255,255,0.65);font-size:0.95em;line-height:1.5;">Только e-mail и код подтверждения — без паролей.</p>
+    </div>
+    <div style="background:var(--bg-card,rgba(20,28,45,0.6));backdrop-filter:blur(12px);padding:28px 22px;border-radius:18px;border:1px solid var(--border-soft,rgba(255,255,255,0.08));text-align:center;">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#8b5cf6);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">2</div>
+      <h3 style="margin:0 0 8px;font-size:1.1em;color:var(--text-main);">Адаптивная диагностика</h3>
+      <p style="margin:0;color:rgba(255,255,255,0.65);font-size:0.95em;line-height:1.5;">25 задач по 6 темам. Сложность подстраивается под уровень ученика.</p>
+    </div>
+    <div style="background:var(--bg-card,rgba(20,28,45,0.6));backdrop-filter:blur(12px);padding:28px 22px;border-radius:18px;border:1px solid var(--border-soft,rgba(255,255,255,0.08));text-align:center;">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#8b5cf6);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">3</div>
+      <h3 style="margin:0 0 8px;font-size:1.1em;color:var(--text-main);">ИИ-наставник</h3>
+      <p style="margin:0;color:rgba(255,255,255,0.65);font-size:0.95em;line-height:1.5;">Разбирает ошибки, объясняет шаги, даёт подсказки в чате.</p>
+    </div>
+    <div style="background:var(--bg-card,rgba(20,28,45,0.6));backdrop-filter:blur(12px);padding:28px 22px;border-radius:18px;border:1px solid var(--border-soft,rgba(255,255,255,0.08));text-align:center;">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#8b5cf6);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">4</div>
+      <h3 style="margin:0 0 8px;font-size:1.1em;color:var(--text-main);">Олимпиадные задачи</h3>
+      <p style="margin:0;color:rgba(255,255,255,0.65);font-size:0.95em;line-height:1.5;">Ежедневный квест + банк задач ВсОШ, Турнира городов, Эйлера.</p>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:56px;">
+    <a href="/adaptive_test/select_class" data-track="cta" style="display:inline-block;padding:16px 36px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:12px;font-size:1.05em;font-weight:700;box-shadow:0 6px 20px rgba(56,189,248,0.4);">🚀 Пройти диагностику бесплатно</a>
+  </div>
+</div>
+{% endblock %}

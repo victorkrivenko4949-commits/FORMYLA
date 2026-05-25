@@ -786,6 +786,19 @@ try:
 except Exception as _e_v4:
     print(f"[VSOSH9-V4] hook skipped: {_e_v4}")
 
+# ── Theory placeholder fix (idempotent) ──────────────────────────────────────
+# Перезаписывает названия методов вида «E14 (название ждёт текста)»
+# настоящими названиями из data/olympiads/methods_catalog_89.json.
+# Идемпотентно: на каждом старте находит только реальные плейсхолдеры и
+# никогда не трогает методы с уже введёнными вручную именами.
+# Запускается БЕЗ env-гейта (в отличие от autoseed), чтобы прод-БД
+# не зависела от ручного включения OLYMPIAD_AUTOSEED.
+try:
+    from services.olympiad_autoseed import fix_theory_placeholders
+    fix_theory_placeholders(app, db)
+except Exception as _e_theory_fix:
+    print(f"[THEORY-FIX] hook skipped: {_e_theory_fix}")
+
 # /grade-5 and /grade-6 — тренажёр FORMYLA по школьным классам.
 try:
     from routes.grade import grade_bp
@@ -818,6 +831,16 @@ try:
 except Exception as _e:
     print(f"[JINJA] md_render filter NOT registered: {_e}")
 
+# inject_geometry — вставляет SVG-чертежи из static/img/vsosh9_geometry/
+# после каждого <h4>Задача N.M</h4> для F-методов. Карта файлов
+# сканируется один раз (lru_cache в services.geometry_drawings).
+try:
+    from services.geometry_drawings import inject_geometry_drawings as _inject_geo
+    app.jinja_env.filters['inject_geometry'] = _inject_geo
+    print("[JINJA] filter inject_geometry registered")
+except Exception as _e:
+    print(f"[JINJA] inject_geometry filter NOT registered: {_e}")
+
 # Limit upload size: 12 MB (for solution photos AND drawing-task screenshots
 # that get base64-encoded; raw image cap remains 8 MB on the drawing route).
 app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
@@ -842,6 +865,15 @@ def not_found(e):
         return "<h1>404 Not Found</h1>", 404
 
 # ── HEALTH CHECK ──────────────────────────────────────────────────
+
+# ---- NULL-tolerant is_flagged filter (prod has nullable column) ----
+from sqlalchemy import or_ as _or_for_flag
+def _is_flagged_not_true():
+    return _or_for_flag(
+        AdaptiveTask.is_flagged.is_(None),
+        AdaptiveTask.is_flagged == False,  # noqa: E712
+    )
+
 @app.route('/health')
 def health_check():
     """Diagnostic endpoint"""
@@ -1664,6 +1696,18 @@ def healthz():
     Postgres ответит мгновенно. См. инцидент 2026-05-25.
     """
     return ({"status": "ok"}, 200, {"Content-Type": "application/json"})
+
+
+@app.route("/call")
+def call_page():
+    """Видеозвонок по коду (Task 6).
+
+    Самодостаточная страница: создать комнату → получить 6-значный код →
+    поделиться кодом → собеседник вводит код у себя → WebRTC mesh.
+    Сигналинг — через существующий blueprint /api/wb_call/*.
+    Авторизация не требуется (можно звонить гостям).
+    """
+    return render_template("call.html")
 
 
 @app.route("/welcome")
@@ -4321,22 +4365,24 @@ def adaptive_test_select_topic():
         # ТОЧНАЯ строка `AdaptiveTask.topic` из БД (без эвристик по keyword-ам).
         from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
         registry = ADAPTIVE_TOPICS_BY_GRADE.get(grade_int, [])
-        all_tasks = AdaptiveTask.query.filter_by(
-            class_level=grade_int, is_flagged=False
-        ).all()
+        all_tasks = AdaptiveTask.query.filter(
+            AdaptiveTask.class_level == grade_int,
+            _is_flagged_not_true(),
+            ).all()
         by_topic = {}
         for t in all_tasks:
             if t.topic:
                 key = t.topic.strip()
                 by_topic[key] = by_topic.get(key, 0) + 1
         for entry in registry:
-            count = by_topic.get(entry['db_topic'], 0)
-            # Поддержка алиасов на случай орфо-разночтений в БД.
-            if count == 0:
-                for alias in entry.get('aliases', []) or []:
-                    count = by_topic.get(alias, 0)
-                    if count:
-                        break
+            # Считаем сумму по `db_topic` + всем `aliases`. Старая версия
+            # выбирала count только первого попавшегося alias с ненулём, что
+            # давало заниженные числа, когда исторически тема разбита в БД
+            # на несколько подтем (например, прод-9 класс: «Треугольники»
+            # + «Начала геометрии» + «Геометрические доказательства» все
+            # маппятся в «Геометрия треугольника и окружности»).
+            keys = [entry['db_topic']] + list(entry.get('aliases', []) or [])
+            count = sum(by_topic.get(k, 0) for k in keys)
             topics.append({
                 'name':      entry['name'],
                 'emoji':     entry['emoji'],
@@ -4428,9 +4474,10 @@ def adaptive_test_select_grade():
     for grade_int in (5, 6, 7, 8, 9, 10, 11):
         kws = get_keywords_for_grade_topic(grade_int, topic) or fallback_keywords.get(topic, [])
         kws_lower = [k.lower() for k in kws]
-        all_tasks = AdaptiveTask.query.filter_by(
-            class_level=grade_int, is_flagged=False
-        ).all()
+        all_tasks = AdaptiveTask.query.filter(
+            AdaptiveTask.class_level == grade_int,
+            _is_flagged_not_true(),
+            ).all()
         if not kws_lower:
             count = len(all_tasks)
         else:
@@ -4553,17 +4600,17 @@ def adaptive_test_start_simple():
         candidates = [db_topic_exact] + list(registry_entry.get('aliases', []) or [])
         filtered_tasks = AdaptiveTask.query.filter(
             AdaptiveTask.class_level == grade_int,
-            AdaptiveTask.is_flagged == False,  # noqa: E712
+            _is_flagged_not_true(),  # noqa: E712
             AdaptiveTask.topic.in_(candidates),
         ).all()
         print(f"[ADAPTIVE registry] grade={grade_int} key={topic} "
               f"db_topic='{db_topic_exact}' → {len(filtered_tasks)} задач")
     elif keywords:
         # Если есть ключевые слова - фильтруем по ним
-        all_tasks = AdaptiveTask.query.filter_by(
-            class_level=grade_int,
-            is_flagged=False  # ФИЛЬТР КАЧЕСТВА: исключаем помеченные задачи
-        ).all()
+        all_tasks = AdaptiveTask.query.filter(
+            AdaptiveTask.class_level == grade_int,
+            _is_flagged_not_true(),
+            ).all()
 
         # Фильтруем задачи, где название темы содержит хотя бы одно ключевое слово
         filtered_tasks = []
@@ -4573,10 +4620,10 @@ def adaptive_test_start_simple():
                 filtered_tasks.append(task)
     else:
         # Если фильтра нет - берем все задачи класса (кроме помеченных)
-        filtered_tasks = AdaptiveTask.query.filter_by(
-            class_level=grade_int,
-            is_flagged=False  # ФИЛЬТР КАЧЕСТВА: исключаем помеченные задачи
-        ).all()
+        filtered_tasks = AdaptiveTask.query.filter(
+            AdaptiveTask.class_level == grade_int,
+            _is_flagged_not_true(),
+            ).all()
     
     if len(filtered_tasks) < 10:
         if len(filtered_tasks) == 0:
@@ -7100,23 +7147,22 @@ def admin_fix_latex_rac():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
-# ── Пометить задачу 1650 как битую (запускается один раз при старте) ──
-try:
-    with app.app_context():
-        _task_1650 = AdaptiveTask.query.get(1650)
-        if _task_1650 and not _task_1650.is_flagged:
-            _task_1650.is_flagged = True
-            _task_1650.flagged_reason = (
-                'Условие/ответ противоречивы. Ответ в БД=18, '
-                'но математически правильный=0 (таких n не существует). '
-                'Требуется проверка источника задачи.'
-            )
-            db.session.commit()
-            print("[QUALITY CONTROL] Задача #1650 помечена как битая (is_flagged=True)")
-        elif _task_1650 and _task_1650.is_flagged:
-            print("[QUALITY CONTROL] Задача #1650 уже помечена")
-except Exception as _e:
-    print(f"[QUALITY CONTROL] Warning marking task 1650: {_e}")
+# ── [DISABLED 2026-05] Legacy hard-coded flag для AdaptiveTask.id == 1650 ──
+# Раньше здесь стартап-хук помечал задачу с внутренним integer id=1650 как
+# битую (причина: «ответ в БД=18, мат-правильный=0»). После переимпорта JSON
+# auto-increment id мог сдвинуться, и id=1650 теперь может указывать на
+# совершенно другую (валидную) задачу → есть риск ложного флага.
+#
+# Логика отключена. Если конкретную задачу действительно надо пометить —
+# делать это нужно по стабильному source_id (AdaptiveTask.source_id):
+#
+#     _bad = AdaptiveTask.query.filter_by(source_id='<vsosh-...-id>').first()
+#     if _bad and not _bad.is_flagged: ...
+#
+# Реальные плохие задачи уже ловятся авто-флагом по fallback'ам тьютора
+# (см. блок ниже «Авто-скрипт: помечаем задачи с >= 3 fallback за 7 дней»),
+# плюс ручной пометкой через /admin/needs_review/action. Поэтому хардкод
+# id=1650 безопасно отключён.
 
 
 # ── Авто-скрипт: помечаем задачи с >= 3 fallback за 7 дней ──

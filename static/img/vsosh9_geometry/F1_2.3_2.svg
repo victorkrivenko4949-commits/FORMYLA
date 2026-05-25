@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Средняя линия KM параллельна AC; треугольник KHM">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon class="edge" points="240.00,71.50 80.00,300.00 400.00,300.00"/>
+  <line class="aux-dash" x1="80.00" y1="300.00" x2="294.72" y2="149.65"/>
+  <polygon points="160.00,185.75 294.72,149.65 240.00,300.00" fill="#D6C65A" fill-opacity="0.18" stroke="#D6C65A" stroke-width="1.8"/>
+  <line class="aux" x1="160.00" y1="185.75" x2="240.00" y2="300.00"/>
+  <polyline class="tick" fill="none" points="200.98,237.30 202.29,246.15 194.43,241.89"/>
+  <polyline class="tick" fill="none" points="320.98,180.18 322.29,189.02 314.43,184.77"/>
+  <polyline class="edge" fill="none" points="286.53,155.38 292.27,163.58 300.46,157.84"/>
+  <circle class="dot" cx="240.00" cy="71.50" r="4.00"/>
+  <text class="label" x="224.00" y="77.50" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="80.00" cy="300.00" r="4.00"/>
+  <text class="label" x="80.00" y="284.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="400.00" cy="300.00" r="4.00"/>
+  <text class="label" x="416.00" y="314.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="294.72" cy="149.65" r="4.00"/>
+  <text class="label" x="304.72" y="161.65" text-anchor="middle" dominant-baseline="middle">H</text>
+  <circle class="dot" cx="240.00" cy="300.00" r="4.00"/>
+  <text class="label" x="256.00" y="306.00" text-anchor="middle" dominant-baseline="middle">M</text>
+  <circle class="dot" cx="160.00" cy="185.75" r="4.00"/>
+  <text class="label" x="144.00" y="185.75" text-anchor="middle" dominant-baseline="middle">K</text>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 460" role="img" aria-label="F1, zadacha 1.4 (2): isosceles triangle KLM with KL=KM, base angles equal">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="460" height="460" rx="14"/>
+  <polygon class="edge" points="90.00,58.95 90.00,440.00 310.00,440.00"/>
+  <polygon class="edge" points="104.00,440.00 104.00,426.00 90.00,426.00"/>
+  <polygon class="aux" points="211.00,268.53 156.00,440.00 266.00,440.00"/>
+  <circle class="dot" cx="90.00" cy="58.95" r="4.00"/>
+  <text class="label" x="72.00" y="50.95" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="90.00" cy="440.00" r="4.00"/>
+  <text class="label" x="72.00" y="458.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="310.00" cy="440.00" r="4.00"/>
+  <text class="label" x="328.00" y="458.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="211.00" cy="268.53" r="4.00"/>
+  <text class="label" x="229.00" y="260.53" text-anchor="middle" dominant-baseline="middle">K</text>
+  <circle class="dot" cx="156.00" cy="440.00" r="4.00"/>
+  <text class="label" x="156.00" y="458.00" text-anchor="middle" dominant-baseline="middle">L</text>
+  <circle class="dot" cx="266.00" cy="440.00" r="4.00"/>
+  <text class="label" x="266.00" y="458.00" text-anchor="middle" dominant-baseline="middle">M</text>
+  <path class="arc-aux" d="M 176.00 440.00 A 20.00 20.00 0 0 0 162.11 420.96"/>
+  <text class="num-aux" x="180.24" y="422.32" text-anchor="middle" dominant-baseline="middle">&#945;</text>
+  <path class="arc-aux" d="M 246.00 440.00 A 20.00 20.00 0 1 0 259.89 420.96"/>
+  <text class="num-aux" x="290.24" y="457.68" text-anchor="middle" dominant-baseline="middle">&#945;</text>
+  <line class="tick-eq" x1="189.21" y1="356.10" x2="177.79" y2="352.43"/>
+  <line class="tick-eq" x1="244.21" y1="352.43" x2="232.79" y2="356.10"/>
+</svg>

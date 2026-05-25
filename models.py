@@ -778,7 +778,22 @@ class AdaptiveTask(db.Model):
     suggested_level = db.Column(db.Integer, default=None)  # Предложенный уровень (если расходится с difficulty_level)
     needs_reclassification = db.Column(db.Boolean, default=False, index=True)  # Требует переклассификации
     last_calibrated_at = db.Column(db.DateTime, default=None)  # Когда последний раз калибровалась
-    
+
+    # FORMYLA-импорт: канонический предмет и стабильный source-id из JSON-датасета.
+    # Эти колонки добавляются в БД через ALTER TABLE в app.py при первом старте
+    # (см. AUTO-MIGRATION блоки) — здесь они объявлены в ORM, чтобы запросы
+    # типа `AdaptiveTask.subject == 'algebra'` работали и в тестовом контексте
+    # in-memory SQLite, где автомиграция не запускается.
+    subject = db.Column(db.String(20), index=True)
+    source_id = db.Column(db.String(120), index=True)
+
+    # AI-тьютор self-check (см. auto-migration в app.py)
+    needs_review = db.Column(db.Boolean, default=False, index=True)
+    llm_suggested_answer = db.Column(db.Text)
+    llm_suggested_solution = db.Column(db.Text)
+    review_reason = db.Column(db.Text)
+    review_flagged_at = db.Column(db.DateTime, default=None)
+
     def to_dict(self):
         """Конвертация в словарь для JSON"""
         return {

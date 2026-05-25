@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Высота AH к BC, AB=13, BH=5">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon class="edge" points="180.00,98.00 100.00,290.00 292.00,290.00"/>
+  <line class="aux" x1="180.00" y1="98.00" x2="180.00" y2="290.00"/>
+  <polyline class="edge" fill="none" points="170.00,290.00 170.00,280.00 180.00,280.00"/>
+  <text class="num" x="156.62" y="200.92" text-anchor="middle" dominant-baseline="middle">13</text>
+  <text class="num" x="140.00" y="312.00" text-anchor="middle" dominant-baseline="middle">5</text>
+  <text class="num" x="166.00" y="194.00" text-anchor="middle" dominant-baseline="middle">?</text>
+  <circle class="dot" cx="180.00" cy="98.00" r="4.00"/>
+  <text class="label" x="180.00" y="82.00" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="100.00" cy="290.00" r="4.00"/>
+  <text class="label" x="84.00" y="304.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="292.00" cy="290.00" r="4.00"/>
+  <text class="label" x="308.00" y="304.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="180.00" cy="290.00" r="4.00"/>
+  <text class="label" x="180.00" y="310.00" text-anchor="middle" dominant-baseline="middle">H</text>
+</svg>

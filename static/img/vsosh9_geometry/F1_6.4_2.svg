@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Подсказка: сравнить прямоугольные треугольники и площади">
+  <style>.bg{fill:#0B0E10}.edge{fill:none;stroke:#E8E4D8;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.aux{fill:none;stroke:#12A7C8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.aux-dash{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-dasharray:6 5;stroke-linecap:round}.arc{fill:none;stroke:#D6C65A;stroke-width:1.8;stroke-linecap:round}.arc-aux{fill:none;stroke:#12A7C8;stroke-width:1.8;stroke-linecap:round}.dot{fill:#E8E4D8}.label{font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:600;fill:#E8E4D8}.num{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#D6C65A}.num-aux{font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;fill:#12A7C8}.tick{stroke:#E8E4D8;stroke-width:1.6}.tick-eq{stroke:#D6C65A;stroke-width:2}</style>
+  <rect class="bg" width="480" height="360" rx="14"/>
+  <polygon points="180.00,300.00 341.04,187.24 420.00,300.00" fill="#12A7C8" fill-opacity="0.18" stroke="#12A7C8" stroke-width="1.6"/>
+  <polygon points="300.00,300.00 120.00,196.08 60.00,300.00" fill="#D6C65A" fill-opacity="0.18" stroke="#D6C65A" stroke-width="1.6"/>
+  <polygon class="edge" points="222.69,18.21 60.00,300.00 420.00,300.00"/>
+  <line class="aux" x1="180.00" y1="300.00" x2="341.04" y2="187.24"/>
+  <line class="aux" x1="300.00" y1="300.00" x2="120.00" y2="196.08"/>
+  <polyline class="edge" fill="none" points="335.88,179.86 328.51,185.03 333.67,192.40"/>
+  <polyline class="edge" fill="none" points="124.50,188.28 132.29,192.78 127.79,200.58"/>
+  <line class="tick" x1="120.00" y1="304.00" x2="120.00" y2="296.00"/>
+  <line class="tick" x1="240.00" y1="304.00" x2="240.00" y2="296.00"/>
+  <line class="tick" x1="360.00" y1="304.00" x2="360.00" y2="296.00"/>
+  <circle class="dot" cx="222.69" cy="18.21" r="4.00"/>
+  <text class="label" x="222.69" y="2.21" text-anchor="middle" dominant-baseline="middle">A</text>
+  <circle class="dot" cx="60.00" cy="300.00" r="4.00"/>
+  <text class="label" x="44.00" y="314.00" text-anchor="middle" dominant-baseline="middle">B</text>
+  <circle class="dot" cx="420.00" cy="300.00" r="4.00"/>
+  <text class="label" x="436.00" y="314.00" text-anchor="middle" dominant-baseline="middle">C</text>
+  <circle class="dot" cx="180.00" cy="300.00" r="4.00"/>
+  <text class="label" x="180.00" y="320.00" text-anchor="middle" dominant-baseline="middle">P</text>
+  <circle class="dot" cx="300.00" cy="300.00" r="4.00"/>
+  <text class="label" x="300.00" y="320.00" text-anchor="middle" dominant-baseline="middle">Q</text>
+  <circle class="dot" cx="341.04" cy="187.24" r="4.00"/>
+  <text class="label" x="355.04" y="179.24" text-anchor="middle" dominant-baseline="middle">X</text>
+  <circle class="dot" cx="120.00" cy="196.08" r="4.00"/>
+  <text class="label" x="106.00" y="188.08" text-anchor="middle" dominant-baseline="middle">Y</text>
+  <text class="num-aux" x="240.00" y="30.00" text-anchor="middle" dominant-baseline="middle">сравнить прямоугольные △PXC и △QYB</text>
+</svg>
