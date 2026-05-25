@@ -85,29 +85,59 @@
         {% endif %}
     </header>
 
-    {# По запросу: показываем ТОЛЬКО «Идея решения» + «Полное решение». #}
-    {# «Идея» берём из main_theorems_md; если её нет — пробуем           #}
-    {# typical_techniques_md, затем definition_md (как краткое описание).#}
-    {% set idea_md = block.main_theorems_md or block.typical_techniques_md or block.definition_md %}
-    {% set solution_md = block.worked_example_md %}
+    {# ── Полный конспект метода: все 6 разделов из БД ─────────────── #}
+    {# Каждый раздел рендерится только если поле непустое.            #}
+    {% set _has_any = (
+        block.definition_md or block.main_theorems_md or
+        block.typical_techniques_md or block.triggers_md or
+        block.worked_example_md or block.pitfalls_md
+    ) %}
 
-    {% if not idea_md and not solution_md %}
+    {% if not _has_any %}
     <section class="oly-card">
         <p style="margin:0; color: var(--text-muted);">📚 Полный конспект будет добавлен.</p>
     </section>
     {% endif %}
 
-    {% if idea_md %}
+    {% if block.definition_md %}
     <section class="oly-card">
-        <h2 style="margin-top:0;">💡 Идея решения</h2>
-        <div class="oly-md">{{ idea_md | md_render | inject_geometry(block.method_code) }}</div>
+        <h2 style="margin-top:0;">📖 Определение</h2>
+        <div class="oly-md">{{ block.definition_md | md_render | inject_geometry(block.method_code) }}</div>
     </section>
     {% endif %}
 
-    {% if solution_md %}
+    {% if block.main_theorems_md %}
     <section class="oly-card" style="margin-top: 16px;">
-        <h2 style="margin-top:0;">✅ Полное решение</h2>
-        <div class="oly-md">{{ solution_md | md_render | inject_geometry(block.method_code) }}</div>
+        <h2 style="margin-top:0;">📐 Главные теоремы и формулы</h2>
+        <div class="oly-md">{{ block.main_theorems_md | md_render | inject_geometry(block.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.typical_techniques_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">💡 Типичные техники</h2>
+        <div class="oly-md">{{ block.typical_techniques_md | md_render | inject_geometry(block.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.triggers_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🎯 Когда применять (триггеры)</h2>
+        <div class="oly-md">{{ block.triggers_md | md_render | inject_geometry(block.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.worked_example_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">✅ Разобранный пример</h2>
+        <div class="oly-md">{{ block.worked_example_md | md_render | inject_geometry(block.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.pitfalls_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">⚠️ Подводные камни</h2>
+        <div class="oly-md">{{ block.pitfalls_md | md_render | inject_geometry(block.method_code) }}</div>
     </section>
     {% endif %}
 
