@@ -991,16 +991,17 @@ _SKIP_GUEST_PATHS = (
 
 @app.before_request
 def ensure_device_and_session():
-    """Гарантирует наличие device_id и пользователя в сессии.
+    """Минимальная реализация — ТОЛЬКО device_id, БЕЗ БД.
 
-    Дефенсивная реализация (после инцидента 2026-05-25):
-    - системные пути (robots.txt, favicon, /static, health-check'и) — skip;
-    - device_id всегда вычисляется (не требует БД);
-    - guest-юзер создаётся под коротким statement_timeout (3s); если БД
-      медленная — пользователь работает как аноним, а не падает 500.
+    После инцидента 2026-05-25 (crash-loop из-за зависающего ensure_guest_user
+    на медленной Postgres) этот хук БОЛЬШЕ НЕ создаёт guest-юзера в БД.
+    Гость создаётся ЛЕНИВО — только когда пользователь начинает реально что-то
+    делать (отправляет ответ, открывает чат). См. get_or_create_guest_user().
+    Это гарантирует что главная и login открываются за миллисекунды даже если
+    БД лагает или вообще лежит.
     """
     path = request.path
-    # 1. Системные пути — без БД, без сессии-логина
+    # 1. Системные пути — полностью без БД
     for _p in _SKIP_GUEST_PATHS:
         if path.startswith(_p):
             return
@@ -1014,28 +1015,17 @@ def ensure_device_and_session():
             device_id = _generate_device_id()
         session['device_id'] = device_id
 
-        # 3. Если не залогинен — пытаемся создать/найти гостя, но НЕ блокируем
-        # запрос если БД лагает.
-        if not current_user.is_authenticated:
-            guest = ensure_guest_user(device_id)
-            if guest is not None:
-                try:
-                    login_user(guest, remember=True)
-                    session.permanent = True
-                    session['user_id'] = guest.id
-                except Exception:
-                    # login_user может упасть на сериализации — не критично
-                    pass
-            # Если guest is None — продолжаем как аноним (без login_user)
-        else:
-            # Обновляем device_id у текущего пользователя если нужно
+        # 3. Только для УЖЕ залогиненных — обновляем device_id если нужно.
+        # Анонимам никаких SQL'ей вообще — никакого ensure_guest_user здесь,
+        # он переехал в lazy-вызов из роутов которые требуют user.
+        if current_user.is_authenticated:
             try:
                 if not current_user.device_id:
                     current_user.device_id = device_id
                     db.session.commit()
+                session['user_id'] = current_user.id
             except Exception:
                 db.session.rollback()
-            session['user_id'] = current_user.id
     except Exception as e:
         # Catch-all: что бы ни упало — не возвращаем 500
         import logging
@@ -1046,6 +1036,29 @@ def ensure_device_and_session():
             db.session.rollback()
         except Exception:
             pass
+
+
+def get_or_create_guest_user():
+    """Lazy-helper. Вызывать ТОЛЬКО из роутов которые реально требуют user-id
+    (например: отправка решения, открытие чата, сохранение прогресса).
+
+    На главной, /welcome, /login и health-checks — НЕ вызывать.
+    Возвращает User либо None (если БД лагает — продолжаем как аноним).
+    """
+    if current_user.is_authenticated:
+        return current_user
+    device_id = session.get('device_id')
+    if not device_id:
+        return None
+    guest = ensure_guest_user(device_id)
+    if guest is not None:
+        try:
+            login_user(guest, remember=True)
+            session.permanent = True
+            session['user_id'] = guest.id
+        except Exception:
+            pass
+    return guest
 
 
 @app.after_request
