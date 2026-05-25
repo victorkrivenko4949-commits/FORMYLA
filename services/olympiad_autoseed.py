@@ -130,6 +130,29 @@ def fix_theory_placeholders(app, db) -> None:
         print(f"[THEORY-FIX] Top-level error: {e}")
 
 
+def seed_theory_only(app, db) -> None:
+    """Idempotent: засевает ТОЛЬКО таблицу olympiad_theory из
+    methods_catalog_89.json (или legacy 65). Используется на каждом старте
+    БЕЗ env-гейта, чтобы прод-каталог методов не оставался пустым после
+    деплоя. Не трогает Probnik/OlympiadTask (для них autoseed остаётся
+    под флагом OLYMPIAD_AUTOSEED=1).
+    """
+    try:
+        from models_olympiad import TheoryBlock
+    except Exception as e:
+        print(f"[THEORY-SEED] models_olympiad not available: {e}")
+        return
+    try:
+        with app.app_context():
+            _seed_theory(db, TheoryBlock)
+    except Exception as e:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        print(f"[THEORY-SEED] Top-level error: {e}")
+
+
 def autoseed_olympiad(app, db) -> None:
     """Главная точка входа. Вызывается из app.py внутри app_context().
 

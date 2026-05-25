@@ -788,6 +788,17 @@ try:
 except Exception as _e_v4:
     print(f"[VSOSH9-V4] hook skipped: {_e_v4}")
 
+# ── Theory catalog seed (idempotent, без env-гейта) ──────────────────────────
+# Засевает olympiad_theory из data/olympiads/methods_catalog_89.json,
+# если таблица пуста или содержит plaholder-имена. Безопасно: ничего
+# не трогает в Probnik/OlympiadTask. Это решает проблему пустого
+# «Каталога методов» (/olympiads/methods) на проде после миграции БД.
+try:
+    from services.olympiad_autoseed import seed_theory_only
+    seed_theory_only(app, db)
+except Exception as _e_theory_seed:
+    print(f"[THEORY-SEED] hook skipped: {_e_theory_seed}")
+
 # ── Theory placeholder fix (idempotent) ──────────────────────────────────────
 # Перезаписывает названия методов вида «E14 (название ждёт текста)»
 # настоящими названиями из data/olympiads/methods_catalog_89.json.
