@@ -125,7 +125,15 @@ def v4_diag():
 
     Безопасность: любой может вызвать (GET), force-import идемпотентен.
     """
-    from services.olympiad_v4_force import run_v4_force_import
+    # Импорт обёрнут в try/except, чтобы endpoint не падал с 500,
+    # если olympiad_v4_force.py отсутствует или имеет ошибки на проде.
+    _v4_import_ok = False
+    _v4_import_err = None
+    try:
+        from services.olympiad_v4_force import run_v4_force_import
+        _v4_import_ok = True
+    except Exception as e:
+        _v4_import_err = str(e)
 
     force = request.args.get('force', '0') == '1'
 
@@ -171,12 +179,15 @@ def v4_diag():
 
     result = None
     if force:
-        try:
-            from flask import current_app
-            run_v4_force_import(current_app, db)
-            result = 'ok'
-        except Exception as e:
-            result = f'error: {e}'
+        if _v4_import_ok:
+            try:
+                from flask import current_app
+                run_v4_force_import(current_app, db)
+                result = 'ok'
+            except Exception as e:
+                result = f'error: {e}'
+        else:
+            result = f'skipped: v4_force module import failed: {_v4_import_err}'
 
     # 5. Повторный подсчёт после force (если был)
     if force:
@@ -203,6 +214,8 @@ def v4_diag():
         total_tasks = OlympiadTask.query.count()
 
     data = {
+        'v4_import_available': _v4_import_ok,
+        'v4_import_error': _v4_import_err,
         'vsosh9_2027': {
             'probniks_total': vsosh_probniks,
             'probniks_published': vsosh_published,
@@ -226,6 +239,8 @@ def v4_diag():
     # Простая HTML-страница для просмотра в браузере
     lines = []
     lines.append('<html><head><meta charset="utf-8"><title>V4 Force-Import Diagnostics</title>')
+    if not _v4_import_ok:
+        lines.append(f'<p class="missing">⚠ olympiad_v4_force module import failed: {_v4_import_err}</p>')
     lines.append('<style>body{font-family:sans-serif;margin:2rem}'
                  'td,th{padding:4px 12px;text-align:left}'
                  '.ok{color:green}.missing{color:red}.warn{color:orange}</style></head><body>')
