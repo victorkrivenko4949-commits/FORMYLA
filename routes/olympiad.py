@@ -114,6 +114,12 @@ def _user_attempt_map(user_id: int, task_ids: list) -> dict:
 
 # ─── 0. Диагностика v4 force-import (для отладки на Render) ───────────────────
 
+@olympiad_bp.route('/admin/v4-ping')
+def v4_ping():
+    """Минимальный ping-эндпоинт для проверки, что olympiad blueprint жив."""
+    return {'status': 'ok', 'blueprint': 'olympiad'}
+
+
 @olympiad_bp.route('/admin/v4-diag')
 def v4_diag():
     """Показать состояние vsosh-9-2027 probnik-сида и (опционально) запустить
