@@ -112,6 +112,154 @@ def _user_attempt_map(user_id: int, task_ids: list) -> dict:
     return {a.task_id: a for a in rows}
 
 
+# ─── 0. Диагностика v4 force-import (для отладки на Render) ───────────────────
+
+@olympiad_bp.route('/admin/v4-diag')
+def v4_diag():
+    """Показать состояние vsosh-9-2027 probnik-сида и (опционально) запустить
+    force-import заново.
+
+    Параметры запроса:
+        force=1  — запустить run_v4_force_import и показать результат
+        json     — только JSON (по умолчанию HTML-страница)
+
+    Безопасность: любой может вызвать (GET), force-import идемпотентен.
+    """
+    from services.olympiad_v4_force import run_v4_force_import
+
+    force = request.args.get('force', '0') == '1'
+
+    # 1. Текущее состояние БД
+    total_probniks = Probnik.query.count()
+    vsosh_probniks = Probnik.query.filter_by(
+        competition='ВсОШ', grade=9, season_year=2027
+    ).count()
+    vsosh_published = Probnik.query.filter_by(
+        competition='ВсОШ', grade=9, season_year=2027, is_published=True
+    ).count()
+    total_tasks = OlympiadTask.query.count()
+
+    # 2. Подсчёт задач по каждому probnik-коду vsosh-9-2027
+    probnik_codes = [
+        r.code for r in
+        Probnik.query.with_entities(Probnik.code).filter(
+            Probnik.competition == 'ВсОШ',
+            Probnik.grade == 9,
+            Probnik.season_year == 2027,
+        ).all()
+    ]
+    tasks_per_probnik = {}
+    for pc in probnik_codes:
+        p = Probnik.query.filter_by(code=pc).first()
+        if p:
+            cnt = OlympiadTask.query.filter_by(probnik_id=p.id).count()
+            tasks_per_probnik[pc] = cnt
+
+    # 3. Статус JSON-файлов (проверяем, доступны ли они)
+    import os
+    data_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'data', 'olympiads',
+    )
+    json_files = {}
+    for fn in ('vsosh_9_2027_probniks.json', 'vsosh_9_2027_tasks.json', 'vsosh_9_2027_theory.json'):
+        fp = os.path.join(data_dir, fn)
+        json_files[fn] = 'ok' if os.path.isfile(fp) else 'MISSING'
+
+    # 4. Переменная окружения
+    env_val = os.environ.get('VSOSH9_2027_FORCE_IMPORT', '(not set)')
+
+    result = None
+    if force:
+        try:
+            from flask import current_app
+            run_v4_force_import(current_app, db)
+            result = 'ok'
+        except Exception as e:
+            result = f'error: {e}'
+
+    # 5. Повторный подсчёт после force (если был)
+    if force:
+        vsosh_probniks = Probnik.query.filter_by(
+            competition='ВсОШ', grade=9, season_year=2027
+        ).count()
+        vsosh_published = Probnik.query.filter_by(
+            competition='ВсОШ', grade=9, season_year=2027, is_published=True
+        ).count()
+        probnik_codes = [
+            r.code for r in
+            Probnik.query.with_entities(Probnik.code).filter(
+                Probnik.competition == 'ВсОШ',
+                Probnik.grade == 9,
+                Probnik.season_year == 2027,
+            ).all()
+        ]
+        tasks_per_probnik = {}
+        for pc in probnik_codes:
+            p = Probnik.query.filter_by(code=pc).first()
+            if p:
+                cnt = OlympiadTask.query.filter_by(probnik_id=p.id).count()
+                tasks_per_probnik[pc] = cnt
+        total_tasks = OlympiadTask.query.count()
+
+    data = {
+        'vsosh9_2027': {
+            'probniks_total': vsosh_probniks,
+            'probniks_published': vsosh_published,
+            'tasks_total': total_tasks,
+            'tasks_per_probnik': tasks_per_probnik,
+        },
+        'global': {
+            'probniks_total': total_probniks,
+        },
+        'env': {
+            'VSOSH9_2027_FORCE_IMPORT': env_val,
+        },
+        'json_files': json_files,
+        'force_ran': force,
+        'force_result': result,
+    }
+
+    if _wants_json() or request.args.get('json') is not None:
+        return jsonify(data)
+
+    # Простая HTML-страница для просмотра в браузере
+    lines = []
+    lines.append('<html><head><meta charset="utf-8"><title>V4 Force-Import Diagnostics</title>')
+    lines.append('<style>body{font-family:sans-serif;margin:2rem}'
+                 'td,th{padding:4px 12px;text-align:left}'
+                 '.ok{color:green}.missing{color:red}.warn{color:orange}</style></head><body>')
+    lines.append(f'<h1>V4 Force-Import Diagnostics</h1>')
+    lines.append(f'<p><a href="?force=1">▶ Запустить force-import</a></p>')
+    lines.append(f'<h2>Состояние vsosh-9-2027</h2>')
+    lines.append(f'<table><tr><th>Метрика</th><th>Значение</th></tr>')
+    lines.append(f'<tr><td>Probnik-записей</td><td>{vsosh_probniks}</td></tr>')
+    lines.append(f'<tr><td>Из них published</td><td>{vsosh_published}</td></tr>')
+    lines.append(f'<tr><td>Всего задач (OlympiadTask)</td><td>{total_tasks}</td></tr>')
+    for code, cnt in sorted(tasks_per_probnik.items()):
+        cls = 'ok' if cnt > 0 else 'missing'
+        lines.append(f'<tr><td>Задач для {code}</td><td class="{cls}">{cnt}</td></tr>')
+    lines.append(f'</table>')
+
+    lines.append(f'<h2>JSON-файлы</h2><table>')
+    for fn, status in json_files.items():
+        cls = 'ok' if status == 'ok' else 'missing'
+        lines.append(f'<tr><td>{fn}</td><td class="{cls}">{status}</td></tr>')
+    lines.append(f'</table>')
+
+    lines.append(f'<h2>Окружение</h2>')
+    lines.append(f'<p>VSOSH9_2027_FORCE_IMPORT = <code>{env_val}</code></p>')
+
+    if force:
+        cls = 'ok' if result == 'ok' else 'missing'
+        lines.append(f'<h2>Force import result</h2>')
+        lines.append(f'<p class="{cls}">{result}</p>')
+        lines.append(f'<p><a href="?">Обновить (без force)</a></p>')
+
+    lines.append('</body></html>')
+    return '\n'.join(lines)
+
+
 # ─── 1. Каталог олимпиад ──────────────────────────────────────────────────────
 
 @olympiad_bp.route('/courses', endpoint='catalog')
