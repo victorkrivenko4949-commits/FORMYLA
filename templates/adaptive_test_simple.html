@@ -114,6 +114,169 @@
                 </p>
             </div>
 
+            <!-- Единая клавиатура ввода -->
+            <div class="kb-wrapper" style="margin-bottom: 20px;">
+                <button type="button" id="kbToggleBtn" class="unified-kb-toggle" onclick="toggleKeyboard()">
+                    ⌨️ Клавиатура
+                </button>
+
+                <div id="unifiedKeyboard" class="unified-keyboard">
+                    <div class="kb-header">
+                        <span class="kb-field-indicator">
+                            <span class="dot"></span>
+                            <span id="kbFieldLabel">Ответ</span>
+                        </span>
+                        <button type="button" class="kb-close-btn" onclick="toggleKeyboard()">✕</button>
+                    </div>
+
+                    <div class="kb-tabs">
+                        <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')">🔢 Математическая</button>
+                        <button type="button" class="kb-tab" data-layout="regular" onclick="switchKbTab('regular')">⌨️ Обычная</button>
+                    </div>
+
+                    <!-- ===== Математическая раскладка ===== -->
+                    <div id="kbLayoutMath" class="kb-layout active">
+                        <!-- Греческие буквы -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\alpha')">α</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\beta')">β</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\gamma')">γ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\delta')">δ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\theta')">θ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\lambda')">λ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\mu')">μ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\pi')">π</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\sigma')">σ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\phi')">φ</button>
+                            <button type="button" class="kb-key math-greek" onclick="kbInsert('\\omega')">ω</button>
+                        </div>
+                        <!-- Математические символы -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sqrt{}')">√</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sum')">∑</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\int')">∫</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\pm')">±</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\infty')">∞</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\approx')">≈</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\neq')">≠</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leq')">≤</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\geq')">≥</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">→</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')">↔</button>
+                        </div>
+                        <!-- LaTeX-команды -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\frac{}{}')">\frac</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\sqrt{}')">\sqrt</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\cdot')">\cdot</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\times')">\times</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\div')">\div</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\partial')">\partial</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\nabla')">\nabla</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\leq')">\le</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\geq')">\ge</button>
+                            <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\neq')">\ne</button>
+                        </div>
+                        <!-- Числа и скобки -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
+                        </div>
+                        <!-- Нижний ряд: скобки, backspace, space, enter -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('(')">(</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(')')">)</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('[')">[</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(']')">]</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('\\\\{')">{</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('\\\\}')">}</button>
+                            <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
+                            <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
+                            <button type="button" class="kb-key enter" onclick="kbInsert('\\\\quad ')">⏎</button>
+                        </div>
+                    </div>
+
+                    <!-- ===== Обычная раскладка ===== -->
+                    <div id="kbLayoutRegular" class="kb-layout">
+                        <!-- Ряд 1 -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('й')">й</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ц')">ц</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('у')">у</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('к')">к</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('е')">е</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('н')">н</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('г')">г</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ш')">ш</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('щ')">щ</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('з')">з</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('х')">х</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ъ')">ъ</button>
+                        </div>
+                        <!-- Ряд 2 -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('ф')">ф</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ы')">ы</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('в')">в</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('а')">а</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('п')">п</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('р')">р</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('о')">о</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('л')">л</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('д')">д</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ж')">ж</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('э')">э</button>
+                        </div>
+                        <!-- Ряд 3 -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('я')">я</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ч')">ч</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('с')">с</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('м')">м</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('и')">и</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('т')">т</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ь')">ь</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('б')">б</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('ю')">ю</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
+                            <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
+                        </div>
+                        <!-- Цифры -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
+                            <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
+                        </div>
+                        <!-- Нижний ряд -->
+                        <div class="kb-row">
+                            <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
+                            <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
+                            <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово ✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Затемнение для мобильных -->
+                <div class="kb-backdrop" id="kbBackdrop" onclick="toggleKeyboard()"></div>
+            </div>
+
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
                     📸 Фото решения из тетради (можно несколько, опционально):
@@ -343,6 +506,309 @@
 .math-solution-field::part(content) {
     color: var(--text-main);
     caret-color: var(--accent-1);
+}
+</style>
+
+<!-- ===== ЕДИНАЯ КЛАВИАТУРА ВВОДА (Математическая / Обычная) ===== -->
+<style>
+/* ---- Кнопка открытия клавиатуры ---- */
+.unified-kb-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 4px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.unified-kb-toggle:hover { opacity: 0.9; }
+.unified-kb-toggle:active { transform: scale(0.96); }
+.unified-kb-toggle.active {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* ---- Контейнер клавиатуры ---- */
+.unified-keyboard {
+    display: none;
+    margin-top: 16px;
+    margin-bottom: 10px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+    z-index: 100;
+}
+.unified-keyboard.open { display: block; }
+
+/* ---- Затемнение фона (только мобильные) ---- */
+.kb-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+}
+
+/* ---- Заголовок + индикатор поля ---- */
+.kb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(30, 41, 59, 0.8);
+    border-bottom: 1px solid var(--border-mid);
+}
+.kb-field-indicator {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.kb-field-indicator .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-1);
+    animation: pulse-dot 1.5s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+.kb-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.kb-close-btn:hover { color: #fff; }
+
+/* ---- Вкладки ---- */
+.kb-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-mid);
+}
+.kb-tab {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    position: relative;
+}
+.kb-tab:hover { color: var(--text-main); background: rgba(59,130,246,0.08); }
+.kb-tab.active {
+    color: var(--accent-1);
+    background: rgba(59,130,246,0.12);
+}
+.kb-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--accent-1);
+    border-radius: 1px;
+}
+
+/* ---- Раскладки ---- */
+.kb-layout {
+    display: none;
+    padding: 10px 8px;
+}
+.kb-layout.active { display: block; }
+
+.kb-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+.kb-row:last-child { margin-bottom: 0; }
+
+/* ---- Клавиши ---- */
+.kb-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 42px;
+    padding: 0 8px;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(100, 116, 139, 0.25);
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s, border-color 0.12s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    flex-shrink: 0;
+}
+.kb-key:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+.kb-key:active {
+    transform: scale(0.92);
+    background: rgba(59, 130, 246, 0.3);
+}
+
+/* Математические символы — чуть крупнее */
+.kb-key.math-symbol {
+    font-size: 18px;
+    min-width: 42px;
+}
+/* Греческие буквы */
+.kb-key.math-greek {
+    font-size: 17px;
+    min-width: 40px;
+    font-style: italic;
+}
+/* LaTeX-команды */
+.kb-key.math-command {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 52px;
+    padding: 0 10px;
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+.kb-key.math-command:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* Широкие клавиши */
+.kb-key.wide { min-width: 60px; }
+.kb-key.space {
+    min-width: 140px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Клавиши действий */
+.kb-key.action {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.2);
+    min-width: 50px;
+    font-size: 13px;
+}
+.kb-key.action:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+.kb-key.action.shift {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.2);
+}
+.kb-key.action.shift:hover {
+    background: rgba(251, 191, 36, 0.3);
+    border-color: rgba(251, 191, 36, 0.4);
+}
+.kb-key.action.shift.active {
+    background: rgba(251, 191, 36, 0.4);
+    border-color: #fbbf24;
+}
+
+/* Enter */
+.kb-key.enter {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-color: transparent;
+    color: #fff;
+    font-weight: 700;
+    min-width: 60px;
+}
+.kb-key.enter:hover {
+    opacity: 0.9;
+}
+
+/* ---- Мобильная версия (фиксированная + оверлей) ---- */
+@media (max-width: 640px) {
+    .unified-keyboard {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 55vh;
+        overflow-y: auto;
+        z-index: 200;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    }
+    .unified-keyboard.open + .kb-backdrop { display: block; }
+    .unified-keyboard.open ~ .kb-backdrop { display: block; }
+
+    .kb-key {
+        height: 38px;
+        min-width: 32px;
+        font-size: 14px;
+    }
+    .kb-key.math-symbol { font-size: 16px; min-width: 36px; }
+    .kb-key.math-greek { font-size: 15px; min-width: 36px; }
+    .kb-key.math-command { font-size: 11px; min-width: 44px; }
+    .kb-key.wide { min-width: 48px; }
+    .kb-key.space { min-width: 100px; }
+    .kb-key.enter { min-width: 50px; }
+
+    .kb-row { gap: 3px; margin-bottom: 4px; }
+    .kb-layout { padding: 8px 4px; }
+    .kb-tab { font-size: 12px; padding: 8px 4px; }
+}
+
+/* ---- Планшеты ---- */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .unified-keyboard {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 50vh;
+        overflow-y: auto;
+        z-index: 200;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    }
+    .unified-keyboard.open + .kb-backdrop { display: block; }
+    .kb-key {
+        height: 44px;
+        min-width: 40px;
+        font-size: 16px;
+    }
+    .kb-key.space { min-width: 180px; }
+}
+
+/* Блокировка скролла body когда клавиатура открыта на мобильных */
+body.kb-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
 }
 </style>
 
@@ -1013,4 +1479,116 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 </script>
+
+<script>
+// ─── Единая клавиатура ввода (Математическая / Обычная) ───
+let _kbActiveField = null;
+
+// Следим за фокусом на MathLive полях
+document.addEventListener('focusin', function(e) {
+    const el = e.target;
+    // MathLive использует shadow DOM, прокси через closest
+    const mf = el.closest ? el.closest('math-field') : null;
+    if (mf && (mf.id === 'user_answer' || mf.id === 'solution_text')) {
+        _kbActiveField = mf;
+        const label = document.getElementById('kbFieldLabel');
+        if (label) {
+            label.textContent = (mf.id === 'user_answer') ? 'Ответ' : 'Решение';
+        }
+    } else if (el && (el.id === 'user_answer' || el.id === 'solution_text')) {
+        _kbActiveField = el;
+        const label = document.getElementById('kbFieldLabel');
+        if (label) {
+            label.textContent = (el.id === 'user_answer') ? 'Ответ' : 'Решение';
+        }
+    }
+});
+
+function kbInsert(text) {
+    if (!_kbActiveField) {
+        _kbActiveField = document.getElementById('user_answer');
+    }
+    if (!_kbActiveField) return;
+    try {
+        const current = _kbActiveField.getValue ? _kbActiveField.getValue('latex') : _kbActiveField.value;
+        const newVal = (current || '') + text;
+        if (_kbActiveField.setValue) {
+            _kbActiveField.setValue(newVal);
+        } else {
+            _kbActiveField.value = newVal;
+        }
+        _kbActiveField.focus();
+        // Триггер события для автосохранения
+        _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch(e) {
+        console.warn('kbInsert error:', e);
+    }
+}
+
+function kbBackspace() {
+    if (!_kbActiveField) {
+        _kbActiveField = document.getElementById('user_answer');
+    }
+    if (!_kbActiveField) return;
+    try {
+        const current = _kbActiveField.getValue ? _kbActiveField.getValue('latex') : _kbActiveField.value;
+        if (current && current.length > 0) {
+            const newVal = current.slice(0, -1);
+            if (_kbActiveField.setValue) {
+                _kbActiveField.setValue(newVal);
+            } else {
+                _kbActiveField.value = newVal;
+            }
+            _kbActiveField.focus();
+            _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    } catch(e) {
+        console.warn('kbBackspace error:', e);
+    }
+}
+
+function toggleKeyboard() {
+    const kb = document.getElementById('unifiedKeyboard');
+    const btn = document.getElementById('kbToggleBtn');
+    const body = document.body;
+    const isMobile = window.innerWidth <= 640;
+    if (!kb) return;
+    const isOpen = kb.classList.contains('open');
+    if (isOpen) {
+        kb.classList.remove('open');
+        if (btn) btn.classList.remove('active');
+        if (isMobile) body.classList.remove('kb-open');
+    } else {
+        kb.classList.add('open');
+        if (btn) btn.classList.add('active');
+        if (isMobile) body.classList.add('kb-open');
+        if (_kbActiveField) _kbActiveField.focus();
+    }
+}
+
+function switchKbTab(tabName) {
+    document.querySelectorAll('.kb-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.kb-layout').forEach(function(l) { l.classList.remove('active'); });
+    var tab = document.querySelector('.kb-tab[data-tab="' + tabName + '"]');
+    var layoutId = 'kbLayout' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    var layout = document.getElementById(layoutId);
+    if (tab) tab.classList.add('active');
+    if (layout) layout.classList.add('active');
+}
+
+function submitCurrentAnswer() {
+    var form = document.getElementById('answerForm');
+    if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+}
+
+// Закрытие клавиатуры по клику на backdrop
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('kb-backdrop')) {
+        toggleKeyboard();
+    }
+});
+</script>
+
 {% endblock %}

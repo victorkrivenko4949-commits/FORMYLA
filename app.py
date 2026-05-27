@@ -1281,8 +1281,7 @@ if IMAGE_MAP:
 
 # ============================================================
 
-
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 
 
 UPLOAD_FOLDER = "static/uploads"

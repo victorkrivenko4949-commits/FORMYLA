@@ -89,3 +89,54 @@ _git_tracked.txt
 _run_audit.py
 _do_cleanup.py
 *.bak
+*.bak.*
+
+# Patches
+*.patch
+
+# Screenshots and adaptive_data byproducts
+screenshots/
+adaptive_data/_backups/
+adaptive_data/generated/
+adaptive_data/generated_C2d/
+adaptive_data/generated_F/
+adaptive_data/audit/
+
+# Debug / temporary HTML pages
+debug_catalog.html
+prod_page.html
+page.html
+local.html
+local2.html
+now.html
+lander.html
+
+# Local diag / response dumps
+flask_err.txt
+flask_log.txt
+headers.txt
+response_body.txt
+diag.txt
+
+# Investigation / garbage check artifacts (root-level)
+/_GARBAGE_*
+/_check_*
+/_investigate*
+/_old_*
+/_b_review_*
+/_backup_check_*
+/_diff_*
+/_garbage_*
+/200
+/bad_*.txt
+/check_out*.txt
+/diff_app.txt
+/do_commit.bat
+/models.json
+/topics_by_grade.txt
+
+# Corrupted / junk filenames
+/{,
+/n{,
+/Главная*,
+/РАЗДЕЛЫ_*
