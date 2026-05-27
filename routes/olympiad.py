@@ -319,6 +319,36 @@ def course():
         .order_by(asc(Probnik.type), asc(Probnik.sort_order), asc(Probnik.number))
         .all()
     )
+
+    # Self-healing: если пробников для vsosh-9-2027 нет, запускаем
+    # force-import прямо из запроса. Это даёт второй шанс, когда
+    # boot-time seed (app.py строка 787) не сработал — например,
+    # Probnik уже содержал записи других олимпиад, или БД не успела
+    # инициализироваться к моменту старта gunicorn.
+    if not probniks:
+        try:
+            from services.olympiad_v4_force import run_v4_force_import
+            from flask import current_app
+            print("[VSOSH9-V4] self-heal: course page triggered force import")
+            run_v4_force_import(current_app, db)
+            probniks = (
+                Probnik.query
+                .filter_by(
+                    competition=competition,
+                    grade=grade,
+                    season_year=season_year,
+                    is_published=True,
+                )
+                .order_by(asc(Probnik.type), asc(Probnik.sort_order), asc(Probnik.number))
+                .all()
+            )
+            print(
+                "[VSOSH9-V4] self-heal: after import probniks=%d"
+                % len(probniks)
+            )
+        except Exception as _e:
+            print("[VSOSH9-V4] self-heal on course page failed: %s" % _e)
+
     topic_probniks = [p for p in probniks if p.type == 'topic']
     stage_probniks = [p for p in probniks if p.type == 'stage']
 
