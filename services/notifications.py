@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 Notification service for FORMYLA.
-Sends messages via Telegram bot and email (Yandex SMTP).
+Sends messages via Telegram bot and email (Resend).
+
+Email delivery went through several providers (Gmail → Yandex → Resend).
+The current implementation prefers Resend HTTP API (see utils/mail.py)
+because Gmail App Passwords got revoked (SMTPAuthenticationError 535)
+and SMTP_SSL on port 465 hits a Python 3.13+ Windows bug.
+SMTP via Resend (smtp.resend.com:465 SSL) is kept as a transparent fallback.
 """
 import os
 import logging
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 logger = logging.getLogger(__name__)
 
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
-SMTP_SERVER = "smtp.yandex.ru"
-SMTP_PORT = 587
-SMTP_USER = os.environ.get("MAIL_USERNAME", "kr1venkovictor@yandex.ru")
-SMTP_PASS = os.environ.get("MAIL_PASSWORD", "")
 
 
 def send_telegram(chat_id, text):
@@ -46,16 +45,56 @@ def send_telegram(chat_id, text):
 
 
 def send_email(to_email, subject, body, html=None):
-    """Send an email via Yandex SMTP (port 587 TLS).
+    """Send an email via Resend.
 
-    Returns True on success, False on failure.
+    Order of preference:
+      1. Resend HTTP API (utils.mail.send_email) — works on any platform,
+         no SMTP plumbing required.
+      2. SMTP fallback via smtp.resend.com:465 (implicit TLS) using the
+         standard MAIL_* env vars.
+
+    Returns True on success, False on failure (never raises).
     """
-    if not SMTP_PASS or not to_email:
-        logger.debug("Email send skipped: no password or recipient")
+    if not to_email:
+        logger.debug("Email send skipped: empty recipient")
+        return False
+
+    # ── 1) HTTP API ──────────────────────────────────────────────────
+    try:
+        from utils.mail import send_email as resend_send, is_configured
+        if is_configured():
+            resend_send(
+                to_email,
+                subject,
+                html or body or "",
+                text=body if html else None,
+            )
+            return True
+    except Exception as exc:
+        logger.error("Resend HTTP send failed, falling back to SMTP: %s", exc)
+
+    # ── 2) SMTP fallback ─────────────────────────────────────────────
+    import smtplib
+    import ssl
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    smtp_host = os.environ.get("MAIL_SERVER", "smtp.resend.com")
+    smtp_port = int(os.environ.get("MAIL_PORT", "465"))
+    smtp_user = os.environ.get("MAIL_USERNAME", "resend")
+    smtp_pass = os.environ.get("MAIL_PASSWORD", "") or os.environ.get("RESEND_API_KEY", "")
+    sender = (
+        os.environ.get("MAIL_DEFAULT_SENDER")
+        or "onboarding@resend.dev"
+    )
+    use_ssl = os.environ.get("MAIL_USE_SSL", "True").lower() in ("true", "1", "t", "yes")
+
+    if not smtp_pass:
+        logger.debug("Email send skipped: no SMTP password / RESEND_API_KEY")
         return False
 
     msg = MIMEMultipart("alternative")
-    msg["From"] = SMTP_USER
+    msg["From"] = sender
     msg["To"] = to_email
     msg["Subject"] = subject
 
@@ -64,13 +103,19 @@ def send_email(to_email, subject, body, html=None):
         msg.attach(MIMEText(html, "html", "utf-8"))
 
     try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_USER, [to_email], msg.as_string())
+        if use_ssl and smtp_port == 465:
+            ctx = ssl.create_default_context()
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10, context=ctx) as server:
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(sender, [to_email], msg.as_string())
+        else:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(sender, [to_email], msg.as_string())
         return True
     except Exception as exc:
-        logger.error("Email send error: %s", exc)
+        logger.error("Email SMTP send error: %s", exc)
         return False

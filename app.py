@@ -183,15 +183,23 @@ app.config['SESSION_COOKIE_SECURE'] = _is_https
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # CRITICAL: Prevent JavaScript access to session cookie
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Flask-Mail configuration (Yandex by default, fully configurable via env vars)
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
+# Flask-Mail configuration (Resend by default, fully configurable via env vars).
+# Resend SMTP requires: host=smtp.resend.com, port=465, SSL=True, username='resend',
+# password=<RESEND_API_KEY>. MAIL_DEFAULT_SENDER must be a verified address
+# (or onboarding@resend.dev for testing) — NOT the username 'resend'.
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.resend.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '465'))
 # Жесткое преобразование строк в bool (исправлено для корректной работы)
 app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'False').lower() in ['true', '1', 't', 'yes']
 app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'True').lower() in ['true', '1', 't', 'yes']
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'resend')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') or os.environ.get('RESEND_API_KEY')
+# Explicit MAIL_DEFAULT_SENDER takes priority; fallback to onboarding@resend.dev
+# (Resend's shared sandbox sender that works without domain verification).
+app.config['MAIL_DEFAULT_SENDER'] = (
+    os.environ.get('MAIL_DEFAULT_SENDER')
+    or 'onboarding@resend.dev'
+)
 
 # DEBUG: Проверка конфигурации Flask-Mail
 print("="*60)
@@ -2512,21 +2520,19 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через SMTP напрямую (без Flask-Mail) с настройками из app.config (.env)."""
-    import smtplib
-    import ssl
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
-    from email.header import Header
-    
-    smtp_host = app.config.get('MAIL_SERVER', 'smtp.yandex.ru')
-    smtp_port = app.config.get('MAIL_PORT', 465)
-    use_ssl = app.config.get('MAIL_USE_SSL', True)
-    use_tls = app.config.get('MAIL_USE_TLS', False)
-    smtp_user = app.config.get('MAIL_USERNAME', '')
-    smtp_pass = app.config.get('MAIL_PASSWORD', '')
-    sender = app.config.get('MAIL_DEFAULT_SENDER') or smtp_user
-    
+    """Отправка кода подтверждения.
+
+    Стратегия (в порядке предпочтения):
+      1) Resend HTTP API — если задан ``RESEND_API_KEY`` или ``MAIL_PASSWORD``
+         начинается с ``re_``. Не зависит от SMTP, обходит Windows-баг
+         ``OSError [Errno 22]`` в ``smtplib.SMTP_SSL`` на Python 3.13+ и
+         работает сквозь любые исходящие firewalls на PaaS.
+      2) SMTP через ``smtplib`` — резервный путь, использует параметры из
+         ``app.config`` (по умолчанию ``smtp.resend.com:465`` SSL).
+
+    Gmail SMTP больше не используется (после 2026-05 Google отклоняет
+    App Passwords для этой учётки — см. инцидент SMTPAuthenticationError 535).
+    """
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background: #ffffff; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -2560,38 +2566,74 @@ def send_auth_email(recipient_email, code):
         </div>
     </div>
     """
-    
-    print(f"[EMAIL] Connecting via raw SMTP ({smtp_host}:{smtp_port}, SSL={use_ssl}, TLS={use_tls})")
-    
+
+    subject = 'Код подтверждения для доступа к платформе FORMYLA'
+
+    # ─── Path 1: Resend HTTP API ────────────────────────────────────────
+    from utils.mail import send_email as resend_send, is_configured as resend_ready
+    if resend_ready():
+        try:
+            print(f"[EMAIL] Sending via Resend HTTP API to {recipient_email}")
+            result = resend_send(recipient_email, subject, html)
+            print(f"[EMAIL] ✅ Resend accepted (id={result.get('id', '?')}) for {recipient_email}")
+            return True
+        except Exception as e:
+            print(f"[EMAIL] Resend API failed ({e}); falling back to SMTP")
+            import traceback
+            traceback.print_exc()
+            # fall through to SMTP
+
+    # ─── Path 2: SMTP fallback ─────────────────────────────────────────
+    import smtplib
+    import ssl
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    from email.header import Header
+
+    smtp_host = app.config.get('MAIL_SERVER', 'smtp.resend.com')
+    smtp_port = int(app.config.get('MAIL_PORT', 465))
+    use_ssl = app.config.get('MAIL_USE_SSL', True)
+    use_tls = app.config.get('MAIL_USE_TLS', False)
+    smtp_user = app.config.get('MAIL_USERNAME', 'resend')
+    smtp_pass = app.config.get('MAIL_PASSWORD', '')
+    sender = app.config.get('MAIL_DEFAULT_SENDER') or 'onboarding@resend.dev'
+
+    print(f"[EMAIL] Connecting via SMTP ({smtp_host}:{smtp_port}, SSL={use_ssl}, TLS={use_tls})")
+
     try:
-        # STARTTLS (порт 587) — единственный способ, стабильный на Python 3.13 Windows.
-        # SMTP_SSL (порт 465) НЕ используется — баг Python 3.13 Windows: OSError [Errno 22]
-        server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
-        server.set_debuglevel(1)
-        server.ehlo()
-        if use_ssl or use_tls:
-            try:
-                context = ssl.create_default_context()
-                server.starttls(context=context)
-            except Exception:
-                print("[EMAIL] default context failed, retrying with unverified context...")
-                context = ssl._create_unverified_context()
-                server.starttls(context=context)
+        if use_ssl and smtp_port == 465:
+            # Resend recommends SMTPS (implicit TLS) on 465.
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=15, context=context)
+            server.set_debuglevel(1)
             server.ehlo()
-        
-        server.set_debuglevel(1)
+        else:
+            # STARTTLS on 587 (also supported by Resend).
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
+            server.set_debuglevel(1)
+            server.ehlo()
+            if use_tls:
+                try:
+                    context = ssl.create_default_context()
+                    server.starttls(context=context)
+                except Exception:
+                    print("[EMAIL] default context failed, retrying with unverified context...")
+                    context = ssl._create_unverified_context()
+                    server.starttls(context=context)
+                server.ehlo()
+
         server.login(smtp_user, smtp_pass)
-        
+
         # Формируем письмо
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = Header('Код подтверждения для доступа к платформе FORMYLA', 'utf-8')
+        msg['Subject'] = Header(subject, 'utf-8')
         msg['From'] = sender
         msg['To'] = recipient_email
         msg.attach(MIMEText(html, 'html', 'utf-8'))
-        
+
         server.sendmail(sender, [recipient_email], msg.as_bytes())
         server.quit()
-        
+
         print(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
         return True
     except Exception as e:
@@ -2634,13 +2676,16 @@ def login():
         print(f">>> КОД СГЕНЕРИРОВАН: {code}", flush=True)
         app.logger.warning(f"КОД СГЕНЕРИРОВАН: {code} для {email}")
         
-        # Отправляем код на email
-        # Проверяем настройки
-        mail_configured = app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD')
-        
+        # Отправляем код на email.
+        # Резолюция настроек: либо Resend (API key), либо классический SMTP.
+        from utils.mail import is_configured as resend_ready
+        smtp_ready = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
+        mail_configured = resend_ready() or smtp_ready
+
         print(f"\n🔍 DEBUG: MAIL_USERNAME = {app.config.get('MAIL_USERNAME')}", flush=True)
         mail_pass = app.config.get('MAIL_PASSWORD') or ''
         print(f"🔍 DEBUG: MAIL_PASSWORD = {'*' * len(mail_pass)} ({len(mail_pass)} символов)", flush=True)
+        print(f"🔍 DEBUG: Resend API key set = {resend_ready()}", flush=True)
         print(f"🔍 DEBUG: Mail configured = {mail_configured}\n", flush=True)
         
         if mail_configured:
@@ -9326,7 +9371,7 @@ def submit_feedback():
     """Принять отзыв пользователя и отправить его на почту владельцу.
 
     Тело JSON: {rating: 1..5|null, message: str, email: str|null, page_url: str}
-    Email-получатель: env REVIEW_NOTIFY_EMAIL → fallback victor.krivenko.4949@gmail.com.
+    Email-получатель: env REVIEW_NOTIFY_EMAIL → SUPPORT_NOTIFY_EMAIL → MAIL_USERNAME.
     Никаких записей в БД (чтобы не требовать миграцию). Тикет-id = unix-timestamp.
     """
     try:

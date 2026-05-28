@@ -91,12 +91,17 @@ def send_support_email(mail_instance, *, nickname, email, category,
 def send_review_email(mail_instance, *, nickname, email, rating, message,
                       page_url, user_agent, ip, ticket_id):
     """Отправить отзыв пользователя владельцу.
-       Получатель: env REVIEW_NOTIFY_EMAIL → fallback victor.krivenko.4949@gmail.com.
+       Получатель: env REVIEW_NOTIFY_EMAIL → SUPPORT_NOTIFY_EMAIL → MAIL_USERNAME.
        Возвращает (ok, error)."""
     from flask_mail import Message
 
-    owner_email = (os.environ.get('REVIEW_NOTIFY_EMAIL')
-                   or 'victor.krivenko.4949@gmail.com')
+    owner_email = (
+        os.environ.get('REVIEW_NOTIFY_EMAIL')
+        or os.environ.get('SUPPORT_NOTIFY_EMAIL')
+        or os.environ.get('MAIL_USERNAME')
+    )
+    if not owner_email:
+        return False, 'REVIEW_NOTIFY_EMAIL / SUPPORT_NOTIFY_EMAIL not set'
 
     try:
         r = int(rating) if rating is not None else 0
