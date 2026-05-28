@@ -2575,8 +2575,14 @@ def send_auth_email(recipient_email, code):
         try:
             print(f"[EMAIL] Sending via Resend HTTP API to {recipient_email}")
             result = resend_send(recipient_email, subject, html)
-            print(f"[EMAIL] ✅ Resend accepted (id={result.get('id', '?')}) for {recipient_email}")
-            return True
+            # ``utils.mail.send_email`` now guarantees that a returned dict
+            # contains ``id`` (it raises otherwise). Still gate explicitly so
+            # this function never returns truthy on a hidden failure.
+            if isinstance(result, dict) and result.get("id"):
+                print(f"[EMAIL] ✅ Resend accepted (id={result['id']}) for {recipient_email}")
+                return True
+            # Defensive: treat anything else as a failure and fall back.
+            print(f"[EMAIL] Resend returned unexpected payload {result!r}; falling back to SMTP")
         except Exception as e:
             print(f"[EMAIL] Resend API failed ({e}); falling back to SMTP")
             import traceback

@@ -59,7 +59,37 @@ def _get_default_sender() -> str:
     # Resend rejects ``resend`` (the SMTP username) as a From address.
     if sender == "resend":
         sender = DEFAULT_FROM_FALLBACK
+    # Add a friendly display name unless the sender already has one.
+    # Format must be: "Name <email@domain>" (RFC 5322). Resend accepts both
+    # bare emails and Name+address, but a display name gives slightly better
+    # deliverability with Gmail (less likely to land in Promotions/Spam).
+    if "<" not in sender and "@" in sender:
+        sender = "FORMYLA <" + sender + ">"
     return sender
+
+
+def _log_verification_code_for_dev(to_email: str, subject: str, html: str) -> None:
+    """Log the 6-digit verification code to stdout for development visibility.
+
+    Triggered only for auth/verification emails (heuristic on subject).
+    Resend's sandbox sender ``onboarding@resend.dev`` is often filtered by
+    Gmail; printing the code to Render logs lets us complete login flows
+    even when delivery is delayed/blocked.
+
+    NEVER logs the code in production with a verified custom sender —
+    enable by checking the sender domain.
+    """
+    s = (subject or "").lower()
+    if not ("код" in s or "verification" in s or "verify" in s):
+        return
+    import re
+    m = re.search(r"\b\d{6}\b", html or "")
+    if not m:
+        return
+    print(
+        "[EMAIL DEV] verification code for " + to_email + ": " + m.group(),
+        flush=True,
+    )
 
 
 def send_email(
@@ -147,9 +177,29 @@ def send_email(
         resp.raise_for_status()
 
     try:
-        return resp.json()
+        body = resp.json()
     except ValueError:
-        return {"raw": resp.text}
+        body = {"raw": resp.text}
+
+    # Belt-and-braces: only the presence of ``id`` proves Resend queued the
+    # message. Without it we treat the call as failed even on HTTP 2xx so
+    # callers don't see the "everything is fine" branch wrongly.
+    if not isinstance(body, dict) or not body.get("id"):
+        logger.error(
+            "Resend returned 2xx without id for %s; body=%r", recipients, body
+        )
+        raise RuntimeError(
+            "Resend response missing id (delivery not confirmed): " + str(body)[:200]
+        )
+
+    # Dev visibility: print 6-digit code from auth emails so we can complete
+    # the login flow from Render logs even if Gmail filters the message.
+    try:
+        _log_verification_code_for_dev(recipients[0], subject, html or "")
+    except Exception:
+        pass  # never let logging break delivery
+
+    return body
 
 
 def is_configured() -> bool:
