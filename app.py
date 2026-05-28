@@ -402,6 +402,7 @@ try:
             _alter('olympiad_theory', 'frequency_vsosh_9', 'INTEGER'),
             _alter('olympiad_theory', 'sort_order', 'INTEGER', ' DEFAULT 0'),
             # связанные поля задач
+            _alter('olympiad_tasks', 'probnik_id', 'INTEGER'),
             _alter('olympiad_tasks', 'method_codes', _json_type),
             _alter('olympiad_tasks', 'year', 'INTEGER'),
             _alter('olympiad_tasks', 'stage', 'VARCHAR(20)'),
@@ -425,6 +426,31 @@ try:
             except Exception as _e_col:
                 db.session.rollback()
                 print(f"[AUTO-MIGRATION] {_tbl}.{_col} skipped: {_e_col}")
+        # Also add FK constraint for probnik_id on PostgreSQL
+        if _is_pg_olymp and 'olympiad_tasks' in _existing_o:
+            try:
+                _pk_cols = {c['name'] for c in _ins_o.get_columns('olympiad_tasks')}
+                if 'probnik_id' in _pk_cols:
+                    # Check if FK constraint already exists
+                    _fk_sql = text(
+                        "SELECT 1 FROM information_schema.table_constraints "
+                        "WHERE constraint_type='FOREIGN KEY' "
+                        "AND table_name='olympiad_tasks' "
+                        "AND constraint_name='fk_olympiad_tasks_probnik_id'"
+                    )
+                    _fk_exists = db.session.execute(_fk_sql).scalar()
+                    if not _fk_exists:
+                        db.session.execute(text(
+                            "ALTER TABLE olympiad_tasks "
+                            "ADD CONSTRAINT fk_olympiad_tasks_probnik_id "
+                            "FOREIGN KEY (probnik_id) REFERENCES olympiad_probniks(id) "
+                            "ON DELETE CASCADE"
+                        ))
+                        db.session.commit()
+                        print("[AUTO-MIGRATION] OK Added FK olympiad_tasks.probnik_id -> olympiad_probniks.id")
+            except Exception as _e_fk:
+                db.session.rollback()
+                print(f"[AUTO-MIGRATION] FK olympiad_tasks.probnik_id skipped: {_e_fk}")
 except Exception as _e_olymp:
     print(f"[AUTO-MIGRATION] olympiad fields Warning: {_e_olymp}")
 
