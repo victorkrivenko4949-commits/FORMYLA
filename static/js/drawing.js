@@ -49,8 +49,8 @@
 
     function escapeHtml(s) {
         return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            .replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')
+            .replace(/"/g, '"').replace(/'/g, ''');
     }
     function fmtDate(iso) {
         if (!iso) return '';
@@ -241,6 +241,48 @@
         });
     });
 
+    // ── Safe JSON parser: reads body as text, tries JSON, falls back ────
+    function parseResponse(r) {
+        var ct = (r.headers.get('Content-Type') || '').toLowerCase();
+        return r.text().then(function (bodyText) {
+            // If the server returned HTML (error page, proxy error, etc.)
+            // we cannot parse it as JSON — treat as a non-JSON error.
+            if (ct.indexOf('application/json') === -1) {
+                // Try to detect Cloudflare / nginx / Flask error pages
+                var snippet = bodyText.length > 200
+                    ? bodyText.slice(0, 200) + '…'
+                    : bodyText;
+                return {
+                    ok: false,
+                    status: r.status,
+                    data: {
+                        error: 'Сервер вернул неожиданный ответ (HTML вместо JSON). '
+                            + 'Статус: ' + r.status + '. '
+                            + 'Возможно, проблема с сетью или прокси.',
+                        _body_snippet: snippet,
+                    }
+                };
+            }
+            try {
+                var data = JSON.parse(bodyText);
+                return { ok: r.ok, status: r.status, data: data };
+            } catch (e) {
+                // JSON parse failed despite correct Content-Type
+                var snippet2 = bodyText.length > 200
+                    ? bodyText.slice(0, 200) + '…'
+                    : bodyText;
+                return {
+                    ok: false,
+                    status: r.status,
+                    data: {
+                        error: 'Ошибка обработки ответа сервера. Попробуйте ещё раз.',
+                        _body_snippet: snippet2,
+                    }
+                };
+            }
+        });
+    }
+
     function submit(bypassCache) {
         hideError();
         var problem = (textArea.value || '').trim();
@@ -279,9 +321,7 @@
             body: JSON.stringify(payload)
         })
         .then(function (r) {
-            return r.json().then(function (data) {
-                return { ok: r.ok, status: r.status, data: data };
-            });
+            return parseResponse(r);
         })
         .then(function (res) {
             setBusy(false);
@@ -330,7 +370,7 @@
         })
         .catch(function (err) {
             setBusy(false);
-            showError('Сетевая ошибка: ' + (err && err.message ? err.message : err));
+            showError('Сетевая ошибка. Проверьте подключение к интернету и попробуйте ещё раз.');
         });
     }
 

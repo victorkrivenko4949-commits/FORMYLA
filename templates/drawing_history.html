@@ -114,7 +114,17 @@
             if (!confirm('Удалить этот чертёж?')) return;
             var id = btn.getAttribute('data-id');
             fetch('/api/drawing/history/' + id, { method: 'DELETE' })
-                .then(function(r){ return r.json(); })
+                .then(function(r){
+                    // Safe parse — check Content-Type before JSON parsing
+                    var ct = (r.headers.get('Content-Type') || '').toLowerCase();
+                    return r.text().then(function(bodyText){
+                        if (ct.indexOf('application/json') === -1) {
+                            return { ok: false, status: r.status, error: 'Сервер вернул HTML вместо JSON' };
+                        }
+                        try { return JSON.parse(bodyText); }
+                        catch(e) { return { ok: false, error: 'Ошибка парсинга ответа' }; }
+                    });
+                })
                 .then(function(j){
                     if (j && j.ok) {
                         var card = btn.closest('.drw-history-card');

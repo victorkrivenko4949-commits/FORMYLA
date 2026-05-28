@@ -115,10 +115,21 @@ else:
     app.secret_key = 'dev-secret-key-LOCAL-ONLY-NOT-FOR-PRODUCTION'
     print("⚠️  WARNING: Используется дефолтный SECRET_KEY (только для локальной разработки!)")
 
-# Asset versioning for cache busting
-import time as _time
-_asset_version = str(int(_time.time()))
-app.jinja_env.globals['asset_version'] = _asset_version
+# Asset versioning for cache busting — based on file mtime so it auto-updates
+# when static files change, without requiring a server restart.
+_asset_version = None
+@app.context_processor
+def _inject_asset_version():
+    global _asset_version
+    import os, time as _time
+    try:
+        mtime = os.path.getmtime(os.path.join(os.path.dirname(__file__), 'static', 'js', 'drawing.js'))
+        new_ver = str(int(mtime))
+    except Exception:
+        new_ver = str(int(_time.time()))
+    if new_ver != _asset_version:
+        _asset_version = new_ver
+    return dict(asset_version=_asset_version)
 
 # DEBUG: Проверка переменных окружения
 print("="*60)
@@ -856,6 +867,17 @@ try:
     print("[BP] telegram_auth_bp registered (/auth/telegram/callback)")
 except Exception as _e:
     print(f"[BP] telegram_auth_bp NOT registered: {_e}")
+
+# /daily_tasks/* — Персонализированные «Задачи дня» (мульти-LLM пайплайн).
+try:
+    from daily_tasks import daily_tasks_bp
+    from migrations.add_daily_tasks_tables import _ensure_table as _ensure_daily_tasks_tables
+    app.register_blueprint(daily_tasks_bp)
+    with app.app_context():
+        _ensure_daily_tasks_tables()
+    print("[BP] daily_tasks_bp registered (/daily_tasks)")
+except Exception as _e:
+    print(f"[BP] daily_tasks_bp NOT registered: {_e}")
 
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
 try:
@@ -1835,7 +1857,7 @@ def section(subject_key):
     for sub_key in subtopics.keys():
         count = 0
         for grade in GRADES:
-            for level in range(1, 8):  # 7 уровней
+            for level in range(1, 9):  # 8 уровней
                 tasks = [p for p in PROBLEMS_DB
                         if p.get("subject") == subject_key
                         and p.get("subtopic") == sub_key
@@ -1876,7 +1898,7 @@ def section_subtopic(subject_key, subtopic_key):
         level_counts[g] = {}
         total_for_grade = 0
         
-        for lev in range(1, 8):  # 7 уровней!
+        for lev in range(1, 9):  # 8 уровней!
             # Считаем задачи для этого уровня
             # subtopic в PROBLEMS_DB хранится как английский ключ (например, 'equations')
             problems_for_level = [p for p in PROBLEMS_DB
@@ -2464,21 +2486,20 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через Yandex SMTP на порту 587 с TLS (для Render)."""
+    """Отправка кода через SMTP напрямую (без Flask-Mail) с настройками из app.config (.env)."""
     import smtplib
+    import ssl
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
+    from email.header import Header
     
-    # Используем надежный порт 587 для TLS
-    smtp_server = 'smtp.yandex.ru'
-    smtp_port = 587
-    smtp_user = 'kr1venkovictor@yandex.ru'
-    smtp_pass = os.environ.get('MAIL_PASSWORD', 'ktxfblhgcrlryncy')
-    
-    msg = MIMEMultipart()
-    msg['From'] = smtp_user
-    msg['To'] = recipient_email
-    msg['Subject'] = 'Код подтверждения для доступа к платформе FORMYLA'
+    smtp_host = app.config.get('MAIL_SERVER', 'smtp.yandex.ru')
+    smtp_port = app.config.get('MAIL_PORT', 465)
+    use_ssl = app.config.get('MAIL_USE_SSL', True)
+    use_tls = app.config.get('MAIL_USE_TLS', False)
+    smtp_user = app.config.get('MAIL_USERNAME', '')
+    smtp_pass = app.config.get('MAIL_PASSWORD', '')
+    sender = app.config.get('MAIL_DEFAULT_SENDER') or smtp_user
     
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background: #ffffff; border-radius: 10px;">
@@ -2513,22 +2534,44 @@ def send_auth_email(recipient_email, code):
         </div>
     </div>
     """
-    msg.attach(MIMEText(html, 'html', 'utf-8'))
+    
+    print(f"[EMAIL] Connecting via raw SMTP ({smtp_host}:{smtp_port}, SSL={use_ssl}, TLS={use_tls})")
     
     try:
-        # Для порта 587 используем обычный SMTP с обязательным starttls()
-        print(f"[EMAIL] Connecting to {smtp_server}:{smtp_port} via TLS")
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
+        # STARTTLS (порт 587) — единственный способ, стабильный на Python 3.13 Windows.
+        # SMTP_SSL (порт 465) НЕ используется — баг Python 3.13 Windows: OSError [Errno 22]
+        server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
+        server.set_debuglevel(1)
         server.ehlo()
-        server.starttls()
-        server.ehlo()
+        if use_ssl or use_tls:
+            try:
+                context = ssl.create_default_context()
+                server.starttls(context=context)
+            except Exception:
+                print("[EMAIL] default context failed, retrying with unverified context...")
+                context = ssl._create_unverified_context()
+                server.starttls(context=context)
+            server.ehlo()
+        
+        server.set_debuglevel(1)
         server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
+        
+        # Формируем письмо
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = Header('Код подтверждения для доступа к платформе FORMYLA', 'utf-8')
+        msg['From'] = sender
+        msg['To'] = recipient_email
+        msg.attach(MIMEText(html, 'html', 'utf-8'))
+        
+        server.sendmail(sender, [recipient_email], msg.as_bytes())
         server.quit()
+        
         print(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
         return True
     except Exception as e:
         print(f"[EMAIL ERROR] Failed to send: {e}")
+        import traceback
+        traceback.print_exc()
         raise Exception(f"Ошибка отправки email: {str(e)}")
 
 
@@ -7385,9 +7428,10 @@ def api_set_grade():
 def daily_quest_regenerate():
     # Гейтинг: задачи дня доступны только после адаптивного теста
     from models import AdaptiveTestResult as _ATR_GATE
+    from markupsafe import Markup
     _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
     if not _has_adaptive:
-        flash('Сначала пройди адаптивный тест — на его основе подбираются задачи дня.', 'info')
+        flash(Markup('Сначала пройди <a href="/adaptive_test/select_class">адаптивный тест</a> — на его основе подбираются задачи дня.'), 'info')
         return redirect(url_for('adaptive_test_select_class'))
     """Принудительная перегенерация Daily Quest (новые олимпиадные задачи)."""
     from services.daily_quest_service import generate_daily_quest
@@ -7404,9 +7448,10 @@ def daily_quest_main():
     """Главная страница Daily Quest"""
     # Гейтинг: задачи дня доступны только после адаптивного теста
     from models import AdaptiveTestResult as _ATR_GATE
+    from markupsafe import Markup
     _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
     if not _has_adaptive:
-        flash('Сначала пройди адаптивный тест — на его основе подбираются задачи дня.', 'info')
+        flash(Markup('Сначала пройди <a href="/adaptive_test/select_class">адаптивный тест</a> — на его основе подбираются задачи дня.'), 'info')
         return redirect(url_for('adaptive_test_select_class'))
     from services.daily_quest_service import get_today_quest, get_quest_tasks
     from services.streak_service import get_streak_stats
@@ -7519,9 +7564,10 @@ def daily_quest_task(task_index):
     """Страница решения задачи из Daily Quest"""
     # Гейтинг: задачи дня доступны только после адаптивного теста
     from models import AdaptiveTestResult as _ATR_GATE
+    from markupsafe import Markup
     _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
     if not _has_adaptive:
-        flash('Сначала пройди адаптивный тест — на его основе подбираются задачи дня.', 'info')
+        flash(Markup('Сначала пройди <a href="/adaptive_test/select_class">адаптивный тест</a> — на его основе подбираются задачи дня.'), 'info')
         return redirect(url_for('adaptive_test_select_class'))
     from services.daily_quest_service import (
         get_today_quest, get_quest_tasks, is_task_solved
@@ -7567,6 +7613,16 @@ def daily_quest_submit(task_index):
     from services.mastery_service import update_mastery_after_task
     from services.streak_service import update_streak_after_quest
     from utils.math_answer_utils import compare_math_answers
+
+    # Гейтинг: задачи дня доступны только после адаптивного теста
+    from models import AdaptiveTestResult as _ATR_GATE
+    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
+    if not _has_adaptive:
+        return jsonify({
+            'success': False,
+            'error': 'Сначала пройдите адаптивный тест — на его основе подбираются задачи дня.',
+            'redirect': url_for('adaptive_test_select_class')
+        }), 403
 
     # Получаем квест
     quest = get_today_quest(current_user.id)
