@@ -119,7 +119,7 @@ class OpenRouterClient:
             )
     """
 
-    def __init__(self, api_key: Optional[str] = None, timeout: float = 60.0):
+    def __init__(self, api_key: Optional[str] = None, timeout: float = 90.0):
         # H-4 (2026-05-14): откат G-3 (timeout=180 для R1). R1 отключён,
         # для chat/sonnet 60 сек достаточно.
         self.api_key = api_key or OPENROUTER_API_KEY
@@ -204,6 +204,23 @@ class OpenRouterClient:
             raise OpenRouterError("OpenRouter вернул пустой choices", body=json.dumps(data))
 
         content = choices[0].get("message", {}).get("content", "")
+
+        # H-5 (2026-05-29): retry на пустой ответ.
+        # OpenRouter иногда возвращает HTTP 200 с content="" и 0 токенов.
+        # Без этой проверки пустой ответ проходит как «успех» → validate_gemini_plan()
+        # → [] → orchestrator падает с «Gemini вернул 0 specs (нужно 10)».
+        # Кидаем retryable-исключение, чтобы @retry сделал повторную попытку.
+        if not content.strip():
+            completion_tokens = data.get("usage", {}).get("completion_tokens", 0)
+            logger.warning(
+                "%s — пустой ответ (HTTP 200, content='', completion_tokens=%d). "
+                "Retry в рамках существующего механизма (%d попыток).",
+                model, completion_tokens, RETRY_ATTEMPTS,
+            )
+            raise OpenRouterError(
+                f"OpenRouter вернул пустой ответ (HTTP 200, 0 токенов) — попытка {model}",
+                body=json.dumps(data),
+            )
 
         # Извлекаем usage
         usage_raw = data.get("usage", {})

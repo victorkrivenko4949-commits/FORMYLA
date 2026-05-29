@@ -135,10 +135,12 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
                 max_tokens=16384,
             )
     except Exception as exc:
+        # H-5 (2026-05-29): OpenRouterError с пустым ответом теперь содержит
+        # причину в сообщении (см. openrouter_client.py). Логируем как есть.
         logger.exception(
-            "Step 1 PLAN — call to %s failed: %s. Returning [] so the "
-            "orchestrator can mark the job as failed instead of hanging "
-            "in state='running' forever.",
+            "Step 1 PLAN — call to %s failed after all retries: %s. "
+            "Returning [] so the orchestrator can mark the job as failed "
+            "instead of hanging in state='running' forever.",
             _GEMINI_MODEL,
             exc,
         )
