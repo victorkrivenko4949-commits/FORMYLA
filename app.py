@@ -183,15 +183,23 @@ app.config['SESSION_COOKIE_SECURE'] = _is_https
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # CRITICAL: Prevent JavaScript access to session cookie
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Flask-Mail configuration (Yandex by default, fully configurable via env vars)
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
+# Flask-Mail configuration (Resend by default, fully configurable via env vars).
+# Resend SMTP requires: host=smtp.resend.com, port=465, SSL=True, username='resend',
+# password=<RESEND_API_KEY>. MAIL_DEFAULT_SENDER must be a verified address
+# (or onboarding@resend.dev for testing) — NOT the username 'resend'.
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.resend.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', '465'))
 # Жесткое преобразование строк в bool (исправлено для корректной работы)
 app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'False').lower() in ['true', '1', 't', 'yes']
 app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'True').lower() in ['true', '1', 't', 'yes']
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'resend')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') or os.environ.get('RESEND_API_KEY')
+# Explicit MAIL_DEFAULT_SENDER takes priority; fallback to onboarding@resend.dev
+# (Resend's shared sandbox sender that works without domain verification).
+app.config['MAIL_DEFAULT_SENDER'] = (
+    os.environ.get('MAIL_DEFAULT_SENDER')
+    or 'onboarding@resend.dev'
+)
 
 # DEBUG: Проверка конфигурации Flask-Mail
 print("="*60)
@@ -895,6 +903,15 @@ except Exception as _e:
     print(f"[BP] telegram_auth_bp NOT registered: {_e}")
 
 # /daily_tasks/* — Персонализированные «Задачи дня» (мульти-LLM пайплайн).
+#
+# ВАЖНО (инцидент 2026-05-29): миграция add_daily_tasks_tables раньше
+# падала на PostgreSQL из-за SQLite-специфичного INTEGER PRIMARY KEY
+# AUTOINCREMENT. Молчаливый except выше съедал ошибку — blueprint не
+# регистрировался, /daily_tasks отдавал 404, ссылка в шапке вела «куда
+# попало», и пользователь жаловался на «кидает в раздел темы». Теперь:
+#   • миграция выбирает DDL по диалекту (SQLite/PostgreSQL);
+#   • любая ошибка регистрации логируется ПОЛНЫМ traceback'ом, чтобы
+#     в логах Render было видно причину при следующем подобном инциденте.
 try:
     from daily_tasks import daily_tasks_bp
     from migrations.add_daily_tasks_tables import _ensure_table as _ensure_daily_tasks_tables
@@ -903,7 +920,9 @@ try:
         _ensure_daily_tasks_tables()
     print("[BP] daily_tasks_bp registered (/daily_tasks)")
 except Exception as _e:
+    import traceback as _tb
     print(f"[BP] daily_tasks_bp NOT registered: {_e}")
+    print(_tb.format_exc())
 
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
 try:
@@ -2512,21 +2531,19 @@ def olympiad_solution(combo_id):
 
 
 def send_auth_email(recipient_email, code):
-    """Отправка кода через SMTP напрямую (без Flask-Mail) с настройками из app.config (.env)."""
-    import smtplib
-    import ssl
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
-    from email.header import Header
-    
-    smtp_host = app.config.get('MAIL_SERVER', 'smtp.yandex.ru')
-    smtp_port = app.config.get('MAIL_PORT', 465)
-    use_ssl = app.config.get('MAIL_USE_SSL', True)
-    use_tls = app.config.get('MAIL_USE_TLS', False)
-    smtp_user = app.config.get('MAIL_USERNAME', '')
-    smtp_pass = app.config.get('MAIL_PASSWORD', '')
-    sender = app.config.get('MAIL_DEFAULT_SENDER') or smtp_user
-    
+    """Отправка кода подтверждения.
+
+    Стратегия (в порядке предпочтения):
+      1) Resend HTTP API — если задан ``RESEND_API_KEY`` или ``MAIL_PASSWORD``
+         начинается с ``re_``. Не зависит от SMTP, обходит Windows-баг
+         ``OSError [Errno 22]`` в ``smtplib.SMTP_SSL`` на Python 3.13+ и
+         работает сквозь любые исходящие firewalls на PaaS.
+      2) SMTP через ``smtplib`` — резервный путь, использует параметры из
+         ``app.config`` (по умолчанию ``smtp.resend.com:465`` SSL).
+
+    Gmail SMTP больше не используется (после 2026-05 Google отклоняет
+    App Passwords для этой учётки — см. инцидент SMTPAuthenticationError 535).
+    """
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background: #ffffff; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -2560,38 +2577,80 @@ def send_auth_email(recipient_email, code):
         </div>
     </div>
     """
-    
-    print(f"[EMAIL] Connecting via raw SMTP ({smtp_host}:{smtp_port}, SSL={use_ssl}, TLS={use_tls})")
-    
+
+    subject = 'Код подтверждения для доступа к платформе FORMYLA'
+
+    # ─── Path 1: Resend HTTP API ────────────────────────────────────────
+    from utils.mail import send_email as resend_send, is_configured as resend_ready
+    if resend_ready():
+        try:
+            print(f"[EMAIL] Sending via Resend HTTP API to {recipient_email}")
+            result = resend_send(recipient_email, subject, html)
+            # ``utils.mail.send_email`` now guarantees that a returned dict
+            # contains ``id`` (it raises otherwise). Still gate explicitly so
+            # this function never returns truthy on a hidden failure.
+            if isinstance(result, dict) and result.get("id"):
+                print(f"[EMAIL] ✅ Resend accepted (id={result['id']}) for {recipient_email}")
+                return True
+            # Defensive: treat anything else as a failure and fall back.
+            print(f"[EMAIL] Resend returned unexpected payload {result!r}; falling back to SMTP")
+        except Exception as e:
+            print(f"[EMAIL] Resend API failed ({e}); falling back to SMTP")
+            import traceback
+            traceback.print_exc()
+            # fall through to SMTP
+
+    # ─── Path 2: SMTP fallback ─────────────────────────────────────────
+    import smtplib
+    import ssl
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    from email.header import Header
+
+    smtp_host = app.config.get('MAIL_SERVER', 'smtp.resend.com')
+    smtp_port = int(app.config.get('MAIL_PORT', 465))
+    use_ssl = app.config.get('MAIL_USE_SSL', True)
+    use_tls = app.config.get('MAIL_USE_TLS', False)
+    smtp_user = app.config.get('MAIL_USERNAME', 'resend')
+    smtp_pass = app.config.get('MAIL_PASSWORD', '')
+    sender = app.config.get('MAIL_DEFAULT_SENDER') or 'onboarding@resend.dev'
+
+    print(f"[EMAIL] Connecting via SMTP ({smtp_host}:{smtp_port}, SSL={use_ssl}, TLS={use_tls})")
+
     try:
-        # STARTTLS (порт 587) — единственный способ, стабильный на Python 3.13 Windows.
-        # SMTP_SSL (порт 465) НЕ используется — баг Python 3.13 Windows: OSError [Errno 22]
-        server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
-        server.set_debuglevel(1)
-        server.ehlo()
-        if use_ssl or use_tls:
-            try:
-                context = ssl.create_default_context()
-                server.starttls(context=context)
-            except Exception:
-                print("[EMAIL] default context failed, retrying with unverified context...")
-                context = ssl._create_unverified_context()
-                server.starttls(context=context)
+        if use_ssl and smtp_port == 465:
+            # Resend recommends SMTPS (implicit TLS) on 465.
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=15, context=context)
+            server.set_debuglevel(1)
             server.ehlo()
-        
-        server.set_debuglevel(1)
+        else:
+            # STARTTLS on 587 (also supported by Resend).
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
+            server.set_debuglevel(1)
+            server.ehlo()
+            if use_tls:
+                try:
+                    context = ssl.create_default_context()
+                    server.starttls(context=context)
+                except Exception:
+                    print("[EMAIL] default context failed, retrying with unverified context...")
+                    context = ssl._create_unverified_context()
+                    server.starttls(context=context)
+                server.ehlo()
+
         server.login(smtp_user, smtp_pass)
-        
+
         # Формируем письмо
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = Header('Код подтверждения для доступа к платформе FORMYLA', 'utf-8')
+        msg['Subject'] = Header(subject, 'utf-8')
         msg['From'] = sender
         msg['To'] = recipient_email
         msg.attach(MIMEText(html, 'html', 'utf-8'))
-        
+
         server.sendmail(sender, [recipient_email], msg.as_bytes())
         server.quit()
-        
+
         print(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
         return True
     except Exception as e:
@@ -2599,6 +2658,24 @@ def send_auth_email(recipient_email, code):
         import traceback
         traceback.print_exc()
         raise Exception(f"Ошибка отправки email: {str(e)}")
+
+
+@app.route("/dev_login")
+def dev_login():
+    """DEV-режим: мгновенный вход как user_id=1 (Victor) — обход SMTP-кода.
+    Работает только на localhost (127.0.0.1) для безопасности.
+    """
+    from flask import request as _req
+    from flask_login import login_user
+    remote = _req.remote_addr or ''
+    if remote not in ('127.0.0.1', '::1', 'localhost'):
+        return 'dev_login only available on localhost', 403
+    target_id = int(_req.args.get('uid', 1))
+    user = User.query.get(target_id)
+    if not user:
+        return f'User id={target_id} not found', 404
+    login_user(user, remember=True)
+    return redirect(url_for('index'))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -2634,13 +2711,16 @@ def login():
         print(f">>> КОД СГЕНЕРИРОВАН: {code}", flush=True)
         app.logger.warning(f"КОД СГЕНЕРИРОВАН: {code} для {email}")
         
-        # Отправляем код на email
-        # Проверяем настройки
-        mail_configured = app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD')
-        
+        # Отправляем код на email.
+        # Резолюция настроек: либо Resend (API key), либо классический SMTP.
+        from utils.mail import is_configured as resend_ready
+        smtp_ready = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
+        mail_configured = resend_ready() or smtp_ready
+
         print(f"\n🔍 DEBUG: MAIL_USERNAME = {app.config.get('MAIL_USERNAME')}", flush=True)
         mail_pass = app.config.get('MAIL_PASSWORD') or ''
         print(f"🔍 DEBUG: MAIL_PASSWORD = {'*' * len(mail_pass)} ({len(mail_pass)} символов)", flush=True)
+        print(f"🔍 DEBUG: Resend API key set = {resend_ready()}", flush=True)
         print(f"🔍 DEBUG: Mail configured = {mail_configured}\n", flush=True)
         
         if mail_configured:
@@ -3212,37 +3292,87 @@ def profile():
     
     # ── Mastery Dashboard ──
     from models import TopicMastery
-    
-    TOPIC_META = {
-        'algebra':        {'name_ru': 'Алгебра',            'icon': '➗'},
-        'geometry':       {'name_ru': 'Геометрия',          'icon': '📐'},
-        'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': '🧩'},
-        'number_theory':  {'name_ru': 'Теория чисел',       'icon': '🔢'},
-        'kl_movement':    {'name_ru': 'Задачи на движение', 'icon': '🚂'},
-        'knights_liars':  {'name_ru': 'Рыцари и лжецы',     'icon': '🧠'},
-    }
-    
+    from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
+
+    # ── Выбираем темы для радара по классу юзера ─────────────────────
+    # Для 7-11 классов берём актуальную таксономию олимпиадных тем
+    # из ADAPTIVE_TOPICS_BY_GRADE (по 7 тем на класс). Для 5-6 и для
+    # юзеров без указанного класса — fallback на 6 общих тем (старая
+    # схема), потому что у этих юзеров TopicMastery лежит под старыми
+    # ключами (algebra/geometry/…), а другой таксономии для них нет.
+    _user_grade = (
+        getattr(current_user, 'preferred_grade', None)
+        or getattr(current_user, 'class_level', None)
+        or getattr(current_user, 'grade', None)
+    )
+    try:
+        _user_grade_int = int(_user_grade) if _user_grade is not None else None
+    except (TypeError, ValueError):
+        _user_grade_int = None
+
+    _legacy_topic_meta = [
+        ('algebra',        'Алгебра',            '➗'),
+        ('geometry',       'Геометрия',          '📐'),
+        ('combinatorics',  'Комбинаторика',      '🧩'),
+        ('number_theory',  'Теория чисел',       '🔢'),
+        ('kl_movement',    'Задачи на движение', '🚂'),
+        ('knights_liars',  'Рыцари и лжецы',     '🧠'),
+    ]
+
+    # topics_def — список словарей вида {key, name_ru, icon, match_keys}
+    # match_keys — все строки, по которым ищем mastery в БД (основной ключ + db_topic + aliases).
+    topics_def = []
+    if _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
+        for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]:
+            match_keys = [t['key']]
+            if t.get('db_topic'):
+                match_keys.append(t['db_topic'])
+            match_keys.extend(t.get('aliases', []) or [])
+            topics_def.append({
+                'key': t['key'],
+                'name_ru': t['name'],
+                'icon': t.get('emoji', '📚'),
+                'match_keys': match_keys,
+            })
+    else:
+        # 5-6 классы или класс не указан — старая схема
+        for key, name_ru, icon in _legacy_topic_meta:
+            topics_def.append({
+                'key': key,
+                'name_ru': name_ru,
+                'icon': icon,
+                'match_keys': [key],
+            })
+
     def get_level_label(mastery):
         if mastery < 0.2:  return 'Новичок'
         if mastery < 0.4:  return 'Ученик'
         if mastery < 0.6:  return 'Практик'
         if mastery < 0.85: return 'Мастер'
         return 'Чемпион'
-    
+
     def get_level_category(mastery):
         if mastery < 0.3:  return 'weak'
         if mastery < 0.6:  return 'medium'
         if mastery < 0.85: return 'strong'
         return 'champion'
-    
+
     mastery_rows = TopicMastery.query.filter_by(user_id=current_user.id).all()
     mastery_by_topic = {row.topic: row for row in mastery_rows}
 
-    # Build mastery_list with ALL topics from TOPIC_META (so radar always has all axes)
+    # Build mastery_list with ALL topics for current grade (so radar always has all axes)
     mastery_list = []
-    for topic_key, meta in TOPIC_META.items():
-        row = mastery_by_topic.get(topic_key)
-        if row:
+    for td in topics_def:
+        # Берём ПЕРВУЮ найденную строку в TopicMastery по любому из match_keys.
+        # Это позволяет показывать прогресс юзера и под новыми, и под старыми
+        # ключами, пока мы не мигрировали данные.
+        row = None
+        for mk in td['match_keys']:
+            row = mastery_by_topic.get(mk)
+            if row is not None:
+                break
+
+        if row is not None:
             mastery_val = round(row.mastery, 3)
             solved = row.solved
             avg_level = round(row.avg_level, 1)
@@ -3251,9 +3381,9 @@ def profile():
             solved = 0
             avg_level = 0.0
         mastery_list.append({
-            'topic': topic_key,
-            'name_ru': meta['name_ru'],
-            'icon': meta['icon'],
+            'topic': td['key'],
+            'name_ru': td['name_ru'],
+            'icon': td['icon'],
             'mastery': mastery_val,
             'solved': solved,
             'avg_level': avg_level,
@@ -9326,7 +9456,7 @@ def submit_feedback():
     """Принять отзыв пользователя и отправить его на почту владельцу.
 
     Тело JSON: {rating: 1..5|null, message: str, email: str|null, page_url: str}
-    Email-получатель: env REVIEW_NOTIFY_EMAIL → fallback victor.krivenko.4949@gmail.com.
+    Email-получатель: env REVIEW_NOTIFY_EMAIL → SUPPORT_NOTIFY_EMAIL → MAIL_USERNAME.
     Никаких записей в БД (чтобы не требовать миграцию). Тикет-id = unix-timestamp.
     """
     try:

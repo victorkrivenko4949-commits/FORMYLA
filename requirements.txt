@@ -54,3 +54,7 @@ numpy==2.4.3
 rapidfuzz==3.14.1
 sentry-sdk[flask]==2.18.0
 sib-api-v3-sdk==7.6.0
+# Resend — primary email provider (HTTP API via utils/mail.py uses `requests`
+# directly, but the SDK is convenient for advanced features like batch sends
+# and webhooks). See docs: https://resend.com/docs/send-with-python
+resend==2.5.1

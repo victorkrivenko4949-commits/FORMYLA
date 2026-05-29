@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Seed adaptive_tasks on Render PostgreSQL with the clean 8394-task dataset.
+Seed adaptive_tasks on Render PostgreSQL with the clean 8389-task dataset.
 
 Connects DIRECTLY to the production PostgreSQL (via DATABASE_URL),
 creates a minimal Flask app with SQLAlchemy, and re-imports all tasks
@@ -42,7 +42,8 @@ from sqlalchemy import text
 JSON_PATH = os.path.join(
     _PROJECT_ROOT, "adaptive_data", "final", "formyla_adaptive_final_polished.json"
 )
-EXPECTED_TOTAL = 8394
+# NOTE: dataset was re-cleaned 2026-05; 5 broken tasks dropped (8394 -> 8389).
+EXPECTED_TOTAL = 8389
 
 ALLOWED_SUBJECTS = {
     "algebra", "geometry", "number_theory", "combinatorics",
@@ -306,7 +307,7 @@ def verify_db(db: SQLAlchemy) -> None:
 
 def main():
     ap = argparse.ArgumentParser(
-        description="Seed adaptive_tasks on Render PostgreSQL with clean 8394 tasks."
+        description="Seed adaptive_tasks on Render PostgreSQL with clean 8389 tasks."
     )
     ap.add_argument(
         "--apply", action="store_true",
@@ -316,7 +317,7 @@ def main():
     args = ap.parse_args()
 
     print("=" * 70)
-    print("FORMYLA adaptive_tasks PostgreSQL seed (8394 tasks)")
+    print("FORMYLA adaptive_tasks PostgreSQL seed (8389 tasks)")
     print(f"  source: {JSON_PATH}")
     print(f"  mode:   {'APPLY (writes to DB)' if args.apply else 'DRY-RUN (no DB writes)'}")
     print("=" * 70)
