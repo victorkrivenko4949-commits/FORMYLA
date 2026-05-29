@@ -951,7 +951,13 @@ app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
 def internal_error(e):
     import traceback, uuid
     err_id = uuid.uuid4().hex[:8]
-    app.logger.error(f"[{err_id}] 500: {e}\n{traceback.format_exc()}")
+    # H-6 (2026-05-29): Явный print для гарантии попадания в Render Logs (stdout).
+    # app.logger может не выводиться в stdout на проде.
+    tb = traceback.format_exc()
+    print(f"\n{'='*70}\n[ERROR {err_id}] 500 Internal Server Error\n{'='*70}")
+    print(tb)
+    print(f"{'='*70}\n")
+    app.logger.error(f"[{err_id}] 500: {e}\n{tb}")
     try:
         return render_template('errors/500.html', error_id=err_id), 500
     except Exception:
