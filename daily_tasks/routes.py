@@ -28,7 +28,11 @@ from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob
 from . import services
 
 # Единый сервис AI-проверки (общий с /api/check_adaptive_answer).
-from services.ai_tutor_review import review_attempt
+# Опциональный импорт — файла может не быть на проде.
+try:
+    from services.ai_tutor_review import review_attempt
+except ModuleNotFoundError:
+    review_attempt = None
 
 # DeepSeek-клиент берём опционально — если AI недоступен, review_attempt
 # вернёт fallback с эталонным ответом из БД.
@@ -435,6 +439,13 @@ def submit_answer_ai(item_id: int):
         return b.split(",", 1)[-1] if b.startswith("data:") else b
 
     images_b64 = [_strip_dataurl(b) for b in raw_images if b]
+
+    # Если AI-проверка недоступна (нет файла services/ai_tutor_review.py на проде)
+    if review_attempt is None:
+        return jsonify({
+            "status": "error",
+            "message": "AI-проверка временно недоступна",
+        }), 503
 
     # AI-проверка через общий сервис
     try:
