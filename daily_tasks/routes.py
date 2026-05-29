@@ -92,7 +92,7 @@ def get_daily_tasks():
             "items": [],
         }
         if wants_html:
-            return render_template("daily_tasks_page.html", data=data)
+            return render_template("daily_tasks_dashboard.html", data=data)
         return jsonify({
             "status": "no_set",
             "message": data["message"],
@@ -126,7 +126,7 @@ def get_daily_tasks():
             "items": [],
         }
         if wants_html:
-            return render_template("daily_tasks_page.html", data=data)
+            return render_template("daily_tasks_dashboard.html", data=data)
         return jsonify({
             "status": "generating",
             "daily_set_id": daily_set.id,
@@ -162,7 +162,7 @@ def get_daily_tasks():
     }
 
     if wants_html:
-        return render_template("daily_tasks_page.html", data=data)
+        return render_template("daily_tasks_dashboard.html", data=data)
     return jsonify(data), 200
 
 
