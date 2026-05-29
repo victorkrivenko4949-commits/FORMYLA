@@ -903,6 +903,15 @@ except Exception as _e:
     print(f"[BP] telegram_auth_bp NOT registered: {_e}")
 
 # /daily_tasks/* — Персонализированные «Задачи дня» (мульти-LLM пайплайн).
+#
+# ВАЖНО (инцидент 2026-05-29): миграция add_daily_tasks_tables раньше
+# падала на PostgreSQL из-за SQLite-специфичного INTEGER PRIMARY KEY
+# AUTOINCREMENT. Молчаливый except выше съедал ошибку — blueprint не
+# регистрировался, /daily_tasks отдавал 404, ссылка в шапке вела «куда
+# попало», и пользователь жаловался на «кидает в раздел темы». Теперь:
+#   • миграция выбирает DDL по диалекту (SQLite/PostgreSQL);
+#   • любая ошибка регистрации логируется ПОЛНЫМ traceback'ом, чтобы
+#     в логах Render было видно причину при следующем подобном инциденте.
 try:
     from daily_tasks import daily_tasks_bp
     from migrations.add_daily_tasks_tables import _ensure_table as _ensure_daily_tasks_tables
@@ -911,7 +920,9 @@ try:
         _ensure_daily_tasks_tables()
     print("[BP] daily_tasks_bp registered (/daily_tasks)")
 except Exception as _e:
+    import traceback as _tb
     print(f"[BP] daily_tasks_bp NOT registered: {_e}")
+    print(_tb.format_exc())
 
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
 try:
@@ -2649,6 +2660,24 @@ def send_auth_email(recipient_email, code):
         raise Exception(f"Ошибка отправки email: {str(e)}")
 
 
+@app.route("/dev_login")
+def dev_login():
+    """DEV-режим: мгновенный вход как user_id=1 (Victor) — обход SMTP-кода.
+    Работает только на localhost (127.0.0.1) для безопасности.
+    """
+    from flask import request as _req
+    from flask_login import login_user
+    remote = _req.remote_addr or ''
+    if remote not in ('127.0.0.1', '::1', 'localhost'):
+        return 'dev_login only available on localhost', 403
+    target_id = int(_req.args.get('uid', 1))
+    user = User.query.get(target_id)
+    if not user:
+        return f'User id={target_id} not found', 404
+    login_user(user, remember=True)
+    return redirect(url_for('index'))
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Passwordless вход - шаг 1: ввод email."""
@@ -3263,37 +3292,87 @@ def profile():
     
     # ── Mastery Dashboard ──
     from models import TopicMastery
-    
-    TOPIC_META = {
-        'algebra':        {'name_ru': 'Алгебра',            'icon': '➗'},
-        'geometry':       {'name_ru': 'Геометрия',          'icon': '📐'},
-        'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': '🧩'},
-        'number_theory':  {'name_ru': 'Теория чисел',       'icon': '🔢'},
-        'kl_movement':    {'name_ru': 'Задачи на движение', 'icon': '🚂'},
-        'knights_liars':  {'name_ru': 'Рыцари и лжецы',     'icon': '🧠'},
-    }
-    
+    from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
+
+    # ── Выбираем темы для радара по классу юзера ─────────────────────
+    # Для 7-11 классов берём актуальную таксономию олимпиадных тем
+    # из ADAPTIVE_TOPICS_BY_GRADE (по 7 тем на класс). Для 5-6 и для
+    # юзеров без указанного класса — fallback на 6 общих тем (старая
+    # схема), потому что у этих юзеров TopicMastery лежит под старыми
+    # ключами (algebra/geometry/…), а другой таксономии для них нет.
+    _user_grade = (
+        getattr(current_user, 'preferred_grade', None)
+        or getattr(current_user, 'class_level', None)
+        or getattr(current_user, 'grade', None)
+    )
+    try:
+        _user_grade_int = int(_user_grade) if _user_grade is not None else None
+    except (TypeError, ValueError):
+        _user_grade_int = None
+
+    _legacy_topic_meta = [
+        ('algebra',        'Алгебра',            '➗'),
+        ('geometry',       'Геометрия',          '📐'),
+        ('combinatorics',  'Комбинаторика',      '🧩'),
+        ('number_theory',  'Теория чисел',       '🔢'),
+        ('kl_movement',    'Задачи на движение', '🚂'),
+        ('knights_liars',  'Рыцари и лжецы',     '🧠'),
+    ]
+
+    # topics_def — список словарей вида {key, name_ru, icon, match_keys}
+    # match_keys — все строки, по которым ищем mastery в БД (основной ключ + db_topic + aliases).
+    topics_def = []
+    if _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
+        for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]:
+            match_keys = [t['key']]
+            if t.get('db_topic'):
+                match_keys.append(t['db_topic'])
+            match_keys.extend(t.get('aliases', []) or [])
+            topics_def.append({
+                'key': t['key'],
+                'name_ru': t['name'],
+                'icon': t.get('emoji', '📚'),
+                'match_keys': match_keys,
+            })
+    else:
+        # 5-6 классы или класс не указан — старая схема
+        for key, name_ru, icon in _legacy_topic_meta:
+            topics_def.append({
+                'key': key,
+                'name_ru': name_ru,
+                'icon': icon,
+                'match_keys': [key],
+            })
+
     def get_level_label(mastery):
         if mastery < 0.2:  return 'Новичок'
         if mastery < 0.4:  return 'Ученик'
         if mastery < 0.6:  return 'Практик'
         if mastery < 0.85: return 'Мастер'
         return 'Чемпион'
-    
+
     def get_level_category(mastery):
         if mastery < 0.3:  return 'weak'
         if mastery < 0.6:  return 'medium'
         if mastery < 0.85: return 'strong'
         return 'champion'
-    
+
     mastery_rows = TopicMastery.query.filter_by(user_id=current_user.id).all()
     mastery_by_topic = {row.topic: row for row in mastery_rows}
 
-    # Build mastery_list with ALL topics from TOPIC_META (so radar always has all axes)
+    # Build mastery_list with ALL topics for current grade (so radar always has all axes)
     mastery_list = []
-    for topic_key, meta in TOPIC_META.items():
-        row = mastery_by_topic.get(topic_key)
-        if row:
+    for td in topics_def:
+        # Берём ПЕРВУЮ найденную строку в TopicMastery по любому из match_keys.
+        # Это позволяет показывать прогресс юзера и под новыми, и под старыми
+        # ключами, пока мы не мигрировали данные.
+        row = None
+        for mk in td['match_keys']:
+            row = mastery_by_topic.get(mk)
+            if row is not None:
+                break
+
+        if row is not None:
             mastery_val = round(row.mastery, 3)
             solved = row.solved
             avg_level = round(row.avg_level, 1)
@@ -3302,9 +3381,9 @@ def profile():
             solved = 0
             avg_level = 0.0
         mastery_list.append({
-            'topic': topic_key,
-            'name_ru': meta['name_ru'],
-            'icon': meta['icon'],
+            'topic': td['key'],
+            'name_ru': td['name_ru'],
+            'icon': td['icon'],
             'mastery': mastery_val,
             'solved': solved,
             'avg_level': avg_level,

@@ -70,9 +70,9 @@
 
     <script defer src="{{ url_for('static', filename='js/analytics.js') }}?v={{ asset_version }}"></script>
 </head>
-<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}">
+<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}">
     <header class="header">
-        <a href="{{ url_for('index') }}" class="logo">
+        <a href="{{ url_for('olympiad.methods') }}" class="logo">
             <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="grad_logo" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -97,8 +97,14 @@
         </button>
 
         <nav class="nav" id="navLinks">
+            {# 2026-05-29: ссылка «Задачи дня» теперь всегда ведёт на
+               фиксированный URL /daily_tasks (а не на url_for). Иначе при
+               отсутствии blueprint daily_tasks_bp Jinja бросает BuildError,
+               который ловится в обработчике ошибок и в итоге кидает
+               пользователя в случайный раздел. Backend-фикс миграции
+               PostgreSQL живёт в migrations/add_daily_tasks_tables.py. #}
             <!-- Задачи дня -->
-            <a href="{{ url_for('daily_quest_main') }}" class="daily-nav-link nav-link nav-pill">
+            <a href="/daily_tasks" class="daily-nav-link nav-link nav-pill">
                 <span class="daily-flame">🔥</span>
                 <span class="daily-text">Задачи дня</span>
                 {% if current_user.is_authenticated %}
@@ -255,7 +261,8 @@
         <!-- Navigation links -->
         <nav class="drawer-nav">
             <div class="drawer-section-title">Главное</div>
-            <a href="{{ url_for('daily_quest_main') }}" class="drawer-link">
+            {# fixed URL вместо url_for — см. комментарий в .nav выше #}
+            <a href="/daily_tasks" class="drawer-link">
                 <span class="drawer-link-icon">🔥</span>
                 Задачи дня
                 {% if current_user.is_authenticated %}
@@ -378,7 +385,8 @@
             <span class="bottom-nav-icon">🏠</span>
             <span class="bottom-nav-label">Главная</span>
         </a>
-        <a href="{{ url_for('daily_quest_main') }}" class="bottom-nav-item" data-path="/daily*">
+        {# fixed URL вместо url_for — см. комментарий в .nav выше #}
+        <a href="/daily_tasks" class="bottom-nav-item" data-path="/daily_tasks*">
             <span class="bottom-nav-icon">🔥</span>
             <span class="bottom-nav-label">Задачи дня</span>
             {% if current_user.is_authenticated %}
