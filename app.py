@@ -995,6 +995,26 @@ def health_check():
     return jsonify(info)
 
 
+@app.route('/debug/routes')
+def debug_routes():
+    """List all registered URL rules (diagnostic)."""
+    rules = []
+    for rule in sorted(app.url_map.iter_rules(), key=lambda r: r.rule):
+        if 'daily' in rule.rule.lower() or 'daily_tasks' in rule.rule.lower():
+            rules.append({
+                'rule': rule.rule,
+                'endpoint': rule.endpoint,
+                'methods': sorted(rule.methods - {'HEAD', 'OPTIONS'}),
+            })
+    return jsonify({
+        'total_rules': len(list(app.url_map.iter_rules())),
+        'daily_rules': rules,
+        'daily_tasks_bp_registered': any(
+            r.rule == '/daily_tasks' for r in app.url_map.iter_rules()
+        ),
+    })
+
+
 # ── SENTRY USER CONTEXT (привязка ошибок к юзеру, без PII) ────────
 if SENTRY_ENABLED:
     @app.before_request
