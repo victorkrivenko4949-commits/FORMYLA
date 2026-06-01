@@ -1094,31 +1094,40 @@ def method_detail(method_code):
     # Python ещё раз фильтруем точно, чтобы не ловить ложные подстроки.
     from sqlalchemy import or_, cast, String
 
-    candidates = (
-        OlympiadTask.query
-        .join(Probnik)
-        .filter(
-            Probnik.code.like('vsosh-9-archive-%'),
-            or_(
-                OlympiadTask.method_primary == method_code,
-                OlympiadTask.method_secondary == method_code,
-                cast(OlympiadTask.method_codes, String).like(f'%"{method_code}"%'),
-            ),
-        )
-        .order_by(Probnik.season_year.desc(), OlympiadTask.sort_order.asc())
-        .all()
-    )
-
-    # Финальная точная фильтрация: проверяем JSON-массив в Python.
     linked_tasks = []
-    for t in candidates:
-        codes = t.method_codes or []
-        if (
-            method_code in codes
-            or t.method_primary == method_code
-            or t.method_secondary == method_code
-        ):
-            linked_tasks.append(t)
+    try:
+        candidates = (
+            OlympiadTask.query
+            .join(Probnik)
+            .filter(
+                Probnik.code.like('vsosh-9-archive-%'),
+                or_(
+                    OlympiadTask.method_primary == method_code,
+                    OlympiadTask.method_secondary == method_code,
+                    cast(OlympiadTask.method_codes, String).like(f'%"{method_code}"%'),
+                ),
+            )
+            .order_by(Probnik.season_year.desc(), OlympiadTask.sort_order.asc())
+            .all()
+        )
+
+        # Финальная точная фильтрация: проверяем JSON-массив в Python.
+        for t in candidates:
+            codes = t.method_codes or []
+            if (
+                method_code in codes
+                or t.method_primary == method_code
+                or t.method_secondary == method_code
+            ):
+                linked_tasks.append(t)
+    except Exception as _e_tasks:
+        db.session.rollback()
+        import logging as _logging
+        _logging.getLogger(__name__).warning(
+            f"[method_detail] linked_tasks query failed for {method_code}: {_e_tasks}"
+        )
+        # Graceful degradation — показываем страницу метода без списка задач
+        pass
 
     return render_template('olympiad/method.html',
                            sections=None, block=block, related=related,

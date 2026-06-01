@@ -20,7 +20,11 @@ services:
     # Историю не повторять: f96cb1c (fix) → 26fa7c5 (revert) → опять 502.
     # До 7b018a9 этот конфиг работал стабильно месяцами.
     # --timeout 120 — стандарт для psycopg wait на медленные запросы Postgres.
-    startCommand: gunicorn app:app --workers 1 --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+    # Flask-Migrate: выполняем неприменённые миграции перед стартом сервера.
+    # Команда идемпотентна — безопасно запускать при каждом деплое/рестарте.
+    startCommand: >-
+      flask db upgrade --directory alembic_migrations &&
+      gunicorn app:app --workers 1 --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
     # КРИТИЧНО: Health Check Path = /healthz (НЕ /, НЕ /profile!).
     # /healthz отдаёт 200 без обращения к БД. /profile требует Postgres +
     # Flask-Login → при тормозах БД health-check виснет → Render думает что
@@ -33,6 +37,8 @@ services:
         fromDatabase:
           name: formyla-db
           property: connectionString
+      - key: FLASK_APP
+        value: app.py
       - key: FLASK_ENV
         value: production
       # Включаем автозагрузку 89 методов олимпиадного каталога при пустых

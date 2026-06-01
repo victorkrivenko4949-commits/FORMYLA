@@ -69,6 +69,19 @@ class User(UserMixin, db.Model):
     telegram_username = db.Column(db.String(64), nullable=True)
     
     @property
+    def is_admin(self):
+        """Админ — user_id == 1 (Victor) или email в whitelist.
+        Используется в daily_tasks/routes.py для bypass лимита 1 регенерация/день.
+        """
+        if self.id == 1:
+            return True
+        admin_emails = {
+            'kr1venkovictor@yandex.ru',
+            'victor.krivenko.4949@gmail.com',
+        }
+        return (self.email or '').lower() in admin_emails
+
+    @property
     def display_name(self):
         """Отображаемое имя: nickname (если не Гость-*) → name → email username → Аноним"""
         # If user has a real nickname (not auto-generated guest)
@@ -878,7 +891,7 @@ class DailyQuest(db.Model):
     
     # Прогресс
     completed_count = db.Column(db.Integer, default=0)  # Решено задач
-    total_count = db.Column(db.Integer, default=5)  # Всего задач
+    total_count = db.Column(db.Integer, default=10)  # Всего задач
     
     # Награды
     xp_earned = db.Column(db.Integer, default=0)  # Заработано XP
