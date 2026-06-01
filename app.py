@@ -5346,597 +5346,103 @@ def check_adaptive_answer():
             _slot['task_id'] = current_task.id
             _slot['difficulty'] = current_task.difficulty_level
 
-        # Если ученик прикрепил фото(-и) рукописного решения — распознаём
-        # каждое через vision-LLM (OpenRouter / mathline pipeline) и
-        # подмешиваем результат в `user_solution`. Это даёт AI-проверке
-        # видеть тетрадное решение, а не только текст из MathLive-поля.
-        if images_b64 and DEEPSEEK_AVAILABLE:
-            try:
-                _ocr_client = DeepSeekClient()
-                transcribed_parts = []
-                for idx, img_b64 in enumerate(images_b64, start=1):
-                    try:
-                        part = _ocr_client.transcribe_handwritten_solution(
-                            image_data=img_b64,
-                            task_text=current_task.task_text or "",
-                        )
-                    except Exception as _one_err:
-                        print(
-                            f"[ADAPTIVE OCR] photo #{idx} failed: {_one_err}"
-                        )
-                        part = ""
-                    if part:
-                        if len(images_b64) > 1:
-                            transcribed_parts.append(
-                                f"--- Фото {idx} из {len(images_b64)} ---\n{part}"
-                            )
-                        else:
-                            transcribed_parts.append(part)
-                    print(
-                        f"[ADAPTIVE OCR] task_id={task_id} photo={idx}/"
-                        f"{len(images_b64)} len={len(part)}"
-                    )
-
-                transcribed = "\n\n".join(transcribed_parts).strip()
-                if transcribed:
-                    header = (
-                        "[Распознанные фото-решения]"
-                        if len(images_b64) > 1
-                        else "[Распознанное фото-решение]"
-                    )
-                    if user_solution:
-                        user_solution = (
-                            f"{user_solution}\n\n{header}\n{transcribed}"
-                        )
-                    else:
-                        user_solution = f"{header}\n{transcribed}"
-            except Exception as _ocr_err:
-                print(f"[ADAPTIVE OCR] failed: {_ocr_err}")
-                # Не падаем — продолжаем без распознанного фото
-        
         # Получаем правильный ответ (если есть поле answer в модели)
         correct_answer = getattr(current_task, 'answer', '') or getattr(current_task, 'correct_answer', 'не указан')
         
-        # ── Определяем тип задачи: доказательство или числовой ответ ──
-        _ca_lower = (correct_answer or '').strip().lower()
-        _task_lower = (current_task.task_text or '').lower()
-        is_proof_task = (
-            _ca_lower in ('доказательство', 'доказать', 'proof', '')
-            or 'докажите' in _task_lower
-            or 'доказать' in _task_lower
-            or 'покажите, что' in _task_lower
-            or 'покажите что' in _task_lower
-            or 'обоснуйте' in _task_lower
+        # ── Единая AI-проверка через review_attempt() ─────────────────
+        # Вся логика: OCR, sympy, math_equivalent, AI-проверка, sanitize,
+        # score_badge — внутри review_attempt(). Никаких inline-дубликатов.
+        from services.ai_tutor_review import review_attempt
+        result = review_attempt(
+            task_text=current_task.task_text or "",
+            correct_answer=correct_answer,
+            solution_ref=current_task.solution or "",
+            user_answer=user_answer,
+            user_solution=user_solution,
+            images_b64=images_b64,
+            deepseek_client_cls=DeepSeekClient if DEEPSEEK_AVAILABLE else None,
+            deepseek_available=bool(DEEPSEEK_AVAILABLE),
+            max_tokens=4096,
+            difficulty_level=current_task.difficulty_level or 5,
         )
         
-        # Проверяем доступность DeepSeek
-        score = 1  # По умолчанию нейтральная оценка
-        feedback = "Ваш ответ принят."
-
-        # ── БЫСТРАЯ ПРЕД-ПРОВЕРКА: если числа в ответе ученика и в каноне
-        # эквивалентны (с точностью до единиц измерения, формата и пробелов) —
-        # сразу засчитываем как верно, без обращения к AI. Это ловит случаи
-        # вроде "30" vs "30 см²", "1/2" vs "0.5", "−5" vs "-5".
-        def _math_equivalent(user: str, canon: str) -> bool:
-            import re as _re
-            if not user or not canon:
-                return False
-            u = user.strip()
-            c = canon.strip()
-            if not u or not c:
-                return False
-            # Прямое совпадение строк (после lower и удаления пробелов)
-            _norm = lambda s: _re.sub(r"\s+", "", s).lower().replace(",", ".")
-            if _norm(u) == _norm(c):
-                return True
-            # Извлекаем все числа (включая дроби и десятичные)
-            num_re = _re.compile(r"-?\d+(?:[.,]\d+)?(?:/\d+)?")
-            def _to_floats(s):
-                out = []
-                for m in num_re.findall(s):
-                    t = m.replace(",", ".")
-                    try:
-                        if "/" in t:
-                            a, b = t.split("/", 1)
-                            out.append(float(a) / float(b))
-                        else:
-                            out.append(float(t))
-                    except Exception:
-                        pass
-                return out
-            uns = _to_floats(u)
-            cns = _to_floats(c)
-            if not uns or not cns:
-                return False
-            # Если множества чисел совпадают (с точностью 1e-4) — эквивалентно
-            if len(uns) == len(cns):
-                if all(abs(a - b) <= max(1e-4, 1e-3 * max(abs(a), abs(b)))
-                       for a, b in zip(sorted(uns), sorted(cns))):
-                    return True
-            # Если у канона ровно одно число и оно встречается в ответе ученика
-            if len(cns) == 1 and any(
-                abs(x - cns[0]) <= max(1e-4, 1e-3 * max(abs(x), abs(cns[0])))
-                for x in uns
-            ):
-                return True
-            return False
-
-        if (not is_proof_task) and _math_equivalent(user_answer, str(correct_answer or "")):
+        float_score = float(result.get("score", 0.0))
+        feedback = str(result.get("feedback") or "")
+        category = str(result.get("category") or "")
+        confidence = float(result.get("confidence") or 0.0)
+        
+        # ── Float→Int score mapping for frontend contract ───────────
+        # Оригинальная шкала адаптивного теста (int: -1, 0, 1, 2):
+        #   2 = идеально, 1 = частично, 0 = нейтрально, -1 = неверно
+        # Новая шкала review_attempt() (float: -1.0, 0.0, 0.3, 0.5, 1.0):
+        #   1.0 → 2  (верный ответ + метод)
+        #   0.3 → 1  (верный ответ без решения на высоком уровне)
+        #   0.5 → 0  (ответ НЕВЕРНЫЙ, метод верный — не котируется как успех)
+        #   0.0 → 0  (сбой AI — нейтрально, без изменения уровня)
+        #  -1.0 → -1 (полностью неверно)
+        # ВАЖНО: 0.5 проверяем ДО 0.3, чтобы частично-верный метод
+        # (ответ НЕВЕРНЫЙ) не котировался как успех (score=1).
+        if float_score >= 1.0:
             score = 2
-
-            def _safe_truncate(text: str, max_len: int = 1500) -> str:
-                """Trim long solution at a safe boundary that doesn't cut LaTeX."""
-                if not text:
-                    return ""
-                if len(text) <= max_len:
-                    return text
-                # try to cut after the last completed \(..\) or \[..\] inside max_len
-                tail = text[:max_len]
-                for marker in ("\\)", "\\]", ".\n", "\n\n", ". ", "\n"):
-                    idx = tail.rfind(marker)
-                    if idx > max_len * 0.6:
-                        return text[: idx + len(marker)] + " …"
-                return tail + " …"
-
-            sol = _safe_truncate(current_task.solution or "")
-            feedback = (
-                f"Ответ верный! ✅\n\n"
-                f"Правильный ответ: **{correct_answer}**"
-                + (f"\n\n**Решение:**\n{sol}" if sol else "")
-            )
-            print(f"[ADAPTIVE] Quick-check: '{user_answer}' ≡ '{correct_answer}' → score=2")
-            DEEPSEEK_AVAILABLE_LOCAL = False  # пропускаем AI-проверку
+        elif float_score >= 0.5:
+            # 0.5 = ответ неверный, метод верный → НЕ успех
+            score = 0
+        elif float_score >= 0.3:
+            score = 1
+        elif float_score <= -0.5:
+            score = -1
         else:
-            DEEPSEEK_AVAILABLE_LOCAL = DEEPSEEK_AVAILABLE
-
-        if DEEPSEEK_AVAILABLE_LOCAL:
-            try:
-                # ── Выбираем промпт в зависимости от типа задачи ──
-                if is_proof_task:
-                    # ПРОМПТ ДЛЯ ЗАДАЧ-ДОКАЗАТЕЛЬСТВ
-                    system_prompt = """Ты — проверяющий математических доказательств платформы FORMYLA.
-
-ЗАДАЧА УЧЕНИКА — ДОКАЗАТЬ УТВЕРЖДЕНИЕ. Это НЕ задача с числовым ответом.
-Ученик должен предоставить логическое рассуждение (доказательство).
-
-АЛГОРИТМ ПРОВЕРКИ:
-1. Прочитай условие задачи — пойми, ЧТО нужно доказать.
-2. Прочитай эталонное решение (если есть) — пойми ИДЕЮ доказательства.
-3. Прочитай решение ученика — проверь его ЛОГИКУ.
-4. ВАЖНО: у доказательства может быть МНОГО правильных путей. Ученик НЕ обязан повторять эталон.
-
-КРИТИЧЕСКИ ВАЖНО:
-✅ Утверждение в задаче ВЕРНО (иначе его не просили бы доказывать). НЕ ПЫТАЙСЯ опровергнуть его!
-✅ Оценивай ЛОГИКУ рассуждений ученика, а не совпадение с эталоном
-✅ Если ученик привёл корректное доказательство (пусть другим методом) — это score: 2
-✅ Если идея верная, но есть пробелы в логике — это score: 1
-❌ ЗАПРЕЩЕНО утверждать, что доказываемое утверждение ложно
-❌ ЗАПРЕЩЕНО приводить "контрпримеры" к утверждению, которое нужно доказать
-❌ ЗАПРЕЩЕНО отвергать верное доказательство из-за отличия от эталона
-
-СИСТЕМА БАЛЛОВ:
-score = 2 (ВЕРНО, +1 уровень):
-  - Доказательство логически корректно и полно
-  - Все ключевые шаги обоснованы
-  - Допускаются мелкие стилистические недочёты
-
-score = 1 (ЧАСТИЧНО, уровень без изменений):
-  - Идея доказательства верная, но есть логические пробелы
-  - Не все случаи рассмотрены
-  - Есть верные шаги, но доказательство неполное
-
-score = -1 (НЕВЕРНО, -1 уровень):
-  - Доказательство содержит грубую логическую ошибку
-  - Ученик не понял, что нужно доказать
-  - Решение пустое или не относится к задаче
-
-ФОРМАТ ОТВЕТА — СТРОГО JSON (БЕЗ markdown маркеров):
-{
-  "score": X,
-  "feedback": "текст разбора"
-}
-
-ПРАВИЛА ДЛЯ FEEDBACK:
-- Используй LaTeX: \\( формула \\) для inline, \\[ формула \\] для display
-- Будь конструктивным и понятным школьнику
-- Если доказательство верное — похвали и отметь ключевую идею
-- Если есть ошибки — укажи конкретно где и почему
-- НЕ оборачивай JSON в markdown блоки"""
-                else:
-                    # ПРОМПТ ДЛЯ ЗАДАЧ С ЧИСЛОВЫМ ОТВЕТОМ (оригинальный)
-                    system_prompt = """Ты — проверяющий математических задач платформы FORMYLA.
-У тебя ЕСТЬ правильный ответ из базы данных. Твоя задача: сравнить ответ ученика с КАНОНИЧЕСКИМ ответом и дать конструктивный фидбек.
-
-КРИТИЧЕСКИ ВАЖНО:
-❌ ЗАПРЕЩЕНО решать задачу заново своим способом
-❌ ЗАПРЕЩЕНО утверждать что канонический ответ неверен
-❌ ЗАПРЕЩЕНО предлагать альтернативные "правильные" ответы
-✅ ОБЯЗАТЕЛЬНО доверяй полю "Правильный ответ" — это истина из базы данных
-✅ Сравнивай ответ ученика ТОЛЬКО с каноническим ответом
-
-ВАЖНО: Ответ должен быть СТРОГО в формате JSON (БЕЗ markdown маркеров ```json):
-{
-  "score": X,
-  "feedback": "текст разбора"
-}
-
-СТРОГИЕ ПРАВИЛА ОЦЕНИВАНИЯ (score):
-
-1. СРАВНЕНИЕ ОТВЕТОВ:
-   - Ответ пользователя (`user_answer`) приходит в формате LaTeX (например, `\\sqrt{31}`, `\\frac{1}{2}`, `2.5`)
-   - Сравнивай МАТЕМАТИЧЕСКОЕ ЗНАЧЕНИЕ, а не текстовое совпадение
-   - Десятичные дроби через точку (20.23) и запятую (20,23) - это ОДНО И ТО ЖЕ число
-   - `\\frac{1}{2}` = `0.5` = `0,5` - это одно и то же
-   - `\\sqrt{4}` = `2` - это одно и то же
-   - Игнорируй пробелы, лишние скобки, незначительные форматирования
-   - Главное - математическая суть числа
-
-2. СИСТЕМА БАЛЛОВ (СТРОГИЕ ПРАВИЛА):
-   
-   score = 2 (ИДЕАЛЬНО, +1 уровень):
-   
-   ⚠️ ЕСЛИ ОТВЕТ ВЕРНЫЙ И ЕСТЬ РЕШЕНИЕ → score: 2. ЕСЛИ ОТВЕТ ВЕРНЫЙ, НО НЕТ РЕШЕНИЯ → score: -1!
-  
-   - Итоговый ответ математически ЭКВИВАЛЕНТЕН правильному И предоставлено решение
-   - КРИТИЧЕСКИ ВАЖНО: Если ответ верный И есть решение (хотя бы краткое) → score: 2
-   - ПРИМЕРЫ ЭКВИВАЛЕНТНОСТИ (ВСЕ это score: 2):
-     * Ученик ввел "15", ожидалось "x=15" → score: 2
-     * Ученик ввел "x=3", ожидалось "3" → score: 2
-     * Ученик ввел "1/2", ожидалось "0.5" → score: 2
-     * Ученик ввел "0.5", ожидалось "1/2" → score: 2
-     * Ученик ввел "15", ожидалось "15.0" → score: 2
-     * Ученик ввел "3", ожидалось "x=3" → score: 2
-    - СТРОГО ЗАПРЕЩЕНО снижать балл за:
-      * Отсутствие "x=", "y=", "z=" или других переменных
-      * Пробелы, скобки, форматирование
-      * Другой формат записи верного числа (дробь vs десятичная)
-    - ВАЖНО: score 2 ставится ТОЛЬКО если ответ верный И предоставлено решение (хотя бы краткое).
-    - ЗОЛОТОЕ ПРАВИЛО: Если числовое значение совпадает И есть решение - это score: 2!
-    
-    score = 1 (ЧАСТИЧНО ВЕРНО, уровень без изменений):
-    - Итоговый ответ СОВПАДАЕТ, НО в решении есть ЯВНАЯ вычислительная ошибка (например, 2+2=5)
-    - Итоговый ответ НЕ совпадает, НО в решении есть правильная идея/метод и ход мыслей верный
-    - Ответ не сокращен до конца (например, 2/4 вместо 1/2) И это было требованием
-    - ПОМНИ: score = 1 это ЧАСТИЧНО правильное решение. Не забывай про эту оценку!
-    
-    score = -1 (НЕВЕРНО, -1 уровень):
-    - Итоговый ответ НЕ совпадает И решение неверное (или отсутствует)
-    - Грубая концептуальная ошибка
-    - *** ОТВЕТ БЕЗ РЕШЕНИЯ = ВСЕГДА score: -1 ***
-      Если поле "Решение ученика" = "не предоставлено" или пустое,
-      а ученик просто вписал ответ без какого-либо решения/обоснования,
-      ставь score: -1 ДАЖЕ ЕСЛИ ОТВЕТ ВЕРНЫЙ.
-      Олимпиадная математика требует РЕШЕНИЕ, а не угадывание!
-    
-    НАПОМИНАНИЕ О ШКАЛЕ: Ты оцениваешь из трёх вариантов: -1, +1, +2.
-    Не забывай про +1 (частично верно)! Это НЕ только -1 и +2.
-    
-    ЗОЛОТОЕ ПРАВИЛО: Никогда не придирайся к оформлению. Если суть числа верная И есть решение - это score: 2!
-
-3. ПРАВИЛА ДЛЯ FEEDBACK:
-   
-   ОБЯЗАТЕЛЬНО:
-   - Если итоговый ответ СОВПАЛ с правильным, начинай с: "Ответ верный!" или "Итоговый ответ правильный!"
-   - НИКОГДА не пиши "Ответ неверный", если числа совпали
-   - Четко разделяй оценку ответа и оценку решения
-   
-   Примеры правильных формулировок:
-   - "Ответ верный! Решение корректное, молодец!" (score: 2) - когда ответ совпал И есть решение
-   - "Ответ правильный! Число 15 - это верный результат." (score: 2) - когда ученик ввел "15", а ожидалось "x=15"
-   - "Ответ верный! 0.5 и 1/2 - это одно и то же число." (score: 2) - когда формат отличается
-   - "Ответ правильный, но в решении есть вычислительная ошибка: \\( 2+3=6 \\) должно быть \\( 2+3=5 \\)." (score: 1) - только если есть ЯВНАЯ ошибка в вычислениях
-   - "Идея решения верная, но в итоговом ответе ошибка из-за..." (score: 1) - когда ответ не совпал, но метод правильный
-   - "К сожалению, ответ неверный. Правильный ответ: ..." (score: -1) - только когда ответ действительно не совпал
-   - "Ответ верный, но решение не предоставлено. В олимпиадной математике необходимо показать ход решения!" (score: -1) - когда ответ верный, но решения нет
-   
-   ЗАПОМНИ: Ответ без решения = score: -1! Олимпиада требует обоснование.
-
-4. ФОРМАТИРОВАНИЕ FEEDBACK — КРАЙНЕ ВАЖНО:
-
-   ⚠️ ПИШИ МАТЕМАТИКУ ПРОСТЫМ ТЕКСТОМ БЕЗ LaTeX-команд.
-       Никаких backslash-команд внутри feedback (нельзя писать backslash-frac,
-       backslash-sqrt, backslash-left, backslash-right, backslash-dfrac,
-       backslash-(...), backslash-[...], $...$, $$...$$). Любые обратные слеши
-       ВНУТРИ feedback ЗАПРЕЩЕНЫ — они ломают рендеринг.
-
-   КАК ЗАПИСЫВАТЬ МАТЕМАТИКУ (используй обычный текст и Unicode):
-   - Степени: x^2, x^n (можно Unicode x²)
-   - Индексы: a_1, a_n (можно Unicode a₁)
-   - Дроби: 1/2, (x+1)/(x-1) — обычной чертой /
-   - Корни: sqrt(5), или "корень из 5"
-   - Сравнения: =, ≠, <, ≤, >, ≥, ≈
-   - Греческие буквы: alpha, beta, pi, theta, lambda — словами
-   - Никаких backslash-команд и LaTeX-делимитеров.
-
-   ПРОЧИЕ ПРАВИЛА:
-   - Используй переносы строк для структурирования текста.
-   - Перед каждым новым шагом решения ставь перенос строки.
-   - Используй **жирный** для ключевых слов (Шаг 1:, Ответ:, Проверка:).
-   - Форматируй текст красиво, как в хорошем учебнике.
-   - Будь конструктивным и понятным школьнику.
-   - НЕ оборачивай JSON в markdown-блоки.
-   - Пиши всё на русском языке обычным текстом без LaTeX.
-"""
-
-                if is_proof_task:
-                    _etalon_sol = (current_task.solution or "")[:2000]
-                    user_prompt = ""
-                    user_prompt += "\u0417\u0430\u0434\u0430\u0447\u0430 (\u0414\u041e\u041a\u0410\u0417\u0410\u0422\u0415\u041b\u042c\u0421\u0422\u0412\u041e): " + current_task.task_text + "\n\n"
-                    user_prompt += "\u042d\u0442\u0430\u043b\u043e\u043d\u043d\u043e\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0438\u0437 \u0411\u0414:\n" + (_etalon_sol if _etalon_sol else "(\u043d\u0435 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e)") + "\n\n"
-                    user_prompt += "\u0420\u0435\u0448\u0435\u043d\u0438\u0435 \u0443\u0447\u0435\u043d\u0438\u043a\u0430: " + user_answer + "\n"
-                    if user_solution:
-                        user_prompt += "\u041f\u043e\u0434\u0440\u043e\u0431\u043d\u043e\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u0435:\n" + user_solution + "\n"
-                    user_prompt += "\n\u041e\u0446\u0435\u043d\u0438 \u0434\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u043e \u0438 \u0434\u0430\u0439 \u0444\u0438\u0434\u0431\u0435\u043a \u0432 \u0444\u043e\u0440\u043c\u0430\u0442\u0435 JSON."
-                else:
-                    user_prompt = f"""Задача: {current_task.task_text}
-
-Правильный ответ: {correct_answer}
-
-Ответ ученика: {user_answer}
-
-Решение ученика: {user_solution if user_solution else 'не предоставлено'}
-
-Оцени решение и дай фидбек в формате JSON."""
-
-                # Вызываем DeepSeek с увеличенным max_tokens для длинных ответов
-                ai_client = DeepSeekClient()
-                ai_response = ai_client.generate(
-                    prompt=user_prompt,
-                    system_prompt=system_prompt,
-                    temperature=0.3,
-                    max_tokens=4096  # Достаточно для детального разбора с LaTeX (timeout=90 уже в классе)
-                )
-                
-                # Парсим JSON-ответ
-                try:
-                    import re
-
-                    def _safe_json_parse(raw: str):
-                        """
-                        Парсит JSON с LaTeX внутри строк.
-                        DeepSeek возвращает \\( \\[ \\frac и т.д. - они невалидны в JSON.
-                        Стратегия: найти JSON-объект, экранировать одиночные \\ внутри строк.
-                        """
-                        # 1. Убираем markdown-обёртки
-                        s = re.sub(r'```json\s*', '', raw.strip())
-                        s = re.sub(r'```\s*', '', s).strip()
-
-                        # 2. Пробуем распарсить как есть
-                        try:
-                            return json.loads(s)
-                        except json.JSONDecodeError:
-                            pass
-
-                        # 3. Экранируем одиночные \ которые не являются валидными JSON-escape
-                        # Валидные: \\ \" \/ \b \f \n \r \t \uXXXX
-                        # Невалидные (LaTeX): \( \) \[ \] \f \c \t (если не \t) и т.д.
-                        # Заменяем одиночный \ на \\ только внутри JSON-строк
-                        def fix_backslashes(m):
-                            content = m.group(0)
-                            # Заменяем \ которые не являются частью валидного escape
-                            fixed = re.sub(
-                                r'\\(?!["\\/bfnrtu])',
-                                r'\\\\',
-                                content
-                            )
-                            return fixed
-
-                        # Находим все JSON-строки (между кавычками) и фиксим в них слеши
-                        s_fixed = re.sub(r'"(?:[^"\\]|\\.)*"', fix_backslashes, s, flags=re.DOTALL)
-
-                        try:
-                            return json.loads(s_fixed)
-                        except json.JSONDecodeError:
-                            pass
-
-                        # 4. Последний шанс: вытащить score и feedback регулярками
-                        score_m = re.search(r'"score"\s*:\s*(-?\d+)', s)
-                        feedback_m = re.search(r'"feedback"\s*:\s*"(.*?)"(?=\s*[,}])', s, re.DOTALL)
-                        if score_m:
-                            fb = feedback_m.group(1) if feedback_m else 'Ответ проверен.'
-                            # Убираем экранирование для отображения
-                            fb = fb.replace('\\n', '\n').replace('\\"', '"')
-                            # Восстанавливаем LaTeX команды которые Python интерпретировал как escape
-                            # \t → tab, \f → form feed, \s → \s (не escape, но на всякий случай)
-                            import re as _re
-                            # Заменяем одинарные слеши перед LaTeX командами на двойные
-                            fb = _re.sub(r'(?<!\\)\\(text|frac|sqrt|cdot|sum|prod|int|lim|left|right|binom|gcd|overline|underline|vec|hat|bar|tilde|dot|ddot|pmod|bmod|geq|leq|neq|approx|equiv|times|div|pm|infty|alpha|beta|gamma|delta|theta|lambda|mu|pi|sigma|phi|omega)', r'\\\\\1', fb)
-                            return {'score': int(score_m.group(1)), 'feedback': fb}
-
-                        raise json.JSONDecodeError("Cannot parse AI response", s, 0)
-
-                    ai_data = _safe_json_parse(ai_response)
-                    score = max(-1, min(2, int(ai_data.get('score', 1))))
-                    feedback = str(ai_data.get('feedback', 'Ответ проверен.'))
-                    print(f"[DEBUG] Parsed score: {score}, feedback length: {len(feedback)}")
-
-                    # ── AI-тьютор v2: если ответ НЕВЕРНЫЙ — тьютор решает сам ──
-                    # Тьютор самостоятельно решает задачу и может исправить БД-ответ
-                    if score == -1:
-                        try:
-                            from services.ai_tutor_v2 import tutor_explain
-                            tutor_result = tutor_explain(
-                                task=current_task,
-                                user_answer=user_answer,
-                                ai_client=ai_client,
-                            )
-                            # Используем разбор и ответ ОТ LLM, а не из БД
-                            feedback = tutor_result['solution']
-                            # FIX: override score if tutor says user is correct
-                            if tutor_result.get('user_correct'):
-                                score = 2
-                                print(f'[tutor_v2] Score overridden to 2 (tutor says correct)')
-                            _log_tutor_call(
-                                task_id=current_task.id,
-                                user_answer=user_answer,
-                                result=tutor_result,
-                            )
-                            print(f"[tutor_v2] status={tutor_result['status']}, "
-                                  f"errors={tutor_result['errors']}, "
-                                  f"needs_review={tutor_result.get('needs_review', False)}, "
-                                  f"llm_answer={tutor_result.get('answer', '?')}, "
-                                  f"feedback_len={len(feedback)}")
-                        except Exception as tutor_err:
-                            app.logger.warning(
-                                f"[tutor_v2] Failed, keeping old feedback: {tutor_err}"
-                            )
-                            # Оставляем старый feedback — не ломаем основной поток
-                        
-                except (json.JSONDecodeError, ValueError) as e:
-                    print(f"[ERROR] Failed to parse AI response as JSON: {e}")
-                    # Fallback: показываем правильный ответ из БД
-                    feedback = (
-                        f"AI-разбор временно недоступен.\n\n"
-                        f"Правильный ответ: **{correct_answer}**\n\n"
-                        f"Решение:\n{current_task.solution[:600] if current_task.solution else 'см. учебник'}"
-                    )
-                    score = 0  # Нейтральная оценка — не меняем уровень
-                    
-            except Exception as e:
-                print("="*70)
-                print(f"[CRITICAL ERROR] DeepSeek API FAILED")
-                print(f"Error Type: {type(e).__name__}")
-                print(f"Error Message: {e}")
-                print("="*70)
-                import traceback
-                traceback.print_exc()
-                print("="*70)
-                print(f"[DEBUG] Task text: {current_task.task_text[:100]}...")
-                print(f"[DEBUG] User answer: {user_answer}")
-                print(f"[DEBUG] Correct answer: {correct_answer}")
-                print("="*70)
-                # Fallback: показываем правильный ответ из БД вместо пустого сообщения
-                feedback = (
-                    f"AI-проверка временно недоступна.\n\n"
-                    f"**Правильный ответ:** {correct_answer}\n\n"
-                    + (f"**Решение:**\n{current_task.solution[:800]}" if current_task.solution else "")
-                )
-                score = 0  # Нейтральная оценка — уровень не меняется
+            score = 0
         
-        # Ограничиваем score в диапазоне [-1, 2]
-        score = max(-1, min(2, score))
-
-        # ── Sanitize feedback: убираем LaTeX-команды и делимитеры ──────────
-        # Конвертируем популярные LaTeX-конструкции в человекочитаемый текст,
-        # чтобы разбор от AI-тьютора всегда выглядел нормально, даже если
-        # модель проигнорировала инструкцию «без LaTeX».
-        def _sanitize_feedback_no_latex(s: str) -> str:
-            if not s:
-                return s
-            import re as _re
-            t = s
-            # 1) убираем делимитеры \( \) \[ \] и $$..$$ / $..$
-            t = t.replace("\\(", " ").replace("\\)", " ")
-            t = t.replace("\\[", "\n").replace("\\]", "\n")
-            t = _re.sub(r"\$\$([^$]*)\$\$", r"\1", t, flags=_re.DOTALL)
-            t = _re.sub(r"\$([^$\n]+)\$", r"\1", t)
-            # 2) \frac{a}{b} → (a)/(b)   (и \dfrac, \tfrac)
-            for cmd in ("dfrac", "tfrac", "frac"):
-                pat = r"\\" + cmd + r"\s*\{([^{}]*)\}\s*\{([^{}]*)\}"
-                # повторяем — на случай вложенных
-                for _ in range(4):
-                    new_t = _re.sub(pat, r"(\1)/(\2)", t)
-                    if new_t == t:
-                        break
-                    t = new_t
-            # 3) \sqrt[n]{x} → root_n(x);   \sqrt{x} → sqrt(x)
-            t = _re.sub(r"\\sqrt\s*\[([^\]]*)\]\s*\{([^{}]*)\}", r"root_\1(\2)", t)
-            t = _re.sub(r"\\sqrt\s*\{([^{}]*)\}", r"sqrt(\1)", t)
-            # 4) \left( \right) → ( )
-            t = t.replace("\\left", "").replace("\\right", "")
-            # 5) операторы и символы
-            replacements = {
-                "\\cdot": "·", "\\times": "×", "\\div": "÷", "\\pm": "±",
-                "\\le": "≤", "\\leq": "≤", "\\ge": "≥", "\\geq": "≥",
-                "\\ne": "≠", "\\neq": "≠", "\\approx": "≈", "\\equiv": "≡",
-                "\\infty": "∞", "\\to": "→", "\\Rightarrow": "⇒",
-                "\\Leftrightarrow": "⇔", "\\in": "∈", "\\notin": "∉",
-                "\\subset": "⊂", "\\cup": "∪", "\\cap": "∩",
-                "\\forall": "∀", "\\exists": "∃", "\\sum": "Σ", "\\prod": "∏",
-                "\\int": "∫", "\\lim": "lim", "\\log": "log", "\\ln": "ln",
-                "\\sin": "sin", "\\cos": "cos", "\\tan": "tg", "\\cot": "ctg",
-                "\\alpha": "α", "\\beta": "β", "\\gamma": "γ", "\\delta": "δ",
-                "\\epsilon": "ε", "\\theta": "θ", "\\lambda": "λ", "\\mu": "μ",
-                "\\pi": "π", "\\rho": "ρ", "\\sigma": "σ", "\\tau": "τ",
-                "\\phi": "φ", "\\omega": "ω",
-                "\\overline": "", "\\underline": "", "\\vec": "",
-                "\\hat": "", "\\bar": "", "\\tilde": "",
-                "\\pmod": "mod", "\\bmod": "mod",
-                "\\quad": " ", "\\qquad": "  ", "\\,": " ", "\\;": " ",
-                "\\!": "", "\\:": " ", "\\ ": " ",
-            }
-            for src, dst in replacements.items():
-                t = t.replace(src, dst)
-            # 6) \text{...} → ...
-            t = _re.sub(r"\\text\s*\{([^{}]*)\}", r"\1", t)
-            # 7) убираем оставшиеся одиночные backslash-команды
-            t = _re.sub(r"\\[A-Za-z]+\s*\{([^{}]*)\}", r"\1", t)
-            t = _re.sub(r"\\[A-Za-z]+", "", t)
-            # 8) убираем одиночные фигурные скобки, оставшиеся от LaTeX
-            #    (но НЕ трогаем индексы вида a_{1} — их уже заменили выше)
-            t = _re.sub(r"\{([^{}]*)\}", r"\1", t)
-            # 9) косметика: схлопываем многократные пробелы
-            t = _re.sub(r"[ \t]{2,}", " ", t)
-            t = _re.sub(r"\n{3,}", "\n\n", t)
-            return t.strip()
-
-        try:
-            feedback = _sanitize_feedback_no_latex(feedback)
-        except Exception as _san_err:
-            print(f"[sanitize] feedback cleanup failed: {_san_err}")
-
-        # ── Task 3: явная коммуникация баллов ──
-        # Адаптивный тест: AI-тьютор должен ВСЕГДА проговаривать,
-        # сколько баллов он поставил.
-        # ВАЖНО (правка по запросу пользователя 2026-05-17):
-        # если AI-тьютор поставил +2 — оставляем +2 даже без отдельного поля
-        # «решение». Не понижаем балл просто по факту отсутствия user_solution:
-        # тьютор сам решает, достоин ли ответ +2.
-        _has_solution = bool((user_solution or '').strip())
-
-        # Префикс с явной оценкой в начале feedback, чтобы ученик видел балл.
-        def _score_badge(s: int, has_solution: bool) -> str:
-            if s == 2:
-                return "🟢 **Оценка тьютора: +2 балла** (верный ответ + корректное решение)"
-            if s == 1:
-                if has_solution:
-                    return "🟡 **Оценка тьютора: +1 балл** (частично верно: либо ответ неточный, либо решение с пробелами)"
-                return "🟡 **Оценка тьютора: +1 балл** (ответ принят, но без решения)"
-            if s == 0:
-                return "⚪ **Оценка тьютора: 0 баллов** (нейтрально, уровень не меняется)"
-            # s == -1
-            if has_solution:
-                return "🔴 **Оценка тьютора: −1 балл** (решение содержит ошибку)"
-            return "🔴 **Оценка тьютора: −1 балл** (нет решения — олимпиада требует обоснование)"
-
-        _badge = _score_badge(score, _has_solution)
-        # Не дублируем, если AI уже сам начал с такой строки
-        if _badge.split(':', 1)[0] not in (feedback or '')[:80]:
-            feedback = f"{_badge}\n\n{feedback or ''}".strip()
+        # ── Детекция сбоя AI ──────────────────────────────────────────
+        # review_attempt() при сбое возвращает:
+        #   JSON parse error → score=-1.0, category="suspicious",           confidence=0.0
+        #   API exception    → score=-1.0, category="suspicious",           confidence=0.0
+        #   AI unavailable   → score=-1.0, category="wrong_answer_wrong_method", confidence=0.0
+        # ВСЕ три ветки hardcode confidence=0.0. Это ЕДИНСТВЕННЫЙ сигнал сбоя.
+        # Легитимная категория "suspicious" (ответ верный, нет решения, уровень≥7)
+        # возвращается с confidence>0 — и не попадает сюда.
+        is_ai_failure = (confidence == 0.0 and category in ("suspicious", "wrong_answer_wrong_method"))
         
-        # НОВАЯ ЛОГИКА АДАПТИВНОСТИ С СТРИКАМИ
+        # НОВАЯ ЛОГИКА АДАПТИВНОСТИ С СТРИКАМИ (4 ветки)
         current_difficulty = session.get('adaptive_current_difficulty', 3)
         partial_streak = session.get('partial_correct_streak', 0)
         
         # Логирование для отладки
-        print(f"[ADAPTIVE] Score: {score}, Current level: {current_difficulty}, Streak: {partial_streak}")
+        print(f"[ADAPTIVE] Score: {score} (float: {float_score}), Current level: {current_difficulty}, Streak: {partial_streak}")
         
         if score == 2:
-            # Идеально - мгновенно повышаем уровень
+            # Идеально — мгновенно повышаем уровень
             new_level = min(7, current_difficulty + 1)
             partial_streak = 0  # Сбрасываем стрик
             print(f"[ADAPTIVE] Score=2: Повышаем уровень {current_difficulty} → {new_level}")
             
         elif score == 1:
-            # Частично верно - уровень НЕ меняется (фикс: было +1 при стрике >= 2)
+            # Частично верно — уровень НЕ меняется
             new_level = current_difficulty
             partial_streak = 0  # Сбрасываем стрик
             print(f"[ADAPTIVE] Score=1: Уровень без изменений {current_difficulty}")
-                
-        else:  # score <= 0
-            # Неверно - снижаем уровень
+            
+        elif is_ai_failure:
+            # Сбой AI — нейтрально: уровень не трогаем, стрик сохраняем
+            # ВАЖНО: проверяем ДО score==-1, потому что сбой AI возвращает
+            # float_score=-1.0 → int score=-1, но это НЕ ошибка ученика.
+            new_level = current_difficulty
+            # partial_streak НЕ сбрасываем — нейтральное событие
+            print(f"[ADAPTIVE] Score=-1 (AI failure): Уровень без изменений, стрик сохранён")
+            
+        elif score == -1:
+            # Полностью неверно — снижаем уровень
             new_level = max(1, current_difficulty - 1)
             partial_streak = 0  # Сбрасываем стрик
+            print(f"[ADAPTIVE] Score=-1: Понижаем уровень {current_difficulty} → {new_level}")
+            
+        else:
+            # score == 0 от 0.5 (частичный метод) — ответ НЕВЕРНЫЙ
+            # Уровень не падает (не полный провал), но стрик сбрасывается
+            new_level = current_difficulty
+            partial_streak = 0  # Сбрасываем стрик — ответ неверный
+            print(f"[ADAPTIVE] Score=0 (wrong answer): Уровень без изменений, стрик сброшен")
         
         # Сохраняем обновленные значения уровня в сессию.
         # ВАЖНО: уровень меняется ТОЛЬКО потому что мы ответили на ЭТУ задачу
