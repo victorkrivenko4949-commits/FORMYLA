@@ -467,7 +467,7 @@ def submit_answer_ai(item_id: int):
             "message": f"Ошибка AI-проверки: {e}",
         }), 500
 
-    score = int(result.get("score", 0))
+    score = result.get("score", 0.0)
     feedback = str(result.get("feedback") or "")
     is_correct = bool(result.get("is_correct"))
 
