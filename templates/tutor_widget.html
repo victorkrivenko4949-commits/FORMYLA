@@ -619,6 +619,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 sendToTutor();
             }
         });
+        
+        // CHAT_ATTACH_V1 — Ctrl+V paste for images from clipboard
+        textarea.addEventListener('paste', function(e) {
+            var items = e.clipboardData && e.clipboardData.items;
+            if (!items) return;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file') {
+                    var file = items[i].getAsFile();
+                    if (file) {
+                        if (!file.type.startsWith('image/')) {
+                            alert('Можно вставлять только изображения');
+                            return;
+                        }
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('Файл больше 10 MB — слишком большой');
+                            return;
+                        }
+                        e.preventDefault();
+                        addFileChip(file);
+                    }
+                    return;
+                }
+            }
+        });
     }
     
     // Drag & Drop

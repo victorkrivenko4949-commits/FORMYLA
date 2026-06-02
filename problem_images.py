@@ -1,78 +1,89 @@
-# Маппинг (combo_id, problem_num) -> путь к файлу картинки (относительно static/)
-# combo_id — это id пробника из olympiads.py
-# problem_num — это номер задачи внутри пробника (поле "num")
-#
-# Используется в app.py для привязки картинок к задачам олимпиад.
+"""
+problem_images.py — Автоматически сгенерировано _process_figures.py
+Содержит 81 привязок рисунков к задачам.
+"""
 
+# IMAGE_MAP: {(combo_id, problem_num): "relative/path/to/image.png"}
 IMAGE_MAP = {
-    # Ломоносов 2024, 5 класс (combo_id=216), задачи 1 и 4
-    (216, 1): "problem_images/lomonosov_2024_5_1.png",
-    (216, 4): "problem_images/lomonosov_2024_5_4.png",
-
-    # Ломоносов 2024, 6 класс (combo_id=217), задачи 1 и 4
-    (217, 1): "problem_images/lomonosov_2024_6_1.png",
-    (217, 4): "problem_images/lomonosov_2024_6_4.png",
-
-    # Ломоносов 2024, 7 класс (combo_id=218), задача 5
-    (218, 5): "problem_images/lomonosov_2024_7_5.png",
-
-    # Ломоносов 2024, 8 класс (combo_id=219), задача 5
-    (219, 5): "problem_images/lomonosov_2024_8_5.png",
-
-    # Ломоносов 2019, 9 класс (combo_id=189), задача 5
-    (189, 5): "problem_images/lomonosov_2019_9_5.png",
-
-    # Ломоносов 2020, 7 класс (combo_id=192), задача 2
-    (192, 2): "problem_images/lomonosov_2020_7_2.png",
-
-    # Ломоносов 2020, 8 класс (combo_id=193), задача 2
-    (193, 2): "problem_images/lomonosov_2020_8_2.png",
-
-    # Ломоносов 2020, 9 класс (combo_id=194), задача 1
-    (194, 1): "problem_images/lomonosov_2020_9_1.png",
-
-    # Ломоносов 2022, 5 класс (combo_id=202), задача 2
-    (202, 2): "problem_images/lomonosov_2022_5_2.png",
-
-    # Ломоносов 2022, 6 класс (combo_id=203), задача 2
-    (203, 2): "problem_images/lomonosov_2022_6_2.png",
-
-    # Formula Unity 2020, 7 класс (combo_id=44), задача 4
-    (44, 4): "problem_images/formula_unity_2020_7_4.png",
-
-    # Formula Unity 2020, 7 класс дубликат (combo_id=724), задача 4
-    (724, 4): "problem_images/formula_unity_2020_7_4.png",
-
-    # Formula Unity 2020, 8 класс (combo_id=725), задача 4
-    (725, 4): "problem_images/formula_unity_2020_8_4.png",
-
-    # Formula Unity 2022, 6 класс (combo_id=748), задача 4
-    (748, 4): "problem_images/formula_unity_2022_6_4.png",
-
-    # Formula Unity 2022, 7 класс (combo_id=749), задача 1
-    (749, 1): "problem_images/formula_unity_2022_7_1.png",
-
-    # Курчатов 2023, 7 класс (combo_id=125), задача 4
-    (125, 4): "problem_images/kurchatov_2023_7_4.png",
-
-    # PVG 2017, 5 класс (combo_id=278), задача 5
-    (278, 5): "problem_images/pvg_2017_5_5.png",
-
-    # PVG 2017, 6 класс (combo_id=279), задача 5
-    (279, 5): "problem_images/pvg_2017_6_5.png",
-
-    # PVG 2017, 9 класс (combo_id=282), задача 4
-    (282, 4): "problem_images/pvg_2017_9_4.png",
-
-    # Турнир городов 2017, 9 класс (combo_id=396), задача 2
-    (396, 2): "problem_images/turgor_2017_9_2.png",
-
-    # СПбГУ 2023, 6 класс (combo_id=342), задача 3
-    (342, 3): "problem_images/spbgu_2023_6_3.png",
-
-    # СПбГУ 2023, 7 класс (combo_id=344), задача 3
-    (344, 3): "problem_images/spbgu_2023_7_3.png",
-
-    # Высшая проба 2018, 10 класс (combo_id=595), задача 4
-    (595, 4): "problem_images/vysshaya_proba_2018_10_4.png",
+    (16, 1): "img/olympiads/euler/2016/kl8/regional/zad1_usl_1.png",
+    (35, 1): "img/olympiads/euler/2024/kl8/regional/zad1_usl_1.png",
+    (57, 1): "img/olympiads/formula_unity/2022/kl7/final/zad1_usl_1.png",
+    (83, 1): "img/olympiads/formula_unity/2024/kl8/final/zad1_usl_1.png",
+    (83, 2): "img/olympiads/formula_unity/2024/kl8/final/zad2_usl_1.png",
+    (83, 3): "img/olympiads/formula_unity/2024/kl8/final/zad3_usl_1.png",
+    (83, 4): "img/olympiads/formula_unity/2024/kl8/final/zad4_usl_1.png",
+    (83, 5): "img/olympiads/formula_unity/2024/kl8/final/zad5_usl_1.png",
+    (91, 1): "img/olympiads/formula_unity/2024/kl11/final/zad1_usl_1.png",
+    (91, 2): "img/olympiads/formula_unity/2024/kl11/final/zad2_usl_1.png",
+    (91, 3): "img/olympiads/formula_unity/2024/kl11/final/zad3_usl_1.png",
+    (91, 4): "img/olympiads/formula_unity/2024/kl11/final/zad4_usl_1.png",
+    (91, 5): "img/olympiads/formula_unity/2024/kl11/final/zad5_usl_1.png",
+    (100, 3): "img/olympiads/kurchatov/2016/kl10/qualifying/zad3_usl_1.png",
+    (187, 1): "img/olympiads/lomonosov/2019/kl7/qualifying/zad1_usl_1.png",
+    (187, 3): "img/olympiads/lomonosov/2019/kl7/qualifying/zad3_usl_1.png",
+    (187, 5): "img/olympiads/lomonosov/2019/kl7/qualifying/zad5_usl_1.png",
+    (206, 1): "img/olympiads/lomonosov/2022/kl9/qualifying/zad1_usl_1.png",
+    (213, 1): "img/olympiads/lomonosov/2023/kl9/qualifying/zad1_usl_1.png",
+    (230, 1): "img/olympiads/phystech/2014/kl11/final/zad1_usl_1.png",
+    (291, 1): "img/olympiads/pvg/2018/kl11/qualifying/zad1_usl_1.png",
+    (291, 2): "img/olympiads/pvg/2018/kl11/qualifying/zad2_usl_1.png",
+    (291, 4): "img/olympiads/pvg/2018/kl11/qualifying/zad4_usl_1.png",
+    (311, 3): "img/olympiads/pvg/2022/kl5/qualifying/zad3_usl_1.png",
+    (317, 1): "img/olympiads/pvg/2022/kl11/qualifying/zad1_usl_1.png",
+    (317, 2): "img/olympiads/pvg/2022/kl11/qualifying/zad2_usl_1.png",
+    (320, 3): "img/olympiads/pvg/2023/kl7/qualifying/zad3_usl_1.png",
+    (330, 2): "img/olympiads/pvg/2024/kl10/qualifying/zad2_usl_1.png",
+    (345, 2): "img/olympiads/spbgu/2023/kl8/final/zad2_usl_1.png",
+    (396, 1): "img/olympiads/turgor/2017/kl9/spring_hard/zad1_usl_1.png",
+    (396, 2): "img/olympiads/turgor/2017/kl9/spring_hard/zad2_usl_1.png",
+    (496, 1): "img/olympiads/vsosh/2018/kl10/regional/zad1_usl_1.png",
+    (496, 2): "img/olympiads/vsosh/2018/kl10/regional/zad2_usl_1.png",
+    (496, 3): "img/olympiads/vsosh/2018/kl10/regional/zad3_usl_1.png",
+    (496, 5): "img/olympiads/vsosh/2018/kl10/regional/zad5_usl_1.png",
+    (510, 1): "img/olympiads/vsosh/2019/kl11/final/zad1_usl_1.png",
+    (510, 3): "img/olympiads/vsosh/2019/kl11/final/zad3_usl_1.png",
+    (510, 4): "img/olympiads/vsosh/2019/kl11/final/zad4_usl_1.png",
+    (515, 1): "img/olympiads/vsosh/2020/kl10/municipal/zad1_usl_1.png",
+    (561, 3): "img/olympiads/vsosh/2025/kl11/final/zad3_usl_1.png",
+    (561, 4): "img/olympiads/vsosh/2025/kl11/final/zad4_usl_1.png",
+    (561, 6): "img/olympiads/vsosh/2025/kl11/final/zad6_usl_1.png",
+    (562, 2): "img/olympiads/vsosh/2025/kl11/regional/zad2_usl_1.png",
+    (562, 3): "img/olympiads/vsosh/2025/kl11/regional/zad3_usl_1.png",
+    (569, 1): "img/olympiads/vysshaya_proba/2013/kl8/final/zad1_usl_1.png",
+    (570, 1): "img/olympiads/vysshaya_proba/2013/kl9/final/zad1_usl_1.png",
+    (570, 2): "img/olympiads/vysshaya_proba/2013/kl9/final/zad2_usl_1.png",
+    (570, 3): "img/olympiads/vysshaya_proba/2013/kl9/final/zad3_usl_1.png",
+    (581, 1): "img/olympiads/vysshaya_proba/2015/kl9/final/zad1_usl_1.png",
+    (584, 2): "img/olympiads/vysshaya_proba/2016/kl8/final/zad2_usl_1.png",
+    (584, 3): "img/olympiads/vysshaya_proba/2016/kl8/final/zad3_usl_1.png",
+    (587, 1): "img/olympiads/vysshaya_proba/2017/kl7/final/zad1_usl_1.png",
+    (587, 2): "img/olympiads/vysshaya_proba/2017/kl7/final/zad2_usl_1.png",
+    (587, 3): "img/olympiads/vysshaya_proba/2017/kl7/final/zad3_usl_1.png",
+    (587, 4): "img/olympiads/vysshaya_proba/2017/kl7/final/zad4_usl_1.png",
+    (587, 5): "img/olympiads/vysshaya_proba/2017/kl7/final/zad5_usl_1.png",
+    (601, 1): "img/olympiads/vysshaya_proba/2019/kl11/final/zad1_usl_1.png",
+    (603, 1): "img/olympiads/vysshaya_proba/2020/kl8/final/zad1_usl_1.png",
+    (603, 2): "img/olympiads/vysshaya_proba/2020/kl8/final/zad2_usl_1.png",
+    (603, 4): "img/olympiads/vysshaya_proba/2020/kl8/final/zad4_usl_1.png",
+    (603, 5): "img/olympiads/vysshaya_proba/2020/kl8/final/zad5_usl_1.png",
+    (604, 1): "img/olympiads/vysshaya_proba/2020/kl9/final/zad1_usl_1.png",
+    (604, 4): "img/olympiads/vysshaya_proba/2020/kl9/final/zad4_usl_1.png",
+    (612, 1): "img/olympiads/vysshaya_proba/2022/kl7/final/zad1_usl_1.png",
+    (612, 3): "img/olympiads/vysshaya_proba/2022/kl7/final/zad3_usl_1.png",
+    (685, 2): "img/olympiads/phystech/2020/kl9/final/zad2_usl_1.png",
+    (685, 3): "img/olympiads/phystech/2020/kl9/final/zad3_usl_1.png",
+    (690, 2): "img/olympiads/phystech/2020/kl11/final/zad2_usl_1.png",
+    (690, 3): "img/olympiads/phystech/2020/kl11/final/zad3_usl_1.png",
+    (690, 4): "img/olympiads/phystech/2020/kl11/final/zad4_usl_1.png",
+    (690, 5): "img/olympiads/phystech/2020/kl11/final/zad5_usl_1.png",
+    (692, 2): "img/olympiads/phystech/2022/kl10/final/zad2_usl_1.png",
+    (693, 2): "img/olympiads/phystech/2022/kl11/final/zad2_usl_1.png",
+    (693, 3): "img/olympiads/phystech/2022/kl11/final/zad3_usl_1.png",
+    (693, 4): "img/olympiads/phystech/2022/kl11/final/zad4_usl_1.png",
+    (693, 5): "img/olympiads/phystech/2022/kl11/final/zad5_usl_1.png",
+    (729, 1): "img/olympiads/formula_unity/2020/kl5/final/zad1_usl_1.png",
+    (729, 2): "img/olympiads/formula_unity/2020/kl5/final/zad2_usl_1.png",
+    (729, 3): "img/olympiads/formula_unity/2020/kl5/final/zad3_usl_1.png",
+    (729, 4): "img/olympiads/formula_unity/2020/kl5/final/zad4_usl_1.png",
+    (775, 1): "img/olympiads/turgor/2025/kl8/fall_basic/zad1_usl_1.png",
 }

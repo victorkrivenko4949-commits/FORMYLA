@@ -36,8 +36,7 @@ logger = logging.getLogger(__name__)
 # Step 1 PLAN: Claude Sonnet 4.5 — base-модель без reasoning. Reasoning-
 # флагманы (gpt-5.5-pro, gemini-3.1-pro) на стриминге 4-5 минут регулярно
 # роняют соединение через нестабильный интернет. Sonnet 4.5 уже в проде
-# в config/models.py:21 (ANALYZER_MODEL), стабильно отдаёт JSON за 5-15s.
-_GEMINI_MODEL = "anthropic/claude-sonnet-4.5"
+_GEMINI_MODEL = "anthropic/claude-sonnet-4.6"
 
 # ── helpers ───────────────────────────────────────────────────────────────
 

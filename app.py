@@ -915,9 +915,11 @@ except Exception as _e:
 try:
     from daily_tasks import daily_tasks_bp
     from migrations.add_daily_tasks_tables import _ensure_table as _ensure_daily_tasks_tables
+    from migrations.add_task_pool_cache import _ensure_task_pool_tables
     app.register_blueprint(daily_tasks_bp)
     with app.app_context():
         _ensure_daily_tasks_tables()
+        _ensure_task_pool_tables()
     print("[BP] daily_tasks_bp registered (/daily_tasks)")
 except Exception as _e:
     import traceback as _tb
@@ -1063,6 +1065,16 @@ app.config.from_object(Config())
 scheduler = APScheduler()
 scheduler.init_app(app)
 
+# ─── VAPID Keys for Web Push Notifications ──────────────────────────
+VAPID_PUBLIC_KEY = (os.environ.get('VAPID_PUBLIC_KEY') or '').strip()
+VAPID_PRIVATE_KEY = (os.environ.get('VAPID_PRIVATE_KEY') or '').strip()
+VAPID_CLAIM_EMAIL = (os.environ.get('VAPID_CLAIM_EMAIL') or 'noreply@formyla.com').strip()
+
+if VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY:
+    print("✅ VAPID keys loaded — Web Push notifications enabled")
+else:
+    print("ℹ️  VAPID keys not set — Web Push notifications disabled")
+
 # Daily Quest Streak Reset Job (runs at 00:00 MSK)
 @scheduler.task('cron', id='daily_streak_reset', hour=0, minute=0)
 def daily_streak_reset_job():
@@ -1074,6 +1086,51 @@ def daily_streak_reset_job():
             app.logger.info("✓ Daily streak reset completed")
         except Exception as e:
             app.logger.error(f"✗ Daily streak reset failed: {e}")
+
+# Daily Quest Deadline Reminder (runs at 18:00 and 21:00 MSK)
+@scheduler.task('cron', id='daily_quest_deadline_reminder', hour='18,21', minute=0)
+def daily_quest_deadline_reminder_job():
+    """Send push notifications to users who haven't completed today's Daily Tasks."""
+    if not VAPID_PUBLIC_KEY or not VAPID_PRIVATE_KEY:
+        return  # Push notifications not configured
+    with app.app_context():
+        try:
+            from datetime import date
+            from models import PushSubscription, User
+            from daily_tasks.models import DailyTaskSet, DailyTaskItem
+            today = date.today()
+            # Find all users with push subscriptions
+            sub_rows = PushSubscription.query.distinct(PushSubscription.user_id).all()
+            sent = 0
+            for sub in sub_rows:
+                user = User.query.get(sub.user_id)
+                if not user or user.is_guest:
+                    continue
+                # Check if user has a daily task set for today
+                daily_set = DailyTaskSet.query.filter_by(
+                    user_id=user.id, target_date=today, status='ready'
+                ).first()
+                if not daily_set:
+                    continue
+                # Check if all tasks are answered (is_correct is not null)
+                all_answered = DailyTaskItem.query.filter(
+                    DailyTaskItem.daily_set_id == daily_set.id,
+                    DailyTaskItem.is_correct.is_(None)
+                ).count() == 0
+                if all_answered:
+                    continue  # Already completed
+                # Send push notification
+                _send_push_notification(
+                    user_id=user.id,
+                    title='⏳ Задачи дня',
+                    body='Осталось меньше 3 часов, чтобы решить задачи дня!',
+                    url='/daily_tasks',
+                )
+                sent += 1
+            if sent:
+                app.logger.info(f"✓ Daily quest reminder sent to {sent} users")
+        except Exception as e:
+            app.logger.error(f"✗ Daily quest reminder failed: {e}")
 
 # Start scheduler
 try:
@@ -2479,6 +2536,14 @@ def olympiad_open():
             num = p.get('num')
             img = IMAGE_MAP.get((combo.get('id'), num))
             if img:
+                # Пропускаем битые/stub-файлы (< 200 байт — это не PNG, а заглушка)
+                import os
+                _full = os.path.join(app.static_folder, img)
+                try:
+                    if os.path.getsize(_full) < 200:
+                        continue
+                except OSError:
+                    continue
                 p['image'] = img
     
     # RUNTIME PATCH: Удаление фразы "см. рисунок" для обхода клиентского кеша
@@ -7585,6 +7650,61 @@ def _make_notif(uid, ntype, sender_id):
         db.session.rollback()
 
 
+# ─── Web Push Notification Helper ────────────────────────────────────
+
+def _send_push_notification(user_id, title, body, url='/'):
+    """Send a web push notification to all subscriptions of a user.
+
+    Uses pywebpush library. Handles expired/deleted subscriptions
+    (HTTP 410 Gone) by removing them from the database.
+
+    Args:
+        user_id: int — recipient user ID.
+        title: str — notification title.
+        body: str — notification body text.
+        url: str — URL to open when the notification is clicked.
+    """
+    from models import PushSubscription
+    if not VAPID_PUBLIC_KEY or not VAPID_PRIVATE_KEY:
+        return
+    subs = PushSubscription.query.filter_by(user_id=user_id).all()
+    if not subs:
+        return
+    payload = {
+        'title': title,
+        'body': body,
+        'icon': '/static/logo.png',
+        'badge': '/static/favicon-32x32.png',
+        'data': {'url': url, 'type': 'push'},
+    }
+    payload_bytes = json.dumps(payload).encode('utf-8')
+    vapid_claims = {'sub': f'mailto:{VAPID_CLAIM_EMAIL}'}
+    for sub in subs:
+        try:
+            from pywebpush import webpush
+            webpush(
+                subscription_info={
+                    'endpoint': sub.endpoint,
+                    'keys': {
+                        'p256dh': sub.p256dh_key,
+                        'auth': sub.auth_key,
+                    },
+                },
+                data=payload_bytes,
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims=vapid_claims,
+            )
+        except Exception as e:
+            err_str = str(e)
+            # Remove subscription if it's expired (410 Gone) or malformed
+            if '410' in err_str or 'Gone' in err_str or '404' in err_str:
+                try:
+                    db.session.delete(sub)
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+            else:
+                app.logger.warning(f"[PUSH] Failed to send to sub #{sub.id}: {err_str}")
 @app.route('/friends/request/<int:uid>', methods=['POST'])
 @login_required
 def send_friend_request(uid):
@@ -7918,7 +8038,7 @@ def api_chat_send(friend_id):
     db.session.add(msg)
     db.session.commit()
 
-    # Уведомление другу
+    # Уведомление другу (in-app)
     try:
         notif = Notification(
             user_id=friend.id,
@@ -7931,6 +8051,27 @@ def api_chat_send(friend_id):
     except Exception as _ne:
         print(f"[CHAT] notification failed: {_ne}")
         db.session.rollback()
+
+    # Push-уведомление другу (браузерный push)
+    try:
+        sender_name = current_user.display_name or current_user.nickname or 'Пользователь'
+        if kind == 'task_share':
+            _send_push_notification(
+                user_id=friend.id,
+                title=f'📚 {sender_name}',
+                body='Поделился(ась) задачей!',
+                url=f'/chat?friend={current_user.id}',
+            )
+        else:
+            body_text = (msg.body or '')[:120]
+            _send_push_notification(
+                user_id=friend.id,
+                title=f'💬 {sender_name}',
+                body=body_text if body_text else 'Новое сообщение',
+                url=f'/chat?friend={current_user.id}',
+            )
+    except Exception as _pe:
+        print(f"[CHAT] push notification failed: {_pe}")
 
     return jsonify({'success': True, 'message': msg.to_dict(viewer_id=current_user.id)})
 
@@ -8264,6 +8405,79 @@ def notifications_count():
     """API: unread notifications count."""
     count = current_user.unread_notifications_count()
     return jsonify({'count': count})
+
+
+# ─── Web Push API Endpoints ──────────────────────────────────────────
+
+@app.route('/api/push/subscribe', methods=['POST'])
+@login_required
+def push_subscribe():
+    """Save a PushSubscription from the client's browser.
+
+    Expects JSON with:
+      { endpoint, keys: { p256dh, auth }, userAgent? }
+    """
+    from models import PushSubscription
+    data = request.get_json(silent=True) or {}
+    endpoint = (data.get('endpoint') or '').strip()
+    keys = data.get('keys') or {}
+    p256dh = (keys.get('p256dh') or '').strip()
+    auth = (keys.get('auth') or '').strip()
+    if not endpoint or not p256dh or not auth:
+        return jsonify({'error': 'Missing endpoint or keys'}), 400
+
+    # Check for existing subscription with same endpoint (update it)
+    existing = PushSubscription.query.filter_by(
+        user_id=current_user.id,
+        endpoint=endpoint,
+    ).first()
+    if existing:
+        existing.p256dh_key = p256dh
+        existing.auth_key = auth
+        existing.user_agent = (data.get('userAgent') or '')[:256]
+    else:
+        sub = PushSubscription(
+            user_id=current_user.id,
+            endpoint=endpoint,
+            p256dh_key=p256dh,
+            auth_key=auth,
+            user_agent=(data.get('userAgent') or '')[:256],
+        )
+        db.session.add(sub)
+
+    try:
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"[PUSH] subscribe error: {e}")
+        return jsonify({'error': 'DB error'}), 500
+
+
+@app.route('/api/push/unsubscribe', methods=['POST'])
+@login_required
+def push_unsubscribe():
+    """Remove a PushSubscription by endpoint."""
+    from models import PushSubscription
+    data = request.get_json(silent=True) or {}
+    endpoint = (data.get('endpoint') or '').strip()
+    if not endpoint:
+        return jsonify({'error': 'Missing endpoint'}), 400
+
+    sub = PushSubscription.query.filter_by(
+        user_id=current_user.id,
+        endpoint=endpoint,
+    ).first()
+    if sub:
+        db.session.delete(sub)
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"[PUSH] unsubscribe error: {e}")
+            return jsonify({'error': 'DB error'}), 500
+
+    return jsonify({'success': True})
 
 
 @app.route('/u/<nickname>')
@@ -9307,6 +9521,7 @@ def api_groups_messages(group_id):
     items = [{
         'id': m.id,
         'body': m.body,
+        'kind': m.kind or 'text',
         'sender_id': m.sender_id,
         'sender_name': (senders.get(m.sender_id).name
                         or senders.get(m.sender_id).nickname
@@ -9314,6 +9529,10 @@ def api_groups_messages(group_id):
                         if senders.get(m.sender_id) else '?',
         'mine': m.sender_id == current_user.id,
         'created_at': m.created_at.isoformat() if m.created_at else None,
+        'attachment_url': m.attachment_url,
+        'attachment_kind': m.attachment_kind,
+        'attachment_name': m.attachment_name,
+        'attachment_size': m.attachment_size,
     } for m in rows]
     return jsonify({'messages': items})
 
@@ -9325,14 +9544,77 @@ def api_groups_send(group_id):
         return jsonify({'error': 'Вы не в группе'}), 403
     data = request.get_json(silent=True) or {}
     body = (data.get('body') or '').strip()
-    if not body:
+    kind = data.get('kind', 'text')
+    attachment = data.get('attachment') if kind == 'attachment' else None
+    if not body and not attachment:
         return jsonify({'error': 'Сообщение пустое'}), 400
     m = GroupMessage(
-        group_id=group_id, sender_id=current_user.id, body=body[:4000]
+        group_id=group_id,
+        sender_id=current_user.id,
+        kind=kind,
+        body=body[:4000] if body else None,
     )
+    if attachment:
+        m.attachment_url = (attachment.get('url') or '')[:400]
+        m.attachment_kind = (attachment.get('kind') or '')[:16]
+        m.attachment_name = (attachment.get('name') or '')[:255]
+        m.attachment_size = attachment.get('size')
     db.session.add(m)
     db.session.commit()
     return jsonify({'success': True, 'id': m.id})
+
+
+@app.route('/api/groups/<int:group_id>/upload', methods=['POST'])
+@login_required
+def api_groups_upload(group_id):
+    """Upload an attachment (image or PDF) for a group message.
+    Same logic as the personal-chat upload endpoint.
+    """
+    if not _is_group_member(group_id, current_user.id):
+        return jsonify({'error': 'Вы не в группе'}), 403
+    if 'file' not in request.files:
+        return jsonify({'error': 'Файл не передан'}), 400
+    f = request.files['file']
+    if not f or not (f.filename or '').strip():
+        return jsonify({'error': 'Файл пустой'}), 400
+    ALLOWED_IMG = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
+    ALLOWED_PDF = {'pdf'}
+    MAX_BYTES = 5 * 1024 * 1024
+    original_name = os.path.basename(f.filename)[:255]
+    ext = (original_name.rsplit('.', 1)[-1] if '.' in original_name else '').lower()
+    if ext in ALLOWED_IMG:
+        att_kind = 'image'
+    elif ext in ALLOWED_PDF:
+        att_kind = 'pdf'
+    else:
+        return jsonify({'error': 'Разрешены только изображения (jpg/png/webp/gif) и PDF'}), 400
+    f.stream.seek(0, os.SEEK_END)
+    size = f.stream.tell()
+    f.stream.seek(0)
+    if size <= 0:
+        return jsonify({'error': 'Файл пустой'}), 400
+    if size > MAX_BYTES:
+        return jsonify({'error': 'Файл больше 5 МБ'}), 400
+    folder = os.path.join('static', 'uploads', 'chat', str(current_user.id))
+    os.makedirs(folder, exist_ok=True)
+    import uuid
+    name = uuid.uuid4().hex + '.' + ext
+    path = os.path.join(folder, name)
+    try:
+        f.save(path)
+    except Exception as _se:
+        app.logger.warning("group upload save failed: %r", _se)
+        return jsonify({'error': 'Не удалось сохранить файл'}), 500
+    url = '/static/uploads/chat/' + str(current_user.id) + '/' + name
+    return jsonify({
+        'success': True,
+        'attachment': {
+            'url':  url,
+            'kind': att_kind,
+            'name': original_name,
+            'size': size,
+        }
+    })
 
 
 @app.route('/groups/<int:group_id>')

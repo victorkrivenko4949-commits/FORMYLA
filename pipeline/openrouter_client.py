@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Async HTTP-клиент для OpenRouter API.
+Async HTTP-client for OpenRouter API.
 
-Использует httpx (async) + tenacity (retry с exponential backoff).
-Считает токены и стоимость для cost_log.
+Uses httpx (async) + tenacity (retry with exponential backoff).
+Counts tokens and cost for cost_log.
 """
 from __future__ import annotations
 
@@ -34,44 +34,98 @@ from pipeline.config import (
 logger = logging.getLogger("pipeline.openrouter")
 
 
-def _extract_first_json_object(text: str) -> Optional[str]:
+def _extract_all_json_objects(text: str) -> list:
+    """Find ALL balanced JSON objects in a string, accounting for
+    string literals and escapes. Returns list of matched JSON substrings,
+    ordered by appearance.
     """
-    Найти первый сбалансированный JSON-объект {...} в произвольной строке.
+    results = []
+    start = 0
+    while True:
+        start = text.find("{", start)
+        if start < 0:
+            break
+        depth = 0
+        in_str = False
+        escape = False
+        for i in range(start, len(text)):
+            ch = text[i]
+            if in_str:
+                if escape:
+                    escape = False
+                elif ch == "\\":
+                    escape = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+                continue
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    results.append(text[start:i + 1])
+                    start = i + 1
+                    break
+        else:
+            start += 1
+    return results
 
-    Учитывает строковые литералы JSON ("...") и escape-последовательности,
-    чтобы скобки внутри строк не сбивали баланс. Возвращает подстроку
-    либо None, если ничего не нашлось.
+
+def _extract_longest_json_object(text: str) -> Optional[str]:
     """
-    start = text.find("{")
-    if start < 0:
+    Find the LONGEST balanced JSON object in arbitrary text.
+
+    Strategy:
+      1. First, look for markdown code blocks with json tag.
+         Extract all balanced JSON objects from within them
+         and return the longest.
+      2. If no code blocks, find ALL balanced objects in the full
+         text and return the longest one.
+
+    This handles Claude/Anthropic responses that wrap JSON in markdown
+    code blocks or include multiple JSON fragments (thinking fragments
+    followed by the actual response).
+    """
+    if not text:
         return None
-    depth = 0
-    in_str = False
-    escape = False
-    for i in range(start, len(text)):
-        ch = text[i]
-        if in_str:
-            if escape:
-                escape = False
-            elif ch == "\\":
-                escape = True
-            elif ch == '"':
-                in_str = False
-            continue
-        if ch == '"':
-            in_str = True
-            continue
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start:i + 1]
-    return None
+
+    import re
+
+    # Strategy 1: Look for ```json ... ``` code blocks
+    json_block_pattern = re.compile(
+        # pattern: triple-backtick optional json tag, content, triple-backtick
+        r'```(?:json)?\s*\n(.*?)```', re.IGNORECASE | re.DOTALL
+    )
+    all_candidates = []
+
+    for match in json_block_pattern.finditer(text):
+        block_content = match.group(1).strip()
+        objs = _extract_all_json_objects(block_content)
+        all_candidates.extend(objs)
+
+    # Also find objects in the raw text (outside code blocks)
+    # First strip code blocks to avoid double-counting
+    remaining = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
+    all_candidates.extend(_extract_all_json_objects(remaining))
+
+    if not all_candidates:
+        return None
+
+    # Return the longest candidate
+    longest = max(all_candidates, key=len)
+    if longest:
+        logger.info(
+            "Longest JSON: %d candidates, picked %d chars",
+            len(all_candidates), len(longest),
+        )
+    return longest
 
 
 class OpenRouterError(Exception):
-    """Ошибка при обращении к OpenRouter."""
+    """Error when calling OpenRouter."""
 
     def __init__(self, message: str, status_code: int = 0, body: str = ""):
         super().__init__(message)
@@ -80,7 +134,7 @@ class OpenRouterError(Exception):
 
 
 class TokenUsage:
-    """Счётчик токенов и стоимости одного вызова."""
+    """Token and cost counter for a single API call."""
 
     __slots__ = ("input_tokens", "output_tokens", "model", "cost_usd", "latency_s")
 
@@ -107,9 +161,9 @@ class TokenUsage:
 
 class OpenRouterClient:
     """
-    Async-клиент для OpenRouter.
+    Async client for OpenRouter.
 
-    Пример использования::
+    Usage::
 
         async with OpenRouterClient() as client:
             text, usage = await client.chat(
@@ -120,12 +174,10 @@ class OpenRouterClient:
     """
 
     def __init__(self, api_key: Optional[str] = None, timeout: float = 90.0):
-        # H-4 (2026-05-14): откат G-3 (timeout=180 для R1). R1 отключён,
-        # для chat/sonnet 60 сек достаточно.
         self.api_key = api_key or OPENROUTER_API_KEY
         if not self.api_key:
             raise OpenRouterError(
-                "OPENROUTER_API_KEY не задан. Добавьте в .env: OPENROUTER_API_KEY=sk-or-..."
+                "OPENROUTER_API_KEY not set. Add to .env: OPENROUTER_API_KEY=sk-or-..."
             )
         self.timeout = timeout
         self._client: Optional[httpx.AsyncClient] = None
@@ -162,7 +214,7 @@ class OpenRouterClient:
         response_format: Optional[Dict] = None,
     ) -> tuple[str, TokenUsage]:
         """
-        Отправить запрос к OpenRouter и получить текстовый ответ.
+        Send request to OpenRouter and get text response.
 
         Returns:
             (content_text, TokenUsage)
@@ -189,7 +241,7 @@ class OpenRouterClient:
 
         if resp.status_code != 200:
             body = resp.text
-            logger.error("OpenRouter %s → %d: %s", model, resp.status_code, body[:500])
+            logger.error("OpenRouter %s -> %d: %s", model, resp.status_code, body[:500])
             raise OpenRouterError(
                 f"OpenRouter returned {resp.status_code}",
                 status_code=resp.status_code,
@@ -198,31 +250,27 @@ class OpenRouterClient:
 
         data = resp.json()
 
-        # Извлекаем контент
+        # Extract content
         choices = data.get("choices", [])
         if not choices:
-            raise OpenRouterError("OpenRouter вернул пустой choices", body=json.dumps(data))
+            raise OpenRouterError("OpenRouter returned empty choices", body=json.dumps(data))
 
         content = choices[0].get("message", {}).get("content", "")
 
-        # H-5 (2026-05-29): retry на пустой ответ.
-        # OpenRouter иногда возвращает HTTP 200 с content="" и 0 токенов.
-        # Без этой проверки пустой ответ проходит как «успех» → validate_gemini_plan()
-        # → [] → orchestrator падает с «Gemini вернул 0 specs (нужно 10)».
-        # Кидаем retryable-исключение, чтобы @retry сделал повторную попытку.
+        # Retry on empty response
         if not content.strip():
             completion_tokens = data.get("usage", {}).get("completion_tokens", 0)
             logger.warning(
-                "%s — пустой ответ (HTTP 200, content='', completion_tokens=%d). "
-                "Retry в рамках существующего механизма (%d попыток).",
+                "%s - empty response (HTTP 200, content='', completion_tokens=%d). "
+                "Retry within existing mechanism (%d attempts).",
                 model, completion_tokens, RETRY_ATTEMPTS,
             )
             raise OpenRouterError(
-                f"OpenRouter вернул пустой ответ (HTTP 200, 0 токенов) — попытка {model}",
+                f"OpenRouter returned empty response (HTTP 200, 0 tokens) - attempt {model}",
                 body=json.dumps(data),
             )
 
-        # Извлекаем usage
+        # Extract usage
         usage_raw = data.get("usage", {})
         usage = TokenUsage(
             input_tokens=usage_raw.get("prompt_tokens", 0),
@@ -232,7 +280,7 @@ class OpenRouterClient:
         )
 
         logger.info(
-            "✓ %s  in=%d out=%d  $%.4f  %.1fs",
+            "[OK] %s  in=%d out=%d  $%.4f  %.1fs",
             model, usage.input_tokens, usage.output_tokens,
             usage.cost_usd, usage.latency_s,
         )
@@ -247,53 +295,57 @@ class OpenRouterClient:
         max_tokens: int = 4096,
     ) -> tuple[Dict, TokenUsage]:
         """
-        Как chat(), но парсит ответ как JSON.
-        Снимает markdown-обёртку ```...``` и (M-2.1) извлекает первый
-        сбалансированный {...} из прозаичного ответа Claude/Anthropic,
-        который иногда «размышляет вслух» перед JSON.
+        Like chat(), but parses response as JSON.
+        Strips markdown wrapper and extracts the longest
+        balanced JSON object from Claude/Anthropic responses
+        that sometimes think out loud before JSON.
+
+        Uses _extract_longest_json_object() to find the
+        longest JSON (not the first), correctly handling
+        multiple fragments in the response.
         """
+        # Anthropic models via OpenRouter do NOT support
+        # response_format=json_object - they return thinking
+        # text instead of JSON. For other models, use native mode.
+        json_format = None if model.startswith("anthropic/") else {"type": "json_object"}
         content, usage = await self.chat(
             model=model,
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
-            response_format={"type": "json_object"},
+            response_format=json_format,
         )
+
+        # Prefill compensation: if the last message was assistant "{" prefill,
+        # the model's continuation won't include the opening brace.
+        # Prepend it back to reconstruct valid JSON before any parsing.
+        if messages and len(messages) > 0:
+            last = messages[-1]
+            if last.get("role") == "assistant" and last.get("content") == "{":
+                if not content.startswith("{"):
+                    content = "{" + content
+                    logger.debug("Prefill: prepended '{' to response (%d chars)", len(content))
 
         text = content.strip()
 
-        # Снимаем markdown-обёртку если есть
-        if text.startswith("```"):
-            lines = text.split("\n")
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines and lines[-1].strip() == "```":
-                lines = lines[:-1]
-            text = "\n".join(lines).strip()
-
-        # Попытка 1: парсим как есть
+        # Attempt 1: parse as-is
         try:
             return json.loads(text), usage
         except json.JSONDecodeError:
             pass
 
-        # M-2.1 (2026-05-14): fallback — извлечь первый сбалансированный {...}
-        # с учётом строковых литералов и escape-символов. Это лечит ответы
-        # Anthropic-моделей, которые часто пишут "Проверяю задачу...\n\n{...}".
-        extracted = _extract_first_json_object(text)
+        # Fallback: extract longest balanced JSON object
+        # accounting for code blocks and multiple fragments
+        extracted = _extract_longest_json_object(text)
         if extracted is not None:
             try:
                 parsed = json.loads(extracted)
                 logger.info(
-                    "JSON extracted from prose response (%s, %d→%d chars)",
+                    "JSON extracted from prose response (%s, %d->%d chars)",
                     model, len(text), len(extracted),
                 )
                 return parsed, usage
             except json.JSONDecodeError:
                 pass
 
-        logger.error(
-            "JSON parse error from %s (and fallback extraction failed)\nRaw: %s",
-            model, text[:500],
-        )
         raise OpenRouterError(f"Invalid JSON from {model}", body=text)

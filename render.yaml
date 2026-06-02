@@ -88,3 +88,10 @@ services:
         sync: false
       - key: PLAUSIBLE_DOMAIN
         sync: false
+      # Web Push Notifications (VAPID keys)
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_CLAIM_EMAIL
+        sync: false

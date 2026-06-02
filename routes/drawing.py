@@ -186,8 +186,11 @@ def whiteboard_page():
 def api_drawing_generate():
     # Force UTF-8 decoding of the body (defence vs proxy mojibake).
     raw = request.get_data(cache=False, as_text=False) or b""
-    logger.info("[drawing] POST /api/drawing/generate body=%d bytes ct=%s",
-                len(raw), request.headers.get("Content-Type", "?"))
+    try:
+        logger.info("[drawing] POST /api/drawing/generate body=%d bytes ct=%s",
+                    len(raw), request.headers.get("Content-Type", "?"))
+    except Exception:
+        pass
     try:
         text = raw.decode("utf-8")
         data = json.loads(text) if text else {}

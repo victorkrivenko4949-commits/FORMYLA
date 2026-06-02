@@ -16,19 +16,20 @@ Flask-контекста через ``threading.Thread`` + ``asyncio.run()``.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import threading
 import time
 from dataclasses import asdict
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from flask import current_app
 
 from models import db
 
-from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob
+from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool, UserTaskAssignment
 from .pipeline.orchestrator import (
     PipelineResult,
     run_daily_generation_pipeline,
@@ -47,6 +48,10 @@ def enqueue_daily_generation(
     triggered_by: str = "manual",
 ) -> Dict[str, Any]:
     """Создать/обновить сет на today и запустить фоновую генерацию.
+
+    **Кэширование**: перед запуском AI-пайплайна проверяется ``task_pool``.
+    Если для данного профиля уже есть готовый пул — задачи выдаются из него
+    без вызова нейросетей (экономия ~$0.85 за генерацию).
 
     Параметры
     ---------
@@ -91,7 +96,108 @@ def enqueue_daily_generation(
         db.session.delete(existing_set)
         db.session.flush()
 
-    # ── создаём DailyTaskSet ──────────────────────────────────────────
+    # ── проверяем task_pool (кэш) ─────────────────────────────────────
+    try:
+        profile = build_profile(user_id)
+        cache_key = compute_cache_key(profile)
+
+        now = datetime.utcnow()
+        pool: Optional[TaskPool] = TaskPool.query.filter(
+            TaskPool.cache_key == cache_key,
+            TaskPool.status.in_(["ready", "partial"]),
+            (TaskPool.expires_at.is_(None)) | (TaskPool.expires_at > now),
+        ).order_by(TaskPool.created_at.desc()).first()
+
+        if pool:
+            # ── Cache HIT ─────────────────────────────────────────────
+            pool.used_count = (pool.used_count or 0) + 1
+
+            tasks_data = _parse_json_field(pool.tasks, [])
+            specs_data = _parse_json_field(pool.specs, [])
+            selected_indices = _select_best_task_indices(tasks_data, n=5)
+
+            daily_set = DailyTaskSet(
+                user_id=user_id,
+                target_date=today,
+                status="ready",
+                triggered_by=triggered_by,
+                generated_at=datetime.utcnow(),
+                class_level=profile.get("class_level"),
+                reason_summary=(
+                    f"Из общего пула (кэш), "
+                    f"ключ: {cache_key[:12]}…"
+                ),
+            )
+            db.session.add(daily_set)
+            db.session.flush()
+
+            for new_pos, idx in enumerate(selected_indices):
+                task = tasks_data[idx] if idx < len(tasks_data) else {}
+                spec = specs_data[idx] if idx < len(specs_data) else {}
+                audit = task.get("_audit_entry", {})
+                is_flagged = task.get("is_flagged", False)
+
+                flag_reason = None
+                if is_flagged and audit:
+                    issues = audit.get("issues", [])
+                    if issues:
+                        flag_reason = "; ".join(
+                            f"[{iss.get('code','?')}] {iss.get('description','')}"
+                            for iss in issues[:3]
+                        )
+
+                item = DailyTaskItem(
+                    daily_set_id=daily_set.id,
+                    position=new_pos + 1,
+                    slot_kind=spec.get("slot_kind"),
+                    subject=spec.get("subject"),
+                    topic=spec.get("topic"),
+                    subtopic=spec.get("subtopic"),
+                    difficulty_level=spec.get("difficulty_level"),
+                    weakness_score=spec.get("weakness_score"),
+                    reason=spec.get("reason"),
+                    task_text=task.get("task_text", ""),
+                    correct_answer=task.get("correct_answer"),
+                    solution=task.get("solution"),
+                    hints=json.dumps(task.get("hints", []), ensure_ascii=False),
+                    gemini_spec_json=json.dumps(spec, ensure_ascii=False),
+                    opus_iterations=task.get("_opus_iterations", 0),
+                    gpt_audit_json=json.dumps(audit, ensure_ascii=False) if audit else None,
+                    is_flagged=is_flagged,
+                    flag_reason=flag_reason,
+                    status="approved" if not is_flagged else "flagged",
+                )
+                db.session.add(item)
+
+            # записываем привязку пользователя к пулу
+            assignment = UserTaskAssignment(
+                user_id=user_id,
+                pool_id=pool.id,
+                task_positions=json.dumps(selected_indices),
+            )
+            db.session.add(assignment)
+            db.session.commit()
+
+            logger.info(
+                "Cache HIT для user=%d key=%s pool=%d → сет #%d (5 задач)",
+                user_id, cache_key[:12], pool.id, daily_set.id,
+            )
+
+            return {
+                "daily_set_id": daily_set.id,
+                "job_id": None,
+                "status": "ready",
+                "message": "Задачи взяты из общего пула (кэш)",
+            }
+
+    except Exception as exc:
+        # Если кэш упал — логируем и падаем сквозь на обычную генерацию
+        logger.warning(
+            "Cache check error для user=%d: %s — падаем на pipeline",
+            user_id, exc,
+        )
+
+    # ── Cache MISS: создаём DailyTaskSet ──────────────────────────────
     daily_set = DailyTaskSet(
         user_id=user_id,
         target_date=today,
@@ -307,6 +413,82 @@ def get_hint(
 
 
 # ──────────────────────────────────────────────────────────────────────
+# Кэширование пула задач
+# ──────────────────────────────────────────────────────────────────────
+
+
+def _norm_topics(topics: List[Any]) -> List[str]:
+    """Нормализовать список тем для детерминированного хэширования.
+
+    * приводит к нижнему регистру
+    * обрезает пробелы
+    * сортирует
+    * пропускает пустые / None
+    """
+    normalized: List[str] = []
+    for t in topics:
+        raw = t.get("topic", str(t)) if isinstance(t, dict) else str(t)
+        stripped = raw.strip().lower()
+        if stripped:
+            normalized.append(stripped)
+    return sorted(normalized)
+
+
+def compute_cache_key(profile: Dict[str, Any]) -> str:
+    """Детерминированный SHA-256 ключ по профилю пользователя.
+
+    Ученики с одинаковым (class_level, набор тем, class_expected_level)
+    получат одинаковый cache_key → один пул задач без повторного AI.
+
+    Регистр и лишние пробелы в названиях тем нормализуются,
+    так что ``" Algebra "`` и ``"algebra"`` дадут одинаковый ключ.
+    """
+    key_data: Dict[str, Any] = {
+        "class_level": profile.get("class_level", 0),
+        "class_expected_level": profile.get("class_expected_level", 0),
+        "weak_topics": _norm_topics(profile.get("weak_topics", [])),
+        "strong_topics": _norm_topics(profile.get("strong_topics", [])),
+    }
+    canonical = json.dumps(key_data, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _select_best_task_indices(tasks: List[Dict[str, Any]], n: int = 5) -> List[int]:
+    """Вернуть индексы ``n`` лучших задач: сначала без флагов, потом с флагами.
+
+    Это позволяет давать разным пользователям *разные* подмножества
+    из одного пула, избегая полного дублирования.
+    """
+    clean = [i for i, t in enumerate(tasks) if not t.get("is_flagged")]
+    flagged = [i for i, t in enumerate(tasks) if t.get("is_flagged")]
+    selected = clean[:n]
+    if len(selected) < n:
+        selected += flagged[: n - len(selected)]
+    return selected
+
+
+def _select_best_tasks(tasks: List[Dict[str, Any]], n: int = 5) -> List[Dict[str, Any]]:
+    """Вернуть ``n`` лучших task-словарей (сами объекты)."""
+    indices = _select_best_task_indices(tasks, n=n)
+    return [tasks[i] for i in indices if i < len(tasks)]
+
+
+def _extract_subject_from_profile(profile: Dict[str, Any]) -> str:
+    """Извлечь доминирующий subject из профиля (первая слабая тема)."""
+    weak = profile.get("weak_topics", [])
+    if weak:
+        subj = weak[0].get("subject", "") if isinstance(weak[0], dict) else ""
+        if subj:
+            return subj
+    strong = profile.get("strong_topics", [])
+    if strong:
+        subj = strong[0].get("subject", "") if isinstance(strong[0], dict) else ""
+        if subj:
+            return subj
+    return "mixed"
+
+
+# ──────────────────────────────────────────────────────────────────────
 # Внутренние функции (фоновый запуск + persist)
 # ──────────────────────────────────────────────────────────────────────
 
@@ -495,6 +677,99 @@ def _persist_pipeline_result(
         status,
         result.total_cost,
         len(result.tasks),
+    )
+
+    # ── сохраняем результат в task_pool (для кэширования) ──────────
+    try:
+        _save_to_task_pool(result, profile, daily_set_id)
+    except Exception as exc:
+        logger.warning(
+            "Не удалось сохранить в task_pool для сета #%s: %s",
+            daily_set_id, exc,
+        )
+
+
+def _save_to_task_pool(
+    result: PipelineResult,
+    profile: Dict[str, Any],
+    daily_set_id: int,
+) -> None:
+    """Сохранить (или обновить) запись в ``task_pool`` после успешной генерации.
+
+    * Конвертирует ``PipelineResult`` в JSON-строки.
+    * Проверяет дубликат по ``cache_key`` (race condition guard).
+    * Записывает ``UserTaskAssignment`` для первого пользователя.
+    """
+    if not result.tasks:
+        logger.warning("_save_to_task_pool: нет задач, пропускаем")
+        return
+
+    cache_key = compute_cache_key(profile)
+    subject = _extract_subject_from_profile(profile)
+    grade = profile.get("class_level", 0)
+
+    # ── готовим сериализованные данные ──────────────────────────────
+    # Встраиваем audit/is_flagged/iteration_count прямо в task-словари
+    # для удобного чтения при cache hit.
+    enriched_tasks: List[Dict[str, Any]] = []
+    for i, task in enumerate(result.tasks):
+        enriched = dict(task)
+        if i < len(result.audit_entries):
+            enriched["_audit_entry"] = result.audit_entries[i]
+        if i < len(result.is_flagged):
+            enriched["is_flagged"] = result.is_flagged[i]
+        if i < len(result.iteration_counts):
+            enriched["_opus_iterations"] = result.iteration_counts[i]
+        enriched_tasks.append(enriched)
+
+    tasks_json = json.dumps(enriched_tasks, ensure_ascii=False, default=str)
+    specs_json = json.dumps(result.specs, ensure_ascii=False, default=str)
+    profile_json = json.dumps(profile, ensure_ascii=False, default=str)
+
+    valid_count = sum(
+        1 for f in result.is_flagged if not f
+    ) if result.is_flagged else len(result.tasks)
+
+    expires_at = datetime.utcnow() + timedelta(days=30)
+
+    # ── race condition guard: мог уже появиться от параллельного запуска ─
+    existing = TaskPool.query.filter_by(cache_key=cache_key).first()
+    if existing:
+        logger.info(
+            "task_pool для ключа %s уже существует (#%d), пропускаем",
+            cache_key[:12], existing.id,
+        )
+        return
+
+    pool_entry = TaskPool(
+        cache_key=cache_key,
+        subject=subject,
+        grade=grade,
+        profile_snapshot=profile_json,
+        tasks=tasks_json,
+        specs=specs_json,
+        status=result.status,
+        valid_count=valid_count,
+        expires_at=expires_at,
+    )
+    db.session.add(pool_entry)
+    db.session.flush()
+
+    # ── записываем привязку для первого пользователя ────────────────
+    daily_set = DailyTaskSet.query.get(daily_set_id)
+    if daily_set:
+        assignment = UserTaskAssignment(
+            user_id=daily_set.user_id,
+            pool_id=pool_entry.id,
+            task_positions=json.dumps(list(range(len(result.tasks)))),
+        )
+        db.session.add(assignment)
+
+    db.session.commit()
+    logger.info(
+        "Сохранён task_pool #%s: key=%s, grade=%d, tasks=%d, valid=%d",
+        pool_entry.id, cache_key[:12], grade,
+        len(result.tasks), valid_count,
     )
 
 

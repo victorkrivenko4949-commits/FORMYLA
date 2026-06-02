@@ -108,11 +108,13 @@ EMBEDDING_MODEL = os.getenv("ADAPTIVE_EMBEDDING_MODEL", "openai/text-embedding-3
 
 # ─── Стоимость моделей ($/1M tokens) — для cost_log ───────────────────────────
 MODEL_COSTS = {
-    "deepseek/deepseek-chat":    {"input": 0.14,  "output": 0.28},
-    "deepseek/deepseek-r1":      {"input": 0.55,  "output": 2.19},
-    "anthropic/claude-sonnet-4": {"input": 3.00,  "output": 15.00},
-    "openai/gpt-4o":             {"input": 2.50,  "output": 10.00},
-    "openai/text-embedding-3-small": {"input": 0.02, "output": 0.0},
+    "deepseek/deepseek-chat":         {"input": 0.14,  "output": 0.28},
+    "deepseek/deepseek-r1":           {"input": 0.55,  "output": 2.19},
+    "anthropic/claude-sonnet-4":      {"input": 3.00,  "output": 15.00},
+    "anthropic/claude-sonnet-4.6":    {"input": 3.00,  "output": 15.00},
+    "anthropic/claude-opus-4.8-fast": {"input": 15.00, "output": 75.00},
+    "openai/gpt-4o":                  {"input": 2.50,  "output": 10.00},
+    "openai/text-embedding-3-small":  {"input": 0.02,  "output": 0.0},
 }
 
 # ─── Шкала уровней (канон) ────────────────────────────────────────────────────

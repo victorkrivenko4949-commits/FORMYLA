@@ -1204,4 +1204,16 @@
   loadSaved();
   pushHistory();   // initial snapshot for undo
   resize();
+
+  // If navigated from olympiad detail page with "Открыть на доске",
+  // load the pending image onto the canvas automatically.
+  try {
+    var pendingSrc = localStorage.getItem('wb_import_pending');
+    if (pendingSrc) {
+      localStorage.removeItem('wb_import_pending');
+      if (typeof window.WB.importImage === 'function') {
+        window.WB.importImage(pendingSrc);
+      }
+    }
+  } catch (_e) {}
 })();

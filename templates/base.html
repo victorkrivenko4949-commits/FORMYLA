@@ -547,6 +547,12 @@
     <!-- Слушатель приглашений на видеозвонок (всплывающее окно у получателя). -->
     <meta name="x-user-authenticated" content="1">
     <script src="{{ url_for('static', filename='js/wb_call_listener.js') }}?v={{ asset_version|default('1') }}" defer></script>
+
+    <!-- Web Push Notifications: VAPID public key + client registration -->
+    <script>
+    window.__VAPID_PUBLIC_KEY = 'BNDgJHRjuXO7znt9fKecKbvqNYLaYvLrWo43dJs5mwAsIqoOGNTSAk03DR37dJIQ4R3yf2MRASzy_9AxGnx-qEg';
+    </script>
+    <script src="{{ url_for('static', filename='js/push_notifications.js') }}?v={{ asset_version }}" defer></script>
     {% endif %}
     
     <!-- Глобальный Caps Lock для полей ввода -->

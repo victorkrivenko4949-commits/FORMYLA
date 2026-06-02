@@ -58,3 +58,7 @@ sib-api-v3-sdk==7.6.0
 # directly, but the SDK is convenient for advanced features like batch sends
 # and webhooks). See docs: https://resend.com/docs/send-with-python
 resend==2.5.1
+
+# Web Push Notifications (VAPID-based browser push)
+pywebpush==1.14.1
+py-vapid==1.9.1

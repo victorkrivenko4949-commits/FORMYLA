@@ -61,10 +61,14 @@ def main():
     print("\n[3] AdaptiveTask query through ORM ...")
     with app.app_context():
         from models import AdaptiveTask, db
+        # 2026-05 cleanup: 8394 -> 8389 (5 broken tasks removed).
+        EXPECTED_TOTAL = 8389
         total = AdaptiveTask.query.count()
         print("    AdaptiveTask.query.count(): " + str(total))
-        assert total == 8394, "ORM count != 8394"
-        results.append(dict(name="ORM_count_8394", ok=True))
+        assert total == EXPECTED_TOTAL, (
+            "ORM count != " + str(EXPECTED_TOTAL) + " (got " + str(total) + ")"
+        )
+        results.append(dict(name="ORM_count_expected", ok=True))
 
         # Filter by subject - must return only that subject
         for sj in ("algebra", "geometry", "combinatorics",

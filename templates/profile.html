@@ -275,7 +275,7 @@
                 Рекорд: <span id="longestStreak" style="color: #ffd700; font-weight: 600;">0</span> дней
             </div>
             <div style="margin-top: 1.5rem;">
-                <a href="{{ url_for('daily_quest_main') }}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s ease;">
+                <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s ease;">
                     📝 Перейти к задачам дня
                 </a>
             </div>
@@ -479,13 +479,7 @@
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                 {% for topic in user.get_recommended_topics_list() %}
                 <span style="display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border-radius: 15px; font-weight: 600; font-size: 0.9em;">
-                    {% if topic == 'algebra' %}Алгебра
-                    {% elif topic == 'geometry' %}Геометрия
-                    {% elif topic == 'combinatorics' %}Комбинаторика
-                    {% elif topic == 'number_theory' %}Теория чисел
-                    {% elif topic == 'movement' %}Движение
-                    {% elif topic == 'knights_liars' %}Логика
-                    {% else %}{{ topic }}{% endif %}
+                    {{ topic_name_map.get(topic, topic) }}
                 </span>
                 {% endfor %}
             </div>

@@ -45,8 +45,7 @@ logger = logging.getLogger(__name__)
 # Step 2 GENERATE: Claude Sonnet 4.5 — base, без reasoning. Раньше пробовали
 # gemini-3.1-pro-preview (45s × 10 = 450s суммарно) и opus-4.8-fast (batch-180s),
 # обе нестабильны на медленном интернете. Sonnet 4.5 точно следует JSON-схеме
-# и кладёт одну задачу за ~5-10s; в проде используется в daily_pool/generator.py.
-_OPUS_MODEL = "anthropic/claude-sonnet-4.5"
+_OPUS_MODEL = "anthropic/claude-sonnet-4.6"
 
 # 5 параллельных потоков: 10 specs распределяются по 5 воркерам (~2 spec
 # на воркер при чистом распараллеливании). Семафор ограничивает число

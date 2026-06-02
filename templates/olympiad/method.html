@@ -3,7 +3,7 @@
 {%- if block -%}
     Метод {{ block.method_code }} — {{ block.method_name }}
 {%- else -%}
-    Теоретические методы — FORMYLA
+    89 методов олимпиадной математики — FORMYLA
 {%- endif -%}
 {% endblock %}
 
@@ -14,49 +14,108 @@
 
     {# ── 1) CATALOG MODE (sections != None) ──────────────────────────────── #}
     {% if sections is not none %}
+    {% set section_labels = {
+        'A': 'Алгебра (A)',
+        'B': 'Логика (B)',
+        'C': 'Алгебра (C)',
+        'D': 'Теория чисел (D)',
+        'E': 'Комбинаторика (E)',
+        'F': 'Геометрия (F)',
+        'G': 'Алгебра (G)',
+        'H': 'Прочее (H)',
+    } %}
     <header class="oly-hero">
-        <h1>📚 Каталог методов</h1>
-        <p>Базовые приёмы решения олимпиадных задач.</p>
+        <h1>📚 89 методов олимпиадной математики</h1>
+        <p>Полный справочник базовых приёмов решения задач ВсОШ и других олимпиад по математике.</p>
         {% if blocks is defined %}
         <p class="oly-card-sub" style="margin-top:8px;">
             Всего методов: <strong>{{ blocks|length }}</strong>
+            {% if total_methods is defined %} ·
+            <a href="{{ url_for('olympiad_prep.index') }}" style="color: var(--accent);">Курсы олимпиадной подготовки →</a>
+            {% endif %}
         </p>
         {% endif %}
     </header>
 
-    {# ── Inline стили для упрощённого каталога (одна колонка) ── #}
+    {# ── Inline стили для каталога с группировкой по разделам ── #}
     <style>
+      .methods-section {
+        max-width: 900px;
+        margin: 0 auto 28px;
+      }
+      .methods-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--border-soft, rgba(255,255,255,0.08));
+      }
+      .methods-section-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .methods-section-header .count-badge {
+        background: var(--accent, #38bdf8);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 12px;
+      }
       .methods-list {
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        max-width: 860px;
-        margin: 0 auto;
+        gap: 8px;
       }
       .methods-list .oly-card {
         display: block;
-        padding: 14px 18px;
+        padding: 12px 18px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .methods-list .oly-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(56,189,248,0.15);
       }
       .methods-list .oly-card h3 {
-        margin: 0 0 4px;
-        font-size: 16px;
+        margin: 0 0 3px;
+        font-size: 15px;
+      }
+      .methods-list .oly-card .oly-card-sub {
+        font-size: 13px;
       }
     </style>
 
     {% if blocks %}
-        <div class="methods-list">
-            {% for tb in blocks %}
-            <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
-                <h3>
-                    <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
-                    {{ tb.method_name }}
-                </h3>
-                {% if tb.section %}
-                <p class="oly-card-sub" style="margin:0;">Раздел {{ tb.section }}</p>
-                {% endif %}
-            </a>
-            {% endfor %}
+        {% set sorted_sections = sections.items() | list %}
+        {% for section_slug, section_blocks in sorted_sections %}
+        <div class="methods-section">
+            <div class="methods-section-header">
+                <h2>{{ section_labels.get(section_slug, 'Раздел ' + section_slug) }}</h2>
+                <span class="count-badge">{{ section_blocks|length }}</span>
+            </div>
+            <div class="methods-list">
+                {% for tb in section_blocks %}
+                <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
+                    <h3>
+                        <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
+                        {{ tb.method_name }}
+                    </h3>
+                    {% if tb.frequency_vsosh_9 %}
+                    <p class="oly-card-sub" style="margin:0;">
+                        Частота на ВсОШ-9: <strong>{{ tb.frequency_vsosh_9 }}×</strong>
+                        {% if tb.difficulty_level %} · Сложность: {{ tb.difficulty_level }}/5{% endif %}
+                    </p>
+                    {% elif tb.difficulty_level %}
+                    <p class="oly-card-sub" style="margin:0;">Сложность: {{ tb.difficulty_level }}/5</p>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
         </div>
+        {% endfor %}
     {% else %}
         <div class="oly-card" style="text-align:center; padding: 40px 20px;">
             <p style="margin:0; color: var(--text-muted);">Методы скоро появятся.</p>

@@ -49,8 +49,8 @@
 
     function escapeHtml(s) {
         return String(s == null ? '' : s)
-            .replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')
-            .replace(/"/g, '"').replace(/'/g, ''');
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
     function fmtDate(iso) {
         if (!iso) return '';
@@ -374,8 +374,17 @@
         });
     }
 
-    btn.addEventListener('click', function () { submit(false); });
-    if (regenBtn) regenBtn.addEventListener('click', function () { submit(false); });
+    btn.addEventListener('click', function () {
+        console.log('[drawing.js] Generate button clicked');
+        submit(false);
+    });
+    if (regenBtn) {
+        regenBtn.addEventListener('click', function () {
+            console.log('[drawing.js] Regenerate button clicked');
+            submit(false);
+        });
+    }
+    console.log('[drawing.js] Event listeners attached successfully');
 
     // Two "force-fresh" buttons:
     //   #regenerateFreshBtn   — inside the result block (post-success)

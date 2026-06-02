@@ -16,7 +16,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
 
-  /* fallback LaTeX, когда KaTeX CDN не загрузился */
+  /* fallback LaTeX */
   .dt-latex-fallback {
     font-style: italic;
     color: rgba(255,255,255,0.88);
@@ -27,112 +27,566 @@
   }
   .dt-latex-display {
     display: block;
-    text-align: center;
-    padding: 12px 16px;
     margin: 8px 0;
+    padding: 8px 12px;
+    background: rgba(56,239,125,0.04);
+    border-left: 3px solid rgba(56,239,125,0.3);
+  }
+
+  /* ── Pipeline steps (persistent) ──────────────────────────────── */
+  .dt-pipeline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    padding: 24px 16px 32px;
+    margin-bottom: 24px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dt-pipeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    transition: all 0.4s ease;
+    opacity: 0.4;
+    filter: grayscale(0.6);
+  }
+  .dt-pipeline-step.is-done {
+    opacity: 0.85;
+    filter: grayscale(0);
+  }
+  .dt-pipeline-step.is-active {
+    opacity: 1;
+    filter: grayscale(0);
+  }
+
+  /* Connecting line between steps */
+  .dt-pipeline-step::after {
+    content: '';
+    position: absolute;
+    top: 26px;
+    left: 55%;
+    width: calc(90%);
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    z-index: 0;
+    transition: background 0.5s ease;
+  }
+  .dt-pipeline-step:last-child::after {
+    display: none;
+  }
+  .dt-pipeline-step.is-done::after {
+    background: rgba(56,239,125,0.5);
+  }
+  .dt-pipeline-step.is-active::after {
+    background: linear-gradient(90deg, rgba(56,239,125,0.7), rgba(56,239,125,0.15));
+  }
+
+  /* Step circle */
+  .dt-ps-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+    flex-shrink: 0;
+  }
+  .dt-pipeline-step.is-done .dt-ps-circle {
+    background: rgba(56,239,125,0.15);
+    border-color: rgba(56,239,125,0.5);
+    color: #38ef7d;
+    box-shadow: 0 0 16px rgba(56,239,125,0.15);
+  }
+  .dt-pipeline-step.is-active .dt-ps-circle {
+    background: rgba(56,239,125,0.12);
+    border-color: #38ef7d;
+    color: #38ef7d;
+    box-shadow: 0 0 24px rgba(56,239,125,0.25);
+    animation: dt-pulse-glow 1.8s ease-in-out infinite;
+  }
+
+  @keyframes dt-pulse-glow {
+    0%, 100% { box-shadow: 0 0 16px rgba(56,239,125,0.2); }
+    50% { box-shadow: 0 0 32px rgba(56,239,125,0.4); }
+  }
+
+  /* Step label */
+  .dt-ps-label {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    transition: color 0.4s ease;
+    max-width: 120px;
+    word-break: break-word;
+  }
+  .dt-pipeline-step.is-done .dt-ps-label {
+    color: rgba(255,255,255,0.65);
+  }
+  .dt-pipeline-step.is-active .dt-ps-label {
+    color: #38ef7d;
+  }
+
+  /* Step model name (sub-label) */
+  .dt-ps-model {
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    color: rgba(255,255,255,0.25);
+    margin-top: 3px;
+    transition: color 0.4s ease;
+    max-width: 120px;
+    word-break: break-word;
+  }
+  .dt-pipeline-step.is-done .dt-ps-model {
+    color: rgba(255,255,255,0.4);
+  }
+  .dt-pipeline-step.is-active .dt-ps-model {
+    color: rgba(56,239,125,0.55);
+  }
+
+  /* Checkmark overlay for done steps */
+  .dt-ps-check {
+    display: none;
+    position: absolute;
+    top: -4px;
+    right: calc(50% - 30px);
     font-size: 16px;
-    background: rgba(0,0,0,0.2);
-    border-left: 3px solid rgba(56,239,125,0.2);
-    font-family: 'Times New Roman', serif;
+    color: #38ef7d;
+    z-index: 2;
+  }
+  .dt-pipeline-step.is-done .dt-ps-check {
+    display: block;
+    animation: dt-check-pop 0.3s ease;
+  }
+  @keyframes dt-check-pop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.3); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Active step shimmer overlay */
+  .dt-pipeline-step.is-active .dt-ps-circle::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, #38ef7d, #38ef7d, transparent, transparent) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: dt-rotate-border 2s linear infinite;
+  }
+  @keyframes dt-rotate-border {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* ── State sections ──────────────────────────────────────────── */
+  .dt-hidden {
+    display: none !important;
+  }
+
+  .dt-empty-card,
+  .dt-generating-card,
+  .dt-ready-header {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+  }
+
+  .dt-empty-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .dt-empty-sub {
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .dt-btn-primary {
+    display: inline-block;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #38ef7d, #2bcb6a);
+    color: #0b0f1a;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .dt-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(56,239,125,0.3);
+  }
+  .dt-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Generating state */
+  .dt-generating-card {
+    padding: 40px 32px;
+  }
+  .dt-gen-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .dt-gen-sub {
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .dt-progress-bar {
+    width: 100%;
+    max-width: 400px;
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto 12px;
+  }
+  .dt-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #38ef7d, #7bf0a5);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .dt-progress-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 6px;
+  }
+  .dt-step-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 4px;
+  }
+  .dt-eta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* Ready state */
+  .dt-ready-header {
+    text-align: left;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .dt-ready-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .dt-ready-meta {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+  }
+  .dt-ready-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .dt-btn-secondary {
+    display: inline-block;
+    padding: 8px 20px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.8);
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .dt-btn-secondary:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .dt-summary-card {
+    background: rgba(56,239,125,0.06);
+    border: 1px solid rgba(56,239,125,0.15);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.75);
+  }
+  .dt-summary-card strong {
+    color: #38ef7d;
+  }
+
+  .dt-partial-notice {
+    background: rgba(255,193,7,0.1);
+    border: 1px solid rgba(255,193,7,0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: rgba(255,193,7,0.8);
+  }
+
+  /* Task Grid */
+  #dt-task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .dt-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .dt-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+  }
+  .dt-card.dt-flagged {
+    border-color: rgba(255,193,7,0.3);
+  }
+  .dt-card.dt-done {
+    border-color: rgba(56,239,125,0.2);
+  }
+  .dt-card-number {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+  }
+  .dt-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-right: 32px;
+  }
+  .dt-topic-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(56,239,125,0.6);
+    background: rgba(56,239,125,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .dt-difficulty {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+  }
+  .dt-card-preview {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.7);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .dt-card-status {
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dt-card-status.dt-correct { color: #38ef7d; }
+  .dt-card-status.dt-incorrect { color: #ff6b6b; }
+  .dt-card-status.dt-pending { color: rgba(255,255,255,0.35); }
+  .dt-flag-badge {
+    font-size: 11px;
+    color: rgba(255,193,7,0.7);
+    background: rgba(255,193,7,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dt-container" id="dt-app">
-  <!-- ── Заголовок ─────────────────────────────────────────────── -->
-  <div class="dt-header-title">
-    <h1>📋 Задачи дня</h1>
+<div class="page-daily-tasks" style="max-width:860px;margin:0 auto;padding:24px 16px 60px;">
+
+  <!-- ═══ Page header ═══ -->
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:8px;">📅 Задачи дня</h2>
+  <p style="color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:24px;">
+    Персональные задачи на основе твоего уровня — каждый день новый набор
+  </p>
+
+  <!-- ═══ Pipeline steps (always visible) ═══ -->
+  <div class="dt-pipeline" id="dt-pipeline">
+    <!-- Step 1: Profile -->
+    <div class="dt-pipeline-step" data-step="profile">
+      <div class="dt-ps-circle">👤</div>
+      <span class="dt-ps-label">Профиль</span>
+      <span class="dt-ps-model">Анализ уровня</span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 2: Gemini (Planning) -->
+    <div class="dt-pipeline-step" data-step="gemini">
+      <div class="dt-ps-circle">📋</div>
+      <span class="dt-ps-label">Планирование</span>
+      <span class="dt-ps-model">Claude Sonnet 4.6</span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 3: Opus (Generation) -->
+    <div class="dt-pipeline-step" data-step="opus">
+      <div class="dt-ps-circle">✍️</div>
+      <span class="dt-ps-label">Генерация</span>
+      <span class="dt-ps-model">Claude Sonnet 4.6</span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 4: Audit -->
+    <div class="dt-pipeline-step" data-step="audit">
+      <div class="dt-ps-circle">🔍</div>
+      <span class="dt-ps-label">Аудит</span>
+      <span class="dt-ps-model">Claude Opus 4.8 Fast</span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 5: Fix -->
+    <div class="dt-pipeline-step" data-step="fix">
+      <div class="dt-ps-circle">🔧</div>
+      <span class="dt-ps-label">Исправление</span>
+      <span class="dt-ps-model">Claude Opus 4.8 Fast</span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 6: Persist -->
+    <div class="dt-pipeline-step" data-step="persist">
+      <div class="dt-ps-circle">💾</div>
+      <span class="dt-ps-label">Сохранение</span>
+      <span class="dt-ps-model">Финализация</span>
+      <span class="dt-ps-check">✓</span>
+    </div>
   </div>
 
-  <!-- ── Пусто / нет задач ─────────────────────────────────────── -->
-  <div class="dt-section dt-hidden" id="dt-empty-state">
-    <div class="dt-empty">
-      <div class="dt-empty-icon">📭</div>
-      <p class="dt-empty-text" id="dt-empty-text">
-        Сегодня задач пока нет. Нажми «Сгенерировать», чтобы получить подборку.
-      </p>
-      <button class="btn-generate" id="dt-btn-generate" onclick="startGeneration()">
-        ✨ Сгенерировать задачи
+  <!-- ═══ Empty state (no set) ═══ -->
+  <div id="dt-empty-state" class="dt-hidden">
+    <div class="dt-empty-card">
+      <div class="dt-empty-title">🚀 Начнём?</div>
+      <div class="dt-empty-sub">
+        Нажми «Сгенерировать», чтобы получить 5 персональных задач<br>
+        на основе твоего уровня и прогресса.
+      </div>
+      <button class="dt-btn-primary" id="dt-btn-generate" onclick="startGeneration()">
+        ⚡ Сгенерировать
       </button>
     </div>
   </div>
 
-  <!-- ── Генерация ─────────────────────────────────────────────── -->
-  <div class="dt-section dt-hidden" id="dt-generating-state">
-    <div class="dt-generating">
-      <div class="dt-gen-spinner"></div>
-      <p class="dt-gen-text">Формируем задачи специально для тебя…</p>
-      <div class="dt-gen-progress">
-        <div class="dt-progress-track" id="dt-progress-track">
-          <div class="dt-progress-fill" id="dt-progress-fill"></div>
-        </div>
-        <div class="dt-progress-label">
-          <span id="dt-progress-text">0 / 10</span>
-        </div>
+  <!-- ═══ Generating state ═══ -->
+  <div id="dt-generating-state" class="dt-hidden">
+    <div class="dt-generating-card">
+      <div class="dt-gen-title">🧠 Генерируем задачи…</div>
+      <div class="dt-gen-sub" id="dt-elapsed">прошло 0:00</div>
+
+      <div class="dt-progress-bar">
+        <div class="dt-progress-fill" id="dt-progress-fill"></div>
       </div>
+      <div class="dt-progress-text" id="dt-progress-text">0%</div>
+
+      <div class="dt-step-name" id="dt-step-name">Запуск…</div>
+      <div class="dt-eta" id="dt-eta">~3 мин</div>
     </div>
   </div>
 
-  <!-- ── Задачи готовы ─────────────────────────────────────────── -->
-  <div class="dt-section dt-hidden" id="dt-ready-state">
-    <div class="dt-header">
-      <div class="dt-header-meta">
-        <span class="dt-date" id="dt-date"></span>
-        <span class="dt-count" id="dt-count"></span>
+  <!-- ═══ Ready state ═══ -->
+  <div id="dt-ready-state" class="dt-hidden">
+    <div class="dt-ready-header">
+      <div>
+        <div class="dt-ready-title">📚 Твои задачи на <span id="dt-date"></span></div>
+        <div class="dt-ready-meta">
+          Выполнено <span id="dt-progress-summary">0/0</span>
+        </div>
+      </div>
+      <div class="dt-ready-actions">
+        <button class="dt-btn-secondary" id="dt-btn-regenerate" onclick="startGeneration()">
+          🔄 Сгенерировать заново
+        </button>
       </div>
     </div>
 
-    <div class="dt-summary-card dt-hidden" id="dt-summary-card">
-      <div class="dt-summary-meta">
-        <span class="dt-summary-label">Средняя сложность</span>
-        <span class="dt-summary-value" id="dt-avg-difficulty"></span>
-      </div>
+    <!-- Summary card -->
+    <div id="dt-summary-card" class="dt-summary-card dt-hidden">
+      <strong>💡 Рекомендация:</strong> <span id="dt-summary-text"></span>
     </div>
 
-    <div class="dt-partial-notice dt-hidden" id="dt-partial-notice">
-      ⏳ Ещё несколько задач в процессе…
+    <!-- Partial notice -->
+    <div id="dt-partial-notice" class="dt-partial-notice dt-hidden">
+      ⚠️ Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
     </div>
 
-    <div class="dt-grid" id="dt-task-grid"></div>
-
-    <div class="dt-regenerate-section">
-      <button class="btn-generate btn-generate-sm" onclick="startGeneration()">
-        🔄 Сгенерировать заново
-      </button>
-    </div>
+    <!-- Task grid -->
+    <div id="dt-task-grid"></div>
   </div>
 
-  <!-- ── Модалка задачи (1-в-1 как /adaptive_test_simple) ──────── -->
-  <div class="dt-modal-overlay dt-hidden" id="dt-modal-overlay" onclick="closeModal()">
-    <div class="dt-modal" onclick="event.stopPropagation()">
-      <div class="dt-modal-header">
-        <span class="dt-modal-title" id="dt-modal-title">Задача</span>
-        <button class="dt-modal-close" onclick="closeModal()">✕</button>
-      </div>
-      <div class="dt-modal-body" id="dt-modal-body">
-        <!-- Динамический контент: рендерится из openTaskModal() в daily_tasks.js.
-             Включает условие, форму ответа, поле «Ход решения», единую клавиатуру,
-             фото-аплоад, AI-лоадер и блок результата от тьютора. -->
-      </div>
+</div>
+
+<!-- ═══ Modal ═══ -->
+<div id="dt-modal-overlay" class="dt-hidden">
+  <div class="dt-modal">
+    <button class="dt-modal-close" id="dt-modal-close">&times;</button>
+    <div class="dt-modal-header">
+      <span class="dt-modal-title" id="dt-modal-title">Задача</span>
+      <span class="dt-modal-difficulty" id="dt-modal-difficulty"></span>
     </div>
+    <div class="dt-modal-body" id="dt-modal-body"></div>
   </div>
 </div>
 
-<!-- KaTeX делимитеры для рендера формул в AI-фидбеке -->
-<script>
-  window._dtKatexDelimiters = [
-    {left: '$$', right: '$$', display: true},
-    {left: '$',  right: '$',  display: false},
-    {left: '\\(', right: '\\)', display: false},
-    {left: '\\[', right: '\\]', display: true}
-  ];
-</script>
+<!-- ═══ Initial data ── читается в daily_tasks.js ═══ -->
+<script id="dt-init-data" type="application/json">{{ data | tojson | safe }}</script>
 
-<!-- MathLive — для поля ответа (та же библиотека, что в адаптивном тесте) -->
-<script src="https://unpkg.com/mathlive"></script>
+{% endblock %}
 
+{% block extra_js %}
 <script src="{{ url_for('static', filename='js/daily_tasks.js') }}?v={{ asset_version }}"></script>
-<!-- Адаптивная модалка: переопределяет openTaskModal / submitAnswer / getHint -->
-<script src="{{ url_for('static', filename='js/daily_tasks_modal.js') }}?v={{ asset_version }}"></script>
 {% endblock %}

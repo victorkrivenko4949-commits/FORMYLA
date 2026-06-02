@@ -278,11 +278,15 @@ class TestProductionImportIntegrity:
         yield c
         c.close()
 
-    def test_total_8394(self, conn):
-        """Updated for FORMYLA 8394-task polished dataset (was 3430)."""
+    def test_total_count(self, conn):
+        """FORMYLA polished dataset. History:
+           3430 (legacy) -> 8394 (polished) -> 8389 (2026-05 final cleanup,
+           5 broken tasks removed).
+        """
         n = conn.execute("SELECT COUNT(*) FROM adaptive_tasks").fetchone()[0]
-        assert n in (3430, 8394), (
-            "Expected 3430 (old) or 8394 (polished), got " + str(n)
+        assert n in (3430, 8394, 8389), (
+            "Expected 3430 (legacy), 8394 (polished) or 8389 (final-clean), "
+            "got " + str(n)
         )
 
     def test_no_duplicate_source_id(self, conn):

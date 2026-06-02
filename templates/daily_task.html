@@ -99,9 +99,13 @@ async function submitAnswer() {
         if (data.success) {
             showFeedback(data);
         } else {
-            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-            submitBtn.disabled = false;
-            submitBtn.textContent = '✓ Проверить';
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✓ Проверить';
+            }
         }
     } catch (error) {
         console.error('Error submitting answer:', error);

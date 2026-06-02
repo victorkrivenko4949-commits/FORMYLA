@@ -27,7 +27,7 @@
         
         <!-- Уровень сложности -->
         <div style="display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border-radius: 20px; font-weight: 600; font-size: 0.9em; margin-bottom: 20px;">
-            ⭐ Уровень сложности: {{ task.difficulty_level }}/7
+            ⭐ Уровень сложности: {{ task.difficulty_level }}/8
         </div>
         
         <!-- Условие задачи -->
@@ -103,14 +103,16 @@
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
                     Ход решения (опционально):
                 </label>
-                <math-field id="solution_text" name="solution"
-                           virtual-keyboard-mode="manual"
-                           virtual-keyboard-theme="material"
-                           class="math-solution-field"
-                           style="width: 100%; min-height: 120px; padding: 15px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-size: 16px; resize: vertical; display: block;">
-                </math-field>
+                {# UI-FIX (2026-05): заменили <math-field> на <textarea> — math-field
+                   рендерит весь текст в одну растягивающуюся строку и не переносит
+                   слова. Для «хода решения» нужен многострочный ввод с переносами,
+                   плюс по-прежнему доступна вставка LaTeX через клавиатуру ниже. #}
+                <textarea id="solution_text" name="solution" rows="6"
+                          placeholder="Пишите решение по шагам, каждый шаг — с новой строки. Можно вставлять формулы: \frac{1}{2}, x^2, \sqrt{3} и т.д."
+                          class="solution-textarea"
+                          style="width: 100%; min-height: 160px; padding: 14px 16px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; font-size: 16px; line-height: 1.7; resize: vertical; display: block; box-sizing: border-box; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;"></textarea>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 Кликните на поле и нажмите кнопку "🔢" справа внизу для вызова математической клавиатуры
+                    💡 Пишите <strong>по шагам</strong> — каждое действие с новой строки (Enter). Формулы вставляются как LaTeX-код (можно через кнопку «⌨️ Клавиатура» ниже).
                 </p>
             </div>
 
@@ -482,28 +484,37 @@
     outline: none;
 }
 
-/* Стили для MathLive поля решения */
-.math-solution-field {
+/* ── Поле «Ход решения»: обычный textarea с переносами строк ── */
+.solution-textarea {
     width: 100%;
-    padding: 15px;
-    background: rgba(15, 23, 42, 0.6) !important;
-    border: 2px solid var(--border-mid) !important;
+    padding: 14px 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid var(--border-mid);
     border-radius: var(--radius-sm);
-    font-size: 16px !important;
-    min-height: 120px;
-    cursor: text;
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 160px;
+    resize: vertical;
     transition: border-color 0.3s;
-    line-height: 1.6 !important;
+    box-sizing: border-box;
+    white-space: pre-wrap;        /* сохраняем переносы строк */
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
-
-.math-solution-field:focus {
-    border-color: var(--accent-1) !important;
+.solution-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.65;
+}
+.solution-textarea:focus {
+    border-color: var(--accent-1);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 /* Курсор в MathLive */
-.math-input-field::part(content),
-.math-solution-field::part(content) {
+.math-input-field::part(content) {
     color: var(--text-main);
     caret-color: var(--accent-1);
 }
@@ -1136,13 +1147,20 @@ document.getElementById('answerForm').addEventListener('submit', async function(
         userAnswer = formData.get('answer');
     }
 
-    // Получаем решение из MathLive поля (если используется)
+    // Получаем решение: теперь это обычный <textarea> (многострочный),
+    // поэтому просто читаем .value. Старая ветка с math-field.getValue('latex')
+    // оставлена для обратной совместимости, если поле всё ещё math-field.
     const solutionField = document.getElementById('solution_text');
     let userSolution = '';
 
     if (solutionField) {
-        // Получаем текст решения в формате LaTeX
-        userSolution = solutionField.getValue('latex-expanded') || solutionField.getValue('latex') || '';
+        if (typeof solutionField.value === 'string') {
+            // <textarea> или <input>
+            userSolution = solutionField.value || '';
+        } else if (typeof solutionField.getValue === 'function') {
+            // legacy <math-field>
+            userSolution = solutionField.getValue('latex-expanded') || solutionField.getValue('latex') || '';
+        }
     } else {
         userSolution = formData.get('solution') || '';
     }
@@ -1242,8 +1260,8 @@ function showResult(result) {
     if (result.score === 2) {
         verdictHTML = `
             <div class="verdict-success">
-                ✅ Верно! +2 балла, уровень: ${result.new_level}/7
-                <div class="level-badge">Уровень: ${result.new_level}/7</div>
+                ✅ Верно! +2 балла, уровень: ${result.new_level}/8
+                <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
     } else if (result.score === 1) {
@@ -1251,21 +1269,21 @@ function showResult(result) {
         verdictHTML = `
             <div class="verdict-partial">
                 ⚠️ Частично верно — уровень без изменений
-                <div class="level-badge">Уровень: ${result.new_level}/7</div>
+                <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
     } else if (result.score === 0) {
         verdictHTML = `
             <div class="verdict-partial">
                 ℹ️ Ответ принят — уровень не изменился
-                <div class="level-badge">Уровень: ${result.new_level}/7</div>
+                <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
     } else {
         verdictHTML = `
             <div class="verdict-error">
                 ❌ Неверно — -1 уровень
-                <div class="level-badge">Уровень: ${result.new_level}/7</div>
+                <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
     }
@@ -1444,30 +1462,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Настройка поля решения
+    // Настройка поля решения — теперь это обычный <textarea>.
     const solutionField = document.getElementById('solution_text');
     if (solutionField) {
-        // UI-FIX (Task 3+4): manual + material theme.
-        solutionField.setOptions({
-            virtualKeyboardMode: 'manual',
-            virtualKeyboardTheme: 'material',
-            virtualKeyboards: 'numeric symbols greek',
-            smartFence: true,
-            smartMode: true,
-            mathModeSpace: '\\,',
-            removeExtraneousParentheses: false
-        });
-        
+        const isTextarea = (solutionField.tagName === 'TEXTAREA');
+
         // Восстанавливаем сохранённое решение из localStorage
         const savedSolution = localStorage.getItem(STORAGE_KEY_SOLUTION);
         if (savedSolution) {
-            solutionField.setValue(savedSolution);
+            if (isTextarea) {
+                solutionField.value = savedSolution;
+            } else if (typeof solutionField.setValue === 'function') {
+                solutionField.setValue(savedSolution);
+            }
         }
-        
+
         // Автосохранение при каждом изменении
         solutionField.addEventListener('input', function() {
             try {
-                localStorage.setItem(STORAGE_KEY_SOLUTION, solutionField.getValue('latex'));
+                const val = isTextarea
+                    ? (solutionField.value || '')
+                    : (solutionField.getValue ? solutionField.getValue('latex') : '');
+                localStorage.setItem(STORAGE_KEY_SOLUTION, val);
             } catch(e) {}
         });
     }
@@ -1484,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ─── Единая клавиатура ввода (Математическая / Обычная) ───
 let _kbActiveField = null;
 
-// Следим за фокусом на MathLive полях
+// Следим за фокусом на полях ввода (math-field для ответа + textarea для решения)
 document.addEventListener('focusin', function(e) {
     const el = e.target;
     // MathLive использует shadow DOM, прокси через closest
@@ -1496,6 +1512,7 @@ document.addEventListener('focusin', function(e) {
             label.textContent = (mf.id === 'user_answer') ? 'Ответ' : 'Решение';
         }
     } else if (el && (el.id === 'user_answer' || el.id === 'solution_text')) {
+        // Обычный <textarea> для решения тоже отслеживаем
         _kbActiveField = el;
         const label = document.getElementById('kbFieldLabel');
         if (label) {
@@ -1504,19 +1521,52 @@ document.addEventListener('focusin', function(e) {
     }
 });
 
+// Вспомогательно: textarea использует .value, math-field — getValue/setValue.
+function _kbIsTextarea(el) {
+    return el && el.tagName === 'TEXTAREA';
+}
+function _kbGetValue(el) {
+    if (!el) return '';
+    if (_kbIsTextarea(el)) return el.value || '';
+    if (typeof el.getValue === 'function') return el.getValue('latex') || '';
+    return el.value || '';
+}
+function _kbSetValue(el, val) {
+    if (!el) return;
+    if (_kbIsTextarea(el)) {
+        el.value = val;
+    } else if (typeof el.setValue === 'function') {
+        el.setValue(val);
+    } else {
+        el.value = val;
+    }
+}
+function _kbInsertAtCursor(el, text) {
+    // Для textarea вставляем в позицию каретки (с переносами строк); иначе — в конец.
+    if (_kbIsTextarea(el)) {
+        const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+        const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
+        const before = el.value.substring(0, start);
+        const after  = el.value.substring(end);
+        el.value = before + text + after;
+        const pos = start + text.length;
+        try { el.setSelectionRange(pos, pos); } catch(e) {}
+    } else {
+        _kbSetValue(el, _kbGetValue(el) + text);
+    }
+}
+
 function kbInsert(text) {
     if (!_kbActiveField) {
         _kbActiveField = document.getElementById('user_answer');
     }
     if (!_kbActiveField) return;
     try {
-        const current = _kbActiveField.getValue ? _kbActiveField.getValue('latex') : _kbActiveField.value;
-        const newVal = (current || '') + text;
-        if (_kbActiveField.setValue) {
-            _kbActiveField.setValue(newVal);
-        } else {
-            _kbActiveField.value = newVal;
+        // Спец-обработка «⏎» для textarea — реальный перенос строки вместо \quad
+        if (_kbIsTextarea(_kbActiveField) && text === '\\quad ') {
+            text = '\n';
         }
+        _kbInsertAtCursor(_kbActiveField, text);
         _kbActiveField.focus();
         // Триггер события для автосохранения
         _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1531,14 +1581,24 @@ function kbBackspace() {
     }
     if (!_kbActiveField) return;
     try {
-        const current = _kbActiveField.getValue ? _kbActiveField.getValue('latex') : _kbActiveField.value;
-        if (current && current.length > 0) {
-            const newVal = current.slice(0, -1);
-            if (_kbActiveField.setValue) {
-                _kbActiveField.setValue(newVal);
-            } else {
-                _kbActiveField.value = newVal;
+        if (_kbIsTextarea(_kbActiveField)) {
+            const el = _kbActiveField;
+            const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+            const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
+            if (start === end && start > 0) {
+                el.value = el.value.substring(0, start - 1) + el.value.substring(end);
+                try { el.setSelectionRange(start - 1, start - 1); } catch(e) {}
+            } else if (start !== end) {
+                el.value = el.value.substring(0, start) + el.value.substring(end);
+                try { el.setSelectionRange(start, start); } catch(e) {}
             }
+            el.focus();
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+        }
+        const current = _kbGetValue(_kbActiveField);
+        if (current && current.length > 0) {
+            _kbSetValue(_kbActiveField, current.slice(0, -1));
             _kbActiveField.focus();
             _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
         }

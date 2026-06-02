@@ -152,3 +152,50 @@ class DailyGenerationJob(db.Model):
             f'<DailyGenerationJob #{self.id} user={self.user_id} '
             f'date={self.target_date} state={self.state!r}>'
         )
+
+
+class TaskPool(db.Model):
+    """Общий пул сгенерированных задач (10 шт.) для повторного использования.
+
+    Ученики с одинаковым профилем (класс + темы + floor_level) получают
+    один и тот же набор из пула, без повторного вызова AI.
+    """
+
+    __tablename__ = 'task_pool'
+
+    id = db.Column(db.Integer, primary_key=True)
+    cache_key = db.Column(db.String(64), nullable=False, index=True)
+    subject = db.Column(db.String(32), nullable=False)
+    grade = db.Column(db.SmallInteger, nullable=False)
+    profile_snapshot = db.Column(db.Text, nullable=False)  # JSON
+    tasks = db.Column(db.Text, nullable=False)  # JSON-массив 10 задач
+    specs = db.Column(db.Text, nullable=False)  # JSON-массив 10 spec'ов
+    status = db.Column(db.String(16), nullable=False)
+    valid_count = db.Column(db.SmallInteger, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    used_count = db.Column(db.Integer, server_default='0')
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return (
+            f'<TaskPool #{self.id} key={self.cache_key[:12]}… '
+            f'grade={self.grade} status={self.status!r}>'
+        )
+
+
+class UserTaskAssignment(db.Model):
+    """Привязка пользователя к пулу — какие 5 из 10 задач он получил."""
+
+    __tablename__ = 'user_task_assignments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    pool_id = db.Column(db.Integer, db.ForeignKey('task_pool.id'), nullable=False, index=True)
+    task_positions = db.Column(db.Text, nullable=False)  # JSON-массив индексов [0,3,5,…]
+    assigned_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def __repr__(self):
+        return (
+            f'<UserTaskAssignment #{self.id} user={self.user_id} '
+            f'pool={self.pool_id}>'
+        )

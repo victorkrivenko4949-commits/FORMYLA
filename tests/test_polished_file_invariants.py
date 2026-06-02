@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Tests that lock-in critical invariants of the polished 8394-task file.
+"""Tests that lock-in critical invariants of the polished 8389-task file.
+(Was 8394; 5 broken tasks were removed in the 2026-05 final cleanup.)
 
 These tests guarantee that the downstream site code does NOT need to
 parse subject/level/grade from the task id - every task carries them
@@ -42,8 +43,9 @@ def tasks():
 
 
 class TestPolishedFileInvariants:
-    def test_total_8394(self, tasks):
-        assert len(tasks) == 8394
+    def test_total_count(self, tasks):
+        # Was 8394 before 2026-05 final cleanup; 5 broken tasks were removed.
+        assert len(tasks) == 8389
 
     def test_all_ids_unique(self, tasks):
         ids = [t.get("id") for t in tasks]

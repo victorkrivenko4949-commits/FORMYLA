@@ -39,7 +39,7 @@
         <!-- Карточка: Финальный уровень -->
         <div style="background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(147, 51, 234, 0.1)); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 2px solid rgba(147, 51, 234, 0.3); text-align: center;">
             <div style="font-size: 3em; font-weight: 700; color: #9333ea; margin-bottom: 10px;">
-                {{ final_level }}/7
+                {{ final_level }}/8
             </div>
             <div style="color: var(--text-muted); font-size: 0.9em;">Финальный уровень</div>
         </div>
@@ -95,7 +95,7 @@
             <!-- Заголовок задачи -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div style="font-weight: 600; color: var(--text-main); font-size: 1.1em;">
-                    Задача #{{ loop.index }} (Уровень {{ answer.difficulty }}/7)
+                    Задача #{{ loop.index }} (Уровень {{ answer.difficulty }}/8)
                 </div>
                 <div style="padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.85em; 
                     {% if answer.score == 2 %}

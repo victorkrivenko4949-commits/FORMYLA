@@ -16,6 +16,15 @@
 .gc-msg.mine .who{display:none}
 .gc-msg .t{font-size:.72em;opacity:.6;margin-top:4px;text-align:right}
 .gc-comp{display:flex;gap:8px;padding:14px;border-top:1px solid rgba(255,255,255,.08)}
+/* CHAT_ATTACH_V1 — attachment preview + image messages in group chat */
+.gc-attach-preview{display:flex;align-items:center;gap:10px;padding:6px 14px 0;font-size:.88em;color:#94a3b8}
+.gc-attach-preview .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gc-attach-preview .cancel{cursor:pointer;color:#ef4444;font-size:1.2em;line-height:1;padding:0 4px}
+.gc-attach-preview .cancel:hover{color:#ff6b6b}
+.gc-msg .att-img{max-width:100%;max-height:320px;border-radius:8px;display:block;margin:4px 0;cursor:pointer}
+.gc-msg .att-pdf{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(255,255,255,.08);border-radius:8px;margin:4px 0;font-size:.9em;color:#e2e8f0;text-decoration:none}
+.gc-msg .att-pdf:hover{background:rgba(74,168,255,.18)}
+.gc-msg .att-name{font-size:.8em;opacity:.7;margin-top:2px}
 .gc-comp textarea{flex:1;resize:none;min-height:44px;max-height:120px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;padding:10px 12px;font-size:.95em;outline:none}
 .gc-comp button{background:linear-gradient(135deg,#6c5ce7,#4aa8ff);border:none;color:#fff;border-radius:10px;padding:0 18px;font-size:1.1em;cursor:pointer}
 .gc-back{text-decoration:none;color:#94a3b8;font-size:1.4em;padding:4px 8px;border-radius:8px}
@@ -218,7 +227,12 @@
     <button class="gc-emoji-btn" id="gcEmojiBtn" type="button" title="Эмодзи">😀</button>
     <textarea id="ta" placeholder="Сообщение в группу… (Enter — отправить)"
               onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendG();}"></textarea>
+    <input type="file" id="gcFileInput" accept="image/*" hidden onchange="onGcAttachPicked(event)">
     <button onclick="sendG()">➤</button>
+  </div>
+  <div id="gcAttachPreview" class="gc-attach-preview" hidden>
+    <span class="name" id="gcAttachName"></span>
+    <span class="cancel" onclick="cancelGcAttach()" title="Отменить">✕</span>
   </div>
 </div>
 
@@ -272,7 +286,18 @@ async function loadM(){
       const div = document.createElement('div');
       div.className = 'gc-msg' + (m.mine ? ' mine' : '');
       const who = m.mine ? '' : '<div class="who">' + esc(m.sender_name) + '</div>';
-      div.innerHTML = who + esc(m.body) + '<div class="t">' + fmtT(m.created_at) + '</div>';
+      // CHAT_ATTACH_V1 — render attachment messages
+      let attachHtml = '';
+      if (m.kind === 'attachment' && m.attachment_url){
+        if (m.attachment_kind === 'image'){
+          attachHtml = '<img class="att-img" src="' + esc(m.attachment_url) + '" onclick="window.open(this.src)" alt="">';
+        } else if (m.attachment_kind === 'pdf'){
+          attachHtml = '<a class="att-pdf" href="' + esc(m.attachment_url) + '" target="_blank">📄 ' + esc(m.attachment_name || 'PDF') + '</a>';
+        }
+      }
+      const bodyHtml = m.body ? esc(m.body) : '';
+      const bodyBlock = bodyHtml ? '<div>' + bodyHtml + '</div>' : '';
+      div.innerHTML = who + attachHtml + bodyBlock + '<div class="t">' + fmtT(m.created_at) + '</div>';
       box.appendChild(div);
     }
     box.scrollTop = box.scrollHeight;
@@ -291,13 +316,19 @@ async function loadMem(){
 
 async function sendG(){
   const ta = document.getElementById('ta');
+  const hasAttach = !!window.gcPendingAttachment;
   const body = (ta.value || '').trim();
-  if(!body) return;
+  if(!body && !hasAttach) return;
   try{
+    const payload = {body: body};
+    if(hasAttach){
+      payload.kind = 'attachment';
+      payload.attachment = window.gcPendingAttachment;
+    }
     const r = await fetch('/api/groups/' + GID + '/send', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({body: body})
+      body: JSON.stringify(payload)
     });
     if(!r.ok){
       const e = await r.json().catch(()=>({}));
@@ -305,6 +336,7 @@ async function sendG(){
       return;
     }
     ta.value = '';
+    cancelGcAttach();
     await loadM();
   }catch(e){ console.error(e); alert('Ошибка соединения'); }
 }
@@ -470,6 +502,55 @@ async function deleteGFromInfo(){
   }catch(e){ console.error(e); alert('Ошибка соединения'); }
 }
 
+// CHAT_ATTACH_V1 — attachment upload / paste support for group chat
+let gcPendingAttachment = null;
+
+async function uploadGcAttachment(file){
+  const MAX_BYTES = 5 * 1024 * 1024;
+  const allowed = ['image/jpeg','image/png','image/webp','image/gif','application/pdf'];
+  if(!allowed.includes(file.type)){ alert('Разрешены только JPG, PNG, WebP, GIF и PDF'); return null; }
+  if(file.size > MAX_BYTES){ alert('Файл слишком большой (макс. 5 МБ)'); return null; }
+  const fd = new FormData();
+  fd.append('file', file);
+  try{
+    const r = await fetch('/api/groups/' + GID + '/upload', {method:'POST', body:fd});
+    const d = await r.json();
+    if(!r.ok || !d.success){ alert(d.error || 'Ошибка загрузки'); return null; }
+    gcPendingAttachment = d.attachment;
+    document.getElementById('gcAttachName').textContent = d.attachment.name || 'Файл';
+    document.getElementById('gcAttachPreview').hidden = false;
+    return d.attachment;
+  }catch(e){ console.error(e); alert('Ошибка соединения при загрузке'); return null; }
+}
+
+function onGcAttachPicked(ev){
+  const file = ev.target.files && ev.target.files[0];
+  if(file) uploadGcAttachment(file);
+  ev.target.value = '';
+}
+
+function cancelGcAttach(){
+  gcPendingAttachment = null;
+  document.getElementById('gcAttachPreview').hidden = true;
+  document.getElementById('gcAttachName').textContent = '';
+}
+
+function initGcPasteHandler(){
+  const ta = document.getElementById('ta');
+  if(!ta) return;
+  ta.addEventListener('paste', function(e){
+    const items = e.clipboardData && e.clipboardData.items;
+    if(!items) return;
+    for(let i=0; i<items.length; i++){
+      if(items[i].kind === 'file'){
+        const file = items[i].getAsFile();
+        if(file){ e.preventDefault(); uploadGcAttachment(file); }
+        return;
+      }
+    }
+  });
+}
+
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
     const p = document.getElementById('giPanel');
@@ -487,6 +568,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const ta  = document.getElementById('ta');
     if (btn && ta) window.EmojiPicker.attach({ button: btn, target: ta, anchor: btn });
   }
+  // CHAT_ATTACH_V1 — wire paste handler for Ctrl+V
+  initGcPasteHandler();
 });
 </script>
 <script src="{{ url_for('static', filename='js/emoji_picker.js') }}" defer></script>

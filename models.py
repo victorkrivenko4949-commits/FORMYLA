@@ -634,6 +634,37 @@ class Notification(db.Model):
         return f'<Notification {self.type} for user {self.user_id}>'
 
 
+class PushSubscription(db.Model):
+    """Web Push subscription for browser push notifications."""
+    __tablename__ = 'push_subscriptions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+                        nullable=False, index=True)
+    endpoint = db.Column(db.Text, nullable=False)
+    p256dh_key = db.Column(db.String(256), nullable=False)
+    auth_key = db.Column(db.String(64), nullable=False)
+    user_agent = db.Column(db.String(256), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', foreign_keys=[user_id],
+                           backref=db.backref('push_subscriptions', lazy='dynamic',
+                                               cascade='all, delete-orphan'))
+
+    def to_dict(self):
+        return {
+            'endpoint': self.endpoint,
+            'keys': {
+                'p256dh': self.p256dh_key,
+                'auth': self.auth_key
+            }
+        }
+
+    def __repr__(self):
+        return f'<PushSubscription user={self.user_id} endpoint={self.endpoint[:50]}...>'
+
+
 class UserPresence(db.Model):
     """Онлайн-статус и typing-индикатор пользователя (CHAT_PRESENCE_V1).
 
@@ -1411,7 +1442,11 @@ class GroupMember(db.Model):
 
 
 class GroupMessage(db.Model):
-    """CHAT_GROUPS_V1 — single message in a group chat."""
+    """CHAT_GROUPS_V1 — single message in a group chat.
+
+    CHAT_ATTACH_V1 — supports image/PDF attachments via the same
+    attachment_* columns as DirectMessage.
+    """
     __tablename__ = 'group_messages'
     id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(
@@ -1422,7 +1457,15 @@ class GroupMessage(db.Model):
         db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False, index=True
     )
-    body = db.Column(db.Text, nullable=False)
+    kind = db.Column(db.String(20), nullable=False, default='text')
+    body = db.Column(db.Text, nullable=True)
+
+    # CHAT_ATTACH_V1 — вложения (картинка / pdf)
+    attachment_url = db.Column(db.String(400), nullable=True)
+    attachment_kind = db.Column(db.String(16), nullable=True)   # 'image' | 'pdf'
+    attachment_name = db.Column(db.String(255), nullable=True)
+    attachment_size = db.Column(db.Integer, nullable=True)      # bytes
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 

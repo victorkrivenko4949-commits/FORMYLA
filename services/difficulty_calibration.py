@@ -13,6 +13,7 @@ LEVEL_LABELS = {
     5: 'Региональный',
     6: 'Всерос финал',
     7: 'IMO / ELITE',
+    8: 'Сверхэлита',
 }
 
 # Level colors for UI
@@ -24,6 +25,7 @@ LEVEL_COLORS = {
     5: '#f97316',
     6: '#ef4444',
     7: '#ec4899',
+    8: '#8b5cf6',
 }
 
 # Expected solve rates per level (for calibration)
@@ -35,6 +37,7 @@ LEVEL_EXPECTED_RATES = {
     5: 0.15,
     6: 0.08,
     7: 0.03,
+    8: 0.01,
 }
 
 # Level descriptions for prompts
@@ -46,6 +49,7 @@ LEVEL_DESCRIPTIONS = {
     5: "Региональный/Зональный. Турнир городов, зональный Всерос. 30-60 минут. 10-20% решат.",
     6: "Заключительный этап Всерос. Сложные задачи финала. 60-90 минут. 5-10% решат.",
     7: "IMO / ELITE. Задачи уровня IMO, суперфинал. 90+ минут. 1-5% (только топ-олимпиадники) решат.",
+    8: "Сверхэлита. Задачи уровня международных олимпиад с глубокой нестандартной идеей. 90+ минут. Менее 1% учеников решат.",
 }
 
 # Few-shot examples for each level (real olympiad problems)
@@ -85,6 +89,11 @@ LEVEL_EXAMPLES = {
         "IMO 2016 P6: Пусть S - конечное множество точек плоскости, не все на одной прямой. Для каждой прямой l, проходящей хотя бы через 2 точки S, обозначим через l(S) множество точек S на l. Докажи, что существует прямая l такая, что l(S) не является подмножеством никакой другой прямой.",
         "Putnam 2018 B6: Докажи, что для любого натурального n существует простое p такое, что p делит n^n + 1.",
     ],
+    8: [
+        "IMO 2019 P6: Найдите все функции f: Z → Z такие, что f(2a) + 2f(b) = f(f(a+b)) для всех a, b ∈ Z.",
+        "IMO 2020 P3: Пусть N = {1, 2, 3, …}. Для каждого положительного целого n пусть f(n) = \frac{4n + \sqrt{4n^2 - 1}}{\sqrt{2n + 1} + \sqrt{2n - 1}}. Найдите f(1) + f(2) + … + f(2020).",
+        "Putnam 2019 A6: Докажи, что для любого натурального n найдутся n различных натуральных чисел, сумма любых двух из которых является точным квадратом.",
+    ],
 }
 
 
@@ -106,7 +115,7 @@ def build_generation_prompt(grade, topic, subtopic, level):
         grade: School grade (5-11)
         topic: Main topic (algebra, geometry, etc.)
         subtopic: Specific subtopic
-        level: Difficulty level (1-7)
+        level: Difficulty level (1-8)
         
     Returns:
         Formatted prompt string
@@ -125,7 +134,7 @@ def build_generation_prompt(grade, topic, subtopic, level):
 - Класс: {grade}
 - Тема: {topic}
 - Подтема: {subtopic}
-- Уровень сложности: {level} из 7
+- Уровень сложности: {level} из 8
 
 КРИТИЧНО: Уровень {level} означает:
 {description}
@@ -173,7 +182,7 @@ def validate_generated_task(task_data, expected_level):
         return False, f"Level {expected_level} task text too short ({len(text)} chars)"
     
     # Check estimated time
-    min_time = {1: 1, 2: 2, 3: 5, 4: 15, 5: 30, 6: 60, 7: 90}.get(expected_level, 5)
+    min_time = {1: 1, 2: 2, 3: 5, 4: 15, 5: 30, 6: 60, 7: 90, 8: 120}.get(expected_level, 5)
     if estimated_time < min_time * 0.5:
         return False, f"Estimated time {estimated_time} min too low for level {expected_level}"
     
@@ -188,9 +197,9 @@ def get_level_by_solve_rate(actual_rate):
         actual_rate: Fraction of users who solved the task (0.0-1.0)
         
     Returns:
-        Suggested level (1-7)
+        Suggested level (1-8)
     """
-    for level in range(7, 0, -1):
+    for level in range(8, 0, -1):
         expected = LEVEL_EXPECTED_RATES[level]
         if actual_rate <= expected * 1.5:
             return level

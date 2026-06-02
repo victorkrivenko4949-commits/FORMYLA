@@ -268,7 +268,8 @@ def _unix_preexec(memory_mb: int = 512, cpu_seconds: int = 8) -> Optional[callab
 
 
 def _run_via_subprocess(code: str, timeout: float) -> bytes:
-    """Spawn `python -c <wrapped>` and read PNG from stdout."""
+    """Spawn `python` and feed wrapped code via stdin to avoid Windows
+    command-line encoding issues with Cyrillic/Unicode characters."""
     wrapped = _WRAPPER.replace("{USER_CODE}", code)
 
     # Use the same interpreter we're running under
@@ -282,6 +283,7 @@ def _run_via_subprocess(code: str, timeout: float) -> bytes:
         "PYTHONNOUSERSITE": "1",
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONIOENCODING": "utf-8",
+        "PYTHONUTF8": "1",
         "MPLBACKEND": "Agg",
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
@@ -302,12 +304,13 @@ def _run_via_subprocess(code: str, timeout: float) -> bytes:
     # Drop any keys whose value is None/empty (Windows is picky).
     env = {k: v for k, v in env.items() if v is not None}
 
-    # NOTE: -E disables PYTHON* env vars EXCEPT those we explicitly want; we
-    # therefore avoid -E and rely on the cleansed env dict + AST whitelist.
+    # NOTE: We pass code via stdin (not -c) to avoid Windows cp1251 encoding
+    # issues when the LLM-generated code contains Cyrillic comments/strings.
+    # The `-` flag tells Python to read the script from stdin.
     try:
         proc = subprocess.run(
-            [python_exe, "-c", wrapped],
-            input=b"",
+            [python_exe, "-"],
+            input=wrapped.encode("utf-8"),
             capture_output=True,
             timeout=timeout,
             preexec_fn=_unix_preexec(),

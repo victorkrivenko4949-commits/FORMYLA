@@ -18,7 +18,7 @@ def get_olympiad_status(ability_level: float) -> Dict[str, str]:
     Конвертирует числовой уровень способностей в олимпиадный статус.
     
     Args:
-        ability_level: Уровень способностей (1.0-7.0)
+        ability_level: Уровень способностей (1.0-8.0)
         
     Returns:
         Dict с ключами 'status', 'color', 'next_status', 'description'
@@ -75,7 +75,7 @@ class AdaptiveTestEngine:
         """
         self.problems_db = problems_db
         self.min_difficulty = 1
-        self.max_difficulty = 7
+        self.max_difficulty = 8
         
     def estimate_user_ability(self, history: List[Dict[str, Any]]) -> float:
         """
@@ -85,7 +85,7 @@ class AdaptiveTestEngine:
             history: List of previous attempts with 'difficulty' and 'is_correct' keys
             
         Returns:
-            Estimated ability level (1.0 - 7.0)
+            Estimated ability level (1.0 - 8.0)
         """
         if not history:
             return 3.5  # Start at medium difficulty
@@ -127,8 +127,8 @@ class AdaptiveTestEngine:
         Problems near user's ability level provide most information.
         
         Args:
-            problem_difficulty: Difficulty level of the problem (1-7)
-            user_ability: Estimated ability of the user (1-7)
+            problem_difficulty: Difficulty level of the problem (1-8)
+            user_ability: Estimated ability of the user (1-8)
             
         Returns:
             Information value (higher is better)
