@@ -227,6 +227,8 @@ def seed_theory_only(app, db) -> None:
     Шаг 2 (`_fill_theory_bodies`): полные тексты `*_md` из
         `theory_65_methods.json` + `theory_24_methods.json` (89 методов
         в сумме — оба файла дополняют друг друга).
+    Шаг 3 (`_seed_probnik_theory`): привязка тематических Probnik'ов
+        к TheoryBlock'ам через method_code из задач (olympiad_probnik_theory).
 
     Запускается на каждом старте БЕЗ env-гейта. Не трогает
     Probnik/OlympiadTask (для них autoseed остаётся под флагом
@@ -234,7 +236,11 @@ def seed_theory_only(app, db) -> None:
     не меняют, кроме случаев, когда были пустые поля.
     """
     try:
-        from models_olympiad import TheoryBlock
+        from models_olympiad import (
+            TheoryBlock,
+            Probnik,
+            ProbnikTheory,
+        )
     except Exception as e:
         print(f"[THEORY-SEED] models_olympiad not available: {e}")
         return
@@ -252,6 +258,8 @@ def seed_theory_only(app, db) -> None:
                 import_rich_md_into_theory(db, TheoryBlock)
             except Exception as _e_md:
                 print(f"[THEORY-MD] hook skipped: {_e_md}")
+            # Привязываем theory-блоки к probnik'ам через method_code из задач.
+            _seed_probnik_theory(db, TheoryBlock, Probnik, ProbnikTheory)
     except Exception as e:
         try:
             db.session.rollback()
@@ -272,6 +280,7 @@ def autoseed_olympiad(app, db) -> None:
             Probnik,
             OlympiadTask,
             TheoryBlock,
+            ProbnikTheory,
         )
     except Exception as e:
         print(f"[OLYMPIAD-SEED] Models not available: {e}")
@@ -282,6 +291,8 @@ def autoseed_olympiad(app, db) -> None:
             _seed_theory(db, TheoryBlock)
             code_to_probnik = _seed_probniks(db, Probnik)
             _seed_tasks(db, OlympiadTask, Probnik, code_to_probnik)
+            # Привязываем theory-блоки к probnik'ам через method_code из задач.
+            _seed_probnik_theory(db, TheoryBlock, Probnik, ProbnikTheory)
     except Exception as e:
         # Никогда не должны падать здесь — это not-critical-path.
         try:
@@ -310,11 +321,12 @@ def _seed_theory(db, TheoryBlock) -> None:
         print(f"[OLYMPIAD-SEED] No theory data found ({THEORY_JSON_CATALOG_89} / {THEORY_JSON_LEGACY_65}) — skipping theory seed")
         return
 
-    # Если в БД уже есть строки и их не меньше, чем в фикстуре,
-    # и при этом НИ ОДНА из них не выглядит как skeleton-заглушка
-    # «E14 (название ждёт текста)» — пропускаем (ничего ломать не будем).
-    # Если же заглушки есть — всё равно идём в upsert-цикл, чтобы их
-    # перезаписать настоящими именами из JSON.
+    # Всегда проходим по всем строкам из JSON-фикстуры, чтобы:
+    #   1) Создать недостающие строки (когда JSON пополнился новыми методами).
+    #   2) Обновить плейсхолдер-имена настоящими.
+    #   3) Дозаполнить пустые метаполя.
+    # Итерация идемпотентна: существующие строки находятся по method_code
+    # и не пересоздаются; только пустые поля заполняются.
     _placeholder = '(название ждёт текста)'
     try:
         stub_count = TheoryBlock.query.filter(
@@ -323,13 +335,9 @@ def _seed_theory(db, TheoryBlock) -> None:
     except Exception:
         stub_count = 0
 
-    if existing >= len(rows) and stub_count == 0:
-        print(f"[OLYMPIAD-SEED] TheoryBlock: {existing} rows (>= {len(rows)} in fixture, no stubs) — skipping seed")
-        return
-
     if stub_count:
         print(f"[OLYMPIAD-SEED] TheoryBlock: found {stub_count} placeholder names — running upsert to fix")
-    print(f"[OLYMPIAD-SEED] Theory source: {src_path} ({len(rows)} rows; in DB: {existing} → topping up)")
+    print(f"[OLYMPIAD-SEED] Theory source: {src_path} ({len(rows)} rows; in DB: {existing} — ensuring all present)")
 
     created = 0
     updated = 0
@@ -458,6 +466,105 @@ def _seed_probniks(db, Probnik) -> dict:
         return {}
 
     return code_to_id
+
+
+# ─── Probnik ↔ Theory links ──────────────────────────────────────────────────
+
+def _seed_probnik_theory(db, TheoryBlock, Probnik, ProbnikTheory) -> None:
+    """Привязывает TheoryBlock'и к Probnik'ам через method_code из задач.
+
+    В tasks JSON каждый элемент имеет probnik_code и method_primary/method_secondary.
+    Функция собирает уникальные method_code для каждого probnik'а, находит
+    соответствующие TheoryBlock.id по method_code и создаёт ProbnikTheory-записи.
+
+    Идемпотентна: если (probnik_id, theory_block_id) уже существует — пропускает.
+    """
+    items = _load_json(TASKS_JSON)
+    if not items:
+        print(f"[PROBNIK-THEORY] No data in {TASKS_JSON} — skipping probnik-theory seed")
+        return
+
+    # Шаг 1: собрать уникальные method_code для каждого probnik_code.
+    probnik_methods: dict[str, set[str]] = {}
+    for item in items:
+        pcode = item.get('probnik_code')
+        if not pcode:
+            continue
+        if pcode not in probnik_methods:
+            probnik_methods[pcode] = set()
+        mp = item.get('method_primary')
+        if mp:
+            probnik_methods[pcode].add(mp)
+        ms = item.get('method_secondary')
+        if ms:
+            probnik_methods[pcode].add(ms)
+
+    if not probnik_methods:
+        print("[PROBNIK-THEORY] No probnik-method mappings found in tasks — nothing to seed")
+        return
+
+    # Шаг 2: построить карту method_code → TheoryBlock.id (одним запросом).
+    all_codes = sorted({c for codes in probnik_methods.values() for c in codes})
+    theory_rows = TheoryBlock.query.filter(
+        TheoryBlock.method_code.in_(all_codes)
+    ).all()
+    code_to_theory_id: dict[str, int] = {
+        t.method_code: t.id for t in theory_rows
+    }
+
+    # Шаг 3: построить карту probnik_code → Probnik.id.
+    all_probnik_codes = list(probnik_methods.keys())
+    probnik_rows = Probnik.query.filter(
+        Probnik.code.in_(all_probnik_codes)
+    ).all()
+    code_to_probnik_id: dict[str, int] = {
+        p.code: p.id for p in probnik_rows
+    }
+
+    # Шаг 4: создать ProbnikTheory-записи (idempotent — пропускаем существующие).
+    created = 0
+    skipped = 0
+    for probnik_code, method_codes in probnik_methods.items():
+        probnik_id = code_to_probnik_id.get(probnik_code)
+        if probnik_id is None:
+            print(f"[PROBNIK-THEORY] Probnik {probnik_code!r} not found in DB — skipping")
+            skipped += len(method_codes)
+            continue
+
+        # Выясняем, какие theory_block_id уже привязаны к этому probnik'у.
+        existing_ids = {
+            pt.theory_block_id
+            for pt in ProbnikTheory.query.filter_by(probnik_id=probnik_id).all()
+        }
+
+        sorted_codes = sorted(method_codes)
+        for display_order, mcode in enumerate(sorted_codes, start=1):
+            theory_id = code_to_theory_id.get(mcode)
+            if theory_id is None:
+                print(f"[PROBNIK-THEORY] TheoryBlock {mcode!r} not found in DB — skipping for probnik {probnik_code!r}")
+                skipped += 1
+                continue
+            if theory_id in existing_ids:
+                skipped += 1
+                continue
+            try:
+                link = ProbnikTheory(
+                    probnik_id=probnik_id,
+                    theory_block_id=theory_id,
+                    display_order=display_order,
+                )
+                db.session.add(link)
+                created += 1
+            except Exception as e:
+                print(f"[PROBNIK-THEORY] Failed to create link (probnik={probnik_code}, method={mcode}): {e}")
+                skipped += 1
+
+    try:
+        db.session.commit()
+        print(f"[PROBNIK-THEORY] Created {created} probnik-theory links (skipped {skipped})")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[PROBNIK-THEORY] Commit failed: {e}")
 
 
 # ─── Tasks ───────────────────────────────────────────────────────────────────
