@@ -104,16 +104,7 @@ def enqueue_daily_generation(
         db.session.flush()
 
     # ── проверяем task_pool (кэш) ─────────────────────────────────────
-    try:
-        if profile is None:
-            import concurrent.futures as _cf
-            with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
-                _future = _executor.submit(build_profile, user_id)
-                try:
-                    profile = _future.result(timeout=20)
-                except _cf.TimeoutError:
-                    logger.warning("enqueue_daily_generation: build_profile timed out after 20s")
-                    return {"status": "error", "message": "Ошибка построения профиля"}
+    if profile is not None:
         cache_key = compute_cache_key(profile)
 
         now = datetime.utcnow()
@@ -224,13 +215,6 @@ def enqueue_daily_generation(
                 "status": "ready",
                 "message": "Задачи взяты из общего пула (кэш)",
             }
-
-    except Exception as exc:
-        # Если кэш упал — логируем и падаем сквозь на обычную генерацию
-        logger.warning(
-            "Cache check error для user=%d: %s — падаем на pipeline",
-            user_id, exc,
-        )
 
     # ── Cache MISS: создаём DailyTaskSet ──────────────────────────────
     daily_set = DailyTaskSet(
