@@ -915,6 +915,7 @@ except Exception as _e:
 try:
     from daily_tasks import daily_tasks_bp
     from migrations.add_daily_tasks_tables import _ensure_table as _ensure_daily_tasks_tables
+    from daily_tasks.services import trigger_daily_prewarm
     from migrations.add_task_pool_cache import _ensure_task_pool_tables
     app.register_blueprint(daily_tasks_bp)
     with app.app_context():
@@ -960,6 +961,9 @@ def internal_error(e):
     print(tb)
     print(f"{'='*70}\n")
     app.logger.error(f"[{err_id}] 500: {e}\n{tb}")
+    # Для API-запросов возвращаем JSON, иначе HTML
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Внутренняя ошибка сервера', 'error_id': err_id}), 500
     try:
         return render_template('errors/500.html', error_id=err_id), 500
     except Exception:
@@ -3204,44 +3208,44 @@ def tutor_history():
 @login_required
 def tutor_send():
     """Отправить сообщение тьютору (специализированному агенту)."""
-    if not DEEPSEEK_AVAILABLE:
-        return jsonify({'error': 'AI недоступен'}), 503
-    
-    # Проверяем, это JSON или FormData (для файлов)
-    if request.is_json:
-        data = request.get_json()
-        message = data.get('message', '').strip()
-        agent_type = data.get('agent_type', 'general')
-        hint_mode = data.get('hint_mode', True)
-        image_data = None
-    else:
-        # FormData с файлами (multiple)
-        message = request.form.get('message', '').strip()
-        agent_type = request.form.get('agent_type', 'general')
-        hint_mode = request.form.get('hint_mode', 'true').lower() == 'true'
-        
-        # Обработка файлов (поддержка multiple)
-        import base64
-        image_data = None
-        
-        # Поддержка нового формата (multiple files под ключом 'files')
-        files = [f for f in request.files.getlist('files') if f and f.filename]
-        # Fallback: старый формат (single file под ключом 'file')
-        if not files and 'file' in request.files:
-            f = request.files['file']
-            if f and f.filename:
-                files = [f]
-        
-        if files:
-            # Берём первый файл для vision API (DeepSeek/OpenRouter поддерживает 1 изображение)
-            first_file = files[0]
-            if first_file and first_file.filename:
-                image_data = base64.b64encode(first_file.read()).decode('utf-8')
-    
-    if not message and not image_data:
-        return jsonify({'error': 'Сообщение пустое'}), 400
-    
     try:
+        if not DEEPSEEK_AVAILABLE:
+            return jsonify({'error': 'AI недоступен'}), 503
+        
+        # Проверяем, это JSON или FormData (для файлов)
+        if request.is_json:
+            data = request.get_json()
+            message = data.get('message', '').strip()
+            agent_type = data.get('agent_type', 'general')
+            hint_mode = data.get('hint_mode', True)
+            image_data = None
+        else:
+            # FormData с файлами (multiple)
+            message = request.form.get('message', '').strip()
+            agent_type = request.form.get('agent_type', 'general')
+            hint_mode = request.form.get('hint_mode', 'true').lower() == 'true'
+            
+            # Обработка файлов (поддержка multiple)
+            import base64
+            image_data = None
+            
+            # Поддержка нового формата (multiple files под ключом 'files')
+            files = [f for f in request.files.getlist('files') if f and f.filename]
+            # Fallback: старый формат (single file под ключом 'file')
+            if not files and 'file' in request.files:
+                f = request.files['file']
+                if f and f.filename:
+                    files = [f]
+            
+            if files:
+                # Берём первый файл для vision API (DeepSeek/OpenRouter поддерживает 1 изображение)
+                first_file = files[0]
+                if first_file and first_file.filename:
+                    image_data = base64.b64encode(first_file.read()).decode('utf-8')
+        
+        if not message and not image_data:
+            return jsonify({'error': 'Сообщение пустое'}), 400
+        
         from models import ChatMessage
         
         # Сохраняем сообщение пользователя с привязкой к агенту
@@ -6144,6 +6148,12 @@ def analyze_adaptive_test(test_id):
     
     test.status = 'completed'
     db.session.commit()
+    
+    # ── Fix 4: Проактивная предгенерация «Задач дня» после адаптивного теста ──
+    try:
+        trigger_daily_prewarm(current_user.id)
+    except Exception:
+        logger.exception("trigger_daily_prewarm failed for user %s", current_user.id)
     
     return jsonify({
         'analysis': analysis,
