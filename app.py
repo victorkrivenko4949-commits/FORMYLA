@@ -5467,27 +5467,59 @@ def check_adaptive_answer():
         # Получаем правильный ответ (если есть поле answer в модели)
         correct_answer = getattr(current_task, 'answer', '') or getattr(current_task, 'correct_answer', 'не указан')
         
-        # ── Единая AI-проверка через review_attempt() ─────────────────
-        # Вся логика: OCR, sympy, math_equivalent, AI-проверка, sanitize,
-        # score_badge — внутри review_attempt(). Никаких inline-дубликатов.
-        from services.ai_tutor_review import review_attempt
-        result = review_attempt(
-            task_text=current_task.task_text or "",
-            correct_answer=correct_answer,
-            solution_ref=current_task.solution or "",
-            user_answer=user_answer,
-            user_solution=user_solution,
-            images_b64=images_b64,
-            deepseek_client_cls=DeepSeekClient if DEEPSEEK_AVAILABLE else None,
-            deepseek_available=bool(DEEPSEEK_AVAILABLE),
-            max_tokens=4096,
-            difficulty_level=current_task.difficulty_level or 5,
-        )
+        # ── Stage 0: Локальная проверка (без LLM, экономия кредитов) ──
+        # Если локальный checker может определить вердикт (correct/wrong),
+        # то НЕ вызываем review_attempt() — экономим кредиты DeepSeek.
+        # Только при `parse_error` падаем на AI-проверку.
+        from services.answer_checker import check_answer
+        local_correct, local_method = check_answer(user_answer, correct_answer)
         
-        float_score = float(result.get("score", 0.0))
-        feedback = str(result.get("feedback") or "")
-        category = str(result.get("category") or "")
-        confidence = float(result.get("confidence") or 0.0)
+        _local_verdict_applied = False  # True → AI не вызываем
+        
+        if local_correct:
+            # Локально подтверждено: ВЕРНО (exact_string или symbolic)
+            float_score = 1.0
+            feedback = f"✅ Ответ верный! Правильный ответ: **{correct_answer}**"
+            category = "correct"
+            confidence = 1.0
+            _local_verdict_applied = True
+            print(f"[CHECKER] Local: CORRECT (method={local_method}) — AI skipped, credits saved")
+            
+        elif local_method == "mismatch":
+            # Локально опровергнуто: НЕВЕРНО
+            # Возвращаем correct_answer + solution из БД, без генерации AI.
+            float_score = -1.0
+            _solution_text = (current_task.solution or "")[:500]
+            feedback = (
+                f"❌ Ответ неверный.\n\n"
+                f"**Правильный ответ:** {correct_answer}"
+                + (f"\n\n**Решение:**\n{_solution_text}" if _solution_text else "")
+            )
+            category = "wrong_answer_wrong_method"
+            confidence = 1.0
+            _local_verdict_applied = True
+            print(f"[CHECKER] Local: WRONG (method={local_method}) — AI skipped, credits saved")
+        
+        # ── AI fallback (только если локальный checker не смог определить) ──
+        if not _local_verdict_applied:
+            from services.ai_tutor_review import review_attempt
+            result = review_attempt(
+                task_text=current_task.task_text or "",
+                correct_answer=correct_answer,
+                solution_ref=current_task.solution or "",
+                user_answer=user_answer,
+                user_solution=user_solution,
+                images_b64=images_b64,
+                deepseek_client_cls=DeepSeekClient if DEEPSEEK_AVAILABLE else None,
+                deepseek_available=bool(DEEPSEEK_AVAILABLE),
+                max_tokens=4096,
+                difficulty_level=current_task.difficulty_level or 5,
+            )
+            
+            float_score = float(result.get("score", 0.0))
+            feedback = str(result.get("feedback") or "")
+            category = str(result.get("category") or "")
+            confidence = float(result.get("confidence") or 0.0)
         
         # ── Float→Int score mapping for frontend contract ───────────
         # Оригинальная шкала адаптивного теста (int: -1, 0, 1, 2):
@@ -6133,15 +6165,22 @@ def analyze_adaptive_test(test_id):
 Будь мотивирующим, но честным. Говори прямо и по делу, как настоящий тренер."""
 
             # Короткий промпт (3-4 предложения) — max_tokens=500 достаточно,
-            # чтобы избежать 504 таймаута Render (30 сек) при синхронном вызове DeepSeek
-            ai_analysis = client.generate(
-                prompt=prompt,
-                system_prompt=r"Ты опытный тренер олимпиадной математической сборной. Твоя задача - мотивировать учеников и давать конкретные рекомендации. Используй LaTeX для формул: \( x^2 \), \( \frac{a}{b} \), \( \sqrt{x} \).",
-                temperature=0.8,
-                max_tokens=500
-            )
-            
-            test.ai_analysis = ai_analysis
+            # но DeepSeekClient.timeout=90с, а Render LB отбивает через ~30с.
+            # Используем ThreadPoolExecutor с жёстким таймаутом 15 секунд.
+            import concurrent.futures as _cf
+            with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+                _future = _executor.submit(
+                    client.generate,
+                    prompt=prompt,
+                    system_prompt=r"Ты опытный тренер олимпиадной математической сборной. Твоя задача - мотивировать учеников и давать конкретные рекомендации. Используй LaTeX для формул: \( x^2 \), \( \frac{a}{b} \), \( \sqrt{x} \).",
+                    temperature=0.8,
+                    max_tokens=500,
+                )
+                try:
+                    test.ai_analysis = _future.result(timeout=15)
+                except _cf.TimeoutError:
+                    logger.warning("analyze_adaptive_test: DeepSeek timeout (15s) — fallback")
+                    test.ai_analysis = "ИИ-тренер сейчас анализирует результаты других олимпиадников. Загляните сюда чуть позже!"
             
         except Exception as e:
             logger.error(f"Ошибка AI анализа: {e}")

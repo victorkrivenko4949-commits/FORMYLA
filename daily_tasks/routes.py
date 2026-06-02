@@ -24,7 +24,7 @@ from flask_login import current_user, login_required
 
 from models import db
 from . import daily_tasks_bp
-from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob
+from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
 
 # Единый сервис AI-проверки (общий с /api/check_adaptive_answer).
@@ -380,6 +380,48 @@ def job_status():
 
 
 # ──────────────────────────────────────────────────────────────────────
+# Fix 6: GET /daily-tasks/status — статус пула для фронта (polling 2 с)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/status", methods=["GET"])
+@login_required
+def daily_tasks_pool_status():
+    """Вернуть статус ``task_pool``'а (предгенерация после адаптивного теста).
+
+    Фронт делает GET /daily-tasks/status каждые 2 с, пока status = ``generating``.
+    Как только статус сменится на ``ready`` / ``partial`` — фронт переходит к
+    GET /daily_tasks.
+    """
+    from daily_tasks.profile import build_profile
+    from daily_tasks.services import compute_cache_key
+
+    profile = build_profile(current_user.id)
+    cache_key = compute_cache_key(profile)
+
+    pool = TaskPool.query.filter_by(cache_key=cache_key).first()
+    if not pool:
+        return jsonify({
+            "status": "no_pool",
+            "pool_id": None,
+            "message": "Пул ещё не создан",
+        }), 404
+
+    return jsonify({
+        "status": pool.status,
+        "pool_id": pool.id,
+        "expires_at": pool.expires_at.isoformat() if pool.expires_at else None,
+        "message": {
+            "generating": "Задачи генерируются",
+            "ready": "Пул готов",
+            "partial": "Пул готов (частично)",
+            "failed": "Генерация не удалась",
+        }.get(pool.status, "Неизвестный статус"),
+        "valid_count": pool.valid_count,
+    }), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
 # POST /daily_tasks/<item_id>/submit_ai
 # ──────────────────────────────────────────────────────────────────────
 #
@@ -447,29 +489,40 @@ def submit_answer_ai(item_id: int):
             "message": "AI-проверка временно недоступна",
         }), 503
 
-    # AI-проверка через общий сервис
+    # AI-проверка через общий сервис с жёстким таймаутом 20 секунд
+    # (DeepSeekClient.timeout=90с, но Render LB отбивает через ~30с)
+    import concurrent.futures as _cf
+    _result = None
     try:
-        result = review_attempt(
-            task_text=item.task_text or "",
-            correct_answer=item.correct_answer or "",
-            solution_ref=item.solution or "",
-            user_answer=user_answer,
-            user_solution=user_solution,
-            images_b64=images_b64,
-            deepseek_client_cls=DeepSeekClient if _DEEPSEEK_AVAILABLE else None,
-            deepseek_available=_DEEPSEEK_AVAILABLE,
-            max_tokens=4096,
-        )
+        with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+            _future = _executor.submit(
+                review_attempt,
+                task_text=item.task_text or "",
+                correct_answer=item.correct_answer or "",
+                solution_ref=item.solution or "",
+                user_answer=user_answer,
+                user_solution=user_solution,
+                images_b64=images_b64,
+                deepseek_client_cls=DeepSeekClient if _DEEPSEEK_AVAILABLE else None,
+                deepseek_available=_DEEPSEEK_AVAILABLE,
+                max_tokens=4096,
+            )
+            try:
+                _result = _future.result(timeout=20)
+            except _cf.TimeoutError:
+                logger.warning("submit_answer_ai: review_attempt timed out after 20s — fallback")
     except Exception as e:  # pragma: no cover
         logger.exception("submit_answer_ai: review_attempt failed: %s", e)
-        return jsonify({
-            "status": "error",
-            "message": f"Ошибка AI-проверки: {e}",
-        }), 500
 
-    score = result.get("score", 0.0)
-    feedback = str(result.get("feedback") or "")
-    is_correct = bool(result.get("is_correct"))
+    if _result is None:
+        # Таймаут или ошибка — сохраняем ответ без AI-проверки
+        score = 0.0
+        feedback = "AI-проверка временно недоступна. Ответ сохранён."
+        is_correct = False
+    else:
+        score = _result.get("score", 0.0)
+        feedback = str(_result.get("feedback") or "")
+        is_correct = bool(_result.get("is_correct"))
 
     # Сохраняем ответ ученика в БД
     from datetime import datetime as _dt

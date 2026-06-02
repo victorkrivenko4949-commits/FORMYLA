@@ -26,6 +26,12 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from flask import current_app
+from sqlalchemy import insert as sql_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+try:
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+except ImportError:
+    pg_insert = None  # PostgreSQL driver not installed (e.g., SQLite-only env)
 
 from models import db
 
@@ -46,6 +52,7 @@ logger = logging.getLogger(__name__)
 def enqueue_daily_generation(
     user_id: int,
     triggered_by: str = "manual",
+    profile: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Создать/обновить сет на today и запустить фоновую генерацию.
 
@@ -98,10 +105,36 @@ def enqueue_daily_generation(
 
     # ── проверяем task_pool (кэш) ─────────────────────────────────────
     try:
-        profile = build_profile(user_id)
+        if profile is None:
+            import concurrent.futures as _cf
+            with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+                _future = _executor.submit(build_profile, user_id)
+                try:
+                    profile = _future.result(timeout=20)
+                except _cf.TimeoutError:
+                    logger.warning("enqueue_daily_generation: build_profile timed out after 20s")
+                    return {"status": "error", "message": "Ошибка построения профиля"}
         cache_key = compute_cache_key(profile)
 
         now = datetime.utcnow()
+
+        # ── Fix 5: пул ещё генерируется (предгенерация после адаптивного теста) ──
+        generating_pool: Optional[TaskPool] = TaskPool.query.filter(
+            TaskPool.cache_key == cache_key,
+            TaskPool.status == "generating",
+        ).first()
+        if generating_pool:
+            logger.info(
+                "Пул для key=%s ещё генерируется (#%d) — возвращаем generating",
+                cache_key[:12], generating_pool.id,
+            )
+            return {
+                "daily_set_id": None,
+                "job_id": generating_pool.id,
+                "status": "generating",
+                "message": "Пул задач ещё генерируется",
+            }
+
         pool: Optional[TaskPool] = TaskPool.query.filter(
             TaskPool.cache_key == cache_key,
             TaskPool.status.in_(["ready", "partial"]),
@@ -114,7 +147,9 @@ def enqueue_daily_generation(
 
             tasks_data = _parse_json_field(pool.tasks, [])
             specs_data = _parse_json_field(pool.specs, [])
-            selected_indices = _select_best_task_indices(tasks_data, n=5)
+            selected_indices = _select_best_task_indices(
+                tasks_data, n=5, rotation=pool.used_count or 0,
+            )
 
             daily_set = DailyTaskSet(
                 user_id=user_id,
@@ -271,16 +306,16 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
         }
 
     # ── сериализуем задачи ───────────────────────────────────────────
-    items: List[Dict[str, Any]] = []
+    all_items: List[Dict[str, Any]] = []
     for item in daily_set.items.order_by(DailyTaskItem.position).all():
-        items.append({
+        all_items.append({
             "id": item.id,
             "position": item.position,
             "slot_kind": item.slot_kind,
             "subject": item.subject,
             "topic": item.topic,
             "subtopic": item.subtopic,
-            "difficulty_level": item.difficulty_level,
+            "difficulty": item.difficulty_level,
             "weakness_score": item.weakness_score,
             "reason": item.reason,
             "task_text": item.task_text,
@@ -295,6 +330,10 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "answered_at": item.answered_at.isoformat() if item.answered_at else None,
             "time_spent_seconds": item.time_spent_seconds,
         })
+
+    # ── отбираем 5 лучших (чистые сначала, флагованные только если чистых < 5) ──
+    best_indices = _select_best_task_indices(all_items, n=5)
+    items = [all_items[i] for i in best_indices]
 
     # ── сериализуем джоб ─────────────────────────────────────────────
     job = DailyGenerationJob.query.filter_by(
@@ -417,21 +456,28 @@ def get_hint(
 # ──────────────────────────────────────────────────────────────────────
 
 
-def _norm_topics(topics: List[Any]) -> List[str]:
+def _norm_topics(topics: Optional[List[Any]]) -> List[str]:
     """Нормализовать список тем для детерминированного хэширования.
 
     * приводит к нижнему регистру
     * обрезает пробелы
+    * удаляет дубликаты
     * сортирует
     * пропускает пустые / None
+    * возвращает [] для None
     """
+    if topics is None:
+        return []
     normalized: List[str] = []
     for t in topics:
         raw = t.get("topic", str(t)) if isinstance(t, dict) else str(t)
         stripped = raw.strip().lower()
         if stripped:
             normalized.append(stripped)
-    return sorted(normalized)
+    # Deduplicate preserving first occurrence, then sort
+    seen: set = set()
+    deduped = [x for x in normalized if not (x in seen or seen.add(x))]
+    return sorted(deduped)
 
 
 def compute_cache_key(profile: Dict[str, Any]) -> str:
@@ -444,6 +490,7 @@ def compute_cache_key(profile: Dict[str, Any]) -> str:
     так что ``" Algebra "`` и ``"algebra"`` дадут одинаковый ключ.
     """
     key_data: Dict[str, Any] = {
+        "subject": profile.get("subject", "unknown"),
         "class_level": profile.get("class_level", 0),
         "class_expected_level": profile.get("class_expected_level", 0),
         "weak_topics": _norm_topics(profile.get("weak_topics", [])),
@@ -453,18 +500,35 @@ def compute_cache_key(profile: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _select_best_task_indices(tasks: List[Dict[str, Any]], n: int = 5) -> List[int]:
-    """Вернуть индексы ``n`` лучших задач: сначала без флагов, потом с флагами.
+def _select_best_task_indices(
+    tasks: List[Dict[str, Any]],
+    n: int = 5,
+    rotation: int = 0,
+) -> List[int]:
+    """Вернуть индексы ``n`` лучших задач с ротацией.
 
-    Это позволяет давать разным пользователям *разные* подмножества
-    из одного пула, избегая полного дублирования.
+    * Сначала чистые (без флагов), потом флагнутые.
+    * Если ``rotation > 0`` — сдвигает порядок, чтобы разные пользователи
+      получали **разные** подмножества из одного пула.
+
+    Параметры
+    ---------
+    tasks : list[dict]
+        Список задач (словарей) с ключом ``is_flagged``.
+    n : int
+        Сколько задач выбрать.
+    rotation : int
+        Сдвиг для ротации (``pool.used_count`` или ``hash(user_id)``).
     """
     clean = [i for i, t in enumerate(tasks) if not t.get("is_flagged")]
     flagged = [i for i, t in enumerate(tasks) if t.get("is_flagged")]
-    selected = clean[:n]
-    if len(selected) < n:
-        selected += flagged[: n - len(selected)]
-    return selected
+    ordered = clean + flagged
+
+    if len(ordered) > n and rotation:
+        offset = rotation % len(ordered)
+        ordered = ordered[offset:] + ordered[:offset]
+
+    return ordered[:n]
 
 
 def _select_best_tasks(tasks: List[Dict[str, Any]], n: int = 5) -> List[Dict[str, Any]]:
@@ -657,6 +721,14 @@ def _persist_pipeline_result(
         )
         db.session.add(item)
 
+        if is_flagged:
+            logger.warning(
+                "FLAG: position=%d, flag_reason=%s, audit_preview=%s",
+                i + 1,
+                flag_reason,
+                json.dumps(audit, ensure_ascii=False, default=str)[:500],
+            )
+
     # ── обновляем DailyTaskSet ───────────────────────────────────────
     status = result.status  # 'ready' | 'partial' | 'failed'
     daily_set.status = status
@@ -730,16 +802,50 @@ def _save_to_task_pool(
         1 for f in result.is_flagged if not f
     ) if result.is_flagged else len(result.tasks)
 
-    expires_at = datetime.utcnow() + timedelta(days=30)
+    # TTL: частичный пул живёт 7 дней, готовый — 30 дней
+    ttl_days = 7 if result.status == "partial" else 30
+    expires_at = datetime.utcnow() + timedelta(days=ttl_days)
 
     # ── race condition guard: мог уже появиться от параллельного запуска ─
     existing = TaskPool.query.filter_by(cache_key=cache_key).first()
     if existing:
-        logger.info(
-            "task_pool для ключа %s уже существует (#%d), пропускаем",
-            cache_key[:12], existing.id,
-        )
-        return
+        if existing.status == "generating":
+            # Fix 1: предгенерация — обновляем пул вместо создания нового
+            logger.info(
+                "task_pool для key=%s уже есть (#%d, status=%s) — обновляем",
+                cache_key[:12], existing.id, existing.status,
+            )
+            existing.tasks = tasks_json
+            existing.specs = specs_json
+            existing.status = result.status  # 'ready' или 'partial'
+            existing.valid_count = valid_count
+            existing.expires_at = expires_at
+            existing.profile_snapshot = profile_json
+            db.session.flush()
+
+            # ── записываем привязку для первого пользователя ────────
+            daily_set = DailyTaskSet.query.get(daily_set_id)
+            if daily_set:
+                assignment = UserTaskAssignment(
+                    user_id=daily_set.user_id,
+                    pool_id=existing.id,
+                    task_positions=json.dumps(list(range(len(result.tasks)))),
+                )
+                db.session.add(assignment)
+
+            db.session.commit()
+            logger.info(
+                "Обновлён task_pool #%s: key=%s, status=%s, tasks=%d, valid=%d",
+                existing.id, cache_key[:12], existing.status,
+                len(result.tasks), valid_count,
+            )
+            return
+        else:
+            logger.info(
+                "task_pool для ключа %s уже существует (#%d, status=%s), пропускаем",
+                cache_key[:12], existing.id, existing.status,
+            )
+            return
 
     pool_entry = TaskPool(
         cache_key=cache_key,
@@ -856,12 +962,157 @@ def _serialize_job(job: DailyGenerationJob) -> Dict[str, Any]:
     }
 
 
-def _parse_json_field(value: Optional[str], fallback: Any = None) -> Any:
-    """Безопасно распарсить JSON-поле из БД."""
-    if not value:
+def _parse_json_field(value: Any, fallback: Any = None) -> Any:
+    """Безопасно распарсить JSON-поле из БД.
+
+    Поддерживает оба диалекта:
+    - SQLite: хранит JSON как TEXT → парсим через json.loads()
+    - PostgreSQL: JSON-колонки возвращают уже разобранный list/dict → возвращаем как есть
+    """
+    if value is None:
         return fallback
+    if isinstance(value, (list, dict)):
+        return value
     try:
         return json.loads(value)
     except (json.JSONDecodeError, TypeError):
-        logger.warning("Не удалось распарсить JSON: %r", value[:100])
+        preview = str(value)[:100] if value else "None"
+        logger.warning("Не удалось распарсить JSON: %r", preview)
         return fallback
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Fix 2–3: Проактивная предгенерация (prewarm) после адаптивного теста
+# ══════════════════════════════════════════════════════════════════════
+
+
+def _dialect_insert(model):
+    """Return dialect-appropriate sqlalchemy Insert builder with ON CONFLICT support.
+
+    ``sqlalchemy.sql.base.Insert`` does **not** have ``on_conflict_do_nothing``;
+    only dialect-specific subclasses (sqlite / postgresql) provide it.
+    """
+    name = db.engine.dialect.name if db.engine else 'sqlite'
+    if name.startswith('postgresql') and pg_insert is not None:
+        return pg_insert(model)
+    return sqlite_insert(model)
+
+
+def trigger_daily_prewarm(user_id: int) -> Dict[str, Any]:
+    """Проактивная предгенерация пула задач после адаптивного теста.
+
+    Атомарно создаёт запись в ``task_pool`` со статусом ``'generating'``.
+    Если такой ключ уже есть — проверяет статус:
+
+    * ``generating`` → ``already_running``
+    * ``ready`` / ``partial`` → ``cache_hit``
+
+    Возвращает словарь с ``status``, ``pool_id``, ``message``.
+    """
+    import concurrent.futures as _cf
+    with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+        _future = _executor.submit(build_profile, user_id)
+        try:
+            profile = _future.result(timeout=20)
+        except _cf.TimeoutError:
+            logger.warning("trigger_daily_prewarm: build_profile timed out after 20s")
+            return {"status": "error", "message": "Ошибка построения профиля"}
+    cache_key = compute_cache_key(profile)
+    subject = _extract_subject_from_profile(profile)
+    grade = profile.get("class_level", 0)
+    profile_json = json.dumps(profile, ensure_ascii=False, default=str)
+
+    # ── Атомарный захват: INSERT … ON CONFLICT DO NOTHING RETURNING id ──
+    stmt = _dialect_insert(TaskPool).values(
+        cache_key=cache_key,
+        subject=subject,
+        grade=grade,
+        profile_snapshot=profile_json,
+        tasks="[]",
+        specs="[]",
+        status="generating",
+        valid_count=0,
+        expires_at=datetime.utcnow() + timedelta(hours=1),
+    ).on_conflict_do_nothing(index_elements=['cache_key'])
+
+    try:
+        result = db.session.execute(stmt.returning(TaskPool.id))
+        row = result.fetchone()
+        db.session.commit()
+    except Exception:
+        logger.exception("ON CONFLICT insert failed for cache_key=%s", cache_key)
+        db.session.rollback()
+        row = None
+
+    if row:
+        # Наш INSERT прошёл — запускаем генерацию в фоне
+        pool_id = row[0]
+        app = current_app._get_current_object()
+        thread = threading.Thread(
+            target=_run_and_fill_pool,
+            args=(app, pool_id, profile),
+            daemon=True,
+        )
+        thread.start()
+        return {"status": "started", "pool_id": pool_id, "message": "Генерация запущена"}
+
+    # Ключ уже существует — проверяем статус
+    pool: Optional[TaskPool] = TaskPool.query.filter_by(cache_key=cache_key).first()
+    if not pool:
+        return {"status": "error", "message": "Гонка: пул не найден"}
+    if pool.status == "generating":
+        return {"status": "already_running", "pool_id": pool.id, "message": "Уже генерируется"}
+    return {"status": "cache_hit", "pool_id": pool.id, "message": "Пул уже готов"}
+
+
+def _run_and_fill_pool(app, pool_id: int, profile: Dict[str, Any]) -> None:
+    """Фоновый worker: запускает пайплайн и заполняет пул.
+
+    Обязательно создаёт свой ``app.app_context()`` — НЕ использовать
+    сессию из запроса! При ошибке переводит пул в ``failed``.
+    """
+    with app.app_context():
+        try:
+            import asyncio
+            result = asyncio.run(run_daily_generation_pipeline(profile))
+
+            pool = db.session.get(TaskPool, pool_id)
+            if not pool:
+                logger.error("Пул #%s не найден в _run_and_fill_pool", pool_id)
+                return
+
+            # Сериализуем результат
+            enriched_tasks = []
+            for i, task in enumerate(result.tasks):
+                enriched = dict(task)
+                if i < len(result.audit_entries):
+                    enriched["_audit_entry"] = result.audit_entries[i]
+                if i < len(result.is_flagged):
+                    enriched["is_flagged"] = result.is_flagged[i]
+                if i < len(result.iteration_counts):
+                    enriched["_opus_iterations"] = result.iteration_counts[i]
+                enriched_tasks.append(enriched)
+
+            pool.tasks = json.dumps(enriched_tasks, ensure_ascii=False, default=str)
+            pool.specs = json.dumps(result.specs, ensure_ascii=False, default=str)
+            pool.status = result.status  # 'ready' или 'partial'
+            pool.valid_count = (
+                sum(1 for f in result.is_flagged if not f)
+                if result.is_flagged else len(result.tasks)
+            )
+            ttl_days = 7 if result.status == "partial" else 30
+            pool.expires_at = datetime.utcnow() + timedelta(days=ttl_days)
+            db.session.commit()
+            logger.info("Пул #%s заполнен: статус=%s", pool_id, pool.status)
+
+        except Exception as exc:
+            logger.exception("Ошибка заполнения пула #%s: %s", pool_id, exc)
+            try:
+                pool = db.session.get(TaskPool, pool_id)
+                if pool:
+                    pool.status = "failed"
+                    pool.expires_at = datetime.utcnow() - timedelta(days=1)
+                    db.session.commit()
+            except Exception:
+                logger.exception("Не удалось отметить пул #%s как failed", pool_id)
+                db.session.rollback()
