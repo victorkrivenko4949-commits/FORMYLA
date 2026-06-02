@@ -164,7 +164,7 @@ class TaskPool(db.Model):
     __tablename__ = 'task_pool'
 
     id = db.Column(db.Integer, primary_key=True)
-    cache_key = db.Column(db.String(64), nullable=False, index=True)
+    cache_key = db.Column(db.String(64), nullable=False, unique=True)
     subject = db.Column(db.String(32), nullable=False)
     grade = db.Column(db.SmallInteger, nullable=False)
     profile_snapshot = db.Column(db.Text, nullable=False)  # JSON
@@ -184,7 +184,7 @@ class TaskPool(db.Model):
 
 
 class UserTaskAssignment(db.Model):
-    """Привязка пользователя к пулу — какие 5 из 10 задач он получил."""
+    """Привязка пользователя к пулу — какие 10 из 10 задач он получил."""
 
     __tablename__ = 'user_task_assignments'
 

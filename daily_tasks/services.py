@@ -139,7 +139,7 @@ def enqueue_daily_generation(
             tasks_data = _parse_json_field(pool.tasks, [])
             specs_data = _parse_json_field(pool.specs, [])
             selected_indices = _select_best_task_indices(
-                tasks_data, n=5, rotation=pool.used_count or 0,
+                tasks_data, n=10, rotation=pool.used_count or 0,
             )
 
             daily_set = DailyTaskSet(
@@ -205,7 +205,7 @@ def enqueue_daily_generation(
             db.session.commit()
 
             logger.info(
-                "Cache HIT для user=%d key=%s pool=%d → сет #%d (5 задач)",
+                "Cache HIT для user=%d key=%s pool=%d → сет #%d (10 задач)",
                 user_id, cache_key[:12], pool.id, daily_set.id,
             )
 
@@ -315,8 +315,8 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "time_spent_seconds": item.time_spent_seconds,
         })
 
-    # ── отбираем 5 лучших (чистые сначала, флагованные только если чистых < 5) ──
-    best_indices = _select_best_task_indices(all_items, n=5)
+    # ── отбираем 10 лучших (чистые сначала, флагованные только если чистых < 10) ──
+    best_indices = _select_best_task_indices(all_items, n=10)
     items = [all_items[i] for i in best_indices]
 
     # ── сериализуем джоб ─────────────────────────────────────────────
