@@ -1216,6 +1216,26 @@ _SKIP_GUEST_PATHS = (
     '/ping',
 )
 
+# Пути, доступные без регистрации. Всё остальное требует входа.
+_PUBLIC_PATHS = (
+    '/static/',
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/healthz',
+    '/health',
+    '/ping',
+    '/about',
+    '/welcome',
+    '/login',
+    '/verify-code',
+    '/dev_login',
+    '/auth/',         # Yandex / Telegram OAuth callback
+    '/yandex_login',
+    '/yandex_receiver',
+    '/link_yandex',
+)
+
 
 @app.before_request
 def ensure_device_and_session():
@@ -1264,6 +1284,35 @@ def ensure_device_and_session():
             db.session.rollback()
         except Exception:
             pass
+
+
+@app.before_request
+def require_registration():
+    """Redirect unauthenticated users to login for all non-public pages.
+
+    Только страницы из _PUBLIC_PATHS доступны без регистрации.
+    Для /api/* возвращаем 401 JSON, для остальных — redirect на /login.
+    """
+    path = request.path
+
+    # Публичные пути — доступны всем
+    for _p in _PUBLIC_PATHS:
+        if path.startswith(_p):
+            return
+
+    # Реально зарегистрированный пользователь (не гость)
+    if current_user.is_authenticated and not getattr(current_user, 'is_guest', False):
+        return
+
+    # API-запросы — 401 JSON
+    if path.startswith('/api/'):
+        return jsonify({
+            'error': 'Требуется регистрация',
+            'login_url': url_for('login')
+        }), 401
+
+    # Всё остальное — редирект на страницу входа
+    return redirect(url_for('login', next=path))
 
 
 def get_or_create_guest_user():
