@@ -191,8 +191,17 @@ def _fill_theory_bodies(db, TheoryBlock) -> None:
             changed = False
             for fld in _BODY_FIELDS:
                 cur = getattr(tb, fld, None)
-                if (not cur or not str(cur).strip()) and src.get(fld):
-                    setattr(tb, fld, src[fld])
+                cur_stripped = str(cur).strip() if cur else ''
+                src_val = src.get(fld)
+                # Overwrite if:
+                #   - field is empty/null, OR
+                #   - field has stubby content (< 300 chars, likely placeholder)
+                #   - AND source has richer content
+                if src_val and (
+                    not cur_stripped
+                    or len(cur_stripped) < 300
+                ):
+                    setattr(tb, fld, src_val)
                     changed = True
             if (not tb.related_methods) and src.get('related_methods'):
                 tb.related_methods = src['related_methods']

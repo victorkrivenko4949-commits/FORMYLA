@@ -163,9 +163,13 @@ def import_rich_md_into_theory(db, TheoryBlock) -> int:
                 if not v:
                     continue
                 old = getattr(tb, fld, None) or ''
-                # Перезаписываем, если новое СУЩЕСТВЕННО длиннее (хотя бы в 1.5×)
-                # или если поле пустое.
-                if (not old.strip()) or len(v) >= max(int(len(old) * 1.5), 800):
+                old_stripped = old.strip()
+                # Перезаписываем, если:
+                #   - поле пустое,
+                #   - или новое СУЩЕСТВЕННО длиннее (хотя бы в 1.5×),
+                #   - или существующий контент очень короткий (< 300 символов,
+                #     т.е. stub/заглушка, а не полноценный текст).
+                if (not old_stripped) or len(v) >= max(int(len(old) * 1.5), 800) or len(old_stripped) < 300:
                     setattr(tb, fld, v)
                     changed = True
             if changed:
