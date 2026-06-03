@@ -146,7 +146,7 @@
         '<div class="wb-invite-head">' +
           avatarHtml +
           '<div style="min-width:0;flex:1;">' +
-            '<p class="wb-invite-title">\u{1F4F9} \u0412\u0430\u0441 \u0437\u043e\u0432\u0443\u0442 \u043d\u0430 \u0437\u0432\u043e\u043d\u043e\u043a</p>' +
+            '<p class="wb-invite-title">\u{1F4DE} \u0412\u0430\u0441 \u0437\u043e\u0432\u0443\u0442 \u043d\u0430 \u0437\u0432\u043e\u043d\u043e\u043a</p>' +
             '<p class="wb-invite-name">' + name + '</p>' +
           '</div>' +
         '</div>' +
@@ -156,7 +156,7 @@
         '</p>' +
         '<div class="wb-invite-actions">' +
           '<button type="button" class="wb-invite-btn wb-invite-btn-decline" data-act="decline">\u041e\u0442\u043a\u043b\u043e\u043d\u0438\u0442\u044c</button>' +
-          '<button type="button" class="wb-invite-btn wb-invite-btn-accept" data-act="accept">\u{1F4F9} \u041f\u0440\u0438\u043d\u044f\u0442\u044c</button>' +
+          '<button type="button" class="wb-invite-btn wb-invite-btn-accept" data-act="accept">\u{1F4DE} \u041f\u0440\u0438\u043d\u044f\u0442\u044c</button>' +
         '</div>' +
         '<p class="wb-invite-foot">\u041f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u0435 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438 \u0437\u0430\u043a\u0440\u043e\u0435\u0442\u0441\u044f \u0447\u0435\u0440\u0435\u0437 60 \u0441.</p>' +
       '</div>';

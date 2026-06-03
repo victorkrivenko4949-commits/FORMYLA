@@ -133,7 +133,7 @@
     div.hidden = true;
     div.innerHTML =
       '<div class="wbc-head">' +
-        '<span class="wbc-title">\u{1F4F9} \u0417\u0432\u043e\u043d\u043e\u043a</span>' +
+        '<span class="wbc-title">\u{1F4DE} \u0417\u0432\u043e\u043d\u043e\u043a</span>' +
         '<span id="wbCallStatus" class="wbc-status">\u043d\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e</span>' +
         '<button type="button" class="wbc-x" id="wbCallClose" title="\u0421\u0432\u0435\u0440\u043d\u0443\u0442\u044c">\u00d7</button>' +
       '</div>' +
