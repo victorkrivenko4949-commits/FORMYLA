@@ -42,6 +42,7 @@
   var ignoreOffer = false;
   var camOn = true;
   var micOn = true;
+  var minimized = false;           // PiP-режим: маленькое окно с видео
 
   // -- Helpers ------------------------------------------------------------
   function $(id) { return document.getElementById(id); }
@@ -103,6 +104,45 @@
         p.style.zIndex = "10000";
       } catch (e) {}
     }
+  }
+
+  // -- PiP minimize / restore --------------------------------------------
+  function minimizePanel() {
+    var p = panel();
+    if (!p || minimized) return;
+    p.classList.add("minimized");
+    minimized = true;
+    // Inject PiP badge (green dot + status)
+    var badge = document.createElement("div");
+    badge.className = "pip-badge";
+    badge.id = "pipBadge";
+    badge.innerHTML =
+      '<span class="pip-dot"></span> \u0412 \u0440\u0430\u0437\u0433\u043e\u0432\u043e\u0440\u0435';
+    p.appendChild(badge);
+    // Inject end-call button (visible on hover)
+    var endBtn = document.createElement("button");
+    endBtn.className = "pip-end";
+    endBtn.id = "pipEnd";
+    endBtn.type = "button";
+    endBtn.title = "\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0437\u0432\u043e\u043d\u043e\u043a";
+    endBtn.textContent = "\u2715";
+    endBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      leaveCall();
+    });
+    p.appendChild(endBtn);
+  }
+
+  function restorePanel() {
+    var p = panel();
+    if (!p || !minimized) return;
+    p.classList.remove("minimized");
+    minimized = false;
+    // Remove injected PiP elements
+    var badge = $("pipBadge");
+    if (badge) badge.remove();
+    var endBtn = $("pipEnd");
+    if (endBtn) endBtn.remove();
   }
 
   function iceServers() {
@@ -178,7 +218,16 @@
       '</div>';
     host.appendChild(div);
 
-    $("wbCallClose").addEventListener("click", function () { showPanel(false); });
+    // Click on minimized panel restores it (unless clicking the end-call button).
+    div.addEventListener("click", function (e) {
+      if (minimized && !e.target.closest(".pip-end")) {
+        restorePanel();
+      }
+    });
+
+    $("wbCallClose").addEventListener("click", function () {
+      if (roomId) { minimizePanel(); } else { showPanel(false); }
+    });
     $("wbCallStart").addEventListener("click", onStartClick);
     $("wbCallGen").addEventListener("click", onGenerateClick);
     $("wbCallRoom").addEventListener("keydown", function (e) {
@@ -1032,6 +1081,16 @@
     $("wbCallVideos").hidden = true;
     $("wbCallToolbar").hidden = true;
     $("wbCallRoomRow").hidden = false;
+    // Clean up minimized / PiP state
+    if (minimized) {
+      minimized = false;
+      var p2 = panel();
+      if (p2) {
+        p2.classList.remove("minimized");
+        var b = $("pipBadge"); if (b) b.remove();
+        var e = $("pipEnd"); if (e) e.remove();
+      }
+    }
     setStatus("\u0412\u044b \u0432\u044b\u0448\u043b\u0438 \u0438\u0437 \u0437\u0432\u043e\u043d\u043a\u0430");
   }
 
@@ -1153,6 +1212,8 @@
   window.WB_CALL = {
     open:  function (rid) { ensurePanel(); showPanel(true); if (rid) { var i = $("wbCallRoom"); if (i) i.value = rid; } },
     close: function ()    { showPanel(false); },
+    minimize: minimizePanel,
+    restore: restorePanel,
     leave: leaveCall,
     state: function () { return { roomId: roomId, peerId: peerId, otherId: otherId, connected: !!(pc && pc.connectionState === "connected") }; }
   };
