@@ -29,7 +29,7 @@ from models import db  # noqa: E402
 from models_olympiad import TheoryBlock  # noqa: E402
 
 
-DEFAULT_PATH = ROOT / 'data' / 'olympiads' / 'methods_catalog_89.json'
+DEFAULT_PATH = ROOT / 'data' / 'olympiads' / 'methods_catalog_105.json'
 
 META_FIELDS = (
     'method_name',

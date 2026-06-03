@@ -3,7 +3,7 @@
 {%- if block -%}
     Метод {{ block.method_code }} — {{ block.method_name }}
 {%- else -%}
-    89 методов олимпиадной математики — FORMYLA
+    102 методов олимпиадной математики — FORMYLA
 {%- endif -%}
 {% endblock %}
 
@@ -25,7 +25,7 @@
         'H': 'Прочее (H)',
     } %}
     <header class="oly-hero">
-        <h1>📚 89 методов олимпиадной математики</h1>
+        <h1>📚 102 методов олимпиадной математики</h1>
         <p>Полный справочник базовых приёмов решения задач ВсОШ и других олимпиад по математике.</p>
         {% if blocks is defined %}
         <p class="oly-card-sub" style="margin-top:8px;">
@@ -144,12 +144,13 @@
         {% endif %}
     </header>
 
-    {# ── Полный конспект метода: все 6 разделов из БД ─────────────── #}
+    {# ── Полный конспект метода: все разделы из БД ─────────────────── #}
     {# Каждый раздел рендерится только если поле непустое.            #}
     {% set _has_any = (
         block.definition_md or block.main_theorems_md or
         block.typical_techniques_md or block.triggers_md or
-        block.worked_example_md or block.pitfalls_md
+        block.worked_example_md or block.pitfalls_md or
+        block.why_it_works_md
     ) %}
 
     {% if not _has_any %}
@@ -200,8 +201,77 @@
     </section>
     {% endif %}
 
+    {# ── 5 новых разделов из methods_final.json ────────────────────── #}
+
+    {% if block.why_it_works_md %}
+    <section class="oly-card oly-card-why" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">💡 Почему это работает</h2>
+        <div class="oly-md">{{ block.why_it_works_md | md_render | inject_geometry(block.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if block.signal_phrases %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🏷️ Фразы-сигналы</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            Если в условии задачи встречаются эти слова или фразы — попробуйте применить метод.
+        </p>
+        <div class="oly-signal-badges">
+            {% for phrase in block.signal_phrases %}
+            <span class="oly-badge oly-badge-signal">{{ phrase }}</span>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if block.first_moves %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🚀 Первые шаги</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            С чего начать, если вы решили применить этот метод.
+        </p>
+        <ol class="oly-moves-list">
+            {% for step in block.first_moves %}
+            <li>{{ step | md_render }}</li>
+            {% endfor %}
+        </ol>
+    </section>
+    {% endif %}
+
+    {% if block.prerequisites %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">📋 Предварительные требования</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            Перед изучением этого метода рекомендуется освоить:
+        </p>
+        <div class="oly-prereq-chain">
+            {% for code in block.prerequisites %}
+            <a class="oly-badge oly-badge-prereq" href="{{ url_for('olympiad.method_detail', method_code=code) }}">
+                {{ code }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if block.leads_to %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🎯 К чему приводит</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            Освоив этот метод, вы сможете перейти к:
+        </p>
+        <div class="oly-prereq-chain">
+            {% for code in block.leads_to %}
+            <a class="oly-badge oly-badge-leads" href="{{ url_for('olympiad.method_detail', method_code=code) }}">
+                {{ code }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     {% if related %}
-    <h2 class="oly-section-title">🔗 Связанные методы</h2>
+    <h2 class="oly-section-title"> Связанные методы</h2>
     <div class="oly-grid">
         {% for tb in related %}
         <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
