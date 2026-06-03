@@ -1,0 +1,503 @@
+/* =====================================================================
+ * static/css/daily_tasks_modal.css
+ * ---------------------------------------------------------------------
+ * Стили формы внутри модалки «Задачи дня» — 1-в-1 как
+ * /adaptive_test_simple (textarea, math-field, photo upload, единая
+ * клавиатура, AI-лоадер, блок результата). Используется тёмная тема
+ * из daily_tasks.css.
+ * ===================================================================== */
+
+/* ── Карточка задачи внутри модалки ───────────────────────────────── */
+
+.dt-modal-body .dt-task-card {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 18px 18px 22px;
+  margin-top: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.dt-modal-body .dt-task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.dt-modal-body .dt-difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #3b82f6, #38ef7d);
+  color: #0a0f1c;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.dt-modal-body .dt-topic-chip {
+  padding: 5px 11px;
+  background: rgba(59, 130, 246, 0.16);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #a3c5ff;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dt-modal-body .dt-task-section-title {
+  color: #38ef7d;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 16px 0 10px;
+}
+
+.dt-modal-body .dt-task-text-html {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* ── Метки полей ──────────────────────────────────────────────────── */
+
+.dt-modal-body .dt-field-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  margin: 18px 0 10px;
+  font-size: 14px;
+}
+
+.dt-modal-body .dt-field-hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12.5px;
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+/* ── MathLive поле ответа ─────────────────────────────────────────── */
+
+.dt-modal-body math-field.dt-math-field {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 2px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px;
+  font-size: 18px !important;
+  color: #fff;
+  caret-color: #38ef7d;
+  transition: border-color 0.2s;
+}
+.dt-modal-body math-field.dt-math-field:focus,
+.dt-modal-body math-field.dt-math-field:focus-within {
+  border-color: #38ef7d !important;
+  outline: none;
+}
+
+/* ── Textarea «Ход решения» ───────────────────────────────────────── */
+
+.dt-modal-body textarea.dt-solution-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 13px 14px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.dt-modal-body textarea.dt-solution-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.dt-modal-body textarea.dt-solution-textarea:focus {
+  border-color: #38ef7d;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(56, 239, 125, 0.12);
+}
+
+/* ── Photo upload ─────────────────────────────────────────────────── */
+
+.dt-modal-body .dt-photo-block {
+  margin-top: 16px;
+}
+.dt-modal-body .dt-photo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 18px;
+  background: rgba(59, 130, 246, 0.10);
+  border: 2px dashed rgba(59, 130, 246, 0.55);
+  border-radius: 10px;
+  color: #80b3ff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.dt-modal-body .dt-photo-btn:hover {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: #3b82f6;
+}
+.dt-modal-body .dt-photo-preview-list {
+  margin-top: 12px;
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+.dt-modal-body .dt-photo-preview-list.has-items { display: grid; }
+.dt-modal-body .dt-photo-thumb {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0f172a;
+}
+.dt-modal-body .dt-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dt-modal-body .dt-photo-thumb-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.dt-modal-body .dt-photo-thumb-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(239, 68, 68, 0.85);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+/* ── Единая клавиатура (Math/Regular) ─────────────────────────────── */
+
+.dt-modal-body .dt-kb-wrapper { margin-top: 16px; }
+.dt-modal-body .dt-kb-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, #3b82f6, #38ef7d);
+  color: #0a0f1c;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+.dt-modal-body .dt-kb-toggle.active {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+}
+.dt-modal-body .dt-keyboard {
+  display: none;
+  margin-top: 12px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  overflow: hidden;
+  user-select: none;
+}
+.dt-modal-body .dt-keyboard.open { display: block; }
+.dt-modal-body .dt-kb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 12px;
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dt-modal-body .dt-kb-field-label {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dt-modal-body .dt-kb-field-label .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38ef7d;
+  animation: dt-pulse 1.4s infinite;
+}
+@keyframes dt-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.dt-modal-body .dt-kb-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+}
+.dt-modal-body .dt-kb-close:hover { color: #fff; }
+.dt-modal-body .dt-kb-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dt-modal-body .dt-kb-tab {
+  flex: 1;
+  padding: 9px 6px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.dt-modal-body .dt-kb-tab:hover {
+  background: rgba(59, 130, 246, 0.10);
+  color: #fff;
+}
+.dt-modal-body .dt-kb-tab.active {
+  color: #38ef7d;
+  background: rgba(56, 239, 125, 0.10);
+}
+.dt-modal-body .dt-kb-layout { display: none; padding: 9px 7px; }
+.dt-modal-body .dt-kb-layout.active { display: block; }
+.dt-modal-body .dt-kb-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+.dt-modal-body .dt-kb-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 40px;
+  padding: 0 8px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+  user-select: none;
+}
+.dt-modal-body .dt-kb-key:hover { background: rgba(59, 130, 246, 0.22); }
+.dt-modal-body .dt-kb-key:active { transform: scale(0.93); }
+.dt-modal-body .dt-kb-key.math-greek { font-style: italic; min-width: 38px; }
+.dt-modal-body .dt-kb-key.math-symbol { font-size: 17px; min-width: 40px; }
+.dt-modal-body .dt-kb-key.math-command {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 48px;
+  background: rgba(139, 92, 246, 0.18);
+  border-color: rgba(139, 92, 246, 0.25);
+}
+.dt-modal-body .dt-kb-key.wide { min-width: 54px; }
+.dt-modal-body .dt-kb-key.space { min-width: 120px; color: rgba(255,255,255,0.5); font-size: 12px; }
+.dt-modal-body .dt-kb-key.action {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+.dt-modal-body .dt-kb-key.enter {
+  background: linear-gradient(135deg, #3b82f6, #38ef7d);
+  color: #0a0f1c;
+  font-weight: 800;
+  border-color: transparent;
+  min-width: 56px;
+}
+
+/* ── Кнопки действий ──────────────────────────────────────────────── */
+
+.dt-modal-body .dt-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.dt-modal-body .dt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  user-select: none;
+}
+.dt-modal-body .dt-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.dt-modal-body .dt-btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #38ef7d);
+  color: #0a0f1c;
+  box-shadow: 0 4px 14px rgba(56, 239, 125, 0.25);
+}
+.dt-modal-body .dt-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(56, 239, 125, 0.35);
+}
+.dt-modal-body .dt-btn-secondary {
+  background: rgba(100, 116, 139, 0.18);
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.dt-modal-body .dt-btn-secondary:hover:not(:disabled) {
+  background: rgba(100, 116, 139, 0.28);
+}
+.dt-modal-body .dt-btn-hint {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.dt-modal-body .dt-btn-hint:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.25);
+}
+
+/* ── AI-лоадер ────────────────────────────────────────────────────── */
+
+.dt-modal-body .dt-ai-loader {
+  display: none;
+  text-align: center;
+  padding: 50px 20px;
+  background: rgba(15, 23, 42, 0.55);
+  border-radius: 14px;
+  border: 2px dashed rgba(59, 130, 246, 0.5);
+  margin-top: 24px;
+}
+.dt-modal-body .dt-ai-loader.show { display: block; }
+.dt-modal-body .dt-ai-spinner {
+  width: 46px;
+  height: 46px;
+  border: 4px solid rgba(59, 130, 246, 0.18);
+  border-top-color: #38ef7d;
+  border-radius: 50%;
+  animation: dt-spin 1s linear infinite;
+  margin: 0 auto 18px;
+}
+@keyframes dt-spin { to { transform: rotate(360deg); } }
+.dt-modal-body .dt-ai-text-main {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.dt-modal-body .dt-ai-text-sub {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+
+/* ── Результат / вердикт от тьютора ───────────────────────────────── */
+
+.dt-modal-body .dt-result-block {
+  display: none;
+  margin-top: 24px;
+}
+.dt-modal-body .dt-result-block.show { display: block; }
+
+.dt-modal-body .dt-verdict {
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  border: 2px solid;
+}
+.dt-modal-body .dt-verdict.success {
+  background: linear-gradient(135deg, rgba(34,197,94,0.20), rgba(34,197,94,0.08));
+  border-color: #22c55e;
+  color: #22c55e;
+}
+.dt-modal-body .dt-verdict.partial {
+  background: linear-gradient(135deg, rgba(251,191,36,0.20), rgba(251,191,36,0.08));
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+.dt-modal-body .dt-verdict.error {
+  background: linear-gradient(135deg, rgba(239,68,68,0.20), rgba(239,68,68,0.08));
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.dt-modal-body .dt-feedback-block {
+  margin-top: 22px;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dt-modal-body .dt-feedback-title {
+  color: #38ef7d;
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.dt-modal-body .dt-feedback-text {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.7;
+  font-size: 14.5px;
+}
+.dt-modal-body .dt-feedback-text strong {
+  color: #fff;
+}
+.dt-modal-body .dt-feedback-text .katex-display {
+  margin: 1.2em 0 !important;
+}
+
+/* ── Подсказка ────────────────────────────────────────────────────── */
+
+.dt-modal-body .dt-hint-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  font-size: 14px;
+}
+.dt-modal-body .dt-hint-box strong { color: #fbbf24; }
+
+/* ── Адаптив для мобильных ────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .dt-modal-body .dt-task-card { padding: 14px; }
+  .dt-modal-body .dt-kb-key { height: 36px; min-width: 30px; font-size: 13px; }
+  .dt-modal-body .dt-kb-key.math-symbol { font-size: 15px; min-width: 34px; }
+  .dt-modal-body .dt-kb-key.math-command { font-size: 11px; min-width: 40px; }
+  .dt-modal-body .dt-kb-key.space { min-width: 90px; }
+  .dt-modal-body .dt-btn { padding: 11px 18px; font-size: 13px; }
+}
