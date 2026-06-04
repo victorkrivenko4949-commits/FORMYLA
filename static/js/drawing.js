@@ -283,8 +283,100 @@
         });
     }
 
+    // ── Polling state ──────────────────────────────────────────────────────
+    var _pollTimer = null;
+    var _pollStartedAt = 0;
+    var _POLL_INTERVAL = 2000;   // ms between polls
+    var _POLL_TIMEOUT = 90000;   // 90 s — max wait before showing timeout
+
+    function _pollStop() {
+        if (_pollTimer) {
+            clearInterval(_pollTimer);
+            _pollTimer = null;
+        }
+    }
+
+    function _renderResult(result) {
+        // result is the object returned by the status endpoint under "result" key
+        var src = result.image_url || result.data_url
+               || (result.image_b64 ? ('data:image/png;base64,' + result.image_b64) : null);
+        if (!src) {
+            showError('Сервер не вернул изображение.');
+            setBusy(false);
+            return;
+        }
+        img.src = src;
+        downloadBtn.href = result.data_url
+                        || (result.image_b64
+                            ? ('data:image/png;base64,' + result.image_b64)
+                            : src);
+        downloadBtn.setAttribute('download', 'drawing.png');
+
+        if (meta) {
+            var parts = [];
+            if (result.model)              parts.push('Модель: ' + result.model);
+            if (typeof result.cost_usd === 'number' && result.cost_usd > 0) {
+                parts.push('Стоимость: $' + result.cost_usd.toFixed(4));
+            }
+            meta.textContent = parts.join(' • ');
+        }
+
+        resultWrap.hidden = false;
+        resultWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        loadHistory();
+        setBusy(false);
+    }
+
+    function _pollStatus(taskId) {
+        fetch('/api/drawing/status/' + encodeURIComponent(taskId), {
+            credentials: 'same-origin'
+        })
+        .then(function (r) { return parseResponse(r); })
+        .then(function (res) {
+            if (!res.ok || !res.data) {
+                _pollStop();
+                setBusy(false);
+                showError('Ошибка при проверке статуса генерации. Попробуйте ещё раз.');
+                return;
+            }
+            var data = res.data;
+            var status = data.status || 'pending';
+
+            // Check timeout (>90 s since first POST)
+            if (Date.now() - _pollStartedAt > _POLL_TIMEOUT) {
+                _pollStop();
+                setBusy(false);
+                showError(
+                    '⏱ Генерация заняла слишком долго (>90 секунд). '
+                    + 'Попробуйте ещё раз или упростите условие задачи.'
+                );
+                // Notify server the task timed out from the client perspective
+                // (the server thread still runs but we stop waiting).
+                return;
+            }
+
+            if (status === 'completed') {
+                _pollStop();
+                _renderResult(data.result || {});
+            } else if (status === 'error') {
+                _pollStop();
+                setBusy(false);
+                showError(data.error || 'Ошибка генерации. Попробуйте ещё раз.');
+            } else {
+                // Still processing — keep polling (timer already running)
+            }
+        })
+        .catch(function () {
+            _pollStop();
+            setBusy(false);
+            showError('Сетевая ошибка при проверке статуса. Попробуйте ещё раз.');
+        });
+    }
+
     function submit(bypassCache) {
         hideError();
+        _pollStop();
+
         var problem = (textArea.value || '').trim();
         var hasImage = !!attachedImageDataUrl;
         // If a photo is attached, we relax the 10-char minimum on text.
@@ -324,8 +416,8 @@
             return parseResponse(r);
         })
         .then(function (res) {
-            setBusy(false);
             if (!res.ok) {
+                setBusy(false);
                 var msg = (res.data && res.data.error)
                     || ('Ошибка ' + res.status + '. Попробуйте ещё раз.');
                 if (res.data && res.data.detail) {
@@ -336,37 +428,20 @@
             }
 
             var data = res.data || {};
-            var src = data.image_url || data.data_url
-                   || (data.image_b64 ? ('data:image/png;base64,' + data.image_b64) : null);
-
-            if (!src) {
-                showError('Сервер не вернул изображение.');
+            var taskId = data.task_id;
+            if (!taskId) {
+                setBusy(false);
+                showError('Сервер не вернул идентификатор задачи.');
                 return;
             }
 
-            img.src = src;
-            // Prefer data-URL for direct download (works even if the static
-            // file was not persisted on disk).
-            downloadBtn.href = data.data_url
-                            || (data.image_b64
-                                ? ('data:image/png;base64,' + data.image_b64)
-                                : src);
-            downloadBtn.setAttribute('download', 'drawing.png');
-
-            if (meta) {
-                var parts = [];
-                if (data.model)              parts.push('Модель: ' + data.model);
-                if (typeof data.cost_usd === 'number' && data.cost_usd > 0) {
-                    parts.push('Стоимость: $' + data.cost_usd.toFixed(4));
-                }
-                meta.textContent = parts.join(' • ');
-            }
-
-            resultWrap.hidden = false;
-            resultWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // Refresh the strip so the new drawing appears immediately.
-            loadHistory();
+            // Start polling
+            _pollStartedAt = Date.now();
+            _pollTimer = setInterval(function () {
+                _pollStatus(taskId);
+            }, _POLL_INTERVAL);
+            // Also fire immediately so the first check happens straight away
+            _pollStatus(taskId);
         })
         .catch(function (err) {
             setBusy(false);

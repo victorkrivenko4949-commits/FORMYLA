@@ -30,13 +30,25 @@ MAX_ATTEMPTS_PER_TASK = 2
 
 
 def _parse_json_field(value, fallback):
-    """Безопасно распарсить JSON-поле модели (может быть None / '' / валидный JSON)."""
-    if not value:
+    """Безопасно распарсить JSON-поле модели.
+
+    Поддерживает:
+      - ``None`` / ``''`` / ``'[]'`` / ``'{}'`` — строковые JSON
+      - Уже десериализованные Python-объекты (list / dict) — когда колонка
+        типа JSONB на PostgreSQL (SQLAlchemy возвращает готовый Python-объект).
+    """
+    if value is None:
         return fallback
-    try:
-        return json.loads(value)
-    except (ValueError, TypeError):
-        return fallback
+    if isinstance(value, (list, dict)):
+        return value
+    if isinstance(value, str):
+        if not value.strip():
+            return fallback
+        try:
+            return json.loads(value)
+        except (ValueError, TypeError):
+            return fallback
+    return fallback
 
 
 def get_attempts_map(quest) -> dict:
