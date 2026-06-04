@@ -566,6 +566,20 @@ try:
                 print(f"[migration] Added {_label} to olympiad_tasks")
             except Exception:
                 db.session.rollback()
+
+        # --- User: generation limits (free mock / exam generation) ---
+        for _stmt, _label in (
+            ("ALTER TABLE users ADD COLUMN generation_count_today INTEGER NOT NULL DEFAULT 0", "generation_count_today"),
+            ("ALTER TABLE users ADD COLUMN generation_reset_date DATE", "generation_reset_date"),
+            ("ALTER TABLE users ADD COLUMN gens_extra_purchased INTEGER NOT NULL DEFAULT 0", "gens_extra_purchased"),
+            ("ALTER TABLE users ADD COLUMN gens_unlimited BOOLEAN NOT NULL DEFAULT 0", "gens_unlimited"),
+        ):
+            try:
+                db.session.execute(db.text(_stmt))
+                db.session.commit()
+                print(f"[migration] Added {_label} to users")
+            except Exception:
+                db.session.rollback()
 except Exception as e:
     print(f"[AUTO-MIGRATION] guest columns Warning: {e}")
 

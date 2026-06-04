@@ -65,6 +65,8 @@ data/*
 # Exception: olympiad section data files are tracked (small, hand-curated).
 !data/olympiads/
 !data/olympiads/**
+# Exception: olympiads_db.py — extracted data dict used by olympiad Blueprint.
+!data/olympiads_db.py
 *.jsonl
 *.bak
 checkpoint.json
