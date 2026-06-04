@@ -287,7 +287,7 @@
     var _pollTimer = null;
     var _pollStartedAt = 0;
     var _POLL_INTERVAL = 2000;   // ms between polls
-    var _POLL_TIMEOUT = 90000;   // 90 s — max wait before showing timeout
+    var _POLL_TIMEOUT = 300000;   // 300 s (5 min) — max wait before showing timeout
 
     function _pollStop() {
         if (_pollTimer) {
@@ -342,12 +342,12 @@
             var data = res.data;
             var status = data.status || 'pending';
 
-            // Check timeout (>90 s since first POST)
+            // Check timeout (>300 s (5 min) since first POST)
             if (Date.now() - _pollStartedAt > _POLL_TIMEOUT) {
                 _pollStop();
                 setBusy(false);
                 showError(
-                    '⏱ Генерация заняла слишком долго (>90 секунд). '
+                    '⏱ Генерация заняла слишком долго (>5 минут). '
                     + 'Попробуйте ещё раз или упростите условие задачи.'
                 );
                 // Notify server the task timed out from the client perspective
