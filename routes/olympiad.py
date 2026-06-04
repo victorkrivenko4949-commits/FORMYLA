@@ -293,7 +293,7 @@ def methods():
         sec = b.section or 'Без раздела'
         grouped.setdefault(sec, []).append(b)
     return render_template('olympiad/method.html',
-                           sections=grouped, detail_block=None,
+                           sections=grouped, blocks=blocks, detail_block=None,
                            related_blocks=None, tasks_for_method=None)
 
 
@@ -331,7 +331,7 @@ def method_detail(method_code):
         sec = b.section or 'Без раздела'
         grouped.setdefault(sec, []).append(b)
     return render_template('olympiad/method.html',
-                           sections=grouped, detail_block=block,
+                           sections=grouped, blocks=all_blocks, detail_block=block,
                            related_blocks=related_blocks,
                            tasks_for_method=tasks_for_method)
 
