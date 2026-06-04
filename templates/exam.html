@@ -42,6 +42,12 @@
             
             <div style="margin-bottom: 15px;">
                 <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">Ход решения (текст):</label>
+                <div style="background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; font-size: 0.85em; color: #fbbf24;">
+                    ⚠️ Можно отправить ответ <strong>без решения</strong> —
+                    тогда проверка будет только по ответу (+1 или -1).
+                    Если хотите получить <strong>частичный балл</strong> (0 за верный метод,
+                    даже если ответ неверный) — обязательно опишите ход решения.
+                </div>
                 <textarea name="solution_{{ item.task_id }}" class="solution-input" placeholder="Опишите как вы решали задачу..." style="width: 100%; min-height: 120px; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2); resize: vertical;"></textarea>
             </div>
             

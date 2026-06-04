@@ -62,3 +62,8 @@ resend==2.5.1
 # Web Push Notifications (VAPID-based browser push)
 pywebpush==1.14.1
 py-vapid==1.9.1
+
+# WebSocket signalling for videoconference (replaces HTTP polling)
+# eventlet provides async worker for Flask-SocketIO
+eventlet==0.39.1
+Flask-SocketIO==5.5.1

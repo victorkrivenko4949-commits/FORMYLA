@@ -140,7 +140,13 @@ function displayProblem(problemId, number) {
             
             <div style="margin-bottom: 25px;">
                 <label style="display: block; color: var(--text-soft); margin-bottom: 10px; font-weight: 500;">Ход решения (опционально):</label>
-                <textarea id="userSolution" placeholder="Опишите как вы решали задачу..." 
+                <div style="background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.88em; color: #fbbf24;">
+                    ⚠️ Можно отправить ответ <strong>без решения</strong> —
+                    тогда проверка будет только по ответу (+1 или -1).
+                    Если хотите получить <strong>частичный балл</strong> (0 за верный метод,
+                    даже если ответ неверный) — обязательно опишите ход решения.
+                </div>
+                <textarea id="userSolution" placeholder="Опишите как вы решали задачу..."
                           style="width: 100%; min-height: 120px; padding: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2); resize: vertical; font-size: 15px;"></textarea>
             </div>
             

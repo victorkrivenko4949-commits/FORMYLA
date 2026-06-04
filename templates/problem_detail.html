@@ -1,5 +1,3 @@
-
-
 {% extends "base.html" %}
 
 {% block title %}Задача #{{ problem.id }}{% endblock %}
@@ -39,13 +37,39 @@
     </div>
     {% endif %}
 
+    {# ── Рисунки условия из MANIFEST (condition_figures) ── #}
+    {% if condition_figures %}
+    <div class="task-figures-block">
+        {% for fig in condition_figures %}
+        {% set fname = fig | replace('figures/', '') %}
+        <figure class="task-figure" data-file="{{ fname }}">
+            <img
+                src="/static/figures/{{ fname }}"
+                alt="Рисунок к задаче"
+                loading="lazy"
+                class="task-figure__img"
+                onerror="this.closest('figure').remove()"
+                onclick="openOnBoard('/static/figures/{{ fname }}')"
+            />
+            <figcaption class="task-figure__cap">
+                <a class="task-figure__download"
+                   href="/static/figures/{{ fname }}"
+                   download="{{ fname }}">⬇ Скачать оригинал</a>
+                <button class="task-figure__board-btn"
+                        onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+            </figcaption>
+        </figure>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% if is_solved %}
     <!-- Задача уже решена -->
     <div class="reveal-block" style="background: #10b981; border-color: #10b981; padding: 15px; border-radius: 12px; margin-top: 20px;">
         <div style="color: #fff; font-weight: 600; font-size: 16px;">✅ Задача решена!</div>
         <div style="color: #d1fae5; margin-top: 8px;">Правильный ответ: <strong>{{ problem.answer | safe }}</strong></div>
     </div>
-    
+
     <div class="reveal-block">
         <button class="reveal-btn" onclick="toggleReveal('solution-box', this)">
             📖 Посмотреть решение
@@ -59,14 +83,33 @@
                     <span style="color: #475569;">Решение скоро появится...</span>
                 {% endif %}
             </div>
+            {# ── Рисунки решения (solution_figures) — видны только здесь ── #}
+            {% if solution_figures %}
+            <div class="task-figures-block" style="margin-top:16px;">
+                {% for fig in solution_figures %}
+                {% set fname = fig | replace('figures/', '') %}
+                <figure class="task-figure" data-file="{{ fname }}">
+                    <img src="/static/figures/{{ fname }}" alt="Рисунок к решению"
+                         loading="lazy" class="task-figure__img"
+                         onerror="this.closest('figure').remove()"
+                         onclick="openOnBoard('/static/figures/{{ fname }}')" />
+                    <figcaption class="task-figure__cap">
+                        <a class="task-figure__download" href="/static/figures/{{ fname }}"
+                           download="{{ fname }}">⬇ Скачать оригинал</a>
+                        <button class="task-figure__board-btn"
+                                onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                    </figcaption>
+                </figure>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
     </div>
     {% else %}
-    <!-- Режим обучения: ввод ответа убран, только подсказки и решения -->
-    
-    <!-- Разделение логики: Олимпиады vs Базовые задачи -->
+    <!-- Режим обучения -->
+
     {% if is_olympiad %}
-        <!-- ДЛЯ ОЛИМПИАД: Статичное решение (старый функционал) -->
+        <!-- ДЛЯ ОЛИМПИАД: Статичное решение -->
         <div class="reveal-block" style="margin-top: 24px;">
             <button class="reveal-btn" onclick="toggleReveal('solution-box-{{ problem.id }}', this)" id="solution-toggle-{{ problem.id }}">
                 💡 Показать ответ и решение
@@ -76,7 +119,7 @@
                 <div style="margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #86efac;">
                     {{ problem.answer | safe }}
                 </div>
-                
+
                 <span class="reveal-label solution-label">Решение</span>
                 <div>
                     {% if problem.solution %}
@@ -85,10 +128,31 @@
                         <span style="color: #475569;">Решение скоро появится...</span>
                     {% endif %}
                 </div>
+
+                {# ── Рисунки решения (solution_figures) — видны только здесь ── #}
+                {% if solution_figures %}
+                <div class="task-figures-block" style="margin-top:16px;">
+                    {% for fig in solution_figures %}
+                    {% set fname = fig | replace('figures/', '') %}
+                    <figure class="task-figure" data-file="{{ fname }}">
+                        <img src="/static/figures/{{ fname }}" alt="Рисунок к решению"
+                             loading="lazy" class="task-figure__img"
+                             onerror="this.closest('figure').remove()"
+                             onclick="openOnBoard('/static/figures/{{ fname }}')" />
+                        <figcaption class="task-figure__cap">
+                            <a class="task-figure__download" href="/static/figures/{{ fname }}"
+                               download="{{ fname }}">⬇ Скачать оригинал</a>
+                            <button class="task-figure__board-btn"
+                                    onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                        </figcaption>
+                    </figure>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
         </div>
     {% else %}
-        <!-- ДЛЯ БАЗОВЫХ ЗАДАЧ: AI-Тьютор (только для авторизованных) -->
+        <!-- ДЛЯ БАЗОВЫХ ЗАДАЧ: AI-Тьютор -->
         {% if current_user.is_authenticated %}
         <div class="ai-tutor-section" style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
             <button onclick="getAIHint({{ problem.id }})" id="hint-btn-{{ problem.id }}" class="ai-btn hint-btn">
@@ -98,23 +162,19 @@
                 🤖 Сгенерировать решение AI
             </button>
         </div>
-        
-        <!-- Контейнер для AI подсказки -->
+
         <div id="ai-hint-{{ problem.id }}" class="reveal-content hidden" style="margin-top: 12px; background: #0c1a2e; border: 1px solid #1e3a5f;">
             <span class="reveal-label" style="background: #1e3a5f; color: #7dd3fc;">💡 Подсказка от AI</span>
             <div id="ai-hint-content-{{ problem.id }}" style="line-height: 1.8;"></div>
         </div>
-        
-        <!-- Контейнер для AI решения -->
+
         <div id="ai-solution-{{ problem.id }}" class="reveal-content hidden" style="margin-top: 12px; background: #0c1a2e; border: 1px solid #1e3a5f;">
             <span class="reveal-label answer-label">Правильный ответ</span>
             <div id="ai-answer-{{ problem.id }}" style="margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #86efac;"></div>
-            
             <span class="reveal-label solution-label">🤖 Решение от AI</span>
             <div id="ai-solution-content-{{ problem.id }}" style="line-height: 1.8;"></div>
         </div>
         {% else %}
-        <!-- Для неавторизованных: показываем только ответ -->
         <div class="reveal-block" style="margin-top: 24px;">
             <button class="reveal-btn" onclick="toggleReveal('answer-box-{{ problem.id }}', this)" id="answer-toggle-{{ problem.id }}">
                 👁 Показать ответ
@@ -132,35 +192,57 @@
         {% endif %}
     {% endif %}
     {% endif %}
-    
-    <!-- Кнопка "Спросить тьютора в чате" -->
+
     {% if current_user.is_authenticated %}
     <div style="text-align: center; margin-top: 30px;">
         <button onclick="openTutorWithContext()" style="padding: 12px 30px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
             💬 Обсудить с AI-тьютором в чате
         </button>
     </div>
-    
     <script>
     function openTutorWithContext() {
-        // Открываем чат
-        if (typeof toggleTutorChat === 'function') {
-            if (!chatOpen) toggleTutorChat();
-            
-            // Добавляем контекст задачи
-            setTimeout(() => {
-                const input = document.getElementById('tutorInput');
-                if (input) {
-                    input.value = 'Помоги с задачей: {{ problem.text[:100] }}...';
-                    input.focus();
+        if (typeof toggleTutorPopup === 'function') {
+            if (!window.popupOpen) toggleTutorPopup();
+            setTimeout(function() {
+                if (typeof selectAgent === 'function') {
+                    selectAgent('general', 'Универсальный агент');
                 }
-            }, 300);
+                setTimeout(function() {
+                    var input = document.getElementById('tutorInput');
+                    if (input) {
+                        input.value = 'Помоги с задачей: {{ problem.text[:100] | escape }}...';
+                        input.focus();
+                        if (typeof sendToTutor === 'function') {
+                            sendToTutor();
+                        }
+                    }
+                }, 400);
+            }, 100);
+        } else {
+            var btn = document.getElementById('tutorBtn');
+            if (btn) {
+                btn.click();
+                setTimeout(function() {
+                    if (typeof selectAgent === 'function') {
+                        selectAgent('general', 'Универсальный агент');
+                    }
+                    setTimeout(function() {
+                        var input = document.getElementById('tutorInput');
+                        if (input) {
+                            input.value = 'Помоги с задачей: {{ problem.text[:100] | escape }}...';
+                            input.focus();
+                            if (typeof sendToTutor === 'function') {
+                                sendToTutor();
+                            }
+                        }
+                    }, 400);
+                }, 300);
+            }
         }
     }
     </script>
     {% endif %}
-    
-    <!-- Предложение после решения -->
+
     <div id="nextSteps" style="display: none; background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); margin-top: 20px; text-align: center;">
         <p style="color: var(--text-soft); margin-bottom: 15px;">Отличная работа! Что дальше?</p>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
@@ -173,373 +255,270 @@
         </div>
     </div>
 
+</div><!-- /.problem-card -->
+
+<!-- ══ BOARD OVERLAY ══════════════════════════════════════════════════════ -->
+<div id="board-overlay" class="board" hidden>
+    <button class="board__close" onclick="closeBoard()" aria-label="Закрыть">✕</button>
+    <div class="board__controls">
+        <button onclick="boardZoom(1.2)">+</button>
+        <button onclick="boardZoom(1/1.2)">−</button>
+        <button onclick="boardReset()">Сброс</button>
+        <a id="board-download" href="#" download>⬇ Скачать оригинал</a>
+    </div>
+    <div class="board__canvas" id="board-canvas">
+        <img id="board-img" src="" alt="Рисунок (доска)" draggable="false"/>
+    </div>
+</div>
 
 <style>
+/* ── task-figure ─────────────────────────────────────────────────────── */
+.task-figures-block { display:flex; flex-wrap:wrap; gap:16px; margin:16px 0 24px; }
+.task-figure { margin:0; display:inline-flex; flex-direction:column; align-items:flex-start; }
+.task-figure__img {
+    max-width:100%; height:auto;
+    border:1px solid #334155; border-radius:8px;
+    cursor:zoom-in; background:#fff; display:block;
+}
+.task-figure__cap { margin-top:6px; font-size:13px; display:flex; gap:10px; align-items:center; }
+.task-figure__download { color:#7dd3fc; text-decoration:underline; cursor:pointer; }
+.task-figure__board-btn {
+    background:rgba(56,189,248,.12); color:#7dd3fc;
+    border:1px solid rgba(56,189,248,.3); border-radius:6px;
+    padding:3px 10px; font-size:12px; cursor:pointer;
+}
+.task-figure__board-btn:hover { background:rgba(56,189,248,.22); }
+
+/* ── board overlay ───────────────────────────────────────────────────── */
+.board {
+    position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,.88);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+}
+.board[hidden] { display:none; }
+.board__close {
+    position:absolute; top:16px; right:16px;
+    font-size:22px; background:#fff; border:none;
+    width:40px; height:40px; border-radius:50%; cursor:pointer; z-index:10001;
+}
+.board__controls {
+    position:absolute; top:16px; left:16px;
+    display:flex; gap:8px; align-items:center; z-index:10001;
+}
+.board__controls button, .board__controls a {
+    background:#fff; border:none; border-radius:6px;
+    padding:6px 10px; cursor:pointer; font-size:14px;
+    text-decoration:none; color:#111;
+}
+.board__canvas { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+#board-img {
+    max-width:92vw; max-height:90vh;
+    transform-origin:center center;
+    user-select:none; -webkit-user-drag:none;
+    background:#fff; border-radius:8px;
+}
+
+/* ── problem-card ────────────────────────────────────────────────────── */
 .problem-card {
-    max-width: 780px;
-    margin: 40px auto;
-    background: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 16px;
-    padding: 40px;
+    max-width:780px; margin:40px auto;
+    background:#0f172a; border:1px solid #1e293b;
+    border-radius:16px; padding:40px;
 }
-
-.problem-meta {
-    font-size: 14px;
-    color: #475569;
-    margin-bottom: 12px;
-    letter-spacing: 0.04em;
-}
-
-.problem-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 24px;
-}
-
+.problem-meta { font-size:14px; color:#475569; margin-bottom:12px; letter-spacing:.04em; }
+.problem-title { font-size:22px; font-weight:700; color:#f1f5f9; margin-bottom:24px; }
 .problem-text {
-    font-size: 16px;
-    line-height: 1.8;
-    color: #cbd5e1;
-    margin-bottom: 32px;
-    padding: 24px;
-    background: #0d1826;
-    border-left: 3px solid #334155;
-    border-radius: 8px;
+    font-size:16px; line-height:1.8; color:#cbd5e1; margin-bottom:32px;
+    padding:24px; background:#0d1826; border-left:3px solid #334155; border-radius:8px;
 }
-
-.problem-image {
-    margin: 16px 0;
-    text-align: center;
-}
-.problem-image img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.reveal-block {
-    margin-bottom: 16px;
-}
-
+.problem-image { margin:16px 0; text-align:center; }
+.problem-image img { max-width:100%; height:auto; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+.reveal-block { margin-bottom:16px; }
 .reveal-btn {
-    background: #1e293b;
-    color: #94a3b8;
-    border: 1px solid #334155;
-    border-radius: 10px;
-    padding: 12px 24px;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    text-align: left;
+    background:#1e293b; color:#94a3b8; border:1px solid #334155;
+    border-radius:10px; padding:12px 24px; font-size:15px;
+    cursor:pointer; transition:all .2s ease; width:100%; text-align:left;
 }
-
-.reveal-btn:hover {
-    background: #263348;
-    color: #e2e8f0;
-    border-color: #475569;
-}
-
+.reveal-btn:hover { background:#263348; color:#e2e8f0; border-color:#475569; }
 .reveal-content {
-    margin-top: 12px;
-    padding: 20px 24px;
-    border-radius: 10px;
-    font-size: 15px;
-    line-height: 1.8;
-    color: #e2e8f0;
-    animation: fadeIn 0.25s ease;
+    margin-top:12px; padding:20px 24px; border-radius:10px;
+    font-size:15px; line-height:1.8; color:#e2e8f0; animation:fadeIn .25s ease;
 }
-
-.reveal-content.hidden {
-    display: none;
-}
-
-#answer-box {
-    background: #0d2218;
-    border: 1px solid #166534;
-}
-
-#solution-box {
-    background: #0c1a2e;
-    border: 1px solid #1e3a5f;
-}
-
+.reveal-content.hidden { display:none; }
+#answer-box { background:#0d2218; border:1px solid #166534; }
+#solution-box { background:#0c1a2e; border:1px solid #1e3a5f; }
 .reveal-label {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 6px;
-    margin-bottom: 12px;
+    display:inline-block; font-size:12px; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    padding:3px 10px; border-radius:6px; margin-bottom:12px;
 }
-
-.answer-label {
-    background: #14532d;
-    color: #86efac;
-}
-
-.solution-label {
-    background: #1e3a5f;
-    color: #7dd3fc;
-}
-
+.answer-label { background:#14532d; color:#86efac; }
+.solution-label { background:#1e3a5f; color:#7dd3fc; }
 .ai-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex: 1;
-    min-width: 200px;
+    padding:12px 24px; border:none; border-radius:10px;
+    font-size:15px; font-weight:600; cursor:pointer;
+    transition:all .3s ease; flex:1; min-width:200px;
 }
-
-.hint-btn {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-}
-
-.hint-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.hint-btn:disabled {
-    background: #334155;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.solution-btn {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    color: white;
-}
-
-.solution-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-}
-
-.solution-btn:disabled {
-    background: #334155;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.back-link {
-    display: inline-block;
-    margin: 24px 0 0 24px;
-    color: #475569;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.2s;
-}
-
-.back-link:hover {
-    color: #94a3b8;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+.hint-btn { background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%); color:white; }
+.hint-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(59,130,246,.4); }
+.hint-btn:disabled { background:#334155; cursor:not-allowed; transform:none; }
+.solution-btn { background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%); color:white; }
+.solution-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(139,92,246,.4); }
+.solution-btn:disabled { background:#334155; cursor:not-allowed; transform:none; }
+.back-link { display:inline-block; margin:24px 0 0 24px; color:#475569; text-decoration:none; font-size:14px; transition:color .2s; }
+.back-link:hover { color:#94a3b8; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
 </style>
 
 <script>
-function toggleReveal(id, btn) {
-    const box = document.getElementById(id);
-    const isHidden = box.classList.contains('hidden');
-    if (isHidden) {
+/* ── board overlay ───────────────────────────────────────────────────── */
+var bScale=1, bX=0, bY=0, bDrag=false, bSX=0, bSY=0;
+function applyBoard(){
+    document.getElementById('board-img').style.transform =
+        'translate('+bX+'px,'+bY+'px) scale('+bScale+')';
+}
+function openOnBoard(src){
+    var ov=document.getElementById('board-overlay');
+    document.getElementById('board-img').src=src;
+    var dl=document.getElementById('board-download');
+    dl.href=src; dl.download=src.split('/').pop();
+    bScale=1; bX=0; bY=0; applyBoard();
+    ov.hidden=false; document.body.style.overflow='hidden';
+}
+function closeBoard(){
+    document.getElementById('board-overlay').hidden=true;
+    document.body.style.overflow='';
+}
+function boardZoom(f){ bScale=Math.min(8,Math.max(0.2,bScale*f)); applyBoard(); }
+function boardReset(){ bScale=1; bX=0; bY=0; applyBoard(); }
+
+(function initBoard(){
+    var canvas=document.getElementById('board-canvas');
+    var ov=document.getElementById('board-overlay');
+    canvas.addEventListener('wheel',function(e){
+        e.preventDefault(); boardZoom(e.deltaY<0?1.1:1/1.1);
+    },{passive:false});
+    canvas.addEventListener('mousedown',function(e){ bDrag=true; bSX=e.clientX-bX; bSY=e.clientY-bY; });
+    window.addEventListener('mousemove',function(e){ if(!bDrag)return; bX=e.clientX-bSX; bY=e.clientY-bSY; applyBoard(); });
+    window.addEventListener('mouseup',function(){ bDrag=false; });
+    var tLast=null;
+    canvas.addEventListener('touchstart',function(e){ if(e.touches.length===1) tLast={x:e.touches[0].clientX,y:e.touches[0].clientY}; },{passive:true});
+    canvas.addEventListener('touchmove',function(e){
+        if(e.touches.length===1&&tLast){ bX+=e.touches[0].clientX-tLast.x; bY+=e.touches[0].clientY-tLast.y; tLast={x:e.touches[0].clientX,y:e.touches[0].clientY}; applyBoard(); }
+    },{passive:true});
+    canvas.addEventListener('touchend',function(){ tLast=null; });
+    ov.addEventListener('click',function(e){ if(e.target===ov) closeBoard(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!ov.hidden) closeBoard(); });
+})();
+
+/* ── reveal toggle ───────────────────────────────────────────────────── */
+function toggleReveal(id, btn){
+    var box=document.getElementById(id);
+    var isHidden=box.classList.contains('hidden');
+    if(isHidden){
         box.classList.remove('hidden');
-        if (id.includes('answer-box')) btn.innerHTML = '✕ Скрыть ответ';
-        if (id.includes('solution-box')) btn.innerHTML = '✕ Скрыть решение';
+        if(id.indexOf('answer-box')>=0) btn.innerHTML='✕ Скрыть ответ';
+        if(id.indexOf('solution-box')>=0) btn.innerHTML='✕ Скрыть решение';
     } else {
         box.classList.add('hidden');
-        if (id.includes('answer-box')) btn.innerHTML = '👁 Показать ответ';
-        if (id.includes('solution-box')) btn.innerHTML = '💡 Показать ответ и решение';
+        if(id.indexOf('answer-box')>=0) btn.innerHTML='👁 Показать ответ';
+        if(id.indexOf('solution-box')>=0) btn.innerHTML='💡 Показать ответ и решение';
     }
 }
 
-function checkAnswer(problemId) {
-    const userAnswer = document.getElementById('user-answer-' + problemId).value.trim();
-    const feedback = document.getElementById('feedback-' + problemId);
-    
-    if (!userAnswer) {
-        feedback.innerHTML = '<span style="color: #f59e0b;">⚠️ Введите ответ</span>';
-        return;
-    }
-    
-    // Send answer to server for checking
-    fetch('/check_answer', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            problem_id: problemId,
-            user_answer: userAnswer
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.correct) {
-            feedback.innerHTML = '<span style="color: #10b981; font-weight: 600;">✅ Правильно!</span>';
-            // Show solution after correct answer
-            setTimeout(() => {
-                const solutionContainer = document.getElementById('solution-container-' + problemId);
-                if (solutionContainer) {
-                    solutionContainer.style.display = 'block';
-                }
-            }, 500);
+function checkAnswer(problemId){
+    var userAnswer=document.getElementById('user-answer-'+problemId).value.trim();
+    var feedback=document.getElementById('feedback-'+problemId);
+    if(!userAnswer){ feedback.innerHTML='<span style="color:#f59e0b;">⚠️ Введите ответ</span>'; return; }
+    fetch('/check_answer',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({problem_id:problemId,user_answer:userAnswer})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+        if(data.correct){
+            feedback.innerHTML='<span style="color:#10b981;font-weight:600;">✅ Правильно!</span>';
+            setTimeout(function(){ var sc=document.getElementById('solution-container-'+problemId); if(sc) sc.style.display='block'; },500);
         } else {
-            feedback.innerHTML = '<span style="color: #ef4444;">❌ Неправильно. Попробуйте ещё раз!</span>';
+            feedback.innerHTML='<span style="color:#ef4444;">❌ Неправильно. Попробуйте ещё раз!</span>';
         }
     })
-    .catch(error => {
-        feedback.innerHTML = '<span style="color: #f59e0b;">⚠️ Ошибка проверки</span>';
-        console.error('Error:', error);
-    });
+    .catch(function(err){ feedback.innerHTML='<span style="color:#f59e0b;">⚠️ Ошибка проверки</span>'; console.error(err); });
 }
 
-// AI Tutor Functions
-
-// Helper function to safely render Markdown with LaTeX protection
-function protectAndRenderMarkdown(text) {
-    if (!window.marked) {
-        return text;
-    }
-    
-    const mathStorage = [];
-    let counter = 0;
-    
-    // Step 1: Protect display math $$...$$ with unique tokens
-    text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
-        const token = `XMATHBLOCKX${counter}XMATHBLOCKX`;
-        mathStorage.push({ token, math: match });
-        counter++;
-        return token;
+/* ── AI Tutor helpers ────────────────────────────────────────────────── */
+function protectAndRenderMarkdown(text){
+    if(!window.marked) return text;
+    var mathStorage=[]; var counter=0;
+    text=text.replace(/\$\$([\s\S]*?)\$\$/g,function(match){
+        var token='XMATHBLOCKX'+counter+'XMATHBLOCKX';
+        mathStorage.push({token:token,math:match}); counter++; return token;
     });
-    
-    // Step 2: Protect inline math $...$
-    text = text.replace(/\$([^\$\n]+?)\$/g, (match) => {
-        const token = `XMATHINLINEX${counter}XMATHINLINEX`;
-        mathStorage.push({ token, math: match });
-        counter++;
-        return token;
+    text=text.replace(/\$([^\$\n]+?)\$/g,function(match){
+        var token='XMATHINLINEX'+counter+'XMATHINLINEX';
+        mathStorage.push({token:token,math:match}); counter++; return token;
     });
-    
-    // Step 3: Parse Markdown (math is now protected)
-    let html = marked.parse(text);
-    
-    // Step 4: Restore all math
-    mathStorage.forEach(({ token, math }) => {
-        html = html.split(token).join(math);
-    });
-    
+    var html=marked.parse(text);
+    mathStorage.forEach(function(item){ html=html.split(item.token).join(item.math); });
     return html;
 }
 
-
-async function getAIHint(problemId) {
-    const btn = document.getElementById(`hint-btn-${problemId}`);
-    const container = document.getElementById(`ai-hint-${problemId}`);
-    const content = document.getElementById(`ai-hint-content-${problemId}`);
-    
-    // Disable button and show loading
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Генерирую подсказку...';
-    
+async function getAIHint(problemId){
+    var btn=document.getElementById('hint-btn-'+problemId);
+    var container=document.getElementById('ai-hint-'+problemId);
+    var content=document.getElementById('ai-hint-content-'+problemId);
+    btn.disabled=true; btn.innerHTML='⏳ Генерирую подсказку...';
     try {
-        const response = await fetch(`/api/tutor/hint/${problemId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            content.innerHTML = `<span style="color: #ef4444;">❌ ${data.error}</span>`;
-        } else {
-            // Safely render Markdown while protecting LaTeX
-            const htmlContent = protectAndRenderMarkdown(data.hint);
-            content.innerHTML = htmlContent;
-            
-            // Then render KaTeX formulas
-            if (typeof reRenderMath === 'function') {
-                reRenderMath(content);
-            }
-        }
-        
-        // Show container
+        var response=await fetch('/api/tutor/hint/'+problemId,{method:'POST',headers:{'Content-Type':'application/json'}});
+        var data=await response.json();
+        if(data.error){ content.innerHTML='<span style="color:#ef4444;">❌ '+data.error+'</span>'; }
+        else { content.innerHTML=protectAndRenderMarkdown(data.hint); if(typeof reRenderMath==='function') reRenderMath(content); }
         container.classList.remove('hidden');
-        
-        // Update button
-        btn.innerHTML = '✓ Подсказка получена';
-        btn.style.background = '#10b981';
-        
-    } catch (error) {
-        content.innerHTML = '<span style="color: #ef4444;">❌ Ошибка связи с сервером</span>';
-        container.classList.remove('hidden');
-        btn.disabled = false;
-        btn.innerHTML = '💡 Получить подсказку от AI';
-        console.error('Error:', error);
+        btn.innerHTML='✓ Подсказка получена'; btn.style.background='#10b981';
+    } catch(err){
+        content.innerHTML='<span style="color:#ef4444;">❌ Ошибка связи с сервером</span>';
+        container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML='💡 Получить подсказку от AI';
+        console.error(err);
     }
 }
 
-async function getAISolution(problemId) {
-    const btn = document.getElementById(`solution-btn-${problemId}`);
-    const container = document.getElementById(`ai-solution-${problemId}`);
-    const answerDiv = document.getElementById(`ai-answer-${problemId}`);
-    const content = document.getElementById(`ai-solution-content-${problemId}`);
-    
-    // Disable button and show loading
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Генерирую решение...';
-    
+async function getAISolution(problemId){
+    var btn=document.getElementById('solution-btn-'+problemId);
+    var container=document.getElementById('ai-solution-'+problemId);
+    var answerDiv=document.getElementById('ai-answer-'+problemId);
+    var content=document.getElementById('ai-solution-content-'+problemId);
+    btn.disabled=true; btn.innerHTML='⏳ Генерирую решение...';
     try {
-        const response = await fetch(`/api/tutor/solution/${problemId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            content.innerHTML = `<span style="color: #ef4444;">❌ ${data.error}</span>`;
-        } else {
-            // Render answer (may contain LaTeX)
-            answerDiv.innerHTML = data.answer;
-            
-            // Safely render Markdown while protecting LaTeX
-            const htmlContent = protectAndRenderMarkdown(data.solution);
-            content.innerHTML = htmlContent;
-            
-            // Then render KaTeX formulas for the entire container
-            if (typeof reRenderMath === 'function') {
-                reRenderMath(container);
-            }
+        var response=await fetch('/api/tutor/solution/'+problemId,{method:'POST',headers:{'Content-Type':'application/json'}});
+        var data=await response.json();
+        if(data.error){ content.innerHTML='<span style="color:#ef4444;">❌ '+data.error+'</span>'; }
+        else {
+            answerDiv.innerHTML=data.answer;
+            content.innerHTML=protectAndRenderMarkdown(data.solution);
+            if(typeof reRenderMath==='function') reRenderMath(container);
         }
-        
-        // Show container
         container.classList.remove('hidden');
-        
-        // Update button
-        btn.innerHTML = '✓ Решение получено';
-        btn.style.background = '#10b981';
-        
-    } catch (error) {
-        content.innerHTML = '<span style="color: #ef4444;">❌ Ошибка связи с сервером</span>';
-        container.classList.remove('hidden');
-        btn.disabled = false;
-        btn.innerHTML = '🤖 Сгенерировать решение AI';
-        console.error('Error:', error);
+        btn.innerHTML='✓ Решение получено'; btn.style.background='#10b981';
+    } catch(err){
+        content.innerHTML='<span style="color:#ef4444;">❌ Ошибка связи с сервером</span>';
+        container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML='🤖 Сгенерировать решение AI';
+        console.error(err);
     }
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var el=document.querySelector('.problem-text');
+    if(el && typeof reRenderMath==='function'){
+        reRenderMath(el);
+    } else if(el && typeof renderMathInElement==='function'){
+        renderMathInElement(el,{
+            delimiters:[
+                {left:'$$',right:'$$',display:true},
+                {left:'$',right:'$',display:false},
+                {left:'\\(',right:'\\)',display:false},
+                {left:'\\[',right:'\\]',display:true}
+            ],throwOnError:false
+        });
+    }
+});
 </script>
 {% endblock %}

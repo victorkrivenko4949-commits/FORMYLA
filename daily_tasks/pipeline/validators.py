@@ -303,7 +303,7 @@ GEMINI_SPEC_REQUIRED_FIELDS = {
 }
 OPUS_TASK_REQUIRED_FIELDS = {"position", "task_text", "correct_answer", "solution", "hints"}
 GPT_AUDIT_ENTRY_REQUIRED_FIELDS = {"position", "verdict", "issues"}
-AUDIT_ISSUE_REQUIRED_FIELDS = {"code", "severity", "explanation", "fix_instruction"}
+AUDIT_ISSUE_REQUIRED_FIELDS = {"code", "severity", "description", "fix_instruction"}
 
 
 def _is_nonempty_string(val: Any) -> bool:

@@ -90,27 +90,25 @@
         <h2 style="color: var(--accent-2); margin-bottom: 25px; font-size: 1.5em;">📊 Детальный разбор</h2>
         
         {% for answer in answers %}
-        <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: var(--radius-sm); border-left: 4px solid {% if answer.score == 2 %}#22c55e{% elif answer.score == 1 %}#fbbf24{% else %}#ef4444{% endif %}; margin-bottom: 20px;">
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: var(--radius-sm); border-left: 4px solid {% if answer.score == 1 %}#22c55e{% elif answer.score == 0 %}#fbbf24{% else %}#ef4444{% endif %}; margin-bottom: 20px;">
             
             <!-- Заголовок задачи -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div style="font-weight: 600; color: var(--text-main); font-size: 1.1em;">
                     Задача #{{ loop.index }} (Уровень {{ answer.difficulty }}/8)
                 </div>
-                <div style="padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.85em; 
-                    {% if answer.score == 2 %}
+                <div style="padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.85em;
+                    {% if answer.score == 1 %}
                         background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e;
-                    {% elif answer.score == 1 %}
+                    {% elif answer.score == 0 %}
                         background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24;
                     {% else %}
                         background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;
                     {% endif %}">
-                    {% if answer.score == 2 %}
+                    {% if answer.score == 1 %}
                         ✅ Верно! +1 уровень
-                    {% elif answer.score == 1 %}
-                        ⚠️ Частично — уровень без изменений
                     {% elif answer.score == 0 %}
-                        ℹ️ Принято — уровень без изменений
+                        ℹ️ 0 баллов — уровень без изменений
                     {% else %}
                         ❌ Неверно — -1 уровень
                     {% endif %}

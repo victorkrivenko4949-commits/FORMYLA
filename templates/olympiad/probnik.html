@@ -90,5 +90,93 @@
         {% endfor %}
     </div>
     {% endif %}
+
+    {# ── Per-task figures ── #}
+    {% if task_figures %}
+    <section style="margin-top: 32px;">
+        <h2 class="oly-section-title">🖼 Иллюстрации к задачам</h2>
+        {% for t in tasks %}
+        {% set figs = task_figures.get(t.id) %}
+        {% if figs and (figs.condition or figs.solution) %}
+        <div style="margin: 20px 0 12px;">
+            <h3 style="font-size:16px; margin:0 0 8px;">Задача №{{ t.number }}</h3>
+            {% if figs.condition %}
+            <div class="task-figures-block">
+                {% for fig in figs.condition %}
+                {% set fname = fig.file | replace('figures/', '') %}
+                <figure class="task-figure" data-file="{{ fname }}">
+                    <img src="/static/figures/{{ fname }}" alt="Рисунок к условию задачи {{ t.number }}"
+                         loading="lazy" class="task-figure__img"
+                         onclick="openOnBoard('/static/figures/{{ fname }}')"
+                         onerror="this.closest('figure').remove()" />
+                    <figcaption class="task-figure__cap">
+                        <a class="task-figure__download" href="/static/figures/{{ fname }}" download="{{ fname }}">⬇ Скачать</a>
+                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                    </figcaption>
+                </figure>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if figs.solution %}
+            <div class="task-figures-block">
+                {% for fig in figs.solution %}
+                {% set fname = fig.file | replace('figures/', '') %}
+                <figure class="task-figure" data-file="{{ fname }}">
+                    <img src="/static/figures/{{ fname }}" alt="Рисунок к решению задачи {{ t.number }}"
+                         loading="lazy" class="task-figure__img"
+                         onclick="openOnBoard('/static/figures/{{ fname }}')"
+                         onerror="this.closest('figure').remove()" />
+                    <figcaption class="task-figure__cap">
+                        <a class="task-figure__download" href="/static/figures/{{ fname }}" download="{{ fname }}">⬇ Скачать</a>
+                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                    </figcaption>
+                </figure>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </section>
+    {% endif %}
 </div>
+
+{# ── Board overlay ── #}
+<div id="board-overlay" class="board" hidden>
+    <button class="board__close" onclick="closeBoard()" aria-label="Close">✕</button>
+    <div class="board__controls">
+        <button onclick="boardZoom(1.2)">+</button>
+        <button onclick="boardZoom(1/1.2)">−</button>
+        <button onclick="boardReset()">Reset</button>
+        <a id="board-download" href="#" download>⬇ Download</a>
+    </div>
+    <div class="board__canvas" id="board-canvas">
+        <img id="board-img" src="" alt="" draggable="false"/>
+    </div>
+</div>
+
+<style>
+.task-figures-block { display:flex; flex-wrap:wrap; gap:16px; margin:8px 0 16px; }
+.task-figure { margin:0; display:inline-flex; flex-direction:column; align-items:flex-start; }
+.task-figure__img { max-width:100%; height:auto; border:1px solid #334155; border-radius:8px; cursor:zoom-in; background:#fff; display:block; }
+.task-figure__cap { margin-top:6px; font-size:13px; display:flex; gap:10px; align-items:center; }
+.task-figure__download { color:#7dd3fc; text-decoration:underline; cursor:pointer; }
+.task-figure__board-btn { background:rgba(56,189,248,.12); color:#7dd3fc; border:1px solid rgba(56,189,248,.3); border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer; }
+.board { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.88); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.board[hidden] { display:none; }
+.board__close { position:absolute; top:16px; right:16px; font-size:22px; background:#fff; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer; z-index:10001; }
+.board__controls { position:absolute; top:16px; left:16px; display:flex; gap:8px; align-items:center; z-index:10001; }
+.board__controls button, .board__controls a { background:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:14px; text-decoration:none; color:#111; }
+.board__canvas { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+#board-img { max-width:92vw; max-height:90vh; transform-origin:center center; user-select:none; -webkit-user-drag:none; background:#fff; border-radius:8px; }
+</style>
+<script>
+var bScale=1,bX=0,bY=0,bDrag=false,bSX=0,bSY=0;
+function applyBoard(){document.getElementById('board-img').style.transform='translate('+bX+'px,'+bY+'px) scale('+bScale+')';}
+function openOnBoard(src){var ov=document.getElementById('board-overlay');document.getElementById('board-img').src=src;var dl=document.getElementById('board-download');dl.href=src;dl.download=src.split('/').pop();bScale=1;bX=0;bY=0;applyBoard();ov.hidden=false;document.body.style.overflow='hidden';}
+function closeBoard(){document.getElementById('board-overlay').hidden=true;document.body.style.overflow='';}
+function boardZoom(f){bScale=Math.min(8,Math.max(0.2,bScale*f));applyBoard();}
+function boardReset(){bScale=1;bX=0;bY=0;applyBoard();}
+(function(){var canvas=document.getElementById('board-canvas');var ov=document.getElementById('board-overlay');canvas.addEventListener('wheel',function(e){e.preventDefault();boardZoom(e.deltaY<0?1.1:1/1.1);},{passive:false});canvas.addEventListener('mousedown',function(e){bDrag=true;bSX=e.clientX-bX;bSY=e.clientY-bY;});window.addEventListener('mousemove',function(e){if(!bDrag)return;bX=e.clientX-bSX;bY=e.clientY-bSY;applyBoard();});window.addEventListener('mouseup',function(){bDrag=false;});ov.addEventListener('click',function(e){if(e.target===ov)closeBoard();});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!ov.hidden)closeBoard();});})();
+</script>
 {% endblock %}

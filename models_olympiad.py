@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Модели раздела «Олимпиады» (`/olympiads/*`).
 
@@ -384,6 +384,51 @@ class StageAttempt(db.Model):
         )
 
 
+
+
+# ------------------------------------------------------------------------------
+# MethodTask  - standalone task bank (VsOSh 9/10/11, 2027)
+# ------------------------------------------------------------------------------
+
+METHOD_TASK_PROBABILITY_TIERS = ('CORE', 'LIKELY', 'POSSIBLE', 'RARE')
+
+
+class MethodTask(db.Model):
+    """Standalone task from VsOSh bank (not linked to Probnik).
+    Primary key is string id like 10-1, 11-42, 9-7.
+    Table method_tasks is created by auto-migration on app start.
+    """
+
+    __tablename__ = 'method_tasks'
+
+    id = db.Column(db.String(20), primary_key=True)
+    grade = db.Column(db.Integer, nullable=False, index=True)
+    olympiad = db.Column(db.String(50), nullable=False, default='VsOSh', server_default='VsOSh')
+    subject = db.Column(db.String(20), nullable=False, default='math', server_default='math')
+    year = db.Column(db.Integer, nullable=True, index=True)
+    num = db.Column(db.Integer, nullable=True)
+    stage = db.Column(db.String(50), nullable=True, index=True)
+    method_code = db.Column(db.String(20), nullable=False, index=True)
+    method_name = db.Column(db.String(300), nullable=True)
+    section = db.Column(db.String(100), nullable=True)
+    difficulty = db.Column(db.Integer, nullable=True, index=True)
+    difficulty_label = db.Column(db.String(100), nullable=True)
+    difficulty_color = db.Column(db.String(20), nullable=True)
+    method_probability = db.Column(db.String(200), nullable=True)
+    method_probability_tier = db.Column(
+        db.Enum(*METHOD_TASK_PROBABILITY_TIERS, name='method_probability_tier', native_enum=False),
+        nullable=True,
+        index=True,
+    )
+    method_probability_color = db.Column(db.String(20), nullable=True)
+    text = db.Column(db.Text, nullable=False)
+    answer = db.Column(db.Text, nullable=True)
+    solution_idea = db.Column(db.Text, nullable=True)
+    task_type = db.Column(db.String(50), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return '<MethodTask id=%r grade=%r method=%r>' % (self.id, self.grade, self.method_code)
 __all__ = [
     'Probnik',
     'OlympiadTask',
@@ -396,4 +441,6 @@ __all__ = [
     'THEORY_SECTIONS',
     'ATTEMPT_STATUSES',
     'STAGE_RESULTS',
+    'MethodTask',
+    'METHOD_TASK_PROBABILITY_TIERS',
 ]

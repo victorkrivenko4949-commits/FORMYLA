@@ -1,9 +1,166 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Профиль - FORMYLA{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mastery.css') }}?v=1">
+<style>
+/* ===== Progress Modal & Button ===== */
+.progress-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(59,130,246,0.15));
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 14px;
+    color: var(--text-main);
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(6px);
+}
+.progress-btn:hover {
+    background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(59,130,246,0.25));
+    border-color: rgba(56,189,248,0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(56,189,248,0.15);
+}
+.progress-btn:active {
+    transform: translateY(0);
+}
+
+/* Overlay */
+.progress-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.progress-modal-overlay.active {
+    display: flex;
+}
+
+/* Modal */
+.progress-modal {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-soft, #334155);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    animation: progressFadeIn 0.25s ease;
+}
+@keyframes progressFadeIn {
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.progress-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-soft, #334155);
+}
+.progress-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-main, #f1f5f9);
+}
+.progress-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted, #94a3b8);
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.progress-modal-close:hover {
+    color: var(--text-main, #f1f5f9);
+}
+
+.progress-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 200px;
+    position: relative;
+}
+
+.progress-chart-wrapper {
+    width: 100%;
+    min-height: 320px;
+    position: relative;
+}
+
+#progressChart {
+    width: 100% !important;
+    max-height: 400px;
+}
+
+/* Empty state */
+.progress-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-soft, #cbd5e1);
+}
+.progress-empty p {
+    margin: 8px 0;
+}
+
+/* Loading */
+.progress-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-soft, #cbd5e1);
+}
+.progress-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border-soft, #334155);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: progressSpin 0.7s linear infinite;
+    margin: 0 auto 12px;
+}
+@keyframes progressSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    .progress-modal {
+        max-width: 100%;
+        border-radius: 16px;
+    }
+    .progress-modal-header {
+        padding: 16px 18px;
+    }
+    .progress-modal-body {
+        padding: 16px;
+    }
+    .progress-chart-wrapper {
+        min-height: 240px;
+    }
+    .progress-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -488,19 +645,6 @@
     </div>
     {% endif %}
 
-    <!-- Быстрые действия -->
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px;">
-        <h3 style="color: var(--text-main); margin-bottom: 20px; text-align: center;">Быстрые действия</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <a href="/" onclick="document.getElementById('tutorBtn')?.click(); return false;" style="padding: 15px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: var(--radius-sm); text-align: center; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.3s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
-                💬 Открыть тьютора
-            </a>
-            <a href="/" style="padding: 15px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; text-decoration: none; border-radius: var(--radius-sm); text-align: center; border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'">
-                📝 Написать пробник
-            </a>
-        </div>
-    </div>
-
     <!-- Входящие заявки -->
     {% if incoming_requests %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px; border-left: 4px solid #f59e0b;">
@@ -541,42 +685,13 @@
     {% endif %}
 
     <!-- Мои друзья -->
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px;">
-        <h3 style="color: var(--text-main); margin-bottom: 20px;">🤝 Мои друзья</h3>
-        
-        <!-- Форма добавления друга -->
-        <form action="{{ url_for('add_student') }}" method="POST" style="margin-bottom: 20px;">
-            <div style="display: flex; gap: 10px;">
-                <input type="text" name="nickname" placeholder="Введите никнейм друга (например, @ivan)" required
-                       style="flex: 1; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-main);">
-                <button type="submit" class="btn-primary" style="padding: 12px 24px;">
-                    Добавить друга
-                </button>
-            </div>
-        </form>
-        
-        <!-- Список друзей -->
-        {% if students %}
-        <div style="display: grid; gap: 10px; margin-top: 15px;">
-            {% for student in students %}
-            <a href="{{ url_for('student_profile', student_id=student.id) }}"
-               style="display: block; padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: 8px; text-decoration: none; border: 1px solid var(--border-soft); transition: all 0.3s;"
-               onmouseover="this.style.background='rgba(30, 41, 59, 0.8)'; this.style.borderColor='var(--accent-2)'"
-               onmouseout="this.style.background='rgba(30, 41, 59, 0.6)'; this.style.borderColor='var(--border-soft)'">
-                <div style="color: var(--text-main); font-weight: 600;">@{{ student.nickname or student.name or student.email }}</div>
-                <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
-                    🏆 {{ student.experience_points or 0 }} XP · Уровень {{ student.current_level or 1 }}
-                </div>
-            </a>
-            {% endfor %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+        <div>
+            <h3 style="color: var(--text-main); margin: 0 0 4px;">🤝 Мои друзья</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Добавляйте друзей и соревнуйтесь вместе!</p>
         </div>
-        {% else %}
-        <p style="color: var(--text-muted); text-align: center; padding: 20px;">
-            У вас пока нет друзей. Добавьте первого по никнейму!
-        </p>
-        {% endif %}
+        <a href="/friends" class="btn-primary" style="padding: 10px 22px; text-decoration: none; white-space: nowrap;">Перейти в раздел друзей</a>
     </div>
-
     <!-- 📊 ИСТОРИЯ АДАПТИВНЫХ ТЕСТОВ -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
@@ -683,6 +798,37 @@
         </button>
     </div>
 
+    <!-- ========== Кнопка "Посмотреть прогресс" ========== -->
+    <div style="text-align: center; margin: 20px 0 10px;">
+        <button id="btnProgressModal" onclick="openProgressModal()"
+                class="progress-btn">
+            📈 Посмотреть прогресс
+        </button>
+    </div>
+
+    <!-- ========== Модальное окно прогресса ========== -->
+    <div id="progressModal" class="progress-modal-overlay" onclick="closeProgressModal(event)">
+        <div class="progress-modal" onclick="event.stopPropagation()">
+            <div class="progress-modal-header">
+                <h3>📊 Прогресс адаптивных тестов</h3>
+                <button class="progress-modal-close" onclick="closeProgressModal()">&times;</button>
+            </div>
+            <div class="progress-modal-body">
+                <div class="progress-chart-wrapper">
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <div id="progressEmpty" class="progress-empty" style="display:none;">
+                    <p>🤷‍♂️ Пока нет результатов тестов.</p>
+                    <p style="font-size:14px;color:var(--text-muted);">Пройдите хотя бы один адаптивный тест, чтобы увидеть график.</p>
+                </div>
+                <div id="progressLoading" class="progress-loading">
+                    <div class="progress-spinner"></div>
+                    <p>Загрузка данных...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Действия -->
     <div style="text-align: center; margin-top: 40px;">
         <a href="{{ url_for('index') }}"
@@ -706,6 +852,9 @@
 
 <!-- Chart.js for Radar Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Chart.js Progress Graph -->
+<script src="{{ url_for('static', filename='js/progress.js') }}"></script>
 
 <script>
 function showNicknameForm() {

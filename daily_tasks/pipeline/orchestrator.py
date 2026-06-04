@@ -26,7 +26,7 @@ from .step4_opus_fix import fix_single_task
 logger = logging.getLogger(__name__)
 
 # ── константы ────────────────────────────────────────────────────────────
-MAX_FIX_ITERATIONS = 3
+MAX_FIX_ITERATIONS = 5
 """Максимальное число итераций Opus‑fix → GPT‑audit для одной задачи."""
 
 MIN_VALID_TASKS = 7

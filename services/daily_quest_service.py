@@ -86,8 +86,25 @@ def _save_attempts_map(quest, m: dict) -> None:
 
 
 def _save_failed_indices(quest, indices) -> None:
-    """Сериализовать список индексов в quest.failed_indices."""
-    quest.failed_indices = json.dumps(sorted(set(int(x) for x in indices)))
+    """Сериализовать список индексов в quest.failed_indices.
+
+    Поддерживает как Text-колонку (SQLite/старая схема), так и JSONB-колонку
+    (PostgreSQL/новая схема). При JSONB нужно передавать Python-объект, а не
+    строку — иначе Postgres выбрасывает DatatypeMismatch.
+    """
+    sorted_list = sorted(set(int(x) for x in indices))
+    # Detect JSONB column type at runtime to avoid DatatypeMismatch on Postgres.
+    try:
+        col = quest.__class__.__table__.c.get('failed_indices')
+        col_type = str(col.type).upper() if col is not None else ''
+    except Exception:
+        col_type = ''
+    if 'JSON' in col_type:
+        # JSONB column: pass a Python list directly (SQLAlchemy handles serialisation)
+        quest.failed_indices = sorted_list
+    else:
+        # Text column (SQLite / legacy): store as JSON string
+        quest.failed_indices = json.dumps(sorted_list)
 
 
 def register_wrong_attempt(quest, task_index: int) -> dict:

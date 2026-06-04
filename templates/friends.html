@@ -11,57 +11,71 @@
     <p>Соревнуйся с друзьями и достигай новых высот вместе!</p>
   </div>
 
-  {% if incoming %}
-  <section class="friends-section">
-    <h2>📩 Тебя хотят добавить <span class="count-badge">{{ incoming|length }}</span></h2>
-    <div class="requests-grid">
-      {% for req in incoming %}
-      <article class="request-card">
-        <div class="req-avatar">
-          {% if req.requester.avatar_url %}
-          <img src="{{ req.requester.avatar_url }}" alt="avatar" class="avatar">
-          {% else %}
-          <div class="avatar-placeholder">{{ (req.requester.name or req.requester.email)[0].upper() }}</div>
-          {% endif %}
-        </div>
-        <div class="req-info">
-          <h3>{{ req.requester.name or req.requester.email }}</h3>
-          {% if req.requester.nickname %}<p class="req-nick">@{{ req.requester.nickname }}</p>{% endif %}
-          <p class="req-stats">Уровень {{ req.requester.current_level }} · {{ req.requester.experience_points }} XP</p>
-        </div>
-        <div class="req-actions">
-          <button class="btn-accept" data-rid="{{ req.id }}" onclick="acceptRequest(this)">✅ Принять</button>
-          <button class="btn-decline" data-rid="{{ req.id }}" onclick="declineRequest(this)">❌ Отклонить</button>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
+  {# ── Запросы ── #}
+  <section class="friends-section requests-section">
+    <h2>📨 Запросы
+      {%- set total_requests = (incoming|length) + (outgoing|length) -%}
+      {% if total_requests > 0 %}<span class="count-badge">{{ total_requests }}</span>{% endif %}
+    </h2>
 
-  {% if outgoing %}
-  <section class="friends-section">
-    <h2>📤 Ожидают ответа <span class="count-badge">{{ outgoing|length }}</span></h2>
-    <div class="requests-grid">
-      {% for req in outgoing %}
-      <article class="request-card">
-        <div class="req-avatar">
-          {% if req.addressee.avatar_url %}
-          <img src="{{ req.addressee.avatar_url }}" alt="avatar" class="avatar">
-          {% else %}
-          <div class="avatar-placeholder">{{ (req.addressee.name or req.addressee.email)[0].upper() }}</div>
-          {% endif %}
-        </div>
-        <div class="req-info">
-          <h3>{{ req.addressee.name or req.addressee.email }}</h3>
-          {% if req.addressee.nickname %}<p class="req-nick">@{{ req.addressee.nickname }}</p>{% endif %}
-        </div>
-        <button class="btn-cancel" data-rid="{{ req.id }}" onclick="cancelRequest(this)">Отменить</button>
-      </article>
-      {% endfor %}
+    {% if incoming %}
+    <div class="requests-sub">
+      <h3 class="requests-sub-title">📩 Входящие <span class="count-badge-sm">{{ incoming|length }}</span></h3>
+      <div class="requests-grid">
+        {% for req in incoming %}
+        <article class="request-card">
+          <div class="req-avatar">
+            {% if req.requester.avatar_url %}
+            <img src="{{ req.requester.avatar_url }}" alt="avatar" class="avatar">
+            {% else %}
+            <div class="avatar-placeholder">{{ (req.requester.name or req.requester.email)[0].upper() }}</div>
+            {% endif %}
+          </div>
+          <div class="req-info">
+            <h3>{{ req.requester.name or req.requester.email }}</h3>
+            {% if req.requester.nickname %}<p class="req-nick">@{{ req.requester.nickname }}</p>{% endif %}
+            <p class="req-stats">Уровень {{ req.requester.current_level }} · {{ req.requester.experience_points }} XP</p>
+          </div>
+          <div class="req-actions">
+            <button class="btn-accept" data-rid="{{ req.id }}" onclick="acceptRequest(this)">✅ Принять</button>
+            <button class="btn-decline" data-rid="{{ req.id }}" onclick="declineRequest(this)">❌ Отклонить</button>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
     </div>
+    {% endif %}
+
+    {% if outgoing %}
+    <div class="requests-sub">
+      <h3 class="requests-sub-title">📤 Исходящие <span class="count-badge-sm">{{ outgoing|length }}</span></h3>
+      <div class="requests-grid">
+        {% for req in outgoing %}
+        <article class="request-card">
+          <div class="req-avatar">
+            {% if req.addressee.avatar_url %}
+            <img src="{{ req.addressee.avatar_url }}" alt="avatar" class="avatar">
+            {% else %}
+            <div class="avatar-placeholder">{{ (req.addressee.name or req.addressee.email)[0].upper() }}</div>
+            {% endif %}
+          </div>
+          <div class="req-info">
+            <h3>{{ req.addressee.name or req.addressee.email }}</h3>
+            {% if req.addressee.nickname %}<p class="req-nick">@{{ req.addressee.nickname }}</p>{% endif %}
+          </div>
+          <button class="btn-cancel" data-rid="{{ req.id }}" onclick="cancelRequest(this)">Отменить</button>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not incoming and not outgoing %}
+    <div class="requests-empty">
+      <p>Нет активных запросов. Найди друзей через поиск ниже!</p>
+    </div>
+    {% endif %}
   </section>
-  {% endif %}
 
   <section class="friends-section">
     <h2>🔍 Найти пользователя</h2>

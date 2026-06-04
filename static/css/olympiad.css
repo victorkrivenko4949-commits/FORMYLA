@@ -282,3 +282,111 @@
 .oly-result-hero .oly-result-label-prize       { color: #60a5fa; }
 .oly-result-hero .oly-result-label-participant { color: #94a3b8; }
 
+/* ── Signal phrases (badges) ───────────────────────────────────────────── */
+.oly-signal-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.oly-badge-signal {
+    background: rgba(56, 189, 248, 0.12);
+    color: #7dd3fc;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 280px;
+    transition: background 0.15s, border-color 0.15s;
+}
+.oly-badge-signal:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* ── First moves (numbered list) ────────────────────────────────────────── */
+.oly-moves-list {
+    padding-left: 1.5em;
+    margin: 0;
+    line-height: 1.7;
+}
+.oly-moves-list li {
+    margin-bottom: 8px;
+    color: var(--text-soft, #e2e8f0);
+}
+.oly-moves-list li::marker {
+    color: var(--accent-1, #60a5fa);
+    font-weight: 700;
+}
+
+/* ── Prerequisite / Leads-to chain ──────────────────────────────────────── */
+.oly-prereq-chain {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+.oly-badge-prereq,
+.oly-badge-leads {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+.oly-badge-prereq {
+    background: rgba(251, 146, 60, 0.12);
+    color: #fb923c;
+    border: 1px solid rgba(251, 146, 60, 0.2);
+}
+.oly-badge-prereq:hover {
+    background: rgba(251, 146, 60, 0.22);
+    border-color: rgba(251, 146, 60, 0.4);
+    color: #fdba74;
+}
+.oly-badge-leads {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(52, 211, 153, 0.2);
+}
+.oly-badge-leads:hover {
+    background: rgba(52, 211, 153, 0.22);
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #6ee7b7;
+}
+
+/* ── Why it works (callout card) ───────────────────────────────────────── */
+.oly-card-why {
+    border-left: 4px solid var(--accent-1, #3b82f6);
+    background: linear-gradient(135deg,
+        rgba(59, 130, 246, 0.06),
+        rgba(147, 51, 234, 0.04)
+    );
+}
+.oly-card-why h2 {
+    color: var(--accent-1, #60a5fa);
+}
+
+/* ── SVG figures in worked_example_md ──────────────────────────────────── */
+.oly-md svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 16px auto;
+}
+.oly-md figure {
+    margin: 16px 0;
+    text-align: center;
+}
+.oly-md figcaption {
+    font-size: 0.88em;
+    color: var(--text-muted, #94a3b8);
+    margin-top: 6px;
+}

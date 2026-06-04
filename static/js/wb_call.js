@@ -43,6 +43,7 @@
   var camOn = true;
   var micOn = true;
   var minimized = false;           // PiP-режим: маленькое окно с видео
+  var _SS_RECONNECT_KEY = "wb_call_reconnect_room";  // sessionStorage key for reload persistence
 
   // -- Helpers ------------------------------------------------------------
   function $(id) { return document.getElementById(id); }
@@ -268,10 +269,10 @@
 
   function _wbOpenPanel() {
     try {
-      ensurePanel();
-      showPanel(true);
-      var inp = $("wbCallRoom");
-      if (inp && !roomId) inp.focus();
+      // Вместо виджета — открываем /call с текущим кодом комнаты (если есть)
+      var code = roomId || "";
+      var url = "/call" + (code ? "?code=" + encodeURIComponent(code) : "");
+      window.location.href = url;
     } catch (e) {
       console.error("[wb_call] openPanel failed", e);
     }
@@ -1070,6 +1071,8 @@
   }
 
   function leaveCall() {
+    // Очищаем sessionStorage — при следующей загрузке не будет автоподключения.
+    try { sessionStorage.removeItem(_SS_RECONNECT_KEY); } catch (e) {}
     if (roomId && peerId) {
       api("leave", { room: roomId, peer_id: peerId }).catch(function () {});
       _wbClearPrevPeer(roomId);
@@ -1095,14 +1098,11 @@
   }
 
   window.addEventListener("beforeunload", function () {
-    if (roomId && peerId) {
-      try {
-        if (navigator.sendBeacon) {
-          var blob = new Blob([JSON.stringify({ room: roomId, peer_id: peerId })],
-                              { type: "application/json" });
-          navigator.sendBeacon("/api/wb_call/leave", blob);
-        }
-      } catch (e) {}
+    // Сохраняем код комнаты в sessionStorage, чтобы после перезагрузки
+    // страницы можно было автоматически переподключиться.
+    // НЕ отправляем leave — иначе собеседник увидит «peer-left».
+    if (roomId) {
+      try { sessionStorage.setItem(_SS_RECONNECT_KEY, roomId); } catch (e) {}
     }
   });
 
@@ -1199,6 +1199,29 @@
           }
         }, 350);
       }
+    }
+
+    // ── Persist call across page reload ──────────────────────────────────
+    // Если sessionStorage содержит код комнаты (сохранённый в beforeunload),
+    // автоматически переподключаемся. Это позволяет звонку «выживать» при F5.
+    var savedRoom = null;
+    try { savedRoom = sessionStorage.getItem(_SS_RECONNECT_KEY); } catch (e) {}
+    if (savedRoom && !roomFromUrl) {
+      // Очищаем сохранённое состояние сразу (чтобы не было повторного входа
+      // при случайном обновлении sessionStorage на той же странице).
+      try { sessionStorage.removeItem(_SS_RECONNECT_KEY); } catch (e) {}
+      // Открываем панель, подставляем код и автоматически нажимаем «Войти» —
+      // точно так же, как при ?room=...&auto=1.
+      ensurePanel();
+      showPanel(true);
+      var inp = $("wbCallRoom");
+      if (inp) inp.value = savedRoom;
+      setTimeout(function () {
+        var startBtn = $("wbCallStart");
+        if (startBtn) {
+          try { startBtn.click(); } catch (e) {}
+        }
+      }, 350);
     }
   }
 

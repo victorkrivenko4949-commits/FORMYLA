@@ -129,7 +129,8 @@ async def _audit_batch(
             batch_id, _dt, usage.input_tokens, usage.output_tokens, usage.cost_usd,
         )
     except Exception as exc:
-        logger.error("AUDIT batch %d — HTTP/timeout error: %s", batch_id, exc)
+        detail = f"AUDIT HTTP/timeout error: {exc}"
+        logger.error(detail)
         # synthesize needs_fix for each item so pipeline keeps going
         fallback = [
             {
@@ -137,8 +138,8 @@ async def _audit_batch(
                 "verdict": "needs_fix",
                 "issues": [
                     {"severity": "minor",
-                     "kind": "audit_error",
-                     "message": f"audit batch failed: {exc}"}
+                     "code": "audit_http_error",
+                     "description": detail}
                 ],
             }
             for it in items
@@ -150,11 +151,12 @@ async def _audit_batch(
         # Dump raw response — короткий ответ часто говорит САМ что не так
         # (markdown, refusal, обрезка). Видеть это критически важно.
         raw_preview = (raw or "")[:600].replace("\n", "\\n")
-        logger.error(
-            "AUDIT batch %d — validation errors (%d): %s | RAW(600 chars)=%r",
+        validation_errors = "; ".join(validation.all_errors)
+        logger.warning(
+            "AUDIT batch %d — validation FAILED (%d err): %s | RAW(600)=%r",
             batch_id,
             len(validation.all_errors),
-            "; ".join(validation.all_errors),
+            validation_errors,
             raw_preview,
         )
         fallback = [
@@ -163,8 +165,8 @@ async def _audit_batch(
                 "verdict": "needs_fix",
                 "issues": [
                     {"severity": "minor",
-                     "kind": "audit_invalid_json",
-                     "message": "audit returned invalid format"}
+                     "code": "audit_json_invalid",
+                     "description": f"audit JSON invalid. errors: {validation_errors}. raw(200)={raw_preview[:200]}"}
                 ],
             }
             for it in items
@@ -173,15 +175,18 @@ async def _audit_batch(
 
     parsed = extract_json_safe(raw)
     if parsed is None or "audit" not in parsed:
-        logger.error("AUDIT batch %d — no 'audit' key in parsed JSON", batch_id)
+        logger.warning(
+            "AUDIT batch %d — no 'audit' key in parsed JSON. keys=%s",
+            batch_id, list(parsed.keys()) if parsed else "(parse failed)",
+        )
         fallback = [
             {
                 "position": it.get("position"),
                 "verdict": "needs_fix",
                 "issues": [
                     {"severity": "minor",
-                     "kind": "audit_no_audit_key",
-                     "message": "audit response missing 'audit' key"}
+                     "code": "audit_missing_key",
+                     "description": "audit response has no 'audit' key"}
                 ],
             }
             for it in items

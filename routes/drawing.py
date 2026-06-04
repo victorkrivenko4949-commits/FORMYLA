@@ -44,6 +44,7 @@ from services.drawing_service import (
     DrawingResult,
     SYSTEM_PROMPT,  # noqa: F401  (re-exported for debugging)
 )
+from services.drawing_async import run_drawing_async, get_task_status
 from services.sandbox import (
     SandboxError,
     SandboxRejected,
@@ -54,6 +55,32 @@ from services.openrouter_client import OpenRouterError
 logger = logging.getLogger(__name__)
 
 drawing_bp = Blueprint("drawing", __name__)
+
+# ── Async task store (in-memory, TTL 30 min) ─────────────────────────────────
+_TASK_STORE: dict = {}
+_task_store_lock = Lock()
+_TASK_TTL = 1800
+
+
+def _task_store_cleanup() -> None:
+    now = time.time()
+    with _task_store_lock:
+        expired = [k for k, v in _TASK_STORE.items()
+                   if now - v.get("created_at", 0) > _TASK_TTL]
+        for k in expired:
+            del _TASK_STORE[k]
+
+
+def _task_set(task_id: str, **kwargs) -> None:
+    with _task_store_lock:
+        if task_id not in _TASK_STORE:
+            _TASK_STORE[task_id] = {"created_at": time.time()}
+        _TASK_STORE[task_id].update(kwargs)
+
+
+def _task_get(task_id: str):
+    with _task_store_lock:
+        return dict(_TASK_STORE[task_id]) if task_id in _TASK_STORE else None
 
 
 # ─── Rate limit (in-memory) ───────────────────────────────────────────────────
@@ -169,7 +196,21 @@ def _log_to_db(
 
 @drawing_bp.route("/drawing", methods=["GET"])
 def drawing_page():
-    return render_template("drawing.html")
+    # Generation limit info for the template banner
+    try:
+        from app import _get_remaining_generations
+        remaining = _get_remaining_generations(current_user)
+        gens_unlimited = bool(current_user.gens_unlimited) if current_user else False
+        gens_label = '♾️ Безлимит' if gens_unlimited else f'{remaining} / день'
+    except Exception:
+        remaining = 0
+        gens_unlimited = False
+        gens_label = '—'
+
+    return render_template("drawing.html",
+                           remaining_generations=remaining,
+                           gens_unlimited=gens_unlimited,
+                           gens_label=gens_label)
 
 
 @drawing_bp.route("/whiteboard", methods=["GET"])
@@ -180,6 +221,23 @@ def whiteboard_page():
     `wb_call_listener.js` редиректит сюда с `?room=<code>`.
     """
     return render_template("whiteboard.html")
+
+
+@drawing_bp.route("/api/drawing/status/<task_id>", methods=["GET"])
+def api_drawing_status(task_id: str):
+    """Poll the status of an async drawing generation task."""
+    _task_store_cleanup()
+    task = _task_get(task_id)
+    if task is None:
+        return jsonify({"error": "task not found"}), 404
+    status = task.get("status", "pending")
+    if status == "completed":
+        return jsonify({"task_id": task_id, "status": "completed",
+                        "result": task.get("result")})
+    elif status == "error":
+        return jsonify({"task_id": task_id, "status": "error",
+                        "error": task.get("error", "unknown error")})
+    return jsonify({"task_id": task_id, "status": status})
 
 
 @drawing_bp.route("/api/drawing/generate", methods=["POST"])
@@ -314,84 +372,11 @@ def api_drawing_generate():
 
     app_root = current_app.root_path
 
-    try:
-        result = generate_drawing(
-            problem,
-            app_root=app_root,
-            use_cache=not bypass_cache,
-        )
-    except SandboxRejected as e:
-        logger.error("[drawing] sandbox rejected: %s", e)
-        _log_to_db(problem=problem, status="rejected", error=str(e))
-        return jsonify({
-            "error": "Сгенерированный код не прошёл проверку безопасности.",
-            "detail": str(e),
-            "stage": "sandbox.validate",
-        }), 502
-    except SandboxTimeout as e:
-        logger.error("[drawing] sandbox timeout: %s", e)
-        _log_to_db(problem=problem, status="timeout", error=str(e))
-        return jsonify({
-            "error": "Построение чертежа заняло слишком много времени.",
-            "detail": str(e),
-            "stage": "sandbox.run",
-        }), 502
-    except SandboxError as e:
-        logger.error("[drawing] sandbox error: %s", e)
-        _log_to_db(problem=problem, status="error", error=str(e))
-        return jsonify({
-            "error": "Не удалось построить чертёж.",
-            "detail": str(e)[:1500],
-            "stage": "sandbox.run",
-        }), 502
-    except OpenRouterError as e:
-        logger.error("[drawing] openrouter error: %s", e)
-        _log_to_db(problem=problem, status="error", error=str(e))
-        return jsonify({
-            "error": "Сервис генерации временно недоступен.",
-            "detail": str(e),
-            "stage": "llm",
-        }), 502
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:  # pragma: no cover
-        logger.exception("[drawing] unexpected error")
-        _log_to_db(problem=problem, status="error", error=str(e))
-        return jsonify({
-            "error": "Внутренняя ошибка сервера.",
-            "detail": str(e),
-        }), 500
-
-    # Persist to /static/generated/* for the <img> tag.
-    image_url: str | None = None
-    image_abs: str | None = None
-    try:
-        image_url, image_abs = _save_png(result.image_bytes)
-    except Exception as e:
-        logger.warning("[drawing] failed to persist PNG: %s", e)
-
-    status = "cache_hit" if result.cache_hit else "ok"
-    _log_to_db(
-        problem=problem,
-        status=status,
-        result=result,
-        image_path=image_abs,
+    # Launch generation in a background thread.
+    # Returns task_id immediately; client polls GET /api/drawing/status/<task_id>
+    task_id = run_drawing_async(
+        problem, app_root, bypass_cache,
+        _save_png, _log_to_db,
     )
+    return jsonify(task_id=task_id, status="processing"), 202
 
-    image_b64 = base64.b64encode(result.image_bytes).decode("ascii")
-
-    return jsonify({
-        "image_url": image_url,
-        "image_b64": image_b64,
-        "data_url": "data:image/png;base64," + image_b64,
-        "model": result.model,
-        "cost_usd": result.cost_usd,
-        "render_ms": result.render_ms,
-        "cache_hit": result.cache_hit,
-        "repair_iters": result.repair_iters,
-        "critique_rounds": result.critique_rounds,
-        "critique_accepted": result.critique_accepted,
-        "critique_rejected": result.critique_rejected,
-        # Avoid leaking source code by default; admins can read it from
-        # DrawingGeneration in the DB.
-    })

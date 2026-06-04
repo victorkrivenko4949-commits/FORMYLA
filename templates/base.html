@@ -70,7 +70,7 @@
 
     <script defer src="{{ url_for('static', filename='js/analytics.js') }}?v={{ asset_version }}"></script>
 </head>
-<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}">
+<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}"{% if current_user.is_authenticated %} data-user-id="{{ current_user.id }}"{% endif %}>
     <header class="header">
         <a href="{{ url_for('olympiad.methods') }}" class="logo">
             <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
@@ -138,8 +138,8 @@
                 </button>
                 <div class="nav-menu">
                     <a href="{{ url_for('olympiads') }}">📖 Каталог</a>
-                    <a href="{{ url_for('olympiad.catalog') }}">🆕 Курсы (ВсОШ-9-2027)</a>
-                    <a href="{{ url_for('olympiad.methods') }}">📚 Каталог методов (89)</a>
+                    <a href="{{ url_for('olympiad.catalog') }}">🆕 Курсы (ВсОШ-2027)</a>
+                    <a href="{{ url_for('olympiad.methods') }}">📚 Каталог методов (102)</a>
                     <a href="{{ url_for('olympiad_prep.calendar') }}">📅 Календарь олимпиад</a>
                     {% if current_user.is_authenticated %}
                     <a href="{{ url_for('olympiad.my_progress') }}">📈 Мой прогресс</a>
@@ -184,6 +184,7 @@
 
             <!-- ℹ️ О сайте (плоская ссылка) -->
             <a href="/about" class="nav-item">ℹ️ О сайте</a>
+            <a href="/about#review-form" class="nav-item">✍️ Написать отзыв</a>
         </nav>
         
         <!-- Форма поиска -->
@@ -224,6 +225,16 @@
             {% endif %}
         </div>
     </header>
+
+    <!-- Баннер восстановления теста -->
+    <div id="testResumeBanner" style="display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #38bdf8;border-radius:8px;padding:12px 20px;margin:8px auto;max-width:900px;align-items:center;justify-content:space-between;gap:12px;">
+        <span style="color:#e2e8f0;font-size:0.95em;">Вы вышли из теста. <span style="color:#38bdf8;font-weight:600;">Продолжить тест?</span></span>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button onclick="resumeAdaptiveTest()" style="padding:6px 16px;border:none;border-radius:6px;background:#38bdf8;color:#0f172a;font-weight:600;cursor:pointer;">Продолжить</button>
+            <button onclick="abandonAdaptiveTest()" style="padding:6px 16px;border:1px solid #475569;border-radius:6px;background:transparent;color:#94a3b8;cursor:pointer;">Начать заново</button>
+            <button onclick="dismissTestBanner()" style="padding:6px 10px;border:none;border-radius:6px;background:transparent;color:#64748b;cursor:pointer;font-size:1.1em;">x</button>
+        </div>
+    </div>
 
     <!-- ═══════════════════════════════════════════════
          MOBILE DRAWER MENU (hidden on desktop via CSS)
@@ -304,7 +315,7 @@
             </a>
             <a href="{{ url_for('olympiad.catalog') }}" class="drawer-link">
                 <span class="drawer-link-icon">🆕</span>
-                Курсы (ВсОШ-9-2027)
+                Курсы (ВсОШ-2027)
             </a>
             <a href="{{ url_for('olympiad.methods') }}" class="drawer-link">
                 <span class="drawer-link-icon">📚</span>
@@ -351,6 +362,10 @@
             <a href="/about" class="drawer-link">
                 <span class="drawer-link-icon">ℹ️</span>
                 О сайте
+            </a>
+            <a href="/about#review-form" class="drawer-link">
+                <span class="drawer-link-icon">✍️</span>
+                Написать отзыв
             </a>
 
             {% if current_user.is_authenticated and not current_user.is_guest %}
@@ -537,15 +552,110 @@
     }
     </script>
     
-    <!-- AI Тьютор виджет (математика) -->
+    <!-- AI Тьютор виджет -->
     {% include 'tutor_widget.html' %}
 
     <!-- Site Concierge — AI-помощник по сайту (UX/навигация). Отдельный от тьютора. -->
     {% include 'partials/site_concierge.html' %}
 
     {% if current_user.is_authenticated %}
-    <!-- Слушатель приглашений на видеозвонок (всплывающее окно у получателя). -->
+    <!-- Слушатель приглашений на видеозвонок + PiP-оверлей межстраничного звонка. -->
     <meta name="x-user-authenticated" content="1">
+    <style>
+    /* ── Floating PiP overlay for cross-page call persistence ───────── */
+    .wb-pip-overlay {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px 8px 10px;
+        background: rgba(15,23,42,.94);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(34,197,94,.5);
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(0,0,0,.5);
+        color: #e2e8f0;
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+        animation: wbPipSlideIn .3s ease;
+        transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .wb-pip-overlay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 32px rgba(34,197,94,.18);
+    }
+    @keyframes wbPipSlideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+    .wb-pip-dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: #22c55e;
+        flex-shrink: 0;
+        animation: wbPipPulse 2s ease-in-out infinite;
+    }
+    @keyframes wbPipPulse {
+        0%,100% { opacity: 1; }
+        50%     { opacity: .35; }
+    }
+    .wb-pip-icon { font-size: 16px; line-height: 1; flex-shrink: 0; }
+    .wb-pip-label {
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .wb-pip-code {
+        color: #94a3b8;
+        font-size: 12px;
+        font-family: monospace;
+        letter-spacing: .5px;
+        flex-shrink: 0;
+    }
+    .wb-pip-spacer { flex: 1; min-width: 4px; }
+    .wb-pip-btn {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,.08);
+        color: #e2e8f0;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background .15s ease, transform .12s ease;
+    }
+    .wb-pip-btn:hover { background: rgba(255,255,255,.18); transform: scale(1.08); }
+    .wb-pip-btn-expand {
+        background: rgba(34,197,94,.18);
+        border: 1px solid rgba(34,197,94,.35);
+    }
+    .wb-pip-btn-expand:hover { background: rgba(34,197,94,.3); }
+    .wb-pip-btn-close {
+        background: rgba(239,68,68,.12);
+        border: 1px solid rgba(239,68,68,.25);
+    }
+    .wb-pip-btn-close:hover { background: rgba(239,68,68,.28); }
+    @media (max-width: 480px) {
+        .wb-pip-overlay {
+            right: 8px; bottom: 8px;
+            left: 8px;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .wb-pip-code { display: none; }
+    }
+    </style>
     <script src="{{ url_for('static', filename='js/wb_call_listener.js') }}?v={{ asset_version|default('1') }}" defer></script>
 
     <!-- Web Push Notifications: VAPID public key + client registration -->
@@ -572,6 +682,185 @@
     <!-- Глобальный виджет «Поделиться с другом» — биндится ко всем .share-friend-btn -->
     <script src="{{ url_for('static', filename='js/share_with_friend.js') }}?v={{ asset_version }}"></script>
     {% endif %}
+    <script>
+    // ─── Восстановление адаптивного теста ───
+    async function checkActiveTest() {
+        try {
+            const r = await fetch('/api/test/active', { credentials: 'same-origin' });
+            if (!r.ok) return;
+            const data = await r.json();
+            if (data?.active && data?.session?.id) {
+                window._activeSessionId = data.session.id;
+                const banner = document.getElementById('testResumeBanner');
+                if (banner) banner.style.display = 'flex';
+            }
+        } catch(e) { /* ignore */ }
+    }
+    function resumeAdaptiveTest() {
+        const sid = window._activeSessionId;
+        if (sid) window.location.href = '/adaptive_test_simple?session=' + sid;
+    }
+    async function abandonAdaptiveTest() {
+        const sid = window._activeSessionId;
+        if (!sid) return;
+        try {
+            await fetch('/api/test/' + sid + '/abandon', { method: 'POST', credentials: 'same-origin' });
+        } catch(e) {}
+        dismissTestBanner();
+    }
+    function dismissTestBanner() {
+        const banner = document.getElementById('testResumeBanner');
+        if (banner) banner.style.display = 'none';
+    }
+    document.addEventListener('DOMContentLoaded', checkActiveTest);
+    </script>
+
+    {# ─── Глобальный iframe для WebRTC (видеоконференция) ────────── #}
+    {# Скрытый iframe, загружающий call_engine.html.              #}
+    {# Держит WebSocket-соединение и RTCPeerConnection живыми     #}
+    {# при навигации между страницами MPA.                        #}
+    <iframe id="wbCallEngine"
+            src="/static/call_engine.html"
+            style="display:none; width:0; height:0; border:0;"
+            aria-hidden="true"
+            title="WebRTC Call Engine"></iframe>
+
+    {# ─── PiP (Picture-in-Picture) overlay ──────────────────────────── #}
+    {# Плавающее окно видеоконференции в правом нижнем углу.          #}
+    {# Показывается, когда пользователь покинул страницу конференции  #}
+    {# но остался в комнате (сохраняется в sessionStorage).           #}
+    <style>
+        #cf-pip-overlay {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 280px;
+            background: #1a1d29;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 999999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #fff;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        #cf-pip-overlay.cf-pip-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #cf-pip-overlay .cf-pip-video-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #0d0f17;
+            overflow: hidden;
+        }
+        #cf-pip-overlay .cf-pip-video-wrap video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        #cf-pip-overlay .cf-pip-info {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #222639;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        #cf-pip-overlay .cf-pip-info-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+        #cf-pip-overlay .cf-pip-room {
+            font-size: 13px;
+            font-weight: 600;
+            color: #38bdf8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #cf-pip-overlay .cf-pip-room::before {
+            content: "● ";
+            color: #22c55e;
+        }
+        #cf-pip-overlay .cf-pip-status {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+        #cf-pip-overlay .cf-pip-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        #cf-pip-overlay .cf-pip-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            padding: 0;
+            line-height: 1;
+        }
+        #cf-pip-overlay .cf-pip-btn:hover {
+            background: rgba(255,255,255,0.16);
+        }
+        #cf-pip-overlay .cf-pip-btn--expand {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+        #cf-pip-overlay .cf-pip-btn--expand:hover {
+            background: #7dd3fc;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave {
+            color: #ef4444;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave:hover {
+            background: rgba(239,68,68,0.2);
+        }
+        #cf-pip-overlay .cf-pip-count {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-left: 4px;
+        }
+    </style>
+
+    <div id="cf-pip-overlay">
+        <div class="cf-pip-video-wrap">
+            <video id="cf-pip-video" autoplay playsinline muted></video>
+        </div>
+        <div class="cf-pip-info">
+            <div class="cf-pip-info-left">
+                <div class="cf-pip-room" id="cf-pip-code">---</div>
+                <div>
+                    <span class="cf-pip-status" id="cf-pip-status">Ожидание...</span>
+                    <span class="cf-pip-count" id="cf-pip-count">1</span>
+                </div>
+            </div>
+            <div class="cf-pip-actions">
+                <button class="cf-pip-btn cf-pip-btn--expand" title="Развернуть" onclick="if(window.__pipManager)window.__pipManager.expand()">⛶</button>
+                <button class="cf-pip-btn cf-pip-btn--leave" title="Покинуть" onclick="if(window.__pipManager)window.__pipManager.clear()">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <script defer src="/static/js/wb_pip.js?v={{ asset_version }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

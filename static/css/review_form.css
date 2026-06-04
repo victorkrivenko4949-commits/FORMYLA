@@ -27,6 +27,16 @@
   color: #f59e0b;
 }
 
+.review-rating-label {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 14px;
+  color: #f59e0b;
+  font-weight: 600;
+  vertical-align: middle;
+  min-width: 48px;
+}
+
 .review-section {
   border-left: 3px solid rgba(16, 185, 129, 0.45);
   padding-left: 18px;

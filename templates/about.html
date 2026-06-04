@@ -168,6 +168,24 @@
     font-size: 14px;
     margin-top: 8px;
   }
+
+  /* ── Mobile notice banner ── */
+  .mobile-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.08));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 24px;
+    color: #fbbf24;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .mobile-notice .mn-icon { font-size: 20px; flex-shrink: 0; }
+  .mobile-notice .mn-text strong { color: #fcd34d; }
+  @media (min-width: 1024px) { .mobile-notice { display: none; } }
 </style>
 {% endblock %}
 {% block content %}
@@ -184,6 +202,12 @@
 </script>
 <div class="about-page" id="about-top" style="scroll-margin-top: 24px;">
 
+  {# ── 0. Mobile notice ── #}
+  <div class="mobile-notice">
+    <span class="mn-icon">📱</span>
+    <span class="mn-text"><strong>Удобнее на компьютере</strong> — на телефоне доступны не все функции</span>
+  </div>
+
   {# ── 2.1 Onboarding banner (only after signup) ── #}
   {% if request.args.get('onboarding') %}
   <div class="onboarding-banner">
@@ -196,6 +220,9 @@
   <section class="about-hero formyla-hero-v2">
     <h1 class="about-title">FORMYLA</h1>
     <p class="about-subtitle">Подготовка к математическим олимпиадам с персональным ИИ-наставником.</p>
+    <div style="text-align:center;margin-top:6px;">
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);color:#fbbf24;font-size:13px;font-weight:600;">💻 удобнее на компьютере</span>
+    </div>
     <p class="hero-description">
       Платформа для учеников <strong>5–11 классов</strong>: адаптивная диагностика по 6 темам (≈30 минут с возможностью разбить на сессии),
       ежедневные задачи под слабые места, банк <strong>8 000+ реальных задач ВсОШ, Турнира городов, Эйлера и Ломоносова</strong>,
@@ -364,7 +391,7 @@
       </div>
       <div class="feature-card">
         <span class="feature-icon">📈</span>
-        <h3>Радар 89 методов ВсОШ</h3>
+        <h3>Радар 102 методов ВсОШ</h3>
         <p>Видишь, какие методы ты уже умеешь, а какие надо подтянуть. Покрытие реальной программы заключительного этапа ВсОШ-9, выстроенное за 17 лет.</p>
       </div>
     </div>
@@ -584,10 +611,10 @@
   </section>
 
   {# ── Review form: пользовательский отзыв о сайте (приходит на email владельцу) ── #}
-  <section class="about-section review-section">
+  <section class="about-section review-section" id="review-form">
     <h2>✍️ Написать отзыв</h2>
     <p>Понравилось пользоваться FORMYLA? Поставь оценку и оставь пару слов — это очень помогает нам становиться лучше.</p>
-    <form id="review-form" class="support-form">
+    <form id="review-form-inner" class="support-form">
       <div class="form-row">
         <label>Оценка</label>
         <div id="review-stars" class="review-stars" role="radiogroup" aria-label="Оценка от 1 до 5">
@@ -597,6 +624,7 @@
           <button type="button" class="rstar" data-val="4" aria-label="4 звезды">★</button>
           <button type="button" class="rstar" data-val="5" aria-label="5 звёзд">★</button>
         </div>
+        <span id="review-rating-label" class="review-rating-label"></span>
         <input type="hidden" name="rating" id="review-rating" value="0">
       </div>
       <div class="form-row">
@@ -664,7 +692,7 @@ form.addEventListener("submit", async (e) => {
 
 // ── Review form handler ─────────────────────────────────────────────
 (function initReviewForm() {
-  const rForm = document.getElementById("review-form");
+  const rForm = document.getElementById("review-form-inner");
   if (!rForm) return;
   const rTa = rForm.querySelector('textarea[name="message"]');
   const rCounter = document.getElementById("review-char-current");
@@ -674,18 +702,30 @@ form.addEventListener("submit", async (e) => {
 
   rTa.addEventListener("input", () => { rCounter.textContent = rTa.value.length; });
 
-  function paint(n, cls) {
+  const rLabel = document.getElementById("review-rating-label");
+  let rSelected = 0;
+
+  function paintActive(n) {
     rStars.forEach((s, i) => {
-      s.classList.toggle(cls, i < n);
+      s.classList.toggle("active", i < n);
     });
   }
+  function paintHover(n) {
+    rStars.forEach((s, i) => {
+      s.classList.toggle("hover", i < n);
+    });
+  }
+  function updateLabel(n) {
+    if (rLabel) rLabel.textContent = n > 0 ? n + " \u0438\u0437 5" : "";
+  }
   rStars.forEach((star, idx) => {
-    star.addEventListener("mouseenter", () => paint(idx + 1, "hover"));
-    star.addEventListener("mouseleave", () => paint(0, "hover"));
+    star.addEventListener("mouseenter", () => paintHover(idx + 1));
+    star.addEventListener("mouseleave", () => paintHover(0));
     star.addEventListener("click", () => {
-      const val = idx + 1;
-      rRatingInput.value = String(val);
-      paint(val, "active");
+      rSelected = idx + 1;
+      rRatingInput.value = String(rSelected);
+      paintActive(rSelected);
+      updateLabel(rSelected);
     });
   });
 

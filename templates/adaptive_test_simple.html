@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Адаптивный тест - {{ topic_name }} - FORMYLA{% endblock %}
+{% block title %}Адаптивный тест - {{ topic_name }} - FORMYLA
+{% endblock %}
 
 {% block content %}
 {# YM_GOALS: mock_start — ученик начал адаптивный тест (главный вариант проверки по темам). #}
@@ -42,7 +43,7 @@
                             data-task-grade="{{ grade }}"
                             data-task-difficulty="{{ task.difficulty_level }}"
                             data-task-url="/adaptive_task/{{ task.id }}"
-                            data-task-preview="{{ task.task_text|striptags|truncate(280) }}"
+                            data-task-preview="{{ task.task_text|truncate(280) }}"
                             style="padding: 8px 16px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
                             onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.borderColor='#8b5cf6'"
                             onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.borderColor='rgba(139, 92, 246, 0.35)'">
@@ -59,7 +60,7 @@
                 </div>
             </div>
             <div style="color: var(--text-main); font-size: 1.1em; line-height: 1.8;" id="taskTextBlock">
-                {{ task.task_text | safe }}
+                {{ task.task_text }}
             </div>
         </div>
 
@@ -101,8 +102,11 @@
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
-                    Ход решения (опционально):
+                    Ход решения (обязательно):
                 </label>
+                <div style="background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.88em; color: #fbbf24;">
+                    ℹ️ Распишите ход решения по шагам — так система оценит ответ точнее и даст более полезную обратную связь. Для заданий на доказательство решение обязательно.
+                </div>
                 {# UI-FIX (2026-05): заменили <math-field> на <textarea> — math-field
                    рендерит весь текст в одну растягивающуюся строку и не переносит
                    слова. Для «хода решения» нужен многострочный ввод с переносами,
@@ -1202,6 +1206,13 @@ document.getElementById('answerForm').addEventListener('submit', async function(
     }
     
     // Показываем лоадер
+    if (!data.user_solution || data.user_solution.trim() === "") {
+        var sf = document.getElementById("solution_text");
+        if (sf) { sf.focus(); sf.style.border = "2px solid #ef4444"; }
+        alert("Опишите ход решения — это обязательно!");
+        return;
+    }
+
     showLoader();
     
     try {
@@ -1254,28 +1265,21 @@ function showResult(result) {
     
     // Формируем вердикт
     let verdictHTML = '';
-    const prevLevel = result.new_level - (result.score === 2 ? 1 : 0);
+    const prevLevel = result.new_level - (result.score === 1 ? 1 : 0);
     const levelChanged = result.new_level !== result.current_level;
 
-    if (result.score === 2) {
+    if (result.score === 1) {
         verdictHTML = `
             <div class="verdict-success">
-                ✅ Верно! +2 балла, уровень: ${result.new_level}/8
-                <div class="level-badge">Уровень: ${result.new_level}/8</div>
-            </div>
-        `;
-    } else if (result.score === 1) {
-        // Partial: уровень НЕ меняется (фикс: убрана логика стрика)
-        verdictHTML = `
-            <div class="verdict-partial">
-                ⚠️ Частично верно — уровень без изменений
+                ✅ Верно! +1 уровень, уровень: ${result.new_level}/8
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
     } else if (result.score === 0) {
+        // Частично верно или ответ неверный — 0 баллов, уровень без изменений
         verdictHTML = `
             <div class="verdict-partial">
-                ℹ️ Ответ принят — уровень не изменился
+                ℹ️ 0 баллов — уровень без изменений
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
@@ -1651,4 +1655,30 @@ document.addEventListener('click', function(e) {
 });
 </script>
 
+{% endblock %}
+
+{% block extra_js %}
+<!-- test session restoration: сохраняем session_id при закрытии/уходе со страницы -->
+<script>
+(function(){
+var u=new URLSearchParams(window.location.search);
+var sid=u.get("session");
+if(sid){
+window._adaptiveSessionId=sid;
+try{localStorage.setItem("adaptive_session_id",sid)}catch(e){}}else{
+try{sid=localStorage.getItem("adaptive_session_id")}catch(e){}
+if(sid)window._adaptiveSessionId=sid}
+function save(){
+var s=window._adaptiveSessionId;if(!s)return;
+var u="/api/test/"+encodeURIComponent(s)+"/answer";
+try{navigator.sendBeacon(u,JSON.stringify({}))}catch(e){
+var x=new XMLHttpRequest();
+x.open("POST",u,false);
+x.setRequestHeader("Content-Type","application/json");
+x.send("{}")}}
+window.addEventListener("beforeunload",save);
+document.addEventListener("visibilitychange",function(){
+if(document.visibilityState==="hidden")save()});
+})();
+</script>
 {% endblock %}

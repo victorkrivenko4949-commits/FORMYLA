@@ -556,8 +556,15 @@
   function setTool(t) {
     tool = t;
     document.querySelectorAll("#wbToolbar .wb-tool").forEach(b => b.classList.toggle("active", b.dataset.tool === t));
+    document.querySelectorAll("#wbToolPopup .wb-tool").forEach(b => b.classList.toggle("active", b.dataset.tool === t));
     applyCursor();
     if (t !== "select") selectedId = null;
+    // Show/hide contextual palette on mobile when a drawing tool is active
+    var ctxPal = document.getElementById("wbCtxPalette");
+    if (ctxPal) {
+      var drawingTools = ["pen","eraser","rect","ellipse","line","arrow","text","sticky"];
+      ctxPal.classList.toggle("visible", drawingTools.indexOf(t) >= 0);
+    }
     redraw();
   }
   function setColor(c) {
@@ -989,6 +996,10 @@
 
   document.getElementById("wbUndo").onclick = undo;
   document.getElementById("wbRedo").onclick = redo;
+  var undoMob = document.getElementById("wbUndoMob");
+  var redoMob = document.getElementById("wbRedoMob");
+  if (undoMob) undoMob.onclick = undo;
+  if (redoMob) redoMob.onclick = redo;
   document.getElementById("wbZoomIn").onclick = function () {
     const r = wrap.getBoundingClientRect();
     zoomAt(r.width / 2, r.height / 2, 1.2);
@@ -1159,6 +1170,101 @@
       _suppressBroadcastDepth--;
     }
   }
+
+  // ── Mobile UI: kebab menu, tool FAB, contextual palette ─────────────
+  var _wbMobile = (function () {
+    var overlay = document.getElementById("wbKebabOverlay");
+    var sheet  = document.getElementById("wbKebabSheet");
+    var kebab  = document.getElementById("wbKebabBtn");
+    var fab    = document.getElementById("wbToolFab");
+    var popup  = document.getElementById("wbToolPopup");
+    var ctxPal = document.getElementById("wbCtxPalette");
+    var thickMob = document.getElementById("wbThicknessMob");
+    var thickMain = document.getElementById("wbThickness");
+
+    // ── Kebab menu ──
+    function openKebab() {
+      if (overlay) overlay.classList.add("open");
+      if (sheet)  sheet.classList.add("open");
+    }
+    function closeKebab() {
+      if (overlay) overlay.classList.remove("open");
+      if (sheet)  sheet.classList.remove("open");
+    }
+    if (kebab) kebab.addEventListener("click", function (e) {
+      e.stopPropagation(); openKebab();
+    });
+    if (overlay) overlay.addEventListener("click", closeKebab);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeKebab();
+    });
+
+    // ── Kebab item action dispatch ──
+    document.querySelectorAll(".wb-kebab-item").forEach(function (item) {
+      item.addEventListener("click", function () {
+        var action = item.getAttribute("data-action");
+        closeKebab();
+        switch (action) {
+          case "call": {
+            var callBtn = document.querySelector("[data-wb-call-open]");
+            if (callBtn) callBtn.click();
+            break;
+          }
+          case "save": {
+            var exportBtn = document.getElementById("wbExport");
+            if (exportBtn) exportBtn.click();
+            break;
+          }
+          case "import": {
+            var importInput = document.getElementById("wbImportInput");
+            if (importInput) importInput.click();
+            break;
+          }
+          case "export-pdf": {
+            alert("Экспорт в PDF будет доступен позже.");
+            break;
+          }
+          case "clear": {
+            var clearBtn = document.getElementById("wbClear");
+            if (clearBtn) clearBtn.click();
+            break;
+          }
+          case "undo": { undo(); break; }
+          case "redo": { redo(); break; }
+        }
+      });
+    });
+
+    // ── Tool FAB toggle ──
+    if (fab) fab.addEventListener("click", function () {
+      var isOpen = fab.classList.toggle("open");
+      if (popup) popup.classList.toggle("open", isOpen);
+    });
+    // Close tool popup when a tool is selected
+    if (popup) popup.addEventListener("click", function (e) {
+      if (e.target.classList.contains("wb-tool") || e.target.classList.contains("icon-btn")) {
+        fab.classList.remove("open");
+        popup.classList.remove("open");
+      }
+    });
+
+    // ── Thickness sync ──
+    if (thickMob && thickMain) {
+      thickMob.addEventListener("input", function () {
+        thickMain.value = thickMob.value;
+        thickMain.dispatchEvent(new Event("input"));
+      });
+      thickMain.addEventListener("input", function () {
+        thickMob.value = thickMain.value;
+      });
+    }
+
+    // ── Initial palette visibility based on current tool ──
+    if (ctxPal) {
+      var drawingTools = ["pen","eraser","rect","ellipse","line","arrow","text","sticky"];
+      ctxPal.classList.toggle("visible", drawingTools.indexOf(tool) >= 0);
+    }
+  })();
 
   // Public API for tab-switch hook
   window.WB = {

@@ -56,6 +56,45 @@
   font-weight: 600;
 }
 
+.count-badge-sm {
+  background: rgba(56, 239, 125, 0.12);
+  border: 1px solid rgba(56, 239, 125, 0.25);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 12px;
+  color: #38ef7d;
+  font-weight: 600;
+}
+
+/* ── Requests section wrapper ── */
+.requests-section {
+  background: rgba(20, 30, 45, 0.4);
+  border: 1px solid rgba(56, 239, 125, 0.08);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+.requests-sub {
+  margin-bottom: 16px;
+}
+.requests-sub:last-child {
+  margin-bottom: 0;
+}
+.requests-sub-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.requests-empty {
+  text-align: center;
+  padding: 18px 12px;
+  color: rgba(255,255,255,0.3);
+  font-size: 14px;
+}
+
 /* ── Сетка запросов ── */
 .requests-grid {
   display: grid;

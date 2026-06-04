@@ -216,7 +216,9 @@
     </div>
     <div class="gc-actions">
       <button class="gc-btn" type="button" title="Пригласить" onclick="openInv()">➕</button>
+      {% if not is_owner %}
       <button class="gc-btn" type="button" title="Покинуть" onclick="leaveG()">🚪</button>
+      {% endif %}
       {% if is_owner %}
       <button class="gc-btn" type="button" title="Удалить группу" onclick="deleteG()" style="color:#ef4444">🗑️</button>
       {% endif %}
@@ -342,6 +344,7 @@ async function sendG(){
 }
 
 async function leaveG(){
+  if(IS_OWNER) return;
   if(!confirm('Точно покинуть группу?')) return;
   try{
     const r = await fetch('/api/groups/' + GID + '/leave', {method:'POST'});
@@ -473,7 +476,7 @@ async function openGroupInfo(){
       + '</div>'
       + '<div class="gi-section">'
       +   '<div class="gi-row action" onclick="closeGroupInfo(); openInv();"><span class="ico">➕</span><span class="lbl">Пригласить друга</span></div>'
-      +   '<div class="gi-row action danger" onclick="closeGroupInfo(); leaveG();"><span class="ico">🚪</span><span class="lbl">Покинуть группу</span></div>'
+      +   (IS_OWNER ? '' : '<div class="gi-row action danger" onclick="closeGroupInfo(); leaveG();"><span class="ico">🚪</span><span class="lbl">Покинуть группу</span></div>')
       +   (IS_OWNER ? '<div class="gi-row action danger" onclick="deleteGFromInfo()"><span class="ico">🗑</span><span class="lbl">Удалить группу</span></div>' : '')
       + '</div>';
   }catch(e){

@@ -42,6 +42,12 @@ class User(UserMixin, db.Model):
     current_plan = db.Column(db.Text, default='free', server_default='free')
     plan_expires_at = db.Column(db.DateTime, nullable=True)
     
+    # Generation limits (free mock / exam generation)
+    generation_count_today = db.Column(db.Integer, default=0, server_default='0')
+    generation_reset_date = db.Column(db.Date, nullable=True)  # which day the counter belongs to
+    gens_extra_purchased = db.Column(db.Integer, default=0, server_default='0')  # extra generations bought (500₽/10)
+    gens_unlimited = db.Column(db.Boolean, default=False, server_default='0')  # unlimited flag (1500₽)
+    
     # Guest access
     is_guest = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
     device_id = db.Column(db.String(64), nullable=True, index=True)

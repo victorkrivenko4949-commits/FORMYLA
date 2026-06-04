@@ -42,13 +42,13 @@
                     data-task-grade="{{ task.class_level or '' }}"
                     data-task-difficulty="{{ task.difficulty_level or '' }}"
                     data-task-url="/adaptive_task/{{ task.id }}"
-                    data-task-preview="{{ task.task_text|striptags|truncate(280) }}"
+                    data-task-preview="{{ task.task_text|truncate(280) }}"
                     style="padding: 8px 16px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                 <span>📨</span><span>Поделиться с другом</span>
             </button>
         </div>
         <div style="color: var(--text-main); font-size: 1.05em; line-height: 1.8; margin-bottom: 24px;">
-            {{ task.task_text | safe }}
+            {{ task.task_text }}
         </div>
 
         {% if task.answer %}
@@ -64,7 +64,7 @@
         <details style="margin-bottom: 14px; padding: 14px 18px; background: rgba(74,168,255,.06); border: 1px solid rgba(74,168,255,.2); border-radius: 10px;">
             <summary style="cursor: pointer; color: #4aa8ff; font-weight: 600;">📝 Показать решение</summary>
             <div style="margin-top: 10px; color: var(--text-main); line-height: 1.7;">
-                {{ task.solution | safe }}
+                {{ task.solution }}
             </div>
         </details>
         {% endif %}

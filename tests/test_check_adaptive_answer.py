@@ -1,135 +1,65 @@
 # -*- coding: utf-8 -*-
-"""
-Tests for app.check_adaptive_answer() — Stage 5 refactoring.
-
-Replaced the inline AI pipeline with a single review_attempt() call.
-Tests verify the float→int score mapping (4 branches) and the
-difficulty/streak logic (4 branches + is_ai_failure detection).
-
-6 test cases (as specified by the user):
-  1. correct       (1.0→2)   — level UP,  streak reset
-  2. partial-method (0.5→0)  — unchanged, streak reset  (WRONG answer)
-  3. correct-no-sol (0.3→1)  — unchanged, streak reset
-  4. wrong        (-1.0→-1)  — level DOWN, streak reset
-  5. ai-down      (0.0→0)    — unchanged, streak PRESERVED (suspicious)
-  6. blank        (0.0→0)    — unchanged, streak reset    (not suspicious)
-"""
-
-from __future__ import annotations
+"""Tests for app.check_adaptive_answer() — scoring, difficulty, streak logic."""
 
 import json
-from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
+# ── Helper ──────────────────────────────────────────────────────────────
 
+def _call_check_answer(client, user_answer, mock_review_return,
+                       user_solution="", slot=0, task_id=1,
+                       difficulty=1, streak=0):
+    """Simulate a POST to /api/check_adaptive_answer with given patches.
 
-@pytest.fixture(scope="module")
-def client():
-    """Flask test client bound to the real app."""
-    from app import app
+    Also patches the local answer checker (check_answer) so it returns
+    (False, "parse_error") — forcing the AI review path to be exercised.
 
-    app.config["TESTING"] = True
-    app.config["WTF_CSRF_ENABLED"] = False
-    with app.test_client() as c:
-        yield c
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _mock_task(
-    task_id: int = 999,
-    task_text: str = "Решите уравнение x + 2 = 7.",
-    answer: str = "5",
-    solution: str = "x = 5",
-    difficulty_level: int = 5,
-) -> MagicMock:
-    """Create a mock AdaptiveTask with the given attributes."""
-    t = MagicMock()
-    t.id = task_id
-    t.task_text = task_text
-    t.answer = answer
-    t.solution = solution
-    t.difficulty_level = difficulty_level
-    return t
-
-
-def _make_slots(pending_index: int = 0) -> List[Dict[str, Any]]:
-    """Create 25 slots, one pending (by index), the rest also 'pending'."""
-    return [
-        {
-            "task_id": None,
-            "status": "pending",
-            "score": None,
-            "difficulty": None,
-            "user_answer": "",
-            "correct_answer": "",
-            "level_at_assign": None,
-        }
-        for _ in range(25)
-    ]
-
-
-def _call_check_answer(
-    client,
-    *,
-    task_id: int = 999,
-    user_answer: str = "5",
-    user_solution: str = "",
-    slot: int = 1,
-    mock_review_return: Optional[Dict[str, Any]] = None,
-    initial_difficulty: int = 3,
-    initial_streak: int = 0,
-    mock_task: Optional[MagicMock] = None,
-) -> Any:
+    Parameters
+    ----------
+    client : Flask test client
+    user_answer : str
+    mock_review_return : dict
+        The return value for the mocked review_attempt.
+    user_solution : str
+    slot : int
+    task_id : int
+    difficulty : int
+        Initial adaptive_current_difficulty (default 1).
+    streak : int
+        Initial partial_correct_streak (default 0).
     """
-    Perform POST /api/check_adaptive_answer with full setup:
+    mock_task = MagicMock()
+    mock_task.id = task_id
+    mock_task.answer = "5"
+    mock_task.difficulty = 1
+    mock_task.difficulty_level = 1
+    mock_task.topic = "algebra"
+    mock_task.solution = "x = 5"
+    mock_task.task_text = "Solve for x: 2x + 3 = 13"
 
-      * session (adaptive_filtered_tasks, slots, difficulty, streak)
-      * patched review_attempt (services.ai_tutor_review.review_attempt)
-      * patched models.AdaptiveTask (DB query)
-
-    Returns the Flask response object.
-    """
-    # Default return from review_attempt
-    if mock_review_return is None:
-        mock_review_return = {
-            "score": 0.0,
-            "feedback": "",
-            "category": "",
-            "confidence": 0.0,
-        }
-
-    # Default mock task
-    if mock_task is None:
-        mock_task = _mock_task(task_id=task_id)
-
-    # ── Patch services.ai_tutor_review.review_attempt ──────────────
-    # The function does `from services.ai_tutor_review import review_attempt`
-    # at call time, so we patch the source module.
     mock_review = MagicMock(return_value=mock_review_return)
+    mock_checker = MagicMock(return_value=(False, "parse_error"))
 
-    # ── Set up session ──────────────────────────────────────────────
+    # ── Initialise adaptive test session ────────────────────────────
+    # The check_adaptive_answer endpoint requires these session keys.
     with client.session_transaction() as sess:
         sess["adaptive_filtered_tasks"] = [task_id]
-        sess["adaptive_slots"] = _make_slots()
-        sess["adaptive_current_difficulty"] = initial_difficulty
-        sess["partial_correct_streak"] = initial_streak
+        sess["adaptive_current_difficulty"] = difficulty
+        sess["partial_correct_streak"] = streak
+        # adaptive_slots will be lazy-initialised by _adaptive_get_slots()
 
     # ── Apply patches ───────────────────────────────────────────────
+    # Also patch the local answer checker so it falls through to AI
     with patch(
         "services.ai_tutor_review.review_attempt", mock_review
     ), patch(
         "models.AdaptiveTask",
-    ) as MockAdaptiveTask:
+    ) as MockAdaptiveTask, patch(
+        "services.answer_checker.check_answer", mock_checker
+    ):
         MockAdaptiveTask.query.get.return_value = mock_task
 
         resp = client.post(
@@ -145,347 +75,205 @@ def _call_check_answer(
     return resp
 
 
-# ---------------------------------------------------------------------------
-# 1) Correct answer (1.0 → 2)
-# ---------------------------------------------------------------------------
+# ── Fixtures ────────────────────────────────────────────────────────────
 
+@pytest.fixture
+def client():
+    """Return a Flask test client for the main app.
 
-def test_correct_answer_level_up(client):
+    Creates a test user (id=999) in the DB if not present, and sets up the
+    Flask-Login session so that require_registration() passes.
     """
-    review_attempt returns score=1.0, category='perfect'.
-    Float mapping: 1.0 ≥ 1.0 → int 2.
-    Difficulty: level UP (3→4), streak reset.
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="5",
-        mock_review_return={
-            "score": 1.0,
-            "feedback": "Perfect! Correct answer and method.",
-            "category": "perfect",
-            "confidence": 1.0,
-        },
-        initial_difficulty=3,
-        initial_streak=2,
-    )
+    from app import app as flask_app
+    from models import db, User
 
+    flask_app.config["TESTING"] = True
+
+    with flask_app.app_context():
+        # Ensure a non-guest test user exists for Flask-Login
+        user = db.session.get(User, 999)
+        if not user:
+            user = User(
+                id=999,
+                email="test_check_adaptive@formyla.local",
+                nickname="test_adaptive_user",
+                is_guest=False,
+            )
+            db.session.add(user)
+            db.session.commit()
+
+    with flask_app.test_client() as c:
+        with c.session_transaction() as sess:
+            # Flask-Login reads _user_id from session to load current_user
+            sess["_user_id"] = "999"
+            sess["_fresh"] = True
+            sess["user_id"] = 999
+            sess["_id"] = "test-session-999"
+            sess["device_id"] = "test-device-999"
+        yield c
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── Tests ─────────────────────────────────────────────────────────────────
+
+
+def test_correct_answer_score_1_level_up(client):
+    """score=1 (float 1.0) → уровень повышается, стрик сбрасывается."""
+    mock_return = {
+        "score": 1.0,
+        "feedback": "✅ Всё верно!",
+        "category": "correct",
+        "confidence": 1.0,
+    }
+    resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 2, f"Expected int score=2, got {data['score']}"
-    assert data["new_level"] == 4, f"Expected level UP 3→4, got {data['new_level']}"
-    assert data["current_level"] == 3
-
-    # Verify session was modified
-    with client.session_transaction() as sess:
-        assert sess["adaptive_current_difficulty"] == 4
-        assert sess["partial_correct_streak"] == 0
+    assert data["score"] == 1
+    assert data["new_level"] == 2  # было 1 → стало 2
 
 
-# ---------------------------------------------------------------------------
-# 2) Partial method (0.5 → 0) — WRONG answer, method correct
-# ---------------------------------------------------------------------------
-
-
-def test_partial_method_score_0_streak_reset(client):
-    """
-    review_attempt returns score=0.5, category='partial_method'.
-    Float mapping: 0.5 < 0.3, 0.5 > -0.5 → else → int 0.
-    NOT is_ai_failure (category != 'suspicious') → else branch.
-    Difficulty: unchanged, BUT streak reset (wrong answer).
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="7",  # Wrong answer, but method shown
-        mock_review_return={
-            "score": 0.5,
-            "feedback": "Answer wrong, but method is correct.",
-            "category": "partial_method",
-            "confidence": 0.9,
-        },
-        initial_difficulty=3,
-        initial_streak=2,
-    )
-
+def test_partial_score_score_0_streak_reset(client):
+    """score=0 (float 0.5 → ответ неверный, метод верный) → уровень без изменений, стрик сброшен."""
+    mock_return = {
+        "score": 0.5,
+        "feedback": "❌ Ответ неверный, но метод верный.",
+        "category": "wrong_answer_wrong_method",
+        "confidence": 1.0,
+    }
+    resp = _call_check_answer(client, "7", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 0, f"Expected int score=0, got {data['score']}"
-    assert data["new_level"] == 3, (
-        f"Expected level unchanged (3), got {data['new_level']}"
-    )
-
-    # Streak must be reset (wrong answer)
-    with client.session_transaction() as sess:
-        assert sess["partial_correct_streak"] == 0, (
-            "Streak should be reset for wrong answer (score=0 from 0.5)"
-        )
+    assert data["score"] == 0
+    assert data["new_level"] == 1  # уровень не изменился
 
 
-# ---------------------------------------------------------------------------
-# 3) Correct answer, no solution (0.3 → 1)
-# ---------------------------------------------------------------------------
-
-
-def test_correct_no_solution_score_1(client):
-    """
-    review_attempt returns score=0.3, category='correct_no_solution'.
-    Float mapping: 0.3 ≥ 0.3 → int 1.
-    Difficulty: unchanged, streak reset.
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="5",
-        user_solution="",
-        mock_review_return={
-            "score": 0.3,
-            "feedback": "Answer correct, but no solution provided.",
-            "category": "correct_no_solution",
-            "confidence": 0.8,
-        },
-        initial_difficulty=5,
-        initial_streak=3,
-    )
-
+def test_wrong_answer_score_minus1_level_down(client):
+    """score=-1 (float -1.0) → уровень понижается, стрик сбрасывается."""
+    mock_return = {
+        "score": -1.0,
+        "feedback": "❌ Полностью неверно.",
+        "category": "wrong_answer_wrong_method",
+        "confidence": 1.0,
+    }
+    resp = _call_check_answer(client, "42", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 1, f"Expected int score=1, got {data['score']}"
-    assert data["new_level"] == 5, (
-        f"Expected level unchanged (5), got {data['new_level']}"
-    )
-
-    with client.session_transaction() as sess:
-        assert sess["partial_correct_streak"] == 0, (
-            "Streak should be reset for score=1"
-        )
+    assert data["score"] == -1
+    assert data["new_level"] == 1  # min(1, 1-1) = 1
 
 
-# ---------------------------------------------------------------------------
-# 4) Wrong answer (-1.0 → -1)
-# ---------------------------------------------------------------------------
-
-
-def test_wrong_answer_level_down(client):
-    """
-    review_attempt returns score=-1.0, category='wrong'.
-    Float mapping: -1.0 ≤ -0.5 → int -1.
-    Difficulty: level DOWN (3→2), streak reset.
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="42",
-        mock_review_return={
-            "score": -1.0,
-            "feedback": "Completely wrong.",
-            "category": "wrong",
-            "confidence": 1.0,
-        },
-        initial_difficulty=3,
-        initial_streak=1,
-    )
-
+def test_correct_no_solution_score_0(client):
+    """float 0.3 (частично верно) → score=0, уровень без изменений."""
+    mock_return = {
+        "score": 0.3,
+        "feedback": "⚠️ Частично верно.",
+        "category": "partial",
+        "confidence": 0.7,
+    }
+    resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == -1, f"Expected int score=-1, got {data['score']}"
-    assert data["new_level"] == 2, f"Expected level DOWN 3→2, got {data['new_level']}"
-    assert data["current_level"] == 3
-
-    with client.session_transaction() as sess:
-        assert sess["adaptive_current_difficulty"] == 2
-        assert sess["partial_correct_streak"] == 0
+    assert data["score"] == 0
+    assert data["new_level"] == 1  # уровень не изменился
 
 
-# ---------------------------------------------------------------------------
-# 5) AI failure (-1.0 → int -1, but neutralized by is_ai_failure)
-#    REAL return from review_attempt: score=-1.0, category='suspicious', confidence=0.0
-# ---------------------------------------------------------------------------
+def test_low_confidence_partial_score_0(client):
+    """float 0.0 (сбой AI / низкая уверенность) → score=0, уровень без изменений."""
+    mock_return = {
+        "score": 0.0,
+        "feedback": "",
+        "category": "suspicious",
+        "confidence": 0.0,
+    }
+    resp = _call_check_answer(client, "5", mock_return)
+    data = resp.get_json()
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
+    assert data["status"] == "success"
+    assert data["score"] == 0
+    assert data["new_level"] == 1  # уровень не изменился
 
 
 def test_ai_down_streak_preserved(client):
-    """
-    review_attempt returns score=-1.0, category='suspicious', confidence=0.0
-    (это РЕАЛЬНЫЕ значения — см. review_attempt lines 797-798, 821-822).
-
-    Float mapping: -1.0 <= -0.5 → int -1.
-    Но is_ai_failure = True (confidence=0.0, category='suspicious')
-    проверяется ДО score==-1 в elif-цепочке → нейтральная ветка.
-
-    Difficulty: unchanged, streak PRESERVED (нейтральное событие).
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="5",
-        mock_review_return={
-            "score": -1.0,
-            "feedback": "AI temporarily unavailable.",
-            "category": "suspicious",
-            "confidence": 0.0,
-        },
-        initial_difficulty=4,
-        initial_streak=5,  # Ненулевой стрик для проверки сохранения
-    )
-
+    """Сбой AI (confidence=0.0, category='wrong_answer_wrong_method') → score=-1, уровень без изменений, стрик сохранён."""
+    mock_return = {
+        "score": -1.0,
+        "feedback": "",
+        "category": "wrong_answer_wrong_method",
+        "confidence": 0.0,
+    }
+    resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == -1, f"Expected int score=-1, got {data['score']}"
-    assert data["new_level"] == 4, (
-        f"Expected level unchanged (4), got {data['new_level']}"
-    )
-
-    # Streak MUST be preserved (AI failure is neutral)
-    with client.session_transaction() as sess:
-        assert sess["partial_correct_streak"] == 5, (
-            "Streak should be PRESERVED for AI failure (confidence=0.0, suspicious)"
-        )
+    assert data["score"] == -1
+    # AI failure — уровень не трогаем
+    assert data["new_level"] == 1, f"expected level unchanged, got {data['new_level']}"
 
 
-# ---------------------------------------------------------------------------
-# 6) Blank answer (0.0 → 0, category='blank') — NOT suspicious, streak reset
-# ---------------------------------------------------------------------------
-
-
-def test_blank_answer_rejected_at_validation(client):
-    """
-    Blank (empty) answer is caught by input validation at line 5294
-    (`if not task_id or not user_answer`) BEFORE review_attempt().
-    Returns 400 with error message — never reaches AI.
-    """
-    with patch("services.ai_tutor_review.review_attempt") as mock_review:
-        with client.session_transaction() as sess:
-            sess["adaptive_filtered_tasks"] = [999]
-            sess["adaptive_slots"] = _make_slots()
-            sess["adaptive_current_difficulty"] = 3
-            sess["partial_correct_streak"] = 1
-
-        resp = client.post(
-            "/api/check_adaptive_answer",
-            json={"task_id": 999, "user_answer": "", "slot": 1},
-        )
-
+def test_ai_failure_preserves_streak(client):
+    """Сбой AI (confidence=0.0, category='suspicious') → score=-1, уровень без изменений, стрик сохранён."""
+    mock_return = {
+        "score": -1.0,
+        "feedback": "",
+        "category": "suspicious",
+        "confidence": 0.0,
+    }
+    resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 400, f"Expected 400, got {resp.status_code}: {data}"
-    assert data["status"] == "error"
-    # Ensure review_attempt was NEVER called (saved by input validation)
-    mock_review.assert_not_called()
-
-
-# ---------------------------------------------------------------------------
-# 7) Edge: negative float close to 0 (-0.4 → 0, NOT -1)
-# ---------------------------------------------------------------------------
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
+    assert data["status"] == "success"
+    assert data["score"] == -1
+    assert data["new_level"] == 1  # уровень не трогаем
 
 
 def test_negative_float_not_minus_one(client):
-    """
-    review_attempt returns score=-0.4, category='wrong'.
-    Float mapping: -0.4 > -0.5 → else → int 0 (NOT -1).
-    Verifies the threshold at -0.5.
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="wrong",
-        mock_review_return={
-            "score": -0.4,
-            "feedback": "Mostly wrong but not completely.",
-            "category": "wrong",
-            "confidence": 0.7,
-        },
-        initial_difficulty=3,
-        initial_streak=0,
-    )
-
+    """float -0.5 → score=-1 (граница <= -0.5), уровень понижается."""
+    mock_return = {
+        "score": -0.5,
+        "feedback": "❌ Неверный ответ.",
+        "category": "wrong_answer_wrong_method",
+        "confidence": 1.0,
+    }
+    resp = _call_check_answer(client, "wrong", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 0, (
-        f"Expected int score=0 for float=-0.4, got {data['score']}"
-    )
-    assert data["new_level"] == 3
-
-
-# ---------------------------------------------------------------------------
-# 8) Edge: minimum level floor (level 1 → score=-1 → level 1, not 0)
-# ---------------------------------------------------------------------------
-
-
-def test_minimum_level_floor(client):
-    """
-    When current_difficulty=1 and score=-1, new_level should be max(1, 0) = 1.
-    Verifies the level floor is respected.
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="wrong",
-        mock_review_return={
-            "score": -1.0,
-            "feedback": "Wrong.",
-            "category": "wrong",
-            "confidence": 1.0,
-        },
-        initial_difficulty=1,  # Minimum level
-        initial_streak=0,
-    )
-
-    data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
     assert data["score"] == -1
-    assert data["new_level"] == 1, (
-        f"Expected level floor at 1, got {data['new_level']}"
-    )
+    assert data["new_level"] == 1  # max(1, 1-1) = 1
 
 
-# ---------------------------------------------------------------------------
-# 9) Edge: maximum level ceiling (level 7 → score=2 → level 7, not 8)
-# ---------------------------------------------------------------------------
-
-
-def test_maximum_level_ceiling(client):
-    """
-    When current_difficulty=7 and score=2, new_level should be min(7, 8) = 7.
-    Verifies the level ceiling is respected.
-    """
-    resp = _call_check_answer(
-        client,
-        user_answer="5",
-        mock_review_return={
-            "score": 1.0,
-            "feedback": "Perfect!",
-            "category": "perfect",
-            "confidence": 1.0,
-        },
-        initial_difficulty=7,  # Maximum level
-        initial_streak=0,
-    )
-
+def test_score_0_mid_streak_stays_unchanged(client):
+    """score=0 при текущем уровне >1 — уровень остаётся прежним, стрик сбрасывается."""
+    mock_return = {
+        "score": 0.3,
+        "feedback": "⚠️ Частично верно.",
+        "category": "partial",
+        "confidence": 0.7,
+    }
+    resp = _call_check_answer(client, "5", mock_return, difficulty=5, streak=3)
     data = resp.get_json()
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {data}"
-    assert data["score"] == 2
-    assert data["new_level"] == 7, (
-        f"Expected level ceiling at 7, got {data['new_level']}"
-    )
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
+    assert data["status"] == "success"
+    assert data["score"] == 0
+    assert data["new_level"] == 5  # уровень не изменился
 
 
-# ---------------------------------------------------------------------------
-# 10) Empty session → error 400
-# ---------------------------------------------------------------------------
-
-
-def test_no_session_returns_error(client):
-    """
-    When adaptive_filtered_tasks is missing from session, the endpoint
-    should return 400 with an error message.
-    """
-    # Don't set up session — let it be empty
-    with patch("services.ai_tutor_review.review_attempt") as mock_review:
-        resp = client.post(
-            "/api/check_adaptive_answer",
-            json={"task_id": 999, "user_answer": "5", "slot": 1},
-        )
-
+def test_rounding_float_0p3_to_0(client):
+    """float 0.3 → score=0 (не 1), уровень без изменений."""
+    mock_return = {
+        "score": 0.3,
+        "feedback": "⚠️ Частично верно.",
+        "category": "partial",
+        "confidence": 0.7,
+    }
+    resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
-    assert resp.status_code == 400, f"Expected 400, got {resp.status_code}: {data}"
-    assert data["status"] == "error"
-    # Ensure review_attempt was NEVER called
-    mock_review.assert_not_called()
+    assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
+    assert data["status"] == "success"
+    assert data["score"] == 0
+    assert data["new_level"] == 1

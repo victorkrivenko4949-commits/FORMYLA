@@ -146,10 +146,55 @@ async def _generate_one_spec(
         )
 
     # Парсим ответ — ожидаем {"tasks": [ОДНА задача]}
+    # Retry up to 3 times if JSON is invalid, passing the bad response back to the model.
+    _MAX_JSON_RETRIES = 3
     parsed = extract_json_safe(raw)
+    _retry_cost = usage.cost_usd
+    for _retry_attempt in range(_MAX_JSON_RETRIES):
+        if parsed is not None and isinstance(parsed, dict):
+            break
+        logger.warning(
+            "Step 2 GENERATE — pos=%s — не смогли распарсить JSON (попытка %d/%d), "
+            "повторяем с просьбой вернуть корректный JSON",
+            pos, _retry_attempt + 1, _MAX_JSON_RETRIES,
+        )
+        # Ask the model to fix its own invalid response
+        retry_messages = messages + [
+            {"role": "assistant", "content": raw},
+            {
+                "role": "user",
+                "content": (
+                    "Твой предыдущий ответ не является валидным JSON. "
+                    "Верни ТОЛЬКО корректный JSON-объект вида "
+                    '{"tasks": [{ ... }]} без каких-либо пояснений, '
+                    "markdown-блоков или лишнего текста."
+                ),
+            },
+        ]
+        try:
+            async with semaphore:
+                raw, _retry_usage = await client.chat(
+                    model=_OPUS_MODEL,
+                    messages=retry_messages,
+                    temperature=0.3,
+                    max_tokens=4096,
+                )
+            _retry_cost += _retry_usage.cost_usd
+            parsed = extract_json_safe(raw)
+        except Exception as _retry_exc:
+            logger.warning(
+                "Step 2 GENERATE — pos=%s — retry %d HTTP error: %s",
+                pos, _retry_attempt + 1, _retry_exc,
+            )
+            break
+
     if parsed is None or not isinstance(parsed, dict):
-        logger.error("Step 2 GENERATE — pos=%s — не смогли распарсить JSON", pos)
-        return _synthesize_fallback_task(spec, "invalid_json"), usage.cost_usd
+        logger.error(
+            "Step 2 GENERATE — pos=%s — не смогли распарсить JSON после %d попыток",
+            pos, _MAX_JSON_RETRIES,
+        )
+        return _synthesize_fallback_task(spec, "invalid_json"), _retry_cost
+    usage_cost = _retry_cost
 
     tasks_list = parsed.get("tasks")
     if not isinstance(tasks_list, list) or len(tasks_list) == 0:
@@ -157,12 +202,12 @@ async def _generate_one_spec(
             "Step 2 GENERATE — pos=%s — отсутствует/пустой 'tasks' в ответе",
             pos,
         )
-        return _synthesize_fallback_task(spec, "no_tasks_key"), usage.cost_usd
+        return _synthesize_fallback_task(spec, "no_tasks_key"), usage_cost
 
     task = tasks_list[0]
     if not isinstance(task, dict):
         logger.error("Step 2 GENERATE — pos=%s — task не словарь", pos)
-        return _synthesize_fallback_task(spec, "task_not_dict"), usage.cost_usd
+        return _synthesize_fallback_task(spec, "task_not_dict"), usage_cost
 
     # Принудительно фиксируем position на ту, что в спеке (модель иногда
     # ставит position=1 для одиночной задачи независимо от исходной)
@@ -174,7 +219,7 @@ async def _generate_one_spec(
         "Step 2 GENERATE [pos=%s] OK — text=%r  answer=%r",
         pos, text_preview, answer_preview,
     )
-    return task, usage.cost_usd
+    return task, usage_cost
 
 
 # ── основная функция ─────────────────────────────────────────────────────

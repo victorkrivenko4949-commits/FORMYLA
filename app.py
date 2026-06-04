@@ -36,6 +36,15 @@ try:
 except ImportError:
     IMAGE_MAP = {}
 
+try:
+    from services.figures_manifest import get_figures_for_problem
+    _FIGURES_AVAILABLE = True
+except Exception as _fig_err:
+    print(f"[figures] manifest not available: {_fig_err}")
+    _FIGURES_AVAILABLE = False
+    def get_figures_for_problem(*a, **kw):
+        return {'condition': [], 'solution': []}
+
 print(f"DEBUG: Загружено {len(IMAGE_MAP)} привязок картинок из problem_images.py")
 
 import requests, random, json, uuid, os, base64, math
@@ -2233,12 +2242,27 @@ def problem_detail(problem_id):
     solved_problems = session.get('solved_problems', [])
     is_solved = problem_id in solved_problems
     
+    # ── figures from MANIFEST ────────────────────────────────────────────────
+    figures = {'condition': [], 'solution': []}
+    if is_olympiad:
+        _olympiad_slug = problem.get('olympiad', '')
+        _year          = problem.get('year')
+        _grade         = problem.get('grade')
+        _day           = problem.get('day')
+        _problem_num   = problem.get('num')
+        if _olympiad_slug and _year and _grade:
+            figures = get_figures_for_problem(
+                _olympiad_slug, _year, _grade, _day, _problem_num
+            )
+
     return render_template('problem_detail.html',
         problem=problem,
         subject_title=subject_title,
         subtopic_title=subtopic_title,
         is_olympiad=is_olympiad,
-        is_solved=is_solved
+        is_solved=is_solved,
+        condition_figures=figures['condition'],
+        solution_figures=figures['solution'],
     )
 
 
@@ -4902,6 +4926,89 @@ def adaptive_test_start_simple():
         flash(f'Неверный формат класса: {grade}', 'error')
         return redirect(url_for('adaptive_test_select_grade', topic=topic))
     
+    # ── ПРОВЕРКА: не пройден ли уже этот тест ────────────────────────────
+    if current_user.is_authenticated:
+        try:
+            last_result = AdaptiveTestResult.query.filter_by(
+                user_id=current_user.id,
+                topic=topic,
+                class_level=grade_int
+            ).filter(
+                AdaptiveTestResult.completed_at.isnot(None)
+            ).order_by(
+                AdaptiveTestResult.completed_at.desc()
+            ).first()
+            
+            if last_result and last_result.completed_at:
+                days_elapsed = (datetime.utcnow() - last_result.completed_at).days
+                COOLDOWN_DAYS = 30
+                days_left = COOLDOWN_DAYS - days_elapsed
+                
+                if days_left > 0:
+                    answers = []
+                    try:
+                        if last_result.answers_history:
+                            answers = json.loads(last_result.answers_history)
+                            ids = [a.get('task_id') for a in answers if a.get('task_id')]
+                            if ids:
+                                tasks_map = {}
+                                rows = AdaptiveTask.query.filter(
+                                    AdaptiveTask.id.in_(ids)
+                                ).all()
+                                tasks_map = {t.id: t for t in rows}
+                                for a in answers:
+                                    tid = a.get('task_id')
+                                    t = tasks_map.get(int(tid)) if tid else None
+                                    a['task_text'] = t.task_text if t else ''
+                    except Exception as _e:
+                        print(f'[ADAPTIVE] Failed to decode answers_history: {_e}')
+                        answers = []
+                    
+                    last_digit = days_left % 10
+                    last_two = days_left % 100
+                    if 11 <= last_two <= 19:
+                        days_word = 'дней'
+                    elif last_digit == 1:
+                        days_word = 'день'
+                    elif 2 <= last_digit <= 4:
+                        days_word = 'дня'
+                    else:
+                        days_word = 'дней'
+                    
+                    correct = last_result.tasks_correct or 0
+                    total = last_result.tasks_total or 25
+                    accuracy = round(correct / total * 100) if total > 0 else 0
+                    
+                    topic_names_local = {
+                        'algebra': 'Алгебра',
+                        'geometry': 'Геометрия',
+                        'combinatorics': 'Комбинаторика',
+                        'number_theory': 'Теория чисел',
+                        'movement': 'Задачи на движение',
+                        'kl_movement': 'Задачи на движение',
+                        'knights_liars': 'Рыцари и лжецы',
+                        'functions': 'Функции',
+                        'equations': 'Уравнения',
+                    }
+                    topic_name_display = topic_names_local.get(topic, topic)
+                    completed_date_str = last_result.completed_at.strftime('%d.%m.%Y')
+                    
+                    return render_template('adaptive_test_already_completed.html',
+                        topic=topic,
+                        topic_name=topic_name_display,
+                        grade=grade,
+                        days_left=days_left,
+                        days_word=days_word,
+                        accuracy=accuracy,
+                        correct=correct,
+                        total=total,
+                        final_level=last_result.final_level or 3,
+                        completed_date=completed_date_str,
+                        answers=answers,
+                    )
+        except Exception as _e:
+            print(f'[ADAPTIVE] Completion check failed: {_e}')
+    
     # ── НОВЫЙ ПУТЬ: реестр тем 7–11 классов (точное совпадение по db_topic) ──
     # Для 7–11 классов мы регистрируем темы в services.adaptive_topics_registry
     # и фильтруем задачи строгим равенством AdaptiveTask.topic == db_topic.
@@ -6587,7 +6694,7 @@ def update_nickname():
 @app.route("/add_student", methods=["POST"])
 @login_required
 def add_student():
-    """Добавление друга по nickname (мгновенная дружба)"""
+    """Добавление друга по nickname (отправка запроса)"""
     friend_nickname = request.form.get('nickname', '').strip()
     
     # Убираем @ если пользователь ввел
@@ -6622,26 +6729,31 @@ def add_student():
     if existing:
         if existing.status == 'accepted':
             flash(f'@{friend.nickname} уже в друзьях', 'info')
+        elif existing.status == 'pending':
+            if existing.requester_id == current_user.id:
+                flash(f'Запрос @{friend.nickname} уже отправлен', 'info')
+            else:
+                flash(f'@{friend.nickname} уже отправил вам запрос', 'info')
         else:
             flash(f'@{friend.nickname} уже в друзьях', 'info')
         return redirect(url_for('profile'))
     
-    # Мгновенная дружба
+    # Отправляем запрос в друзья — ожидает подтверждения (как ВКонтакте)
     try:
         friendship = Friendship(
             requester_id=current_user.id,
             addressee_id=friend.id,
-            status='accepted'
+            status='pending'
         )
-        friendship.accepted_at = datetime.utcnow()
         db.session.add(friendship)
-        current_user.experience_points = (current_user.experience_points or 0) + 10
-        friend.experience_points = (friend.experience_points or 0) + 10
         db.session.commit()
-        flash(f'Вы и @{friend.nickname} теперь друзья! +10 XP', 'success')
+        _make_notif(friend.id, 'friend_request', current_user.id, {
+            'message': f'{current_user.nickname or current_user.name or current_user.email} хочет добавить вас в друзья'
+        })
+        flash(f'Запрос в друзья отправлен @{friend.nickname}', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Ошибка при добавлении: {str(e)}', 'error')
+        flash(f'Ошибка при отправке запроса: {str(e)}', 'error')
     
     return redirect(url_for('profile'))
 
@@ -7831,16 +7943,15 @@ def send_friend_request(uid):
             db.session.commit()
             _make_notif(person.id, 'friend_accepted', current_user.id)
             return jsonify({'status': 'friends', 'message': 'Теперь вы друзья! +10 XP'})
-    # Мгновенная дружба — без подтверждения
-    f = Friendship(requester_id=current_user.id, addressee_id=uid, status='accepted')
-    f.accepted_at = datetime.utcnow()
+    # Отправляем запрос в друзья — ожидает подтверждения (как ВКонтакте)
+    f = Friendship(requester_id=current_user.id, addressee_id=uid, status='pending')
     db.session.add(f)
-    current_user.experience_points = (current_user.experience_points or 0) + 10
-    person.experience_points = (person.experience_points or 0) + 10
     db.session.commit()
-    _make_notif(person.id, 'friend_accepted', current_user.id)
+    _make_notif(person.id, 'friend_request', current_user.id, {
+        'message': f'{current_user.nickname or current_user.name or current_user.email} хочет добавить вас в друзья'
+    })
     nm = person.nickname or person.name or person.email
-    return jsonify({'status': 'friends', 'message': f'Вы и {nm} теперь друзья! +10 XP'})
+    return jsonify({'status': 'pending', 'message': f'Запрос в друзья отправлен {nm}'})
 
 
 @app.route('/friends/accept/<int:rid>', methods=['POST'])
@@ -9083,6 +9194,75 @@ def api_set_nickname():
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error setting nickname: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+# ============================================================
+# ПРОГРЕСС АДАПТИВНЫХ ТЕСТОВ (график)
+# ============================================================
+
+@app.route('/api/progress/<int:user_id>')
+@login_required
+def api_progress(user_id):
+    """API: прогресс адаптивных тестов — данные для графика по темам."""
+    try:
+        # user_id=0 означает "текущий пользователь" (защита от fallback в JS)
+        if user_id == 0:
+            user_id = current_user.id
+        # Разрешено: свой профиль или друзья
+        if user_id != current_user.id and not current_user.is_friend_with(user_id):
+            return jsonify({'error': 'Доступ запрещён'}), 403
+
+        rows = (AdaptiveTestResult.query
+                .filter(AdaptiveTestResult.user_id == user_id)
+                .order_by(AdaptiveTestResult.completed_at.asc())
+                .all())
+
+        # Собираем все уникальные даты (YYYY-MM) и группируем по темам
+        dates_set = set()
+        topic_map = {}  # topic -> {YYYY-MM: percent}
+
+        for r in rows:
+            if not r.completed_at or not r.topic:
+                continue
+            month_key = r.completed_at.strftime("%Y-%m")
+            dates_set.add(month_key)
+            percent = round((r.tasks_correct / max(r.tasks_total, 1)) * 100, 1)
+            topic_map.setdefault(r.topic, {})[month_key] = percent
+
+        if not dates_set:
+            return jsonify({'labels': [], 'datasets': [], 'points': 0})
+
+        dates = sorted(dates_set)
+
+        datasets = []
+        color_palette = [
+            '#38bdf8', '#f472b6', '#34d399', '#fb923c',
+            '#a78bfa', '#facc15', '#fb7185', '#2dd4bf'
+        ]
+        for idx, (topic, vals) in enumerate(sorted(topic_map.items())):
+            color = color_palette[idx % len(color_palette)]
+            data = []
+            for d in dates:
+                data.append(vals.get(d))  # None = gap
+            datasets.append({
+                'label': topic,
+                'data': data,
+                'borderColor': color,
+                'backgroundColor': color + '33',
+                'tension': 0.3,
+                'spanGaps': True,
+                'pointRadius': 4,
+                'pointHoverRadius': 6,
+            })
+
+        return jsonify({
+            'labels': dates,
+            'datasets': datasets,
+            'points': len(dates)
+        })
+    except Exception as e:
+        app.logger.error(f"Error in api_progress: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
 

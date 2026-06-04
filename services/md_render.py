@@ -40,6 +40,16 @@ _MD_EXTENSIONS = [
     'nl2br',
 ]
 
+# Дополнительные параметры для рендеринга Markdown.
+# unsafe_allow_raw_html=True — необходим для inline-SVG в worked_example_md.
+_MD_EXTENSION_CONFIGS = {
+    'extra': {
+        'markdown.extensions.extra': {
+            'unsafe_allow_raw_html': True,
+        },
+    },
+}
+
 
 def _protect_latex(text: str) -> tuple[str, list[str]]:
     """Заменить LaTeX-фрагменты на плейсхолдеры, вернуть (текст, список фрагментов)."""
@@ -81,6 +91,9 @@ def md_render(text: str | None) -> Markup:
 
     На вход принимает строку (или None — вернёт пустую Markup).  На выходе —
     `markupsafe.Markup`, который Jinja не экранирует.
+
+    Поддерживает inline-SVG и другой raw HTML за счёт
+    `unsafe_allow_raw_html=True` в конфиге расширения `extra`.
     """
     if not text:
         return Markup('')
@@ -89,6 +102,7 @@ def md_render(text: str | None) -> Markup:
     html = _markdown.markdown(
         protected,
         extensions=_MD_EXTENSIONS,
+        extension_configs=_MD_EXTENSION_CONFIGS,
         output_format='html5',
     )
     html = _restore_latex(html, placeholders)
