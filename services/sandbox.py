@@ -228,7 +228,7 @@ _WRAPPER = textwrap.dedent(
 )
 
 
-def _unix_preexec(memory_mb: int = 768, cpu_seconds: int = 8) -> Optional[callable]:
+def _unix_preexec(memory_mb: int = 4096, cpu_seconds: int = 8) -> Optional[callable]:
     """Build a preexec_fn that applies rlimits on Unix; None on Windows."""
     if os.name != "posix":
         return None
