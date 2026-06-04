@@ -281,7 +281,7 @@ def _run_via_subprocess(code: str, timeout: float) -> bytes:
     # are still discoverable, but block extra user-site / PATH leakage.
     pythonpath = os.pathsep.join(p for p in sys.path if p)
 
-    env = {
+    env = {**os.environ,
         "PYTHONNOUSERSITE": "1",
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONIOENCODING": "utf-8",
