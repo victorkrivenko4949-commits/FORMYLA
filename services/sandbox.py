@@ -244,7 +244,9 @@ def _unix_preexec(memory_mb: int = 4096, cpu_seconds: int = 8) -> Optional[calla
         # Address space (memory)
         mem_bytes = memory_mb * 1024 * 1024
         try:
-            _r.setrlimit(_r.RLIMIT_AS, (mem_bytes, mem_bytes))
+                       pass
+# DISABLED: RLIMIT_AS breaks numpy/matplotlib import
+            #             _r.setrlimit(_r.RLIMIT_AS, (mem_bytes, mem_bytes))
         except Exception:
             pass
         # No core dumps
