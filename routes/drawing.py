@@ -227,7 +227,7 @@ def whiteboard_page():
 def api_drawing_status(task_id: str):
     """Poll the status of an async drawing generation task."""
     _task_store_cleanup()
-    task = _task_get(task_id)
+    task = get_task_status(task_id)
     if task is None:
         return jsonify({"error": "task not found"}), 404
     status = task.get("status", "pending")
