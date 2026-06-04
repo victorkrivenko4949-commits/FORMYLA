@@ -287,7 +287,7 @@
     var _pollTimer = null;
     var _pollStartedAt = 0;
     var _POLL_INTERVAL = 2000;   // ms between polls
-    var _POLL_TIMEOUT = 300000;   // 300 s (5 min) — max wait before showing timeout
+        var _POLL_TIMEOUT = 600000;    // 600 s (10 min) — max wait before showing timeout
 
     function _pollStop() {
         if (_pollTimer) {
@@ -347,7 +347,7 @@
                 _pollStop();
                 setBusy(false);
                 showError(
-                    '⏱ Генерация заняла слишком долго (>5 минут). '
+                    '⏱ Генерация заняла слишком долго (>10 минут). '
                     + 'Попробуйте ещё раз или упростите условие задачи.'
                 );
                 // Notify server the task timed out from the client perspective
