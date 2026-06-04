@@ -262,7 +262,9 @@ def _unix_preexec(memory_mb: int = 4096, cpu_seconds: int = 8) -> Optional[calla
         # Allow a small pool of subprocesses/threads (matplotlib spawns
         # helpers for its cache + font discovery).
         try:
-            _r.setrlimit(_r.RLIMIT_NPROC, (64, 64))
+            # DISABLED: RLIMIT_NPROC breaks matplotlib font discovery threads on Render
+            #_r.setrlimit(_r.RLIMIT_NPROC, (64, 64))
+            pass
         except Exception:
             pass
 
