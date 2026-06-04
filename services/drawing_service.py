@@ -50,8 +50,8 @@ logger = logging.getLogger(__name__)
 # Hard-coded per product decision: drawing pipeline runs on the newest Sonnet
 # slug; do NOT make this env-configurable.  Fallback is DeepSeek (cheap) for
 # the rare case the primary slug is unavailable on OpenRouter.
-MODEL_PRIMARY = "anthropic/claude-opus-4.7"
-MODEL_FALLBACK = None
+MODEL_PRIMARY = "anthropic/claude-sonnet-4"
+MODEL_FALLBACK = "anthropic/claude-opus-4.7"
 
 # Critic model — vision-capable, geometry-aware.
 # NOTE: in OpenRouter, Gemini 3.1 Pro is currently only exposed as the
@@ -1085,7 +1085,7 @@ def _generate_code_until_renders(
 
         # --- Sandbox execution ---
         try:
-            image_bytes = run_drawing_code(code, timeout=12.0)
+            image_bytes = run_drawing_code(code, timeout=15.0)
             attempts.append({
                 "stage": "sandbox",
                 "iter": iteration,
