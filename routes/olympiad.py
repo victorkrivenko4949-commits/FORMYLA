@@ -8,7 +8,6 @@ from datetime import datetime, date
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app
 from flask_login import current_user, login_required
 
-from data.olympiads_db import OLYMPIADS_DB
 from models import db, User
 from models_olympiad import (
     Probnik, OlympiadTask, TheoryBlock, ProbnikTheory,
