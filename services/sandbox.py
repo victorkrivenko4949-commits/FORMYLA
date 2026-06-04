@@ -228,7 +228,7 @@ _WRAPPER = textwrap.dedent(
 )
 
 
-def _unix_preexec(memory_mb: int = 512, cpu_seconds: int = 8) -> Optional[callable]:
+def _unix_preexec(memory_mb: int = 768, cpu_seconds: int = 8) -> Optional[callable]:
     """Build a preexec_fn that applies rlimits on Unix; None on Windows."""
     if os.name != "posix":
         return None
@@ -284,7 +284,7 @@ def _run_via_subprocess(code: str, timeout: float) -> bytes:
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONIOENCODING": "utf-8",
         "PYTHONUTF8": "1",
-        "MPLBACKEND": "Agg",
+        "MPLBACKEND": "Agg",     "OPENBLAS_NUM_THREADS": "1",     "OMP_NUM_THREADS": "1",     "MKL_NUM_THREADS": "1",     "NUMEXPR_NUM_THREADS": "1",     "MALLOC_ARENA_MAX": "2",
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
         # Path: empty so no host executables findable from child.
