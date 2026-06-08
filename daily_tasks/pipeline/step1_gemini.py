@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Step 1 пайплайна «Задачи дня» — Gemini 2.5 Pro (планировщик).
+Step 1 пайплайна «Задачи дня» — планировщик (Claude Sonnet 4.6).
 
-Отправляет профиль ученика в Gemini, получает 10 спецификаций задач (spec'ов)
-и валидирует их структурно через `validate_gemini_plan()`.
+Отправляет профиль ученика в планировщика, получает 10 спецификаций задач
+(spec'ов) и валидирует их структурно через `validate_gemini_plan()`.
+
+При сбое (HTTP 402 баланс, 429 rate-limit, 5xx, JSON-parse, validation)
+**бросает** ``GeminiPlanError`` с классифицированной категорией и человеко-
+читаемым сообщением. Это критично: оркестратор и UI получают РЕАЛЬНУЮ
+причину сбоя, а не обобщённое "вернул 0 specs".
 """
 
 from __future__ import annotations
@@ -19,7 +24,7 @@ if str(_project_root) not in sys.path:
 
 from typing import Any, Dict, List, Optional
 
-from pipeline.openrouter_client import OpenRouterClient, TokenUsage
+from pipeline.openrouter_client import OpenRouterClient, OpenRouterError, TokenUsage
 from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
 from services.taxonomy_grade6 import get_all_subtopics as get_grade6_subtopics
 from services.topic_taxonomy import get_all_subtopics_for_grade
@@ -37,6 +42,51 @@ logger = logging.getLogger(__name__)
 # флагманы (gpt-5.5-pro, gemini-3.1-pro) на стриминге 4-5 минут регулярно
 # роняют соединение через нестабильный интернет. Sonnet 4.5 уже в проде
 _GEMINI_MODEL = "anthropic/claude-sonnet-4.6"
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Классифицированная ошибка планировщика
+# ──────────────────────────────────────────────────────────────────────
+
+
+class GeminiPlanError(Exception):
+    """Step 1 PLAN failed with a known, classified reason.
+
+    Оркестратор ловит это исключение и пишет ``str(self)`` в
+    ``PipelineResult.error`` и далее в ``DailyGenerationJob.error_message``
+    + ``DailyTaskSet.reason_summary``, чтобы UI показал *настоящую* причину
+    (HTTP-код, parse-error, validation-issue) — а не обобщённое
+    "Gemini вернул 0 specs".
+    """
+
+    def __init__(
+        self,
+        message: str,
+        category: str = "unknown",
+        status_code: int = 0,
+        body_snippet: str = "",
+    ):
+        super().__init__(message)
+        # 'http_402' | 'http_429' | 'http_4xx' | 'http_5xx' |
+        # 'network'  | 'parse'    | 'validate' | 'unknown'
+        self.category = category
+        self.status_code = status_code
+        self.body_snippet = body_snippet
+
+
+def _classify_openrouter_error(exc: OpenRouterError) -> str:
+    """Map HTTP status from OpenRouterError to short human category."""
+    code = getattr(exc, "status_code", 0) or 0
+    if code == 402:
+        return "http_402"          # payment required (balance / credit limit)
+    if code == 429:
+        return "http_429"          # rate limit
+    if 400 <= code < 500:
+        return f"http_{code}"
+    if 500 <= code < 600:
+        return f"http_{code}"
+    return "network"
+
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
@@ -95,7 +145,7 @@ def _format_prompt(
 
 
 async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Сгенерировать 10 спецификаций задач через Gemini 2.5 Pro.
+    """Сгенерировать 10 спецификаций задач через планировщика.
 
     Параметры
     ---------
@@ -108,7 +158,13 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     list[dict]
         10 валидированных spec'ов (каждый — словарь с ключами ``position``,
         ``slot_kind``, ``subject``, ``topic``, ``subtopic``,
-        ``difficulty_level``, …)  либо пустой список в случае ошибки.
+        ``difficulty_level``, …).
+
+    Raises
+    ------
+    GeminiPlanError
+        При сбое OpenRouter, парсинга JSON или валидации структуры.
+        ``str(exc)`` содержит человекочитаемое объяснение (включая HTTP-код).
     """
     class_level = profile["class_level"]
     topics_ref = _build_topics_reference(class_level)
@@ -119,9 +175,6 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     ]
 
     # ── вызов планировщика через OpenRouter ──────────────────────────
-    # Любые исключения (httpx timeout, 4xx/5xx, network, asyncio.CancelledError)
-    # ловим здесь и возвращаем []. Это критично: фоновый тред job-а раньше
-    # падал молча и оставлял state='running' навсегда.
     raw_response: str
     usage: TokenUsage
 
@@ -133,17 +186,50 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
                 temperature=0.3,
                 max_tokens=16384,
             )
-    except Exception as exc:
-        # H-5 (2026-05-29): OpenRouterError с пустым ответом теперь содержит
-        # причину в сообщении (см. openrouter_client.py). Логируем как есть.
+    except OpenRouterError as exc:
+        # Classified HTTP / API error — propagate with status_code & snippet
+        category = _classify_openrouter_error(exc)
+        body_snippet = (getattr(exc, "body", "") or "")[:300]
         logger.exception(
-            "Step 1 PLAN — call to %s failed after all retries: %s. "
-            "Returning [] so the orchestrator can mark the job as failed "
-            "instead of hanging in state='running' forever.",
-            _GEMINI_MODEL,
-            exc,
+            "Step 1 PLAN — OpenRouter call to %s failed: status=%s category=%s body=%s",
+            _GEMINI_MODEL, exc.status_code, category, body_snippet,
         )
-        return []
+        if category == "http_402":
+            human = (
+                "Закончился баланс OpenRouter (HTTP 402). "
+                "Пополни счёт на openrouter.ai/credits и попробуй снова."
+            )
+        elif category == "http_429":
+            human = (
+                "Слишком много запросов к OpenRouter (HTTP 429). "
+                "Подожди минуту и повтори."
+            )
+        elif category.startswith("http_5"):
+            human = (
+                f"Временный сбой OpenRouter ({exc.status_code}). "
+                "Повтори через минуту."
+            )
+        elif category.startswith("http_4"):
+            human = (
+                f"Ошибка запроса к OpenRouter ({exc.status_code}). "
+                "Проверь конфигурацию."
+            )
+        else:
+            human = f"Сбой связи с OpenRouter: {exc}"
+        raise GeminiPlanError(
+            human, category=category,
+            status_code=exc.status_code, body_snippet=body_snippet,
+        ) from exc
+    except Exception as exc:
+        # Network / timeout / asyncio.CancelledError / etc.
+        logger.exception(
+            "Step 1 PLAN — call to %s crashed: %s",
+            _GEMINI_MODEL, exc,
+        )
+        raise GeminiPlanError(
+            f"Сбой при вызове планировщика: {type(exc).__name__}: {exc}",
+            category="network",
+        ) from exc
 
     logger.info(
         "Gemini plan — токены: %d in / %d out, стоимость: $%.6f",
@@ -152,7 +238,10 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
         usage.cost_usd,
     )
 
-    logger.info("Gemini plan — raw response длина: %d символов", len(raw_response) if raw_response else 0)
+    logger.info(
+        "Gemini plan — raw response длина: %d символов",
+        len(raw_response) if raw_response else 0,
+    )
 
     # DEBUG: dump raw response to file for inspection
     try:
@@ -165,24 +254,37 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     validation: GeminiPlanValidation = validate_gemini_plan(raw_response)
 
     if not validation.valid:
+        err_summary = "; ".join(validation.all_errors[:5]) or "validation failed"
         logger.error(
             "Gemini plan — ошибки валидации (%d): %s",
-            len(validation.all_errors),
-            "; ".join(validation.all_errors),
+            len(validation.all_errors), err_summary,
         )
-        logger.error("Gemini raw response END (last 800 chars): %s", raw_response[-800:] if raw_response else "(EMPTY)")
-        return []
+        tail = raw_response[-800:] if raw_response else "(EMPTY)"
+        logger.error("Gemini raw response END (last 800 chars): %s", tail)
+        raise GeminiPlanError(
+            f"Ответ модели не прошёл валидацию: {err_summary}",
+            category="validate",
+            body_snippet=tail[:300],
+        )
 
     # ── парсинг JSON ─────────────────────────────────────────────────
     parsed: Optional[Dict[str, Any]] = extract_json_safe(raw_response)
     if parsed is None or "specs" not in parsed:
-        logger.error("Gemini plan — не найден ключ 'specs' после успешной валидации")
-        return []
+        raise GeminiPlanError(
+            "Не удалось извлечь JSON со spec'ами из ответа модели",
+            category="parse",
+            body_snippet=(raw_response or "")[-300:],
+        )
 
     specs: List[Dict[str, Any]] = parsed["specs"]
+    if not isinstance(specs, list) or len(specs) != 10:
+        raise GeminiPlanError(
+            f"Модель вернула {len(specs) if isinstance(specs, list) else 'не-list'} spec'ов вместо 10",
+            category="validate",
+        )
+
     logger.info(
         "Gemini plan — OK: %d specs, cost=$%.4f",
-        len(specs),
-        usage.cost_usd,
+        len(specs), usage.cost_usd,
     )
     return specs

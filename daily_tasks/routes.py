@@ -26,6 +26,7 @@ from models import db
 from . import daily_tasks_bp
 from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
+from .services import today_in_user_tz
 
 # Единый сервис AI-проверки (общий с /api/check_adaptive_answer).
 # Опциональный импорт — файла может не быть на проде.
@@ -62,7 +63,7 @@ def get_daily_tasks():
     * Готов / частично → 200 с полным набором задач
     """
     user_id = current_user.id
-    today = date.today()
+    today = today_in_user_tz()
 
     # ── всегда отдаём HTML (страница, а не API) ──────────────────────
     # Браузеры шлют Accept: */*, что совпадает с application/json,
@@ -135,7 +136,7 @@ def get_daily_tasks():
             "eta_seconds": eta_seconds,
         }), 202
 
-    # ── готов / частично ─────────────────────────────────────────────
+    # ── failed / ready / partial ─────────────────────────────────────
     # пользуемся сервисной функцией, которая уже умеет сериализовать
     svc_data = services.get_daily_tasks(user_id)
 
@@ -144,6 +145,16 @@ def get_daily_tasks():
     completed = sum(
         1 for it in items if it.get("user_answer") is not None
     )
+
+    # Для failed-сета подтягиваем error_message из джоба — фронт покажет его
+    # в understandable виде, плюс кнопку «Попробовать снова».
+    error_message = None
+    if svc_data.get("status") == "failed":
+        job = DailyGenerationJob.query.filter_by(
+            user_id=user_id, target_date=today,
+        ).first()
+        if job and job.error_message:
+            error_message = job.error_message
 
     data = {
         "date": today.isoformat(),
@@ -154,6 +165,7 @@ def get_daily_tasks():
         "summary": svc_data.get("reason_summary"),
         "generated_at": svc_data.get("generated_at"),
         "total_cost_usd": svc_data.get("total_cost_usd"),
+        "error_message": error_message,
         "progress": {
             "completed": completed,
             "total": len(items),
@@ -301,11 +313,16 @@ def get_hint(item_id: int):
 def regenerate():
     """Перегенерировать сегодняшний набор задач.
 
-    * Обычный пользователь — 1 раз в день.
+    Правила лимита:
+    * Обычный пользователь — 1 успешная генерация в день
+      (``status == 'ready'`` или ``'partial'``).
+    * **Failed-сеты НЕ считаются** израсходованной попыткой —
+      пользователь может повторить, если генерация сломалась
+      (например, исчерпался баланс OpenRouter, упал LLM-провайдер).
     * Админ — без лимита.
     """
     user_id = current_user.id
-    today = date.today()
+    today = today_in_user_tz()
 
     # ── проверяем лимит для обычных пользователей ───────────────────
     if not current_user.is_admin:
@@ -314,24 +331,18 @@ def regenerate():
             target_date=today,
         ).first()
 
-        if existing_set and existing_set.status == "ready":
-            # проверяем, не было ли уже регенерации сегодня
-            generated_count = DailyTaskSet.query.filter(
-                DailyTaskSet.user_id == user_id,
-                DailyTaskSet.target_date == today,
-                DailyTaskSet.generated_at.isnot(None),
-            ).count()
-
-            if generated_count >= 1:
-                logger.warning(
-                    "User %d пытается перегенерировать задачи, уже было %d генераций сегодня",
-                    user_id,
-                    generated_count,
-                )
-                return jsonify({
-                    "success": False,
-                    "message": "Перегенерация доступна 1 раз в день",
-                }), 429
+        # Лимит срабатывает ТОЛЬКО когда сегодня уже есть УСПЕШНЫЙ сет.
+        # Failed / generating / отсутствие сета — повторная попытка разрешена.
+        if existing_set and existing_set.status in ("ready", "partial"):
+            logger.warning(
+                "User %d пытается перегенерировать задачи, "
+                "но сегодня уже есть готовый сет #%d (status=%s)",
+                user_id, existing_set.id, existing_set.status,
+            )
+            return jsonify({
+                "success": False,
+                "message": "Перегенерация доступна 1 раз в день",
+            }), 429
 
     # ── удаляем существующий сет (каскадно удалит items + jobs) ─────
     existing_set = DailyTaskSet.query.filter_by(
