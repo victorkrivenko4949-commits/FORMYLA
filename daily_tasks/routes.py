@@ -26,6 +26,7 @@ from models import db
 from . import daily_tasks_bp
 from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
+from .services import today_in_user_tz
 
 # Единый сервис AI-проверки (общий с /api/check_adaptive_answer).
 # Опциональный импорт — файла может не быть на проде.
