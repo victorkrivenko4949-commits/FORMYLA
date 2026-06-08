@@ -44,11 +44,24 @@ def app_ctx():
 
 @pytest.fixture()
 def clean_today_set(app_ctx):
-    """Remove any existing set/items/jobs for today (user_id=1)."""
-    from models import db
+    """Ensure a test user (id=1) exists and wipe today's set/items/jobs.
+
+    Tests run against the project's live SQLite DB (formyla.db) but CI may
+    boot with an empty users table. We bootstrap user_id=1 so that
+    ``dev_login`` succeeds (it calls ``User.query.get(1)``).
+    """
+    from models import db, User
     from daily_tasks.models import (
         DailyTaskSet, DailyTaskItem, DailyGenerationJob,
     )
+
+    # ── ensure user_id=1 exists (required by dev_login + FK on daily_task_sets.user_id)
+    user = User.query.get(1)
+    if not user:
+        user = User(id=1, email="test_user_1@formyla.local", name="TestUser")
+        db.session.add(user)
+        db.session.commit()
+
     today = date.today()
     DailyGenerationJob.query.filter_by(target_date=today).delete()
     set_ids = [
@@ -214,12 +227,23 @@ def test_regenerate_allows_retry_after_failed_set(app_ctx, clean_today_set):
     Воспроизводит сценарий: пользователь нажал «Сгенерировать», получил
     ошибку 402 → status='failed'. Раньше следующий клик на «Повторить»
     давал 429 «Перегенерация доступна 1 раз в день». Теперь — пускает.
+
+    Использует ``date.today()`` — это нормально потому что и фикстура,
+    и endpoint (после TZ-фикса 543c510) читают одну и ту же дату через
+    ``today_in_user_tz()`` (UTC+3 МСК) при стандартном времени сервера,
+    либо обе даты сходятся при отсутствии TZ-фикса. Расхождение
+    возможно только в полуночное окно UTC vs МСК, что не покрывается
+    этим юнит-тестом (для этого есть отдельный live-сценарий).
     """
     from models import db
     from daily_tasks.models import DailyTaskSet
+    from daily_tasks.services import today_in_user_tz
     from app import app
 
-    today = date.today()
+    # Используем ту же функцию, что и endpoint, чтобы фикстурные данные
+    # совпадали с тем, что ищет /daily_tasks/regenerate.
+    today = today_in_user_tz()
+
     # Имитируем уже существующий failed-сет от предыдущей попытки
     failed_set = DailyTaskSet(
         user_id=1, target_date=today, status="failed",
@@ -229,7 +253,13 @@ def test_regenerate_allows_retry_after_failed_set(app_ctx, clean_today_set):
     db.session.commit()
 
     with app.test_client() as c:
-        c.get('/dev_login')
+        # dev_login требует user_id=1 в БД — это гарантирует фикстура
+        # clean_today_set. Проверяем что вход прошёл (302 redirect = success).
+        login_rv = c.get('/dev_login')
+        assert login_rv.status_code in (302, 200), (
+            f"dev_login failed: {login_rv.status_code} {login_rv.get_data(as_text=True)[:200]}"
+        )
+
         # Mock the heavy enqueue_daily_generation so we don't actually hit LLM
         with patch(
             "daily_tasks.routes.services.enqueue_daily_generation",
