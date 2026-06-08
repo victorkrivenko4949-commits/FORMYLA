@@ -45,6 +45,28 @@ from .profile import build_profile
 logger = logging.getLogger(__name__)
 
 # ──────────────────────────────────────────────────────────────────────
+# Часовой пояс пользователя (МСК, UTC+3)
+# ──────────────────────────────────────────────────────────────────────
+# Render работает в UTC. Если использовать today_in_user_tz() напрямую, то в
+# 21:00-23:59 МСК пользователь видит «сет на завтра», но БД содержит сет
+# на «сегодня UTC» = вчера МСК → 404 «no_set» и фейковая ошибка генерации.
+# Решение: единая утилита, считающая дату по МСК для всех мест, где сет
+# создаётся / ищется по target_date.
+
+DAILY_TASKS_TZ = timezone(timedelta(hours=3))  # МСК = UTC+3
+
+
+def today_in_user_tz() -> date:
+    """Текущая дата в часовом поясе пользователя (МСК, UTC+3).
+
+    На Render серверное время — UTC. Чтобы пользователь, открывающий
+    /daily_tasks в 22:30 МСК (= 19:30 UTC), видел сет на «сегодня МСК»,
+    а не на вчерашнюю UTC-дату, используем явный TZ.
+    """
+    return datetime.now(DAILY_TASKS_TZ).date()
+
+
+# ──────────────────────────────────────────────────────────────────────
 # Публичные функции
 # ──────────────────────────────────────────────────────────────────────
 
@@ -75,7 +97,7 @@ def enqueue_daily_generation(
         * ``status`` — текущий статус сета
         * ``message`` — человеко-читаемое пояснение
     """
-    today = date.today()
+    today = today_in_user_tz()
 
     # ── проверяем, есть ли уже сет на сегодня ─────────────────────────
     existing_set = DailyTaskSet.query.filter_by(
@@ -274,7 +296,7 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
         * ``items`` — список задач (каждая с полями ``id``, ``position``, …)
         * ``job`` — информация о фоновом джобе (если есть)
     """
-    today = date.today()
+    today = today_in_user_tz()
     daily_set = DailyTaskSet.query.filter_by(
         user_id=user_id,
         target_date=today,
@@ -340,7 +362,7 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
 
 def get_job_status(user_id: int) -> Dict[str, Any]:
     """Получить статус фонового джоба генерации на сегодня."""
-    today = date.today()
+    today = today_in_user_tz()
     job = DailyGenerationJob.query.filter_by(
         user_id=user_id,
         target_date=today,

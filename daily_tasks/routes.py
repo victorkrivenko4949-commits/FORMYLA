@@ -62,7 +62,7 @@ def get_daily_tasks():
     * Готов / частично → 200 с полным набором задач
     """
     user_id = current_user.id
-    today = date.today()
+    today = today_in_user_tz()
 
     # ── всегда отдаём HTML (страница, а не API) ──────────────────────
     # Браузеры шлют Accept: */*, что совпадает с application/json,
@@ -321,7 +321,7 @@ def regenerate():
     * Админ — без лимита.
     """
     user_id = current_user.id
-    today = date.today()
+    today = today_in_user_tz()
 
     # ── проверяем лимит для обычных пользователей ───────────────────
     if not current_user.is_admin:
