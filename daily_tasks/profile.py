@@ -6,6 +6,7 @@ daily_tasks/profile.py — Step 1: построение профиля поль�
 вычисляет weakness_score по формуле из ТЗ, отбирает 7 слабых и 3 сильных тем.
 """
 
+import logging
 from typing import Dict, List, Optional, Tuple
 
 from models import (
@@ -17,6 +18,14 @@ from services.topic_taxonomy import (
 from services.adaptive_topics_registry import (
     ADAPTIVE_TOPICS_BY_GRADE, get_db_topic, is_registered
 )
+
+logger = logging.getLogger(__name__)
+
+# Дефолтный class_level для пользователей без preferred_grade в БД.
+# Основная аудитория FORMYLA — 8–9 классы (ВсОШ-2027), поэтому
+# при отсутствии явного выбора класса считаем юзера 9-классником,
+# а не 5-классником (как было раньше).
+_DEFAULT_CLASS_LEVEL = 9
 
 # ──────────────────────────────────────────────
 # Константы
@@ -60,9 +69,14 @@ def _extract_subject(db_topic: str, class_level: int) -> str:
             if db_topic.startswith(prefix):
                 return subject
         return 'unknown'
-    # Grade 5-6: из SUBTOPICS (там subjects — список, берём первый)
+    # Grade 5-6: из SUBTOPICS.
+    # NB: фактическая схема SUBTOPICS в текущей таксономии —
+    # ``Dict[str, List[str]]`` (значение это список ID подтем, БЕЗ
+    # полей `subjects` / `grades` / `topics`). Если когда-нибудь
+    # схема расширится до dict с метаданными — этот блок продолжит
+    # работать.
     entry = SUBTOPICS.get(db_topic)
-    if entry and entry.get('subjects'):
+    if isinstance(entry, dict) and entry.get('subjects'):
         return entry['subjects'][0]
     # fallback: через TOPIC_NAMES_RU
     short = TOPIC_NAMES_RU.get(db_topic, db_topic)
@@ -90,10 +104,18 @@ def _get_topic_catalog(class_level: int) -> List[Dict]:
             }
             for entry in grade_data
         ]
-    # Grade 5-6: из SUBTOPICS
+    # Grade 5-6: из SUBTOPICS.
+    # Фактическая схема SUBTOPICS — ``Dict[str, List[str]]`` (нет
+    # отдельного поля `grades`). Поэтому для 5-6 классов отдаём
+    # весь каталог тем — фильтрация по подклассу будет на стороне
+    # LLM-плана. Если запись окажется dict с явным `grades` — он
+    # будет соблюдён.
     result = []
     for db_topic, entry in SUBTOPICS.items():
-        grades = entry.get('grades', [])
+        if isinstance(entry, dict):
+            grades = entry.get('grades') or [5, 6]
+        else:
+            grades = [5, 6]
         if class_level in grades:
             result.append({
                 'topic_key': db_topic,
@@ -129,8 +151,17 @@ def _get_subtopic_hints(db_topic: str, class_level: int, topic_key: str = '') ->
     """Получить список подтем (hints) для темы — не более 5."""
     hints: List[str] = []
     if class_level <= 6:
-        subs = SUBTOPICS.get(db_topic, {}).get('topics', {})
-        hints = [v.get('name_ru', k) for k, v in subs.items()]
+        # SUBTOPICS в текущей таксономии: Dict[str, List[str]] — flat
+        # список ID подтем. Старый код ожидал dict с полем 'topics'.
+        entry = SUBTOPICS.get(db_topic)
+        if isinstance(entry, dict):
+            subs = entry.get('topics', {}) or {}
+            hints = [
+                v.get('name_ru', k) if isinstance(v, dict) else str(k)
+                for k, v in subs.items()
+            ]
+        elif isinstance(entry, list):
+            hints = [str(s) for s in entry]
     else:
         # Grade 7+: ADAPTIVE_TOPICS_BY_GRADE[class_level] is a list of dicts
         grade_data = ADAPTIVE_TOPICS_BY_GRADE.get(class_level, [])
@@ -176,7 +207,24 @@ def build_profile(user_id: int) -> Dict:
     if not user:
         raise ValueError(f"User {user_id} not found")
 
-    class_level = user.preferred_grade or 5
+    raw_grade = user.preferred_grade
+    if not raw_grade:
+        logger.warning(
+            "build_profile: user_id=%d has empty preferred_grade — "
+            "falling back to class_level=%d",
+            user_id, _DEFAULT_CLASS_LEVEL,
+        )
+        class_level = _DEFAULT_CLASS_LEVEL
+    else:
+        try:
+            class_level = int(raw_grade)
+        except (TypeError, ValueError):
+            logger.warning(
+                "build_profile: user_id=%d has non-numeric preferred_grade=%r — "
+                "falling back to class_level=%d",
+                user_id, raw_grade, _DEFAULT_CLASS_LEVEL,
+            )
+            class_level = _DEFAULT_CLASS_LEVEL
     expected_level = _class_expected_level(class_level)
 
     # ── 2. Каталог тем для класса ──

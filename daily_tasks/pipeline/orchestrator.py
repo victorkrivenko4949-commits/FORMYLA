@@ -2,12 +2,12 @@
 """
 Оркестратор пайплайна «Задачи дня».
 
-Реализует Step 1–5 по ТЗ:
-  Step 2: Gemini → specs
-  Step 3: Opus → tasks
-  Step 4: GPT audit → verdict + issues
-  Step 5: Fix‑loop (Opus fix → GPT re‑audit, max 3 итерации)
-  Rescue‑pass: если ≥ 3 задач всё ещё ``is_flagged`` после 3 итераций
+Реализует Step 1–5 по ТЗ:
+  Step 2: Gemini → specs
+  Step 3: Opus → tasks
+  Step 4: GPT audit → verdict + issues
+  Step 5: Fix‑loop (Opus fix → GPT re‑audit, max 3 итерации)
+  Rescue‑pass: если ≥ 3 задач всё ещё ``is_flagged`` после 3 итераций
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from .step1_gemini import generate_gemini_plan
+from .step1_gemini import generate_gemini_plan, GeminiPlanError
 from .step2_opus import generate_opus_tasks
 from .step3_gpt_audit import audit_tasks
 from .step4_opus_fix import fix_single_task
@@ -191,7 +191,7 @@ async def run_daily_generation_pipeline(
     total_cost = 0.0
 
     # ═══════════════════════════════════════════════════════════════════
-    # Step 2: Gemini → specs
+    # Step 2: Gemini → specs
     # ═══════════════════════════════════════════════════════════════════
     logger.info("Pipeline: Step 2 — Gemini plan")
     _safe_progress(progress_callback, "gemini_plan", 15)
@@ -202,14 +202,32 @@ async def run_daily_generation_pipeline(
         total_cost += all_steps[-1].cost_usd
 
         if not specs or len(specs) != 10:
-            msg = f"Gemini вернул {len(specs) if specs else 0} specs (нужно 10)"
+            msg = (
+                f"Планировщик вернул {len(specs) if specs else 0} "
+                "задач вместо 10"
+            )
             logger.error("Pipeline: %s", msg)
             result.error = msg
             result.steps = all_steps
             return result
+    except GeminiPlanError as exc:
+        # Классифицированная ошибка от step1 — уже содержит понятный текст.
+        # Пробрасываем КОНКРЕТНУЮ причину (HTTP-402 / parse / validate / etc.)
+        # вместо обобщённого "Gemini вернул 0 specs".
+        msg = str(exc)
+        logger.error(
+            "Pipeline: Step 1 PLAN failed: category=%s status=%s msg=%s",
+            getattr(exc, "category", "?"),
+            getattr(exc, "status_code", 0),
+            msg,
+        )
+        all_steps.append(_make_step_log("gemini_plan", t0, error=msg))
+        result.error = msg
+        result.steps = all_steps
+        return result
     except Exception as exc:
-        msg = f"Gemini plan crashed: {exc}"
-        logger.exception(msg)
+        msg = f"Сбой планировщика: {type(exc).__name__}: {exc}"
+        logger.exception("Pipeline: %s", msg)
         all_steps.append(_make_step_log("gemini_plan", t0, error=str(exc)))
         result.error = msg
         result.steps = all_steps
@@ -218,7 +236,7 @@ async def run_daily_generation_pipeline(
     result.specs = specs
 
     # ═══════════════════════════════════════════════════════════════════
-    # Step 3: Opus → tasks
+    # Step 3: Opus → tasks
     # ═══════════════════════════════════════════════════════════════════
     logger.info("Pipeline: Step 3 — Opus generate")
     _safe_progress(progress_callback, "opus_generate", 35)
@@ -229,21 +247,26 @@ async def run_daily_generation_pipeline(
         total_cost += all_steps[-1].cost_usd
 
         if not opus_tasks or len(opus_tasks) != 10:
-            msg = f"Opus вернул {len(opus_tasks) if opus_tasks else 0} tasks (нужно 10)"
+            msg = (
+                f"Генератор задач вернул "
+                f"{len(opus_tasks) if opus_tasks else 0} задач вместо 10. "
+                "Возможные причины: HTTP-ошибка OpenRouter (см. логи), "
+                "таймаут, баланс."
+            )
             logger.error("Pipeline: %s", msg)
             result.error = msg
             result.steps = all_steps
             return result
     except Exception as exc:
-        msg = f"Opus generate crashed: {exc}"
-        logger.exception(msg)
+        msg = f"Сбой генератора задач: {type(exc).__name__}: {exc}"
+        logger.exception("Pipeline: %s", msg)
         all_steps.append(_make_step_log("opus_generate", t0, error=str(exc)))
         result.error = msg
         result.steps = all_steps
         return result
 
     # ═══════════════════════════════════════════════════════════════════
-    # Step 4 + Step 5: GPT audit + fix‑loop (max 3 итерации)
+    # Step 4 + Step 5: GPT audit + fix‑loop (max 3 итерации)
     # ═══════════════════════════════════════════════════════════════════
     logger.info("Pipeline: Step 4+5 — GPT audit + fix-loop (max %d it)", MAX_FIX_ITERATIONS)
     _safe_progress(progress_callback, "gpt_audit", 60)

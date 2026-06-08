@@ -538,6 +538,24 @@
     </div>
   </div>
 
+  <!-- ═══ Failed state ═══ -->
+  <div id="dt-failed-state" class="dt-hidden">
+    <div class="dt-empty-card" style="border-color:rgba(255,107,107,0.35);">
+      <div class="dt-empty-title" style="color:#ff9b9b;">❌ Не удалось сгенерировать задачи</div>
+      <div class="dt-empty-sub">
+        <div id="dt-failed-message"
+             style="color:#ff9b9b;margin-bottom:14px;line-height:1.45;
+                    word-break:break-word;"></div>
+        <div style="color:rgba(255,255,255,0.55);font-size:14px;">
+          Это не отняло твою дневную попытку — можно попробовать снова.
+        </div>
+      </div>
+      <button class="dt-btn-primary" id="dt-btn-retry" onclick="startGeneration()">
+        🔄 Попробовать снова
+      </button>
+    </div>
+  </div>
+
   <!-- ═══ Ready state ═══ -->
   <div id="dt-ready-state" class="dt-hidden">
     <div class="dt-ready-header">
