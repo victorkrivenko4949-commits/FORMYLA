@@ -28,6 +28,11 @@ document.addEventListener('DOMContentLoaded', function() {
         case 'partial':
             showReadyState(data);
             break;
+        case 'failed':
+            // Раньше падало в default → showEmptyState() → пустой блок без ошибки.
+            // Теперь показываем понятное сообщение об ошибке + кнопку «Повторить».
+            showFailedState(data);
+            break;
         default:
             console.warn('Unknown daily tasks status:', data.status);
             showEmptyState();
@@ -67,6 +72,55 @@ document.addEventListener('DOMContentLoaded', function() {
 function showEmptyState() {
     var el = document.getElementById('dt-empty-state');
     if (el) el.classList.remove('dt-hidden');
+}
+
+/**
+ * Показать состояние «генерация провалилась».
+ *
+ * Берём сообщение из data.error_message (приходит из routes.py для
+ * status='failed') либо data.summary, либо общий fallback. Кнопка
+ * «Попробовать снова» вызывает startGeneration() — он сам сбросит
+ * failed-сет и запустит новую генерацию. Failed-сет НЕ считается
+ * израсходованной попыткой 1/день (см. routes.regenerate).
+ */
+function showFailedState(data) {
+    var el = document.getElementById('dt-failed-state');
+    var empty = document.getElementById('dt-empty-state');
+    var msg = (data && (data.error_message || data.summary)) || '';
+    msg = String(msg || '').replace(/^❌\s*/, '');  // убираем дубликат значка
+
+    if (el) {
+        // Заполняем сообщение, если шаблон содержит #dt-failed-message
+        var msgEl = document.getElementById('dt-failed-message');
+        if (msgEl && msg) {
+            msgEl.textContent = msg;
+        }
+        el.classList.remove('dt-hidden');
+        return;
+    }
+
+    // Fallback: на старых шаблонах рисуем поверх empty-state.
+    if (empty) {
+        empty.classList.remove('dt-hidden');
+        var title = empty.querySelector('.dt-empty-title');
+        var sub = empty.querySelector('.dt-empty-sub');
+        var btn = empty.querySelector('.dt-btn-primary');
+        if (title) title.textContent = '❌ Не удалось сгенерировать задачи';
+        if (sub) {
+            sub.innerHTML = '';
+            if (msg) {
+                var p = document.createElement('div');
+                p.style.cssText = 'color:#ff9b9b;margin-bottom:14px;line-height:1.45;';
+                p.textContent = msg;
+                sub.appendChild(p);
+            }
+            var hint = document.createElement('div');
+            hint.style.cssText = 'color:rgba(255,255,255,0.55);font-size:14px;';
+            hint.textContent = 'Это не отняло твою дневную попытку — можешь попробовать снова.';
+            sub.appendChild(hint);
+        }
+        if (btn) btn.textContent = '🔄 Попробовать снова';
+    }
 }
 
 function showGeneratingState(data) {

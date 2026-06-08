@@ -634,12 +634,16 @@ def _persist_pipeline_result(
     result: PipelineResult,
     profile: Dict[str, Any],
 ) -> None:
-    """Записать результат пайплайна в БД (Step 6 по ТЗ).
+    """Записать результат пайплайна в БД (Step 6 по ТЗ).
 
-    * Создаёт / обновляет ``DailyTaskItem`` для каждой из 10 позиций.
-    * Устанавливает ``DailyTaskSet.status``, ``generated_at``,
-      ``reason_summary``, ``pipeline_log``, ``total_cost_usd``.
-    * Обновляет ``DailyGenerationJob.state``.
+    Поведение зависит от ``result.status``:
+
+    * ``'ready'`` / ``'partial'`` — создаём ``DailyTaskItem`` для **каждой
+      реальной задачи** в ``result.tasks`` (1 … N, N ≤ 10).
+    * ``'failed'`` — **НЕ создаём** «zombie»-items с ``task_text=''``;
+      сохраняем сет со статусом ``failed`` и причиной в ``reason_summary``,
+      чтобы UI мог показать понятное сообщение об ошибке, а не пустые
+      карточки. ``error_message`` джоба содержит технические детали.
     """
     daily_set = DailyTaskSet.query.get(daily_set_id)
     if not daily_set:
@@ -649,76 +653,102 @@ def _persist_pipeline_result(
     # ── удаляем старые items (если были) ─────────────────────────────
     DailyTaskItem.query.filter_by(daily_set_id=daily_set_id).delete()
 
-    # ── создаём 10 items ─────────────────────────────────────────────
-    for i in range(10):
-        spec = result.specs[i] if i < len(result.specs) else {}
-        task = result.tasks[i] if i < len(result.tasks) else {}
-        audit = (
-            result.audit_entries[i]
-            if i < len(result.audit_entries) and result.audit_entries[i]
-            else {}
-        )
-        is_flagged = (
-            result.is_flagged[i]
-            if i < len(result.is_flagged)
-            else False
-        )
-        iteration_count = (
-            result.iteration_counts[i]
-            if i < len(result.iteration_counts)
-            else 0
-        )
+    status = result.status  # 'ready' | 'partial' | 'failed'
+    is_failed = (status == "failed") or (not result.tasks)
 
-        # ── флаг-причина (из аудита) ─────────────────────────────────
-        flag_reason = None
-        if is_flagged and audit:
-            issues = audit.get("issues", [])
-            if issues:
-                flag_reason = "; ".join(
-                    f"[{iss.get('code','?')}] {iss.get('description','')}"
-                    for iss in issues[:3]  # топ-3 проблемы
-                )
-
-        item = DailyTaskItem(
-            daily_set_id=daily_set_id,
-            position=i + 1,
-            # ── мета (из spec) ───────────────────────────────────────
-            slot_kind=spec.get("slot_kind"),
-            subject=spec.get("subject"),
-            topic=spec.get("topic"),
-            subtopic=spec.get("subtopic"),
-            difficulty_level=spec.get("difficulty_level"),
-            weakness_score=spec.get("weakness_score"),
-            reason=spec.get("reason"),
-            # ── контент (из task) ────────────────────────────────────
-            task_text=task.get("task_text", ""),
-            correct_answer=task.get("correct_answer"),
-            solution=task.get("solution"),
-            hints=json.dumps(task.get("hints", []), ensure_ascii=False),
-            # ── аудит / итерации ─────────────────────────────────────
-            gemini_spec_json=json.dumps(spec, ensure_ascii=False),
-            opus_iterations=iteration_count,
-            gpt_audit_json=json.dumps(audit, ensure_ascii=False) if audit else None,
-            is_flagged=is_flagged,
-            flag_reason=flag_reason,
-            status="approved" if not is_flagged else "flagged",
-        )
-        db.session.add(item)
-
-        if is_flagged:
-            logger.warning(
-                "FLAG: position=%d, flag_reason=%s, audit_preview=%s",
-                i + 1,
-                flag_reason,
-                json.dumps(audit, ensure_ascii=False, default=str)[:500],
+    # ── ВАЖНО: при failed НЕ создаём пустые items ──────────────────
+    # Раньше создавали 10 «zombie»-items с task_text='' — фронт рендерил
+    # пустые карточки, пользователь видел «пустой блок без ошибки».
+    items_created = 0
+    if not is_failed:
+        n_real = min(10, len(result.tasks))
+        for i in range(n_real):
+            spec = result.specs[i] if i < len(result.specs) else {}
+            task = result.tasks[i] if i < len(result.tasks) else {}
+            audit = (
+                result.audit_entries[i]
+                if i < len(result.audit_entries) and result.audit_entries[i]
+                else {}
+            )
+            is_flagged = (
+                result.is_flagged[i]
+                if i < len(result.is_flagged)
+                else False
+            )
+            iteration_count = (
+                result.iteration_counts[i]
+                if i < len(result.iteration_counts)
+                else 0
             )
 
+            # Пропускаем «битые» задачи без текста — они бы создали zombie-item
+            task_text = (task.get("task_text") or "").strip()
+            if not task_text:
+                logger.warning(
+                    "Persist: пропускаю позицию %d — task_text пуст (spec=%s)",
+                    i + 1, spec.get("topic", "?"),
+                )
+                continue
+
+            # ── флаг-причина (из аудита) ─────────────────────────────
+            flag_reason = None
+            if is_flagged and audit:
+                issues = audit.get("issues", [])
+                if issues:
+                    flag_reason = "; ".join(
+                        f"[{iss.get('code','?')}] {iss.get('description','')}"
+                        for iss in issues[:3]  # топ-3 проблемы
+                    )
+
+            item = DailyTaskItem(
+                daily_set_id=daily_set_id,
+                position=i + 1,
+                # ── мета (из spec) ───────────────────────────────────
+                slot_kind=spec.get("slot_kind"),
+                subject=spec.get("subject"),
+                topic=spec.get("topic"),
+                subtopic=spec.get("subtopic"),
+                difficulty_level=spec.get("difficulty_level"),
+                weakness_score=spec.get("weakness_score"),
+                reason=spec.get("reason"),
+                # ── контент (из task) ────────────────────────────────
+                task_text=task_text,
+                correct_answer=task.get("correct_answer"),
+                solution=task.get("solution"),
+                hints=json.dumps(task.get("hints", []), ensure_ascii=False),
+                # ── аудит / итерации ─────────────────────────────────
+                gemini_spec_json=json.dumps(spec, ensure_ascii=False),
+                opus_iterations=iteration_count,
+                gpt_audit_json=(
+                    json.dumps(audit, ensure_ascii=False) if audit else None
+                ),
+                is_flagged=is_flagged,
+                flag_reason=flag_reason,
+                status="approved" if not is_flagged else "flagged",
+            )
+            db.session.add(item)
+            items_created += 1
+
+            if is_flagged:
+                logger.warning(
+                    "FLAG: position=%d, flag_reason=%s, audit_preview=%s",
+                    i + 1, flag_reason,
+                    json.dumps(audit, ensure_ascii=False, default=str)[:500],
+                )
+
     # ── обновляем DailyTaskSet ───────────────────────────────────────
-    status = result.status  # 'ready' | 'partial' | 'failed'
-    daily_set.status = status
+    daily_set.status = "failed" if is_failed else status
     daily_set.generated_at = datetime.utcnow()
     daily_set.class_level = profile.get("class_level")
-    daily_set.reason_summary = _build_reason_summary(result, profile)
+
+    if is_failed:
+        # Сохраняем реальную причину для UI: она видна и в шапке сета,
+        # и в DailyGenerationJob.error_message (через _fail_job).
+        err = result.error or "Неизвестная ошибка генерации"
+        daily_set.reason_summary = f"❌ {err[:400]}"
+    else:
+        daily_set.reason_summary = _build_reason_summary(result, profile)
+
     daily_set.pipeline_log = json.dumps(
         [asdict(s) for s in result.steps],
         ensure_ascii=False,
@@ -728,21 +758,20 @@ def _persist_pipeline_result(
 
     db.session.commit()
     logger.info(
-        "Персист: сет #%s, статус=%s, cost=$%.4f, items=%d",
-        daily_set_id,
-        status,
-        result.total_cost,
-        len(result.tasks),
+        "Персист: сет #%s, статус=%s, cost=$%.4f, items_created=%d, error=%r",
+        daily_set_id, daily_set.status, result.total_cost,
+        items_created, result.error,
     )
 
-    # ── сохраняем результат в task_pool (для кэширования) ──────────
-    try:
-        _save_to_task_pool(result, profile, daily_set_id)
-    except Exception as exc:
-        logger.warning(
-            "Не удалось сохранить в task_pool для сета #%s: %s",
-            daily_set_id, exc,
-        )
+    # ── сохраняем результат в task_pool (только если успех) ─────────
+    if not is_failed:
+        try:
+            _save_to_task_pool(result, profile, daily_set_id)
+        except Exception:
+            # ИСПРАВЛЕНО: было warning без exception, теперь полный stacktrace
+            logger.exception(
+                "Не удалось сохранить в task_pool для сета #%s", daily_set_id,
+            )
 
 
 def _save_to_task_pool(
