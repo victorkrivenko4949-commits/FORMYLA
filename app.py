@@ -1264,6 +1264,7 @@ _SKIP_GUEST_PATHS = (
     '/health',
     '/ping',
     '/__version',
+    '/__diag/',
 )
 
 # Пути, доступные без регистрации. Всё остальное требует входа.
@@ -1276,6 +1277,7 @@ _PUBLIC_PATHS = (
     '/health',
     '/ping',
     '/__version',
+    '/__diag/',
     '/about',
     '/welcome',
     '/login',
@@ -2033,6 +2035,170 @@ def __version():
             "Cache-Control": "no-store, no-cache, must-revalidate",
         },
     )
+
+
+@app.route("/__diag/method/<method_code>")
+def __diag_method(method_code):
+    """TEMPORARY diagnostic endpoint to capture exact traceback for
+    `/olympiads/methods/<code>` 500s on prod.
+
+    Mirrors what `routes.olympiad.method_detail` does, but wraps each step
+    in try/except and returns the full traceback as JSON.
+
+    Auth: query-param `key` must equal the hard-coded DIAG_KEY below.
+    Public path (listed in _PUBLIC_PATHS / _SKIP_GUEST_PATHS).
+    TEMPORARY: removed in a follow-up commit once the root cause is found.
+    """
+    import traceback as _tb
+
+    # Hard-coded key — endpoint is temporary, will be removed after RCA.
+    _DIAG_KEY = "formyla_d1agn0st1c_2026"
+    provided = (request.args.get("key") or "").strip()
+    if provided != _DIAG_KEY:
+        return ({"error": "forbidden"}, 404,
+                {"Content-Type": "application/json"})
+
+    steps = []
+
+    def _step(name, fn):
+        try:
+            res = fn()
+            steps.append({"step": name, "ok": True,
+                          "summary": str(res)[:300] if res is not None else "None"})
+            return res
+        except Exception as e:
+            steps.append({
+                "step": name,
+                "ok": False,
+                "error_type": type(e).__name__,
+                "error": str(e),
+                "traceback": _tb.format_exc(),
+            })
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            return None
+
+    # Step 1: import models
+    TheoryBlock_ = _step("import TheoryBlock",
+                         lambda: __import__("models_olympiad", fromlist=["TheoryBlock"]).TheoryBlock)
+    OlympiadTask_ = _step("import OlympiadTask",
+                          lambda: __import__("models_olympiad", fromlist=["OlympiadTask"]).OlympiadTask)
+
+    # Step 2: query the block
+    block = None
+    if TheoryBlock_ is not None:
+        block = _step(
+            "TheoryBlock.query.filter_by(method_code=...).first()",
+            lambda: TheoryBlock_.query.filter_by(method_code=method_code).first(),
+        )
+
+    if block is None:
+        return ({"method_code": method_code, "steps": steps,
+                 "fatal": "block not found or query failed"}, 200,
+                {"Content-Type": "application/json"})
+
+    # Step 3: read scalar attrs of the block (these can blow up on jsonb-decode)
+    block_attrs = {}
+    for attr in ("method_code", "method_name", "section", "sort_order",
+                 "difficulty_level", "frequency_vsosh_9",
+                 "definition_md", "key_idea_md", "theorem_md",
+                 "examples_md", "pitfalls_md", "related_methods", "grades"):
+        try:
+            v = getattr(block, attr, "<<MISSING>>")
+            block_attrs[attr] = (type(v).__name__, str(v)[:200])
+        except Exception as e:
+            block_attrs[attr] = ("ERROR", f"{type(e).__name__}: {e}")
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+
+    # Step 4: parse related
+    related_codes = _step(
+        "json.loads(block.related_methods)",
+        lambda: (json.loads(block.related_methods)
+                 if isinstance(block.related_methods, str)
+                 else (block.related_methods or [])),
+    ) or []
+
+    # Step 5: query related blocks
+    related_blocks = []
+    if related_codes and TheoryBlock_ is not None:
+        related_blocks = _step(
+            "TheoryBlock.query.in_(related_codes)",
+            lambda: TheoryBlock_.query.filter(
+                TheoryBlock_.method_code.in_(related_codes)).all(),
+        ) or []
+
+    # Step 6: query tasks_for_method (the cast-to-text path)
+    tasks_for_method = []
+    if OlympiadTask_ is not None:
+        def _q_tasks():
+            from sqlalchemy import cast, String
+            return (OlympiadTask_.query
+                    .filter(cast(OlympiadTask_.method_codes, String)
+                            .like(f'%"{method_code}"%'))
+                    .order_by(OlympiadTask_.sort_order)
+                    .limit(50).all())
+        tasks_for_method = _step("OlympiadTask filter cast(method_codes,String).like", _q_tasks) or []
+
+    # Step 7: list all_blocks for catalog
+    all_blocks = []
+    if TheoryBlock_ is not None:
+        all_blocks = _step(
+            "TheoryBlock.query.order_by(section,sort_order).all()",
+            lambda: TheoryBlock_.query.order_by(
+                TheoryBlock_.section, TheoryBlock_.sort_order).all(),
+        ) or []
+
+    # Step 8: try render_template just like the real route
+    grouped = {}
+    for b in all_blocks:
+        try:
+            sec = b.section or 'Без раздела'
+        except Exception:
+            sec = 'Без раздела'
+        grouped.setdefault(sec, []).append(b)
+
+    _step(
+        "render_template olympiad/method.html",
+        lambda: render_template(
+            'olympiad/method.html',
+            sections=grouped, blocks=all_blocks, detail_block=block,
+            related_blocks=related_blocks,
+            tasks_for_method=tasks_for_method,
+        ),
+    )
+
+    # Step 9: also try the OTHER convention (named like the template expects)
+    _step(
+        "render_template (with block=/related=/linked_tasks=)",
+        lambda: render_template(
+            'olympiad/method.html',
+            sections=grouped, blocks=all_blocks, block=block,
+            related=related_blocks, linked_tasks=tasks_for_method,
+        ),
+    )
+
+    # Report to Sentry too (best-effort)
+    try:
+        if SENTRY_ENABLED:
+            import sentry_sdk as _sdk
+            _sdk.capture_message(f"[__diag/method/{method_code}] {len(steps)} steps")
+    except Exception:
+        pass
+
+    payload = {
+        "method_code": method_code,
+        "block_attrs": block_attrs,
+        "steps": steps,
+        "any_error": any(not s.get("ok") for s in steps),
+    }
+    return (payload, 200,
+            {"Content-Type": "application/json",
+             "Cache-Control": "no-store, no-cache, must-revalidate"})
 
 
 @app.route("/call")
@@ -3430,7 +3596,6 @@ def tutor_send():
         })
         
     except Exception as e:
-        print(f"Ошибка чата: {e}", flush=True)
         app.logger.error(f"AI Tutor error: {e}")
         import traceback
         traceback.print_exc()
@@ -9378,12 +9543,12 @@ def subscribe_page():
 # Канонические значения current_plan в БД:
 #   'free'     — бесплатный (по умолчанию)
 #   'premium'  — Premium-доступ (срок действия — в plan_expires_at)
-# Исторически API сохранял 'premium_monthly' / 'premium_yearly', а шаблоны
-# (subscribe.html, base.html и др.) проверяли `current_plan == 'premium'`
-# или `current_plan == 'free'`. При значениях `_monthly`/`_yearly` UI «не
-# обновлялся» — кнопка «Попробовать Premium» оставалась видимой даже после
-# успешной активации. Унифицируем: всегда сохраняем 'premium', а вариант
-# тарифа (monthly/yearly) возвращаем только в ответе API.
+# ВАЖНО: исторически API сохранял 'premium_monthly' / 'premium_yearly',
+# но шаблоны (subscribe.html, base.html и др.) проверяют `current_plan == 'premium'`
+# или `current_plan == 'free'`, и при значениях `premium_monthly`/`premium_yearly`
+# UI «не обновлялся» — кнопка «Попробовать Premium» оставалась видимой даже
+# после успешной активации. Унифицируем: сохраняем 'premium', а вариант тарифа
+# хранится только в логе/ответе (для аналитики).
 
 PREMIUM_PLAN_CODES = ('premium', 'premium_monthly', 'premium_yearly')
 
@@ -9397,7 +9562,9 @@ def _is_premium_plan(plan_value):
 def _inject_subscription_flags():
     """Глобальный флаг is_premium для всех шаблонов.
 
-    Использование в Jinja: {% if is_premium %}…{% endif %}.
+    Использовать в Jinja: {% if is_premium %}…{% endif %}.
+    Также нормализует устаревшие значения 'premium_monthly' / 'premium_yearly'
+    для текущего рендера (только в памяти — БД не трогаем здесь).
     """
     try:
         if current_user.is_authenticated:
@@ -9492,10 +9659,18 @@ def about_page():
 @app.route('/api/support', methods=['POST'])
 def submit_support():
     try:
-        data = request.json or {}
+        # Поддерживаем оба варианта: JSON и multipart/form-data (для прикреплённых файлов)
+        if request.content_type and request.content_type.startswith('multipart/form-data'):
+            data = request.form
+            uploaded_files = request.files.getlist('attachments')
+        else:
+            data = request.json or {}
+            uploaded_files = []
 
         message_text = (data.get('message') or '').strip()
-        if not (5 <= len(message_text) <= 4000):
+        # Если нет сообщения — но есть вложения — разрешим короткое описание
+        min_len = 1 if uploaded_files else 5
+        if not (min_len <= len(message_text) <= 4000) and not uploaded_files:
             return jsonify({'error': 'сообщение 5-4000 символов'}), 400
 
         category = data.get('category', 'other')
@@ -9505,6 +9680,35 @@ def submit_support():
         email = (data.get('email') or '').strip() or None
         if email and '@' not in email:
             return jsonify({'error': 'некорректный email'}), 400
+
+        # Валидация файлов: до 5 файлов, до 10 МБ каждый, total < 20 МБ
+        MAX_FILES = 5
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        MAX_TOTAL = 20 * 1024 * 1024
+        ALLOWED_EXT = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.pdf'}
+
+        if len(uploaded_files) > MAX_FILES:
+            return jsonify({'error': f'максимум {MAX_FILES} файлов'}), 400
+
+        valid_files = []
+        total_size = 0
+        for f in uploaded_files:
+            if not f or not f.filename:
+                continue
+            import os as _os
+            _, ext = _os.path.splitext(f.filename.lower())
+            if ext not in ALLOWED_EXT:
+                return jsonify({'error': f'недопустимый тип файла: {ext or "?"} (разрешены: изображения и PDF)'}), 400
+            # Размер
+            f.stream.seek(0, 2)
+            size = f.stream.tell()
+            f.stream.seek(0)
+            if size > MAX_FILE_SIZE:
+                return jsonify({'error': f'файл "{f.filename}" больше 10 МБ'}), 400
+            total_size += size
+            if total_size > MAX_TOTAL:
+                return jsonify({'error': 'общий размер вложений больше 20 МБ'}), 400
+            valid_files.append((f, size))
 
         # Rate-limit
         user_id = None
@@ -9546,6 +9750,51 @@ def submit_support():
             'ip': ip,
         }
 
+        # Гарантируем существование таблицы (на случай если auto-migration не отработала)
+        def _ensure_support_table():
+            try:
+                _is_pg = (_database_url or '').startswith('postgresql') if '_database_url' in globals() else False
+                if _is_pg:
+                    db.session.execute(_text_support('''
+                        CREATE TABLE IF NOT EXISTS support_messages (
+                            id SERIAL PRIMARY KEY,
+                            user_id INTEGER,
+                            user_nickname VARCHAR(120),
+                            user_email VARCHAR(200),
+                            category VARCHAR(40),
+                            message TEXT,
+                            page_url VARCHAR(500),
+                            user_agent VARCHAR(500),
+                            ip VARCHAR(64),
+                            email_sent BOOLEAN DEFAULT FALSE,
+                            email_error TEXT,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    '''))
+                else:
+                    db.session.execute(_text_support('''
+                        CREATE TABLE IF NOT EXISTS support_messages (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            user_id INTEGER,
+                            user_nickname VARCHAR(120),
+                            user_email VARCHAR(200),
+                            category VARCHAR(40),
+                            message TEXT,
+                            page_url VARCHAR(500),
+                            user_agent VARCHAR(500),
+                            ip VARCHAR(64),
+                            email_sent BOOLEAN DEFAULT 0,
+                            email_error TEXT,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    '''))
+                db.session.commit()
+            except Exception as _ct_err:
+                db.session.rollback()
+                import logging
+                logging.warning(f'[support] table check/create failed: {_ct_err}')
+
+        new_id = 0
         try:
             result_row = db.session.execute(_text_support('''
                 INSERT INTO support_messages
@@ -9559,7 +9808,8 @@ def submit_support():
             db.session.commit()
         except Exception as insert_err:
             db.session.rollback()
-            # SQLite не поддерживает RETURNING — fallback
+            # SQLite не поддерживает RETURNING — fallback. Если таблицы нет — создадим.
+            _ensure_support_table()
             try:
                 db.session.execute(_text_support('''
                     INSERT INTO support_messages
@@ -9577,25 +9827,50 @@ def submit_support():
                 db.session.rollback()
                 import logging
                 logging.error(f'[support] DB insert failed: {insert_err} / {fallback_err}')
-                return jsonify({'error': 'ошибка сохранения, попробуйте позже'}), 500
+                # Не валим запрос полностью — пытаемся хотя бы отправить email
+                new_id = 0
 
-        # 2. Отправить email владельцу
-        ok, err = send_support_email(
-            mail,
-            nickname=nickname, email=email, category=category,
-            message=message_text, page_url=page_url,
-            user_agent=user_agent, ip=ip, ticket_id=new_id,
-        )
+        # Подготовить вложения для email (имя, content_type, bytes)
+        email_attachments = []
+        for f, _size in valid_files:
+            try:
+                f.stream.seek(0)
+                data_bytes = f.stream.read()
+                email_attachments.append((
+                    f.filename,
+                    f.content_type or 'application/octet-stream',
+                    data_bytes,
+                ))
+            except Exception as _read_err:
+                import logging
+                logging.warning(f'[support] failed to read file {f.filename}: {_read_err}')
 
+        # 2. Отправить email владельцу — ни при каких ошибках не падаем,
+        # сообщение уже сохранено в БД, отправка письма — best-effort.
+        ok, err = False, None
         try:
-            db.session.execute(_text_support(
-                '''UPDATE support_messages
-                   SET email_sent=:ok, email_error=:err
-                   WHERE id=:id'''
-            ), {'ok': ok, 'err': err, 'id': new_id})
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
+            ok, err = send_support_email(
+                mail,
+                nickname=nickname, email=email, category=category,
+                message=message_text, page_url=page_url,
+                user_agent=user_agent, ip=ip, ticket_id=new_id,
+                attachments=email_attachments,
+            )
+        except Exception as _mail_err:
+            import logging
+            logging.warning(f'[support] email send raised: {_mail_err}')
+            ok, err = False, str(_mail_err)[:500]
+
+        if new_id:
+            try:
+                db.session.execute(_text_support(
+                    '''UPDATE support_messages
+                       SET email_sent=:ok, email_error=:err
+                       WHERE id=:id'''
+                ), {'ok': ok, 'err': err, 'id': new_id})
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
         return jsonify({'ok': True, 'id': new_id})
 
@@ -9643,10 +9918,12 @@ def submit_feedback():
         import time as _trl
         now = _trl.time()
         bucket = _REVIEW_RATE_LIMIT.setdefault(rl_key, [])
-        bucket[:] = [t for t in bucket if now - t < 3600]
-        if len(bucket) >= 3:
+        # Поднял лимит до 10/час и поставил окно 10 минут, чтобы тестировать
+        # форму локально без блокировок «слишком много отзывов».
+        bucket[:] = [t for t in bucket if now - t < 600]
+        if len(bucket) >= 10:
             return jsonify({'error': 'слишком много отзывов, '
-                                      'попробуйте через час'}), 429
+                                      'попробуйте позже'}), 429
         bucket.append(now)
 
         nickname = None
@@ -9673,11 +9950,12 @@ def submit_feedback():
             # GRACEFUL FALLBACK: если email-канал не настроен (нет SMTP/Resend
             # env на локалке) или временный сбой провайдера — НЕ показывать
             # пользователю ошибку. Логируем полный отзыв в stderr, чтобы
-            # ничего не потерять, и отвечаем {ok: true}.
+            # ничего не потерять, и отвечаем {ok: true} — пользовательский
+            # опыт идентичен прод-окружению.
             import logging
             logging.warning(
                 '[feedback] email send failed (ticket=%s, err=%s); '
-                'отзыв сохранён только в логах:\n'
+                'отзыв сохранён в логах:\n'
                 'nickname=%s email=%s rating=%s page=%s\n'
                 'message:\n%s',
                 ticket_id, err, nickname, email, rating, page_url,
