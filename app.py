@@ -1263,6 +1263,7 @@ _SKIP_GUEST_PATHS = (
     '/healthz',
     '/health',
     '/ping',
+    '/__version',
 )
 
 # Пути, доступные без регистрации. Всё остальное требует входа.
@@ -1274,6 +1275,7 @@ _PUBLIC_PATHS = (
     '/healthz',
     '/health',
     '/ping',
+    '/__version',
     '/about',
     '/welcome',
     '/login',
@@ -1977,6 +1979,60 @@ def healthz():
     Postgres ответит мгновенно. См. инцидент 2026-05-25.
     """
     return ({"status": "ok"}, 200, {"Content-Type": "application/json"})
+
+
+@app.route("/__version")
+def __version():
+    """Returns the deployed git commit SHA so we can verify Render builds.
+
+    Reads from (in order):
+      1. env RENDER_GIT_COMMIT (set automatically by Render),
+      2. env GIT_COMMIT (manual override),
+      3. file `.git/HEAD` resolved (local dev).
+
+    Cache-busting: no-store. Public endpoint (no auth required).
+    """
+    import os as _os
+    sha = (
+        _os.environ.get("RENDER_GIT_COMMIT")
+        or _os.environ.get("GIT_COMMIT")
+        or ""
+    )
+    if not sha:
+        try:
+            _root = _os.path.dirname(_os.path.abspath(__file__))
+            _head = _os.path.join(_root, ".git", "HEAD")
+            if _os.path.isfile(_head):
+                with open(_head, "r", encoding="utf-8") as _f:
+                    head_data = _f.read().strip()
+                if head_data.startswith("ref:"):
+                    ref_path = _os.path.join(_root, ".git", head_data.split(" ", 1)[1])
+                    if _os.path.isfile(ref_path):
+                        with open(ref_path, "r", encoding="utf-8") as _f2:
+                            sha = _f2.read().strip()
+                else:
+                    sha = head_data
+        except Exception:
+            sha = ""
+    sha_short = (sha or "unknown")[:12]
+    payload = {
+        "sha": sha or "unknown",
+        "sha_short": sha_short,
+        "source": (
+            "render_env" if _os.environ.get("RENDER_GIT_COMMIT")
+            else "git_env" if _os.environ.get("GIT_COMMIT")
+            else "git_head_file" if sha
+            else "unknown"
+        ),
+    }
+    return (
+        payload,
+        200,
+        {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+    )
 
 
 @app.route("/call")
