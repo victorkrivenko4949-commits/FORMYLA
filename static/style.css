@@ -121,9 +121,11 @@ a {
 }
 
 .main {
-    max-width: 1160px;
-    margin: 0 auto;
+    max-width: 1280px;
+    width: 100%;
+    margin-inline: auto;
     padding: 44px 22px 70px;
+    box-sizing: border-box;
 }
 
 .page-title {
