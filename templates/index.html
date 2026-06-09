@@ -3,13 +3,19 @@
 {% block title %}FORMYLA — Разделы{% endblock %}
 
 {% block content %}
-<div style="text-align:center;margin-bottom:8px;">
-  <span style="display:inline-block;padding:4px 16px;border-radius:20px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:var(--accent-1);font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Базовый уровень</span>
-</div>
-<h1 class="page-title">Темы для изучения</h1>
-<p class="page-subtitle">Выбери раздел математики и начни тренировку по темам.</p>
 
-<div class="cards-grid">
+{# ════════════════════════════════════════════════════════════════════════
+   DESKTOP / TABLET (>768px) — старая верстка без изменений.
+   Скрывается на мобильных через .m-hide → display:none в mobile.css.
+   ════════════════════════════════════════════════════════════════════════ #}
+<div class="m-hide">
+  <div style="text-align:center;margin-bottom:8px;">
+    <span style="display:inline-block;padding:4px 16px;border-radius:20px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:var(--accent-1);font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Базовый уровень</span>
+  </div>
+  <h1 class="page-title">Темы для изучения</h1>
+  <p class="page-subtitle">Выбери раздел математики и начни тренировку по темам.</p>
+
+  <div class="cards-grid">
     {% for key, title in subjects.items() %}
         <a href="{{ url_for('section', subject_key=key) }}" class="card">
             <h2 class="card-title">{{ title }}</h2>
@@ -46,6 +52,151 @@
         <p class="card-text">Математические игры и головоломки — Судоку, Танграм и другие.</p>
         <p style="color:#888; font-style:italic; font-size:13px; margin-top:8px;">Скоро появится 🚧</p>
     </div>
+  </div>
 </div>
+
+
+{# ════════════════════════════════════════════════════════════════════════
+   MOBILE HOME SLIDER (≤768px) — свайп-пейджер главных разделов.
+   Показывается только на узких экранах через .m-only → media-query в mobile.css.
+   Прототип: 3 слайда (Задачи дня / Темы / Олимпиады).
+   ════════════════════════════════════════════════════════════════════════ #}
+<section class="m-only mhome" id="mHome"
+         role="region" aria-roledescription="carousel" aria-label="Разделы Formyla">
+
+  <div class="mhome-track" id="mHomeTrack" tabindex="0">
+
+    {# ── Слайд 1: 🔥 Задачи дня ─────────────────────────────────────── #}
+    <article class="mhome-slide" id="mHomeSlide0"
+             role="group" aria-roledescription="slide" aria-label="Задачи дня (1 из 3)">
+      <div class="mhome-card mhome-card--daily">
+        <div class="mhome-hero">
+          <div class="mhome-emoji" aria-hidden="true">🔥</div>
+          <h2 class="mhome-title">Задачи дня</h2>
+          <p class="mhome-sub">Ежедневный квест — задачи, подобранные под твои слабые места.</p>
+
+          {% if current_user.is_authenticated %}
+            {% set dq = current_user.today_quest() %}
+            {% if dq and dq.total_count %}
+              <div class="mhome-progress" aria-label="Прогресс дня">
+                <div class="mhome-progress-bar">
+                  <div class="mhome-progress-fill"
+                       style="width: {{ (dq.completed_count / dq.total_count * 100) | round(0, 'floor') }}%"></div>
+                </div>
+                <div class="mhome-progress-text">
+                  {% if dq.completed_count >= dq.total_count %}
+                    ✓ Готово на сегодня!
+                  {% else %}
+                    {{ dq.completed_count }} / {{ dq.total_count }} задач
+                  {% endif %}
+                </div>
+              </div>
+            {% else %}
+              <div class="mhome-badge mhome-badge--new">NEW</div>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <a href="/daily_tasks" class="mhome-btn mhome-btn--primary">
+          Решать сегодня →
+        </a>
+      </div>
+    </article>
+
+    {# ── Слайд 2: 📚 Темы ───────────────────────────────────────────── #}
+    <article class="mhome-slide" id="mHomeSlide1"
+             role="group" aria-roledescription="slide" aria-label="Темы (2 из 3)">
+      <div class="mhome-card mhome-card--themes">
+        <div class="mhome-hero">
+          <div class="mhome-emoji" aria-hidden="true">📚</div>
+          <h2 class="mhome-title">Темы</h2>
+          <p class="mhome-sub">Тренировка по разделам математики 5–11 класса.</p>
+        </div>
+
+        <div class="mhome-tiles">
+          {% for key, title in subjects.items() %}
+            {% if loop.index <= 6 %}
+            <a href="{{ url_for('section', subject_key=key) }}" class="mhome-tile">
+              <span class="mhome-tile-emoji" aria-hidden="true">
+                {% if key == 'algebra' %}🔢
+                {% elif key == 'geometry' %}📐
+                {% elif key == 'combinatorics' %}🎲
+                {% elif key == 'number_theory' %}🔠
+                {% elif key == 'movement' %}🏃
+                {% elif key == 'knights_liars' %}🛡️
+                {% else %}✨{% endif %}
+              </span>
+              <span class="mhome-tile-title">{{ title }}</span>
+            </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </article>
+
+    {# ── Слайд 3: 🏆 Олимпиады ──────────────────────────────────────── #}
+    <article class="mhome-slide" id="mHomeSlide2"
+             role="group" aria-roledescription="slide" aria-label="Олимпиады (3 из 3)">
+      <div class="mhome-card mhome-card--olymp">
+        <div class="mhome-hero">
+          <div class="mhome-emoji" aria-hidden="true">🏆</div>
+          <h2 class="mhome-title">Олимпиады</h2>
+          <p class="mhome-sub">8 000+ задач из ВсОШ, Эйлера, Ломоносова, Турнира городов.</p>
+        </div>
+
+        <div class="mhome-list">
+          <a href="{{ url_for('olympiads') }}" class="mhome-row">
+            <span class="mhome-row-icon">📖</span>
+            <span class="mhome-row-text">
+              <b>Каталог олимпиад</b>
+              <small>Все турниры и годы</small>
+            </span>
+            <span class="mhome-row-chev">›</span>
+          </a>
+          <a href="{{ url_for('olympiad.catalog') }}" class="mhome-row">
+            <span class="mhome-row-icon">🆕</span>
+            <span class="mhome-row-text">
+              <b>Курс ВсОШ-2027</b>
+              <small>295+ задач за 17 лет</small>
+            </span>
+            <span class="mhome-row-chev">›</span>
+          </a>
+          <a href="{{ url_for('olympiad.methods') }}" class="mhome-row">
+            <span class="mhome-row-icon">📚</span>
+            <span class="mhome-row-text">
+              <b>Каталог методов</b>
+              <small>89 формализованных приёмов</small>
+            </span>
+            <span class="mhome-row-chev">›</span>
+          </a>
+          <a href="{{ url_for('olympiad_prep.calendar') }}" class="mhome-row">
+            <span class="mhome-row-icon">📅</span>
+            <span class="mhome-row-text">
+              <b>Календарь</b>
+              <small>Ближайшие туры</small>
+            </span>
+            <span class="mhome-row-chev">›</span>
+          </a>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  {# ── Индикатор страниц (точки) ──────────────────────────────────── #}
+  <div class="mhome-dots" id="mHomeDots" role="tablist" aria-label="Навигация по разделам">
+    <button type="button" class="mhome-dot is-active"
+            role="tab" aria-selected="true" aria-controls="mHomeSlide0"
+            aria-label="К разделу: Задачи дня" data-target="0"></button>
+    <button type="button" class="mhome-dot"
+            role="tab" aria-selected="false" aria-controls="mHomeSlide1"
+            aria-label="К разделу: Темы" data-target="1"></button>
+    <button type="button" class="mhome-dot"
+            role="tab" aria-selected="false" aria-controls="mHomeSlide2"
+            aria-label="К разделу: Олимпиады" data-target="2"></button>
+  </div>
+
+  <p class="mhome-hint">← свайп влево / вправо →</p>
+</section>
 
 {% endblock %}

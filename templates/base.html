@@ -69,6 +69,8 @@
     {% endif %}
 
     <script defer src="{{ url_for('static', filename='js/analytics.js') }}?v={{ asset_version }}"></script>
+    <!-- Mobile home swipe-pager (≤768px). На десктопе скрипт ничего не делает (init ищет #mHome, которого там нет). -->
+    <script defer src="{{ url_for('static', filename='js/mobile_home_slider.js') }}?v={{ asset_version }}"></script>
 </head>
 <body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}"{% if current_user.is_authenticated %} data-user-id="{{ current_user.id }}"{% endif %}>
     <header class="header">
