@@ -9319,29 +9319,71 @@ def subscribe_page():
                            plan_expires_at=plan_expires_at)
 
 
+# Канонические значения current_plan в БД:
+#   'free'     — бесплатный (по умолчанию)
+#   'premium'  — Premium-доступ (срок действия — в plan_expires_at)
+# Исторически API сохранял 'premium_monthly' / 'premium_yearly', а шаблоны
+# (subscribe.html, base.html и др.) проверяли `current_plan == 'premium'`
+# или `current_plan == 'free'`. При значениях `_monthly`/`_yearly` UI «не
+# обновлялся» — кнопка «Попробовать Premium» оставалась видимой даже после
+# успешной активации. Унифицируем: всегда сохраняем 'premium', а вариант
+# тарифа (monthly/yearly) возвращаем только в ответе API.
+
+PREMIUM_PLAN_CODES = ('premium', 'premium_monthly', 'premium_yearly')
+
+
+def _is_premium_plan(plan_value):
+    """True, если строка тарифа считается Premium-доступом."""
+    return (plan_value or '').strip().lower() in PREMIUM_PLAN_CODES
+
+
+@app.context_processor
+def _inject_subscription_flags():
+    """Глобальный флаг is_premium для всех шаблонов.
+
+    Использование в Jinja: {% if is_premium %}…{% endif %}.
+    """
+    try:
+        if current_user.is_authenticated:
+            return {
+                'is_premium': _is_premium_plan(current_user.current_plan),
+            }
+    except Exception:
+        pass
+    return {'is_premium': False}
+
+
 @app.route('/api/subscribe', methods=['POST'])
 @login_required
 def api_subscribe():
-    """API активации Premium (демо — без оплаты)."""
-    data = request.get_json() or {}
-    plan = data.get('plan', 'premium_monthly')
+    """API активации Premium (демо — без оплаты).
 
-    if plan not in ('premium_monthly', 'premium_yearly'):
+    Тело: {plan: 'premium_monthly'|'premium_yearly'}.
+    В БД сохраняем КАНОНИЧЕСКОЕ значение 'premium' — чтобы все шаблоны,
+    проверяющие `current_plan == 'premium'`, отображали статус корректно
+    после reload страницы.
+    """
+    data = request.get_json() or {}
+    requested = data.get('plan', 'premium_monthly')
+
+    if requested not in ('premium_monthly', 'premium_yearly'):
         return jsonify({'error': 'Неизвестный тариф'}), 400
 
     from datetime import timedelta
-    if plan == 'premium_monthly':
+    if requested == 'premium_monthly':
         expires = datetime.utcnow() + timedelta(days=30)
     else:
         expires = datetime.utcnow() + timedelta(days=365)
 
-    current_user.current_plan = plan
+    # КАНОНИЗАЦИЯ: всегда 'premium' в БД. Срок — в plan_expires_at.
+    current_user.current_plan = 'premium'
     current_user.plan_expires_at = expires
     db.session.commit()
 
     return jsonify({
         'ok': True,
-        'plan': plan,
+        'plan': 'premium',
+        'plan_variant': requested,  # для аналитики/UI: monthly|yearly
         'expires_at': str(expires)[:10],
         'message': 'Premium активирован!'
     })
