@@ -279,7 +279,17 @@ def auto_fix_latex(text: str) -> str:
 # ──────────────────────────────────────────────
 
 # Допустимые значения
-VALID_SLOT_KINDS = {"weak_base", "weak_main", "weak_challenge", "strong_review", "strong_challenge"}
+# Примечание: 'calibration' добавлено для калибровочных задач (темы без
+# пройденного диагностического теста — см. PR percent_to_level + calibration).
+# Это совпадает с допустимыми значениями slot_kind в `daily_tasks/models.py`.
+VALID_SLOT_KINDS = {
+    "weak_base",
+    "weak_main",
+    "weak_challenge",
+    "strong_review",
+    "strong_challenge",
+    "calibration",
+}
 VALID_SUBJECTS = {"algebra", "geometry", "number_theory", "combinatorics", "logic"}
 VALID_DIFFICULTY_RANGE = (1, 8)
 VALID_VERDICTS = {"approved", "needs_fix"}
