@@ -19,8 +19,10 @@
 
 /* ── Container ── */
 .dt-container {
-    max-width: 1000px;
-    margin: 0 auto;
+    max-width: 1280px;
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
     padding: 24px;
     display: flex;
     flex-direction: column;
