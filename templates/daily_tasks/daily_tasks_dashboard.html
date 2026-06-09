@@ -450,6 +450,77 @@
     padding: 1px 6px;
     border-radius: 4px;
   }
+
+  /* ── PR percent_to_level + calibration ──────────────────────── */
+  /* Баннер «Профиль ещё в калибровке» */
+  .dt-calibration-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: linear-gradient(135deg, rgba(255, 186, 73, 0.10), rgba(255, 186, 73, 0.04));
+    border: 1px solid rgba(255, 186, 73, 0.35);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 14px 0 18px;
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .dt-cal-banner-icon {
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .dt-cal-banner-body { flex: 1; min-width: 0; }
+  .dt-cal-banner-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #ffd089;
+  }
+  .dt-cal-banner-text {
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .dt-cal-banner-btn {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    padding: 8px 14px;
+    background: #ffba49;
+    color: #1a1206;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .dt-cal-banner-btn:hover {
+    background: #ffc764;
+    transform: translateY(-1px);
+  }
+  @media (max-width: 600px) {
+    .dt-calibration-banner { flex-direction: column; align-items: stretch; }
+    .dt-cal-banner-btn { align-self: flex-start; }
+  }
+
+  /* Бейдж «🧪 Калибровка» на карточке задачи */
+  .dt-calibration-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    background: rgba(255, 186, 73, 0.16);
+    border: 1px solid rgba(255, 186, 73, 0.4);
+    color: #ffd089;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    line-height: 1.5;
+  }
+  /* Лёгкая визуальная отличимость карточки калибровки */
+  .dt-card.dt-calibration {
+    border-color: rgba(255, 186, 73, 0.28);
+  }
 </style>
 {% endblock %}
 
@@ -581,6 +652,32 @@
     <div id="dt-partial-notice" class="dt-partial-notice dt-hidden">
       ⚠️ Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
     </div>
+
+    {# ── Calibration banner (PR percent_to_level + calibration) ──
+       Рисуется, если в сегодняшнем сете есть хотя бы одна
+       калибровочная задача — то есть профиль пользователя ещё
+       неполный (пройдено < 7 адаптивных тестов). #}
+    {% if data and data.has_calibration %}
+    <div class="dt-calibration-banner" role="status">
+      <div class="dt-cal-banner-icon">🧪</div>
+      <div class="dt-cal-banner-body">
+        <div class="dt-cal-banner-title">
+          Профиль ещё в калибровке
+        </div>
+        <div class="dt-cal-banner-text">
+          {{ data.calibration_items_count }} из {{ data.progress.total }}
+          задач — по темам, по которым ты пока не проходил адаптивный
+          тест. Они помечены бейджем 🧪 «Калибровка» и подобраны на
+          среднем уровне. Пройди диагностику, чтобы задачи стали
+          точнее под твой уровень.
+        </div>
+      </div>
+      <a class="dt-cal-banner-btn"
+         href="{{ data.adaptive_tests_url or '/adaptive_test_simple' }}">
+        Пройти тест →
+      </a>
+    </div>
+    {% endif %}
 
     <!-- Task grid -->
     <div id="dt-task-grid"></div>
