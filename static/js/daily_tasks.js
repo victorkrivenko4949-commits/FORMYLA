@@ -285,12 +285,15 @@ function renderTaskGrid(items) {
     }
 }
 
+// Шкала сложности — 8-балльная (см. validators.py: VALID_DIFFICULTY_RANGE = (1, 8)
+// и opus_generate.md §8: L1-L2 простые / L3-L4 учебник / L5-L6 муниципал-регион ВсОШ /
+// L7-L8 финал ВсОШ). Поэтому рисуем до 8 звёзд, без капа на 5.
 function renderDifficultyStars(level) {
     if (!level && level !== 0) return '';
     var num = typeof level === 'number' ? level : parseInt(level);
     if (isNaN(num)) return String(level);
     var stars = '';
-    for (var i = 0; i < Math.min(num, 5); i++) stars += '★';
+    for (var i = 0; i < Math.min(num, 8); i++) stars += '★';
     return stars;
 }
 
@@ -582,7 +585,8 @@ function openTaskModal(item, index) {
     // Task info chips
     html += '<div class="dt-task-info">';
     html += '<span class="dt-info-chip">📚 <strong>' + escapeHtml(item.topic || '') + '</strong></span>';
-    html += '<span class="dt-info-chip">📊 Сложность: <strong>' + (item.difficulty || '?') + '/5</strong></span>';
+    // Шкала difficulty — 8-балльная (см. renderDifficultyStars() и validators.py).
+    html += '<span class="dt-info-chip">📊 Сложность: <strong>' + (item.difficulty || '?') + '/8</strong></span>';
     html += '</div>';
 
     // Flagged warning
