@@ -782,3 +782,266 @@
         transition: none !important;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOBILE HOME SLIDER  —  свайп-пейджер главных разделов на мобильной "/"
+   Подход: нативный CSS scroll-snap + минимум JS (mobile_home_slider.js).
+   На десктопе (>768px) полностью отключается — .m-only прячется,
+   .m-hide показывается; десктопная вёрстка остаётся нетронутой.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* По умолчанию (desktop): мобильный блок прячем, десктопный показываем */
+.m-only { display: none !important; }
+.m-hide { display: block; }
+
+@media (max-width: 768px) {
+    .m-only { display: block !important; }
+    .m-hide { display: none !important; }
+
+    /* На мобильных убираем стандартные отступы .main, чтобы слайдер мог
+       тянуться до краёв экрана. Внутренние отступы — у каждой карточки. */
+    .main { padding-left: 0 !important; padding-right: 0 !important; }
+
+    /* ── Контейнер слайдера ─────────────────────────────────────────── */
+    .mhome {
+        position: relative;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* ── Лента слайдов (скроллится по горизонтали со snap'ом) ─────── */
+    .mhome-track {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;          /* Firefox */
+        overscroll-behavior-x: contain; /* не дёргать страницу */
+    }
+    .mhome-track::-webkit-scrollbar { display: none; }
+    .mhome-track:focus-visible {
+        outline: 2px solid var(--accent-2, #38bdf8);
+        outline-offset: -2px;
+        border-radius: 6px;
+    }
+
+    /* ── Слайд: занимает 100% ширины экрана ─────────────────────── */
+    .mhome-slide {
+        flex: 0 0 100%;
+        width: 100%;
+        min-width: 100%;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        padding: 14px 14px 8px;
+        box-sizing: border-box;
+    }
+
+    /* ── Карточка-слайд ─────────────────────────────────────────── */
+    .mhome-card {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-height: calc(100vh - 56px - 60px - 80px); /* header + bottom-nav + воздух */
+        padding: 20px 18px 24px;
+        background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
+        border: 1px solid rgba(56, 189, 248, 0.18);
+        border-radius: 20px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+    }
+    .mhome-card--daily { background: linear-gradient(160deg, #2a1a0f 0%, #1a1410 50%, #0f0a08 100%); border-color: rgba(249,115,22,0.30); }
+    .mhome-card--themes { background: linear-gradient(160deg, #0e1c2e 0%, #0a1422 50%, #070d18 100%); border-color: rgba(59,130,246,0.30); }
+    .mhome-card--olymp  { background: linear-gradient(160deg, #1d1a2e 0%, #14122a 50%, #0a0820 100%); border-color: rgba(168,85,247,0.30); }
+
+    .mhome-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding-top: 8px; }
+    .mhome-emoji {
+        font-size: 56px;
+        line-height: 1;
+        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    }
+    .mhome-title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 800;
+        color: #f8fafc;
+        letter-spacing: 0.3px;
+    }
+    .mhome-sub {
+        margin: 0;
+        font-size: 14.5px;
+        color: #94a3b8;
+        max-width: 320px;
+        line-height: 1.45;
+    }
+
+    /* ── Progress bar для слайда «Задачи дня» ─────────────────── */
+    .mhome-progress { width: 100%; max-width: 280px; margin-top: 12px; }
+    .mhome-progress-bar {
+        position: relative;
+        height: 10px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .mhome-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #f97316, #fb923c);
+        border-radius: 999px;
+        transition: width .4s ease;
+    }
+    .mhome-progress-text {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #cbd5e1;
+        text-align: center;
+        font-weight: 600;
+    }
+    .mhome-badge--new {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 3px 12px;
+        background: linear-gradient(90deg, #f97316, #fb923c);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        border-radius: 999px;
+    }
+
+    /* ── Главная кнопка слайда ─────────────────────────────────── */
+    .mhome-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: auto;
+        padding: 14px 22px;
+        min-height: 48px;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        text-align: center;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .mhome-btn--primary {
+        background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+        color: #0f172a;
+        box-shadow: 0 4px 14px rgba(56,189,248,0.35);
+    }
+    .mhome-btn:active { transform: translateY(1px) scale(.99); }
+
+    /* ── Сетка плиток для слайда «Темы» ────────────────────────── */
+    .mhome-tiles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .mhome-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 92px;
+        padding: 14px 10px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        color: #e2e8f0;
+        text-decoration: none;
+        text-align: center;
+        transition: background .15s ease, transform .15s ease;
+    }
+    .mhome-tile:active { background: rgba(56,189,248,0.10); transform: scale(.98); }
+    .mhome-tile-emoji { font-size: 26px; line-height: 1; }
+    .mhome-tile-title { font-size: 13.5px; font-weight: 600; line-height: 1.2; }
+
+    /* ── Список-ссылки для слайда «Олимпиады» ──────────────────── */
+    .mhome-list { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .mhome-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 56px;
+        padding: 10px 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        color: #e2e8f0;
+        text-decoration: none;
+        transition: background .15s ease;
+    }
+    .mhome-row:active { background: rgba(168,85,247,0.12); }
+    .mhome-row-icon { font-size: 22px; flex-shrink: 0; }
+    .mhome-row-text { flex: 1; display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+    .mhome-row-text b { font-size: 15px; font-weight: 700; color: #f8fafc; }
+    .mhome-row-text small { font-size: 12.5px; color: #94a3b8; margin-top: 2px; }
+    .mhome-row-chev { font-size: 22px; color: #64748b; flex-shrink: 0; }
+
+    /* ── Индикатор страниц (точки) ─────────────────────────────── */
+    .mhome-dots {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 0 6px;
+    }
+    .mhome-dot {
+        width: 10px;
+        height: 10px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: rgba(148,163,184,0.35);
+        cursor: pointer;
+        transition: background .2s ease, transform .2s ease, width .2s ease;
+        /* Тач-таргет ≥ 44px при наличии псевдоэлемента */
+        position: relative;
+    }
+    .mhome-dot::after {
+        /* увеличенная невидимая зона нажатия для удобного попадания пальцем */
+        content: '';
+        position: absolute;
+        inset: -14px;
+    }
+    .mhome-dot.is-active {
+        width: 28px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #38bdf8, #3b82f6);
+    }
+    .mhome-dot:focus-visible {
+        outline: 2px solid #38bdf8;
+        outline-offset: 3px;
+    }
+
+    .mhome-hint {
+        margin: 0 0 6px;
+        text-align: center;
+        font-size: 11.5px;
+        color: #64748b;
+        letter-spacing: 0.4px;
+    }
+
+    /* ── Уменьшенная анимация ─────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+        .mhome-track { scroll-behavior: auto; }
+        .mhome-progress-fill,
+        .mhome-tile,
+        .mhome-row,
+        .mhome-dot,
+        .mhome-btn { transition: none !important; }
+    }
+}
+
+/* ── На совсем узких экранах (≤375px, iPhone SE) — компактнее ── */
+@media (max-width: 375px) {
+    .mhome-card { padding: 16px 14px 20px; min-height: calc(100vh - 56px - 60px - 60px); }
+    .mhome-emoji { font-size: 48px; }
+    .mhome-title { font-size: 24px; }
+    .mhome-tile { min-height: 84px; padding: 10px 8px; }
+    .mhome-tile-emoji { font-size: 22px; }
+}
