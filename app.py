@@ -295,6 +295,28 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] adaptive_tasks Warning: {e}")
 
+# AUTO-MIGRATION: Add is_calibration column to daily_task_items
+# Колонка добавлена в daily_tasks/models.py:89 (PR percent_to_level + calibration,
+# 2026-06-08). Без неё /daily_tasks падает с UndefinedColumn 500. Idempotent.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        if 'daily_task_items' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('daily_task_items')]
+            if 'is_calibration' not in columns:
+                print("[AUTO-MIGRATION] Adding 'is_calibration' to daily_task_items...")
+                # BOOLEAN DEFAULT FALSE — синтаксис понимают и PostgreSQL, и SQLite.
+                db.session.execute(text(
+                    "ALTER TABLE daily_task_items ADD COLUMN is_calibration BOOLEAN DEFAULT FALSE NOT NULL"
+                ))
+                db.session.commit()
+                print("[AUTO-MIGRATION] ✓ Column 'is_calibration' added to daily_task_items")
+            else:
+                print("[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] daily_task_items.is_calibration Warning: {e}")
+
 # AUTO-MIGRATION: Create tutor_calls table for AI-тьютор v2 logging
 try:
     with app.app_context():
