@@ -185,8 +185,12 @@ function renderTaskGrid(items) {
     items.forEach(function(item, index) {
         var card = document.createElement('div');
         card.className = 'dt-card';
+        // Store item ID on the card so we can find it later for in-place updates
+        card.setAttribute('data-item-id', item.id);
         if (item.is_flagged) card.classList.add('dt-flagged');
         if (item.user_answer !== null) card.classList.add('dt-done');
+        // PR percent_to_level + calibration — серая рамка/бейдж для калибровочных
+        if (item.is_calibration) card.classList.add('dt-calibration');
 
         // Number badge
         var number = document.createElement('div');
@@ -237,6 +241,14 @@ function renderTaskGrid(items) {
             flagBadge.className = 'dt-flag-badge';
             flagBadge.textContent = '⚠️ Флаг';
             statusRow.appendChild(flagBadge);
+        }
+
+        if (item.is_calibration) {
+            var calBadge = document.createElement('span');
+            calBadge.className = 'dt-calibration-badge';
+            calBadge.title = 'Тест по этой теме не пройден — задача калибровочная';
+            calBadge.textContent = '🧪 Калибровка';
+            statusRow.appendChild(calBadge);
         }
 
         // Assemble card
@@ -303,12 +315,14 @@ function startGeneration() {
     if (genBtn) genBtn.disabled = true;
     if (regenBtn) regenBtn.disabled = true;
 
-    // Hide other states, show generating
+    // Hide other states (including failed), show generating
     var emptyState = document.getElementById('dt-empty-state');
     var readyState = document.getElementById('dt-ready-state');
+    var failedState = document.getElementById('dt-failed-state');
     var genState = document.getElementById('dt-generating-state');
     if (emptyState) emptyState.classList.add('dt-hidden');
     if (readyState) readyState.classList.add('dt-hidden');
+    if (failedState) failedState.classList.add('dt-hidden');
     if (genState) genState.classList.remove('dt-hidden');
 
     // Reset progress display
@@ -455,8 +469,8 @@ var DT_STEP_HUMAN = {
     'queued': 'Запуск…',
     'build_profile': 'Анализ твоего профиля',
     'profile': 'Анализ твоего профиля',
-    'gemini_plan': 'Claude Sonnet 4.5 планирует задачи',
-    'opus_generate': 'Claude Sonnet 4.5 пишет задачи (5 потоков)',
+    'gemini_plan': 'Claude Sonnet 4.6 планирует задачи',
+    'opus_generate': 'Claude Sonnet 4.6 пишет задачи (5 потоков)',
     'gpt_audit': 'Claude Opus 4.8 Fast проверяет качество (5 потоков)',
     'opus_fix': 'Claude Opus 4.8 Fast исправляет замечания',
     'rescue_pass': 'Rescue: повторная генерация проблемных задач',
@@ -707,10 +721,18 @@ function submitAnswer(itemId) {
         // Render LaTeX in result (KaTeX or fallback)
         renderMath(form);
 
-        // Reload page after brief delay to update card statuses
-        setTimeout(function() {
-            location.reload();
-        }, 2500);
+        // ── Update the task card in-place (no page reload) ──────────
+        // Find the card by matching item ID from the modal's data attribute
+        updateTaskCardInPlace(itemId, result.is_correct);
+
+        // Update progress badge without page reload
+        var progressBadge = document.getElementById('dt-progress-summary');
+        if (progressBadge) {
+            var parts = progressBadge.textContent.split('/');
+            var completed = parseInt(parts[0] || '0', 10) + 1;
+            var total = parseInt(parts[1] || '0', 10);
+            progressBadge.textContent = completed + '/' + total;
+        }
     })
     .catch(function(error) {
         console.error('Submit error:', error);
@@ -720,6 +742,65 @@ function submitAnswer(itemId) {
         }
         if (hintBtn) hintBtn.disabled = false;
     });
+}
+
+
+/**
+ * Update the task card in the grid after an answer is submitted,
+ * so the user sees the result without a page reload.
+ * Tasks remain visible all day with their ✅/❌ status.
+ */
+function updateTaskCardInPlace(itemId, isCorrect) {
+    // Find all cards in the grid
+    var grid = document.getElementById('dt-task-grid');
+    if (!grid) return;
+
+    var cards = grid.querySelectorAll('.dt-card');
+    // We need to find which card corresponds to this itemId.
+    // The cards don't store itemId directly, so we look for the modal
+    // that was opened for this item and find its card by position.
+    // Alternative: store itemId as data attribute on the card.
+
+    // Store itemId on the currently opened card via the modal
+    var overlay = document.getElementById('dt-modal-overlay');
+    if (overlay) {
+        // Find the card whose click would open this item's modal.
+        // Since we just answered, the modal is still open — we can
+        // find the card by iterating and matching the click handler's item.
+        // Simpler approach: mark the card when modal opens.
+        var activeCard = findCardByItemId(itemId);
+        if (activeCard) {
+            activeCard.classList.add('dt-done');
+            var statusRow = activeCard.querySelector('.dt-card-status');
+            if (statusRow) {
+                statusRow.className = 'dt-card-status';
+                if (isCorrect) {
+                    statusRow.classList.add('dt-correct');
+                    statusRow.textContent = '✅ Верно';
+                } else {
+                    statusRow.classList.add('dt-incorrect');
+                    statusRow.textContent = '❌ Неверно';
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * Find a task card in the grid by matching its item ID.
+ * Cards store their itemId in a data attribute set by openTaskModal.
+ */
+function findCardByItemId(itemId) {
+    var grid = document.getElementById('dt-task-grid');
+    if (!grid) return null;
+    var cards = grid.querySelectorAll('.dt-card');
+    for (var i = 0; i < cards.length; i++) {
+        if (cards[i].getAttribute('data-item-id') === String(itemId)) {
+            return cards[i];
+        }
+    }
+    return null;
 }
 
 // ── Hints ──
