@@ -9572,12 +9572,26 @@ def submit_feedback():
             user_agent=user_agent, ip=ip, ticket_id=ticket_id,
         )
         if not ok:
+            # GRACEFUL FALLBACK: если email-канал не настроен (нет SMTP/Resend
+            # env на локалке) или временный сбой провайдера — НЕ показывать
+            # пользователю ошибку. Логируем полный отзыв в stderr, чтобы
+            # ничего не потерять, и отвечаем {ok: true}.
             import logging
-            logging.error(f'[feedback] email send failed: {err}')
-            return jsonify({'error': 'не удалось отправить отзыв, '
-                                      'попробуйте позже'}), 502
+            logging.warning(
+                '[feedback] email send failed (ticket=%s, err=%s); '
+                'отзыв сохранён только в логах:\n'
+                'nickname=%s email=%s rating=%s page=%s\n'
+                'message:\n%s',
+                ticket_id, err, nickname, email, rating, page_url,
+                message_text,
+            )
+            return jsonify({
+                'ok': True,
+                'id': ticket_id,
+                'delivered': False,
+            })
 
-        return jsonify({'ok': True, 'id': ticket_id})
+        return jsonify({'ok': True, 'id': ticket_id, 'delivered': True})
 
     except Exception:
         import logging
