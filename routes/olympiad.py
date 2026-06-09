@@ -37,11 +37,31 @@ def _course_view(grade: int):
     probniks = (Probnik.query
                 .filter_by(competition=_COMPETITION, grade=grade, season_year=_SEASON_YEAR)
                 .order_by(Probnik.sort_order).all())
-    sections_q = (db.session.query(TheoryBlock.section)
-                  .filter(TheoryBlock.grades.contains(str(grade)),
-                          TheoryBlock.method_code.isnot(None))
-                  .distinct().order_by(TheoryBlock.section).all())
-    method_sections = [r[0] for r in sections_q if r[0]]
+    # ВАЖНО: TheoryBlock.grades — db.JSON (на проде → JSONB).
+    # .contains(str(grade)) на JSONB генерирует оператор @> и падает с
+    # InvalidParameterValue: invalid input syntax for type json.
+    # Используем cast в TEXT и LIKE (работает и на SQLite, и на PostgreSQL).
+    # try/except + rollback: список разделов опционален — лучше пустой
+    # список, чем 500 на странице курса.
+    method_sections = []
+    try:
+        from sqlalchemy import cast, String
+        sections_q = (db.session.query(TheoryBlock.section)
+                      .filter(cast(TheoryBlock.grades, String)
+                              .like(f'%{grade}%'),
+                              TheoryBlock.method_code.isnot(None))
+                      .distinct().order_by(TheoryBlock.section).all())
+        method_sections = [r[0] for r in sections_q if r[0]]
+    except Exception as _sec_err:
+        logger.warning(
+            '[_course_view] failed to load method_sections for grade=%s: %s',
+            grade, _sec_err,
+        )
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        method_sections = []
     progress_by_probnik = {}
     if current_user.is_authenticated:
         for p in probniks:
