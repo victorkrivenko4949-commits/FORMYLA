@@ -156,6 +156,13 @@ def get_daily_tasks():
         if job and job.error_message:
             error_message = job.error_message
 
+    # ── Completeness-баннер: считаем сколько задач калибровочные ─────
+    # (для UI достаточно: число калибровочных / общее число задач).
+    calibration_items_count = sum(
+        1 for it in items if it.get("is_calibration")
+    )
+    has_calibration = calibration_items_count > 0
+
     data = {
         "date": today.isoformat(),
         "status": svc_data["status"],
@@ -171,6 +178,11 @@ def get_daily_tasks():
             "total": len(items),
         },
         "items": items,
+        # PR percent_to_level + calibration
+        "calibration_items_count": calibration_items_count,
+        "has_calibration": has_calibration,
+        # подсказка на которой страницу идти за тестами (для баннера)
+        "adaptive_tests_url": "/adaptive_test_simple",
     }
 
     if wants_html:

@@ -73,13 +73,20 @@ class DailyTaskItem(db.Model):
 
     # --- мета-поля (заполняются на шаге Gemini) ---
     slot_kind = db.Column(db.String(32), nullable=True)
-    # slot_kind: 'weakness', 'review', 'new_topic', 'mixed'
+    # slot_kind: 'weakness', 'review', 'new_topic', 'mixed',
+    #            'weak_base', 'weak_main', 'weak_challenge',
+    #            'strong_review', 'strong_challenge', 'calibration'
     subject = db.Column(db.String(100), nullable=True)
     topic = db.Column(db.String(200), nullable=True)
     subtopic = db.Column(db.String(100), nullable=True)
     difficulty_level = db.Column(db.Integer, nullable=True)  # 1..5
     weakness_score = db.Column(db.Float, nullable=True)
     reason = db.Column(db.Text, nullable=True)
+
+    # PR percent_to_level + calibration (2026-06-08):
+    # True если задача даётся по теме БЕЗ пройденного диагностического
+    # теста (т.е. это калибровочная задача). UI рисует бейдж «калибровка».
+    is_calibration = db.Column(db.Boolean, nullable=False, default=False)
 
     # --- контент (заполняется на шаге Opus) ---
     task_text = db.Column(db.Text, nullable=False)

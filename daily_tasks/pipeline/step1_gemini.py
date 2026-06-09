@@ -132,12 +132,19 @@ def _format_prompt(
 ) -> str:
     """Подставить переменные в prompt-шаблон."""
     prompt = _load_prompt()
+    slot_alloc = profile.get("slot_allocation") or {
+        "measured": 10,
+        "calibration": 0,
+    }
+    completeness = float(profile.get("profile_completeness", 1.0) or 1.0)
     return prompt.format(
         weak_topics=json.dumps(profile["weak_topics"], ensure_ascii=False, indent=2),
         strong_topics=json.dumps(profile["strong_topics"], ensure_ascii=False, indent=2),
         class_level=profile["class_level"],
         class_expected_level=profile["class_expected_level"],
         TOPICS_REFERENCE=json.dumps(topics_ref, ensure_ascii=False, indent=2),
+        slot_allocation=json.dumps(slot_alloc, ensure_ascii=False),
+        profile_completeness=f"{completeness:.2f}",
     )
 
 

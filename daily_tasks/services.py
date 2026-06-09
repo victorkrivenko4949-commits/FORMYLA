@@ -40,7 +40,7 @@ from .pipeline.orchestrator import (
     PipelineResult,
     run_daily_generation_pipeline,
 )
-from .profile import build_profile
+from .profile import build_profile, ProfileBuildError
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +179,14 @@ def enqueue_daily_generation(
             db.session.add(daily_set)
             db.session.flush()
 
+            # темы, считаемые калибровочными в этом профиле, — нужны для
+            # is_calibration на items (PR percent_to_level + calibration)
+            cal_topic_set = {
+                (t or "").strip().lower()
+                for t in (profile.get("calibration_topics") or [])
+                if isinstance(t, str)
+            }
+
             for new_pos, idx in enumerate(selected_indices):
                 task = tasks_data[idx] if idx < len(tasks_data) else {}
                 spec = specs_data[idx] if idx < len(specs_data) else {}
@@ -194,6 +202,9 @@ def enqueue_daily_generation(
                             for iss in issues[:3]
                         )
 
+                spec_topic = (spec.get("topic") or "").strip().lower()
+                is_calibration = spec_topic in cal_topic_set
+
                 item = DailyTaskItem(
                     daily_set_id=daily_set.id,
                     position=new_pos + 1,
@@ -204,6 +215,7 @@ def enqueue_daily_generation(
                     difficulty_level=spec.get("difficulty_level"),
                     weakness_score=spec.get("weakness_score"),
                     reason=spec.get("reason"),
+                    is_calibration=is_calibration,
                     task_text=task.get("task_text", ""),
                     correct_answer=task.get("correct_answer"),
                     solution=task.get("solution"),
@@ -314,6 +326,9 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
     # ── сериализуем задачи ───────────────────────────────────────────
     all_items: List[Dict[str, Any]] = []
     for item in daily_set.items.order_by(DailyTaskItem.position).all():
+        # is_calibration появилось в новой миграции — берём безопасно
+        # на случай если БД ещё не пересоздана.
+        is_calibration = bool(getattr(item, "is_calibration", False) or False)
         all_items.append({
             "id": item.id,
             "position": item.position,
@@ -324,6 +339,7 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "difficulty": item.difficulty_level,
             "weakness_score": item.weakness_score,
             "reason": item.reason,
+            "is_calibration": is_calibration,
             "task_text": item.task_text,
             "correct_answer": item.correct_answer,
             "solution": item.solution,
@@ -489,18 +505,32 @@ def _norm_topics(topics: Optional[List[Any]]) -> List[str]:
 def compute_cache_key(profile: Dict[str, Any]) -> str:
     """Детерминированный SHA-256 ключ по профилю пользователя.
 
-    Ученики с одинаковым (class_level, набор тем, class_expected_level)
-    получат одинаковый cache_key → один пул задач без повторного AI.
+    Ученики с одинаковым (class_level, набор тем, class_expected_level,
+    набор калибровочных тем дня, profile_completeness) получают
+    одинаковый cache_key → один пул задач без повторного AI.
 
-    Регистр и лишние пробелы в названиях тем нормализуются,
-    так что ``" Algebra "`` и ``"algebra"`` дадут одинаковый ключ.
+    PR percent_to_level + calibration:
+    * добавлены ``profile_completeness`` и ``calibration_topics`` —
+      иначе ученик с 1/7 тестов и ученик с 7/7 тестов получили бы
+      ОДИН пул, что неверно (для них набор задач должен отличаться).
+
+    Регистр и лишние пробелы в названиях тем нормализуются.
     """
+    # квантуем completeness до 0.10, чтобы мелкие колебания
+    # (например 0.142 vs 0.143) не множили пулы
+    completeness_q = round(float(profile.get("profile_completeness", 0.0)), 1)
     key_data: Dict[str, Any] = {
         "subject": profile.get("subject", "unknown"),
         "class_level": profile.get("class_level", 0),
         "class_expected_level": profile.get("class_expected_level", 0),
         "weak_topics": _norm_topics(profile.get("weak_topics", [])),
         "strong_topics": _norm_topics(profile.get("strong_topics", [])),
+        "calibration_topics": sorted(
+            (t or "").strip().lower()
+            for t in (profile.get("calibration_topics") or [])
+            if isinstance(t, str) and t.strip()
+        ),
+        "completeness_q": completeness_q,
     }
     canonical = json.dumps(key_data, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -603,14 +633,26 @@ async def _run_pipeline_async(
     try:
         # ── Step 1: build_profile ────────────────────────────────────
         _update_job_progress(job, "build_profile", 5)
-        logger.info("[user=%d] Step 1: построение профиля", user_id)
-        profile = build_profile(user_id)
+        logger.info("[user=%d] Step 1: построение профиля", user_id)
+        try:
+            profile = build_profile(user_id)
+        except ProfileBuildError as exc:
+            # Бизнес-ошибка (нет grade, нет каталога) — не баг.
+            # Помечаем сет failed с понятной причиной, выходим без traceback.
+            logger.warning(
+                "[user=%d] ProfileBuildError: %s", user_id, exc,
+            )
+            _mark_set_failed(daily_set_id, str(exc))
+            _fail_job(job_id, f"Профиль: {exc}")
+            return
         logger.info(
-            "[user=%d] Профиль: класс=%d, слабых=%d, сильных=%d",
+            "[user=%d] Профиль: класс=%s completeness=%.2f слабых=%d сильных=%d калибровочных=%d",
             user_id,
             profile.get("class_level"),
+            profile.get("profile_completeness", 0.0),
             len(profile.get("weak_topics", [])),
             len(profile.get("strong_topics", [])),
+            len(profile.get("calibration_topics", [])),
         )
 
         # ── Step 2–5: пайплайн с live-обновлением прогресса ────────
@@ -682,6 +724,12 @@ def _persist_pipeline_result(
     # Раньше создавали 10 «zombie»-items с task_text='' — фронт рендерил
     # пустые карточки, пользователь видел «пустой блок без ошибки».
     items_created = 0
+    # Множество калибровочных тем — нужно для is_calibration на items.
+    cal_topic_set = {
+        (t or "").strip().lower()
+        for t in (profile.get("calibration_topics") or [])
+        if isinstance(t, str)
+    }
     if not is_failed:
         n_real = min(10, len(result.tasks))
         for i in range(n_real):
@@ -722,6 +770,9 @@ def _persist_pipeline_result(
                         for iss in issues[:3]  # топ-3 проблемы
                     )
 
+            spec_topic = (spec.get("topic") or "").strip().lower()
+            is_calibration = spec_topic in cal_topic_set
+
             item = DailyTaskItem(
                 daily_set_id=daily_set_id,
                 position=i + 1,
@@ -733,6 +784,7 @@ def _persist_pipeline_result(
                 difficulty_level=spec.get("difficulty_level"),
                 weakness_score=spec.get("weakness_score"),
                 reason=spec.get("reason"),
+                is_calibration=is_calibration,
                 # ── контент (из task) ────────────────────────────────
                 task_text=task_text,
                 correct_answer=task.get("correct_answer"),
@@ -957,24 +1009,66 @@ def _fail_job(job_id: int, error_message: str) -> None:
         logger.exception("Не удалось обновить job #%s: %s", job_id, exc)
 
 
+def _mark_set_failed(daily_set_id: int, reason: str) -> None:
+    """Пометить DailyTaskSet как failed с понятной причиной.
+
+    Используется при ProfileBuildError (пустой grade и т.п.) — чтобы UI
+    показал юзеру конкретное сообщение, а не «общая ошибка».
+    """
+    try:
+        s = DailyTaskSet.query.get(daily_set_id)
+        if not s:
+            return
+        s.status = "failed"
+        s.reason_summary = f"❌ {reason[:400]}"
+        s.generated_at = datetime.utcnow()
+        db.session.commit()
+        logger.warning("DailyTaskSet #%s marked failed: %s", daily_set_id, reason)
+    except Exception:
+        logger.exception("Не удалось пометить DailyTaskSet #%s как failed", daily_set_id)
+        db.session.rollback()
+
+
 def _build_reason_summary(
-    result: PipelineResult,
+    result: "PipelineResult",
     profile: Dict[str, Any],
 ) -> str:
-    """Сформировать краткое описание (почему эти темы)."""
+    """Сформировать краткое описание (почему эти темы).
+
+    PR percent_to_level + calibration:
+    * добавлен префикс с completeness ("Пройдено N/7 тестов")
+    * сообщение про калибровочные темы — UI рисует баннер и бейджи
+    """
     weak_topics = profile.get("weak_topics", [])
     strong_topics = profile.get("strong_topics", [])
 
     weak_names = [t.get("topic_ru", t.get("topic", "?")) for t in weak_topics[:3]]
     strong_names = [t.get("topic_ru", t.get("topic", "?")) for t in strong_topics[:2]]
 
-    parts = []
+    parts: List[str] = []
+
+    # ── completeness: «Пройдено N/7 тестов» ─────────────────────────
+    measured = int(profile.get("measured_topics_count", 0) or 0)
+    completeness = float(profile.get("profile_completeness", 0.0) or 0.0)
+    # total = 7 для 7+ кл; для 5-6 может отличаться, но в reason нам важна
+    # дробь measured/total — берём из topics_full если есть
+    total_topics = len(profile.get("topics_full") or []) or 7
+    if completeness < 1.0:
+        parts.append(
+            f"Пройдено {measured} из {total_topics} тестов — "
+            f"задачи по непройденным темам ориентировочные"
+        )
+
     if weak_names:
         parts.append(f"Слабые темы: {', '.join(weak_names)}")
     if strong_names:
         parts.append(f"Повторение: {', '.join(strong_names)}")
 
-    # ── добавляем информацию о качестве ──────────────────────────────
+    cal_topics = profile.get("calibration_topics") or []
+    if cal_topics:
+        parts.append(f"Калибровка: {', '.join(cal_topics[:2])}")
+
+    # ── информация о качестве ────────────────────────────────────────
     flagged_count = sum(result.is_flagged)
     if flagged_count > 0:
         parts.append(f"({flagged_count} задач помечены на доработку)")

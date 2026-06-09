@@ -2,12 +2,49 @@
 """
 daily_tasks/profile.py — Step 1: построение профиля пользователя.
 
-Собирает данные из AdaptiveTestResult + TaskSolution + AdaptiveTask,
-вычисляет weakness_score по формуле из ТЗ, отбирает 7 слабых и 3 сильных тем.
+Архитектура (PR «percent_to_level + calibration», ТЗ от 2026-06-08):
+
+1. У каждой темы класса (7 шт. для 7–11 кл., 10 шт. для 5–6 кл.) есть состояние
+   ``measured`` — пройден ли по ней адаптивный диагностический тест.
+   * ``measured=True`` — есть ``AdaptiveTestResult`` → процент знания темы
+     известен как ``100 * tasks_correct / tasks_total``.
+   * ``measured=False`` — теста не было → тема **калибровочная**: задачи дня
+     по ней даются на безопасном стартовом уровне, а ответы ученика по этим
+     задачам со временем превращаются в собственный «running_pct» (см.
+     ``update_topic_running_pct``).
+
+2. Процент знания темы → уровень сложности задачи (1–5) через
+   :func:`percent_to_level`. Пороги вынесены в
+   :data:`PERCENT_LEVEL_THRESHOLDS` для удобного тюнинга.
+
+3. Слабые темы (низкий %) идут в ``weak_topics`` с **пониженным**
+   ``floor_level`` (``pct_level − 1``), чтобы Gemini-плэннер выбирал задачи
+   «чуть ниже измеренного уровня» (подтянуть пробел). Доля
+   «stretch»-задач — 20% — пойдёт на ``pct_level + 1`` (рост).
+
+4. Сильные темы (высокий %) — в ``strong_topics`` для повторения.
+
+5. Калибровочные темы (без теста) тоже попадают в ``weak_topics`` (приоритет
+   ниже измеренных), но с явным флагом ``calibration=True`` и стартовым
+   ``target_level = CALIBRATION_START_LEVEL``. По дням недели темы ротируются,
+   чтобы за 6–7 дней закрыть профиль (см. ``_select_calibration_topics``).
+
+6. **Никакого silent-fallback `class_level=9`**. Если у пользователя пустой
+   ``preferred_grade`` — функция бросает :class:`ProfileBuildError` с ясной
+   причиной, оркестратор пишет её в ``reason_summary`` (см. ТЗ п.6).
+
+Совместимость
+-------------
+Возвращаемый профиль сохраняет старые ключи (``weak_topics``,
+``strong_topics``, ``class_level``, ``class_expected_level``,
+``adaptive_summary``) — Gemini-промпт и кэш ``task_pool`` продолжают работать.
+Добавлены новые ключи (``profile_completeness``, ``measured_topics_count``,
+``calibration_topics``, ``topics_full``).
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from datetime import date, datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 from models import (
     db, User, AdaptiveTestResult, TaskSolution, AdaptiveTask
@@ -18,19 +55,45 @@ from services.topic_taxonomy import (
 from services.adaptive_topics_registry import (
     ADAPTIVE_TOPICS_BY_GRADE, get_db_topic, is_registered
 )
+from .running_pct import (
+    compute_topic_running_pct,
+    MIN_ANSWERS_FOR_MEASURED,
+)
 
 logger = logging.getLogger(__name__)
 
-# Дефолтный class_level для пользователей без preferred_grade в БД.
-# Основная аудитория FORMYLA — 8–9 классы (ВсОШ-2027), поэтому
-# при отсутствии явного выбора класса считаем юзера 9-классником,
-# а не 5-классником (как было раньше).
-_DEFAULT_CLASS_LEVEL = 9
 
-# ──────────────────────────────────────────────
-# Константы
-# ──────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════
+# Константы — все пороги и веса ВЫНЕСЕНЫ сюда, чтобы тюнить без правки логики
+# ══════════════════════════════════════════════════════════════════════
 
+# ── Маппинг процент → уровень сложности 1–5 (см. ТЗ п.1) ──────────────
+# Формат: список (верхняя граница включительно, уровень).
+# Низкий % → низкий уровень (ученик слаб → задаём проще).
+# Высокий % → высокий уровень (ученик силён → задаём челлендж).
+PERCENT_LEVEL_THRESHOLDS: List[Tuple[int, int]] = [
+    (20, 1),   #   0–20% → lvl 1 (база)
+    (40, 2),   #  21–40% → lvl 2
+    (60, 3),   #  41–60% → lvl 3
+    (80, 4),   #  61–80% → lvl 4
+    (100, 5),  # 81–100% → lvl 5 (челлендж)
+]
+
+# ── Поведение для измеренных слабых тем ───────────────────────────────
+# Сколько уровней «вниз» от измеренного даём как target (подтянуть пробелы).
+LEVEL_PULL_DOWN: int = 1
+# Сколько уровней «вверх» даём для растяжки (часть задач для роста).
+LEVEL_STRETCH_UP: int = 1
+# Доля растяжки от всех задач по теме (для подсказки Gemini-плэннеру).
+LEVEL_STRETCH_PROB: float = 0.2
+
+# ── Калибровочные темы (без теста) ────────────────────────────────────
+# Стартовый уровень для калибровочных задач — середина шкалы, безопасно.
+CALIBRATION_START_LEVEL: int = 2
+# Максимум 2 калибровочные темы в день — чтобы не размывать фокус.
+CALIBRATION_TOPICS_PER_DAY: int = 2
+
+# ── Старая логика (оставлена для совместимости с существующим Gemini) ─
 _SUBJECT_PREFIX_MAP: Dict[str, str] = {
     'Алгебра': 'algebra',
     'Геометрия': 'geometry',
@@ -38,17 +101,196 @@ _SUBJECT_PREFIX_MAP: Dict[str, str] = {
     'Теория чисел': 'number_theory',
     'Логика': 'logic',
 }
+_WEAK_THRESHOLD = 35
+_MAX_WEAK_PER_SUBJECT = 2
+_TOP_WEAK_COUNT = 7
+_TOP_STRONG_COUNT = 3
+_MIN_STRONG_ATTEMPTS = 5
 
-_WEAK_THRESHOLD = 35            # минимальный weakness_score для попадания в слабые
-_MAX_WEAK_PER_SUBJECT = 2       # макс. слабых тем из одного раздела
-_TOP_WEAK_COUNT = 7             # сколько слабых тем отдаём
-_TOP_STRONG_COUNT = 3           # сколько сильных тем отдаём
-_MIN_STRONG_ATTEMPTS = 5        # мин. попыток для сильной темы
+# ── Минимально допустимый уровень сложности (1–8 в БД) ────────────────
+MIN_TASK_LEVEL = 1
+MAX_TASK_LEVEL = 8  # шкала AdaptiveTask.difficulty_level в БД (1..8)
 
 
-# ──────────────────────────────────────────────
-# Вспомогательные функции
-# ──────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════
+# Исключения
+# ══════════════════════════════════════════════════════════════════════
+
+
+class ProfileBuildError(Exception):
+    """Профиль построить нельзя по бизнес-причине (отсутствие grade и т.п.).
+
+    Оркестратор ловит и пишет ``str(exc)`` в ``DailyTaskSet.reason_summary``
+    + ``DailyGenerationJob.error_message``. Никакого silent-fallback.
+    """
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Чистые функции (без БД, легко тестируются)
+# ══════════════════════════════════════════════════════════════════════
+
+
+def percent_to_level(pct: Optional[float]) -> Optional[int]:
+    """Конвертация процента знания темы (0–100) в уровень сложности (1–5).
+
+    Параметры
+    ---------
+    pct : float | None
+        Процент 0..100. Значения вне диапазона clamp'ятся.
+        ``None`` → ``None`` (тест не пройден, уровень неизвестен).
+
+    Возвращает
+    ----------
+    int | None
+        Уровень из :data:`PERCENT_LEVEL_THRESHOLDS` (1..5) или ``None``.
+
+    Примеры
+    -------
+    >>> percent_to_level(None)
+    >>> percent_to_level(0)
+    1
+    >>> percent_to_level(20)
+    1
+    >>> percent_to_level(21)
+    2
+    >>> percent_to_level(100)
+    5
+    >>> percent_to_level(150)  # clamp
+    5
+    """
+    if pct is None:
+        return None
+    try:
+        pct_f = float(pct)
+    except (TypeError, ValueError):
+        return None
+    # clamp в [0, 100]
+    pct_f = max(0.0, min(100.0, pct_f))
+    for upper, lvl in PERCENT_LEVEL_THRESHOLDS:
+        if pct_f <= upper:
+            return lvl
+    # safety fallback — не должно случиться при корректной таблице
+    return PERCENT_LEVEL_THRESHOLDS[-1][1]
+
+
+def compute_profile_completeness(
+    measured_count: int, total_topics: int = 7
+) -> float:
+    """Доля пройденных тестов от общего числа тем в каталоге класса.
+
+    Возвращает 0.0..1.0; деление на 0 защищено.
+    """
+    if total_topics <= 0:
+        return 0.0
+    return round(max(0, min(measured_count, total_topics)) / total_topics, 4)
+
+
+def compute_target_level_from_pct(
+    pct: Optional[float],
+    pull_down: int = LEVEL_PULL_DOWN,
+    floor: int = MIN_TASK_LEVEL,
+    ceil: int = MAX_TASK_LEVEL,
+) -> Optional[int]:
+    """Target-уровень задачи по проценту знания (со сдвигом вниз).
+
+    Используется, чтобы подтянуть слабую тему: даём задачи **на 1 уровень
+    ниже** измеренного. Если pct=None — возвращает ``None`` (тема
+    калибровочная, level отдельно).
+
+    >>> compute_target_level_from_pct(30)   # pct_level=2, pull_down=1
+    1
+    >>> compute_target_level_from_pct(90)   # pct_level=5, pull_down=1
+    4
+    >>> compute_target_level_from_pct(None)
+    """
+    lvl = percent_to_level(pct)
+    if lvl is None:
+        return None
+    return max(floor, min(ceil, lvl - pull_down))
+
+
+def compute_stretch_level_from_pct(
+    pct: Optional[float],
+    stretch_up: int = LEVEL_STRETCH_UP,
+    floor: int = MIN_TASK_LEVEL,
+    ceil: int = MAX_TASK_LEVEL,
+) -> Optional[int]:
+    """Stretch-уровень (на ступеньку выше измеренного) — для роста."""
+    lvl = percent_to_level(pct)
+    if lvl is None:
+        return None
+    return max(floor, min(ceil, lvl + stretch_up))
+
+
+def compute_slot_allocation(
+    measured_count: int,
+    total_topics: int = 7,
+    total_slots: int = 10,
+    min_measured_slots: int = 0,
+) -> Tuple[int, int]:
+    """Сколько задач выделить под measured-темы и под calibration-темы.
+
+    Логика (ТЗ п.3, «1/7 пройдено → ~3–4 measured + ~6 калибровочных»):
+
+    Если measured_count = 0 → (0, total_slots) — все 10 калибровочных.
+    Если measured_count = total_topics (7/7) → (total_slots, 0).
+    Между ними — линейная интерполяция с округлением.
+
+    Формула:
+        measured_slots ≈ round(total_slots * (measured_count / total_topics))
+
+    + гарантия минимум 3 measured_slots, если есть хоть один тест (иначе
+    «1 тест ничего не меняет» — нарушение требования «приоритет слабым»).
+    """
+    if total_topics <= 0:
+        return (total_slots, 0)
+    if measured_count <= 0:
+        return (max(0, min_measured_slots), total_slots - max(0, min_measured_slots))
+    if measured_count >= total_topics:
+        return (total_slots, 0)
+
+    # propor + базовый запас 3 на измеренные
+    ratio = measured_count / total_topics
+    measured_slots = max(3, round(total_slots * ratio))
+    measured_slots = min(total_slots, measured_slots)
+    calibration_slots = total_slots - measured_slots
+    return (measured_slots, calibration_slots)
+
+
+def select_calibration_topics(
+    candidate_topics: List[str],
+    n: int,
+    rotation_seed: int,
+) -> List[str]:
+    """Детерминированно выбрать ``n`` калибровочных тем из ``candidate_topics``.
+
+    Ротация: сдвиг = ``rotation_seed % len(candidate_topics)``.
+    За 6–7 дней при стабильном seed=weekday темы перебираются равномерно.
+
+    Параметры
+    ---------
+    candidate_topics : list[str]
+        Список ``db_topic`` тем без теста.
+    n : int
+        Сколько вернуть (≤ len(candidate_topics)).
+    rotation_seed : int
+        Обычно ``date.weekday()`` (0..6).
+    """
+    if not candidate_topics or n <= 0:
+        return []
+    # копия отсортированная — чтобы результат был детерминирован, а не
+    # зависел от порядка в БД/каталоге
+    sorted_topics = sorted(candidate_topics)
+    k = len(sorted_topics)
+    offset = max(0, rotation_seed) % k
+    rotated = sorted_topics[offset:] + sorted_topics[:offset]
+    return rotated[:min(n, k)]
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Вспомогательные функции (с обращением к БД)
+# ══════════════════════════════════════════════════════════════════════
+
 
 def _class_expected_level(class_level: int) -> int:
     """Ожидаемый уровень подготовки для класса (ТЗ строка 96)."""
@@ -63,22 +305,14 @@ def _class_expected_level(class_level: int) -> int:
 
 def _extract_subject(db_topic: str, class_level: int) -> str:
     """Извлечь subject из названия темы."""
-    # Grade 7-11: по префиксу db_topic
     if class_level >= 7:
         for prefix, subject in _SUBJECT_PREFIX_MAP.items():
             if db_topic.startswith(prefix):
                 return subject
         return 'unknown'
-    # Grade 5-6: из SUBTOPICS.
-    # NB: фактическая схема SUBTOPICS в текущей таксономии —
-    # ``Dict[str, List[str]]`` (значение это список ID подтем, БЕЗ
-    # полей `subjects` / `grades` / `topics`). Если когда-нибудь
-    # схема расширится до dict с метаданными — этот блок продолжит
-    # работать.
     entry = SUBTOPICS.get(db_topic)
     if isinstance(entry, dict) and entry.get('subjects'):
         return entry['subjects'][0]
-    # fallback: через TOPIC_NAMES_RU
     short = TOPIC_NAMES_RU.get(db_topic, db_topic)
     for prefix, subject in _SUBJECT_PREFIX_MAP.items():
         if short.startswith(prefix) or db_topic.startswith(prefix):
@@ -89,7 +323,7 @@ def _extract_subject(db_topic: str, class_level: int) -> str:
 def _get_topic_catalog(class_level: int) -> List[Dict]:
     """Получить каталог тем для класса.
 
-    Grade 5-6 → SUBTOPICS (topic_taxonomy), 10 тем.
+    Grade 5-6 → SUBTOPICS (topic_taxonomy).
     Grade 7-11 → ADAPTIVE_TOPICS_BY_GRADE, 7 тем.
     """
     if class_level >= 7:
@@ -104,12 +338,6 @@ def _get_topic_catalog(class_level: int) -> List[Dict]:
             }
             for entry in grade_data
         ]
-    # Grade 5-6: из SUBTOPICS.
-    # Фактическая схема SUBTOPICS — ``Dict[str, List[str]]`` (нет
-    # отдельного поля `grades`). Поэтому для 5-6 классов отдаём
-    # весь каталог тем — фильтрация по подклассу будет на стороне
-    # LLM-плана. Если запись окажется dict с явным `grades` — он
-    # будет соблюдён.
     result = []
     for db_topic, entry in SUBTOPICS.items():
         if isinstance(entry, dict):
@@ -131,19 +359,14 @@ def _calc_weakness_score(
     class_expected_level: int,
     avg_level_solved: float,
 ) -> float:
-    """
-    Формула weakness_score (0–100) из ТЗ.
-
-    weakness_score = 100 * (1 - accuracy) * min(1, attempts/5)
-                     + max(0, 10 * (class_expected_level - avg_level_solved))
-    """
+    """Старая формула weakness_score для совместимости со strong-отбором."""
     term1 = 100.0 * (1.0 - accuracy) * min(1.0, attempts / 5.0)
     term2 = max(0.0, 10.0 * (class_expected_level - avg_level_solved))
     return round(term1 + term2, 1)
 
 
 def _floor_level(class_expected_level: int, avg_level_solved: float) -> int:
-    """Минимальный уровень сложности для генерации (ТЗ строка 118)."""
+    """Минимальный уровень сложности (старая формула, дефолт для калибровки)."""
     return max(2, int(avg_level_solved) - 1, class_expected_level - 2)
 
 
@@ -151,8 +374,6 @@ def _get_subtopic_hints(db_topic: str, class_level: int, topic_key: str = '') ->
     """Получить список подтем (hints) для темы — не более 5."""
     hints: List[str] = []
     if class_level <= 6:
-        # SUBTOPICS в текущей таксономии: Dict[str, List[str]] — flat
-        # список ID подтем. Старый код ожидал dict с полем 'topics'.
         entry = SUBTOPICS.get(db_topic)
         if isinstance(entry, dict):
             subs = entry.get('topics', {}) or {}
@@ -163,9 +384,7 @@ def _get_subtopic_hints(db_topic: str, class_level: int, topic_key: str = '') ->
         elif isinstance(entry, list):
             hints = [str(s) for s in entry]
     else:
-        # Grade 7+: ADAPTIVE_TOPICS_BY_GRADE[class_level] is a list of dicts
         grade_data = ADAPTIVE_TOPICS_BY_GRADE.get(class_level, [])
-        # Find the entry matching topic_key in the list
         entry = {}
         if isinstance(grade_data, list):
             for item in grade_data:
@@ -180,71 +399,174 @@ def _get_subtopic_hints(db_topic: str, class_level: int, topic_key: str = '') ->
     return hints[:5]
 
 
-# ──────────────────────────────────────────────
-# Основная функция
-# ──────────────────────────────────────────────
+def _resolve_class_level(user: User) -> int:
+    """Явный, не-молчаливый резолв класса.
 
-def build_profile(user_id: int) -> Dict:
+    Если ``preferred_grade`` пуст или не парсится — бросаем ProfileBuildError.
+    Никакого silent ``class_level=9`` (ТЗ п.6).
     """
-    Построить профиль пользователя для генерации «Задач дня».
+    raw_grade = getattr(user, 'preferred_grade', None)
+    if raw_grade in (None, '', 0, '0'):
+        msg = (
+            "Не указан класс ученика (preferred_grade пуст). "
+            "Без класса невозможно выбрать тематический каталог. "
+            "Зайди в Профиль → укажи класс."
+        )
+        logger.error(
+            "build_profile: user_id=%s missing preferred_grade — refuse silent fallback",
+            getattr(user, 'id', '?'),
+        )
+        raise ProfileBuildError(msg)
+    try:
+        class_level = int(raw_grade)
+    except (TypeError, ValueError):
+        msg = (
+            f"preferred_grade='{raw_grade}' не число. "
+            "Зайди в Профиль и выбери класс из списка."
+        )
+        logger.error(
+            "build_profile: user_id=%s preferred_grade=%r is not int",
+            getattr(user, 'id', '?'), raw_grade,
+        )
+        raise ProfileBuildError(msg)
+    if class_level < 5 or class_level > 11:
+        msg = f"Класс {class_level} вне поддерживаемого диапазона (5–11)."
+        raise ProfileBuildError(msg)
+    return class_level
 
-    Возвращает dict (см. ТЗ раздел 1 Step 1):
-    {
-        "user_id": int,
-        "class_level": int,
-        "class_expected_level": int,
-        "adaptive_summary": {
-            "total_attempts": int,
-            "overall_accuracy": float,
-            "avg_level_solved": float,
-        },
-        "weak_topics": [ ... ],   # 7 тем
-        "strong_topics": [ ... ],  # 3 темы
-    }
+
+def _load_topic_test_pct(
+    user_id: int, class_level: int
+) -> Dict[str, float]:
+    """Достать карту ``db_topic → pct (0..100)`` из AdaptiveTestResult.
+
+    Берём **последний** тест на каждую (topic, class_level). Если у одной
+    темы несколько записей — побеждает самая свежая (по completed_at, иначе
+    по id).
     """
-    # ── 1. Получаем пользователя ──
+    results = (
+        db.session.query(AdaptiveTestResult)
+        .filter(
+            AdaptiveTestResult.user_id == user_id,
+            AdaptiveTestResult.class_level == class_level,
+        )
+        .order_by(
+            AdaptiveTestResult.completed_at.desc().nullslast()
+            if hasattr(AdaptiveTestResult.completed_at.desc(), 'nullslast')
+            else AdaptiveTestResult.completed_at.desc(),
+            AdaptiveTestResult.id.desc(),
+        )
+        .all()
+    )
+    pct_map: Dict[str, float] = {}
+    for tr in results:
+        if not tr.topic or tr.topic in pct_map:
+            continue  # уже взяли более свежий
+        total = tr.tasks_total or 0
+        correct = tr.tasks_correct or 0
+        if total <= 0:
+            continue
+        pct = round(100.0 * correct / total, 2)
+        pct_map[tr.topic] = pct
+    return pct_map
+
+
+def _load_topic_final_level(
+    user_id: int, class_level: int
+) -> Dict[str, int]:
+    """``db_topic → final_level (IRT 1..7)`` (для совместимости со старым кодом)."""
+    rows = (
+        db.session.query(AdaptiveTestResult.topic, AdaptiveTestResult.final_level)
+        .filter(
+            AdaptiveTestResult.user_id == user_id,
+            AdaptiveTestResult.class_level == class_level,
+        )
+        .all()
+    )
+    out: Dict[str, int] = {}
+    for topic, lvl in rows:
+        if topic and lvl is not None and topic not in out:
+            out[topic] = int(lvl)
+    return out
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Основная функция — build_profile()
+# ══════════════════════════════════════════════════════════════════════
+
+
+def build_profile(
+    user_id: int,
+    today: Optional[date] = None,
+) -> Dict[str, Any]:
+    """Построить профиль пользователя для генерации «Задач дня».
+
+    Параметры
+    ---------
+    user_id : int
+    today : date | None
+        Дата сегодня — нужна для ротации калибровочных тем по дням.
+        По умолчанию ``date.today()``.
+
+    Возвращает
+    ----------
+    dict со следующими ключами:
+
+    * ``user_id``
+    * ``class_level``                   — int 5..11
+    * ``class_expected_level``          — int (из _class_expected_level)
+    * ``profile_completeness``          — float 0..1 (N тестов / 7)
+    * ``measured_topics_count``         — int
+    * ``calibration_topics_count``      — int
+    * ``slot_allocation``               — {'measured': int, 'calibration': int}
+    * ``adaptive_summary``              — старая агрегация (по TaskSolution)
+    * ``weak_topics``                   — list[dict] (измеренные слабые +
+      калибровочные) — Gemini его и так читает
+    * ``strong_topics``                 — list[dict]
+    * ``calibration_topics``            — list[db_topic] (для маркировки items)
+    * ``topics_full``                   — полный список с полями
+      {'db_topic', 'subject', 'topic_key', 'measured', 'calibration',
+      'pct', 'level_from_pct', 'target_level', 'stretch_level',
+      'floor_level', 'subtopic_hints', ...}
+
+    Raises
+    ------
+    ProfileBuildError
+        Если у пользователя нет валидного ``preferred_grade``. Это
+        бизнес-ошибка, не баг — оркестратор пишет её в reason_summary.
+    """
+    # ── 1. Пользователь ──────────────────────────────────────────────
     user = User.query.get(user_id)
     if not user:
         raise ValueError(f"User {user_id} not found")
 
-    raw_grade = user.preferred_grade
-    if not raw_grade:
-        logger.warning(
-            "build_profile: user_id=%d has empty preferred_grade — "
-            "falling back to class_level=%d",
-            user_id, _DEFAULT_CLASS_LEVEL,
-        )
-        class_level = _DEFAULT_CLASS_LEVEL
-    else:
-        try:
-            class_level = int(raw_grade)
-        except (TypeError, ValueError):
-            logger.warning(
-                "build_profile: user_id=%d has non-numeric preferred_grade=%r — "
-                "falling back to class_level=%d",
-                user_id, raw_grade, _DEFAULT_CLASS_LEVEL,
-            )
-            class_level = _DEFAULT_CLASS_LEVEL
+    class_level = _resolve_class_level(user)  # может бросить ProfileBuildError
     expected_level = _class_expected_level(class_level)
 
-    # ── 2. Каталог тем для класса ──
+    # ── 2. Каталог тем класса ────────────────────────────────────────
     topic_catalog = _get_topic_catalog(class_level)
     if not topic_catalog:
-        raise ValueError(f"No topics found for class level {class_level}")
+        raise ProfileBuildError(
+            f"Для класса {class_level} не найден каталог тем "
+            "(ADAPTIVE_TOPICS_BY_GRADE / SUBTOPICS пуст)."
+        )
 
-    # ── 3. Собираем статистику по каждой теме из TaskSolution ──
-    # Берём все решения пользователя со связанными задачами
+    total_topics = len(topic_catalog)
+
+    # ── 3. Map db_topic → % (из адаптивных тестов) ───────────────────
+    pct_by_topic = _load_topic_test_pct(user_id, class_level)
+    final_level_by_topic = _load_topic_final_level(user_id, class_level)
+
+    # ── 4. Статистика TaskSolution (для совместимости, weakness_score) ─
     solutions_query = (
         db.session.query(TaskSolution, AdaptiveTask)
         .join(AdaptiveTask, TaskSolution.task_id == AdaptiveTask.id)
         .filter(TaskSolution.user_id == user_id)
         .all()
     )
-
-    # Агрегируем по topic (db_topic из AdaptiveTask)
-    topic_stats: Dict[str, Dict] = {}
+    topic_stats: Dict[str, Dict[str, Any]] = {}
     for sol, task in solutions_query:
-        topic = task.topic  # db_topic
+        topic = task.topic
         if topic not in topic_stats:
             topic_stats[topic] = {
                 'attempts': 0,
@@ -258,142 +580,218 @@ def build_profile(user_id: int) -> Dict:
             ts['correct'] += 1
         ts['level_sum'] += task.difficulty_level
 
-    # ── 4. Достаём final_level из AdaptiveTestResult ──
-    test_results = (
-        db.session.query(AdaptiveTestResult)
-        .filter(
-            AdaptiveTestResult.user_id == user_id,
-            AdaptiveTestResult.class_level == class_level,
-        )
-        .all()
-    )
-    test_level_map: Dict[str, int] = {}
-    for tr in test_results:
-        test_level_map[tr.topic] = tr.final_level
+    # ── 5. Построить полный список тем с новыми полями ──────────────
+    if today is None:
+        today = date.today()
+    weekday_seed = today.weekday()  # 0..6
 
-    # ── 5. Строим per-topic статистику для каталога ──
-    all_topics_data: List[Dict] = []
-    total_attempts = 0
-    total_correct = 0
-    total_level_sum = 0
+    topics_full: List[Dict[str, Any]] = []
+    measured_count = 0
+    calibration_candidate_topics: List[str] = []
 
-    for topic_entry in topic_catalog:
-        db_topic = topic_entry['db_topic']
+    for entry in topic_catalog:
+        db_topic = entry['db_topic']
+        subj = _extract_subject(db_topic, class_level)
+
+        # — статистика по решённым задачам (для floor_level и weakness) —
         stats = topic_stats.get(db_topic, {
-            'attempts': 0,
-            'correct': 0,
-            'level_sum': 0,
-            'subject': _extract_subject(db_topic, class_level),
+            'attempts': 0, 'correct': 0, 'level_sum': 0, 'subject': subj,
         })
-
         attempts = stats['attempts']
         correct = stats['correct']
-        accuracy = round(correct / attempts, 4) if attempts > 0 else 0.0
+        accuracy_solutions = round(correct / attempts, 4) if attempts > 0 else 0.0
         avg_level = round(stats['level_sum'] / attempts, 2) if attempts > 0 else 0.0
 
-        weakness = _calc_weakness_score(accuracy, attempts, expected_level, avg_level)
-        final_level = test_level_map.get(db_topic)
-        floor = _floor_level(expected_level, avg_level) if attempts > 0 else max(2, expected_level - 2)
+        # — главное: процент из адаптивного теста, если есть —
+        pct = pct_by_topic.get(db_topic)
+        measured = pct is not None
+        running_pct_value: Optional[float] = None
+        running_pct_count = 0
 
-        topic_data = {
-            'subject': stats['subject'],
+        if not measured:
+            # Достройка профиля по истории решений (вариант B, см.
+            # daily_tasks/running_pct.py). Когда ученик нарешал
+            # MIN_ANSWERS_FOR_MEASURED калибровочных задач по теме —
+            # тема становится measured без формального теста.
+            try:
+                running_pct_value, running_pct_count, running_measured = (
+                    compute_topic_running_pct(user_id, db_topic)
+                )
+            except Exception:
+                logger.exception(
+                    "running_pct calc failed for user=%s topic=%r — skip",
+                    user_id, db_topic,
+                )
+                running_pct_value, running_pct_count, running_measured = (
+                    None, 0, False,
+                )
+            if running_measured and running_pct_value is not None:
+                pct = running_pct_value
+                measured = True
+
+        if measured:
+            measured_count += 1
+        else:
+            calibration_candidate_topics.append(db_topic)
+
+        # — конвертация в уровни —
+        if measured:
+            pct_level = percent_to_level(pct)         # 1..5
+            target_level = compute_target_level_from_pct(pct)
+            stretch_level = compute_stretch_level_from_pct(pct)
+            calibration = False
+            # floor_level для Gemini: используем target_level (т.к. это и есть
+            # «куда мы хотим попасть» по ТЗ). Защита: не ниже 1.
+            floor = max(MIN_TASK_LEVEL, target_level or MIN_TASK_LEVEL)
+        else:
+            pct_level = None
+            target_level = CALIBRATION_START_LEVEL
+            stretch_level = min(MAX_TASK_LEVEL, CALIBRATION_START_LEVEL + 1)
+            calibration = True
+            floor = CALIBRATION_START_LEVEL
+
+        weakness = _calc_weakness_score(
+            accuracy_solutions, attempts, expected_level, avg_level,
+        )
+
+        topic_data: Dict[str, Any] = {
+            # старые поля (нужны существующему Gemini-промпту)
+            'subject': subj,
             'topic': db_topic,
-            'topic_key': topic_entry.get('topic_key', db_topic),
+            'topic_key': entry.get('topic_key', db_topic),
             'weakness_score': weakness,
-            'accuracy': accuracy,
+            'accuracy': accuracy_solutions,
             'attempts': attempts,
             'avg_level_solved': avg_level,
-            'final_level': final_level,
+            'final_level': final_level_by_topic.get(db_topic),
             'floor_level': floor,
             'subtopic_hints': _get_subtopic_hints(
-                db_topic, class_level, topic_entry.get('topic_key', '')
+                db_topic, class_level, entry.get('topic_key', '')
+            ),
+            # новые поля (PR percent_to_level + calibration)
+            'measured': measured,
+            'calibration': calibration,
+            'pct': pct,
+            'level_from_pct': pct_level,
+            'target_level': target_level,
+            'stretch_level': stretch_level,
+            # история калибровки (для UI/логов; если measured=True
+            # из running_pct — будет видно, что % набран без теста)
+            'running_pct': running_pct_value,
+            'running_pct_count': running_pct_count,
+            # приоритет в задачах дня: чем ниже %, тем выше приоритет (для
+            # measured); у calibration — фиксированный средний приоритет
+            'priority': (
+                round(100.0 - (pct if pct is not None else 50.0), 2)
             ),
         }
-        all_topics_data.append(topic_data)
+        topics_full.append(topic_data)
 
-        total_attempts += attempts
-        total_correct += correct
-        total_level_sum += stats['level_sum']
+    # ── 6. Калибровочные темы дня — ротация по weekday ───────────────
+    # min_measured_slots: гарантируем ≥3 измеренных слота, если есть
+    # хоть один тест (чтобы 1/7 действительно отличался от 0/7).
+    # При 0/7 это 0, иначе 3.
+    slot_allocation = compute_slot_allocation(
+        measured_count=measured_count,
+        total_topics=total_topics,
+        total_slots=10,
+        min_measured_slots=(3 if measured_count > 0 else 0),
+    )
+    measured_slots, calibration_slots = slot_allocation
 
-    # ── 6. Глобальный adaptive_summary ──
-    overall_accuracy = round(total_correct / total_attempts, 4) if total_attempts > 0 else 0.0
-    overall_avg_level = round(total_level_sum / total_attempts, 2) if total_attempts > 0 else 0.0
+    # сколько тем под калибровку оставляем в weak_topics (Gemini сам решит,
+    # сколько задач на каждую дать, но лимит тем — CALIBRATION_TOPICS_PER_DAY)
+    n_cal_topics = min(
+        CALIBRATION_TOPICS_PER_DAY,
+        len(calibration_candidate_topics),
+        # если нет калибровочных слотов, темы тоже не выбираем
+        max(1, calibration_slots) if calibration_slots > 0 else 0,
+    )
+    chosen_calibration = select_calibration_topics(
+        calibration_candidate_topics,
+        n=n_cal_topics,
+        rotation_seed=weekday_seed,
+    )
+    chosen_calibration_set = set(chosen_calibration)
 
+    # ── 7. Глобальный adaptive_summary (для совместимости) ───────────
+    total_attempts = sum(t['attempts'] for t in topics_full)
+    total_correct = sum(
+        int(round(t['accuracy'] * t['attempts'])) for t in topics_full
+    )
+    total_level_sum = sum(
+        int(round(t['avg_level_solved'] * t['attempts'])) for t in topics_full
+    )
+    overall_accuracy = (
+        round(total_correct / total_attempts, 4) if total_attempts > 0 else 0.0
+    )
+    overall_avg_level = (
+        round(total_level_sum / total_attempts, 2) if total_attempts > 0 else 0.0
+    )
     adaptive_summary = {
         'total_attempts': total_attempts,
         'overall_accuracy': overall_accuracy,
         'avg_level_solved': overall_avg_level,
     }
 
-    # ── 7. Отбор слабых тем (max 7) ──
-    sorted_by_weakness = sorted(
-        all_topics_data,
-        key=lambda t: t['weakness_score'],
-        reverse=True,
+    # ── 8. Отбор weak_topics ─────────────────────────────────────────
+    # Стратегия:
+    # (a) MEASURED-слабые: берём measured-темы, сортируем по priority desc
+    #     (то есть по pct asc — самые слабые в первую очередь).
+    # (b) CALIBRATION-темы: добавляем chosen_calibration (ротация дня)
+    #     с явным флагом calibration=True. Они идут после (a) — приоритет
+    #     ниже, но без них набор будет однообразным при completeness<100%.
+    # (c) Итого <= 7 weak-тем. Лимит per-subject (max 2) применяется
+    #     только к measured-слабым; калибровочные — без лимита (их и так
+    #     максимум CALIBRATION_TOPICS_PER_DAY).
+    measured_topics_sorted = sorted(
+        [t for t in topics_full if t['measured']],
+        key=lambda t: (-t['priority'], -t['weakness_score']),
     )
-
-    weak_topics: List[Dict] = []
+    weak_topics: List[Dict[str, Any]] = []
     subject_count: Dict[str, int] = {}
 
-    for t in sorted_by_weakness:
+    for t in measured_topics_sorted:
         if len(weak_topics) >= _TOP_WEAK_COUNT:
             break
-        # Пропускаем, если weakness_score ниже порога
-        if t['weakness_score'] < _WEAK_THRESHOLD and len(weak_topics) >= 3:
+        if subject_count.get(t['subject'], 0) >= _MAX_WEAK_PER_SUBJECT:
             continue
-        # Max 2 темы из одного раздела
-        subj = t['subject']
-        if subject_count.get(subj, 0) >= _MAX_WEAK_PER_SUBJECT:
+        weak_topics.append(_pick_topic_fields(t))
+        subject_count[t['subject']] = subject_count.get(t['subject'], 0) + 1
+
+    # Добавляем калибровочные (без per-subject лимита — их максимум 2)
+    used_topic_set = {t['topic'] for t in weak_topics}
+    for t in topics_full:
+        if len(weak_topics) >= _TOP_WEAK_COUNT:
+            break
+        if t['topic'] in used_topic_set:
             continue
-        weak_topics.append({
-            'subject': t['subject'],
-            'topic': t['topic'],
-            'weakness_score': t['weakness_score'],
-            'accuracy': t['accuracy'],
-            'attempts': t['attempts'],
-            'avg_level_solved': t['avg_level_solved'],
-            'floor_level': t['floor_level'],
-            'subtopic_hints': t['subtopic_hints'],
-        })
-        subject_count[subj] = subject_count.get(subj, 0) + 1
+        if t['topic'] not in chosen_calibration_set:
+            continue
+        weak_topics.append(_pick_topic_fields(t))
+        used_topic_set.add(t['topic'])
 
-    # Если набрали меньше 7 — добираем из оставшихся без ограничения subject
-    if len(weak_topics) < _TOP_WEAK_COUNT:
-        used_topics = {wt['topic'] for wt in weak_topics}
-        for t in sorted_by_weakness:
-            if len(weak_topics) >= _TOP_WEAK_COUNT:
-                break
-            if t['topic'] in used_topics:
-                continue
-            weak_topics.append({
-                'subject': t['subject'],
-                'topic': t['topic'],
-                'weakness_score': t['weakness_score'],
-                'accuracy': t['accuracy'],
-                'attempts': t['attempts'],
-                'avg_level_solved': t['avg_level_solved'],
-                'floor_level': t['floor_level'],
-                'subtopic_hints': t['subtopic_hints'],
-            })
-            used_topics.add(t['topic'])
-
-    # ── 8. Отбор сильных тем (max 3) ──
-    weak_topic_set = {wt['topic'] for wt in weak_topics}
-    strong_candidates = [
-        t for t in all_topics_data
-        if t['attempts'] >= _MIN_STRONG_ATTEMPTS
-        and t['topic'] not in weak_topic_set
-    ]
-    sorted_by_accuracy = sorted(
-        strong_candidates,
-        key=lambda t: (t['accuracy'], t['attempts']),
+    # ── 9. Strong topics (по высокому pct/accuracy) ──────────────────
+    # Кандидаты: measured-темы с pct >= 60 (lvl 3+ по нашей шкале) ИЛИ
+    # темы с большим количеством попыток и высокой accuracy.
+    used_in_weak = {t['topic'] for t in weak_topics}
+    strong_candidates = []
+    for t in topics_full:
+        if t['topic'] in used_in_weak:
+            continue
+        if not t['measured']:
+            # калибровочную в strong не берём
+            continue
+        if (t['pct'] or 0) >= 60 or (
+            t['attempts'] >= _MIN_STRONG_ATTEMPTS and t['accuracy'] >= 0.7
+        ):
+            strong_candidates.append(t)
+    strong_candidates.sort(
+        key=lambda t: (t['pct'] or 0, t['accuracy'], t['attempts']),
         reverse=True,
     )
-
-    strong_topics: List[Dict] = []
-    for t in sorted_by_accuracy:
-        if len(strong_topics) >= _TOP_STRONG_COUNT:
-            break
+    strong_topics: List[Dict[str, Any]] = []
+    for t in strong_candidates[:_TOP_STRONG_COUNT]:
         strong_topics.append({
             'subject': t['subject'],
             'topic': t['topic'],
@@ -401,27 +799,20 @@ def build_profile(user_id: int) -> Dict:
             'attempts': t['attempts'],
             'avg_level_solved': t['avg_level_solved'],
             'subtopic_hints': t['subtopic_hints'],
+            'pct': t['pct'],
+            'measured': True,
+            'calibration': False,
+            'target_level': t['target_level'],
         })
 
-    # Если сильных меньше 3 — добираем из той же subject-группы
+    # Если сильных меньше 3 — добираем фолбэк-кандидатами, как раньше
     if len(strong_topics) < _TOP_STRONG_COUNT:
-        used_in_both = weak_topic_set | {st['topic'] for st in strong_topics}
-        fill_candidates = [
-            t for t in all_topics_data
-            if t['topic'] not in used_in_both
-        ]
-        strong_subjects = {st['subject'] for st in strong_topics}
-        fill_candidates.sort(
-            key=lambda t: (
-                t['subject'] in strong_subjects,  # same subject first
-                t['accuracy'],
-                t['attempts'],
-            ),
-            reverse=True,
-        )
-        for t in fill_candidates:
+        used = used_in_weak | {st['topic'] for st in strong_topics}
+        for t in topics_full:
             if len(strong_topics) >= _TOP_STRONG_COUNT:
                 break
+            if t['topic'] in used:
+                continue
             strong_topics.append({
                 'subject': t['subject'],
                 'topic': t['topic'],
@@ -429,13 +820,62 @@ def build_profile(user_id: int) -> Dict:
                 'attempts': t['attempts'],
                 'avg_level_solved': t['avg_level_solved'],
                 'subtopic_hints': t['subtopic_hints'],
+                'pct': t['pct'],
+                'measured': t['measured'],
+                'calibration': t['calibration'],
+                'target_level': t['target_level'],
             })
+            used.add(t['topic'])
 
-    return {
+    # ── 10. Финальный профиль ────────────────────────────────────────
+    completeness = compute_profile_completeness(measured_count, total_topics)
+    profile: Dict[str, Any] = {
         'user_id': user_id,
         'class_level': class_level,
         'class_expected_level': expected_level,
+        'profile_completeness': completeness,
+        'measured_topics_count': measured_count,
+        'calibration_topics_count': len(calibration_candidate_topics),
+        'slot_allocation': {
+            'measured': measured_slots,
+            'calibration': calibration_slots,
+        },
         'adaptive_summary': adaptive_summary,
         'weak_topics': weak_topics,
         'strong_topics': strong_topics,
+        'calibration_topics': chosen_calibration,
+        # полный «сырьевой» список — полезен для тестов и UI-баннера
+        'topics_full': topics_full,
+    }
+
+    logger.info(
+        "build_profile: user=%s grade=%s completeness=%.2f measured=%d/%d "
+        "weak=%d (cal=%d) strong=%d slots=(m=%d,c=%d)",
+        user_id, class_level, completeness, measured_count, total_topics,
+        len(weak_topics), len(chosen_calibration), len(strong_topics),
+        measured_slots, calibration_slots,
+    )
+    return profile
+
+
+def _pick_topic_fields(t: Dict[str, Any]) -> Dict[str, Any]:
+    """Подготовить запись weak_topics-style из полного topic_data."""
+    return {
+        'subject': t['subject'],
+        'topic': t['topic'],
+        'weakness_score': t['weakness_score'],
+        'accuracy': t['accuracy'],
+        'attempts': t['attempts'],
+        'avg_level_solved': t['avg_level_solved'],
+        'floor_level': t['floor_level'],
+        'subtopic_hints': t['subtopic_hints'],
+        # новые поля (Gemini-промпт пока их не использует, но они полезны
+        # для аудита и для будущей версии промпта)
+        'measured': t['measured'],
+        'calibration': t['calibration'],
+        'pct': t['pct'],
+        'level_from_pct': t['level_from_pct'],
+        'target_level': t['target_level'],
+        'stretch_level': t['stretch_level'],
+        'priority': t['priority'],
     }
