@@ -946,8 +946,12 @@ class DailyQuest(db.Model):
     attempts_map = db.Column(db.Text, default='{}')
 
     # DQ_ATTEMPTS_V1: индексы задач, заблокированных после исчерпания попыток.
-    # JSON-массив, например '[2, 4]'. Параллелен solved_indices, но для fails.
-    failed_indices = db.Column(db.Text, default='[]')
+    # JSON-массив, например [2, 4]. Параллелен solved_indices, но для fails.
+    # NB: тип db.JSON. На проде колонка уже jsonb (Render PG); на SQLite
+    # SQLAlchemy сериализует/десериализует через TEXT прозрачно. Это лечит
+    # psycopg.errors.DatatypeMismatch при записи строки в jsonb-колонку.
+    # solved_indices намеренно остаётся db.Text — на проде у него тип text.
+    failed_indices = db.Column(db.JSON, default=list)
 
     # DQ_REGEN_COOLDOWN_V1: когда последний раз пользователь перегенерил квест.
     # Нужно для cooldown-логики (1 час между регенерациями).
