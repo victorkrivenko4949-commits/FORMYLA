@@ -316,12 +316,37 @@ def method_detail(method_code):
         related_blocks = (TheoryBlock.query
                           .filter(TheoryBlock.method_code.in_(related_codes))
                           .all())
-    # Задачи по этому методу
-    tasks_for_method = (OlympiadTask.query
-                        .filter(OlympiadTask.method_codes.contains(method_code))
-                        .order_by(OlympiadTask.sort_order)
-                        .limit(50)
-                        .all())
+    # Задачи по этому методу.
+    # ВАЖНО: OlympiadTask.method_codes объявлено как db.JSON (на проде → JSONB).
+    # Прямой `.contains(str)` на JSONB генерирует оператор `@>` и падает
+    # с InvalidParameterValue: "invalid input syntax for type json".
+    # Используем cast в TEXT и LIKE — работает и на SQLite (TEXT-хранилище),
+    # и на PostgreSQL (приведение jsonb → text). Дополнительно оборачиваем в
+    # try/except: любой DB-сбой не должен ломать страницу метода —
+    # «связанные задачи» опциональны.
+    tasks_for_method = []
+    try:
+        from sqlalchemy import cast, String
+        tasks_for_method = (
+            OlympiadTask.query
+            .filter(cast(OlympiadTask.method_codes, String)
+                    .like(f'%"{method_code}"%'))
+            .order_by(OlympiadTask.sort_order)
+            .limit(50)
+            .all()
+        )
+    except Exception as _tasks_err:
+        import logging
+        logging.warning(
+            '[method_detail] failed to load tasks for %s: %s',
+            method_code, _tasks_err,
+        )
+        try:
+            from app import db as _db
+            _db.session.rollback()
+        except Exception:
+            pass
+        tasks_for_method = []
     # Все блоки для grouped (каталог методов)
     all_blocks = (TheoryBlock.query
                   .order_by(TheoryBlock.section, TheoryBlock.sort_order)
