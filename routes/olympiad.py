@@ -386,6 +386,9 @@ def method_detail(method_code):
     return render_template('olympiad/method.html',
                            sections=None,
                            block=block,
+                           # Новый шаблон (Group C) обращается к {{ theory.* }} —
+                           # передаём alias, чтобы работали обе версии разметки.
+                           theory=block,
                            related=related_blocks,
                            linked_tasks=tasks_for_method,
                            # legacy aliases (in case anything else reads them):
