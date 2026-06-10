@@ -375,8 +375,22 @@ def method_detail(method_code):
     for b in all_blocks:
         sec = b.section or 'Без раздела'
         grouped.setdefault(sec, []).append(b)
+    # CRITICAL FIX: pass sections=None so the template enters DETAIL MODE.
+    # The template uses `{% if sections is not none %}` to switch between
+    # catalog and detail. Previously sections=grouped (non-None), so clicking
+    # any method opened the catalog page instead of the method's detail page
+    # — root cause of the "102 methods don't open" bug.
+    # Also rename kwargs to what the template expects:
+    #   block (was detail_block), related (was related_blocks),
+    #   linked_tasks (was tasks_for_method).
     return render_template('olympiad/method.html',
-                           sections=grouped, blocks=all_blocks, detail_block=block,
+                           sections=None,
+                           block=block,
+                           related=related_blocks,
+                           linked_tasks=tasks_for_method,
+                           # legacy aliases (in case anything else reads them):
+                           blocks=all_blocks,
+                           detail_block=block,
                            related_blocks=related_blocks,
                            tasks_for_method=tasks_for_method)
 
