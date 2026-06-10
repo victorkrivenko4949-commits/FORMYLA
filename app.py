@@ -889,6 +889,173 @@ try:
 except Exception as _e_theory_seed:
     print(f"[THEORY-SEED] hook skipped: {_e_theory_seed}")
 
+# ── Olympiad prep catalog seed (idempotent, без env-гейта) ───────────────────
+# Засевает olympiad_prep дефолтным набором олимпиад России, если таблица
+# пуста. Безопасно: ничего не пересоздаёт, если уже есть хотя бы одна запись.
+# Это решает проблему пустого «Календаря олимпиад» (/olympiad-prep/calendar)
+# на проде, где локальные скрипты вроде _add_10_olympiads.py не запускаются.
+# grades/stages в модели — db.Text, поэтому передаём JSON-строки.
+try:
+    import json as _json_seed
+    with app.app_context():
+        from models import OlympiadPrep as _OlympiadPrepSeed
+        if _OlympiadPrepSeed.query.count() == 0:
+            print("[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...")
+            _olymp_prep_defaults = [
+                {
+                    "slug": "fiztekh",
+                    "name": "Олимпиада «Физтех»",
+                    "short_name": "Физтех",
+                    "description": "Олимпиада «Физтех» по математике проводится Московским физико-техническим институтом. Победители и призёры получают льготы при поступлении в ведущие вузы России.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://olymp.mipt.ru/",
+                    "color_hex": "#06b6d4",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Октябрь 2025 – январь 2026"},
+                        {"name": "Заключительный этап", "date_range": "Февраль – март 2026"},
+                    ],
+                },
+                {
+                    "slug": "kurchatov",
+                    "name": "Олимпиада «Курчатов»",
+                    "short_name": "Курчатов",
+                    "description": "Олимпиада «Курчатов» по математике для школьников. Даёт льготы при поступлении в вузы.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://kurchatov.test.ru/",
+                    "color_hex": "#a855f7",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Уточняется"},
+                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
+                    ],
+                },
+                {
+                    "slug": "shag-v-budushchee",
+                    "name": "Шаг в будущее",
+                    "short_name": "Шаг в будущее",
+                    "description": "Олимпиада школьников «Шаг в будущее» по математике. Проводится МГТУ им. Н.Э. Баумана.",
+                    "grades": [8, 9, 10, 11],
+                    "official_url": "https://olymp.bmstu.ru/",
+                    "color_hex": "#f97316",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "2025"},
+                        {"name": "Заключительный этап — 11 кл.", "date_range": "7 марта 2026"},
+                        {"name": "Заключительный этап — 8–10 кл.", "date_range": "9 марта 2026"},
+                    ],
+                },
+                {
+                    "slug": "otkrytaya",
+                    "name": "Открытая олимпиада школьников",
+                    "short_name": "Открытая",
+                    "description": "Открытая олимпиада школьников по математике. Организатор — НИУ ИТМО и другие ведущие вузы.",
+                    "grades": [8, 9, 10, 11],
+                    "official_url": "https://openolymp.ru/",
+                    "color_hex": "#10b981",
+                    "stages": [
+                        {"name": "1-й отборочный онлайн-этап", "date_range": "3 декабря 2025 – 19 января 2026"},
+                        {"name": "Заключительный этап", "date_range": "Уточняется"},
+                    ],
+                },
+                {
+                    "slug": "vsesibirskaya",
+                    "name": "Всесибирская открытая олимпиада",
+                    "short_name": "Всесибирская",
+                    "description": "Всесибирская открытая олимпиада школьников по математике. Проводится НГУ и СО РАН.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://sesc.nsu.ru/olymp/",
+                    "color_hex": "#84cc16",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Уточняется"},
+                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
+                    ],
+                },
+                {
+                    "slug": "itmo",
+                    "name": "Олимпиада ИТМО",
+                    "short_name": "ИТМО",
+                    "description": "Олимпиада школьников по математике университета ИТМО. Входит в Перечень олимпиад РСОШ.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://olymp.itmo.ru/",
+                    "color_hex": "#eab308",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Осень 2025 – зима 2026"},
+                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
+                    ],
+                },
+                {
+                    "slug": "nadezhda-energetiki",
+                    "name": "Олимпиада «Надежда энергетики»",
+                    "short_name": "Надежда энергетики",
+                    "description": "Олимпиада «Надежда энергетики» по математике. Организаторы — ведущие энергетические вузы России.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://www.energy-hope.ru/",
+                    "color_hex": "#ec4899",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Уточняется"},
+                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
+                    ],
+                },
+                {
+                    "slug": "rosatom",
+                    "name": "Олимпиада «Росатом»",
+                    "short_name": "Росатом",
+                    "description": "Олимпиада «Росатом» по математике. Проводится НИЯУ МИФИ. Даёт льготы при поступлении.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://rosatomolymp.mephi.ru/",
+                    "color_hex": "#3b82f6",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Уточняется"},
+                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
+                    ],
+                },
+                {
+                    "slug": "inzhenernaya",
+                    "name": "Инженерная олимпиада школьников",
+                    "short_name": "Инженерная",
+                    "description": "Инженерная олимпиада школьников по математике. Входит в Перечень РСОШ, даёт льготы при поступлении.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://olymp.urfu.ru/",
+                    "color_hex": "#14b8a6",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Осень 2025 – зима 2026"},
+                        {"name": "Заключительный этап", "date_range": "Февраль – март 2026"},
+                    ],
+                },
+                {
+                    "slug": "plekhanovskaya",
+                    "name": "Плехановская олимпиада",
+                    "short_name": "Плехановская",
+                    "description": "Плехановская олимпиада школьников по математике. Проводится РЭУ им. Г.В. Плеханова.",
+                    "grades": [9, 10, 11],
+                    "official_url": "https://olymp.rea.ru/",
+                    "color_hex": "#d946ef",
+                    "stages": [
+                        {"name": "Отборочный этап", "date_range": "Уточняется"},
+                        {"name": "Заключительный этап", "date_range": "Весна 2026"},
+                    ],
+                },
+            ]
+            for _i, _o in enumerate(_olymp_prep_defaults):
+                db.session.add(_OlympiadPrepSeed(
+                    slug=_o["slug"],
+                    name=_o["name"],
+                    short_name=_o["short_name"],
+                    description=_o["description"],
+                    grades=_json_seed.dumps(_o["grades"]),
+                    stages=_json_seed.dumps(_o["stages"], ensure_ascii=False),
+                    official_url=_o["official_url"],
+                    color_hex=_o["color_hex"],
+                    sort_order=_i + 1,
+                    is_active=True,
+                ))
+            db.session.commit()
+            print(f"[OLYMP-PREP-SEED] ✓ Added {len(_olymp_prep_defaults)} olympiads to olympiad_prep")
+        else:
+            # Idempotent: nothing to do; uncomment for verbose logs:
+            # print(f"[OLYMP-PREP-SEED] already populated ({_OlympiadPrepSeed.query.count()} rows), skipping")
+            pass
+except Exception as _e_olymp_prep_seed:
+    print(f"[OLYMP-PREP-SEED] hook skipped: {_e_olymp_prep_seed}")
+
 # ── Theory placeholder fix (idempotent) ──────────────────────────────────────
 # Перезаписывает названия методов вида «E14 (название ждёт текста)»
 # настоящими названиями из data/olympiads/methods_catalog_89.json.
