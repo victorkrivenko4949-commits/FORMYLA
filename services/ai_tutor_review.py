@@ -486,23 +486,51 @@ def _pick_category(
 
 # ── Score badge ───────────────────────────────────────────────────────
 
-def score_badge(score: float, has_solution: bool) -> str:
-    """Бейдж результата для UI.
+def score_badge(
+    score: float,
+    has_solution: bool,
+    answer_correct: Optional[bool] = None,
+    method_correct: Optional[bool] = None,
+) -> str:
+    """Бейдж результата для UI (FORMYLA v2: шкала +1 / 0 / −1).
 
-    После изменений по ТЗ FORMYLA шкала только положительная:
-        1.0   → +2 балла (верный ответ + полное решение)
-        ≥0.3  → +1 балл  (верный ответ; для high-diff без обоснования)
-        0.0   → 0 баллов (неверный ответ или пусто)
-        <0    → 0 баллов (на всякий случай: legacy-значения)
+    Логика:
+        Только ответ (has_solution=False):
+            answer_correct=True  → +1 балл, уровень +1
+            answer_correct=False → −1 балл, уровень −1
+        С решением:
+            answer_correct=True  + method_correct≠False → +1 балл, +1
+            answer_correct=True  + method_correct=False →  0 баллов (метод не тот)
+            answer_correct=False + method_correct=True  →  0 баллов (метод понят)
+            answer_correct=False + method_correct≠True  → −1 балл, −1
+        AI failure / неопределённость → 0 баллов, без изменений.
     """
-    if score >= 1.0:
-        return "🟢 **Оценка тьютора: +2 балла** (верный ответ + корректное решение)"
-    if score >= 0.3:
+    # Сбой AI или неопределённость → нейтрально
+    if answer_correct is None:
+        return ("⚪ **Оценка тьютора: 0 баллов** "
+                "(ответ не принят — попробуй ещё раз, уровень без изменений)")
+
+    if answer_correct is True:
+        if has_solution and method_correct is False:
+            # Ответ верный, но метод/идея неверная — нейтрально
+            return ("🟡 **Оценка тьютора: 0 баллов, уровень без изменений** "
+                    "(ответ верный, но метод/решение не соответствует — "
+                    "разберись с правильной идеей)")
+        # Ответ верный (с верным методом или без решения)
         if has_solution:
-            return "🟡 **Оценка тьютора: +1 балл** (верный ответ, добавь полное обоснование для +2 баллов)"
-        return "🟡 **Оценка тьютора: +1 балл** (верный ответ, добавь обоснование для +2 баллов)"
-    # 0.0 и ниже — нейтрально, без отрицательных оценок
-    return "⚪ **Оценка тьютора: 0 баллов** (ответ не принят — попробуй ещё раз)"
+            return ("🟢 **Оценка тьютора: +1 балл, уровень +1** "
+                    "(верный ответ + корректный метод решения)")
+        return ("🟢 **Оценка тьютора: +1 балл, уровень +1** "
+                "(верный ответ — отлично!)")
+
+    # answer_correct is False — ответ неверный
+    if has_solution and method_correct is True:
+        # Ответ не туда, но метод понят — нейтрально
+        return ("🟡 **Оценка тьютора: 0 баллов, уровень без изменений** "
+                "(ответ неверный, но метод понят правильно — "
+                "проверь арифметику и финальные шаги)")
+    return ("🔴 **Оценка тьютора: −1 балл, уровень −1** "
+            "(неверный ответ — разбери эталонное решение и попробуй похожую задачу)")
 
 
 # ── Главная функция: review_attempt ───────────────────────────────────
@@ -781,16 +809,21 @@ def review_attempt(
     except Exception as e:
         logger.warning("sanitize_feedback failed: %s", e)
 
-    # 6) Префикс с явной оценкой
-    has_sol = bool(user_solution.strip())
-    badge = score_badge(score, has_sol)
+    # 6) Префикс с явной оценкой (FORMYLA v2: +1/0/−1)
+    has_sol = bool(user_solution.strip()) or bool(images_b64)
+    badge = score_badge(
+        score,
+        has_sol,
+        answer_correct=answer_correct,
+        method_correct=method_correct,
+    )
     if badge.split(":", 1)[0] not in (feedback or "")[:80]:
         feedback = f"{badge}\n\n{feedback or ''}".strip()
 
     return {
         "score": score,
         "feedback": feedback,
-        "is_correct": (score >= 0.5),
+        "is_correct": bool(answer_correct),
         "is_proof_task": proof_mode,
         "user_solution_enriched": user_solution,
         "answer_correct": answer_correct,
