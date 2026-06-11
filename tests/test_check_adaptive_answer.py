@@ -119,7 +119,7 @@ def client():
 
 
 def test_correct_answer_score_1_level_up(client):
-    """score=1 (float 1.0) → уровень повышается, стрик сбрасывается."""
+    """ТЗ FORMYLA: верный ответ + полное решение → score=2, уровень повышается."""
     mock_return = {
         "score": 1.0,
         "feedback": "✅ Всё верно!",
@@ -130,31 +130,32 @@ def test_correct_answer_score_1_level_up(client):
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 1
+    assert data["score"] == 2  # +2 балла (верный ответ + решение)
     assert data["new_level"] == 2  # было 1 → стало 2
 
 
-def test_partial_score_score_0_streak_reset(client):
-    """score=0 (float 0.5 → ответ неверный, метод верный) → уровень без изменений, стрик сброшен."""
+def test_partial_score_score_1(client):
+    """ТЗ FORMYLA: float 0.5 теперь означает верный ответ без полного обоснования → +1 балл."""
     mock_return = {
         "score": 0.5,
-        "feedback": "❌ Ответ неверный, но метод верный.",
-        "category": "wrong_answer_wrong_method",
+        "feedback": "🟡 Верный ответ, добавь обоснование для +2.",
+        "category": "correct_no_justification",
         "confidence": 1.0,
     }
-    resp = _call_check_answer(client, "7", mock_return)
+    resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 0
-    assert data["new_level"] == 1  # уровень не изменился
+    # 0.5 → 1 балл (≥0.3 ветка). Уровень не меняется.
+    assert data["score"] == 1
+    assert data["new_level"] == 1
 
 
-def test_wrong_answer_score_minus1_level_down(client):
-    """score=-1 (float -1.0) → уровень понижается, стрик сбрасывается."""
+def test_wrong_answer_score_0_level_stable(client):
+    """ТЗ FORMYLA: неверный ответ → score=0 (а не −1), уровень НЕ понижается."""
     mock_return = {
-        "score": -1.0,
-        "feedback": "❌ Полностью неверно.",
+        "score": -1.0,  # legacy float value — мапится в 0 на новой шкале
+        "feedback": "❌ Ответ не принят.",
         "category": "wrong_answer_wrong_method",
         "confidence": 1.0,
     }
@@ -162,24 +163,26 @@ def test_wrong_answer_score_minus1_level_down(client):
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == -1
-    assert data["new_level"] == 1  # min(1, 1-1) = 1
+    # По ТЗ: минимум 0, никаких −1.
+    assert data["score"] == 0
+    # Уровень не понижается (отрицательных оценок нет).
+    assert data["new_level"] == 1
 
 
-def test_correct_no_solution_score_0(client):
-    """float 0.3 (частично верно) → score=0, уровень без изменений."""
+def test_correct_no_solution_score_1(client):
+    """ТЗ FORMYLA: float 0.3 (верный ответ без обоснования) → +1 балл."""
     mock_return = {
         "score": 0.3,
-        "feedback": "⚠️ Частично верно.",
-        "category": "partial",
+        "feedback": "🟡 Верный ответ.",
+        "category": "correct_no_justification",
         "confidence": 0.7,
     }
     resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 0
-    assert data["new_level"] == 1  # уровень не изменился
+    assert data["score"] == 1  # +1 балл за верный ответ без решения
+    assert data["new_level"] == 1
 
 
 def test_low_confidence_partial_score_0(client):
@@ -199,7 +202,7 @@ def test_low_confidence_partial_score_0(client):
 
 
 def test_ai_down_streak_preserved(client):
-    """Сбой AI (confidence=0.0, category='wrong_answer_wrong_method') → score=-1, уровень без изменений, стрик сохранён."""
+    """ТЗ FORMYLA: сбой AI (legacy float=-1.0) → score=0, уровень без изменений."""
     mock_return = {
         "score": -1.0,
         "feedback": "",
@@ -210,13 +213,13 @@ def test_ai_down_streak_preserved(client):
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == -1
+    assert data["score"] == 0  # минимум 0
     # AI failure — уровень не трогаем
     assert data["new_level"] == 1, f"expected level unchanged, got {data['new_level']}"
 
 
 def test_ai_failure_preserves_streak(client):
-    """Сбой AI (confidence=0.0, category='suspicious') → score=-1, уровень без изменений, стрик сохранён."""
+    """ТЗ FORMYLA: сбой AI (confidence=0.0, category='suspicious') → score=0."""
     mock_return = {
         "score": -1.0,
         "feedback": "",
@@ -227,12 +230,12 @@ def test_ai_failure_preserves_streak(client):
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == -1
-    assert data["new_level"] == 1  # уровень не трогаем
+    assert data["score"] == 0  # минимум 0
+    assert data["new_level"] == 1
 
 
-def test_negative_float_not_minus_one(client):
-    """float -0.5 → score=-1 (граница <= -0.5), уровень понижается."""
+def test_negative_float_clipped_to_zero(client):
+    """ТЗ FORMYLA: любые отрицательные float (-0.5, -1.0) → score=0."""
     mock_return = {
         "score": -0.5,
         "feedback": "❌ Неверный ответ.",
@@ -243,37 +246,37 @@ def test_negative_float_not_minus_one(client):
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == -1
-    assert data["new_level"] == 1  # max(1, 1-1) = 1
+    assert data["score"] == 0  # минимум 0, никаких −1
+    assert data["new_level"] == 1
 
 
-def test_score_0_mid_streak_stays_unchanged(client):
-    """score=0 при текущем уровне >1 — уровень остаётся прежним, стрик сбрасывается."""
+def test_score_1_mid_streak_stays_unchanged(client):
+    """float 0.3 при уровне>1 → score=1 (+1 балл), уровень без изменений."""
     mock_return = {
         "score": 0.3,
-        "feedback": "⚠️ Частично верно.",
-        "category": "partial",
+        "feedback": "🟡 Верный ответ.",
+        "category": "correct_no_justification",
         "confidence": 0.7,
     }
     resp = _call_check_answer(client, "5", mock_return, difficulty=5, streak=3)
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 0
-    assert data["new_level"] == 5  # уровень не изменился
+    assert data["score"] == 1
+    assert data["new_level"] == 5  # уровень не изменился (1-балльный ответ)
 
 
-def test_rounding_float_0p3_to_0(client):
-    """float 0.3 → score=0 (не 1), уровень без изменений."""
+def test_rounding_float_0p3_to_1(client):
+    """ТЗ FORMYLA: float 0.3 → score=1 (+1 балл), не 0."""
     mock_return = {
         "score": 0.3,
-        "feedback": "⚠️ Частично верно.",
-        "category": "partial",
+        "feedback": "🟡 Верный ответ.",
+        "category": "correct_no_justification",
         "confidence": 0.7,
     }
     resp = _call_check_answer(client, "5", mock_return)
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 0
+    assert data["score"] == 1
     assert data["new_level"] == 1

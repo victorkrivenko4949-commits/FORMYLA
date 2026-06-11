@@ -113,7 +113,7 @@ def test_sympy_correct_with_solution(mock_compare):
 @patch("services.ai_tutor_review._HAS_SYMPY", True)
 @patch("services.ai_tutor_review._compare_with_sympy")
 def test_sympy_correct_no_solution_high_level(mock_compare):
-    """sympy confirms correct, but no solution + level=7 → score=0.3, category='suspicious'."""
+    """ТЗ FORMYLA: верный ответ без обоснования всегда даёт минимум +1 (score=0.5)."""
     mock_compare.return_value = (True, False)
     result = _call_review(
         user_answer="5",
@@ -121,12 +121,11 @@ def test_sympy_correct_no_solution_high_level(mock_compare):
         user_solution="",
         difficulty_level=7,
     )
-    # correct answer without justification at level>=7 → 0.3
-    assert result["score"] == 0.3
-    assert result["is_correct"] is False   # 0.3 < 0.5
+    # По ТЗ FORMYLA: верный ответ без решения → 0.5 (+1 балл)
+    assert result["score"] == 0.5
+    assert result["is_correct"] is True
     assert result["answer_correct"] is True
     assert result["method_correct"] is True
-    assert result["category"] == "suspicious"
     # No AI was called, so no escalation needed
     assert result["needs_escalation"] is False
 
@@ -138,7 +137,7 @@ def test_sympy_correct_no_solution_high_level(mock_compare):
 @patch("services.ai_tutor_review._HAS_SYMPY", True)
 @patch("services.ai_tutor_review._compare_with_sympy")
 def test_sympy_wrong_ai_unavailable(mock_compare):
-    """sympy says answer is wrong, AI not available → score=-1.0."""
+    """ТЗ FORMYLA: неверный ответ → score=0.0 (а не −1)."""
     mock_compare.return_value = (False, False)  # (is_correct=False, needs_ai=False)
     result = _call_review(
         user_answer="42",
@@ -148,12 +147,11 @@ def test_sympy_wrong_ai_unavailable(mock_compare):
         deepseek_client_cls=None,
         difficulty_level=5,
     )
-    # sympy determined wrong → answer_correct=False, method_correct=False → -1.0
-    assert result["score"] == -1.0
+    # По ТЗ FORMYLA: отрицательных оценок нет → 0.0
+    assert result["score"] == 0.0
     assert result["is_correct"] is False
     assert result["answer_correct"] is False
     assert result["method_correct"] is False
-    assert result["category"] == "wrong_answer_wrong_method"
     assert result["confidence"] == 0.0
     assert result["needs_escalation"] is False
     # Should mention "AI-проверка временно недоступна"
@@ -220,7 +218,7 @@ def test_ai_correct_low_confidence_escalation():
 # ---------------------------------------------------------------------------
 
 def test_ai_wrong():
-    """AI returns answer_correct=false, method_correct=false → score=-1.0."""
+    """ТЗ FORMYLA: неверный ответ → score=0.0 (минимум 0)."""
     mock_ai = _mock_deepseek({
         "answer_correct": False,
         "method_correct": False,
@@ -235,17 +233,16 @@ def test_ai_wrong():
         deepseek_client_cls=mock_ai,
         difficulty_level=5,
     )
-    assert result["score"] == -1.0
+    assert result["score"] == 0.0
     assert result["is_correct"] is False
     assert result["answer_correct"] is False
     assert result["method_correct"] is False
-    assert result["category"] == "wrong_answer_wrong_method"
     assert result["error_location"] == "Ошибка в раскрытии скобок"
     assert result["needs_escalation"] is False
 
 
 def test_ai_wrong_good_method():
-    """AI says answer wrong but method correct → score=0.5."""
+    """ТЗ FORMYLA: неверный ответ → score=0.0 даже при верном методе."""
     mock_ai = _mock_deepseek({
         "answer_correct": False,
         "method_correct": True,
@@ -260,11 +257,11 @@ def test_ai_wrong_good_method():
         deepseek_client_cls=mock_ai,
         difficulty_level=5,
     )
-    assert result["score"] == 0.5
-    assert result["is_correct"] is True  # 0.5 >= 0.5
+    # По ТЗ: ответ НЕверный → 0.0 (не 0.5)
+    assert result["score"] == 0.0
+    assert result["is_correct"] is False
     assert result["answer_correct"] is False
     assert result["method_correct"] is True
-    assert result["category"] == "wrong_answer_good_method"
 
 
 # ---------------------------------------------------------------------------
@@ -272,27 +269,37 @@ def test_ai_wrong_good_method():
 # ---------------------------------------------------------------------------
 
 class TestComputeScore:
-    """Direct unit tests for the scoring function."""
+    """Прямые unit-тесты для функции оценки (новая шкала ТЗ FORMYLA).
+
+    Шкала:
+        неверный ответ                        → 0.0
+        верный ответ + решение + верный метод → 1.0
+        верный ответ без полного решения      → 0.5  (минимум +1 балл)
+    """
 
     def test_wrong_answer_wrong_method(self):
-        assert _compute_score(answer_correct=False, method_correct=False, has_solution=False, difficulty_level=5) == -1.0
+        # Неверный ответ → 0.0 (а не −1.0).
+        assert _compute_score(answer_correct=False, method_correct=False, has_solution=False, difficulty_level=5) == 0.0
 
     def test_wrong_answer_good_method(self):
-        assert _compute_score(answer_correct=False, method_correct=True, has_solution=False, difficulty_level=5) == 0.5
+        # Неверный ответ остаётся неверным даже при верном методе → 0.0.
+        assert _compute_score(answer_correct=False, method_correct=True, has_solution=False, difficulty_level=5) == 0.0
 
     def test_correct_with_solution(self):
         assert _compute_score(answer_correct=True, method_correct=True, has_solution=True, difficulty_level=5) == 1.0
 
     def test_correct_no_solution_low_level(self):
-        assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=4) == 1.0
+        # Верный ответ без обоснования → 0.5 (+1 балл) независимо от уровня.
+        assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=4) == 0.5
 
     def test_correct_no_solution_mid_level(self):
         assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=5) == 0.5
         assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=6) == 0.5
 
     def test_correct_no_solution_high_level(self):
-        assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=7) == 0.3
-        assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=8) == 0.3
+        # Главный сценарий ТЗ: верный ответ без решения = +1 балл (0.5), не −1.
+        assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=7) == 0.5
+        assert _compute_score(answer_correct=True, method_correct=True, has_solution=False, difficulty_level=8) == 0.5
 
 
 # ---------------------------------------------------------------------------
