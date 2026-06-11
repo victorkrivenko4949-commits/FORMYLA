@@ -521,17 +521,306 @@
   .dt-card.dt-calibration {
     border-color: rgba(255, 186, 73, 0.28);
   }
+
+  /* ── ⏱  Countdown 24h ───────────────────────────────────────── */
+  .dt-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(56,239,125,0.10), rgba(56,239,125,0.04));
+    border: 1px solid rgba(56,239,125,0.28);
+    border-radius: 14px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    color: rgba(255,255,255,0.88);
+    font-size: 14px;
+  }
+  .dt-countdown-icon { font-size: 22px; line-height: 1; }
+  .dt-countdown-text { flex: 1; line-height: 1.4; }
+  .dt-countdown-time {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: #38ef7d;
+    letter-spacing: 1px;
+    min-width: 110px;
+    text-align: right;
+  }
+  .dt-countdown.dt-expiring .dt-countdown-time {
+    color: #ffba49;
+  }
+  .dt-countdown.dt-expired .dt-countdown-time {
+    color: #ff6b6b;
+  }
+
+  /* ── 📅 Calendar sidebar ────────────────────────────────────── */
+  .dt-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1080px) {
+    .dt-layout { grid-template-columns: 1fr; }
+    .dt-sidebar { order: 2; position: static !important; }
+  }
+
+  .dt-sidebar {
+    position: sticky;
+    top: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+  }
+  .dt-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 10px;
+  }
+  .dt-cal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.92);
+    text-align: center;
+    flex: 1;
+    letter-spacing: 0.2px;
+  }
+  .dt-cal-nav-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.75);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    flex: 0 0 36px;
+  }
+  .dt-cal-nav-btn:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+  .dt-cal-nav-btn:active { transform: scale(0.95); }
+  .dt-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    min-height: 240px;
+  }
+  .dt-cal-dow {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    text-align: center;
+    padding: 4px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+  }
+  .dt-cal-day {
+    aspect-ratio: 1 / 1;
+    min-height: 44px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.05);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dt-cal-daynum {
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0.6;
+  }
+  /* ГЛАВНОЕ — кол-во решённых задач, X/10 в каждой клетке */
+  .dt-cal-solved {
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    padding: 2px 5px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.32);
+    color: inherit;
+  }
+  .dt-cal-day.dt-cal-empty {
+    cursor: default;
+    background: transparent;
+    border: none;
+  }
+  .dt-cal-day.dt-cal-future {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .dt-cal-day:hover:not(.dt-cal-empty):not(.dt-cal-future) {
+    transform: translateY(-1px);
+    border-color: rgba(255,255,255,0.30);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  /* tiers (по числу решённых задач) */
+  .dt-cal-day.dt-tier-empty { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.35); }
+  .dt-cal-day.dt-tier-gray  { background: rgba(140,140,140,0.18); color: rgba(255,255,255,0.55); }
+  .dt-cal-day.dt-tier-pale  { background: rgba(56,239,125,0.15); color: #b6f7c8; }
+  .dt-cal-day.dt-tier-green { background: rgba(56,239,125,0.35); color: #062012; }
+  .dt-cal-day.dt-tier-bright{ background: rgba(56,239,125,0.65); color: #0a1e10; }
+  .dt-cal-day.dt-tier-gold  {
+    background: linear-gradient(135deg, #f7d774, #d6a437);
+    color: #2b1d05;
+    box-shadow: 0 0 14px rgba(247,215,116,0.45);
+  }
+  .dt-cal-day.dt-cal-today {
+    outline: 2px solid #38ef7d;
+    outline-offset: 1px;
+  }
+  .dt-cal-crown {
+    position: absolute;
+    top: -8px;
+    right: -2px;
+    font-size: 12px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+    pointer-events: none;
+  }
+  .dt-cal-legend {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.5;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+  }
+  .dt-cal-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dt-cal-legend-sw {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── 📱 Mobile tuning ─────────────────────────────────────── */
+  @media (max-width: 1080px) {
+    .dt-sidebar {
+      margin-top: 16px;
+      padding: 16px;
+    }
+    .dt-cal-day { font-size: 15px; min-height: 44px; }
+    .dt-cal-nav-btn { width: 40px; height: 40px; font-size: 20px; flex: 0 0 40px; }
+    .dt-cal-title { font-size: 18px; }
+    .dt-cal-grid { gap: 5px; min-height: 280px; }
+  }
+  @media (max-width: 480px) {
+    .dt-sidebar { padding: 14px 12px; border-radius: 14px; }
+    .dt-cal-day { font-size: 14px; min-height: 40px; border-radius: 8px; }
+    .dt-cal-grid { gap: 4px; }
+    .dt-cal-legend { grid-template-columns: 1fr; }
+  }
+
+  /* ── Day-history panel (под календарём) ─────────────────────── */
+  .dt-day-history {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .dt-day-history-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 6px;
+  }
+  .dt-day-history-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+  }
+  .dt-day-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .dt-dh-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.7);
+  }
+  .dt-dh-item-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .dt-dh-pos {
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+  }
+  .dt-dh-topic {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: rgba(56,239,125,0.7);
+  }
+  .dt-dh-status-correct { color: #38ef7d; }
+  .dt-dh-status-incorrect { color: #ff6b6b; }
+  .dt-dh-status-pending { color: rgba(255,255,255,0.35); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-daily-tasks" style="max-width:860px;margin:0 auto;padding:24px 16px 60px;">
+<div class="page-daily-tasks" style="max-width:1200px;margin:0 auto;padding:24px 16px 60px;">
 
   <!-- ═══ Page header ═══ -->
   <h2 style="font-size:26px;font-weight:700;margin-bottom:8px;">📅 Задачи дня</h2>
   <p style="color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:24px;">
     Персональные задачи на основе твоего уровня — каждый день новый набор
   </p>
+
+  <!-- ═══ Two-column layout: основной блок + календарь справа ═══ -->
+  <div class="dt-layout">
+    <div class="dt-main">
+
+      <!-- ═══ ⏱  24-часовой обратный отсчёт ═══ -->
+      <div id="dt-countdown" class="dt-countdown dt-hidden">
+        <span class="dt-countdown-icon">⏱</span>
+        <span class="dt-countdown-text">
+          До истечения 24 часов:
+          <span style="display:block;font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">
+            После 0 задачи удалятся и можно будет сгенерировать новые
+          </span>
+        </span>
+        <span class="dt-countdown-time" id="dt-countdown-time">--:--:--</span>
+      </div>
 
   <!-- ═══ Pipeline steps (always visible) ═══ -->
   <div class="dt-pipeline" id="dt-pipeline">
@@ -605,7 +894,9 @@
       <div class="dt-progress-text" id="dt-progress-text">0%</div>
 
       <div class="dt-step-name" id="dt-step-name">Запуск…</div>
-      <div class="dt-eta" id="dt-eta">~3 мин</div>
+      {# ETA «осталось примерно…» убрана по запросу пользователя.
+         Скрытый div сохранён только чтобы JS не падал при попытке записи. #}
+      <div class="dt-eta" id="dt-eta" style="display:none !important;"></div>
     </div>
   </div>
 
@@ -636,11 +927,8 @@
           Выполнено <span id="dt-progress-summary">0/0</span>
         </div>
       </div>
-      <div class="dt-ready-actions">
-        <button class="dt-btn-secondary" id="dt-btn-regenerate" onclick="startGeneration()">
-          🔄 Сгенерировать заново
-        </button>
-      </div>
+      {# «Сгенерировать заново» убрана — новый набор появится автоматически
+         после истечения 24-часового окна (см. #dt-countdown). #}
     </div>
 
     <!-- Summary card -->
@@ -683,6 +971,30 @@
     <div id="dt-task-grid"></div>
   </div>
 
+    </div>{# /.dt-main #}
+
+    <!-- ═══ 📅 Calendar sidebar ═══ -->
+    <aside class="dt-sidebar" id="dt-sidebar">
+      <div class="dt-cal-header">
+        <button class="dt-cal-nav-btn" id="dt-cal-prev" title="Предыдущий месяц">‹</button>
+        <div class="dt-cal-title" id="dt-cal-title">—</div>
+        <button class="dt-cal-nav-btn" id="dt-cal-next" title="Следующий месяц">›</button>
+      </div>
+
+      <div class="dt-cal-grid" id="dt-cal-grid">
+        {# Дни недели + дни месяца рисует JS #}
+      </div>
+
+      <!-- Панель с задачами выбранного дня (показывается под календарём) -->
+      <div class="dt-day-history dt-hidden" id="dt-day-history">
+        <div class="dt-day-history-title" id="dt-day-history-title">—</div>
+        <div class="dt-day-history-sub" id="dt-day-history-sub"></div>
+        <div class="dt-day-history-list" id="dt-day-history-list"></div>
+      </div>
+    </aside>
+
+  </div>{# /.dt-layout #}
+
 </div>
 
 <!-- ═══ Modal ═══ -->
@@ -704,4 +1016,346 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/daily_tasks.js') }}?v={{ asset_version }}"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Inline JS: 24h countdown + календарь + day-history панель.
+     Использует те же серверные эндпоинты:
+       GET /daily_tasks/calendar?year=YYYY&month=MM
+       GET /daily_tasks/day_history/<YYYY-MM-DD>
+     Данные для countdown берутся из <script id="dt-init-data">.
+   ══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── helpers ────────────────────────────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+
+  function parseInitData() {
+    try {
+      var raw = document.getElementById('dt-init-data');
+      if (!raw) return null;
+      return JSON.parse(raw.textContent || raw.innerText || '{}');
+    } catch (e) {
+      console.warn('[dt] cannot parse init data', e);
+      return null;
+    }
+  }
+
+  function pad2(n) { n = String(Math.max(0, Math.floor(n))); return n.length < 2 ? '0' + n : n; }
+
+  // ── ⏱ 24h countdown ───────────────────────────────────────────────
+  // Берём expires_at из init-data. Если страница в empty/generating/expired —
+  // блока countdown не показываем. При expire — автоматически перезагружаем
+  // страницу, чтобы пользователь увидел чистое empty-state с кнопкой
+  // «Сгенерировать» (бэкенд уже пометит сет как expired).
+  var countdownTimer = null;
+
+  function initCountdown() {
+    var data = parseInitData();
+    if (!data || !data.expires_at) return;
+    if (data.status !== 'ready' && data.status !== 'partial') return;
+
+    var box = $('dt-countdown');
+    var timeEl = $('dt-countdown-time');
+    if (!box || !timeEl) return;
+
+    var expiresAt = new Date(data.expires_at).getTime();
+    if (!isFinite(expiresAt)) return;
+
+    box.classList.remove('dt-hidden');
+
+    function tick() {
+      var now = Date.now();
+      var ms = expiresAt - now;
+      if (ms <= 0) {
+        timeEl.textContent = '00:00:00';
+        box.classList.remove('dt-expiring');
+        box.classList.add('dt-expired');
+        if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        // Дадим серверу шанс пометить expired при перезагрузке.
+        // Небольшая задержка, чтобы пользователь увидел 00:00:00.
+        setTimeout(function() { window.location.reload(); }, 1200);
+        return;
+      }
+      var totalSec = Math.floor(ms / 1000);
+      var hh = Math.floor(totalSec / 3600);
+      var mm = Math.floor((totalSec % 3600) / 60);
+      var ss = totalSec % 60;
+      timeEl.textContent = pad2(hh) + ':' + pad2(mm) + ':' + pad2(ss);
+      if (ms < 60 * 60 * 1000) {
+        box.classList.add('dt-expiring');
+      } else {
+        box.classList.remove('dt-expiring');
+      }
+    }
+
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
+  // ── 📅 Calendar ────────────────────────────────────────────────────
+  var currentYear = null;
+  var currentMonth = null;  // 1..12
+  var todayIso = null;
+  var selectedDate = null;
+  var calCache = {};
+
+  var MONTH_NAMES_RU = [
+    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+  ];
+  var DOW_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  function buildSkeletonPayload(year, month) {
+    // Локальная генерация дней месяца (на случай если бэкенд недоступен).
+    // tier='empty' — все клетки пустые до прихода данных с сервера.
+    var lastDay = new Date(year, month, 0).getDate();
+    var today = new Date();
+    var todayIsoLocal = today.getFullYear() + '-' +
+      pad2(today.getMonth() + 1) + '-' + pad2(today.getDate());
+    var days = [];
+    for (var d = 1; d <= lastDay; d++) {
+      var iso = year + '-' + pad2(month) + '-' + pad2(d);
+      var dDate = new Date(year, month - 1, d);
+      var isToday = (iso === todayIsoLocal);
+      var isFuture = dDate > today && !isToday;
+      days.push({
+        date: iso,
+        day: d,
+        solved: 0,
+        total: 0,
+        status: null,
+        tier: 'empty',
+        is_today: isToday,
+        is_future: isFuture
+      });
+    }
+    return { success: true, year: year, month: month, today: todayIsoLocal, days: days };
+  }
+
+  function renderCalendarSkeleton(year, month) {
+    var titleEl = $('dt-cal-title');
+    if (titleEl) titleEl.textContent = MONTH_NAMES_RU[month - 1] + ' ' + year;
+    // Сразу рисуем сетку с днями — даже до прихода данных от сервера.
+    renderCalendar(buildSkeletonPayload(year, month));
+  }
+
+  function loadCalendar(year, month) {
+    currentYear = year;
+    currentMonth = month;
+    renderCalendarSkeleton(year, month);
+
+    var cacheKey = year + '-' + month;
+    if (calCache[cacheKey]) {
+      renderCalendar(calCache[cacheKey]);
+      return;
+    }
+
+    var url = '/daily_tasks/calendar?year=' + year + '&month=' + month;
+    fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+      .then(function(r) {
+        if (!r.ok) { throw new Error('HTTP ' + r.status); }
+        var ct = r.headers.get('Content-Type') || '';
+        if (ct.indexOf('json') === -1) { throw new Error('not json: ' + ct); }
+        return r.json();
+      })
+      .then(function(payload) {
+        if (!payload || !payload.success) {
+          console.warn('[dt-cal] bad payload', payload);
+          return;
+        }
+        calCache[cacheKey] = payload;
+        todayIso = payload.today;
+        renderCalendar(payload);
+      })
+      .catch(function(err) {
+        console.warn('[dt-cal] fetch error — оставляем скелетон', err);
+      });
+  }
+
+  function renderCalendar(payload) {
+    var grid = $('dt-cal-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    // дни недели
+    DOW_RU.forEach(function(d) {
+      var el = document.createElement('div');
+      el.className = 'dt-cal-dow';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    // пустые ячейки до 1-го числа (понедельник как первый день)
+    var first = new Date(Date.UTC(payload.year, payload.month - 1, 1));
+    // getUTCDay: 0=вс, 1=пн … 6=сб → переведём в индекс «пн-первый»
+    var leadIdx = (first.getUTCDay() + 6) % 7;
+    for (var i = 0; i < leadIdx; i++) {
+      var blank = document.createElement('div');
+      blank.className = 'dt-cal-day dt-cal-empty';
+      grid.appendChild(blank);
+    }
+
+    // дни месяца
+    payload.days.forEach(function(d) {
+      var el = document.createElement('div');
+      var cls = ['dt-cal-day', 'dt-tier-' + d.tier];
+      if (d.is_today) cls.push('dt-cal-today');
+      if (d.is_future) cls.push('dt-cal-future');
+      el.className = cls.join(' ');
+      el.setAttribute('data-date', d.date);
+      el.setAttribute('title',
+        d.total > 0
+          ? (d.day + ' число — решено ' + d.solved + ' / ' + d.total)
+          : (d.is_future ? 'Ещё не наступило' : (d.day + ' число — без задач')));
+
+      // ── Главное содержимое клетки: число месяца сверху, СНИЗУ — кол-во решённых
+      var num = document.createElement('span');
+      num.className = 'dt-cal-daynum';
+      num.textContent = d.day;
+      el.appendChild(num);
+
+      // Кол-во решённых задач (для прошлых дней с задачами).
+      // Это «самое главное» — показываем числом X/10 в самой клетке.
+      if (!d.is_future && d.total > 0) {
+        var solvedBadge = document.createElement('span');
+        solvedBadge.className = 'dt-cal-solved';
+        solvedBadge.textContent = d.solved + '/' + d.total;
+        el.appendChild(solvedBadge);
+      }
+
+      if (d.tier === 'gold') {
+        var crown = document.createElement('span');
+        crown.className = 'dt-cal-crown';
+        crown.textContent = '👑';
+        el.appendChild(crown);
+      }
+
+      // Кликабельны ВСЕ прошлые дни и сегодня (даже без задач) — покажем
+      // пустое состояние в панели истории. Будущие — без клика.
+      if (!d.is_future) {
+        el.style.cursor = 'pointer';
+        (function(dateIso) {
+          el.addEventListener('click', function() { openDayHistory(dateIso); });
+        })(d.date);
+      } else {
+        el.style.cursor = 'not-allowed';
+      }
+      grid.appendChild(el);
+    });
+  }
+
+  // ── 📋 Day history panel ───────────────────────────────────────────
+  function openDayHistory(dateIso) {
+    selectedDate = dateIso;
+    var panel = $('dt-day-history');
+    var titleEl = $('dt-day-history-title');
+    var subEl = $('dt-day-history-sub');
+    var listEl = $('dt-day-history-list');
+    if (!panel || !listEl) return;
+
+    panel.classList.remove('dt-hidden');
+    titleEl.textContent = '📋 ' + formatDateRu(dateIso);
+    subEl.textContent = 'Загружаю…';
+    listEl.innerHTML = '';
+
+    fetch('/daily_tasks/day_history/' + dateIso, { credentials: 'same-origin' })
+      .then(function(r) { return r.json(); })
+      .then(function(payload) {
+        if (!payload || !payload.success) {
+          subEl.textContent = 'Не удалось загрузить.';
+          return;
+        }
+        if (!payload.has_set || !payload.items || payload.items.length === 0) {
+          subEl.textContent = 'В этот день задач не было.';
+          return;
+        }
+        subEl.textContent = 'Решено ' + payload.solved + ' из ' + payload.total
+          + (payload.status === 'expired' ? ' · сет завершён' : '');
+        payload.items.forEach(function(it) {
+          listEl.appendChild(buildDhItem(it));
+        });
+      })
+      .catch(function(err) {
+        console.warn('[dt-dh] fetch error', err);
+        subEl.textContent = 'Не удалось загрузить.';
+      });
+  }
+
+  function buildDhItem(it) {
+    var wrap = document.createElement('div');
+    wrap.className = 'dt-dh-item';
+
+    var head = document.createElement('div');
+    head.className = 'dt-dh-item-head';
+
+    var pos = document.createElement('span');
+    pos.className = 'dt-dh-pos';
+    pos.textContent = '#' + (it.position || '?');
+    head.appendChild(pos);
+
+    if (it.topic) {
+      var topic = document.createElement('span');
+      topic.className = 'dt-dh-topic';
+      topic.textContent = it.topic;
+      head.appendChild(topic);
+    }
+
+    var status = document.createElement('span');
+    if (it.is_correct === true) {
+      status.className = 'dt-dh-status-correct';
+      status.textContent = '✓ верно';
+    } else if (it.is_answered) {
+      status.className = 'dt-dh-status-incorrect';
+      status.textContent = '✗ неверно';
+    } else {
+      status.className = 'dt-dh-status-pending';
+      status.textContent = '— не решено';
+    }
+    head.appendChild(status);
+    wrap.appendChild(head);
+
+    if (it.preview) {
+      var body = document.createElement('div');
+      body.textContent = it.preview;
+      wrap.appendChild(body);
+    }
+    return wrap;
+  }
+
+  function formatDateRu(iso) {
+    var parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    var d = parseInt(parts[2], 10);
+    var m = parseInt(parts[1], 10);
+    var y = parts[0];
+    return d + ' ' + (MONTH_NAMES_RU[m - 1] || '').toLowerCase() + ' ' + y;
+  }
+
+  // ── nav buttons ────────────────────────────────────────────────────
+  function bindNav() {
+    var prev = $('dt-cal-prev');
+    var next = $('dt-cal-next');
+    if (prev) prev.addEventListener('click', function() {
+      var m = currentMonth - 1, y = currentYear;
+      if (m < 1) { m = 12; y -= 1; }
+      loadCalendar(y, m);
+    });
+    if (next) next.addEventListener('click', function() {
+      var m = currentMonth + 1, y = currentYear;
+      if (m > 12) { m = 1; y += 1; }
+      loadCalendar(y, m);
+    });
+  }
+
+  // ── init ───────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    initCountdown();
+    bindNav();
+    var now = new Date();
+    loadCalendar(now.getFullYear(), now.getMonth() + 1);
+  });
+})();
+</script>
 {% endblock %}

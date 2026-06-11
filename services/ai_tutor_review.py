@@ -622,93 +622,46 @@ def review_attempt(
             except Exception as _exc:
                 logger.debug("sympy comparison error: %s", _exc)
 
-    # 3) Quick-check / fast return
-    score = 1
+    # 3) Quick-check (для подсказки ИИ — НЕ для финального вердикта)
+    #
+    # ВАЖНО (по требованию продукта): вердикт +1/0/−1 принимает ТОЛЬКО ИИ-тьютор.
+    # Ранее здесь были два «fast return»:
+    #   3a) sympy_determined + sympy_correct → возвращали ВЕРНО без ИИ.
+    #   3b) math_equivalent(user, canon)    → возвращали ВЕРНО без ИИ.
+    # Из-за этого возникал «локальный кейс +1», параллельный с ИИ-тьютором,
+    # и при разнице форматов ответа результаты расходились.
+    # Теперь sympy/math-equivalent используются ИСКЛЮЧИТЕЛЬНО как hint
+    # в промпте для модели — финальный вердикт всегда выдаёт DeepSeek.
+    score = 0.0
     feedback = "Ваш ответ принят."
 
-    # 3a) Sympy says correct → compute score, return immediately (AI не нужен)
-    if sympy_determined and sympy_correct:
-        has_sol = bool(user_solution.strip())
-        score = _compute_score(
-            answer_correct=True,
-            method_correct=True,
-            has_solution=has_sol,
-            difficulty_level=difficulty_level,
-        )
-        sol_short = _safe_truncate_solution(solution_ref)
-        feedback = (
-            "Ответ верный! ✅\n\n"
-            f"Правильный ответ: **{correct_answer}**"
-            + (f"\n\n**Решение:**\n{sol_short}" if sol_short else "")
-        )
-        feedback = sanitize_feedback_no_latex(feedback)
-        badge = score_badge(score, has_sol)
-        if badge.split(":", 1)[0] not in feedback[:80]:
-            feedback = f"{badge}\n\n{feedback}".strip()
-        category = _pick_category(
-            answer_correct=True,
-            method_correct=True,
-            has_solution=has_sol,
-            difficulty_level=difficulty_level,
-            score=score,
-        )
-        return {
-            "score": score,
-            "feedback": feedback,
-            "is_correct": (score >= 0.5),
-            "is_proof_task": False,
-            "user_solution_enriched": user_solution,
-            "answer_correct": True,
-            "method_correct": True,
-            "category": category,
-            "confidence": 1.0,
-            "error_location": None,
-            "needs_escalation": False,
-        }
+    # Подсказка для модели: если sympy не сработал, но строки совпадают
+    # численно → пометим это и отдадим как hint.
+    math_equiv_hint: Optional[bool] = None
+    if not proof_mode and not sympy_determined and correct_answer:
+        try:
+            math_equiv_hint = math_equivalent(user_answer, correct_answer)
+        except Exception:
+            math_equiv_hint = None
 
-    # 3b) Existing math_equivalent fast path (when sympy didn't determine)
-    if not sympy_determined and (not proof_mode) and correct_answer and math_equivalent(user_answer, correct_answer):
-        has_sol = bool(user_solution.strip())
-        score = _compute_score(
-            answer_correct=True,
-            method_correct=True,
-            has_solution=has_sol,
-            difficulty_level=difficulty_level,
-        )
-        sol_short = _safe_truncate_solution(solution_ref)
-        feedback = (
-            "Ответ верный! ✅\n\n"
-            f"Правильный ответ: **{correct_answer}**"
-            + (f"\n\n**Решение:**\n{sol_short}" if sol_short else "")
-        )
-        feedback = sanitize_feedback_no_latex(feedback)
-        badge = score_badge(score, has_sol)
-        if badge.split(":", 1)[0] not in feedback[:80]:
-            feedback = f"{badge}\n\n{feedback}".strip()
-        category = _pick_category(
-            answer_correct=True,
-            method_correct=True,
-            has_solution=has_sol,
-            difficulty_level=difficulty_level,
-            score=score,
-        )
-        return {
-            "score": score,
-            "feedback": feedback,
-            "is_correct": (score >= 0.5),
-            "is_proof_task": False,
-            "user_solution_enriched": user_solution,
-            "answer_correct": True,
-            "method_correct": True,
-            "category": category,
-            "confidence": 0.9,
-            "error_location": None,
-            "needs_escalation": False,
-        }
+    # 4) AI-проверка через DeepSeek — ЕДИНСТВЕННЫЙ источник вердикта.
+    #
+    # sympy / math_equivalent ниже идут ИСКЛЮЧИТЕЛЬНО как hint в промпте
+    # (подсказка), а финальные answer_correct / method_correct берём из
+    # ответа модели. Если ИИ недоступен или вернул не-JSON — ставим
+    # НЕЙТРАЛЬНЫЙ результат (score=0.0, category="suspicious", confidence=0.0),
+    # а вызывающий код (см. app.py:check_adaptive_answer) поймёт это
+    # как is_ai_failure и НЕ изменит уровень/стрик ученика.
 
-    # 4) AI-проверка через DeepSeek
-    #    Для computational: если sympy_determined — модель оценивает ТОЛЬКО
-    #    метод/рассуждение (фидбек), НЕ правильность ответа.
+    # Defaults для нейтрального исхода — на случай любых сбоев ниже.
+    has_sol = bool(user_solution.strip())
+    answer_correct = False
+    method_correct = False
+    category = "suspicious"
+    confidence = 0.0
+    error_location = None
+    needs_escalation = False
+
     if deepseek_available and deepseek_client_cls is not None:
         try:
             system_prompt = get_tutor_prompt(proof_mode=proof_mode)
@@ -724,20 +677,40 @@ def review_attempt(
                     user_prompt += f"Подробное решение:\n{user_solution}\n"
                 user_prompt += "\nОцени доказательство и дай фидбек в формате JSON."
             else:
-                # Computational: inject sympy verdict if available
-                sympy_note = ""
+                # Computational: даём sympy/math_equivalent как ПОДСКАЗКУ,
+                # но финальное решение — за моделью.
+                hint_lines = []
                 if sympy_determined:
-                    sympy_note = (
-                        f"\n\n[ПРОВЕРКА КОДОМ: Ответ {'ВЕРНЫЙ ✅' if sympy_correct else 'НЕВЕРНЫЙ ❌'}.]"
-                        "\nЭтот вердикт окончательный. Твоя задача — "
-                        "оценить метод/рассуждение ученика и дать фидбек."
+                    hint_lines.append(
+                        "Проверка кодом (sympy): "
+                        + ("численно совпадает с эталоном." if sympy_correct
+                           else "численно НЕ совпадает с эталоном.")
                     )
+                if math_equiv_hint is True:
+                    hint_lines.append(
+                        "Простая численная проверка: ответ ученика численно "
+                        "эквивалентен эталону."
+                    )
+                elif math_equiv_hint is False and not sympy_determined:
+                    hint_lines.append(
+                        "Простая численная проверка: совпадений не найдено "
+                        "(не доверяй на 100%, формат записи мог отличаться)."
+                    )
+                hint_block = ""
+                if hint_lines:
+                    hint_block = (
+                        "\n\n[ПОДСКАЗКИ ОТ КОДА — не вердикт; учитывай, но решай сам]\n- "
+                        + "\n- ".join(hint_lines)
+                        + "\nФинальный вердикт ВСЕГДА выноси сам и заполняй "
+                          "answer_correct/method_correct по факту."
+                    )
+
                 user_prompt = (
                     f"Задача: {task_text}\n\n"
                     f"Правильный ответ: {correct_answer or 'не указан'}\n\n"
                     f"Ответ ученика: {user_answer}\n\n"
-                    f"Решение ученика: {user_solution if user_solution else 'не предоставлено'}\n\n"
-                    f"{sympy_note}\n"
+                    f"Решение ученика: {user_solution if user_solution else 'не предоставлено'}\n"
+                    f"{hint_block}\n\n"
                     f"Оцени решение и дай фидбек в формате JSON."
                 )
 
@@ -751,14 +724,10 @@ def review_attempt(
 
             try:
                 ai_data = _safe_json_parse(ai_response)
-                has_sol = bool(user_solution.strip())
-                if sympy_determined:
-                    # sympy determined answer is wrong (correct would have returned early)
-                    answer_correct = sympy_correct  # False
-                    method_correct = bool(ai_data.get("method_correct", False))
-                else:
-                    answer_correct = bool(ai_data.get("answer_correct", False))
-                    method_correct = bool(ai_data.get("method_correct", False))
+                # Берём вердикт ИСКЛЮЧИТЕЛЬНО от модели — никаких
+                # forced-override от sympy/math_equivalent.
+                answer_correct = bool(ai_data.get("answer_correct", False))
+                method_correct = bool(ai_data.get("method_correct", False))
                 score = _compute_score(
                     answer_correct=answer_correct,
                     method_correct=method_correct,
@@ -775,86 +744,41 @@ def review_attempt(
                 confidence = float(ai_data.get("confidence", 1.0))
                 error_location = ai_data.get("error_location") or None
                 feedback = str(ai_data.get("feedback", "Ответ проверен."))
-                # TODO Stage 6: escalation router -> Claude-Sonnet, cost-tracked $4 max
                 needs_escalation = (
                     confidence < 0.6 and proof_mode and difficulty_level >= 7
                 )
             except (json.JSONDecodeError, ValueError) as parse_err:
                 logger.error("Failed to parse AI response as JSON: %s", parse_err)
-                has_sol = bool(user_solution.strip())
-                if sympy_determined:
-                    answer_correct = sympy_correct  # False
-                    method_correct = False
-                else:
-                    answer_correct = False
-                    method_correct = False
-                score = _compute_score(
-                    answer_correct=answer_correct,
-                    method_correct=method_correct,
-                    has_solution=has_sol,
-                    difficulty_level=difficulty_level,
-                )
+                # Сбой парсинга → НЕЙТРАЛЬНО (не −1!): уровень не падает.
+                score = 0.0
                 category = "suspicious"
                 confidence = 0.0
-                error_location = None
-                needs_escalation = False
                 feedback = (
-                    "AI-разбор временно недоступен.\n\n"
+                    "AI-разбор временно недоступен — оценка нейтральная, "
+                    "уровень не изменится.\n\n"
                     f"Правильный ответ: **{correct_answer or 'см. БД'}**\n\n"
                     f"Решение:\n{(solution_ref or 'см. учебник')[:600]}"
                 )
         except Exception as e:
             logger.exception("DeepSeek call failed: %s", e)
-            has_sol = bool(user_solution.strip())
-            if sympy_determined:
-                answer_correct = sympy_correct  # False
-                method_correct = False
-            else:
-                answer_correct = False
-                method_correct = False
-            score = _compute_score(
-                answer_correct=answer_correct,
-                method_correct=method_correct,
-                has_solution=has_sol,
-                difficulty_level=difficulty_level,
-            )
+            # API/сетевой сбой → НЕЙТРАЛЬНО (не −1!).
+            score = 0.0
             category = "suspicious"
             confidence = 0.0
-            error_location = None
-            needs_escalation = False
             feedback = (
-                "AI-проверка временно недоступна.\n\n"
+                "AI-проверка временно недоступна — оценка нейтральная, "
+                "уровень не изменится.\n\n"
                 f"**Правильный ответ:** {correct_answer or 'см. БД'}\n\n"
                 + (f"**Решение:**\n{solution_ref[:800]}" if solution_ref else "")
             )
     else:
-        # AI unavailable — use sympy verdict if possible, else neutral fallback
-        has_sol = bool(user_solution.strip())
-        if sympy_determined:
-            # sympy_correct=True would have returned early, so this is False
-            answer_correct = sympy_correct
-            method_correct = False
-        else:
-            answer_correct = False
-            method_correct = False
-        score = _compute_score(
-            answer_correct=answer_correct,
-            method_correct=method_correct,
-            has_solution=has_sol,
-            difficulty_level=difficulty_level,
-        )
-        category = _pick_category(
-            answer_correct=answer_correct,
-            method_correct=method_correct,
-            has_solution=has_sol,
-            difficulty_level=difficulty_level,
-            score=score,
-        )
+        # ИИ не подключён в окружении → НЕЙТРАЛЬНО (не −1!).
+        score = 0.0
+        category = "suspicious"
         confidence = 0.0
-        error_location = None
-        needs_escalation = False
         feedback = (
-            "AI-проверка временно недоступна.\n\n"
+            "AI-проверка сейчас недоступна — оценка нейтральная, "
+            "уровень не изменится.\n\n"
             f"**Правильный ответ:** {correct_answer or 'см. БД'}\n\n"
             + (f"**Решение:**\n{solution_ref[:800]}" if solution_ref else "")
         )

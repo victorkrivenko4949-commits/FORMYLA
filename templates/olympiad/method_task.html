@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}{{ competition }} — задача {{ task.id }} — FORMYLA{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('olympiad.method_section', grade=task.grade, section_name=task.section) }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к разделу</a>
+    </p>
+
+    <article style="max-width: 800px; margin: 0 auto;">
+        <header style="margin-bottom: 24px;">
+            <h1 style="margin: 0 0 8px;">
+                <span class="oly-badge oly-badge-topic">{{ task.id }}</span>
+                {{ competition }} · {{ task.grade }} класс
+            </h1>
+            <p style="color: var(--text-muted); margin: 0 0 4px;">
+                Раздел: <strong>{{ task.section or '—' }}</strong>
+                · Метод: <strong>{{ task.method_code }}</strong>
+                {% if task.method_name %}· {{ task.method_name }}{% endif %}
+            </p>
+            {% if task.difficulty_label or task.method_probability_tier %}
+            <p style="margin: 4px 0 0;">
+                {% if task.difficulty_label %}
+                <span class="oly-badge" style="background:{{ task.difficulty_color or '#888' }}; color:#fff;">{{ task.difficulty_label }}</span>
+                {% endif %}
+                {% if task.method_probability_tier %}
+                <span class="oly-badge" style="background:{{ task.method_probability_color or '#888' }}; color:#fff;">{{ task.method_probability_tier }}</span>
+                {% endif %}
+            </p>
+            {% endif %}
+        </header>
+
+        <div style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            <h2 style="margin: 0 0 16px; font-size: 1.1rem;">Условие</h2>
+            <div class="oly-task-text">{{ task.text | safe }}</div>
+        </div>
+
+        {% if task.solution_idea %}
+        <details style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; cursor: pointer;">
+            <summary style="font-weight: 600; font-size: 1.05rem; color: var(--accent-1);">💡 Идея решения</summary>
+            <div style="margin-top: 12px; line-height: 1.7;">{{ task.solution_idea | safe }}</div>
+        </details>
+        {% endif %}
+
+        {% if task.answer %}
+        <details style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; cursor: pointer;">
+            <summary style="font-weight: 600; font-size: 1.05rem; color: #34d399;">✅ Ответ</summary>
+            <div style="margin-top: 12px; line-height: 1.7;">{{ task.answer | safe }}</div>
+        </details>
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="discussWithTutor()" style="padding: 12px 30px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                💬 Обсудить с ИИ-тьютором
+            </button>
+        </div>
+        <script>
+        function discussWithTutor() {
+            if (typeof toggleTutorPopup === 'function') {
+                if (!window.popupOpen) toggleTutorPopup();
+                setTimeout(function() {
+                    if (typeof selectAgent === 'function') {
+                        selectAgent('general', 'Универсальный агент');
+                    }
+                    setTimeout(function() {
+                        var input = document.getElementById('tutorInput');
+                        if (input) {
+                            var taskPreview = 'Помоги решить задачу: {{ task.text[:200] | escape }}...';
+                            input.value = taskPreview;
+                            input.focus();
+                            input.style.height = 'auto';
+                            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+                            if (typeof sendToTutor === 'function') {
+                                sendToTutor();
+                            }
+                        }
+                    }, 400);
+                }, 100);
+            } else {
+                var btn = document.getElementById('tutorBtn');
+                if (btn) {
+                    btn.click();
+                    setTimeout(function() {
+                        if (typeof selectAgent === 'function') {
+                            selectAgent('general', 'Универсальный агент');
+                        }
+                        setTimeout(function() {
+                            var input = document.getElementById('tutorInput');
+                            if (input) {
+                                var taskPreview = 'Помоги решить задачу: {{ task.text[:200] | escape }}...';
+                                input.value = taskPreview;
+                                input.focus();
+                                if (typeof sendToTutor === 'function') {
+                                    sendToTutor();
+                                }
+                            }
+                        }, 400);
+                    }, 300);
+                }
+            }
+        }
+        </script>
+        {% endif %}
+    </article>
+</div>
+{% endblock %}

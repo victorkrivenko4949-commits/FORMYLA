@@ -16,7 +16,8 @@ TZ Section 5 (document lines 479–571).
 from __future__ import annotations
 
 import logging
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+from calendar import monthrange
 from typing import Any, Dict
 
 from flask import jsonify, render_template, request
@@ -27,6 +28,27 @@ from . import daily_tasks_bp
 from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
 from .services import today_in_user_tz
+
+# 24h TTL для сета «Задач дня»: после истечения сет автоматически
+# помечается как expired при следующем GET /daily_tasks, и пользователю
+# показывается чистое empty-state с кнопкой «Сгенерировать».
+DAILY_SET_TTL = timedelta(hours=24)
+
+
+def _set_expires_at(daily_set: DailyTaskSet) -> datetime | None:
+    """Момент истечения 24h-окна сета (UTC). None — если ещё не готов."""
+    anchor = daily_set.generated_at
+    if anchor is None:
+        return None
+    return anchor + DAILY_SET_TTL
+
+
+def _is_expired(daily_set: DailyTaskSet) -> bool:
+    """True, если сет старше 24 часов и должен быть помечен expired."""
+    exp = _set_expires_at(daily_set)
+    if exp is None:
+        return False
+    return datetime.utcnow() >= exp
 
 # Единый сервис AI-проверки (общий с /api/check_adaptive_answer).
 # Опциональный импорт — файла может не быть на проде.
@@ -75,7 +97,29 @@ def get_daily_tasks():
         target_date=today,
     ).first()
 
-    # ── нет сета ─────────────────────────────────────────────────────
+    # ── 24h-TTL: если сет старше 24 часов от generated_at — помечаем
+    # expired «лениво» прямо в этом запросе (вариант (b) из ТЗ).
+    # После expire показываем чистое empty-state с кнопкой «Сгенерировать»,
+    # чтобы ученик мог собрать новый набор.
+    if (
+        daily_set
+        and daily_set.status not in ("expired", "generating")
+        and _is_expired(daily_set)
+    ):
+        try:
+            daily_set.status = "expired"
+            db.session.commit()
+            logger.info(
+                "DailyTaskSet #%s expired (>24h since generated_at=%s)",
+                daily_set.id, daily_set.generated_at,
+            )
+        except Exception:  # pragma: no cover
+            db.session.rollback()
+        # Для отображения на странице — считаем как «нет сегодняшнего сета»,
+        # чтобы пользователь увидел кнопку «Сгенерировать».
+        daily_set = None
+
+    # ── нет сета (или только что протух) ─────────────────────────────
     if not daily_set:
         data = {
             "status": "no_set",
@@ -163,6 +207,7 @@ def get_daily_tasks():
     )
     has_calibration = calibration_items_count > 0
 
+    expires_at_dt = _set_expires_at(daily_set)
     data = {
         "date": today.isoformat(),
         "status": svc_data["status"],
@@ -171,6 +216,10 @@ def get_daily_tasks():
         "class_level": daily_set.class_level,
         "summary": svc_data.get("reason_summary"),
         "generated_at": svc_data.get("generated_at"),
+        # 24h-окно: ISO-строка момента, когда задачи протухнут.
+        # Фронт использует это значение для обратного отсчёта вверху страницы.
+        "expires_at": expires_at_dt.isoformat() + "Z" if expires_at_dt else None,
+        "ttl_seconds": int(DAILY_SET_TTL.total_seconds()),
         "total_cost_usd": svc_data.get("total_cost_usd"),
         "error_message": error_message,
         "progress": {
@@ -579,3 +628,194 @@ def submit_answer_ai(item_id: int):
         "solution": item.solution or "",
         "set_progress": {"completed": completed, "total": total},
     })
+
+
+# ──────────────────────────────────────────────────────────────────────
+# GET /daily_tasks/calendar?year=YYYY&month=MM
+# ──────────────────────────────────────────────────────────────────────
+#
+# Возвращает агрегированную статистику по решённым задачам за каждый день
+# указанного месяца (по умолчанию — текущий месяц). Используется для
+# вертикального календаря справа от блока «Задачи дня».
+#
+# Цвета подсветки на фронте:
+#   0          → серая
+#   1–3        → бледно-зелёная
+#   4–6        → зелёная
+#   7–9        → яркая зелёная
+#   10 (или больше) → золотая (с короной)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/calendar", methods=["GET"])
+@login_required
+def calendar_stats():
+    """Статистика по решённым задачам за каждый день месяца."""
+    today = today_in_user_tz()
+    try:
+        year = int(request.args.get("year") or today.year)
+        month = int(request.args.get("month") or today.month)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "Неверный year/month"}), 400
+
+    if month < 1 or month > 12:
+        return jsonify({"success": False, "message": "Неверный month"}), 400
+
+    last_day = monthrange(year, month)[1]
+    first_dt = date(year, month, 1)
+    last_dt = date(year, month, last_day)
+
+    # Берём ВСЕ сеты пользователя за этот месяц (включая expired).
+    # expired-сеты тоже видны на календаре — их данные сохраняются,
+    # пользователь видит свою историю.
+    sets = (
+        DailyTaskSet.query
+        .filter(
+            DailyTaskSet.user_id == current_user.id,
+            DailyTaskSet.target_date >= first_dt,
+            DailyTaskSet.target_date <= last_dt,
+        )
+        .all()
+    )
+    set_ids = [s.id for s in sets]
+    set_by_id = {s.id: s for s in sets}
+
+    # Подтягиваем items одним запросом (избегаем N+1).
+    items_by_set: Dict[int, list] = {sid: [] for sid in set_ids}
+    if set_ids:
+        items = (
+            DailyTaskItem.query
+            .filter(DailyTaskItem.daily_set_id.in_(set_ids))
+            .all()
+        )
+        for it in items:
+            items_by_set.setdefault(it.daily_set_id, []).append(it)
+
+    # Собираем массив с статистикой по каждому дню месяца.
+    days = []
+    for d in range(1, last_day + 1):
+        the_date = date(year, month, d)
+        ds = next(
+            (s for s in sets if s.target_date == the_date),
+            None,
+        )
+        solved = 0
+        total = 0
+        status = None
+        if ds is not None:
+            ds_items = items_by_set.get(ds.id, [])
+            total = len(ds_items)
+            solved = sum(1 for it in ds_items if it.is_correct)
+            status = ds.status
+
+        # Категория для подсветки на фронте (информативно — фронт может
+        # сам пересчитать, но сервер тоже отдаёт для удобства).
+        if total == 0:
+            tier = "empty"
+        elif solved == 0:
+            tier = "gray"
+        elif solved <= 3:
+            tier = "pale"
+        elif solved <= 6:
+            tier = "green"
+        elif solved <= 9:
+            tier = "bright"
+        else:  # >= 10
+            tier = "gold"
+
+        days.append({
+            "date": the_date.isoformat(),
+            "day": d,
+            "solved": solved,
+            "total": total,
+            "status": status,
+            "tier": tier,
+            "is_today": (the_date == today),
+            "is_future": (the_date > today),
+        })
+
+    return jsonify({
+        "success": True,
+        "year": year,
+        "month": month,
+        "today": today.isoformat(),
+        "days": days,
+    }), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# GET /daily_tasks/day_history/<date>
+# ──────────────────────────────────────────────────────────────────────
+#
+# Возвращает список задач (и их статусы) за указанный день.
+# Используется для модалки/панели, которая открывается по клику на
+# дату в календаре.
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/day_history/<date_iso>", methods=["GET"])
+@login_required
+def day_history(date_iso: str):
+    """Список задач, решённых пользователем в указанную дату."""
+    try:
+        target = date.fromisoformat(date_iso)
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "message": "Неверный формат даты (ожидается YYYY-MM-DD)",
+        }), 400
+
+    daily_set = DailyTaskSet.query.filter_by(
+        user_id=current_user.id,
+        target_date=target,
+    ).first()
+
+    if not daily_set:
+        return jsonify({
+            "success": True,
+            "date": date_iso,
+            "has_set": False,
+            "solved": 0,
+            "total": 0,
+            "status": None,
+            "items": [],
+        }), 200
+
+    items = (
+        DailyTaskItem.query
+        .filter_by(daily_set_id=daily_set.id)
+        .order_by(DailyTaskItem.position.asc())
+        .all()
+    )
+
+    items_payload = []
+    for it in items:
+        # Краткий превью текста задачи (для модалки).
+        preview = (it.task_text or "").strip()
+        if len(preview) > 220:
+            preview = preview[:220].rstrip() + "…"
+        items_payload.append({
+            "id": it.id,
+            "position": it.position,
+            "topic": it.topic,
+            "subject": it.subject,
+            "difficulty_level": it.difficulty_level,
+            "preview": preview,
+            "is_correct": it.is_correct,
+            "is_answered": it.user_answer is not None,
+            "answered_at": it.answered_at.isoformat() + "Z" if it.answered_at else None,
+        })
+
+    solved = sum(1 for it in items if it.is_correct)
+    total = len(items)
+
+    return jsonify({
+        "success": True,
+        "date": date_iso,
+        "has_set": True,
+        "daily_set_id": daily_set.id,
+        "status": daily_set.status,
+        "solved": solved,
+        "total": total,
+        "items": items_payload,
+    }), 200

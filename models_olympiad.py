@@ -216,10 +216,17 @@ class TheoryBlock(db.Model):
     triggers_md = db.Column(db.Text, nullable=True)
     worked_example_md = db.Column(db.Text, nullable=True)
     pitfalls_md = db.Column(db.Text, nullable=True)
+    why_it_works_md = db.Column(db.Text, nullable=True)
 
     # JSON-массив строк-кодов: ["F4a","F3"]. Используем `db.JSON` —
     # это совместимый кросс-БД тип (PostgreSQL → JSONB, SQLite → TEXT).
     related_methods = db.Column(db.JSON, nullable=True)
+
+    # Дополнительные поля из methods_final.json (ТЗ 102 методов)
+    signal_phrases = db.Column(db.JSON, nullable=True)  # фразы-сигналы в условии
+    first_moves = db.Column(db.JSON, nullable=True)     # первые ходы решения
+    prerequisites = db.Column(db.JSON, nullable=True)   # method_codes, которые нужно знать
+    leads_to = db.Column(db.JSON, nullable=True)        # method_codes, для которых этот — фундамент
 
     # ── Каталог методов (добавлены миграцией add_methods_catalog_fields.py) ──
     # Список классов, для которых актуален метод (например, [5,6,7,8,9]).

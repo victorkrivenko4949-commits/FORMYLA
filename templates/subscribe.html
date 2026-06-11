@@ -378,106 +378,123 @@
     <!-- Plan cards -->
     <div class="plans-grid">
 
-        <!-- Free plan -->
-        <div class="plan-card">
-            <div class="plan-name">Бесплатный</div>
-            <div class="plan-price free-price">
-                <span class="amount">0</span><span class="currency">₽</span>
-                <span class="period">навсегда</span>
-            </div>
-            <ul class="plan-features">
-                <li class="highlight">
-                    <span class="feat-icon">✅</span>
-                    <span>20 задач в день</span>
-                </li>
-                <li class="highlight">
-                    <span class="feat-icon">✅</span>
-                    <span>3 AI-разбора в день</span>
-                </li>
-                <li>
-                    <span class="feat-icon">✅</span>
-                    <span>Все темы 5–11 класс</span>
-                </li>
-                <li>
-                    <span class="feat-icon">✅</span>
-                    <span>Бесплатный пробник</span>
-                </li>
-                <li>
-                    <span class="feat-icon">✅</span>
-                    <span>5 чертежей в день</span>
-                </li>
-                <li>
-                    <span class="feat-icon">✅</span>
-                    <span>Адаптивный тест</span>
-                </li>
-                <li>
-                    <span class="feat-icon">✅</span>
-                    <span>Задачи дня</span>
-                </li>
-                <li class="dimmed">
-                    <span class="feat-icon">—</span>
-                    <span>История тестов: 7 дней</span>
-                </li>
-                <li class="dimmed">
-                    <span class="feat-icon">—</span>
-                    <span>AI-разборы: базовые (2000 токенов)</span>
-                </li>
-                <li class="dimmed">
-                    <span class="feat-icon">—</span>
-                    <span>Статистика: базовая</span>
-                </li>
-            </ul>
-
-            {% if current_plan == 'free' %}
-            <button class="btn-plan btn-plan-current" disabled>
-                ✓ Текущий план
-            </button>
-            {% else %}
-            <button class="btn-plan btn-plan-free" disabled>
-                Бесплатный
-            </button>
-            {% endif %}
+    <!-- Free plan -->
+    <div class="plan-card">
+        <div class="plan-name">Бесплатный</div>
+        <div class="plan-price free-price">
+            <span class="amount">0</span><span class="currency">₽</span>
+            <span class="period">навсегда</span>
         </div>
+        <ul class="plan-features">
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>AI-разборы — до 300 в день</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Все темы, 5–11 класс</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Курсы на основе глубокого анализа методов решения ВсОШ — под задачи 2027 года</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>102 понятно расписанных метода</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Каталог топ-11 олимпиад России</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Интерактивная доска</span>
+            </li>
+        </ul>
 
-        <!-- Premium plan -->
-        <div class="plan-card premium">
-            <div class="plan-badge">⭐ РЕКОМЕНДУЕМ</div>
-            <div class="plan-name">Premium</div>
-            <div class="plan-price premium-price">
-                <span class="amount" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">390</span><span class="currency" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">₽</span>
-                <span class="amount" style="margin-left:10px;color:#38ef7d;">0</span><span class="currency" style="color:#38ef7d;">₽</span>
-                <span class="period">Сейчас всё доступно бесплатно</span>
-            </div>
-            <ul class="plan-features">
-                <li class="highlight">
-                    <span class="feat-icon">🚀</span>
-                    <span>Безлимит задач (до 500/день)</span>
-                </li>
-                <li class="highlight">
-                    <span class="feat-icon">🤖</span>
-                    <span>Безлимит AI-разборов (до 200/мес)</span>
-                </li>
-                <li class="highlight">
-                    <span class="feat-icon">⚡</span>
-                    <span>Расширенные AI-разборы (8000 токенов)</span>
-                </li>
-                <li class="highlight">
-                    <span class="feat-icon">📊</span>
-                    <span>История тестов навсегда</span>
-                </li>
-                <li class="highlight">
-                    <span class="feat-icon">📈</span>
-                    <span>Полная статистика прогресса</span>
-                </li>
-                <li class="highlight">
-                    <span class="feat-icon">🎯</span>
-                    <span>Приоритетный AI (быстрее)</span>
-                </li>
-                <li class="highlight">
-                    <span class="feat-icon">🏆</span>
-                    <span>Все темы 5–11 класс</span>
-                </li>
-            </ul>
+        {% if current_plan == 'free' %}
+        <button class="btn-plan btn-plan-current" disabled>
+            ✓ Текущий план
+        </button>
+        {% else %}
+        <button class="btn-plan btn-plan-free" disabled>
+            Бесплатный
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Premium plan -->
+    <div class="plan-card premium">
+        <div class="plan-badge">⭐ РЕКОМЕНДУЕМ</div>
+        <div class="plan-name">Premium</div>
+        <div class="plan-price premium-price">
+            <span class="amount" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">390</span><span class="currency" style="text-decoration: line-through; opacity: 0.55; color:#94a3b8;">₽</span>
+            <span class="amount" style="margin-left:10px;color:#38ef7d;">0</span><span class="currency" style="color:#38ef7d;">₽</span>
+            <span class="period">Сейчас всё доступно бесплатно</span>
+        </div>
+        <ul class="plan-features">
+
+            <!-- Всё из бесплатного -->
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Все темы, 5–11 класс</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Курсы на основе глубокого анализа методов решения ВсОШ — под задачи 2027 года</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>102 понятно расписанных метода</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Каталог топ-11 олимпиад России</span>
+            </li>
+            <li>
+                <span class="feat-icon">✅</span>
+                <span>Интерактивная доска</span>
+            </li>
+
+            <!-- Дополнительно в Premium -->
+            <li class="highlight">
+                <span class="feat-icon">🤖</span>
+                <span>Безлимитные AI-разборы (без дневного лимита)</span>
+            </li>
+            <li class="highlight">
+                <span class="feat-icon">⚡</span>
+                <span>Расширенные AI-разборы (до 8000 токенов)</span>
+            </li>
+            <li class="highlight">
+                <span class="feat-icon">🧭</span>
+                <span>Адаптивный тест для определения проблемных тем</span>
+            </li>
+            <li class="highlight">
+                <span class="feat-icon">📊</span>
+                <span>История тестов — навсегда</span>
+            </li>
+            <li class="highlight">
+                <span class="feat-icon">📈</span>
+                <span>Полная статистика прогресса</span>
+            </li>
+            <li class="highlight">
+                <span class="feat-icon">🎯</span>
+                <span>Приоритетный AI (быстрее ответы)</span>
+            </li>
+        </ul>
+
+        {% if current_plan == 'premium' %}
+        <button class="btn-plan btn-plan-current" disabled>
+            ✓ Текущий план
+        </button>
+        {% else %}
+        <button class="btn-plan btn-plan-premium">
+            🎁 Попробовать Premium бесплатно
+        </button>
+        {% endif %}
+    </div>
+
+</div>
 
             {% if current_plan and current_plan != 'free' %}
             <button class="btn-plan btn-plan-current" disabled>

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Тест уже пройден{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+
+    <div style="text-align: center; margin-bottom: 40px;">
+        <div style="font-size: 3em; margin-bottom: 10px;">⏳</div>
+        <h1 style="font-size: 1.8em; color: var(--accent-1); margin-bottom: 8px;">
+            Тест уже пройден
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            Вы уже проходили тест «{{ topic_name }}» ({{ grade }} класс)
+        </p>
+    </div>
+
+    <!-- Cooldown banner -->
+    <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(234, 179, 8, 0.15)); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 2px solid rgba(251, 191, 36, 0.5); margin-bottom: 30px; text-align: center;">
+        <p style="font-size: 1.15em; color: var(--text-main); line-height: 1.7; margin-bottom: 10px;">
+            Новый тест по этой теме будет доступен через <strong style="color: #fbbf24;">{{ days_left }}</strong> {{ days_word }}.
+        </p>
+        <p style="color: var(--text-soft); font-size: 1em; line-height: 1.6; margin: 0;">
+            Пока готовьтесь — решайте <a href="/daily" style="color: #60a5fa; text-decoration: underline;">задачи дня</a>,
+            изучайте <a href="/section/{{ topic }}" style="color: #60a5fa; text-decoration: underline;">методы</a>
+            и повторяйте теорию.
+        </p>
+    </div>
+
+    <!-- Previous result -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="font-size: 1.3em; color: var(--accent-1); margin-bottom: 20px; text-align: center;">
+            Ваш результат
+        </h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1)); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(59, 130, 246, 0.3); text-align: center;">
+                <div style="font-size: 1.8em; font-weight: 700; color: #60a5fa;">{{ accuracy }}%</div>
+                <div style="font-size: 0.85em; color: var(--text-muted); margin-top: 4px;">Точность</div>
+            </div>
+            <div style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1)); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(34, 197, 94, 0.3); text-align: center;">
+                <div style="font-size: 1.8em; font-weight: 700; color: #22c55e;">{{ correct }}/{{ total }}</div>
+                <div style="font-size: 0.85em; color: var(--text-muted); margin-top: 4px;">Правильных ответов</div>
+            </div>
+            <div style="background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(147, 51, 234, 0.1)); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(147, 51, 234, 0.3); text-align: center;">
+                <div style="font-size: 1.8em; font-weight: 700; color: #a855f7;">{{ final_level }}</div>
+                <div style="font-size: 0.85em; color: var(--text-muted); margin-top: 4px;">Финальный уровень</div>
+            </div>
+            <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1)); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(251, 191, 36, 0.3); text-align: center;">
+                <div style="font-size: 1.2em; font-weight: 700; color: #fbbf24;">{{ completed_date }}</div>
+                <div style="font-size: 0.85em; color: var(--text-muted); margin-top: 4px;">Дата прохождения</div>
+            </div>
+        </div>
+
+        <!-- Answers history -->
+        {% if answers %}
+        <div style="margin-top: 20px;">
+            <details style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
+                <summary style="cursor: pointer; color: var(--text-soft); font-weight: 600; font-size: 0.95em;">
+                    📋 История ответов ({{ answers|length }} задач)
+                </summary>
+                <div style="margin-top: 16px;">
+                    {% for answer in answers %}
+                    <div style="background: rgba(15, 23, 42, 0.8); padding: 14px; border-radius: var(--radius-sm);
+                        border-left: 4px solid {% if answer.score is defined and answer.score >= 1 %}#22c55e{% elif answer.score is defined and answer.score == 0 %}#fbbf24{% else %}#ef4444{% endif %};
+                        margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-weight: 600; color: var(--text-main);">Задача {{ loop.index }}</span>
+                            <span style="padding: 3px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600;
+                                {% if answer.score is defined and answer.score >= 1 %}
+                                    background: rgba(34, 197, 94, 0.2); color: #22c55e;
+                                {% elif answer.score is defined and answer.score == 0 %}
+                                    background: rgba(251, 191, 36, 0.2); color: #fbbf24;
+                                {% else %}
+                                    background: rgba(239, 68, 68, 0.2); color: #ef4444;
+                                {% endif %}">
+                                {% if answer.score is defined and answer.score >= 1 %}✅ Верно{% elif answer.score is defined and answer.score == 0 %}⚠️ Частично{% else %}❌ Неверно{% endif %}
+                            </span>
+                        </div>
+                        {% if answer.task_text %}
+                        <div style="font-size: 0.9em; color: var(--text-soft); margin-bottom: 8px; line-height: 1.5;">
+                            {{ answer.task_text|truncate(200) }}
+                        </div>
+                        {% endif %}
+                        <div style="display: flex; gap: 16px; font-size: 0.85em; color: var(--text-muted); flex-wrap: wrap;">
+                            <span>Ваш ответ: <strong style="color: var(--text-main);">{{ (answer.user_answer or '—')[:80] }}</strong></span>
+                            <span>Правильный: <strong style="color: #22c55e;">{{ (answer.correct_answer or '—')[:80] }}</strong></span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Navigation -->
+    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <a href="/daily"
+            style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 51, 234, 0.2)); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4); transition: all 0.2s;">
+            📅 Задачи дня
+        </a>
+        <a href="/section/{{ topic }}"
+            style="display: inline-block; padding: 14px 28px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;">
+            📚 Изучать методы
+        </a>
+        <a href="/adaptive_test/select_grade?topic={{ topic }}"
+            style="display: inline-block; padding: 14px 28px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;">
+            🔄 Выбрать другую тему
+        </a>
+        <a href="/probniks"
+            style="display: inline-block; padding: 14px 28px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;">
+            🏠 К тестам
+        </a>
+    </div>
+
+</div>
+
+<style>
+    details summary::-webkit-details-marker {
+        color: var(--text-muted);
+    }
+    details summary {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    details summary::before {
+        content: '▶';
+        font-size: 0.8em;
+        color: var(--text-muted);
+        transition: transform 0.2s;
+    }
+    details[open] summary::before {
+        transform: rotate(90deg);
+    }
+</style>
+{% endblock %}

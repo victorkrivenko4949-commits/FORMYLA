@@ -194,26 +194,122 @@ def task_attempt(task_id):
 @olympiad_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
 def task_submit(task_id):
-    """Финальная отправка ответа задачи."""
+    """Финальная отправка ответа задачи.
+
+    Сравнивает ответ пользователя с task.answer (после нормализации).
+    Возвращает структуру, которую ожидает фронт:
+      {success, is_correct, correct_answer, xp_earned, ai_feedback}
+    Также проставляет TaskAttempt.status:
+      - 'solved'    — если ответ совпал;
+      - 'attempted' — если не совпал.
+    """
+    import re as _re
     t = OlympiadTask.query.get_or_404(task_id)
     data = request.get_json(force=True, silent=True) or {}
-    answer_text = data.get('answer', '')
+    user_answer_raw = (data.get('answer') or '').strip()
+    user_solution = (data.get('solution') or '').strip()
+
+    correct_raw = (getattr(t, 'answer', '') or '').strip()
+
+    def _norm(s):
+        if s is None:
+            return ''
+        s = str(s).strip().lower()
+        # снимаем $...$, \(...\), пробелы и популярную косметику
+        s = s.replace('$', '').replace('\\(', '').replace('\\)', '')
+        s = s.replace('\\[', '').replace('\\]', '')
+        s = s.replace(',', '.')
+        s = _re.sub(r'\s+', '', s)
+        # 1/2 эквивалентно \frac{1}{2}
+        s = _re.sub(r'\\frac\{([^{}]+)\}\{([^{}]+)\}', r'\1/\2', s)
+        # \cdot → *
+        s = s.replace('\\cdot', '*').replace('\\times', '*')
+        # убираем финальную точку
+        s = s.rstrip('.')
+        return s
+
+    is_correct = bool(correct_raw) and _norm(user_answer_raw) == _norm(correct_raw)
+    ai_comment_extra = ''
+
+    # ── AI-эквивалентность ответа (если строгое сравнение не совпало) ──
+    # Используем DeepSeek, чтобы признать ответы вроде «y=39» эквивалентом «39»,
+    # «√2», «sqrt(2)», «1.414…» и т.п. Если ключа нет / сеть упала — тихо
+    # пропускаем (is_correct остаётся как был).
+    if (not is_correct) and correct_raw and user_answer_raw:
+        try:
+            import os as _os
+            if _os.environ.get('DEEPSEEK_API_KEY'):
+                from ai.deepseek_client import DeepSeekClient
+                import json as _json
+                _client = DeepSeekClient()
+                _sys = (
+                    'Ты проверяешь школьный ответ на олимпиадную задачу. '
+                    'Тебе дают эталонный ответ и ответ ученика. Реши, эквивалентны ли они математически. '
+                    'Игнорируй: лишние пробелы, регистр, формат («ответ:», «=», «x=», «y=» и т.п.), '
+                    'разные записи дробей (1/2 = 0.5 = \\frac{1}{2}), корней (sqrt(2) = \\sqrt{2}), '
+                    'единицы измерения если они совпадают по смыслу. '
+                    'Если ученик дал множество решений или диапазон, проверь полное совпадение с эталоном. '
+                    'Верни СТРОГО JSON-объект без markdown и кода: '
+                    '{"is_equivalent": true|false, "comment": "краткий комментарий 1-2 предложения"}'
+                )
+                _user = (
+                    'Эталонный ответ: ' + str(correct_raw) + '\n' +
+                    'Ответ ученика: ' + str(user_answer_raw) + '\n' +
+                    'Эквивалентны?'
+                )
+                _raw = _client.generate(prompt=_user, system_prompt=_sys, temperature=0.0, max_tokens=200)
+                _m = _re.search(r'\{[\s\S]*?\}', _raw or '')
+                if _m:
+                    _data = _json.loads(_m.group(0))
+                    if _data.get('is_equivalent') is True:
+                        is_correct = True
+                    ai_comment_extra = (_data.get('comment') or '').strip()
+        except Exception as _e:
+            import logging as _lg
+            _lg.getLogger(__name__).warning('AI-equivalence check failed: %r', _e)
+
+    # ── upsert TaskAttempt ──
+    new_status = 'solved' if is_correct else 'attempted'
     attempt = (TaskAttempt.query
                .filter_by(user_id=current_user.id, task_id=task_id)
                .first())
     if not attempt:
         attempt = TaskAttempt(
             user_id=current_user.id, task_id=task_id,
-            status='submitted', note=answer_text,
-            started_at=datetime.utcnow(), finished_at=datetime.utcnow(),
+            status=new_status, note=user_answer_raw,
+            started_at=datetime.utcnow(),
+            finished_at=datetime.utcnow() if is_correct else None,
         )
         db.session.add(attempt)
     else:
-        attempt.status = 'submitted'
-        attempt.note = answer_text
-        attempt.finished_at = datetime.utcnow()
+        # не понижаем статус с solved → attempted
+        if attempt.status != 'solved':
+            attempt.status = new_status
+        attempt.note = user_answer_raw
+        if is_correct:
+            attempt.finished_at = datetime.utcnow()
     db.session.commit()
-    return jsonify({'ok': True, 'status': 'submitted'})
+
+    xp_earned = 10 if is_correct else 0
+    if is_correct:
+        ai_feedback = 'Молодец! Ответ совпал с эталоном.'
+    else:
+        ai_feedback = (
+            'Ответ не совпал с эталоном. Загляни в «💡 Идея решения» — она теперь '
+            'открыта. Попробуй ещё раз или сверься с полным решением.'
+        )
+    if ai_comment_extra:
+        ai_feedback = ai_comment_extra + ' ' + ai_feedback
+
+    return jsonify({
+        'success': True,
+        'ok': True,
+        'is_correct': is_correct,
+        'correct_answer': correct_raw,
+        'xp_earned': xp_earned,
+        'ai_feedback': ai_feedback,
+        'status': attempt.status,
+    })
 
 
 # ──────────────────────────────────────────────
@@ -442,7 +538,14 @@ def method_task(method_task_id):
 @olympiad_bp.route('/my-progress')
 @login_required
 def my_progress():
-    """Сводка прогресса по всем пробникам."""
+    """Сводка прогресса по всем пробникам.
+
+    Шаблон olympiad/my_progress.html ожидает:
+      - totals.tasks_solved / tasks_attempted / tasks_revealed / stages_finished
+      - by_probnik[*].probnik (объект с .code/.title/.type)
+      - by_probnik[*].solved / attempted / revealed / viewed
+      - stage_attempts (список StageAttempt)
+    """
     probniks = (Probnik.query
                 .filter_by(competition=_COMPETITION, season_year=_SEASON_YEAR)
                 .order_by(Probnik.grade, Probnik.sort_order)
@@ -452,32 +555,63 @@ def my_progress():
                       .order_by(StageAttempt.started_at.desc())
                       .limit(50)
                       .all())
-    # Агрегация
-    total_tasks = 0
-    total_done = 0
+
     by_probnik = []
+    grand_solved = 0
+    grand_attempted = 0
+    grand_revealed = 0
+    grand_viewed = 0
+
     for p in probniks:
         cnt = OlympiadTask.query.filter_by(probnik_id=p.id).count()
         if cnt == 0:
             continue
-        done = (TaskAttempt.query
-                .filter_by(user_id=current_user.id, status='done')
-                .join(OlympiadTask, OlympiadTask.id == TaskAttempt.task_id)
-                .filter(OlympiadTask.probnik_id == p.id)
-                .count())
-        total_tasks += cnt
-        total_done += done
+
+        def _count(statuses, _pid=p.id):
+            return (TaskAttempt.query
+                    .filter(TaskAttempt.user_id == current_user.id)
+                    .filter(TaskAttempt.status.in_(statuses))
+                    .join(OlympiadTask, OlympiadTask.id == TaskAttempt.task_id)
+                    .filter(OlympiadTask.probnik_id == _pid)
+                    .count())
+
+        solved = _count(['solved', 'done'])
+        attempted = _count(['attempted'])
+        revealed = _count(['revealed'])
+        viewed = _count(['viewed'])
+
+        grand_solved += solved
+        grand_attempted += attempted
+        grand_revealed += revealed
+        grand_viewed += viewed
+
         by_probnik.append({
+            'probnik': p,
+            'total': cnt,
+            'solved': solved,
+            'attempted': attempted,
+            'revealed': revealed,
+            'viewed': viewed,
             'code': p.code,
             'title': p.title,
             'grade': p.grade,
-            'total': cnt,
-            'done': done,
+            'done': solved,
         })
+
+    stages_finished = sum(
+        1 for s in stage_attempts
+        if (s.result or '').lower() in ('winner', 'prize', 'participant')
+    )
+
     totals = {
-        'total_tasks': total_tasks,
-        'total_done': total_done,
-        'total_probniks': len(probniks),
+        'tasks_solved': grand_solved,
+        'tasks_attempted': grand_attempted,
+        'tasks_revealed': grand_revealed,
+        'tasks_viewed': grand_viewed,
+        'stages_finished': stages_finished,
+        'total_tasks': sum(r['total'] for r in by_probnik),
+        'total_done': grand_solved,
+        'total_probniks': len(by_probnik),
     }
     return render_template('olympiad/my_progress.html',
                            totals=totals,

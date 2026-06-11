@@ -6,7 +6,7 @@
 {% block content %}
 <div class="oly-wrap">
     <p style="margin-bottom: 12px;">
-        <a href="{{ url_for('olympiad.course') }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к курсу</a>
+        <a href="{{ url_for('olympiad.catalog') }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к курсам (9 / 10 / 11)</a>
     </p>
 
     <header style="margin-bottom: 24px;">
@@ -22,24 +22,7 @@
         <p style="color: var(--text-muted); margin: 0;">{{ probnik.description }}</p>
         {% endif %}
 
-        {% if probnik.type == 'stage' %}
-        <div style="margin-top: 18px;">
-            <p style="color: var(--text-muted); margin: 0 0 12px;">
-                ⏱ {{ probnik.duration_minutes }} минут · 🏁 макс. {{ probnik.max_score }} баллов
-                {% if probnik.threshold_prize %}· призёр от {{ probnik.threshold_prize }}{% endif %}
-                {% if probnik.threshold_winner %}· победитель от {{ probnik.threshold_winner }}{% endif %}
-            </p>
-            {% if current_user.is_authenticated %}
-            <form method="POST"
-                  action="{{ url_for('olympiad.stage_start', code=probnik.code) }}"
-                  style="display:inline;">
-                <button type="submit" class="oly-btn">▶ Начать этап (с таймером)</button>
-            </form>
-            {% else %}
-            <a href="{{ url_for('login') }}" class="oly-btn">Войти для запуска этапа</a>
-            {% endif %}
-        </div>
-        {% endif %}
+        {# Этапные пробники полностью убраны из UI — блок стартера удалён. #}
     </header>
 
     <h2 class="oly-section-title">Задачи</h2>
@@ -77,7 +60,9 @@
     <h2 class="oly-section-title">📚 Рекомендуемая теория</h2>
     <div class="oly-grid">
         {% for link in theory_links %}
-        {% set tb = link.theory_block %}
+        {# link может прийти как TheoryBlock напрямую (новый код) либо как
+           объект с .theory_block (старый код / SimpleNamespace). #}
+        {% set tb = link.theory_block if link.theory_block is defined else link %}
         <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
             <h3>
                 <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>

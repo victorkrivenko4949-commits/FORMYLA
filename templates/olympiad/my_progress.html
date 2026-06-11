@@ -7,7 +7,7 @@
 <div class="oly-wrap">
     <header class="oly-hero">
         <h1>📈 Мой прогресс</h1>
-        <p>Сводка по задачам, этапным попыткам и самооценке.</p>
+        <p>Сводка по решённым задачам и попыткам.</p>
     </header>
 
     <div class="oly-grid">
@@ -22,10 +22,6 @@
         <div class="oly-card">
             <h3 style="margin-top:0;">👁 Подсмотрено</h3>
             <p style="font-size: 2em; margin: 0; color: #f87171;">{{ totals.tasks_revealed }}</p>
-        </div>
-        <div class="oly-card">
-            <h3 style="margin-top:0;">🏁 Этапов сдано</h3>
-            <p style="font-size: 2em; margin: 0; color: #60a5fa;">{{ totals.stages_finished }}</p>
         </div>
     </div>
 
@@ -62,44 +58,6 @@
     </table>
     {% else %}
     <p style="color: var(--text-muted);">Открой первый пробник, чтобы здесь появилась статистика.</p>
-    {% endif %}
-
-    <h2 class="oly-section-title">Этапные попытки</h2>
-    {% if stage_attempts %}
-    <table class="oly-table">
-        <thead>
-            <tr>
-                <th>Пробник</th>
-                <th>Дата</th>
-                <th>Баллы</th>
-                <th>Результат</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for s in stage_attempts %}
-            <tr>
-                <td>
-                    {% if s.probnik_id %}
-                    <a href="{{ url_for('olympiad.stage_submit', code=(s.probnik.code if s.probnik else 'unknown')) }}?attempt_id={{ s.id }}">
-                        {{ s.probnik.title if s.probnik else '—' }}
-                    </a>
-                    {% else %}—{% endif %}
-                </td>
-                <td>{{ s.started_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                <td>{{ s.total_score }}</td>
-                <td>
-                    {% if s.result == 'winner' %}🥇 Победитель
-                    {% elif s.result == 'prize' %}🥈 Призёр
-                    {% elif s.result == 'participant' %}👤 Участник
-                    {% else %}<span style="color:var(--text-muted);">не сдано</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p style="color: var(--text-muted);">Этапных попыток пока нет.</p>
     {% endif %}
 </div>
 {% endblock %}

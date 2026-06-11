@@ -241,7 +241,7 @@
         <span class="hero-flow-num">2</span>
         <div>
           <strong>Ежедневные задачи</strong>
-          <span>3–10 задач в день, подобранных алгоритмом под твои пробелы. Каждая с разбором.</span>
+          <span>10 задач в день, подобранных алгоритмом под твои пробелы. Каждая с разбором.</span>
         </div>
       </li>
       <li class="hero-flow-item">
@@ -263,11 +263,6 @@
     <div class="hero-cta-row">
       <a href="#how-it-works" class="hero-cta hero-cta-secondary">Подробнее, как это работает ↓</a>
     </div>
-
-    <p class="hero-foot">
-      После регистрации сразу 3 задачи дня бесплатно — навсегда, без карты и без таймера. Платная подписка появится только когда захочешь больше задач и безлимитный диалог с тьютором.
-    </p>
-  </section>
 
   <style>
     .formyla-hero-v2 .hero-flow{
@@ -307,20 +302,25 @@
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-num">8 000+</div>
-        <div class="stat-label">олимпиадных задач из реальных туров ВсОШ, Турнира городов, Эйлера и Ломоносова</div>
+        <div class="stat-label">олимпиадных задач из реальных туров ВсОШ, Турнира городов, Эйлера и Ломоносова....</div>
       </div>
       <div class="stat-card">
         <div class="stat-num">295+</div>
-        <div class="stat-label">задач ВсОШ-9 за 17 лет, разобранных по 89 методам</div>
+        <div class="stat-label">задач ВсОШ за 17 лет, разобранных по 102 методам</div>
       </div>
       <div class="stat-card">
         <div class="stat-num">3 500+</div>
         <div class="stat-label">адаптивных задач, подбирающихся под уровень ученика</div>
       </div>
       <div class="stat-card">
+        <div class="stat-num">102</div>
+        <div class="stat-label">102 метода решения задач используемые в олимпиадной математике</div>
+      </div>
+       <div class="stat-card">
         <div class="stat-num">1</div>
         <div class="stat-label">ИИ-агентов с разными специализациями</div>
       </div>
+      
       <div class="stat-card">
         <div class="stat-num">5–11</div>
         <div class="stat-label">классы: от первой олимпиады до выпускных туров</div>
@@ -334,17 +334,17 @@
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-number">1</div>
-        <h3>Пройди диагностику ~ за 30 минут</h3>
-        <p>Адаптивная диагностика: 25 задач по каждой из 6 тем — алгебре, геометрии, комбинаторике, теории чисел, движению, логике. На полное прохождение всех тем нужно ~30 минут на тему (можно разбить на 6 сессий). После каждой темы получаешь радар сильных и слабых разделов.</p>
+        <h3>Пройди диагностику ~ за 45 минут на тему>
+        <p>Адаптивная диагностика: 25 задач по каждой из нескольких тем. После каждой темы получаешь радар сильных и слабых разделов.</p>
       </div>
       <div class="step-card">
         <div class="step-number">2</div>
-        <h3>Получай 5 задач в день</h3>
-        <p>Каждое утро ИИ подбирает квест из 5 задач именно по твоим слабым темам и подходящему уровню. За полный квест дня — бонус +100 XP и сохранение стрика.</p>
+        <h3>Получай 10 задач в день>
+        <p>Каждое утро ИИ подбирает квест из 10 задач по твоим слабым темам и подходящему уровню. За полный квест дня — бонус +100 XP и сохранение стрика.</p>
       </div>
       <div class="step-card">
         <div class="step-number">3</div>
-        <h3>Спрашивай у 7 ИИ-агентов</h3>
+        <h3>Спрашивай у 7 ИИ-агентов, совветуем включать режим подстказки</h3>
         <p>По алгебре, геометрии, теории чисел, комбинаторике, движению, логике и отдельный наставник по стратегии олимпиад. Режим «только подсказки» — агент не даст ответ, поможет дойти самому.</p>
       </div>
       <div class="step-card">
@@ -639,56 +639,865 @@
       <button type="submit" class="submit-btn">Отправить отзыв</button>
       <div id="review-result" class="form-result"></div>
     </form>
+
+    {# ── Список отзывов других пользователей ── #}
+    <div id="reviews-list-wrap" class="reviews-list-wrap">
+      <div class="reviews-list-header">
+        <h3 class="reviews-list-title">⭐ Отзывы наших учеников</h3>
+        <div class="reviews-summary" id="reviews-summary">
+          <span class="reviews-summary-avg" id="reviews-avg">—</span>
+          <span class="reviews-summary-stars" id="reviews-avg-stars"></span>
+          <span class="reviews-summary-total" id="reviews-total"></span>
+        </div>
+        <div class="reviews-list-toolbar">
+          <button type="button" class="reviews-sort-btn active" data-sort="new" id="reviews-sort-new">🆕 Сначала новые</button>
+          <button type="button" class="reviews-sort-btn" data-sort="top" id="reviews-sort-top">👍 По оценке</button>
+        </div>
+      </div>
+      <div id="reviews-list" class="reviews-list" aria-live="polite">
+        <div class="reviews-empty" id="reviews-loading">Загружаем отзывы…</div>
+      </div>
+      <div class="reviews-list-footer">
+        <button type="button" id="reviews-load-more" class="reviews-load-more" hidden>Показать ещё</button>
+      </div>
+    </div>
   </section>
 
-  {# ── Support form (kept from legacy, important infra) ── #}
+  <style>
+    /* === Список отзывов на /about === */
+    .reviews-list-wrap {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.25);
+    }
+    .reviews-list-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .reviews-list-title {
+      margin: 0;
+      font-size: 1.15em;
+      color: #f8fafc;
+      flex: 0 0 auto;
+    }
+    .reviews-summary {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 4px 12px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 999px;
+      font-size: 0.9em;
+      color: #e2e8f0;
+    }
+    .reviews-summary-avg {
+      font-weight: 700;
+      color: #fbbf24;
+      font-size: 1.1em;
+    }
+    .reviews-summary-stars { color: #fbbf24; letter-spacing: 1px; }
+    .reviews-summary-total { color: #94a3b8; font-size: 0.9em; }
+    .reviews-list-toolbar {
+      display: inline-flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .reviews-sort-btn {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85em;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .reviews-sort-btn:hover { border-color: rgba(56, 189, 248, 0.5); color: #fff; }
+    .reviews-sort-btn.active {
+      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      border-color: transparent;
+      color: #fff;
+      font-weight: 600;
+    }
+    .reviews-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .review-card {
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(15, 23, 42, 0.55));
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: rev-in 0.25s ease;
+    }
+    @keyframes rev-in { from {opacity:0; transform: translateY(6px);} to {opacity:1; transform: none;} }
+    .review-card.self { border-color: rgba(251, 191, 36, 0.5); }
+    .review-card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .review-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.95em;
+      flex: 0 0 36px;
+      overflow: hidden;
+    }
+    .review-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .review-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .review-nick {
+      color: #f1f5f9;
+      font-weight: 600;
+      font-size: 0.95em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .review-date { color: #94a3b8; font-size: 0.78em; }
+    .review-stars {
+      color: #fbbf24;
+      letter-spacing: 1px;
+      font-size: 0.95em;
+    }
+    .review-stars .star-off { color: rgba(148, 163, 184, 0.35); }
+    .review-text {
+      color: #cbd5e1;
+      font-size: 0.93em;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+    .review-self-badge {
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 0.7em;
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      padding: 1px 6px;
+      border-radius: 999px;
+      vertical-align: middle;
+    }
+    .reviews-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #94a3b8;
+      padding: 26px 12px;
+      font-style: italic;
+    }
+    .reviews-list-footer {
+      margin-top: 14px;
+      text-align: center;
+    }
+    .reviews-load-more {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #e2e8f0;
+      padding: 8px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.15s ease;
+    }
+    .reviews-load-more:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.6);
+    }
+    @media (max-width: 600px) {
+      .reviews-list-toolbar { margin-left: 0; width: 100%; }
+      .reviews-list { grid-template-columns: 1fr; }
+    }
+    /* Подсветка звёзд, если отзыв пытаются отправить без оценки */
+    @keyframes rstars-shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    #review-stars.shake {
+      animation: rstars-shake 0.45s ease;
+    }
+    #review-stars.shake .rstar {
+      color: #f87171 !important;
+      text-shadow: 0 0 8px rgba(248, 113, 113, 0.5);
+    }
+  </style>
+
+  {# ── Красивый чат "Связаться с нами" с загрузкой файлов ── #}
   <section class="about-section support-section">
     <h2>💬 Связаться с нами</h2>
     <p>Нашли баг? Есть идея? Не получается решить? Напиши нам — ответим в Telegram-канале или на почту.</p>
-    <form id="support-form" class="support-form">
-      <div class="form-row">
-        <label>Тип обращения</label>
-        <select name="category" required>
-          <option value="bug">🐛 Баг / ошибка</option>
-          <option value="suggestion">💡 Идея / предложение</option>
-          <option value="question">❓ Вопрос</option>
-          <option value="other" selected>✉️ Другое</option>
-        </select>
+
+    <style>
+      .contact-chat {
+        background: linear-gradient(180deg, rgba(56, 189, 248, 0.04), rgba(15, 23, 42, 0.6));
+        border: 1px solid rgba(56, 189, 248, 0.18);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+      }
+      .contact-chat__header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+        color: #fff;
+      }
+      .contact-chat__avatar {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.22);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+      }
+      .contact-chat__title { font-size: 15px; font-weight: 700; line-height: 1.2; }
+      .contact-chat__status {
+        font-size: 12px;
+        opacity: 0.9;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .contact-chat__status::before {
+        content: '';
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #4ade80;
+        box-shadow: 0 0 8px #4ade80;
+        animation: pulse-dot 2s infinite;
+      }
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      .contact-chat__messages {
+        padding: 18px;
+        min-height: 160px;
+        max-height: 360px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .contact-chat__msg {
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-size: 14px;
+        line-height: 1.5;
+        word-wrap: break-word;
+        animation: msg-in 0.2s ease;
+      }
+      @keyframes msg-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .contact-chat__msg--bot {
+        background: rgba(56, 189, 248, 0.12);
+        color: #e2e8f0;
+        border-bottom-left-radius: 4px;
+        align-self: flex-start;
+        border: 1px solid rgba(56, 189, 248, 0.18);
+      }
+      .contact-chat__msg--user {
+        background: linear-gradient(135deg, #38bdf8, #6366f1);
+        color: #fff;
+        border-bottom-right-radius: 4px;
+        align-self: flex-end;
+      }
+      .contact-chat__msg--system {
+        background: rgba(148, 163, 184, 0.12);
+        color: #94a3b8;
+        font-size: 13px;
+        align-self: center;
+        border-radius: 10px;
+        font-style: italic;
+      }
+      .contact-chat__attachments {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 6px;
+      }
+      .contact-chat__att-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.14);
+        color: inherit;
+      }
+      .contact-chat__att-chip a {
+        color: inherit;
+        text-decoration: underline;
+      }
+      .contact-chat__inputbar {
+        border-top: 1px solid rgba(56, 189, 248, 0.18);
+        padding: 12px 14px;
+        background: rgba(15, 23, 42, 0.6);
+      }
+      .contact-chat__quick {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .contact-chat__quick-btn {
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        color: #94e4ff;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .contact-chat__quick-btn:hover {
+        background: rgba(56, 189, 248, 0.22);
+        transform: translateY(-1px);
+      }
+      .contact-chat__quick-btn.active {
+        background: linear-gradient(135deg, #38bdf8, #6366f1);
+        border-color: transparent;
+        color: #fff;
+      }
+      .contact-chat__email-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .contact-chat__email-input {
+        flex: 1;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 10px;
+        padding: 8px 12px;
+        color: #e2e8f0;
+        font-size: 13px;
+      }
+      .contact-chat__email-input:focus {
+        outline: none;
+        border-color: #38bdf8;
+        background: rgba(56, 189, 248, 0.06);
+      }
+      .contact-chat__input-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 14px;
+        padding: 8px;
+        transition: border-color 0.2s;
+      }
+      .contact-chat__input-row:focus-within {
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+      }
+      .contact-chat__textarea {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #e2e8f0;
+        font-size: 14px;
+        resize: none;
+        max-height: 120px;
+        min-height: 22px;
+        padding: 6px 8px;
+        line-height: 1.4;
+        font-family: inherit;
+      }
+      .contact-chat__btn {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+      .contact-chat__btn--attach {
+        background: rgba(148, 163, 184, 0.14);
+        color: #94a3b8;
+      }
+      .contact-chat__btn--attach:hover {
+        background: rgba(148, 163, 184, 0.24);
+        color: #e2e8f0;
+      }
+      .contact-chat__btn--send {
+        background: linear-gradient(135deg, #38bdf8, #6366f1);
+        color: #fff;
+      }
+      .contact-chat__btn--send:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+      }
+      .contact-chat__btn--send:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .contact-chat__pending-files {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .contact-chat__pending-files:empty { display: none; }
+      .contact-chat__file-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: #94e4ff;
+      }
+      .contact-chat__file-chip button {
+        background: none; border: none;
+        color: inherit; cursor: pointer;
+        padding: 0; margin-left: 4px;
+        font-size: 14px; opacity: 0.7;
+      }
+      .contact-chat__file-chip button:hover { opacity: 1; color: #fca5a5; }
+      .contact-chat__hint {
+        text-align: center;
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 6px;
+      }
+    </style>
+
+    <div class="contact-chat">
+      <div class="contact-chat__header">
+        <div class="contact-chat__avatar">💬</div>
+        <div>
+          <div class="contact-chat__title">Поддержка FORMYLA</div>
+          <div class="contact-chat__status">Обычно отвечаем за 1-2 часа</div>
+        </div>
       </div>
-      <div class="form-row">
-        <label>Email <span class="muted">(необязательно)</span></label>
-        <input type="email" name="email" placeholder="чтобы мы могли ответить">
+
+      <div class="contact-chat__messages" id="contact-chat-messages">
+        <div class="contact-chat__msg contact-chat__msg--bot">
+          👋 Привет! Опишите проблему, вопрос или идею. Можно прикрепить скриншоты или PDF.
+        </div>
       </div>
-      <div class="form-row">
-        <label>Сообщение</label>
-        <textarea name="message" required minlength="5" maxlength="4000" rows="6" placeholder="Опиши проблему или идею..."></textarea>
-        <div class="char-count"><span id="char-current">0</span> / 4000</div>
+
+      <div class="contact-chat__inputbar">
+        <div class="contact-chat__quick" id="contact-chat-quick">
+          <button type="button" class="contact-chat__quick-btn active" data-category="other">✉️ Другое</button>
+          <button type="button" class="contact-chat__quick-btn" data-category="bug">🐛 Баг</button>
+          <button type="button" class="contact-chat__quick-btn" data-category="suggestion">💡 Идея</button>
+          <button type="button" class="contact-chat__quick-btn" data-category="question">❓ Вопрос</button>
+        </div>
+
+        <div class="contact-chat__email-row">
+          <input type="email" class="contact-chat__email-input" id="contact-chat-email"
+                 placeholder="📧 Email (необязательно — чтобы мы могли ответить)" maxlength="120">
+        </div>
+
+        <div class="contact-chat__pending-files" id="contact-chat-files"></div>
+
+        <div class="contact-chat__input-row">
+          <button type="button" class="contact-chat__btn contact-chat__btn--attach" id="contact-chat-attach"
+                  title="Прикрепить файлы (картинки или PDF, до 10 МБ каждый)">📎</button>
+          <input type="file" id="contact-chat-fileinput" multiple
+                 accept="image/*,application/pdf,.pdf,.png,.jpg,.jpeg,.webp,.gif"
+                 style="display:none">
+          <textarea class="contact-chat__textarea" id="contact-chat-text"
+                    placeholder="Опишите проблему или идею…" rows="1" maxlength="4000"></textarea>
+          <button type="button" class="contact-chat__btn contact-chat__btn--send" id="contact-chat-send"
+                  title="Отправить (Ctrl+Enter)">➤</button>
+        </div>
+
+        <div class="contact-chat__hint">
+          Enter — новая строка · Ctrl+Enter — отправить · Макс 10 МБ на файл
+        </div>
       </div>
-      <button type="submit" class="submit-btn">Отправить</button>
-      <div id="support-result" class="form-result"></div>
-    </form>
+    </div>
+  </section>
+
+  {# ── AI-помощник FORMYLA — встроенная карточка (3-я секция) ───────────── #}
+  <section class="about-section support-section ai-helper-section">
+    <h2>🤖 Помощник FORMYLA</h2>
+    <p>Спроси у ИИ о сайте, тарифах, разделах, как начать или подготовиться к олимпиаде. Это не репетитор по задачам — для подсказок по решению используй задачи на сайте.</p>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/site_concierge.css') }}?v={{ asset_version|default('1') }}">
+
+    {# Override стилей ПЕРЕД виджетом, чтобы перекрыть `position:fixed`. #}
+    <style>
+      /* Корневой контейнер — снять fixed-позицию, влезть в карточку */
+      .ai-helper-section #siteConciergeRoot {
+        position: static !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        z-index: auto !important;
+        width: 100% !important;
+        margin-top: 16px;
+      }
+      /* FAB вообще убираем */
+      .ai-helper-section #siteConciergeRoot .site-concierge-fab { display: none !important; }
+      /* Панель — всегда раскрыта, в потоке страницы */
+      .ai-helper-section #siteConciergeRoot .site-concierge-panel {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        pointer-events: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 460px !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        border-radius: 14px;
+      }
+      /* Скрываем крестик закрытия — закрывать нечего */
+      .ai-helper-section #siteConciergeRoot .scf-close { display: none !important; }
+      .ai-helper-section #siteConciergeRoot .scf-body { min-height: 280px; }
+    </style>
+
+    <div id="siteConciergeRoot">
+      <button type="button" class="site-concierge-fab" aria-label="Помощь по сайту">
+        <span aria-hidden="true">💬</span>
+      </button>
+
+      <section class="site-concierge-panel is-open" role="dialog" aria-label="Помощник FORMYLA">
+        <header class="scf-header">
+          <h3>💬 Помощник FORMYLA</h3>
+          <button type="button" class="scf-close" aria-label="Закрыть">✕</button>
+        </header>
+        <div class="scf-body" role="log" aria-live="polite">
+          {# История и quick-replies рендерятся JS-скриптом. #}
+        </div>
+        <div class="scf-input-row">
+          <input type="text" placeholder="Введите вопрос…" maxlength="500" autocomplete="off">
+          <button type="button" class="scf-send" aria-label="Отправить">⏎</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/site_concierge.js') }}?v={{ asset_version|default('1') }}" defer></script>
   </section>
 
 </div>
 
 <script>
-const form = document.getElementById("support-form");
-const ta = form.querySelector('textarea[name="message"]');
-const counter = document.getElementById("char-current");
-const result = document.getElementById("support-result");
-ta.addEventListener("input", () => { counter.textContent = ta.value.length; });
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  result.textContent = "Отправка...";
-  result.className = "form-result loading";
-  const data = { category: form.category.value, email: form.email.value.trim(), message: ta.value.trim(), page_url: window.location.href };
-  try {
-    const r = await fetch("/api/support", { method: "POST", headers: {"Content-Type": "application/json"}, credentials: "include", body: JSON.stringify(data) });
-    let j; try { j = await r.json(); } catch (_) { j = {}; }
-    if (r.ok && j.ok) { result.textContent = "✅ Спасибо! Мы получили ваше сообщение."; result.className = "form-result ok"; form.reset(); counter.textContent = "0"; }
-    else { result.textContent = "❌ " + (j.error || "Ошибка отправки"); result.className = "form-result err"; }
-  } catch (err) { result.textContent = "❌ Нет соединения. Попробуйте позже."; result.className = "form-result err"; }
-});
+// ── Contact chat: красивый чат "Связаться с нами" с загрузкой файлов ──
+(function initContactChat() {
+  const root = document.querySelector('.contact-chat');
+  if (!root) return;
+
+  const messagesEl = document.getElementById('contact-chat-messages');
+  const textEl = document.getElementById('contact-chat-text');
+  const emailEl = document.getElementById('contact-chat-email');
+  const sendBtn = document.getElementById('contact-chat-send');
+  const attachBtn = document.getElementById('contact-chat-attach');
+  const fileInput = document.getElementById('contact-chat-fileinput');
+  const filesContainer = document.getElementById('contact-chat-files');
+  const quickWrap = document.getElementById('contact-chat-quick');
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 МБ
+  let category = 'other';
+  let pendingFiles = [];
+
+  // Для авторизованных юзеров: подтягиваем историю и держим polling
+  const IS_AUTH = {{ 'true' if current_user.is_authenticated else 'false' }};
+  const HISTORY_URL = '/api/my/support/messages';
+  const POLL_INTERVAL_MS = 15000;
+  // Запоминаем уже отрендеренные сообщения, чтобы не дублировать при polling
+  const renderedIds = new Set();
+  let pollTimer = null;
+
+  function autoResize() {
+    textEl.style.height = 'auto';
+    textEl.style.height = Math.min(textEl.scrollHeight, 120) + 'px';
+  }
+  textEl.addEventListener('input', autoResize);
+
+  quickWrap.querySelectorAll('.contact-chat__quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      quickWrap.querySelectorAll('.contact-chat__quick-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      category = btn.dataset.category;
+    });
+  });
+
+  attachBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(addFile);
+    fileInput.value = '';
+  });
+
+  function formatSize(b) {
+    if (b < 1024) return b + ' Б';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' КБ';
+    return (b / 1024 / 1024).toFixed(1) + ' МБ';
+  }
+
+  function addFile(file) {
+    if (file.size > MAX_FILE_SIZE) {
+      addMessage('system', '❌ Файл "' + file.name + '" слишком большой (макс 10 МБ)');
+      return;
+    }
+    pendingFiles.push(file);
+    renderPendingFiles();
+  }
+
+  function renderPendingFiles() {
+    filesContainer.innerHTML = '';
+    pendingFiles.forEach((f, idx) => {
+      const chip = document.createElement('span');
+      chip.className = 'contact-chat__file-chip';
+      const icon = f.type.startsWith('image/') ? '🖼️' : '📄';
+      chip.innerHTML = icon + ' ' + escapeHtml(f.name) + ' <span style="opacity:.6">(' + formatSize(f.size) + ')</span>';
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.textContent = '×';
+      x.title = 'Убрать';
+      x.addEventListener('click', () => {
+        pendingFiles.splice(idx, 1);
+        renderPendingFiles();
+      });
+      chip.appendChild(x);
+      filesContainer.appendChild(chip);
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function addMessage(kind, text, attachments) {
+    const div = document.createElement('div');
+    div.className = 'contact-chat__msg contact-chat__msg--' + kind;
+    div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+    if (attachments && attachments.length) {
+      const wrap = document.createElement('div');
+      wrap.className = 'contact-chat__attachments';
+      attachments.forEach(a => {
+        const chip = document.createElement('span');
+        chip.className = 'contact-chat__att-chip';
+        const icon = (a.type || '').startsWith('image/') ? '🖼️' : '📄';
+        chip.innerHTML = icon + ' ' + escapeHtml(a.name);
+        wrap.appendChild(chip);
+      });
+      div.appendChild(wrap);
+    }
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  // Форматируем ISO-дату как HH:MM · DD.MM
+  function fmtTs(iso) {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const pad = n => String(n).padStart(2, '0');
+      return pad(d.getHours()) + ':' + pad(d.getMinutes())
+           + ' · ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1);
+    } catch (_) { return ''; }
+  }
+
+  // Рендер одного сообщения из истории/polling (от user или admin)
+  function renderHistoryMessage(m) {
+    if (!m || !m.id || renderedIds.has(m.id)) return;
+    renderedIds.add(m.id);
+    // ВАЖНО: чтобы не было дублей с локальным optimistic-рендером (когда юзер
+    // только что отправил), при появлении server-side версии его сообщения
+    // удаляем все ОПТИМИСТИЧЕСКИЕ плашки без data-msg-id с таким же текстом.
+    const txt = (m.text || '').trim();
+    if (m.from === 'user' && txt) {
+      const opts = messagesEl.querySelectorAll('.contact-chat__msg:not([data-msg-id])');
+      opts.forEach(el => {
+        // не трогаем приветственный bot-bubble и системные сообщения
+        if (el.classList.contains('contact-chat__msg--system')) return;
+        const elText = (el.textContent || '').trim();
+        // удаляем если текст совпадает (учитываем варианты "Спасибо! Мы получили..." как НЕ-совпадение)
+        if (elText === txt || elText.startsWith(txt)) {
+          el.remove();
+        }
+      });
+    }
+    // По пожеланию админа («как в норм чатах»): сообщения поддержки (admin) — СПРАВА,
+    // сообщения юзера (его обращения) — СЛЕВА. Меняем местами классы.
+    const kind = m.from === 'admin' ? 'user' : (m.from === 'user' ? 'bot' : 'system');
+    const div = document.createElement('div');
+    div.className = 'contact-chat__msg contact-chat__msg--' + kind;
+    div.dataset.msgId = m.id;
+    const body = document.createElement('div');
+    body.innerHTML = escapeHtml(m.text || '').replace(/\n/g, '<br>');
+    div.appendChild(body);
+    const ts = fmtTs(m.created_at);
+    if (ts) {
+      const tsEl = document.createElement('div');
+      tsEl.style.cssText = 'font-size:11px;opacity:.6;margin-top:4px;';
+      tsEl.textContent = ts;
+      div.appendChild(tsEl);
+    }
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // Загружаем всю историю и помечаем "новый ответ от админа" если есть
+  async function loadHistory(isInitial) {
+    if (!IS_AUTH) return;
+    try {
+      const r = await fetch(HISTORY_URL, { credentials: 'include' });
+      if (!r.ok) return;
+      const j = await r.json();
+      if (!j || !j.success || !Array.isArray(j.messages)) return;
+      // При первой загрузке: убираем дефолтный приветственный bubble, если есть история
+      if (isInitial && j.messages.length > 0) {
+        // Оставим приветствие, но добавим разделитель «История переписки»
+        const sep = document.createElement('div');
+        sep.className = 'contact-chat__msg contact-chat__msg--system';
+        sep.style.cssText = 'text-align:center;font-size:11px;opacity:.6;background:transparent;';
+        sep.textContent = '— история переписки —';
+        messagesEl.appendChild(sep);
+      }
+      const hadNew = j.messages.some(m => !renderedIds.has(m.id));
+      j.messages.forEach(renderHistoryMessage);
+      if (!isInitial && hadNew) {
+        // Лёгкий звуковой/визуальный сигнал — просто прокрутка вниз
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+    } catch (_) {
+      // тихо игнорируем (нет сети — попробуем в следующий раз)
+    }
+  }
+
+  function startPolling() {
+    if (!IS_AUTH) return;
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(() => loadHistory(false), POLL_INTERVAL_MS);
+    // Останавливаем polling, когда вкладка скрыта, и возобновляем при возврате
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      } else {
+        loadHistory(false);
+        if (!pollTimer) pollTimer = setInterval(() => loadHistory(false), POLL_INTERVAL_MS);
+      }
+    });
+  }
+
+  async function sendMessage() {
+    const text = textEl.value.trim();
+    if (!text && pendingFiles.length === 0) {
+      addMessage('system', 'Напишите сообщение или прикрепите файл');
+      return;
+    }
+    if (text.length > 0 && text.length < 3) {
+      addMessage('system', 'Сообщение слишком короткое');
+      return;
+    }
+
+    const attachmentsMeta = pendingFiles.map(f => ({ name: f.name, type: f.type, size: f.size }));
+    addMessage('user', text || '(только вложения)', attachmentsMeta);
+
+    sendBtn.disabled = true;
+    const sendingMsg = addMessage('system', '⏳ Отправляем...');
+
+    try {
+      const fd = new FormData();
+      fd.append('category', category);
+      fd.append('email', (emailEl.value || '').trim());
+      fd.append('message', text);
+      fd.append('page_url', window.location.href);
+      pendingFiles.forEach(f => fd.append('attachments', f, f.name));
+
+      const r = await fetch('/api/support', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      });
+      let j;
+      try { j = await r.json(); } catch (_) { j = {}; }
+
+      sendingMsg.remove();
+
+      if (r.ok && j.ok) {
+        const emailNote = emailEl.value.trim() ? ' на ' + emailEl.value.trim() : '';
+        addMessage('bot', '✅ Спасибо! Мы получили ваше сообщение и скоро ответим' + emailNote + '.');
+        textEl.value = '';
+        autoResize();
+        pendingFiles = [];
+        renderPendingFiles();
+      } else {
+        addMessage('system', '❌ ' + (j.error || 'Ошибка отправки. Попробуйте позже.'));
+      }
+    } catch (err) {
+      sendingMsg.remove();
+      addMessage('system', '❌ Нет соединения. Проверьте интернет и попробуйте снова.');
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  textEl.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // ── Инициализация persistence (история + polling) ──
+  if (IS_AUTH) {
+    loadHistory(true).then(() => {
+      // После любой отправки делаем дополнительный pull через 1.5 сек,
+      // чтобы новое сообщение из БД сразу появилось с timestamp от сервера.
+      const origSend = sendMessage;
+      // (sendMessage переопределён через замыкание — навешиваем хук на кнопку)
+      sendBtn.addEventListener('click', () => {
+        setTimeout(() => loadHistory(false), 1500);
+      });
+      textEl.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          setTimeout(() => loadHistory(false), 1500);
+        }
+      });
+      startPolling();
+    });
+  }
+})();
 
 // ── Review form handler ─────────────────────────────────────────────
 (function initReviewForm() {
@@ -731,10 +1540,30 @@ form.addEventListener("submit", async (e) => {
 
   rForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    // Валидация: без оценки отправка запрещена
+    const ratingVal = parseInt(rRatingInput.value, 10) || 0;
+    if (ratingVal < 1 || ratingVal > 5) {
+      rResult.textContent = "⚠️ Поставьте оценку от 1 до 5 звёзд";
+      rResult.className = "form-result err";
+      // Подсвечиваем звёзды лёгкой тряской, чтобы было заметно
+      const starsBox = document.getElementById("review-stars");
+      if (starsBox) {
+        starsBox.classList.remove("shake");
+        // force reflow перед повторным запуском анимации
+        void starsBox.offsetWidth;
+        starsBox.classList.add("shake");
+      }
+      try {
+        (starsBox || rRatingInput).scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (_) {}
+      return;
+    }
+
     rResult.textContent = "Отправка...";
     rResult.className = "form-result loading";
     const payload = {
-      rating: parseInt(rRatingInput.value, 10) || 0,
+      rating: ratingVal,
       email: rForm.email.value.trim(),
       message: rTa.value.trim(),
       page_url: window.location.href,
@@ -748,12 +1577,19 @@ form.addEventListener("submit", async (e) => {
       });
       let j; try { j = await r.json(); } catch (_) { j = {}; }
       if (r.ok && j.ok) {
-        rResult.textContent = "✅ Спасибо за отзыв! Мы прочитаем его лично.";
+        rResult.textContent = "✅ Спасибо за отзыв! Он уже виден другим ученикам ниже.";
         rResult.className = "form-result ok";
         rForm.reset();
         rRatingInput.value = "0";
-        paint(0, "active");
+        paintActive(0);
         rCounter.textContent = "0";
+        // Сразу обновляем список отзывов, чтобы пользователь видел свой
+        try { if (window.__reloadReviews) window.__reloadReviews(); } catch (_) {}
+        // Прокручиваем к списку отзывов
+        try {
+          const wrap = document.getElementById('reviews-list-wrap');
+          if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
       } else {
         rResult.textContent = "❌ " + (j.error || "Ошибка отправки");
         rResult.className = "form-result err";
@@ -763,6 +1599,168 @@ form.addEventListener("submit", async (e) => {
       rResult.className = "form-result err";
     }
   });
+})();
+
+// ── Reviews list (загружает /api/reviews) ──────────────────────────
+(function initReviewsList() {
+  const listEl = document.getElementById("reviews-list");
+  if (!listEl) return;
+  const loadMoreBtn = document.getElementById("reviews-load-more");
+  const avgEl = document.getElementById("reviews-avg");
+  const avgStarsEl = document.getElementById("reviews-avg-stars");
+  const totalEl = document.getElementById("reviews-total");
+  const sortNewBtn = document.getElementById("reviews-sort-new");
+  const sortTopBtn = document.getElementById("reviews-sort-top");
+
+  const PAGE_SIZE = 12;
+  let offset = 0;
+  let sort = "new";
+  let total = 0;
+
+  function escHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function renderStars(n) {
+    n = Math.max(0, Math.min(5, parseInt(n, 10) || 0));
+    let html = "";
+    for (let i = 1; i <= 5; i++) {
+      html += i <= n
+        ? '<span>★</span>'
+        : '<span class="star-off">★</span>';
+    }
+    return html;
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return "";
+    let d;
+    try { d = new Date(iso); } catch (_) { return ""; }
+    if (isNaN(d.getTime())) return "";
+    const diff = (Date.now() - d.getTime()) / 1000;
+    if (diff < 60) return "только что";
+    if (diff < 3600) return Math.floor(diff / 60) + " мин назад";
+    if (diff < 86400) return Math.floor(diff / 3600) + " ч назад";
+    if (diff < 86400 * 7) return Math.floor(diff / 86400) + " дн назад";
+    try {
+      return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
+    } catch (_) {
+      return d.toISOString().slice(0, 10);
+    }
+  }
+
+  function initialOf(name) {
+    const s = String(name || "").trim();
+    if (!s) return "?";
+    return s.charAt(0).toUpperCase();
+  }
+
+  function renderCard(r) {
+    const av = r.avatar_url
+      ? '<img src="' + escHtml(r.avatar_url) + '" alt="">'
+      : escHtml(initialOf(r.nickname));
+    const selfBadge = r.is_self
+      ? '<span class="review-self-badge">это вы</span>'
+      : "";
+    return (
+      '<div class="review-card' + (r.is_self ? ' self' : '') + '">' +
+        '<div class="review-card-head">' +
+          '<div class="review-avatar">' + av + '</div>' +
+          '<div class="review-meta">' +
+            '<div class="review-nick">' + escHtml(r.nickname) + selfBadge + '</div>' +
+            '<div class="review-date">' + escHtml(timeAgo(r.created_at)) + '</div>' +
+          '</div>' +
+          '<div class="review-stars">' + renderStars(r.rating) + '</div>' +
+        '</div>' +
+        '<div class="review-text">' + escHtml(r.message) + '</div>' +
+      '</div>'
+    );
+  }
+
+  async function loadReviews(reset) {
+    if (reset) {
+      offset = 0;
+      listEl.innerHTML = '<div class="reviews-empty" id="reviews-loading">Загружаем отзывы…</div>';
+    }
+    try {
+      const url = "/api/reviews?limit=" + PAGE_SIZE
+        + "&offset=" + offset + "&sort=" + encodeURIComponent(sort);
+      const r = await fetch(url, { credentials: "include" });
+      const j = await r.json();
+      const reviews = (j && j.reviews) || [];
+      total = j && typeof j.total === "number" ? j.total : reviews.length;
+
+      if (reset) listEl.innerHTML = "";
+
+      if (reset && reviews.length === 0) {
+        listEl.innerHTML = '<div class="reviews-empty">Пока нет отзывов. Будьте первым 👆</div>';
+        if (loadMoreBtn) loadMoreBtn.hidden = true;
+        if (avgEl) avgEl.textContent = "—";
+        if (avgStarsEl) avgStarsEl.innerHTML = "";
+        if (totalEl) totalEl.textContent = "(0 отзывов)";
+        return;
+      }
+
+      const html = reviews.map(renderCard).join("");
+      const placeholder = listEl.querySelector("#reviews-loading");
+      if (placeholder) placeholder.remove();
+      listEl.insertAdjacentHTML("beforeend", html);
+      offset += reviews.length;
+
+      if (avgEl) {
+        const a = parseFloat(j.avg_rating || 0);
+        avgEl.textContent = a > 0 ? a.toFixed(1) : "—";
+      }
+      if (avgStarsEl) {
+        avgStarsEl.innerHTML = renderStars(Math.round(parseFloat(j.avg_rating || 0)));
+      }
+      if (totalEl) {
+        const n = j.total || 0;
+        let suffix = "отзывов";
+        const mod10 = n % 10, mod100 = n % 100;
+        if (mod10 === 1 && mod100 !== 11) suffix = "отзыв";
+        else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) suffix = "отзыва";
+        totalEl.textContent = "(" + n + " " + suffix + ")";
+      }
+
+      if (loadMoreBtn) {
+        loadMoreBtn.hidden = offset >= total;
+      }
+    } catch (e) {
+      const placeholder = listEl.querySelector("#reviews-loading");
+      if (placeholder) placeholder.remove();
+      if (reset) {
+        listEl.innerHTML = '<div class="reviews-empty">Не удалось загрузить отзывы. Попробуйте обновить страницу.</div>';
+      }
+      if (loadMoreBtn) loadMoreBtn.hidden = true;
+    }
+  }
+
+  // Экспортируем для вызова после успешной отправки отзыва
+  window.__reloadReviews = function () {
+    loadReviews(true);
+  };
+
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener("click", function () { loadReviews(false); });
+  }
+
+  function setSort(s, btn) {
+    sort = s;
+    [sortNewBtn, sortTopBtn].forEach(b => b && b.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+    loadReviews(true);
+  }
+  if (sortNewBtn) sortNewBtn.addEventListener("click", function () { setSort("new", sortNewBtn); });
+  if (sortTopBtn) sortTopBtn.addEventListener("click", function () { setSort("top", sortTopBtn); });
+
+  // Стартовая загрузка
+  loadReviews(true);
 })();
 </script>
 

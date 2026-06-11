@@ -68,6 +68,20 @@ def run_v4_force_import(app, db):
     probniks_raw = _load_list(PROBNIKS_JSON)
     tasks_raw = _load_list(TASKS_JSON)
     theory_raw = _load_list(THEORY_JSON)
+
+    # PR: убираем этапные пробники (пользователь скрыл этот функционал).
+    # Stage-пробники имеют type='stage' и code 'vsosh-9-2027-stage-N';
+    # задачи к ним тоже фильтруем по probnik_code.
+    if isinstance(probniks_raw, list):
+        before = len(probniks_raw)
+        probniks_raw = [p for p in probniks_raw
+                        if (p or {}).get('type') != 'stage']
+        if len(probniks_raw) != before:
+            print('[VSOSH9-V4] skip %d stage probniks (filtered out)'
+                  % (before - len(probniks_raw)))
+    if isinstance(tasks_raw, list):
+        tasks_raw = [t for t in tasks_raw
+                     if 'stage' not in (t or {}).get('probnik_code', '')]
     if probniks_raw is None or tasks_raw is None or theory_raw is None:
         print(
             "[VSOSH9-V4] fixtures missing or malformed, skipping. "

@@ -7,14 +7,9 @@
 <div class="oly-wrap">
     <header class="oly-hero">
         <h1>🎯 {{ competition }} · {{ grade }} класс · сезон {{ season_year - 1 }}/{{ season_year }}</h1>
-        {% if grade == 9 %}
         <p>{{ topic_probniks|length }} тематических пробников. Пройди по порядку, изучая теорию и решая задачи.</p>
-        {% else %}
-        <p>Банк задач ВсОШ {{ grade }} класс — {{ method_sections|length }} разделов.</p>
-        {% endif %}
     </header>
 
-    {% if grade == 9 %}
     <h2 class="oly-section-title">📚 Тематические пробники</h2>
     {% if topic_probniks %}
     <div class="oly-grid">
@@ -43,31 +38,6 @@
     </div>
     {% else %}
     <p style="color: var(--text-muted);">Тематические пробники появятся после загрузки данных.</p>
-    {% endif %}
-
-    {% else %}
-    {# Grades 10/11: show MethodTask sections as clickable cards #}
-    <h2 class="oly-section-title">📚 Разделы задач</h2>
-    {% if method_sections %}
-    <div class="oly-grid">
-        {% for sec in method_sections %}
-        <a class="oly-card" href="{{ url_for('olympiad.method_section', grade=grade, section_name=sec.section) }}">
-            <h3>
-                <span class="oly-badge oly-badge-topic">Раздел #{{ loop.index }}</span>
-                {{ sec.section }}
-            </h3>
-            <div class="oly-progress" title="{{ sec.count }} задач">
-                <span style="width: 0%"></span>
-            </div>
-            <p class="oly-card-sub" style="margin-top:8px;">
-                Задач: <strong>{{ sec.count }}</strong>
-            </p>
-        </a>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p style="color: var(--text-muted);">Задачи для этого класса появятся после загрузки данных.</p>
-    {% endif %}
     {% endif %}
 
 </div>
