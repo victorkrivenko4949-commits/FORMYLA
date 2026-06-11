@@ -15,7 +15,6 @@
         </h1>
         <p style="font-size: 1em; color: var(--text-soft); margin-bottom: 6px;">
             Задача {{ current_slot or current_index }} из 25
-            &nbsp;•&nbsp; <span style="color: var(--accent-2);">Отвечено: {{ answered_count or 0 }}/25</span>
         </p>
     </div>
 
@@ -353,8 +352,7 @@
                 </button>
             </div>
             {% if not can_finish %}
-            <p id="finishHint" style="text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px;">
-                Осталось ответить: <strong style="color: var(--accent-2);">{{ remaining_to_finish }}</strong>
+            <p id="finishHint" style="text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px; display: none;">
             </p>
             {% endif %}
         </form>
