@@ -795,7 +795,7 @@
             if (data?.active && data?.session?.id) {
                 window._activeSessionId = data.session.id;
                 const banner = document.getElementById('testResumeBanner');
-                if (banner) banner.style.display = 'flex';
+                if (banner && !location.pathname.startsWith('/adaptive_test_simple') && sessionStorage.getItem('testBannerDismissed') !== '1') banner.style.display = 'flex';
             }
         } catch(e) { /* ignore */ }
     }
