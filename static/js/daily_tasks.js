@@ -608,6 +608,9 @@ function openTaskModal(item, index) {
     // Answer form or result
     if (item.user_answer === null) {
         html += '<div class="dt-answer-form" id="dt-answer-form-' + item.id + '">';
+        // Сначала показываем требования к формату ответа — ученик увидит их
+        // ДО ввода и сможет записать ответ правильно с первого раза.
+        html += buildAnswerFormatHint(item.correct_answer);
         html += '<label class="dt-answer-label">✏️ Твой ответ:</label>';
         html += '<input type="text" class="dt-answer-input" id="dt-answer-input" placeholder="Введи ответ..." autocomplete="off">';
         html += '<div class="dt-answer-actions">';
@@ -635,6 +638,11 @@ function openTaskModal(item, index) {
         html += '<div class="dt-result-text">' + resultText + '</div>';
         if (item.correct_answer) {
             html += '<div class="dt-result-correct-answer">Правильный ответ: ' + escapeHtml(item.correct_answer) + '</div>';
+        }
+        // Если ответ не принят — показываем требования к формату записи,
+        // чтобы ученик понял, в каком виде ожидался ответ.
+        if (!item.is_correct && item.correct_answer) {
+            html += buildAnswerFormatHint(item.correct_answer);
         }
         if (item.solution) {
             html += '<div class="dt-result-solution"><strong>📖 Решение:</strong><br>' + item.solution + '</div>';
@@ -711,6 +719,9 @@ function submitAnswer(itemId) {
         resultHtml += '<div class="dt-result-text">' + resultText + '</div>';
         if (result.correct_answer) {
             resultHtml += '<div class="dt-result-correct-answer">Правильный ответ: ' + escapeHtml(result.correct_answer) + '</div>';
+        }
+        if (!result.is_correct && result.correct_answer) {
+            resultHtml += buildAnswerFormatHint(result.correct_answer);
         }
         if (result.solution) {
             resultHtml += '<div class="dt-result-solution"><strong>📖 Решение:</strong><br>' + result.solution + '</div>';
@@ -908,6 +919,59 @@ function escapeHtml(text) {
     var div = document.createElement('div');
     div.appendChild(document.createTextNode(text));
     return div.innerHTML;
+}
+
+/**
+ * Эвристика: по формату правильного ответа подсказываем ученику,
+ * в каком виде нужно записать ответ при проверке.
+ *
+ * Возвращает HTML-блок с инструкциями (или пустую строку, если ответ
+ * не задан). Используется и до ввода ответа (как guidance), и после
+ * неверной попытки (как объяснение, почему ответ не принят).
+ */
+function buildAnswerFormatHint(correctAnswer) {
+    if (!correctAnswer) return '';
+    var raw = String(correctAnswer).trim();
+    if (!raw) return '';
+
+    var rules = [];
+    var multiVar = /([A-Za-zА-Яа-я])\s*=\s*[^,;]+(\s*[,;]\s*[A-Za-zА-Яа-я]\s*=\s*[^,;]+)+/;
+
+    if (multiVar.test(raw)) {
+        rules.push('Запишите все неизвестные через запятую, например: <code>x = 4, y = 2</code>');
+        rules.push('Используйте знак <code>=</code> между переменной и её значением');
+        rules.push('Соблюдайте порядок переменных, указанный в условии задачи');
+    } else if (/^[A-Za-zА-Яа-я]\s*=\s*\S+/.test(raw)) {
+        rules.push('Запишите ответ в виде <code>' + raw.charAt(0) + ' = …</code> (с переменной и знаком равенства)');
+    } else if (/^[^=]+,[^=]+/.test(raw) && raw.indexOf('=') === -1) {
+        rules.push('Перечислите все значения через запятую, например: <code>' + escapeHtml(raw) + '</code>');
+    } else if (/^[\[\(]\s*-?\d/.test(raw) || /[\)\]]\s*$/.test(raw)) {
+        rules.push('Запишите ответ интервалом, например: <code>(-∞; 2]</code> или <code>[1; 5)</code>');
+    } else if (/\\frac|\//.test(raw)) {
+        rules.push('Дробь записывайте через <code>/</code> (например <code>3/4</code>) или используйте <code>\\frac{a}{b}</code>');
+        rules.push('Сократите дробь, если это возможно');
+    } else if (/^-?\d+[\.,]\d+$/.test(raw)) {
+        rules.push('Десятичную дробь пишите через запятую или точку, например: <code>' + escapeHtml(raw) + '</code>');
+    } else if (/^-?\d+$/.test(raw)) {
+        rules.push('Ответ — целое число. Запишите только число, без единиц измерения и пояснений');
+    }
+
+    if (/\\sqrt|√/.test(raw)) {
+        rules.push('Корень записывайте как <code>\\sqrt{…}</code> (например <code>\\sqrt{3}</code>) или символом <strong>√</strong>');
+    }
+
+    rules.push('Лишних пробелов и пояснений быть не должно — только сам ответ');
+
+    var html = '';
+    html += '<div class="dt-answer-format-hint">';
+    html += '<div class="dt-answer-format-title">📐 Требования к ответу:</div>';
+    html += '<ul class="dt-answer-format-list">';
+    for (var i = 0; i < rules.length; i++) {
+        html += '<li>' + rules[i] + '</li>';
+    }
+    html += '</ul>';
+    html += '</div>';
+    return html;
 }
 
 /**

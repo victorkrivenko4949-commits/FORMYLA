@@ -21,20 +21,76 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     {% block extra_css %}{% endblock %}
     
-    <!-- KaTeX for math rendering -->
+    <!-- KaTeX for math rendering — синхронная загрузка + скрытие до рендера,
+         чтобы не было «вспышки» сырого $LaTeX$ перед заменой на формулы. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <!-- ФИКС: onload гарантирует что KaTeX уже загружен перед авторендером -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
-            onload="renderMathInElement(document.body, {
+    <style>
+      /* Прячем содержимое до завершения рендера KaTeX. Применяется только
+         если есть потенциально математический контент (через JS-флаг).
+         Fail-safe: автоматически снимается через 1500ms, чтобы страница
+         НЕ зависла навсегда если KaTeX упал. */
+      html:not(.katex-ready) body.has-math .oly-md,
+      html:not(.katex-ready) body.has-math .task-text,
+      html:not(.katex-ready) body.has-math .problem-card,
+      html:not(.katex-ready) body.has-math .ai-feedback,
+      html:not(.katex-ready) body.has-math [data-katex] {
+        visibility: hidden;
+      }
+    </style>
+    <!-- preload — браузер начинает качать ещё до парсинга остального HTML -->
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
+    <!-- Синхронная загрузка: блокирует парсинг до загрузки KaTeX,
+         но даёт ГАРАНТИЮ что renderMathInElement доступна как только
+         DOM закончит парсить body. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+      // Помечаем body как «возможно содержит math» — чтобы CSS-скрытие
+      // действовало только на странички с формулами, а не на всю морду.
+      (function(){
+        try {
+          document.documentElement.classList.add('katex-loading');
+          // Fail-safe: если KaTeX не справится за 1.5s — показываем как есть.
+          setTimeout(function(){
+            document.documentElement.classList.remove('katex-loading');
+            document.documentElement.classList.add('katex-ready');
+          }, 1500);
+        } catch(e){}
+      })();
+      // Рендер сразу при готовности DOM. Используем DOMContentLoaded —
+      // он срабатывает СРАЗУ как только тело распаршено, не дожидаясь
+      // картинок/iframe'ов, поэтому быстрее чем 'load'.
+      document.addEventListener('DOMContentLoaded', function(){
+        var t0 = performance.now();
+        try {
+          // Помечаем body — теперь CSS-скрытие активируется (если оно нужно)
+          document.body.classList.add('has-math');
+          if (typeof renderMathInElement === 'function') {
+            renderMathInElement(document.body, {
               delimiters: [
                 {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false},
+                {left: '$',  right: '$',  display: false},
                 {left: '\\(', right: '\\)', display: false},
                 {left: '\\[', right: '\\]', display: true}
               ],
-              throwOnError: false
-            }); console.log('✓ KaTeX auto-render completed');"></script>
+              throwOnError: false,
+              // ignoredTags — НЕ трогать содержимое <script>, <style>, <code>,
+              // <pre> чтобы не ломать примеры кода / синтаксис.
+              ignoredTags: ['script','noscript','style','textarea','pre','code']
+            });
+          }
+        } catch(e) { console.warn('KaTeX render error', e); }
+        finally {
+          // Снимаем класс «загрузка» — содержимое становится видимым.
+          document.documentElement.classList.remove('katex-loading');
+          document.documentElement.classList.add('katex-ready');
+          if (window.console && console.log) {
+            console.log('✓ KaTeX rendered in ' + Math.round(performance.now()-t0) + 'ms');
+          }
+        }
+      });
+    </script>
     
     <!-- Marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -202,6 +258,25 @@
         <!-- Авторизация -->
         <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
             {% if current_user.is_authenticated and not current_user.is_guest %}
+                <!-- Твоя поддержка (личный чат с админом) -->
+                <a href="{{ url_for('admin_support.my_support_page') }}"
+                   id="navMySupportLink"
+                   title="Твоя поддержка — личный чат с командой FORMYLA"
+                   style="position:relative; padding: 8px 14px; background: rgba(168, 85, 247, 0.12);
+                          color: #d8b4fe; text-decoration: none; border-radius: 8px;
+                          font-weight: 600; font-size: 14px;
+                          border: 1px solid rgba(168, 85, 247, 0.3); transition: all 0.2s;"
+                   onmouseover="this.style.background='rgba(168, 85, 247, 0.22)'"
+                   onmouseout="this.style.background='rgba(168, 85, 247, 0.12)'">
+                    💬 Поддержка
+                    <span id="navMySupportBadge"
+                          style="display:none; position:absolute; top:-6px; right:-6px;
+                                 min-width:18px; height:18px; padding:0 5px;
+                                 background:#ef4444; color:#fff; border-radius:9px;
+                                 font-size:11px; font-weight:700; line-height:18px;
+                                 text-align:center; box-shadow:0 0 0 2px #0f172a;">0</span>
+                </a>
+
                 <!-- Авторизованный пользователь -->
                 <a href="{{ url_for('profile') }}"
                    style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
@@ -486,6 +561,28 @@
         tick();
         setInterval(tick, 30000);
     })();
+
+    /* Support unread badge poller (top nav «💬 Поддержка») */
+    (function supportUnreadPoller(){
+        async function tick(){
+            const badge = document.getElementById('navMySupportBadge');
+            if (!badge) return;
+            try{
+                const r = await fetch('/api/my/support/unread_count', {credentials:'same-origin'});
+                if (!r.ok) return;
+                const data = await r.json();
+                const n = (data && data.unread) || 0;
+                if (n > 0){
+                    badge.textContent = n > 9 ? '9+' : String(n);
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }catch(e){ /* ignore */ }
+        }
+        tick();
+        setInterval(tick, 30000);
+    })();
     </script>
     {% endif %}
 
@@ -554,11 +651,11 @@
     }
     </script>
     
-    <!-- AI Тьютор виджет -->
+    {# AI-Тьютор — глобальная плавающая кнопка (правый нижний угол) для разбора задач. #}
     {% include 'tutor_widget.html' %}
 
-    <!-- Site Concierge — AI-помощник по сайту (UX/навигация). Отдельный от тьютора. -->
-    {% include 'partials/site_concierge.html' %}
+    {# Site Concierge (FAB-помощник по сайту) — НЕ подключаем глобально.
+       Inline-секция «Помощник FORMYLA» есть только на странице /about. #}
 
     {% if current_user.is_authenticated %}
     <!-- Слушатель приглашений на видеозвонок + PiP-оверлей межстраничного звонка. -->

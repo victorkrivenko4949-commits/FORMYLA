@@ -3,6 +3,25 @@
 {% block title %}Решения — {{ olympiad.full_title }}{% endblock %}
 
 {% block content %}
+<div style="margin-bottom: 16px;">
+    <a href="/olympiads" class="btn-back-catalog"
+       style="display:inline-flex; align-items:center; gap:8px;
+              padding:10px 18px; background:rgba(56,189,248,0.12);
+              border:1px solid rgba(56,189,248,0.35); color:#e2e8f0;
+              border-radius:10px; text-decoration:none; font-weight:600;
+              font-size:0.95em; transition: all .15s ease;">
+        <span style="font-size:1.1em;">←</span> Назад к каталогу
+    </a>
+</div>
+<style>
+    .btn-back-catalog:hover {
+        background: rgba(56,189,248,0.22) !important;
+        border-color: rgba(56,189,248,0.6) !important;
+        color: #fff !important;
+        transform: translateX(-2px);
+    }
+</style>
+
 <h1 class="page-title">{{ olympiad.full_title }}</h1>
 <p class="page-subtitle">
     {{ combo.year }} год, {{ combo.grade }} класс — {{ combo.round_title | default('') }}
@@ -93,6 +112,43 @@
         </div>
     {% endif %}
 
+    {# ── Solution figures (official PDF figures from all11_figures archive) ── #}
+    {% if p.get("solution_figures") %}
+    <div class="solution-figures-wrap">
+        {% for fig in p.solution_figures %}
+        <figure class="solution-fig{% if fig.assignment == 'pdf_pool_uncertain' %} solution-fig--uncertain{% endif %}">
+            <div class="solution-fig-frame"
+                 data-fig-src="{{ url_for('static', filename=fig.file) }}"
+                 data-fig-num="{{ p.num }}"
+                 role="button"
+                 tabindex="0"
+                 title="Кликни, чтобы увеличить">
+                <img src="{{ url_for('static', filename=fig.file) }}"
+                     alt="Рисунок к решению задачи {{ p.num }}"
+                     loading="lazy"
+                     class="solution-fig-img">
+                <span class="solution-fig-zoom-hint" aria-hidden="true">🔍 нажми для увеличения</span>
+            </div>
+            <figcaption class="solution-fig-caption">
+                {% if fig.assignment == 'pdf_pool_uncertain' %}
+                    <em>возможный рисунок к решению</em>
+                {% else %}
+                    📐 Рисунок из официального решения
+                {% endif %}
+                {% if fig.source_url %}
+                    ·
+                    <a href="{{ fig.source_url }}" target="_blank"
+                       rel="noopener noreferrer"
+                       class="solution-fig-source">
+                        источник ↗
+                    </a>
+                {% endif %}
+            </figcaption>
+        </figure>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {# Manual review flag #}
     {% if p.get("needs_manual_review") %}
     <div style="margin-top:10px; color:#888; font-size:12px; font-style:italic;">
@@ -156,5 +212,254 @@ function closeSolutionModal() {
 document.getElementById('solution-modal-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeSolutionModal();
 });
+</script>
+
+<!-- ───────────────────── Solution figures styling + lightbox ───────────────────── -->
+<style>
+    /* Сетка картинок-решений (на широких экранах — две в ряд) */
+    .solution-figures-wrap {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    @media (min-width: 900px) {
+        .solution-figures-wrap { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+    }
+
+    /* Карточка картинки */
+    .solution-fig {
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        animation: solFigIn 0.4s ease;
+    }
+    @keyframes solFigIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    /* Рамка картинки — кликабельная, с hover-эффектом */
+    .solution-fig-frame {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+        background: #ffffff;
+        padding: 18px;
+        border-radius: 14px;
+        border: 2px solid rgba(76, 175, 80, 0.35);
+        box-shadow:
+            0 4px 16px rgba(0, 0, 0, 0.28),
+            0 1px 3px rgba(0, 0, 0, 0.4),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        cursor: zoom-in;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        overflow: hidden;
+    }
+    .solution-fig-frame:hover {
+        transform: translateY(-3px) scale(1.015);
+        border-color: rgba(76, 175, 80, 0.7);
+        box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.45),
+            0 4px 12px rgba(76, 175, 80, 0.25),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    .solution-fig-frame:focus-visible {
+        outline: 3px solid #4caf50;
+        outline-offset: 4px;
+    }
+
+    /* Менее яркая рамка для «возможных» картинок */
+    .solution-fig--uncertain .solution-fig-frame {
+        border-color: rgba(255, 204, 2, 0.4);
+        background: #fffef4;
+    }
+    .solution-fig--uncertain .solution-fig-frame:hover {
+        border-color: rgba(255, 204, 2, 0.7);
+        box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.45),
+            0 4px 12px rgba(255, 204, 2, 0.25);
+    }
+
+    /* Сама картинка */
+    .solution-fig-img {
+        display: block;
+        max-width: 100%;
+        width: 100%;
+        height: auto;
+        max-height: 520px;
+        object-fit: contain;
+        /* Чёткое масштабирование для PNG/GIF (особенно для маленьких чертежей) */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        transition: transform 0.3s ease;
+    }
+    .solution-fig-frame:hover .solution-fig-img {
+        transform: scale(1.04);
+    }
+
+    /* Подсказка «нажми для увеличения» — появляется при hover */
+    .solution-fig-zoom-hint {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        background: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+    }
+    .solution-fig-frame:hover .solution-fig-zoom-hint {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Подпись */
+    .solution-fig-caption {
+        margin-top: 12px;
+        color: #94a3b8;
+        font-size: 13px;
+        line-height: 1.55;
+        font-style: normal;
+    }
+    .solution-fig--uncertain .solution-fig-caption { font-style: italic; }
+    .solution-fig-source {
+        color: #81c784;
+        text-decoration: underline;
+        text-decoration-color: rgba(129, 199, 132, 0.4);
+        text-underline-offset: 2px;
+    }
+    .solution-fig-source:hover {
+        color: #b9f6ca;
+        text-decoration-color: #b9f6ca;
+    }
+
+    /* ── Lightbox (zoom-on-click) ── */
+    .solfig-lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.92);
+        backdrop-filter: blur(6px);
+        z-index: 99999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: lbFadeIn 0.2s ease;
+        padding: 32px;
+    }
+    .solfig-lightbox.open { display: flex; }
+    @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .solfig-lightbox-img {
+        max-width: 95vw;
+        max-height: 90vh;
+        width: auto;
+        height: auto;
+        border-radius: 12px;
+        background: #fff;
+        padding: 16px;
+        box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
+        cursor: zoom-out;
+        animation: lbScaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+    @keyframes lbScaleIn {
+        from { opacity: 0; transform: scale(0.85); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .solfig-lightbox-close {
+        position: absolute;
+        top: 22px;
+        right: 22px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+    .solfig-lightbox-close:hover {
+        background: rgba(255, 255, 255, 0.22);
+        transform: rotate(90deg);
+    }
+    .solfig-lightbox-hint {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.65);
+        font-size: 13px;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 6px 14px;
+        border-radius: 999px;
+        backdrop-filter: blur(4px);
+    }
+</style>
+
+<!-- Lightbox для увеличения картинки-решения -->
+<div id="solfig-lightbox" class="solfig-lightbox" role="dialog" aria-modal="true" aria-label="Увеличенный рисунок к решению">
+    <button class="solfig-lightbox-close" id="solfig-lightbox-close" aria-label="Закрыть">×</button>
+    <img class="solfig-lightbox-img" id="solfig-lightbox-img" alt="Рисунок к решению">
+    <div class="solfig-lightbox-hint">Кликни на картинку или нажми Esc, чтобы закрыть</div>
+</div>
+
+<script>
+(function initSolutionFigureLightbox() {
+    const lightbox = document.getElementById('solfig-lightbox');
+    const lightboxImg = document.getElementById('solfig-lightbox-img');
+    const closeBtn = document.getElementById('solfig-lightbox-close');
+    if (!lightbox || !lightboxImg) return;
+
+    function openLightbox(src, alt) {
+        lightboxImg.src = src;
+        lightboxImg.alt = alt || 'Рисунок к решению';
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+        // Не очищаем src сразу — будет неприятный flash; через 300мс
+        setTimeout(() => { if (!lightbox.classList.contains('open')) lightboxImg.src = ''; }, 300);
+    }
+
+    // Делегирование клика на все рамки картинок
+    document.querySelectorAll('.solution-fig-frame').forEach(frame => {
+        const open = () => {
+            const src = frame.dataset.figSrc;
+            const num = frame.dataset.figNum;
+            openLightbox(src, 'Рисунок к решению задачи ' + num);
+        };
+        frame.addEventListener('click', open);
+        frame.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                open();
+            }
+        });
+    });
+
+    closeBtn.addEventListener('click', closeLightbox);
+    lightboxImg.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+    });
+})();
 </script>
 {% endblock %}

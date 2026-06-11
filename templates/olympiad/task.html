@@ -77,13 +77,50 @@
     </section>
     {% endif %}
 
-    {# По запросу: блоки «Ваш ответ / Решение / Ответить» и «Моя оценка / Заметка
-       / Я решил / Подсмотрел» удалены. Оставлены только аккордеоны
-       «💡 Идея решения» и «✅ Полное решение», свёрнутые по умолчанию. #}
+    {# ─── Блок ввода ответа ─────────────────────────────────────── #}
+    {% if task.answer %}
+    <section class="oly-answer-block" id="answerBlock"
+             data-task-id="{{ task.id }}"
+             data-submit-url="{{ url_for('olympiad.task_submit', task_id=task.id) }}"
+             data-attempt-url="{{ url_for('olympiad.task_attempt', task_id=task.id) }}"
+             data-initial-status="{{ attempt.status if attempt else 'viewed' }}"
+             data-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}" data-correct-answer="{{ task.answer | e }}">
+        <h2 style="margin-top:0;">✏️ Ваш ответ</h2>
+        <p class="oly-answer-hint">Введи ответ, чтобы открыть идею и полное решение.</p>
+        <input type="text"
+               id="olyAnswerInput"
+               class="answer-input oly-answer-input"
+               placeholder="Например: 5050 или 1/2"
+               autocomplete="off">
+        <button type="button" id="olyAnswerSubmit"
+                class="submit-button oly-answer-submit"
+                disabled>
+            Проверить ответ
+        </button>
 
-    {# Открытие/закрытие реализовано универсальным JS-обработчиком в скрипте
-       extra_js (см. ниже). Alpine больше не нужен для этих блоков — это
-       избавляет от зависимости от CDN и от рассинхронизации x-show / data-open. #}
+        <div class="oly-reveal-without-check">
+            <button type="button" id="olyAnswerReveal"
+                    class="oly-link-btn oly-link-btn--dim">
+                Я не знаю ответ — открыть подсказку и решение
+            </button>
+        </div>
+
+        <div class="feedback-section" id="feedbackSection" style="display:none;">
+            <div id="feedbackContent"></div>
+        </div>
+    </section>
+    {% endif %}
+
+    {# ─── Обёртка с блокировкой Идеи/Решения до ответа ──────────── #}
+    {# solutionsUnlocked = true, если: ответ был дан И задача solved/attempted/revealed
+       ИЛИ пользователь явно нажал «открыть без проверки». #}
+    <div class="oly-solutions-wrap oly-solutions-locked" id="olySolutionsWrap">
+
+        {% if task.answer %}
+        <div class="oly-solutions-locked-msg" id="olySolutionsLockedMsg">
+            🔒 Введи свой ответ выше, и откроется идея + полное решение.
+        </div>
+        {% endif %}
 
     <!-- Идея решения (свёрнута по умолчанию, раскрывается по клику) -->
     <section class="oly-reveal" data-open="false">
@@ -128,13 +165,12 @@
                 {% endfor %}
             </div>
             {% endif %}
-            {% if task.answer %}
-            <p style="margin-top: 16px; padding: 12px; background: rgba(34,197,94,.08); border-radius: 8px;">
-                <strong>Ответ:</strong> <span class="oly-md" style="display:inline;">{{ task.answer | md_render }}</span>
-            </p>
-            {% endif %}
+            {# По запросу пользователя: ответ внутри блока «Полное решение»
+               больше НЕ показываем — он раскрывается только через форму
+               проверки ответа выше. #}
         </div>
     </section>
+    </div> {# /.oly-solutions-wrap #}
 </div>
 
 {# ── Board overlay ── #}
@@ -306,7 +342,94 @@
 .board__controls button, .board__controls a { background:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:14px; text-decoration:none; color:#111; }
 .board__canvas { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
 #board-img { max-width:92vw; max-height:90vh; transform-origin:center center; user-select:none; -webkit-user-drag:none; background:#fff; border-radius:8px; }
-</style>
+
+/* ── Answer block + lock overlay ── */
+.oly-answer-block {
+    background: linear-gradient(145deg, rgba(56,189,248,0.08), rgba(56,189,248,0.02));
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-top: 24px;
+}
+.oly-answer-hint {
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.95em;
+    margin: 0 0 14px;
+}
+.oly-answer-input {
+    margin-bottom: 12px;
+}
+.oly-reveal-without-check {
+    margin-top: 14px;
+    text-align: center;
+}
+.oly-link-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted, #94a3b8);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.92em;
+    padding: 4px 8px;
+}
+.oly-link-btn:hover {
+    color: var(--accent, #38bdf8);
+}
+.oly-solutions-wrap {
+    position: relative;
+}
+.oly-solutions-locked .oly-reveal {
+    pointer-events: none;
+    opacity: 0.45;
+    filter: blur(1.5px) grayscale(0.4);
+    user-select: none;
+}
+.oly-solutions-locked-msg {
+    text-align: center;
+    padding: 14px 20px;
+    margin: 16px 0;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px dashed rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+
+/* Изначально dim, без подчёркивания: пользователь должен СНАЧАЛА попытаться. */
+.oly-link-btn.oly-link-btn--dim {
+    color: var(--text-muted, #64748b);
+    opacity: 0.55;
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(148,163,184,0.35);
+    transition: color 0.2s ease, opacity 0.2s ease, text-shadow 0.2s ease, border-color 0.2s ease;
+}
+.oly-link-btn.oly-link-btn--dim:hover {
+    opacity: 0.85;
+    color: var(--text-soft, #cbd5e1);
+}
+/* Когда решения открыты — ссылка «загорается». */
+.oly-link-btn.oly-link-btn--active {
+    color: #38bdf8;
+    opacity: 1;
+    text-decoration: underline;
+    text-shadow: 0 0 12px rgba(56,189,248,0.55);
+    border-bottom-color: transparent;
+}
+/* Сабмит-кнопка с явными текст/состоянием. */
+.oly-answer-submit {
+    margin-top: 4px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+.oly-answer-submit:disabled {
+    background: rgba(56, 239, 125, 0.25);
+    color: rgba(255,255,255,0.75);
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+}
+\n</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -507,11 +630,15 @@ function olympiadTask(cfg) {
 
                 if (data.success) {
                     this._renderFeedback(data);
-                    // Если ответ верный — обновляем статус и self_score через attempt API
+                    // ЛЮБОЙ ответ (правильный или нет) снимает блокировку идеи/решения
+                    this.solutionsUnlocked = true;
                     if (data.is_correct) {
                         this.status = 'solved';
-                        // self-score ставим равной max_score, если ещё не выставлен
                         if (this.selfScore == null) this.selfScore = 7;
+                    } else {
+                        if (this.status === 'viewed' || !this.status) {
+                            this.status = 'attempted';
+                        }
                     }
                 } else {
                     alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
@@ -668,4 +795,225 @@ function olympiadTask(cfg) {
     };
 }
 </script>
+
+<script>
+// ── PLAIN-JS обработчик блока «Ваш ответ» (без Alpine) ──
+(function () {
+    function ready(fn) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fn);
+        } else {
+            fn();
+        }
+    }
+    ready(function () {
+        var block = document.getElementById('answerBlock');
+        if (!block) return;
+        var input = document.getElementById('olyAnswerInput');
+        var btn = document.getElementById('olyAnswerSubmit');
+        var revealBtn = document.getElementById('olyAnswerReveal');
+        var wrap = document.getElementById('olySolutionsWrap');
+        var lockedMsg = document.getElementById('olySolutionsLockedMsg');
+        var feedbackSection = document.getElementById('feedbackSection');
+        var feedbackContent = document.getElementById('feedbackContent');
+
+        var submitUrl = block.getAttribute('data-submit-url');
+        var attemptUrl = block.getAttribute('data-attempt-url');
+        var authenticated = block.getAttribute('data-authenticated') === 'true';
+        var initialStatus = block.getAttribute('data-initial-status') || 'viewed';
+
+        var revealedStatuses = ['solved','attempted','revealed','submitted','done'];
+        if (revealedStatuses.indexOf(initialStatus) !== -1) {
+            unlockSolutions();
+        }
+
+        function syncBtn() {
+            var v = (input.value || '').trim();
+            btn.disabled = !v;
+        }
+        input.addEventListener('input', syncBtn);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!btn.disabled) doSubmit();
+            }
+        });
+        syncBtn();
+
+        btn.addEventListener('click', function () {
+            if (!btn.disabled) doSubmit();
+        });
+
+        revealBtn.addEventListener('click', function () {
+            unlockSolutions();
+            if (authenticated) {
+                fetch(attemptUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                    body: JSON.stringify({status:'revealed'})
+                }).catch(function(){});
+            }
+        });
+
+        function unlockSolutions() {
+            if (wrap) wrap.classList.remove('oly-solutions-locked');
+            if (lockedMsg) lockedMsg.style.display = 'none';
+            if (revealBtn) {
+                revealBtn.classList.remove('oly-link-btn--dim');
+                revealBtn.classList.add('oly-link-btn--active');
+            }
+        }
+
+        // Клиентская нормализация — копия серверной (на случай fallback)
+        function normalizeAnswer(s) {
+            if (s == null) return '';
+            s = String(s).trim().toLowerCase();
+            s = s.replace(/\$/g, '').replace(/\\\(/g, '').replace(/\\\)/g, '');
+            s = s.replace(/\\\[/g, '').replace(/\\\]/g, '');
+            s = s.replace(/,/g, '.');
+            s = s.replace(/\s+/g, '');
+            s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2');
+            s = s.replace(/\\cdot/g, '*').replace(/\\times/g, '*');
+            s = s.replace(/\.$/, '');
+            return s;
+        }
+
+        function clientCheck(answer) {
+            var correct = block.getAttribute('data-correct-answer') || '';
+            var ok = correct && normalizeAnswer(answer) === normalizeAnswer(correct);
+            return {
+                success: true,
+                is_correct: !!ok,
+                correct_answer: correct,
+                xp_earned: ok ? 10 : 0,
+                ai_feedback: ok
+                    ? 'Молодец! Ответ совпал с эталоном.'
+                    : 'Ответ не совпал с эталоном. Загляни в «💡 Идея решения» — она теперь открыта.',
+                _client: true
+            };
+        }
+
+        function doSubmit() {
+            var answer = (input.value || '').trim();
+            if (!answer) return;
+            btn.disabled = true;
+            var prevText = btn.textContent;
+            btn.textContent = 'Проверяем…';
+
+            // Параллельно сразу готовим клиентский результат — он не зависит от сети.
+            var clientResult = clientCheck(answer);
+
+            if (!authenticated) {
+                // Гость — сразу клиентская проверка без сети.
+                renderFeedback(clientResult);
+                unlockSolutions();
+                btn.textContent = prevText;
+                syncBtn();
+                return;
+            }
+
+            fetch(submitUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type':'application/json',
+                    'X-Requested-With':'XMLHttpRequest',
+                    'Accept':'application/json'
+                },
+                body: JSON.stringify({answer: answer})
+            })
+            .then(function (r) {
+                if (!r.ok) {
+                    // 401/403/302/500 — отдаём клиентский результат.
+                    return r.text().then(function (txt) {
+                        console.warn('submit HTTP ' + r.status, txt.slice(0, 300));
+                        return clientResult;
+                    });
+                }
+                // Если редирект или HTML — fallback на клиент.
+                var ct = (r.headers.get('Content-Type') || '').toLowerCase();
+                if (ct.indexOf('application/json') === -1) {
+                    console.warn('submit non-JSON response');
+                    return clientResult;
+                }
+                return r.json().catch(function () { return clientResult; });
+            })
+            .then(function (data) {
+                if (!data) data = clientResult;
+                renderFeedback(data);
+                unlockSolutions();
+            })
+            .catch(function (e) {
+                console.error('submit error, fallback to client check', e);
+                renderFeedback(clientResult);
+                unlockSolutions();
+            })
+            .finally(function () {
+                btn.textContent = prevText;
+                syncBtn();
+            });
+        }
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function renderFeedback(data) {
+            var html;
+            var aiHtml = escapeHtml(data.ai_feedback || '').replace(/\n/g,'<br>');
+            if (data.is_correct) {
+                html = '<div class="feedback-correct">' +
+                       '  <div class="feedback-icon">✓</div>' +
+                       '  <h3>Правильно!</h3>' +
+                       '  <p class="xp-earned">+' + (data.xp_earned||0) + ' XP</p>' +
+                       '  <div class="ai-feedback">' + aiHtml + '</div>' +
+                       '</div>';
+            } else {
+                html = '<div class="feedback-incorrect">' +
+                       '  <div class="feedback-icon">✗</div>' +
+                       '  <h3>Неправильно</h3>' +
+                       '  <div class="correct-answer-block">' +
+                       '    <span class="correct-answer-label">Правильный ответ:</span>' +
+                       '    <span class="correct-answer-math">' + escapeHtml(data.correct_answer || '') + '</span>' +
+                       '  </div>' +
+                       '  <div class="ai-feedback">' + aiHtml + '</div>' +
+                       '  <button type="button" class="try-again-button" id="olyTryAgain">Попробовать ещё раз</button>' +
+                       '</div>';
+            }
+            feedbackContent.innerHTML = html;
+            feedbackSection.style.display = 'block';
+
+            var ta = document.getElementById('olyTryAgain');
+            if (ta) {
+                ta.addEventListener('click', function () {
+                    feedbackSection.style.display = 'none';
+                    input.value = '';
+                    syncBtn();
+                    input.focus();
+                });
+            }
+
+            try {
+                if (window.renderMathInElement) {
+                    window.renderMathInElement(feedbackSection, {
+                        delimiters: [
+                            {left:'$$', right:'$$', display:true},
+                            {left:'$',  right:'$',  display:false},
+                            {left:'\\(', right:'\\)', display:false},
+                            {left:'\\[', right:'\\]', display:true}
+                        ],
+                        throwOnError: false
+                    });
+                }
+            } catch (e) {}
+
+            feedbackSection.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+    });
+})();
+</script>
+
 {% endblock %}

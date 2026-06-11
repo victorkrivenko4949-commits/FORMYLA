@@ -34,6 +34,12 @@ from .validators import (
     extract_json_safe,
     validate_gemini_plan,
 )
+from .slot_planner import (
+    PlannedSlot,
+    check_slots_match_windows,
+    plan_slots,
+    topic_to_window_summary,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -129,14 +135,44 @@ def _load_prompt() -> str:
 def _format_prompt(
     profile: Dict[str, Any],
     topics_ref: Dict[str, Any],
+    planned_slots: List[PlannedSlot],
 ) -> str:
-    """Подставить переменные в prompt-шаблон."""
+    """Подставить переменные в prompt-шаблон.
+
+    PR per-topic difficulty matching: дополнительно передаём в промпт
+    SLOT_PLAN — список из 10 заранее заполненных слотов с topic+
+    difficulty_level. LLM ОБЯЗАНА сохранить эти поля без изменений
+    и только обогатить spec текстовыми полями (archetype, must_use,
+    reason_for_student и т.д.).
+    """
     prompt = _load_prompt()
     slot_alloc = profile.get("slot_allocation") or {
         "measured": 10,
         "calibration": 0,
     }
     completeness = float(profile.get("profile_completeness", 1.0) or 1.0)
+
+    # Текстовая сводка «тема → окно сложности» для подсказки LLM
+    summary = topic_to_window_summary(planned_slots)
+    window_lines: List[str] = []
+    for topic, rec in summary.items():
+        cal = " (КАЛИБРОВКА)" if rec["is_calibration"] else ""
+        score = ""
+        if rec.get("test_total"):
+            score = f", тест {rec['test_correct']}/{rec['test_total']}"
+        window_lines.append(
+            f"  • {topic}{cal}{score} → "
+            f"target=L{rec['target_level']}, окно [L{rec['window'][0]}, L{rec['window'][1]}], "
+            f"запланированные уровни: {rec['levels']}"
+        )
+    topic_window_summary = "\n".join(window_lines) if window_lines else "(нет данных)"
+
+    # Полный план слотов как JSON — LLM должна сохранить эти поля 1:1
+    slot_plan_json = json.dumps(
+        [s.to_spec_seed() for s in planned_slots],
+        ensure_ascii=False, indent=2,
+    )
+
     return prompt.format(
         weak_topics=json.dumps(profile["weak_topics"], ensure_ascii=False, indent=2),
         strong_topics=json.dumps(profile["strong_topics"], ensure_ascii=False, indent=2),
@@ -145,6 +181,8 @@ def _format_prompt(
         TOPICS_REFERENCE=json.dumps(topics_ref, ensure_ascii=False, indent=2),
         slot_allocation=json.dumps(slot_alloc, ensure_ascii=False),
         profile_completeness=f"{completeness:.2f}",
+        SLOT_PLAN=slot_plan_json,
+        TOPIC_WINDOW_SUMMARY=topic_window_summary,
     )
 
 
@@ -175,7 +213,19 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     class_level = profile["class_level"]
     topics_ref = _build_topics_reference(class_level)
-    formatted_prompt = _format_prompt(profile, topics_ref)
+
+    # ── PER-TOPIC DIFFICULTY MATCHING ────────────────────────────────
+    # Детерминированно строим план 10 слотов ДО вызова LLM:
+    # каждый слот уже знает topic + difficulty_level (из окна темы).
+    planned_slots = plan_slots(profile)
+    if len(planned_slots) != 10:
+        raise GeminiPlanError(
+            f"slot_planner вернул {len(planned_slots)} слотов вместо 10 — "
+            "проверь профиль (weak_topics/strong_topics/calibration пусты?)",
+            category="validate",
+        )
+
+    formatted_prompt = _format_prompt(profile, topics_ref, planned_slots)
 
     messages: List[Dict[str, str]] = [
         {"role": "user", "content": formatted_prompt},
@@ -290,8 +340,71 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
             category="validate",
         )
 
+    # ── PER-TOPIC DIFFICULTY MATCHING: enforcing the plan ────────────
+    # LLM могла «креативно» поменять topic / difficulty_level. Источник
+    # истины — planned_slots. Перезаписываем критичные поля и логируем,
+    # если что-то расходилось. Текстовые поля (archetype, must_use,
+    # reason_for_student, ...) оставляем как пришли от LLM.
+    by_pos = {s.position: s for s in planned_slots}
+    mismatches_before = check_slots_match_windows(specs, planned_slots)
+    if mismatches_before:
+        logger.warning(
+            "Step 1 PLAN: %d slot(s) had difficulty OUT of topic window — "
+            "rewriting from slot_planner: %s",
+            len(mismatches_before), mismatches_before,
+        )
+
+    enforced_specs: List[Dict[str, Any]] = []
+    for spec in specs:
+        pos = spec.get("position")
+        planned = by_pos.get(pos)
+        if planned is None:
+            # LLM выдала чужой position — пропускаем, потом отловит validation
+            enforced_specs.append(spec)
+            continue
+        merged = dict(spec)
+        # Жёстко берём topic / subject / difficulty / level_window из плана:
+        merged["topic"] = planned.topic
+        merged["subject"] = planned.subject
+        merged["topic_key"] = planned.topic_key
+        merged["slot_kind"] = planned.slot_kind
+        merged["difficulty_level"] = planned.difficulty_level
+        merged["target_level"] = planned.target_level
+        merged["level_window"] = list(planned.level_window)
+        merged["is_calibration"] = planned.is_calibration
+        merged["measured"] = planned.measured
+        # weakness_score legacy для DailyTaskItem
+        if planned.pct is not None:
+            merged.setdefault("weakness_score", round(100.0 - planned.pct, 2))
+        enforced_specs.append(merged)
+
+    # Re-check after enforcement (sanity).
+    mismatches_after = check_slots_match_windows(enforced_specs, planned_slots)
+    if mismatches_after:
+        logger.error(
+            "Step 1 PLAN: mismatches REMAIN after enforcement: %s",
+            mismatches_after,
+        )
+
+    # ── лог-сводка: тема → уровни (для аудита) ───────────────────────
+    enforced_summary: Dict[str, List[int]] = {}
+    for spec in enforced_specs:
+        enforced_summary.setdefault(spec.get("topic") or "?", []).append(
+            spec.get("difficulty_level")
+        )
+    plan_summary = topic_to_window_summary(planned_slots)
+    for topic, levels in enforced_summary.items():
+        rec = plan_summary.get(topic, {})
+        score = ""
+        if rec.get("test_total"):
+            score = f" {rec['test_correct']}/{rec['test_total']}"
+        logger.info(
+            "Step 1 plan match: %s%s window=%s levels=%s",
+            topic, score, rec.get("window"), levels,
+        )
+
     logger.info(
-        "Gemini plan — OK: %d specs, cost=$%.4f",
-        len(specs), usage.cost_usd,
+        "Gemini plan — OK: %d specs, cost=$%.4f, enforced=%d slots",
+        len(enforced_specs), usage.cost_usd, len(enforced_specs),
     )
-    return specs
+    return enforced_specs

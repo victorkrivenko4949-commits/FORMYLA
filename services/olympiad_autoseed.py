@@ -22,9 +22,10 @@ from typing import Any, Iterable
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'olympiads')
 
-# Полный каталог 89 методов (с метаданными — секции, классы, частоты).
-# Если файл доступен — используется в первую очередь; иначе берётся
-# исторический theory_65_methods.json (полное описание у 65 методов).
+# Полный каталог 102 методов (последняя версия — с метаданными И с полными
+# текстами definition_md/main_theorems_md/etc). Используется в первую очередь.
+# Fallback: каталог 89 методов → исторический theory_65_methods.json.
+THEORY_JSON_CATALOG_102 = os.path.join(DATA_DIR, 'methods_catalog_102.json')
 THEORY_JSON_CATALOG_89 = os.path.join(DATA_DIR, 'methods_catalog_89.json')
 THEORY_JSON_LEGACY_65 = os.path.join(DATA_DIR, 'theory_65_methods.json')
 THEORY_JSON = THEORY_JSON_LEGACY_65  # обратная совместимость для тестов
@@ -311,9 +312,13 @@ def _seed_theory(db, TheoryBlock) -> None:
         print(f"[OLYMPIAD-SEED] Cannot query TheoryBlock: {e}")
         return
 
-    # Берём максимально полный каталог: сначала 89-методов, потом fallback на legacy.
-    rows = _load_json(THEORY_JSON_CATALOG_89)
-    src_path = THEORY_JSON_CATALOG_89
+    # Берём максимально полный каталог: сначала 102 (последняя версия,
+    # с полными текстами), затем 89-методов, затем fallback на legacy.
+    rows = _load_json(THEORY_JSON_CATALOG_102)
+    src_path = THEORY_JSON_CATALOG_102
+    if not rows:
+        rows = _load_json(THEORY_JSON_CATALOG_89)
+        src_path = THEORY_JSON_CATALOG_89
     if not rows:
         rows = _load_json(THEORY_JSON_LEGACY_65)
         src_path = THEORY_JSON_LEGACY_65

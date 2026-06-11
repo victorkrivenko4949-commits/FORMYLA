@@ -90,8 +90,12 @@ LEVEL_STRETCH_PROB: float = 0.2
 # ── Калибровочные темы (без теста) ────────────────────────────────────
 # Стартовый уровень для калибровочных задач — середина шкалы, безопасно.
 CALIBRATION_START_LEVEL: int = 2
-# Максимум 2 калибровочные темы в день — чтобы не размывать фокус.
+# Максимум калибровочных тем в день при наличии хоть одного measured-теста
+# (чтобы не размывать фокус — основные задачи идут по measured).
+# При completeness=0 (0 из N тестов) лимит снимается: даём ВСЕ темы в
+# калибровку (см. build_profile).
 CALIBRATION_TOPICS_PER_DAY: int = 2
+CALIBRATION_TOPICS_PER_DAY_WHEN_EMPTY: int = 10  # фактически = total_topics
 
 # ── Старая логика (оставлена для совместимости с существующим Gemini) ─
 _SUBJECT_PREFIX_MAP: Dict[str, str] = {
@@ -104,6 +108,9 @@ _SUBJECT_PREFIX_MAP: Dict[str, str] = {
 _WEAK_THRESHOLD = 35
 _MAX_WEAK_PER_SUBJECT = 2
 _TOP_WEAK_COUNT = 7
+# Когда у ученика 0 тестов, все темы класса попадают в weak_topics
+# как калибровочные. Лимит снимаем до общего числа тем класса (5..10).
+_TOP_WEAK_COUNT_WHEN_EMPTY = 10
 _TOP_STRONG_COUNT = 3
 _MIN_STRONG_ATTEMPTS = 5
 
@@ -191,17 +198,11 @@ def compute_target_level_from_pct(
     floor: int = MIN_TASK_LEVEL,
     ceil: int = MAX_TASK_LEVEL,
 ) -> Optional[int]:
-    """Target-уровень задачи по проценту знания (со сдвигом вниз).
+    """[DEPRECATED] Target-уровень из pct в сжатой шкале 1..5.
 
-    Используется, чтобы подтянуть слабую тему: даём задачи **на 1 уровень
-    ниже** измеренного. Если pct=None — возвращает ``None`` (тема
-    калибровочная, level отдельно).
-
-    >>> compute_target_level_from_pct(30)   # pct_level=2, pull_down=1
-    1
-    >>> compute_target_level_from_pct(90)   # pct_level=5, pull_down=1
-    4
-    >>> compute_target_level_from_pct(None)
+    Сохранена для обратной совместимости. Новый код должен использовать
+    :func:`score_to_target_level` (полная шкала 1..8 на основе
+    ``final_level`` адаптивного теста + ratio correct/total).
     """
     lvl = percent_to_level(pct)
     if lvl is None:
@@ -215,11 +216,154 @@ def compute_stretch_level_from_pct(
     floor: int = MIN_TASK_LEVEL,
     ceil: int = MAX_TASK_LEVEL,
 ) -> Optional[int]:
-    """Stretch-уровень (на ступеньку выше измеренного) — для роста."""
+    """[DEPRECATED] Stretch-уровень в сжатой шкале 1..5."""
     lvl = percent_to_level(pct)
     if lvl is None:
         return None
     return max(floor, min(ceil, lvl + stretch_up))
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Per-topic difficulty matching (PR per-topic difficulty matching)
+# ══════════════════════════════════════════════════════════════════════
+#
+# КЛЮЧЕВАЯ ИДЕЯ:
+# Адаптивный тест по теме даёт пару (correct, total) и ``final_level`` (1..8).
+# Эти данные мы используем НАПРЯМУЮ, без потери верхней части шкалы:
+#
+#   8/8, final_level=8  →  target=L8, окно [L7, L8]   ← раньше тут было L5!
+#   7/8, final_level=7  →  target=L7, окно [L6, L8]
+#   4/8, final_level=4  →  target=L3, окно [L2, L4]
+#   1/8, final_level=2  →  target=L1, окно [L1, L3]   ← бери ниже измеренного
+#
+# В отличие от старой логики `percent_to_level` (сжимала всё в L1..L5),
+# здесь используется ПОЛНАЯ шкала 1..8 — соответствует AdaptiveTask.difficulty_level
+# и VALID_DIFFICULTY_RANGE в validators.py.
+# ══════════════════════════════════════════════════════════════════════
+
+
+def score_to_target_level(
+    correct: Optional[int],
+    total: Optional[int],
+    final_level: Optional[int],
+    floor: int = MIN_TASK_LEVEL,
+    ceil: int = MAX_TASK_LEVEL,
+) -> Optional[int]:
+    """Per-topic target_level в полной шкале 1..8 из результата адаптивного теста.
+
+    Логика:
+    * базовый уровень — то, что измерил адаптивный движок (``final_level``);
+    * для **слабых** тем (ratio низкий) опускаем НИЖЕ измеренного — нужно
+      добрать фундамент:
+        - ratio ≤ 0.25 (1/8)  →  base − 2
+        - ratio ≤ 0.50 (4/8)  →  base − 1
+        - ratio ≤ 0.75 (6/8)  →  base
+        - ratio > 0.75 (≥7/8) →  base   (держим высокий уровень)
+    * clamp в диапазон [floor, ceil] = [1, 8].
+
+    Параметры
+    ---------
+    correct, total : int | None
+        Количество правильных / всего задач в тесте по теме.
+    final_level : int | None
+        Финальный уровень IRT-движка адаптивного теста (1..8).
+    floor, ceil : int
+        Границы шкалы (по умолчанию 1..8).
+
+    Возвращает
+    ----------
+    int | None
+        Целевой уровень 1..8 либо ``None``, если данных недостаточно.
+
+    Примеры
+    -------
+    >>> score_to_target_level(8, 8, 8)
+    8
+    >>> score_to_target_level(7, 8, 7)
+    7
+    >>> score_to_target_level(4, 8, 4)
+    3
+    >>> score_to_target_level(1, 8, 2)
+    1
+    >>> score_to_target_level(0, 8, 1)
+    1
+    """
+    if final_level is None:
+        return None
+    try:
+        base = int(final_level)
+    except (TypeError, ValueError):
+        return None
+    base = max(floor, min(ceil, base))
+
+    # Без статистики ratio — отдаём чистый final_level
+    if not total or total <= 0:
+        return base
+
+    try:
+        ratio = float(correct or 0) / float(total)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return base
+
+    if ratio <= 0.25:
+        return max(floor, base - 2)
+    if ratio <= 0.50:
+        return max(floor, base - 1)
+    if ratio <= 0.75:
+        return base
+    # ratio > 0.75 — сильная тема, держим базовый (высокий)
+    return min(ceil, base)
+
+
+def compute_level_window(
+    target_level: Optional[int],
+    floor: int = MIN_TASK_LEVEL,
+    ceil: int = MAX_TASK_LEVEL,
+) -> Tuple[int, int]:
+    """Окно уровней [low, high] для генерации задач вокруг target_level.
+
+    Правила:
+    * **Слабая тема** (target ≤ 3): окно [target, target+2] — даём
+      фундамент + лёгкий рост (например, 1/8 → L1..L3).
+    * **Средняя тема** (target == 4 или 5): [target−1, target+1].
+    * **Сильная тема** (target ≥ 6): [max(target−1, 6), 8] — приоритет
+      верхней части шкалы; при target=8 окно [7, 8], при 8/8 = L7..L8.
+    * Если target=None — возвращаем (floor, ceil), полный диапазон.
+
+    Результат clamp'ится в [floor, ceil] и гарантированно low ≤ high.
+    """
+    if target_level is None:
+        return (floor, ceil)
+    try:
+        t = int(target_level)
+    except (TypeError, ValueError):
+        return (floor, ceil)
+    t = max(floor, min(ceil, t))
+
+    if t <= 3:
+        # слабая — фундамент + 2 ступеньки вверх
+        lo, hi = t, t + 2
+    elif t >= 6:
+        # сильная — приоритет верха, нижняя граница не ниже 6
+        lo, hi = max(t - 1, 6), ceil
+    else:
+        # средняя
+        lo, hi = t - 1, t + 1
+
+    lo = max(floor, min(ceil, lo))
+    hi = max(floor, min(ceil, hi))
+    if lo > hi:
+        lo, hi = hi, lo
+    return (lo, hi)
+
+
+def calibration_target_level(class_expected_level: int) -> int:
+    """Target_level для калибровочной темы (нет AdaptiveTestResult).
+
+    Берём середину по классу — это безопасный «нащупывающий» уровень.
+    Для 7-8 кл это L4, для 10-11 — L6.
+    """
+    return max(MIN_TASK_LEVEL, min(MAX_TASK_LEVEL, int(class_expected_level or 3)))
 
 
 def compute_slot_allocation(
@@ -443,6 +587,26 @@ def _load_topic_test_pct(
     Берём **последний** тест на каждую (topic, class_level). Если у одной
     темы несколько записей — побеждает самая свежая (по completed_at, иначе
     по id).
+
+    NB: для per-topic difficulty matching мы теперь дополнительно используем
+    :func:`_load_topic_test_results` — он отдаёт (correct, total, final_level)
+    отдельно для каждой темы. Эта функция оставлена для совместимости
+    (running_pct, weakness_score).
+    """
+    return {
+        topic: data["pct"]
+        for topic, data in _load_topic_test_results(user_id, class_level).items()
+    }
+
+
+def _load_topic_test_results(
+    user_id: int, class_level: int
+) -> Dict[str, Dict[str, Any]]:
+    """db_topic → {correct, total, final_level, pct, completed_at}.
+
+    Нужна для :func:`score_to_target_level`, чтобы получить target_level
+    в полной шкале 1..8 на основе ``final_level`` адаптивного теста и
+    точного ratio. Берём только последний тест на каждую тему.
     """
     results = (
         db.session.query(AdaptiveTestResult)
@@ -458,23 +622,28 @@ def _load_topic_test_pct(
         )
         .all()
     )
-    pct_map: Dict[str, float] = {}
+    out: Dict[str, Dict[str, Any]] = {}
     for tr in results:
-        if not tr.topic or tr.topic in pct_map:
-            continue  # уже взяли более свежий
-        total = tr.tasks_total or 0
-        correct = tr.tasks_correct or 0
+        if not tr.topic or tr.topic in out:
+            continue
+        total = int(tr.tasks_total or 0)
+        correct = int(tr.tasks_correct or 0)
         if total <= 0:
             continue
-        pct = round(100.0 * correct / total, 2)
-        pct_map[tr.topic] = pct
-    return pct_map
+        out[tr.topic] = {
+            "correct": correct,
+            "total": total,
+            "final_level": int(tr.final_level) if tr.final_level is not None else None,
+            "pct": round(100.0 * correct / total, 2),
+            "completed_at": tr.completed_at,
+        }
+    return out
 
 
 def _load_topic_final_level(
     user_id: int, class_level: int
 ) -> Dict[str, int]:
-    """``db_topic → final_level (IRT 1..7)`` (для совместимости со старым кодом)."""
+    """``db_topic → final_level (IRT 1..8)`` (для совместимости со старым кодом)."""
     rows = (
         db.session.query(AdaptiveTestResult.topic, AdaptiveTestResult.final_level)
         .filter(
@@ -553,9 +722,15 @@ def build_profile(
 
     total_topics = len(topic_catalog)
 
-    # ── 3. Map db_topic → % (из адаптивных тестов) ───────────────────
-    pct_by_topic = _load_topic_test_pct(user_id, class_level)
-    final_level_by_topic = _load_topic_final_level(user_id, class_level)
+    # ── 3. Map db_topic → результат адаптивного теста ────────────────
+    # test_results: {topic: {correct, total, final_level, pct, completed_at}}
+    # Используется напрямую в score_to_target_level → полная шкала 1..8.
+    test_results = _load_topic_test_results(user_id, class_level)
+    pct_by_topic = {t: r["pct"] for t, r in test_results.items()}
+    final_level_by_topic = {
+        t: r["final_level"] for t, r in test_results.items()
+        if r.get("final_level") is not None
+    }
 
     # ── 4. Статистика TaskSolution (для совместимости, weakness_score) ─
     solutions_query = (
@@ -634,21 +809,37 @@ def build_profile(
         else:
             calibration_candidate_topics.append(db_topic)
 
-        # — конвертация в уровни —
+        # — конвертация в уровни (PER-TOPIC DIFFICULTY MATCHING) ──────
+        # target_level и окно [low, high] берутся ИЗ результата
+        # адаптивного теста по этой теме (не из общего % ученика).
+        # 8/8 алгебры → target=L8, окно [L7, L8]; геометрия независимо.
+        pct_level = percent_to_level(pct)  # legacy 1..5 — для совместимости
         if measured:
-            pct_level = percent_to_level(pct)         # 1..5
-            target_level = compute_target_level_from_pct(pct)
-            stretch_level = compute_stretch_level_from_pct(pct)
+            tr = test_results.get(db_topic, {})
+            target_level = score_to_target_level(
+                correct=tr.get("correct"),
+                total=tr.get("total"),
+                final_level=tr.get("final_level"),
+            )
+            # Если в БД нет final_level (старая запись теста или running_pct)
+            # — фолбэк: оцениваем по pct через старую сжатую шкалу + растяжка
+            # в шкалу 1..8 (умножаем на 8/5).
+            if target_level is None:
+                legacy = compute_target_level_from_pct(pct) or MIN_TASK_LEVEL
+                target_level = max(MIN_TASK_LEVEL, min(MAX_TASK_LEVEL,
+                    round(legacy * (MAX_TASK_LEVEL / 5.0))))
+            level_lo, level_hi = compute_level_window(target_level)
+            stretch_level = level_hi  # для совместимости с Gemini-промптом
             calibration = False
-            # floor_level для Gemini: используем target_level (т.к. это и есть
-            # «куда мы хотим попасть» по ТЗ). Защита: не ниже 1.
-            floor = max(MIN_TASK_LEVEL, target_level or MIN_TASK_LEVEL)
         else:
-            pct_level = None
-            target_level = CALIBRATION_START_LEVEL
-            stretch_level = min(MAX_TASK_LEVEL, CALIBRATION_START_LEVEL + 1)
+            # Калибровочная тема — нет теста. Берём середину по классу.
+            target_level = calibration_target_level(expected_level)
+            level_lo, level_hi = compute_level_window(target_level)
+            stretch_level = level_hi
             calibration = True
-            floor = CALIBRATION_START_LEVEL
+        # floor_level = low окна (под старый промпт Gemini, который запрещает
+        # опускаться ниже floor_level). Совпадает с low окна.
+        floor = level_lo
 
         weakness = _calc_weakness_score(
             accuracy_solutions, attempts, expected_level, avg_level,
@@ -675,6 +866,16 @@ def build_profile(
             'level_from_pct': pct_level,
             'target_level': target_level,
             'stretch_level': stretch_level,
+            # ── PER-TOPIC DIFFICULTY MATCHING ──────────────────────────
+            # Окно уровней [low, high] для этой темы — жёстко из теста.
+            # Step 1 (Gemini) получит готовые difficulty_level для каждого
+            # слота, выбранные ВНУТРИ этого окна (см. step1_gemini.py).
+            'level_window': [int(level_lo), int(level_hi)],
+            'level_low': int(level_lo),
+            'level_high': int(level_hi),
+            # сырые данные теста (для аудита и UI)
+            'test_correct': test_results.get(db_topic, {}).get('correct'),
+            'test_total': test_results.get(db_topic, {}).get('total'),
             # история калибровки (для UI/логов; если measured=True
             # из running_pct — будет видно, что % набран без теста)
             'running_pct': running_pct_value,
@@ -699,14 +900,25 @@ def build_profile(
     )
     measured_slots, calibration_slots = slot_allocation
 
-    # сколько тем под калибровку оставляем в weak_topics (Gemini сам решит,
-    # сколько задач на каждую дать, но лимит тем — CALIBRATION_TOPICS_PER_DAY)
-    n_cal_topics = min(
-        CALIBRATION_TOPICS_PER_DAY,
-        len(calibration_candidate_topics),
-        # если нет калибровочных слотов, темы тоже не выбираем
-        max(1, calibration_slots) if calibration_slots > 0 else 0,
-    )
+    # Сколько тем под калибровку оставляем в weak_topics.
+    # PR per-topic difficulty matching (фикс 0/7):
+    #   * При measured_count == 0 (ни одного теста) лимит снимается:
+    #     берём ВСЕ темы каталога — все 10 задач должны быть калибровочными.
+    #   * При measured_count > 0 действует обычный лимит
+    #     CALIBRATION_TOPICS_PER_DAY=2, чтобы не размывать фокус.
+    if measured_count == 0:
+        n_cal_topics = min(
+            CALIBRATION_TOPICS_PER_DAY_WHEN_EMPTY,
+            len(calibration_candidate_topics),
+            total_topics,  # сколько вообще тем у класса
+        )
+    else:
+        n_cal_topics = min(
+            CALIBRATION_TOPICS_PER_DAY,
+            len(calibration_candidate_topics),
+            # если нет калибровочных слотов, темы тоже не выбираем
+            max(1, calibration_slots) if calibration_slots > 0 else 0,
+        )
     chosen_calibration = select_calibration_topics(
         calibration_candidate_topics,
         n=n_cal_topics,
@@ -751,18 +963,26 @@ def build_profile(
     weak_topics: List[Dict[str, Any]] = []
     subject_count: Dict[str, int] = {}
 
+    # PR per-topic difficulty matching: при 0 тестов поднимаем лимит,
+    # чтобы все 7-10 калибровочных тем попали в weak_topics → slot_planner
+    # распределит между ними 10 слотов (вместо урезания до 7).
+    weak_limit = (
+        _TOP_WEAK_COUNT_WHEN_EMPTY if measured_count == 0 else _TOP_WEAK_COUNT
+    )
+
     for t in measured_topics_sorted:
-        if len(weak_topics) >= _TOP_WEAK_COUNT:
+        if len(weak_topics) >= weak_limit:
             break
         if subject_count.get(t['subject'], 0) >= _MAX_WEAK_PER_SUBJECT:
             continue
         weak_topics.append(_pick_topic_fields(t))
         subject_count[t['subject']] = subject_count.get(t['subject'], 0) + 1
 
-    # Добавляем калибровочные (без per-subject лимита — их максимум 2)
+    # Добавляем калибровочные (без per-subject лимита — их максимум
+    # CALIBRATION_TOPICS_PER_DAY при measured>0, или ВСЕ темы при 0/N).
     used_topic_set = {t['topic'] for t in weak_topics}
     for t in topics_full:
-        if len(weak_topics) >= _TOP_WEAK_COUNT:
+        if len(weak_topics) >= weak_limit:
             break
         if t['topic'] in used_topic_set:
             continue
@@ -803,6 +1023,15 @@ def build_profile(
             'measured': True,
             'calibration': False,
             'target_level': t['target_level'],
+            # PER-TOPIC DIFFICULTY MATCHING
+            'level_window': t['level_window'],
+            'level_low': t['level_low'],
+            'level_high': t['level_high'],
+            'floor_level': t['floor_level'],
+            'stretch_level': t['stretch_level'],
+            'test_correct': t.get('test_correct'),
+            'test_total': t.get('test_total'),
+            'final_level': t.get('final_level'),
         })
 
     # Если сильных меньше 3 — добираем фолбэк-кандидатами, как раньше
@@ -824,6 +1053,14 @@ def build_profile(
                 'measured': t['measured'],
                 'calibration': t['calibration'],
                 'target_level': t['target_level'],
+                'level_window': t['level_window'],
+                'level_low': t['level_low'],
+                'level_high': t['level_high'],
+                'floor_level': t['floor_level'],
+                'stretch_level': t['stretch_level'],
+                'test_correct': t.get('test_correct'),
+                'test_total': t.get('test_total'),
+                'final_level': t.get('final_level'),
             })
             used.add(t['topic'])
 
@@ -869,13 +1106,19 @@ def _pick_topic_fields(t: Dict[str, Any]) -> Dict[str, Any]:
         'avg_level_solved': t['avg_level_solved'],
         'floor_level': t['floor_level'],
         'subtopic_hints': t['subtopic_hints'],
-        # новые поля (Gemini-промпт пока их не использует, но они полезны
-        # для аудита и для будущей версии промпта)
+        # новые поля (PR percent_to_level + calibration + per-topic)
         'measured': t['measured'],
         'calibration': t['calibration'],
         'pct': t['pct'],
         'level_from_pct': t['level_from_pct'],
         'target_level': t['target_level'],
         'stretch_level': t['stretch_level'],
+        # PER-TOPIC DIFFICULTY MATCHING
+        'level_window': t['level_window'],
+        'level_low': t['level_low'],
+        'level_high': t['level_high'],
+        'test_correct': t.get('test_correct'),
+        'test_total': t.get('test_total'),
+        'final_level': t.get('final_level'),
         'priority': t['priority'],
     }

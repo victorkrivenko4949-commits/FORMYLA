@@ -675,20 +675,70 @@ class DeepSeekClient:
             'работаю только с текст',
             'работаю с текст',
             'я не вижу',
+            'не имею возможности видеть',
+            'не способен видеть',
+            'не могу анализировать изображ',
+            'не могу просматривать',
+            'не могу рассмотреть',
+            'нет возможности увидеть',
+            'cannot see',
+            'cannot view',
+            "can't see",
+            "i don't have the ability to see",
+            'unable to view',
+            'unable to see',
+            'no image',
+            'no picture',
+            'изображение не прикреплено',
+            'фото не прикреплено',
+            'картинка не прикреплена',
+            'не вижу картинк',
+            'не вижу фото',
+            'не вижу изображ',
+            'прикрепите изображ',
+            'прикрепите фото',
+            'загрузите изображ',
+            'загрузите фото',
+            # Дополнительные фразы (найдены в реальных ответах)
+            'к сожалению, я не могу обработать',
+            'к сожалению, я не могу',
+            'не могу воспроизвести',
+            'не могу интерпретировать',
+            'не могу распознать',
+            'не удалось распознать',
+            'не удалось обработать',
+            'не удается увидеть',
+            'не удается распознать',
+            'sorry, i cannot',
+            "i'm unable to",
+            'i am unable to',
+            'i cannot process',
+            'i cannot analyze',
         )
         if image_data:
-            for msg in chat_history[-20:]:
+            # При наличии фото — полностью очищаем историю от "отравленных" сообщений
+            # и ограничиваем контекст последними 5 сообщениями, чтобы минимизировать bias
+            clean_history = []
+            for msg in chat_history[-10:]:  # берём меньше истории при vision
                 role = msg.get('role', 'user')
                 content = msg.get('content', '') or ''
-                if role == 'assistant' and any(p in content.lower() for p in _NEG_PHRASES):
-                    # Пропускаем «отравленные» ответы прошлых раундов без vision
+                content_lower = content.lower()
+                # Пропускаем ВСЕ сообщения, связанные с "не вижу фото"
+                if role == 'assistant' and any(p in content_lower for p in _NEG_PHRASES):
+                    continue
+                # Также пропускаем user-сообщения с упоминанием прикреплённых фото
+                # (чтобы не было контекста "раньше я слал фото и ты не видел")
+                if role == 'user' and ('[📎' in content or 'прикрепл' in content_lower or 'фото' in content_lower):
                     continue
                 # Убираем плейсхолдеры из user-сообщений
                 if isinstance(content, str):
                     content = content.replace('[📎 Прикреплено изображение]', '').strip()
                 if not content:
                     continue
-                messages.append({'role': role, 'content': content})
+                clean_history.append({'role': role, 'content': content})
+            # Берём только последние 5 сообщений для vision-запросов
+            for msg in clean_history[-5:]:
+                messages.append(msg)
         else:
             for msg in chat_history[-20:]:
                 messages.append({
@@ -732,7 +782,11 @@ class DeepSeekClient:
             messages.append({"role": "user", "content": new_message})
             use_vision_model = False
         
-        print(f">>> Messages count: {len(messages)}, Vision: {use_vision_model}", flush=True)
+        # Log safely — flush=True can crash with OSError on Windows (broken stdout pipe)
+        try:
+            print(f">>> Messages count: {len(messages)}, Vision: {use_vision_model}")
+        except OSError:
+            pass
         logger.info(f"Sending {len(messages)} messages to AI (vision={use_vision_model})")
         
         def _call_api(api_url, model, api_key, msgs, is_openrouter=False):
@@ -771,15 +825,22 @@ class DeepSeekClient:
         try:
             if use_vision_model:
                 openrouter_key = os.environ.get('OPENROUTER_API_KEY')
+                # Vision-модели в порядке приоритета:
+                # 1. Платные качественные модели (если есть баланс)
+                # 2. Бесплатные fallback-модели
                 vision_models = [
-                    # Более новая и стабильно поддерживающая vision модель
-                    "openai/gpt-4o-mini",
-                    # Запасные варианты на случай отказа основной
-                    "google/gemini-2.0-flash-001",
-                    "anthropic/claude-3.5-sonnet",
+                    # Платные модели — лучшее качество распознавания
+                    "google/gemini-2.0-flash-001",      # Отличное vision, быстрая
+                    "openai/gpt-4o-mini",               # Хорошее vision, дешёвая
+                    "anthropic/claude-3.5-sonnet",      # Премиум качество
+                    # FREE-tier vision модели OpenRouter — fallback если нет баланса
+                    "google/gemini-2.0-flash-exp:free", # Бесплатная Gemini с vision
+                    "meta-llama/llama-3.2-11b-vision-instruct:free",  # Llama vision
+                    "nvidia/nemotron-nano-12b-v2-vl:free",  # Nvidia vision (может отвечать "не вижу")
                 ]
                 if openrouter_key:
                     last_err = None
+                    last_poisoned_response = None
                     for vm in vision_models:
                         try:
                             content = _call_api(
@@ -789,12 +850,31 @@ class DeepSeekClient:
                                 messages,
                                 is_openrouter=True,
                             )
+                            # Проверяем, не "отравлен" ли ответ фразами "не вижу"
+                            content_lower = content.lower() if content else ''
+                            is_poisoned = any(p in content_lower for p in _NEG_PHRASES)
+                            if is_poisoned:
+                                logger.warning(f"Vision via {vm} returned 'cannot see' response, trying next model")
+                                last_poisoned_response = content
+                                continue  # Пробуем следующую модель
                             logger.info(f"Tutor response generated for user {user.id} (vision={vm})")
                             return content
                         except Exception as vision_err:
                             last_err = vision_err
                             logger.warning(f"Vision via {vm} failed: {vision_err}")
-                    # Все vision-модели не сработали — возвращаем дружелюбное сообщение
+                    # Все vision-модели не сработали или вернули "не вижу"
+                    if last_poisoned_response:
+                        # Если хотя бы одна модель ответила (пусть и "не вижу"),
+                        # возвращаем специальное сообщение с просьбой описать текстом
+                        logger.error(f"All vision models returned 'cannot see' for user {user.id}")
+                        return (
+                            "🖼️ К сожалению, AI-модели не смогли распознать содержимое изображения. "
+                            "Это может быть из-за качества фото или формата файла.\n\n"
+                            "**Попробуйте:**\n"
+                            "• Сделать фото при хорошем освещении\n"
+                            "• Убедиться, что текст на фото чёткий и читаемый\n"
+                            "• Или просто опишите задачу текстом — я с радостью помогу!"
+                        )
                     logger.error(f"All vision models failed for user {user.id}: {last_err}")
                     return (
                         "🖼️ Не получилось распознать изображение через vision-AI "

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ competition }} {{ grade }} класс — {{ section }} — FORMYLA{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('olympiad.course' if grade==9 else 'olympiad.course_10' if grade==10 else 'olympiad.course_11') }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к курсу</a>
+    </p>
+
+    <header style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 6px;">
+            <span class="oly-badge oly-badge-topic">{{ section }}</span>
+            {{ competition }} · {{ grade }} класс
+        </h1>
+        <p style="color: var(--text-muted); margin: 0;">
+            {% set total = namespace(n=0) %}
+            {% for g in grouped %}{% set total.n = total.n + g.tasks|length %}{% endfor %}
+            {{ total.n }} задач
+        </p>
+    </header>
+
+    {% if grouped %}
+    {% for g in grouped %}
+    <h2 class="oly-section-title" style="margin-top: 28px;">🏆 {{ g.stage }}</h2>
+    <div class="oly-grid">
+        {% for t in g.tasks %}
+        <a class="oly-card" href="{{ url_for('olympiad.method_task', method_task_id=t.id) }}">
+            <h3 style="display:flex; justify-content: space-between; align-items: center; gap:8px;">
+                <span>№{{ t.id }}</span>
+                {% if t.difficulty %}
+                <span class="oly-badge oly-badge-{{ t.difficulty }}">{{ t.difficulty }}</span>
+                {% endif %}
+            </h3>
+            <p class="oly-card-sub">
+                Метод: <strong>{{ t.method_code }}</strong>
+                {% if t.method_name %}· {{ t.method_name }}{% endif %}
+            </p>
+            {% if t.difficulty_label %}
+            <p class="oly-card-sub" style="margin-top:6px;">
+                <span style="color:{{ t.difficulty_color or '#888' }};">{{ t.difficulty_label }}</span>
+                {% if t.method_probability_tier %}
+                · <span style="color:{{ t.method_probability_color or '#888' }};">{{ t.method_probability_tier }}</span>
+                {% endif %}
+            </p>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color: var(--text-muted);">В этом разделе пока нет задач.</p>
+    {% endif %}
+</div>
+{% endblock %}

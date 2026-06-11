@@ -67,6 +67,10 @@ data/*
 !data/olympiads/**
 # Exception: olympiads_db.py — extracted data dict used by olympiad Blueprint.
 !data/olympiads_db.py
+# Exception: adaptive bank seed (9120 калиброванных задач L1..L8).
+# Используется services/adaptive_full_seed.py при ADAPTIVE_FORCE_IMPORT=1.
+!data/adaptive/
+!data/adaptive/**
 *.jsonl
 *.bak
 checkpoint.json

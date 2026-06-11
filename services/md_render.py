@@ -70,13 +70,24 @@ def _protect_latex(text: str) -> tuple[str, list[str]]:
     return text, placeholders
 
 
+# Регексы для зачистки <br> рядом с display-math плейсхолдером.
+# Расширение nl2br Markdown превращает все \n в <br>, в том числе внутри
+# $$...$$ блоков — что ломает KaTeX (он видит обрыв формулы по <br>).
+# Мы убираем <br>\n до и после плейсхолдера ПЕРЕД восстановлением LaTeX.
+_RE_BR_AROUND_PH = re.compile(r'(?:<br\s*/?>\s*)*(@@LATEXBLOCK_\d+_\d+@@)(?:\s*<br\s*/?>)*')
+
+
 def _restore_latex(html: str, placeholders: list[str]) -> str:
-    """Подставить LaTeX-фрагменты обратно в готовый HTML."""
-    for i, pat in enumerate(_LATEX_PATTERNS):
-        # У нас есть плейсхолдеры вида @@LATEXBLOCK_<i>_<idx>@@.
-        # Идём по индексам этого паттерна.
-        pass
-    # Простой обратный обход: ищем по индексу глобального списка.
+    """Подставить LaTeX-фрагменты обратно в готовый HTML.
+
+    Дополнительно вычищает <br> теги, которые nl2br расширение втыкает
+    вокруг плейсхолдеров — иначе они попадают внутрь $$...$$ блока
+    и KaTeX обрывает рендеринг формулы.
+    """
+    # 1) Убрать <br> до/после плейсхолдеров (особенно критично для $$...$$).
+    html = _RE_BR_AROUND_PH.sub(r'\1', html)
+
+    # 2) Подставить LaTeX обратно.
     for idx, original in enumerate(placeholders):
         for i in range(len(_LATEX_PATTERNS)):
             ph = f'@@LATEXBLOCK_{i}_{idx}@@'
@@ -94,9 +105,23 @@ def md_render(text: str | None) -> Markup:
 
     Поддерживает inline-SVG и другой raw HTML за счёт
     `unsafe_allow_raw_html=True` в конфиге расширения `extra`.
+
+    PR math_normalize (инцидент 2026-06-10):
+    Прогоняем текст через :func:`services.math_text_normalizer.normalize_math_text`
+    ПЕРЕД защитой LaTeX. Это автоматически оборачивает «голые» математические
+    выражения (`x^2`, `sqrt(x)`, `{x+y=1; x*y=2}`) в `$...$`, чтобы KaTeX/MathJax
+    отрендерил их как формулы, а не сырой ASCII.
     """
     if not text:
         return Markup('')
+
+    # ── Math auto-normalize ──
+    try:
+        from services.math_text_normalizer import normalize_math_text
+        text = normalize_math_text(text)
+    except Exception:
+        # Любая ошибка нормализатора — не валим страницу, рендерим как есть.
+        pass
 
     protected, placeholders = _protect_latex(text)
     html = _markdown.markdown(

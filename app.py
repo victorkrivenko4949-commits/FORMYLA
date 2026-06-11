@@ -284,6 +284,10 @@ try:
                 'suggested_level': 'INTEGER',
                 'needs_reclassification': 'BOOLEAN DEFAULT 0',
                 'last_calibrated_at': 'DATETIME',
+                # Поля для адаптивного сидера (services/adaptive_full_seed.py).
+                # Используются для idempotency и трассировки источника датасета.
+                'task_type': 'TEXT',
+                'source': 'TEXT',
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -682,6 +686,56 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] support_messages Warning: {e}")
 
+# AUTO-MIGRATION: Create site_reviews table for public user reviews
+# Хранит публичные отзывы о сайте, чтобы их видели другие пользователи
+# на странице /about. Отзыв публикуется автоматически после отправки формы.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_sr, text as _text_sr
+        _inspector_sr = _inspect_sr(db.engine)
+        if 'site_reviews' not in _inspector_sr.get_table_names():
+            _is_pg_sr = _database_url.startswith('postgresql')
+            if _is_pg_sr:
+                db.session.execute(_text_sr("""
+                    CREATE TABLE IF NOT EXISTS site_reviews (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        nickname VARCHAR(64),
+                        avatar_url VARCHAR(500),
+                        rating INTEGER NOT NULL DEFAULT 0,
+                        message TEXT NOT NULL,
+                        is_public BOOLEAN DEFAULT TRUE,
+                        is_hidden BOOLEAN DEFAULT FALSE,
+                        ip VARCHAR(64),
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """))
+                db.session.execute(_text_sr("""
+                    CREATE INDEX IF NOT EXISTS idx_site_reviews_public
+                    ON site_reviews(is_public, is_hidden, created_at DESC)
+                """))
+            else:
+                db.session.execute(_text_sr("""
+                    CREATE TABLE IF NOT EXISTS site_reviews (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        nickname VARCHAR(64),
+                        avatar_url VARCHAR(500),
+                        rating INTEGER NOT NULL DEFAULT 0,
+                        message TEXT NOT NULL,
+                        is_public BOOLEAN DEFAULT 1,
+                        is_hidden BOOLEAN DEFAULT 0,
+                        ip VARCHAR(64),
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+            db.session.commit()
+            print("[AUTO-MIGRATION] ✓ Created site_reviews table")
+        else:
+            print("[AUTO-MIGRATION] ✓ site_reviews table already exists")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] site_reviews Warning: {e}")
+
 # AUTO-MIGRATION: Add solved_indices column to daily_quests
 # Used to track per-task completion (so a solved task can't be re-attempted).
 try:
@@ -851,6 +905,14 @@ try:
     from routes.olympiad import olympiad_bp
     app.register_blueprint(olympiad_bp)
     print("[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)")
+
+    # Admin Support inbox + user-side «Твоя поддержка»
+    try:
+        from routes.admin_support import admin_support_bp
+        app.register_blueprint(admin_support_bp)
+        print("[BP] admin_support_bp registered (/admin/support, /my/support)")
+    except Exception as _e_as:
+        print(f"[BP] admin_support_bp FAILED: {_e_as}")
 except Exception as _e:
     print(f"[BP] olympiad_bp NOT registered: {_e}")
 
@@ -872,11 +934,36 @@ else:
 # курса «ВсОШ-9 2026/2027» не доезжают до прод-БД на Render. Этот блок
 # идемпотентно прогоняет upsert/replace из scripts/import_olympiad на старте.
 # Отключается env-переменной VSOSH9_2027_FORCE_IMPORT=0.
-try:
-    from services.olympiad_v4_force import run_v4_force_import
-    run_v4_force_import(app, db)
-except Exception as _e_v4:
-    print(f"[VSOSH9-V4] hook skipped: {_e_v4}")
+# ВсОШ-2027 production-сидер: безопасно (идемпотентно) перезаливает данные
+# 9/10/11 классов из data/olympiads/vsosh9_full.json + vsosh_10_11_full.json
+# при VSOSH9_2027_FORCE_IMPORT=1. Если в БД уже 50 пробников × 20 задач,
+# пропускает (см. services/vsosh_full_seed.py).
+# СТАРЫЙ run_v4_force_import (services.olympiad_v4_force) ОТКЛЮЧЕН —
+# он перезаписывал свежие данные старыми JSON из data/olympiads/v4.
+if os.environ.get('VSOSH9_2027_FORCE_IMPORT', '0') == '1':
+    try:
+        from services.vsosh_full_seed import run_vsosh_full_seed
+        _seed_result = run_vsosh_full_seed(app, db)
+        print(f"[VSOSH-FULL-SEED] result={_seed_result.get('status')}")
+    except Exception as _e_seed:
+        print(f"[VSOSH-FULL-SEED] hook skipped: {_e_seed}")
+else:
+    print("[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)")
+
+# ── Adaptive bank seed (9120 калиброванных задач L1..L8) ─────────────────
+# Идемпотентно перезаливает таблицу adaptive_tasks из
+# data/adaptive/adaptive_full_9120.json. Если уже >= 9000 строк с
+# source = 'calibrated_2026_06_04' — пропускает работу.
+# Включается переменной окружения ADAPTIVE_FORCE_IMPORT=1.
+if os.environ.get('ADAPTIVE_FORCE_IMPORT', '0') == '1':
+    try:
+        from services.adaptive_full_seed import run_adaptive_full_seed
+        _ad_seed_result = run_adaptive_full_seed(app, db)
+        print(f"[ADAPTIVE-FULL-SEED] result={_ad_seed_result}")
+    except Exception as _e_ad_seed:
+        print(f"[ADAPTIVE-FULL-SEED] hook skipped: {_e_ad_seed}")
+else:
+    print("[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)")
 
 # ── Theory catalog seed (idempotent, без env-гейта) ──────────────────────────
 # Засевает olympiad_theory из data/olympiads/methods_catalog_89.json,
@@ -1098,13 +1185,21 @@ try:
 except Exception as _e:
     print(f"[BP] grade_bp NOT registered: {_e}")
 
-# /api/concierge/* — Site Concierge AI helper (отдельный от ИИ-тьютора).
+# /api/assistant + legacy /api/concierge/* — FORMYLA AI Site Assistant
+# (отдельный от ИИ-тьютора). Полная переcборка: см. assistant/ package.
 try:
-    from routes.concierge import concierge_bp
-    app.register_blueprint(concierge_bp)
-    print("[BP] concierge_bp registered (/api/concierge/ask, /api/concierge/intents)")
+    from assistant import assistant_bp
+    app.register_blueprint(assistant_bp)
+    # Seed KB on first run (idempotent). Must be inside app_context.
+    try:
+        from assistant.kb import init_db as _assistant_init_db
+        with app.app_context():
+            _assistant_init_db()
+        print("[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded")
+    except Exception as _e_seed:
+        print(f"[BP] assistant_bp registered, but KB seed failed: {_e_seed}")
 except Exception as _e:
-    print(f"[BP] concierge_bp NOT registered: {_e}")
+    print(f"[BP] assistant_bp NOT registered: {_e}")
 
 # /auth/telegram/* — Telegram Login Widget callback.
 try:
@@ -1137,6 +1232,17 @@ try:
 except Exception as _e:
     import traceback as _tb
     print(f"[BP] daily_tasks_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
+# ── AUTO-MIGRATION: test_sessions (для восстановления адаптивного теста) ──
+try:
+    from migrations.add_test_sessions import _ensure_test_sessions_table
+    with app.app_context():
+        _ensure_test_sessions_table()
+    print("[BP] test_sessions migration ensured")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] test_sessions migration FAILED: {_e}")
     print(_tb.format_exc())
 
 # Jinja filter for Markdown rendering of olympiad task/theory text (LaTeX-safe).
@@ -1454,6 +1560,7 @@ _PUBLIC_PATHS = (
     '/yandex_login',
     '/yandex_receiver',
     '/link_yandex',
+    '/api/reviews',   # Публичный список отзывов о сайте (для /about)
 )
 
 
@@ -2680,6 +2787,17 @@ def problem_detail(problem_id):
                 _olympiad_slug, _year, _grade, _day, _problem_num
             )
 
+    # Нормализуем математический текст (auto-wrap `^`, `sqrt`, `{x+y=1; x*y=2}`
+    # в `$...$`), чтобы KaTeX рендерил формулы красиво. Не модифицирует
+    # исходный объект PROBLEMS_DB/OLYMPIADS_DB — работаем с копией.
+    try:
+        from services.math_text_normalizer import normalize_problem_fields
+        problem = normalize_problem_fields(problem)
+    except Exception as _norm_err:
+        app.logger.warning(
+            f"[math_normalizer] problem {problem_id}: {_norm_err}"
+        )
+
     return render_template('problem_detail.html',
         problem=problem,
         subject_title=subject_title,
@@ -3065,10 +3183,19 @@ def olympiad_open():
     if patch_count > 0:
         print(f"[RUNTIME PATCH] Удалено 'см. рисунок' из {patch_count} полей в combo_id={combo.get('id')}")
 
+    # Нормализуем math-формулы в problem.text — `x^2`, `sqrt(x)`, системы.
+    _problems_raw = combo.get('problems', [])
+    try:
+        from services.math_text_normalizer import normalize_problem_fields
+        _problems_norm = [normalize_problem_fields(p) for p in _problems_raw]
+    except Exception as _e_norm:
+        app.logger.warning(f"[math_normalizer] olympiad_detail: {_e_norm}")
+        _problems_norm = _problems_raw
+
     return render_template('olympiad_detail.html',
         olympiad=olympiad,
         combo=combo,
-        problems=combo.get('problems', [])
+        problems=_problems_norm
     )
 
 
@@ -3116,6 +3243,32 @@ def olympiad_solution(combo_id):
             combo['source_url'] = specific_url
     except Exception as _url_err:
         pass  # Keep original source_url on any error
+
+    # Прикрепляем рисунки-решения (official figures из all11_figures архива).
+    # Только на страницу решений — в условиях рисунки не показываются.
+    try:
+        from services.solution_figures import attach_to_problems as _attach_fig
+        attached = _attach_fig(combo=combo, problems=combo.get('problems', []))
+        if attached:
+            app.logger.info(
+                f"[solution_figures] combo_id={combo.get('id')}: "
+                f"attached {attached} figures"
+            )
+    except Exception as _fig_err:
+        app.logger.warning(f"[solution_figures] attach failed: {_fig_err}")
+
+    # Нормализуем math-формулы в text/solution/answer.
+    try:
+        from services.math_text_normalizer import normalize_problem_fields
+        combo_problems = combo.get('problems') or []
+        if combo_problems:
+            # Не модифицируем глобальный COMBOS — работаем с копией
+            combo = dict(combo)
+            combo['problems'] = [
+                normalize_problem_fields(p) for p in combo_problems
+            ]
+    except Exception as _e_norm:
+        app.logger.warning(f"[math_normalizer] olympiad_solution: {_e_norm}")
 
     return render_template('olympiad_solutions.html',
         olympiad=olympiad,
@@ -5131,6 +5284,55 @@ def api_free_mock_evaluate():
 # ADAPTIVE TESTING (Адаптивное тестирование)
 # ============================================================
 
+# ── Adaptive test cooldown: 30 дней между тестами ─────────────────────────
+# Раз в 30 дней пользователь может пройти полный 25-задачный адаптивный тест.
+# Раньше можно было перепроходить сколько угодно — это сбивало уровень
+# и портило per-topic difficulty matching в задачах дня. Теперь:
+#   - Залогиненный: учитываем по AdaptiveTestResult.completed_at для user_id.
+#   - Гость: учитываем по session['adaptive_completed_at'] (ISO-таймстамп).
+ADAPTIVE_COOLDOWN_DAYS = 30
+
+
+def _adaptive_cooldown_status():
+    """Вернуть (is_blocked: bool, days_left: int, last_completed_at: datetime|None).
+
+    Если is_blocked=True — пользователь должен подождать days_left дней до
+    следующего теста. last_completed_at — ISO-дата прошлого прохождения.
+    """
+    from datetime import datetime as _dt, timedelta as _td
+    now = _dt.utcnow()
+    last_at = None
+    try:
+        if current_user.is_authenticated:
+            from models import AdaptiveTestResult
+            res = (AdaptiveTestResult.query
+                   .filter_by(user_id=current_user.id)
+                   .order_by(AdaptiveTestResult.completed_at.desc())
+                   .first())
+            if res and res.completed_at:
+                last_at = res.completed_at
+        else:
+            raw = session.get('adaptive_completed_at')
+            if raw:
+                try:
+                    last_at = _dt.fromisoformat(raw)
+                except (TypeError, ValueError):
+                    last_at = None
+    except Exception as e:
+        logger.warning('[ADAPTIVE-COOLDOWN] check failed: %s', e)
+        return False, 0, None
+
+    if last_at is None:
+        return False, 0, None
+
+    elapsed = now - last_at
+    cd = _td(days=ADAPTIVE_COOLDOWN_DAYS)
+    if elapsed >= cd:
+        return False, 0, last_at
+    days_left = max(1, (cd - elapsed).days + 1)
+    return True, days_left, last_at
+
+
 @app.route("/adaptive_test/select_class")
 def adaptive_test_select_class():
     """Шаг 1 адаптивного теста: выбор класса (5–11).
@@ -5138,7 +5340,18 @@ def adaptive_test_select_class():
     Класс выбирается ПЕРВЫМ, затем пользователь попадает на выбор темы,
     которая зависит от класса (для 5/6 — школьные домены, для 7+ —
     классические олимпиадные темы).
+
+    Cooldown: если последний тест был меньше 30 дней назад —
+    редиректим на результаты прошлого теста с flash-сообщением.
     """
+    is_blocked, days_left, last_at = _adaptive_cooldown_status()
+    if is_blocked:
+        flash(
+            f'Адаптивный тест можно проходить раз в 30 дней. До следующего теста: {days_left} дн. '
+            f'Текущий уровень и подбор задач уже настроены по прошлому результату.',
+            'info',
+        )
+        return redirect('/adaptive_test_simple/results')
     return render_template('adaptive_test_select_class.html')
 
 
@@ -5148,7 +5361,17 @@ def adaptive_test_select_topic():
 
     - Для 5 и 6 классов показываем домены из GradeTask (импорт 1600 задач).
     - Для 7–11 классов — классические темы из AdaptiveTask.
+
+    Cooldown: те же 30 дней что и для select_class.
     """
+    is_blocked, days_left, _ = _adaptive_cooldown_status()
+    if is_blocked:
+        flash(
+            f'Адаптивный тест можно проходить раз в 30 дней. До следующего теста: {days_left} дн.',
+            'info',
+        )
+        return redirect('/adaptive_test_simple/results')
+
     try:
         grade_int = int(request.args.get('grade', ''))
     except (ValueError, TypeError):
@@ -5235,7 +5458,17 @@ def adaptive_test_start_grade():
     разбитый по школьным доменам. Пока эти задачи проходятся в обычном
     режиме (страница grade.domain_*) — без полностью адаптивного движка,
     т.к. он завязан на поля AdaptiveTask.
+
+    Cooldown: общий лимит 30 дней между адаптивными тестами.
     """
+    is_blocked, days_left, _ = _adaptive_cooldown_status()
+    if is_blocked:
+        flash(
+            f'Адаптивный тест можно проходить раз в 30 дней. До следующего теста: {days_left} дн.',
+            'info',
+        )
+        return redirect('/adaptive_test_simple/results')
+
     try:
         grade_int = int(request.args.get('grade', ''))
     except (ValueError, TypeError):
@@ -5327,7 +5560,20 @@ def adaptive_test_select_grade():
 
 @app.route("/adaptive_test/start")
 def adaptive_test_start_simple():
-    """Простой запуск адаптивного теста с фильтрацией по теме."""
+    """Простой запуск адаптивного теста с фильтрацией по теме.
+
+    Cooldown: общий лимит 30 дней между адаптивными тестами (любой темой).
+    Дополнительно ниже сохраняется per-topic проверка для совместимости.
+    """
+    # Глобальный 30-дневный кулдаун (любая тема/класс)
+    is_blocked, days_left, _ = _adaptive_cooldown_status()
+    if is_blocked:
+        flash(
+            f'Адаптивный тест можно проходить раз в 30 дней. До следующего теста: {days_left} дн.',
+            'info',
+        )
+        return redirect('/adaptive_test_simple/results')
+
     topic = request.args.get('topic')
     grade = request.args.get('grade')
     
@@ -5696,13 +5942,409 @@ def _adaptive_slots_summary(slots):
     return out
 
 
+# ─── Test Session Recovery API ───────────────────────────────────────────
+# Сохраняет полное состояние адаптивного теста в таблице test_sessions
+# для восстановления после закрытия вкладки / перезагрузки страницы.
+#
+# Ключи Flask-сессии, которые нужно сохранять:
+_ADAPTIVE_SESSION_KEYS = (
+    'adaptive_current_difficulty',
+    'adaptive_filtered_tasks',
+    'adaptive_topic',
+    'adaptive_topic_name',
+    'adaptive_grade',
+    'adaptive_db_topic',
+    'adaptive_current_index',
+    'adaptive_current_task_id',
+    'adaptive_current_slot',
+    'adaptive_shown_task_ids',
+    'partial_correct_streak',
+)
+
+
+def _ts_get_user_key():
+    """Возвращает (user_id, device_id) для привязки сессии теста."""
+    try:
+        from flask_login import current_user as _cu
+        uid = _cu.id if (_cu and getattr(_cu, 'is_authenticated', False)) else None
+    except Exception:
+        uid = None
+    did = session.get('device_id')
+    return uid, did
+
+
+def _ts_serialize_adaptive_state():
+    """Снимок ключей Flask-сессии адаптивного теста (JSON-сериализуемый)."""
+    out = {}
+    for k in _ADAPTIVE_SESSION_KEYS:
+        if k in session:
+            out[k] = session.get(k)
+    return out
+
+
+def _get_active_test_session(test_type='adaptive'):
+    """Находит активную (in_progress) запись test_sessions для текущего
+    пользователя/устройства. Возвращает row mapping или None."""
+    from sqlalchemy import text as _sql
+    uid, did = _ts_get_user_key()
+    if not uid and not did:
+        return None
+    try:
+        if uid:
+            row = db.session.execute(
+                _sql(
+                    "SELECT * FROM test_sessions "
+                    "WHERE user_id = :uid AND test_type = :tt AND status = 'in_progress' "
+                    "ORDER BY last_activity_at DESC LIMIT 1"
+                ),
+                {'uid': uid, 'tt': test_type},
+            ).fetchone()
+            if row:
+                return dict(row._mapping)
+        if did:
+            row = db.session.execute(
+                _sql(
+                    "SELECT * FROM test_sessions "
+                    "WHERE device_id = :did AND test_type = :tt AND status = 'in_progress' "
+                    "ORDER BY last_activity_at DESC LIMIT 1"
+                ),
+                {'did': did, 'tt': test_type},
+            ).fetchone()
+            if row:
+                return dict(row._mapping)
+    except Exception as _e:
+        print(f"[test_sessions] _get_active_test_session error: {_e}")
+    return None
+
+
+def _save_adaptive_state_to_db(session_id=None, status=None, mark_completed=False):
+    """Сохраняет ТЕКУЩЕЕ состояние Flask-сессии адаптивного теста в БД.
+
+    Если `session_id` передан — обновляет существующую запись.
+    Если нет — пытается найти существующую in_progress запись,
+    иначе создаёт новую.
+
+    Возвращает session_id (int) или None при ошибке.
+    """
+    from sqlalchemy import text as _sql
+    import json as _json
+    from datetime import datetime as _dt
+
+    if 'adaptive_filtered_tasks' not in session:
+        # Тест не активен — нечего сохранять
+        return None
+
+    uid, did = _ts_get_user_key()
+    if not uid and not did:
+        return None
+
+    slots = _adaptive_get_slots()
+    answered_cnt = _adaptive_answered_count(slots)
+    current_idx = answered_cnt  # сколько уже отвечено = индекс следующего
+    state = _ts_serialize_adaptive_state()
+    answers_json = _json.dumps(slots, ensure_ascii=False)
+    state_json = _json.dumps(state, ensure_ascii=False)
+    topic = session.get('adaptive_topic') or ''
+    topic_name = session.get('adaptive_topic_name') or topic
+    grade = str(session.get('adaptive_grade') or '')
+    new_status = status or ('completed' if mark_completed else 'in_progress')
+
+    # current_result = суммарный score по answered-слотам
+    try:
+        cur_result = sum(
+            int(s.get('score') or 0)
+            for s in slots
+            if s.get('status') == 'answered' and isinstance(s.get('score'), (int, float))
+        )
+    except Exception:
+        cur_result = 0
+
+    try:
+        # 1. Найти существующую запись
+        if session_id is None:
+            row = _get_active_test_session('adaptive')
+            if row:
+                session_id = row.get('id')
+
+        if session_id:
+            # UPDATE
+            db.session.execute(
+                _sql(
+                    "UPDATE test_sessions SET "
+                    "topic = :topic, topic_name = :tname, grade = :grade, "
+                    "status = :st, current_question_index = :idx, "
+                    "answers = :answers, adaptive_state = :state, "
+                    "current_result = :cur_result, "
+                    "last_activity_at = :now, "
+                    "completed_at = CASE WHEN :st = 'completed' THEN :now ELSE completed_at END "
+                    "WHERE id = :sid"
+                ),
+                {
+                    'topic': topic, 'tname': topic_name, 'grade': grade,
+                    'st': new_status, 'idx': current_idx,
+                    'answers': answers_json, 'state': state_json,
+                    'cur_result': cur_result,
+                    'now': _dt.utcnow(), 'sid': session_id,
+                },
+            )
+            db.session.commit()
+            return int(session_id)
+
+        # 2. INSERT новой записи
+        result = db.session.execute(
+            _sql(
+                "INSERT INTO test_sessions "
+                "(user_id, device_id, test_type, topic, topic_name, grade, "
+                "status, current_question_index, total_questions, "
+                "answers, adaptive_state, current_result, "
+                "started_at, last_activity_at) "
+                "VALUES (:uid, :did, 'adaptive', :topic, :tname, :grade, "
+                ":st, :idx, 25, :answers, :state, :cur_result, :now, :now)"
+            ),
+            {
+                'uid': uid, 'did': did,
+                'topic': topic, 'tname': topic_name, 'grade': grade,
+                'st': new_status, 'idx': current_idx,
+                'answers': answers_json, 'state': state_json,
+                'cur_result': cur_result,
+                'now': _dt.utcnow(),
+            },
+        )
+        db.session.commit()
+
+        # достаём id (поддержка SQLite + PostgreSQL)
+        new_id = None
+        try:
+            new_id = result.lastrowid
+        except Exception:
+            pass
+        if not new_id:
+            # Постгрес: вернём по уникальному поиску
+            r2 = db.session.execute(
+                _sql(
+                    "SELECT id FROM test_sessions WHERE "
+                    "(user_id = :uid OR (:uid IS NULL AND device_id = :did)) "
+                    "AND test_type = 'adaptive' AND status = :st "
+                    "ORDER BY id DESC LIMIT 1"
+                ),
+                {'uid': uid, 'did': did, 'st': new_status},
+            ).fetchone()
+            new_id = r2[0] if r2 else None
+        return int(new_id) if new_id else None
+    except Exception as _e:
+        print(f"[test_sessions] _save_adaptive_state_to_db error: {_e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return None
+
+
+def _load_adaptive_state_from_db(session_id):
+    """Загружает строку test_sessions по id и восстанавливает ключи
+    Flask-сессии. Возвращает True/False."""
+    from sqlalchemy import text as _sql
+    import json as _json
+    try:
+        row = db.session.execute(
+            _sql("SELECT * FROM test_sessions WHERE id = :sid"),
+            {'sid': int(session_id)},
+        ).fetchone()
+        if not row:
+            return False
+        rec = dict(row._mapping)
+        # Доступ разрешён, если совпадает user_id ИЛИ device_id
+        uid, did = _ts_get_user_key()
+        owner_uid = rec.get('user_id')
+        owner_did = rec.get('device_id')
+        if uid and owner_uid and int(owner_uid) == int(uid):
+            pass
+        elif did and owner_did and str(owner_did) == str(did):
+            pass
+        else:
+            # Не наш — отказ
+            return False
+
+        state_raw = rec.get('adaptive_state')
+        if isinstance(state_raw, str):
+            state = _json.loads(state_raw) if state_raw else {}
+        elif isinstance(state_raw, dict):
+            state = state_raw
+        else:
+            state = {}
+
+        answers_raw = rec.get('answers')
+        if isinstance(answers_raw, str):
+            answers = _json.loads(answers_raw) if answers_raw else []
+        elif isinstance(answers_raw, list):
+            answers = answers_raw
+        else:
+            answers = []
+
+        # Восстанавливаем все ключи
+        for k in _ADAPTIVE_SESSION_KEYS:
+            if k in state:
+                session[k] = state[k]
+        if isinstance(answers, list) and len(answers) == 25:
+            session['adaptive_slots'] = answers
+        # Поддерживаем минимум: если в state не было adaptive_filtered_tasks —
+        # фронт всё равно пометит сессию активной благодаря adaptive_slots.
+        if 'adaptive_filtered_tasks' not in session:
+            session['adaptive_filtered_tasks'] = state.get('adaptive_filtered_tasks', [])
+
+        session.permanent = True
+        session.modified = True
+        return True
+    except Exception as _e:
+        print(f"[test_sessions] _load_adaptive_state_from_db error: {_e}")
+        return False
+
+
+@app.route("/api/test/start", methods=["POST"])
+def api_test_start():
+    """Создаёт (или возвращает существующую) запись test_sessions для
+    активного адаптивного теста. Используется JS на странице теста."""
+    if 'adaptive_filtered_tasks' not in session:
+        return jsonify({'ok': False, 'error': 'Сессия теста не активна'}), 400
+    sid = _save_adaptive_state_to_db()
+    if not sid:
+        return jsonify({'ok': False, 'error': 'Не удалось создать сессию'}), 500
+    return jsonify({'ok': True, 'session_id': sid})
+
+
+@app.route("/api/test/active", methods=["GET"])
+def api_test_active():
+    """Проверяет, есть ли активная (in_progress) сессия для текущего
+    пользователя/устройства. Возвращает {active: True, session: {...}} или {}."""
+    row = _get_active_test_session('adaptive')
+    if not row:
+        return jsonify({})
+    return jsonify({
+        'active': True,
+        'session': {
+            'id': row.get('id'),
+            'topic': row.get('topic'),
+            'topic_name': row.get('topic_name'),
+            'grade': row.get('grade'),
+            'current_question_index': row.get('current_question_index'),
+            'total_questions': row.get('total_questions'),
+            'status': row.get('status'),
+        },
+    })
+
+
+@app.route("/api/test/<int:session_id>/resume", methods=["GET"])
+def api_test_resume(session_id):
+    """Возвращает полное состояние сессии + восстанавливает Flask-сессию."""
+    from sqlalchemy import text as _sql
+    import json as _json
+    ok = _load_adaptive_state_from_db(session_id)
+    if not ok:
+        return jsonify({'ok': False, 'error': 'Сессия не найдена или нет доступа'}), 404
+    row = db.session.execute(
+        _sql("SELECT * FROM test_sessions WHERE id = :sid"),
+        {'sid': session_id},
+    ).fetchone()
+    rec = dict(row._mapping) if row else {}
+    state_raw = rec.get('adaptive_state')
+    state = _json.loads(state_raw) if isinstance(state_raw, str) and state_raw else (state_raw or {})
+    answers_raw = rec.get('answers')
+    slots = _json.loads(answers_raw) if isinstance(answers_raw, str) and answers_raw else (answers_raw or [])
+    return jsonify({
+        'ok': True,
+        'session': {
+            'id': rec.get('id'),
+            'status': rec.get('status'),
+            'topic': rec.get('topic'),
+            'topic_name': rec.get('topic_name'),
+            'grade': rec.get('grade'),
+            'current_question_index': rec.get('current_question_index'),
+            'total_questions': rec.get('total_questions'),
+        },
+        'adaptive_state': state,
+        'slots': slots,
+    })
+
+
+@app.route("/api/test/<int:session_id>/answer", methods=["POST"])
+def api_test_answer(session_id):
+    """Сохраняет текущее состояние Flask-сессии в БД. Вызывается из
+    `sendBeacon` при закрытии вкладки. Тело запроса не используется —
+    источник истины это Flask session."""
+    sid = _save_adaptive_state_to_db(session_id=session_id)
+    if not sid:
+        return jsonify({'ok': False}), 400
+    return jsonify({'ok': True, 'status': 'ok', 'session_id': sid})
+
+
+@app.route("/api/test/<int:session_id>/complete", methods=["POST"])
+def api_test_complete(session_id):
+    """Отмечает сессию как 'completed'."""
+    sid = _save_adaptive_state_to_db(session_id=session_id, mark_completed=True)
+    if not sid:
+        return jsonify({'ok': False}), 400
+    return jsonify({'ok': True})
+
+
+@app.route("/api/test/<int:session_id>/abandon", methods=["POST"])
+def api_test_abandon(session_id):
+    """Отмечает сессию как 'abandoned' — для кнопки «Начать заново»."""
+    from sqlalchemy import text as _sql
+    from datetime import datetime as _dt
+    try:
+        # Проверка владения
+        row = db.session.execute(
+            _sql("SELECT user_id, device_id FROM test_sessions WHERE id = :sid"),
+            {'sid': session_id},
+        ).fetchone()
+        if not row:
+            return jsonify({'ok': False}), 404
+        uid, did = _ts_get_user_key()
+        owner_uid = row[0]
+        owner_did = row[1]
+        if not ((uid and owner_uid and int(owner_uid) == int(uid))
+                or (did and owner_did and str(owner_did) == str(did))):
+            return jsonify({'ok': False, 'error': 'forbidden'}), 403
+        db.session.execute(
+            _sql(
+                "UPDATE test_sessions SET status = 'abandoned', "
+                "last_activity_at = :now WHERE id = :sid"
+            ),
+            {'now': _dt.utcnow(), 'sid': session_id},
+        )
+        db.session.commit()
+        return jsonify({'ok': True})
+    except Exception as _e:
+        print(f"[test_sessions] api_test_abandon error: {_e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({'ok': False, 'error': str(_e)}), 500
+# ─── End Test Session Recovery API ────────────────────────────────────────
+
+
 @app.route("/adaptive_test_simple")
 def adaptive_test_simple_page():
     """Упрощенная страница адаптивного теста (без авторизации, на сессиях).
 
     Поддерживает навигацию по слотам через `?slot=N` (1..25).
     Если slot не указан — открывается первый pending-слот (или 1-й, если
-    все уже отвечены/пропущены)."""
+    все уже отвечены/пропущены).
+
+    Также поддерживает восстановление прерванного теста через
+    `?session=<id>` — состояние Flask-сессии загружается из БД."""
+    # ── Восстановление сессии из БД по ?session=<id> ──
+    _resume_sid = request.args.get('session')
+    if _resume_sid:
+        try:
+            _ok = _load_adaptive_state_from_db(int(_resume_sid))
+        except (TypeError, ValueError):
+            _ok = False
+        if not _ok:
+            flash('Не удалось восстановить прерванный тест', 'error')
+            return redirect(url_for('probniks_page'))
+
     # Проверяем, что в сессии есть данные теста
     if 'adaptive_filtered_tasks' not in session:
         flash('Сначала выберите тему и класс для теста', 'error')
@@ -5885,6 +6527,22 @@ def adaptive_test_simple_finish():
     session['adaptive_current_index'] = 25
     session.modified = True
 
+    # Помечаем сессию завершённой в БД
+    try:
+        _save_adaptive_state_to_db(mark_completed=True)
+    except Exception as _e_fin:
+        print(f"[test_sessions] complete-on-finish failed: {_e_fin}")
+
+    # ── Cooldown: фиксируем время прохождения для 30-дневного лимита ──
+    # Для гостей пишем в сессию (логиненные пользователи получают
+    # AdaptiveTestResult.completed_at на странице результатов).
+    try:
+        from datetime import datetime as _dt_now
+        session['adaptive_completed_at'] = _dt_now.utcnow().isoformat()
+        session.modified = True
+    except Exception as _e_cd:
+        print(f"[ADAPTIVE-COOLDOWN] failed to stamp session: {_e_cd}")
+
     if request.method == 'POST':
         return jsonify({'status': 'success', 'redirect': '/adaptive_test_simple/results'})
     return redirect('/adaptive_test_simple/results')
@@ -5997,60 +6655,38 @@ def check_adaptive_answer():
 
         # Получаем правильный ответ (если есть поле answer в модели)
         correct_answer = getattr(current_task, 'answer', '') or getattr(current_task, 'correct_answer', 'не указан')
-        
-        # ── Stage 0: Локальная проверка (без LLM, экономия кредитов) ──
-        # Если локальный checker может определить вердикт (correct/wrong),
-        # то НЕ вызываем review_attempt() — экономим кредиты DeepSeek.
-        # Только при `parse_error` падаем на AI-проверку.
-        from services.answer_checker import check_answer
-        local_correct, local_method = check_answer(user_answer, correct_answer)
-        
-        _local_verdict_applied = False  # True → AI не вызываем
-        
-        if local_correct:
-            # Локально подтверждено: ВЕРНО (exact_string или symbolic)
-            float_score = 1.0
-            feedback = f"✅ Ответ верный! Правильный ответ: **{correct_answer}**"
-            category = "correct"
-            confidence = 1.0
-            _local_verdict_applied = True
-            print(f"[CHECKER] Local: CORRECT (method={local_method}) — AI skipped, credits saved")
-            
-        elif local_method == "mismatch":
-            # Локально опровергнуто: НЕВЕРНО
-            # Возвращаем correct_answer + solution из БД, без генерации AI.
-            float_score = -1.0
-            _solution_text = (current_task.solution or "")[:500]
-            feedback = (
-                f"❌ Ответ неверный.\n\n"
-                f"**Правильный ответ:** {correct_answer}"
-                + (f"\n\n**Решение:**\n{_solution_text}" if _solution_text else "")
-            )
-            category = "wrong_answer_wrong_method"
-            confidence = 1.0
-            _local_verdict_applied = True
-            print(f"[CHECKER] Local: WRONG (method={local_method}) — AI skipped, credits saved")
-        
-        # ── AI fallback (только если локальный checker не смог определить) ──
-        if not _local_verdict_applied:
-            from services.ai_tutor_review import review_attempt
-            result = review_attempt(
-                task_text=current_task.task_text or "",
-                correct_answer=correct_answer,
-                solution_ref=current_task.solution or "",
-                user_answer=user_answer,
-                user_solution=user_solution,
-                images_b64=images_b64,
-                deepseek_client_cls=DeepSeekClient if DEEPSEEK_AVAILABLE else None,
-                deepseek_available=bool(DEEPSEEK_AVAILABLE),
-                max_tokens=4096,
-                difficulty_level=current_task.difficulty_level or 5,
-            )
-            
-            float_score = float(result.get("score", 0.0))
-            feedback = str(result.get("feedback") or "")
-            category = str(result.get("category") or "")
-            confidence = float(result.get("confidence") or 0.0)
+
+        # ── ИИ-тьютор — ЕДИНСТВЕННЫЙ судья вердикта +1/0/−1 ───────────────
+        # ВАЖНО (по требованию продукта): НИКАКИХ локальных short-circuit.
+        # Ни строковая сверка (services.answer_checker), ни «правильный ответ
+        # без решения = +1» не должны выносить вердикт мимо ИИ-тьютора —
+        # они раньше создавали рассинхрон: «локально −1, по факту +1» или
+        # наоборот.
+        # review_attempt() сам внутри использует sympy/match-equivalent
+        # ИСКЛЮЧИТЕЛЬНО как подсказку для модели; финальные answer_correct /
+        # method_correct берутся из JSON-ответа DeepSeek.
+        from services.ai_tutor_review import review_attempt
+        result = review_attempt(
+            task_text=current_task.task_text or "",
+            correct_answer=correct_answer,
+            solution_ref=current_task.solution or "",
+            user_answer=user_answer,
+            user_solution=user_solution,
+            images_b64=images_b64,
+            deepseek_client_cls=DeepSeekClient if DEEPSEEK_AVAILABLE else None,
+            deepseek_available=bool(DEEPSEEK_AVAILABLE),
+            max_tokens=4096,
+            difficulty_level=current_task.difficulty_level or 5,
+        )
+
+        float_score = float(result.get("score", 0.0))
+        feedback = str(result.get("feedback") or "")
+        category = str(result.get("category") or "")
+        confidence = float(result.get("confidence") or 0.0)
+        print(
+            f"[ADAPTIVE] AI tutor verdict: float_score={float_score}, "
+            f"category={category}, confidence={confidence}"
+        )
         
         # ── Float→Int score mapping for frontend contract ───────────
         # Оригинальная шкала адаптивного теста (int: -1, 0, 1, 2):
@@ -6076,14 +6712,13 @@ def check_adaptive_answer():
             score = 0
         
         # ── Детекция сбоя AI ──────────────────────────────────────────
-        # review_attempt() при сбое возвращает:
-        #   JSON parse error → score=-1.0, category="suspicious",           confidence=0.0
-        #   API exception    → score=-1.0, category="suspicious",           confidence=0.0
-        #   AI unavailable   → score=-1.0, category="wrong_answer_wrong_method", confidence=0.0
-        # ВСЕ три ветки hardcode confidence=0.0. Это ЕДИНСТВЕННЫЙ сигнал сбоя.
-        # Легитимная категория "suspicious" (ответ верный, нет решения, уровень≥7)
-        # возвращается с confidence>0 — и не попадает сюда.
-        is_ai_failure = (confidence == 0.0 and category in ("suspicious", "wrong_answer_wrong_method"))
+        # После последнего рефакторинга review_attempt() при ЛЮБОМ сбое ИИ
+        # (parse error / API exception / AI unavailable) возвращает:
+        #   score=0.0, category="suspicious", confidence=0.0
+        # confidence=0.0 — единственный надёжный сигнал сбоя. Легитимная
+        # категория "suspicious" (ответ верный, нет обоснования, уровень≥7)
+        # приходит с confidence>0 и сюда не попадает.
+        is_ai_failure = (confidence == 0.0 and category == "suspicious")
         
         # НОВАЯ ЛОГИКА АДАПТИВНОСТИ С СТРИКАМИ (4 ветки)
         current_difficulty = session.get('adaptive_current_difficulty', 3)
@@ -6159,6 +6794,12 @@ def check_adaptive_answer():
             next_slot = min(slot_num + 1, 25)
 
         session.modified = True
+
+        # Сохраняем прогресс в БД (для восстановления после закрытия вкладки)
+        try:
+            _save_adaptive_state_to_db()
+        except Exception as _e_save:
+            print(f"[test_sessions] save in check_adaptive_answer failed: {_e_save}")
 
         # Legacy-флаг is_last_task: оставлен для обратной совместимости JS.
         # Реальное завершение теперь только через /adaptive_test_simple/finish
@@ -10069,11 +10710,14 @@ def submit_feedback():
 
         rating_raw = data.get('rating')
         try:
-            rating = int(rating_raw) if rating_raw not in (None, '', 0, '0') else 0
+            rating = int(rating_raw) if rating_raw not in (None, '',) else 0
         except (TypeError, ValueError):
             rating = 0
-        if rating < 0 or rating > 5:
-            rating = 0
+        # Звёзды теперь ОБЯЗАТЕЛЬНЫ — без оценки 1..5 отзыв не принимается.
+        if rating < 1 or rating > 5:
+            return jsonify({
+                'error': 'Поставьте оценку от 1 до 5 звёзд'
+            }), 400
 
         email = (data.get('email') or '').strip() or None
         if email and '@' not in email:
@@ -10106,6 +10750,55 @@ def submit_feedback():
               or request.remote_addr)
 
         ticket_id = int(now)
+
+        # Сохраняем отзыв в БД (site_reviews), чтобы он отображался
+        # на странице /about другим пользователям. Не блокируем ответ
+        # пользователю, если запись в БД упала.
+        review_db_id = None
+        try:
+            avatar_url = None
+            if user_id:
+                try:
+                    avatar_url = current_user.avatar_url
+                except Exception:
+                    avatar_url = None
+            display_nick = nickname or (
+                f"Гость #{user_id}" if user_id else "Аноним"
+            )
+            ins = db.session.execute(
+                text("""
+                    INSERT INTO site_reviews
+                        (user_id, nickname, avatar_url, rating,
+                         message, is_public, is_hidden, ip)
+                    VALUES (:user_id, :nickname, :avatar_url, :rating,
+                            :message, :is_public, :is_hidden, :ip)
+                """),
+                {
+                    'user_id': user_id,
+                    'nickname': (display_nick or 'Аноним')[:64],
+                    'avatar_url': (avatar_url or None),
+                    'rating': rating,
+                    'message': message_text,
+                    'is_public': True,
+                    'is_hidden': False,
+                    'ip': (ip or '')[:64],
+                }
+            )
+            db.session.commit()
+            # Достаём id вставленной записи (для логов и потенциальной
+            # модерации). PostgreSQL и SQLite-совместимый способ.
+            try:
+                review_db_id = db.session.execute(
+                    text("SELECT MAX(id) FROM site_reviews")
+                ).scalar()
+            except Exception:
+                review_db_id = None
+        except Exception as _e_save:
+            db.session.rollback()
+            import logging
+            logging.warning(
+                f"[feedback] DB save failed (ticket={ticket_id}): {_e_save}"
+            )
 
         ok, err = send_review_email(
             mail,
@@ -10140,6 +10833,130 @@ def submit_feedback():
         import logging
         logging.exception('[feedback] Unexpected error')
         return jsonify({'error': 'внутренняя ошибка сервера'}), 500
+
+
+@app.route('/api/reviews', methods=['GET'])
+def list_site_reviews():
+    """Публичный список отзывов о сайте для страницы /about.
+
+    Query params:
+        limit  — int, по умолчанию 30, максимум 100.
+        offset — int, по умолчанию 0.
+        sort   — 'new' (по дате DESC) | 'top' (по рейтингу DESC, потом по дате).
+
+    Возвращает {ok, total, avg_rating, reviews: [{id, nickname,
+    avatar_url, rating, message, created_at}], counts: {1..5}}.
+    """
+    try:
+        try:
+            limit = int(request.args.get('limit', 30))
+        except (TypeError, ValueError):
+            limit = 30
+        limit = max(1, min(limit, 100))
+        try:
+            offset = int(request.args.get('offset', 0))
+        except (TypeError, ValueError):
+            offset = 0
+        offset = max(0, offset)
+        sort = (request.args.get('sort') or 'new').strip().lower()
+        if sort not in ('new', 'top'):
+            sort = 'new'
+
+        # Базовый фильтр: только публичные и не скрытые модератором.
+        # Дополнительно отрезаем пустые сообщения и слишком короткие.
+        base_where = (
+            "is_public = TRUE AND is_hidden = FALSE "
+            "AND message IS NOT NULL AND length(message) >= 5"
+        )
+        # SQLite понимает TRUE/FALSE с версии 3.23+, но на всякий случай
+        # делаем совместимый wildcard через 1/0.
+        if not _database_url.startswith('postgresql'):
+            base_where = base_where.replace('TRUE', '1').replace('FALSE', '0')
+
+        order_by = (
+            "rating DESC, created_at DESC" if sort == 'top'
+            else "created_at DESC"
+        )
+
+        rows = db.session.execute(text(f"""
+            SELECT id, user_id, nickname, avatar_url, rating, message,
+                   created_at
+            FROM site_reviews
+            WHERE {base_where}
+            ORDER BY {order_by}
+            LIMIT :limit OFFSET :offset
+        """), {'limit': limit, 'offset': offset}).fetchall()
+
+        # Сводная статистика (total + средний рейтинг + распределение
+        # по звёздам). Считаем по тем же базовым фильтрам, что и выдача.
+        stats = db.session.execute(text(f"""
+            SELECT COUNT(*) AS total,
+                   COALESCE(AVG(NULLIF(rating, 0)), 0) AS avg_rating
+            FROM site_reviews
+            WHERE {base_where}
+        """)).fetchone()
+        total = int(stats[0] or 0) if stats else 0
+        try:
+            avg_rating = float(stats[1]) if stats and stats[1] is not None else 0.0
+        except Exception:
+            avg_rating = 0.0
+        avg_rating = round(avg_rating, 2)
+
+        counts = {str(i): 0 for i in range(1, 6)}
+        try:
+            for r in db.session.execute(text(f"""
+                SELECT rating, COUNT(*) FROM site_reviews
+                WHERE {base_where} AND rating BETWEEN 1 AND 5
+                GROUP BY rating
+            """)).fetchall():
+                counts[str(int(r[0]))] = int(r[1])
+        except Exception:
+            pass
+
+        items = []
+        for r in rows:
+            rid, uid, nick, avatar, rating_v, msg, created = (
+                r[0], r[1], r[2], r[3], r[4], r[5], r[6]
+            )
+            # Никогда не отдаём IP / email наружу.
+            items.append({
+                'id': int(rid),
+                'nickname': nick or 'Аноним',
+                'avatar_url': avatar or None,
+                'rating': int(rating_v or 0),
+                'message': msg or '',
+                'created_at': (
+                    created.isoformat() if hasattr(created, 'isoformat')
+                    else str(created) if created else None
+                ),
+                'is_self': bool(
+                    uid and current_user.is_authenticated
+                    and current_user.id == uid
+                ),
+            })
+
+        return jsonify({
+            'ok': True,
+            'total': total,
+            'avg_rating': avg_rating,
+            'counts': counts,
+            'reviews': items,
+            'limit': limit,
+            'offset': offset,
+            'sort': sort,
+        })
+
+    except Exception:
+        import logging
+        logging.exception('[reviews] Unexpected error')
+        return jsonify({
+            'ok': False,
+            'error': 'не удалось загрузить отзывы',
+            'reviews': [],
+            'total': 0,
+            'avg_rating': 0,
+            'counts': {str(i): 0 for i in range(1, 6)},
+        }), 500
 
 
 # ─── CHAT_GROUPS_V1 — group chat endpoints ─────────────────────────────────

@@ -837,6 +837,11 @@ class AdaptiveTask(db.Model):
     subject = db.Column(db.String(20), index=True)
     source_id = db.Column(db.String(120), index=True)
 
+    # Тип задачи и источник датасета (для идемпотентности сидера).
+    # Колонки уже существуют в БД (ALTER TABLE при первом запуске).
+    task_type = db.Column(db.Text)
+    source = db.Column(db.Text, index=True)
+
     # AI-тьютор self-check (см. auto-migration в app.py)
     needs_review = db.Column(db.Boolean, default=False, index=True)
     llm_suggested_answer = db.Column(db.Text)

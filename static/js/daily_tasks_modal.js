@@ -13,6 +13,53 @@ function _esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// Эвристика: на основе формата правильного ответа подсказываем,
+// в каком виде ожидается ответ от ученика.
+function _buildAnswerFormatHint(correctAnswer){
+  if(!correctAnswer) return '';
+  var raw = String(correctAnswer).trim();
+  if(!raw) return '';
+
+  var rules = [];
+  var multiVar = /([A-Za-zА-Яа-я])\s*=\s*[^,;]+(\s*[,;]\s*[A-Za-zА-Яа-я]\s*=\s*[^,;]+)+/;
+
+  if(multiVar.test(raw)){
+    rules.push('Запишите все неизвестные через запятую, например: <code>x = 4, y = 2</code>');
+    rules.push('Используйте знак <code>=</code> между переменной и её значением');
+    rules.push('Соблюдайте порядок переменных, указанный в условии');
+  } else if(/^[A-Za-zА-Яа-я]\s*=\s*\S+/.test(raw)){
+    rules.push('Запишите ответ в виде <code>' + raw.charAt(0) + ' = …</code> (с переменной и знаком равенства)');
+  } else if(/^[^=]+,[^=]+/.test(raw) && raw.indexOf('=') === -1){
+    rules.push('Перечислите все значения через запятую, например: <code>' + _esc(raw) + '</code>');
+  } else if(/^[\[\(]\s*-?\d/.test(raw) || /[\)\]]\s*$/.test(raw)){
+    rules.push('Запишите ответ интервалом, например: <code>(-∞; 2]</code> или <code>[1; 5)</code>');
+  } else if(/\\frac|\//.test(raw)){
+    rules.push('Дробь записывайте через <code>/</code> или используйте \\frac{a}{b} на матклавиатуре');
+    rules.push('Сократите дробь, если это возможно');
+  } else if(/^-?\d+[\.,]\d+$/.test(raw)){
+    rules.push('Десятичную дробь пишите через запятую или точку, например: <code>' + _esc(raw) + '</code>');
+  } else if(/^-?\d+$/.test(raw)){
+    rules.push('Ответ — целое число. Запишите только число, без единиц измерения');
+  }
+
+  if(/\\sqrt|√/.test(raw)){
+    rules.push('Корень записывайте как <code>\\sqrt{…}</code> или используйте кнопку <strong>√</strong> на матклавиатуре');
+  }
+
+  rules.push('Лишних пробелов и пояснений быть не должно — только сам ответ');
+
+  var html = '';
+  html += '<div class="dt-answer-format-hint">';
+  html += '<div class="dt-answer-format-title">📐 Требования к ответу:</div>';
+  html += '<ul class="dt-answer-format-list">';
+  for(var i = 0; i < rules.length; i++){
+    html += '<li>' + rules[i] + '</li>';
+  }
+  html += '</ul>';
+  html += '</div>';
+  return html;
+}
+
 function _key(label, val, cls){
   cls = cls || '';
   var esc = String(val).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -324,6 +371,10 @@ function openTaskModal(item, index){
     if(item.correct_answer){
       h += '<div class="dt-feedback-block"><div class="dt-feedback-title">📝 Правильный ответ:</div>';
       h += '<div class="dt-feedback-text"><code>'+_esc(item.correct_answer)+'</code></div></div>';
+      // Если ответ был не принят — напомним требования к формату.
+      if(!item.is_correct){
+        h += _buildAnswerFormatHint(item.correct_answer);
+      }
     }
     if(item.solution){
       h += '<div class="dt-feedback-block"><div class="dt-feedback-title">📖 Эталонное решение:</div>';
@@ -339,12 +390,13 @@ function openTaskModal(item, index){
   }
 
   h += '<form id="dt-answer-form" enctype="multipart/form-data" autocomplete="off">';
-  h += '<label class="dt-field-label">✏️ Ваш ответ:</label>';
+  h += _buildAnswerFormatHint(item.correct_answer);
+  h += '<label class="dt-field-label">✏️ Ваш ответ <span class="dt-field-label-extra">(можно писать доказательство!)</span></label>';
   h += '<math-field id="dt-user-answer" class="dt-math-field" virtual-keyboard-mode="manual" virtual-keyboard-theme="material"></math-field>';
-  h += '<p class="dt-field-hint">💡 Нажмите кнопку «🔢» справа внизу поля, чтобы открыть математическую клавиатуру (√, дроби, степени).</p>';
-  h += '<label class="dt-field-label">Ход решения (опционально):</label>';
-  h += '<textarea id="dt-solution-text" class="dt-solution-textarea" rows="6" placeholder="Пишите решение по шагам, каждый шаг — с новой строки. Можно вставлять формулы: \\frac{1}{2}, x^2, \\sqrt{3} и т.д."></textarea>';
-  h += '<p class="dt-field-hint">💡 Пишите <strong>по шагам</strong> — каждое действие с новой строки. Формулы можно вставлять через «⌨️ Клавиатуру» ниже.</p>';
+  h += '<p class="dt-field-hint">💡 Нажмите «🔢» справа внизу поля для матклавиатуры (√, дроби, степени). Если задача — доказать утверждение, пишите доказательство прямо здесь или в поле ниже.</p>';
+  h += '<label class="dt-field-label">📝 Ход решения / доказательство <span class="dt-field-label-extra">(опционально)</span></label>';
+  h += '<textarea id="dt-solution-text" class="dt-solution-textarea" rows="6" placeholder="Пишите решение или доказательство по шагам, каждый шаг — с новой строки. Можно вставлять формулы: \\frac{1}{2}, x^2, \\sqrt{3} и т.д."></textarea>';
+  h += '<p class="dt-field-hint">💡 Пишите <strong>по шагам</strong> — каждое действие или логический переход с новой строки. Формулы можно вставлять через «⌨️ Клавиатуру» ниже.</p>';
   h += '<div class="dt-kb-wrapper">';
   h += '<button type="button" id="dt-kb-toggle-btn" class="dt-kb-toggle" onclick="dtToggleKeyboard()">⌨️ Клавиатура</button>';
   h += '<div id="dt-keyboard" class="dt-keyboard">';
@@ -392,6 +444,7 @@ function openTaskModal(item, index){
   body.innerHTML = h;
   overlay.classList.add('dt-open');
   window.dtCurrentItemId = item.id;
+  window.dtCurrentCorrectAnswer = item.correct_answer || '';
 
   var taskTextEl = document.getElementById('dt-task-text-html');
   if(taskTextEl && typeof renderMath === 'function') renderMath(taskTextEl);
@@ -560,6 +613,7 @@ function _dtShowResult(result){
 
   var score = (typeof result.score === 'number') ? result.score : 0;
   var html = '';
+  var isWrong = false;
   if(score === 2){
     html = '<div class="dt-verdict success">✅ Верно! Отличная работа</div>';
   } else if(score === 1){
@@ -568,6 +622,16 @@ function _dtShowResult(result){
     html = '<div class="dt-verdict partial">ℹ️ Ответ принят</div>';
   } else {
     html = '<div class="dt-verdict error">❌ Неверно</div>';
+    isWrong = true;
+  }
+
+  // Если ответ неверный — дополнительно показываем правильный ответ
+  // и требования к формату записи, чтобы ученик мог сравнить.
+  var correct = (result && result.correct_answer) || window.dtCurrentCorrectAnswer || '';
+  if(isWrong && correct){
+    html += '<div class="dt-feedback-block"><div class="dt-feedback-title">📝 Правильный ответ:</div>';
+    html += '<div class="dt-feedback-text"><code>' + _esc(correct) + '</code></div></div>';
+    html += _buildAnswerFormatHint(correct);
   }
   verdict.innerHTML = html;
 

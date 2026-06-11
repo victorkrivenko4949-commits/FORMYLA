@@ -702,39 +702,98 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Покупка дополнительных генераций
-async function buyGenerations() {
-    if (!confirm('Купить 10 дополнительных генераций за 500₽?')) return;
-    try {
-        const resp = await fetch('/api/buy_generations', { method: 'POST' });
-        const data = await resp.json();
-        if (data.ok) {
-            alert(data.message);
-            location.reload();
-        } else {
-            alert(data.error || 'Ошибка');
-        }
-    } catch (e) {
-        alert('Ошибка сети: ' + e.message);
-    }
+// === Mock Payment Modal (тестовая «оплата» без бекенда) ===
+function _showMockPayment(plan) {
+    var isUnl = plan === 'unlimited';
+    var price = isUnl ? '1 500₽' : '500₽';
+    var title = isUnl ? '♾️ Безлимит генераций' : '📦 +10 генераций';
+    var desc  = isUnl ? 'Безлимитные AI-чертежи на 30 дней'
+                      : 'Дополнительные 10 генераций к лимиту';
+    var existing = document.getElementById('mockPayOverlay');
+    if (existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'mockPayOverlay';
+    overlay.style.cssText =
+      'position:fixed;inset:0;background:rgba(8,12,24,0.78);' +
+      'z-index:99999;display:flex;align-items:center;justify-content:center;' +
+      'backdrop-filter:blur(6px);padding:20px;';
+    overlay.innerHTML =
+      '<div style="background:#1a1f2e;border:1px solid rgba(139,92,246,0.3);' +
+      'border-radius:16px;padding:32px;max-width:480px;width:100%;' +
+      'box-shadow:0 8px 32px rgba(0,0,0,0.5);color:#fff;font-family:-apple-system,sans-serif;">' +
+        '<div style="text-align:center;margin-bottom:24px;">' +
+          '<div style="font-size:48px;">💳</div>' +
+          '<h2 style="margin:8px 0 4px;font-size:22px;">Тестовая оплата</h2>' +
+          '<p style="margin:0;color:#94a3b8;font-size:13px;">' +
+            'Демонстрационная форма — реальная оплата не происходит' +
+          '</p>' +
+        '</div>' +
+        '<div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);' +
+        'border-radius:12px;padding:16px;margin-bottom:20px;display:flex;' +
+        'justify-content:space-between;align-items:center;">' +
+          '<div>' +
+            '<div style="font-weight:600;font-size:15px;">' + title + '</div>' +
+            '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">' + desc + '</div>' +
+          '</div>' +
+          '<div style="color:#a78bfa;font-size:20px;font-weight:700;">' + price + '</div>' +
+        '</div>' +
+        '<div style="margin-bottom:14px;">' +
+          '<div style="color:#cbd5e1;font-size:12px;margin-bottom:4px;">Номер карты</div>' +
+          '<div style="padding:10px;background:rgba(255,255,255,0.04);' +
+          'border:1px solid rgba(255,255,255,0.1);border-radius:8px;' +
+          'font-family:monospace;font-size:14px;">4242 4242 4242 4242</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;margin-bottom:18px;">' +
+          '<div style="flex:1;">' +
+            '<div style="color:#cbd5e1;font-size:12px;margin-bottom:4px;">Срок</div>' +
+            '<div style="padding:10px;background:rgba(255,255,255,0.04);' +
+            'border:1px solid rgba(255,255,255,0.1);border-radius:8px;' +
+            'font-family:monospace;font-size:14px;">12 / 27</div>' +
+          '</div>' +
+          '<div style="flex:1;">' +
+            '<div style="color:#cbd5e1;font-size:12px;margin-bottom:4px;">CVC</div>' +
+            '<div style="padding:10px;background:rgba(255,255,255,0.04);' +
+            'border:1px solid rgba(255,255,255,0.1);border-radius:8px;' +
+            'font-family:monospace;font-size:14px;">•••</div>' +
+          '</div>' +
+        '</div>' +
+        '<button id="mockPayBtn" style="width:100%;padding:13px;' +
+        'background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;' +
+        'border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">' +
+          'Оплатить ' + price +
+        '</button>' +
+        '<div id="mockPayStatus" style="text-align:center;margin-top:12px;font-size:13px;height:18px;"></div>' +
+        '<div style="text-align:center;margin-top:12px;">' +
+          '<button id="mockPayClose" style="background:transparent;border:none;' +
+          'color:#94a3b8;font-size:13px;cursor:pointer;text-decoration:underline;">' +
+            'Отмена' +
+          '</button>' +
+        '</div>' +
+        '<div style="margin-top:18px;padding:10px;' +
+        'background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);' +
+        'border-radius:8px;color:#fbbf24;font-size:11px;text-align:center;">' +
+          '⚠️ Тестовая страница. Реальный платёжный шлюз пока не подключён.' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('mockPayClose').onclick = function() { overlay.remove(); };
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+    document.getElementById('mockPayBtn').onclick = function() {
+        var btn = this;
+        var status = document.getElementById('mockPayStatus');
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.textContent = 'Обработка...';
+        setTimeout(function() {
+            status.innerHTML = '<span style="color:#4ade80;">✅ Платёж принят (тестовый режим)</span>';
+            btn.textContent = 'Готово';
+            setTimeout(function() { overlay.remove(); }, 1500);
+        }, 1100);
+    };
 }
 
-// Покупка безлимитных генераций
-async function buyUnlimited() {
-    if (!confirm('Купить безлимитные генерации за 1 500₽?')) return;
-    try {
-        const resp = await fetch('/api/buy_unlimited', { method: 'POST' });
-        const data = await resp.json();
-        if (data.ok) {
-            alert(data.message);
-            location.reload();
-        } else {
-            alert(data.error || 'Ошибка');
-        }
-    } catch (e) {
-        alert('Ошибка сети: ' + e.message);
-    }
-}
+function buyGenerations() { _showMockPayment('topup'); }
+function buyUnlimited()  { _showMockPayment('unlimited'); }
 </script>
 
 <!-- MathLive для ввода математических формул -->

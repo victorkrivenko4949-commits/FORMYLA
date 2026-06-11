@@ -194,6 +194,15 @@ def _log_to_db(
 
 # ─── Routes ───────────────────────────────────────────────────────────────────
 
+@drawing_bp.route("/mock-payment", methods=["GET"])
+def mock_payment_page():
+    """Тестовая страница оплаты. plan=unlimited|topup."""
+    plan = (request.args.get('plan') or 'topup').strip().lower()
+    if plan not in ('unlimited', 'topup'):
+        plan = 'topup'
+    return render_template('mock_payment.html', plan=plan)
+
+
 @drawing_bp.route("/drawing", methods=["GET"])
 def drawing_page():
     # Generation limit info for the template banner

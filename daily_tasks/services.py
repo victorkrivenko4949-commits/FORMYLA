@@ -837,6 +837,14 @@ def _persist_pipeline_result(
         items_created, result.error,
     )
 
+    # ── PER-TOPIC DIFFICULTY MATCHING: лог-сводка соответствия ────────
+    # Печатаем «тема → window vs реальные уровни задач», чтобы было
+    # видно, что 1/8 алгебра дала задачи L1-L3, а 8/8 геометрия — L7-L8.
+    try:
+        _log_topic_difficulty_match(profile, result)
+    except Exception:
+        logger.exception("Не удалось напечатать topic-difficulty summary")
+
     # ── сохраняем результат в task_pool (только если успех) ─────────
     if not is_failed:
         try:
@@ -1089,6 +1097,73 @@ def _serialize_job(job: DailyGenerationJob) -> Dict[str, Any]:
         "finished_at": job.finished_at.isoformat() if job.finished_at else None,
         "created_at": job.created_at.isoformat() if job.created_at else None,
     }
+
+
+def _log_topic_difficulty_match(
+    profile: Dict[str, Any],
+    result: "PipelineResult",
+) -> None:
+    """Печать сводки «тема → запланированное окно vs реальные уровни задач».
+
+    PR per-topic difficulty matching: критерий готовности по ТЗ — на
+    тестовом профиле «алгебра 1/8, геометрия 8/8» в логах виден чистый
+    матчинг topic→difficulty. Эта функция выводит ровно такой блок.
+    """
+    # Собираем target_level/level_window per topic из профиля
+    topic_meta: Dict[str, Dict[str, Any]] = {}
+    for t in (profile.get("topics_full") or []):
+        topic = (t.get("topic") or "").strip()
+        if not topic:
+            continue
+        topic_meta[topic] = {
+            "target_level": t.get("target_level"),
+            "level_window": t.get("level_window") or [
+                t.get("level_low"), t.get("level_high"),
+            ],
+            "test_correct": t.get("test_correct"),
+            "test_total": t.get("test_total"),
+            "calibration": bool(t.get("calibration")),
+            "final_level": t.get("final_level"),
+        }
+
+    # Группируем сгенерированные задачи по теме
+    levels_by_topic: Dict[str, List[int]] = {}
+    mismatches: List[str] = []
+    for spec, is_flagged in zip(result.specs or [], result.is_flagged or []):
+        topic = (spec.get("topic") or "?").strip()
+        lvl = spec.get("difficulty_level")
+        levels_by_topic.setdefault(topic, []).append(lvl)
+        meta = topic_meta.get(topic, {})
+        win = meta.get("level_window") or [1, 8]
+        if isinstance(lvl, int) and isinstance(win, (list, tuple)) and len(win) == 2:
+            lo, hi = win[0], win[1]
+            if lo is not None and hi is not None and not (lo <= lvl <= hi):
+                mismatches.append(
+                    f"pos={spec.get('position')} topic={topic} L{lvl} OUTSIDE window {win}"
+                )
+
+    logger.info("=" * 60)
+    logger.info("PER-TOPIC DIFFICULTY MATCHING SUMMARY")
+    logger.info("=" * 60)
+    for topic, levels in levels_by_topic.items():
+        meta = topic_meta.get(topic, {})
+        score = "N/A"
+        if meta.get("test_total"):
+            score = f"{meta.get('test_correct')}/{meta.get('test_total')}"
+        cal = " (CAL)" if meta.get("calibration") else ""
+        logger.info(
+            "  %s%s — тест %s, target=L%s, окно %s → задачи: %s",
+            topic, cal, score,
+            meta.get("target_level"), meta.get("level_window"),
+            levels,
+        )
+    if mismatches:
+        logger.warning("MISMATCHES (%d):", len(mismatches))
+        for m in mismatches:
+            logger.warning("  %s", m)
+    else:
+        logger.info("MATCH OK: все задачи попали в окно своих тем.")
+    logger.info("=" * 60)
 
 
 def _parse_json_field(value: Any, fallback: Any = None) -> Any:
