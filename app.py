@@ -6079,9 +6079,9 @@ def _adaptive_pick_task_for_slot(slot_index, slots, current_difficulty):
 
     picked = _pick_first_at_level(current_difficulty)
     if picked is None:
-        for offset in (1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6):
+        for offset in (1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7):
             lvl = current_difficulty + offset
-            if 1 <= lvl <= 7:
+            if 1 <= lvl <= 8:
                 picked = _pick_first_at_level(lvl)
                 if picked:
                     break
@@ -6542,6 +6542,21 @@ def adaptive_test_simple_page():
 
     slot = slots[slot_index]
 
+    # ── Stale-slot reassignment (FORMYLA v2 calibration fix) ────────────
+    # Если слот ещё pending (т.е. на него не отвечено) и был назначен при
+    # ином уровне сложности (level_at_assign != current_difficulty),
+    # перевыбираем задачу под актуальный уровень. Это устраняет «застрявший
+    # бейдж 3/8» при росте уровня в калибровочных слотах.
+    if (
+        slot.get('status', 'pending') == 'pending'
+        and slot.get('task_id')
+        and slot.get('level_at_assign') is not None
+        and slot.get('level_at_assign') != current_difficulty
+    ):
+        slot['task_id'] = None
+        slot['difficulty'] = None
+        slot['level_at_assign'] = None
+
     # ── Если в слоте ещё нет назначенной задачи — назначаем сейчас ──────
     current_task = None
     if slot.get('task_id'):
@@ -6914,11 +6929,13 @@ def check_adaptive_answer():
             else:
                 score = -1  # совсем не то
 
-        # ── Применяем дельту к уровню (clamp 1..7) ─────────────────────
+        # ── Применяем дельту к уровню (clamp 1..8) ─────────────────────
+        # FORMYLA v2: уровни 1..8, дельта +1/0/-1 от СОХРАНЁННОГО уровня
+        # (а не от difficulty показанной задачи).
         current_difficulty = session.get('adaptive_current_difficulty', 3)
         partial_streak = session.get('partial_correct_streak', 0)
         delta = score  # +1 / 0 / -1
-        new_level = max(1, min(7, current_difficulty + delta))
+        new_level = max(1, min(8, current_difficulty + delta))
 
         # partial_streak: сбрасываем при любом не-нейтральном вердикте;
         # сохраняем при AI failure и при score==0 (нейтрально).
