@@ -7037,7 +7037,7 @@ def check_adaptive_answer():
             'score': score,
             'feedback': feedback,
             'new_level': new_level,
-            'current_level': current_difficulty,
+            'current_level': new_level,
             'is_last_task': is_last_task,
             'can_finish': can_finish,
             'answered_count': answered_count,
