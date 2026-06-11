@@ -51,10 +51,12 @@ services:
       # См. services/vsosh_full_seed.py.
       - key: VSOSH9_2027_FORCE_IMPORT
         value: "1"
-      # Адаптивный тест: production-сидер 9120 калиброванных задач (L1..L8).
-      # На старте Flask грузит data/adaptive/adaptive_full_9120.json в
+      # Адаптивный тест: production-сидер 9135 калиброванных задач (L1..L8,
+      # fixed-версия — убраны клоны, добавлены разнотипные).
+      # На старте Flask грузит adaptive_data/adaptive_full_9120_fixed.json в
       # adaptive_tasks. Идемпотентно: если уже >= 9000 строк с
-      # source='calibrated_2026_06_04' — пропуск. См. services/adaptive_full_seed.py.
+      # source='calibrated_2026_06_04_v4_fixed' — пропуск.
+      # См. services/adaptive_full_seed.py.
       - key: ADAPTIVE_FORCE_IMPORT
         value: "1"
       - key: SECRET_KEY
