@@ -3001,6 +3001,53 @@ def _fix_latex_parens(text):
     text = re.sub(r'\\(sqrt|frac|text|mathrm|mathbf|mathbb|overline|underline|hat|tilde|vec)\(([^)]*)\)', r'\\\1{\2}', text)
     return text
 
+
+def _sanitize_ai_latex(text):
+    """Приводит AI-генерированный текст к KaTeX-валидному LaTeX:
+    - bare `sqrt(x)` → `\\sqrt{x}` (даже если без обратного слеша)
+    - юникод-символы ², ³, √, ∛, − → LaTeX-аналоги
+    - `a*b` (между переменными/числами) → `a \\cdot b`
+    - оборачивает голые LaTeX-конструкции в $...$, если они вне $-блока
+
+    Применяется к text / answer / solution из AI-ответа перед сохранением.
+    Безопасна для уже корректного LaTeX.
+    """
+    if not text or not isinstance(text, str):
+        return text
+
+    s = text
+
+    # 1) Unicode → LaTeX
+    s = s.replace('²', '^{2}').replace('³', '^{3}')
+    s = s.replace('⁴', '^{4}').replace('⁵', '^{5}')
+    s = s.replace('₀', '_{0}').replace('₁', '_{1}').replace('₂', '_{2}')
+    s = s.replace('₃', '_{3}').replace('₄', '_{4}').replace('₅', '_{5}')
+    s = s.replace('−', '-')  # minus sign → ASCII hyphen
+    s = s.replace('·', r' \cdot ').replace('×', r' \cdot ')
+
+    # 2) bare sqrt(...) / sqrt{...} → \sqrt{...}  (без backslash)
+    #    учитываем вложенные скобки одного уровня
+    s = re.sub(r'(?<!\\)\bsqrt\s*\(([^()]*)\)', r'\\sqrt{\1}', s, flags=re.IGNORECASE)
+    s = re.sub(r'(?<!\\)\bsqrt\s*\{([^{}]*)\}', r'\\sqrt{\1}', s, flags=re.IGNORECASE)
+
+    # 3) Unicode √(...) → \sqrt{...}
+    s = re.sub(r'√\s*\(([^()]*)\)', r'\\sqrt{\1}', s)
+    s = re.sub(r'√\s*([a-zA-Z0-9]+)', r'\\sqrt{\1}', s)
+    s = re.sub(r'∛\s*\(([^()]*)\)', r'\\sqrt[3]{\1}', s)
+    s = re.sub(r'∛\s*([a-zA-Z0-9]+)', r'\\sqrt[3]{\1}', s)
+
+    # 4) Если в строке появился \sqrt но нет $-окружения вокруг него — оборачиваем
+    #    каждое такое вхождение в $...$. Делаем простую обёртку для непокрытых.
+    if '\\sqrt' in s and '$' not in s:
+        # Оборачиваем \sqrt{...} вместе с примыкающим выражением до =, ., , или конца
+        s = re.sub(
+            r'(\\sqrt(?:\[[^\]]*\])?\{[^{}]*\}(?:\s*[+\-=]\s*[a-zA-Z0-9\\\{\}\.]+)*)',
+            r'$\1$',
+            s,
+        )
+
+    return s
+
 def _wrap_bare_latex(text):
     """
     Находит голые LaTeX-команды (без $...$) и оборачивает их.
@@ -5092,6 +5139,12 @@ def api_free_mock_generate_single_task():
 4. Уровень сложности должен строго соответствовать {difficulty}.
 5. КРИТИЧЕСКИ ВАЖНО: НЕ ИСПОЛЬЗУЙ КАВЫЧКИ " ВНУТРИ ТЕКСТА ЗАДАЧИ! Вместо прямой речи используй тире или скобки.
    Например: вместо А сказал: "Я рыцарь" пиши: А сказал - Я рыцарь.
+6. ВСЕ МАТЕМАТИЧЕСКИЕ ФОРМУЛЫ В ТЕКСТЕ, ОТВЕТЕ И РЕШЕНИИ ОБЯЗАТЕЛЬНО ОБОРАЧИВАЙ В $...$ И ПИШИ В LaTeX:
+   - корень: $\\sqrt{{2x+3}}$ (НЕ sqrt(2x+3), НЕ √)
+   - дробь: $\\frac{{a}}{{b}}$ (НЕ a/b в строку)
+   - степень: $x^{{2}}$, $x^{{n+1}}$ (НЕ x^2, НЕ x**2)
+   - умножение: $a \\cdot b$ (НЕ a*b)
+   - НЕ ИСПОЛЬЗУЙ юникод-символы ² ³ √ ∛ — только LaTeX-команды.
 
 ЕСТЕСТВЕННОЕ РАЗНООБРАЗИЕ:
 Избегай шаблонных "купил яблоки" или "пункт А и Б", но НЕ ДОБАВЛЯЙ искусственные приставки вроде "В киберспортивном симуляторе...", "В криптографическом протоколе...", "Хакер взламывает...".
@@ -5171,7 +5224,16 @@ def api_free_mock_generate_single_task():
             print("="*80)
             # Выкидываем ValueError, чтобы фронтенд повторил запрос
             raise ValueError("Invalid JSON format from AI")
-        
+
+        # LATEX-санитизация: приводим текст/ответ/решение к KaTeX-валидному виду
+        # (sqrt(x) → \sqrt{x}, юникод-символы → LaTeX, обёртка в $...$ при необходимости)
+        try:
+            for _k in ('text', 'answer', 'solution'):
+                if _k in task and task[_k]:
+                    task[_k] = _sanitize_ai_latex(str(task[_k]))
+        except Exception as _e_san:
+            print(f"[free_mock] sanitize_ai_latex failed: {_e_san}")
+
         # Сохраняем математическую идею задачи в историю сессии
         task_topic = task.get('topic', 'Неизвестная тема')
         task_text = task.get('text', '')
