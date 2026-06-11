@@ -100,6 +100,20 @@ def select_tasks(
                        .order_by(AdaptiveTask.id.asc()).all()
         if widened:
             return widened
+    if grade is not None and subject:
+        for g_offset in (1, -1, 2, -2):
+            g = int(grade) + g_offset
+            if g < 5 or g > 11:
+                continue
+            q_grade = base_query(subject=subject, grade=g, include_flagged=include_flagged)
+            if excluded:
+                q_grade = q_grade.filter(~AdaptiveTask.id.in_(list(excluded)))
+            hit = q_grade.filter(AdaptiveTask.difficulty_level == int(level)).order_by(AdaptiveTask.id.asc()).all()
+            if not hit:
+                hit = q_grade.order_by(AdaptiveTask.id.asc()).all()
+            if hit:
+                return hit
+            
 
     # Совсем нет задач — возвращаем пусто, чтобы вызывающий код показал
     # понятное сообщение.
