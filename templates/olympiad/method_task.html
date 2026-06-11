@@ -34,20 +34,20 @@
 
         <div style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
             <h2 style="margin: 0 0 16px; font-size: 1.1rem;">Условие</h2>
-            <div class="oly-task-text">{{ task.text | safe }}</div>
+            <div class="oly-task-text">{{ task.text | md_render }}</div>
         </div>
 
         {% if task.solution_idea %}
         <details style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; cursor: pointer;">
             <summary style="font-weight: 600; font-size: 1.05rem; color: var(--accent-1);">💡 Идея решения</summary>
-            <div style="margin-top: 12px; line-height: 1.7;">{{ task.solution_idea | safe }}</div>
+            <div style="margin-top: 12px; line-height: 1.7;">{{ task.solution_idea | md_render }}</div>
         </details>
         {% endif %}
 
         {% if task.answer %}
         <details style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; cursor: pointer;">
             <summary style="font-weight: 600; font-size: 1.05rem; color: #34d399;">✅ Ответ</summary>
-            <div style="margin-top: 12px; line-height: 1.7;">{{ task.answer | safe }}</div>
+            <div style="margin-top: 12px; line-height: 1.7;">{{ task.answer | md_render }}</div>
         </details>
         {% endif %}
 
