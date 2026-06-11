@@ -6838,66 +6838,67 @@ def check_adaptive_answer():
         feedback = str(result.get("feedback") or "")
         category = str(result.get("category") or "")
         confidence = float(result.get("confidence") or 0.0)
+        answer_correct = result.get("answer_correct")
+        method_correct = result.get("method_correct")
+        has_solution = bool((user_solution or "").strip()) or bool(images_b64)
         print(
             f"[ADAPTIVE] AI tutor verdict: float_score={float_score}, "
-            f"category={category}, confidence={confidence}"
+            f"category={category}, confidence={confidence}, "
+            f"answer_correct={answer_correct}, method_correct={method_correct}, "
+            f"has_solution={has_solution}"
         )
-        
-        # ── Float→Int score mapping for frontend contract ───────────
-        # Новая шкала (по ТЗ FORMYLA): только положительные оценки.
-        #   review_attempt() возвращает float: 0.0, 0.5, 1.0
-        #     1.0  → +2 балла (верный ответ + полное решение)
-        #     0.5  → +1 балл  (верный ответ без полного обоснования)
-        #     0.3  → +1 балл  (legacy: верный ответ, high-difficulty)
-        #     0.0  → 0 баллов (неверный ответ или пусто)
-        # Минимум score == 0 — отрицательных значений нет.
-        if float_score >= 1.0:
-            score = 2
-        elif float_score >= 0.3:
-            score = 1
-        else:
-            score = 0
-        
+
         # ── Детекция сбоя AI ──────────────────────────────────────────
-        # После последнего рефакторинга review_attempt() при ЛЮБОМ сбое ИИ
-        # (parse error / API exception / AI unavailable) возвращает:
-        #   score=0.0, category="suspicious", confidence=0.0
-        # confidence=0.0 — единственный надёжный сигнал сбоя. Легитимная
-        # категория "suspicious" (ответ верный, нет обоснования, уровень≥7)
-        # приходит с confidence>0 и сюда не попадает.
-        is_ai_failure = (confidence == 0.0 and category == "suspicious")
-        
-        # НОВАЯ ЛОГИКА АДАПТИВНОСТИ С СТРИКАМИ (4 ветки)
+        # При сбое (parse error / API exception / AI unavailable) review_attempt()
+        # возвращает: score=0.0, category="suspicious", confidence=0.0,
+        # answer_correct=None. Это нейтральное событие — уровень не трогаем.
+        is_ai_failure = (
+            confidence == 0.0
+            and category == "suspicious"
+            and answer_correct is None
+        )
+
+        # ── Шкала FORMYLA v2 (только ответ vs ответ+решение): +1 / 0 / -1 ──
+        # Только ответ (без решения/фото):
+        #   правильный ответ                   → +1 балл  / уровень +1
+        #   неправильный ответ                 → -1 балл  / уровень -1
+        # С решением:
+        #   правильный ответ + правильный метод → +1 балл  / уровень +1
+        #   правильный ответ + неверный метод  →  0 баллов / без изм.
+        #   неверный ответ + правильный метод  →  0 баллов / без изм.
+        #   совсем не то                       → -1 балл  / уровень -1
+        # AI failure / answer_correct == None  →  0 баллов / без изм.
+        if is_ai_failure or answer_correct is None:
+            score = 0
+        elif answer_correct is True:
+            # Ответ верный.
+            if has_solution and method_correct is False:
+                score = 0   # ответ верный, но метод неверный → нейтрально
+            else:
+                score = 1   # без решения ИЛИ метод верный/None
+        else:
+            # answer_correct is False — ответ неверный.
+            if has_solution and method_correct is True:
+                score = 0   # ответ не туда, но метод понят → нейтрально
+            else:
+                score = -1  # совсем не то
+
+        # ── Применяем дельту к уровню (clamp 1..7) ─────────────────────
         current_difficulty = session.get('adaptive_current_difficulty', 3)
         partial_streak = session.get('partial_correct_streak', 0)
-        
-        # Логирование для отладки
-        print(f"[ADAPTIVE] Score: {score} (float: {float_score}), Current level: {current_difficulty}, Streak: {partial_streak}")
-        
-        if score == 2:
-            # Идеально — мгновенно повышаем уровень
-            new_level = min(7, current_difficulty + 1)
-            partial_streak = 0  # Сбрасываем стрик
-            print(f"[ADAPTIVE] Score=2: Повышаем уровень {current_difficulty} → {new_level}")
-            
-        elif score == 1:
-            # Частично верно — уровень НЕ меняется
-            new_level = current_difficulty
-            partial_streak = 0  # Сбрасываем стрик
-            print(f"[ADAPTIVE] Score=1: Уровень без изменений {current_difficulty}")
-            
-        elif is_ai_failure:
-            # Сбой AI — нейтрально: уровень не трогаем, стрик сохраняем.
-            new_level = current_difficulty
-            # partial_streak НЕ сбрасываем — нейтральное событие
-            print(f"[ADAPTIVE] Score=0 (AI failure): Уровень без изменений, стрик сохранён")
+        delta = score  # +1 / 0 / -1
+        new_level = max(1, min(7, current_difficulty + delta))
 
-        else:
-            # score == 0 — ответ неверный. По ТЗ FORMYLA отрицательных
-            # оценок нет: уровень не понижается, только стрик сбрасывается.
-            new_level = current_difficulty
+        # partial_streak: сбрасываем при любом не-нейтральном вердикте;
+        # сохраняем при AI failure и при score==0 (нейтрально).
+        if score in (1, -1):
             partial_streak = 0
-            print(f"[ADAPTIVE] Score=0 (wrong answer): Уровень без изменений, стрик сброшен")
+
+        print(
+            f"[ADAPTIVE] Score={score} (delta={delta}), "
+            f"Level: {current_difficulty} → {new_level}, "
+            f"is_ai_failure={is_ai_failure}"
+        )
         
         # Сохраняем обновленные значения уровня в сессию.
         # ВАЖНО: уровень меняется ТОЛЬКО потому что мы ответили на ЭТУ задачу
