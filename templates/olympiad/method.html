@@ -3,7 +3,7 @@
 {%- if theory -%}
     Метод {{ theory.method_code }} — {{ theory.method_name }}
 {%- else -%}
-    102 методов олимпиадной математики — FORMYLA
+    {{ blocks|length if blocks is defined and blocks else 'Все' }} методов олимпиадной математики — FORMYLA
 {%- endif -%}
 {% endblock %}
 
@@ -25,7 +25,7 @@
         'H': 'Прочее (H)',
     } %}
     <header class="oly-hero">
-        <h1>📚 102 методов олимпиадной математики</h1>
+        <h1>📚 {{ blocks|length if blocks is defined and blocks else '' }} методов олимпиадной математики</h1>
         <p>Полный справочник базовых приёмов решения задач ВсОШ и других олимпиад по математике.</p>
         {% if blocks is defined %}
         <p class="oly-card-sub" style="margin-top:8px;">

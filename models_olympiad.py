@@ -315,8 +315,13 @@ class TaskAttempt(db.Model):
         index=True,
     )
 
+    # ВАЖНО: используем обычную db.String, а не db.Enum.
+    # В проде встречаются legacy-значения статусов (например 'submitted'),
+    # оставшиеся от предыдущей схемы. Жёсткий Enum приводил к LookupError
+    # при загрузке таких строк → 500 на странице пробника (см. /olympiads/probnik/*).
+    # Валидация значений выполняется на уровне приложения (см. ATTEMPT_STATUSES).
     status = db.Column(
-        db.Enum(*ATTEMPT_STATUSES, name='task_attempt_status', native_enum=False),
+        db.String(20),
         nullable=False,
         default='viewed',
         server_default='viewed',
