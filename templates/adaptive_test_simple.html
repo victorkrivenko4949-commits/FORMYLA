@@ -27,7 +27,7 @@
         
         <!-- Уровень сложности -->
         <div style="display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border-radius: 20px; font-weight: 600; font-size: 0.9em; margin-bottom: 20px;">
-            ⭐ Уровень сложности: {{ current_level }}/8
+                        ⭐ Уровень сложности: {{ task.difficulty_level or current_level }}/8
         </div>
         
         <!-- Условие задачи -->
@@ -1245,7 +1245,7 @@ function showLoader() {
 }
 
 function hideLoader() {
-    document.getElementById('aiLoader').style.display = 'none';
+    document.getElementById('aiLoader').style.display = 'none'; var _sb = document.getElementById('submitBtn'); if (_sb) _sb.disabled = false;
 }
 
 function showResult(result) {
