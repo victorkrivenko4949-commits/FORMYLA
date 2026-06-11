@@ -1234,6 +1234,8 @@
 
   // Для авторизованных юзеров: подтягиваем историю и держим polling
   const IS_AUTH = {{ 'true' if current_user.is_authenticated else 'false' }};
+  const USER_DISPLAY = {{ ((current_user.display_name or current_user.nickname or current_user.email) if current_user.is_authenticated else 'Гость')|tojson }};
+  const ADMIN_DISPLAY = 'Lavrik';
   const HISTORY_URL = '/api/my/support/messages';
   const POLL_INTERVAL_MS = 15000;
   // Запоминаем уже отрендеренные сообщения, чтобы не дублировать при polling
@@ -1361,6 +1363,13 @@
     const div = document.createElement('div');
     div.className = 'contact-chat__msg contact-chat__msg--' + kind;
     div.dataset.msgId = m.id;
+    // Подпись отправителя: admin → "Lavrik", user → имя/ник/email пользователя
+    if (m.from === 'admin' || m.from === 'user') {
+      const senderEl = document.createElement('div');
+      senderEl.style.cssText = 'font-size:11px;font-weight:600;opacity:.85;margin-bottom:4px;';
+      senderEl.textContent = m.from === 'admin' ? ADMIN_DISPLAY : USER_DISPLAY;
+      div.appendChild(senderEl);
+    }
     const body = document.createElement('div');
     body.innerHTML = escapeHtml(m.text || '').replace(/\n/g, '<br>');
     div.appendChild(body);
