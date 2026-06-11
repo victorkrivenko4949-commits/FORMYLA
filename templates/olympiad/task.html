@@ -844,8 +844,7 @@ function olympiadTask(cfg) {
             if (!btn.disabled) doSubmit();
         });
 
-        revealBtn.addEventListener('click', function () {
-            unlockSolutions();
+        revealBtn.addEventListener('click', function () { unlockSolutions(); lockAnswerInput();
             if (authenticated) {
                 fetch(attemptUrl, {
                     method: 'POST',
@@ -856,7 +855,7 @@ function olympiadTask(cfg) {
             }
         });
 
-        function unlockSolutions() {
+        function lockAnswerInput() { try { var tid = block.getAttribute('data-task-id') || ''; if (input) { input.disabled = true; input.value=''; input.placeholder = 'Ответ заблокирован — решение открыто'; } if (btn) { btn.disabled = true; btn.textContent = 'Ответ заблокирован'; } localStorage.setItem('oly_locked_' + tid, '1'); } catch (e) {} } function unlockSolutions() {
             if (wrap) wrap.classList.remove('oly-solutions-locked');
             if (lockedMsg) lockedMsg.style.display = 'none';
             if (revealBtn) {
