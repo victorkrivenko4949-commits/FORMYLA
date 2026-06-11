@@ -1,0 +1,713 @@
+/* FORMYLA — Conference UI styles.
+   Dark theme, custom layout (NOT Zoom copy).
+   Icons: Unicode/emoji (replaceable with Lucide/Phosphor later). */
+
+/* ── Container ──────────────────────────────────────────────────── */
+.cf-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Lobby ──────────────────────────────────────────────────────── */
+.cf-lobby {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 2rem;
+}
+
+.cf-lobby-card {
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.cf-lobby-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: #fff;
+}
+
+.cf-lobby-sub {
+    font-size: 0.95rem;
+    color: #888;
+    margin: 0 0 1.5rem;
+}
+
+.cf-lobby-row {
+    margin-bottom: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.cf-lobby-divider {
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    color: #555;
+    font-size: 0.85rem;
+}
+.cf-lobby-divider::before,
+.cf-lobby-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #2a2a4a;
+    margin: 0 0.75rem;
+}
+
+.cf-lobby-error {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.cf-lobby-status {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 1rem;
+}
+
+/* ── Inputs / Buttons ───────────────────────────────────────────── */
+.cf-input {
+    background: #0f0f23;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+.cf-input:focus {
+    border-color: #4a6cf7;
+}
+.cf-input--code {
+    flex: 1;
+    text-align: center;
+    font-size: 1.2rem;
+    letter-spacing: 0.3em;
+    font-weight: 700;
+    font-family: "Courier New", monospace;
+}
+.cf-input::placeholder {
+    color: #555;
+}
+
+.cf-btn {
+    background: #2a2a4a;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1.25rem;
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, opacity 0.2s;
+}
+.cf-btn:hover { background: #3a3a5a; }
+.cf-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cf-btn--primary {
+    background: #4a6cf7;
+    color: #fff;
+    width: 100%;
+}
+.cf-btn--primary:hover { background: #3b5de7; }
+.cf-btn--secondary {
+    background: #2a6a4a;
+    color: #fff;
+}
+.cf-btn--secondary:hover { background: #1f5a3a; }
+.cf-btn--small {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+}
+
+.cf-icon-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+}
+.cf-icon-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+.cf-icon-btn--small { font-size: 0.8rem; }
+
+/* ── Room (in-call) ─────────────────────────────────────────────── */
+.cf-room {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    position: relative;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.cf-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: #0f0f23;
+    border-bottom: 1px solid #2a2a4a;
+    flex-shrink: 0;
+    min-height: 44px;
+}
+
+.cf-header-left,
+.cf-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cf-room-code {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+}
+.cf-room-code-label { color: #888; }
+.cf-room-code-value {
+    color: #4a6cf7;
+    font-weight: 700;
+    font-family: "Courier New", monospace;
+    letter-spacing: 0.15em;
+}
+
+.cf-connection-status {
+    font-size: 0.75rem;
+    color: #888;
+}
+.cf-status--connected { color: #4caf50; }
+.cf-status--connecting { color: #ff9800; }
+
+.cf-timer {
+    font-size: 0.85rem;
+    color: #888;
+    font-family: monospace;
+}
+
+/* ── Video Grid ─────────────────────────────────────────────────── */
+.cf-video-grid {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    overflow-y: auto;
+    background: #111;
+}
+
+.cf-video-tile {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+    aspect-ratio: 16/9;
+    background: #1a1a2e;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #2a2a4a;
+    transition: border-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cf-video-tile--local {
+    border-color: #4a6cf7;
+}
+
+.cf-video-tile--connected {
+    border-color: #4caf50;
+}
+
+.cf-video-tile--connecting {
+    border-color: #ff9800;
+    animation: pulse-border 1.5s infinite;
+}
+
+.cf-video-tile--disconnected {
+    border-color: #f44336;
+    opacity: 0.6;
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-color: #ff9800; }
+    50% { border-color: #ffa726; }
+}
+
+.cf-video-el {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cf-tile-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.4rem 0.6rem;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+}
+
+.cf-tile-name {
+    color: #fff;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.cf-tile-role-badge {
+    font-size: 0.65rem;
+    background: #4a6cf7;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.cf-tile-status {
+    color: #aaa;
+    font-size: 0.7rem;
+    margin-left: auto;
+}
+
+.cf-tile-status-icons {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.4rem;
+    display: flex;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.cf-tile-mic-off {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.cf-tile-hand-raised {
+    position: absolute;
+    bottom: 2rem;
+    right: 0.4rem;
+    font-size: 1.5rem;
+    animation: wave 1s infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    75% { transform: rotate(-10deg); }
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────── */
+.cf-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: #0f0f23;
+    border-top: 1px solid #2a2a4a;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.cf-toolbar-left,
+.cf-toolbar-center,
+.cf-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.cf-tb-btn {
+    background: #2a2a4a;
+    border: none;
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+    min-width: 44px;
+    justify-content: center;
+}
+.cf-tb-btn:hover { background: #3a3a5a; transform: scale(1.05); }
+.cf-tb-btn:active { transform: scale(0.95); }
+
+.cf-tb-btn--off {
+    background: #5a2a2a;
+    color: #ff6b6b;
+}
+.cf-tb-btn--off:hover { background: #6a3a3a; }
+
+.cf-tb-btn--active {
+    background: #2a5a3a;
+    color: #4caf50;
+}
+
+.cf-tb-btn--end {
+    background: #c0392b;
+    color: #fff;
+}
+.cf-tb-btn--end:hover { background: #e74c3c; }
+
+.cf-tb-icon { font-size: 1.2rem; line-height: 1; }
+
+.cf-tb-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #4a6cf7;
+    color: #fff;
+    font-size: 0.6rem;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    padding: 0 3px;
+}
+.cf-tb-badge--unread {
+    background: #e74c3c;
+}
+
+/* ── Side panels ────────────────────────────────────────────────── */
+.cf-panels-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 90;
+    display: none;
+}
+
+.cf-panel {
+    position: fixed;
+    top: 0;
+    right: -360px;
+    width: 340px;
+    max-width: 100%;
+    height: 100vh;
+    background: #16213e;
+    border-left: 1px solid #2a2a4a;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s ease;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.3);
+}
+
+.cf-panel--open {
+    right: 0;
+}
+
+.cf-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #2a2a4a;
+    flex-shrink: 0;
+}
+
+.cf-panel-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.cf-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+/* ── Participant panel ──────────────────────────────────────────── */
+.cf-participant-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    margin-bottom: 2px;
+    transition: background 0.15s;
+    flex-wrap: wrap;
+}
+.cf-participant-row:hover { background: rgba(255,255,255,0.05); }
+.cf-participant-row--me {
+    background: rgba(74,108,247,0.1);
+}
+
+.cf-participant-name {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.cf-participant-role {
+    font-size: 0.7rem;
+    background: #4a6cf7;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.cf-participant-status {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.cf-participant-admin {
+    display: flex;
+    gap: 0.25rem;
+    width: 100%;
+    margin-top: 0.3rem;
+    padding-left: 0.5rem;
+}
+
+.cf-admin-btn {
+    background: #2a2a4a;
+    border: none;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+}
+.cf-admin-btn:hover { background: #3a3a5a; color: #fff; }
+.cf-admin-btn--danger:hover { background: #5a2a2a; color: #ff6b6b; }
+
+/* ── Chat panel ─────────────────────────────────────────────────── */
+.cf-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.cf-chat-msg {
+    background: #0f0f23;
+    border-radius: 8px;
+    padding: 0.5rem 0.7rem;
+    max-width: 90%;
+}
+
+.cf-chat-msg--self {
+    background: #1a2a4a;
+    align-self: flex-end;
+}
+
+.cf-chat-msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.2rem;
+}
+
+.cf-chat-msg-name {
+    font-size: 0.75rem;
+    color: #4a6cf7;
+    font-weight: 600;
+}
+
+.cf-chat-msg-time {
+    font-size: 0.65rem;
+    color: #666;
+}
+
+.cf-chat-msg-text {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    word-break: break-word;
+}
+
+.cf-chat-input-row {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    border-top: 1px solid #2a2a4a;
+    flex-shrink: 0;
+}
+
+.cf-chat-input {
+    flex: 1;
+    font-size: 0.85rem;
+}
+
+/* ── Reactions ──────────────────────────────────────────────────── */
+.cf-reactions-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 50;
+    overflow: hidden;
+}
+
+.cf-float-reaction {
+    position: absolute;
+    bottom: 0;
+    font-size: 2rem;
+    animation: float-up 2s ease-out forwards;
+    pointer-events: none;
+}
+
+.cf-float-reaction--self {
+    font-size: 2.5rem;
+}
+
+@keyframes float-up {
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-200px) scale(1.2);
+        opacity: 0;
+    }
+}
+
+.cf-reaction-picker {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 0.5rem;
+    display: flex;
+    gap: 0.3rem;
+    z-index: 60;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.cf-reaction-btn {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    padding: 0.3rem 0.4rem;
+    border-radius: 8px;
+    transition: background 0.15s, transform 0.1s;
+}
+.cf-reaction-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.2);
+}
+
+/* ── Toast notifications ────────────────────────────────────────── */
+.cf-toast-container {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-items: center;
+    pointer-events: none;
+}
+
+.cf-toast {
+    background: #16213e;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: toast-in 0.3s ease;
+    pointer-events: auto;
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .cf-video-tile {
+        width: 100%;
+        max-width: 100%;
+    }
+    .cf-toolbar {
+        gap: 0.3rem;
+        padding: 0.4rem 0.5rem;
+    }
+    .cf-tb-btn {
+        padding: 0.45rem 0.5rem;
+        font-size: 1rem;
+        min-width: 38px;
+    }
+    .cf-panel {
+        width: 100%;
+        right: -100%;
+    }
+    .cf-lobby-card {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+.cf-panel-body::-webkit-scrollbar,
+.cf-chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+.cf-panel-body::-webkit-scrollbar-track,
+.cf-chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+.cf-panel-body::-webkit-scrollbar-thumb,
+.cf-chat-messages::-webkit-scrollbar-thumb {
+    background: #2a2a4a;
+    border-radius: 2px;
+}

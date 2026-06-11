@@ -76,8 +76,9 @@ class User(UserMixin, db.Model):
     
     @property
     def is_admin(self):
-        """Админ — user_id == 1 (Victor) или email в whitelist.
-        Используется в daily_tasks/routes.py для bypass лимита 1 регенерация/день.
+        """Админ — user_id == 1 (Victor), email в whitelist или nickname в whitelist.
+        Используется в daily_tasks/routes.py для bypass лимита 1 регенерация/день
+        и в routes/admin_support.py для доступа к /admin/support.
         """
         if self.id == 1:
             return True
@@ -85,7 +86,14 @@ class User(UserMixin, db.Model):
             'kr1venkovictor@yandex.ru',
             'victor.krivenko.4949@gmail.com',
         }
-        return (self.email or '').lower() in admin_emails
+        if (self.email or '').lower() in admin_emails:
+            return True
+        # Whitelist по nickname — для друзей-модераторов поддержки.
+        # Case-insensitive: Lavrik / lavrik / LAVRIK все подходят.
+        admin_nicknames = {
+            'lavrik',
+        }
+        return (self.nickname or '').lower() in admin_nicknames
 
     @property
     def display_name(self):
