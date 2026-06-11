@@ -5514,7 +5514,35 @@ def adaptive_test_select_class():
 
     Cooldown: если последний тест был меньше 30 дней назад —
     редиректим на результаты прошлого теста с flash-сообщением.
+
+    Дополнительно: ВСЕГДА чистим состояние предыдущего незавершённого
+    теста из Flask-сессии, чтобы при нажатии «Начать» пользователь
+    реально стартовал с экрана выбора, а не падал в стенд активного
+    теста.
     """
+    # ── Очищаем все ключи незавершённого адаптивного теста ──
+    # Это поведение «Начать заново»: если юзер нажал «Начать» с probniks/
+    # profile/dt, мы должны показать выбор класса, а не вернуть его
+    # в середину старого теста.
+    _adaptive_keys_to_clear = [
+        'adaptive_filtered_tasks',
+        'adaptive_current_difficulty',
+        'adaptive_current_index',
+        'adaptive_current_slot',
+        'adaptive_current_task_id',
+        'adaptive_slots',
+        'adaptive_answers',
+        'adaptive_shown_task_ids',
+        'adaptive_topic',
+        'adaptive_topic_name',
+        'adaptive_grade',
+        'adaptive_db_topic',
+        'partial_correct_streak',
+    ]
+    for _k in _adaptive_keys_to_clear:
+        session.pop(_k, None)
+    session.modified = True
+
     is_blocked, days_left, last_at = _adaptive_cooldown_status()
     if is_blocked:
         flash(
