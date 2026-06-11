@@ -6525,10 +6525,11 @@ def adaptive_test_simple_page():
             flash('Не удалось восстановить прерванный тест', 'error')
             return redirect(url_for('probniks_page'))
 
-    # Проверяем, что в сессии есть данные теста
+    # Проверяем, что в сессии есть данные теста. Если нет — редиректим
+    # на выбор класса/темы, а не в общий каталог probniks_page.
     if 'adaptive_filtered_tasks' not in session:
-        flash('Сначала выберите тему и класс для теста', 'error')
-        return redirect(url_for('probniks_page'))
+        flash('Сначала выберите класс и тему для теста', 'error')
+        return redirect(url_for('adaptive_test_select_class'))
 
     grade = session.get('adaptive_grade', '9')
     slots = _adaptive_get_slots()
