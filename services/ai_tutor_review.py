@@ -441,35 +441,25 @@ def _compute_score(
 ) -> float:
     """Вычислить финальный балл по единой шкале.
 
-    Таблица (см. docs/SCORING.md):
-      пусто/"не знаю"                             → 0.0
-      answer_correct=False, method_correct=False   → -1.0
-      answer_correct=False, method_correct=True    → 0.5
-      answer_correct=True,  method_correct=True, has_solution=True  → 1.0
-      answer_correct=True,  method_correct=True, has_solution=False:
-        difficulty_level ≤ 4  → 1.0
-        difficulty_level 5-6  → 0.5
-        difficulty_level ≥ 7  → 0.3  (suspicious)
+    Изменено по ТЗ FORMYLA:
+      • Верный ответ ВСЕГДА даёт минимум +1 балл (даже без обоснования),
+        полное решение даёт +2 (1.0 во float-шкале).
+      • Неверный ответ даёт 0 баллов (без отрицательных значений).
+
+    Таблица:
+      пусто/"не знаю"                              → 0.0
+      answer_correct=False, method_correct=*       → 0.0  (минимум 0, не −1)
+      answer_correct=True,  has_solution=True      → 1.0  (→ +2 балла во фронте)
+      answer_correct=True,  has_solution=False     → 0.5  (→ +1 балл во фронте)
     """
-    if not answer_correct and not method_correct:
-        return -1.0
-    if not answer_correct and method_correct:
-        return 0.5
-    # answer_correct is True
-    if not method_correct:
-        # correct answer but wrong method — shouldn't normally happen,
-        # but if model says method=False, treat as partial
-        return 0.5
-    # Both correct
-    if has_solution:
+    # Неверный ответ → 0. Никаких отрицательных оценок.
+    if not answer_correct:
+        return 0.0
+    # answer_correct=True → минимум +1 балл (0.5 во float-шкале).
+    if has_solution and method_correct:
         return 1.0
-    # Correct answer without justification
-    if difficulty_level <= 4:
-        return 1.0
-    elif difficulty_level <= 6:
-        return 0.5
-    else:
-        return 0.3
+    # верный ответ без полного решения / без обоснования метода → +1 балл
+    return 0.5
 
 
 def _pick_category(
@@ -497,20 +487,22 @@ def _pick_category(
 # ── Score badge ───────────────────────────────────────────────────────
 
 def score_badge(score: float, has_solution: bool) -> str:
+    """Бейдж результата для UI.
+
+    После изменений по ТЗ FORMYLA шкала только положительная:
+        1.0   → +2 балла (верный ответ + полное решение)
+        ≥0.3  → +1 балл  (верный ответ; для high-diff без обоснования)
+        0.0   → 0 баллов (неверный ответ или пусто)
+        <0    → 0 баллов (на всякий случай: legacy-значения)
+    """
     if score >= 1.0:
-        return "🟢 **Оценка тьютора: +1 балл** (верный ответ + корректное решение)"
-    if score >= 0.5:
-        if has_solution:
-            return "🟡 **Оценка тьютора: +0.5 балла** (частично верно: ответ неточный или решение с пробелами)"
-        return "🟡 **Оценка тьютора: +0.5 балла** (ответ принят, но без решения)"
+        return "🟢 **Оценка тьютора: +2 балла** (верный ответ + корректное решение)"
     if score >= 0.3:
-        return "🟠 **Оценка тьютора: +0.3 балла** (верный ответ без обоснования — подозрительно)"
-    if score == 0.0:
-        return "⚪ **Оценка тьютора: 0 баллов** (нейтрально, уровень не меняется)"
-    # -1
-    if has_solution:
-        return "🔴 **Оценка тьютора: −1 балл** (решение содержит ошибку)"
-    return "🔴 **Оценка тьютора: −1 балл** (нет решения — олимпиада требует обоснование)"
+        if has_solution:
+            return "🟡 **Оценка тьютора: +1 балл** (верный ответ, добавь полное обоснование для +2 баллов)"
+        return "🟡 **Оценка тьютора: +1 балл** (верный ответ, добавь обоснование для +2 баллов)"
+    # 0.0 и ниже — нейтрально, без отрицательных оценок
+    return "⚪ **Оценка тьютора: 0 баллов** (ответ не принят — попробуй ещё раз)"
 
 
 # ── Главная функция: review_attempt ───────────────────────────────────
