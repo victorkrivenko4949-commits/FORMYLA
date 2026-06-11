@@ -258,6 +258,7 @@
         <!-- Авторизация -->
         <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
             {% if current_user.is_authenticated and not current_user.is_guest %}
+                {% if current_user.is_admin %}
                 <!-- Твоя поддержка (личный чат с админом) -->
                 <a href="{{ url_for('admin_support.my_support_page') }}"
                    id="navMySupportLink"
@@ -276,6 +277,7 @@
                                  font-size:11px; font-weight:700; line-height:18px;
                                  text-align:center; box-shadow:0 0 0 2px #0f172a;">0</span>
                 </a>
+                {% endif %}
 
                 <!-- Авторизованный пользователь -->
                 <a href="{{ url_for('profile') }}"
