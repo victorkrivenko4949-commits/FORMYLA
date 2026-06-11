@@ -1043,6 +1043,24 @@ if os.environ.get('ADAPTIVE_FORCE_IMPORT', '0') == '1':
 else:
     print("[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)")
 
+# ── LaTeX root fix (идемпотентно, чинит битые \sqrt[n]{}/\sqrt{} в БД) ────
+# JSON-сидеры уже починены (scripts/normalize_roots_in_data.py), но прод
+# читает из PostgreSQL. На каждом редеплое прогоняем текстовые колонки
+# olympiad_tasks / method_tasks / adaptive_tasks через normalize_roots и
+# UPDATE-им только изменившиеся строки. Безопасно для корректных формул.
+# Отключить можно через env LATEX_ROOT_DB_FIX=0.
+if os.environ.get('LATEX_ROOT_DB_FIX', '1').strip().lower() in ('1', 'true', 'yes', 'on'):
+    try:
+        from services.latex_root_db_fix import run_latex_root_db_fix
+        _root_fix_result = run_latex_root_db_fix(app, db)
+        print(f"[LATEX-ROOT-DB-FIX] result={_root_fix_result}")
+    except Exception as _e_root_fix:
+        import traceback as _tb_root_fix
+        print(f"[LATEX-ROOT-DB-FIX] hook FAILED: {_e_root_fix}")
+        print(_tb_root_fix.format_exc())
+else:
+    print("[LATEX-ROOT-DB-FIX] disabled (set LATEX_ROOT_DB_FIX=1 to enable)")
+
 # ── Theory catalog seed (idempotent, без env-гейта) ──────────────────────────
 # Засевает olympiad_theory из data/olympiads/methods_catalog_89.json,
 # если таблица пуста или содержит plaholder-имена. Безопасно: ничего
@@ -3017,7 +3035,19 @@ def _sanitize_ai_latex(text):
 
     s = text
 
-    # 1) Unicode → LaTeX
+    # 0) КОРНИ — В ПЕРВУЮ ОЧЕРЕДЬ.
+    #    КРИТИЧНО: радикальные юникод-символы (∛, ³√, √) и битые формы
+    #    \sqrt[n] нужно канонизировать ДО общей замены '³'->'^{3}'.
+    #    Иначе '³√(x)' превращается в '^{3}\sqrt{x}' — болтающаяся степень
+    #    «³» без знака радикала (инцидент 2026-06-11, задача G6.17).
+    #    Канонизатор приводит всё к \sqrt[n]{...} / \sqrt{...} и идемпотентен.
+    try:
+        from services.latex_root_normalizer import normalize_roots
+        s = normalize_roots(s)
+    except Exception:
+        pass
+
+    # 1) Unicode → LaTeX (корни уже обработаны выше, '³√' здесь не встретится)
     s = s.replace('²', '^{2}').replace('³', '^{3}')
     s = s.replace('⁴', '^{4}').replace('⁵', '^{5}')
     s = s.replace('₀', '_{0}').replace('₁', '_{1}').replace('₂', '_{2}')
@@ -3030,11 +3060,12 @@ def _sanitize_ai_latex(text):
     s = re.sub(r'(?<!\\)\bsqrt\s*\(([^()]*)\)', r'\\sqrt{\1}', s, flags=re.IGNORECASE)
     s = re.sub(r'(?<!\\)\bsqrt\s*\{([^{}]*)\}', r'\\sqrt{\1}', s, flags=re.IGNORECASE)
 
-    # 3) Unicode √(...) → \sqrt{...}
-    s = re.sub(r'√\s*\(([^()]*)\)', r'\\sqrt{\1}', s)
-    s = re.sub(r'√\s*([a-zA-Z0-9]+)', r'\\sqrt{\1}', s)
-    s = re.sub(r'∛\s*\(([^()]*)\)', r'\\sqrt[3]{\1}', s)
-    s = re.sub(r'∛\s*([a-zA-Z0-9]+)', r'\\sqrt[3]{\1}', s)
+    # 3) Повторная канонизация корней (на случай, если bare-sqrt дал \sqrt[n] X)
+    try:
+        from services.latex_root_normalizer import normalize_roots as _nr2
+        s = _nr2(s)
+    except Exception:
+        pass
 
     # 4) Если в строке появился \sqrt но нет $-окружения вокруг него — оборачиваем
     #    каждое такое вхождение в $...$. Делаем простую обёртку для непокрытых.
