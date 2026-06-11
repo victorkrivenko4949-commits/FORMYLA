@@ -65,22 +65,33 @@ def _file_paths(app):
 
 
 def _is_db_already_correct(db, Probnik, OlympiadTask) -> bool:
-    """Проверить, что в БД уже лежат 50 пробников × 20 задач = 1000."""
+    """Проверить, что в БД уже лежат ≥ 50 пробников × 20 задач во ВСЕХ грейдах (9,10,11)."""
     try:
         probniks = (Probnik.query
                     .filter(Probnik.code.like('vsosh-%-2027-%'))
                     .all())
-        if len(probniks) != EXPECTED_PROBNIKS_TOTAL:
+        if len(probniks) < EXPECTED_PROBNIKS_TOTAL:
+            logger.info(
+                '[VSOSH-FULL] not seeded: probniks=%d < %d',
+                len(probniks), EXPECTED_PROBNIKS_TOTAL,
+            )
+            return False
+        # Проверим что есть пробники во всех 3 грейдах: 9, 10, 11
+        grades_present = {p.grade for p in probniks}
+        if not {9, 10, 11}.issubset(grades_present):
+            logger.info(
+                '[VSOSH-FULL] not seeded: missing grades. present=%s',
+                sorted(grades_present),
+            )
             return False
         pids = [p.id for p in probniks]
         n_tasks = OlympiadTask.query.filter(OlympiadTask.probnik_id.in_(pids)).count()
-        if n_tasks != EXPECTED_OLY_TASKS_TOTAL:
+        if n_tasks < EXPECTED_OLY_TASKS_TOTAL:
+            logger.info(
+                '[VSOSH-FULL] not seeded: tasks=%d < %d',
+                n_tasks, EXPECTED_OLY_TASKS_TOTAL,
+            )
             return False
-        # Проверим что каждый probnik имеет ровно 20 задач
-        for p in probniks:
-            n = OlympiadTask.query.filter_by(probnik_id=p.id).count()
-            if n != 20:
-                return False
         return True
     except Exception as e:
         logger.warning('[VSOSH-FULL] _is_db_already_correct failed: %s', e)
