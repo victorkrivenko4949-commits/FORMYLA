@@ -6402,6 +6402,21 @@ def adaptive_test_simple_page():
     }
     topic_name = current_task.topic
 
+    # Нормализуем математический текст (auto-wrap `^`, `sqrt`, системы и т.п.
+    # в `$...$`) — чтобы KaTeX/MathJax корректно отрисовывал формулы на
+    # странице задачи внутри темы. Не модифицируем исходный объект
+    # AdaptiveTask — работаем с копией task_dict.
+    try:
+        from services.math_text_normalizer import normalize_math_text
+        for _fld in ('task_text', 'solution', 'criteria_1_point', 'criteria_2_points'):
+            _v = task_dict.get(_fld)
+            if isinstance(_v, str) and _v:
+                task_dict[_fld] = normalize_math_text(_v)
+    except Exception as _norm_err:
+        app.logger.warning(
+            f"[math_normalizer] adaptive_test_simple task {current_task.id}: {_norm_err}"
+        )
+
     answered_count = _adaptive_answered_count(slots)
     can_finish = (answered_count >= 25)
     is_readonly = slot.get('status') in ('answered',)
@@ -6953,7 +6968,23 @@ def adaptive_test_simple_results():
                     )
         except Exception as _e:
             print(f"[ADAPTIVE results] feedback rehydrate failed: {_e}")
-    
+
+    # Нормализуем math-формулы (`x^2`, `sqrt(x)`, системы) в каждом ответе —
+    # task_text/solution/feedback/correct_answer. Делается ПЕРЕД рендером,
+    # чтобы KaTeX/MathJax увидел корректный LaTeX.
+    try:
+        from services.math_text_normalizer import normalize_math_text
+        for _a in answers:
+            for _fld in ('task_text', 'solution', 'feedback',
+                         'correct_answer', 'user_answer'):
+                _v = _a.get(_fld)
+                if isinstance(_v, str) and _v:
+                    _a[_fld] = normalize_math_text(_v)
+    except Exception as _norm_err:
+        app.logger.warning(
+            f"[math_normalizer] adaptive_test_simple_results: {_norm_err}"
+        )
+
     # Подсчет статистики с учетом новых полей score
     total = len(answers)
     
