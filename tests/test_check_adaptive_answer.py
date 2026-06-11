@@ -125,7 +125,7 @@ def client():
 #   answer_correct=False, method_correct=True  (с реш.) → score= 0, level=ст.
 #   answer_correct=False, method_correct=False/None    → score=-1, level-1
 #   answer_correct=None (AI failure / суждение неясно)  → score= 0, level=ст.
-# Уровень clamped to [1, 7].
+# Уровень clamped to [1, 8] (FORMYLA v2, fix/adaptive-progress).
 # ═════════════════════════════════════════════════════════════════════════
 
 
@@ -254,3 +254,150 @@ def test_ai_failure_neutral(client):
     assert resp.status_code == 200
     assert data["score"] == 0
     assert data["new_level"] == 1
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Regression tests for fix/adaptive-progress (calibration & clamp 1..8).
+# ═════════════════════════════════════════════════════════════════════════
+
+
+def test_two_consecutive_correct_answers_accumulate_level(client):
+    """Регрессия: два верных ответа подряд → уровень накапливается 3 → 4 → 5.
+
+    Бывший баг: new_level пересчитывался от difficulty показанной задачи,
+    из-за чего после первого +1 уровень "застревал". Теперь new_level
+    берётся от СОХРАНЁННОГО session['adaptive_current_difficulty'].
+    """
+    mock_return = {
+        "score": 1.0,
+        "feedback": "✅",
+        "category": "correct",
+        "confidence": 1.0,
+        "answer_correct": True,
+        "method_correct": True,
+    }
+    # 1-й ответ: cur=3 → new=4
+    resp1 = _call_check_answer(client, "5", mock_return, difficulty=3, slot=1)
+    data1 = resp1.get_json()
+    assert resp1.status_code == 200
+    assert data1["new_level"] == 4, f"first answer: {data1}"
+
+    # Проверяем что session обновилась
+    with client.session_transaction() as sess:
+        assert sess["adaptive_current_difficulty"] == 4
+
+    # 2-й ответ: cur=4 → new=5 (НЕ "застрял" на 4)
+    # Передаём difficulty=4 явно, так как _call_check_answer переинициализирует
+    # session перед каждым вызовом — мы продолжаем накопленный уровень.
+    # task_id=2 чтобы попасть в другой слот без already_answered.
+    resp2 = _call_check_answer(client, "5", mock_return, slot=2, task_id=2, difficulty=4)
+    data2 = resp2.get_json()
+    assert resp2.status_code == 200
+    assert data2["new_level"] == 5, (
+        f"second answer should accumulate to 5, not stuck at 4. Got: {data2}"
+    )
+
+    with client.session_transaction() as sess:
+        assert sess["adaptive_current_difficulty"] == 5
+
+
+def test_correct_answer_at_level_7_advances_to_8(client):
+    """Регрессия: clamp теперь 1..8 (а не 1..7). На уровне 7 верный ответ → 8."""
+    mock_return = {
+        "score": 1.0,
+        "feedback": "✅",
+        "category": "correct",
+        "confidence": 1.0,
+        "answer_correct": True,
+        "method_correct": True,
+    }
+    resp = _call_check_answer(client, "5", mock_return, difficulty=7)
+    data = resp.get_json()
+    assert resp.status_code == 200
+    assert data["score"] == 1
+    assert data["new_level"] == 8, (
+        f"level 7 + correct should advance to 8 (clamp 1..8), not stuck at 7. Got: {data}"
+    )
+
+
+def test_correct_answer_at_level_8_stays_at_8(client):
+    """Регрессия: на максимуме 8 верный ответ → остаётся 8 (clamp сверху)."""
+    mock_return = {
+        "score": 1.0,
+        "feedback": "✅",
+        "category": "correct",
+        "confidence": 1.0,
+        "answer_correct": True,
+        "method_correct": True,
+    }
+    resp = _call_check_answer(client, "5", mock_return, difficulty=8)
+    data = resp.get_json()
+    assert resp.status_code == 200
+    assert data["score"] == 1
+    assert data["new_level"] == 8  # clamp(1, 8, 8+1) = 8
+
+
+def test_stale_pending_slot_reassigned_after_level_change(client):
+    """Регрессия: если pending-слот был назначен при cur=3, а потом cur стал 5
+    (юзер ответил на другой слот +1+1), то при открытии этого слота задача
+    должна быть переназначена под текущий уровень (level_at_assign=5)."""
+    from app import app as flask_app
+    from models import db, AdaptiveTask
+
+    flask_app.config["TESTING"] = True
+
+    # Подготавливаем сессию: один pending-слот с task назначенной при cur=3,
+    # потом меняем cur на 5 и открываем тот же слот.
+    with flask_app.app_context():
+        # Берём 2 реальные задачи разных уровней из БД для теста.
+        # Если БД пуста — тест пропускаем.
+        t3 = AdaptiveTask.query.filter_by(difficulty_level=3).first()
+        t5 = AdaptiveTask.query.filter_by(difficulty_level=5).first()
+        if not (t3 and t5):
+            pytest.skip("Нет задач уровня 3 и 5 в формьила-БД для теста")
+
+        with flask_app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess["_user_id"] = "999"
+                sess["adaptive_filtered_tasks"] = [t3.id, t5.id]
+                sess["adaptive_grade"] = "9"
+                sess["adaptive_topic"] = "algebra"
+                sess["adaptive_current_difficulty"] = 5  # ← сменили уровень
+                # Слот 1 был назначен при cur=3 (level_at_assign=3) — pending.
+                slots = [
+                    {
+                        "task_id": t3.id,
+                        "status": "pending",
+                        "score": None,
+                        "difficulty": 3,
+                        "user_answer": "",
+                        "correct_answer": "",
+                        "level_at_assign": 3,
+                    }
+                ] + [
+                    {
+                        "task_id": None, "status": "pending", "score": None,
+                        "difficulty": None, "user_answer": "", "correct_answer": "",
+                        "level_at_assign": None,
+                    }
+                    for _ in range(24)
+                ]
+                sess["adaptive_slots"] = slots
+
+            # Открываем слот 1 — он должен быть переназначен под cur=5
+            resp = c.get("/adaptive_test_simple?slot=1")
+            assert resp.status_code == 200, (
+                f"slot=1 GET failed: status={resp.status_code}"
+            )
+
+            with c.session_transaction() as sess:
+                slot_after = sess["adaptive_slots"][0]
+                assert slot_after["task_id"] is not None, (
+                    "Слот должен иметь назначенную задачу после render"
+                )
+                # level_at_assign должен соответствовать новому cur=5
+                # (точное равенство — если задача уровня 5 нашлась)
+                assert slot_after["level_at_assign"] == 5, (
+                    f"После cur=5 слот должен быть переназначен с "
+                    f"level_at_assign=5, получили {slot_after}"
+                )
