@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Production-сидер банка адаптивного теста (9120 задач).
+Production-сидер банка адаптивного теста (9135 задач, fixed-версия).
 
 Запускается на старте Flask-приложения в Render (или локально), если
 установлена переменная окружения ADAPTIVE_FORCE_IMPORT=1.
 
 Источник:
-  data/adaptive/adaptive_full_9120.json  (формат — см. ниже)
+  adaptive_data/adaptive_full_9120_fixed.json  (формат — см. ниже)
+
+  Замена старого data/adaptive/adaptive_full_9120.json (9120 задач):
+  убраны идентичные задачи-клоны (баг 1), добавлены разнотипные.
+  Маркер SOURCE_TAG поднят до v4_fixed, чтобы сидер сработал ровно один раз
+  при следующем рестарте/деплое и переписал adaptive_tasks свежим набором.
 
 Формат записи JSON (как в adaptive_export_2026-06-04_completed (3).json):
   {
@@ -20,9 +25,9 @@ Production-сидер банка адаптивного теста (9120 зад�
   }
 
 Идемпотентность:
-  - Если в БД уже 9000+ задач из этого источника (определяется по
-    AdaptiveTask.source == 'calibrated_2026_06_04'), сидер пропускает работу.
-  - Иначе делает: TRUNCATE adaptive_tasks → bulk INSERT 9120 строк.
+  - Если в БД уже 9000+ задач из текущего источника (определяется по
+    AdaptiveTask.source == SOURCE_TAG), сидер пропускает работу.
+  - Иначе делает: DELETE FROM adaptive_tasks → bulk INSERT всех строк.
   - Бэкап старых данных в backups/ НЕ делается (это прод; на Render бэкап
     через скачивание Postgres-дампа).
 
@@ -84,8 +89,8 @@ TOPIC_MAP = {
     ("logic",         11): "Логика. Логика, множества, функции и отображения",
 }
 
-SOURCE_TAG = "calibrated_2026_06_04_v3"
-DEFAULT_PATH = os.path.join("data", "adaptive", "adaptive_full_9120.json")
+SOURCE_TAG = "calibrated_2026_06_04_v4_fixed"
+DEFAULT_PATH = os.path.join("adaptive_data", "adaptive_full_9120_fixed.json")
 
 
 def run_adaptive_full_seed(app, db):
