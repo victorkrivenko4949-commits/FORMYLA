@@ -1009,6 +1009,23 @@ if os.environ.get('VSOSH9_2027_FORCE_IMPORT', '0') == '1':
 else:
     print("[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)")
 
+# ── VsOSh 10/11 2027 additive seed (idempotent, non-destructive) ─────────
+# Аддитивный сидер: ТОЛЬКО для grade=10 и grade=11 (вставка отсутствующих
+# пробников/задач). НЕ удаляет данные 9 класса (в отличие от
+# services.vsosh_full_seed). По умолчанию включён; отключить можно через
+# env VSOSH10_2027_FORCE_IMPORT=0. Источник: data/olympiads/vsosh_10_11_full.json.
+if os.environ.get('VSOSH10_2027_FORCE_IMPORT', '1').strip().lower() in ('1', 'true', 'yes', 'on'):
+    try:
+        from services.vsosh_10_11_additive_seed import run_vsosh_10_11_additive_seed
+        _seed_10_11_result = run_vsosh_10_11_additive_seed(app, db)
+        print(f"[VSOSH10_11-ADD] result={_seed_10_11_result}")
+    except Exception as _e_seed_10_11:
+        import traceback as _tb_seed_10_11
+        print(f"[VSOSH10_11-ADD] hook FAILED: {_e_seed_10_11}")
+        print(_tb_seed_10_11.format_exc())
+else:
+    print("[VSOSH10_11-ADD] disabled (set VSOSH10_2027_FORCE_IMPORT=1 to enable)")
+
 # ── Adaptive bank seed (9120 калиброванных задач L1..L8) ─────────────────
 # Идемпотентно перезаливает таблицу adaptive_tasks из
 # data/adaptive/adaptive_full_9120.json. Если уже >= 9000 строк с
