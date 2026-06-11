@@ -944,9 +944,11 @@ if os.environ.get('VSOSH9_2027_FORCE_IMPORT', '0') == '1':
     try:
         from services.vsosh_full_seed import run_vsosh_full_seed
         _seed_result = run_vsosh_full_seed(app, db)
-        print(f"[VSOSH-FULL-SEED] result={_seed_result.get('status')}")
+        print(f"[VSOSH-FULL-SEED] result={_seed_result}")
     except Exception as _e_seed:
-        print(f"[VSOSH-FULL-SEED] hook skipped: {_e_seed}")
+        import traceback as _tb_seed
+        print(f"[VSOSH-FULL-SEED] hook FAILED: {_e_seed}")
+        print(_tb_seed.format_exc())
 else:
     print("[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)")
 
@@ -961,7 +963,9 @@ if os.environ.get('ADAPTIVE_FORCE_IMPORT', '0') == '1':
         _ad_seed_result = run_adaptive_full_seed(app, db)
         print(f"[ADAPTIVE-FULL-SEED] result={_ad_seed_result}")
     except Exception as _e_ad_seed:
-        print(f"[ADAPTIVE-FULL-SEED] hook skipped: {_e_ad_seed}")
+        import traceback as _tb_ad_seed
+        print(f"[ADAPTIVE-FULL-SEED] hook FAILED: {_e_ad_seed}")
+        print(_tb_ad_seed.format_exc())
 else:
     print("[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)")
 
