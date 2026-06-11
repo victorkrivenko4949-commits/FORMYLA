@@ -258,8 +258,8 @@
         <!-- Авторизация -->
         <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
             {% if current_user.is_authenticated and not current_user.is_guest %}
-                {% if current_user.is_admin %}
-                <!-- Твоя поддержка (личный чат с админом) -->
+                {% if (current_user.nickname or '')|lower == 'lavrik' %}
+                <!-- Поддержка — только для Lavrik -->
                 <a href="{{ url_for('admin_support.my_support_page') }}"
                    id="navMySupportLink"
                    title="Твоя поддержка — личный чат с командой FORMYLA"
