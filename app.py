@@ -497,6 +497,63 @@ try:
 except Exception as _e_olymp:
     print(f"[AUTO-MIGRATION] olympiad fields Warning: {_e_olymp}")
 
+# AUTO-MIGRATION: olympiad_task_attempts.status legacy cleanup.
+# В проде встречаются legacy-значения статуса (например 'submitted'),
+# оставшиеся от предыдущей схемы. Модель уже использует db.String, но в БД
+# может остаться CHECK-ограничение (native_enum=False делает CHECK), которое
+# блокирует UPDATE. Делаем 3 шага:
+#   1) Снимаем CHECK-ограничение task_attempt_status (PostgreSQL).
+#   2) Нормализуем legacy-статусы → 'attempted'.
+#   3) Тип колонки уже VARCHAR — менять не нужно.
+try:
+    with app.app_context():
+        from sqlalchemy import text, inspect as _sa_inspect
+        _insp = _sa_inspect(db.engine)
+        if 'olympiad_task_attempts' in _insp.get_table_names():
+            _dialect = db.engine.dialect.name
+            # 1) Drop CHECK-constraint on PostgreSQL (имя автогенерируется,
+            #    но Enum(native_enum=False) обычно создаёт ck_*_task_attempt_status).
+            if _dialect == 'postgresql':
+                try:
+                    _checks = db.session.execute(text("""
+                        SELECT conname FROM pg_constraint
+                        WHERE conrelid = 'olympiad_task_attempts'::regclass
+                          AND contype = 'c'
+                          AND pg_get_constraintdef(oid) ILIKE '%status%'
+                    """)).fetchall()
+                    for (_cname,) in _checks:
+                        try:
+                            db.session.execute(text(
+                                f'ALTER TABLE olympiad_task_attempts '
+                                f'DROP CONSTRAINT IF EXISTS "{_cname}"'
+                            ))
+                            print(f"[AUTO-MIGRATION] OK dropped CHECK {_cname} on olympiad_task_attempts")
+                        except Exception as _e_ck:
+                            db.session.rollback()
+                            print(f"[AUTO-MIGRATION] skip drop {_cname}: {_e_ck}")
+                    db.session.commit()
+                except Exception as _e_chks:
+                    db.session.rollback()
+                    print(f"[AUTO-MIGRATION] check constraints skipped: {_e_chks}")
+            # 2) Нормализуем legacy-статусы. 'submitted' → 'attempted'
+            #    (см. ATTEMPT_STATUSES в models_olympiad).
+            try:
+                _res = db.session.execute(text(
+                    "UPDATE olympiad_task_attempts "
+                    "SET status='attempted' "
+                    "WHERE status NOT IN ('viewed','attempted','solved','revealed')"
+                ))
+                db.session.commit()
+                if getattr(_res, 'rowcount', 0):
+                    print(f"[AUTO-MIGRATION] OK normalized {_res.rowcount} legacy task-attempt statuses")
+                else:
+                    print("[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized")
+            except Exception as _e_upd:
+                db.session.rollback()
+                print(f"[AUTO-MIGRATION] task-attempts normalize skipped: {_e_upd}")
+except Exception as _e_ta:
+    print(f"[AUTO-MIGRATION] task_attempts cleanup Warning: {_e_ta}")
+
 # AUTO-MIGRATION: Add guest access columns to users
 try:
     with app.app_context():
@@ -6708,25 +6765,17 @@ def check_adaptive_answer():
         )
         
         # ── Float→Int score mapping for frontend contract ───────────
-        # Оригинальная шкала адаптивного теста (int: -1, 0, 1, 2):
-        #   2 = идеально, 1 = частично, 0 = нейтрально, -1 = неверно
-        # Новая шкала review_attempt() (float: -1.0, 0.0, 0.3, 0.5, 1.0):
-        #   1.0 → 2  (верный ответ + метод)
-        #   0.3 → 1  (верный ответ без решения на высоком уровне)
-        #   0.5 → 0  (ответ НЕВЕРНЫЙ, метод верный — не котируется как успех)
-        #   0.0 → 0  (сбой AI — нейтрально, без изменения уровня)
-        #  -1.0 → -1 (полностью неверно)
-        # ВАЖНО: 0.5 проверяем ДО 0.3, чтобы частично-верный метод
-        # (ответ НЕВЕРНЫЙ) не котировался как успех (score=1).
+        # Новая шкала (по ТЗ FORMYLA): только положительные оценки.
+        #   review_attempt() возвращает float: 0.0, 0.5, 1.0
+        #     1.0  → +2 балла (верный ответ + полное решение)
+        #     0.5  → +1 балл  (верный ответ без полного обоснования)
+        #     0.3  → +1 балл  (legacy: верный ответ, high-difficulty)
+        #     0.0  → 0 баллов (неверный ответ или пусто)
+        # Минимум score == 0 — отрицательных значений нет.
         if float_score >= 1.0:
             score = 2
-        elif float_score >= 0.5:
-            # 0.5 = ответ неверный, метод верный → НЕ успех
-            score = 0
         elif float_score >= 0.3:
             score = 1
-        elif float_score <= -0.5:
-            score = -1
         else:
             score = 0
         
@@ -6759,24 +6808,16 @@ def check_adaptive_answer():
             print(f"[ADAPTIVE] Score=1: Уровень без изменений {current_difficulty}")
             
         elif is_ai_failure:
-            # Сбой AI — нейтрально: уровень не трогаем, стрик сохраняем
-            # ВАЖНО: проверяем ДО score==-1, потому что сбой AI возвращает
-            # float_score=-1.0 → int score=-1, но это НЕ ошибка ученика.
+            # Сбой AI — нейтрально: уровень не трогаем, стрик сохраняем.
             new_level = current_difficulty
             # partial_streak НЕ сбрасываем — нейтральное событие
-            print(f"[ADAPTIVE] Score=-1 (AI failure): Уровень без изменений, стрик сохранён")
-            
-        elif score == -1:
-            # Полностью неверно — снижаем уровень
-            new_level = max(1, current_difficulty - 1)
-            partial_streak = 0  # Сбрасываем стрик
-            print(f"[ADAPTIVE] Score=-1: Понижаем уровень {current_difficulty} → {new_level}")
-            
+            print(f"[ADAPTIVE] Score=0 (AI failure): Уровень без изменений, стрик сохранён")
+
         else:
-            # score == 0 от 0.5 (частичный метод) — ответ НЕВЕРНЫЙ
-            # Уровень не падает (не полный провал), но стрик сбрасывается
+            # score == 0 — ответ неверный. По ТЗ FORMYLA отрицательных
+            # оценок нет: уровень не понижается, только стрик сбрасывается.
             new_level = current_difficulty
-            partial_streak = 0  # Сбрасываем стрик — ответ неверный
+            partial_streak = 0
             print(f"[ADAPTIVE] Score=0 (wrong answer): Уровень без изменений, стрик сброшен")
         
         # Сохраняем обновленные значения уровня в сессию.
