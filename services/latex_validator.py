@@ -144,8 +144,16 @@ def normalize_math_text(text: str) -> str:
     out: List[str] = []
     for seg, is_math in segments:
         if is_math:
-            # Внутри math: только нормализуем \frac12 → \frac{1}{2}
+            # Внутри math: нормализуем \frac12 → \frac{1}{2}
             seg = _FRAC_NOBRACES.sub(r'\\frac{\1}{\2}', seg)
+            # и канонизируем корни (\sqrt[3] X → \sqrt[3]{X}, ∛ → \sqrt[3]{...},
+            # ^{3}\sqrt{...} → \sqrt[3]{...}). Безопасно для корректных формул
+            # и идемпотентно — инцидент 2026-06-11 (задача G6.17).
+            try:
+                from services.latex_root_normalizer import normalize_roots
+                seg = normalize_roots(seg)
+            except Exception:
+                pass
             out.append(seg)
             continue
 
