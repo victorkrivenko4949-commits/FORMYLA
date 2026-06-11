@@ -1357,9 +1357,9 @@
         }
       });
     }
-    // По пожеланию админа («как в норм чатах»): сообщения поддержки (admin) — СПРАВА,
-    // сообщения юзера (его обращения) — СЛЕВА. Меняем местами классы.
-    const kind = m.from === 'admin' ? 'user' : (m.from === 'user' ? 'bot' : 'system');
+    // Классический паттерн мессенджера: own msgs RIGHT, support LEFT.
+
+    const kind = m.from === 'user' ? 'user' : (m.from === 'admin' ? 'bot' : 'system');
     const div = document.createElement('div');
     div.className = 'contact-chat__msg contact-chat__msg--' + kind;
     div.dataset.msgId = m.id;
