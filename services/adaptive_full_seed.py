@@ -84,7 +84,7 @@ TOPIC_MAP = {
     ("logic",         11): "Логика. Логика, множества, функции и отображения",
 }
 
-SOURCE_TAG = "calibrated_2026_06_04"
+SOURCE_TAG = "calibrated_2026_06_04_v3"
 DEFAULT_PATH = os.path.join("data", "adaptive", "adaptive_full_9120.json")
 
 
