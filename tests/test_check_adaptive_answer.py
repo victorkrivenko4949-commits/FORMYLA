@@ -401,3 +401,55 @@ def test_stale_pending_slot_reassigned_after_level_change(client):
                     f"После cur=5 слот должен быть переназначен с "
                     f"level_at_assign=5, получили {slot_after}"
                 )
+
+
+def test_picker_prefers_higher_levels_over_lower(client):
+    """Регрессия (fix/adaptive-badge-level Fix 2): когда на текущем уровне
+    нет задач, пикер должен сначала пробовать уровни ВЫШЕ, потом ниже.
+
+    Это исправляет «застрявший бейдж 4/8»: при высоком уровне (7-8) и пустоте
+    на этом уровне пикер не должен скатываться к простым задачам уровня 3-4.
+    """
+    from app import app as flask_app
+    from models import db, AdaptiveTask
+
+    flask_app.config["TESTING"] = True
+
+    with flask_app.app_context():
+        # Берём задачи уровня 3 и 7 — НЕТ задачи уровня 5
+        t3 = AdaptiveTask.query.filter_by(difficulty_level=3).first()
+        t7 = AdaptiveTask.query.filter_by(difficulty_level=7).first()
+        if not (t3 and t7):
+            pytest.skip("Нет задач уровня 3 и 7 в БД для теста")
+
+        with flask_app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess["_user_id"] = "999"
+                sess["adaptive_filtered_tasks"] = [t3.id, t7.id]
+                sess["adaptive_grade"] = "9"
+                sess["adaptive_topic"] = "algebra"
+                # current=5, в банке только 3 и 7. Пикер должен выбрать 7 (выше),
+                # а не 3 (ниже).
+                sess["adaptive_current_difficulty"] = 5
+                sess["adaptive_slots"] = [
+                    {
+                        "task_id": None, "status": "pending", "score": None,
+                        "difficulty": None, "user_answer": "", "correct_answer": "",
+                        "level_at_assign": None,
+                    }
+                    for _ in range(25)
+                ]
+
+            resp = c.get("/adaptive_test_simple?slot=1")
+            assert resp.status_code == 200
+
+            with c.session_transaction() as sess:
+                slot_after = sess["adaptive_slots"][0]
+                assert slot_after["task_id"] == t7.id, (
+                    f"Должна была выбраться задача уровня 7 (выше cur=5), "
+                    f"а не уровня 3 (ниже). Выбран task_id={slot_after['task_id']}, "
+                    f"ожидали {t7.id}"
+                )
+                assert slot_after["difficulty"] == 7, (
+                    f"slot.difficulty должен быть 7, получили {slot_after['difficulty']}"
+                )
