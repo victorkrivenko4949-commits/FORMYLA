@@ -7,7 +7,7 @@
     </button>
     
     <!-- Всплывающее окно -->
-    <div id="ai-tutor-popup" style="display: none; position: fixed; bottom: 100px; right: 20px; width: 500px; height: 600px; background: var(--bg-card); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); flex-direction: column; resize: both; overflow: auto; min-width: 350px; min-height: 400px; max-width: 90vw; max-height: 90vh;">
+    <div id="ai-tutor-popup" style="display: none; position: fixed; bottom: 100px; right: 20px; width: 500px; height: 620px; background: var(--bg-card); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); flex-direction: column; overflow: hidden; max-width: 90vw; max-height: 90vh; overscroll-behavior: contain;">
         
         <!-- ЭКРАН 1: Выбор агента -->
         <div id="agentSelectionScreen" style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
@@ -260,6 +260,10 @@
 }
 .hint-toggle input:checked + .hint-toggle__switch::before{
   transform:translateX(16px);
+}
+
+#chatMessages {
+    overscroll-behavior: contain;
 }
 
 #chatMessages::-webkit-scrollbar {
