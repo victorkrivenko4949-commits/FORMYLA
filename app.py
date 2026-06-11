@@ -6079,11 +6079,20 @@ def _adaptive_pick_task_for_slot(slot_index, slots, current_difficulty):
 
     picked = _pick_first_at_level(current_difficulty)
     if picked is None:
-        for offset in (1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7):
+        # Сначала вверх (+1..+7), потом вниз (-1..-7) — чтобы при дефиците
+        # на текущем уровне отдавать предпочтение более высоким, а не
+        # скатываться к простым.
+        for offset in (1, 2, 3, 4, 5, 6, 7, -1, -2, -3, -4, -5, -6, -7):
             lvl = current_difficulty + offset
             if 1 <= lvl <= 8:
                 picked = _pick_first_at_level(lvl)
                 if picked:
+                    if offset < 0:
+                        print(
+                            f"[ADAPTIVE-PICK] WARNING: no free tasks at level "
+                            f">= {current_difficulty} for slot {slot_index+1}; "
+                            f"fell DOWN to level {lvl} (offset={offset})"
+                        )
                     break
     if picked is None:
         # Любая неиспользованная задача
@@ -6543,13 +6552,13 @@ def adaptive_test_simple_page():
     slot = slots[slot_index]
 
     # ── Stale-slot reassignment (FORMYLA v2 calibration fix) ────────────
-    # Если слот ещё pending (т.е. на него не отвечено) и был назначен при
-    # ином уровне сложности (level_at_assign != current_difficulty),
-    # перевыбираем задачу под актуальный уровень. Это устраняет «застрявший
-    # бейдж 3/8» при росте уровня в калибровочных слотах.
+    # Если активный слот ещё pending (т.е. на него не отвечено) и был
+    # назначен при ином уровне (level_at_assign != current_difficulty) —
+    # сбрасываем task_id, чтобы пикер выбрал свежую задачу под актуальный
+    # уровень. Это устраняет «застрявший бейдж 4/8» когда session-уровень
+    # уже вырос до 5/6/7/8.
     if (
         slot.get('status', 'pending') == 'pending'
-        and slot.get('task_id')
         and slot.get('level_at_assign') is not None
         and slot.get('level_at_assign') != current_difficulty
     ):
