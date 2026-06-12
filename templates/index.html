@@ -4,8 +4,8 @@
 
 {% block content %}
 
-{% if current_user.is_authenticated and current_user.username == 'pavelznaka' %}
-<div style="text-align:center; margin:24px 0;">
+
+{% if current_user.is_authenticated and current_user.nickname == 'pavelznaka' %}<div style="text-align:center; margin:24px 0;">
   <h1 style="font-size:48px; font-weight:900; letter-spacing:1px; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin:0;">ПАВЕЛЕНТИУС МОРСКОЙ</h1>
 </div>
 {% endif %}
