@@ -22,6 +22,16 @@ document.addEventListener('DOMContentLoaded', function() {
             break;
         case 'generating':
             showGeneratingState(data);
+            // Fix «прошло X:XX» сбрасывается при F5: даже на загрузке
+            // страницы в состоянии 'generating' нужно сразу запустить
+            // таймер — иначе он стоит на «прошло 0:00» до первого
+            // polling-ответа (5 с тишины) и потом всё равно начнёт с 0.
+            // Инициализируем по серверным данным (started_at / elapsed_seconds),
+            // чтобы цифра соответствовала реальному прошедшему времени.
+            startElapsedTimer({
+                serverStartedAt: data.started_at,
+                elapsedSeconds: data.elapsed_seconds
+            });
             startPolling();
             break;
         case 'ready':
@@ -390,11 +400,48 @@ function formatMMSS(totalSeconds) {
     return mins + ':' + (secs < 10 ? '0' : '') + secs;
 }
 
-function startElapsedTimer() {
+// Fix «прошло X:XX» сбрасывается при F5.
+// Раньше: window.dtElapsedStart = Date.now() — локальная метка, при F5
+// она пропадала и таймер начинал с 0, хотя на сервере генерация уже шла.
+// Теперь принимаем опциональный объект {serverStartedAt, elapsedSeconds}
+// от бэкенда (см. daily_tasks/routes.py и daily_tasks/services.py:_serialize_job)
+// и считаем смещение так, чтобы «локальное время старта» соответствовало
+// реальному моменту начала генерации на сервере.
+function startElapsedTimer(opts) {
     if (window.dtElapsedInterval) clearInterval(window.dtElapsedInterval);
-    window.dtElapsedStart = Date.now();
+
+    var nowMs = Date.now();
+    var startMs = nowMs;  // дефолт — стартуем «сейчас»
+
+    if (opts && typeof opts === 'object') {
+        // Приоритет 1: ISO-строка started_at от сервера (UTC с 'Z').
+        if (opts.serverStartedAt) {
+            var parsed = Date.parse(opts.serverStartedAt);
+            if (!isNaN(parsed)) {
+                startMs = parsed;
+            }
+        }
+        // Приоритет 2 / fallback: серверно посчитанные elapsed_seconds.
+        // Используем, если ISO не парсится ИЛИ часы клиента сильно
+        // разошлись с серверными (>30 сек) — в этом случае серверный
+        // elapsed заведомо точнее.
+        if (opts.elapsedSeconds !== undefined &&
+            opts.elapsedSeconds !== null &&
+            opts.elapsedSeconds >= 0) {
+            var fromElapsed = nowMs - (opts.elapsedSeconds * 1000);
+            if (startMs === nowMs ||
+                Math.abs(fromElapsed - startMs) > 30000) {
+                startMs = fromElapsed;
+            }
+        }
+    }
+
+    window.dtElapsedStart = startMs;
     var elEl = document.getElementById('dt-elapsed');
-    if (elEl) elEl.textContent = 'прошло 0:00';
+    if (elEl) {
+        var initSec = (Date.now() - window.dtElapsedStart) / 1000;
+        elEl.textContent = 'прошло ' + formatMMSS(initSec);
+    }
     window.dtElapsedInterval = setInterval(function () {
         var el = document.getElementById('dt-elapsed');
         if (!el) return;
@@ -434,6 +481,35 @@ function pollJobStatus() {
                     location.reload();
                 }, 3000);
             } else {
+                // Синхронизация таймера «прошло X:XX» с сервером.
+                // Если по каким-то причинам локальный отсчёт ушёл далеко
+                // от серверного (>3 сек) — подкручиваем dtElapsedStart,
+                // чтобы цифра не отставала / не убегала.
+                if (data.started_at || data.elapsed_seconds !== undefined) {
+                    var expectedStart = null;
+                    if (data.started_at) {
+                        var p = Date.parse(data.started_at);
+                        if (!isNaN(p)) expectedStart = p;
+                    }
+                    if (expectedStart === null &&
+                        data.elapsed_seconds !== undefined &&
+                        data.elapsed_seconds !== null) {
+                        expectedStart = Date.now() - data.elapsed_seconds * 1000;
+                    }
+                    if (expectedStart !== null) {
+                        if (!window.dtElapsedInterval) {
+                            // Таймер ещё не идёт (например, перешли в это
+                            // состояние без startElapsedTimer) — запустим.
+                            startElapsedTimer({
+                                serverStartedAt: data.started_at,
+                                elapsedSeconds: data.elapsed_seconds
+                            });
+                        } else if (window.dtElapsedStart &&
+                                   Math.abs(expectedStart - window.dtElapsedStart) > 3000) {
+                            window.dtElapsedStart = expectedStart;
+                        }
+                    }
+                }
                 updateProgress(data);
             }
         })

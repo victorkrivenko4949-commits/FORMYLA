@@ -1086,16 +1086,30 @@ def _build_reason_summary(
 
 
 def _serialize_job(job: DailyGenerationJob) -> Dict[str, Any]:
-    """Сериализовать джоб в dict для API."""
+    """Сериализовать джоб в dict для API.
+
+    Все ``*_at`` поля в БД хранятся как naive UTC (``datetime.utcnow()``).
+    Чтобы фронт корректно интерпретировал их (в частности — для подсчёта
+    «прошло X:XX» от ``started_at``), отдаём ISO-строку с явным
+    суффиксом ``Z``. Дополнительно отдаём ``elapsed_seconds`` —
+    серверно посчитанное прошедшее время в секундах, чтобы JS не
+    зависел от расхождения часов клиент/сервер.
+    """
+    elapsed_seconds = None
+    if job.started_at:
+        elapsed_seconds = max(
+            0, int((datetime.utcnow() - job.started_at).total_seconds())
+        )
     return {
         "id": job.id,
         "state": job.state,
         "current_step": job.current_step,
         "progress_pct": job.progress_pct,
         "error_message": job.error_message,
-        "started_at": job.started_at.isoformat() if job.started_at else None,
-        "finished_at": job.finished_at.isoformat() if job.finished_at else None,
-        "created_at": job.created_at.isoformat() if job.created_at else None,
+        "started_at": (job.started_at.isoformat() + "Z") if job.started_at else None,
+        "finished_at": (job.finished_at.isoformat() + "Z") if job.finished_at else None,
+        "created_at": (job.created_at.isoformat() + "Z") if job.created_at else None,
+        "elapsed_seconds": elapsed_seconds,
     }
 
 
