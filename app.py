@@ -6942,30 +6942,18 @@ def check_adaptive_answer():
             and answer_correct is None
         )
 
-        # ── Шкала FORMYLA v2 (только ответ vs ответ+решение): +1 / 0 / -1 ──
-        # Только ответ (без решения/фото):
-        #   правильный ответ                   → +1 балл  / уровень +1
-        #   неправильный ответ                 → -1 балл  / уровень -1
-        # С решением:
-        #   правильный ответ + правильный метод → +1 балл  / уровень +1
-        #   правильный ответ + неверный метод  →  0 баллов / без изм.
-        #   неверный ответ + правильный метод  →  0 баллов / без изм.
-        #   совсем не то                       → -1 балл  / уровень -1
-        # AI failure / answer_correct == None  →  0 баллов / без изм.
+        # — Шкала FORMYLA: уровень определяется ТОЛЬКО по вердикту ИИ-тьютора —
+        #   answer_correct is True  → +1 (верно)
+        #   answer_correct is False → -1 (неверно)
+        #   answer_correct is None / AI failure → 0 (нейтрально, без изм.)
+        # method_correct БОЛЬШЕ НЕ влияет на уровень (по требованию: +1 значит +1).
         if is_ai_failure or answer_correct is None:
             score = 0
         elif answer_correct is True:
-            # Ответ верный.
-            if has_solution and method_correct is False:
-                score = 0   # ответ верный, но метод неверный → нейтрально
-            else:
-                score = 1   # без решения ИЛИ метод верный/None
+            # ИИ-тьютор сказал: ответ верный → +1, независимо от метода.
+            score = 1
         else:
-            # answer_correct is False — ответ неверный.
-            if has_solution and method_correct is True:
-                score = 0   # ответ не туда, но метод понят → нейтрально
-            else:
-                score = -1  # совсем не то
+            score = -1
 
         # ── Применяем дельту к уровню (clamp 1..8) ─────────────────────
         # FORMYLA v2: уровни 1..8, дельта +1/0/-1 от СОХРАНЁННОГО уровня
