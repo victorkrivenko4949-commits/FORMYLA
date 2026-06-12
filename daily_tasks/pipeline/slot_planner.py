@@ -146,48 +146,72 @@ def _pick_difficulty_for_topic(
 ) -> int:
     """Pick a concrete difficulty inside topic's level_window.
 
-    Distribution policy depends on topic strength:
+    Distribution policy depends on whether the topic was MEASURED
+    (we have real adaptive-test data) and on the student's level.
 
-    * Strong topic (target >= 6): bias to the TOP of the window.
-      8/8 -> window [7, 8] -> majority L8, sometimes L7.
-    * Weak topic (target <= 3): bias to the BOTTOM of the window, but
-      give the last slot one step up for growth.
-      1/8 -> window [1, 3] -> L1, L2, L3 with L1 prevailing.
-    * Medium: spread evenly through the window.
+    * NOT measured / calibration: ученик ещё не проходил тест по теме.
+      Стартуем от СЕРЕДИНЫ окна (чтобы не пугать максимумом) и при
+      нескольких слотах — равномерно разносим уровни по окну.
+      Окно [3..8], 2 слота → [5, 7] вместо прежних [8, 8].
+    * MEASURED strong (target >= 6, pct >= 75): bias to the TOP, но
+      два слота всегда РАЗНЫЕ (hi и hi-1), а не два одинаковых hi.
+    * MEASURED weak (target <= 3): bias to the BOTTOM, последний слот
+      на step up для роста.
+    * MEASURED medium: ровное распределение по окну.
+
+    Детерминированно: distribution зависит только от slot_index_in_topic
+    и total_slots_for_topic, никакого random.
     """
     lo, hi = _topic_window(topic)
-    target = _clamp(topic.get("target_level") or lo)
     if lo == hi:
         return lo
 
+    target = _clamp(topic.get("target_level") or lo, lo, hi)
     width = hi - lo + 1
     n = max(1, total_slots_for_topic)
-    is_strong = target >= 6 or (topic.get("pct") or 0) >= 75
+
+    # ── 1) НЕ ИЗМЕРЕННАЯ / калибровочная тема ─────────────────────────
+    # Главный фикс ТЗ: пока уровень неизвестен — НЕ ставить верх окна
+    # и при нескольких слотах разнести равномерно.
+    measured = bool(topic.get("measured", False))
+    is_calibration = bool(topic.get("calibration")) or not measured
+    if is_calibration:
+        if n == 1:
+            # Один слот по неизвестной теме — даём середину окна, а не верх.
+            # Это «калибровочная» задача: посмотреть, тянет ли ученик середину.
+            return _clamp(lo + (hi - lo) // 2, lo, hi)
+        # Несколько слотов: равномерно по окну от lo до hi (включительно).
+        # Формула: позиция k из n даёт level = lo + round(k*(hi-lo)/(n-1)).
+        if n >= 2:
+            step = (hi - lo) / float(n - 1)
+            level = int(round(lo + slot_index_in_topic * step))
+            return _clamp(level, lo, hi)
+        return target
+
+    # ── 2) ИЗМЕРЕННАЯ сильная тема ────────────────────────────────────
+    pct = float(topic.get("pct") or 0)
+    is_strong = target >= 6 or pct >= 75
     is_weak = target <= 3
 
     if is_strong:
-        # Top-biased: cycle from top down. With 2 slots: [hi, hi-1], or [8,7].
-        # With 3 slots: [hi, hi, hi-1].
-        # offset 0 -> hi, 1 -> max(hi-1, lo), 2 -> hi, ...
+        # Top-biased, но без дубликата: 2 слота → [hi, hi-1].
+        # 3 слота → [hi, hi-1, hi] (если hi-1==lo, держим hi).
         if slot_index_in_topic == 0:
             return hi
-        return hi if slot_index_in_topic % 2 == 0 else max(lo, hi - 1)
+        return max(lo, hi - 1) if slot_index_in_topic % 2 == 1 else hi
 
     if is_weak:
-        # Bottom-biased: cycle from lo up. 3 slots in [1,3]:
-        # offset 0 -> lo (=target),
-        # offset 1 -> lo+1,
-        # offset 2 -> hi (stretch).
-        # We always cover target itself first, then build up.
+        # Bottom-biased: lo, lo+1, lo+2, …
         step = slot_index_in_topic % width
         return _clamp(lo + step, lo, hi)
 
-    # Medium: even distribution across the window.
-    # spread positions evenly: 0 -> lo, last -> hi
+    # Medium: ровно по окну.
     if n == 1:
         return target
-    pos = slot_index_in_topic % width
-    return _clamp(lo + pos, lo, hi)
+    if n >= 2:
+        s = (hi - lo) / float(n - 1)
+        return _clamp(int(round(lo + slot_index_in_topic * s)), lo, hi)
+    return _clamp(lo + (slot_index_in_topic % width), lo, hi)
 
 
 # ---------------------------------------------------------------------
@@ -464,8 +488,97 @@ def plan_slots(
     # Truncate if somehow we over-shot.
     slots = slots[:total_slots]
 
+    # ── Глобальное правило разброса: не более 2 задач с одним уровнем ───
+    # Применяется ТОЛЬКО к не-измеренным/калибровочным слотам — у измеренных
+    # уровень = закон (по результатам теста). Если у нас 3+ слотов с
+    # одинаковым difficulty_level и среди них есть calibration-слот —
+    # сдвигаем такие слоты по их level_window, пока распределение не станет
+    # ≤2 одинаковых уровней (или пока двигать больше некуда).
+    _enforce_spread(slots, max_same_level=2)
+
     _log_plan(slots)
     return slots
+
+
+def _enforce_spread(slots: List[PlannedSlot], max_same_level: int = 2) -> None:
+    """In-place: разносим difficulty_level так, чтобы один и тот же
+    уровень встречался не более ``max_same_level`` раз.
+
+    Двигаем ТОЛЬКО калибровочные/не-измеренные слоты (их уровень не закон).
+    Для каждого «лишнего» слота пробуем сдвинуть его уровень внутри окна
+    туда, где счётчик ещё не упёрся в потолок. Детерминированно: сначала
+    идём вверх по окну, потом вниз.
+    """
+    if len(slots) <= max_same_level:
+        return
+    # Count occurrences
+    from collections import Counter
+    while True:
+        counts = Counter(s.difficulty_level for s in slots)
+        over = [lvl for lvl, c in counts.items() if c > max_same_level]
+        if not over:
+            return
+        moved_anything = False
+        for lvl in over:
+            # Кандидаты на сдвиг: только калибровочные/не-измеренные слоты
+            # с этим уровнем; среди них сначала пробуем те, у кого окно
+            # шире (есть куда двигать).
+            movable = [
+                s for s in slots
+                if s.difficulty_level == lvl and (s.is_calibration or not s.measured)
+            ]
+            if not movable:
+                # Все слоты с этим уровнем — измеренные. Двигать нельзя.
+                # Логируем и выходим из внешнего while, чтобы не зацикливаться.
+                logger.info(
+                    "slot_planner: level=%d встречается %d раз, но все слоты "
+                    "измеренные (target locked) — оставляем как есть",
+                    lvl, counts[lvl],
+                )
+                continue
+            # Сколько слотов на этом уровне нужно подвинуть, чтобы счётчик
+            # упал до max_same_level: c − max_same_level (но не больше,
+            # чем калибровочных слотов на этом уровне).
+            movable.sort(key=lambda s: s.position)
+            to_move = max(0, counts[lvl] - max_same_level)
+            # Двигаем сначала самые «последние по порядку» калибровочные
+            # слоты — они менее заметны как нарушители порядка отображения.
+            extras = movable[-to_move:] if to_move else []
+            for slot in extras:
+                lo, hi = slot.level_window
+                # Кандидаты: сначала вверх (lvl+1, lvl+2, …, hi),
+                # потом вниз (lvl-1, …, lo).
+                candidates: List[int] = []
+                for d in range(1, max(hi - lvl, lvl - lo) + 1):
+                    if lvl + d <= hi:
+                        candidates.append(lvl + d)
+                    if lvl - d >= lo:
+                        candidates.append(lvl - d)
+                placed = False
+                for new_lvl in candidates:
+                    if counts.get(new_lvl, 0) < max_same_level:
+                        logger.info(
+                            "slot_planner spread: pos=%d topic=%s "
+                            "level %d→%d (counter[%d]=%d, window=[%d,%d])",
+                            slot.position, slot.topic, lvl, new_lvl,
+                            lvl, counts[lvl], lo, hi,
+                        )
+                        slot.difficulty_level = new_lvl
+                        counts[lvl] -= 1
+                        counts[new_lvl] = counts.get(new_lvl, 0) + 1
+                        placed = True
+                        moved_anything = True
+                        break
+                if not placed:
+                    # Окно слота не позволяет сдвинуться без перекоса
+                    # — оставляем как есть, логируем.
+                    logger.info(
+                        "slot_planner spread: pos=%d topic=%s "
+                        "не удалось подвинуть с L%d (окно=[%d,%d] узкое)",
+                        slot.position, slot.topic, lvl, lo, hi,
+                    )
+        if not moved_anything:
+            return
 
 
 # ---------------------------------------------------------------------
@@ -490,24 +603,35 @@ def topic_to_window_summary(slots: List[PlannedSlot]) -> Dict[str, Dict[str, Any
 
 
 def _log_plan(slots: List[PlannedSlot]) -> None:
-    """Emit a single info line summarising the planned slots."""
+    """Emit per-slot info lines + a summary line for diagnostics.
+
+    Per-slot формат (требование ТЗ — чтобы было видно распределение в проде):
+        SLOT_PLAN pos=N topic=<...> measured=<bool> window=[a..b] -> level=<n>
+
+    Плюс одна суммарная строка с распределением уровней по комплекту:
+        slot_planner summary: levels_count={L1:..,L2:..,…} duplicates=[L4×3, …]
+    """
     if not slots:
         logger.warning("slot_planner: empty plan")
         return
-    summary = topic_to_window_summary(slots)
-    lines = []
-    for topic, rec in summary.items():
-        cal = " (CAL)" if rec["is_calibration"] else ""
-        score = ""
-        if rec["test_total"]:
-            score = f" {rec['test_correct']}/{rec['test_total']}"
-        lines.append(
-            f"{topic}{cal}{score} -> window={rec['window']} "
-            f"target=L{rec['target_level']} levels={rec['levels']}"
+    from collections import Counter
+
+    for s in slots:
+        logger.info(
+            "SLOT_PLAN pos=%d topic=%s measured=%s window=[%d..%d] "
+            "target=L%d -> level=%d (slot_kind=%s)",
+            s.position, s.topic, s.measured,
+            s.level_window[0], s.level_window[1],
+            s.target_level, s.difficulty_level, s.slot_kind,
         )
+    levels = [s.difficulty_level for s in slots]
+    counts = Counter(levels)
+    dups = [f"L{lvl}x{c}" for lvl, c in sorted(counts.items()) if c > 2]
     logger.info(
-        "slot_planner plan (%d slots): %s",
-        len(slots), " | ".join(lines),
+        "slot_planner summary: levels=%s distribution=%s%s",
+        levels,
+        dict(sorted(counts.items())),
+        (" duplicates>2: " + ", ".join(dups)) if dups else "",
     )
 
 

@@ -194,10 +194,35 @@ async def _audit_batch(
         return batch_id, fallback, usage.cost_usd
 
     audit_entries: List[Dict[str, Any]] = parsed["audit"]
-    verdicts = {}
+    verdicts: Dict[str, int] = {}
+    # estimated_actual_level is OPTIONAL on the schema side (validator doesn't
+    # require it), but the gpt_audit.md prompt now asks the auditor to ALWAYS
+    # provide it. Log per-entry estimated_actual_level vs spec.difficulty_level
+    # so we can debug calibration drift without changing the validator schema.
     for e in audit_entries:
         v = e.get("verdict", "?")
         verdicts[v] = verdicts.get(v, 0) + 1
+        pos = e.get("position", "?")
+        est = e.get("estimated_actual_level")
+        spec_lvl: Optional[int] = None
+        for it in items:
+            if it.get("position") == pos:
+                spec_lvl = (it.get("spec") or {}).get("difficulty_level")
+                break
+        if est is None:
+            logger.debug(
+                "AUDIT [batch=%d] pos=%s verdict=%s — no estimated_actual_level (old prompt?)",
+                batch_id, pos, v,
+            )
+        else:
+            try:
+                delta = (int(est) - int(spec_lvl)) if spec_lvl is not None else None
+            except (TypeError, ValueError):
+                delta = None
+            logger.info(
+                "AUDIT [batch=%d] pos=%s verdict=%s spec_lvl=%s est_lvl=%s delta=%s",
+                batch_id, pos, v, spec_lvl, est, delta,
+            )
     detail = ", ".join(f"{v}={n}" for v, n in sorted(verdicts.items()))
     logger.info(
         "Step 3 AUDIT [batch=%d] OK — %d entries (%s) cost=$%.4f",
