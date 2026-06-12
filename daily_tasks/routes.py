@@ -152,9 +152,16 @@ def get_daily_tasks():
 
         # считаем примерное ETA (если знаем, когда начали)
         eta_seconds = None
+        elapsed_seconds = None
+        started_at_iso = None
         if job and job.started_at:
             elapsed = (datetime.utcnow() - job.started_at).total_seconds()
             eta_seconds = max(0, int(90 - elapsed))  # ~90 секунд в среднем
+            elapsed_seconds = max(0, int(elapsed))
+            # started_at в БД хранится как datetime.utcnow() (naive UTC).
+            # Отдаём ISO-строку с явным суффиксом 'Z', чтобы JS
+            # Date.parse(...) корректно интерпретировал её как UTC.
+            started_at_iso = job.started_at.isoformat() + "Z"
 
         data = {
             "status": "generating",
@@ -163,6 +170,11 @@ def get_daily_tasks():
             "progress_pct": job.progress_pct if job else 0,
             "current_step": job.current_step if job else None,
             "eta_seconds": eta_seconds,
+            # Fix «прошло X:XX» сбрасывается при F5: отдаём серверное
+            # время старта (UTC, ISO с 'Z') + уже посчитанное elapsed,
+            # чтобы JS-таймер мог восстановиться с правильной отметки.
+            "started_at": started_at_iso,
+            "elapsed_seconds": elapsed_seconds,
             "class_level": None,
             "summary": None,
             "generated_at": None,
@@ -178,6 +190,8 @@ def get_daily_tasks():
             "progress_pct": job.progress_pct if job else 0,
             "current_step": job.current_step if job else None,
             "eta_seconds": eta_seconds,
+            "started_at": started_at_iso,
+            "elapsed_seconds": elapsed_seconds,
         }), 202
 
     # ── failed / ready / partial ─────────────────────────────────────
