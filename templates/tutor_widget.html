@@ -1,5 +1,13 @@
 <!-- AI Тьютор - плавающий виджет с выбором агента (PREMIUM UX) -->
 {% if current_user.is_authenticated %}
+<style>
+/* ═══ TUTOR WIDGET: RESIZE + MOBILE POSITION ═══ */
+#ai-tutor-popup { resize: both !important; overflow: auto !important; min-width: 300px; min-height: 360px; max-width: 95vw !important; max-height: 92vh !important; }
+@media (max-width: 768px) {
+  #tutorWidget { left: 20px !important; right: auto !important; }
+  #ai-tutor-popup { left: 20px !important; right: auto !important; }
+}
+</style>
 <div id="tutorWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
     <!-- Кнопка открытия -->
     <button id="tutorBtn" onclick="toggleTutorPopup()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
