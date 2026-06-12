@@ -12,19 +12,39 @@ services:
     name: formyla-com
     env: python
     plan: starter
+    # ПРИМЕЧАНИЕ: фактический Instance Type в Render Dashboard — Pro Plus
+    # (8 GB RAM / 4 CPU). Значение `plan: starter` в этом YAML — историческое
+    # и НЕ переопределяет Dashboard (Render берёт live setting).
     buildCommand: pip install -r requirements.txt
-    # КРИТИЧНО: --workers 1 + БЕЗ --preload.
-    # Render plan: starter = 512 MB RAM. 2 worker'а × ~250-300 MB (matplotlib +
-    # numpy + Sentry + SQLAlchemy + 9773 adaptive_tasks + 1213 probniks) → OOM →
-    # SIGKILL → 502/timeout на ВСЕХ маршрутах.
-    # Историю не повторять: f96cb1c (fix) → 26fa7c5 (revert) → опять 502.
-    # До 7b018a9 этот конфиг работал стабильно месяцами.
+    # КРИТИЧНО: --workers 1 (НЕ 2!) + БЕЗ --preload.
+    #
+    # Почему НЕ повышаем --workers, даже на Pro Plus 8 GB:
+    #   1. APScheduler (app.py:1483) запускается при импорте; 2 worker'а →
+    #      cron-таски daily_streak_reset / daily_quest_deadline_reminder
+    #      выполнятся ДВАЖДЫ.
+    #   2. ADAPTIVE_FORCE_IMPORT / VSOSH9_2027_FORCE_IMPORT / OLYMPIAD_AUTOSEED
+    #      сидеры стартуют на boot; гонка двух одновременных wipe+insert.
+    #   3. In-memory _ROOMS в routes/wb_call.py, wb_meet.py, room_state.py —
+    #      пользователи попадут в разные комнаты на разных воркерах,
+    #      звонок развалится (см. TODO «Move to Redis Pub/Sub»).
+    #
+    # Параллелизм HTTP-запросов решён через --threads 4 в одном воркере
+    # (Gunicorn gthread worker class). Это даёт:
+    #   - 4 одновременных HTTP-запроса (нет очереди на /daily_tasks/regenerate,
+    #     /api/check_adaptive_answer, /job_status и т.п.).
+    #   - APScheduler / _ROOMS / сидеры работают как и прежде в одном процессе.
+    #   - Pipeline-генерация задач дня идёт в threading.Thread(daemon=True),
+    #     потоки не блокируют HTTP-обработку.
+    # Безопасно: Python threading и Flask-SQLAlchemy совместимы (scoped_session
+    # per-thread). GIL отпускается на сетевых вызовах (OpenRouter/Gemini).
+    #
+    # Историю не повторять: f96cb1c (fix) → 26fa7c5 (revert) → 502.
     # --timeout 120 — стандарт для psycopg wait на медленные запросы Postgres.
     # Flask-Migrate: выполняем неприменённые миграции перед стартом сервера.
     # Команда идемпотентна — безопасно запускать при каждом деплое/рестарте.
     startCommand: >-
       flask db upgrade --directory alembic_migrations &&
-      gunicorn app:app --workers 1 --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+      gunicorn app:app --workers 1 --threads 4 --worker-class gthread --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
     # КРИТИЧНО: Health Check Path = /healthz (НЕ /, НЕ /profile!).
     # /healthz отдаёт 200 без обращения к БД. /profile требует Postgres +
     # Flask-Login → при тормозах БД health-check виснет → Render думает что
