@@ -55,6 +55,23 @@ logger = logging.getLogger(__name__)
 
 DAILY_TASKS_TZ = timezone(timedelta(hours=3))  # МСК = UTC+3
 
+# ──────────────────────────────────────────────────────────────────────
+# Zombie-job watchdog
+# ──────────────────────────────────────────────────────────────────────
+# Нормальная генерация занимает ~60-120 секунд (3 AI-шага + аудит + фикс-луп).
+# Если фоновый поток умер (gunicorn worker restart, OOM, deploy, SIGKILL),
+# job/sеt застывает в `running`/`generating` навсегда → UI бесконечно крутит
+# таймер «прошло X:XX», а guard в enqueue_daily_generation() видит
+# существующий generating-сет и НЕ запускает новую генерацию.
+#
+# Чтобы избежать необходимости в отдельном cron-watchdog'е, мы делаем
+# **lazy cleanup** прямо в hot path: при каждом GET /job_status и
+# POST /regenerate проверяем, нет ли «зомби» (state='running' старше
+# STALE_JOB_TIMEOUT), и помечаем их как failed. Это идемпотентно,
+# не требует доп. процессов и работает на любом плане Render.
+STALE_JOB_TIMEOUT = timedelta(minutes=10)
+"""Если job 'running' старше этого порога — считаем поток мёртвым."""
+
 
 def today_in_user_tz() -> date:
     """Текущая дата в часовом поясе пользователя (МСК, UTC+3).
@@ -64,6 +81,121 @@ def today_in_user_tz() -> date:
     а не на вчерашнюю UTC-дату, используем явный TZ.
     """
     return datetime.now(DAILY_TASKS_TZ).date()
+
+
+def _reap_stale_jobs(user_id: Optional[int] = None) -> int:
+    """Lazy-watchdog: помечает зомби-jobs как failed и освобождает сеты.
+
+    Условие зомби: ``DailyGenerationJob.state == 'running'`` и
+    ``started_at`` старше :data:`STALE_JOB_TIMEOUT`. Такое случается,
+    когда фоновый ``threading.Thread(daemon=True)`` умер до завершения
+    (рестарт gunicorn, OOM, deploy). Без этой проверки сет навсегда
+    остаётся в ``generating`` и блокирует новую генерацию.
+
+    Вызывается из ``get_job_status()`` и ``enqueue_daily_generation()``
+    перед основной логикой — поэтому пользователь, увидевший «висит»,
+    автоматически разморозит сет, просто обновив страницу.
+
+    Параметры
+    ---------
+    user_id : int | None
+        Если задан — чистим только jobs данного пользователя
+        (минимизирует contention в hot path). ``None`` — чистим всех
+        (используется только в startup-хуке, если будет добавлен).
+
+    Возвращает
+    ----------
+    int : сколько зомби помечено как failed.
+    """
+    try:
+        threshold = datetime.utcnow() - STALE_JOB_TIMEOUT
+        q = DailyGenerationJob.query.filter(
+            DailyGenerationJob.state == "running",
+            DailyGenerationJob.started_at != None,  # noqa: E711
+            DailyGenerationJob.started_at < threshold,
+        )
+        if user_id is not None:
+            q = q.filter(DailyGenerationJob.user_id == user_id)
+        stale_jobs = q.all()
+        if not stale_jobs:
+            return 0
+
+        reaped = 0
+        for job in stale_jobs:
+            job.state = "failed"
+            job.error_message = (
+                "Генерация прервана (поток умер до завершения, "
+                "вероятно рестарт сервера). Попробуйте ещё раз."
+            )[:500]
+            job.finished_at = datetime.utcnow()
+
+            # связанный DailyTaskSet тоже размораживаем, иначе guard
+            # в enqueue_daily_generation() будет видеть status='generating'
+            # и отказывать в новой генерации.
+            if job.daily_set_id:
+                related_set = DailyTaskSet.query.get(job.daily_set_id)
+                if related_set and related_set.status == "generating":
+                    related_set.status = "failed"
+                    related_set.reason_summary = (
+                        "❌ Генерация прервана — попробуйте ещё раз"
+                    )
+                    related_set.generated_at = datetime.utcnow()
+            reaped += 1
+            logger.warning(
+                "Reaped zombie job #%s (user=%s, started_at=%s, step=%s)",
+                job.id, job.user_id, job.started_at, job.current_step,
+            )
+
+        db.session.commit()
+        return reaped
+    except Exception:
+        logger.exception("Не удалось почистить зомби-jobs")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return 0
+
+
+def _reap_stale_pools() -> int:
+    """Lazy-watchdog для ``TaskPool``: чистит зависшие пулы предгенерации.
+
+    Аналогично :func:`_reap_stale_jobs`, но для записей в ``task_pool``
+    со ``status='generating'`` и ``expires_at < now`` (по умолчанию
+    prewarm-пулы создаются с TTL=1h в :func:`trigger_daily_prewarm`).
+    Зомби-пул блокирует cache_hit для всех пользователей с тем же
+    профилем — поэтому чистим его при каждом обращении.
+
+    Возвращает количество помеченных failed-пулов.
+    """
+    try:
+        now = datetime.utcnow()
+        # Берём слегка щедрый порог — 15 минут для пулов:
+        # generating-пул должен жить максимум TTL (1h), но если он
+        # старше expires_at — он гарантированно мёртв.
+        stale_pools = TaskPool.query.filter(
+            TaskPool.status == "generating",
+            TaskPool.expires_at.isnot(None),
+            TaskPool.expires_at < now,
+        ).all()
+        if not stale_pools:
+            return 0
+        for pool in stale_pools:
+            pool.status = "failed"
+            pool.expires_at = now - timedelta(seconds=1)
+            logger.warning(
+                "Reaped zombie task_pool #%s (cache_key=%s, was generating, expired)",
+                pool.id, (pool.cache_key or "")[:12],
+            )
+        db.session.commit()
+        return len(stale_pools)
+    except Exception:
+        logger.exception("Не удалось почистить зомби-пулы")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return 0
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -99,6 +231,13 @@ def enqueue_daily_generation(
     """
     today = today_in_user_tz()
 
+    # ── lazy zombie-cleanup: размораживаем зависшие jobs пользователя ──
+    # Если предыдущий фоновый поток умер (рестарт gunicorn, OOM), сет
+    # навсегда остаётся в 'generating' и блокирует новую генерацию.
+    # Чистим перед проверкой guard'а ниже, чтобы тот же запрос смог
+    # запустить новую генерацию.
+    _reap_stale_jobs(user_id=user_id)
+
     # ── проверяем, есть ли уже сет на сегодня ─────────────────────────
     existing_set = DailyTaskSet.query.filter_by(
         user_id=user_id,
@@ -131,7 +270,11 @@ def enqueue_daily_generation(
 
         now = datetime.utcnow()
 
-        # ── Fix 5: пул ещё генерируется (предгенерация после адаптивного теста) ──
+        # ── Fix 5: пул ещё генерируется (предгенерация после адаптивного теста) ──
+        # ВАЖНО: сначала чистим зомби-пулы (status='generating' с истёкшим
+        # expires_at — поток заполнения умер). Иначе пользователь навсегда
+        # застрянет на «Пул ещё генерируется».
+        _reap_stale_pools()
         generating_pool: Optional[TaskPool] = TaskPool.query.filter(
             TaskPool.cache_key == cache_key,
             TaskPool.status == "generating",
@@ -308,6 +451,10 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
         * ``items`` — список задач (каждая с полями ``id``, ``position``, …)
         * ``job`` — информация о фоновом джобе (если есть)
     """
+    # lazy zombie-cleanup: если job умер — размораживаем сет, чтобы
+    # пользователь увидел failed-state + кнопку Retry, а не пустоту.
+    _reap_stale_jobs(user_id=user_id)
+
     today = today_in_user_tz()
     daily_set = DailyTaskSet.query.filter_by(
         user_id=user_id,
@@ -377,7 +524,18 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
 
 
 def get_job_status(user_id: int) -> Dict[str, Any]:
-    """Получить статус фонового джоба генерации на сегодня."""
+    """Получить статус фонового джоба генерации на сегодня.
+
+    Перед возвратом статуса вызывает :func:`_reap_stale_jobs` — если
+    фоновый поток умер (рестарт worker'а, OOM), job автоматически
+    помечается failed, и пользователь увидит «Попробовать снова»
+    вместо вечного таймера «прошло X:XX».
+    """
+    # lazy zombie-cleanup: пользователь, открывший /daily_tasks и
+    # увидевший зависший таймер, обновит страницу — и этот же запрос
+    # разморозит сет (если job старше STALE_JOB_TIMEOUT).
+    _reap_stale_jobs(user_id=user_id)
+
     today = today_in_user_tz()
     job = DailyGenerationJob.query.filter_by(
         user_id=user_id,
