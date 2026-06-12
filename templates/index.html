@@ -5,10 +5,26 @@
 {% block content %}
 
 
-{% if current_user.is_authenticated and current_user.nickname in ['pavelznaka', 'victor'] %}<div style="text-align:center; margin:24px 0;">  <h1 style="font-size:48px; font-weight:900; letter-spacing:1px; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin:0;">ПАВЕЛЕНТИУС МОРСКОЙ</h1>
+{% if current_user.is_authenticated and current_user.nickname in ['pavelznaka', 'victor'] %}
+<div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:32px; margin:24px 0;">
+  <h1 style="font-size:48px; font-weight:900; letter-spacing:1px; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin:0;">ПАВЕЛЕНТИУС МОРСКОЙ</h1>
+  <div style="flex:1 1 360px; max-width:520px; min-width:300px; text-align:left; background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:16px; padding:18px 22px; box-shadow:0 4px 20px rgba(59,130,246,0.08);">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+      <span style="font-size:22px;">📐</span>
+      <h2 style="font-size:20px; font-weight:800; margin:0; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">Мат статистика</h2>
+    </div>
+    <p style="font-size:13px; color:var(--text-secondary,#6b7280); margin:0 0 12px;">Раздел для магистратуры (1–2 курс): ключевые темы и примеры задач.</p>
+    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;">
+      <li style="font-size:14px;"><b>Теория меры.</b> Интеграл Лебега, теоремы Фубини и о монотонной сходимости. <i>Пример:</i> вычислить ∫₀^∞ e⁻ˣ² dx = √π/2.</li>
+      <li style="font-size:14px;"><b>Функц. анализ.</b> Пространства Банаха/Гильберта, теорема Хана–Банаха. <i>Пример:</i> доказать, что ℓ² полно.</li>
+      <li style="font-size:14px;"><b>Компл. анализ.</b> Теорема Коши, вычеты. <i>Пример:</i> ∮ |z|=2 dz/(z²+1) через вычеты.</li>
+      <li style="font-size:14px;"><b>Топология.</b> Компактность, связность, фундаментальная группа. <i>Пример:</i> π₁(S¹) ≅ ℤ.</li>
+      <li style="font-size:14px;"><b>Дифф. уравнения.</b> Краевые задачи, устойчивость по Ляпунову. <i>Пример:</i> y'' + ω²y = 0, y(0)=y(π)=0.</li>
+    </ul>
+    <p style="font-size:12px; color:var(--accent-1); margin:12px 0 0; font-weight:600;">Средний уровень сложности: ★★★★☆ · рекомендовано для магистратуры</p>
+  </div>
 </div>
 {% endif %}
-
 {# ════════════════════════════════════════════════════════════════════════
    DESKTOP / TABLET (>768px) — старая верстка без изменений.
    Скрывается на мобильных через .m-hide → display:none в mobile.css.
