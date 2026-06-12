@@ -813,10 +813,27 @@
       <!-- ═══ ⏱  24-часовой обратный отсчёт ═══ -->
       <div id="dt-countdown" class="dt-countdown dt-hidden">
         <span class="dt-countdown-icon">⏱</span>
+        {# Кол-во задач для подписи под таймером: берём из progress.total,
+           с фолбэком на длину items. Грамматика: 1 задача / 2-4 задачи /
+           5+ задач (русское склонение). #}
+        {% set _dt_progress = (data.progress if data and data.progress is mapping else {}) %}
+        {% set _dt_items = (data.items if data and data.items is iterable and data.items is not string else []) %}
+        {% set _dt_total = (_dt_progress.get('total') or (_dt_items|length) or 0) %}
+        {% set _dt_n10 = _dt_total % 10 %}
+        {% set _dt_n100 = _dt_total % 100 %}
+        {% if _dt_total == 0 %}
+          {% set _dt_word = "задач" %}
+        {% elif _dt_n10 == 1 and _dt_n100 != 11 %}
+          {% set _dt_word = "задача" %}
+        {% elif _dt_n10 in [2,3,4] and _dt_n100 not in [12,13,14] %}
+          {% set _dt_word = "задачи" %}
+        {% else %}
+          {% set _dt_word = "задач" %}
+        {% endif %}
         <span class="dt-countdown-text">
           До истечения 24 часов:
           <span style="display:block;font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">
-            После 0 задачи удалятся и можно будет сгенерировать новые
+            После {{ _dt_total }} {{ _dt_word }} удалятся и можно будет сгенерировать новые
           </span>
         </span>
         <span class="dt-countdown-time" id="dt-countdown-time">--:--:--</span>
