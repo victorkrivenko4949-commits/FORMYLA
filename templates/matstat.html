@@ -18,6 +18,7 @@
     <a href="#t5">5. Метод максимального правдоподобия</a>
     <a href="#t6">6. Доверительные интервалы</a>
     <a href="#t7">7. Проверка гипотез</a>
+    <a href="#t8">8. Разбор задач</a>
   </nav>
 
   <section id="t1" class="ms-card">
@@ -111,6 +112,56 @@
       <p>Критерий согласия $\chi^2$: статистика $\displaystyle \chi^2=\sum_{k=1}^{m}\frac{(n_k-np_k)^2}{np_k}$ при больших $n$ имеет распределение $\chi^2_{m-1}$.</p>
       <p class="ms-sol"><b>Вывод.</b> Если $\chi^2>\chi^2_{1-\alpha,\,m-1}$, гипотеза о распределении отвергается.</p>
     </div>
+  </section>
+  
+  <section id="t8" class="ms-card">
+<h2>8. Разбор задач</h2>
+<p>Подборка классических задач с полными решениями — по всем разделам выше. Формулы в LaTeX.</p>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 1. Несмещённость и состоятельность $\overline{X}$</div>
+<p>$X_1,\dots,X_n$ — выборка с $\mathbb{E}X_1=a$, $\mathrm{D}X_1=\sigma^2<\infty$. Доказать, что $\overline{X}$ несмещённа и состоятельна для $a$.</p>
+<p class="ms-sol"><b>Решение.</b> $\mathbb{E}\,\overline{X}=\frac1n\sum\mathbb{E}X_i=a$ — несмещённость. Далее $\mathrm{D}\,\overline{X}=\sigma^2/n\to0$, поэтому по неравенству Чебышёва $\overline{X}\xrightarrow{P}a$ — состоятельность.</p>
+</div>
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 2. Оценка методом моментов для $U[0,\theta]$</div>
+<p>По выборке из равномерного распределения $U[0,\theta]$ найти оценку $\hat\theta$ методом моментов и проверить её несмещённость.</p>
+<p class="ms-sol"><b>Решение.</b> $\mathbb{E}X=\theta/2$, приравниваем к $\overline{X}$: $\hat\theta_{\text{ММ}}=2\overline{X}$. Тогда $\mathbb{E}\,\hat\theta=2\cdot\theta/2=\theta$ — оценка несмещённа.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 3. Оценка МП для показательного распределения</div>
+<p>$f(y)=\lambda e^{-\lambda y}$, $y\ge0$. Найти $\hat\lambda_{\text{МП}}$ и проверить, что это точка максимума.</p>
+<p class="ms-sol"><b>Решение.</b> $\ell(\lambda)=n\ln\lambda-\lambda\sum X_i$, $\ell'(\lambda)=\frac{n}{\lambda}-\sum X_i=0\Rightarrow\hat\lambda=\frac{1}{\overline{X}}$. Так как $\ell''(\lambda)=-n/\lambda^2<0$, это максимум.</p>
+</div>
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 4. Дисперсия эмпирической функции</div>
+<p>Найти $\mathbb{E}\,F_n(y)$ и $\mathrm{D}\,F_n(y)$ для фиксированного $y$.</p>
+<p class="ms-sol"><b>Решение.</b> $nF_n(y)\sim\mathrm{Bin}(n,F(y))$, поэтому $\mathbb{E}\,F_n(y)=F(y)$, $\mathrm{D}\,F_n(y)=\dfrac{F(y)\bigl(1-F(y)\bigr)}{n}$.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 5. Несмещённая оценка дисперсии</div>
+<p>Показать, что $S_0^2=\frac{1}{n-1}\sum (X_i-\overline{X})^2$ несмещённа для $\sigma^2$.</p>
+<p class="ms-sol"><b>Решение.</b> $\mathbb{E}\sum(X_i-\overline{X})^2=\sum\mathbb{E}X_i^2-n\,\mathbb{E}\overline{X}^2=(n-1)\sigma^2$, откуда $\mathbb{E}\,S_0^2=\sigma^2$.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 6. Доверительный интервал для среднего</div>
+<p>$n=25$, $\overline{X}=10$, $\sigma=2$, $\alpha=0{,}05$. Построить 95%-й доверительный интервал для $a$.</p>
+<p class="ms-sol"><b>Решение.</b> $z_{0{,}975}=1{,}96$, погрешность $1{,}96\cdot 2/5=0{,}784$. Интервал: $(9{,}22;\,10{,}78)$.</p>
+</div>
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 7. Критерий согласия $\chi^2$ (Пирсона)</div>
+<p>Кость бросили $n=60$ раз; грани выпали $9,11,8,12,10,10$ раз. Проверить на уровне $\alpha=0{,}05$ гипотезу о равномерности кости.</p>
+<p class="ms-sol"><b>Решение.</b> Ожидаемые частоты $np_k=10$. $\chi^2=\sum\frac{(n_k-10)^2}{10}=\frac{1+1+4+4+0+0}{10}=1{,}0$. Критическое значение $\chi^2_{0{,}95,\,5}=11{,}07$. Так как $1{,}0<11{,}07$, гипотеза о равномерности не отвергается.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 8. Неравенство Рао–Крамера для $\mathcal{N}(a,\sigma^2)$</div>
+<p>При известном $\sigma$ найти нижнюю границу дисперсии несмещённых оценок $a$ и показать, что $\overline{X}$ эффективна.</p>
+<p class="ms-sol"><b>Решение.</b> $\ln f=-\frac{(x-a)^2}{2\sigma^2}+\text{const}$, $\frac{\partial}{\partial a}\ln f=\frac{x-a}{\sigma^2}$, информация Фишера $I(a)=1/\sigma^2$. Граница Рао–Крамера $\dfrac{1}{nI(a)}=\dfrac{\sigma^2}{n}=\mathrm{D}\,\overline{X}$ — достигается, значит $\overline{X}$ эффективна.</p>
+</div>
   </section>
 
   <footer class="ms-foot">По мотивам классических задачников по математической статистике. © FORMYLA</footer>
