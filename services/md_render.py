@@ -37,7 +37,7 @@ _LATEX_PATTERNS = [
 _MD_EXTENSIONS = [
     'extra',          # tables, fenced_code, footnotes, ...
     'sane_lists',
-    'nl2br',
+      # nl2br убран: одиночные переносы строк делали текст и формулы "расплывчатыми"
 ]
 
 # Дополнительные параметры для рендеринга Markdown.
