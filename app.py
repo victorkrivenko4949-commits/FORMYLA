@@ -11546,6 +11546,20 @@ def group_page(group_id):
     is_owner = bool(g and g.owner_id == current_user.id)
     return render_template('group_chat.html', group=g, is_owner=is_owner)
 
+# ─── Мат. статистика (доступ только избранным) ───────────────
+@app.route("/matstat")
+@login_required
+def matstat():
+    """Большая обучающая статья по математической статистике.
+    Видна только пользователям с ником pavelznaka или victorkrivenko."""
+    allowed = {"pavelznaka", "victorkrivenko", "victor"}
+    nick = (getattr(current_user, "nickname", None) or "").lower()
+    uname = (getattr(current_user, "username", None) or "").lower()
+    if nick not in allowed and uname not in allowed:
+        abort(404)
+    return render_template("matstat.html")
+
+
 
 if __name__ == '__main__':
     # Auto-reloader is disabled by default because long-running endpoints
