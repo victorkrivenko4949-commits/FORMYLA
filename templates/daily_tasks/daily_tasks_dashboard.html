@@ -794,6 +794,12 @@
   .dt-dh-status-correct { color: #38ef7d; }
   .dt-dh-status-incorrect { color: #ff6b6b; }
   .dt-dh-status-pending { color: rgba(255,255,255,0.35); }
+  /* === FIX: центрирование задач + видимость flagged (added) === */
+.dt-layout { max-width: 1180px; margin: 0 auto; }
+#dt-task-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important; justify-content: center; }
+.dt-card.is-flagged, .dt-card[data-flagged="true"] { opacity: 1 !important; display: flex !important; }
+.dt-card { opacity: 1 !important; }
+
 </style>
 {% endblock %}
 
