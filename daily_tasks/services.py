@@ -207,6 +207,7 @@ def enqueue_daily_generation(
     user_id: int,
     triggered_by: str = "manual",
     profile: Optional[Dict[str, Any]] = None,
+    forced_topic: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Создать/обновить сет на today и запустить фоновую генерацию.
 
@@ -425,7 +426,7 @@ def enqueue_daily_generation(
     app = current_app._get_current_object()
     thread = threading.Thread(
         target=_background_run,
-        args=(app, user_id, today, daily_set.id, job.id),
+        args=(app, user_id, today, daily_set.id, job.id, forced_topic),
         daemon=True,
     )
     thread.start()
@@ -757,6 +758,7 @@ def _background_run(
     target_date: date,
     daily_set_id: int,
     job_id: int,
+    forced_topic: Optional[str] = None,
 ) -> None:
     """Запустить пайплайн в фоновом потоке (синхронная обёртка)."""
     with app.app_context():
@@ -766,6 +768,7 @@ def _background_run(
                 target_date=target_date,
                 daily_set_id=daily_set_id,
                 job_id=job_id,
+                forced_topic=forced_topic,
             ))
         except Exception as exc:
             logger.exception(
@@ -781,6 +784,7 @@ async def _run_pipeline_async(
     target_date: date,
     daily_set_id: int,
     job_id: int,
+    forced_topic: Optional[str] = None,
 ) -> None:
     """Асинхронный запуск пайплайна с обновлением прогресса джоба."""
     job = DailyGenerationJob.query.get(job_id)
@@ -812,6 +816,28 @@ async def _run_pipeline_async(
             len(profile.get("strong_topics", [])),
             len(profile.get("calibration_topics", [])),
         )
+        # ── forced_topic override: «сегодня день <темы>» ─────────────
+        if forced_topic:
+            ft = forced_topic.strip().lower()
+            full = profile.get("topics_full") or []
+            matched = [
+                dict(t)
+                for t in full
+                if isinstance(t, dict) and ft in (t.get("topic") or "").strip().lower()
+            ]
+            if matched:
+                profile["weak_topics"] = matched
+                profile["strong_topics"] = []
+                profile["calibration_topics"] = []
+                logger.info(
+                    "[user=%d] forced_topic=%r → %d тем(ы) из каталога",
+                    user_id, forced_topic, len(matched),
+                )
+            else:
+                logger.warning(
+                    "[user=%d] forced_topic=%r не найден в каталоге класса — игнорируем",
+                    user_id, forced_topic,
+                )
 
         # ── Step 2–5: пайплайн с live-обновлением прогресса ────────
         # Колбэк обновляет current_step/progress_pct в БД при переходах
