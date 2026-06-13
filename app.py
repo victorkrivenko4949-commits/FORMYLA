@@ -10677,6 +10677,10 @@ from services.telegram_notify import send_support_email, send_review_email
 _SUPPORT_RATE_LIMIT = {}  # in-memory, для prod лучше Redis
 
 
+@app.route('/sql')
+def sql_page():
+    return render_template('sql.html')
+
 @app.route('/about')
 def about_page():
     # Если авторизованный пользователь ещё не проходил онбординг —
