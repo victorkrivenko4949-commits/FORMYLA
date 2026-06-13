@@ -965,6 +965,17 @@ function renderLatexFallback(root) {
  * Attempts KaTeX rendering; falls back to simple styled spans if unavailable.
  */
 function renderMath(root, opts) {
+    // Апгрейд: «тяжёлые» формулы (\frac, \sqrt, \sum и т.п.) в инлайн $...$
+// выносим в display $$...$$, чтобы высокая дробь рендерилась отдельным
+// блоком, а не втискивалась в строку. Работает для всех путей (модалка/карточки).
+    if (root && root.innerHTML && root.innerHTML.indexOf('$') !== -1) {
+        root.innerHTML = root.innerHTML.replace(/(^|[^$])\$([^$]*?)\$(?!\$)/g, function(m, pre, inner) {
+            if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
+                return pre + '$$' + inner + '$$';
+            }
+            return m;
+        });
+    }
     if (typeof renderMathInElement !== 'undefined') {
         try {
             renderMathInElement(root, opts || {
