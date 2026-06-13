@@ -2,6 +2,14 @@
 // Handles all interactions for the AI-generated daily math problems feature
 // Pattern: fetch().then() (no async/await), DOMContentLoaded, setInterval polling
 
+// Returns the topic selected in the UI (e.g. "Number Theory" day), or '' if none.
+function getSelectedTopic() {
+    var el = document.getElementById('dt-topic-input');
+    if (el && typeof el.value === 'string') return el.value.trim();
+    if (el && el.dataset && el.dataset.topic) return el.dataset.topic.trim();
+    return '';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // ── Read initial data from JSON script tag ──
     var dataEl = document.getElementById('dt-init-data');
@@ -355,7 +363,8 @@ function startGeneration() {
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken()
-        }
+        },
+            body: JSON.stringify({ topic: getSelectedTopic() })
     })
     .then(function(response) {
         if (!response.ok) {
