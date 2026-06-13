@@ -439,7 +439,7 @@ def regenerate():
     # ── запускаем новую генерацию ───────────────────────────────────
     result = services.enqueue_daily_generation(
         user_id=user_id,
-        triggered_by="manual",
+        triggered_by="manual",         forced_topic=((request.get_json(silent=True) or {}).get("topic") or "").strip() or None,
     )
 
     return jsonify(result), 202
