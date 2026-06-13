@@ -976,6 +976,15 @@ function renderMath(root, opts) {
             return m;
         });
     }
+    // Апгрейд для inline \(...\): тяжёлые формулы выносим в display \[...\].
+    if (root && root.innerHTML && root.innerHTML.indexOf('\\(') !== -1) {
+        root.innerHTML = root.innerHTML.replace(/\\\(([\s\S]*?)\\\)/g, function(m, inner) {
+            if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
+                return '\\[' + inner + '\\]';
+                }
+            return m;
+            });
+        }
     if (typeof renderMathInElement !== 'undefined') {
         try {
             renderMathInElement(root, opts || {
