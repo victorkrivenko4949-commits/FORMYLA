@@ -1060,6 +1060,17 @@ function buildAnswerFormatHint(correctAnswer) {
  */
 function escapeHtmlPreserveLatex(text) {
     if (!text) return '';
+    
+// Апгрейд: «тяжёлые» формулы (\frac, \sqrt, \sum, \int, \prod, \lim, дроби)
+// внутри инлайн $...$ выносим в display $$...$$ — иначе высокая дробь
+// втискивается в строку и ломает поток текста. Пользователь хочет блок.
+text = String(text).replace(/(^|[^$])\$([^$\n]*?)\$(?!\$)/g, function(m, pre, inner) {
+    if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
+        return pre + '$$' + inner + '$$';
+    }
+    return m;
+});
+
     // Просто экранируем спецсимволы HTML — LaTeX в \(...\) их не использует.
     // Бэкслеши, фигурные скобки, кириллица — всё проходит как есть.
     return String(text)
