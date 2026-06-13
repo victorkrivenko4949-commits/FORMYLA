@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}SQL — краткий конспект — FORMYLA{% endblock %}
+
+{% block content %}
+<div class="sql-wrap">
+
+  <header class="sql-hero">
+    <div class="sql-badge">🗄️ Шпаргалка</div>
+    <h1 class="sql-title">SQL — краткий конспект</h1>
+    <p class="sql-sub">Напоминание синтаксиса: от SELECT до оконных функций. Примеры — диалект PostgreSQL.</p>
+  </header>
+
+  <nav class="sql-toc">
+    <a href="#s1">1. SELECT</a>
+    <a href="#s2">2. WHERE</a>
+    <a href="#s3">3. JOIN</a>
+    <a href="#s4">4. GROUP BY</a>
+    <a href="#s5">5. Агрегаты</a>
+    <a href="#s6">6. Оконные функции</a>
+    <a href="#s7">7. CTE и подзапросы</a>
+    <a href="#s8">8. Изменение данных</a>
+  </nav>
+
+  <section id="s1" class="sql-card">
+    <h2>1. SELECT — выборка</h2>
+    <p>Базовый запрос: выбрать столбцы, задать алиасы, отсортировать и ограничить число строк.</p>
+    <pre class="sql-code">SELECT id, name AS имя, price * 1.2 AS price_vat
+FROM products
+ORDER BY price DESC
+LIMIT 10 OFFSET 0;</pre>
+    <p><b>DISTINCT</b> убирает дубликаты: <code>SELECT DISTINCT category FROM products;</code></p>
+  </section>
+
+  <section id="s2" class="sql-card">
+    <h2>2. WHERE — фильтрация</h2>
+    <pre class="sql-code">SELECT *
+FROM users
+WHERE age BETWEEN 18 AND 30
+  AND city IN ('Moscow', 'SPb')
+  AND email LIKE '%@gmail.com'
+  AND deleted_at IS NULL;</pre>
+    <p>Операторы: <code>= != &lt; &gt; &gt;= &lt;=</code>, <code>AND OR NOT</code>, <code>IN</code>, <code>BETWEEN</code>, <code>LIKE</code> / <code>ILIKE</code>, <code>IS NULL</code>.</p>
+  </section>
+
+  <section id="s3" class="sql-card">
+    <h2>3. JOIN — соединение таблиц</h2>
+    <pre class="sql-code">SELECT o.id, u.name, o.total
+FROM orders AS o
+INNER JOIN users AS u ON u.id = o.user_id
+LEFT JOIN coupons AS c ON c.order_id = o.id;</pre>
+    <ul>
+      <li><b>INNER JOIN</b> — только совпавшие строки;</li>
+      <li><b>LEFT / RIGHT JOIN</b> — все строки левой / правой таблицы;</li>
+      <li><b>FULL JOIN</b> — все строки обеих таблиц.</li>
+    </ul>
+  </section>
+
+  <section id="s4" class="sql-card">
+    <h2>4. GROUP BY — группировка</h2>
+    <pre class="sql-code">SELECT category, COUNT(*) AS cnt, AVG(price) AS avg_price
+FROM products
+GROUP BY category
+HAVING COUNT(*) > 5
+ORDER BY cnt DESC;</pre>
+    <p><b>WHERE</b> фильтрует строки до группировки, <b>HAVING</b> — уже группы.</p>
+  </section>
+
+  <section id="s5" class="sql-card">
+    <h2>5. Агрегатные функции</h2>
+    <ul>
+      <li><code>COUNT(*)</code> — число строк;</li>
+      <li><code>SUM(x)</code>, <code>AVG(x)</code> — сумма и среднее;</li>
+      <li><code>MIN(x)</code>, <code>MAX(x)</code> — минимум и максимум;</li>
+      <li><code>COUNT(DISTINCT x)</code> — число уникальных.</li>
+    </ul>
+    <p>Полезно для продуктовой аналитики: конверсия $CR=\dfrac{\text{покупки}}{\text{визиты}}$ считается через отношение двух COUNT.</p>
+  </section>
+
+  <section id="s6" class="sql-card">
+    <h2>6. Оконные функции</h2>
+    <p>Считают по «окну» строк, не схлопывая их (в отличие от GROUP BY).</p>
+    <pre class="sql-code">SELECT user_id, created_at, total,
+  ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at) AS n,
+  SUM(total) OVER (PARTITION BY user_id) AS user_total
+FROM orders;</pre>
+    <p>Часто: <code>ROW_NUMBER()</code>, <code>RANK()</code>, <code>LAG()</code> / <code>LEAD()</code>, скользящие суммы.</p>
+  </section>
+
+  <section id="s7" class="sql-card">
+    <h2>7. CTE и подзапросы</h2>
+    <pre class="sql-code">WITH paying AS (
+  SELECT user_id, SUM(total) AS revenue
+  FROM orders
+  GROUP BY user_id
+)
+SELECT u.name, p.revenue
+FROM paying AS p
+JOIN users AS u ON u.id = p.user_id
+WHERE p.revenue > 1000;</pre>
+    <p><b>CTE</b> (<code>WITH</code>) делает сложные запросы читаемыми.</p>
+  </section>
+
+  <section id="s8" class="sql-card">
+    <h2>8. Изменение данных</h2>
+    <pre class="sql-code">INSERT INTO users (name, email) VALUES ('Ann', 'ann@mail.ru');
+UPDATE users SET age = age + 1 WHERE id = 7;
+DELETE FROM users WHERE deleted_at IS NOT NULL;</pre>
+    <p>Всегда указывай <b>WHERE</b> в UPDATE/DELETE — иначе изменятся все строки.</p>
+  </section>
+
+  <footer class="sql-foot">Краткая шпаргалка по SQL для продуктовой аналитики. © FORMYLA</footer>
+
+</div>
+{% endblock %}
