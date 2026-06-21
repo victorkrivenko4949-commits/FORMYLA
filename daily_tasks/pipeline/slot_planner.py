@@ -75,7 +75,7 @@ class PlannedSlot:
             "position": self.position,
             "slot_kind": self.slot_kind,
             "subject": self.subject,
-            "topic": self.topic,
+            "theme": self.topic, "topic": self.topic,
             "topic_key": self.topic_key,
             "difficulty_level": self.difficulty_level,
             "target_level": self.target_level,
