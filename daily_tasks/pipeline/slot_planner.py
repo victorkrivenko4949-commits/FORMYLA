@@ -375,7 +375,9 @@ def _allocate_topic_slots(
         topic, n = allocated[donor_idx]
         allocated[donor_idx] = (topic, n + (total_slots - cur_total))
 
-    return allocateddef _allocate_topic_slots(
+    return allocated
+   
+def _allocate_topic_slots(
     weak_topics: List[Dict[str, Any]],
     strong_topics: List[Dict[str, Any]],
     calibration_topics: List[Dict[str, Any]],
