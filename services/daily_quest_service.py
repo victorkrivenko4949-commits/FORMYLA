@@ -707,7 +707,7 @@ def get_quest_tasks(quest: DailyQuest) -> List[Dict]:
     # Строим индекс для олимпиадных задач (combo_id * 100 + num)
     olympiad_index = {}
     for combo in COMBOS:
-                combo_id = combo.get('id', 0); combo_id = int(combo_id) if str(combo_id).strip().lstrip('-').isdigit() else 0
+        combo_id = combo.get('id', 0); combo_id = int(combo_id) if str(combo_id).strip().lstrip('-').isdigit() else 0
         for p in combo.get('problems', []):
             oid = combo_id * 100 + p.get('num', 1)
             olympiad_index[oid] = {
