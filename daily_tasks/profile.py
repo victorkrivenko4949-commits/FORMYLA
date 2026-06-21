@@ -922,7 +922,7 @@ def build_profile(
     chosen_calibration = select_calibration_topics(
         calibration_candidate_topics,
         n=n_cal_topics,
-        rotation_seed=weekday_seed,
+        rotation_seed=today.toordinal(),
     )
     chosen_calibration_set = set(chosen_calibration)
 
