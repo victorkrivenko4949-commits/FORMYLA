@@ -94,6 +94,25 @@ else:
 
 app = Flask(__name__)
 
+# ─── Логгер: пишем в файл вместо stderr ────────────────────────────
+# На Windows debug=True + werkzeug debugger перехватывает stderr,
+# что вызывает OSError: [Errno 22] Invalid argument при любом выводе
+# в stderr (включая app.logger.warning). Решение — FileHandler.
+import logging
+_log_dir = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(_log_dir, exist_ok=True)
+_log_file = os.path.join(_log_dir, 'app.log')
+_file_handler = logging.FileHandler(_log_file, encoding='utf-8')
+_file_handler.setLevel(logging.DEBUG)
+_file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+))
+# Удаляем дефолтный StreamHandler (пишет в stderr → ломается под debugger)
+app.logger.handlers.clear()
+app.logger.addHandler(_file_handler)
+app.logger.setLevel(logging.DEBUG)
+app.logger.info("=== App started, logging to %s", _log_file)
+
 # ─── Cloudflare ProxyFix (доверяем X-Forwarded-* за CF + Render) ───
 try:
     from werkzeug.middleware.proxy_fix import ProxyFix
@@ -3486,20 +3505,19 @@ def send_auth_email(recipient_email, code):
     from utils.mail import send_email as resend_send, is_configured as resend_ready
     if resend_ready():
         try:
-            print(f"[EMAIL] Sending via Resend HTTP API to {recipient_email}")
+            app.logger.warning(f"[EMAIL] Sending via Resend HTTP API to {recipient_email}")
             result = resend_send(recipient_email, subject, html)
             # ``utils.mail.send_email`` now guarantees that a returned dict
             # contains ``id`` (it raises otherwise). Still gate explicitly so
             # this function never returns truthy on a hidden failure.
             if isinstance(result, dict) and result.get("id"):
-                print(f"[EMAIL] ✅ Resend accepted (id={result['id']}) for {recipient_email}")
+                app.logger.warning(f"[EMAIL] ✅ Resend accepted (id={result['id']}) for {recipient_email}")
                 return True
             # Defensive: treat anything else as a failure and fall back.
-            print(f"[EMAIL] Resend returned unexpected payload {result!r}; falling back to SMTP")
+            app.logger.warning(f"[EMAIL] Resend returned unexpected payload {result!r}; falling back to SMTP")
         except Exception as e:
-            print(f"[EMAIL] Resend API failed ({e}); falling back to SMTP")
-            import traceback
-            traceback.print_exc()
+            app.logger.error(f"[EMAIL] Resend API failed ({e}); falling back to SMTP")
+            app.logger.error(traceback.format_exc())
             # fall through to SMTP
 
     # ─── Path 2: SMTP fallback ─────────────────────────────────────────
@@ -3517,7 +3535,7 @@ def send_auth_email(recipient_email, code):
     smtp_pass = app.config.get('MAIL_PASSWORD', '')
     sender = app.config.get('MAIL_DEFAULT_SENDER') or 'onboarding@resend.dev'
 
-    print(f"[EMAIL] Connecting via SMTP ({smtp_host}:{smtp_port}, SSL={use_ssl}, TLS={use_tls})")
+    app.logger.warning(f"[EMAIL] Connecting via SMTP ({smtp_host}:{smtp_port}, SSL={use_ssl}, TLS={use_tls})")
 
     try:
         if use_ssl and smtp_port == 465:
@@ -3536,7 +3554,7 @@ def send_auth_email(recipient_email, code):
                     context = ssl.create_default_context()
                     server.starttls(context=context)
                 except Exception:
-                    print("[EMAIL] default context failed, retrying with unverified context...")
+                    app.logger.warning("[EMAIL] default context failed, retrying with unverified context...")
                     context = ssl._create_unverified_context()
                     server.starttls(context=context)
                 server.ehlo()
@@ -3553,12 +3571,11 @@ def send_auth_email(recipient_email, code):
         server.sendmail(sender, [recipient_email], msg.as_bytes())
         server.quit()
 
-        print(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
+        app.logger.warning(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
         return True
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send: {e}")
-        import traceback
-        traceback.print_exc()
+        app.logger.error(f"[EMAIL ERROR] Failed to send: {e}")
+        app.logger.error(traceback.format_exc())
         raise Exception(f"Ошибка отправки email: {str(e)}")
 
 
@@ -3587,9 +3604,6 @@ def login():
         return redirect(url_for('index'))
     
     if request.method == "POST":
-        import sys
-        print(">>> LOGIN POST ВЫЗВАН", flush=True)
-        sys.stdout.flush()
         app.logger.warning("LOGIN POST ВЫЗВАН")
         
         email = request.form.get('email', '').strip().lower()
@@ -3610,7 +3624,6 @@ def login():
         code = user.generate_auth_code()
         db.session.commit()
         
-        print(f">>> КОД СГЕНЕРИРОВАН: {code}", flush=True)
         app.logger.warning(f"КОД СГЕНЕРИРОВАН: {code} для {email}")
         
         # Отправляем код на email.
@@ -3619,40 +3632,26 @@ def login():
         smtp_ready = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
         mail_configured = resend_ready() or smtp_ready
 
-        print(f"\n🔍 DEBUG: MAIL_USERNAME = {app.config.get('MAIL_USERNAME')}", flush=True)
+        app.logger.warning(f"MAIL_USERNAME = {app.config.get('MAIL_USERNAME')}")
         mail_pass = app.config.get('MAIL_PASSWORD') or ''
-        print(f"🔍 DEBUG: MAIL_PASSWORD = {'*' * len(mail_pass)} ({len(mail_pass)} символов)", flush=True)
-        print(f"🔍 DEBUG: Resend API key set = {resend_ready()}", flush=True)
-        print(f"🔍 DEBUG: Mail configured = {mail_configured}\n", flush=True)
+        app.logger.warning(f"MAIL_PASSWORD = {'*' * len(mail_pass)} ({len(mail_pass)} символов)")
+        app.logger.warning(f"Resend API key set = {resend_ready()}")
+        app.logger.warning(f"Mail configured = {mail_configured}")
         
         if mail_configured:
             try:
                 send_auth_email(email, code)
                 
                 # Дублируем в консоль для отладки
-                print("\n" + "="*60, flush=True)
-                print("✅ EMAIL УСПЕШНО ОТПРАВЛЕН", flush=True)
-                print("="*60, flush=True)
-                print(f"   Кому: {email}", flush=True)
-                print(f"   Код: {code}", flush=True)
-                print("="*60 + "\n", flush=True)
                 app.logger.warning(f"EMAIL ОТПРАВЛЕН: {email}, код: {code}")
                 
                 flash(f'Код отправлен на {email}. Проверьте почту!', 'success')
                 
             except Exception as e:
                 error_message = str(e)
-                print(f"\n❌ ОШИБКА ОТПРАВКИ EMAIL: {error_message}\n", flush=True)
                 app.logger.error(f"ОШИБКА EMAIL: {error_message}")
                 
                 # Fallback - выводим код в консоль
-                print("\n" + "="*60, flush=True)
-                print("⚠️  FALLBACK - КОД В КОНСОЛИ", flush=True)
-                print("="*60, flush=True)
-                print(f"   Email: {email}", flush=True)
-                print(f"   КОД: {code}", flush=True)
-                print(f"   Действителен: 10 минут", flush=True)
-                print("="*60 + "\n", flush=True)
                 
                 # Показываем понятное сообщение пользователю
                 if "аутентификации" in error_message.lower() or "authentication" in error_message.lower():
@@ -3663,13 +3662,6 @@ def login():
                     flash(f'Ошибка отправки email: {error_message}', 'error')
         else:
             # Email не настроен
-            print("\n" + "="*60, flush=True)
-            print("⚠️  EMAIL НЕ НАСТРОЕН - КОД В КОНСОЛИ", flush=True)
-            print("="*60, flush=True)
-            print(f"   Email: {email}", flush=True)
-            print(f"   КОД: {code}", flush=True)
-            print(f"   Действителен: 10 минут", flush=True)
-            print("="*60 + "\n", flush=True)
             app.logger.warning(f"EMAIL НЕ НАСТРОЕН - КОД: {code}")
             
             flash(f'Код отправлен на {email}', 'success')
@@ -8701,6 +8693,18 @@ def daily_quest_regenerate():
     return redirect(url_for('daily_quest_main'))
 
 
+@app.route('/daily_tasks')
+@login_required
+def daily_tasks_redirect():
+    """Редирект со старого URL /daily_tasks на /daily (daily_quest_main).
+
+    В навигации /daily_tasks использовался для нового blueprint'а, который
+    может быть недоступен на проде. Перенаправляем на рабочий /daily,
+    чтобы ссылка в меню никогда не вела в 404.
+    """
+    return redirect(url_for('daily_quest_main'))
+
+
 @app.route('/daily')
 @login_required
 def daily_quest_main():
@@ -9138,6 +9142,53 @@ def daily_quest_status():
         'streak': streak_stats['current_streak'],
         'freeze_available': streak_stats['freeze_available']
     })
+
+
+# ============================================================================
+# DAILY TASK ROTATION (Задача дня)
+# ============================================================================
+
+@app.route('/api/daily-task')
+@login_required
+def api_daily_task():
+    """API: «Задача дня» — тематический набор из 10 задач (Вариант А).
+
+    GET /api/daily-task          — стабильный набор на сегодня
+    GET /api/daily-task?regenerate=1 — принудительно новый набор
+
+    Возвращает набор из 10 задач на сегодня. Все задачи — из одного subject,
+    который ротируется по дням (epoch-based rotation).
+    В рамках одного дня возвращается ТОТ ЖЕ набор (стабильность),
+    если не передан параметр ?regenerate=1.
+
+    Ответ:
+        { tasks: [{ task_id, task_text, solution, correct_answer, subject,
+                    topic, method, class_level, difficulty_level,
+                    shown_date }, ...],
+          subject, shown_date, count }
+    """
+    from services.daily_task_rotation import pick_daily_set
+
+    force_regenerate = request.args.get("regenerate", "").strip() in ("1", "true", "yes")
+    result = pick_daily_set(current_user.id, force_regenerate=force_regenerate)
+    if result.get("error"):
+        return jsonify(result), 404
+    return jsonify(result)
+
+
+@app.route('/daily-set')
+@login_required
+def daily_set_page():
+    """Страница «Задачи дня» — тематический набор из 10 задач (Вариант А).
+
+    GET /daily-set — показывает сегодняшний набор задач с кнопкой
+    «Перегенерировать», которая запрашивает /api/daily-task?regenerate=1
+    и перезагружает страницу.
+    """
+    from services.daily_task_rotation import pick_daily_set
+
+    result = pick_daily_set(current_user.id)
+    return render_template('daily_set.html', data=result)
 
 
 # ============================================================================

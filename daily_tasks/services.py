@@ -847,12 +847,37 @@ async def _try_bank_first(
     ``DailyTaskItem`` напрямую из банка, минуя шаги 1–3 (LLM), и
     помечаем сет как ``ready``.
 
+    Внутренний ``try/except`` гарантирует, что любая неожиданная
+    ошибка (битый JSON, несоответствие схемы, race condition и т.п.)
+    не провалит пайплайн — мы просто возвращаем ``False`` (MISS),
+    и вызывающий код запустит LLM-генерацию.
+
     Returns
     -------
     bool
         ``True``, если задачи взяты из банка (LLM пайплайн не нужен).
         ``False``, если банк не подошёл — вызывающий код запускает LLM.
     """
+    try:
+        return await _try_bank_first_impl(
+            user_id, target_date, daily_set_id, job_id, profile,
+        )
+    except Exception as exc:
+        logger.warning(
+            "[user=%d] Банк: внутренняя ошибка (%s) — MISS, запускаю LLM",
+            user_id, exc,
+        )
+        return False
+
+
+async def _try_bank_first_impl(
+    user_id: int,
+    target_date: date,
+    daily_set_id: int,
+    job_id: int,
+    profile: Dict[str, Any],
+) -> bool:
+    """Внутренняя реализация ``_try_bank_first`` (вынесена для ``try/except``)."""
     from models import User  # local import to avoid circular dependency
 
     grade = profile.get("class_level")
@@ -1006,9 +1031,16 @@ async def _run_pipeline_async(
         )
 
         # ── Bank check: пробуем банк готовых задач перед LLM ─────────
-        bank_hit = await _try_bank_first(
-            user_id, target_date, daily_set_id, job_id, profile,
-        )
+        try:
+            bank_hit = await _try_bank_first(
+                user_id, target_date, daily_set_id, job_id, profile,
+            )
+        except Exception as bank_exc:
+            logger.warning(
+                "[user=%d] Банк: ошибка при проверке банка (%s) — запускаю LLM",
+                user_id, bank_exc,
+            )
+            bank_hit = False
         if bank_hit:
             logger.info(
                 "[user=%d] Банк: задачи взяты из банка, LLM пайплайн пропущен",

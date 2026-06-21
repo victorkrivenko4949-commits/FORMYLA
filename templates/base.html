@@ -155,14 +155,8 @@
         </button>
 
         <nav class="nav" id="navLinks">
-            {# 2026-05-29: ссылка «Задачи дня» теперь всегда ведёт на
-               фиксированный URL /daily_tasks (а не на url_for). Иначе при
-               отсутствии blueprint daily_tasks_bp Jinja бросает BuildError,
-               который ловится в обработчике ошибок и в итоге кидает
-               пользователя в случайный раздел. Backend-фикс миграции
-               PostgreSQL живёт в migrations/add_daily_tasks_tables.py. #}
             <!-- Задачи дня -->
-            <a href="/daily_tasks" class="daily-nav-link nav-link nav-pill">
+            <a href="{{ url_for('daily_quest_main') }}" class="daily-nav-link nav-link nav-pill">
                 <span class="daily-flame">🔥</span>
                 <span class="daily-text">Задачи дня</span>
                 {% if current_user.is_authenticated %}
@@ -353,8 +347,7 @@
         <!-- Navigation links -->
         <nav class="drawer-nav">
             <div class="drawer-section-title">Главное</div>
-            {# fixed URL вместо url_for — см. комментарий в .nav выше #}
-            <a href="/daily_tasks" class="drawer-link">
+            <a href="{{ url_for('daily_quest_main') }}" class="drawer-link">
                 <span class="drawer-link-icon">🔥</span>
                 Задачи дня
                 {% if current_user.is_authenticated %}
@@ -481,8 +474,7 @@
             <span class="bottom-nav-icon">🏠</span>
             <span class="bottom-nav-label">Главная</span>
         </a>
-        {# fixed URL вместо url_for — см. комментарий в .nav выше #}
-        <a href="/daily_tasks" class="bottom-nav-item" data-path="/daily_tasks*">
+        <a href="{{ url_for('daily_quest_main') }}" class="bottom-nav-item" data-path="/daily*">
             <span class="bottom-nav-icon">🔥</span>
             <span class="bottom-nav-label">Задачи дня</span>
             {% if current_user.is_authenticated %}
