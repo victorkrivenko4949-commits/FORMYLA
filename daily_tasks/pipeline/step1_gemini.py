@@ -5,6 +5,8 @@ Step 1 пайплайна «Задачи дня» — планировщик (Cl
 Отправляет профиль ученика в планировщика, получает 10 спецификаций задач
 (spec'ов) и валидирует их структурно через `validate_gemini_plan()`.
 
++ generate_gemini_thematic_plan — упрощённый планировщик для «Тематического дня».
+
 При сбое (HTTP 402 баланс, 429 rate-limit, 5xx, JSON-parse, validation)
 **бросает** ``GeminiPlanError`` с классифицированной категорией и человеко-
 читаемым сообщением. Это критично: оркестратор и UI получают РЕАЛЬНУЮ
@@ -94,6 +96,86 @@ def _classify_openrouter_error(exc: OpenRouterError) -> str:
     return "network"
 
 
+DIVERSITY_RULES = """
+=== ПРАВИЛА РАЗНООБРАЗИЯ (2026-06-21) ===
+1. Каждая из 10 задач имеет свою подтему + свой метод решения (из subtopic_hints и reason_hint).
+2. Подтема и метод для задачи №1 определяются днём и классом из слота[0].
+3. Задача №i получает подтему и метод строго из своего слота (subtopic_hints[i-1], reason_hint).
+4. Сложность (difficulty_level) меняется ТОЛЬКО внутри level_window каждого слота.
+5. ЗАПРЕЩЕНО менять topic, class_level (grade), difficulty_level.
+6. ЗАПРЕЩЕНО повторять subtopic в нескольких задачах, если в каталоге достаточно подтем.
+7. ЗАПРЕЩЕНО повторять method в нескольких задачах.
+8. Используй subtopic_hints и reason_hint из SLOT_PLAN как единственные источники подтемы/метода.
+""".strip()
+
+
+def build_forbidden_block(
+    used: List[Dict[str, Any]],
+    recent_pool_tasks: Optional[List[Dict[str, Any]]] = None,
+) -> str:
+    """Сформировать текст \"ЧТО ГЕНЕРИРОВАТЬ ЗАПРЕЩЕНО\" для промпта.
+
+    Parameters
+    ----------
+    used : list[dict]
+        Результат ``assign_diversity()`` — по 1 записи на слот с ключами
+        position, topic, subtopic, method, level, note.
+    recent_pool_tasks : list[dict], optional
+        Недавние задачи из пула (чтобы не повторять их сюжеты/числа).
+
+    Returns
+    -------
+    str
+        Многострочный блок \"ЧТО ГЕНЕРИРОВАТЬ ЗАПРЕЩЕНО\".
+    """
+    lines: List[str] = []
+    lines.append("=== ЧТО ГЕНЕРИРОВАТЬ ЗАПРЕЩЕНО ===")
+    lines.append("")
+
+    if not used:
+        lines.append("(Нет данных о разнообразии — ограничений нет)")
+        return "\n".join(lines)
+
+    # По каждой занятой связке «подтема + метод»
+    lines.append("Каждая задача закреплена за своей парой (подтема, метод):")
+    for entry in used:
+        pos = entry.get("position", "?")
+        topic = entry.get("topic", "?")
+        sub = entry.get("subtopic", "?")
+        method = entry.get("method", "?")
+        lvl = entry.get("level", "?")
+        note = entry.get("note", "")
+        note_str = f" ({note})" if note else ""
+        lines.append(
+            f"  #{pos}: topic=«{topic}» subtopic=«{sub}» method=«{method}» "
+            f"level=L{lvl}{note_str}"
+        )
+
+    lines.append("")
+    lines.append("ЖЁСТКИЕ ЗАПРЕТЫ:")
+    lines.append("- НЕЛЬЗЯ менять topic / class_level / difficulty_level — они фиксированы.")
+    lines.append("- НЕЛЬЗЯ использовать subtopic или method не из назначенного слота.")
+    lines.append("- НЕЛЬЗЯ назначать одну и ту же подтему двум разным задачам.")
+    lines.append("- НЕЛЬЗЯ назначать один и тот же метод двум разным задачам.")
+    lines.append("- НЕЛЬЗЯ повторять сюжет/числа из недавних задач (см. ниже).")
+
+    # Recent-pool запреты
+    if recent_pool_tasks:
+        lines.append("")
+        lines.append("НЕДАВНИЕ ЗАДАЧИ (НЕ ПОВТОРЯТЬ СЮЖЕТЫ/ЧИСЛА):")
+        for i, task in enumerate(recent_pool_tasks[:10], 1):
+            snippet = str(task.get("task_text", task.get("title", "")))[:120]
+            lines.append(f"  {i}. {snippet}")
+
+    lines.append("")
+    lines.append(
+        "Нарушение любого из этих запретов приведёт к тому, что "
+        "набор задач будет отклонён автоматической проверкой."
+    )
+
+    return "\n".join(lines)
+
+
 # ── helpers ───────────────────────────────────────────────────────────────
 
 
@@ -173,7 +255,7 @@ def _format_prompt(
         ensure_ascii=False, indent=2,
     )
 
-    return prompt.format(
+    prompt = prompt.format(
         weak_topics=json.dumps(profile["weak_topics"], ensure_ascii=False, indent=2),
         strong_topics=json.dumps(profile["strong_topics"], ensure_ascii=False, indent=2),
         class_level=profile["class_level"],
@@ -184,6 +266,13 @@ def _format_prompt(
         SLOT_PLAN=slot_plan_json,
         TOPIC_WINDOW_SUMMARY=topic_window_summary,
     )
+
+    # ── DIVERSITY BLOCK ───────────────────────────────────────────────
+    prompt += "\n\n" + DIVERSITY_RULES + "\n\n" + build_forbidden_block(
+        profile.get("_diversity_used", []),
+        profile.get("_recent_pool_tasks", []),
+    )
+    return prompt
 
 
 # ── основная функция ─────────────────────────────────────────────────────
@@ -406,5 +495,237 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     logger.info(
         "Gemini plan — OK: %d specs, cost=$%.4f, enforced=%d slots",
         len(enforced_specs), usage.cost_usd, len(enforced_specs),
+    )
+    return enforced_specs
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Thematic day planner
+# ══════════════════════════════════════════════════════════════════════════
+
+
+def _build_thematic_slot_plan(subject: str) -> List[Dict[str, Any]]:
+    """Построить простой план из 10 слотов с нарастающей сложностью.
+
+    Для тематического дня нет данных адаптивных тестов, поэтому slot_kind
+    для всех слотов — ``calibration``, а difficulty_level ступенчато растёт
+    с 1 до 7 (первые 2 слота L1, затем L2, L3, и т.д.).
+    """
+    difficulty_map = [1, 1, 2, 2, 3, 3, 4, 5, 6, 7]
+    slots: List[Dict[str, Any]] = []
+    for pos in range(1, 11):
+        slots.append({
+            "position": pos,
+            "slot_kind": "calibration",
+            "subject": subject,
+            "topic": "",
+            "topic_key": "",
+            "difficulty_level": difficulty_map[pos - 1],
+            "target_level": 1,
+            "level_window": [1, 8],
+            "is_calibration": True,
+            "measured": False,
+            "pct": None,
+            "test_correct": None,
+            "test_total": None,
+            "final_level": None,
+            "subtopic_hints": [],
+            "reason_hint": "",
+        })
+    return slots
+
+
+def _load_thematic_prompt() -> str:
+    """Загрузить содержимое ``prompts/gemini_thematic_plan.md``."""
+    prompt_path = os.path.join(
+        os.path.dirname(__file__), "prompts", "gemini_thematic_plan.md",
+    )
+    with open(prompt_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def _format_thematic_prompt(
+    profile: Dict[str, Any],
+    slot_plan: List[Dict[str, Any]],
+) -> str:
+    """Подставить переменные в thematic prompt-шаблон.
+
+    Параметры
+    ---------
+    profile : dict
+        Минимальный профиль от ``build_thematic_profile()`` — содержит
+        ``class_level`` и ``subject_constraint``.
+    slot_plan : list[dict]
+        10 слотов с предопределёнными position / difficulty_level / subject.
+    """
+    prompt = _load_thematic_prompt()
+    slot_plan_json = json.dumps(slot_plan, ensure_ascii=False, indent=2)
+    return prompt.format(
+        class_level=profile["class_level"],
+        subject_constraint=profile["subject_constraint"],
+        SLOT_PLAN=slot_plan_json,
+    )
+
+
+async def generate_gemini_thematic_plan(
+    profile: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    """Сгенерировать 10 спецификаций для тематического дня.
+
+    Упрощённая версия ``generate_gemini_plan()`` — без ссылок на
+    адаптивные тесты, weak/strong topics, per-topic difficulty matching.
+
+    Параметры
+    ---------
+    profile : dict
+        Результат ``build_thematic_profile(user_id, subject)`` — содержит
+        ``class_level``, ``subject_constraint``, ``class_expected_level``.
+
+    Возвращает
+    ----------
+    list[dict]
+        10 валидированных spec'ов (каждый — словарь с ключами ``position``,
+        ``slot_kind``, ``subject``, ``topic``, ``subtopic``,
+        ``difficulty_level``, …).
+
+    Raises
+    ------
+    GeminiPlanError
+        При сбое OpenRouter, парсинга JSON или валидации структуры.
+    """
+    subject = profile["subject_constraint"]
+    slot_plan = _build_thematic_slot_plan(subject)
+    formatted_prompt = _format_thematic_prompt(profile, slot_plan)
+
+    messages: List[Dict[str, str]] = [
+        {"role": "user", "content": formatted_prompt},
+    ]
+
+    # ── вызов планировщика через OpenRouter ──────────────────────────
+    raw_response: str
+    usage: TokenUsage
+
+    try:
+        async with OpenRouterClient() as client:
+            raw_response, usage = await client.chat(
+                model=_GEMINI_MODEL,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=16384,
+            )
+    except OpenRouterError as exc:
+        category = _classify_openrouter_error(exc)
+        body_snippet = (getattr(exc, "body", "") or "")[:300]
+        logger.exception(
+            "Thematic PLAN — OpenRouter call to %s failed: status=%s category=%s body=%s",
+            _GEMINI_MODEL, exc.status_code, category, body_snippet,
+        )
+        if category == "http_402":
+            human = (
+                "Закончился баланс OpenRouter (HTTP 402). "
+                "Пополни счёт на openrouter.ai/credits и попробуй снова."
+            )
+        elif category == "http_429":
+            human = (
+                "Слишком много запросов к OpenRouter (HTTP 429). "
+                "Подожди минуту и повтори."
+            )
+        elif category.startswith("http_5"):
+            human = (
+                f"Временный сбой OpenRouter ({exc.status_code}). "
+                "Повтори через минуту."
+            )
+        elif category.startswith("http_4"):
+            human = (
+                f"Ошибка запроса к OpenRouter ({exc.status_code}). "
+                "Проверь конфигурацию."
+            )
+        else:
+            human = f"Сбой связи с OpenRouter: {exc}"
+        raise GeminiPlanError(
+            human, category=category,
+            status_code=exc.status_code, body_snippet=body_snippet,
+        ) from exc
+    except Exception as exc:
+        logger.exception(
+            "Thematic PLAN — call to %s crashed: %s",
+            _GEMINI_MODEL, exc,
+        )
+        raise GeminiPlanError(
+            f"Сбой при вызове планировщика: {type(exc).__name__}: {exc}",
+            category="network",
+        ) from exc
+
+    logger.info(
+        "Thematic plan — токены: %d in / %d out, стоимость: $%.6f",
+        usage.input_tokens, usage.output_tokens, usage.cost_usd,
+    )
+    logger.info(
+        "Thematic plan — raw response длина: %d символов",
+        len(raw_response) if raw_response else 0,
+    )
+
+    # DEBUG: dump raw response
+    try:
+        with open("_thematic_last_response.txt", "w", encoding="utf-8") as _f:
+            _f.write(raw_response or "(EMPTY)")
+    except Exception:
+        pass
+
+    # ── валидация ────────────────────────────────────────────────────
+    validation: GeminiPlanValidation = validate_gemini_plan(raw_response)
+
+    if not validation.valid:
+        err_summary = "; ".join(validation.all_errors[:5]) or "validation failed"
+        logger.error(
+            "Thematic plan — ошибки валидации (%d): %s",
+            len(validation.all_errors), err_summary,
+        )
+        tail = raw_response[-800:] if raw_response else "(EMPTY)"
+        logger.error("Thematic raw response END (last 800 chars): %s", tail)
+        raise GeminiPlanError(
+            f"Ответ модели не прошёл валидацию: {err_summary}",
+            category="validate",
+            body_snippet=tail[:300],
+        )
+
+    # ── парсинг JSON ─────────────────────────────────────────────────
+    parsed: Optional[Dict[str, Any]] = extract_json_safe(raw_response)
+    if parsed is None or "specs" not in parsed:
+        raise GeminiPlanError(
+            "Не удалось извлечь JSON со spec'ами из ответа модели",
+            category="parse",
+            body_snippet=(raw_response or "")[-300:],
+        )
+
+    specs: List[Dict[str, Any]] = parsed["specs"]
+    if not isinstance(specs, list) or len(specs) != 10:
+        raise GeminiPlanError(
+            f"Модель вернула {len(specs) if isinstance(specs, list) else 'не-list'} spec'ов вместо 10",
+            category="validate",
+        )
+
+    # ── enforce slot_kind + subject + difficulty_level из плана ──────
+    # (на случай, если LLM их изменила)
+    by_pos = {s["position"]: s for s in slot_plan}
+    enforced_specs: List[Dict[str, Any]] = []
+    enforced_count = 0
+    for spec in specs:
+        pos = spec.get("position")
+        planned = by_pos.get(pos)
+        if planned is None:
+            enforced_specs.append(spec)
+            continue
+        merged = dict(spec)
+        merged["slot_kind"] = planned["slot_kind"]
+        merged["subject"] = planned["subject"]
+        merged["difficulty_level"] = planned["difficulty_level"]
+        # topic / subtopic — оставляем как есть (LLM сгенерировала)
+        enforced_specs.append(merged)
+        enforced_count += 1
+
+    logger.info(
+        "Thematic plan — OK: %d specs, cost=$%.4f, enforced=%d slots",
+        len(enforced_specs), usage.cost_usd, enforced_count,
     )
     return enforced_specs

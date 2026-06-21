@@ -30,12 +30,28 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
+from daily_tasks.pipeline.diversity_catalog import DIVERSITY_CATALOG
+
 logger = logging.getLogger(__name__)
 
 
 TOTAL_SLOTS = 10
 MIN_LEVEL = 1
 MAX_LEVEL = 8
+
+# Fallback-список универсальных методов, если в каталоге нет данных
+SOLUTION_METHODS: List[str] = [
+    "разбор случаев",
+    "от противного",
+    "оценка и границы",
+    "подбор и проверка",
+    "обратный ход",
+    "систематический перебор",
+    "построение схемы или таблицы",
+    "индукция и рекурсия",
+    "сравнение и аналогия",
+    "графическая интерпретация",
+]
 
 
 # ---------------------------------------------------------------------
@@ -494,10 +510,77 @@ def plan_slots(
     # одинаковым difficulty_level и среди них есть calibration-слот —
     # сдвигаем такие слоты по их level_window, пока распределение не станет
     # ≤2 одинаковых уровней (или пока двигать больше некуда).
+    # ── PER-SLOT DIVERSITY (subtopic + method) ────────────────────────
+    # Назначаем каждой из 10 задач свою подтему и метод из DIVERSITY_CATALOG,
+    # чтобы задачи были максимально различны.
+    grade = profile.get("class_level")
+    day_index = profile.get("_day_index", 0)
+    diversity_used = assign_diversity(slots, profile.get("subtopics", []), day_index, grade)
+    profile["_diversity_used"] = diversity_used
+
     _enforce_spread(slots, max_same_level=2)
 
     _log_plan(slots)
     return slots
+
+
+def assign_diversity(
+    slots: List[PlannedSlot],
+    subtopics: List[str],
+    day_index: int = 0,
+    grade: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """Assign unique subtopic + method to each slot for diversity.
+
+    Uses DIVERSITY_CATALOG[grade][topic] if available, otherwise falls back
+    to subtopics from inventory and SOLUTION_METHODS.
+
+    Returns a list of dicts (one per slot) with keys:
+        position, topic, subtopic, method, level, note
+    """
+    if not slots:
+        return []
+
+    day_topic = slots[0].topic_key
+    node: Dict[str, Any] = DIVERSITY_CATALOG.get(grade, {}).get(day_topic, {})
+
+    subs: List[str] = node.get("subtopics") or (subtopics or [])
+    methods: List[str] = node.get("methods") or SOLUTION_METHODS
+    level_notes: Dict = node.get("level_notes", {})
+
+    # Ensure we have at least something
+    if not subs:
+        subs = [f"подтема {i}" for i in range(1, 11)]
+    if not methods:
+        methods = SOLUTION_METHODS
+
+    # Rotation based on day_index for diversity across days
+    rot = day_index % len(subs) if subs else 0
+    rotated_subs = subs[rot:] + subs[:rot]
+
+    used: List[Dict[str, Any]] = []
+    for i, slot in enumerate(slots):
+        sub = rotated_subs[i % len(rotated_subs)] if rotated_subs else ""
+        method = methods[(i + day_index) % len(methods)] if methods else ""
+        lvl = slot.difficulty_level
+        # level_notes may have int or str keys
+        note = level_notes.get(lvl) or level_notes.get(str(lvl), "")
+
+        slot.subtopic_hints = [sub]
+        slot.reason_hint = (
+            f"класс {grade}; уровень {lvl} ({note}); подтема: {sub}; метод: {method}"
+        )
+
+        used.append({
+            "position": slot.position,
+            "topic": slot.topic,
+            "subtopic": sub,
+            "method": method,
+            "level": lvl,
+            "note": note,
+        })
+
+    return used
 
 
 def _enforce_spread(slots: List[PlannedSlot], max_same_level: int = 2) -> None:
