@@ -68,7 +68,7 @@ class PlannedSlot:
     final_level: Optional[int]
     subtopic_hints: List[str] = field(default_factory=list)
     reason_hint: str = ""
-   theme_subtopic: str = ""  # diversified subtopic for unique themes
+     theme_subtopic: str = ""  # diversified subtopic for unique themes
 
     def to_spec_seed(self) -> Dict[str, Any]:
         """Convert to a dict that Step 1 (LLM) can extend."""
