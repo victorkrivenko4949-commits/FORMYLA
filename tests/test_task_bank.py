@@ -540,3 +540,157 @@ class TestIntegration:
         if tasks:
             assert len(tasks) == tb.TASKS_PER_PROBE
             assert tb.validate_tasks(tasks)
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  12. Обработка ошибок банка (try/except)
+# ═══════════════════════════════════════════════════════════════════
+
+class TestBankErrorHandling:
+    """Проверка, что исключения в ``_try_bank_first`` НЕ вызывают 500.
+
+    Фикс: банк-путь обёрнут в try/except на двух уровнях:
+    1. ``_try_bank_first`` → ``_try_bank_first_impl`` (внутренняя защита)
+    2. ``_run_pipeline_async`` → ``_try_bank_first`` (внешняя защита)
+
+    Любая ошибка = MISS → graceful fallback на LLM-пайплайн.
+    """
+
+    def test_try_bank_first_wraps_exception(self, monkeypatch):
+        """``_try_bank_first`` перехватывает исключение из ``_impl`` и
+        возвращает ``False`` (MISS), не проваливая пайплайн."""
+        import asyncio
+        from daily_tasks.services import _try_bank_first
+
+        async def _impl_raises(*args, **kwargs):
+            raise RuntimeError("Внутренняя ошибка банка")
+
+        monkeypatch.setattr(
+            "daily_tasks.services._try_bank_first_impl",
+            _impl_raises,
+        )
+
+        result = asyncio.run(_try_bank_first(
+            user_id=42,
+            target_date=None,
+            daily_set_id=1,
+            job_id=1,
+            profile={"class_level": 6},
+        ))
+        # Исключение перехвачено → MISS (False), а не крах
+        assert result is False, (
+            "Исключение в _try_bank_first_impl должно давать MISS (False)"
+        )
+
+    def test_try_bank_first_wraps_arbitrary_error(self, monkeypatch):
+        """Любой тип исключения (ValueError, KeyError, OSError и т.д.)
+        перехватывается и превращается в False."""
+        import asyncio
+        from daily_tasks.services import _try_bank_first
+
+        async def _impl_raises_value(*args, **kwargs):
+            raise ValueError("Битый JSON в банке")
+
+        async def _impl_raises_key(*args, **kwargs):
+            raise KeyError("Отсутствует ключ")
+
+        monkeypatch.setattr(
+            "daily_tasks.services._try_bank_first_impl",
+            _impl_raises_value,
+        )
+        assert asyncio.run(_try_bank_first(
+            user_id=1, target_date=None,
+            daily_set_id=1, job_id=1,
+            profile={"class_level": 6},
+        )) is False, "ValueError → MISS"
+
+        monkeypatch.setattr(
+            "daily_tasks.services._try_bank_first_impl",
+            _impl_raises_key,
+        )
+        assert asyncio.run(_try_bank_first(
+            user_id=1, target_date=None,
+            daily_set_id=1, job_id=1,
+            profile={"class_level": 6},
+        )) is False, "KeyError → MISS"
+
+    def test_try_bank_first_empty_profile_returns_false(self):
+        """Если профиль без class_level — сразу MISS (без ошибки)."""
+        import asyncio
+        from daily_tasks.services import _try_bank_first_impl
+
+        result = asyncio.run(_try_bank_first_impl(
+            user_id=1, target_date=None,
+            daily_set_id=1, job_id=1,
+            profile={},
+        ))
+        assert result is False, "Пустой профиль → MISS"
+
+    def test_run_pipeline_catches_bank_exception(self, monkeypatch):
+        """``_run_pipeline_async`` перехватывает исключение из
+        ``_try_bank_first`` и продолжает выполнение (не крашится)."""
+        import asyncio
+        from daily_tasks.services import _run_pipeline_async
+        from app import app
+
+        async def _bank_raises(*args, **kwargs):
+            raise RuntimeError("Авария банка")
+
+        monkeypatch.setattr(
+            "daily_tasks.services._try_bank_first",
+            _bank_raises,
+        )
+
+        # Патчим build_profile, чтобы не зависеть от БД
+        def fake_build_profile(uid):
+            return {"class_level": 6, "weak_topics": [], "strong_topics": []}
+
+        monkeypatch.setattr(
+            "daily_tasks.services.build_profile",
+            fake_build_profile,
+        )
+
+        # Патчим job-запросы, чтобы не трогать БД
+        class FakeJob:
+            id = 1
+            status = "running"
+            current_step = None
+            progress_pct = 0
+
+        # Monkeypatch на .query.get триггерит дескриптор Flask-SQLAlchemy,
+        # который требует app context — оборачиваем вызов.
+        with app.app_context():
+            monkeypatch.setattr(
+                "daily_tasks.services.DailyGenerationJob.query.get",
+                lambda jid: FakeJob(),
+            )
+
+        # no-op заглушки для всех функций, работающих с БД
+        for name in (
+            "_update_job_progress",
+            "_persist_pipeline_result",
+            "_mark_set_failed",
+            "_fail_job",
+            "run_daily_generation_pipeline",
+        ):
+            monkeypatch.setattr(
+                f"daily_tasks.services.{name}",
+                lambda *a, **kw: None,
+            )
+
+        # В _progress_cb (строки 1055–1062) есть DailyGenerationJob.query.get,
+        # которая тоже требует app context. Она обёрнута в try/except,
+        # но для корректной работы дескриптора SQLAlchemy даём контекст.
+        with app.app_context():
+            try:
+                asyncio.run(_run_pipeline_async(
+                    user_id=1,
+                    target_date=None,
+                    daily_set_id=1,
+                    job_id=1,
+                ))
+            except Exception:
+                pytest.fail(
+                    "_run_pipeline_async не должен выбрасывать исключение "
+                    "при ошибке банка — try/except должен перехватить"
+                )
