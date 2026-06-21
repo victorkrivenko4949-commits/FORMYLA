@@ -106,7 +106,7 @@ def _topic_window(topic: Dict[str, Any]) -> Tuple[int, int]:
     Profile fills 'level_window' / 'level_low' / 'level_high'. Falls back
     to (target_level, target_level) or full range as a last resort.
     """
-       measured = bool(topic.get("measured", False)) and not topic.get("calibration")
+       ured = bool(topic.get("measured", False)) and not topic.get("calibration")
     _t = topic.get("target_level")
     if measured and _t is not None:
         return (_clamp(_t), _clamp(_t))
