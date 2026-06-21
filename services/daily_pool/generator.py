@@ -253,7 +253,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 ЗАДАНИЕ: Создай задачу для ПОЗИЦИИ {position} из 5.
 
 ТРЕБОВАНИЯ К ЭТОЙ ПОЗИЦИИ:
-  Тема: {spec.get('theme', '')}
+  Тема: {spec.get('theme') or spec.get('topic') or spec.get('subject') or ''}
   Подтема: {spec.get('subtopic', '')}
   Идея: {spec.get('idea', '')}
   Сложность: {spec.get('difficulty', 5)}/10
