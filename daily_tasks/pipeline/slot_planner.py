@@ -68,6 +68,7 @@ class PlannedSlot:
     final_level: Optional[int]
     subtopic_hints: List[str] = field(default_factory=list)
     reason_hint: str = ""
+   theme_subtopic: str = ""  # diversified subtopic for unique themes
 
     def to_spec_seed(self) -> Dict[str, Any]:
         """Convert to a dict that Step 1 (LLM) can extend."""
@@ -75,8 +76,9 @@ class PlannedSlot:
             "position": self.position,
             "slot_kind": self.slot_kind,
             "subject": self.subject,
-            "theme": self.topic, "topic": self.topic,
+            "theme": (self.topic + " — " + self.theme_subtopic) if self.theme_subtopic else self.topic, "topic": self.topic,
             "topic_key": self.topic_key,
+           "theme_subtopic": self.theme_subtopic,
             "difficulty_level": self.difficulty_level,
             "target_level": self.target_level,
             "level_window": list(self.level_window),
@@ -499,6 +501,7 @@ def plan_slots(
     # сдвигаем такие слоты по их level_window, пока распределение не станет
     # ≤2 одинаковых уровней (или пока двигать больше некуда).
     _enforce_spread(slots, max_same_level=2)
+    _assign_diverse_themes(slots)
 
     _log_plan(slots)
     return slots
@@ -666,3 +669,21 @@ def check_slots_match_windows(
                 "planned_difficulty": planned.difficulty_level,
             })
     return mismatches
+
+
+def _assign_diverse_themes(slots: List[PlannedSlot]) -> None:
+  by_topic: Dict[str, List[PlannedSlot]] = {}
+  for s in slots:
+    by_topic.setdefault(s.topic, []).append(s)
+  for topic, group in by_topic.items():
+    if len(group) <= 1:
+      continue
+    hints: List[str] = []
+    for s in group:
+      for h in s.subtopic_hints:
+        if h and h not in hints:
+          hints.append(h)
+    if not hints:
+      continue
+    for i, s in enumerate(group):
+      s.theme_subtopic = hints[i % len(hints)]
