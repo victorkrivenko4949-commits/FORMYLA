@@ -14,8 +14,8 @@ the 10 daily-task slots. That created two bugs:
 
 This module fixes both issues deterministically, BEFORE calling the LLM:
 
-* split 10 slots between weak topics, strong topics and calibration topics
-  proportionally to weakness priority;
+  * split 10 slots EQUALLY across all topics (weak, strong and calibration)
+  so each topic gets roughly the same number of tasks over time;
 * for each slot, pick a concrete difficulty_level INSIDE the per-topic
   window [level_low, level_high] of the chosen topic.
 
@@ -29,6 +29,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
+from itertools import zip_longest
 
 logger = logging.getLogger(__name__)
 
@@ -374,6 +375,52 @@ def _allocate_topic_slots(
         topic, n = allocated[donor_idx]
         allocated[donor_idx] = (topic, n + (total_slots - cur_total))
 
+    return allocateddef _allocate_topic_slots(
+    weak_topics: List[Dict[str, Any]],
+    strong_topics: List[Dict[str, Any]],
+    calibration_topics: List[Dict[str, Any]],
+    total_slots: int = TOTAL_SLOTS,
+) -> List[Tuple[Dict[str, Any], int]]:
+    """Allocate total_slots evenly across ALL topics.
+
+    Equal-coverage strategy: every topic (weak, strong, calibration alike)
+    receives an (almost) equal number of slots, so that over a month each
+    topic accumulates roughly the same task count. Difficulty differentiation
+    between weak/strong topics is handled separately via _topic_window /
+    _slot_kind_for, NOT via slot counts.
+
+    Ordering interleaves weak -> strong -> calibration so diverse topics
+    appear spread across the daily set.
+
+    Returns: list of (topic_dict, n_slots).
+    """
+    if total_slots <= 0:
+        return []
+
+    weak = [t for t in (weak_topics or []) if not t.get("calibration")]
+    strong = list(strong_topics or [])
+    calibration = list(calibration_topics or [])
+
+    # Interleave for diversity while keeping a stable, deterministic order.
+    topics: List[Dict[str, Any]] = []
+    for trio in zip_longest(weak, strong, calibration):
+        for t in trio:
+            if t is not None:
+                topics.append(t)
+
+    if not topics:
+        return []
+
+    n = len(topics)
+    base = total_slots // n
+    remainder = total_slots - base * n
+
+    # Each topic gets `base`; the first `remainder` topics get one extra.
+    counts = [base + (1 if i < remainder else 0) for i in range(n)]
+
+    allocated: List[Tuple[Dict[str, Any], int]] = [
+        (t, c) for t, c in zip(topics, counts) if c > 0
+    ]
     return allocated
 
 
