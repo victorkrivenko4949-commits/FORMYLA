@@ -23,7 +23,7 @@ import threading
 import time
 from dataclasses import asdict
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from flask import current_app
 from sqlalchemy import insert as sql_insert
@@ -35,12 +35,20 @@ except ImportError:
 
 from models import db
 
-from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool, UserTaskAssignment
+from .models import (
+    DailyTaskSet,
+    DailyTaskItem,
+    DailyGenerationJob,
+    TaskPool,
+    UserTaskAssignment,
+    ThematicDaySet,
+)
 from .pipeline.orchestrator import (
     PipelineResult,
     run_daily_generation_pipeline,
 )
 from .profile import build_profile, ProfileBuildError
+from . import task_bank as tb
 
 logger = logging.getLogger(__name__)
 
@@ -660,7 +668,7 @@ def _norm_topics(topics: Optional[List[Any]]) -> List[str]:
     return sorted(deduped)
 
 
-def compute_cache_key(profile: Dict[str, Any]) -> str:
+def compute_cache_key(profile: Dict[str, Any], thematic: bool = False) -> str:
     """Детерминированный SHA-256 ключ по профилю пользователя.
 
     Ученики с одинаковым (class_level, набор тем, class_expected_level,
@@ -673,6 +681,11 @@ def compute_cache_key(profile: Dict[str, Any]) -> str:
       ОДИН пул, что неверно (для них набор задач должен отличаться).
 
     Регистр и лишние пробелы в названиях тем нормализуются.
+
+    Параметр ``thematic``:
+    * ``False`` (по умолчанию) — поведение не меняется, старый ключ.
+    * ``True`` — добавляет ``week_number`` (ISO week) в ключ, чтобы
+      для одной и той же темы можно было иметь разные пулы по неделям.
     """
     # квантуем completeness до 0.10, чтобы мелкие колебания
     # (например 0.142 vs 0.143) не множили пулы
@@ -690,6 +703,8 @@ def compute_cache_key(profile: Dict[str, Any]) -> str:
         ),
         "completeness_q": completeness_q,
     }
+    if thematic:
+        key_data["week_number"] = date.today().isocalendar()[1]
     canonical = json.dumps(key_data, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
@@ -746,6 +761,49 @@ def _extract_subject_from_profile(profile: Dict[str, Any]) -> str:
     return "mixed"
 
 
+# ── Thematic day constants ───────────────────────────────────────────────
+THEMATIC_DAY_EPOCH: date = date(2026, 1, 1)
+"""Эпоха для детерминированной ротации subject'ов тематического дня."""
+
+
+def _get_thematic_subject(profile: Dict[str, Any], today: date) -> str:
+    """Определить subject для тематического дня через детерминированную ротацию.
+
+    Subject index = (today - epoch).days % len(subjects).
+    Subject'ы берутся из ``profile['topics_full']`` — уникальные subject'ы.
+    Если subjects ≥ 2 и сегодняшний subject совпадает со вчерашним,
+    сдвигаем на +1 (чтобы два дня подряд не было одного subject).
+    """
+    topics_full = profile.get("topics_full", [])
+    unique_subjects: List[str] = sorted(set(
+        t.get("subject", "") for t in topics_full
+        if isinstance(t, dict) and t.get("subject")
+    ))
+    if not unique_subjects:
+        # fallback: из weak/strong тем или "algebra"
+        subj = _extract_subject_from_profile(profile)
+        if subj and subj != "mixed":
+            unique_subjects = [subj]
+        else:
+            unique_subjects = ["algebra"]
+
+    days_since_epoch = max(0, (today - THEMATIC_DAY_EPOCH).days)
+    subject_index = days_since_epoch % len(unique_subjects)
+    today_subject = unique_subjects[subject_index]
+
+    # ── защита от двух одинаковых subject'ов подряд ──────────────
+    if len(unique_subjects) >= 2:
+        yesterday = today - timedelta(days=1)
+        yesterday_days = max(0, (yesterday - THEMATIC_DAY_EPOCH).days)
+        yesterday_index = yesterday_days % len(unique_subjects)
+        yesterday_subject = unique_subjects[yesterday_index]
+        if today_subject == yesterday_subject:
+            subject_index = (subject_index + 1) % len(unique_subjects)
+            today_subject = unique_subjects[subject_index]
+
+    return today_subject
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Внутренние функции (фоновый запуск + persist)
 # ──────────────────────────────────────────────────────────────────────
@@ -774,6 +832,140 @@ def _background_run(
                 exc,
             )
             _fail_job(job_id, str(exc))
+
+
+async def _try_bank_first(
+    user_id: int,
+    target_date: date,
+    daily_set_id: int,
+    job_id: int,
+    profile: Dict[str, Any],
+) -> bool:
+    """Проверить банк готовых задач перед запуском LLM-пайплайна.
+
+    Если банк содержит probe для (grade, level, day) — создаём
+    ``DailyTaskItem`` напрямую из банка, минуя шаги 1–3 (LLM), и
+    помечаем сет как ``ready``.
+
+    Returns
+    -------
+    bool
+        ``True``, если задачи взяты из банка (LLM пайплайн не нужен).
+        ``False``, если банк не подошёл — вызывающий код запускает LLM.
+    """
+    from models import User  # local import to avoid circular dependency
+
+    grade = profile.get("class_level")
+    if not grade:
+        logger.info("[user=%d] Банк: нет class_level в профиле", user_id)
+        return False
+
+    if not tb.grade_is_available(grade):
+        logger.info("[user=%d] Банк: класс %d не поддерживается", user_id, grade)
+        return False
+
+    # ── Определяем день N ─────────────────────────────────────────────
+    user = User.query.get(user_id)
+    if not user or not user.created_at:
+        logger.info("[user=%d] Банк: нет created_at у пользователя", user_id)
+        return False
+
+    start_date = user.created_at.date()
+    day_num = tb.compute_day_number(start_date, today=target_date)
+
+    # ── Определяем уровень ─────────────────────────────────────────────
+    bank_level = tb.pick_bank_level(profile)
+    logger.info(
+        "[user=%d] Банк: ищу grade=%d level=%d day=%d",
+        user_id, grade, bank_level, day_num,
+    )
+
+    # ── Ищем probe в банке ─────────────────────────────────────────────
+    bank_tasks = tb.get_tasks(grade=grade, level=bank_level, day=day_num)
+    if bank_tasks is None:
+        logger.info(
+            "[user=%d] Банк: MISS для grade=%d level=%d day=%d → запускаю LLM",
+            user_id, grade, bank_level, day_num,
+        )
+        return False
+
+    # ── HIT: создаём DailyTaskItem из банка ────────────────────────────
+    _update_job_progress(
+        DailyGenerationJob.query.get(job_id),
+        "bank_hit", 25,
+    )
+
+    # Получаем мету пробника (тема/субъект) для spec-полей
+    probe_meta = tb.get_probe_meta(grade=grade, level=bank_level, day=day_num)
+    probe_theme = (probe_meta or {}).get("theme", "Общая тема")
+
+    # Определяем subject (пока берём из профиля, если есть)
+    profile_subject = _extract_subject_from_profile(profile)
+    # Множество калибровочных тем
+    cal_topic_set = {
+        (t or "").strip().lower()
+        for t in (profile.get("calibration_topics") or [])
+        if isinstance(t, str)
+    }
+    spec_topic_lower = probe_theme.strip().lower()
+    is_calibration = spec_topic_lower in cal_topic_set
+
+    daily_set = DailyTaskSet.query.get(daily_set_id)
+    if not daily_set:
+        logger.error("[user=%d] DailyTaskSet #%s не найден", user_id, daily_set_id)
+        return False
+
+    # Удаляем старые items (если были)
+    DailyTaskItem.query.filter_by(daily_set_id=daily_set_id).delete()
+
+    for pos, t in enumerate(bank_tasks, start=1):
+        item = DailyTaskItem(
+            daily_set_id=daily_set_id,
+            position=pos,
+            slot_kind="bank",
+            subject=profile_subject,
+            topic=probe_theme,
+            difficulty_level=bank_level,
+            is_calibration=is_calibration,
+            task_text=(t.get("text") or "").strip(),
+            correct_answer=(t.get("answer") or "").strip(),
+            solution=(t.get("solution") or "").strip(),
+            hints=json.dumps([], ensure_ascii=False),
+            gemini_spec_json=json.dumps({
+                "slot_kind": "bank",
+                "subject": profile_subject,
+                "topic": probe_theme,
+                "difficulty_level": bank_level,
+                "position": pos,
+                "source": "task_bank",
+                "probe_day": day_num,
+            }, ensure_ascii=False),
+            opus_iterations=0,
+            gpt_audit_json=None,
+            is_flagged=False,
+            status="approved",
+        )
+        db.session.add(item)
+
+    # ── Обновляем DailyTaskSet ─────────────────────────────────────────
+    daily_set.status = "ready"
+    daily_set.generated_at = datetime.utcnow()
+    daily_set.class_level = grade
+    daily_set.reason_summary = (
+        f"Из банка готовых задач (grade={grade}, "
+        f"level={bank_level}, day={day_num}, тема: {probe_theme})"
+    )
+    daily_set.total_cost_usd = 0.0
+
+    db.session.commit()
+
+    logger.info(
+        "[user=%d] Банк HIT: 10 задач из банка (grade=%d level=%d day=%d тема='%s')",
+        user_id, grade, bank_level, day_num, probe_theme,
+    )
+
+    _complete_job(job_id)
+    return True
 
 
 async def _run_pipeline_async(
@@ -813,6 +1005,17 @@ async def _run_pipeline_async(
             len(profile.get("calibration_topics", [])),
         )
 
+        # ── Bank check: пробуем банк готовых задач перед LLM ─────────
+        bank_hit = await _try_bank_first(
+            user_id, target_date, daily_set_id, job_id, profile,
+        )
+        if bank_hit:
+            logger.info(
+                "[user=%d] Банк: задачи взяты из банка, LLM пайплайн пропущен",
+                user_id,
+            )
+            return
+
         # ── Step 2–5: пайплайн с live-обновлением прогресса ────────
         # Колбэк обновляет current_step/progress_pct в БД при переходах
         # между внутренними шагами оркестратора, чтобы JS-поллер видел
@@ -832,7 +1035,7 @@ async def _run_pipeline_async(
         )
 
         # ── Step 6: persist ──────────────────────────────────────────
-        _update_job_progress(job, "persist", 90)
+        _update_job_progress(job, "persist", 95)
         _persist_pipeline_result(daily_set_id, job_id, result, profile)
 
         # ── завершение ──────────────────────────────────────────────
@@ -957,6 +1160,19 @@ def _persist_pipeline_result(
                 is_flagged=is_flagged,
                 flag_reason=flag_reason,
                 status="approved" if not is_flagged else "flagged",
+                # ── классификация (Step 6 — Claude Sonnet 4.7) ───────
+                difficulty_level_classified=(
+                    result.classifications[i].get("level")
+                    if i < len(result.classifications)
+                    and result.classifications[i] is not None
+                    else None
+                ),
+                classification_json=(
+                    json.dumps(result.classifications[i], ensure_ascii=False)
+                    if i < len(result.classifications)
+                    and result.classifications[i] is not None
+                    else None
+                ),
             )
             db.session.add(item)
             items_created += 1
@@ -1492,3 +1708,496 @@ def _run_and_fill_pool(app, pool_id: int, profile: Dict[str, Any]) -> None:
             except Exception:
                 logger.exception("Не удалось отметить пул #%s как failed", pool_id)
                 db.session.rollback()
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Тематический день (Thematic Day) — выбор из TaskPool (кэш)
+# ══════════════════════════════════════════════════════════════════════
+
+
+STALE_THEMATIC_TIMEOUT = timedelta(minutes=10)
+"""Если thematic_set 'generating' старше этого порога — считаем поток мёртвым."""
+
+
+def _cascade_fill_thematic_set(
+    pool: TaskPool,
+    user_id: int,
+    profile: Dict[str, Any],
+    today: date,
+) -> List[Dict[str, Any]]:
+    """4-уровневый каскад для отбора ровно 10 задач тематического дня.
+
+    Уровень 1: уникальные topic'и + unseen задачи из today_subject.
+    Уровень 2: unseen задачи из today_subject (topic'и могут повторяться).
+    Уровень 3: любые subject'ы, кроме yesterday_subject.
+    Уровень 4: соседний subject по ротации.
+
+    Все задачи на каждом уровне сортируются по ``difficulty_level``.
+    Возвращает список task-словарей (до 10).
+    """
+    today_subject = pool.subject
+
+    # ── unique subjects из профиля ──────────────────────────────────
+    topics_full = profile.get("topics_full", [])
+    unique_subjects: List[str] = sorted(set(
+        t.get("subject", "") for t in topics_full
+        if isinstance(t, dict) and t.get("subject")
+    ))
+    if not unique_subjects:
+        unique_subjects = [today_subject]
+
+    # ── yesterday_subject (через эпоху) ─────────────────────────────
+    yesterday = today - timedelta(days=1)
+    yesterday_days = max(0, (yesterday - THEMATIC_DAY_EPOCH).days)
+    yesterday_idx = yesterday_days % len(unique_subjects)
+    yesterday_subject = unique_subjects[yesterday_idx]
+
+    # ── adjacent subject (соседний по ротации) ──────────────────────
+    try:
+        today_idx = unique_subjects.index(today_subject)
+    except ValueError:
+        today_idx = 0
+    adjacent_subject = unique_subjects[(today_idx + 1) % len(unique_subjects)]
+
+    # ── загружаем все задачи из пула ────────────────────────────────
+    pool_tasks = _parse_json_field(pool.tasks, [])
+
+    # ── собираем все assignment'ы пользователя → set seen tasks ─────
+    assignments = UserTaskAssignment.query.filter(
+        UserTaskAssignment.user_id == user_id,
+    ).all()
+    # Строим set сигнатур (subject, topic, task_text) для seen tasks
+    seen_signatures: Set[Tuple[str, str, str]] = set()
+    for a in assignments:
+        a_pool = db.session.get(TaskPool, a.pool_id)
+        if not a_pool:
+            continue
+        a_tasks = _parse_json_field(a_pool.tasks, [])
+        positions = _parse_json_field(a.task_positions, [])
+        for pos in positions:
+            if isinstance(pos, int) and pos < len(a_tasks):
+                t = a_tasks[pos]
+                seen_signatures.add((
+                    str(t.get("subject", "")),
+                    str(t.get("topic", "")),
+                    str(t.get("task_text", "")),
+                ))
+
+    def _is_seen(task: Dict[str, Any]) -> bool:
+        sig = (
+            str(task.get("subject", "")),
+            str(task.get("topic", "")),
+            str(task.get("task_text", "")),
+        )
+        return sig in seen_signatures
+
+    def _sort_key(task: Dict[str, Any]) -> float:
+        return float(task.get("difficulty_level", 3) or 3)
+
+    selected: List[Dict[str, Any]] = []
+    used_topics: Set[str] = set()
+
+    # ── L1: unique topics + unseen ──────────────────────────────────
+    l1_candidates = sorted(
+        [t for t in pool_tasks if not _is_seen(t) and t.get("subject") == today_subject],
+        key=_sort_key,
+    )
+    for task in l1_candidates:
+        topic = str(task.get("topic", ""))
+        if topic not in used_topics and len(selected) < 10:
+            selected.append(task)
+            used_topics.add(topic)
+    if len(selected) >= 10:
+        return selected[:10]
+
+    # ── L2: unseen (topics may repeat) ──────────────────────────────
+    for task in l1_candidates:
+        if task not in selected and len(selected) < 10:
+            selected.append(task)
+    if len(selected) >= 10:
+        return selected[:10]
+
+    # ── L3: any subject except yesterday_subject ────────────────────
+    if len(selected) < 10:
+        other_pools = TaskPool.query.filter(
+            TaskPool.status == "ready",
+            TaskPool.subject != yesterday_subject,
+            TaskPool.grade == pool.grade,
+        ).all()
+        other_candidates: List[Dict[str, Any]] = []
+        for op in other_pools:
+            for t in _parse_json_field(op.tasks, []):
+                if not _is_seen(t) and t.get("subject") != yesterday_subject:
+                    other_candidates.append(t)
+        other_candidates.sort(key=_sort_key)
+        for task in other_candidates:
+            if task not in selected and len(selected) < 10:
+                selected.append(task)
+    if len(selected) >= 10:
+        return selected[:10]
+
+    # ── L4: adjacent subject ────────────────────────────────────────
+    if len(selected) < 10:
+        adj_pool = TaskPool.query.filter(
+            TaskPool.status == "ready",
+            TaskPool.subject == adjacent_subject,
+            TaskPool.grade == pool.grade,
+        ).order_by(TaskPool.created_at.desc()).first()
+        if adj_pool:
+            adj_tasks = _parse_json_field(adj_pool.tasks, [])
+            adj_tasks.sort(key=_sort_key)
+            for task in adj_tasks:
+                if task not in selected and len(selected) < 10:
+                    selected.append(task)
+
+    return selected[:10]
+
+
+def get_or_create_thematic_set(user_id: int) -> Dict[str, Any]:
+    """Получить или создать тематический день из TaskPool (кэш).
+
+    Без AI-пайплайна: subject определяется детерминированной ротацией
+    по эпохе, задачи выбираются из существующего TaskPool через
+    4-уровневый каскад.
+
+    Возвращает
+    ----------
+    dict
+        ``thematic_set_id`` — ID созданного набора (или None)
+        ``status`` — ``ready`` / ``generating`` / ``no_set`` / ``failed``
+        ``subject`` — предмет
+        ``message`` — пояснение
+    """
+    _reap_stale_thematic_sets(user_id=user_id)
+
+    today = today_in_user_tz()
+
+    # ── проверяем, нет ли уже сета на сегодня ─────────────────────────
+    existing = ThematicDaySet.query.filter_by(
+        user_id=user_id,
+        target_date=today,
+    ).first()
+
+    if existing and existing.status == "ready":
+        logger.info(
+            "ThematicSet для user=%d date=%s уже ready — возвращаем",
+            user_id, today,
+        )
+        return _serialize_thematic_set(existing)
+
+    if existing and existing.status == "generating":
+        logger.info(
+            "ThematicSet для user=%d date=%s уже генерируется",
+            user_id, today,
+        )
+        return _serialize_thematic_set(existing)
+
+    if existing and existing.status == "failed":
+        # удаляем старый failed-сет, создаём новый
+        db.session.delete(existing)
+        db.session.flush()
+
+    # ── строим полный профиль (не build_thematic_profile!) ───────────
+    try:
+        profile = build_profile(user_id, today=today)
+    except ProfileBuildError as exc:
+        logger.warning("[thematic user=%d] ProfileBuildError: %s", user_id, exc)
+        return {
+            "thematic_set_id": None,
+            "status": "failed",
+            "subject": None,
+            "message": f"Не удалось построить профиль: {exc}",
+        }
+    except Exception as exc:
+        logger.exception("[thematic user=%d] Ошибка профиля: %s", user_id, exc)
+        return {
+            "thematic_set_id": None,
+            "status": "failed",
+            "subject": None,
+            "message": f"Ошибка профиля: {exc}",
+        }
+
+    # ── определяем subject через эпоху ───────────────────────────────
+    today_subject = _get_thematic_subject(profile, today)
+
+    # ── class_level из профиля ───────────────────────────────────────
+    class_level = profile.get("class_level") or profile.get("grade") or 5
+
+    # ── проверяем / создаём TaskPool с thematic=True ─────────────────
+    cache_key = compute_cache_key(profile, thematic=True)
+
+    now = datetime.utcnow()
+    _reap_stale_pools()
+
+    # проверяем generating-пул
+    gen_pool = TaskPool.query.filter(
+        TaskPool.cache_key == cache_key,
+        TaskPool.status == "generating",
+    ).first()
+    if gen_pool:
+        # создаём ThematicDaySet в generating до готовности пула
+        ts = ThematicDaySet(
+            user_id=user_id,
+            target_date=today,
+            subject=today_subject,
+            class_level=class_level,
+            status="generating",
+            triggered_by="manual",
+            started_at=datetime.utcnow(),
+            progress_pct=10,
+            current_step="waiting_pool",
+        )
+        db.session.add(ts)
+        db.session.commit()
+        return _serialize_thematic_set(ts)
+
+    # проверяем готовый пул
+    pool = TaskPool.query.filter(
+        TaskPool.cache_key == cache_key,
+        TaskPool.status.in_(["ready", "partial"]),
+        (TaskPool.expires_at.is_(None)) | (TaskPool.expires_at > now),
+    ).order_by(TaskPool.created_at.desc()).first()
+
+    if pool:
+        # ── Cache HIT: каскадный отбор 10 задач ──────────────────────
+        pool.used_count = (pool.used_count or 0) + 1
+        selected_tasks = _cascade_fill_thematic_set(pool, user_id, profile, today)
+
+        ts = ThematicDaySet(
+            user_id=user_id,
+            target_date=today,
+            subject=today_subject,
+            class_level=class_level,
+            status="ready",
+            triggered_by="manual",
+            generated_at=datetime.utcnow(),
+            started_at=datetime.utcnow(),
+            finished_at=datetime.utcnow(),
+            progress_pct=100,
+            current_step="completed",
+            tasks_json=json.dumps(selected_tasks, ensure_ascii=False, default=str),
+        )
+        db.session.add(ts)
+        db.session.commit()
+
+        logger.info(
+            "ThematicSet #%s для user=%d: %d задач из пула #%d (subject=%s)",
+            ts.id, user_id, len(selected_tasks), pool.id, today_subject,
+        )
+        return _serialize_thematic_set(ts)
+
+    # ── Cache MISS: создаём пул и запускаем предгенерацию ────────────
+    # Создаём TaskPool в статусе generating
+    pool = TaskPool(
+        cache_key=cache_key,
+        subject=today_subject,
+        grade=class_level,
+        profile_snapshot=json.dumps(profile, ensure_ascii=False, default=str)[:2000],
+        tasks="[]",
+        specs="[]",
+        status="generating",
+        valid_count=0,
+        expires_at=datetime.utcnow() + timedelta(hours=1),
+    )
+    db.session.add(pool)
+    db.session.flush()
+    pool_id = pool.id
+
+    # Создаём ThematicDaySet в generating
+    ts = ThematicDaySet(
+        user_id=user_id,
+        target_date=today,
+        subject=today_subject,
+        class_level=class_level,
+        status="generating",
+        triggered_by="manual",
+        started_at=datetime.utcnow(),
+        progress_pct=5,
+        current_step="generating_pool",
+    )
+    db.session.add(ts)
+    db.session.commit()
+
+    # Запускаем фоновое заполнение пула
+    app = current_app._get_current_object()
+    thread = threading.Thread(
+        target=_run_and_fill_pool,
+        args=(app, pool_id, profile),
+        daemon=True,
+    )
+    thread.start()
+
+    logger.info(
+        "ThematicSet #%s для user=%d: пул #%s создан, фоновая генерация запущена",
+        ts.id, user_id, pool_id,
+    )
+
+    return _serialize_thematic_set(ts)
+
+
+def get_thematic_set(user_id: int) -> Dict[str, Any]:
+    """Получить сегодняшний тематический день для пользователя.
+
+    Перед возвратом чистит зависшие сеты (lazy zombie-cleanup).
+
+    Возвращает
+    ----------
+    dict
+        ``status`` — статус сета (или ``'no_set'`` если сета нет)
+        ``thematic_set_id`` — ID сета
+        ``subject`` — предмет
+        ``target_date`` — дата
+        ``tasks`` — список задач (если ready)
+        ``progress`` — информация о прогрессе
+    """
+    _reap_stale_thematic_sets(user_id=user_id)
+
+    today = today_in_user_tz()
+    thematic_set = ThematicDaySet.query.filter_by(
+        user_id=user_id,
+        target_date=today,
+    ).first()
+
+    if not thematic_set:
+        return {"status": "no_set", "thematic_set_id": None}
+
+    return _serialize_thematic_set(thematic_set)
+
+
+# ── helpers ────────────────────────────────────────────────────────────
+
+
+def _serialize_thematic_set(thematic_set: ThematicDaySet) -> Dict[str, Any]:
+    """Сериализовать ThematicDaySet в dict для API."""
+    elapsed_seconds = None
+    if thematic_set.started_at:
+        elapsed_seconds = max(
+            0, int((datetime.utcnow() - thematic_set.started_at).total_seconds())
+        )
+
+    tasks = _parse_json_field(thematic_set.tasks_json, [])
+
+    return {
+        "thematic_set_id": thematic_set.id,
+        "status": thematic_set.status,
+        "subject": thematic_set.subject,
+        "class_level": thematic_set.class_level,
+        "target_date": thematic_set.target_date.isoformat(),
+        "generated_at": (
+            thematic_set.generated_at.isoformat() + "Z"
+            if thematic_set.generated_at else None
+        ),
+        "triggered_by": thematic_set.triggered_by,
+        "pipeline_log": _parse_json_field(thematic_set.pipeline_log),
+        "total_cost_usd": thematic_set.total_cost_usd,
+        "error_message": thematic_set.error_message,
+        "tasks": tasks,
+        "progress": {
+            "progress_pct": thematic_set.progress_pct,
+            "current_step": thematic_set.current_step,
+            "elapsed_seconds": elapsed_seconds,
+            "started_at": (
+                thematic_set.started_at.isoformat() + "Z"
+                if thematic_set.started_at else None
+            ),
+            "finished_at": (
+                thematic_set.finished_at.isoformat() + "Z"
+                if thematic_set.finished_at else None
+            ),
+        },
+    }
+
+
+def _reap_stale_thematic_sets(user_id: Optional[int] = None) -> int:
+    """Lazy-watchdog: помечает зависшие thematic_set'ы как failed.
+
+    ThematicSet со статусом ``generating``, у которого ``started_at``
+    старше ``STALE_THEMATIC_TIMEOUT``, считается зомби — поток генерации
+    мог умереть (OOM, рестарт worker'а, deploy). Помечаем как failed,
+    чтобы пользователь увидел кнопку повторной генерации.
+    """
+    query = ThematicDaySet.query.filter(
+        ThematicDaySet.status == "generating",
+        ThematicDaySet.started_at.isnot(None),
+        ThematicDaySet.started_at < (datetime.utcnow() - STALE_THEMATIC_TIMEOUT),
+    )
+    if user_id is not None:
+        query = query.filter(ThematicDaySet.user_id == user_id)
+
+    stale = query.all()
+    if not stale:
+        return 0
+
+    logger.warning(
+        "Найдено %d зависших thematic_set'ов (старше %s) — помечаем failed",
+        len(stale), STALE_THEMATIC_TIMEOUT,
+    )
+    for s in stale:
+        s.status = "failed"
+        s.error_message = (
+            "Генерация прервана (таймаут). Возможно, произошёл перезапуск сервера. "
+            "Нажмите «Обновить» чтобы попробовать снова."
+        )
+        s.finished_at = datetime.utcnow()
+    db.session.commit()
+    return len(stale)
+
+
+# ── helpers для обновления статуса (используются _run_and_fill_pool) ──
+
+
+def _update_thematic_progress(
+    thematic_set_id: int,
+    current_step: str,
+    progress_pct: int,
+) -> None:
+    """Обновить текущий шаг и прогресс ThematicDaySet."""
+    try:
+        ts = ThematicDaySet.query.get(thematic_set_id)
+        if ts:
+            ts.current_step = current_step
+            ts.progress_pct = progress_pct
+            db.session.commit()
+    except Exception as exc:
+        logger.warning(
+            "Не удалось обновить прогресс thematic_set #%s: %s",
+            thematic_set_id, exc,
+        )
+        db.session.rollback()
+
+
+def _complete_thematic_set(thematic_set_id: int) -> None:
+    """Отметить тематический сет как завершённый."""
+    try:
+        ts = ThematicDaySet.query.get(thematic_set_id)
+        if ts:
+            ts.status = "ready"
+            ts.generated_at = datetime.utcnow()
+            ts.finished_at = datetime.utcnow()
+            ts.progress_pct = 100
+            ts.current_step = "completed"
+            db.session.commit()
+            logger.info("ThematicDaySet #%s завершён", thematic_set_id)
+    except Exception as exc:
+        logger.exception(
+            "Не удалось завершить ThematicDaySet #%s: %s", thematic_set_id, exc,
+        )
+        db.session.rollback()
+
+
+def _fail_thematic_set(thematic_set_id: int, error_message: str) -> None:
+    """Отметить тематический сет как failed."""
+    try:
+        ts = ThematicDaySet.query.get(thematic_set_id)
+        if ts:
+            ts.status = "failed"
+            ts.error_message = error_message[:500]
+            ts.finished_at = datetime.utcnow()
+            db.session.commit()
+            logger.error("ThematicDaySet #%s failed: %s", thematic_set_id, error_message)
+    except Exception as exc:
+        logger.exception(
+            "Не удалось отметить ThematicDaySet #%s как failed: %s",
+            thematic_set_id, exc,
+        )
+        db.session.rollback()
