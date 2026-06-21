@@ -13,9 +13,8 @@ return;
 
 if (!data || data.length === 0) return;
 
-const values = data.map(d => Math.round(d.value * 100));
+const values = data.map(d => Math.round((d.value || 0) * 8));
 const names = data.map(d => d.name || '');
-
 // Wrap long topic labels into multiple lines so they are not clipped
 function wrapLabel(label, maxLen) {
 const words = String(label).split(' ');
@@ -35,10 +34,10 @@ return lines;
 const wrappedLabels = names.map(n => wrapLabel(n, 16));
 
 const pointColors = values.map(v => {
-if (v >= 60) return '#38ef7d';
-if (v >= 30) return '#fbbf24';
-if (v > 0) return '#f87171';
-return 'rgba(255,255,255,0.25)';
+    if (v >= 6) return '#38ef7d';
+    if (v >= 3) return '#fbbf24';
+    if (v > 0) return '#f87171';
+    return 'rgba(255,255,255,0.25)';
 });
 
 const pointRadius = values.map(v => v > 0 ? 6 : 4);
@@ -91,10 +90,10 @@ return `${v.toFixed(0)}%`;
 },
 scales: {
 r: {
-min: 0,
-max: 100,
+      min: 1,
+      max: 8,
 ticks: {
-stepSize: 20,
+        stepSize: 1,
 color: 'rgba(255,255,255,0.3)',
 backdropColor: 'transparent',
 font: { size: 10 }
@@ -110,8 +109,8 @@ lineWidth: 1,
 pointLabels: {
 color: (ctx) => {
 const v = values[ctx.index] || 0;
-if (v >= 60) return '#38ef7d';
-if (v >= 30) return '#fbbf24';
+          if (v >= 6) return '#38ef7d';
+          if (v >= 3) return '#fbbf24';
 if (v > 0) return '#f87171';
 return 'rgba(255,255,255,0.45)';
 },
