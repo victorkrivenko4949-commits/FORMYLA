@@ -199,7 +199,8 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
     Returns: dict with keys: statement, solution, answer, topic, difficulty, method, idea_summary
     Raises: ValueError if model returns reject or invalid JSON
     """
-    predicted = analysis.get("predicted_variant", [])     dominant_theme = analysis.get("dominant_theme")
+    predicted = analysis.get("predicted_variant", [])
+        dominant_theme = analysis.get("dominant_theme")
     if position > len(predicted):
         raise ValueError(f"Position {position} not in predicted_variant (len={len(predicted)})")
 
@@ -315,6 +316,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 В одном варианте из 5 задач КАЖДАЯ тема встречается РОВНО ОДИН РАЗ.
 Канонический набор тем варианта: алгебра, геометрия, теория чисел, комбинаторика, логика/игры/инварианты.
 Если выше в блоке "СТРОГО ЗАПРЕЩЕНО ГЕНЕРИРОВАТЬ ЗАДАЧУ ПО ТЕМАМ, УЖЕ ВЗЯТЫМ В ЭТОМ ВАРИАНТЕ" уже указана твоя целевая тема — СМЕНИ тему на одну из НЕвзятых из канонического списка, при этом сохрани сложность и стилистику позиции.
+{("ИСКЛЮЧЕНИЕ (тема дня): сегодня доминирующая тема варианта — '" + str(dominant_theme) + "'. Для этой темы правило 'ровно один раз' НЕ действует: тема дня МОЖЕТ и ДОЛЖНА встречаться несколько раз (ориентир 3-4 задачи из вашего блока по теме дня). Остальные позиции — другие темы из канонического списка для разнообразия.") if dominant_theme else ""}
 
 ═══════════════════════════════════════════════════
 ✏️ LaTeX (КРИТИЧНО — иначе KaTeX не отрендерит)
