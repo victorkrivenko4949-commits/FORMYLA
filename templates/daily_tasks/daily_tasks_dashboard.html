@@ -1379,7 +1379,126 @@
     bindNav();
     var now = new Date();
     loadCalendar(now.getFullYear(), now.getMonth() + 1);
+    renderTasks();
+    bindActionButtons();
   });
+  // ── Task cards rendering + answer modal (restored) ──────────────
+function escapeHtml(s){ s=(s==null?'':String(s)); return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function renderTasks(){
+var data=parseInitData(); if(!data) return;
+var grid=$('dt-task-grid'); if(!grid) return;
+var items=(data.items&&data.items.length)?data.items:[];
+if(!items.length){ return; }
+grid.innerHTML='';
+items.forEach(function(it){
+var card=document.createElement('div');
+card.className='dt-card'+(it.is_answered?(it.is_correct?' dt-done':' dt-flagged'):'');
+card.setAttribute('data-item-id', it.id);
+var statusHtml;
+if(it.is_answered && it.is_correct){ statusHtml='<div class="dt-card-status dt-correct">\u2713 \u0420\u0435\u0448\u0435\u043d\u043e</div>'; }
+else if(it.is_answered){ statusHtml='<div class="dt-card-status dt-incorrect">\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e</div>'; }
+else{ statusHtml='<div class="dt-card-status dt-pending">\u2014 \u041d\u0435 \u0440\u0435\u0448\u0435\u043d\u043e</div>'; }
+card.innerHTML='<div class="dt-card-number">'+escapeHtml(it.position||'')+'</div>'+
+'<div class="dt-card-header"><span class="dt-topic-badge">'+escapeHtml(it.topic||'')+'</span><span class="dt-difficulty">'+escapeHtml(it.difficulty_level||'')+'</span></div>'+
+'<div class="dt-card-preview">'+escapeHtml(it.preview||it.text||'')+'</div>'+statusHtml;
+card.addEventListener('click', function(){ openTask(it); });
+grid.appendChild(card);
+});
+}
+// ── Fraction / answer normalization (1/4 => 0.25) ─────────────
+function normalizeAnswer(raw){
+if(raw==null) return '';
+var s=String(raw).trim().replace(',', '.');
+var m=s.match(/^\s*(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)\s*$/);
+if(m){ var num=parseFloat(m[1]), den=parseFloat(m[2]); if(den!==0&&isFinite(num)&&isFinite(den)){ var v=num/den; return String(Math.round(v*1e9)/1e9); } }
+return s;
+}
+// ── Answer modal ────────────────────────────────────────────
+var dtModalEl=null; var dtOpenStart=0;
+function ensureModal(){
+if(dtModalEl) return dtModalEl;
+var ov=document.createElement('div'); ov.className='dt-modal'; ov.id='dt-modal';
+ov.style.cssText='position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,0.7);overflow-y:auto;padding:40px 16px;';
+ov.innerHTML='<div class="dt-modal-box" style="background:#10151f;border:1px solid rgba(255,255,255,0.1);border-radius:16px;max-width:680px;width:100%;padding:24px 26px;color:rgba(255,255,255,0.9);position:relative;">'+
+'<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>'+
+'<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:rgba(56,239,125,0.7);margin-bottom:10px;"></div>'+
+'<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>'+
+'<input type="text" id="dt-answer-input" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-size:16px;margin-bottom:14px;">'+
+'<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button><button id="dt-hint-btn" class="dt-btn-secondary">\ud83d\udca1 \u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430</button></div>'+
+'<div id="dt-modal-result" style="margin-top:16px;"></div>'+
+'</div>';
+document.body.appendChild(ov);
+ov.addEventListener('click', function(e){ if(e.target===ov) closeModal(); });
+ov.querySelector('#dt-modal-close').addEventListener('click', closeModal);
+dtModalEl=ov; return ov;
+}
+function closeModal(){ if(dtModalEl) dtModalEl.style.display='none'; }
+var dtCurrentItem=null;
+function openTask(it){
+ensureModal();
+dtCurrentItem=it; dtOpenStart=Date.now();
+$('dt-modal-title').textContent=(it.topic||'')+(it.difficulty_level?(' \u00b7 '+it.difficulty_level):'');
+$('dt-modal-statement').textContent=(it.text||it.preview||'');
+var inp=$('dt-answer-input'); inp.value=(it.user_answer||'');
+var res=$('dt-modal-result'); res.innerHTML='';
+if(it.is_answered){ res.innerHTML='<div style="color:'+(it.is_correct?'#38ef7d':'#ff6b6b')+';">'+(it.is_correct?'\u2713 \u0420\u0430\u043d\u0435\u0435 \u0440\u0435\u0448\u0435\u043d\u043e \u0432\u0435\u0440\u043d\u043e':'\u2717 \u0420\u0430\u043d\u0435\u0435 \u043e\u0442\u0432\u0435\u0447\u0435\u043d\u043e \u043d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>'; }
+$('dt-submit-btn').onclick=submitAnswer;
+$('dt-hint-btn').onclick=loadHint;
+inp.onkeydown=function(e){ if(e.key==='Enter') submitAnswer(); };
+dtModalEl.style.display='flex';
+inp.focus();
+}
+function submitAnswer(){
+if(!dtCurrentItem) return;
+var inp=$('dt-answer-input'); var res=$('dt-modal-result'); var btn=$('dt-submit-btn');
+var raw=inp.value.trim(); if(!raw){ inp.focus(); return; }
+var normalized=normalizeAnswer(raw);
+btn.disabled=true; var oldTxt=btn.textContent; btn.textContent='\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u044e\u2026';
+res.innerHTML='<div style="color:rgba(255,255,255,0.6);">\ud83d\udd0d DeepSeek \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u0442 \u043e\u0442\u0432\u0435\u0442\u2026</div>';
+var secs=Math.max(0, Math.round((Date.now()-dtOpenStart)/1000));
+fetch('/daily_tasks/'+dtCurrentItem.id+'/submit', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({ answer: raw, normalized_answer: normalized, time_spent_seconds: secs }) })
+.then(function(r){ return r.json(); })
+.then(function(p){
+btn.disabled=false; btn.textContent=oldTxt;
+if(!p){ res.innerHTML='<div style="color:#ff6b6b;">\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438</div>'; return; }
+var ok=p.is_correct===true;
+var html='<div style="color:'+(ok?'#38ef7d':'#ff6b6b')+';font-weight:600;margin-bottom:8px;">'+(ok?'\u2713 \u0412\u0435\u0440\u043d\u043e!':'\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>';
+if(!ok && p.correct_answer!=null){ html+='<div style="margin-bottom:6px;">\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442: <b>'+escapeHtml(p.correct_answer)+'</b></div>'; }
+if(p.explanation){ html+='<div style="color:rgba(255,255,255,0.75);line-height:1.5;margin-top:6px;">'+escapeHtml(p.explanation)+'</div>'; }
+if(p.solution){ html+='<div style="color:rgba(255,255,255,0.6);line-height:1.5;margin-top:8px;white-space:pre-wrap;">'+escapeHtml(p.solution)+'</div>'; }
+res.innerHTML=html;
+dtCurrentItem.is_answered=true; dtCurrentItem.is_correct=ok; dtCurrentItem.user_answer=raw;
+renderTasks();
+if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); }
+})
+.catch(function(err){ btn.disabled=false; btn.textContent=oldTxt; res.innerHTML='<div style="color:#ff6b6b;">\u0421\u0435\u0442\u0435\u0432\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430</div>'; console.warn('[dt-submit]',err); });
+}
+function loadHint(){
+if(!dtCurrentItem) return;
+var res=$('dt-modal-result');
+fetch('/daily_tasks/'+dtCurrentItem.id+'/hint', { credentials:'same-origin', headers:{'Accept':'application/json'} })
+.then(function(r){ return r.json(); })
+.then(function(p){ if(p&&p.hint){ res.innerHTML='<div style="color:#ffba49;line-height:1.5;">\ud83d\udca1 '+escapeHtml(p.hint)+'</div>'; } else { res.innerHTML='<div style="color:rgba(255,255,255,0.5);">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043e\u043a \u043d\u0435\u0442</div>'; } })
+.catch(function(err){ console.warn('[dt-hint]',err); });
+}
+function bindActionButtons(){
+var gen=document.querySelector('.dt-btn-primary');
+var buttons=document.querySelectorAll('.dt-btn-primary, .dt-btn-secondary');
+buttons.forEach(function(b){
+var t=(b.textContent||'').toLowerCase();
+if(t.indexOf('\u0441\u0433\u0435\u043d\u0435\u0440')>=0 || t.indexOf('\u043f\u0435\u0440\u0435\u0433\u0435\u043d')>=0 || t.indexOf('\u043f\u043e\u043f\u0440\u043e\u0431')>=0){
+b.addEventListener('click', triggerGenerate);
+}
+});
+}
+function triggerGenerate(){
+var topicEl=$('dt-topic-input'); var topic=topicEl?topicEl.value.trim():'';
+fetch('/daily_tasks/regenerate', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({ topic: topic }) })
+.then(function(r){ return r.json().catch(function(){ return {}; }); })
+.then(function(){ setTimeout(function(){ window.location.reload(); }, 1500); })
+.catch(function(err){ console.warn('[dt-gen]',err); });
+}
+
 })();
 </script>
 {% endblock %}

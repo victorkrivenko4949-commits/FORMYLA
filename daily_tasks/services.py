@@ -689,6 +689,7 @@ def compute_cache_key(profile: Dict[str, Any]) -> str:
             for t in (profile.get("calibration_topics") or [])
             if isinstance(t, str) and t.strip()
         ),
+        "day_index": (date.today() - date(2026, 1, 1)).days,
         "completeness_q": completeness_q,
     }
     canonical = json.dumps(key_data, sort_keys=True, ensure_ascii=False)
