@@ -199,7 +199,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
     Returns: dict with keys: statement, solution, answer, topic, difficulty, method, idea_summary
     Raises: ValueError if model returns reject or invalid JSON
     """
-    predicted = analysis.get("predicted_variant", [])
+    predicted = analysis.get("predicted_variant", [])     dominant_theme = analysis.get("dominant_theme")
     if position > len(predicted):
         raise ValueError(f"Position {position} not in predicted_variant (len={len(predicted)})")
 
@@ -418,7 +418,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 
     openrouter.log_cost_to_db('generate', model_used, result['usage'], result['cost_usd'])
     # v2.3: programmatic post-parse validation (raises ValueError -> retry-guard)
-    validate_generated_problem(data, existing_in_variant or [], current_year)
+    validate_generated_problem(data, existing_in_variant or [], current_year, dominant_theme)
     logger.info(
         f"[Generator] pos={position} topic={data.get('topic','')} "
         f"model={model_used} ${result['cost_usd']:.4f}"
