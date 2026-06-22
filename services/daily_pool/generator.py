@@ -143,7 +143,7 @@ def validate_generated_problem(problem: dict, existing_in_variant: list,
     # B) topic duplicate (normalized)
     if existing_in_variant:
         norm_topic = _normalize_topic(topic)
-        if norm_topic:
+        if norm_topic and _normalize_topic(topic) != (_normalize_topic(dominant_theme) if dominant_theme else None):
             for ex in existing_in_variant:
                 if _normalize_topic(ex.get("topic", "")) == norm_topic:
                     raise ValueError(f"topic_duplicate: '{topic}' (normalized '{norm_topic}') already used")
