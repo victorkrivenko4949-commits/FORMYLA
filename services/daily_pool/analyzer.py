@@ -6,7 +6,6 @@ Cached in olympiad_analysis table for 30 days.
 import json
 import logging
 from datetime import datetime, timedelta, timezone
-
 from models import db
 from services.openrouter_client import openrouter
 
@@ -123,8 +122,7 @@ def _run_analysis(olympiad_slug: str, grade: int, round_key: str) -> dict:
         db.session.execute(
             db.text("""
                 UPDATE olympiad_analysis
-                SET analysis_json=:json, model_used=:model, tokens_used=:tokens,
-                    cost_usd=:cost, expires_at=:exp
+                SET analysis_json=:json, model_used=:model, tokens_used=:tokens, cost_usd=:cost, expires_at=:exp
                 WHERE id=:id
             """),
             {
@@ -138,7 +136,7 @@ def _run_analysis(olympiad_slug: str, grade: int, round_key: str) -> dict:
         db.session.execute(
             db.text("""
                 INSERT INTO olympiad_analysis
-                    (olympiad_slug, grade, round, analysis_json, model_used, tokens_used, cost_usd, expires_at)
+                (olympiad_slug, grade, round, analysis_json, model_used, tokens_used, cost_usd, expires_at)
                 VALUES (:slug, :grade, :round, :json, :model, :tokens, :cost, :exp)
             """),
             {
@@ -153,20 +151,25 @@ def _run_analysis(olympiad_slug: str, grade: int, round_key: str) -> dict:
 
     # Log cost
     openrouter.log_cost_to_db('analyze', MODEL, result['usage'], result['cost_usd'])
-
     logger.info(f"[Analyzer] Done: {olympiad_slug}/{grade}/{round_key} "
                 f"({len(rows)} problems, ${result['cost_usd']:.4f})")
+
     return analysis
 
 
 def _build_prompt(title, grade, round_key, count, tasks_block):
     """Build the analyzer prompt from template."""
     ROUND_NAMES = {
-        'school': 'Школьный этап', 'municipal': 'Муниципальный этап',
-        'regional': 'Региональный этап', 'final': 'Заключительный этап',
-        'selection': 'Отборочный этап', 'distance': 'Дистанционный этап',
-        'spring_basic': 'Весенний тур (базовый)', 'spring_hard': 'Весенний тур (сложный)',
-        'autumn_basic': 'Осенний тур (базовый)', 'autumn_hard': 'Осенний тур (сложный)',
+        'school': 'Школьный этап',
+        'municipal': 'Муниципальный этап',
+        'regional': 'Региональный этап',
+        'final': 'Заключительный этап',
+        'selection': 'Отборочный этап',
+        'distance': 'Дистанционный этап',
+        'spring_basic': 'Весенний тур (базовый)',
+        'spring_hard': 'Весенний тур (сложный)',
+        'autumn_basic': 'Осенний тур (базовый)',
+        'autumn_hard': 'Осенний тур (сложный)',
     }
     round_title = ROUND_NAMES.get(round_key, round_key)
 
@@ -178,9 +181,7 @@ def _build_prompt(title, grade, round_key, count, tasks_block):
 {'='*55}
 АРХИВ ЗАДАЧ (все доступные за разные годы):
 {'='*55}
-
 {tasks_block}
-
 {'='*55}
 ЗАДАНИЕ: Проанализируй архив и верни JSON-профиль.
 {'='*55}
@@ -196,69 +197,99 @@ def _build_prompt(title, grade, round_key, count, tasks_block):
 
 Верни ТОЛЬКО валидный JSON (без markdown-обёртки) со структурой:
 {{
-  "olympiad": "{title}",
-  "grade": {grade},
-  "round": "{round_key}",
-  "total_problems_analyzed": {count},
-  "themes_distribution": {{"алгебра": 0.25, "геометрия": 0.20, ...}},
-  "position_profiles": [
-    {{"position": 1, "typical_themes": ["..."], "difficulty": N, "answer_type": "...", "typical_methods": ["..."], "avg_solution_length": "..."}}
-  ],
-  "style_notes": {{"formality": "...", "language_features": ["..."], "unique_traits": ["..."]}},
-  "forbidden_topics": ["..."],
-  "predicted_variant": [
-    {{"position": 1, "theme": "алгебра", "subtopic": "...", "idea": "...", "difficulty": N, "answer_type": "number|formula|set", "expected_techniques": ["..."]}}
-  ]
+    "olympiad": "{title}",
+    "grade": {grade},
+    "round": "{round_key}",
+    "total_problems_analyzed": {count},
+    "themes_distribution": {{"алгебра": 0.25, "геометрия": 0.20, ...}},
+    "position_profiles": [
+        {{"position": 1, "typical_themes": ["..."], "difficulty": N, "answer_type": "...", "typical_methods": ["..."], "avg_solution_length": "..."}}
+    ],
+    "style_notes": {{"formality": "...", "language_features": ["..."], "unique_traits": ["..."]}},
+    "forbidden_topics": ["..."],
+    "predicted_variant": [
+        {{"position": 1, "theme": "алгебра", "subtopic": "...", "idea": "...", "difficulty": N, "answer_type": "number|formula|set", "expected_techniques": ["..."]}}
+    ]
 }}
 
 ⛔ ЖЁСТКИЕ ПРАВИЛА для predicted_variant:
 1. answer_type ОБЯЗАН быть один из: "number", "formula", "set" (множество значений / пары / список).
    ЗАПРЕЩЕНО: "proof", "proof_or_*", "*_or_proof", "construction", "find_all" (только если ответ — конкретное множество).
    Даже если в архиве задачи требуют доказательства — в predicted_variant давай только числовые/формульные ответы.
-2. ВСЕ темы в predicted_variant должны быть РАЗНЫМИ (5 уникальных тем для 5 позиций, 10 уникальных для 10).
-   Не ставь две позиции "геометрия" подряд. Распределяй: алгебра, геометрия, комбинаторика, теория чисел, логика/игры/инварианты.
+2. РАСПРЕДЕЛЕНИЕ ТЕМ определяется ТЕМОЙ ДНЯ (см. _HARDCODED_TEMPLATES). Для дня с доминирующей темой (например, теория чисел) большинство задач должны быть по этой теме с РАЗНЫМИ подтемами; остальные 1-2 позиции — для разнообразия.
 3. Если архив содержит мало числовых задач — придумай аналогичные числовые формулировки для тех же тем.
 """
 
 
-# v2.3: hardcoded predicted_variant templates for combos where we want
-# guaranteed topic diversity. Each theme is canonical; idea is a hint
-# that the generator may rephrase.
+# v2.4: hardcoded predicted_variant templates for combos where we want
+# a guaranteed THEME-OF-THE-DAY focus. Today (Day 1) is Theory of Numbers:
+# the variant is dominated by number theory (3 of 5 positions) with distinct
+# subtopics, plus geometry and logic/games for a touch of variety.
+# Each theme is canonical; idea is a hint that the generator may rephrase.
+# DOMINANT_THEME marks the canonical theme that is allowed to repeat.
+DOMINANT_THEME = {
+    ("vsosh", 9, "regional"): "теория чисел",
+}
+
 _HARDCODED_TEMPLATES = {
     ("vsosh", 9, "regional"): [
-        {"position": 1, "theme": "алгебра",        "subtopic": "уравнения/неравенства",     "idea": "Нетривиальная замена / параметр / функциональное уравнение", "difficulty": 6, "answer_type": "number", "expected_techniques": ["замена переменной", "оценка"]},
-        {"position": 2, "theme": "геометрия",      "subtopic": "планиметрия",               "idea": "Свойства окружностей / биссектрис / подобия / гомотетии",     "difficulty": 7, "answer_type": "number", "expected_techniques": ["вписанная окружность", "степень точки"]},
-        {"position": 3, "theme": "теория чисел",   "subtopic": "делимость/сравнения",        "idea": "Сравнения по модулю / квадратичные вычеты / порядок элемента", "difficulty": 7, "answer_type": "number", "expected_techniques": ["сравнения", "теорема Эйлера"]},
-        {"position": 4, "theme": "комбинаторика", "subtopic": "подсчёт/двойной подсчёт",    "idea": "Биекция / двойной подсчёт / включение-исключение",            "difficulty": 8, "answer_type": "formula", "expected_techniques": ["биекция", "оценка снизу+конструкция"]},
-        {"position": 5, "theme": "логика/игры/инварианты", "subtopic": "инвариант/полуинвариант", "idea": "Инвариант, экстремальный принцип или стратегия в игре", "difficulty": 8, "answer_type": "number", "expected_techniques": ["инвариант", "крайний случай"]},
+        {"position": 1, "theme": "теория чисел", "subtopic": "делимость/сравнения",
+         "idea": "Сравнения по модулю / признаки делимости / АОКиРуффини",
+         "difficulty": 6, "answer_type": "number",
+         "expected_techniques": ["сравнения", "разложение на множители"]},
+        {"position": 2, "theme": "теория чисел", "subtopic": "диофантовы уравнения",
+         "idea": "Решение уравнений в целых числах / оценка + перебор остатков",
+         "difficulty": 7, "answer_type": "set",
+         "expected_techniques": ["оценка", "остатки по модулю"]},
+        {"position": 3, "theme": "геометрия", "subtopic": "планиметрия",
+         "idea": "Свойства окружностей / биссектрис / подобия",
+         "difficulty": 7, "answer_type": "number",
+         "expected_techniques": ["вписанная окружность", "степень точки"]},
+        {"position": 4, "theme": "теория чисел", "subtopic": "простые числа/порядок элемента",
+         "idea": "Квадратичные вычеты / порядок элемента / теорема Эйлера",
+         "difficulty": 8, "answer_type": "number",
+         "expected_techniques": ["теорема Эйлера", "порядок элемента"]},
+        {"position": 5, "theme": "логика/игры/инварианты", "subtopic": "инвариант/полуинвариант",
+         "idea": "Инвариант, экстремальный принцип или стратегия в игре (с теоретико-числовым сюжетом)",
+         "difficulty": 8, "answer_type": "number",
+         "expected_techniques": ["инвариант", "крайний случай"]},
     ],
 }
 
 
 def _enforce_predicted_variant_template(analysis: dict, slug: str, grade, round_key: str) -> dict:
-    """Override predicted_variant with a hardcoded 5-unique-themes template
-    for combos in _HARDCODED_TEMPLATES; otherwise return analysis unchanged."""
+    """Override predicted_variant with a hardcoded theme-of-the-day template
+    for combos in _HARDCODED_TEMPLATES; otherwise return analysis unchanged.
+
+    v2.4: the template may intentionally repeat a DOMINANT_THEME (e.g. number
+    theory) across several positions. We expose the dominant theme on the
+    analysis dict so the generator can relax its topic-duplicate guard.
+    """
     key = (slug, int(grade), round_key)
     template = _HARDCODED_TEMPLATES.get(key)
     if not template:
         return analysis
 
     original = analysis.get("predicted_variant") or []
-    # Detect topic duplicates in the original to log why we override
     themes = [(p.get("theme") or "").strip().lower() for p in original]
-    has_dup = len(themes) != len(set(themes)) or len(themes) < 5
-    if has_dup:
-        logger.warning(
-            f"[Analyzer] {slug}/{grade}/{round_key}: model gave themes={themes}, "
-            f"overriding with v2.3 hardcoded 5-unique-theme template"
-        )
-    else:
-        logger.info(f"[Analyzer] {slug}/{grade}/{round_key}: applying v2.3 template (forced)")
+    logger.info(
+        f"[Analyzer] {slug}/{grade}/{round_key}: applying v2.4 theme-of-the-day "
+        f"template (was themes={themes})"
+    )
+
     analysis["predicted_variant"] = list(template)
-    # Also wipe forbidden_topics that might collide with our 5 canonical themes
+
+    # v2.4: tell downstream (generator) which theme is allowed to repeat today.
+    dominant = DOMINANT_THEME.get(key)
+    if dominant:
+        analysis["dominant_theme"] = dominant
+
+    # Wipe forbidden_topics that might collide with our canonical themes
     forbidden = analysis.get("forbidden_topics") or []
-    canonical = {"алгебра", "геометрия", "теория чисел", "комбинаторика", "логика", "игры", "инварианты", "логика/игры/инварианты"}
+    canonical = {"алгебра", "геометрия", "теория чисел", "комбинаторика",
+                 "логика", "игры", "инварианты", "логика/игры/инварианты"}
     cleaned = [t for t in forbidden if (t or "").strip().lower() not in canonical]
     if len(cleaned) != len(forbidden):
         analysis["forbidden_topics"] = cleaned
+
     return analysis
