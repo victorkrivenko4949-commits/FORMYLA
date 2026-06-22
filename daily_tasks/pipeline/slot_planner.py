@@ -2,23 +2,27 @@
 """
 daily_tasks/pipeline/slot_planner.py - deterministic 10-slot planner.
 
-THEMATIC DAY MODE (2026-06-22):
-  Each day ALL 10 tasks belong to ONE random topic. A new random topic is
-  chosen every day (random.choice over the full topic catalog of the user).
-  Difficulty per slot is still picked inside that topic's level window and
-  spread out via _enforce_spread, so the 10 tasks share one topic but vary
-  in difficulty.
+THEMATIC DAY MODE (DETERMINISTIC CALENDAR, 2026-06-22):
+    Each day ALL 10 tasks belong to ONE topic. The topic of the day is
+    chosen by a DETERMINISTIC CALENDAR (no randomness): the full topic
+    catalog of the user is sorted stably, and the day index
+    (today - ANCHOR_DATE) % len(topics) selects exactly one topic. Thus
+    every topic appears exactly once per cycle (cycle length == number of
+    topics), and when the cycle restarts the topics repeat in the same
+    order. The same calendar date always maps to the same topic.
+    Difficulty per slot is still picked inside that topic's level window and
+    spread out via _enforce_spread, so the 10 tasks share one topic but vary
+    in difficulty.
 
 The LLM (Step 1) only fills in topic content (archetype, must_use_concepts,
 reason_for_student, ...) for spec objects whose topic + difficulty_level
 are already locked in by us.
 """
-
 from __future__ import annotations
 
 import logging
-import random
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
 from itertools import zip_longest
 
@@ -27,6 +31,11 @@ logger = logging.getLogger(__name__)
 TOTAL_SLOTS = 10
 MIN_LEVEL = 1
 MAX_LEVEL = 8
+
+# Anchor date for the deterministic topic calendar. Day index is computed as
+# (today - ANCHOR_DATE).days, so this fixes the phase of the cycle. Do not
+# change after launch unless you intend to shift everyone's calendar.
+ANCHOR_DATE = date(2026, 1, 1)
 
 
 @dataclass
@@ -122,7 +131,6 @@ def _pick_difficulty_for_topic(
     target = _clamp(topic.get("target_level") or lo, lo, hi)
     width = hi - lo + 1
     n = max(1, total_slots_for_topic)
-
     measured = bool(topic.get("measured", False))
     is_calibration = bool(topic.get("calibration")) or not measured
     if is_calibration:
@@ -133,7 +141,6 @@ def _pick_difficulty_for_topic(
             level = int(round(lo + slot_index_in_topic * step))
             return _clamp(level, lo, hi)
         return target
-
     pct = float(topic.get("pct") or 0)
     is_strong = target >= 6 or pct >= 75
     is_weak = target <= 3
@@ -152,28 +159,76 @@ def _pick_difficulty_for_topic(
     return _clamp(lo + (slot_index_in_topic % width), lo, hi)
 
 
+def _topic_sort_key(topic: Dict[str, Any]) -> str:
+    """Stable, deterministic sort key for a topic dict.
+
+    Order priority: topic_key -> db_topic -> topic. Falling back through
+    these keeps the cycle order stable even if some fields are missing,
+    so the same catalog always yields the same calendar order.
+    """
+    return str(
+        topic.get("topic_key")
+        or topic.get("db_topic")
+        or topic.get("topic")
+        or ""
+    )
+
+
+def _day_index(today: date, cycle_len: int) -> int:
+    """Deterministic day index into the topic cycle.
+
+    Uses a fixed ANCHOR_DATE so a given calendar date always maps to the
+    same position in the cycle. cycle_len == number of topics, therefore
+    each topic is visited exactly once per cycle and the cycle repeats in
+    the same order on the next pass.
+    """
+    if cycle_len <= 0:
+        return 0
+    return (today - ANCHOR_DATE).days % cycle_len
+
+
+def _pick_day_topic(
+    all_topics: List[Dict[str, Any]],
+    today: Optional[date] = None,
+) -> Tuple[Dict[str, Any], int, int]:
+    """Pick the topic of the day via the DETERMINISTIC CALENDAR.
+
+    Returns (day_topic, day_index, cycle_len). No randomness: topics are
+    sorted stably and indexed by the calendar day, so every topic shows up
+    exactly once per full cycle before any repeats.
+    """
+    today = today or date.today()
+    topics_sorted = sorted(all_topics, key=_topic_sort_key)
+    cycle_len = len(topics_sorted)
+    idx = _day_index(today, cycle_len)
+    return topics_sorted[idx], idx, cycle_len
+
+
 def plan_slots(
     profile: Dict[str, Any],
     total_slots: int = TOTAL_SLOTS,
+    today: Optional[date] = None,
 ) -> List[PlannedSlot]:
     """Build the deterministic list of 10 PlannedSlot objects.
 
-    THEMATIC DAY: all slots belong to ONE random topic from the user's
-    full topic catalog (profile['topics_full']). A new topic is chosen
-    every call via random.choice.
+    THEMATIC DAY (DETERMINISTIC CALENDAR): all slots belong to ONE topic
+    from the user's full topic catalog (profile['topics_full']). The topic
+    is chosen by a fixed calendar (see _pick_day_topic), NOT randomly, so
+    every topic is used exactly once per cycle and cycles repeat in the
+    same order. ``today`` may be passed for testing / backfill; defaults to
+    date.today().
     """
     all_topics = list(profile.get("topics_full") or [])
     if not all_topics:
         logger.warning("plan_slots: empty topics_full, cannot build thematic day")
         return []
-
-    day_topic = random.choice(all_topics)
+    day_topic, day_index, cycle_len = _pick_day_topic(all_topics, today)
     logger.info(
-        "plan_slots THEMATIC DAY: topic=%s subject=%s measured=%s",
+        "plan_slots THEMATIC DAY (calendar): topic=%s subject=%s measured=%s "
+        "day_index=%d/%d cycle_len=%d",
         day_topic.get("topic"), day_topic.get("subject"),
-        day_topic.get("measured"),
+        day_topic.get("measured"), day_index, cycle_len, cycle_len,
     )
-
     slots: List[PlannedSlot] = []
     for k in range(total_slots):
         difficulty = _pick_difficulty_for_topic(day_topic, k, total_slots)
@@ -204,7 +259,6 @@ def plan_slots(
             subtopic_hints=list(day_topic.get("subtopic_hints") or []),
             reason_hint="; ".join(reason_bits),
         ))
-
     slots = slots[:total_slots]
     _enforce_spread(slots, max_same_level=2)
     _assign_diverse_themes(slots)
