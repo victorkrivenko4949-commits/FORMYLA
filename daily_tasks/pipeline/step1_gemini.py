@@ -183,6 +183,7 @@ def _format_prompt(
         profile_completeness=f"{completeness:.2f}",
         SLOT_PLAN=slot_plan_json,
         TOPIC_WINDOW_SUMMARY=topic_window_summary,
+        RECENT_TASKS_FOR_TOPIC=profile.get("recent_tasks_for_topic") or "(нет данных о ранее выданных задачах)",
     )
 
 
