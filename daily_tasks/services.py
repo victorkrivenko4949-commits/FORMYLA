@@ -717,7 +717,7 @@ def _select_best_task_indices(
         Сдвиг для ротации (``pool.used_count`` или ``hash(user_id)``).
     """
     clean = [i for i, t in enumerate(tasks) if not t.get("is_flagged") and (t.get("task_text") or "").strip() and not t.get("_generation_failed")]
-        flagged = [i for i, t in enumerate(tasks) if t.get("is_flagged") and (t.get("task_text") or "").strip() and not t.get("_generation_failed")]
+    flagged = [i for i, t in enumerate(tasks) if t.get("is_flagged") and (t.get("task_text") or "").strip() and not t.get("_generation_failed")]
     ordered = clean + flagged
 
     if len(ordered) > n and rotation:
