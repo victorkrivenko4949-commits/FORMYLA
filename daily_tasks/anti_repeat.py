@@ -131,3 +131,23 @@ def check_repeats_against_history(
     if dups:
         logger.info("anti_repeat: %d task(s) repeat history, flagging: %s", len(dups), dups)
     return dups
+
+
+
+def history_fingerprint(user_id: int) -> str:
+  """Short hash of the user's recent statement hashes.
+
+  Changes whenever the student receives new tasks, so it can be folded
+  into the TaskPool cache key to force a fresh pool on each topic cycle.
+  """
+  history = get_recent_tasks_history(user_id)
+  hashes: List[str] = []
+  for entries in (history or {}).values():
+    for e in entries:
+      h = e.get("stmt_hash")
+      if h:
+        hashes.append(h)
+  if not hashes:
+    return ""
+  blob = "|".join(sorted(hashes))
+  return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
