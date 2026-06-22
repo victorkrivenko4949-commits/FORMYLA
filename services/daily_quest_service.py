@@ -8,7 +8,7 @@ import json
 import random
 from typing import List, Dict, Optional
 from datetime import datetime, date, timedelta
-from models import db, DailyQuest, User, TopicMastery
+from models import db, DailyQuest, User, TopicMastery, AdaptiveTestResult
 from services.mastery_service import (
     calculate_topic_mastery,
     get_weak_topics,
