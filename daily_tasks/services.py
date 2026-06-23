@@ -297,6 +297,21 @@ def enqueue_daily_generation(
             TaskPool.status.in_(["ready", "partial"]),
             (TaskPool.expires_at.is_(None)) | (TaskPool.expires_at > now),
         ).order_by(TaskPool.created_at.desc()).first()
+        # --- Relaxed fallback: любой ready пул того же grade+subject (экономия OpenRouter) ---
+        if not pool:
+            try:
+                _grade = profile.get('class_level') or 0
+                _subject = _extract_subject_from_profile(profile)
+                pool = TaskPool.query.filter(
+                    TaskPool.grade == _grade,
+                    TaskPool.subject == _subject,
+                    TaskPool.status.in_(['ready', 'partial']),
+                    (TaskPool.expires_at.is_(None)) | (TaskPool.expires_at > now),
+                ).order_by(TaskPool.created_at.desc()).first()
+                if pool:
+                    logger.info('Relaxed pool HIT grade=%s subject=%s pool=#%s', _grade, _subject, pool.id)
+            except Exception:
+                logger.exception('Relaxed pool fallback failed')                
 
         if pool:
             # ── Cache HIT ─────────────────────────────────────────────
