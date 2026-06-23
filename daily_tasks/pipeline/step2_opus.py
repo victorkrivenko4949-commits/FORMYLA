@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Step 2 пайплайна «Задачи дня» — Gemini 3.1 Pro (параллельный генератор задач).
+Step 2 pipeline 'Daily tasks' - parallel task generator.
 
-Принимает 10 спецификаций от Step 1, для КАЖДОЙ независимо вызывает LLM
-в 5 параллельных потоках через ``asyncio.Semaphore(5)``. Каждый воркер
-обрабатывает свою спеку независимо: упавший воркер не валит остальных,
-а возвращает «синтетическую» заглушку с правильной position — на Step 3
-её пометят ``needs_fix``, на Step 4 — попытаются восстановить.
+Prinimaet 10 specifikacij ot Step 1, dlya KAZHDOJ nezavisimo vyzyvaet LLM
+cherez asyncio.Semaphore. Kazhdyj vorker obrabatyvaet svoyu speku nezavisimo:
+upavshij vorker ne valit ostalnyh, a vozvrashchaet sintetic zaglushku s
+pravilnoj position - na Step 3 ee pometyat needs_fix, na Step 4 vosstanovyat.
 
-Зачем переехали с Opus 4.8 на Gemini 3.1 Pro:
-* Раньше один batch-запрос на 10 задач шёл ~120-180 сек и иногда обрывался
-  по 90s-таймауту, обнуляя ВСЕ 10 позиций.
-* Параллельный режим 5×2 даёт ~25-40 сек wall-time и устойчивость к
-  частичным сбоям (упавшие позиции лечит Step 4).
-* Gemini 3.1 Pro быстрее Opus в 3-4 раза и в проде уже подтверждён рабочим
-  (см. services/drawing_service.py:60 — MODEL_CRITIC).
+KLYUCH (2026-06-24):
+* response_format json_object - DeepSeek lyubit oborachivat otvet v markdown,
+  iz-za chego extract_json_safe padал i my poluchali GEN_FAILED. JSON-rezhim
+  ubiraet bolshinstvo etih sboev (sm. api-docs.deepseek.com json_mode).
+* max_tokens po urovnyu: L6-L8 (olimpiadnye) trebuyut dlinnogo resheniya,
+  4096 obrezalo JSON -> nevalidnyj otvet.
+* model routing po difficulty_level vynesen v _model_for_level - tochka,
+  gde finalno reshaem kakaya model na kakoj uroven.
 """
-
 from __future__ import annotations
 
 import asyncio
@@ -25,6 +24,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+
 _project_root = Path(__file__).resolve().parents[2]
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
@@ -32,7 +32,6 @@ if str(_project_root) not in sys.path:
 from typing import Any, Dict, List, Optional, Tuple
 
 from pipeline.openrouter_client import OpenRouterClient, TokenUsage
-
 from .validators import (
     OpusGenerationValidation,
     extract_json_safe,
@@ -41,38 +40,64 @@ from .validators import (
 
 logger = logging.getLogger(__name__)
 
-# ── модель ────────────────────────────────────────────────────────────────
-# Step 2 GENERATE: Claude Sonnet 4.5 — base, без reasoning. Раньше пробовали
-# gemini-3.1-pro-preview (45s × 10 = 450s суммарно) и opus-4.8-fast (batch-180s),
-# обе нестабильны на медленном интернете. Sonnet 4.5 точно следует JSON-схеме
-# Cost-routing по difficulty_level: L1-L5 -> Haiku 4.5 (дёшево),
-# L6-L8 -> Sonnet 4.6 (олимпиадные, нужно качество). Retry всегда HARD.
+# == modeli i routing ==
+# Step 2 GENERATE. Vse urovni poka na DeepSeek v3.1 (deshevo/bezlimit).
+# Razdelenie EASY/HARD ostavleno yavnym, chtoby finalno podstavit silnuyu
+# reasoning-model na olimpiadnye L6-L8 (DeepSeek v3.1 base slab na AIME ~40%,
+# reasoning-modeli daet ~80% i 97% MATH-500 - sm. sravnenie R1 vs V3).
 _GEN_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
 _GEN_MODEL_HARD = "deepseek/deepseek-chat-v3.1"
 _GEN_HARD_THRESHOLD = 6
-_OPUS_MODEL = _GEN_MODEL_HARD  # алиас для совместимости с логами
+_OPUS_MODEL = _GEN_MODEL_HARD  # alias dlya sovmestimosti s logami
 
-# 5 параллельных потоков: 10 specs распределяются по 5 воркерам (~2 spec
-# на воркер при чистом распараллеливании). Семафор ограничивает число
-# одновременных HTTP-запросов к OpenRouter, чтобы не словить 429.
-_PARALLEL_WORKERS = 10
+# Parallelizm. Bylo 10 (vrazrez s docstring '5 potokov' i risk 429 ot
+# OpenRouter). Vozvrashchaem 5 - stabilnee, 10 spec -> ~2 na vorker.
+_PARALLEL_WORKERS = 5
+
+# JSON-rezhim: zastavlyaet model vernut chistyj JSON-objekt bez markdown.
+_JSON_RESPONSE_FORMAT = {"type": "json_object"}
 
 
-# ── helpers ───────────────────────────────────────────────────────────────
+def _model_for_level(difficulty_level: Any) -> str:
+    """Vybor modeli po urovnyu slozhnosti (8-ballnaya shkala).
+
+    Edinaya tochka resheniya 'kakaya model na kakoj uroven'. Seychas obe
+    vetki - DeepSeek v3.1; pri finalnom reshenii dostatochno pomenyat
+    _GEN_MODEL_HARD na reasoning-model (naprimer deepseek/deepseek-r1).
+    """
+    try:
+        lvl = int(difficulty_level or 1)
+    except (TypeError, ValueError):
+        lvl = 1
+    return _GEN_MODEL_HARD if lvl >= _GEN_HARD_THRESHOLD else _GEN_MODEL_EASY
 
 
+def _max_tokens_for_level(difficulty_level: Any) -> int:
+    """Bolshe tokenov dlya slozhnyh urovnej - inache JSV obrezaetsya."""
+    try:
+        lvl = int(difficulty_level or 1)
+    except (TypeError, ValueError):
+        lvl = 1
+    if lvl >= _GEN_HARD_THRESHOLD:
+        return 8192
+    if lvl >= 4:
+        return 6144
+    return 4096
+
+
+# == helpers ==
 def _load_prompt() -> str:
-    """Загрузить содержимое `prompts/opus_generate.md`."""
+    """Zagruzit soderzhimoe prompts/opus_generate.md."""
     prompt_path = os.path.join(os.path.dirname(__file__), "prompts", "opus_generate.md")
     with open(prompt_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
 def _format_prompt_for_single_spec(spec: Dict[str, Any]) -> str:
-    """Подставить ОДНУ спецификацию в prompt-шаблон.
+    """Podstavit ODNU specifikaciyu v prompt-shablon.
 
-    Промпт ожидает ``{"specs": [...]}`` на входе и ``{"tasks": [...]}``
-    на выходе. Здесь подсовываем массив длины 1.
+    Prompt ozhidaet {\"specs\": [...]} na vhode i {\"tasks\": [...]} na vyhode.
+    Zdes podsovyvaem massiv dliny 1.
     """
     prompt = _load_prompt()
     specs_json = json.dumps(
@@ -84,22 +109,17 @@ def _format_prompt_for_single_spec(spec: Dict[str, Any]) -> str:
 
 
 def _synthesize_fallback_task(spec: Dict[str, Any], reason: str) -> Dict[str, Any]:
-    """Сформировать пустую задачу-заглушку с правильной позицией.
-
-    Это нужно, чтобы общий выход Step 2 всегда содержал ровно 10 элементов
-    (требование ``validate_opus_generation``). Step 3 пометит её
-    ``needs_fix``, Step 4 попробует регенерировать.
-    """
+    """Sformirovat pustuyu zadachu-zaglushku s pravilnoj poziciej."""
     pos = spec.get("position")
     return {
         "position": pos,
         "task_text": (
-            f"[GEN_FAILED] Не удалось сгенерировать задачу для позиции {pos}. "
-            f"Причина: {reason}"
+            f"[GEN_FAILED] Ne udalos sgenerirovat zadachu dlya pozicii {pos}. "
+            f"Prichina: {reason}"
         ),
-        "correct_answer": "—",
-        "solution": "—",
-        "hints": ["Будет сгенерировано на шаге исправления."],
+        "correct_answer": "-",
+        "solution": "-",
+        "hints": ["Budet sgenerirovano na shage ispravleniya."],
         "_generation_failed": True,
         "_failure_reason": reason,
     }
@@ -110,15 +130,17 @@ async def _generate_one_spec(
     semaphore: asyncio.Semaphore,
     spec: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], float]:
-    """Сгенерировать одну задачу под одну спеку.
+    """Sgenerirovat odnu zadachu pod odnu speku.
 
-    Возвращает кортеж (task_dict, cost_usd). При ЛЮБОЙ ошибке (HTTP timeout,
-    невалидный JSON, отсутствие нужных полей) — возвращает синтетическую
-    заглушку с ``_generation_failed=True`` и cost=0. Это позволяет
-    остальным 4 воркерам спокойно доработать.
+    Vozvrashchaet (task_dict, cost_usd). Pri LYUBOJ oshibke - sintetic
+    zaglushka s _generation_failed=True i cost=0, chtoby ostalnye vorkery
+    spokojno dorabotali.
     """
     import time as _time_mod
     pos = spec.get("position")
+    lvl = spec.get("difficulty_level")
+    model = _model_for_level(lvl)
+    max_tokens = _max_tokens_for_level(lvl)
     formatted = _format_prompt_for_single_spec(spec)
     messages = [{"role": "user", "content": formatted}]
     topic_short = (spec.get("topic") or "?")[:30]
@@ -127,31 +149,32 @@ async def _generate_one_spec(
     async with semaphore:
         _t0 = _time_mod.time()
         logger.info(
-            "Step 2 GENERATE [pos=%s] START — topic=%r subtopic=%r difficulty=L%s",
-            pos, topic_short, subtopic_short, spec.get("difficulty_level"),
+            "Step 2 GENERATE [pos=%s] START - topic=%r subtopic=%r L%s model=%s max_tokens=%d",
+            pos, topic_short, subtopic_short, lvl, model, max_tokens,
         )
         try:
             raw, usage = await client.chat(
-                model=(_GEN_MODEL_HARD if (int(spec.get("difficulty_level") or 1) >= _GEN_HARD_THRESHOLD) else _GEN_MODEL_EASY),
+                model=model,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=4096,
+                max_tokens=max_tokens,
+                response_format=_JSON_RESPONSE_FORMAT,
             )
         except Exception as exc:
             _dt = _time_mod.time() - _t0
             logger.exception(
-                "Step 2 GENERATE [pos=%s] FAIL after %.1fs — HTTP/network error: %s",
+                "Step 2 GENERATE [pos=%s] FAIL after %.1fs - HTTP/network error: %s",
                 pos, _dt, exc,
             )
             return _synthesize_fallback_task(spec, f"http_error: {exc}"), 0.0
         _dt = _time_mod.time() - _t0
         logger.info(
-            "Step 2 GENERATE [pos=%s] HTTP-OK in %.1fs — in=%d out=%d cost=$%.4f",
+            "Step 2 GENERATE [pos=%s] HTTP-OK in %.1fs - in=%d out=%d cost=$%.4f",
             pos, _dt, usage.input_tokens, usage.output_tokens, usage.cost_usd,
         )
 
-    # Парсим ответ — ожидаем {"tasks": [ОДНА задача]}
-    # Retry up to 3 times if JSON is invalid, passing the bad response back to the model.
+    # Parsim otvet - ozhidaem {"tasks": [ODNA zadacha]}.
+    # Retry do 3 raz pri nevalidnom JSON, peredavaya plohoj otvet modeli obratno.
     _MAX_JSON_RETRIES = 3
     parsed = extract_json_safe(raw)
     _retry_cost = usage.cost_usd
@@ -159,112 +182,92 @@ async def _generate_one_spec(
         if parsed is not None and isinstance(parsed, dict):
             break
         logger.warning(
-            "Step 2 GENERATE — pos=%s — не смогли распарсить JSON (попытка %d/%d), "
-            "повторяем с просьбой вернуть корректный JSON",
+            "Step 2 GENERATE - pos=%s - ne smogli rasparsit JSON (popytka %d/%d), "
+            "povtoryaem s prosboj vernut korrektnyj JSON",
             pos, _retry_attempt + 1, _MAX_JSON_RETRIES,
         )
-        # Ask the model to fix its own invalid response
         retry_messages = messages + [
             {"role": "assistant", "content": raw},
             {
                 "role": "user",
                 "content": (
-                    "Твой предыдущий ответ не является валидным JSON. "
-                    "Верни ТОЛЬКО корректный JSON-объект вида "
-                    '{"tasks": [{ ... }]} без каких-либо пояснений, '
-                    "markdown-блоков или лишнего текста."
+                    "Tvoj predydushchij otvet ne yavlyaetsya validnym JSON. "
+                    "Verni TOLKO korrektnyj JSON-objekt vida "
+                    '{"tasks": [{ ... }]} bez kakih-libo poyasnenij, '
+                    "markdown-blokov ili lishnego teksta."
                 ),
             },
         ]
         try:
             async with semaphore:
                 raw, _retry_usage = await client.chat(
-                    model=_GEN_MODEL_HARD,
+                    model=model,
                     messages=retry_messages,
                     temperature=0.3,
-                    max_tokens=4096,
+                    max_tokens=max_tokens,
+                    response_format=_JSON_RESPONSE_FORMAT,
                 )
             _retry_cost += _retry_usage.cost_usd
             parsed = extract_json_safe(raw)
         except Exception as _retry_exc:
             logger.warning(
-                "Step 2 GENERATE — pos=%s — retry %d HTTP error: %s",
+                "Step 2 GENERATE - pos=%s - retry %d HTTP error: %s",
                 pos, _retry_attempt + 1, _retry_exc,
             )
-            break
+            continue
 
     if parsed is None or not isinstance(parsed, dict):
         logger.error(
-            "Step 2 GENERATE — pos=%s — не смогли распарсить JSON после %d попыток",
+            "Step 2 GENERATE - pos=%s - ne smogli rasparsit JSON posle %d popytok",
             pos, _MAX_JSON_RETRIES,
         )
         return _synthesize_fallback_task(spec, "invalid_json"), _retry_cost
-    usage_cost = _retry_cost
 
+    usage_cost = _retry_cost
     tasks_list = parsed.get("tasks")
     if not isinstance(tasks_list, list) or len(tasks_list) == 0:
         logger.error(
-            "Step 2 GENERATE — pos=%s — отсутствует/пустой 'tasks' в ответе",
+            "Step 2 GENERATE - pos=%s - otsutstvuet/pustoj 'tasks' v otvete",
             pos,
         )
         return _synthesize_fallback_task(spec, "no_tasks_key"), usage_cost
 
     task = tasks_list[0]
     if not isinstance(task, dict):
-        logger.error("Step 2 GENERATE — pos=%s — task не словарь", pos)
+        logger.error("Step 2 GENERATE - pos=%s - task ne slovar", pos)
         return _synthesize_fallback_task(spec, "task_not_dict"), usage_cost
 
-    # Принудительно фиксируем position на ту, что в спеке (модель иногда
-    # ставит position=1 для одиночной задачи независимо от исходной)
+    # Prinuditelno fiksiruem position na tu, chto v speke.
     task["position"] = pos
-
     text_preview = (task.get("task_text") or "")[:120].replace("\n", " ")
     answer_preview = str(task.get("correct_answer") or "")[:60]
     logger.info(
-        "Step 2 GENERATE [pos=%s] OK — text=%r  answer=%r",
+        "Step 2 GENERATE [pos=%s] OK - text=%r answer=%r",
         pos, text_preview, answer_preview,
     )
     return task, usage_cost
 
 
-# ── основная функция ─────────────────────────────────────────────────────
-
-
+# == osnovnaya funkciya ==
 async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Сгенерировать 10 задач параллельно через Gemini 3.1 Pro (5 потоков).
+    """Sgenerirovat 10 zadach parallelno (semaphore=_PARALLEL_WORKERS).
 
-    Параметры
-    ---------
-    specs : list[dict]
-        10 спецификаций от Step 1 (каждая содержит ``position``, ``slot_kind``,
-        ``subject``, ``topic``, ``subtopic``, ``difficulty_level``, …).
-
-    Возвращает
-    ----------
-    list[dict]
-        10 задач (по одной на каждую спеку, отсортированы по ``position``).
-        Сбойные позиции возвращаются как fallback-заглушки с флагом
-        ``_generation_failed=True`` — общий список всё равно длины 10, чтобы
-        ``validate_opus_generation`` (требует ровно 10) не валился целиком.
-        Пустой список — только если на входе не 10 спек или ВСЕ воркеры
-        выбросили нерекаверебельную ошибку.
+    Vozvrashchaet 10 zadach (po odnoj na speku, otsortirovany po position).
+    Sbojnye pozicii - fallback-zaglushki s _generation_failed=True; obshchij
+    spisok vsegda dliny 10, chtoby validate_opus_generation ne valilsya.
     """
     if not specs:
-        logger.error("Step 2 GENERATE — пустой список спек, нечего генерировать")
+        logger.error("Step 2 GENERATE - pustoj spisok spek, nechego generirovat")
         return []
-
     if len(specs) != 10:
         logger.warning(
-            "Step 2 GENERATE — получено %d спек вместо ожидаемых 10, всё равно "
-            "продолжаем (валидатор может развернуть результат позже)",
+            "Step 2 GENERATE - polucheno %d spek vmesto 10, vse ravno prodolzhaem",
             len(specs),
         )
 
     semaphore = asyncio.Semaphore(_PARALLEL_WORKERS)
-
     logger.info(
-        "Step 2 GENERATE — запуск %d параллельных воркеров (semaphore=%d), "
-        "модель=%s",
+        "Step 2 GENERATE - zapusk %d vorkerov (semaphore=%d), model_hard=%s",
         len(specs), _PARALLEL_WORKERS, _OPUS_MODEL,
     )
 
@@ -272,7 +275,6 @@ async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any
         coros = [_generate_one_spec(client, semaphore, spec) for spec in specs]
         results = await asyncio.gather(*coros, return_exceptions=False)
 
-    # Разворачиваем результаты
     tasks: List[Dict[str, Any]] = []
     total_cost = 0.0
     failed_positions: List[Any] = []
@@ -282,35 +284,26 @@ async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any
         if task.get("_generation_failed"):
             failed_positions.append(task.get("position"))
 
-    # Сортируем по position для стабильности
     tasks.sort(key=lambda t: t.get("position") or 0)
-
     logger.info(
-        "Step 2 GENERATE — DONE: %d задач (failed=%d at positions %s), "
-        "total_cost=$%.4f (5 parallel workers)",
+        "Step 2 GENERATE - DONE: %d zadach (failed=%d at positions %s), total_cost=$%.4f",
         len(tasks), len(failed_positions), failed_positions, total_cost,
     )
 
-    # ── валидация ─────────────────────────────────────────────────────
-    # Формируем единый ответ для совместимости с существующим валидатором,
-    # который ожидает строку с JSON {"tasks": [10 элементов]}.
     pseudo_raw = json.dumps({"tasks": tasks}, ensure_ascii=False)
     validation: OpusGenerationValidation = validate_opus_generation(pseudo_raw)
-
     if not validation.valid:
-        # Если упало мало позиций — продолжаем, Step 3/4 их подлечит.
-        # Если упало всё — пробрасываем []. Граница — >= 5 валидных задач.
         valid_entries = sum(1 for e in validation.entries if e.valid)
         if valid_entries >= 5:
             logger.warning(
-                "Step 2 GENERATE — частичная валидация: %d/10 ok, %d ошибок. "
-                "Пропускаем дальше — Step 3 пометит сбойные, Step 4 исправит.",
+                "Step 2 GENERATE - chastichnaya validaciya: %d/10 ok, %d oshibok. "
+                "Propuskaem dalshe - Step 3 pometit sbojnye, Step 4 ispravit.",
                 valid_entries, len(validation.all_errors),
             )
         else:
             logger.error(
-                "Step 2 GENERATE — критическая ошибка: только %d/10 задач "
-                "прошли валидацию. Ошибки: %s",
+                "Step 2 GENERATE - kriticheskaya oshibka: tolko %d/10 zadach proshli "
+                "validaciyu. Oshibki: %s",
                 valid_entries,
                 "; ".join(validation.all_errors[:5]),
             )
