@@ -18,7 +18,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
 
-  /* fallback LaTeX */
+  /* fallback LaTeX */     /* FIX: модалка и история дня всегда видимы (нет чёрного поля от has-math visibility:hidden) */     #dt-modal, #dt-modal *, .dt-modal-body, #dt-modal-statement, .dt-day-history, .dt-dh-item { visibility: visible !important; }     #dt-modal-statement { background: transparent !important; }
   .dt-latex-fallback {
     font-style: italic;
     color: rgba(255,255,255,0.88);
@@ -1344,7 +1344,7 @@
 
     if (it.preview) {
       var body = document.createElement('div');
-      body.textContent = it.preview;
+      body.textContent = it.preview; try{ if(typeof reRenderMath==='function') reRenderMath(body); }catch(e){}
       wrap.appendChild(body);
     }
     return wrap;
@@ -1440,7 +1440,7 @@ function openTask(it){
 ensureModal();
 dtCurrentItem=it; dtOpenStart=Date.now();
 $('dt-modal-title').textContent=(it.topic||'')+(it.difficulty_level?(' \u00b7 '+it.difficulty_level):'');
-$('dt-modal-statement').textContent=(it.text||it.preview||''); try{ if(typeof reRenderMath==='function') reRenderMath($('.dt-modal-statement')); }catch(e){}
+$('dt-modal-statement').textContent=(it.text||it.preview||''); try{ if(typeof reRenderMath==='function') reRenderMath($('dt-modal-statement')); }catch(e){}
 var inp=$('dt-answer-input'); inp.value=(it.user_answer||'');
 var res=$('dt-modal-result'); res.innerHTML='';
 if(it.is_answered){ res.innerHTML='<div style="color:'+(it.is_correct?'#38ef7d':'#ff6b6b')+';">'+(it.is_correct?'\u2713 \u0420\u0430\u043d\u0435\u0435 \u0440\u0435\u0448\u0435\u043d\u043e \u0432\u0435\u0440\u043d\u043e':'\u2717 \u0420\u0430\u043d\u0435\u0435 \u043e\u0442\u0432\u0435\u0447\u0435\u043d\u043e \u043d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>'; }
@@ -1471,7 +1471,7 @@ if(p.solution){ html+='<div style="color:rgba(255,255,255,0.6);line-height:1.5;m
 res.innerHTML=html;
 dtCurrentItem.is_answered=true; dtCurrentItem.is_correct=ok; dtCurrentItem.user_answer=raw;
 renderTasks();
-if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); } }; if(p.is_correct===true){ _dtFinish(); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.6);">DeepSeek проверяет решение…</div>'; fetch('/daily_tasks/'+dtCurrentItem.id+'/submit_ai',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({user_answer:raw,user_solution:raw,time_spent_seconds:secs})}).then(function(r){return r.json();}).then(function(a){ if(a&&a.status==='success'){ p.is_correct=a.is_correct===true; if(a.correct_answer!=null)p.correct_answer=a.correct_answer; if(a.feedback)p.explanation=a.feedback; if(a.solution)p.solution=a.solution; if(a.set_progress)p.set_progress=a.set_progress; } _dtFinish(); }).catch(function(e){ console.warn('[dt-submit-ai]',e); _dtFinish(); }); }
+if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); } }; if(p.is_correct===true){ _dtFinish(); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.6);">DeepSeek проверяет ответ…</div>'; fetch('/daily_tasks/'+dtCurrentItem.id+'/submit_ai',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({user_answer:raw,user_solution:raw,time_spent_seconds:secs})}).then(function(r){return r.json();}).then(function(a){ if(a&&a.status==='success'){ p.is_correct=a.is_correct===true; if(a.correct_answer!=null)p.correct_answer=a.correct_answer; if(a.feedback)p.explanation=a.feedback; if(a.solution)p.solution=a.solution; if(a.set_progress)p.set_progress=a.set_progress; } _dtFinish(); }).catch(function(e){ console.warn('[dt-submit-ai]',e); _dtFinish(); }); }
 })
 .catch(function(err){ btn.disabled=false; btn.textContent=oldTxt; res.innerHTML='<div style="color:#ff6b6b;">\u0421\u0435\u0442\u0435\u0432\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430</div>'; console.warn('[dt-submit]',err); });
 }
