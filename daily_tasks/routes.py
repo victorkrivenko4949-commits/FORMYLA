@@ -533,7 +533,7 @@ def submit_answer_ai(item_id: int):
             "message": "Задача не принадлежит текущему пользователю",
         }), 403
 
-            if item.user_answer is not None and item.is_correct:
+    if item.user_answer is not None and item.is_correct:
         return jsonify({
             "status": "error",
             "message": "На эту задачу уже отвечено.",
