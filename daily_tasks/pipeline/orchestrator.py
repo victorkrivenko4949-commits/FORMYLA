@@ -2,14 +2,12 @@
 """
 Оркестратор пайплайна «Задачи дня».
 
-Реализует Step 1–5 по ТЗ:
-  Step 2: Gemini → specs
-  Step 3: Opus → tasks
-  Step 4: GPT audit → verdict + issues
-  Step 5: Fix‑loop (Opus fix → GPT re‑audit, max 3 итерации)
-  Rescue‑pass: если ≥ 3 задач всё ещё ``is_flagged`` после 3 итераций
+Step 2: Gemini -> specs
+Step 3: Opus -> tasks
+Step 4: GPT audit -> verdict + issues
+Step 5: Fix-loop (Opus fix -> GPT re-audit, max 5 итераций, фиксы в 5 потоков)
+Rescue-pass: если >= 3 задач всё ещё is_flagged после итераций
 """
-
 from __future__ import annotations
 
 import asyncio
@@ -25,21 +23,21 @@ from .step4_opus_fix import fix_single_task
 
 logger = logging.getLogger(__name__)
 
-# ── константы ────────────────────────────────────────────────────────────
 MAX_FIX_ITERATIONS = 5
-"""Максимальное число итераций Opus‑fix → GPT‑audit для одной задачи."""
+"""Максимальное число итераций Opus-fix -> GPT-audit для одной задачи."""
 
 MIN_VALID_TASKS = 7
-"""Минимальное количество валидных задач для статуса ``ready``."""
+"""Минимальное количество валидных задач для статуса ready."""
 
 FLAGGED_THRESHOLD = 3
-"""При ≥ этого числа ``is_flagged`` задач запускается rescue‑проход."""
+"""При >= этого числа is_flagged задач запускается rescue-проход."""
+
+_FIX_PARALLEL_WORKERS = 5
+"""Сколько Opus-fix запускаем параллельно в одной итерации fix-loop."""
 
 
 def _safe_progress(callback, step: str, pct: int) -> None:
-    """Безопасно дёргает progress-callback (если передан).
-    Любые исключения подавляются и логируются, чтобы не сломать пайплайн
-    из-за побочного UI-эффекта."""
+    """Безопасно дёргает progress-callback (если передан)."""
     if callback is None:
         return
     try:
@@ -48,12 +46,9 @@ def _safe_progress(callback, step: str, pct: int) -> None:
         logger.warning("Progress callback failed: %s", exc)
 
 
-# ── структуры данных ────────────────────────────────────────────────────
-
-
 @dataclass
 class PipelineStepLog:
-    """Запись одного шага пайплайна для ``pipeline_log``."""
+    """Запись одного шага пайплайна для pipeline_log."""
     step: str
     duration_sec: float
     cost_usd: float
@@ -65,9 +60,8 @@ class PipelineStepLog:
 @dataclass
 class PipelineResult:
     """Результат работы полного пайплайна генерации."""
-
     success: bool
-    status: str  # 'ready' | 'partial' | 'failed'
+    status: str
     specs: List[Dict[str, Any]] = field(default_factory=list)
     tasks: List[Dict[str, Any]] = field(default_factory=list)
     audit_entries: List[Dict[str, Any]] = field(default_factory=list)
@@ -76,9 +70,6 @@ class PipelineResult:
     steps: List[PipelineStepLog] = field(default_factory=list)
     total_cost: float = 0.0
     error: Optional[str] = None
-
-
-# ── helpers ──────────────────────────────────────────────────────────────
 
 
 def _make_step_log(
@@ -99,22 +90,14 @@ def _make_step_log(
     )
 
 
-# ── rescue‑проход ────────────────────────────────────────────────────────
-
-
 async def _rescue_pass(
     flagged_specs: List[Dict[str, Any]],
     flagged_positions: List[int],
 ) -> Tuple[List[Dict[str, Any]], List[PipelineStepLog], float]:
-    """Rescue‑проход для задач, не прошедших 3 итерации фикса.
-
-    Генерирует НОВЫЕ задачи через Opus (с пометкой «проще/clean‑archetype»)
-    и проводит один раунд аудита (без дополнительных итераций фикса).
-    """
+    """Rescue-проход для задач, не прошедших итерации фикса."""
     rescue_steps: List[PipelineStepLog] = []
     rescue_cost = 0.0
 
-    # ── Opus generate для flagged позиций ─────────────────────────────
     logger.warning(
         "Rescue: запуск Opus generate для %d flagged задач (позиции %s)",
         len(flagged_specs),
@@ -130,7 +113,6 @@ async def _rescue_pass(
         rescue_steps[-1].error = "Opus generate вернул пустой результат"
         return [], rescue_steps, rescue_cost
 
-    # ── один раунд GPT audit (без fix‑loop) ───────────────────────────
     t0 = time.monotonic()
     rescue_audit = await audit_tasks(flagged_specs, rescue_tasks)
     rescue_steps.append(_make_step_log("rescue_gpt_audit", t0))
@@ -141,18 +123,14 @@ async def _rescue_pass(
         rescue_steps[-1].error = "GPT audit вернул пустой результат"
         return [], rescue_steps, rescue_cost
 
-    # Принимаем все approved задачи из rescue; остальные — flagged
     final_rescue_tasks: List[Dict[str, Any]] = []
     for i, (spec, task, audit_entry) in enumerate(
         zip(flagged_specs, rescue_tasks, rescue_audit)
     ):
         if audit_entry.get("verdict") == "approved":
-            # Пересохраняем спеки rescue (они должны быть проще)
-            # audit_entry["position"] перезаписываем на оригинальную позицию
             audit_entry["position"] = flagged_positions[i]
             final_rescue_tasks.append(task)
         else:
-            # Даже rescue не прошёл — оставляем flagged
             final_rescue_tasks.append(task)
 
     logger.info(
@@ -163,36 +141,16 @@ async def _rescue_pass(
     return final_rescue_tasks, rescue_steps, rescue_cost
 
 
-# ── основной пайплайн ────────────────────────────────────────────────────
-
-
 async def run_daily_generation_pipeline(
     profile: Dict[str, Any],
     progress_callback: callable = None,
 ) -> PipelineResult:
-    """Запустить полный пайплайн генерации «Задачи дня».
-
-    Параметры
-    ---------
-    profile : dict
-        Профиль пользователя от ``build_profile()``. Ожидаемые ключи:
-        ``user_id``, ``class_level``, ``weak_topics``, ``strong_topics``,
-        ``class_expected_level``, ``adaptive_summary``.
-
-    Возвращает
-    ----------
-    PipelineResult
-        Структурированный результат со списками ``specs``, ``tasks``,
-        ``audit_entries``, ``iteration_counts``, ``is_flagged``,
-        ``steps`` (лог шагов) и ``total_cost``.
-    """
+    """Запустить полный пайплайн генерации «Задачи дня»."""
     result = PipelineResult(success=False, status="failed")
     all_steps: List[PipelineStepLog] = []
     total_cost = 0.0
 
-    # ═══════════════════════════════════════════════════════════════════
-    # Step 2: Gemini → specs
-    # ═══════════════════════════════════════════════════════════════════
+    # Step 2: Gemini -> specs
     logger.info("Pipeline: Step 2 — Gemini plan")
     _safe_progress(progress_callback, "gemini_plan", 15)
     t0 = time.monotonic()
@@ -200,7 +158,6 @@ async def run_daily_generation_pipeline(
         specs = await generate_gemini_plan(profile)
         all_steps.append(_make_step_log("gemini_plan", t0))
         total_cost += all_steps[-1].cost_usd
-
         if not specs or len(specs) != 10:
             msg = (
                 f"Планировщик вернул {len(specs) if specs else 0} "
@@ -211,9 +168,6 @@ async def run_daily_generation_pipeline(
             result.steps = all_steps
             return result
     except GeminiPlanError as exc:
-        # Классифицированная ошибка от step1 — уже содержит понятный текст.
-        # Пробрасываем КОНКРЕТНУЮ причину (HTTP-402 / parse / validate / etc.)
-        # вместо обобщённого "Gemini вернул 0 specs".
         msg = str(exc)
         logger.error(
             "Pipeline: Step 1 PLAN failed: category=%s status=%s msg=%s",
@@ -235,9 +189,7 @@ async def run_daily_generation_pipeline(
 
     result.specs = specs
 
-    # ═══════════════════════════════════════════════════════════════════
-    # Step 3: Opus → tasks
-    # ═══════════════════════════════════════════════════════════════════
+    # Step 3: Opus -> tasks
     logger.info("Pipeline: Step 3 — Opus generate")
     _safe_progress(progress_callback, "opus_generate", 35)
     t0 = time.monotonic()
@@ -245,7 +197,6 @@ async def run_daily_generation_pipeline(
         opus_tasks = await generate_opus_tasks(specs)
         all_steps.append(_make_step_log("opus_generate", t0))
         total_cost += all_steps[-1].cost_usd
-
         if not opus_tasks or len(opus_tasks) != 10:
             msg = (
                 f"Генератор задач вернул "
@@ -265,24 +216,27 @@ async def run_daily_generation_pipeline(
         result.steps = all_steps
         return result
 
-    # ═══════════════════════════════════════════════════════════════════
-    # Step 4 + Step 5: GPT audit + fix‑loop (max 3 итерации)
-    # ═══════════════════════════════════════════════════════════════════
-    logger.info("Pipeline: Step 4+5 — GPT audit + fix-loop (max %d it)", MAX_FIX_ITERATIONS)
+
+    # Step 4 + Step 5: GPT audit + fix-loop (фиксы параллельно в _FIX_PARALLEL_WORKERS потоков)
+    logger.info(
+        "Pipeline: Step 4+5 — GPT audit + fix-loop (max %d it, %d потоков)",
+        MAX_FIX_ITERATIONS,
+        _FIX_PARALLEL_WORKERS,
+    )
     _safe_progress(progress_callback, "gpt_audit", 60)
 
-    approved: List[Tuple[int, Dict, Dict, Dict, int]] = []  # (position, spec, task, audit, iterations)
+    approved: List[Tuple[int, Dict, Dict, Dict, int]] = []
     queue: List[Tuple[Dict, Dict, int]] = [
         (spec, task, 1) for spec, task in zip(specs, opus_tasks)
     ]
-    fix_iteration_count = 0
 
+    fix_iteration_count = 0
     while queue:
         fix_iteration_count += 1
         pending_specs = [s for s, _, _ in queue]
         pending_tasks = [t for _, t, _ in queue]
 
-        # ── GPT audit ────────────────────────────────────────────────
+        # GPT audit
         t0 = time.monotonic()
         try:
             audit_entries = await audit_tasks(pending_specs, pending_tasks)
@@ -294,12 +248,9 @@ async def run_daily_generation_pipeline(
             logger.exception("GPT audit crashed on iteration %d", fix_iteration_count)
             all_steps.append(
                 _make_step_log(
-                    f"gpt_audit_iter_{fix_iteration_count}",
-                    t0,
-                    error=str(exc),
+                    f"gpt_audit_iter_{fix_iteration_count}", t0, error=str(exc),
                 )
             )
-            # В случае ошибки аудита — флагаем все задачи в очереди
             for spec, task, it in queue:
                 approved.append((None, spec, task, {"verdict": "needs_fix", "issues": [], "flagged": True}, it))
             break
@@ -310,65 +261,71 @@ async def run_daily_generation_pipeline(
                 approved.append((None, spec, task, {"verdict": "needs_fix", "issues": [], "flagged": True}, it))
             break
 
-        # ── распределяем approved / needs_fix ────────────────────────
+        # Разбираем результаты аудита БЕЗ await: approved / flagged / to_fix
         next_queue: List[Tuple[Dict, Dict, int]] = []
-
+        to_fix: List[Tuple[Dict, Dict, Dict, int]] = []  # (spec, task, audit_entry, it)
         for (spec, task, it), audit_entry in zip(queue, audit_entries):
             position = spec.get("position", "?")
-
             if audit_entry.get("verdict") == "approved":
                 approved.append((position, spec, task, audit_entry, it))
                 logger.debug("Position %s — approved (ит: %d)", position, it)
+            elif it >= MAX_FIX_ITERATIONS:
+                approved.append(
+                    (position, spec, task, {**audit_entry, "flagged": True}, it)
+                )
+                logger.warning("Position %s — flagged (ит: %d, лимит)", position, it)
             else:
-                if it >= MAX_FIX_ITERATIONS:
-                    # Исчерпали лимит итераций — флагаем
-                    approved.append(
-                        (position, spec, task, {**audit_entry, "flagged": True}, it)
-                    )
-                    logger.warning("Position %s — flagged (ит: %d, лимит)", position, it)
-                else:
-                    # Opus fix
-                    t_fix = time.monotonic()
+                to_fix.append((spec, task, audit_entry, it))
+
+
+        # Параллельный Opus-fix для всех to_fix (до _FIX_PARALLEL_WORKERS одновременно)
+        if to_fix:
+            sem = asyncio.Semaphore(_FIX_PARALLEL_WORKERS)
+
+            async def _run_fix(spec, task, audit_entry, it):
+                position = spec.get("position", "?")
+                t_fix = time.monotonic()
+                async with sem:
                     try:
                         fixed_task = await fix_single_task(spec, task, audit_entry)
-                        all_steps.append(
-                            _make_step_log(f"opus_fix_{position}_it_{it}", t_fix)
-                        )
-                        total_cost += all_steps[-1].cost_usd
+                        step = _make_step_log(f"opus_fix_{position}_it_{it}", t_fix)
+                        return (spec, fixed_task, it, step, None)
                     except Exception as exc:
                         logger.exception(
                             "Opus fix crashed на position=%s, итерация %d", position, it
                         )
-                        all_steps.append(
-                            _make_step_log(
-                                f"opus_fix_{position}_it_{it}",
-                                t_fix,
-                                error=str(exc),
-                            )
+                        step = _make_step_log(
+                            f"opus_fix_{position}_it_{it}", t_fix, error=str(exc)
                         )
-                        # Если fix упал — отправляем задачу обратно в очередь как есть
-                        # (она пойдёт на ещё один audit, а потом будет flagged)
-                        next_queue.append((spec, task, it + 1))
-                        continue
+                        return (spec, None, it, step, exc)
 
-                    if fixed_task is not None:
-                        next_queue.append((spec, fixed_task, it + 1))
-                        logger.debug(
-                            "Position %s — fix OK (ит: %d → %d)",
-                            position, it, it + 1,
-                        )
-                    else:
-                        # Opus fix вернул None — оставляем старую задачу, +1 итерация
-                        logger.warning(
-                            "Position %s — fix вернул None, повтор на итерации %d",
-                            position, it,
-                        )
-                        next_queue.append((spec, task, it + 1))
+            fix_results = await asyncio.gather(
+                *[_run_fix(s, t, a, it) for (s, t, a, it) in to_fix]
+            )
+
+            for (orig_spec, orig_task, orig_audit, orig_it), (spec, fixed_task, it, step, exc) in zip(
+                to_fix, fix_results
+            ):
+                all_steps.append(step)
+                total_cost += step.cost_usd
+                position = spec.get("position", "?")
+                if exc is not None:
+                    # fix упал — возвращаем старую задачу, +1 итерация
+                    next_queue.append((spec, orig_task, it + 1))
+                    continue
+                if fixed_task is not None:
+                    next_queue.append((spec, fixed_task, it + 1))
+                    logger.debug("Position %s — fix OK (ит: %d -> %d)", position, it, it + 1)
+                else:
+                    logger.warning(
+                        "Position %s — fix вернул None, повтор на итерации %d", position, it
+                    )
+                    next_queue.append((spec, orig_task, it + 1))
 
         queue = next_queue
 
-    # ── сортируем approved по position ─────────────────────────────────
-    # approved: list of (position, spec, task, audit_entry, iterations)
+
+    # Сортируем approved по position
     approved.sort(key=lambda x: x[0] if x[0] is not None else 999)
 
     final_specs: List[Dict] = []
@@ -390,9 +347,7 @@ async def run_daily_generation_pipeline(
     result.iteration_counts = iteration_counts
     result.is_flagged = is_flagged
 
-    # ═══════════════════════════════════════════════════════════════════
-    # Rescue‑проход (если ≥ FLAGGED_THRESHOLD задач flagged)
-    # ═══════════════════════════════════════════════════════════════════
+    # Rescue-проход (если >= FLAGGED_THRESHOLD задач flagged)
     flagged_count = sum(is_flagged)
     if flagged_count >= FLAGGED_THRESHOLD:
         logger.warning(
@@ -402,10 +357,11 @@ async def run_daily_generation_pipeline(
         _safe_progress(progress_callback, "rescue_pass", 80)
         flagged_indices = [i for i, f in enumerate(is_flagged) if f]
         flagged_specs_for_rescue = [final_specs[i] for i in flagged_indices]
-        flagged_positions = [i + 1 for i in flagged_indices]  # 1-based
+        flagged_positions = [i + 1 for i in flagged_indices]
 
         rescue_tasks, rescue_steps, rescue_cost = await _rescue_pass(
-            flagged_specs_for_rescue, flagged_positions,
+            flagged_specs_for_rescue,
+            flagged_positions,
         )
         all_steps.extend(rescue_steps)
         total_cost += rescue_cost
@@ -413,24 +369,21 @@ async def run_daily_generation_pipeline(
         if rescue_tasks and len(rescue_tasks) == len(flagged_indices):
             for idx_in_rescue, original_idx in enumerate(flagged_indices):
                 final_tasks[original_idx] = rescue_tasks[idx_in_rescue]
-                # Снимаем флаг, если rescue-задача прошла audit
                 audit_entry = final_audit[original_idx]
                 if audit_entry.get("verdict") == "approved":
                     is_flagged[original_idx] = False
 
-            result.tasks = final_tasks
-            result.is_flagged = is_flagged
+        result.tasks = final_tasks
+        result.is_flagged = is_flagged
 
-    # ═══════════════════════════════════════════════════════════════════
     # Финальный статус
-    # ═══════════════════════════════════════════════════════════════════
     valid_count = len(final_tasks) - sum(is_flagged)
     if valid_count >= MIN_VALID_TASKS:
         result.status = "ready"
         result.success = True
     elif valid_count > 0:
         result.status = "partial"
-        result.success = True  # partial — всё равно успех, но с пометкой
+        result.success = True
     else:
         result.status = "failed"
         result.success = False
