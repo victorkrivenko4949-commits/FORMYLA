@@ -1402,7 +1402,7 @@ card.innerHTML='<div class="dt-card-number">'+escapeHtml(it.position||'')+'</div
 '<div class="dt-card-header"><span class="dt-topic-badge">'+escapeHtml(it.topic||'')+'</span><span class="dt-difficulty">'+escapeHtml(it.difficulty_level||'')+'</span></div>'+
 '<div class="dt-card-preview">'+escapeHtml(it.preview||it.text||'')+'</div>'+statusHtml;
 card.addEventListener('click', function(){ openTask(it); });
-grid.appendChild(card);
+grid.appendChild(card); try{ if(typeof reRenderMath==='function') reRenderMath(card); }catch(e){}
 });
 }
 // ── Fraction / answer normalization (1/4 => 0.25) ─────────────
@@ -1438,7 +1438,7 @@ function openTask(it){
 ensureModal();
 dtCurrentItem=it; dtOpenStart=Date.now();
 $('dt-modal-title').textContent=(it.topic||'')+(it.difficulty_level?(' \u00b7 '+it.difficulty_level):'');
-$('dt-modal-statement').textContent=(it.text||it.preview||'');
+$('dt-modal-statement').textContent=(it.text||it.preview||''); try{ if(typeof reRenderMath==='function') reRenderMath($('.dt-modal-statement')); }catch(e){}
 var inp=$('dt-answer-input'); inp.value=(it.user_answer||'');
 var res=$('dt-modal-result'); res.innerHTML='';
 if(it.is_answered){ res.innerHTML='<div style="color:'+(it.is_correct?'#38ef7d':'#ff6b6b')+';">'+(it.is_correct?'\u2713 \u0420\u0430\u043d\u0435\u0435 \u0440\u0435\u0448\u0435\u043d\u043e \u0432\u0435\u0440\u043d\u043e':'\u2717 \u0420\u0430\u043d\u0435\u0435 \u043e\u0442\u0432\u0435\u0447\u0435\u043d\u043e \u043d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>'; }
