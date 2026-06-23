@@ -5810,7 +5810,7 @@ def adaptive_test_start_simple():
             
             if last_result and last_result.completed_at:
                 days_elapsed = (datetime.utcnow() - last_result.completed_at).days
-                COOLDOWN_DAYS = 30
+                COOLDOWN_DAYS = 0
                 days_left = COOLDOWN_DAYS - days_elapsed
                 
                 if days_left > 0:
