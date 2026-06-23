@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 # в gpt_audit.md, поэтому модель получала пустой шаблон. Баг исправлен.
 # Cost-routing: батч с max(difficulty_level) < 6 -> Sonnet 4.6 (дешевле),
 # иначе (есть L>=6) -> Opus 4.8-fast (надёжный аудит олимпиадных).
-_AUDIT_MODEL_EASY = "deepseek/deepseek-r1"
-_AUDIT_MODEL_HARD = "deepseek/deepseek-r1"
+_AUDIT_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
+_AUDIT_MODEL_HARD = "deepseek/deepseek-chat-v3.1"
 _AUDIT_HARD_THRESHOLD = 6
 _GPT_AUDIT_MODEL = _AUDIT_MODEL_HARD  # алиас для совместимости
 
