@@ -31,7 +31,12 @@ logger = logging.getLogger(__name__)
 # и все возвращали `{"audit": []}` — НО это было из-за бага в
 # _format_audit_prompt(): placeholder "position: 1" не совпадал с "position: N"
 # в gpt_audit.md, поэтому модель получала пустой шаблон. Баг исправлен.
-_GPT_AUDIT_MODEL = "anthropic/claude-opus-4.8-fast"
+# Cost-routing: батч с max(difficulty_level) < 6 -> Sonnet 4.6 (дешевле),
+# иначе (есть L>=6) -> Opus 4.8-fast (надёжный аудит олимпиадных).
+_AUDIT_MODEL_EASY = "anthropic/claude-sonnet-4.6"
+_AUDIT_MODEL_HARD = "anthropic/claude-opus-4.8-fast"
+_AUDIT_HARD_THRESHOLD = 6
+_GPT_AUDIT_MODEL = _AUDIT_MODEL_HARD  # алиас для совместимости
 
 # Parallel workers (10 tasks split into 5 batches of 2)
 _AUDIT_PARALLEL_WORKERS = 5
@@ -118,7 +123,7 @@ async def _audit_batch(
 
     try:
         raw, usage = await client.chat(
-            model=_GPT_AUDIT_MODEL,
+            model=(_AUDIT_MODEL_HARD if max((int((it.get("spec") or {}).get("difficulty_level") or 0) for it in items), default=0) >= _AUDIT_HARD_THRESHOLD else _AUDIT_MODEL_EASY),
             messages=messages,
             temperature=0.2,
             max_tokens=4096,
