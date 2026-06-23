@@ -503,7 +503,7 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "weakness_score": item.weakness_score,
             "reason": item.reason,
             "is_calibration": is_calibration,
-            "task_text": item.task_text,
+            "task_text": item.task_text,                 "text": item.task_text,                 "preview": (item.task_text or "")[:300],
             "correct_answer": item.correct_answer,
             "solution": item.solution,
             "hints": _parse_json_field(item.hints, []),
