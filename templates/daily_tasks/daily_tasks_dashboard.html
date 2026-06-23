@@ -1461,7 +1461,7 @@ fetch('/daily_tasks/'+dtCurrentItem.id+'/submit', { method:'POST', credentials:'
 .then(function(p){
 btn.disabled=false; btn.textContent=oldTxt;
 if(!p){ res.innerHTML='<div style="color:#ff6b6b;">\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438</div>'; return; }
-var ok=p.is_correct===true;
+var _dtFinish=function(){ var ok=p.is_correct===true;
 var html='<div style="color:'+(ok?'#38ef7d':'#ff6b6b')+';font-weight:600;margin-bottom:8px;">'+(ok?'\u2713 \u0412\u0435\u0440\u043d\u043e!':'\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>';
 if(!ok && p.correct_answer!=null){ html+='<div style="margin-bottom:6px;">\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442: <b>'+escapeHtml(p.correct_answer)+'</b></div>'; }
 if(p.explanation){ html+='<div style="color:rgba(255,255,255,0.75);line-height:1.5;margin-top:6px;">'+escapeHtml(p.explanation)+'</div>'; }
@@ -1469,7 +1469,7 @@ if(p.solution){ html+='<div style="color:rgba(255,255,255,0.6);line-height:1.5;m
 res.innerHTML=html;
 dtCurrentItem.is_answered=true; dtCurrentItem.is_correct=ok; dtCurrentItem.user_answer=raw;
 renderTasks();
-if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); }
+if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); } }; if(p.is_correct===true){ _dtFinish(); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.6);">DeepSeek проверяет решение…</div>'; fetch('/daily_tasks/'+dtCurrentItem.id+'/submit_ai',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({user_answer:raw,user_solution:raw,time_spent_seconds:secs})}).then(function(r){return r.json();}).then(function(a){ if(a&&a.status==='success'){ p.is_correct=a.is_correct===true; if(a.correct_answer!=null)p.correct_answer=a.correct_answer; if(a.feedback)p.explanation=a.feedback; if(a.solution)p.solution=a.solution; if(a.set_progress)p.set_progress=a.set_progress; } _dtFinish(); }).catch(function(e){ console.warn('[dt-submit-ai]',e); _dtFinish(); }); }
 })
 .catch(function(err){ btn.disabled=false; btn.textContent=oldTxt; res.innerHTML='<div style="color:#ff6b6b;">\u0421\u0435\u0442\u0435\u0432\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430</div>'; console.warn('[dt-submit]',err); });
 }
