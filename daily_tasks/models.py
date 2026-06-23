@@ -79,7 +79,7 @@ class DailyTaskItem(db.Model):
     subject = db.Column(db.String(100), nullable=True)
     topic = db.Column(db.String(200), nullable=True)
     subtopic = db.Column(db.String(100), nullable=True)
-    difficulty_level = db.Column(db.Integer, nullable=True)  # 1..5
+    difficulty_level = db.Column(db.Integer, nullable=True)  # 1..8
     weakness_score = db.Column(db.Float, nullable=True)
     reason = db.Column(db.Text, nullable=True)
 
