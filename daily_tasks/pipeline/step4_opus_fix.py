@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 # ── модель ────────────────────────────────────────────────────────────────
 # Step 4 FIX LOOP: Opus 4.8 fast (как и шаг 2 — для быстрой починки)
 # Fix cost-routing: лёгкие (L<6) чиним Sonnet 4.6, олимпиадные (L>=6) -> Opus 4.8-fast.
-_FIX_MODEL_EASY = "anthropic/claude-sonnet-4.6"
-_FIX_MODEL_HARD = "anthropic/claude-opus-4.8-fast"
+_FIX_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
+_FIX_MODEL_HARD = "deepseek/deepseek-chat-v3.1"
 _FIX_HARD_THRESHOLD = 6
 _OPUS_FIX_MODEL = _FIX_MODEL_HARD  # алиас для совместимости
 
