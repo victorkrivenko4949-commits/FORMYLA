@@ -26,6 +26,9 @@ logger = logging.getLogger(__name__)
 MAX_FIX_ITERATIONS = 2
 """Максимальное число итераций Opus-fix -> GPT-audit для одной задачи."""
 
+LEVEL_TOLERANCE = 1
+"""Допустимое расхождение уровня сложности (1-5), при котором needs_fix считается приемлемым."""
+
 MIN_VALID_TASKS = 7
 """Минимальное количество валидных задач для статуса ready."""
 
@@ -35,6 +38,17 @@ FLAGGED_THRESHOLD = 999
 _FIX_PARALLEL_WORKERS = 5
 """Сколько Opus-fix запускаем параллельно в одной итерации fix-loop."""
 
+
+def _level_within_tolerance(spec, audit_entry):
+    """needs_fix приемлем, если уровень сложности (1-5) расходится с целевым не больше чем на LEVEL_TOLERANCE."""
+    est = audit_entry.get("estimated_actual_level")
+    target = spec.get("difficulty_level")
+    if est is None or target is None:
+        return False
+    try:
+        return abs(int(est) - int(target)) <= LEVEL_TOLERANCE
+    except (TypeError, ValueError):
+        return False
 
 def _safe_progress(callback, step: str, pct: int) -> None:
     """Безопасно дёргает progress-callback (если передан)."""
@@ -266,7 +280,7 @@ async def run_daily_generation_pipeline(
         to_fix: List[Tuple[Dict, Dict, Dict, int]] = []  # (spec, task, audit_entry, it)
         for (spec, task, it), audit_entry in zip(queue, audit_entries):
             position = spec.get("position", "?")
-            if audit_entry.get("verdict") == "approved":
+            if audit_entry.get("verdict") == "approved" or _level_within_tolerance(spec, audit_entry):               
                 approved.append((position, spec, task, audit_entry, it))
                 logger.debug("Position %s — approved (ит: %d)", position, it)
             elif it >= MAX_FIX_ITERATIONS:
