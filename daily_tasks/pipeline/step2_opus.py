@@ -47,15 +47,15 @@ logger = logging.getLogger(__name__)
 # обе нестабильны на медленном интернете. Sonnet 4.5 точно следует JSON-схеме
 # Cost-routing по difficulty_level: L1-L5 -> Haiku 4.5 (дёшево),
 # L6-L8 -> Sonnet 4.6 (олимпиадные, нужно качество). Retry всегда HARD.
-_GEN_MODEL_EASY = "anthropic/claude-haiku-4.5"
-_GEN_MODEL_HARD = "anthropic/claude-sonnet-4.6"
+_GEN_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
+_GEN_MODEL_HARD = "deepseek/deepseek-chat-v3.1"
 _GEN_HARD_THRESHOLD = 6
 _OPUS_MODEL = _GEN_MODEL_HARD  # алиас для совместимости с логами
 
 # 5 параллельных потоков: 10 specs распределяются по 5 воркерам (~2 spec
 # на воркер при чистом распараллеливании). Семафор ограничивает число
 # одновременных HTTP-запросов к OpenRouter, чтобы не словить 429.
-_PARALLEL_WORKERS = 5
+_PARALLEL_WORKERS = 10
 
 
 # ── helpers ───────────────────────────────────────────────────────────────
