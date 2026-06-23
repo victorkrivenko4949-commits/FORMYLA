@@ -19,6 +19,7 @@
   }
 
   /* fallback LaTeX */     /* FIX: модалка и история дня всегда видимы (нет чёрного поля от has-math visibility:hidden) */     #dt-modal, #dt-modal *, .dt-modal-body, #dt-modal-statement, .dt-day-history, .dt-dh-item { visibility: visible !important; }     #dt-modal-statement { background: transparent !important; }
+      /* FIX2: модалка по высоте контента — убираем пустое чёрное поле снизу */ .dt-modal-box{height:auto !important;min-height:0 !important;max-height:calc(100vh - 80px) !important;overflow-y:auto !important;} .dt-modal-body,#dt-modal-statement{min-height:0 !important;height:auto !important;margin-bottom:12px !important;} #dt-modal-result{min-height:0 !important;height:auto !important;} #dt-modal-result:empty{display:none !important;margin:0 !important;}
   .dt-latex-fallback {
     font-style: italic;
     color: rgba(255,255,255,0.88);
