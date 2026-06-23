@@ -6,6 +6,8 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks.css') }}?v={{ asset_version }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks_modal.css') }}?v={{ asset_version }}">
 <style>
+      /* скрываем названия моделей/подписи в пайплайне */
+    .dt-ps-model { display: none !important; }
   /* ── Темная тема для daily_tasks ─────────────────────────────── */
   body.page-daily-tasks {
     background: #0b0f1a;
