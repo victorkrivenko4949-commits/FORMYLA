@@ -5461,7 +5461,7 @@ def api_free_mock_evaluate():
 # и портило per-topic difficulty matching в задачах дня. Теперь:
 #   - Залогиненный: учитываем по AdaptiveTestResult.completed_at для user_id.
 #   - Гость: учитываем по session['adaptive_completed_at'] (ISO-таймстамп).
-ADAPTIVE_COOLDOWN_DAYS = 30
+ADAPTIVE_COOLDOWN_DAYS = 0
 
 
 def _adaptive_cooldown_status():
