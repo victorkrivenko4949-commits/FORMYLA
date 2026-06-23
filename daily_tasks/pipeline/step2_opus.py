@@ -45,7 +45,12 @@ logger = logging.getLogger(__name__)
 # Step 2 GENERATE: Claude Sonnet 4.5 — base, без reasoning. Раньше пробовали
 # gemini-3.1-pro-preview (45s × 10 = 450s суммарно) и opus-4.8-fast (batch-180s),
 # обе нестабильны на медленном интернете. Sonnet 4.5 точно следует JSON-схеме
-_OPUS_MODEL = "anthropic/claude-sonnet-4.6"
+# Cost-routing по difficulty_level: L1-L5 -> Haiku 4.5 (дёшево),
+# L6-L8 -> Sonnet 4.6 (олимпиадные, нужно качество). Retry всегда HARD.
+_GEN_MODEL_EASY = "anthropic/claude-haiku-4.5"
+_GEN_MODEL_HARD = "anthropic/claude-sonnet-4.6"
+_GEN_HARD_THRESHOLD = 6
+_OPUS_MODEL = _GEN_MODEL_HARD  # алиас для совместимости с логами
 
 # 5 параллельных потоков: 10 specs распределяются по 5 воркерам (~2 spec
 # на воркер при чистом распараллеливании). Семафор ограничивает число
@@ -127,7 +132,7 @@ async def _generate_one_spec(
         )
         try:
             raw, usage = await client.chat(
-                model=_OPUS_MODEL,
+                model=(_GEN_MODEL_HARD if (int(spec.get("difficulty_level") or 1) >= _GEN_HARD_THRESHOLD) else _GEN_MODEL_EASY),
                 messages=messages,
                 temperature=0.7,
                 max_tokens=4096,
@@ -174,7 +179,7 @@ async def _generate_one_spec(
         try:
             async with semaphore:
                 raw, _retry_usage = await client.chat(
-                    model=_OPUS_MODEL,
+                    model=_GEN_MODEL_HARD,
                     messages=retry_messages,
                     temperature=0.3,
                     max_tokens=4096,
