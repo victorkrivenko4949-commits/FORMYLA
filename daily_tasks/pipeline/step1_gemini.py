@@ -48,8 +48,7 @@ logger = logging.getLogger(__name__)
 # Step 1 PLAN: Claude Sonnet 4.5 — base-модель без reasoning. Reasoning-
 # флагманы (gpt-5.5-pro, gemini-3.1-pro) на стриминге 4-5 минут регулярно
 # роняют соединение через нестабильный интернет. Sonnet 4.5 уже в проде
-_GEMINI_MODEL = "anthropic/claude-sonnet-4.6"
-
+_GEMINI_MODEL = "deepseek/deepseek-chat-v3.1"  # vse etapy na DeepSeek (deshevo)
 
 # ──────────────────────────────────────────────────────────────────────
 # Классифицированная ошибка планировщика
