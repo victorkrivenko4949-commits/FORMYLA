@@ -206,3 +206,48 @@ class UserTaskAssignment(db.Model):
             f'<UserTaskAssignment #{self.id} user={self.user_id} '
             f'pool={self.pool_id}>'
         )
+
+
+
+class ThematicDaySet(db.Model):
+    """Thematic-day generation set: all 10 tasks share ONE topic for a day.
+    Used by daily_tasks/services.py (thematic day pipeline). One row per
+    user per target_date; holds generation state + the produced tasks JSON.
+    """
+    __tablename__ = 'thematic_day_sets'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    target_date = db.Column(db.Date, nullable=False, index=True)
+    subject = db.Column(db.String(100), nullable=True)
+    class_level = db.Column(db.Integer, nullable=True)
+
+    # state machine: generating, ready, failed
+    status = db.Column(db.String(32), nullable=False, default='generating')
+    triggered_by = db.Column(db.String(64), nullable=True)
+    current_step = db.Column(db.String(64), nullable=True)
+    progress_pct = db.Column(db.Integer, nullable=False, default=0)
+
+    # produced content + diagnostics
+    tasks_json = db.Column(db.Text, nullable=True)
+    pipeline_log = db.Column(db.Text, nullable=True)
+    error_message = db.Column(db.Text, nullable=True)
+    total_cost_usd = db.Column(db.Float, nullable=False, default=0.0)
+
+    # timestamps
+    started_at = db.Column(db.DateTime, nullable=True)
+    finished_at = db.Column(db.DateTime, nullable=True)
+    generated_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('thematic_day_sets', lazy='dynamic'))
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'target_date', name='_thematic_set_user_date_uc'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<ThematicDaySet #{self.id} user={self.user_id} '
+            f'date={self.target_date} status={self.status!r}>'
+        )
