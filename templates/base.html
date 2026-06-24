@@ -156,7 +156,7 @@
 
         <nav class="nav" id="navLinks">
             <!-- Задачи дня -->
-            <a href="{{ url_for('daily_quest_main') }}" class="daily-nav-link nav-link nav-pill">
+            <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="daily-nav-link nav-link nav-pill">
                 <span class="daily-flame">🔥</span>
                 <span class="daily-text">Задачи дня</span>
                 {% if current_user.is_authenticated %}
@@ -348,7 +348,7 @@
         <!-- Navigation links -->
         <nav class="drawer-nav">
             <div class="drawer-section-title">Главное</div>
-            <a href="{{ url_for('daily_quest_main') }}" class="drawer-link">
+            <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="drawer-link">
                 <span class="drawer-link-icon">🔥</span>
                 Задачи дня
                 {% if current_user.is_authenticated %}
@@ -475,7 +475,7 @@
             <span class="bottom-nav-icon">🏠</span>
             <span class="bottom-nav-label">Главная</span>
         </a>
-        <a href="{{ url_for('daily_quest_main') }}" class="bottom-nav-item" data-path="/daily*">
+        <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="bottom-nav-item" data-path="/daily*">
             <span class="bottom-nav-icon">🔥</span>
             <span class="bottom-nav-label">Задачи дня</span>
             {% if current_user.is_authenticated %}
