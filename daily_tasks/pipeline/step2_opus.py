@@ -40,6 +40,28 @@ from .validators import (
 
 logger = logging.getLogger(__name__)
 
+def _coerce_tasks_list(parsed: Any) -> List[Dict[str, Any]]:
+    # Heuristicheski izvlekaem spisok zadach iz raznyh form otveta modeli.
+    if isinstance(parsed, list):
+        return [t for t in parsed if isinstance(t, dict)]
+    if not isinstance(parsed, dict):
+        return []
+    # 1) Standartnyj klyuch "tasks".
+    _t = parsed.get("tasks")
+    if isinstance(_t, list) and _t:
+        return [t for t in _t if isinstance(t, dict)]
+    # 2) Inogda model kladet zadachi pod inymi klyuchami.
+    for _alt_key in ("task", "items", "data", "result", "results"):
+        _alt = parsed.get(_alt_key)
+        if isinstance(_alt, list) and _alt:
+            return [t for t in _alt if isinstance(t, dict)]
+        if isinstance(_alt, dict):
+            return [_alt]
+    # 3) Esli sam parsed pohozh na odnu zadachu - obernem v spisok.
+    if parsed.get("task_text") or parsed.get("correct_answer"):
+        return [parsed]
+    return []      
+
 # == modeli i routing ==
 # Step 2 GENERATE. Vse urovni poka na DeepSeek v3.1 (deshevo/bezlimit).
 # Razdelenie EASY/HARD ostavleno yavnym, chtoby finalno podstavit silnuyu
@@ -224,7 +246,7 @@ async def _generate_one_spec(
         return _synthesize_fallback_task(spec, "invalid_json"), _retry_cost
 
     usage_cost = _retry_cost
-    tasks_list = parsed.get("tasks")
+    tasks_list = _coerce_tasks_list(parsed)
     if not isinstance(tasks_list, list) or len(tasks_list) == 0:
         logger.error(
             "Step 2 GENERATE - pos=%s - otsutstvuet/pustoj 'tasks' v otvete",
