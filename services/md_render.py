@@ -37,7 +37,7 @@ _LATEX_PATTERNS = [
 _MD_EXTENSIONS = [
     'extra',          # tables, fenced_code, footnotes, ...
     'sane_lists',
-    'nl2br',
+      # nl2br убран: одиночные переносы строк делали текст и формулы "расплывчатыми"
 ]
 
 # Дополнительные параметры для рендеринга Markdown.
@@ -122,7 +122,8 @@ def md_render(text: str | None) -> Markup:
     except Exception:
         # Любая ошибка нормализатора — не валим страницу, рендерим как есть.
         pass
-
+    # Downgrade trivial single-line $$..$$ -> inline $..$ (fixes centered/scattered symbols)     
+    text = re.sub(r'\$\$([^\n]{1,40}?)\$\$', r'$\1$', text)
     protected, placeholders = _protect_latex(text)
     html = _markdown.markdown(
         protected,

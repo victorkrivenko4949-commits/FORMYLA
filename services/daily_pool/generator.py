@@ -143,7 +143,7 @@ def validate_generated_problem(problem: dict, existing_in_variant: list,
     # B) topic duplicate (normalized)
     if existing_in_variant:
         norm_topic = _normalize_topic(topic)
-        if norm_topic:
+        if norm_topic and _normalize_topic(topic) != (_normalize_topic(dominant_theme) if dominant_theme else None):
             for ex in existing_in_variant:
                 if _normalize_topic(ex.get("topic", "")) == norm_topic:
                     raise ValueError(f"topic_duplicate: '{topic}' (normalized '{norm_topic}') already used")
@@ -200,6 +200,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
     Raises: ValueError if model returns reject or invalid JSON
     """
     predicted = analysis.get("predicted_variant", [])
+        dominant_theme = analysis.get("dominant_theme")
     if position > len(predicted):
         raise ValueError(f"Position {position} not in predicted_variant (len={len(predicted)})")
 
@@ -253,7 +254,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 ЗАДАНИЕ: Создай задачу для ПОЗИЦИИ {position} из 5.
 
 ТРЕБОВАНИЯ К ЭТОЙ ПОЗИЦИИ:
-  Тема: {spec.get('theme', '')}
+  Тема: {spec.get('theme') or spec.get('topic') or spec.get('subject') or ''}
   Подтема: {spec.get('subtopic', '')}
   Идея: {spec.get('idea', '')}
   Сложность: {spec.get('difficulty', 5)}/10
@@ -315,6 +316,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 В одном варианте из 5 задач КАЖДАЯ тема встречается РОВНО ОДИН РАЗ.
 Канонический набор тем варианта: алгебра, геометрия, теория чисел, комбинаторика, логика/игры/инварианты.
 Если выше в блоке "СТРОГО ЗАПРЕЩЕНО ГЕНЕРИРОВАТЬ ЗАДАЧУ ПО ТЕМАМ, УЖЕ ВЗЯТЫМ В ЭТОМ ВАРИАНТЕ" уже указана твоя целевая тема — СМЕНИ тему на одну из НЕвзятых из канонического списка, при этом сохрани сложность и стилистику позиции.
+{("ИСКЛЮЧЕНИЕ (тема дня): сегодня доминирующая тема варианта — '" + str(dominant_theme) + "'. Для этой темы правило 'ровно один раз' НЕ действует: тема дня МОЖЕТ и ДОЛЖНА встречаться несколько раз (ориентир 3-4 задачи из вашего блока по теме дня). Остальные позиции — другие темы из канонического списка для разнообразия.") if dominant_theme else ""}
 
 ═══════════════════════════════════════════════════
 ✏️ LaTeX (КРИТИЧНО — иначе KaTeX не отрендерит)
@@ -418,7 +420,7 @@ def generate_problem(analysis: dict, position: int, existing_in_variant: list = 
 
     openrouter.log_cost_to_db('generate', model_used, result['usage'], result['cost_usd'])
     # v2.3: programmatic post-parse validation (raises ValueError -> retry-guard)
-    validate_generated_problem(data, existing_in_variant or [], current_year)
+    validate_generated_problem(data, existing_in_variant or [], current_year, dominant_theme)
     logger.info(
         f"[Generator] pos={position} topic={data.get('topic','')} "
         f"model={model_used} ${result['cost_usd']:.4f}"

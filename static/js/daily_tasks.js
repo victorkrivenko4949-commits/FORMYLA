@@ -2,6 +2,14 @@
 // Handles all interactions for the AI-generated daily math problems feature
 // Pattern: fetch().then() (no async/await), DOMContentLoaded, setInterval polling
 
+// Returns the topic selected in the UI (e.g. "Number Theory" day), or '' if none.
+function getSelectedTopic() {
+    var el = document.getElementById('dt-topic-input');
+    if (el && typeof el.value === 'string') return el.value.trim();
+    if (el && el.dataset && el.dataset.topic) return el.dataset.topic.trim();
+    return '';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // ── Read initial data from JSON script tag ──
     var dataEl = document.getElementById('dt-init-data');
@@ -355,7 +363,8 @@ function startGeneration() {
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken()
-        }
+        },
+            body: JSON.stringify({ topic: getSelectedTopic() })
     })
     .then(function(response) {
         if (!response.ok) {
@@ -965,6 +974,26 @@ function renderLatexFallback(root) {
  * Attempts KaTeX rendering; falls back to simple styled spans if unavailable.
  */
 function renderMath(root, opts) {
+    // Апгрейд: «тяжёлые» формулы (\frac, \sqrt, \sum и т.п.) в инлайн $...$
+// выносим в display $$...$$, чтобы высокая дробь рендерилась отдельным
+// блоком, а не втискивалась в строку. Работает для всех путей (модалка/карточки).
+    if (root && root.innerHTML && root.innerHTML.indexOf('$') !== -1) {
+        root.innerHTML = root.innerHTML.replace(/(^|[^$])\$([^$]*?)\$(?!\$)/g, function(m, pre, inner) {
+            if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
+                return pre + '$$' + inner + '$$';
+            }
+            return m;
+        });
+    }
+    // Апгрейд для inline \(...\): тяжёлые формулы выносим в display \[...\].
+    if (root && root.innerHTML && root.innerHTML.indexOf('\\(') !== -1) {
+        root.innerHTML = root.innerHTML.replace(/\\\(([\s\S]*?)\\\)/g, function(m, inner) {
+            if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
+                return '\\[' + inner + '\\]';
+                }
+            return m;
+            });
+        }
     if (typeof renderMathInElement !== 'undefined') {
         try {
             renderMathInElement(root, opts || {
@@ -1060,6 +1089,17 @@ function buildAnswerFormatHint(correctAnswer) {
  */
 function escapeHtmlPreserveLatex(text) {
     if (!text) return '';
+    
+// Апгрейд: «тяжёлые» формулы (\frac, \sqrt, \sum, \int, \prod, \lim, дроби)
+// внутри инлайн $...$ выносим в display $$...$$ — иначе высокая дробь
+// втискивается в строку и ломает поток текста. Пользователь хочет блок.
+text = String(text).replace(/(^|[^$])\$([^$\n]*?)\$(?!\$)/g, function(m, pre, inner) {
+    if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
+        return pre + '$$' + inner + '$$';
+    }
+    return m;
+});
+
     // Просто экранируем спецсимволы HTML — LaTeX в \(...\) их не использует.
     // Бэкслеши, фигурные скобки, кириллица — всё проходит как есть.
     return String(text)

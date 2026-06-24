@@ -12,6 +12,18 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_SITE_URL = os.getenv("OPENROUTER_SITE_URL", "https://formyla.ru")
 OPENROUTER_APP_NAME = "FORMYLA-AdaptivePipeline"
 
+# --- DeepSeek Direct API (deshevle + menshe taymautov, chem cherez OpenRouter) ---
+# Esli DEEPSEEK_API_KEY zadan, vyzovy DeepSeek-modelej idut napryamuyu na api.deepseek.com.
+# Esli klyucha net - avtomaticheskij fallback na OpenRouter (nichego ne lomaetsya).
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+DEEPSEEK_BASE_URL = "https://api.deepseek.com/chat/completions"
+# OpenRouter-ID -> pryamoe imya modeli v DeepSeek API.
+DEEPSEEK_DIRECT_MODELS = {
+    "deepseek/deepseek-chat-v3.1": "deepseek-chat",
+    "deepseek/deepseek-chat": "deepseek-chat",
+    "deepseek/deepseek-r1": "deepseek-reasoner",
+}
+
 # ─── Модели (Опция M, 2026-05-14): гибрид Generator по уровням ───────────────
 # Тест после H-2 показал: новый Validator корректно ловит реальные арифметические
 # ошибки deepseek-chat на l6 (2²+45²=2029, не 2024; ОДЗ в иррац. неравенствах;
@@ -109,6 +121,8 @@ EMBEDDING_MODEL = os.getenv("ADAPTIVE_EMBEDDING_MODEL", "openai/text-embedding-3
 # ─── Стоимость моделей ($/1M tokens) — для cost_log ───────────────────────────
 MODEL_COSTS = {
     "deepseek/deepseek-chat":         {"input": 0.14,  "output": 0.28},
+    "deepseek-chat": {"input": 0.14, "output": 0.28},
+"deepseek-reasoner": {"input": 0.55, "output": 2.19},
     "deepseek/deepseek-r1":           {"input": 0.55,  "output": 2.19},
     "anthropic/claude-sonnet-4":      {"input": 3.00,  "output": 15.00},
     "anthropic/claude-sonnet-4.6":    {"input": 3.00,  "output": 15.00},

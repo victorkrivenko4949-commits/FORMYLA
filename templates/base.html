@@ -180,6 +180,7 @@
                     <a href="{{ url_for('index') }}">📐 Темы</a>
                     <a href="/probniks">📊 Тест по темам</a>
                     <a href="{{ url_for('secrets') }}">🗝️ Секреты</a>
+                    {% if current_user.is_authenticated and (((current_user.nickname or '')|lower in ['pavelznaka','victorkrivenko','victor']) or ((current_user.username or '')|lower in ['pavelznaka','victorkrivenko','victor'])) %}<a href="/matstat">📊 Хочу познать мат статистику</a>{% endif %}
                 </div>
             </div>
 
