@@ -93,7 +93,7 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────────────
 
 
-@daily_tasks_bp.route("", methods=["GET"])
+@daily_tasks_bp.route("/", methods=["GET"])
 @login_required
 def get_daily_tasks():
     """Получить сегодняшний набор задач или статус генерации.
