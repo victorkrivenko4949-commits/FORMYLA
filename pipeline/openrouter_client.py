@@ -25,6 +25,9 @@ from pipeline.config import (
     OPENROUTER_BASE_URL,
     OPENROUTER_SITE_URL,
     OPENROUTER_APP_NAME,
+DEEPSEEK_API_KEY,
+DEEPSEEK_BASE_URL,
+DEEPSEEK_DIRECT_MODELS,
     MODEL_COSTS,
     RETRY_ATTEMPTS,
     RETRY_WAIT_MIN,
@@ -32,6 +35,25 @@ from pipeline.config import (
 )
 
 logger = logging.getLogger("pipeline.openrouter")
+
+
+def _resolve_route(model, openrouter_headers):
+    """Vybrat endpoint dlya zaprosa: DeepSeek napryamuyu ili OpenRouter.
+
+    Esli model est v DEEPSEEK_DIRECT_MODELS i zadan DEEPSEEK_API_KEY -
+    shlem napryamuyu na api.deepseek.com (deshevle/bystree, bez OpenRouter-nacenki).
+    Inache - fallback na OpenRouter (nichego ne lomaetsya, esli klyucha net).
+    Vozvrashchaet (api_url, api_model, headers).
+    """
+    direct_name = DEEPSEEK_DIRECT_MODELS.get(model)
+    if direct_name and DEEPSEEK_API_KEY:
+        headers = {
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+            "Content-Type": "application/json",
+        }
+        return DEEPSEEK_BASE_URL, direct_name, headers
+    return OPENROUTER_BASE_URL, model, openrouter_headers
+
 
 
 def _extract_all_json_objects(text: str) -> list:
@@ -221,9 +243,10 @@ class OpenRouterClient:
         """
         if self._client is None:
             raise OpenRouterError("Client not initialized. Use 'async with OpenRouterClient() as c:'")
-
+            
+        api_url, api_model, headers = _resolve_route(model, self._headers())
         payload: Dict[str, Any] = {
-            "model": model,
+            "model": api_model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
@@ -233,10 +256,10 @@ class OpenRouterClient:
 
         t0 = time.monotonic()
         resp = await self._client.post(
-            OPENROUTER_BASE_URL,
-            headers=self._headers(),
+            api_url,
+            headers=headers,
             json=payload,
-        )
+                )
         latency = time.monotonic() - t0
 
         if resp.status_code != 200:
