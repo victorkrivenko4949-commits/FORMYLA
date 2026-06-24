@@ -877,6 +877,9 @@ async def _try_bank_first(
         ``True``, если задачи взяты из банка (LLM пайплайн не нужен).
         ``False``, если банк не подошёл — вызывающий код запускает LLM.
     """
+    # FORCE LLM: банк отключён, чтобы задачи всегда генерировались по уровню
+    logger.info("[user=%d] Банк отключён (FORCE_LLM) — генерируем через LLM", user_id)
+    return False
     try:
         return await _try_bank_first_impl(
             user_id, target_date, daily_set_id, job_id, profile,
