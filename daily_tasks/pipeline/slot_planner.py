@@ -229,80 +229,80 @@ def _pick_day_topic(
 
 
 def plan_slots(
-    profile: Dict[str, Any],
-    total_slots: int = TOTAL_SLOTS,
-    today: Optional[date] = None,
+profile: Dict[str, Any],
+total_slots: int = TOTAL_SLOTS,
+today: Optional[date] = None,
 ) -> List[PlannedSlot]:
-    """Build the deterministic list of 10 PlannedSlot objects.
+"""Build the deterministic list of 10 PlannedSlot objects.
 
-    THEMATIC DAY (DETERMINISTIC CALENDAR): all slots belong to ONE topic
-    from the user's full topic catalog (profile['topics_full']). The topic
-    is chosen by a fixed calendar (see _pick_day_topic), NOT randomly, so
-    every topic is used exactly once per cycle and cycles repeat in the
-    same order. ``today`` may be passed for testing / backfill; defaults to
-    date.today().
-    """
-    all_topics = list(profile.get("topics_full") or [])
-    if not all_topics:
-        logger.warning("plan_slots: empty topics_full, cannot build thematic day")
-        return []
-    day_topic, day_index, cycle_len = _pick_day_topic(all_topics, today)
-    # Apply grade-aware difficulty floor so the same topic window never drops
+THEMATIC DAY (DETERMINISTIC CALENDAR): all slots belong to ONE topic
+from the user's full topic catalog (profile['topics_full']). The topic
+is chosen by a fixed calendar (see _pick_day_topic), NOT randomly, so
+every topic is used exactly once per cycle and cycles repeat in the
+same order. ``today`` may be passed for testing / backfill; defaults to
+date.today().
+"""
+all_topics = list(profile.get("topics_full") or [])
+if not all_topics:
+logger.warning("plan_slots: empty topics_full, cannot build thematic day")
+return []
+day_topic, day_index, cycle_len = _pick_day_topic(all_topics, today)
+# Apply grade-aware difficulty floor so the same topic window never drops
 # below a grade-appropriate baseline (e.g. no L1-L2 tasks for a 9th grader).
 _floor = _grade_floor(profile)
 if _floor > MIN_LEVEL:
-    _lo, _hi = _topic_window(day_topic)
-    _new_lo = _clamp(max(_lo, _floor))
-    _new_hi = _clamp(max(_hi, _new_lo))
-    day_topic = dict(day_topic)
-    day_topic["level_window"] = [_new_lo, _new_hi]
-    if day_topic.get("target_level") is not None:
-        day_topic["target_level"] = _clamp(max(int(day_topic["target_level"]), _new_lo))
-    logger.info(
-        "plan_slots: grade floor applied grade_floor=%d window->[%d,%d]",
-        _floor, _new_lo, _new_hi,
-    )
-    logger.info(
-        "plan_slots THEMATIC DAY (calendar): topic=%s subject=%s measured=%s "
-        "day_index=%d/%d cycle_len=%d",
-        day_topic.get("topic"), day_topic.get("subject"),
-        day_topic.get("measured"), day_index, cycle_len, cycle_len,
-    )
-    slots: List[PlannedSlot] = []
-    for k in range(total_slots):
-        difficulty = _pick_difficulty_for_topic(day_topic, k, total_slots)
-        lo, hi = _topic_window(day_topic)
-        slot_kind = _slot_kind_for(day_topic, difficulty)
-        reason_bits: List[str] = []
-        corr, tot = day_topic.get("test_correct"), day_topic.get("test_total")
-        if day_topic.get("calibration"):
-            reason_bits.append("Тест по этой теме не пройден - калибровочная задача")
-        elif corr is not None and tot:
-            reason_bits.append(f"Результат теста по теме: {corr}/{tot}")
-        reason_bits.append(f"уровень {difficulty} из окна [{lo}, {hi}]")
-        slots.append(PlannedSlot(
-            position=k + 1,
-            slot_kind=slot_kind,
-            subject=day_topic.get("subject", "unknown"),
-            topic=day_topic.get("topic", ""),
-            topic_key=day_topic.get("topic_key", day_topic.get("topic", "")),
-            difficulty_level=difficulty,
-            target_level=int(day_topic.get("target_level") or difficulty),
-            level_window=(lo, hi),
-            is_calibration=bool(day_topic.get("calibration") or not day_topic.get("measured", True)),
-            measured=bool(day_topic.get("measured", False)),
-            pct=day_topic.get("pct"),
-            test_correct=day_topic.get("test_correct"),
-            test_total=day_topic.get("test_total"),
-            final_level=day_topic.get("final_level"),
-            subtopic_hints=list(day_topic.get("subtopic_hints") or []),
-            reason_hint="; ".join(reason_bits),
-        ))
-    slots = slots[:total_slots]
-    _enforce_spread(slots, max_same_level=2)
-    _assign_diverse_themes(slots)
-    _log_plan(slots)
-    return slots
+_lo, _hi = _topic_window(day_topic)
+_new_lo = _clamp(max(_lo, _floor))
+_new_hi = _clamp(max(_hi, _new_lo))
+day_topic = dict(day_topic)
+day_topic["level_window"] = [_new_lo, _new_hi]
+if day_topic.get("target_level") is not None:
+day_topic["target_level"] = _clamp(max(int(day_topic["target_level"]), _new_lo))
+logger.info(
+"plan_slots: grade floor applied grade_floor=%d window->[%d,%d]",
+_floor, _new_lo, _new_hi,
+)
+logger.info(
+"plan_slots THEMATIC DAY (calendar): topic=%s subject=%s measured=%s "
+"day_index=%d/%d cycle_len=%d",
+day_topic.get("topic"), day_topic.get("subject"),
+day_topic.get("measured"), day_index, cycle_len, cycle_len,
+)
+slots: List[PlannedSlot] = []
+for k in range(total_slots):
+difficulty = _pick_difficulty_for_topic(day_topic, k, total_slots)
+lo, hi = _topic_window(day_topic)
+slot_kind = _slot_kind_for(day_topic, difficulty)
+reason_bits: List[str] = []
+corr, tot = day_topic.get("test_correct"), day_topic.get("test_total")
+if day_topic.get("calibration"):
+reason_bits.append("Тест по этой теме не пройден - калибровочная задача")
+elif corr is not None and tot:
+reason_bits.append(f"Результат теста по теме: {corr}/{tot}")
+reason_bits.append(f"уровень {difficulty} из окна [{lo}, {hi}]")
+slots.append(PlannedSlot(
+position=k + 1,
+slot_kind=slot_kind,
+subject=day_topic.get("subject", "unknown"),
+topic=day_topic.get("topic", ""),
+topic_key=day_topic.get("topic_key", day_topic.get("topic", "")),
+difficulty_level=difficulty,
+target_level=int(day_topic.get("target_level") or difficulty),
+level_window=(lo, hi),
+is_calibration=bool(day_topic.get("calibration") or not day_topic.get("measured", True)),
+measured=bool(day_topic.get("measured", False)),
+pct=day_topic.get("pct"),
+test_correct=day_topic.get("test_correct"),
+test_total=day_topic.get("test_total"),
+final_level=day_topic.get("final_level"),
+subtopic_hints=list(day_topic.get("subtopic_hints") or []),
+reason_hint="; ".join(reason_bits),
+))
+slots = slots[:total_slots]
+_enforce_spread(slots, max_same_level=2)
+_assign_diverse_themes(slots)
+_log_plan(slots)
+return slots
 
 
 def _enforce_spread(slots: List[PlannedSlot], max_same_level: int = 2) -> None:
