@@ -41,6 +41,13 @@ _GPT_AUDIT_MODEL = _AUDIT_MODEL_HARD  # алиас для совместимос
 # Parallel workers (10 tasks split into 5 batches of 2)
 _AUDIT_PARALLEL_WORKERS = 10
 
+# JSON-rezhim: zastavlyaet DeepSeek vernut chistyj JSON-objekt bez markdown.
+_JSON_RESPONSE_FORMAT = {"type": "json_object"}
+# Skolko raz povtoryaem audit pri nevalidnom JSON pered fallback na needs_fix.
+_AUDIT_MAX_RETRIES = 2
+# max_tokens dlya audita: podnyali s 4096, chtoby otvet na batch ne obrezalsya.
+_AUDIT_MAX_TOKENS = 6144
+
 
 def _load_prompt() -> str:
     prompt_path = os.path.join(
@@ -126,7 +133,9 @@ async def _audit_batch(
             model=(_AUDIT_MODEL_HARD if max((int((it.get("spec") or {}).get("difficulty_level") or 0) for it in items), default=0) >= _AUDIT_HARD_THRESHOLD else _AUDIT_MODEL_EASY),
             messages=messages,
             temperature=0.2,
-            max_tokens=4096,
+
+            max_tokens=_AUDIT_MAX_TOKENS,
+            response_format=_JSON_RESPONSE_FORMAT,
         )
         _dt = _time_mod.time() - _t0
         logger.info(
