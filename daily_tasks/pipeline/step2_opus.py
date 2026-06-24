@@ -69,7 +69,7 @@ def _coerce_tasks_list(parsed: Any) -> List[Dict[str, Any]]:
 # reasoning-modeli daet ~80% i 97% MATH-500 - sm. sravnenie R1 vs V3).
 _GEN_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
 _GEN_MODEL_HARD = "deepseek/deepseek-r1"
-_GEN_HARD_THRESHOLD = 6
+_GEN_HARD_THRESHOLD = 4
 _OPUS_MODEL = _GEN_MODEL_HARD  # alias dlya sovmestimosti s logami
 
 # Parallelizm. Bylo 10 (vrazrez s docstring '5 potokov' i risk 429 ot
