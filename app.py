@@ -94,6 +94,10 @@ else:
 
 app = Flask(__name__)
 
+# ─── Security: CSRF, CSP, Rate Limiting, Input Validation ──────────
+from services.security import init_security, sanitize_text, sanitize_json_payload, get_csrf_token
+init_security(app)
+
 # ─── Логгер: пишем в файл вместо stderr ────────────────────────────
 # На Windows debug=True + werkzeug debugger перехватывает stderr,
 # что вызывает OSError: [Errno 22] Invalid argument при любом выводе
@@ -157,7 +161,7 @@ def _inject_asset_version():
         new_ver = str(int(_time.time()))
     if new_ver != _asset_version:
         _asset_version = new_ver
-    return dict(asset_version=_asset_version)
+    return dict(asset_version=_asset_version, csrf_token=get_csrf_token)
 
 # DEBUG: Проверка переменных окружения
 print("="*60)
@@ -1941,6 +1945,8 @@ SUBJECTS = {
     "number_theory": "Теория чисел",
     "movement": "Задачи на движение",
     "knights_liars": "Рыцари и лжецы",
+    "games": "Игры",
+    "coloring": "Раскраски",
 }
 
 
@@ -1971,7 +1977,9 @@ SUBTOPICS = {
     "knights_liars": {
         "basic_logic": "Простая логика",
         "complex_logic": "Сложная логика"
-    }
+    },
+    "games": {},
+    "coloring": {}
 }
 
 GRADES = [5, 6, 7, 8, 9, 10, 11]
@@ -2619,6 +2627,14 @@ def index():
     return render_template("index.html",
         subjects=SUBJECTS,
         solved_count=solved_count
+    )
+
+
+@app.route("/topics")
+def topics():
+    """Страница со всеми темами (8 предметов)."""
+    return render_template("topics.html",
+        subjects=SUBJECTS
     )
 
 
@@ -5496,6 +5512,71 @@ def _adaptive_cooldown_status():
     return True, days_left, last_at
 
 
+def _adaptive_in_progress_summary():
+    """Проверить, есть ли у пользователя незавершённый адаптивный тест.
+
+    Возвращает dict с ключами:
+      url         — ссылка для продолжения (/adaptive_test_simple)
+      topic_name  — название темы
+      grade       — класс (строка)
+      answered    — сколько задач отвечено
+      total       — всего задач (25)
+    или None, если активного теста нет.
+
+    Проверяет:
+      1. Flask-сессию — наличие adaptive_filtered_tasks и adaptive_slots
+         с хотя бы одним отвеченным слотом (но не всеми 25).
+      2. БД — test_sessions (через _get_active_test_session).
+    """
+    total = 25
+
+    # ── 1. Проверка сессии ──────────────────────────────────────────────
+    if session.get('adaptive_filtered_tasks'):
+        slots = session.get('adaptive_slots')
+        if isinstance(slots, list) and len(slots) == total:
+            answered = sum(1 for s in slots if s.get('status') == 'answered')
+            if 1 <= answered < total:
+                topic_name = session.get('adaptive_topic_name') or 'Адаптивный тест'
+                grade = session.get('adaptive_grade', '')
+                return {
+                    'url': url_for('adaptive_test_simple_page'),
+                    'topic_name': topic_name,
+                    'grade': str(grade),
+                    'answered': answered,
+                    'total': total,
+                }
+
+    # ── 2. Проверка БД (test_sessions) ──────────────────────────────────
+    try:
+        db_session = _get_active_test_session()
+        if db_session:
+            state = db_session.get('state') or {}
+            if isinstance(state, str):
+                import json as _json
+                try:
+                    state = _json.loads(state)
+                except (TypeError, ValueError, _json.JSONDecodeError):
+                    state = {}
+            slots = state.get('adaptive_slots') or []
+            answered = sum(1 for s in slots if isinstance(s, dict) and s.get('status') == 'answered')
+            topic_name = state.get('adaptive_topic_name') or 'Адаптивный тест'
+            grade = state.get('adaptive_grade', '')
+            ts_id = db_session.get('id')
+            url = url_for('adaptive_test_simple_page', session=ts_id) if ts_id else url_for('adaptive_test_simple_page')
+            if answered > 0:
+                return {
+                    'url': url,
+                    'topic_name': topic_name,
+                    'grade': str(grade),
+                    'answered': answered,
+                    'total': total,
+                }
+    except Exception as _e:
+        print(f"[adaptive_in_progress_summary] DB check error: {_e}")
+
+    return None
+
+
 @app.route("/adaptive_test/select_class")
 def adaptive_test_select_class():
     """Шаг 1 адаптивного теста: выбор класса (5–11).
@@ -5530,6 +5611,7 @@ def adaptive_test_select_class():
         'adaptive_grade',
         'adaptive_db_topic',
         'partial_correct_streak',
+        'adaptive_completed_at',
     ]
     for _k in _adaptive_keys_to_clear:
         session.pop(_k, None)
@@ -5543,7 +5625,10 @@ def adaptive_test_select_class():
             'info',
         )
         return redirect('/adaptive_test_simple/results')
-    return render_template('adaptive_test_select_class.html')
+    return render_template(
+        'adaptive_test_select_class.html',
+        in_progress=_adaptive_in_progress_summary(),
+    )
 
 
 @app.route("/adaptive_test/select_topic")
@@ -5638,6 +5723,7 @@ def adaptive_test_select_topic():
         grade=grade_int,
         topics=topics,
         min_tasks=MIN_TASKS,
+        in_progress=_adaptive_in_progress_summary(),
     )
 
 
@@ -7757,6 +7843,70 @@ def list_friends():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route("/api/social/friends/request", methods=["POST"])
+@login_required
+def api_social_friend_request():
+    """API: Отправить заявку в друзья (для social.html)."""
+    try:
+        data = request.get_json()
+        uid = data.get('user_id')
+        if not uid:
+            return jsonify({'success': False, 'error': 'user_id is required'}), 400
+
+        from models import Friendship
+        uid = int(uid)
+        if uid == current_user.id:
+            return jsonify({'success': False, 'error': 'Нельзя добавить себя'}), 400
+
+        person = User.query.get(uid)
+        if not person:
+            return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
+
+        st = current_user.friendship_status_with(uid)
+        if st == 'friends':
+            return jsonify({'success': False, 'error': 'Уже друзья'}), 409
+        if st == 'pending_sent':
+            return jsonify({'success': False, 'error': 'Запрос уже отправлен'}), 409
+        if st == 'blocked':
+            return jsonify({'success': False, 'error': 'Недоступно'}), 403
+
+        # Если пользователь уже отправил нам запрос — автоматически принимаем
+        if st == 'pending_received':
+            existing = Friendship.query.filter_by(
+                requester_id=uid, addressee_id=current_user.id, status='pending'
+            ).first()
+            if existing:
+                existing.accept()
+                db.session.commit()
+                current_user.experience_points = (current_user.experience_points or 0) + 10
+                person.experience_points = (person.experience_points or 0) + 10
+                db.session.commit()
+                _make_notif(person.id, 'friend_accepted', current_user.id)
+                return jsonify({
+                    'success': True,
+                    'status': 'friends',
+                    'message': 'Теперь вы друзья! +10 XP'
+                })
+
+        # Отправляем запрос
+        f = Friendship(requester_id=current_user.id, addressee_id=uid, status='pending')
+        db.session.add(f)
+        db.session.commit()
+        _make_notif(person.id, 'friend_request', current_user.id, {
+            'message': f'{current_user.nickname or current_user.name or current_user.email} хочет добавить вас в друзья'
+        })
+        nm = person.nickname or person.name or person.email
+        return jsonify({
+            'success': True,
+            'status': 'pending',
+            'message': f'Запрос в друзья отправлен {nm}'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route("/api/social/mentorship/request", methods=["POST"])
 @login_required
 def send_mentorship_request():
@@ -8631,518 +8781,185 @@ def admin_seed_secrets():
         }), 500
 
 
+@app.route("/admin/fix-theory-blocks", methods=["POST"])
+def admin_fix_theory_blocks():
+    """
+    Защищенный роут: ПЕРЕЗАПИСЫВАЕТ все TheoryBlock'и из methods_catalog_102.json.
+    Отличается от `_seed_theory()` в olympiad_autoseed.py тем, что НЕ щадит
+    существующие поля — force-overwrite ВСЕХ md-полей (definition_md,
+    main_theorems_md, pitfalls_md и т.д.) правильными данными из JSON.
+    
+    Это нужно, чтобы на продакшене (Render) исправить записи TheoryBlock,
+    у которых слова слиплись из-за бага в normalize_math_text().
+    
+    Требует токен из переменной окружения SEED_ADMIN_TOKEN.
+    Токен передаётся через заголовок X-Admin-Token ИЛИ query-параметр ?token=
+    
+    Returns:
+        JSON: { "status": "success"|"error", "updated": int, "created": int, "total": int, "message": str }
+    """
+    import hmac
+    import json as _json
+    import traceback
+    import os as _os
+
+    # Проверка токена
+    expected_token = _os.environ.get('SEED_ADMIN_TOKEN')
+    if not expected_token:
+        return jsonify({
+            'status': 'error',
+            'message': 'SEED_ADMIN_TOKEN not configured on server'
+        }), 503
+
+    provided_token = request.headers.get('X-Admin-Token') or request.args.get('token')
+    if not provided_token:
+        return jsonify({
+            'status': 'error',
+            'message': 'Admin token required. Provide via X-Admin-Token header or ?token= parameter'
+        }), 403
+
+    if not hmac.compare_digest(expected_token, provided_token):
+        app.logger.warning(f"[SECURITY] Invalid admin token attempt from {request.remote_addr}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid admin token'
+        }), 403
+
+    # Путь к JSON-каталогу (app.py в корне проекта, поэтому dirname один раз)
+    _data_dir = _os.path.join(_os.path.dirname(__file__), 'data', 'olympiads')
+
+    # Сначала пробуем 102 (полный каталог), затем 89 (fallback)
+    _candidates = ['methods_catalog_102.json', 'methods_catalog_89.json']
+    rows = None
+    _used_path = None
+    for _fname in _candidates:
+        _fp = _os.path.join(_data_dir, _fname)
+        if _os.path.exists(_fp):
+            try:
+                with open(_fp, 'r', encoding='utf-8') as _f:
+                    rows = _json.load(_f)
+                if isinstance(rows, list) and len(rows) > 0:
+                    _used_path = _fp
+                    break
+            except Exception:
+                continue
+
+    if rows is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'No methods catalog found (tried 102, 89)'
+        }), 500
+
+    app.logger.info(f"[ADMIN] Fix-theory-blocks using catalog: {_used_path} ({len(rows)} rows)")
+
+    try:
+        # Динамический импорт модели (как в __diag_method)
+        TheoryBlock = __import__("models_olympiad", fromlist=["TheoryBlock"]).TheoryBlock
+
+        if not isinstance(rows, list):
+            return jsonify({
+                'status': 'error',
+                'message': 'JSON root is not a list'
+            }), 500
+
+        updated = 0
+        created = 0
+
+        for item in rows:
+            code = item.get('method_code')
+            if not code:
+                continue
+
+            tb = TheoryBlock.query.filter_by(method_code=code).first()
+
+            if tb is None:
+                # Создаём новый блок — все поля из JSON
+                tb = TheoryBlock(
+                    method_code=code,
+                    method_name=item.get('method_name') or code,
+                    section=item.get('section') or '',
+                    definition_md=item.get('definition_md'),
+                    main_theorems_md=item.get('main_theorems_md'),
+                    typical_techniques_md=item.get('typical_techniques_md'),
+                    triggers_md=item.get('triggers_md'),
+                    worked_example_md=item.get('worked_example_md'),
+                    pitfalls_md=item.get('pitfalls_md'),
+                    why_it_works_md=item.get('why_it_works_md'),
+                    related_methods=item.get('related_methods') or [],
+                    signal_phrases=item.get('signal_phrases'),
+                    first_moves=item.get('first_moves'),
+                    prerequisites=item.get('prerequisites'),
+                    leads_to=item.get('leads_to'),
+                    grades=item.get('grades'),
+                    recommended_competitions=item.get('recommended_competitions'),
+                    difficulty_level=item.get('difficulty_level'),
+                    frequency_vsosh_9=item.get('frequency_vsosh_9'),
+                    total_count=item.get('total_count'),
+                    share_percent=item.get('share_percent'),
+                    sort_order=item.get('sort_order', 0) or 0,
+                )
+                db.session.add(tb)
+                created += 1
+            else:
+                # FORCE-overwrite ВСЕХ полей (в отличие от _seed_theory,
+                # который только заполняет пустые)
+                tb.method_name = item.get('method_name') or code
+                tb.section = item.get('section') or ''
+                tb.definition_md = item.get('definition_md')
+                tb.main_theorems_md = item.get('main_theorems_md')
+                tb.typical_techniques_md = item.get('typical_techniques_md')
+                tb.triggers_md = item.get('triggers_md')
+                tb.worked_example_md = item.get('worked_example_md')
+                tb.pitfalls_md = item.get('pitfalls_md')
+                tb.why_it_works_md = item.get('why_it_works_md')
+                tb.related_methods = item.get('related_methods') or []
+                tb.signal_phrases = item.get('signal_phrases')
+                tb.first_moves = item.get('first_moves')
+                tb.prerequisites = item.get('prerequisites')
+                tb.leads_to = item.get('leads_to')
+                tb.grades = item.get('grades')
+                tb.recommended_competitions = item.get('recommended_competitions')
+                tb.difficulty_level = item.get('difficulty_level')
+                tb.frequency_vsosh_9 = item.get('frequency_vsosh_9')
+                tb.total_count = item.get('total_count')
+                tb.share_percent = item.get('share_percent')
+                tb.sort_order = item.get('sort_order', 0) or 0
+                updated += 1
+
+        db.session.commit()
+
+        app.logger.info(
+            f"[ADMIN] Theory blocks force-overwritten by {request.remote_addr}: "
+            f"{updated} updated, {created} created"
+        )
+
+        return jsonify({
+            'status': 'success',
+            'message': f'TheoryBlock force-overwrite complete',
+            'updated': updated,
+            'created': created,
+            'total': len(rows)
+        }), 200
+
+    except Exception as e:
+        app.logger.error(f"[ADMIN] Fix-theory-blocks failed: {e}")
+        traceback.print_exc()
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({
+            'status': 'error',
+            'message': f'Internal server error: {str(e)}',
+            'updated': 0,
+            'created': 0,
+            'total': 0
+        }), 500
+
+
 # ============================================================================
 # DAILY QUEST ROUTES
 # ============================================================================
-
-@app.route('/api/set_grade', methods=['POST'])
-@login_required
-def api_set_grade():
-    """API: Установить предпочтительный класс для Daily Quest"""
-    data = request.get_json(silent=True) or {}
-    grade = data.get('grade')
-
-    if grade is None:
-        return jsonify({'success': False, 'error': 'Не указан класс'}), 400
-
-    try:
-        grade = int(grade)
-    except (ValueError, TypeError):
-        return jsonify({'success': False, 'error': 'Класс должен быть числом'}), 400
-
-    if grade not in range(5, 12):  # 5-11
-        return jsonify({'success': False, 'error': 'Класс должен быть от 5 до 11'}), 400
-
-    old_grade = current_user.preferred_grade
-    current_user.preferred_grade = grade
-
-    # Если класс реально изменился — удаляем сегодняшний Daily Quest,
-    # чтобы при следующем заходе на /daily он перегенерировался под новый класс.
-    if old_grade != grade:
-        try:
-            from models import DailyQuest
-            from datetime import date as _date
-            DailyQuest.query.filter_by(
-                user_id=current_user.id,
-                date=_date.today()
-            ).delete(synchronize_session=False)
-        except Exception as _e:
-            app.logger.warning(f"api_set_grade: failed to drop today's quest: {_e}")
-
-    db.session.commit()
-
-    return jsonify({'success': True, 'grade': grade})
-
-
-@app.route('/daily/regenerate', methods=['POST'])
-@login_required
-def daily_quest_regenerate():
-    # Гейтинг: задачи дня доступны только после адаптивного теста
-    from models import AdaptiveTestResult as _ATR_GATE
-    from markupsafe import Markup
-    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
-    if not _has_adaptive:
-        flash(Markup('Сначала пройди <a href="/adaptive_test/select_class">адаптивный тест</a> — на его основе подбираются задачи дня.'), 'info')
-        return redirect(url_for('adaptive_test_select_class'))
-    """Принудительная перегенерация Daily Quest (новые олимпиадные задачи)."""
-    from services.daily_quest_service import generate_daily_quest
-    quest = generate_daily_quest(current_user.id, force_regenerate=True)
-    if quest:
-        return redirect(url_for('daily_quest_main'))
-    flash('Не удалось перегенерировать квест', 'error')
-    return redirect(url_for('daily_quest_main'))
-
-
-@app.route('/daily_tasks')
-@login_required
-def daily_tasks_redirect():
-    """Редирект со старого URL /daily_tasks на /daily (daily_quest_main).
-
-    В навигации /daily_tasks использовался для нового blueprint'а, который
-    может быть недоступен на проде. Перенаправляем на рабочий /daily,
-    чтобы ссылка в меню никогда не вела в 404.
-    """
-    return redirect(url_for('daily_quest_main'))
-
-
-@app.route('/daily')
-@login_required
-def daily_quest_main():
-    """Главная страница Daily Quest"""
-    # Гейтинг: задачи дня доступны только после адаптивного теста
-    from models import AdaptiveTestResult as _ATR_GATE
-    from markupsafe import Markup
-    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
-    if not _has_adaptive:
-        flash(Markup('Сначала пройди <a href="/adaptive_test/select_class">адаптивный тест</a> — на его основе подбираются задачи дня.'), 'info')
-        return redirect(url_for('adaptive_test_select_class'))
-    from services.daily_quest_service import get_today_quest, get_quest_tasks
-    from services.streak_service import get_streak_stats
-    from markupsafe import Markup
-    
-    # Если класс не выбран — показываем страницу выбора
-    if not current_user.preferred_grade:
-        return render_template('daily.html',
-                             quest=None,
-                             tasks=[],
-                             streak_stats={'current_streak': 0, 'longest_streak': 0, 'freeze_available': False},
-                             need_grade_selection=True,
-                             preferred_grade=None)
-    
-    # Получаем или создаём квест на сегодня
-    quest = get_today_quest(current_user.id)
-
-    if not quest:
-        flash('Не удалось создать Daily Quest. Попробуйте позже.', 'error')
-        return redirect(url_for('index'))
-
-    # Защита: если задачи квеста подобраны под ДРУГОЙ класс — перегенерируем.
-    # Например: пользователь сменил класс через дропдаун, или квест был
-    # создан старой версией кода с COMBOS-задачами не того класса.
-    # Делаем это ТОЛЬКО если пользователь ещё не начал решать (completed_count == 0),
-    # чтобы не сбрасывать прогресс посреди дня.
-    try:
-        from services.daily_quest_service import get_quest_tasks as _gqt, generate_daily_quest as _gdq
-        if quest.completed_count == 0 and current_user.preferred_grade:
-            _peek_tasks = _gqt(quest)
-            if _peek_tasks:
-                _user_g = int(current_user.preferred_grade)
-                grades_in_quest = [int(t.get('grade', 0) or 0) for t in _peek_tasks]
-                # Если БОЛЬШИНСТВО задач не строго того же класса — перегенерация.
-                # (Допускаем 1 задачу другого класса как буфер.)
-                wrong_grade_count = sum(1 for g in grades_in_quest if g != _user_g)
-                if wrong_grade_count >= 2:
-                    app.logger.info(
-                        f"daily_quest_main: regenerating quest for user {current_user.id} "
-                        f"— quest grades {grades_in_quest} don't match preferred_grade {_user_g} "
-                        f"(wrong_grade_count={wrong_grade_count})"
-                    )
-                    new_quest = _gdq(current_user.id, force_regenerate=True)
-                    if new_quest:
-                        quest = new_quest
-    except Exception as _re:
-        app.logger.warning(f"daily_quest_main: grade-mismatch regen failed: {_re}")
-    
-    # Конвертируем markdown ai_comment → HTML В ОТДЕЛЬНУЮ ПЕРЕМЕННУЮ.
-    # ВАЖНО: НЕ мутируем ORM-объект quest.ai_comment, иначе SQLAlchemy пометит его dirty
-    # и любой следующий .query.first() триггернёт autoflush → UPDATE daily_quests …
-    # На SQLite это вызывает 'database is locked' при конкуренции с APScheduler.
-    ai_comment_html = None
-    if quest.ai_comment:
-        try:
-            import markdown as md_lib
-            ai_comment_html = Markup(md_lib.markdown(quest.ai_comment, extensions=['nl2br']))
-        except ImportError:
-            import re
-            text = quest.ai_comment
-            text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
-            text = text.replace('\n\n', '</p><p>').replace('\n', '<br>')
-            ai_comment_html = Markup(f'<p>{text}</p>')
-
-    # Если перед нами всё-таки висит грязная сессия (другой код выше что-то мутировал) —
-    # сбросим её, чтобы следующая SELECT-операция не упёрлась в autoflush + locked DB.
-    try:
-        if db.session.dirty or db.session.new or db.session.deleted:
-            db.session.rollback()
-    except Exception:
-        pass
-
-    # Получаем задачи квеста
-    tasks = get_quest_tasks(quest)
-
-    # Получаем статистику streak (ловим 'database is locked' с retry — SQLite + APScheduler)
-    import time as _t_streak
-    streak_stats = None
-    for _i in range(5):
-        try:
-            streak_stats = get_streak_stats(current_user.id)
-            break
-        except Exception as _se:
-            if 'database is locked' in str(_se).lower() and _i < 4:
-                try:
-                    db.session.rollback()
-                except Exception:
-                    pass
-                _t_streak.sleep(0.3 * (_i + 1))
-                continue
-            raise
-
-    # Список индексов уже решённых задач (для шаблона: «✅ Решено» vs «🚀 Решить»)
-    from services.daily_quest_service import get_solved_indices as _gsi
-    solved_indices = _gsi(quest)
-
-    return render_template('daily.html',
-                         quest=quest,
-                         tasks=tasks,
-                         ai_comment_html=ai_comment_html,
-                         streak_stats=streak_stats,
-                         need_grade_selection=False,
-                         preferred_grade=current_user.preferred_grade,
-                         solved_indices=solved_indices)
-
-
-@app.route('/daily/task/<int:task_index>')
-@login_required
-def daily_quest_task(task_index):
-    """Страница решения задачи из Daily Quest"""
-    # Гейтинг: задачи дня доступны только после адаптивного теста
-    from models import AdaptiveTestResult as _ATR_GATE
-    from markupsafe import Markup
-    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
-    if not _has_adaptive:
-        flash(Markup('Сначала пройди <a href="/adaptive_test/select_class">адаптивный тест</a> — на его основе подбираются задачи дня.'), 'info')
-        return redirect(url_for('adaptive_test_select_class'))
-    from services.daily_quest_service import (
-        get_today_quest, get_quest_tasks, is_task_solved
-    )
-
-    # Получаем квест на сегодня
-    quest = get_today_quest(current_user.id)
-
-    if not quest:
-        flash('Daily Quest не найден', 'error')
-        return redirect(url_for('daily_quest_main'))
-
-    # Получаем задачи
-    tasks = get_quest_tasks(quest)
-
-    # Проверяем индекс
-    if task_index < 0 or task_index >= len(tasks):
-        flash('Задача не найдена', 'error')
-        return redirect(url_for('daily_quest_main'))
-
-    task = tasks[task_index]
-
-    # Если задача уже решена правильно — на страницу решения не пускаем,
-    # возвращаем пользователя обратно к списку.
-    if is_task_solved(quest, task_index):
-        flash('Эта задача уже решена.', 'info')
-        return redirect(url_for('daily_quest_main'))
-
-    return render_template('daily_task.html',
-                         quest=quest,
-                         task=task,
-                         task_index=task_index,
-                         total_tasks=len(tasks))
-
-
-@app.route('/daily/task/<int:task_index>/submit', methods=['POST'])
-@login_required
-def daily_quest_submit(task_index):
-    """Отправка ответа на задачу Daily Quest"""
-    from services.daily_quest_service import (
-        get_today_quest, get_quest_tasks, complete_quest_task, is_task_solved
-    )
-    from services.mastery_service import update_mastery_after_task
-    from services.streak_service import update_streak_after_quest
-    from utils.math_answer_utils import compare_math_answers
-
-    # Гейтинг: задачи дня доступны только после адаптивного теста
-    from models import AdaptiveTestResult as _ATR_GATE
-    _has_adaptive = _ATR_GATE.query.filter_by(user_id=current_user.id).first() is not None
-    if not _has_adaptive:
-        return jsonify({
-            'success': False,
-            'error': 'Сначала пройдите адаптивный тест — на его основе подбираются задачи дня.',
-            'redirect': url_for('adaptive_test_select_class')
-        }), 403
-
-    # Получаем квест
-    quest = get_today_quest(current_user.id)
-
-    if not quest:
-        return jsonify({'success': False, 'error': 'Quest not found'}), 404
-
-    # Получаем задачи
-    tasks = get_quest_tasks(quest)
-
-    if task_index < 0 or task_index >= len(tasks):
-        return jsonify({'success': False, 'error': 'Invalid task index'}), 400
-
-    # Защита от повторного решения: если задача уже решена правильно,
-    # не позволяем фарм XP / повторную попытку.
-    if is_task_solved(quest, task_index):
-        return jsonify({
-            'success': False,
-            'error': 'Эта задача уже решена. Повторное решение невозможно.',
-            'already_solved': True,
-        }), 409
-
-    task = tasks[task_index]
-    
-    # Получаем ответ и решение пользователя
-    user_answer = request.json.get('answer', '').strip()
-    user_solution = request.json.get('solution', '').strip()
-    
-    if not user_answer and not user_solution:
-        return jsonify({'success': False, 'error': 'Answer or solution is required'}), 400
-    
-    # === ШАГ 1. Быстрая локальная сверка ответа с заложенным эталоном ===
-    correct_answer = task.get('answer', '')
-    correct_solution = task.get('solution', '')
-    local_match = compare_math_answers(user_answer, correct_answer) if user_answer else False
-
-    # === ШАГ 2. ИИ-верификация: даём тьютору право переопределить вердикт ===
-    # База задач может содержать ошибочные эталонные ответы. Поэтому ИИ-тьютор
-    # сам решает задачу, сравнивает свой ответ с заложенным и с ответом ученика,
-    # и выдаёт финальный вердикт. Если эталон ошибочен — мы уважаем правильный
-    # ответ ученика.
-    ai_feedback = ""
-    ai_verdict = None  # 'correct' | 'wrong' | None
-    ai_overrode_reference = False
-    actual_correct_answer = correct_answer  # что считать правильным после AI-проверки
-
-    if DEEPSEEK_AVAILABLE and user_answer:
-        try:
-            import json as _json
-            import re as _re
-            client = DeepSeekClient()
-            solution_part = f"\n\nРешение ученика:\n{user_solution}" if user_solution else ""
-            ref_solution_part = f"\nЭталонное решение из базы:\n{correct_solution}" if correct_solution else ""
-
-            prompt = f"""Ты — ИИ-тьютор по олимпиадной математике. Реши задачу САМ, затем проверь ответ ученика.
-
-ВАЖНО: эталонный ответ из базы задач МОЖЕТ БЫТЬ ОШИБОЧНЫМ. Не доверяй ему слепо — реши задачу сам и сравни.
-
-Задача:
-{task.get('text', '')}
-
-Эталонный ответ из базы: {correct_answer}
-{ref_solution_part}
-
-Ответ ученика: {user_answer}
-{solution_part}
-
-Сделай следующее:
-1. Реши задачу самостоятельно. Найди ИСТИННО правильный ответ.
-2. Сравни истинный ответ с ответом ученика (учитывай эквивалентные формы: 1/2 = 0.5, 70° = 70 и т. п.).
-3. Сравни истинный ответ с эталоном из базы. Если они отличаются — пометь, что эталон ошибочен.
-4. Дай подробный разбор решения ученика на русском.
-
-ПРАВИЛА ФОРМАТИРОВАНИЯ (СТРОГО):
-- Используй обычный Markdown: **жирный текст** через две звёздочки, # заголовки, * списки.
-- НЕ используй \\cdot или \\textbf для выделения текста — только Markdown **звёздочки**.
-- Все формулы оборачивай в \\( ... \\) для inline или \\[ ... \\] для display.
-- Внутри формул используй стандартный LaTeX: \\frac{{a}}{{b}}, \\cdot, \\sqrt{{...}}.
-- НИКОГДА не пиши \\cdot \\cdot вокруг русских слов — это ломает рендеринг.
-
-В САМОМ КОНЦЕ ответа добавь СТРОГО такой блок (без изменений формата):
-
-```json
-{{"true_answer": "<твой правильный ответ>", "student_correct": <true|false>, "reference_was_wrong": <true|false>}}
-```
-
-Где:
-- true_answer — твой правильный ответ к задаче
-- student_correct — true если ответ ученика правильный (эквивалентен истинному)
-- reference_was_wrong — true если эталон из базы не совпадает с истинным ответом
-"""
-
-            ai_raw = client.generate(prompt, max_tokens=2000) or ""
-
-            # Парсим JSON-блок из конца ответа
-            json_match = _re.search(r'\{[^{}]*"student_correct"[^{}]*\}', ai_raw)
-            if json_match:
-                try:
-                    verdict_data = _json.loads(json_match.group(0))
-                    student_correct = bool(verdict_data.get('student_correct', False))
-                    reference_was_wrong = bool(verdict_data.get('reference_was_wrong', False))
-                    true_answer = str(verdict_data.get('true_answer', '')).strip()
-
-                    ai_verdict = 'correct' if student_correct else 'wrong'
-                    if reference_was_wrong and true_answer:
-                        ai_overrode_reference = True
-                        actual_correct_answer = true_answer
-                except Exception as _je:
-                    app.logger.warning(f"daily submit: failed to parse AI verdict JSON: {_je}")
-
-            # В фидбеке прячем технический JSON-блок от пользователя
-            ai_feedback = _re.sub(r'```json\s*\{[^{}]*"student_correct"[^{}]*\}\s*```', '', ai_raw)
-            ai_feedback = _re.sub(r'\{[^{}]*"student_correct"[^{}]*\}', '', ai_feedback).strip()
-
-            # Чиним типичный косяк LLM: \cdot \cdot вокруг русских слов вместо ** **.
-            # Превращаем обратно в Markdown-bold, чтобы фронт корректно отрендерил <strong>.
-            ai_feedback = _re.sub(
-                r'\\cdot\s*\\cdot\s*([^\n\\]+?)\s*\\cdot\s*\\cdot',
-                r'**\1**',
-                ai_feedback
-            )
-            # Также \textbf{...} → **...**
-            ai_feedback = _re.sub(r'\\textbf\{([^{}]+)\}', r'**\1**', ai_feedback)
-
-            if ai_overrode_reference and ai_verdict == 'correct':
-                ai_feedback = (
-                    "ℹ️ *Эталонный ответ в базе задач был ошибочным. Я перепроверил — "
-                    f"твой ответ верный, истинный ответ: **{actual_correct_answer}**.*\n\n"
-                    + ai_feedback
-                )
-        except Exception as e:
-            app.logger.error(f"AI verdict error: {e}")
-            ai_feedback = ""
-
-    # === ШАГ 3. Финальный вердикт ===
-    # Приоритет: AI-вердикт > локальная сверка.
-    # Если AI явно сказал student_correct=true — засчитываем, даже если local_match=false.
-    # Если AI сказал student_correct=false, а local_match=true — доверяем AI только если
-    # он явно отметил reference_was_wrong (значит он реально перерешал).
-    if ai_verdict == 'correct':
-        is_correct = True
-    elif ai_verdict == 'wrong' and ai_overrode_reference:
-        # AI перерешал, и ответ ученика реально не подходит — даже если совпал с (ошибочным) эталоном
-        is_correct = False
-    else:
-        # Нет AI-вердикта (DEEPSEEK недоступен или JSON не распарсился) — fallback на локальную сверку
-        is_correct = local_match
-
-    # === ШАГ 4. Обновляем квест/мастерство/XP ===
-    xp_earned = 20 if is_correct else 0
-
-    if is_correct:
-        complete_quest_task(quest, task_index, is_correct, xp_earned)
-
-        topic = task.get('topic', task.get('subject', ''))
-        grade = task.get('grade', 7)
-        difficulty = task.get('difficulty', 3)
-
-        if topic:
-            update_mastery_after_task(current_user.id, topic, grade, is_correct, difficulty)
-
-        current_user.experience_points += xp_earned
-        db.session.commit()
-
-        if quest.completed_count >= quest.total_count:
-            update_streak_after_quest(current_user.id)
-
-    # === ШАГ 5. Fallback-фидбек, если AI не дал ничего ===
-    if not ai_feedback:
-        if is_correct:
-            ai_feedback = "✅ Правильно! +20 XP"
-        else:
-            ai_feedback = f"❌ Неправильно. Правильный ответ: {actual_correct_answer}"
-            if correct_solution and not ai_overrode_reference:
-                ai_feedback += f"\n\n**Решение:**\n{correct_solution}"
-
-    return jsonify({
-        'success': True,
-        'is_correct': is_correct,
-        'correct_answer': actual_correct_answer if not is_correct else None,
-        'xp_earned': xp_earned,
-        'ai_feedback': ai_feedback,
-        'quest_completed': quest.completed_count >= quest.total_count,
-        'total_xp': quest.xp_earned,
-        'reference_overridden': ai_overrode_reference,
-    })
-
-
-@app.route('/daily/complete')
-@login_required
-def daily_quest_complete():
-    """Экран завершения Daily Quest"""
-    from services.daily_quest_service import get_today_quest
-    from services.streak_service import get_streak_stats
-    from datetime import date
-    
-    # Получаем квест на сегодня
-    quest = get_today_quest(current_user.id)
-    
-    if not quest or quest.completed_count < quest.total_count:
-        flash('Daily Quest ещё не завершён', 'warning')
-        return redirect(url_for('daily_quest_main'))
-    
-    # Получаем статистику streak
-    streak_stats = get_streak_stats(current_user.id)
-    
-    # Генерируем AI-комментарий по результатам дня
-    ai_summary = ""
-    if DEEPSEEK_AVAILABLE:
-        try:
-            client = DeepSeekClient()
-            prompt = f"""Пользователь завершил Daily Quest:
-- Решено задач: {quest.completed_count}/{quest.total_count}
-- Заработано XP: {quest.xp_earned}
-- Текущий streak: {streak_stats['current_streak']} дней
-
-Напиши мотивирующий комментарий на русском (2-3 предложения)."""
-            
-            ai_summary = client.generate(prompt, max_tokens=1000)
-        except Exception as e:
-            app.logger.error(f"AI summary error: {e}")
-            ai_summary = "Отличная работа! Продолжай в том же духе! 🔥"
-    else:
-        ai_summary = f"Поздравляем! Ты завершил Daily Quest и заработал {quest.xp_earned} XP! 🎉"
-    
-    return render_template('daily_complete.html',
-                         quest=quest,
-                         streak_stats=streak_stats,
-                         ai_summary=ai_summary)
-
-
-@app.route('/api/daily/status')
-@login_required
-def daily_quest_status():
-    """API: Статус Daily Quest (для виджета)"""
-    from services.daily_quest_service import get_today_quest
-    from services.streak_service import get_streak_stats
-    
-    quest = get_today_quest(current_user.id)
-    streak_stats = get_streak_stats(current_user.id)
-    
-    if not quest:
-        return jsonify({
-            'exists': False,
-            'streak': streak_stats['current_streak']
-        })
-    
-    return jsonify({
-        'exists': True,
-        'completed': quest.completed_count,
-        'total': quest.total_count,
-        'xp_earned': quest.xp_earned,
-        'is_complete': quest.completed_count >= quest.total_count,
-        'streak': streak_stats['current_streak'],
-        'freeze_available': streak_stats['freeze_available']
-    })
-
 
 # ============================================================================
 # DAILY TASK ROTATION (Задача дня)
