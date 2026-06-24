@@ -1239,15 +1239,15 @@ def _persist_pipeline_result(
                 status="approved" if not is_flagged else "flagged",
                 # ── классификация (Step 6 — Claude Sonnet 4.7) ───────
                 difficulty_level_classified=(
-                    result.classifications[i].get("level")
-                    if i < len(result.classifications)
-                    and result.classifications[i] is not None
+                    result.audit_entries[i].get("estimated_actual_level")
+                    if i < len(result.audit_entries)
+                    and result.audit_entries[i] is not None
                     else None
                 ),
                 classification_json=(
-                    json.dumps(result.classifications[i], ensure_ascii=False)
-                    if i < len(result.classifications)
-                    and result.classifications[i] is not None
+                    json.dumps(result.audit_entries[i], ensure_ascii=False)
+                    if i < len(result.audit_entries)
+                    and result.audit_entries[i] is not None
                     else None
                 ),
             )
