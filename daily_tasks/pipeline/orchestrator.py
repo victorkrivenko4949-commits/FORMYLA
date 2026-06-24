@@ -23,7 +23,7 @@ from .step4_opus_fix import fix_single_task
 
 logger = logging.getLogger(__name__)
 
-MAX_FIX_ITERATIONS = 2
+MAX_FIX_ITERATIONS = 3
 """Максимальное число итераций Opus-fix -> GPT-audit для одной задачи."""
 
 LEVEL_TOLERANCE = 1
@@ -32,7 +32,7 @@ LEVEL_TOLERANCE = 1
 MIN_VALID_TASKS = 7
 """Минимальное количество валидных задач для статуса ready."""
 
-FLAGGED_THRESHOLD = 999
+FLAGGED_THRESHOLD = 1
 """При >= этого числа is_flagged задач запускается rescue-проход."""
 
 _FIX_PARALLEL_WORKERS = 5
