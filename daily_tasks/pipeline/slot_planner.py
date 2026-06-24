@@ -12,7 +12,9 @@ THEMATIC DAY MODE (DETERMINISTIC CALENDAR, 2026-06-22):
     order. The same calendar date always maps to the same topic.
     Difficulty per slot is still picked inside that topic's level window and
     spread out via _enforce_spread, so the 10 tasks share one topic but vary
-    in difficulty.
+    in difficulty. Subtopics within the day are diversified from
+    DIVERSITY_CATALOG so the 10 tasks cover different facets of the topic
+    (e.g. for quadratics: Vieta, parameters, root placement, ...).
 
 The LLM (Step 1) only fills in topic content (archetype, must_use_concepts,
 reason_for_student, ...) for spec objects whose topic + difficulty_level
@@ -49,10 +51,6 @@ SOLUTION_METHODS: List[str] = [
 ]
 
 # Grade-aware minimum difficulty floor (2026-06-26).
-# For older grades the calibration/low end of (1,8) produced tasks that were
-# far too easy (e.g. L1-L2 for a 9th grader prepping municipal/regional). We
-# raise the floor of the level window per grade so the same topic window still
-# varies in difficulty but never drops below a grade-appropriate baseline.
 _GRADE_LEVEL_FLOOR = {
     5: 1,
     6: 1,
@@ -72,9 +70,17 @@ def _grade_floor(profile: Dict[str, Any]) -> int:
         grade = 0
     return _GRADE_LEVEL_FLOOR.get(grade, MIN_LEVEL)
 
-# Anchor date for the deterministic topic calendar. Day index is computed as
-# (today - ANCHOR_DATE).days, so this fixes the phase of the cycle. Do not
-# change after launch unless you intend to shift everyone's calendar.
+
+def _profile_grade(profile: Dict[str, Any]) -> Optional[int]:
+    """Best-effort integer grade from profile, or None."""
+    try:
+        g = int(profile.get("class_level") or 0)
+    except (TypeError, ValueError):
+        return None
+    return g or None
+
+
+# Anchor date for the deterministic topic calendar.
 ANCHOR_DATE = date(2026, 1, 1)
 
 
@@ -200,12 +206,7 @@ def _pick_difficulty_for_topic(
 
 
 def _topic_sort_key(topic: Dict[str, Any]) -> str:
-    """Stable, deterministic sort key for a topic dict.
-
-    Order priority: topic_key -> db_topic -> topic. Falling back through
-    these keeps the cycle order stable even if some fields are missing,
-    so the same catalog always yields the same calendar order.
-    """
+    """Stable, deterministic sort key for a topic dict."""
     return str(
         topic.get("topic_key")
         or topic.get("db_topic")
@@ -215,13 +216,7 @@ def _topic_sort_key(topic: Dict[str, Any]) -> str:
 
 
 def _day_index(today: date, cycle_len: int) -> int:
-    """Deterministic day index into the topic cycle.
-
-    Uses a fixed ANCHOR_DATE so a given calendar date always maps to the
-    same position in the cycle. cycle_len == number of topics, therefore
-    each topic is visited exactly once per cycle and the cycle repeats in
-    the same order on the next pass.
-    """
+    """Deterministic day index into the topic cycle."""
     if cycle_len <= 0:
         return 0
     return (today - ANCHOR_DATE).days % cycle_len
@@ -231,12 +226,7 @@ def _pick_day_topic(
     all_topics: List[Dict[str, Any]],
     today: Optional[date] = None,
 ) -> Tuple[Dict[str, Any], int, int]:
-    """Pick the topic of the day via the DETERMINISTIC CALENDAR.
-
-    Returns (day_topic, day_index, cycle_len). No randomness: topics are
-    sorted stably and indexed by the calendar day, so every topic shows up
-    exactly once per full cycle before any repeats.
-    """
+    """Pick the topic of the day via the DETERMINISTIC CALENDAR."""
     today = today or date.today()
     topics_sorted = sorted(all_topics, key=_topic_sort_key)
     cycle_len = len(topics_sorted)
@@ -244,27 +234,55 @@ def _pick_day_topic(
     return topics_sorted[idx], idx, cycle_len
 
 
+def _normalize_key(s: str) -> str:
+    """Normalize a topic string for fuzzy matching against the catalog."""
+    return "".join(ch.lower() for ch in str(s or "") if ch.isalnum())
+
+
+def _catalog_node(grade: Optional[int], topic_key: str, topic: str) -> Dict[str, Any]:
+    """Look up a DIVERSITY_CATALOG node for this grade + topic.
+
+    Tries exact match on topic_key/topic first, then a normalized match
+    (case/punctuation/space-insensitive). Returns {} if nothing fits.
+    """
+    if grade is None:
+        return {}
+    grade_node = DIVERSITY_CATALOG.get(grade) or DIVERSITY_CATALOG.get(str(grade)) or {}
+    if not grade_node:
+        return {}
+    for cand in (topic_key, topic):
+        if cand and cand in grade_node:
+            return grade_node[cand]
+    wanted = {_normalize_key(topic_key), _normalize_key(topic)}
+    wanted.discard("")
+    for cat_topic, node in grade_node.items():
+        if _normalize_key(cat_topic) in wanted:
+            return node
+    return {}
+
+
+def _catalog_subtopics(grade: Optional[int], topic_key: str, topic: str) -> List[str]:
+    """Return the list of subtopics for a topic from the catalog (may be empty)."""
+    node = _catalog_node(grade, topic_key, topic)
+    subs = node.get("subtopics") if isinstance(node, dict) else None
+    return list(subs) if subs else []
+
+
 def plan_slots(
     profile: Dict[str, Any],
     total_slots: int = TOTAL_SLOTS,
     today: Optional[date] = None,
 ) -> List[PlannedSlot]:
-    """Build the deterministic list of 10 PlannedSlot objects.
-
-    THEMATIC DAY (DETERMINISTIC CALENDAR): all slots belong to ONE topic
-    from the user's full topic catalog (profile['topics_full']). The topic
-    is chosen by a fixed calendar (see _pick_day_topic), NOT randomly, so
-    every topic is used exactly once per cycle and cycles repeat in the
-    same order. ``today`` may be passed for testing / backfill; defaults to
-    date.today().
-    """
+    """Build the deterministic list of 10 PlannedSlot objects (THEMATIC DAY)."""
     all_topics = list(profile.get("topics_full") or [])
     if not all_topics:
         logger.warning("plan_slots: empty topics_full, cannot build thematic day")
         return []
+
     day_topic, day_index, cycle_len = _pick_day_topic(all_topics, today)
-    # Apply grade-aware difficulty floor so the same topic window never drops
-    # below a grade-appropriate baseline (e.g. no L1-L2 tasks for a 9th grader).
+    grade = _profile_grade(profile)
+
+    # Apply grade-aware difficulty floor.
     _floor = _grade_floor(profile)
     if _floor > MIN_LEVEL:
         _lo, _hi = _topic_window(day_topic)
@@ -278,12 +296,37 @@ def plan_slots(
             "plan_slots: grade floor applied grade_floor=%d window->[%d,%d]",
             _floor, _new_lo, _new_hi,
         )
+
+    # DIVERSITY FIX (2026-06-24): make sure the day's subtopics are varied.
+    # If the topic carries no subtopic_hints of its own, pull the full list
+    # from DIVERSITY_CATALOG so the 10 tasks cover different facets of the
+    # topic (e.g. for quadratics: Vieta, parameters, root placement, ...)
+    # instead of collapsing into 10 identical plain-equation tasks.
+    _existing_hints = list(day_topic.get("subtopic_hints") or [])
+    _catalog_subs = _catalog_subtopics(
+        grade,
+        day_topic.get("topic_key", day_topic.get("topic", "")),
+        day_topic.get("topic", ""),
+    )
+    _day_hints = _existing_hints or _catalog_subs
+    if _catalog_subs:
+        logger.info(
+            "plan_slots: diversity subtopics from catalog grade=%s topic=%s count=%d",
+            grade, day_topic.get("topic"), len(_catalog_subs),
+        )
+    else:
+        logger.warning(
+            "plan_slots: no catalog subtopics for grade=%s topic_key=%s topic=%s",
+            grade, day_topic.get("topic_key"), day_topic.get("topic"),
+        )
+
     logger.info(
         "plan_slots THEMATIC DAY (calendar): topic=%s subject=%s measured=%s "
         "day_index=%d/%d cycle_len=%d",
-        day_topic.get("topic"), day_topic.get("subject"),
-        day_topic.get("measured"), day_index, cycle_len, cycle_len,
+        day_topic.get("topic"), day_topic.get("subject"), day_topic.get("measured"),
+        day_index, cycle_len, cycle_len,
     )
+
     slots: List[PlannedSlot] = []
     for k in range(total_slots):
         difficulty = _pick_difficulty_for_topic(day_topic, k, total_slots)
@@ -292,10 +335,10 @@ def plan_slots(
         reason_bits: List[str] = []
         corr, tot = day_topic.get("test_correct"), day_topic.get("test_total")
         if day_topic.get("calibration"):
-            reason_bits.append("\u0422\u0435\u0441\u0442 \u043f\u043e \u044d\u0442\u043e\u0439 \u0442\u0435\u043c\u0435 \u043d\u0435 \u043f\u0440\u043e\u0439\u0434\u0435\u043d - \u043a\u0430\u043b\u0438\u0431\u0440\u043e\u0432\u043e\u0447\u043d\u0430\u044f \u0437\u0430\u0434\u0430\u0447\u0430")
+            reason_bits.append("Тест по этой теме не пройден - калибровочная задача")
         elif corr is not None and tot:
-            reason_bits.append(f"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0442\u0435\u0441\u0442\u0430 \u043f\u043e \u0442\u0435\u043c\u0435: {corr}/{tot}")
-        reason_bits.append(f"\u0443\u0440\u043e\u0432\u0435\u043d\u044c {difficulty} \u0438\u0437 \u043e\u043a\u043d\u0430 [{lo}, {hi}]")
+            reason_bits.append(f"Результат теста по теме: {corr}/{tot}")
+        reason_bits.append(f"уровень {difficulty} из окна [{lo}, {hi}]")
         slots.append(PlannedSlot(
             position=k + 1,
             slot_kind=slot_kind,
@@ -311,15 +354,15 @@ def plan_slots(
             test_correct=day_topic.get("test_correct"),
             test_total=day_topic.get("test_total"),
             final_level=day_topic.get("final_level"),
-            subtopic_hints=list(day_topic.get("subtopic_hints") or []),
+            subtopic_hints=list(_day_hints),
             reason_hint="; ".join(reason_bits),
         ))
+
     slots = slots[:total_slots]
     _enforce_spread(slots, max_same_level=2)
-    _assign_diverse_themes(slots)
+    _assign_diverse_themes(slots, day_index=day_index)
     _log_plan(slots)
     return slots
-
 
 
 def assign_diversity(
@@ -328,47 +371,32 @@ def assign_diversity(
     day_index: int = 0,
     grade: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
-    """Assign unique subtopic + method to each slot for diversity.
-
-    Uses DIVERSITY_CATALOG[grade][topic] if available, otherwise falls back
-    to subtopics from inventory and SOLUTION_METHODS.
-
-    Returns a list of dicts (one per slot) with keys:
-        position, topic, subtopic, method, level, note
-    """
+    """Assign unique subtopic + method to each slot for diversity."""
     if not slots:
         return []
-
     day_topic = slots[0].topic_key
-    node: Dict[str, Any] = DIVERSITY_CATALOG.get(grade, {}).get(day_topic, {})
-
+    day_topic_name = slots[0].topic
+    node: Dict[str, Any] = _catalog_node(grade, day_topic, day_topic_name)
     subs: List[str] = node.get("subtopics") or (subtopics or [])
     methods: List[str] = node.get("methods") or SOLUTION_METHODS
     level_notes: Dict = node.get("level_notes", {})
-
-    # Ensure we have at least something
     if not subs:
         subs = [f"подтема {i}" for i in range(1, 11)]
     if not methods:
         methods = SOLUTION_METHODS
-
-    # Rotation based on day_index for diversity across days
     rot = day_index % len(subs) if subs else 0
     rotated_subs = subs[rot:] + subs[:rot]
-
     used: List[Dict[str, Any]] = []
     for i, slot in enumerate(slots):
         sub = rotated_subs[i % len(rotated_subs)] if rotated_subs else ""
         method = methods[(i + day_index) % len(methods)] if methods else ""
         lvl = slot.difficulty_level
-        # level_notes may have int or str keys
         note = level_notes.get(lvl) or level_notes.get(str(lvl), "")
-
         slot.subtopic_hints = [sub]
+        slot.theme_subtopic = sub
         slot.reason_hint = (
             f"класс {grade}; уровень {lvl} ({note}); подтема: {sub}; метод: {method}"
         )
-
         used.append({
             "position": slot.position,
             "topic": slot.topic,
@@ -377,7 +405,6 @@ def assign_diversity(
             "level": lvl,
             "note": note,
         })
-
     return used
 
 
@@ -410,13 +437,11 @@ def _enforce_spread(slots: List[PlannedSlot], max_same_level: int = 2) -> None:
                         candidates.append(lvl + d)
                     if lvl - d >= lo:
                         candidates.append(lvl - d)
-                placed = False
                 for new_lvl in candidates:
                     if counts.get(new_lvl, 0) < max_same_level:
                         slot.difficulty_level = new_lvl
                         counts[lvl] -= 1
                         counts[new_lvl] = counts.get(new_lvl, 0) + 1
-                        placed = True
                         moved_anything = True
                         break
         if not moved_anything:
@@ -447,19 +472,21 @@ def _log_plan(slots: List[PlannedSlot]) -> None:
     from collections import Counter
     for s in slots:
         logger.info(
-            "SLOT_PLAN pos=%d topic=%s measured=%s window=[%d..%d] "
+            "SLOT_PLAN pos=%d topic=%s subtopic=%s measured=%s window=[%d..%d] "
             "target=L%d -> level=%d (slot_kind=%s)",
-            s.position, s.topic, s.measured,
+            s.position, s.topic, s.theme_subtopic, s.measured,
             s.level_window[0], s.level_window[1],
             s.target_level, s.difficulty_level, s.slot_kind,
         )
     levels = [s.difficulty_level for s in slots]
     counts = Counter(levels)
     dups = [f"L{lvl}x{c}" for lvl, c in sorted(counts.items()) if c > 2]
+    subs = [s.theme_subtopic for s in slots]
     logger.info(
-        "slot_planner summary: levels=%s distribution=%s%s",
+        "slot_planner summary: levels=%s distribution=%s%s subtopics=%s",
         levels, dict(sorted(counts.items())),
         (" duplicates>2: " + ", ".join(dups)) if dups else "",
+        subs,
     )
 
 
@@ -488,13 +515,19 @@ def check_slots_match_windows(
     return mismatches
 
 
-def _assign_diverse_themes(slots: List[PlannedSlot]) -> None:
+def _assign_diverse_themes(slots: List[PlannedSlot], day_index: int = 0) -> None:
+    """Assign a DISTINCT theme_subtopic to each slot from its subtopic_hints.
+
+    The hints list is rotated by day_index so the same topic gets a
+    different ordering of subtopics on different days. Each slot in a topic
+    group gets a different subtopic (cycling only if there are fewer hints
+    than slots), guaranteeing the 10 daily tasks cover varied facets
+    (e.g. quadratics: Vieta, parameters, root placement, ...).
+    """
     by_topic: Dict[str, List[PlannedSlot]] = {}
     for s in slots:
         by_topic.setdefault(s.topic, []).append(s)
     for topic, group in by_topic.items():
-        if len(group) <= 1:
-            continue
         hints: List[str] = []
         for s in group:
             for h in s.subtopic_hints:
@@ -502,5 +535,9 @@ def _assign_diverse_themes(slots: List[PlannedSlot]) -> None:
                     hints.append(h)
         if not hints:
             continue
+        rot = day_index % len(hints)
+        rotated = hints[rot:] + hints[:rot]
         for i, s in enumerate(group):
-            s.theme_subtopic = hints[i % len(hints)]
+            sub = rotated[i % len(rotated)]
+            s.theme_subtopic = sub
+            s.subtopic_hints = [sub]
