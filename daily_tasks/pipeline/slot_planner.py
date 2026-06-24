@@ -32,6 +32,30 @@ TOTAL_SLOTS = 10
 MIN_LEVEL = 1
 MAX_LEVEL = 8
 
+# Grade-aware minimum difficulty floor (2026-06-26).
+# For older grades the calibration/low end of (1,8) produced tasks that were
+# far too easy (e.g. L1-L2 for a 9th grader prepping municipal/regional). We
+# raise the floor of the level window per grade so the same topic window still
+# varies in difficulty but never drops below a grade-appropriate baseline.
+_GRADE_LEVEL_FLOOR = {
+    5: 1,
+    6: 1,
+    7: 2,
+    8: 3,
+    9: 4,
+    10: 4,
+    11: 5,
+}
+
+
+def _grade_floor(profile: Dict[str, Any]) -> int:
+    """Minimum difficulty_level allowed for this user's grade."""
+    try:
+        grade = int(profile.get("class_level") or 0)
+    except (TypeError, ValueError):
+        grade = 0
+    return _GRADE_LEVEL_FLOOR.get(grade, MIN_LEVEL)
+
 # Anchor date for the deterministic topic calendar. Day index is computed as
 # (today - ANCHOR_DATE).days, so this fixes the phase of the cycle. Do not
 # change after launch unless you intend to shift everyone's calendar.
@@ -223,6 +247,21 @@ def plan_slots(
         logger.warning("plan_slots: empty topics_full, cannot build thematic day")
         return []
     day_topic, day_index, cycle_len = _pick_day_topic(all_topics, today)
+    # Apply grade-aware difficulty floor so the same topic window never drops
+# below a grade-appropriate baseline (e.g. no L1-L2 tasks for a 9th grader).
+_floor = _grade_floor(profile)
+if _floor > MIN_LEVEL:
+    _lo, _hi = _topic_window(day_topic)
+    _new_lo = _clamp(max(_lo, _floor))
+    _new_hi = _clamp(max(_hi, _new_lo))
+    day_topic = dict(day_topic)
+    day_topic["level_window"] = [_new_lo, _new_hi]
+    if day_topic.get("target_level") is not None:
+        day_topic["target_level"] = _clamp(max(int(day_topic["target_level"]), _new_lo))
+    logger.info(
+        "plan_slots: grade floor applied grade_floor=%d window->[%d,%d]",
+        _floor, _new_lo, _new_hi,
+    )
     logger.info(
         "plan_slots THEMATIC DAY (calendar): topic=%s subject=%s measured=%s "
         "day_index=%d/%d cycle_len=%d",
