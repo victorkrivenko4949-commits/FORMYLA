@@ -34,6 +34,25 @@ from .services import today_in_user_tz
 # показывается чистое empty-state с кнопкой «Сгенерировать».
 DAILY_SET_TTL = timedelta(hours=24)
 
+# Российские темы для поля «Тема дня» — ротация по дню и классу.
+_RU_THEMES = [
+    "Теория чисел",
+    "Геометрия",
+    "Алгебра",
+    "Комбинаторика",
+    "Логика и игры",
+]
+
+
+def _theme_for_day(target_date, class_level=None) -> str:
+    """Детерминированная тема дня: меняется ежедневно и зависит от класса."""
+    try:
+        doy = target_date.timetuple().tm_yday
+    except Exception:
+        doy = 0
+    cls = int(class_level) if class_level else 0
+    return _RU_THEMES[(doy + cls) % len(_RU_THEMES)]
+
 
 def _set_expires_at(daily_set: DailyTaskSet) -> datetime | None:
     """Момент истечения 24h-окна сета (UTC). None — если ещё не готов."""
@@ -137,7 +156,7 @@ def get_daily_tasks():
             "items": [],
         }
         if wants_html:
-            return render_template("daily_tasks_dashboard.html", data=data)
+            return render_template("daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
         return jsonify({
             "status": "no_set",
             "message": data["message"],
@@ -183,7 +202,7 @@ def get_daily_tasks():
             "items": [],
         }
         if wants_html:
-            return render_template("daily_tasks_dashboard.html", data=data)
+            return render_template("daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
         return jsonify({
             "status": "generating",
             "daily_set_id": daily_set.id,
@@ -249,7 +268,7 @@ def get_daily_tasks():
     }
 
     if wants_html:
-        return render_template("daily_tasks_dashboard.html", data=data)
+        return render_template("daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
     return jsonify(data), 200
 
 
