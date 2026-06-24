@@ -390,3 +390,43 @@
     color: var(--text-muted, #94a3b8);
     margin-top: 6px;
 }
+
+
+/* ─── Fix "blurry/broken" task text: clean math + continuous flow ─── */
+.oly-md {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-soft, #cdd3df);
+  word-break: normal;
+  overflow-wrap: anywhere;
+  hyphens: none;
+}
+.oly-md p { margin: 0 0 12px; }
+.oly-md p:last-child { margin-bottom: 0; }
+
+/* Inline formulas must stay on the same line as the text — no breaks */
+.oly-md .katex {
+  font-size: 1.02em;
+  white-space: nowrap;
+}
+/* Display formulas: tidy spacing + horizontal scroll instead of overflow */
+.oly-md .katex-display {
+  margin: 14px 0;
+  padding: 2px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+.oly-md .katex-display > .katex { white-space: nowrap; }
+
+/* Prevent fuzzy/anti-aliased look on dark bg */
+.oly-md, .oly-md .katex {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@media (max-width: 640px) {
+  .oly-md { font-size: 15px; line-height: 1.65; }
+  .oly-md .katex-display { font-size: 0.95em; }
+}

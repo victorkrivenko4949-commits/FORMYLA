@@ -30,6 +30,7 @@ from pipeline.openrouter_client import OpenRouterClient, OpenRouterError, TokenU
 from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
 from services.taxonomy_grade6 import get_all_subtopics as get_grade6_subtopics
 from services.topic_taxonomy import get_all_subtopics_for_grade
+from daily_tasks.anti_repeat import get_recent_tasks_history, format_history_for_prompt
 
 from .validators import (
     GeminiPlanValidation,
@@ -49,8 +50,7 @@ logger = logging.getLogger(__name__)
 # Step 1 PLAN: Claude Sonnet 4.5 — base-модель без reasoning. Reasoning-
 # флагманы (gpt-5.5-pro, gemini-3.1-pro) на стриминге 4-5 минут регулярно
 # роняют соединение через нестабильный интернет. Sonnet 4.5 уже в проде
-_GEMINI_MODEL = "anthropic/claude-sonnet-4.6"
-
+_GEMINI_MODEL = "deepseek/deepseek-chat-v3.1"  # vse etapy na DeepSeek (deshevo)
 
 # ──────────────────────────────────────────────────────────────────────
 # Классифицированная ошибка планировщика
@@ -248,6 +248,19 @@ def _format_prompt(
             f"запланированные уровни: {rec['levels']}"
         )
     topic_window_summary = "\n".join(window_lines) if window_lines else "(нет данных)"
+    
+    # Anti-repeat across cycles: история ранее выданных задач по темам дня.
+    recent_history = get_recent_tasks_history(profile.get("user_id"))
+    planned_topics: List[str] = []
+    for s in planned_slots:
+        if s.topic and s.topic not in planned_topics:
+            planned_topics.append(s.topic)
+    history_blocks: List[str] = []
+    for _topic in planned_topics:
+        history_blocks.append(
+            f"Тема <<{_topic}>>:\n" + format_history_for_prompt(recent_history, _topic)
+        )
+    recent_tasks_for_topic = "\n\n".join(history_blocks) if history_blocks else "(нет данных)"
 
     # Полный план слотов как JSON — LLM должна сохранить эти поля 1:1
     slot_plan_json = json.dumps(
@@ -265,6 +278,7 @@ def _format_prompt(
         profile_completeness=f"{completeness:.2f}",
         SLOT_PLAN=slot_plan_json,
         TOPIC_WINDOW_SUMMARY=topic_window_summary,
+        RECENT_TASKS_FOR_TOPIC=recent_tasks_for_topic,
     )
 
     # ── DIVERSITY BLOCK ───────────────────────────────────────────────

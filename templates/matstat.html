@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Математическая статистика — FORMYLA{% endblock %}
+
+{% block content %}
+<div class="matstat-wrap">
+
+  <header class="ms-hero">
+    <div class="ms-hero-badge">📊 Спецкурс</div>
+    <h1 class="ms-title">Математическая статистика</h1>
+    <p class="ms-sub">От выборки до проверки гипотез: теория, ключевые формулы и разобранные примеры. Все формулы — в нормальном LaTeX.</p>
+  </header>
+
+  <nav class="ms-toc">
+    <a href="#t1">1. Выборка и характеристики</a>
+    <a href="#t2">2. Эмпирическая функция распределения</a>
+    <a href="#t3">3. Точечные оценки</a>
+    <a href="#t4">4. Метод моментов</a>
+    <a href="#t5">5. Метод максимального правдоподобия</a>
+    <a href="#t6">6. Доверительные интервалы</a>
+    <a href="#t7">7. Проверка гипотез</a>
+    <a href="#t8">8. Разбор задач</a>
+  </nav>
+
+  <section id="t1" class="ms-card">
+    <h2>1. Выборка и выборочные характеристики</h2>
+    <p><b>Выборка</b> $X_1,\dots,X_n$ — это $n$ независимых одинаково распределённых случайных величин с функцией распределения $F$.</p>
+    <p>Выборочное среднее и выборочная дисперсия:</p>
+    <p>$$\overline{X}=\frac{1}{n}\sum_{i=1}^{n}X_i,\qquad S^2=\frac{1}{n}\sum_{i=1}^{n}\bigl(X_i-\overline{X}\bigr)^2.$$</p>
+    <p>Несмещённая версия дисперсии: $\displaystyle S_0^2=\frac{1}{n-1}\sum_{i=1}^{n}\bigl(X_i-\overline{X}\bigr)^2$, причём $\mathbb{E}\,S_0^2=\sigma^2$.</p>
+    <div class="ms-ex">
+      <div class="ms-ex-h">📝 Пример</div>
+      <p>Пусть $X_1,\dots,X_n$ — выборка из $\mathcal{N}(a,\sigma^2)$. Показать, что $\mathbb{E}\,\overline{X}=a$ и $\mathrm{D}\,\overline{X}=\sigma^2/n$.</p>
+      <p class="ms-sol"><b>Решение.</b> По линейности $\mathbb{E}\,\overline{X}=\frac1n\sum \mathbb{E}X_i=a$. Ввиду независимости $\mathrm{D}\,\overline{X}=\frac{1}{n^2}\sum \mathrm{D}X_i=\frac{\sigma^2}{n}$.</p>
+    </div>
+  </section>
+
+  <section id="t2" class="ms-card">
+    <h2>2. Эмпирическая функция распределения</h2>
+    <p>По выборке строится эмпирическая функция распределения:</p>
+    <p>$$F_n(y)=\frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\{X_i\le y\}.$$</p>
+    <p>По теореме Гливенко–Кантелли она равномерно сходится к истинной:</p>
+    <p>$$\sup_{y\in\mathbb{R}}\bigl|F_n(y)-F(y)\bigr|\xrightarrow{\text{п.н.}}0.$$</p>
+    <div class="ms-ex">
+      <div class="ms-ex-h">📝 Пример</div>
+      <p>Найти $\mathbb{E}\,F_n(y)$ и $\mathrm{D}\,F_n(y)$ для фиксированного $y$.</p>
+      <p class="ms-sol"><b>Решение.</b> $n F_n(y)\sim \mathrm{Bin}(n,F(y))$, поэтому $\mathbb{E}\,F_n(y)=F(y)$ и $\mathrm{D}\,F_n(y)=\dfrac{F(y)\bigl(1-F(y)\bigr)}{n}$.</p>
+    </div>
+  </section>
+
+  <section id="t3" class="ms-card">
+    <h2>3. Точечные оценки</h2>
+    <p>Оценка $\hat\theta=\hat\theta(X_1,\dots,X_n)$ называется:</p>
+    <ul>
+      <li><b>несмещённой</b>, если $\mathbb{E}\,\hat\theta=\theta$;</li>
+      <li><b>состоятельной</b>, если $\hat\theta\xrightarrow{P}\theta$ при $n\to\infty$;</li>
+      <li><b>эффективной</b>, если она имеет наименьшую дисперсию в классе несмещённых.</li>
+    </ul>
+    <p>Нижняя граница Рао–Крамера: $\displaystyle \mathrm{D}\,\hat\theta\ge \frac{1}{n\,I(\theta)}$, где $I(\theta)=\mathbb{E}\!\left[\left(\frac{\partial}{\partial\theta}\ln f(X;\theta)\right)^2\right]$ — информация Фишера.</p>
+    <div class="ms-ex">
+      <div class="ms-ex-h">📝 Пример</div>
+      <p>Показать, что $S_0^2$ несмещённа для $\sigma^2$.</p>
+      <p class="ms-sol"><b>Решение.</b> $\mathbb{E}\sum (X_i-\overline X)^2=(n-1)\sigma^2$, откуда $\mathbb{E}\,S_0^2=\sigma^2$.</p>
+    </div>
+  </section>
+
+  <section id="t4" class="ms-card">
+    <h2>4. Метод моментов</h2>
+    <p>Идея: приравнять теоретические моменты к выборочным. Для одного параметра $\theta$:</p>
+    <p>$$\mathbb{E}_\theta X=\frac{1}{n}\sum_{i=1}^{n}X_i=\overline{X}\;\Rightarrow\;\hat\theta_{\text{ММ}}.$$</p>
+    <div class="ms-ex">
+      <div class="ms-ex-h">📝 Пример</div>
+      <p>Выборка из равномерного распределения $U[0,\theta]$. Найти оценку методом моментов.</p>
+      <p class="ms-sol"><b>Решение.</b> $\mathbb{E}X=\theta/2=\overline X$, поэтому $\hat\theta_{\text{ММ}}=2\overline X$.</p>
+    </div>
+  </section>
+
+  <section id="t5" class="ms-card">
+    <h2>5. Метод максимального правдоподобия</h2>
+    <p>Функция правдоподобия и её логарифм:</p>
+    <p>$$L(\theta)=\prod_{i=1}^{n}f(X_i;\theta),\qquad \ell(\theta)=\sum_{i=1}^{n}\ln f(X_i;\theta).$$</p>
+    <p>Оценка МП находится из $\dfrac{\partial \ell}{\partial\theta}=0$.</p>
+    <div class="ms-ex">
+      <div class="ms-ex-h">📝 Пример</div>
+      <p>Выборка из показательного распределения $f(y)=\lambda e^{-\lambda y}$, $y\ge 0$. Найти $\hat\lambda_{\text{МП}}$.</p>
+      <p class="ms-sol"><b>Решение.</b> $\ell(\lambda)=n\ln\lambda-\lambda\sum X_i$, $\ell'(\lambda)=\dfrac{n}{\lambda}-\sum X_i=0$, откуда $\hat\lambda=\dfrac{1}{\overline X}$.</p>
+    </div>
+  </section>
+
+  <section id="t6" class="ms-card">
+    <h2>6. Доверительные интервалы</h2>
+    <p>Интервал $(\theta_1,\theta_2)$ называется доверительным уровня $1-\alpha$, если $\mathbb{P}(\theta_1<\theta<\theta_2)=1-\alpha$.</p>
+    <p>Для среднего нормальной выборки при известном $\sigma$:</p>
+    <p>$$\overline{X}\pm z_{1-\alpha/2}\,\frac{\sigma}{\sqrt{n}}.$$</p>
+    <p>При неизвестном $\sigma$ используется квантиль Стьюдента $t_{1-\alpha/2,\,n-1}$ и $S_0$.</p>
+    <div class="ms-ex">
+      <div class="ms-ex-h">📝 Пример</div>
+      <p>$n=25$, $\overline X=10$, $\sigma=2$, $\alpha=0{,}05$. Построить доверительный интервал для $a$.</p>
+      <p class="ms-sol"><b>Решение.</b> $z_{0{,}975}=1{,}96$, погрешность $1{,}96\cdot 2/5=0{,}784$. Интервал: $(9{,}22;\,10{,}78)$.</p>
+    </div>
+  </section>
+
+  <section id="t7" class="ms-card">
+    <h2>7. Проверка гипотез</h2>
+    <p>Нулевая $H_0$ против альтернативы $H_1$. Ошибки:</p>
+    <ul>
+      <li>I рода: отвергнуть верную $H_0$, вероятность $\alpha$;</li>
+      <li>II рода: принять ложную $H_0$, вероятность $\beta$.</li>
+    </ul>
+    <p>Мощность критерия равна $1-\beta$. По лемме Неймана–Пирсона наиболее мощный критерий основан на отношении правдоподобия $\dfrac{L(\theta_1)}{L(\theta_0)}\ge c$.</p>
+    <div class="ms-ex">
+      <div class="ms-ex-h">📝 Пример</div>
+      <p>Критерий согласия $\chi^2$: статистика $\displaystyle \chi^2=\sum_{k=1}^{m}\frac{(n_k-np_k)^2}{np_k}$ при больших $n$ имеет распределение $\chi^2_{m-1}$.</p>
+      <p class="ms-sol"><b>Вывод.</b> Если $\chi^2>\chi^2_{1-\alpha,\,m-1}$, гипотеза о распределении отвергается.</p>
+    </div>
+  </section>
+  
+  <section id="t8" class="ms-card">
+<h2>8. Разбор задач</h2>
+<p>Подборка классических задач с полными решениями — по всем разделам выше. Формулы в LaTeX.</p>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 1. Несмещённость и состоятельность $\overline{X}$</div>
+<p>$X_1,\dots,X_n$ — выборка с $\mathbb{E}X_1=a$, $\mathrm{D}X_1=\sigma^2<\infty$. Доказать, что $\overline{X}$ несмещённа и состоятельна для $a$.</p>
+<p class="ms-sol"><b>Решение.</b> $\mathbb{E}\,\overline{X}=\frac1n\sum\mathbb{E}X_i=a$ — несмещённость. Далее $\mathrm{D}\,\overline{X}=\sigma^2/n\to0$, поэтому по неравенству Чебышёва $\overline{X}\xrightarrow{P}a$ — состоятельность.</p>
+</div>
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 2. Оценка методом моментов для $U[0,\theta]$</div>
+<p>По выборке из равномерного распределения $U[0,\theta]$ найти оценку $\hat\theta$ методом моментов и проверить её несмещённость.</p>
+<p class="ms-sol"><b>Решение.</b> $\mathbb{E}X=\theta/2$, приравниваем к $\overline{X}$: $\hat\theta_{\text{ММ}}=2\overline{X}$. Тогда $\mathbb{E}\,\hat\theta=2\cdot\theta/2=\theta$ — оценка несмещённа.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 3. Оценка МП для показательного распределения</div>
+<p>$f(y)=\lambda e^{-\lambda y}$, $y\ge0$. Найти $\hat\lambda_{\text{МП}}$ и проверить, что это точка максимума.</p>
+<p class="ms-sol"><b>Решение.</b> $\ell(\lambda)=n\ln\lambda-\lambda\sum X_i$, $\ell'(\lambda)=\frac{n}{\lambda}-\sum X_i=0\Rightarrow\hat\lambda=\frac{1}{\overline{X}}$. Так как $\ell''(\lambda)=-n/\lambda^2<0$, это максимум.</p>
+</div>
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 4. Дисперсия эмпирической функции</div>
+<p>Найти $\mathbb{E}\,F_n(y)$ и $\mathrm{D}\,F_n(y)$ для фиксированного $y$.</p>
+<p class="ms-sol"><b>Решение.</b> $nF_n(y)\sim\mathrm{Bin}(n,F(y))$, поэтому $\mathbb{E}\,F_n(y)=F(y)$, $\mathrm{D}\,F_n(y)=\dfrac{F(y)\bigl(1-F(y)\bigr)}{n}$.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 5. Несмещённая оценка дисперсии</div>
+<p>Показать, что $S_0^2=\frac{1}{n-1}\sum (X_i-\overline{X})^2$ несмещённа для $\sigma^2$.</p>
+<p class="ms-sol"><b>Решение.</b> $\mathbb{E}\sum(X_i-\overline{X})^2=\sum\mathbb{E}X_i^2-n\,\mathbb{E}\overline{X}^2=(n-1)\sigma^2$, откуда $\mathbb{E}\,S_0^2=\sigma^2$.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 6. Доверительный интервал для среднего</div>
+<p>$n=25$, $\overline{X}=10$, $\sigma=2$, $\alpha=0{,}05$. Построить 95%-й доверительный интервал для $a$.</p>
+<p class="ms-sol"><b>Решение.</b> $z_{0{,}975}=1{,}96$, погрешность $1{,}96\cdot 2/5=0{,}784$. Интервал: $(9{,}22;\,10{,}78)$.</p>
+</div>
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 7. Критерий согласия $\chi^2$ (Пирсона)</div>
+<p>Кость бросили $n=60$ раз; грани выпали $9,11,8,12,10,10$ раз. Проверить на уровне $\alpha=0{,}05$ гипотезу о равномерности кости.</p>
+<p class="ms-sol"><b>Решение.</b> Ожидаемые частоты $np_k=10$. $\chi^2=\sum\frac{(n_k-10)^2}{10}=\frac{1+1+4+4+0+0}{10}=1{,}0$. Критическое значение $\chi^2_{0{,}95,\,5}=11{,}07$. Так как $1{,}0<11{,}07$, гипотеза о равномерности не отвергается.</p>
+</div>
+
+<div class="ms-ex">
+<div class="ms-ex-h">📝 Задача 8. Неравенство Рао–Крамера для $\mathcal{N}(a,\sigma^2)$</div>
+<p>При известном $\sigma$ найти нижнюю границу дисперсии несмещённых оценок $a$ и показать, что $\overline{X}$ эффективна.</p>
+<p class="ms-sol"><b>Решение.</b> $\ln f=-\frac{(x-a)^2}{2\sigma^2}+\text{const}$, $\frac{\partial}{\partial a}\ln f=\frac{x-a}{\sigma^2}$, информация Фишера $I(a)=1/\sigma^2$. Граница Рао–Крамера $\dfrac{1}{nI(a)}=\dfrac{\sigma^2}{n}=\mathrm{D}\,\overline{X}$ — достигается, значит $\overline{X}$ эффективна.</p>
+</div>
+  </section>
+
+  <footer class="ms-foot">По мотивам классических задачников по математической статистике. © FORMYLA</footer>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.matstat-wrap{max-width:860px;margin:0 auto;padding:24px 16px 64px;color:#e2e8f0;line-height:1.65;}
+.ms-hero{text-align:center;padding:36px 20px;margin-bottom:28px;border-radius:20px;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #334155;}
+.ms-hero-badge{display:inline-block;font-size:13px;font-weight:600;color:#38bdf8;background:rgba(56,189,248,.12);padding:5px 14px;border-radius:999px;margin-bottom:14px;}
+.ms-title{font-size:34px;margin:0 0 10px;color:#fff;font-weight:800;}
+.ms-sub{font-size:16px;color:#94a3b8;max-width:620px;margin:0 auto;}
+.ms-toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:32px;}
+.ms-toc a{font-size:13px;color:#cbd5e1;background:#1e293b;border:1px solid #334155;padding:8px 14px;border-radius:10px;text-decoration:none;transition:.18s;}
+.ms-toc a:hover{background:#334155;color:#fff;transform:translateY(-2px);}
+.ms-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:26px 28px;margin-bottom:22px;scroll-margin-top:90px;}
+.ms-card h2{font-size:22px;color:#38bdf8;margin:0 0 16px;font-weight:700;}
+.ms-card p{margin:12px 0;}
+.ms-card ul{margin:12px 0;padding-left:22px;}
+.ms-card li{margin:6px 0;}
+.ms-ex{margin-top:18px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:16px 18px;}
+.ms-ex-h{font-weight:700;color:#10b981;margin-bottom:8px;font-size:15px;}
+.ms-sol{background:rgba(56,189,248,.06);border-left:3px solid #38bdf8;border-radius:6px;padding:10px 14px;margin-top:10px;}
+.ms-foot{text-align:center;color:#64748b;font-size:13px;margin-top:36px;}
+@media (max-width:600px){.ms-title{font-size:26px;}.ms-card{padding:18px 16px;}}
+</style>
+{% endblock %}

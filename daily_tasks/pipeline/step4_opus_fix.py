@@ -32,7 +32,11 @@ logger = logging.getLogger(__name__)
 
 # ── модель ────────────────────────────────────────────────────────────────
 # Step 4 FIX LOOP: Opus 4.8 fast (как и шаг 2 — для быстрой починки)
-_OPUS_FIX_MODEL = "anthropic/claude-opus-4.8-fast"
+# Fix cost-routing: лёгкие (L<6) чиним Sonnet 4.6, олимпиадные (L>=6) -> Opus 4.8-fast.
+_FIX_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
+_FIX_MODEL_HARD = "deepseek/deepseek-chat-v3.1"
+_FIX_HARD_THRESHOLD = 6
+_OPUS_FIX_MODEL = _FIX_MODEL_HARD  # алиас для совместимости
 
 # ── helpers ───────────────────────────────────────────────────────────────
 
@@ -117,7 +121,7 @@ async def fix_single_task(
 
     async with OpenRouterClient() as client:
         raw_response, usage = await client.chat(
-            model=_OPUS_FIX_MODEL,
+            model=(_FIX_MODEL_HARD if (int(spec.get("difficulty_level") or 1) >= _FIX_HARD_THRESHOLD) else _FIX_MODEL_EASY),
             messages=messages,
             temperature=0.5,
             max_tokens=4096,

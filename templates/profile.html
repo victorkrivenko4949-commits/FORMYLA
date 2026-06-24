@@ -552,7 +552,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <div style="color: var(--text-main); font-weight: 600;">{{ progress.name_ru }}</div>
                     <div style="padding: 4px 12px; background: {% if progress.level >= 5 %}#10b981{% elif progress.level >= 3 %}#f59e0b{% else %}#ef4444{% endif %}; color: white; border-radius: 12px; font-size: 14px; font-weight: 600;">
-                        Уровень {{ progress.level }}/7
+                        Уровень {{ ((progress.level|float * 8 / 7) | round | int) }}/8
                     </div>
                 </div>
                 
@@ -591,7 +591,7 @@
                     </div>
                     <div style="text-align: right;">
                         <div style="color: var(--accent-2); font-weight: 600; font-size: 18px;">{{ test.tasks_correct }}/{{ test.tasks_total }}</div>
-                        <div style="color: var(--text-muted); font-size: 13px;">Уровень: {{ test.final_level }}/7</div>
+                        <div style="color: var(--text-muted); font-size: 13px;">Уровень: {{ ((test.final_level|float * 8 / 7) | round | int) }}/8</div>
                     </div>
                 </div>
             </div>
@@ -710,14 +710,14 @@
             
             <div style="background: rgba(251, 191, 36, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(251, 191, 36, 0.3); text-align: center;">
                 <div style="font-size: 2em; font-weight: 700; color: #fbbf24; margin-bottom: 5px;">
-                    {{ test_stats.avg_level }}/7
+                    {{ ((test_stats.avg_level|float * 8 / 7) | round | int) }}/8
                 </div>
                 <div style="color: var(--text-muted); font-size: 0.9em;">Средний уровень</div>
             </div>
             
             <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(34, 197, 94, 0.3); text-align: center;">
                 <div style="font-size: 2em; font-weight: 700; color: #22c55e; margin-bottom: 5px;">
-                    {{ test_stats.max_level }}/7
+                    {{ test_stats.max_level }}/8
                 </div>
                 <div style="color: var(--text-muted); font-size: 0.9em;">Рекордный уровень</div>
             </div>
@@ -739,7 +739,7 @@
                     </div>
                     <div style="text-align: right;">
                         <div style="color: {% if test.final_level >= 6 %}#22c55e{% elif test.final_level >= 4 %}#fbbf24{% else %}#3b82f6{% endif %}; font-weight: 700; font-size: 1.3em;">
-                            {% for i in range(test.final_level) %}⭐{% endfor %} {{ test.final_level }}/7
+                            {% for i in range(test.final_level) %}⭐{% endfor %} {{ ((test.final_level|float * 8 / 7) | round | int) }}/8
                         </div>
                     </div>
                 </div>

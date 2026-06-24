@@ -215,6 +215,7 @@ def enqueue_daily_generation(
     user_id: int,
     triggered_by: str = "manual",
     profile: Optional[Dict[str, Any]] = None,
+    forced_topic: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Создать/обновить сет на today и запустить фоновую генерацию.
 
@@ -304,6 +305,21 @@ def enqueue_daily_generation(
             TaskPool.status.in_(["ready", "partial"]),
             (TaskPool.expires_at.is_(None)) | (TaskPool.expires_at > now),
         ).order_by(TaskPool.created_at.desc()).first()
+        # --- Relaxed fallback: любой ready пул того же grade+subject (экономия OpenRouter) ---
+        if not pool:
+            try:
+                _grade = profile.get('class_level') or 0
+                _subject = _extract_subject_from_profile(profile)
+                pool = TaskPool.query.filter(
+                    TaskPool.grade == _grade,
+                    TaskPool.subject == _subject,
+                    TaskPool.status.in_(['ready', 'partial']),
+                    (TaskPool.expires_at.is_(None)) | (TaskPool.expires_at > now),
+                ).order_by(TaskPool.created_at.desc()).first()
+                if pool:
+                    logger.info('Relaxed pool HIT grade=%s subject=%s pool=#%s', _grade, _subject, pool.id)
+            except Exception:
+                logger.exception('Relaxed pool fallback failed')                
 
         if pool:
             # ── Cache HIT ─────────────────────────────────────────────
@@ -433,7 +449,7 @@ def enqueue_daily_generation(
     app = current_app._get_current_object()
     thread = threading.Thread(
         target=_background_run,
-        args=(app, user_id, today, daily_set.id, job.id),
+        args=(app, user_id, today, daily_set.id, job.id, forced_topic),
         daemon=True,
     )
     thread.start()
@@ -495,7 +511,7 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "weakness_score": item.weakness_score,
             "reason": item.reason,
             "is_calibration": is_calibration,
-            "task_text": item.task_text,
+            "task_text": item.task_text,                 "text": item.task_text,                 "preview": (item.task_text or "")[:300],
             "correct_answer": item.correct_answer,
             "solution": item.solution,
             "hints": _parse_json_field(item.hints, []),
@@ -701,6 +717,7 @@ def compute_cache_key(profile: Dict[str, Any], thematic: bool = False) -> str:
             for t in (profile.get("calibration_topics") or [])
             if isinstance(t, str) and t.strip()
         ),
+        "week_index": ((date.today() - date(2026, 1, 1)).days // 7),
         "completeness_q": completeness_q,
     }
     if thematic:
@@ -729,8 +746,8 @@ def _select_best_task_indices(
     rotation : int
         Сдвиг для ротации (``pool.used_count`` или ``hash(user_id)``).
     """
-    clean = [i for i, t in enumerate(tasks) if not t.get("is_flagged")]
-    flagged = [i for i, t in enumerate(tasks) if t.get("is_flagged")]
+    clean = [i for i, t in enumerate(tasks) if not t.get("is_flagged") and (t.get("task_text") or "").strip() and not t.get("_generation_failed")]
+    flagged = [i for i, t in enumerate(tasks) if t.get("is_flagged") and (t.get("task_text") or "").strip() and not t.get("_generation_failed")]
     ordered = clean + flagged
 
     if len(ordered) > n and rotation:
@@ -815,6 +832,7 @@ def _background_run(
     target_date: date,
     daily_set_id: int,
     job_id: int,
+    forced_topic: Optional[str] = None,
 ) -> None:
     """Запустить пайплайн в фоновом потоке (синхронная обёртка)."""
     with app.app_context():
@@ -824,6 +842,7 @@ def _background_run(
                 target_date=target_date,
                 daily_set_id=daily_set_id,
                 job_id=job_id,
+                forced_topic=forced_topic,
             ))
         except Exception as exc:
             logger.exception(
@@ -998,6 +1017,7 @@ async def _run_pipeline_async(
     target_date: date,
     daily_set_id: int,
     job_id: int,
+    forced_topic: Optional[str] = None,
 ) -> None:
     """Асинхронный запуск пайплайна с обновлением прогресса джоба."""
     job = DailyGenerationJob.query.get(job_id)
@@ -1029,6 +1049,28 @@ async def _run_pipeline_async(
             len(profile.get("strong_topics", [])),
             len(profile.get("calibration_topics", [])),
         )
+        # ── forced_topic override: «сегодня день <темы>» ─────────────
+        if forced_topic:
+            ft = forced_topic.strip().lower()
+            full = profile.get("topics_full") or []
+            matched = [
+                dict(t)
+                for t in full
+                if isinstance(t, dict) and ft in (t.get("topic") or "").strip().lower()
+            ]
+            if matched:
+                profile["weak_topics"] = matched
+                profile["strong_topics"] = []
+                profile["calibration_topics"] = []
+                logger.info(
+                    "[user=%d] forced_topic=%r → %d тем(ы) из каталога",
+                    user_id, forced_topic, len(matched),
+                )
+            else:
+                logger.warning(
+                    "[user=%d] forced_topic=%r не найден в каталоге класса — игнорируем",
+                    user_id, forced_topic,
+                )
 
         # ── Bank check: пробуем банк готовых задач перед LLM ─────────
         try:

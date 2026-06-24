@@ -5469,7 +5469,7 @@ def api_free_mock_evaluate():
 # и портило per-topic difficulty matching в задачах дня. Теперь:
 #   - Залогиненный: учитываем по AdaptiveTestResult.completed_at для user_id.
 #   - Гость: учитываем по session['adaptive_completed_at'] (ISO-таймстамп).
-ADAPTIVE_COOLDOWN_DAYS = 30
+ADAPTIVE_COOLDOWN_DAYS = 0
 
 
 def _adaptive_cooldown_status():
@@ -5888,7 +5888,7 @@ def adaptive_test_start_simple():
             
             if last_result and last_result.completed_at:
                 days_elapsed = (datetime.utcnow() - last_result.completed_at).days
-                COOLDOWN_DAYS = 30
+                COOLDOWN_DAYS = 0
                 days_left = COOLDOWN_DAYS - days_elapsed
                 
                 if days_left > 0:
@@ -10545,6 +10545,10 @@ from services.telegram_notify import send_support_email, send_review_email
 _SUPPORT_RATE_LIMIT = {}  # in-memory, для prod лучше Redis
 
 
+@app.route('/sql')
+def sql_page():
+    return render_template('sql.html')
+
 @app.route('/about')
 def about_page():
     # Если авторизованный пользователь ещё не проходил онбординг —
@@ -11413,6 +11417,20 @@ def group_page(group_id):
     g = GroupChat.query.get(group_id)
     is_owner = bool(g and g.owner_id == current_user.id)
     return render_template('group_chat.html', group=g, is_owner=is_owner)
+
+# ─── Мат. статистика (доступ только избранным) ───────────────
+@app.route("/matstat")
+@login_required
+def matstat():
+    """Большая обучающая статья по математической статистике.
+    Видна только пользователям с ником pavelznaka или victorkrivenko."""
+    allowed = {"pavelznaka", "victorkrivenko", "victor"}
+    nick = (getattr(current_user, "nickname", None) or "").lower()
+    uname = (getattr(current_user, "username", None) or "").lower()
+    if nick not in allowed and uname not in allowed:
+        abort(404)
+    return render_template("matstat.html")
+
 
 
 if __name__ == '__main__':
