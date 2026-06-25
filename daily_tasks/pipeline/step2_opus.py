@@ -25,6 +25,14 @@ FIX (2026-06-25):
   zaglushki delaem eshche odnu stroguyu popytku so spec-shemoj polej.
 * validate-porog snizhen do 3/10, chtoby ne vozvrashchat pustoj spisok i ne
   ronyat ves nabor (Step 4 dorabotaet ostalnoe).
+
+FIX (2026-06-25 vecher) - AUDIT ETAP:
+* dobavlen _audit_task: posle generacii proveryaem KAZHDUYU zadachu na (1) flag
+  _generation_failed/GEN_FAILED i (2) tematicheskoe sootvetstvie spec.topic/
+  subtopic. Eto lovit sluchaj, kogda model vernula validnuyu zadachu NE PO TEME
+  (naprimer kvadratnoe uravnenie v teme 'Kombinatorika' - pozicii 5/8).
+* dobavlen cikl peregeneracii: sbojnye/off-topic pozicii peregeneriruyutsya po
+  TEM ZHE usloviyam (ta zhe spec/difficulty_level/position) do _MAX_REGEN_ROUNDS.
 """
 from __future__ import annotations
 
@@ -32,6 +40,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -85,6 +94,7 @@ def _coerce_tasks_list(parsed: Any) -> List[Dict[str, Any]]:
         return [parsed]
     return []
 
+
 # == modeli i routing ==
 # Step 2 GENERATE. Vse urovni poka na DeepSeek v3.1 (deshevo/bezlimit).
 _GEN_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
@@ -97,6 +107,9 @@ _PARALLEL_WORKERS = 5
 
 # JSON-rezhim: zastavlyaet model vernut chistyj JSON-objekt bez markdown.
 _JSON_RESPONSE_FORMAT = {"type": "json_object"}
+
+# Skolko raundov peregeneracii sbojnyh/off-topic pozicij dopuskaem.
+_MAX_REGEN_ROUNDS = 3
 
 
 def _model_for_level(difficulty_level: Any) -> str:
@@ -157,6 +170,66 @@ def _synthesize_fallback_task(spec: Dict[str, Any], reason: str) -> Dict[str, An
     }
 
 
+# == AUDIT: proverka zadach na GEN_FAILED i tematicheskoe sootvetstvie ==
+# Stop-slova: chasto vstrechayutsya, no temu ne opredelyayut.
+_AUDIT_STOPWORDS = {
+    "naidite", "naiti", "reshite", "vychislite", "chemu", "raven", "ravno",
+    "esli", "dano", "izvestno", "skolko", "kakoe", "kakoj", "kakaya", "chto",
+    "dlya", "pri", "the", "and", "find", "solve", "value", "that", "with",
+}
+
+
+def _tokenize(text: str) -> set:
+    """Razbit tekst na normalizovannye slova (kirillica+latinica, >=4 simvola)."""
+    words = re.findall(r"[\w\u0400-\u04FF]+", (text or "").lower())
+    return {w for w in words if len(w) >= 4 and w not in _AUDIT_STOPWORDS}
+
+
+def _topic_keywords(spec: Dict[str, Any]) -> set:
+    """Klyuchevye slova temy iz spec (topic/subtopic/section/keywords)."""
+    parts: List[str] = []
+    for key in ("topic", "subtopic", "section", "category", "theme"):
+        val = spec.get(key)
+        if isinstance(val, str):
+            parts.append(val)
+    kw = spec.get("keywords")
+    if isinstance(kw, list):
+        parts.extend(str(k) for k in kw)
+    elif isinstance(kw, str):
+        parts.append(kw)
+    return _tokenize(" ".join(parts))
+
+
+def _audit_task(task: Dict[str, Any], spec: Dict[str, Any]) -> Tuple[bool, str]:
+    """Proverit odnu zadachu. Vozvrashchaet (ok, reason).
+
+    Kriterii:
+      1) net flaga _generation_failed i markera [GEN_FAILED] v tekste;
+      2) tekst zadachi nepustoj i osmyslennyj (>= 15 simvolov);
+      3) tematicheskoe sootvetstvie: tekst zadachi peresekaetsya s klyuchevymi
+         slovami temy. Esli u temy net izvlekaemyh klyuchevyh slov - propuskaem
+         tematicheskuyu proverku (ne mozhem sudit), schitaem ok.
+    """
+    if not isinstance(task, dict):
+        return False, "task_not_dict"
+    if task.get("_generation_failed"):
+        return False, task.get("_failure_reason") or "generation_failed"
+    text = (task.get("task_text") or "").strip()
+    if "[GEN_FAILED]" in text:
+        return False, "gen_failed_marker"
+    if len(text) < 15:
+        return False, "empty_or_too_short"
+
+    topic_kw = _topic_keywords(spec)
+    if not topic_kw:
+        # Net dannyh dlya tematicheskoj proverki - ne nakazyvaem zadachu.
+        return True, "ok_no_topic_data"
+    task_kw = _tokenize(text + " " + str(task.get("solution") or ""))
+    if topic_kw & task_kw:
+        return True, "ok"
+    return False, "off_topic"
+
+
 async def _generate_one_spec(
     client: OpenRouterClient,
     semaphore: asyncio.Semaphore,
@@ -164,8 +237,8 @@ async def _generate_one_spec(
 ) -> Tuple[Dict[str, Any], float]:
     """Sgenerirovat odnu zadachu pod odnu speku.
 
-    Vozvrashchaet (task_dict, cost_usd). Pri LYUBOJ oshibke - sintetic
-    zaglushka s _generation_failed=True, chtoby ostalnye vorkery dorabotali.
+    Vozvrashchaet (task_dict, cost_usd). Pri LYUBOJ oshibke - sintetic zaglushka
+    s _generation_failed=True, chtoby ostalnye vorkery dorabotali.
     """
     import time as _time_mod
 
@@ -175,7 +248,6 @@ async def _generate_one_spec(
     max_tokens = _max_tokens_for_level(lvl)
     formatted = _format_prompt_for_single_spec(spec)
     messages = [{"role": "user", "content": formatted}]
-
     topic_short = (spec.get("topic") or "?")[:30]
     subtopic_short = (spec.get("subtopic") or "?")[:30]
 
@@ -251,7 +323,6 @@ async def _generate_one_spec(
             continue
 
     usage_cost = _retry_cost
-
     if parsed is None or not isinstance(parsed, dict):
         logger.error(
             "Step 2 GENERATE - pos=%s - ne smogli rasparsit JSON posle %d popytok",
@@ -299,12 +370,14 @@ async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any
     """Sgenerirovat 10 zadach parallelno (semaphore=_PARALLEL_WORKERS).
 
     Vozvrashchaet 10 zadach (po odnoj na speku, otsortirovany po position).
-    Sbojnye pozicii - fallback-zaglushki s _generation_failed=True; obshchij
-    spisok vsegda dliny 10, chtoby validate_opus_generation ne valilsya.
+    Posle generacii zapuskaetsya ETAP AUDITA (_audit_task): kazhdaya zadacha
+    proveryaetsya na GEN_FAILED i tematicheskoe sootvetstvie. Sbojnye/off-topic
+    pozicii peregeneriruyutsya po TEM ZHE usloviyam do _MAX_REGEN_ROUNDS raz.
     """
     if not specs:
         logger.error("Step 2 GENERATE - pustoj spisok spek, nechego generirovat")
         return []
+
     if len(specs) != 10:
         logger.warning(
             "Step 2 GENERATE - polucheno %d spek vmesto 10, vse ravno prodolzhaem",
@@ -317,22 +390,70 @@ async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any
         len(specs), _PARALLEL_WORKERS, _OPUS_MODEL,
     )
 
+    # Spec po position - chtoby peregenerirovat konkretnye pozicii po tem zhe usloviyam.
+    spec_by_pos: Dict[Any, Dict[str, Any]] = {spec.get("position"): spec for spec in specs}
+    total_cost = 0.0
+
     async with OpenRouterClient() as client:
+        # --- Raund 0: pervichnaya generaciya vseh spek ---
         coros = [_generate_one_spec(client, semaphore, spec) for spec in specs]
         results = await asyncio.gather(*coros, return_exceptions=False)
 
-    tasks: List[Dict[str, Any]] = []
-    total_cost = 0.0
-    failed_positions: List[Any] = []
-    for task, cost in results:
-        tasks.append(task)
-        total_cost += cost
-        if task.get("_generation_failed"):
-            failed_positions.append(task.get("position"))
+        task_by_pos: Dict[Any, Dict[str, Any]] = {}
+        for task, cost in results:
+            total_cost += cost
+            task_by_pos[task.get("position")] = task
 
+        # --- ETAP AUDITA + peregeneraciya nedostayushchih ---
+        for _round in range(1, _MAX_REGEN_ROUNDS + 1):
+            bad_positions: List[Any] = []
+            for pos, spec in spec_by_pos.items():
+                task = task_by_pos.get(pos)
+                ok, reason = _audit_task(task, spec) if task is not None else (False, "missing")
+                if not ok:
+                    bad_positions.append(pos)
+                    logger.warning(
+                        "Step 2 AUDIT - pos=%s ne proshla (prichina=%s), v ochered na peregeneraciyu",
+                        pos, reason,
+                    )
+
+            if not bad_positions:
+                logger.info("Step 2 AUDIT - vse zadachi proshli audit, peregeneraciya ne nuzhna")
+                break
+
+            logger.info(
+                "Step 2 AUDIT - raund peregeneracii %d/%d: %d pozicij (%s)",
+                _round, _MAX_REGEN_ROUNDS, len(bad_positions), bad_positions,
+            )
+            regen_specs = [spec_by_pos[p] for p in bad_positions]
+            regen_coros = [_generate_one_spec(client, semaphore, s) for s in regen_specs]
+            regen_results = await asyncio.gather(*regen_coros, return_exceptions=False)
+            for task, cost in regen_results:
+                total_cost += cost
+                task_by_pos[task.get("position")] = task
+        else:
+            # Cikl ne prervan break-om: posle vseh raundov chast pozicij vse eshche plohaya.
+            still_bad = [
+                pos for pos, spec in spec_by_pos.items()
+                if not _audit_task(task_by_pos.get(pos), spec)[0]
+            ]
+            if still_bad:
+                logger.error(
+                    "Step 2 AUDIT - posle %d raundov ostalis sbojnye pozicii: %s. "
+                    "Otdaem chto est - Step 3 pometit, Step 4 ispravit.",
+                    _MAX_REGEN_ROUNDS, still_bad,
+                )
+
+    # Sobiraem itogovyj spisok po position.
+    tasks: List[Dict[str, Any]] = list(task_by_pos.values())
     tasks.sort(key=lambda t: t.get("position") or 0)
+
+    failed_positions = [
+        pos for pos, spec in spec_by_pos.items()
+        if not _audit_task(task_by_pos.get(pos), spec)[0]
+    ]
     logger.info(
-        "Step 2 GENERATE - DONE: %d zadach (failed=%d at positions %s), total_cost=$%.4f",
+        "Step 2 GENERATE - DONE: %d zadach (audit_failed=%d at positions %s), total_cost=$%.4f",
         len(tasks), len(failed_positions), failed_positions, total_cost,
     )
 
