@@ -34,6 +34,7 @@ MIN_VALID_TASKS = 7
 
 FLAGGED_THRESHOLD = 1
 """При >= этого числа is_flagged задач запускается rescue-проход."""
+GEMINI_PLAN_MAX_ATTEMPTS = 3
 
 _FIX_PARALLEL_WORKERS = 5
 """Сколько Opus-fix запускаем параллельно в одной итерации fix-loop."""
@@ -169,13 +170,24 @@ async def run_daily_generation_pipeline(
     _safe_progress(progress_callback, "gemini_plan", 15)
     t0 = time.monotonic()
     try:
-        specs = await generate_gemini_plan(profile)
-        all_steps.append(_make_step_log("gemini_plan", t0))
-        total_cost += all_steps[-1].cost_usd
+        specs = None
+        for _plan_attempt in range(1, GEMINI_PLAN_MAX_ATTEMPTS + 1):
+            specs = await generate_gemini_plan(profile)
+            all_steps.append(_make_step_log("gemini_plan", t0))
+            total_cost += all_steps[-1].cost_usd
+            if specs and len(specs) == 10:
+                break
+            logger.warning(
+                "Pipeline: Step 1 plan returned %d specs instead of 10 (attempt %d/%d)",
+                len(specs) if specs else 0,
+                _plan_attempt,
+                GEMINI_PLAN_MAX_ATTEMPTS,
+            )
+            t0 = time.monotonic()
         if not specs or len(specs) != 10:
             msg = (
-                f"Планировщик вернул {len(specs) if specs else 0} "
-                "задач вместо 10"
+                f"Planner returned {len(specs) if specs else 0} "
+                f"specs instead of 10 after {GEMINI_PLAN_MAX_ATTEMPTS} attempts"
             )
             logger.error("Pipeline: %s", msg)
             result.error = msg
