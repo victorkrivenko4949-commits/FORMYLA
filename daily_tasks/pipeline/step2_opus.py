@@ -201,7 +201,7 @@ async def _generate_one_spec(
     parsed = extract_json_safe(raw)
     _retry_cost = usage.cost_usd
     for _retry_attempt in range(_MAX_JSON_RETRIES):
-        if parsed is not None and isinstance(parsed, dict):
+        if parsed is not None and isinstance(parsed, dict) and _coerce_tasks_list(parsed):
             break
         logger.warning(
             "Step 2 GENERATE - pos=%s - ne smogli rasparsit JSON (popytka %d/%d), "
