@@ -713,8 +713,8 @@ def _convert_heic_to_jpeg(photo_bytes):
 @login_required
 def coach():
   """Страница Куратора: радар + чат с ИИ-агентом."""
-radar = _get_user_radar()
-return render_template('prep/coach.html', radar=radar, topic_names=TOPIC_NAMES_RU)
+    radar = _get_user_radar()
+        return render_template('prep/coach.html', radar=radar, topic_names=TOPIC_NAMES_RU)
 
 
 @prep_bp.route('/coach/chat', methods=['POST'])
@@ -722,17 +722,17 @@ return render_template('prep/coach.html', radar=radar, topic_names=TOPIC_NAMES_R
 def coach_chat():
     """Обработка сообщения чата с ИИ-куратором."""
     data = request.get_json(silent=True) or {}
-  message = (data.get('message') or '').strip()
-  if not message:
-    return jsonify(reply='Напиши вопрос, и я подскажу, что подтянуть.'), 400
-  radar = _get_user_radar()
-  weak = sorted(radar.items(), key=lambda kv: kv[1])[:3]
-  weak_names = ', '.join(TOPIC_NAMES_RU.get(t, t) for t, _ in weak)
+      message = (data.get('message') or '').strip()
+      if not message:
+        return jsonify(reply='Напиши вопрос, и я подскажу, что подтянуть.'), 400
+      radar = _get_user_radar()
+      weak = sorted(radar.items(), key=lambda kv: kv[1])[:3]
+      weak_names = ', '.join(TOPIC_NAMES_RU.get(t, t) for t, _ in weak)
 
-  reply = (
-    f'По твоему радару слабее всего: {weak_names}. '
-    f'Советую на этой неделе сделать акцент на них: по 10 задач в день, '
-    f'база по 1 на каждую из 7 подтем + 3 в самые слабые. '
-    f'Твой вопрос: "{message}".'
-  )
-  return jsonify(reply=reply, weak_topics=[t for t, _ in weak])
+      reply = (
+        f'По твоему радару слабее всего: {weak_names}. '
+        f'Советую на этой неделе сделать акцент на них: по 10 задач в день, '
+        f'база по 1 на каждую из 7 подтем + 3 в самые слабые. '
+        f'Твой вопрос: "{message}".'
+      )
+      return jsonify(reply=reply, weak_topics=[t for t, _ in weak])
