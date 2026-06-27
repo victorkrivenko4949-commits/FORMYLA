@@ -53,9 +53,9 @@ def _get_user_radar():
         ).first()
         if progress:
             # Map IRT level (1-7) to skill (0-100)
-            radar[topic] = min(100, max(0, int(progress.current_level / 7 * 100)))
+            radar[topic] = min(100, max(0, int((progress.current_level - 1) / 6 * 100)))
         else:
-            radar[topic] = 50  # default
+            radar[topic] = 0  # default
     return radar
 
 
@@ -83,12 +83,12 @@ def _get_radar_from_adaptive_test():
         if topic and topic not in seen_topics:
             seen_topics.add(topic)
             # Map final_level (1-7) to skill (0-100)
-            radar[topic] = min(100, max(0, int((r.final_level or 3) / 7 * 100)))
+            radar[topic] = min(100, max(0, int(((r.final_level or 1) - 1) / 6 * 100)))
 
     # Fill missing topics with default
     for t in RADAR_TOPICS:
         if t not in radar:
-            radar[t] = 50
+            radar[t] = 0
 
     return radar
 
