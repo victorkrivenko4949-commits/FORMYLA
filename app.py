@@ -912,11 +912,11 @@ mail = Mail(app)
 # removed by request together with the "Написать олимпиаду" section.
 
 try:
-    from routes.prep import prep_bp
+        from routes.prep import prep_bp
     app.register_blueprint(prep_bp)
     print("[BP] prep_bp registered (/prep)")
 except Exception as _e:
-    print(f"[BP] prep_bp NOT registered: {_e}")
+            import traceback; print('[BP] prep_bp NOT registered:'); traceback.print_exc()
 
 try:
     from routes.olympiad_prep import olympiad_prep_bp
