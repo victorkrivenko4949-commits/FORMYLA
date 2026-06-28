@@ -266,7 +266,8 @@ from models import (
     GroupChat, GroupMember, GroupMessage,
     init_db,
 )
-init_db(app)
+from models_curator import CuratorState, Subtopic, SubtopicProgress  # noqa: F401
+
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
 # This runs on every startup to ensure database schema is up to date
