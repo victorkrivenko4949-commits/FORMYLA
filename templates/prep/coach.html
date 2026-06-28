@@ -4,24 +4,28 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/prep.css') }}?v={{ asset_version }}">
 <style>
-.coach-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
-.coach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.coach-wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+.coach-grid { display: grid; grid-template-columns: 0.85fr 1fr; gap: 20px; align-items: start; }
 @media (max-width: 860px) { .coach-grid { grid-template-columns: 1fr; } }
-.coach-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; }
-.coach-card h2 { margin: 0 0 12px; font-size: 18px; }
-.radar-list { list-style: none; padding: 0; margin: 0; }
-.radar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.radar-name { flex: 0 0 150px; font-size: 14px; }
-.radar-bar { flex: 1; height: 10px; background: #eef0f3; border-radius: 6px; overflow: hidden; }
-.radar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg,#6366f1,#22c55e); }
-.radar-val { flex: 0 0 44px; text-align: right; font-size: 13px; color: #6b7280; }
-.chat-box { display: flex; flex-direction: column; height: 460px; }
-.chat-log { flex: 1; overflow-y: auto; border: 1px solid #eef0f3; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+.coach-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 18px; }
+.coach-card h2 { margin: 0 0 14px; font-size: 16px; color: #e5e7eb; }
+.radar-chart { display: flex; justify-content: center; }
+.radar-chart svg { width: 100%; max-width: 280px; height: auto; }
+.radar-grid-line { fill: none; stroke: rgba(255,255,255,0.10); }
+.radar-axis { stroke: rgba(255,255,255,0.12); }
+.radar-area { fill: rgba(99,102,241,0.30); stroke: #6366f1; stroke-width: 2; }
+.radar-dot { fill: #22c55e; }
+.radar-axis-label { fill: rgba(255,255,255,0.65); font-size: 9px; }
+.radar-legend { list-style: none; padding: 0; margin: 14px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.radar-legend li { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.75); }
+.radar-legend b { color: #6366f1; font-weight: 600; }
+.chat-box { display: flex; flex-direction: column; height: 420px; }
+.chat-log { flex: 1; overflow-y: auto; border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
 .chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
 .chat-msg.user { background: #6366f1; color: #fff; margin-left: auto; }
-.chat-msg.bot { background: #f3f4f6; color: #111; }
+.chat-msg.bot { background: rgba(255,255,255,0.08); color: #e5e7eb; }
 .chat-input-row { display: flex; gap: 8px; }
-.chat-input-row input { flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; }
+.chat-input-row input { flex: 1; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 14px; background: rgba(0,0,0,0.25); color: #fff; }
 .chat-input-row button { padding: 10px 18px; border: 0; border-radius: 10px; background: #6366f1; color: #fff; font-weight: 600; cursor: pointer; }
 </style>
 {% endblock %}
@@ -29,30 +33,22 @@
 {% block content %}
 <div class="coach-wrap">
 <h1>🎓 Куратор подготовки</h1>
-<p style="color:#6b7280;">Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.</p>
+<p style="color:rgba(255,255,255,0.6);">Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.</p>
 <div class="coach-grid">
 <div class="coach-card">
 <h2>📊 Радар по темам</h2>
-<ul class="radar-list">
-{% for topic, value in radar.items() %}
-<li class="radar-row">
-<span class="radar-name">{{ topic_names.get(topic, topic) }}</span>
-<span class="radar-bar"><span class="radar-fill" style="width: {{ value }}%;"></span></span>
-<span class="radar-val">{{ value }}%</span>
-</li>
-{% endfor %}
+<div class="radar-chart">
+<svg id="radarSvg" viewBox="0 0 240 240" data-radar='{% for topic, value in radar.items() %}{{ "," if not loop.first }}{{ value }}{% endfor %}' data-labels='{% for topic, value in radar.items() %}{{ "|" if not loop.first }}{{ topic_names.get(topic, topic) }}{% endfor %}'></svg>
+</div>
+<ul class="radar-legend">
+{% for topic, value in radar.items() %}<li><span>{{ topic_names.get(topic, topic) }}</span><b>{{ value }}%</b></li>{% endfor %}
 </ul>
 </div>
 <div class="coach-card">
 <h2>💬 Чат с ИИ-куратором</h2>
 <div class="chat-box">
-<div class="chat-log" id="chatLog">
-<div class="chat-msg bot">Привет! Я твой ИИ-куратор. Спроси меня, какие подтемы стоит подтянуть, и я составлю план.</div>
-</div>
-<form class="chat-input-row" id="chatForm">
-<input type="text" id="chatInput" placeholder="Что подтянуть по геометрии?" autocomplete="off">
-<button type="submit">Отправить</button>
-</form>
+<div class="chat-log" id="chatLog"><div class="chat-msg bot">Привет! Я твой ИИ-куратор. Спроси меня, какие подтемы стоит подтянуть, и я составлю план.</div></div>
+<form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Что подтянуть по геометрии?" autocomplete="off"><button type="submit">Отправить</button></form>
 </div>
 </div>
 </div>
@@ -62,6 +58,35 @@
 {% block extra_js %}
 <script>
 (function () {
+var svg = document.getElementById('radarSvg');
+if (svg) {
+var vals = (svg.getAttribute('data-radar') || '').split(',').map(function (v) { return Math.max(0, Math.min(100, parseFloat(v) || 0)); });
+var labels = (svg.getAttribute('data-labels') || '').split('|');
+var n = vals.length;
+var cx = 120, cy = 120, R = 80;
+var NS = 'http://www.w3.org/2000/svg';
+function pt(i, r) { var a = (Math.PI * 2 * i / n) - Math.PI / 2; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+function mk(tag, attrs, cls) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (cls) e.setAttribute('class', cls); return e; }
+if (n > 0) {
+[0.25, 0.5, 0.75, 1].forEach(function (f) {
+var pts = '';
+for (var i = 0; i < n; i++) { var p = pt(i, R * f); pts += p[0] + ',' + p[1] + ' '; }
+svg.appendChild(mk('polygon', { points: pts.trim() }, 'radar-grid-line'));
+});
+for (var i = 0; i < n; i++) {
+var e = pt(i, R);
+svg.appendChild(mk('line', { x1: cx, y1: cy, x2: e[0], y2: e[1] }, 'radar-axis'));
+var lp = pt(i, R + 16);
+var t = mk('text', { x: lp[0], y: lp[1], 'text-anchor': 'middle', 'dominant-baseline': 'middle' }, 'radar-axis-label');
+t.textContent = (labels[i] || '').slice(0, 12);
+svg.appendChild(t);
+}
+var dpts = '';
+for (var i = 0; i < n; i++) { var p = pt(i, R * vals[i] / 100); dpts += p[0] + ',' + p[1] + ' '; }
+svg.appendChild(mk('polygon', { points: dpts.trim() }, 'radar-area'));
+for (var i = 0; i < n; i++) { var p = pt(i, R * vals[i] / 100); svg.appendChild(mk('circle', { cx: p[0], cy: p[1], r: 3 }, 'radar-dot')); }
+}
+}
 var form = document.getElementById('chatForm');
 var input = document.getElementById('chatInput');
 var log = document.getElementById('chatLog');
