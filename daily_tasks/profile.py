@@ -1092,6 +1092,39 @@ def build_profile(
         len(weak_topics), len(chosen_calibration), len(strong_topics),
         measured_slots, calibration_slots,
     )
+     # — CURATOR (new sub-theme system): inject today's locked subtopic —
+  profile['curator_subtopic'] = None
+  try:
+    from models import CuratorState
+    from .monthly_plan import (
+      get_or_build_plan,
+      pick_day_subtopic,
+      subtopic_title,
+      parent_topic_for_subtopic,
+    )
+    _cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if _cs is not None and getattr(_cs, 'enabled', True):
+      _today = today or date.today()
+      _plan = get_or_build_plan(_cs, class_level, _today)
+      _slug = pick_day_subtopic(_plan, _today)
+      if _slug:
+        _parent = parent_topic_for_subtopic(_slug, class_level)
+        _day_topic = None
+        for _t in topics_full:
+          if _t.get('topic') == _parent or _t.get('topic_key') == _parent:
+            _day_topic = _t
+            break
+        if _day_topic is None and topics_full:
+          _day_topic = topics_full[0]
+        profile['curator_subtopic'] = {
+          'slug': _slug,
+          'name': subtopic_title(_slug),
+          'day_topic': _day_topic or {},
+          'day_index': _today.toordinal(),
+        }
+  except Exception as _exc:
+    logger.warning('curator_subtopic injection failed: %s', _exc)
+
     return profile
 
 
