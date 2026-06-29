@@ -712,8 +712,8 @@ def _convert_heic_to_jpeg(photo_bytes):
 @prep_bp.route('/coach')
 @login_required
 def coach():
-    """Страница Куратора: радар + чат с ИИ-агентом."""
-        radar = _get_radar_from_adaptive_test() or _get_user_radar()
+        """Страница Куратора: радар + чат с ИИ-агентом."""
+    radar = _get_radar_from_adaptive_test() or _get_user_radar()
     return render_template('prep/coach.html', radar=radar, topic_names=TOPIC_NAMES_RU)
 
 @prep_bp.route('/coach/chat', methods=['POST'])
