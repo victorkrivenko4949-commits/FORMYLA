@@ -545,20 +545,20 @@ def _assign_diverse_themes(slots: List[PlannedSlot], day_index: int = 0) -> None
 
 # === NEW (curator monthly plan): per-SUBTOPIC daily generation ===
 def plan_slots_for_subtopic(profile, day_topic, subtopic_slug, subtopic_name, day_index=0, total_slots=TOTAL_SLOTS):
-        """Build total_slots PlannedSlot objects all locked to ONE subtopic of the day."""
-        grade = _profile_grade(profile)
-        topic = dict(day_topic or {})
-        lo, hi = _topic_window(topic)
-        _floor = _grade_floor(profile)
-        if _floor > MIN_LEVEL:
-                    lo = _clamp(max(lo, _floor))
-                    hi = _clamp(max(hi, lo))
-                    topic["level_window"] = [lo, hi]
-                    if topic.get("target_level") is not None:
-                                    topic["target_level"] = _clamp(max(int(topic["target_level"]), lo))
+    """Build total_slots PlannedSlot objects all locked to ONE subtopic of the day."""
+    grade = _profile_grade(profile)
+    topic = dict(day_topic or {})
+    lo, hi = _topic_window(topic)
+    _floor = _grade_floor(profile)
+    if _floor > MIN_LEVEL:
+        lo = _clamp(max(lo, _floor))
+        hi = _clamp(max(hi, lo))
+    topic["level_window"] = [lo, hi]
+    if topic.get("target_level") is not None:
+        topic["target_level"] = _clamp(max(int(topic["target_level"]), lo))
     title = subtopic_name or subtopic_slug or topic.get("topic", "")
     logger.info(
-            "plan_slots_for_subtopic: subtopic=%s parent_topic=%s grade=%s window=[%d,%d]",
+        "plan_slots_for_subtopic: subtopic=%s parent_topic=%s grade=%s window=[%d,%d]",
         subtopic_slug, topic.get("topic"), grade, lo, hi,
     )
     slots = []
@@ -575,23 +575,23 @@ def plan_slots_for_subtopic(profile, day_topic, subtopic_slug, subtopic_name, da
         reason_bits.append(f"подтема: {title}; метод: {method}; уровень {difficulty} из [{lo}, {hi}]")
         slots.append(PlannedSlot(
             position=k + 1,
-                    slot_kind=slot_kind,
-                    subject=topic.get("subject", "math"),
-                    topic=topic.get("topic", ""),
-                    topic_key=topic.get("topic_key", topic.get("topic", "")),
-                    difficulty_level=difficulty,
-                    target_level=int(topic.get("target_level") or difficulty),
-                    level_window=(lo, hi),
-                    is_calibration=bool(topic.get("calibration") or not topic.get("measured", True)),
-                    measured=bool(topic.get("measured", False)),
-                    pct=topic.get("pct"),
-                    test_correct=topic.get("test_correct"),
-                    test_total=topic.get("test_total"),
-                    final_level=topic.get("final_level"),
-                    subtopic_hints=[title],
-                    reason_hint="; ".join(reason_bits),
-                    theme_subtopic=title,
-                ))
+            slot_kind=slot_kind,
+            subject=topic.get("subject", "math"),
+            topic=topic.get("topic", ""),
+            topic_key=topic.get("topic_key", topic.get("topic", "")),
+            difficulty_level=difficulty,
+            target_level=int(topic.get("target_level") or difficulty),
+            level_window=(lo, hi),
+            is_calibration=bool(topic.get("calibration") or not topic.get("measured", True)),
+            measured=bool(topic.get("measured", False)),
+            pct=topic.get("pct"),
+            test_correct=topic.get("test_correct"),
+            test_total=topic.get("test_total"),
+            final_level=topic.get("final_level"),
+            subtopic_hints=[title],
+            reason_hint="; ".join(reason_bits),
+            theme_subtopic=title,
+        ))
     slots = slots[:total_slots]
     _enforce_spread(slots, max_same_level=2)
     _log_plan(slots)
