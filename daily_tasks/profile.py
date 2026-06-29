@@ -1092,9 +1092,9 @@ def build_profile(
         len(weak_topics), len(chosen_calibration), len(strong_topics),
         measured_slots, calibration_slots,
     )
-     # — CURATOR (new sub-theme system): inject today's locked subtopic —
-  profile['curator_subtopic'] = None
-  try:
+    # CURATOR (sub-theme system): inject today's locked subtopic
+    profile['curator_subtopic'] = None
+    try::
     from models import CuratorState
     from .monthly_plan import (
       get_or_build_plan,
