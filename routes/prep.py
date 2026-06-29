@@ -727,3 +727,30 @@ def coach_chat():
     radar = _get_user_radar()
     weak = sorted(radar.items(), key=lambda kv: kv[1])[:3]
     weak_names = ', '.join(TOPIC_NAMES_RU.get(t, t) for t, _ in weak)
+    radar_lines = [f"  - {TOPIC_NAMES_RU.get(t, t)}: {s}/100" for t, s in sorted(radar.items(), key=lambda kv: kv[1], reverse=True)]
+    plans = PrepPlan.query.filter_by(user_id=current_user.id).order_by(PrepPlan.created_at.desc()).all()
+    plan_lines = []
+    for p in plans:
+        done = PrepDay.query.filter_by(plan_id=p.id, completed=True).count()
+        total = PrepDay.query.filter_by(plan_id=p.id).count()
+        plan_lines.append(f"  - {p.title} (цель: {p.target_olympiad or '—'}, статус: {p.status}, прогресс: {done}/{total} дней)")
+    system_prompt = (
+        "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам (ВсОШ, ММО, Турнир городов). "
+        "Ты знаешь всё об ученике: радар по темам, активные планы и прогресс. Отвечай кратко, на русском, "
+        "давай конкретные шаги на ближайшие дни по слабым темам. Не выдумывай данные."
+    )
+    radar_block = "\n".join(radar_lines) or "  (нет данных)"
+    plan_block = "\n".join(plan_lines) or "  (планов нет)"
+    prompt = (
+        f"ДАННЫЕ ОБ УЧЕНИКЕ:\nРадар (навык 0-100):\n{radar_block}\n\n"
+        f"Слабые темы: {weak_names}\n\nПланы:\n{plan_block}\n\n"
+        f"ВОПРОС УЧЕНИКА: {message}"
+    )
+    try:
+        from ai.deepseek_client import DeepSeekClient
+        client = DeepSeekClient()
+        reply = client.generate_with_reasoning(prompt, system_prompt=system_prompt, max_tokens=2000)
+    except Exception as e:
+        current_app.logger.error(f"DeepSeek coach_chat error: {e}")
+        reply = f"Сейчас не могу связаться с ИИ-куратором. Стоит подтянуть: {weak_names}."
+    return jsonify(reply=reply)
