@@ -399,6 +399,64 @@ class StageAttempt(db.Model):
 
 
 # ------------------------------------------------------------------------------
+# VserossCourseEntry — запись курса ВсОШ 2027 (прогноз методов)
+# ------------------------------------------------------------------------------
+
+VSOSH_STAGES_ORDER = ['Школьный', 'Муниципальный', 'Региональный', 'Заключительный']
+
+
+class VserossCourseEntry(db.Model):
+    """Одна строка курса ВсОШ 2027: метод для (grade, stage).
+
+    UPSERT-ключ: (grade, stage, method_code).
+    Содержит прогноз 2027, уверенность, порядок изучения и пр.
+    """
+
+    __tablename__ = 'vsosh_course_entries'
+
+    id = db.Column(db.Integer, primary_key=True)
+    grade = db.Column(db.Integer, nullable=False, index=True)       # 9 / 10 / 11
+    stage = db.Column(db.String(30), nullable=False, index=True)    # Школьный / Муниципальный / Региональный / Заключительный
+
+    method_code = db.Column(db.String(10), nullable=False, index=True)
+    method_name = db.Column(db.String(300), nullable=False)
+    section = db.Column(db.String(10), nullable=True)
+
+    # Прогноз
+    forecast_2027 = db.Column(db.Float, nullable=True)              # Прогноз2027
+    study_order = db.Column(db.String(200), nullable=True)          # Очередь_изучения
+    importance = db.Column(db.String(100), nullable=True)           # Приоритет
+
+    # Уверенность
+    confidence_label = db.Column(db.String(100), nullable=True)     # "🟢 100% — будет точно" и т.п.
+    confidence_level = db.Column(db.Integer, nullable=False, default=1)  # 3=🟢 2=🟡 1=⚪
+
+    # Статистика
+    appearances = db.Column(db.Integer, nullable=True)              # Появлений
+    last_year = db.Column(db.Integer, nullable=True)                # Последний
+    total_count = db.Column(db.Integer, nullable=True)              # Всего
+    sum_2021_25 = db.Column(db.Integer, nullable=True)              # Сумма2021_25
+    trend = db.Column(db.Float, nullable=True)                      # Тренд
+    regularity = db.Column(db.String(100), nullable=True)           # Закономерность
+    reason = db.Column(db.Text, nullable=True)                      # Почему
+
+    # Для отображения
+    sort_order = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('grade', 'stage', 'method_code', name='uq_vsosh_course_entry'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<VserossCourseEntry grade={self.grade} '
+            f'stage={self.stage!r} code={self.method_code!r}>'
+        )
+
+
+# ------------------------------------------------------------------------------
 # MethodTask  - standalone task bank (VsOSh 9/10/11, 2027)
 # ------------------------------------------------------------------------------
 
@@ -455,4 +513,6 @@ __all__ = [
     'STAGE_RESULTS',
     'MethodTask',
     'METHOD_TASK_PROBABILITY_TIERS',
+    'VserossCourseEntry',
+    'VSOSH_STAGES_ORDER',
 ]
