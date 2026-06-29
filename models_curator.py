@@ -12,6 +12,7 @@ class CuratorState(db.Model):
     __tablename__ = 'curator_state'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, unique=True, index=True)
     target_olympiads = db.Column(db.JSON, default=list)
+    id = db.Column(db.Integer, primary_key=True)
     grade = db.Column(db.Integer, nullable=True)
     goal_text = db.Column(db.Text, nullable=True)
     prep_plan = db.Column(db.JSON, default=dict)
