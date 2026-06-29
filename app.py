@@ -267,6 +267,7 @@ from models import (
     init_db,
 )
 from models_curator import CuratorState, Subtopic, SubtopicProgress  # noqa: F401
+init_db(app)
 
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
