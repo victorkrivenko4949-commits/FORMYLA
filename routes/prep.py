@@ -23,6 +23,8 @@ from flask_login import current_user, login_required
 
 from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution
 from services.prep_planner import generate_prep_plan, RADAR_TOPICS, TOPIC_NAMES_RU
+from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
+from daily_tasks.profile import build_profile, ProfileBuildError
 
 # Allowed MIME types for photo upload
 ALLOWED_PHOTO_MIMES = {'image/jpeg', 'image/png', 'image/webp', 'image/heic'}
@@ -44,19 +46,42 @@ def _get_plan_or_404(plan_id):
 
 
 def _get_user_radar():
-    """Build radar dict from user's UserTopicProgress or defaults."""
-    from models import UserTopicProgress
-    radar = {}
-    for topic in RADAR_TOPICS:
-        progress = UserTopicProgress.query.filter_by(
-            user_id=current_user.id, topic=topic
-        ).first()
-        if progress:
-            # Map IRT level (1-7) to skill (0-100)
-            radar[topic] = min(100, max(0, int((progress.current_level - 1) / 6 * 100)))
-        else:
-            radar[topic] = 0  # default
-    return radar
+    """Build radar dict from build_profile() topics_full (7 subtopics).
+
+    Returns dict {topic_key: pct} for the user's class subtopics,
+    or falls back to empty dict if profile cannot be built.
+    """
+    try:
+        profile = build_profile(current_user.id)
+        topics_full = profile.get('topics_full', []) or []
+        radar = {}
+        for t in topics_full:
+            key = t.get('topic_key') or t.get('topic', '')
+            pct = t.get('pct', 0)
+            if key:
+                radar[key] = min(100, max(0, int(pct)))
+        return radar
+    except ProfileBuildError:
+        return {}
+    except Exception:
+        current_app.logger.exception('_get_user_radar failed')
+        return {}
+
+
+def _get_user_grade():
+    """Return current user's preferred grade or None."""
+    return getattr(current_user, 'preferred_grade', None)
+
+
+def _curator_profile():
+    """Build profile dict for curator, or None on failure."""
+    try:
+        return build_profile(current_user.id)
+    except ProfileBuildError:
+        return None
+    except Exception:
+        current_app.logger.exception('_curator_profile failed')
+        return None
 
 
 def _get_radar_from_adaptive_test():
@@ -708,49 +733,204 @@ def _convert_heic_to_jpeg(photo_bytes):
         return buf.getvalue(), 'image/jpeg'
 
 
-# --- Куратор подготовки: радар + чат с ИИ-куратором ---
+# ─── Куратор подготовки: подтемы, приветствие, чат с ИИ ────────────────────
+
+def _build_subtopic_ctx(profile):
+    """Build (radar_dict, topic_names_dict, weak_keys, subtopics_to_test)
+    from a profile dict containing 'topics_full'.
+
+    Returns dict with keys: radar, topic_names, weak_keys, subtopics_to_test, test_done.
+    Returns empty-data dict if profile is None or has no topics_full.
+    """
+    if not profile:
+        return {'radar': {}, 'topic_names': {}, 'weak_keys': [],
+                'subtopics_to_test': [], 'test_done': False}
+
+    topics_full = profile.get('topics_full', []) or []
+    radar = {}
+    topic_names = {}
+    subtopics_to_test = []
+    for t in topics_full:
+        key = t.get('topic_key') or t.get('topic', '')
+        pct = t.get('pct', 0)
+        measured = t.get('measured', False)
+        name = t.get('topic_name') or t.get('topic', key)
+        if key:
+            radar[key] = min(100, max(0, int(pct)))
+            topic_names[key] = name
+            if not measured:
+                subtopics_to_test.append({'key': key, 'name': name})
+
+    # Weak = lowest pct among measured topics
+    measured_radar = {k: v for k, v in radar.items()
+                      if any(t.get('measured') and (t.get('topic_key') or t.get('topic')) == k
+                             for t in topics_full)}
+    weak_keys = [k for k, _ in sorted(measured_radar.items(), key=lambda kv: kv[1])[:3]]
+    test_done = profile.get('measured_topics_count', 0) > 0
+
+    return {
+        'radar': radar,
+        'topic_names': topic_names,
+        'weak_keys': weak_keys,
+        'subtopics_to_test': subtopics_to_test,
+        'test_done': test_done,
+    }
+
+
 @prep_bp.route('/coach')
 @login_required
 def coach():
-    """Страница Куратора: радар + чат с ИИ-агентом."""
-    radar = _get_radar_from_adaptive_test() or _get_user_radar()
-    return render_template('prep/coach.html', radar=radar, topic_names=TOPIC_NAMES_RU)
+    """Страница Куратора: радар по 7 подтемам + чат с ИИ-агентом."""
+    profile = _curator_profile()
+    ctx = _build_subtopic_ctx(profile)
+    return render_template('prep/coach.html',
+                           radar=ctx['radar'],
+                           topic_names=ctx['topic_names'],
+                           test_done=ctx['test_done'],
+                           subtopics_to_test=ctx['subtopics_to_test'])
+
+
+@prep_bp.route('/coach/greeting')
+@login_required
+def coach_greeting():
+    """JSON-приветствие: определяет сценарий по статусу пользователя.
+
+    Сценарии:
+      - need_grade          — класс не выбран
+      - need_test           — класс выбран, но диагностика не пройдена
+      - recommend_olympiad  — диагностика пройдена, рекомендовать олимпиаду
+    """
+    grade = _get_user_grade()
+    if not grade:
+        return jsonify(
+            greeting='👋 Привет! Я твой ИИ-куратор FORMYLA. Для начала выбери свой класс, '
+                     'чтобы я мог построить радар твоих подтем.',
+            scenario='need_grade',
+            recommended_olympiad=None,
+            subtopics_to_test=[],
+            cta='Выбрать класс',
+        )
+
+    profile = _curator_profile()
+    ctx = _build_subtopic_ctx(profile)
+    test_done = ctx['test_done']
+
+    # Выбор рекомендуемой олимпиады
+    recommended = None
+    if test_done:
+        try:
+            olymp = (OlympiadPrep.query
+                     .filter(OlympiadPrep.is_active.is_(True))
+                     .filter(OlympiadPrep.grades_list.astype(str).contains(str(grade)))
+                     .order_by(OlympiadPrep.sort_order)
+                     .first())
+            if olymp:
+                recommended = {'slug': olymp.slug, 'name': olymp.name,
+                               'short_name': olymp.short_name}
+        except Exception:
+            current_app.logger.exception('olympiad recommendation failed')
+
+    if not test_done:
+        greeting = (
+            f'👋 Привет! Ты в {grade}-м классе. Похоже, ты ещё не прошёл диагностический тест. '
+            f'Пройди его — я узнаю твои сильные и слабые подтемы и смогу составить план подготовки.'
+        )
+        return jsonify(
+            greeting=greeting,
+            scenario='need_test',
+            recommended_olympiad=None,
+            subtopics_to_test=ctx['subtopics_to_test'],
+            cta='Пройти диагностику',
+        )
+
+    top_weak = ctx['weak_keys'][:3] if ctx['weak_keys'] else []
+    weak_names = ', '.join(ctx['topic_names'].get(k, k) for k in top_weak)
+    if recommended:
+        greeting = (
+            f'👋 Привет! Ты в {grade}-м классе. Я проанализировал твой диагностический тест. '
+            f'Рекомендую начать подготовку к **{recommended["name"]}**. '
+            f'Слабые подтемы: {weak_names}. Готов начать?'
+        )
+    else:
+        greeting = (
+            f'👋 Привет! Ты в {grade}-м классе. Я проанализировал твой диагностический тест. '
+            f'Слабые подтемы: {weak_names}. Давай составим план подготовки!'
+        )
+
+    return jsonify(
+        greeting=greeting,
+        scenario='recommend_olympiad',
+        recommended_olympiad=recommended,
+        subtopics_to_test=ctx['subtopics_to_test'],
+        cta='Создать план подготовки',
+    )
+
 
 @prep_bp.route('/coach/chat', methods=['POST'])
 @login_required
 def coach_chat():
-    """Обработка сообщения чата с ИИ-куратором."""
+    """Обработка сообщения чата с ИИ-куратором (DeepSeek + fallback)."""
     data = request.get_json(silent=True) or {}
     message = (data.get('message') or '').strip()
     if not message:
         return jsonify(reply='Напиши вопрос, и я подскажу, что подтянуть.'), 400
-    radar = _get_user_radar()
-    weak = sorted(radar.items(), key=lambda kv: kv[1])[:3]
-    weak_names = ', '.join(TOPIC_NAMES_RU.get(t, t) for t, _ in weak)
-    radar_lines = [f"  - {TOPIC_NAMES_RU.get(t, t)}: {s}/100" for t, s in sorted(radar.items(), key=lambda kv: kv[1], reverse=True)]
+
+    profile = _curator_profile()
+    ctx = _build_subtopic_ctx(profile)
+    radar = ctx['radar']
+    topic_names = ctx['topic_names']
+    weak_keys = ctx['weak_keys']
+    test_done = ctx['test_done']
+    grade = _get_user_grade()
+
+    # Build subtopic radar lines using only 7 adaptive subtopics
+    sorted_topics = sorted(radar.items(), key=lambda kv: kv[1], reverse=True)
+    radar_lines = [f"  - {topic_names.get(t, t)}: {s}/100" for t, s in sorted_topics]
+
+    # Plans
     plans = PrepPlan.query.filter_by(user_id=current_user.id).order_by(PrepPlan.created_at.desc()).all()
     plan_lines = []
     for p in plans:
         done = PrepDay.query.filter_by(plan_id=p.id, completed=True).count()
         total = PrepDay.query.filter_by(plan_id=p.id).count()
         plan_lines.append(f"  - {p.title} (цель: {p.target_olympiad or '—'}, статус: {p.status}, прогресс: {done}/{total} дней)")
+
+    # Weak names
+    weak_names_str = ', '.join(topic_names.get(k, k) for k in weak_keys) if weak_keys else 'нет данных'
+
+    # Build rich system prompt
     system_prompt = (
-        "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам (ВсОШ, ММО, Турнир городов). "
-        "Ты знаешь всё об ученике: радар по темам, активные планы и прогресс. Отвечай кратко, на русском, "
-        "давай конкретные шаги на ближайшие дни по слабым темам. Не выдумывай данные."
+        "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам. "
+        "Твоя задача — помогать ученику 5–11 классов улучшать свои знания по подтемам математики. "
+        "Отвечай кратко, на русском, давай конкретные шаги на ближайшие дни. "
+        "Используй эмодзи для наглядности. Не выдумывай данные — опирайся только на те, что переданы. "
+        "Если ученик спрашивает про незнакомую тему — честно скажи, что данных нет."
     )
+
     radar_block = "\n".join(radar_lines) or "  (нет данных)"
     plan_block = "\n".join(plan_lines) or "  (планов нет)"
+    test_status = "диагностика пройдена" if test_done else "диагностика не пройдена"
+    grade_info = f"Класс: {grade}" if grade else "Класс: не выбран"
+
     prompt = (
-        f"ДАННЫЕ ОБ УЧЕНИКЕ:\nРадар (навык 0-100):\n{radar_block}\n\n"
-        f"Слабые темы: {weak_names}\n\nПланы:\n{plan_block}\n\n"
+        f"ДАННЫЕ ОБ УЧЕНИКЕ:\n"
+        f"{grade_info}\n"
+        f"Статус: {test_status}\n"
+        f"Радар подтем (навык 0-100):\n{radar_block}\n\n"
+        f"Слабые подтемы: {weak_names_str}\n\n"
+        f"Планы подготовки:\n{plan_block}\n\n"
         f"ВОПРОС УЧЕНИКА: {message}"
     )
+
     try:
         from ai.deepseek_client import DeepSeekClient
         client = DeepSeekClient()
-        reply = client.generate_with_reasoning(prompt, system_prompt=system_prompt, max_tokens=2000)
+        reply = client.generate_with_reasoning(
+            prompt, system_prompt=system_prompt, max_tokens=2000
+        )
     except Exception as e:
         current_app.logger.error(f"DeepSeek coach_chat error: {e}")
-        reply = f"Сейчас не могу связаться с ИИ-куратором. Стоит подтянуть: {weak_names}."
+        fallback = weak_names_str if weak_names_str else 'подтянуть пробелы в математике'
+        reply = f"Сейчас не могу связаться с ИИ-куратором. Стоит подтянуть: {fallback}."
+
     return jsonify(reply=reply)

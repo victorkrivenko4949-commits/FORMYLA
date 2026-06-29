@@ -36,7 +36,7 @@
 <p style="color:rgba(255,255,255,0.6);">Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.</p>
 <div class="coach-grid">
 <div class="coach-card">
-<h2>📊 Радар по темам</h2>
+<h2>📊 Радар по подтемам</h2>
 <div class="radar-chart">
 <svg id="radarSvg" viewBox="0 0 240 240" data-radar='{% for topic, value in radar.items() %}{{ "," if not loop.first }}{{ value }}{% endfor %}' data-labels='{% for topic, value in radar.items() %}{{ "|" if not loop.first }}{{ topic_names.get(topic, topic) }}{% endfor %}'></svg>
 </div>
@@ -47,8 +47,9 @@
 <div class="coach-card">
 <h2>💬 Чат с ИИ-куратором</h2>
 <div class="chat-box">
-<div class="chat-log" id="chatLog"><div class="chat-msg bot">Привет! Я твой ИИ-куратор. Спроси меня, какие подтемы стоит подтянуть, и я составлю план.</div></div>
-<form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Что подтянуть по геометрии?" autocomplete="off"><button type="submit">Отправить</button></form>
+<div class="chat-log" id="chatLog"><div class="chat-msg bot" id="greetingMsg">⏳ Загружаю приветствие…</div></div>
+<form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Спроси куратора…" autocomplete="off"><button type="submit">Отправить</button></form>
+<div class="cta-row" id="ctaRow" style="display:none; margin-top:10px;"></div>
 </div>
 </div>
 </div>
@@ -56,6 +57,13 @@
 {% endblock %}
 
 {% block extra_js %}
+<style>
+.cta-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.cta-btn { display: inline-block; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; color: #fff; background: #6366f1; transition: background 0.2s; }
+.cta-btn:hover { background: #4f46e5; }
+.cta-btn.secondary { background: rgba(255,255,255,0.08); color: #e5e7eb; }
+.cta-btn.secondary:hover { background: rgba(255,255,255,0.15); }
+</style>
 <script>
 (function () {
 var svg = document.getElementById('radarSvg');
@@ -87,13 +95,52 @@ svg.appendChild(mk('polygon', { points: dpts.trim() }, 'radar-area'));
 for (var i = 0; i < n; i++) { var p = pt(i, R * vals[i] / 100); svg.appendChild(mk('circle', { cx: p[0], cy: p[1], r: 3 }, 'radar-dot')); }
 }
 }
+
+// ─── Dynamic greeting via API ──────────────────────────────────────────
+var greetingEl = document.getElementById('greetingMsg');
+var ctaRow = document.getElementById('ctaRow');
+
+fetch('{{ url_for("prep.coach_greeting") }}')
+  .then(function (r) { return r.json(); })
+  .then(function (data) {
+    greetingEl.innerHTML = data.greeting || '👋 Привет! Я твой ИИ-куратор FORMYLA.';
+    // Render CTA buttons based on scenario
+    var buttons = [];
+    if (data.scenario === 'need_grade') {
+      buttons.push({ text: '🎯 Выбрать класс', href: '{{ url_for("profile") }}', cls: '' });
+    } else if (data.scenario === 'need_test') {
+      buttons.push({ text: '🧪 Пройти диагностику', href: '{{ url_for("adaptive.start") }}', cls: '' });
+    } else if (data.scenario === 'recommend_olympiad') {
+      if (data.recommended_olympiad) {
+        buttons.push({ text: '📋 Создать план подготовки', href: '/prep/new?olympiad=' + data.recommended_olympiad.slug, cls: '' });
+        buttons.push({ text: '🔍 Другие олимпиады', href: '/prep/new', cls: 'secondary' });
+      } else {
+        buttons.push({ text: '📋 Создать план подготовки', href: '/prep/new', cls: '' });
+      }
+    }
+    if (buttons.length) {
+      ctaRow.style.display = 'flex';
+      buttons.forEach(function (b) {
+        var a = document.createElement('a');
+        a.className = 'cta-btn' + (b.cls ? ' ' + b.cls : '');
+        a.href = b.href;
+        a.textContent = b.text;
+        ctaRow.appendChild(a);
+      });
+    }
+  })
+  .catch(function () {
+    greetingEl.textContent = '👋 Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
+  });
+
+// ─── Chat ──────────────────────────────────────────────────────────────
 var form = document.getElementById('chatForm');
 var input = document.getElementById('chatInput');
 var log = document.getElementById('chatLog');
 function addMsg(text, who) {
 var div = document.createElement('div');
 div.className = 'chat-msg ' + who;
-div.textContent = text;
+div.innerHTML = text;
 log.appendChild(div);
 log.scrollTop = log.scrollHeight;
 return div;
@@ -104,15 +151,15 @@ var text = input.value.trim();
 if (!text) return;
 addMsg(text, 'user');
 input.value = '';
-var pending = addMsg('Думаю…', 'bot');
+var pending = addMsg('💭 Думаю…', 'bot');
 fetch('{{ url_for("prep.coach_chat") }}', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ message: text })
 })
 .then(function (r) { return r.json(); })
-.then(function (data) { pending.textContent = data.reply || 'Не удалось получить ответ.'; })
-.catch(function () { pending.textContent = 'Ошибка соединения. Попробуй ещё раз.'; });
+.then(function (data) { pending.innerHTML = data.reply || 'Не удалось получить ответ.'; })
+.catch(function () { pending.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
 });
 })();
 </script>
