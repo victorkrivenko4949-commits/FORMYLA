@@ -16,15 +16,17 @@ Endpoints:
 
 import json
 import hashlib
-from datetime import date, datetime
+import random
+from datetime import date, datetime, timedelta
 
 from flask import Blueprint, jsonify, request, abort, render_template, current_app
 from flask_login import current_user, login_required
 
-from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution
+from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution, DailyQuest
 from services.prep_planner import generate_prep_plan, RADAR_TOPICS, TOPIC_NAMES_RU
-from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
-from daily_tasks.profile import build_profile, ProfileBuildError
+from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE, get_db_topic, get_topic_entry
+from daily_tasks.profile import build_profile, ProfileBuildError, score_to_target_level
+from services.olympiads_knowledge import build_olympiads_context, recommend_olympiads_for, get_olympiad_knowledge
 
 # Allowed MIME types for photo upload
 ALLOWED_PHOTO_MIMES = {'image/jpeg', 'image/png', 'image/webp', 'image/heic'}
@@ -777,6 +779,111 @@ def _build_subtopic_ctx(profile):
     }
 
 
+# ─── Content hooks (C6) ────────────────────────────────────────────────────
+
+def get_onboarding_tasks(grade, limit=12):
+    """Подобрать задачи для онбординга (первый тест, без профиля).
+
+    Берёт задачи класса на уровне CALIBRATION_START_LEVEL (2) с запасом.
+    Если задач уровня 2 недостаточно — падает на уровень 1.
+    Возвращает список словарей с ключами: id, task_text, topic, difficulty_level.
+    """
+    from daily_tasks.profile import CALIBRATION_START_LEVEL
+    try:
+        grade_int = int(grade)
+    except (TypeError, ValueError):
+        return []
+    try:
+        tasks = (
+            AdaptiveTask.query
+            .filter_by(class_level=grade_int, difficulty_level=CALIBRATION_START_LEVEL)
+            .filter(AdaptiveTask.is_flagged.is_(False))
+            .order_by(db.func.random())
+            .limit(limit)
+            .all()
+        )
+        if len(tasks) < limit // 2 and CALIBRATION_START_LEVEL > 1:
+            # Fallback: level 1
+            tasks = (
+                AdaptiveTask.query
+                .filter_by(class_level=grade_int, difficulty_level=CALIBRATION_START_LEVEL - 1)
+                .filter(AdaptiveTask.is_flagged.is_(False))
+                .order_by(db.func.random())
+                .limit(limit)
+                .all()
+            )
+        return [
+            {'id': t.id, 'task_text': t.task_text,
+             'topic': t.topic, 'difficulty_level': t.difficulty_level}
+            for t in tasks
+        ]
+    except Exception:
+        current_app.logger.exception('get_onboarding_tasks failed')
+        return []
+
+
+def get_subtopic_test(grade, subtopic_key, count=5):
+    """Подобрать задачи для теста по подтеме дня.
+
+    Использует registry для маппинга (grade, subtopic_key) → db_topic.
+    Берёт задачи на уровне [CALIBRATION_START_LEVEL, CALIBRATION_START_LEVEL+1].
+    Если db_topic не найден — пытается найти LIKE-совпадение по topic.
+    """
+    from daily_tasks.profile import CALIBRATION_START_LEVEL
+    try:
+        grade_int = int(grade)
+    except (TypeError, ValueError):
+        return []
+    try:
+        db_topic = get_db_topic(grade_int, subtopic_key)
+        if not db_topic:
+            # Fallback: ищем по ключевому слову в topic
+            topic_entry = get_topic_entry(grade_int, subtopic_key)
+            keyword = topic_entry['name'] if topic_entry else subtopic_key
+            tasks = (
+                AdaptiveTask.query
+                .filter_by(class_level=grade_int)
+                .filter(AdaptiveTask.topic.ilike(f'%{keyword}%'))
+                .filter(AdaptiveTask.difficulty_level.between(
+                    CALIBRATION_START_LEVEL, CALIBRATION_START_LEVEL + 1))
+                .filter(AdaptiveTask.is_flagged.is_(False))
+                .order_by(db.func.random())
+                .limit(count)
+                .all()
+            )
+        else:
+            tasks = (
+                AdaptiveTask.query
+                .filter_by(class_level=grade_int, topic=db_topic)
+                .filter(AdaptiveTask.difficulty_level.between(
+                    CALIBRATION_START_LEVEL, CALIBRATION_START_LEVEL + 1))
+                .filter(AdaptiveTask.is_flagged.is_(False))
+                .order_by(db.func.random())
+                .limit(count)
+                .all()
+            )
+        # Fallback: если не найдено — просто tasks уровня CALIBRATION_START_LEVEL
+        if not tasks:
+            tasks = (
+                AdaptiveTask.query
+                .filter_by(class_level=grade_int, difficulty_level=CALIBRATION_START_LEVEL)
+                .filter(AdaptiveTask.is_flagged.is_(False))
+                .order_by(db.func.random())
+                .limit(count)
+                .all()
+            )
+        return [
+            {'id': t.id, 'task_text': t.task_text,
+             'topic': t.topic, 'difficulty_level': t.difficulty_level}
+            for t in tasks
+        ]
+    except Exception:
+        current_app.logger.exception('get_subtopic_test failed')
+        return []
+
+
+# ─── Страница куратора ─────────────────────────────────────────────────────
+
 @prep_bp.route('/coach')
 @login_required
 def coach():
@@ -790,15 +897,20 @@ def coach():
                            subtopics_to_test=ctx['subtopics_to_test'])
 
 
+# ─── Приветствие / определение сценария (C4 + C7) ─────────────────────────
+
 @prep_bp.route('/coach/greeting')
 @login_required
 def coach_greeting():
-    """JSON-приветствие: определяет сценарий по статусу пользователя.
+    """JSON-приветствие: 6 сценариев по состоянию пользователя.
 
-    Сценарии:
-      - need_grade          — класс не выбран
-      - need_test           — класс выбран, но диагностика не пройдена
-      - recommend_olympiad  — диагностика пройдена, рекомендовать олимпиаду
+    Сценарии (C7):
+      1. need_grade           — класс не выбран
+      2. onboarding_test      — класс есть, но профиль пуст (0 измеренных тем)
+      3. daily_test           — нет квеста сегодня, профиль есть (предложить тест по подтеме)
+      4. daily_tasks_ready    — квест сегодня есть, но не завершён
+      5. day_summary          — квест сегодня завершён
+      6. recommend_olympiad   — флаг, добавляется к day_summary/daily_test при слабых темах
     """
     grade = _get_user_grade()
     if not grade:
@@ -808,68 +920,431 @@ def coach_greeting():
             scenario='need_grade',
             recommended_olympiad=None,
             subtopics_to_test=[],
-            cta='Выбрать класс',
+            cta_url='/profile',
+            cta_text='🎯 Выбрать класс',
         )
 
     profile = _curator_profile()
     ctx = _build_subtopic_ctx(profile)
     test_done = ctx['test_done']
+    measured_count = profile.get('measured_topics_count', 0) if profile else 0
 
-    # Выбор рекомендуемой олимпиады
-    recommended = None
-    if test_done:
-        try:
-            olymp = (OlympiadPrep.query
-                     .filter(OlympiadPrep.is_active.is_(True))
-                     .filter(OlympiadPrep.grades_list.astype(str).contains(str(grade)))
-                     .order_by(OlympiadPrep.sort_order)
-                     .first())
-            if olymp:
-                recommended = {'slug': olymp.slug, 'name': olymp.name,
-                               'short_name': olymp.short_name}
-        except Exception:
-            current_app.logger.exception('olympiad recommendation failed')
-
-    if not test_done:
+    # ── Сценарий 2: онбординг ───────────────────────────────────────────
+    if measured_count == 0:
         greeting = (
-            f'👋 Привет! Ты в {grade}-м классе. Похоже, ты ещё не прошёл диагностический тест. '
-            f'Пройди его — я узнаю твои сильные и слабые подтемы и смогу составить план подготовки.'
+            f'👋 Привет! Ты в {grade}-м классе. Давай познакомимся — '
+            f'реши несколько задач, и я пойму, какие темы тебе нужно подтянуть.'
         )
         return jsonify(
             greeting=greeting,
-            scenario='need_test',
+            scenario='onboarding_test',
             recommended_olympiad=None,
-            subtopics_to_test=ctx['subtopics_to_test'],
-            cta='Пройти диагностику',
+            subtopics_to_test=[],
+            cta_url=None,
+            cta_text='🧪 Начать онбординг',
         )
 
-    top_weak = ctx['weak_keys'][:3] if ctx['weak_keys'] else []
-    weak_names = ', '.join(ctx['topic_names'].get(k, k) for k in top_weak)
-    if recommended:
+    # ── Проверка DailyQuest на сегодня ──────────────────────────────────
+    today = date.today()
+    daily_quest = DailyQuest.query.filter_by(
+        user_id=current_user.id, date=today
+    ).first()
+
+    # ── Сценарий 4: задачи дня в процессе ──────────────────────────────
+    if daily_quest and daily_quest.completed_at is None:
+        remaining = daily_quest.total_count - daily_quest.completed_count
         greeting = (
-            f'👋 Привет! Ты в {grade}-м классе. Я проанализировал твой диагностический тест. '
-            f'Рекомендую начать подготовку к **{recommended["name"]}**. '
-            f'Слабые подтемы: {weak_names}. Готов начать?'
+            f'👋 С возвращением! У тебя осталось **{remaining} из {daily_quest.total_count}** задач '
+            f'на сегодня. Продолжай в том же духе! 💪'
         )
-    else:
+        return jsonify(
+            greeting=greeting,
+            scenario='daily_tasks_ready',
+            recommended_olympiad=None,
+            subtopics_to_test=[],
+            cta_url=None,
+            cta_text='📝 Продолжить задачи дня',
+        )
+
+    # ── Сценарий 5: день завершён ──────────────────────────────────────
+    if daily_quest and daily_quest.completed_at is not None:
+        # Определяем слабые подтемы для рекомендации
+        weak_keys = ctx['weak_keys']
+        weak_names = ', '.join(ctx['topic_names'].get(k, k) for k in weak_keys[:3]) if weak_keys else ''
+        day_result = f'{daily_quest.completed_count}/{daily_quest.total_count}'
         greeting = (
-            f'👋 Привет! Ты в {grade}-м классе. Я проанализировал твой диагностический тест. '
-            f'Слабые подтемы: {weak_names}. Давай составим план подготовки!'
+            f'🎉 Отлично! Ты завершил день — {day_result}. '
+            f'Завтра будет новая подтема. Отдохни и набирайся сил!'
         )
+        if weak_names:
+            greeting += f'\n\nОбрати внимание на: **{weak_names}** — стоит подтянуть.'
+
+        # Рекомендуем олимпиаду если есть слабые темы
+        recommended = None
+        try:
+            recommended_slugs = recommend_olympiads_for(
+                grade, [t.get('topic_key') or t.get('topic', '') for t in (profile.get('weak_topics') or [])]
+            )
+            if recommended_slugs:
+                olymp = OlympiadPrep.query.filter_by(
+                    slug=recommended_slugs[0], is_active=True
+                ).first()
+                if olymp:
+                    recommended = {'slug': olymp.slug, 'name': olymp.name, 'short_name': olymp.short_name}
+        except Exception:
+            pass
+
+        return jsonify(
+            greeting=greeting,
+            scenario='day_summary',
+            recommended_olympiad=recommended,
+            subtopics_to_test=ctx['subtopics_to_test'],
+            cta_url='/prep/new' if recommended else None,
+            cta_text='📋 Создать план подготовки' if recommended else None,
+            day_result=day_result,
+        )
+
+    # ── Сценарий 3: daily_test — предложить тест по приоритетной подтеме ─
+    # Нет квеста сегодня, но профиль есть
+    priority_subtopic = None
+    if ctx.get('subtopics_to_test'):
+        priority_subtopic = ctx['subtopics_to_test'][0]
+    elif ctx['weak_keys']:
+        priority_subtopic = {'key': ctx['weak_keys'][0], 'name': ctx['topic_names'].get(ctx['weak_keys'][0], ctx['weak_keys'][0])}
+
+    subtopic_name = priority_subtopic['name'] if priority_subtopic else 'математике'
+    greeting = (
+        f'👋 Привет! Ты в {grade}-м классе. Готов позаниматься? '
+        f'Предлагаю начать с темы **«{subtopic_name}»** — '
+        f'реши несколько задач, и я подберу задачи дня под твой уровень.'
+    )
 
     return jsonify(
         greeting=greeting,
-        scenario='recommend_olympiad',
-        recommended_olympiad=recommended,
+        scenario='daily_test',
+        recommended_olympiad=None,
         subtopics_to_test=ctx['subtopics_to_test'],
-        cta='Создать план подготовки',
+        priority_subtopic=priority_subtopic,
+        cta_url=None,
+        cta_text='🧪 Пройти тест по теме',
     )
 
+
+# ─── Онбординг: сохранить результаты (C4) ─────────────────────────────────
+
+@prep_bp.route('/coach/onboarding/submit', methods=['POST'])
+@login_required
+def coach_onboarding_submit():
+    """Сохранить результаты онбординг-теста (первые задачи пользователя).
+
+    Ожидает JSON: {'results': {task_id: score, ...}}
+    где score = 0 (неверно) или 1 (верно) или 2 (частично).
+
+    Создаёт AdaptiveTestResult для каждой темы, пересчитывает профиль.
+    Возвращает профиль + слабые темы + рекомендуемую олимпиаду.
+    """
+    data = request.get_json(silent=True) or {}
+    results = data.get('results')
+    if not results or not isinstance(results, dict):
+        return jsonify(error='Передайте results: {task_id: score, ...}'), 400
+
+    grade = _get_user_grade()
+    if not grade:
+        return jsonify(error='Сначала выберите класс'), 400
+
+    try:
+        # Группируем результаты по topic
+        topic_results = {}
+        task_ids = [int(k) for k in results.keys()]
+        tasks = {t.id: t for t in AdaptiveTask.query.filter(AdaptiveTask.id.in_(task_ids)).all()}
+
+        for task_id_str, score in results.items():
+            try:
+                task_id = int(task_id_str)
+                task = tasks.get(task_id)
+                if not task:
+                    continue
+                topic = task.topic or 'unknown'
+                if topic not in topic_results:
+                    topic_results[topic] = {'correct': 0, 'total': 0, 'final_level': 0}
+                topic_results[topic]['total'] += 1
+                try:
+                    score_val = int(score)
+                except (ValueError, TypeError):
+                    score_val = 0
+                if score_val >= 1:
+                    topic_results[topic]['correct'] += 1
+                # final_level = max(1, min(8, int(score_val * 2)))
+                topic_results[topic]['final_level'] = max(1, min(8, int(
+                    topic_results[topic]['correct'] / max(1, topic_results[topic]['total']) * 8
+                )))
+            except (ValueError, TypeError):
+                continue
+
+        # Сохраняем результаты
+        now = datetime.utcnow()
+        for topic, tr in topic_results.items():
+            result = AdaptiveTestResult(
+                user_id=current_user.id,
+                topic=topic,
+                class_level=grade,
+                final_level=tr['final_level'],
+                tasks_correct=tr['correct'],
+                tasks_total=tr['total'],
+                started_at=now,
+                completed_at=now,
+            )
+            db.session.add(result)
+        db.session.commit()
+
+        # Перестраиваем профиль
+        profile = build_profile(current_user.id)
+        ctx = _build_subtopic_ctx(profile)
+        weak_keys = ctx['weak_keys']
+        weak_names = [ctx['topic_names'].get(k, k) for k in weak_keys]
+
+        # Рекомендуем олимпиаду
+        recommended = None
+        try:
+            recommended_slugs = recommend_olympiads_for(
+                grade, [t.get('topic_key') or t.get('topic', '') for t in (profile.get('weak_topics') or [])]
+            )
+            if recommended_slugs:
+                olymp = OlympiadPrep.query.filter_by(
+                    slug=recommended_slugs[0], is_active=True
+                ).first()
+                if olymp:
+                    recommended = {'slug': olymp.slug, 'name': olymp.name, 'short_name': olymp.short_name}
+        except Exception:
+            pass
+
+        return jsonify(
+            status='ok',
+            measured_count=profile.get('measured_topics_count', 0),
+            weak_topics=weak_names,
+            recommended_olympiad=recommended,
+        )
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('coach_onboarding_submit failed')
+        return jsonify(error='Ошибка при сохранении результатов'), 500
+
+
+# ─── Daily test: сохранить результат теста по подтеме (C4) ────────────────
+
+@prep_bp.route('/coach/daily/submit', methods=['POST'])
+@login_required
+def coach_daily_submit():
+    """Сохранить результат теста по подтеме дня.
+
+    Ожидает JSON: {'subtopic_key': str, 'results': {task_id: score, ...}}
+
+    Вычисляет уровень ученика по подтеме, создаёт DailyQuest с задачами
+    на уровне [level-1, level+1] (окно ±1, clamped 1..8).
+    Возвращает: tasks (первые 5 из квеста), level, subtopic_key.
+    """
+    data = request.get_json(silent=True) or {}
+    subtopic_key = (data.get('subtopic_key') or '').strip()
+    results = data.get('results')
+    if not subtopic_key or not results or not isinstance(results, dict):
+        return jsonify(error='Передайте subtopic_key и results: {task_id: score, ...}'), 400
+
+    grade = _get_user_grade()
+    if not grade:
+        return jsonify(error='Сначала выберите класс'), 400
+
+    try:
+        # Оценка правильных ответов
+        correct = 0
+        total = 0
+        for task_id_str, score in results.items():
+            try:
+                total += 1
+                if int(score) >= 1:
+                    correct += 1
+            except (ValueError, TypeError):
+                continue
+
+        # Определение уровня: используем score_to_target_level
+        from daily_tasks.profile import CALIBRATION_START_LEVEL
+        level = score_to_target_level(correct, total, final_level=CALIBRATION_START_LEVEL)
+        level = max(1, min(8, level or CALIBRATION_START_LEVEL))
+
+        # Окно ±1 для задач дня
+        min_level = max(1, level - 1)
+        max_level = min(8, level + 1)
+
+        # Получаем db_topic для подтемы
+        db_topic = get_db_topic(grade, subtopic_key)
+        if db_topic:
+            # Подбираем задачи из БД на уровне [level-1, level+1]
+            quest_tasks = (
+                AdaptiveTask.query
+                .filter_by(class_level=grade, topic=db_topic)
+                .filter(AdaptiveTask.difficulty_level.between(min_level, max_level))
+                .filter(AdaptiveTask.is_flagged.is_(False))
+                .order_by(db.func.random())
+                .limit(10)
+                .all()
+            )
+        else:
+            quest_tasks = []
+
+        # Fallback: если задач по теме нет — любые задачи класса на уровне level
+        if len(quest_tasks) < 5:
+            quest_tasks = (
+                AdaptiveTask.query
+                .filter_by(class_level=grade)
+                .filter(AdaptiveTask.difficulty_level.between(min_level, max_level))
+                .filter(AdaptiveTask.is_flagged.is_(False))
+                .order_by(db.func.random())
+                .limit(10)
+                .all()
+            )
+
+        # Создаём DailyQuest
+        import json as json_mod
+        task_ids = [t.id for t in quest_tasks]
+        today = date.today()
+        # Удаляем старый незавершённый квест, если есть
+        old_quest = DailyQuest.query.filter_by(
+            user_id=current_user.id, date=today
+        ).first()
+        if old_quest:
+            db.session.delete(old_quest)
+            db.session.flush()
+
+        quest = DailyQuest(
+            user_id=current_user.id,
+            date=today,
+            task_ids=json_mod.dumps(task_ids),
+            completed_count=0,
+            total_count=len(task_ids),
+            ai_comment=f'Подтема: {subtopic_key}, уровень: {level} (окно {min_level}–{max_level})',
+        )
+        db.session.add(quest)
+        db.session.commit()
+
+        # Возвращаем первые 5 задач
+        preview_tasks = [
+            {'id': t.id, 'task_text': t.task_text, 'difficulty_level': t.difficulty_level}
+            for t in quest_tasks[:5]
+        ]
+
+        return jsonify(
+            status='ok',
+            level=level,
+            min_level=min_level,
+            max_level=max_level,
+            subtopic_key=subtopic_key,
+            tasks=preview_tasks,
+            total_count=len(task_ids),
+        )
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('coach_daily_submit failed')
+        return jsonify(error='Ошибка при обработке теста'), 500
+
+
+# ─── Завершить день (C4) ──────────────────────────────────────────────────
+
+@prep_bp.route('/coach/day/complete', methods=['POST'])
+@login_required
+def coach_day_complete():
+    """Завершить день: принять X/10 правильных ответов, адаптировать уровень.
+
+    Ожидает JSON: {'correct': int, 'total': int}
+
+    Адаптация уровня (шкала 1..8):
+      - correct ≥ 8 → +1 (вверх)
+      - 4 ≤ correct ≤ 7 → 0 (без изменений)
+      - correct ≤ 3 → -1 (вниз)
+
+    Обновляет completed_at в DailyQuest.
+    Возвращает новый уровень и сообщение.
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        correct = int(data.get('correct', 0))
+        total = int(data.get('total', 10))
+    except (ValueError, TypeError):
+        return jsonify(error='Передайте correct и total (целые числа)'), 400
+
+    if total <= 0:
+        return jsonify(error='total должен быть > 0'), 400
+    if correct < 0 or correct > total:
+        return jsonify(error=f'correct должен быть от 0 до {total}'), 400
+
+    today = date.today()
+    try:
+        # Находим сегодняшний квест
+        quest = DailyQuest.query.filter_by(
+            user_id=current_user.id, date=today
+        ).first()
+
+        if quest:
+            quest.completed_count = correct
+            quest.total_count = total
+            quest.completed_at = datetime.utcnow()
+            db.session.commit()
+
+        # Адаптация уровня
+        prev_level = 2  # дефолт
+        if quest and quest.ai_comment:
+            try:
+                # Парсим уровень из ai_comment
+                for part in quest.ai_comment.split(','):
+                    part = part.strip()
+                    if 'уровень:' in part:
+                        lvl_str = part.split(':')[1].strip().split()[0]
+                        prev_level = int(lvl_str)
+            except (ValueError, IndexError):
+                pass
+
+        if correct >= 8:
+            delta = 1
+        elif correct <= 3:
+            delta = -1
+        else:
+            delta = 0
+
+        new_level = max(1, min(8, prev_level + delta))
+        pct = int(round(correct / total * 100))
+
+        # Сообщение
+        if delta > 0:
+            msg = f'🎉 Отлично! {correct}/{total} правильных. Уровень повышен: {prev_level} → {new_level}.'
+        elif delta < 0:
+            msg = f'💪 Ничего страшного! {correct}/{total} правильных. Попробуй уровень {new_level}.'
+        else:
+            msg = f'✅ Хорошо! {correct}/{total} правильных. Уровень {new_level} подходит.'
+
+        return jsonify(
+            status='ok',
+            correct=correct,
+            total=total,
+            pct=pct,
+            prev_level=prev_level,
+            new_level=new_level,
+            delta=delta,
+            message=msg,
+        )
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('coach_day_complete failed')
+        return jsonify(error='Ошибка при завершении дня'), 500
+
+
+# ─── Чат с ИИ-куратором (C5 + Part B integration) ────────────────────────
 
 @prep_bp.route('/coach/chat', methods=['POST'])
 @login_required
 def coach_chat():
-    """Обработка сообщения чата с ИИ-куратором (DeepSeek + fallback)."""
+    """Обработка сообщения чата с ИИ-куратором (DeepSeek + fallback).
+
+    В system_prompt добавляет блок ДОСТУПНЫЕ ОЛИМПИАДЫ И ТРЕБОВАНИЯ
+    из build_olympiads_context() (Part B).
+    """
     data = request.get_json(silent=True) or {}
     message = (data.get('message') or '').strip()
     if not message:
@@ -898,6 +1373,18 @@ def coach_chat():
     # Weak names
     weak_names_str = ', '.join(topic_names.get(k, k) for k in weak_keys) if weak_keys else 'нет данных'
 
+    # Build olympiads context (Part B)
+    olympiad_block = ''
+    if grade and test_done:
+        try:
+            weak_subtopic_keys = [t.get('topic_key') or t.get('topic', '') for t in (profile.get('weak_topics') or [])]
+            olympiad_block = (
+                '\n\nДОСТУПНЫЕ ОЛИМПИАДЫ И ТРЕБОВАНИЯ:\n'
+                + build_olympiads_context(grade, weak_subtopic_keys)
+            )
+        except Exception:
+            pass
+
     # Build rich system prompt
     system_prompt = (
         "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам. "
@@ -905,6 +1392,7 @@ def coach_chat():
         "Отвечай кратко, на русском, давай конкретные шаги на ближайшие дни. "
         "Используй эмодзи для наглядности. Не выдумывай данные — опирайся только на те, что переданы. "
         "Если ученик спрашивает про незнакомую тему — честно скажи, что данных нет."
+        + olympiad_block
     )
 
     radar_block = "\n".join(radar_lines) or "  (нет данных)"
