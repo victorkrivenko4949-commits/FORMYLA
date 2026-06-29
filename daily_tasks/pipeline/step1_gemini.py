@@ -40,6 +40,7 @@ from .validators import (
 from .slot_planner import (
     PlannedSlot,
     check_slots_match_windows,
+    plan_slots_for_subtopic,
     plan_slots,
     topic_to_window_summary,
 )
@@ -318,9 +319,18 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     topics_ref = _build_topics_reference(class_level)
 
     # ── PER-TOPIC DIFFICULTY MATCHING ────────────────────────────────
-    # Детерминированно строим план 10 слотов ДО вызова LLM:
-    # каждый слот уже знает topic + difficulty_level (из окна темы).
-    planned_slots = plan_slots(profile)
+_curator_sub = profile.get("curator_subtopic") or {}
+if _curator_sub.get("slug"):
+        planned_slots = plan_slots_for_subtopic(
+        profile,
+            _curator_sub.get("day_topic") or {},
+            _curator_sub.get("slug", ""),
+            _curator_sub.get("name", ""),
+            day_index=int(_curator_sub.get("day_index", 0) or 0),
+                )
+    else:
+        # каждый слот уже знает topic + difficulty_level (из окна темы).
+        planned_slots = plan_slots(profile)
     if len(planned_slots) != 10:
         raise GeminiPlanError(
             f"slot_planner вернул {len(planned_slots)} слотов вместо 10 — "
