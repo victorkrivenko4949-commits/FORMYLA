@@ -318,18 +318,17 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     class_level = profile["class_level"]
     topics_ref = _build_topics_reference(class_level)
 
-    # ── PER-TOPIC DIFFICULTY MATCHING ────────────────────────────────
-_curator_sub = profile.get("curator_subtopic") or {}
-if _curator_sub.get("slug"):
+            # PER-TOPIC DIFFICULTY MATCHING
+    _curator_sub = profile.get("curator_subtopic") or {}
+    if _curator_sub.get("slug"):
         planned_slots = plan_slots_for_subtopic(
-        profile,
+            profile,
             _curator_sub.get("day_topic") or {},
             _curator_sub.get("slug", ""),
             _curator_sub.get("name", ""),
             day_index=int(_curator_sub.get("day_index", 0) or 0),
-                )
+        )
     else:
-        # каждый слот уже знает topic + difficulty_level (из окна темы).
         planned_slots = plan_slots(profile)
     if len(planned_slots) != 10:
         raise GeminiPlanError(
