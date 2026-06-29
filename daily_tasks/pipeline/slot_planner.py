@@ -558,7 +558,7 @@ def plan_slots_for_subtopic(profile, day_topic, subtopic_slug, subtopic_name, da
                                     topic["target_level"] = _clamp(max(int(topic["target_level"]), lo))
     title = subtopic_name or subtopic_slug or topic.get("topic", "")
     logger.info(
-        "plan_slots_for_subtopic: subtopic=%s parent_topic=%s grade=%s window=[%d,%d]",
+            "plan_slots_for_subtopic: subtopic=%s parent_topic=%s grade=%s window=[%d,%d]",
         subtopic_slug, topic.get("topic"), grade, lo, hi,
     )
     slots = []
