@@ -1,4 +1,127 @@
 {% extends "base.html" %}
 {% block title %}Курсы олимпиад — FORMYLA{% endblock %}
 
-{% block content %}{% endblock %}
+{% block extra_css %}
+<style>
+  .vs-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 40px;
+    color: #fff;
+  }
+  .vs-header h1 {
+    font-size: 1.8rem;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .vs-header p {
+    margin: 0;
+    opacity: 0.85;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .vs-header .subtitle {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+
+  .vs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .vs-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 14px;
+    padding: 28px 24px;
+    text-decoration: none;
+    color: var(--text-color, #333);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+  }
+  .vs-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    text-decoration: none;
+    color: var(--text-color, #333);
+  }
+  .vs-card .grade-badge {
+    display: inline-block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .vs-card h3 {
+    font-size: 1.25rem;
+    margin: 0 0 8px 0;
+  }
+  .vs-card .stats {
+    margin-top: auto;
+    padding-top: 16px;
+    font-size: 0.85rem;
+    opacity: 0.75;
+  }
+  .vs-card .stages-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 0 0;
+  }
+  .vs-card .stage-pill {
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--bg-muted, #f0f0f0);
+    color: var(--text-muted, #666);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+
+  <!-- 🔮 Предикт методов -->
+  <div class="vs-header">
+    <h1>🔮 Предикт методов в решении задач ВсОШ 2027</h1>
+    <p>
+      Долгая аналитика прошлых лет: на основе данных 428 строк по 74 уникальным методам
+      составлен прогноз на ВсОШ 2027. Для каждого класса (9, 10, 11) отобраны методы
+      по 4 этапам: Школьный → Муниципальный → Региональный → Заключительный.
+    </p>
+    <div class="subtitle">
+      Всего отобрано <strong>{{ total_included }}</strong> методов
+      · Уверенность: 🟢 высокая ({{ conf_counts.get(3, 0) }}) ·
+      🟡 средняя ({{ conf_counts.get(2, 0) }}) ·
+      ⚪ низкая ({{ conf_counts.get(1, 0) }})
+    </div>
+  </div>
+
+  <!-- Карточки курсов -->
+  <div class="vs-grid">
+    {% for g in grades %}
+    <a class="vs-card" href="{{ url_for('olympiad.vsosh_course', grade=g.grade) }}">
+      <div class="grade-badge">{{ g.grade }} класс</div>
+      <h3>ВсОШ {{ g.grade }} · подготовка к 2027</h3>
+      <div class="stages-preview">
+        {% for s in g.stages %}
+        <span class="stage-pill">{{ s.name }} ({{ s.count }})</span>
+        {% endfor %}
+      </div>
+      <div class="stats">{{ g.total }} методов · уверенность 🟢{{ g.green }} 🟡{{ g.yellow }} ⚪{{ g.white }}</div>
+    </a>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
