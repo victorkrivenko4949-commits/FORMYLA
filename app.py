@@ -10807,6 +10807,16 @@ def submit_feedback():
     """
     try:
         data = request.json or {}
+            # --- Бан на управление отзывами (Виктор запретил)
+            _ban_nick = (getattr(current_user, "nickname", None) or "").strip().lower()
+            _ban_uname = (getattr(current_user, "username", None) or "").strip().lower()
+            _ban_disp = (getattr(current_user, "display_name", None) or "").strip().lower()
+            _BANNED_REVIEW_USERS = {"ayudzyuba"}
+            _BANNED_REVIEW_IDS = set()
+            _uid_now = current_user.id if current_user.is_authenticated else None
+            if (_ban_nick in _BANNED_REVIEW_USERS or _ban_uname in _BANNED_REVIEW_USERS
+                    or _ban_disp in _BANNED_REVIEW_USERS or _uid_now in _BANNED_REVIEW_IDS):
+                return jsonify({'error': 'Виктор запретил вам это делать!'}), 403
 
         message_text = (data.get('message') or '').strip()
         if not (5 <= len(message_text) <= 4000):
