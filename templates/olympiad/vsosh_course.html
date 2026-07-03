@@ -2,130 +2,303 @@
 {% block title %}ВсОШ {{ grade }} класс — прогноз 2027 — FORMYLA{% endblock %}
 
 {% block extra_css %}
+{% set accent_colors = {
+  9:  {'primary': '#8b5cf6', 'soft': 'rgba(139,92,246,0.15)', 'border': 'rgba(139,92,246,0.25)', 'gradient': 'linear-gradient(135deg, #7c3aed, #6d28d9)'},
+  10: {'primary': '#06b6d4', 'soft': 'rgba(6,182,212,0.15)', 'border': 'rgba(6,182,212,0.25)', 'gradient': 'linear-gradient(135deg, #0891b2, #0e7490)'},
+  11: {'primary': '#10b981', 'soft': 'rgba(16,185,129,0.15)', 'border': 'rgba(16,185,129,0.25)', 'gradient': 'linear-gradient(135deg, #059669, #047857)'},
+} %}
+{% set ac = accent_colors[grade] %}
 <style>
-  .vs-course-header {
-    margin-bottom: 32px;
-  }
-  .vs-course-header h1 {
-    font-size: 1.6rem;
-    margin: 0 0 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .vs-course-header .meta {
-    font-size: 0.9rem;
-    opacity: 0.75;
-  }
-
-  .vs-stage-section {
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-color, #e0e0e0);
-    border-radius: 14px;
-    margin-bottom: 28px;
+  /* ─── Course hero ─────────────────────────────────────────── */
+  .vs-hero {
+    background: linear-gradient(135deg, rgba(30,41,59,0.85), rgba(15,23,42,0.95));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid {{ ac.border }};
+    border-radius: 20px;
+    padding: 36px 40px;
+    margin-bottom: 36px;
+    position: relative;
     overflow: hidden;
   }
-  .vs-stage-header {
-    padding: 16px 20px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-bottom: 1px solid var(--border-color, #e0e0e0);
-    background: var(--bg-muted, #f8f9fa);
+  .vs-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: {{ ac.gradient }};
+    opacity: 0.08;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .vs-hero h1 {
+    font-size: 1.8rem;
+    margin: 0 0 6px 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    color: #fff;
   }
-  .vs-stage-header .count {
-    font-weight: 400;
+  .vs-hero .grade-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: {{ ac.soft }};
+    border: 1px solid {{ ac.border }};
+    border-radius: 40px;
+    padding: 4px 16px 4px 12px;
     font-size: 0.85rem;
-    opacity: 0.7;
-    margin-left: auto;
-  }
-
-  .vs-table-wrap {
-    overflow-x: auto;
-    padding: 0;
-  }
-  .vs-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-  }
-  .vs-table th {
-    text-align: left;
-    padding: 10px 14px;
+    color: {{ ac.primary }};
     font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.7;
-    border-bottom: 1px solid var(--border-color, #e0e0e0);
-    white-space: nowrap;
   }
-  .vs-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border-color, #e0e0e0);
-    vertical-align: top;
+  .vs-hero .grade-tag .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: {{ ac.primary }};
   }
-  .vs-table tr:last-child td {
-    border-bottom: none;
+  .vs-hero .subtitle {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.92rem;
+    margin: 8px 0 0 0;
   }
-  .vs-table tr:hover {
-    background: var(--bg-hover, rgba(0,0,0,0.02));
-  }
-
-  .vs-table .method-name {
-    font-weight: 500;
-  }
-  .vs-table .method-code {
-    font-family: monospace;
+  .vs-hero .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255,255,255,0.5);
     font-size: 0.85rem;
-    opacity: 0.7;
-    white-space: nowrap;
+    text-decoration: none;
+    margin-bottom: 12px;
+    transition: color 0.15s;
   }
-  .vs-table .forecast {
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .vs-table .study-order {
-    font-size: 0.82rem;
-    opacity: 0.75;
+  .vs-hero .back-link:hover {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
   }
 
+  /* ─── Stats bar ────────────────────────────────────────────── */
+  .vs-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .vs-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.8);
+  }
+  .vs-stat strong {
+    color: #fff;
+    font-size: 1.1rem;
+  }
+  .vs-stat .label {
+    opacity: 0.6;
+  }
   .conf-dot {
     display: inline-block;
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    margin-right: 6px;
-    vertical-align: middle;
+    margin-right: 4px;
   }
-  .conf-3 { background: #2ecc71; }  /* 🟢 */
-  .conf-2 { background: #f1c40f; }  /* 🟡 */
-  .conf-1 { background: #bdc3c7; }  /* ⚪ */
+  .conf-3 { background: #2ecc71; box-shadow: 0 0 8px rgba(46,204,113,0.4); }
+  .conf-2 { background: #f1c40f; box-shadow: 0 0 8px rgba(241,196,15,0.4); }
+  .conf-1 { background: #94a3b8; }
 
-  .conf-label {
+  /* ─── Stage section ────────────────────────────────────────── */
+  .vs-stage {
+    background: var(--bg-card, rgba(30,41,59,0.5));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border-soft, #334155);
+    border-radius: 18px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .vs-stage:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  .vs-stage-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border-soft, #334155);
+    background: rgba(255,255,255,0.03);
+  }
+  .vs-stage-header .icon {
+    font-size: 1.3rem;
+  }
+  .vs-stage-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-soft, #cbd5e1);
+  }
+  .vs-stage-header .count {
+    margin-left: auto;
     font-size: 0.82rem;
+    opacity: 0.55;
+    background: rgba(255,255,255,0.06);
+    padding: 4px 12px;
+    border-radius: 20px;
   }
 
+  /* ─── Method card grid ─────────────────────────────────────── */
+  .vs-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    padding: 16px 22px 20px;
+  }
+  .vs-method {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-soft, #334155);
+    border-radius: 14px;
+    padding: 16px 18px;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  .vs-method:hover {
+    transform: translateY(-2px);
+    border-color: {{ ac.primary }};
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  }
+  .vs-method .method-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .vs-method .method-head .name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-soft, #cbd5e1);
+    line-height: 1.35;
+  }
+  .vs-method .method-head .code {
+    font-family: monospace;
+    font-size: 0.78rem;
+    opacity: 0.5;
+    white-space: nowrap;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+  }
+  .vs-method .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: var(--text-muted, #94a3b8);
+    flex-wrap: wrap;
+  }
+  .vs-method .meta-row .study-order {
+    opacity: 0.6;
+  }
+  .vs-method .meta-row .importance {
+    padding: 1px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .vs-method .meta-row .importance.imp-high {
+    background: rgba(239,68,68,0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239,68,68,0.2);
+  }
+  .vs-method .meta-row .importance.imp-mid {
+    background: rgba(245,158,11,0.15);
+    color: #fcd34d;
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+  .vs-method .meta-row .importance.imp-low {
+    background: rgba(148,163,184,0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(148,163,184,0.15);
+  }
+
+  /* ─── Forecast bar ──────────────────────────────────────────── */
+  .vs-method .forecast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .vs-method .forecast .bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .vs-method .forecast .bar-wrap .bar {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+    position: relative;
+  }
+  .vs-method .forecast .bar-wrap .bar.bar-high {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+  }
+  .vs-method .forecast .bar-wrap .bar.bar-mid {
+    background: linear-gradient(90deg, #f1c40f, #f39c12);
+  }
+  .vs-method .forecast .bar-wrap .bar.bar-low {
+    background: linear-gradient(90deg, #94a3b8, #64748b);
+  }
+  .vs-method .forecast .pct {
+    font-weight: 700;
+    font-size: 0.88rem;
+    min-width: 44px;
+    text-align: right;
+  }
+  .vs-method .forecast .pct.pct-high { color: #2ecc71; }
+  .vs-method .forecast .pct.pct-mid  { color: #f1c40f; }
+  .vs-method .forecast .pct.pct-low  { color: #94a3b8; }
+
+  /* ─── Empty state ───────────────────────────────────────────── */
   .vs-empty {
     text-align: center;
     padding: 60px 20px;
-    opacity: 0.6;
+    opacity: 0.5;
+    color: var(--text-muted, #94a3b8);
+  }
+  .vs-empty p {
+    margin: 0;
+    font-size: 1rem;
   }
 
-  /* Legend */
-  .vs-legend {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 28px;
-    font-size: 0.85rem;
-    flex-wrap: wrap;
+  /* ─── Responsive ────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .vs-hero { padding: 24px 20px; }
+    .vs-hero h1 { font-size: 1.35rem; }
+    .vs-stats { gap: 10px; }
+    .vs-stat { flex: 1; min-width: 100px; }
+    .vs-methods { grid-template-columns: 1fr; padding: 12px 14px 16px; }
+    .vs-stage-header { padding: 12px 14px; }
   }
-  .vs-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .vs-methods { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
   }
 </style>
 {% endblock %}
@@ -133,64 +306,111 @@
 {% block content %}
 <div class="oly-wrap">
 
-  <div class="vs-course-header">
-    <h1>🏅 ВсОШ {{ grade }} класс · прогноз методов на 2027</h1>
-    <p class="meta">
-      {{ total_methods }} методов · 4 этапа · на основе аналитики {{ source_year_range }}
+  <!-- Hero -->
+  <div class="vs-hero">
+    <a class="back-link" href="{{ url_for('olympiad.catalog') }}">← Все курсы</a>
+    <h1>
+      🔮 Предикт ВсОШ {{ grade }} класс · 2027
+      <span class="grade-tag"><span class="dot"></span> {{ grade }} класс</span>
+    </h1>
+    <p class="subtitle">
+      {{ total }} методов · 4 этапа · на основе аналитики 2021–2025
     </p>
+
+    <!-- Stats -->
+    <div class="vs-stats">
+      <span class="vs-stat">
+        <strong>{{ total }}</strong>
+        <span class="label">методов</span>
+      </span>
+      <span class="vs-stat">
+        <span class="conf-dot conf-3"></span>
+        <strong>{{ conf_counts.get(3, 0) }}</strong>
+        <span class="label">высокая уверенность</span>
+      </span>
+      <span class="vs-stat">
+        <span class="conf-dot conf-2"></span>
+        <strong>{{ conf_counts.get(2, 0) }}</strong>
+        <span class="label">средняя</span>
+      </span>
+      <span class="vs-stat">
+        <span class="conf-dot conf-1"></span>
+        <strong>{{ conf_counts.get(1, 0) }}</strong>
+        <span class="label">низкая</span>
+      </span>
+    </div>
   </div>
 
-  <!-- Легенда уверенности -->
-  <div class="vs-legend">
-    <span class="vs-legend-item"><span class="conf-dot conf-3"></span> 🟢 100% — будет точно</span>
-    <span class="vs-legend-item"><span class="conf-dot conf-2"></span> 🟡 Вероятно</span>
-    <span class="vs-legend-item"><span class="conf-dot conf-1"></span> ⚪ Под вопросом</span>
-  </div>
-
+  <!-- Stage sections -->
   {% if stages_data %}
     {% for sd in stages_data %}
-    <div class="vs-stage-section">
+    <div class="vs-stage">
       <div class="vs-stage-header">
-        {{ sd.icon }} {{ sd.name }}
+        <span class="icon">{{ sd.icon }}</span>
+        <h2>{{ sd.name }}</h2>
         <span class="count">{{ sd.methods|length }} методов</span>
       </div>
 
       {% if sd.methods %}
-      <div class="vs-table-wrap">
-      <table class="vs-table">
-        <thead>
-          <tr>
-            <th>Метод</th>
-            <th>Код</th>
-            <th>Прогноз 2027</th>
-            <th>Очередь</th>
-            <th>Уверенность</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for m in sd.methods %}
-          <tr>
-            <td class="method-name">{{ m.method_name }}</td>
-            <td class="method-code">{{ m.method_code }}</td>
-            <td class="forecast">
-              {% if m.forecast_2027 is not none %}
-                {{ '%.0f'|format(m.forecast_2027 * 100) }}%
+      <div class="vs-methods">
+        {% for m in sd.methods %}
+        {% set pct = (m.forecast_2027 * 100)|round|int if m.forecast_2027 is not none else none %}
+        {% if pct is not none and pct >= 70 %}
+          {% set bar_class = 'bar-high' %}
+          {% set pct_class = 'pct-high' %}
+        {% elif pct is not none and pct >= 40 %}
+          {% set bar_class = 'bar-mid' %}
+          {% set pct_class = 'pct-mid' %}
+        {% else %}
+          {% set bar_class = 'bar-low' %}
+          {% set pct_class = 'pct-low' %}
+        {% endif %}
+
+        {% set imp = m.importance|lower if m.importance else '' %}
+        {% if 'высок' in imp or 'critical' in imp or 'обязательн' in imp %}
+          {% set imp_class = 'imp-high' %}
+        {% elif 'средн' in imp or 'важн' in imp %}
+          {% set imp_class = 'imp-mid' %}
+        {% else %}
+          {% set imp_class = 'imp-low' %}
+        {% endif %}
+
+        <a class="vs-method" href="{{ url_for('olympiad.methods') }}">
+          <div class="method-head">
+            <span class="name">{{ m.method_name }}</span>
+            <span class="code">{{ m.method_code }}</span>
+          </div>
+
+          <div class="forecast">
+            <div class="bar-wrap">
+              <span class="bar {{ bar_class }}" style="width:{{ pct }}%"></span>
+            </div>
+            <span class="pct {{ pct_class }}">
+              {% if pct is not none %}
+                {{ pct }}%
               {% else %}
                 —
               {% endif %}
-            </td>
-            <td class="study-order">{{ m.study_order or '—' }}</td>
-            <td>
+            </span>
+          </div>
+
+          <div class="meta-row">
+            {% if m.study_order %}
+            <span class="study-order">📋 очередь {{ m.study_order }}</span>
+            {% endif %}
+            {% if m.importance %}
+            <span class="importance {{ imp_class }}">{{ m.importance }}</span>
+            {% endif %}
+            <span>
               <span class="conf-dot conf-{{ m.confidence_level }}"></span>
-              <span class="conf-label">{{ m.confidence_label or '—' }}</span>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              {{ m.confidence_label or '—' }}
+            </span>
+          </div>
+        </a>
+        {% endfor %}
       </div>
       {% else %}
-      <div class="vs-empty">Нет методов для этого этапа</div>
+      <div class="vs-empty"><p>Нет методов для этого этапа</p></div>
       {% endif %}
     </div>
     {% endfor %}

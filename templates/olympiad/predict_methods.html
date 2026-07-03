@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Предикт методов — ВсОШ 2027 — FORM YLA{% endblock %}
+{% block meta_description %}Прогноз (предикт) эффективности методов решения задач ВсОШ 2027 по классам: оценка вероятности применения каждого метода на каждом этапе.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/predict_methods.css') }}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="predict-wrap">
+
+  {# ════════════════════════════════════════════════════ #}
+  {#  HERO                                              #}
+  {# ════════════════════════════════════════════════════ #}
+  <div class="predict-hero">
+    <div class="predict-hero-icon">🔮</div>
+    <h1>Предикт методов ВсОШ 2027</h1>
+    <p class="predict-hero-sub">
+      Оценка вероятности применения ключевых олимпиадных методов
+      на каждом из этапов Всероссийской олимпиады школьников по математике.
+    </p>
+  </div>
+
+  {# ════════════════════════════════════════════════════ #}
+  {#  КАРТОЧКИ ПО КЛАССАМ                               #}
+  {# ════════════════════════════════════════════════════ #}
+  <div class="predict-grid">
+
+    {# ─── 9 КЛАСС ─── #}
+    <div class="grade-card card-violet">
+      <div class="grade-card-header">
+        <h2 class="grade-card-title">9 класс</h2>
+        <span class="grade-card-icon">📐</span>
+      </div>
+      <p class="grade-card-desc">Начальный этап: базовая алгебра и геометрия, первые шаги в комбинаторике.</p>
+
+      <div class="stage-tags">
+        <span class="stage-tag"><span class="stage-icon">🏫</span> ШЭ</span>
+        <span class="stage-tag"><span class="stage-icon">🏛️</span> МЭ</span>
+        <span class="stage-tag"><span class="stage-icon">🏅</span> РЭ</span>
+        <span class="stage-tag"><span class="stage-icon">👑</span> ЗЭ</span>
+      </div>
+
+      <div class="conf-section-title">Вероятность применения</div>
+      <div class="conf-rows">
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=9, section_name='E') }}">Комбинаторика</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:92%"></div></div>
+          <span class="conf-row-value">92%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=9, section_name='G') }}">Неравенства</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:78%"></div></div>
+          <span class="conf-row-value">78%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=9, section_name='F') }}">Планиметрия</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:85%"></div></div>
+          <span class="conf-row-value">85%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=9, section_name='D') }}">Теория чисел</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:70%"></div></div>
+          <span class="conf-row-value">70%</span>
+        </div>
+      </div>
+
+      <div class="conf-section-title">Уровень сложности</div>
+      <div class="conf-dots">
+        <span class="conf-dot high"></span>
+        <span class="conf-dot high"></span>
+        <span class="conf-dot mid"></span>
+        <span class="conf-dot-label">2 высоких · 1 средний</span>
+      </div>
+    </div>
+
+    {# ─── 10 КЛАСС ─── #}
+    <div class="grade-card card-cyan">
+      <div class="grade-card-header">
+        <h2 class="grade-card-title">10 класс</h2>
+        <span class="grade-card-icon">🔬</span>
+      </div>
+      <p class="grade-card-desc">Углубление: стереометрия, продвинутая комбинаторика, неравенства.</p>
+
+      <div class="stage-tags">
+        <span class="stage-tag"><span class="stage-icon">🏫</span> ШЭ</span>
+        <span class="stage-tag"><span class="stage-icon">🏛️</span> МЭ</span>
+        <span class="stage-tag"><span class="stage-icon">🏅</span> РЭ</span>
+        <span class="stage-tag"><span class="stage-icon">👑</span> ЗЭ</span>
+      </div>
+
+      <div class="conf-section-title">Вероятность применения</div>
+      <div class="conf-rows">
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=10, section_name='F') }}">Стереометрия</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:88%"></div></div>
+          <span class="conf-row-value">88%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=10, section_name='E') }}">Комбинаторика</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:82%"></div></div>
+          <span class="conf-row-value">82%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=10, section_name='G') }}">Неравенства</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:75%"></div></div>
+          <span class="conf-row-value">75%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=10, section_name='D') }}">Теория чисел</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:80%"></div></div>
+          <span class="conf-row-value">80%</span>
+        </div>
+      </div>
+
+      <div class="conf-section-title">Уровень сложности</div>
+      <div class="conf-dots">
+        <span class="conf-dot high"></span>
+        <span class="conf-dot mid"></span>
+        <span class="conf-dot mid"></span>
+        <span class="conf-dot-label">1 высокий · 2 средних</span>
+      </div>
+    </div>
+
+    {# ─── 11 КЛАСС ─── #}
+    <div class="grade-card card-emerald">
+      <div class="grade-card-header">
+        <h2 class="grade-card-title">11 класс</h2>
+        <span class="grade-card-icon">🏆</span>
+      </div>
+      <p class="grade-card-desc">Финальный уровень: геометрия, углублённый анализ, алгебра сложных задач.</p>
+
+      <div class="stage-tags">
+        <span class="stage-tag"><span class="stage-icon">🏫</span> ШЭ</span>
+        <span class="stage-tag"><span class="stage-icon">🏛️</span> МЭ</span>
+        <span class="stage-tag"><span class="stage-icon">🏅</span> РЭ</span>
+        <span class="stage-tag"><span class="stage-icon">👑</span> ЗЭ</span>
+      </div>
+
+      <div class="conf-section-title">Вероятность применения</div>
+      <div class="conf-rows">
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=11, section_name='F') }}">Геометрия</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:90%"></div></div>
+          <span class="conf-row-value">90%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=11, section_name='E') }}">Комбинаторика</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:72%"></div></div>
+          <span class="conf-row-value">72%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=11, section_name='C') }}">Анализ</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:68%"></div></div>
+          <span class="conf-row-value">68%</span>
+        </div>
+        <div class="conf-row">
+          <a class="conf-row-label" href="{{ url_for('olympiad.method_section', grade=11, section_name='A') }}">Алгебра</a>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:85%"></div></div>
+          <span class="conf-row-value">85%</span>
+        </div>
+      </div>
+
+      <div class="conf-section-title">Уровень сложности</div>
+      <div class="conf-dots">
+        <span class="conf-dot high"></span>
+        <span class="conf-dot high"></span>
+        <span class="conf-dot high"></span>
+        <span class="conf-dot-label">3 высоких</span>
+      </div>
+    </div>
+
+  </div>{# / .predict-grid #}
+
+</div>{# / .predict-wrap #}
+{% endblock %}

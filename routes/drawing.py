@@ -228,8 +228,12 @@ def whiteboard_page():
 
     Используется как landing для приглашений в видеозвонок:
     `wb_call_listener.js` редиректит сюда с `?room=<code>`.
+    Теперь также поддерживает `?board=<id>` для per-board localStorage.
     """
-    return render_template("whiteboard.html")
+    board_id = request.args.get("board", "default")
+    room = request.args.get("room", "")
+    conv = request.args.get("conv", "")
+    return render_template("whiteboard.html", board_id=board_id, room=room, conv=conv)
 
 
 @drawing_bp.route("/api/drawing/status/<task_id>", methods=["GET"])

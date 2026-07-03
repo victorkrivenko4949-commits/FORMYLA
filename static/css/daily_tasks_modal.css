@@ -500,6 +500,23 @@
   border-color: #ef4444;
   color: #ef4444;
 }
+.dt-modal-body .dt-verdict.info {
+  background: linear-gradient(135deg, rgba(59,130,246,0.20), rgba(59,130,246,0.08));
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.dt-modal-body .dt-solve-prompt {
+  margin: 18px 0 22px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.06));
+  border-radius: 12px;
+  border: 1px solid rgba(34,197,94,0.25);
+  color: #86efac;
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: center;
+}
 
 .dt-modal-body .dt-feedback-block {
   margin-top: 22px;

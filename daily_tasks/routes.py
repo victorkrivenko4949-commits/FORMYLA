@@ -72,9 +72,10 @@ def _is_expired(daily_set: DailyTaskSet) -> bool:
 # Единый сервис AI-проверки (общий с /api/check_adaptive_answer).
 # Опциональный импорт — файла может не быть на проде.
 try:
-    from services.ai_tutor_review import review_attempt
+    from services.ai_tutor_review import review_attempt, solve_task
 except ModuleNotFoundError:
     review_attempt = None
+    solve_task = None
 
 # DeepSeek-клиент берём опционально — если AI недоступен, review_attempt
 # вернёт fallback с эталонным ответом из БД.
@@ -537,6 +538,62 @@ def daily_tasks_pool_status():
 # ──────────────────────────────────────────────────────────────────────
 
 
+@daily_tasks_bp.route("/<int:item_id>/solve", methods=["POST"])
+@login_required
+def solve_task_preview(item_id: int):
+    """AI решает задачу с нуля (превью) — вызывается при открытии задачи до того,
+    как ученик написал свой ответ."""
+    item = DailyTaskItem.query.get(item_id)
+    if not item:
+        return jsonify({"status": "error", "message": "Задача не найдена"}), 404
+
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+    if not daily_set or daily_set.user_id != current_user.id:
+        return jsonify({
+            "status": "error",
+            "message": "Задача не принадлежит текущему пользователю",
+        }), 403
+
+    if solve_task is None:
+        # Fallback: отдаём эталонное решение из БД
+        return jsonify({
+            "status": "success",
+            "solution": item.solution or "Решение временно недоступно.",
+        })
+
+    import concurrent.futures as _cf
+    _result = None
+    try:
+        with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+            _future = _executor.submit(
+                solve_task,
+                task_text=item.task_text or "",
+                correct_answer=item.correct_answer or "",
+                solution_ref=item.solution or "",
+                deepseek_client_cls=DeepSeekClient if _DEEPSEEK_AVAILABLE else None,
+                deepseek_available=_DEEPSEEK_AVAILABLE,
+                max_tokens=4096,
+            )
+            try:
+                _result = _future.result(timeout=20)
+            except _cf.TimeoutError:
+                logger.warning("solve_task_preview: solve_task timed out after 20s — fallback")
+    except Exception as e:
+        logger.exception("solve_task_preview: solve_task failed: %s", e)
+
+    if _result and _result.get("success"):
+        return jsonify({
+            "status": "success",
+            "solution": _result.get("solution", ""),
+        })
+
+    # Fallback: эталонное решение из БД
+    return jsonify({
+        "status": "success",
+        "solution": item.solution or "Решение временно недоступно.",
+    })
+
+
 @daily_tasks_bp.route("/<int:item_id>/submit_ai", methods=["POST"])
 @login_required
 def submit_answer_ai(item_id: int):
@@ -611,6 +668,7 @@ def submit_answer_ai(item_id: int):
                 deepseek_client_cls=DeepSeekClient if _DEEPSEEK_AVAILABLE else None,
                 deepseek_available=_DEEPSEEK_AVAILABLE,
                 max_tokens=4096,
+                sanitize_latex=False,
             )
             try:
                 _result = _future.result(timeout=20)

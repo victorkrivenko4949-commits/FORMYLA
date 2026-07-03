@@ -711,3 +711,73 @@
     background: #2a2a4a;
     border-radius: 2px;
 }
+
+/* ── Board panel ──────────────────────────────────────────────────── */
+.cf-panel--board {
+    right: -380px;
+    width: 340px;
+}
+.cf-panel--board.cf-panel--open {
+    right: 0;
+}
+
+.cf-board-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.25rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.cf-board-item:hover {
+    background: #2a2a4a;
+}
+.cf-board-item--selected {
+    background: #1a3a5c;
+    border: 1px solid #4a6cf7;
+}
+.cf-board-item-name {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    font-weight: 500;
+}
+.cf-board-item-status {
+    font-size: 0.85rem;
+    color: #4caf50;
+    font-weight: 700;
+}
+
+.cf-board-create {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #2a2a4a;
+    margin-bottom: 0.5rem;
+}
+.cf-board-input {
+    flex: 1;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 0.45rem 0.6rem;
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    outline: none;
+}
+.cf-board-input:focus {
+    border-color: #4a6cf7;
+}
+.cf-btn--board-create {
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.cf-btn--board-create:hover {
+    background: #5a7cf7;
+}

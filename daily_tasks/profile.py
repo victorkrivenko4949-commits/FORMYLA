@@ -1095,7 +1095,7 @@ def build_profile(
     # CURATOR (sub-theme system): inject today's locked subtopic
     profile['curator_subtopic'] = None
     try:
-        from models import CuratorState
+        from models_curator import CuratorState
         from .monthly_plan import (
             get_or_build_plan,
             pick_day_subtopic,

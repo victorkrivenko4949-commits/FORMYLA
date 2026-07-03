@@ -691,6 +691,14 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] guest columns Warning: {e}")
 
+# AUTO-MIGRATION: pre_gen_queue table (pre-generation of tomorrow's tasks)
+try:
+    from migrations.add_pregen_queue import _ensure_table as _ensure_pregen_table
+    _ensure_pregen_table()
+    print("[migration] pre_gen_queue table ensured")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] pre_gen_queue table: {e}")
+
 # AUTO-MIGRATION: Fix friendships table (old schema had user_1_id/user_2_id, new has requester_id/addressee_id)
 try:
     with app.app_context():
@@ -972,6 +980,14 @@ try:
 except Exception as _e:
     print(f"[BP] wb_meet_bp NOT registered: {_e}")
 
+# Conference room API (SocketIO-backed group video calls).
+try:
+    from routes.conference_api import conference_api_bp
+    app.register_blueprint(conference_api_bp)
+    print("[BP] conference_api_bp registered (/api/conference/*)")
+except Exception as _e:
+    print(f"[BP] conference_api_bp NOT registered: {_e}")
+
 try:
     from routes.chat_presence import chat_presence_bp, _ensure_table as _ensure_presence_table
     app.register_blueprint(chat_presence_bp)
@@ -1009,6 +1025,14 @@ if os.environ.get('OLYMPIAD_AUTOSEED', '').strip() in ('1', 'true', 'yes', 'on')
         print(f"[OLYMPIAD-SEED] Autoseed skipped: {_e_seed}")
 else:
     print("[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)")
+
+# SocketIO for conference WebRTC signalling (видеоконференции).
+try:
+    from routes.wb_ws import init_socketio
+    init_socketio(app, manage_session=False)
+    print("[SocketIO] Conference WebSocket signalling initialized (/ws-call)")
+except Exception as _e_sio:
+    print(f"[SocketIO] Failed to initialize: {_e_sio}")
 
 # ── VsOsh-9 2027 v4 force-import on boot ─────────────────────────────────────
 # autoseed выше — пуглив: пропускает раздачу, если в Probnik/OlympiadTask уже
@@ -1355,6 +1379,19 @@ except Exception as _e:
     print(f"[BP] daily_tasks_bp NOT registered: {_e}")
     print(_tb.format_exc())
 
+# /curator/* — Модуль «Куратор» (AI-наставник): диагностика, план, тьютор, прогресс.
+try:
+    from curator import curator_bp
+    from migrations.add_curator_tables import _ensure_curator_tables
+    app.register_blueprint(curator_bp)
+    with app.app_context():
+        _ensure_curator_tables()
+    print("[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] curator_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
 # ── AUTO-MIGRATION: test_sessions (для восстановления адаптивного теста) ──
 try:
     from migrations.add_test_sessions import _ensure_test_sessions_table
@@ -1575,6 +1612,204 @@ def daily_quest_deadline_reminder_job():
         except Exception as e:
             app.logger.error(f"✗ Daily quest reminder failed: {e}")
 
+
+# ─── Куратор: вечерняя проверка и push-уведомления ──────────────────────────
+
+@scheduler.task('cron', id='curator_evening_notification', hour='19,20,21', minute=0)
+def curator_evening_notification_job():
+    """Вечерняя проверка куратора: оценивает прогресс за день и отправляет
+    персонализированные push-уведомления (мотивация / дисциплина / похвала).
+
+    Запускается в 19:00, 20:00, 21:00 по серверному времени (MSK=UTC+3).
+    Куратор пишет сам, без участия преподавателя.
+    """
+    if not VAPID_PUBLIC_KEY or not VAPID_PRIVATE_KEY:
+        return  # Push notifications not configured
+
+    with app.app_context():
+        try:
+            from models import PushSubscription, User
+            from curator.push_service import check_and_notify_user
+
+            # Все пользователи с push-подписками
+            sub_rows = PushSubscription.query.distinct(PushSubscription.user_id).all()
+            checked = 0
+            notified = 0
+
+            for sub in sub_rows:
+                user = User.query.get(sub.user_id)
+                if not user or user.is_guest:
+                    continue
+
+                try:
+                    result = check_and_notify_user(user_id=user.id, force=False)
+                    checked += 1
+                    if result.get('sent'):
+                        notified += 1
+                except Exception as user_err:
+                    app.logger.warning(
+                        f"[curator_evening] Error checking user #{sub.user_id}: {user_err}"
+                    )
+
+            if checked:
+                app.logger.info(
+                    f"✓ Curator evening check: {checked} users checked, "
+                    f"{notified} notifications sent"
+                )
+        except Exception as e:
+            app.logger.error(f"✗ Curator evening check failed: {e}")
+
+
+# ─── Месячный цикл подготовки: утреннее напоминание + вечерняя генерация ──────
+
+@scheduler.task('cron', id='curator_morning_prep_reminder', hour='9', minute=0)
+def curator_morning_prep_reminder_job():
+    """Утреннее напоминание о месячном цикле подготовки.
+
+    - В тестовые дни (1-7): напоминает пройти тест по подтеме дня.
+    - В task-only дни (8-30): напоминает, что сегодня задачи без теста.
+    Запускается в 9:00 MSK.
+    """
+    if not VAPID_PUBLIC_KEY or not VAPID_PRIVATE_KEY:
+        return
+
+    with app.app_context():
+        try:
+            from models import PushSubscription, User
+            from curator.monthly_cycle import get_today_info
+
+            sub_rows = PushSubscription.query.distinct(PushSubscription.user_id).all()
+            reminded = 0
+
+            for sub in sub_rows:
+                user = User.query.get(sub.user_id)
+                if not user or user.is_guest:
+                    continue
+
+                try:
+                    info = get_today_info(user.id)
+                    if not info.get("subtopic"):
+                        continue
+
+                    subtopic_title = info.get("subtopic_title", info["subtopic"])
+                    is_test_day = info.get("is_test_day", False)
+                    has_tasks = info.get("has_tasks", False)
+
+                    if is_test_day and not info.get("tested"):
+                        # Тестовый день — напомнить пройти тест
+                        _send_push_notification(
+                            user_id=user.id,
+                            title='📝 Утренний тест',
+                            body=f'Сегодня тест по теме «{subtopic_title}». Пройди 5 задач!',
+                            url='/prep',
+                        )
+                        reminded += 1
+                    elif not has_tasks and not is_test_day:
+                        # Task-only день — сообщить, что вечером будут задачи
+                        _send_push_notification(
+                            user_id=user.id,
+                            title='📚 Задачи дня',
+                            body=f'Сегодня тренируем тему «{subtopic_title}». Задачи придут вечером!',
+                            url='/prep',
+                        )
+                        reminded += 1
+                except Exception as user_err:
+                    app.logger.warning(
+                        f"[morning_prep] Error for user #{sub.user_id}: {user_err}"
+                    )
+
+            if reminded:
+                app.logger.info(f"✓ Morning prep reminder sent to {reminded} users")
+        except Exception as e:
+            app.logger.error(f"✗ Morning prep reminder failed: {e}")
+
+
+@scheduler.task('cron', id='curator_evening_prep_generate', hour='18', minute=0)
+def curator_evening_prep_generate_job():
+    """Вечерняя генерация задач дня для месячного цикла подготовки.
+
+    Для пользователей с активным monthly plan:
+    - Если сегодня task-only день (8-30) — запускает генерацию задач.
+    - Если тестовый день — проверяет, был ли тест, иначе напоминает.
+    Запускается в 18:00 MSK.
+    """
+    if not VAPID_PUBLIC_KEY or not VAPID_PRIVATE_KEY:
+        return
+
+    with app.app_context():
+        try:
+            from models import PushSubscription, User
+            from curator.monthly_cycle import (
+                get_today_info,
+                generate_tasks_only,
+            )
+
+            sub_rows = PushSubscription.query.distinct(PushSubscription.user_id).all()
+            generated = 0
+            reminded_test = 0
+
+            for sub in sub_rows:
+                user = User.query.get(sub.user_id)
+                if not user or user.is_guest:
+                    continue
+
+                try:
+                    info = get_today_info(user.id)
+                    if not info.get("subtopic"):
+                        continue
+
+                    is_test_day = info.get("is_test_day", False)
+                    tested = info.get("tested", False)
+                    has_tasks = info.get("has_tasks", False)
+
+                    if has_tasks:
+                        continue  # Уже сгенерировано
+
+                    if is_test_day and not tested:
+                        # Тестовый день, но тест не пройден — напомнить
+                        subtopic_title = info.get("subtopic_title", info["subtopic"])
+                        _send_push_notification(
+                            user_id=user.id,
+                            title='⚠️ Пропущен тест',
+                            body=f'Ты ещё не прошёл тест по теме «{subtopic_title}». '
+                                 f'Пройди скорее, чтобы получить задачи дня!',
+                            url='/prep',
+                        )
+                        reminded_test += 1
+                    elif not is_test_day:
+                        # Task-only день — генерация задач
+                        result = generate_tasks_only(user.id)
+                        if result.get("success"):
+                            generated += 1
+                except Exception as user_err:
+                    app.logger.warning(
+                        f"[evening_prep] Error for user #{sub.user_id}: {user_err}"
+                    )
+
+            if generated or reminded_test:
+                app.logger.info(
+                    f"✓ Evening prep: generated for {generated} users, "
+                    f"test reminders sent to {reminded_test}"
+                )
+        except Exception as e:
+            app.logger.error(f"✗ Evening prep generation failed: {e}")
+
+
+# Pre-generation queue processor (runs every 30 minutes)
+@scheduler.task('cron', id='process_pregen_queue', minute='*/30')
+def process_pregen_queue_job():
+    """Process pre-generation queue for tomorrow's tasks."""
+    with app.app_context():
+        try:
+            from daily_tasks.services import _process_pregen_queue
+            from daily_tasks.services import _reap_stale_pregen
+            launched = _process_pregen_queue()
+            reaped = _reap_stale_pregen()
+            if launched or reaped:
+                app.logger.info(f"✓ Pre-gen queue: launched {launched}, reaped {reaped}")
+        except Exception as e:
+            app.logger.error(f"✗ Pre-gen queue processing failed: {e}")
+
 # Start scheduler
 try:
     scheduler.start()
@@ -1682,6 +1917,7 @@ _PUBLIC_PATHS = (
     '/yandex_receiver',
     '/link_yandex',
     '/api/reviews',   # Публичный список отзывов о сайте (для /about)
+    '/api/conference/',  # Конференции (гостевой доступ, WebRTC + SocketIO)
 )
 
 
@@ -2610,6 +2846,17 @@ def call_page():
     Авторизация не требуется (можно звонить гостям).
     """
     return render_template("call.html")
+
+
+@app.route("/conference")
+def conference_page():
+    """Групповая видеоконференция (SocketIO-backed, до 8 участников).
+
+    Создать комнату → получить 6-значный код → поделиться →
+    собеседник вводит код → WebRTC mesh с сигналингом через WebSocket.
+    Авторизация не требуется (можно звонить гостям).
+    """
+    return render_template("conference.html")
 
 
 @app.route("/welcome")
@@ -11447,9 +11694,20 @@ if __name__ == '__main__':
         os.environ.get("FLASK_RELOAD", "0").strip().lower()
         in ("1", "true", "yes", "on")
     )
-    app.run(
-        debug=True,
-        port=5001,
-        use_reloader=_use_reloader,
-    )
+    # Use socketio.run() when SocketIO is available (for WebSocket transport),
+    # fall back to standard Flask app.run() otherwise.
+    try:
+        from routes.wb_ws import socketio as _ws_socketio
+        _ws_socketio.run(
+            app,
+            debug=True,
+            port=5001,
+            use_reloader=_use_reloader,
+        )
+    except (ImportError, AttributeError):
+        app.run(
+            debug=True,
+            port=5001,
+            use_reloader=_use_reloader,
+        )
 

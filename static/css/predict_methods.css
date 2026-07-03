@@ -1,0 +1,399 @@
+/* ═══════════════════════════════════════════════════════════════
+   predict_methods.css — Предикт методов ВсОШ 2027
+   Стекло (glassmorphism), градиенты, микроанимации
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Переменные ──────────────────────────────────────────── */
+.predict-wrap {
+  --bg-deep: #070b15;
+  --bg-card: rgba(255, 255, 255, 0.97);
+  --bg-card-hover: rgba(255, 255, 255, 1);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --violet: #8b5cf6;
+  --violet-glow: rgba(139, 92, 246, 0.25);
+  --violet-soft: rgba(139, 92, 246, 0.08);
+  --cyan: #06b6d4;
+  --cyan-glow: rgba(6, 182, 212, 0.25);
+  --cyan-soft: rgba(6, 182, 212, 0.08);
+  --emerald: #10b981;
+  --emerald-glow: rgba(16, 185, 129, 0.25);
+  --emerald-soft: rgba(16, 185, 129, 0.08);
+  --amber: #f59e0b;
+  --amber-glow: rgba(245, 158, 11, 0.20);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  background: var(--bg-deep);
+  min-height: 100vh;
+}
+
+/* ─── Hero-секция ──────────────────────────────────────────── */
+.predict-hero {
+  position: relative;
+  text-align: center;
+  padding: 56px 32px 48px;
+  margin-bottom: 56px;
+  background: linear-gradient(135deg, rgba(139,92,246,0.10) 0%, rgba(6,182,212,0.06) 50%, rgba(16,185,129,0.06) 100%);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.predict-hero::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -20%;
+  width: 140%;
+  height: 220%;
+  background: radial-gradient(ellipse at 30% 50%, var(--violet-glow) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 50%, rgba(6,182,212,0.10) 0%, transparent 50%);
+  pointer-events: none;
+  animation: heroGlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlow {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  100% { transform: translate(20px, -20px) scale(1.08); opacity: 1; }
+}
+
+.predict-hero-icon {
+  position: relative;
+  z-index: 1;
+  font-size: 56px;
+  display: inline-block;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 20px var(--violet-glow));
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.predict-hero h1 {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  background: linear-gradient(135deg, #c4b5fd 0%, #67e8f9 50%, #6ee7b7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+
+.predict-hero-sub {
+  position: relative;
+  z-index: 1;
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ─── Сетка карточек ────────────────────────────────────────── */
+.predict-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+  margin-top: 8px;
+}
+
+/* ─── Карточка класса ───────────────────────────────────────── */
+.grade-card {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 28px 24px 32px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  transition: var(--transition);
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.grade-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  opacity: 0;
+  transition: var(--transition);
+  pointer-events: none;
+}
+
+.grade-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.10);
+}
+
+.grade-card:active {
+  transform: translateY(-2px);
+}
+
+/* Акцентная полоска сверху */
+.grade-card.card-violet { border-top: 4px solid var(--violet); }
+.grade-card.card-cyan   { border-top: 4px solid var(--cyan); }
+.grade-card.card-emerald{ border-top: 4px solid var(--emerald); }
+
+/* Glow-подсветка при ховере */
+.grade-card.card-violet:hover { box-shadow: 0 12px 40px var(--violet-glow); }
+.grade-card.card-cyan:hover   { box-shadow: 0 12px 40px var(--cyan-glow); }
+.grade-card.card-emerald:hover{ box-shadow: 0 12px 40px var(--emerald-glow); }
+
+.grade-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grade-card-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.grade-card.card-violet .grade-card-title { color: var(--violet); }
+.grade-card.card-cyan   .grade-card-title { color: var(--cyan); }
+.grade-card.card-emerald .grade-card-title { color: var(--emerald); }
+
+.grade-card-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.grade-card-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ─── Теги этапов ──────────────────────────────────────────── */
+.stage-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.stage-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--violet-soft);
+  color: var(--violet);
+  white-space: nowrap;
+}
+
+.card-cyan .stage-tag {
+  background: var(--cyan-soft);
+  color: var(--cyan);
+}
+
+.card-emerald .stage-tag {
+  background: var(--emerald-soft);
+  color: var(--emerald);
+}
+
+.stage-tag .stage-icon {
+  font-size: 13px;
+}
+
+/* ─── Шкала уверенности (conf-bar) ─────────────────────────── */
+.conf-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 4px 0 10px;
+}
+
+.conf-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.conf-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.conf-row-label {
+  min-width: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition);
+  cursor: pointer;
+}
+.conf-row-label:hover {
+  color: var(--violet);
+  text-decoration: underline;
+}
+.card-cyan .conf-row-label:hover { color: var(--cyan); }
+.card-emerald .conf-row-label:hover { color: var(--emerald); }
+
+.conf-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.conf-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.card-violet .conf-bar-fill { background: linear-gradient(90deg, #a78bfa, var(--violet)); }
+.card-cyan   .conf-bar-fill { background: linear-gradient(90deg, #22d3ee, var(--cyan)); }
+.card-emerald .conf-bar-fill { background: linear-gradient(90deg, #34d399, var(--emerald)); }
+
+.conf-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 20px;
+  height: 100%;
+  background: inherit;
+  filter: blur(4px);
+  opacity: 0.6;
+}
+
+.conf-row-value {
+  min-width: 36px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text-primary);
+}
+
+/* ─── Точечная шкала (3 уровня) ────────────────────────────── */
+.conf-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.conf-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.10);
+  transition: var(--transition);
+}
+
+.conf-dot.high { background: var(--violet); }
+.card-cyan   .conf-dot.high { background: var(--cyan); }
+.card-emerald .conf-dot.high { background: var(--emerald); }
+
+.conf-dot.mid { background: var(--amber); }
+
+.conf-dot-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+/* ─── Анимация появления карточек ──────────────────────────── */
+.grade-card {
+  opacity: 0;
+  animation: cardIn 0.5s ease forwards;
+}
+
+.grade-card:nth-child(1) { animation-delay: 0.10s; }
+.grade-card:nth-child(2) { animation-delay: 0.20s; }
+.grade-card:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Адаптивность ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .predict-wrap {
+    padding: 24px 16px 60px;
+  }
+
+  .predict-hero {
+    padding: 40px 20px 32px;
+    margin-bottom: 40px;
+  }
+
+  .predict-hero-icon {
+    font-size: 42px;
+  }
+
+  .predict-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .grade-card {
+    padding: 22px 18px 26px;
+  }
+
+  .conf-row-label {
+    min-width: 72px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .predict-hero h1 {
+    font-size: 24px;
+  }
+
+  .predict-hero-sub {
+    font-size: 14px;
+  }
+
+  .stage-tags {
+    gap: 6px;
+  }
+
+  .stage-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+}
