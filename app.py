@@ -10817,7 +10817,6 @@ def submit_feedback():
             if (_ban_nick in _BANNED_REVIEW_USERS or _ban_uname in _BANNED_REVIEW_USERS
                     or _ban_disp in _BANNED_REVIEW_USERS or _uid_now in _BANNED_REVIEW_IDS):
                 return jsonify({'error': 'Виктор запретил вам это делать!'}), 403
-
         message_text = (data.get('message') or '').strip()
         if not (5 <= len(message_text) <= 4000):
             return jsonify({'error': 'отзыв должен быть 5-4000 символов'}), 400
