@@ -19,10 +19,10 @@ import hashlib
 import random
 from datetime import date, datetime, timedelta
 
-from flask import Blueprint, jsonify, request, abort, render_template, current_app
+from flask import Blueprint, jsonify, request, abort, render_template, current_app, session
 from flask_login import current_user, login_required
 
-from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution, DailyQuest
+from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution, DailyQuest, ChatMessage
 from services.prep_planner import generate_prep_plan, RADAR_TOPICS, TOPIC_NAMES_RU
 from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE, get_db_topic, get_topic_entry
 from daily_tasks.profile import build_profile, ProfileBuildError, score_to_target_level
@@ -544,7 +544,8 @@ def _evaluate_solution(task, user_answer, user_solution):
   "score": 0-2,
   "errors": ["список ошибок, если есть"],
   "feedback": "краткий комментарий (1-3 предложения): что верно, что нет, как исправить",
-  "hint": "подсказка, если решение неверное (1 предложение)"
+  "hint": "подсказка, если решение неверное (1 предложение)",
+  "solution": "ПОЛНОЕ пошаговое решение задачи (на русском, с LaTeX-формулами в $...$). Если эталонное решение дано — перепиши его своими словами. Если эталонного решения нет — составь полное решение сам. Обязательно покажи все шаги."
 }}
 
 Правила оценки:
@@ -571,6 +572,7 @@ def _evaluate_solution(task, user_answer, user_solution):
             'errors': result.get('errors', []),
             'hint': result.get('hint', ''),
             'correct_answer': correct_answer,
+            'solution': result.get('solution', ''),
             'ai_checked': True,
         }
 
@@ -754,7 +756,8 @@ def _build_subtopic_ctx(profile):
     subtopics_to_test = []
     for t in topics_full:
         key = t.get('topic_key') or t.get('topic', '')
-        pct = t.get('pct', 0)
+        pct_raw = t.get('pct')
+        pct = pct_raw if pct_raw is not None else 0
         measured = t.get('measured', False)
         name = t.get('topic_name') or t.get('topic', key)
         if key:
@@ -787,6 +790,7 @@ def get_onboarding_tasks(grade, limit=12):
     Берёт задачи класса на уровне CALIBRATION_START_LEVEL (2) с запасом.
     Если задач уровня 2 недостаточно — падает на уровень 1.
     Возвращает список словарей с ключами: id, task_text, topic, difficulty_level.
+    task_text нормализуется через normalize_math_text для KaTeX-совместимости.
     """
     from daily_tasks.profile import CALIBRATION_START_LEVEL
     try:
@@ -812,8 +816,28 @@ def get_onboarding_tasks(grade, limit=12):
                 .limit(limit)
                 .all()
             )
+        if not tasks:
+            # Ultimate fallback: any difficulty level
+            current_app.logger.warning(
+                'get_onboarding_tasks: no tasks found for grade=%s at levels %s-%s, trying any level',
+                grade_int, CALIBRATION_START_LEVEL - 1, CALIBRATION_START_LEVEL
+            )
+            tasks = (
+                AdaptiveTask.query
+                .filter_by(class_level=grade_int)
+                .filter(AdaptiveTask.is_flagged.is_(False))
+                .order_by(db.func.random())
+                .limit(limit)
+                .all()
+            )
+        if not tasks:
+            current_app.logger.error(
+                'get_onboarding_tasks: completely empty for grade=%s (no AdaptiveTask records at all)',
+                grade_int
+            )
+        from services.math_text_normalizer import normalize_math_text
         return [
-            {'id': t.id, 'task_text': t.task_text,
+            {'id': t.id, 'task_text': normalize_math_text(t.task_text) if t.task_text else t.task_text,
              'topic': t.topic, 'difficulty_level': t.difficulty_level}
             for t in tasks
         ]
@@ -902,17 +926,31 @@ def coach():
 @prep_bp.route('/coach/greeting')
 @login_required
 def coach_greeting():
-    """JSON-приветствие: 6 сценариев по состоянию пользователя.
+    """JSON-приветствие: 6+4 сценариев по состоянию пользователя.
 
-    Сценарии (C7):
-      1. need_grade           — класс не выбран
-      2. onboarding_test      — класс есть, но профиль пуст (0 измеренных тем)
-      3. daily_test           — нет квеста сегодня, профиль есть (предложить тест по подтеме)
-      4. daily_tasks_ready    — квест сегодня есть, но не завершён
-      5. day_summary          — квест сегодня завершён
-      6. recommend_olympiad   — флаг, добавляется к day_summary/daily_test при слабых темах
+    Основные сценарии (C7):
+      1. need_grade            — класс не выбран
+      2. onboarding_test       — класс есть, но профиль пуст (0 измеренных тем)
+      3. daily_test            — нет квеста сегодня, профиль есть (предложить тест по подтеме)
+      4. daily_tasks_ready     — квест сегодня есть, но не завершён
+      5. day_summary           — квест сегодня завершён
+      6. recommend_olympiad    — флаг, добавляется к day_summary/daily_test при слабых темах
+
+    Сценарии monthly prep cycle (C8–C11), проверяются перед daily_test:
+      7. prep_morning_test     — тестовый день (1-7), тест не пройден
+      8. prep_test_taken       — тестовый день, тест уже пройден
+      9. prep_tasks_ready      — тренировочный день (8-30), задачи готовы
+     10. prep_task_day         — тренировочный день, задачи ещё не готовы
     """
     grade = _get_user_grade()
+
+    # ── Query-param actions ───────────────────────────────────────────
+    action = request.args.get('action')
+    if action == 'onboarding_tasks':
+        limit = request.args.get('limit', 21, type=int)
+        tasks = get_onboarding_tasks(grade, limit=limit)
+        return jsonify(tasks=tasks)
+
     if not grade:
         return jsonify(
             greeting='👋 Привет! Я твой ИИ-куратор FORMYLA. Для начала выбери свой класс, '
@@ -929,11 +967,34 @@ def coach_greeting():
     test_done = ctx['test_done']
     measured_count = profile.get('measured_topics_count', 0) if profile else 0
 
+    # ── Сценарий 2a: онбординг уже запущен ──────────────────────────────
+    existing_test = session.get('coach_test')
+    if existing_test and existing_test.get('active'):
+        task_ids = existing_test.get('task_ids', [])
+        idx = existing_test.get('current_index', 0)
+        total = len(task_ids)
+        greeting = (
+            f'🧪 <strong>Диагностика уже запущена!</strong> '
+            f'Ты на задаче {idx + 1} из {total}. '
+            f'Просто напиши ответ в чат, чтобы продолжить.'
+        )
+        return jsonify(
+            greeting=greeting,
+            scenario='test_in_progress',
+            recommended_olympiad=None,
+            subtopics_to_test=[],
+            cta_url=None,
+            cta_text=None,
+        )
+
     # ── Сценарий 2: онбординг ───────────────────────────────────────────
     if measured_count == 0:
         greeting = (
-            f'👋 Привет! Ты в {grade}-м классе. Давай познакомимся — '
-            f'реши несколько задач, и я пойму, какие темы тебе нужно подтянуть.'
+            f'Привет! 👋 Рад знакомству! Ты в {grade} классе, но диагностика ещё не пройдена, '
+            f'и все подтемы пока с нуля — это нормально, сейчас начнём.\n\n'
+            f'🔹 <strong>Пройди диагностику</strong> (10–15 минут) — '
+            f'она покажет твой реальный уровень и поможет составить план.\n\n'
+            f'Начинаем? 😊'
         )
         return jsonify(
             greeting=greeting,
@@ -941,7 +1002,7 @@ def coach_greeting():
             recommended_olympiad=None,
             subtopics_to_test=[],
             cta_url=None,
-            cta_text='🧪 Начать онбординг',
+            cta_text='🧪 Начать диагностику',
         )
 
     # ── Проверка DailyQuest на сегодня ──────────────────────────────────
@@ -1004,7 +1065,130 @@ def coach_greeting():
             day_result=day_result,
         )
 
-    # ── Сценарий 3: daily_test — предложить тест по приоритетной подтеме ─
+    # ── Сценарий 3a: monthly prep cycle — тестовый день ──────────────────
+    # Проверяем, есть ли у пользователя активный monthly prep plan
+    try:
+        _prep_info = None
+        _has_prep = False
+        # lazy import to avoid circular dependencies
+        from curator.monthly_cycle import get_today_info as _get_prep_info
+        _prep_info = _get_prep_info(current_user.id)
+        if _prep_info and _prep_info.get("subtopic"):
+            _has_prep = True
+    except Exception:
+        _prep_info = None
+        _has_prep = False
+
+    if _has_prep:
+        _cycle_day = _prep_info.get("cycle_day", 0)
+        _is_test_day = _prep_info.get("is_test_day", False)
+        _tested = _prep_info.get("tested", False)
+        _has_tasks = _prep_info.get("has_tasks", False)
+        _subtopic_title = _prep_info.get("subtopic_title", _prep_info.get("subtopic", ""))
+        _level = _prep_info.get("level", 2)
+        _remaining_tests = max(0, 7 - len(_prep_info.get("tested_subtopics", [])))
+        _cycle_progress = f"День {_cycle_day}/30"
+
+        if _is_test_day and not _tested:
+            # Сценарий 3a.1: Утренний тест
+            greeting = (
+                f'🌅 Доброе утро! Сегодня **тестовый день** ({_cycle_progress}).\n\n'
+                f'Тема дня: **«{_subtopic_title}»**.\n'
+                f'Пройди тест из 5 задач — это займёт 5–10 минут. '
+                f'По результатам я подберу задачи дня под твой уровень.\n\n'
+                f'Осталось пройти тестов: **{_remaining_tests}**. 💪'
+            )
+            return jsonify(
+                greeting=greeting,
+                scenario='prep_morning_test',
+                recommended_olympiad=None,
+                prep_info={
+                    'cycle_day': _cycle_day,
+                    'subtopic': _prep_info.get('subtopic'),
+                    'subtopic_title': _subtopic_title,
+                    'is_test_day': True,
+                    'tested': False,
+                    'remaining_tests': _remaining_tests,
+                    'level': _level,
+                },
+                cta_url='/coach',
+                cta_text='🧪 Начать тест',
+            )
+
+        elif _is_test_day and _tested:
+            # Сценарий 3a.2: Тест пройден, ждём задачи
+            greeting = (
+                f'✅ Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
+                f'Задачи дня уже готовятся под твой уровень (сложность {_level}/8). '
+                f'Они придут вечером — проверь уведомления!\n\n'
+                f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}**.'
+            )
+            return jsonify(
+                greeting=greeting,
+                scenario='prep_test_taken',
+                recommended_olympiad=None,
+                prep_info={
+                    'cycle_day': _cycle_day,
+                    'subtopic': _prep_info.get('subtopic'),
+                    'subtopic_title': _subtopic_title,
+                    'is_test_day': True,
+                    'tested': True,
+                    'remaining_tests': _remaining_tests,
+                    'level': _level,
+                },
+                cta_url='/daily-set',
+                cta_text='📚 Перейти к задачам дня' if _has_tasks else None,
+            )
+
+        elif not _is_test_day:
+            if _has_tasks:
+                # Сценарий 3a.3: Task-only день, задачи уже готовы
+                greeting = (
+                    f'📚 Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
+                    f'Тема: **«{_subtopic_title}»**.\n'
+                    f'Задачи дня уже готовы — продолжай тренироваться! 💪\n\n'
+                    f'Уровень сложности: {_level}/8.'
+                )
+                return jsonify(
+                    greeting=greeting,
+                    scenario='prep_tasks_ready',
+                    recommended_olympiad=None,
+                    prep_info={
+                        'cycle_day': _cycle_day,
+                        'subtopic': _prep_info.get('subtopic'),
+                        'subtopic_title': _subtopic_title,
+                        'is_test_day': False,
+                        'has_tasks': True,
+                        'level': _level,
+                    },
+                    cta_url='/daily-set',
+                    cta_text='📚 Перейти к задачам дня',
+                )
+            else:
+                # Сценарий 3a.4: Task-only день, задачи ещё не готовы
+                greeting = (
+                    f'🌅 Доброе утро! Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
+                    f'Тема недели: **«{_subtopic_title}»**.\n'
+                    f'Задачи придут вечером — настроим их под твой уровень ({_level}/8).\n\n'
+                    f'А пока можешь повторить теорию или решить несколько задач для разминки! 📖'
+                )
+                return jsonify(
+                    greeting=greeting,
+                    scenario='prep_task_day',
+                    recommended_olympiad=None,
+                    prep_info={
+                        'cycle_day': _cycle_day,
+                        'subtopic': _prep_info.get('subtopic'),
+                        'subtopic_title': _subtopic_title,
+                        'is_test_day': False,
+                        'has_tasks': False,
+                        'level': _level,
+                    },
+                    cta_url=None,
+                    cta_text='📖 Повторить теорию',
+                )
+
+    # ── Сценарий 3b: daily_test — предложить тест по приоритетной подтеме ─
     # Нет квеста сегодня, но профиль есть
     priority_subtopic = None
     if ctx.get('subtopics_to_test'):
@@ -1029,22 +1213,118 @@ def coach_greeting():
         cta_text='🧪 Пройти тест по теме',
     )
 
+# ─── Онбординг: inline-тест в чате ────────────────────────────────────────
+
+
+@prep_bp.route('/coach/test/start', methods=['POST'])
+@login_required
+def coach_test_start():
+    """Начать онбординг-диагностику прямо в чате.
+
+    Сохраняет список задач в сессии, возвращает первую задачу
+    как сообщение бота. Последующие ответы обрабатываются через
+    coach_chat (тест-режим).
+    """
+    # ── Guard: test already in progress ──────────────────────────────────
+    existing = session.get('coach_test')
+    if existing and existing.get('active'):
+        task_ids = existing.get('task_ids', [])
+        current_index = existing.get('current_index', 0)
+        if current_index < len(task_ids):
+            # Return current task instead of restarting
+            current_task_id = task_ids[current_index]
+            task = AdaptiveTask.query.get(current_task_id)
+            if task:
+                from services.math_text_normalizer import normalize_math_text
+                task_text = normalize_math_text(task.task_text) if task.task_text else task.task_text
+                total = len(task_ids)
+                num = current_index + 1
+                reply = (
+                    f"🧪 <strong>Диагностика уже запущена!</strong>\n\n"
+                    f"<hr>\n"
+                    f"<strong>Задача {num} из {total}:</strong><br>"
+                    f"{task_text}\n\n"
+                    f"<hr>\n"
+                    f"✏️ <em>Запиши свой ответ.</em>"
+                )
+                return jsonify(reply=reply)
+        # All tasks answered but not submitted yet
+        return jsonify(
+            reply='📊 Ты уже ответил на все вопросы! Напиши свой ответ на последний, чтобы завершить тест.'
+        ), 400
+
+    profile = _curator_profile()
+    measured_count = profile.get('measured_topics_count', 0) if profile else 0
+    if measured_count > 0:
+        return jsonify(reply='Диагностика уже пройдена!'), 400
+
+    grade = _get_user_grade()
+    if not grade:
+        return jsonify(reply='Сначала выберите класс в профиле.'), 400
+
+    tasks = get_onboarding_tasks(grade, limit=21)
+    if not tasks:
+        return jsonify(reply='😅 Диагностические задачи временно недоступны. Попробуй позже.'), 503
+
+    task_ids = [t['id'] for t in tasks]
+
+    # Store minimal test state in session (only IDs, not full task text)
+    session['coach_test'] = {
+        'active': True,
+        'task_ids': task_ids,
+        'current_index': 0,
+        'answers': {},
+        'awaiting_difficulty_for': None,
+        'difficulty_ratings': {},
+    }
+
+    # Build reply with first task
+    first_task = tasks[0]
+    total = len(tasks)
+    reply = (
+        f"🧪 <strong>Диагностика начата!</strong> Всего {total} задач.\n\n"
+        f"<hr>\n"
+        f"<strong>Задача 1 из {total}:</strong><br>"
+        f"{first_task['task_text']}\n\n"
+        f"<hr>\n"
+        f"✏️ <em>Запиши свой ответ.</em>"
+    )
+
+    # Save bot message to history
+    try:
+        db.session.add(ChatMessage(
+            user_id=current_user.id,
+            agent_type='coach',
+            role='assistant',
+            content=reply,
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return jsonify(reply=reply)
+
 
 # ─── Онбординг: сохранить результаты (C4) ─────────────────────────────────
+
 
 @prep_bp.route('/coach/onboarding/submit', methods=['POST'])
 @login_required
 def coach_onboarding_submit():
     """Сохранить результаты онбординг-теста (первые задачи пользователя).
 
-    Ожидает JSON: {'results': {task_id: score, ...}}
+    Ожидает JSON: {'results': {task_id: score, ...}, 'solutions': {task_id: solution_text, ...}}
     где score = 0 (неверно) или 1 (верно) или 2 (частично).
+
+    Если переданы solutions — использует AI-проверку через _evaluate_solution
+    для каждого ответа, вместо простого счёта.
 
     Создаёт AdaptiveTestResult для каждой темы, пересчитывает профиль.
     Возвращает профиль + слабые темы + рекомендуемую олимпиаду.
     """
     data = request.get_json(silent=True) or {}
     results = data.get('results')
+    solutions = data.get('solutions') or {}
     if not results or not isinstance(results, dict):
         return jsonify(error='Передайте results: {task_id: score, ...}'), 400
 
@@ -1056,25 +1336,35 @@ def coach_onboarding_submit():
         # Группируем результаты по topic
         topic_results = {}
         task_ids = [int(k) for k in results.keys()]
-        tasks = {t.id: t for t in AdaptiveTask.query.filter(AdaptiveTask.id.in_(task_ids)).all()}
+        tasks_map = {t.id: t for t in AdaptiveTask.query.filter(AdaptiveTask.id.in_(task_ids)).all()}
+
+        # Если есть решения — используем AI-проверку
+        use_ai_check = bool(solutions)
 
         for task_id_str, score in results.items():
             try:
                 task_id = int(task_id_str)
-                task = tasks.get(task_id)
+                task = tasks_map.get(task_id)
                 if not task:
                     continue
                 topic = task.topic or 'unknown'
                 if topic not in topic_results:
                     topic_results[topic] = {'correct': 0, 'total': 0, 'final_level': 0}
                 topic_results[topic]['total'] += 1
-                try:
-                    score_val = int(score)
-                except (ValueError, TypeError):
-                    score_val = 0
+
+                if use_ai_check and task_id_str in solutions:
+                    # AI-проверка решения
+                    user_solution = solutions.get(task_id_str, '')
+                    is_correct, feedback = _evaluate_solution(task, '', user_solution)
+                    score_val = 2 if is_correct else (1 if feedback.get('score') == 1 else 0)
+                else:
+                    try:
+                        score_val = int(score)
+                    except (ValueError, TypeError):
+                        score_val = 0
+
                 if score_val >= 1:
                     topic_results[topic]['correct'] += 1
-                # final_level = max(1, min(8, int(score_val * 2)))
                 topic_results[topic]['final_level'] = max(1, min(8, int(
                     topic_results[topic]['correct'] / max(1, topic_results[topic]['total']) * 8
                 )))
@@ -1103,6 +1393,10 @@ def coach_onboarding_submit():
         weak_keys = ctx['weak_keys']
         weak_names = [ctx['topic_names'].get(k, k) for k in weak_keys]
 
+        # Определяем общий уровень (средний по всем темам)
+        all_levels = [tr['final_level'] for tr in topic_results.values()]
+        overall_level = round(sum(all_levels) / max(len(all_levels), 1))
+
         # Рекомендуем олимпиаду
         recommended = None
         try:
@@ -1123,6 +1417,8 @@ def coach_onboarding_submit():
             measured_count=profile.get('measured_topics_count', 0),
             weak_topics=weak_names,
             recommended_olympiad=recommended,
+            overall_level=overall_level,
+            topic_results={t: tr['final_level'] for t, tr in topic_results.items()},
         )
     except Exception:
         db.session.rollback()
@@ -1335,7 +1631,183 @@ def coach_day_complete():
         return jsonify(error='Ошибка при завершении дня'), 500
 
 
+# ─── Coach chat history ────────────────────────────────────────────────────
+@prep_bp.route('/coach/history')
+@login_required
+def coach_history():
+    """Вернуть историю чата с куратором (последние 50 сообщений)."""
+    messages = (
+        ChatMessage.query
+        .filter_by(user_id=current_user.id, agent_type='coach')
+        .order_by(ChatMessage.timestamp.asc())
+        .limit(50)
+        .all()
+    )
+    return jsonify(messages=[m.to_dict() for m in messages])
+
+
+@prep_bp.route('/coach/history/delete', methods=['POST'])
+@login_required
+def coach_history_delete():
+    """Удалить всю историю чата с куратором для текущего пользователя."""
+    try:
+        ChatMessage.query.filter_by(
+            user_id=current_user.id,
+            agent_type='coach'
+        ).delete()
+        db.session.commit()
+        # Также сбрасываем активную диагностику в сессии
+        session.pop('coach_test', None)
+        return jsonify(status='ok')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Failed to delete coach chat history: {e}")
+        return jsonify(status='error', error=str(e)), 500
+
+
+# ─── Helpers: chat persistence and onboarding submission ─────────────────
+
+def _save_chat_message(user_id, role, content):
+    """Save a chat message to the ChatMessage table for the coach agent."""
+    try:
+        db.session.add(ChatMessage(
+            user_id=user_id,
+            agent_type='coach',
+            role=role,
+            content=content,
+        ))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Failed to save coach chat message: {e}")
+
+
+def _submit_onboarding_results(solutions_dict, difficulty_ratings=None):
+    """Submit onboarding test results from inline chat test mode.
+
+    Builds {results: {task_id: 1, ...}, solutions: {...}} from the solutions
+    dict, evaluates each solution via AI, creates AdaptiveTestResult rows,
+    rebuilds the profile, and returns a formatted chat bot message with results.
+
+    If difficulty_ratings dict {task_id: 1-8} is provided, includes it in the
+    summary.
+    """
+    if difficulty_ratings is None:
+        difficulty_ratings = {}
+    # Build results dict — all 1s; AI will evaluate via solutions
+    results = {tid: 1 for tid in solutions_dict}
+
+    grade = _get_user_grade()
+    if not grade:
+        reply = '⚠️ Сначала выберите класс в профиле.'
+        _save_chat_message(current_user.id, 'assistant', reply)
+        return jsonify(reply=reply)
+
+    try:
+        # Group results by topic
+        topic_results = {}
+        task_ids = [int(k) for k in results.keys()]
+        tasks_map = {t.id: t for t in AdaptiveTask.query.filter(AdaptiveTask.id.in_(task_ids)).all()}
+
+        for task_id_str in results:
+            try:
+                task_id = int(task_id_str)
+                task = tasks_map.get(task_id)
+                if not task:
+                    continue
+                topic = task.topic or 'unknown'
+                if topic not in topic_results:
+                    topic_results[topic] = {'correct': 0, 'total': 0, 'final_level': 0}
+                topic_results[topic]['total'] += 1
+
+                # Use AI to evaluate solution
+                user_solution = solutions_dict.get(task_id_str, '')
+                try:
+                    is_correct, feedback = _evaluate_solution(task, '', user_solution)
+                    score_val = 2 if is_correct else (1 if feedback.get('score') == 1 else 0)
+                except Exception:
+                    score_val = 1  # fallback: count as attempted
+
+                if score_val >= 1:
+                    topic_results[topic]['correct'] += 1
+                topic_results[topic]['final_level'] = max(1, min(8, int(
+                    topic_results[topic]['correct'] / max(1, topic_results[topic]['total']) * 8
+                )))
+            except (ValueError, TypeError):
+                continue
+
+        # Save results
+        now = datetime.utcnow()
+        for topic, tr in topic_results.items():
+            db.session.add(AdaptiveTestResult(
+                user_id=current_user.id,
+                topic=topic,
+                class_level=grade,
+                final_level=tr['final_level'],
+                tasks_correct=tr['correct'],
+                tasks_total=tr['total'],
+                started_at=now,
+                completed_at=now,
+            ))
+        db.session.commit()
+
+        # Rebuild profile
+        profile = build_profile(current_user.id)
+        ctx = _build_subtopic_ctx(profile)
+        weak_names = [ctx['topic_names'].get(k, k) for k in ctx['weak_keys']]
+
+        all_levels = [tr['final_level'] for tr in topic_results.values()]
+        overall_level = round(sum(all_levels) / max(len(all_levels), 1))
+
+        # Recommend olympiad
+        recommended = None
+        try:
+            recommended_slugs = recommend_olympiads_for(
+                grade, [t.get('topic_key') or t.get('topic', '')
+                        for t in (profile.get('weak_topics') or [])]
+            )
+            if recommended_slugs:
+                olymp = OlympiadPrep.query.filter_by(
+                    slug=recommended_slugs[0], is_active=True
+                ).first()
+                if olymp:
+                    recommended = {'slug': olymp.slug, 'name': olymp.name, 'short_name': olymp.short_name}
+        except Exception:
+            pass
+
+        # Format response as chat bot message
+        level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
+                        4: '🟠 Продвинутый', 5: '🔴 Высокий', 6: '💎 Эксперт',
+                        7: '👑 Мастер', 8: '🏆 Легенда'}
+        level_label = level_labels.get(overall_level, '🟡 Средний')
+
+        reply = (
+            f"🎉 <strong>Диагностика завершена!</strong>\n\n"
+            f"📊 <strong>Твой общий уровень:</strong> {level_label} (уровень {overall_level}/8)\n"
+            f"📐 Измерено <strong>{profile.get('measured_topics_count', 0)}</strong> тем.\n"
+        )
+        if weak_names:
+            reply += f"⚠️ <strong>Слабые темы:</strong> {', '.join(weak_names)}.\n"
+        reply += "\n🔥 Рекомендация: задачи дня будут подобраны под твой уровень."
+
+        if recommended:
+            reply += f"\n\n📋 <strong>Рекомендуемая олимпиада:</strong> {recommended['name']}"
+
+        reply += "\n\n📝 <em>Оцени сложность каждой задачи от 1 до 8 в следующем сообщении.</em>"
+
+        _save_chat_message(current_user.id, 'assistant', reply)
+        return jsonify(reply=reply)
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('_submit_onboarding_results failed')
+        reply = '❌ Произошла ошибка при проверке результатов. Попробуй начать тест заново.'
+        _save_chat_message(current_user.id, 'assistant', reply)
+        return jsonify(reply=reply)
+
+
 # ─── Чат с ИИ-куратором (C5 + Part B integration) ────────────────────────
+
 
 @prep_bp.route('/coach/chat', methods=['POST'])
 @login_required
@@ -1344,11 +1816,145 @@ def coach_chat():
 
     В system_prompt добавляет блок ДОСТУПНЫЕ ОЛИМПИАДЫ И ТРЕБОВАНИЯ
     из build_olympiads_context() (Part B).
+
+    Если в сессии активен онбординг-тест (coach_test), сообщение
+    обрабатывается как ответ на текущую задачу диагностики.
     """
     data = request.get_json(silent=True) or {}
     message = (data.get('message') or '').strip()
     if not message:
         return jsonify(reply='Напиши вопрос, и я подскажу, что подтянуть.'), 400
+
+    # ─── Onboarding test in progress ─────────────────────────────────────
+    test_state = session.get('coach_test')
+    if test_state and test_state.get('active'):
+        total = len(test_state['task_ids'])
+        current_index = test_state['current_index']
+
+        # ── Case 1: Awaiting difficulty rating for previous answer ─────
+        awaiting_task_id = test_state.get('awaiting_difficulty_for')
+        if awaiting_task_id is not None:
+            difficulty_str = message.strip()
+            try:
+                difficulty = int(difficulty_str)
+                if 1 <= difficulty <= 8:
+                    # Save difficulty rating
+                    test_state.setdefault('difficulty_ratings', {})[str(awaiting_task_id)] = difficulty
+                    test_state['awaiting_difficulty_for'] = None
+                    session['coach_test'] = test_state
+
+                    # All tasks answered + difficulty rated → submit
+                    if current_index >= total:
+                        session.pop('coach_test', None)
+                        return _submit_onboarding_results(
+                            test_state['answers'],
+                            difficulty_ratings=test_state.get('difficulty_ratings', {})
+                        )
+
+                    # Show next task
+                    next_task_id = test_state['task_ids'][current_index]
+                    task = AdaptiveTask.query.get(next_task_id)
+                    if task:
+                        from services.math_text_normalizer import normalize_math_text
+                        task_text = normalize_math_text(task.task_text) if task.task_text else task.task_text
+                        num = current_index + 1
+                        reply = (
+                            f"✅ Спасибо! Переходим к следующей задаче.\n\n"
+                            f"<hr>\n"
+                            f"<strong>Задача {num} из {total}:</strong><br>"
+                            f"{task_text}\n\n"
+                            f"<hr>\n"
+                            f"✏️ <em>Запиши свой ответ.</em>"
+                        )
+                    else:
+                        reply = "⚠️ Ошибка загрузки задачи. Попробуй начать тест заново."
+
+                    _save_chat_message(current_user.id, 'assistant', reply)
+                    return jsonify(reply=reply)
+            except (ValueError, TypeError):
+                pass
+            # Invalid difficulty — ask again
+            reply = "📝 Пожалуйста, оцените сложность задачи по шкале от 1 до 8 — именно для вас, с учётом ваших текущих знаний (просто напишите число)."
+            _save_chat_message(current_user.id, 'assistant', reply)
+            return jsonify(reply=reply)
+
+        # ── Case 2: Student answered a task ────────────────────────────
+        if current_index < total:
+            task_id = test_state['task_ids'][current_index]
+            # Save user answer
+            test_state['answers'][str(task_id)] = message
+            test_state['current_index'] = current_index + 1
+            session['coach_test'] = test_state
+
+            # Save user message to history
+            _save_chat_message(current_user.id, 'user', message)
+
+            # Get the task for evaluation
+            task = AdaptiveTask.query.get(task_id)
+            if not task:
+                reply = "⚠️ Ошибка загрузки задачи. Попробуй начать тест заново."
+                _save_chat_message(current_user.id, 'assistant', reply)
+                return jsonify(reply=reply)
+
+            # Evaluate answer via AI
+            try:
+                is_correct, feedback = _evaluate_solution(task, '', message)
+                verdict = feedback.get('verdict', 'unknown')
+                ai_msg = feedback.get('message', '')
+                correct_answer = feedback.get('correct_answer', '') or (task.correct_answer or '')
+                reference_solution = task.solution or ''
+                # Use AI-generated solution as fallback when DB has none
+                ai_solution = feedback.get('solution', '') or ''
+                display_solution = reference_solution or ai_solution
+
+                # Build evaluation reply
+                if verdict == 'correct':
+                    eval_part = f"✅ <strong>Верно!</strong> {ai_msg}"
+                elif verdict == 'partial':
+                    eval_part = f"⚠️ <strong>Частично верно.</strong> {ai_msg}"
+                else:
+                    eval_part = f"❌ <strong>Неверно.</strong> {ai_msg}"
+
+                reply = f"{eval_part}\n\n"
+
+                # Show correct answer
+                if correct_answer:
+                    reply += f"📌 <strong>Правильный ответ:</strong> ${correct_answer}$\n\n"
+
+                # Show full solution (DB reference or AI-generated)
+                if display_solution:
+                    reply += f"📝 <strong>Полное решение:</strong>\n{display_solution}\n\n"
+
+                # Ask for difficulty rating
+                reply += (
+                    f"<hr>\n"
+                    f"📝 <em>Оцени сложность этой задачи от 1 до 8.</em>"
+                )
+
+                # Set awaiting difficulty flag
+                test_state['awaiting_difficulty_for'] = task_id
+                session['coach_test'] = test_state
+
+            except Exception as e:
+                current_app.logger.error(f"coach_chat evaluation error: {e}")
+                # Fallback: skip AI evaluation, still ask difficulty
+                reference_solution = task.solution or ''
+                correct_answer = task.correct_answer or ''
+
+                reply = "✅ Ответ принят!\n\n"
+                if correct_answer:
+                    reply += f"📌 <strong>Правильный ответ:</strong> ${correct_answer}$\n\n"
+                if reference_solution:
+                    reply += f"📝 <strong>Полное решение:</strong>\n{reference_solution}\n\n"
+                reply += (
+                    f"<hr>\n"
+                    f"📝 <em>Оцени сложность этой задачи от 1 до 8.</em>"
+                )
+                test_state['awaiting_difficulty_for'] = task_id
+                session['coach_test'] = test_state
+
+            _save_chat_message(current_user.id, 'assistant', reply)
+            return jsonify(reply=reply)
 
     profile = _curator_profile()
     ctx = _build_subtopic_ctx(profile)
@@ -1420,5 +2026,9 @@ def coach_chat():
         current_app.logger.error(f"DeepSeek coach_chat error: {e}")
         fallback = weak_names_str if weak_names_str else 'подтянуть пробелы в математике'
         reply = f"Сейчас не могу связаться с ИИ-куратором. Стоит подтянуть: {fallback}."
+
+    # Save user message and bot reply to chat history
+    _save_chat_message(current_user.id, 'user', message)
+    _save_chat_message(current_user.id, 'assistant', reply)
 
     return jsonify(reply=reply)

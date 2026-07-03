@@ -429,6 +429,36 @@ def _register_handlers():
                 "value": value,
             })
 
+    @socketio.on("board-select", namespace=WS_NAMESPACE)
+    def on_board_select(data):
+        """Хост выбирает доску — рассылаем всем участникам."""
+        sid = request.sid
+        room_id = _find_room_by_sid(sid)
+        if not room_id:
+            return
+        room = get_room(room_id)
+        if room is None:
+            return
+        actor = room.get_participant_by_sid(sid)
+        if actor is None:
+            return
+        # Только host/co-host могут выбрать доску
+        if actor.role not in (ROLE_HOST, ROLE_CO_HOST):
+            return
+        board_id = data.get("board_id", "").strip()
+        board_name = data.get("board_name", "").strip() or board_id
+        if not board_id:
+            return
+        # Сохраняем board_id во флагах комнаты
+        set_flag(room_id, sid, "board_id", board_id)
+        set_flag(room_id, sid, "board_name", board_name)
+        # Рассылаем всем (включая отправителя, чтобы обновился UI)
+        _broadcast(room_id, "board-selected", {
+            "board_id": board_id,
+            "board_name": board_name,
+            "selected_by": actor.peer_id,
+        })
+
     @socketio.on("get-room-state", namespace=WS_NAMESPACE)
     def on_get_room_state():
         sid = request.sid

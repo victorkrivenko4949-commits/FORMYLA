@@ -221,7 +221,7 @@ function renderTaskGrid(items) {
 
         var topicBadge = document.createElement('span');
         topicBadge.className = 'dt-topic-badge';
-        topicBadge.textContent = item.topic || '';
+        topicBadge.textContent = item.subtopic || '';
 
         var difficulty = document.createElement('span');
         difficulty.className = 'dt-difficulty';
@@ -658,7 +658,7 @@ function openTaskModal(item, index) {
     if (!overlay || !body) return;
 
     // Set title
-    if (title) title.textContent = 'Задача ' + (index + 1) + ' · ' + (item.topic || '');
+    if (title) title.textContent = 'Задача ' + (index + 1) + ' · ' + (item.subtopic || '');
     if (difficulty) difficulty.textContent = renderDifficultyStars(item.difficulty);
 
     // Show overlay — remove dt-hidden so dt-open can take effect
@@ -669,7 +669,7 @@ function openTaskModal(item, index) {
 
     // Task info chips
     html += '<div class="dt-task-info">';
-    html += '<span class="dt-info-chip">📚 <strong>' + escapeHtml(item.topic || '') + '</strong></span>';
+    html += '<span class="dt-info-chip">📚 <strong>' + escapeHtml(item.subtopic || '') + '</strong></span>';
     // Шкала difficulty — 8-балльная (см. renderDifficultyStars() и validators.py).
     html += '<span class="dt-info-chip">📊 Сложность: <strong>' + (item.difficulty || '?') + '/8</strong></span>';
     html += '</div>';
@@ -803,7 +803,7 @@ function submitAnswer(itemId) {
         resultHtml += '<div class="dt-result-icon">' + resultIcon + '</div>';
         resultHtml += '<div class="dt-result-text">' + resultText + '</div>';
         if (result.correct_answer) {
-            resultHtml += '<div class="dt-result-correct-answer">Правильный ответ: ' + escapeHtml(result.correct_answer) + '</div>';
+            resultHtml += '<div class="dt-result-correct-answer">Правильный ответ: ' + escapeHtmlPreserveLatex(result.correct_answer) + '</div>';
         }
         if (!result.is_correct && result.correct_answer) {
             resultHtml += buildAnswerFormatHint(result.correct_answer);
@@ -1049,7 +1049,7 @@ function buildAnswerFormatHint(correctAnswer) {
     } else if (/^[A-Za-zА-Яа-я]\s*=\s*\S+/.test(raw)) {
         rules.push('Запишите ответ в виде <code>' + raw.charAt(0) + ' = …</code> (с переменной и знаком равенства)');
     } else if (/^[^=]+,[^=]+/.test(raw) && raw.indexOf('=') === -1) {
-        rules.push('Перечислите все значения через запятую, например: <code>' + escapeHtml(raw) + '</code>');
+        rules.push('Перечислите все значения через запятую, например: <code>' + escapeHtmlPreserveLatex(raw) + '</code>');
     } else if (/^[\[\(]\s*(?:-?\d+(?:[.,]\d+)?|[-+]?\\infty|[-+]?∞)\s*[;,]\s*(?:-?\d+(?:[.,]\d+)?|[-+]?\\infty|[-+]?∞)\s*[\)\]]\s*$/.test(raw)) {
         // Только настоящий интервал: '(a;b)', '[a;b]', '(-∞;2]', '[1;5)' и т.п.
         // Перечисление [1, 2, 5] больше не триггерит эту ветку — оно уходит выше
@@ -1059,7 +1059,7 @@ function buildAnswerFormatHint(correctAnswer) {
         rules.push('Дробь записывайте через <code>/</code> (например <code>3/4</code>) или используйте <code>\\frac{a}{b}</code>');
         rules.push('Сократите дробь, если это возможно');
     } else if (/^-?\d+[\.,]\d+$/.test(raw)) {
-        rules.push('Десятичную дробь пишите через запятую или точку, например: <code>' + escapeHtml(raw) + '</code>');
+        rules.push('Десятичную дробь пишите через запятую или точку, например: <code>' + escapeHtmlPreserveLatex(raw) + '</code>');
     } else if (/^-?\d+$/.test(raw)) {
         rules.push('Ответ — целое число. Запишите только число, без единиц измерения и пояснений');
     }

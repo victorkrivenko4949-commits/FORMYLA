@@ -6,7 +6,8 @@
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "formyla_wb_state_v1";
+  var WB_BOARD_ID = (window.WB_BOARD_ID || "default");
+  const STORAGE_KEY = "formyla_wb_board_" + WB_BOARD_ID;
   const MAX_HISTORY = 50;
 
   const canvasEl = document.getElementById("wbCanvas");

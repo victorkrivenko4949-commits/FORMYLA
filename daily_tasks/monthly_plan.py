@@ -64,22 +64,31 @@ def _ordered_subtopics_for_grade(grade: int) -> List[str]:
     return ordered
 
 
-def build_monthly_plan(grade: int, anchor: Optional[date] = None) -> Dict[str, Any]:
+def build_monthly_plan(grade: int, anchor: Optional[date] = None, subtopics: Optional[List[str]] = None) -> Dict[str, Any]:
     """Построить помесячный план: подтемы класса нарезаются на месяцы по 7.
 
+    Если передан ``subtopics`` — используется именно этот список подтем (ровно один месяц).
+    Иначе подтемы берутся из _ordered_subtopics_for_grade(grade) и нарезаются на месяцы.
     Последний месяц может быть неполным (< 7 подтем), это допустимо.
     Возвращает dict, готовый для сохранения в CuratorState.prep_plan.
     """
     if anchor is None:
         anchor = date.today()
-    flat = _ordered_subtopics_for_grade(grade)
-    months: List[Dict[str, Any]] = []
-    for i in range(0, len(flat), SUBTOPICS_PER_MONTH):
-        chunk = flat[i:i + SUBTOPICS_PER_MONTH]
-        months.append({
-            "index": (i // SUBTOPICS_PER_MONTH) + 1,
-            "subtopics": chunk,
-        })
+    if subtopics is not None:
+        # Интеллектуальный подбор: куратор выбрал 7 слабых подтем → один месяц
+        months: List[Dict[str, Any]] = [{
+            "index": 1,
+            "subtopics": subtopics,
+        }]
+    else:
+        flat = _ordered_subtopics_for_grade(grade)
+        months = []
+        for i in range(0, len(flat), SUBTOPICS_PER_MONTH):
+            chunk = flat[i:i + SUBTOPICS_PER_MONTH]
+            months.append({
+                "index": (i // SUBTOPICS_PER_MONTH) + 1,
+                "subtopics": chunk,
+            })
     return {
         "version": PLAN_VERSION,
         "anchor_date": anchor.isoformat(),

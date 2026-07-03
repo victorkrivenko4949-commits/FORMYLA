@@ -585,6 +585,9 @@ body footer{ display:none !important; }
 }
 </style>
 
+<script>
+    window.WB_BOARD_ID = "{{ board_id | e }}";
+</script>
 <script src="{{ url_for('static', filename='js/whiteboard.js') }}?v={{ asset_version }}"></script>
 <script src="{{ url_for('static', filename='js/wb_call.js') }}?v={{ asset_version }}"></script>
 <script src="{{ url_for('static', filename='js/wb_meet.js') }}?v={{ asset_version }}"></script>

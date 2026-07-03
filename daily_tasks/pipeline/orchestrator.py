@@ -32,7 +32,7 @@ LEVEL_TOLERANCE = 1
 MIN_VALID_TASKS = 7
 """Минимальное количество валидных задач для статуса ready."""
 
-FLAGGED_THRESHOLD = 1
+FLAGGED_THRESHOLD = 3
 """При >= этого числа is_flagged задач запускается rescue-проход."""
 GEMINI_PLAN_MAX_ATTEMPTS = 3
 
@@ -119,7 +119,7 @@ async def _rescue_pass(
         flagged_positions,
     )
     t0 = time.monotonic()
-    rescue_tasks = await generate_opus_tasks(flagged_specs)
+    rescue_tasks = await generate_opus_tasks(flagged_specs, force_model="deepseek/deepseek-chat-v3.1")
     rescue_steps.append(_make_step_log("rescue_opus_generate", t0))
     rescue_cost += rescue_steps[-1].cost_usd
 
@@ -262,7 +262,8 @@ async def run_daily_generation_pipeline(
         pending_specs = [s for s, _, _ in queue]
         pending_tasks = [t for _, t, _ in queue]
 
-        # GPT audit
+        # GPT re-audit
+        _safe_progress(progress_callback, "gpt_reaudit", min(60 + fix_iteration_count * 5, 79))
         t0 = time.monotonic()
         try:
             audit_entries = await audit_tasks(pending_specs, pending_tasks)
@@ -306,6 +307,7 @@ async def run_daily_generation_pipeline(
 
         # Параллельный Opus-fix для всех to_fix (до _FIX_PARALLEL_WORKERS одновременно)
         if to_fix:
+            _safe_progress(progress_callback, "opus_fix", min(60 + fix_iteration_count * 5 + 2, 79))
             sem = asyncio.Semaphore(_FIX_PARALLEL_WORKERS)
 
             async def _run_fix(spec, task, audit_entry, it):

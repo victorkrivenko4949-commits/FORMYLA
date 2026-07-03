@@ -34,6 +34,10 @@
         handRaised: false,
         connected: false,
         joinInProgress: false,
+        // Board sharing
+        boardId: null,
+        boardName: null,
+        boardSelectorOpen: false,
     };
 
     var _container = null;
@@ -283,6 +287,15 @@
                 }
                 break;
 
+            case "board-selected":
+                st.boardId = msg.board_id || null;
+                st.boardName = msg.board_name || null;
+                _log("board selected:", st.boardId, st.boardName);
+                // Показываем уведомление всем (кроме отправителя, если known)
+                _showToast("\u0414\u043E\u0441\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u043D\u0430: " + (st.boardName || st.boardId));
+                _updateToolbar();
+                break;
+
             case "room-state":
                 st.participants = {};
                 if (msg.participants) {
@@ -292,6 +305,11 @@
                     }
                 }
                 st.flags = msg.flags || {};
+                // Restore board state from flags
+                if (st.flags.board_id) {
+                    st.boardId = st.flags.board_id;
+                    st.boardName = st.flags.board_name || null;
+                }
                 _rebuildVideoGrid();
                 _updateParticipantPanel();
                 break;
@@ -534,6 +552,9 @@
                     ]),
                 ]),
                 _el("div", { className: "cf-toolbar-center" }, [
+                    _el("button", { className: "cf-tb-btn cf-tb-btn--board", id: "cf-tb-board", onClick: _toggleBoardSelector, title: "\u0414\u043E\u0441\u043A\u0430" }, [
+                        _el("span", { className: "cf-tb-icon" }, ["\uD83D\uDCDD"]),
+                    ]),
                     _el("button", { className: "cf-tb-btn cf-tb-btn--hand", id: "cf-tb-hand", onClick: _toggleHandRaise, title: "\u041F\u043E\u0434\u043D\u044F\u0442\u044C \u0440\u0443\u043A\u0443" }, [
                         _el("span", { className: "cf-tb-icon" }, ["\u270B"]),
                     ]),
@@ -573,6 +594,19 @@
                 _el("div", { className: "cf-chat-input-row" }, [
                     _el("input", { className: "cf-input cf-chat-input", id: "cf-chat-input", type: "text", placeholder: "\u041D\u0430\u043F\u0438\u0448\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435...", onKeydown: _onChatKeydown }),
                     _el("button", { className: "cf-btn cf-btn--small", onClick: _sendChat }, ["\u2192"]),
+                ]),
+            ]),
+            // Board selector panel (hidden by default, host only)
+            _el("div", { className: "cf-panel cf-panel--board", id: "cf-panel-board" }, [
+                _el("div", { className: "cf-panel-header" }, [
+                    _el("span", { className: "cf-panel-title" }, ["\u0414\u043E\u0441\u043A\u0430"]),
+                    _el("button", { className: "cf-icon-btn", onClick: _toggleBoardSelector }, ["\u2716"]),
+                ]),
+                _el("div", { className: "cf-panel-body", id: "cf-board-list" }, [
+                    _el("div", { className: "cf-board-create" }, [
+                        _el("input", { className: "cf-input cf-board-input", id: "cf-board-input", type: "text", placeholder: "\u041D\u043E\u0432\u0430\u044F \u0434\u043E\u0441\u043A\u0430..." }),
+                        _el("button", { className: "cf-btn cf-btn--small cf-btn--board-create", onClick: _createBoard }, ["\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C"]),
+                    ]),
                 ]),
             ]),
             // Reaction overlay
@@ -832,14 +866,50 @@
         _updateToolbar();
     }
 
+    // ── Board sharing ──────────────────────────────────────────────────
+
+    function _toggleBoardSelector() {
+        if (st.myRole === "host" || st.myRole === "co-host") {
+            // Хост/co-host: показать/скрыть выбор досок
+            var panel = $id("cf-panel-board");
+            var overlay = $id("cf-panels-overlay");
+            if (!panel) return;
+            var isOpen = panel.classList.contains("cf-panel--open");
+            _closePanels();
+            if (!isOpen) {
+                panel.classList.add("cf-panel--open");
+                if (overlay) overlay.style.display = "";
+                _updateBoardList();
+            }
+        } else {
+            // Участник: открыть выбранную доску
+            if (st.boardId) {
+                _openBoardPage();
+            } else {
+                _showToast("\u0414\u043E\u0441\u043A\u0430 \u0435\u0449\u0451 \u043D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u043E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0442\u043E\u0440\u043E\u043C");
+            }
+        }
+    }
+
+    function _openBoardPage() {
+        var boardId = st.boardId || "default";
+        var room = st.roomCode || "";
+        var url = "/whiteboard?board=" + encodeURIComponent(boardId) +
+                  "&room=" + encodeURIComponent(room) +
+                  "&conv=" + encodeURIComponent(st.roomCode || "");
+        window.open(url, "_blank");
+    }
+
     function _updateToolbar() {
         var micBtn = $id("cf-tb-mic");
         var camBtn = $id("cf-tb-cam");
         var handBtn = $id("cf-tb-hand");
+        var boardBtn = $id("cf-tb-board");
 
         if (micBtn) _toggleClass(micBtn, "cf-tb-btn--off", !st.micOn);
         if (camBtn) _toggleClass(camBtn, "cf-tb-btn--off", !st.camOn);
         if (handBtn) _toggleClass(handBtn, "cf-tb-btn--active", st.handRaised);
+        if (boardBtn) _toggleClass(boardBtn, "cf-tb-btn--active", !!st.boardId);
 
         var micIcon = $id("cf-tb-mic-icon");
         if (micIcon) micIcon.textContent = st.micOn ? "\uD83C\uDF99" : "\uD83C\uDF99\uFE0B";
@@ -852,6 +922,71 @@
             var count = Object.keys(st.participants).length + 1; // +1 for self
             countEl.textContent = count;
         }
+    }
+
+    // ── Board list management ────────────────────────────────────────────
+
+    function _getSavedBoards() {
+        try {
+            var raw = localStorage.getItem("formyla_wb_boards_v1");
+            if (raw) {
+                var parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+            }
+        } catch (e) {}
+        return [{ id: "default", name: "\u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F" }];
+    }
+
+    function _saveBoards(boards) {
+        try {
+            localStorage.setItem("formyla_wb_boards_v1", JSON.stringify(boards));
+        } catch (e) {}
+    }
+
+    function _updateBoardList() {
+        var list = $id("cf-board-list");
+        if (!list) return;
+        var createRow = list.querySelector(".cf-board-create");
+        while (list.children.length > 1) {
+            list.removeChild(list.lastChild);
+        }
+        var boards = _getSavedBoards();
+        for (var i = 0; i < boards.length; i++) {
+            var b = boards[i];
+            var isSelected = (b.id === st.boardId);
+            var item = _el("div", { className: "cf-board-item" + (isSelected ? " cf-board-item--selected" : "") }, [
+                _el("span", { className: "cf-board-item-name" }, [b.name || b.id]),
+                _el("span", { className: "cf-board-item-status" }, [isSelected ? "\u2713" : ""]),
+            ]);
+            if (!isSelected) {
+                item.style.cursor = "pointer";
+                item.onclick = (function (bid, bname) {
+                    return function () { _selectBoard(bid, bname); };
+                })(b.id, b.name);
+            }
+            list.appendChild(item);
+        }
+    }
+
+    function _selectBoard(boardId, boardName) {
+        _postToIframe({ type: "select-board", board_id: boardId, board_name: boardName });
+        _closePanels();
+    }
+
+    function _createBoard() {
+        var input = $id("cf-board-input");
+        if (!input) return;
+        var name = input.value.trim();
+        if (!name) {
+            _showToast("\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0434\u043E\u0441\u043A\u0438");
+            return;
+        }
+        var boardId = "board_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+        var boards = _getSavedBoards();
+        boards.push({ id: boardId, name: name });
+        _saveBoards(boards);
+        input.value = "";
+        _selectBoard(boardId, name);
     }
 
     function _updateLocalTileStatus() {
@@ -1185,6 +1320,9 @@
         st.micOn = true;
         st.camOn = true;
         st.roomCode = null;
+        st.boardId = null;
+        st.boardName = null;
+        st.boardSelectorOpen = false;
 
         if (_roomEl) {
             _roomEl.style.display = "none";
@@ -1304,6 +1442,7 @@
             participants: {}, flags: {}, micOn: true, camOn: true,
             screenSharing: false, handRaised: false, connected: false,
             joinInProgress: false,
+            boardId: null, boardName: null, boardSelectorOpen: false,
         };
         _log("conference UI destroyed");
     }

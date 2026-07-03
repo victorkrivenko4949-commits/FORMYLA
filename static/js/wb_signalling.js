@@ -154,6 +154,7 @@
             "signal", "mute-changed", "kicked", "role-changed",
             "chat-msg", "reaction", "hand-raise", "screen-share",
             "flag-changed", "room-state", "room-ended", "host-changed",
+            "board-selected",
         ];
         for (var i = 0; i < serverEvents.length; i++) {
             socket.on(serverEvents[i], _onServerEvent(serverEvents[i]));
@@ -282,6 +283,15 @@
         setScreenShare: function (on) {
             if (!socket || !socket.connected) return;
             socket.emit("screen-share", { action: on ? "start" : "stop" });
+        },
+
+        // Выбрать доску для всех участников (только host/co-host)
+        selectBoard: function (boardId, boardName) {
+            if (!socket || !socket.connected) return;
+            socket.emit("board-select", {
+                board_id: boardId,
+                board_name: boardName || boardId,
+            });
         },
 
         // Установить флаг комнаты (lock, waiting_room, etc)

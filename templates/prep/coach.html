@@ -24,9 +24,266 @@
 .chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
 .chat-msg.user { background: #6366f1; color: #fff; margin-left: auto; }
 .chat-msg.bot { background: rgba(255,255,255,0.08); color: #e5e7eb; }
+/* Prevent KaTeX from breaking characters inside chat bubbles */
+.chat-msg .katex { white-space: nowrap; overflow-x: auto; max-width: 100%; display: inline-block; vertical-align: middle; }
 .chat-input-row { display: flex; gap: 8px; }
 .chat-input-row input { flex: 1; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 14px; background: rgba(0,0,0,0.25); color: #fff; }
 .chat-input-row button { padding: 10px 18px; border: 0; border-radius: 10px; background: #6366f1; color: #fff; font-weight: 600; cursor: pointer; }
+
+/* ---- Клавиатура ввода (единая, как в адаптивном тесте) ---- */
+.unified-kb-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 4px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.unified-kb-toggle:hover { opacity: 0.9; }
+.unified-kb-toggle:active { transform: scale(0.96); }
+.unified-kb-toggle.active {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+.unified-keyboard {
+    display: none;
+    margin-top: 16px;
+    margin-bottom: 10px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+    z-index: 100;
+}
+.unified-keyboard.open { display: block; }
+.kb-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+}
+.kb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: rgba(30, 41, 59, 0.8);
+    border-bottom: 1px solid var(--border-mid);
+}
+.kb-field-indicator {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.kb-field-indicator .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-1);
+    animation: pulse-dot 1.5s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+.kb-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.kb-close-btn:hover { color: #fff; }
+.kb-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-mid);
+}
+.kb-tab {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    position: relative;
+}
+.kb-tab:hover { color: var(--text-main); background: rgba(59,130,246,0.08); }
+.kb-tab.active {
+    color: var(--accent-1);
+    background: rgba(59,130,246,0.12);
+}
+.kb-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--accent-1);
+    border-radius: 1px;
+}
+.kb-layout {
+    display: none;
+    padding: 10px 8px;
+}
+.kb-layout.active { display: block; }
+.kb-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+.kb-row:last-child { margin-bottom: 0; }
+.kb-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 42px;
+    padding: 0 8px;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(100, 116, 139, 0.25);
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.08s, border-color 0.12s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    flex-shrink: 0;
+}
+.kb-key:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+.kb-key:active {
+    transform: scale(0.92);
+    background: rgba(59, 130, 246, 0.3);
+}
+.kb-key.math-symbol {
+    font-size: 18px;
+    min-width: 42px;
+}
+.kb-key.math-greek {
+    font-size: 17px;
+    min-width: 40px;
+    font-style: italic;
+}
+.kb-key.math-command {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 52px;
+    padding: 0 10px;
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+.kb-key.math-command:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+.kb-key.wide { min-width: 60px; }
+.kb-key.space {
+    min-width: 140px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.kb-key.action {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.2);
+    min-width: 50px;
+    font-size: 13px;
+}
+.kb-key.action:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+.kb-key.enter {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-color: transparent;
+    color: #fff;
+    font-weight: 700;
+    min-width: 60px;
+}
+.kb-key.enter:hover { opacity: 0.9; }
+@media (max-width: 640px) {
+    .unified-keyboard {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 55vh;
+        overflow-y: auto;
+        z-index: 200;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    }
+    .unified-keyboard.open + .kb-backdrop,
+    .unified-keyboard.open ~ .kb-backdrop { display: block; }
+    .kb-key {
+        height: 38px;
+        min-width: 32px;
+        font-size: 14px;
+    }
+    .kb-key.math-symbol { font-size: 16px; min-width: 36px; }
+    .kb-key.math-greek { font-size: 15px; min-width: 36px; }
+    .kb-key.math-command { font-size: 11px; min-width: 44px; }
+    .kb-key.wide { min-width: 48px; }
+    .kb-key.space { min-width: 100px; }
+    .kb-key.enter { min-width: 50px; }
+    .kb-row { gap: 3px; margin-bottom: 4px; }
+    .kb-layout { padding: 8px 4px; }
+    .kb-tab { font-size: 12px; padding: 8px 4px; }
+}
+@media (min-width: 641px) and (max-width: 1024px) {
+    .unified-keyboard {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 50vh;
+        overflow-y: auto;
+        z-index: 200;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+    }
+    .unified-keyboard.open + .kb-backdrop { display: block; }
+    .kb-key {
+        height: 44px;
+        min-width: 40px;
+        font-size: 16px;
+    }
+    .kb-key.space { min-width: 180px; }
+}
+body.kb-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
 </style>
 {% endblock %}
 
@@ -49,7 +306,162 @@
 <div class="chat-box">
 <div class="chat-log" id="chatLog"><div class="chat-msg bot" id="greetingMsg">⏳ Загружаю приветствие…</div></div>
 <form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Спроси куратора…" autocomplete="off"><button type="submit">Отправить</button></form>
+
+<!-- Клавиатура ввода (единая, как в адаптивном тесте) -->
+<div class="kb-wrapper" style="margin-bottom: 0;">
+    <button type="button" id="kbToggleBtn" class="unified-kb-toggle" onclick="toggleKeyboard()">
+        ⌨️ Клавиатура
+    </button>
+
+    <div id="unifiedKeyboard" class="unified-keyboard">
+        <div class="kb-header">
+            <span class="kb-field-indicator">
+                <span class="dot"></span>
+                <span id="kbFieldLabel">Чат</span>
+            </span>
+            <button type="button" class="kb-close-btn" onclick="toggleKeyboard()">✕</button>
+        </div>
+
+        <div class="kb-tabs">
+            <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')">🔢 Математическая</button>
+            <button type="button" class="kb-tab" data-layout="regular" onclick="switchKbTab('regular')">⌨️ Обычная</button>
+        </div>
+
+        <!-- ===== Математическая раскладка ===== -->
+        <div id="kbLayoutMath" class="kb-layout active">
+            <div class="kb-row">
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\alpha')">α</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\beta')">β</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\gamma')">γ</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\delta')">δ</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\theta')">θ</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\lambda')">λ</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\mu')">μ</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\pi')">π</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\sigma')">σ</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\phi')">φ</button>
+                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\omega')">ω</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sqrt{}')">√</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sum')">∑</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\int')">∫</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\pm')">±</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\infty')">∞</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\approx')">≈</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\neq')">≠</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leq')">≤</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\geq')">≥</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">→</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')">↔</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\frac{}{}')">\frac</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\sqrt{}')">\sqrt</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\cdot')">\cdot</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\times')">\times</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\div')">\div</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\partial')">\partial</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\nabla')">\nabla</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\leq')">\le</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\geq')">\ge</button>
+                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\neq')">\ne</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
+                <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
+                <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
+                <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
+                <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
+                <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
+                <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
+                <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
+                <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
+                <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
+                <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
+                <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key" onclick="kbInsert('(')">(</button>
+                <button type="button" class="kb-key" onclick="kbInsert(')')">)</button>
+                <button type="button" class="kb-key" onclick="kbInsert('[')">[</button>
+                <button type="button" class="kb-key" onclick="kbInsert(']')">]</button>
+                <button type="button" class="kb-key" onclick="kbInsert('\\\\{')">{</button>
+                <button type="button" class="kb-key" onclick="kbInsert('\\\\}')">}</button>
+                <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
+                <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
+                <button type="button" class="kb-key enter" onclick="kbInsert('\\\\quad ')">⏎</button>
+            </div>
+        </div>
+
+        <!-- ===== Обычная раскладка ===== -->
+        <div id="kbLayoutRegular" class="kb-layout">
+            <div class="kb-row">
+                <button type="button" class="kb-key" onclick="kbInsert('й')">й</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ц')">ц</button>
+                <button type="button" class="kb-key" onclick="kbInsert('у')">у</button>
+                <button type="button" class="kb-key" onclick="kbInsert('к')">к</button>
+                <button type="button" class="kb-key" onclick="kbInsert('е')">е</button>
+                <button type="button" class="kb-key" onclick="kbInsert('н')">н</button>
+                <button type="button" class="kb-key" onclick="kbInsert('г')">г</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ш')">ш</button>
+                <button type="button" class="kb-key" onclick="kbInsert('щ')">щ</button>
+                <button type="button" class="kb-key" onclick="kbInsert('з')">з</button>
+                <button type="button" class="kb-key" onclick="kbInsert('х')">х</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ъ')">ъ</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key" onclick="kbInsert('ф')">ф</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ы')">ы</button>
+                <button type="button" class="kb-key" onclick="kbInsert('в')">в</button>
+                <button type="button" class="kb-key" onclick="kbInsert('а')">а</button>
+                <button type="button" class="kb-key" onclick="kbInsert('п')">п</button>
+                <button type="button" class="kb-key" onclick="kbInsert('р')">р</button>
+                <button type="button" class="kb-key" onclick="kbInsert('о')">о</button>
+                <button type="button" class="kb-key" onclick="kbInsert('л')">л</button>
+                <button type="button" class="kb-key" onclick="kbInsert('д')">д</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ж')">ж</button>
+                <button type="button" class="kb-key" onclick="kbInsert('э')">э</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key" onclick="kbInsert('я')">я</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ч')">ч</button>
+                <button type="button" class="kb-key" onclick="kbInsert('с')">с</button>
+                <button type="button" class="kb-key" onclick="kbInsert('м')">м</button>
+                <button type="button" class="kb-key" onclick="kbInsert('и')">и</button>
+                <button type="button" class="kb-key" onclick="kbInsert('т')">т</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ь')">ь</button>
+                <button type="button" class="kb-key" onclick="kbInsert('б')">б</button>
+                <button type="button" class="kb-key" onclick="kbInsert('ю')">ю</button>
+                <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
+                <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
+                <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
+                <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
+                <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
+                <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
+                <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
+                <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
+                <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
+                <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
+                <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
+            </div>
+            <div class="kb-row">
+                <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
+                <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
+                <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово ✓</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="kb-backdrop" id="kbBackdrop" onclick="toggleKeyboard()"></div>
+</div>
 <div class="cta-row" id="ctaRow" style="display:none; margin-top:10px;"></div>
+<div style="margin-top:8px; text-align:right;">
+  <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">🗑️ Очистить историю</button>
+</div>
 </div>
 </div>
 </div>
@@ -126,61 +538,33 @@ fetch('{{ url_for("prep.coach_greeting") }}')
     // Render CTA buttons based on scenario
     if (data.scenario === 'need_grade') {
       addCtaButton('🎯 Выбрать класс', '/profile', '');
+    } else if (data.scenario === 'test_in_progress') {
+      // Diagnostic test already running — hide greeting, focus input
+      greetingEl.style.display = 'none';
+      ctaRow.style.display = 'none';
+      var input = document.getElementById('chatInput');
+      if (input) input.focus();
     } else if (data.scenario === 'onboarding_test') {
-      addCtaAction('🧪 Начать онбординг', function () {
-        // Fetch onboarding tasks
-        fetch('{{ url_for("prep.coach_greeting") }}?action=onboarding_tasks')
+      // Кнопка "Начать диагностику (21 задача)" — inline в чате
+      addCtaAction('🧪 Начать диагностику (21 задача)', function () {
+        ctaRow.innerHTML = '';
+        greetingEl.innerHTML = '⏳ Загружаю диагностические задачи…';
+        // Start test via API — returns first task as a chat message
+        fetch('{{ url_for("prep.coach_test_start") }}', { method: 'POST' })
           .then(function (r) { return r.json(); })
-          .then(function (taskData) {
-            // Simple: replace greeting with task list
-            var html = '<div style="max-height:300px;overflow-y:auto;">';
-            if (taskData.tasks && taskData.tasks.length) {
-              html += '<p><strong>Реши这几 задачи, чтобы я понял твой уровень:</strong></p>';
-              taskData.tasks.forEach(function (t, i) {
-                html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
-                html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + t.task_text + '</p>';
-                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">✅ Решил</button> ';
-                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">❌ Не смог</button></div>';
-                html += '</div>';
-              });
-              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishOnboarding">📊 Завершить онбординг</button></div>';
+          .then(function (data) {
+            if (data.reply) {
+              // Hide greeting, show first task as bot message
+              greetingEl.style.display = 'none';
+              addMsg(data.reply, 'bot');
+              // Focus chat input
+              var input = document.getElementById('chatInput');
+              if (input) input.focus();
             } else {
-              html += '<p>😅 Задачи временно недоступны. Попробуй позже.</p>';
+              greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать диагностику.');
             }
-            html += '</div>';
-            greetingEl.innerHTML = html;
-            ctaRow.innerHTML = '';
-            document.getElementById('finishOnboarding').addEventListener('click', function () {
-              // Collect results
-              var results = {};
-              document.querySelectorAll('[data-task]').forEach(function (btn) {
-                var taskId = btn.getAttribute('data-task');
-                if (btn.classList.contains('cta-btn') && !btn.classList.contains('secondary')) {
-                  results[taskId] = 1;
-                } else if (btn.classList.contains('secondary')) {
-                  if (!results[taskId]) results[taskId] = 0;
-                }
-              });
-              fetch('{{ url_for("prep.coach_onboarding_submit") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ results: results })
-              })
-              .then(function (r) { return r.json(); })
-              .then(function (res) {
-                if (res.status === 'ok') {
-                  greetingEl.innerHTML = '🎉 Отлично! Я проанализировал твои ответы. Измерено ' + res.measured_count + ' тем. Слабые: ' + (res.weak_topics || []).join(', ') + '.';
-                  if (res.recommended_olympiad) {
-                    addCtaButton('📋 Создать план подготовки', '/prep/new?olympiad=' + res.recommended_olympiad.slug, '');
-                  }
-                  addCtaButton('📊 Посмотреть профиль', '/profile', 'secondary');
-                } else {
-                  greetingEl.innerHTML = '❌ Ошибка: ' + (res.error || 'попробуй ещё раз');
-                }
-              });
-            });
           })
-          .catch(function () { greetingEl.innerHTML = '❌ Не удалось загрузить задачи.'; });
+          .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
       }, '');
     } else if (data.scenario === 'daily_test') {
       addCtaAction('🧪 Пройти тест по теме', function () {
@@ -270,6 +654,24 @@ fetch('{{ url_for("prep.coach_greeting") }}')
     greetingEl.textContent = '👋 Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
   });
 
+// ─── Load chat history ─────────────────────────────────────────────────────
+fetch('{{ url_for("prep.coach_history") }}')
+  .then(function (r) { return r.json(); })
+  .then(function (data) {
+    if (data.messages && data.messages.length) {
+      // Remove greeting — history will be rendered instead
+      var greetingEl = document.getElementById('greetingMsg');
+      if (greetingEl) greetingEl.style.display = 'none';
+      data.messages.forEach(function (msg) {
+        var who = msg.role === 'user' ? 'user' : 'bot';
+        addMsg(msg.content, who);
+      });
+    }
+  })
+  .catch(function () {
+    /* history unavailable — keep greeting */
+  });
+
 // ─── Chat ──────────────────────────────────────────────────────────────
 var form = document.getElementById('chatForm');
 var input = document.getElementById('chatInput');
@@ -280,6 +682,10 @@ div.className = 'chat-msg ' + who;
 div.innerHTML = text;
 log.appendChild(div);
 log.scrollTop = log.scrollHeight;
+// Re-render KaTeX math ($...$) in newly added message
+if (typeof reRenderMath === 'function') {
+  reRenderMath(div);
+}
 return div;
 }
 form.addEventListener('submit', function (e) {
@@ -295,9 +701,178 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ message: text })
 })
 .then(function (r) { return r.json(); })
-.then(function (data) { pending.innerHTML = data.reply || 'Не удалось получить ответ.'; })
+.then(function (data) {
+  pending.innerHTML = data.reply || 'Не удалось получить ответ.';
+  // Re-render KaTeX math in the updated reply content
+  if (typeof reRenderMath === 'function') {
+    reRenderMath(pending);
+  }
+})
 .catch(function () { pending.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
 });
+
+// ─── Delete history button ──────────────────────────────────────────────
+var delBtn = document.getElementById('deleteHistoryBtn');
+if (delBtn) {
+  delBtn.addEventListener('click', function () {
+    if (!confirm('🗑️ Удалить всю историю диалога с куратором? Это действие нельзя отменить.')) return;
+    delBtn.disabled = true;
+    delBtn.textContent = '⏳ Удаляю…';
+    fetch('{{ url_for("prep.coach_history_delete") }}', { method: 'POST' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.status === 'ok') {
+          // Reload page to clear chat
+          window.location.reload();
+        } else {
+          alert('❌ Ошибка: ' + (data.error || 'не удалось удалить историю'));
+          delBtn.disabled = false;
+          delBtn.textContent = '🗑️ Очистить историю';
+        }
+      })
+      .catch(function () {
+        alert('❌ Ошибка соединения. Попробуй ещё раз.');
+        delBtn.disabled = false;
+        delBtn.textContent = '🗑️ Очистить историю';
+      });
+  });
+}
 })();
+
+// ─── Единая клавиатура ввода (Математическая / Обычная) ───
+let _kbActiveField = null;
+
+document.addEventListener('focusin', function(e) {
+    const el = e.target;
+    if (el && el.id === 'chatInput') {
+        _kbActiveField = el;
+        const label = document.getElementById('kbFieldLabel');
+        if (label) label.textContent = 'Чат';
+    }
+});
+
+function _kbIsTextarea(el) {
+    return el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT');
+}
+function _kbGetValue(el) {
+    if (!el) return '';
+    if (_kbIsTextarea(el)) return el.value || '';
+    if (typeof el.getValue === 'function') return el.getValue('latex') || '';
+    return el.value || '';
+}
+function _kbSetValue(el, val) {
+    if (!el) return;
+    if (_kbIsTextarea(el)) {
+        el.value = val;
+    } else if (typeof el.setValue === 'function') {
+        el.setValue(val);
+    } else {
+        el.value = val;
+    }
+}
+function _kbInsertAtCursor(el, text) {
+    if (_kbIsTextarea(el)) {
+        const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+        const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
+        const before = el.value.substring(0, start);
+        const after  = el.value.substring(end);
+        el.value = before + text + after;
+        const pos = start + text.length;
+        try { el.setSelectionRange(pos, pos); } catch(e) {}
+    } else {
+        _kbSetValue(el, _kbGetValue(el) + text);
+    }
+}
+
+function kbInsert(text) {
+    if (!_kbActiveField) {
+        _kbActiveField = document.getElementById('chatInput');
+    }
+    if (!_kbActiveField) return;
+    try {
+        if (_kbIsTextarea(_kbActiveField) && text === '\\quad ') {
+            text = '\n';
+        }
+        _kbInsertAtCursor(_kbActiveField, text);
+        _kbActiveField.focus();
+        _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch(e) {
+        console.warn('kbInsert error:', e);
+    }
+}
+
+function kbBackspace() {
+    if (!_kbActiveField) {
+        _kbActiveField = document.getElementById('chatInput');
+    }
+    if (!_kbActiveField) return;
+    try {
+        if (_kbIsTextarea(_kbActiveField)) {
+            const el = _kbActiveField;
+            const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+            const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
+            if (start === end && start > 0) {
+                el.value = el.value.substring(0, start - 1) + el.value.substring(end);
+                try { el.setSelectionRange(start - 1, start - 1); } catch(e) {}
+            } else if (start !== end) {
+                el.value = el.value.substring(0, start) + el.value.substring(end);
+                try { el.setSelectionRange(start, start); } catch(e) {}
+            }
+            el.focus();
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+        }
+        const current = _kbGetValue(_kbActiveField);
+        if (current && current.length > 0) {
+            _kbSetValue(_kbActiveField, current.slice(0, -1));
+            _kbActiveField.focus();
+            _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    } catch(e) {
+        console.warn('kbBackspace error:', e);
+    }
+}
+
+function toggleKeyboard() {
+    const kb = document.getElementById('unifiedKeyboard');
+    const btn = document.getElementById('kbToggleBtn');
+    const body = document.body;
+    const isMobile = window.innerWidth <= 640;
+    if (!kb) return;
+    const isOpen = kb.classList.contains('open');
+    if (isOpen) {
+        kb.classList.remove('open');
+        if (btn) btn.classList.remove('active');
+        if (isMobile) body.classList.remove('kb-open');
+    } else {
+        kb.classList.add('open');
+        if (btn) btn.classList.add('active');
+        if (isMobile) body.classList.add('kb-open');
+        if (_kbActiveField) _kbActiveField.focus();
+    }
+}
+
+function switchKbTab(tabName) {
+    document.querySelectorAll('.kb-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.kb-layout').forEach(function(l) { l.classList.remove('active'); });
+    var tab = document.querySelector('.kb-tab[data-layout="' + tabName + '"]');
+    var layoutId = 'kbLayout' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    var layout = document.getElementById(layoutId);
+    if (tab) tab.classList.add('active');
+    if (layout) layout.classList.add('active');
+}
+
+function submitCurrentAnswer() {
+    var form = document.getElementById('chatForm');
+    if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+}
+
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('kb-backdrop')) {
+        toggleKeyboard();
+    }
+});
 </script>
 {% endblock %}

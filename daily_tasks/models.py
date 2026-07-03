@@ -251,3 +251,50 @@ class ThematicDaySet(db.Model):
             f'<ThematicDaySet #{self.id} user={self.user_id} '
             f'date={self.target_date} status={self.status!r}>'
         )
+
+
+class PreGenQueue(db.Model):
+    """Очередь предгенерации задач на завтра.
+
+    После успешной генерации сегодняшнего сета система автоматически
+    ставит в очередь генерацию на завтра. Если несколько пользователей
+    запускают генерацию одновременно — запросы распределяются на 24 часа.
+
+    Когда наступает target_date, ``enqueue_daily_generation()`` проверяет
+    готовый ``TaskPool`` (через cache_key) и выдаёт задачи без LLM.
+    """
+
+    __tablename__ = 'pre_gen_queue'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    target_date = db.Column(db.Date, nullable=False, index=True)
+
+    # cache_key совпадает с TaskPool.cache_key для данного профиля
+    cache_key = db.Column(db.String(64), nullable=False, index=True)
+    pool_id = db.Column(db.Integer, db.ForeignKey('task_pool.id', ondelete='SET NULL'), nullable=True, index=True)
+
+    # queue state machine: queued → generating → ready / failed → consumed
+    status = db.Column(db.String(16), nullable=False, default='queued')
+    profile_json = db.Column(db.Text, nullable=True)  # JSON-слепок профиля
+
+    # rate-limiting: когда этот entry может начать генерацию
+    release_at = db.Column(db.DateTime, nullable=True)
+    # когда пул перестаёт быть актуальным (на случай, если не consumed)
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('pre_gen_queues', lazy='dynamic'))
+    pool = db.relationship('TaskPool', backref=db.backref('pre_gen_entries', lazy='dynamic'))
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'target_date', name='_pregen_user_date_uc'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<PreGenQueue #{self.id} user={self.user_id} '
+            f'date={self.target_date} status={self.status!r}>'
+        )

@@ -60,8 +60,9 @@ SYSTEM_PROMPT_PROOF = (
     "Если сомневаешься (< 0.6) — укажи низкий confidence.\n"
     "- error_location: конкретное место ошибки (строка/шаг) или null.\n"
     "- feedback: 1-2 фразы ученику.\n\n"
-    "FEEDBACK без LaTeX (никаких \\frac, \\sqrt, $...$, \\(...\\)).\n"
-    "Используй простой текст: x^2, 1/2, sqrt(5), >=, <=, !=, alpha, pi.\n"
+    "FEEDBACK используй полноценный LaTeX с $...$ для инлайн-формул "
+    "и $$...$$ для display-формул:\n"
+    "  $\\frac{1}{2}$, $\\sqrt{3}$, $x^2 + y^2 = z^2$, $\\alpha$, $\\pi$.\n"
     "Будь конструктивным и понятным школьнику.\n"
 )
 
@@ -102,8 +103,9 @@ SYSTEM_PROMPT_NUMERIC = (
     "FEEDBACK:\n"
     "- Если ответ совпал — начинай с \"Ответ верный!\".\n"
     "- НИКОГДА не пиши \"Ответ неверный\", если числа совпали.\n"
-    "- Пиши математику простым текстом: x^2, 1/2, sqrt(5), >=, alpha, pi.\n"
-    "- Никаких \\frac, \\sqrt, \\cdot, \\left, $, \\(, \\[ и т.п.\n"
+    "- Используй полноценный LaTeX с $...$ для инлайн-формул "
+    "и $$...$$ для display-формул:\n"
+    "  $\\frac{1}{2}$, $\\sqrt{3}$, $x^2 + y^2 = z^2$, $\\alpha$, $\\pi$.\n"
     "- **жирный** для ключевых слов (Шаг 1:, Ответ:).\n"
     "- Переносы строк для шагов.\n"
     "- НЕ оборачивай JSON в markdown-блоки.\n"
@@ -323,44 +325,174 @@ def sanitize_feedback_no_latex(s: str) -> str:
 def _clean_latex_for_sympy(text: str) -> str:
     """Очищает LaTeX-разметку перед передачей в sympy.sympify.
 
-    Берёт подход из find_irrational_answers.py + answer_normalizer.py:
-    - удаляет \\( \\), \\[ \\], $$, $
-    - конвертит \\frac{a}{b} → (a)/(b), \\sqrt{x} → sqrt(x)
-    - заменяет ^ → **, запятую-разделитель → точка
-    - убирает лишние команды (\\cdot, \\left, \\right и т.п.)
+    Улучшенная версия:
+    - обрабатывает вложенные дроби, \\binom, \\overline
+    - конвертирует \\pmod, \\equiv, \\cup, \\to, \\infty и др.
+    - ^{...} преобразуется в **(...) ДО глобальной ^ → **
+    - удаляет \\begin{...}...\\end{...} окружения
+    - оставшиеся { } преобразуются в ( )
     """
     if not text:
         return ""
     t = text.strip()
-    # 1) LaTeX math-mode markers
+
+    # A) 	ext{...} — извлекаем содержимое
+    t = re.sub(r'\\text\s*\{([^{}]*)\}', r'\1', t, count=0)
+
+    # B) LaTeX math-mode markers
     t = re.sub(r'\\\(|\\\)|\\\[|\\\]', '', t)
     t = re.sub(r'\$\$|\$', '', t)
-    # 2) Trailing period (LaTeX sentence punctuation)
+
+    # C) Trailing period (LaTeX sentence punctuation)
     t = t.rstrip('.')
-    # 3) \frac{a}{b} → (a)/(b)
-    t = re.sub(
-        r'\\(?:dfrac|tfrac|frac)\s*\{([^{}]*)\}\s*\{([^{}]*)\}',
-        r'(\1)/(\2)',
-        t,
-    )
-    # 4) \sqrt{x} → sqrt(x)
+
+    # D) Remove \\begin{...}...\\end{...} blocks (matrix, cases, etc.)
+    t = re.sub(r'\\begin\{[^{}]*\}.*?\\end\{[^{}]*\}', '', t, flags=re.DOTALL)
+
+    # E) Handle nested fractions iteratively (inside-out)
+    MAX_ITER = 20
+    for _ in range(MAX_ITER):
+        new_t = re.sub(
+            r'\\(?:dfrac|tfrac|frac)\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}'
+            r'\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}',
+            r'(\1)/(\2)',
+            t,
+        )
+        if new_t == t:
+            break
+        t = new_t
+
+    # F) \\binom{n}{k} → binomial(n,k)
+    for _ in range(MAX_ITER):
+        new_t = re.sub(
+            r'\\binom\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}'
+            r'\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}',
+            r'binomial(\1,\2)',
+            t,
+        )
+        if new_t == t:
+            break
+        t = new_t
+
+    # G) \\sqrt[n]{x} → (x)**(1/(n))  and  \\sqrt{x} → sqrt(x)
+    t = re.sub(r'\\sqrt\s*\[([^\]]*)\]\s*\{([^{}]*)\}', r'(\2)**(1/(\1))', t)
     t = re.sub(r'\\sqrt\s*\{([^{}]*)\}', r'sqrt(\1)', t)
-    # 5) ^ → ** (sympy exponentiation)
+
+    # H) \\overline, \\underline, \\vec, \\hat, \\bar, \\tilde — remove wrapper
+    for cmd in ('overline', 'underline', 'vec', 'hat', 'bar', 'tilde'):
+        t = re.sub(r'\\' + cmd + r'\s*\{([^{}]*)\}', r'(\1)', t)
+
+    # I) \\pm → +-, \\mp → -+
+    t = re.sub(r'\\pm\b', '+-', t)
+    t = re.sub(r'\\mp\b', '-+', t)
+
+    # J) Modulo operations
+    t = re.sub(r'\\pmod\s*\{([^{}]*)\}', r' % \1', t)
+    t = re.sub(r'\\bmod\b', ' % ', t)
+
+    # K) Relations
+    t = re.sub(r'\\equiv\b', '==', t)
+    t = re.sub(r'\\ne\b|\\neq\b', '!=', t)
+    t = re.sub(r'\\ge\b|\\geq\b', '>=', t)
+    t = re.sub(r'\\le\b|\\leq\b', '<=', t)
+    t = re.sub(r'\\approx\b', '==', t)
+    t = re.sub(r'\\sim\b', '~', t)
+    t = re.sub(r'\\propto\b', 'oo', t)
+
+    # L) Set operations
+    t = re.sub(r'\\cup\b', ' + ', t)
+    t = re.sub(r'\\cap\b', ' & ', t)
+    t = re.sub(r'\\subset\b', ' < ', t)
+    t = re.sub(r'\\supset\b', ' > ', t)
+    t = re.sub(r'\\subseteq\b', ' <= ', t)
+    t = re.sub(r'\\supseteq\b', ' >= ', t)
+    t = re.sub(r'\\in\b', ' in ', t)
+    t = re.sub(r'\\notin\b', ' not in ', t)
+    t = re.sub(r'\\emptyset\b|\\varnothing\b', 'EmptySet', t)
+
+    # M) Arrows
+    t = re.sub(r'\\to\b|\\rightarrow\b', '->', t)
+    t = re.sub(r'\\Rightarrow\b', '=>', t)
+    t = re.sub(r'\\leftarrow\b', '<-', t)
+    t = re.sub(r'\\Leftarrow\b', '<=', t)
+    t = re.sub(r'\\leftrightarrow\b', '<->', t)
+    t = re.sub(r'\\Leftrightarrow\b', '<=>', t)
+    t = re.sub(r'\\mapsto\b', '|->', t)
+
+    # N) Calculus
+    t = re.sub(r'\\infty\b', 'oo', t)
+    t = re.sub(r'\\partial\b', 'D', t)
+    t = re.sub(r'\\nabla\b', 'Nabla', t)
+    t = re.sub(r'\\prime\b', "'", t)
+
+    # O) Operators
+    t = re.sub(r'\\cdot\b', '*', t)
+    t = re.sub(r'\\times\b', '*', t)
+    t = re.sub(r'\\div\b', '/', t)
+
+    # P) Geometry
+    t = re.sub(r'\\angle\b', 'angle', t)
+    t = re.sub(r'\\triangle\b', 'triangle', t)
+    t = re.sub(r'\\degree\b|\\deg\b', 'deg', t)
+
+    # Q) Dots
+    t = re.sub(r'\\ldots\b|\\cdots\b', '...', t)
+    t = re.sub(r'\\vdots\b|\\ddots\b', '...', t)
+
+    # R) Percent
+    t = re.sub(r'\\%', '%', t)
+
+    # S) Handle ^{...} superscripts BEFORE global ^→**
+    #    Convert x^{...} → x**(...)
+    for _ in range(MAX_ITER):
+        new_t = re.sub(
+            r'\^\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}',
+            r'**(\1)',
+            t,
+        )
+        if new_t == t:
+            break
+        t = new_t
+
+    # T) Handle _{...} subscripts — keep as _ for sympy
+    for _ in range(MAX_ITER):
+        new_t = re.sub(
+            r'_\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}',
+            r'_\1',
+            t,
+        )
+        if new_t == t:
+            break
+        t = new_t
+
+    # U) Global ^ → ** (now only bare ^ remains)
     t = t.replace('^', '**')
-    # 6) Comma decimal → dot (only between digits)
+
+    # V) Comma decimal → dot (only between digits)
     t = re.sub(r'(?<=\d),(?=\d)', '.', t)
-    # 7) Remove leftover LaTeX commands (\cdot, \left, \right, \displaystyle, etc.)
+
+    # W) Remove leftover LaTeX commands
     t = re.sub(
-        r'\\(?:cdot|times|left|right|big|Big|bigg|Bigg|quad|qquad|displaystyle'
-        r'|text|textbf|mathit|mathrm|underline)\s*',
+        r'\\(?:left|right|big|Big|bigg|Bigg|quad|qquad|displaystyle'
+        r'|textbf|mathit|mathrm|underline|normalsize|small|large'
+        r'|Large|LARGE|huge|Huge|colon|enspace|thinspace|negmedspace'
+        r'|negthickspace|smallskip|medskip|bigskip|vskip|hskip'
+        r'|vspace|hspace|noindent|rule|hline|cr|newline'
+        r'|implies|iff|lor|land|lnot|forall|exists'
+        r'|operatorname)\s*',
         '',
         t,
     )
-    # 8) Remove remaining backslash-commands (e.g. \alpha → alpha for sympy)
-    #    But keep pi → pi, etc.
+
+    # X) Remove remaining backslash-commands (e.g. \\alpha → alpha for sympy)
     t = re.sub(r'\\([a-zA-Z]+)', r'\1', t)
-    # 9) Squeeze all whitespace
+
+    # Y) Replace remaining braces with parentheses
+    t = t.replace('{', '(').replace('}', ')')
+
+    # Z) Squeeze all whitespace
     t = re.sub(r'\s+', '', t)
+
     return t
 
 
@@ -547,6 +679,7 @@ def review_attempt(
     deepseek_available: bool = True,
     max_tokens: int = 4096,
     difficulty_level: int = 5,
+    sanitize_latex: bool = True,
 ) -> Dict[str, Any]:
     """Полная AI-проверка ответа ученика.
 
@@ -803,11 +936,12 @@ def review_attempt(
             + (f"**Решение:**\n{solution_ref[:800]}" if solution_ref else "")
         )
 
-    # 5) Sanitize feedback (убираем LaTeX-команды)
-    try:
-        feedback = sanitize_feedback_no_latex(feedback)
-    except Exception as e:
-        logger.warning("sanitize_feedback failed: %s", e)
+    # 5) Sanitize feedback (убираем LaTeX-команды, если требуется)
+    if sanitize_latex:
+        try:
+            feedback = sanitize_feedback_no_latex(feedback)
+        except Exception as e:
+            logger.warning("sanitize_feedback failed: %s", e)
 
     # 6) Префикс с явной оценкой (FORMYLA v2: +1/0/−1)
     has_sol = bool(user_solution.strip()) or bool(images_b64)
@@ -835,8 +969,115 @@ def review_attempt(
     }
 
 
+# ── solve_task — AI решает задачу с нуля ──────────────────────────────
+
+SOLVE_SYSTEM_PROMPT = (
+    "Ты — AI-репетитор платформы FORMYLA. Реши математическую задачу ПОЛНОСТЬЮ "
+    "и ПОДРОБНО, как эталонное решение. Используй правильный математический язык.\n\n"
+    "ФОРМАТ ОТВЕТА — СТРОГО JSON (без markdown):\n"
+    '{"solution": "..."}\n\n'
+    "ПРАВИЛА:\n"
+    "- Реши задачу шаг за шагом.\n"
+    "- Используй LaTeX для всех формул: $...$ для инлайн, $$...$$ для display.\n"
+    "- Пиши $\\frac{a}{b}$, $\\sqrt{x}$, $x^2$, $\\alpha$, $\\pi$ и т.д.\n"
+    "- Каждый шаг с новой строки, используй **жирный** для ключевых слов.\n"
+    "- Если есть несколько способов — покажи один, самый понятный.\n"
+    "- Заверши ответом в рамке: **Ответ:** $...$.\n"
+    "- НЕ оборачивай JSON в markdown-блоки.\n"
+)
+
+
+def solve_task(
+    *,
+    task_text: str,
+    correct_answer: str = "",
+    solution_ref: str = "",
+    deepseek_client_cls: Any = None,
+    deepseek_available: bool = True,
+    max_tokens: int = 4096,
+) -> Dict[str, Any]:
+    """AI решает задачу с нуля (без ответа ученика) — для превью в «Задачах дня».
+
+    Args:
+        task_text: условие задачи.
+        correct_answer: канонический ответ (для сверки, передаётся как hint).
+        solution_ref: эталонное решение из БД (для сверки, передаётся как hint).
+        deepseek_client_cls: класс DeepSeekClient.
+        deepseek_available: флаг доступности AI.
+        max_tokens: лимит генерации.
+
+    Returns:
+        dict с полями:
+            solution (str) — подробное решение с LaTeX.
+            success (bool) — удалось ли решить.
+    """
+    if not deepseek_available or deepseek_client_cls is None:
+        # Fallback: отдаём эталонное решение из БД, если есть
+        if solution_ref:
+            return {"solution": solution_ref, "success": True}
+        return {
+            "solution": "AI-решение временно недоступно.",
+            "success": False,
+        }
+
+    try:
+        hint_parts = []
+        if correct_answer:
+            hint_parts.append(f"Правильный ответ из БД (для сверки): {correct_answer}")
+        if solution_ref:
+            hint_parts.append(
+                f"Эталонное решение из БД (можно использовать как основу, "
+                f"но перепиши своими словами):\n{solution_ref[:1500]}"
+            )
+        hint_block = (
+            "\n\n[Подсказка из БД — используй как ориентир, но реши сам]\n"
+            + "\n".join(hint_parts)
+            if hint_parts
+            else ""
+        )
+
+        user_prompt = (
+            f"Реши задачу:\n\n{task_text}\n"
+            f"{hint_block}\n\n"
+            "Верни JSON с полем 'solution' — полное подробное решение."
+        )
+
+        client = deepseek_client_cls()
+        ai_response = client.generate(
+            prompt=user_prompt,
+            system_prompt=SOLVE_SYSTEM_PROMPT,
+            temperature=0.4,
+            max_tokens=max_tokens,
+        )
+
+        try:
+            data = _safe_json_parse(ai_response)
+            solution = str(data.get("solution", "") or "").strip()
+            if solution:
+                return {"solution": solution, "success": True}
+        except (json.JSONDecodeError, ValueError):
+            logger.warning("solve_task: failed to parse AI response as JSON")
+
+        # Fallback: если не удалось распарсить JSON, пробуем взять сырой текст
+        cleaned = ai_response.strip().strip("`").strip()
+        if cleaned and len(cleaned) > 20:
+            return {"solution": cleaned, "success": True}
+
+    except Exception as e:
+        logger.exception("solve_task: AI call failed: %s", e)
+
+    # Ultimate fallback — эталон из БД
+    if solution_ref:
+        return {"solution": solution_ref, "success": True}
+    return {
+        "solution": "AI-решение временно недоступно. Попробуй решить самостоятельно.",
+        "success": False,
+    }
+
+
 __all__ = [
     "review_attempt",
+    "solve_task",
     "is_proof_task",
     "math_equivalent",
     "transcribe_photos",

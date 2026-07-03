@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Call Engine</title>
+  <!--
+    call_engine.html — iframe-движок видеоконференции.
+
+    Загружается в <iframe id="wbCallEngine"> на странице конференции.
+    Связующее звено между wb_signalling.js (SocketIO) и wb_engine.js (WebRTC).
+
+    Порядок загрузки:
+      1. /socket.io/socket.io.js — клиент Flask-SocketIO (раздаётся сервером).
+      2. static/js/wb_signalling.js — SocketIO-клиент (автоподключение к /ws-call).
+      3. static/js/wb_engine.js — WebRTC mesh engine (использует window.__wbSignalling).
+
+    Оба скрипта самозапускаются через IIFE при загрузке страницы.
+  -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/static/js/wb_signalling.js"></script>
+  <script src="/static/js/wb_engine.js"></script>
+</head>
+<body>
+</body>
+</html>

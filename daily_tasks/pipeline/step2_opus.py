@@ -1,56 +1,28 @@
 # -*- coding: utf-8 -*-
 """
-Step 2 pipeline 'Daily tasks' - parallel task generator.
+Step 2: генерация задач через DeepSeek API (parallelopus).
 
-Prinimaet 10 specifikacij ot Step 1, dlya KAZHDOJ nezavisimo vyzyvaet LLM
-cherez asyncio.Semaphore. Kazhdyj vorker obrabatyvaet svoyu speku nezavisimo:
-upavshij vorker ne valit ostalnyh, a vozvrashchaet sintetic zaglushku s
-pravilnoj position - na Step 3 ee pometyat needs_fix, na Step 4 vosstanovyat.
+Вход: 10 спецификаций от планировщика (Gemini).
+Выход: 10 готовых задач с текстом, ответом, решением и подсказками.
+Каждая задача генерируется отдельным вызовом модели параллельно.
 
-KLYUCH (2026-06-24):
-* response_format json_object - DeepSeek lyubit oborachivat otvet v markdown,
-  iz-za chego extract_json_safe padal i my poluchali GEN_FAILED. JSON-rezhim
-  ubiraet bolshinstvo etih sboev (sm. api-docs.deepseek.com json_mode).
-* max_tokens po urovnyu: L6-L8 (olimpiadnye) trebuyut dlinnogo resheniya,
-  4096 obrezalo JSON -> nevalidnyj otvet.
-* model routing po difficulty_level vynesen v _model_for_level - tochka,
-  gde finalno reshaem kakaya model na kakoj uroven.
-
-FIX (2026-06-25):
-* _coerce_tasks_list teper raspoznaet odinochnuyu zadachu po bolshemu naboru
-  polej (condition/problem/statement/text/answer/solution) - DeepSeek inogda
-  vozvrashchaet zadachu bez obertki 'tasks', iz-za chego my poluchali
-  no_tasks_key na poziciyah 4/6/8/9.
-* dobavlen tochechnyj self-rescue vnutri _generate_one_spec: pered vydachej
-  zaglushki delaem eshche odnu stroguyu popytku so spec-shemoj polej.
-* validate-porog snizhen do 3/10, chtoby ne vozvrashchat pustoj spisok i ne
-  ronyat ves nabor (Step 4 dorabotaet ostalnoe).
-
-FIX (2026-06-25 vecher) - AUDIT ETAP:
-* dobavlen _audit_task: posle generacii proveryaem KAZHDUYU zadachu na (1) flag
-  _generation_failed/GEN_FAILED i (2) tematicheskoe sootvetstvie spec.topic/
-  subtopic. Eto lovit sluchaj, kogda model vernula validnuyu zadachu NE PO TEME
-  (naprimer kvadratnoe uravnenie v teme 'Kombinatorika' - pozicii 5/8).
-* dobavlen cikl peregeneracii: sbojnye/off-topic pozicii peregeneriruyutsya po
-  TEM ZHE usloviyam (ta zhe spec/difficulty_level/position) do _MAX_REGEN_ROUNDS.
+Доступные модели (настраиваются в pipeline/config.py):
+  - deepseek/deepseek-chat-v3.1 — для уровней 1..3 (быстро, ~3-4 сек)
+  - deepseek/deepseek-r1 — для уровней 4..8 (медленно, ~40-110 сек)
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
 import os
-import re
-import sys
-from pathlib import Path
-
-_project_root = Path(__file__).resolve().parents[2]
-if str(_project_root) not in sys.path:
-    sys.path.insert(0, str(_project_root))
-
+import random
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
-from pipeline.openrouter_client import OpenRouterClient, TokenUsage
+from pipeline.openrouter_client import OpenRouterClient
+
 from .validators import (
     OpusGenerationValidation,
     extract_json_safe,
@@ -59,57 +31,18 @@ from .validators import (
 
 logger = logging.getLogger(__name__)
 
-# Polya, po kotorym uznaem odinochnuyu zadachu, esli model ne obernula v 'tasks'.
-_SINGLE_TASK_FIELDS = (
-    "task_text",
-    "correct_answer",
-    "condition",
-    "problem",
-    "statement",
-    "text",
-    "answer",
-    "solution",
-)
+# == kontseptualnye konstanty ==
 
-
-def _coerce_tasks_list(parsed: Any) -> List[Dict[str, Any]]:
-    # Heuristicheski izvlekaem spisok zadach iz raznyh form otveta modeli.
-    if isinstance(parsed, list):
-        return [t for t in parsed if isinstance(t, dict)]
-    if not isinstance(parsed, dict):
-        return []
-    # 1) Standartnyj klyuch "tasks".
-    _t = parsed.get("tasks")
-    if isinstance(_t, list) and _t:
-        return [t for t in _t if isinstance(t, dict)]
-    # 2) Inogda model kladet zadachi pod inymi klyuchami.
-    for _alt_key in ("task", "items", "data", "result", "results", "problems", "questions"):
-        _alt = parsed.get(_alt_key)
-        if isinstance(_alt, list) and _alt:
-            return [t for t in _alt if isinstance(t, dict)]
-        if isinstance(_alt, dict):
-            return [_alt]
-    # 3) Esli sam parsed pohozh na odnu zadachu - obernem v spisok.
-    if any(parsed.get(_f) for _f in _SINGLE_TASK_FIELDS):
-        return [parsed]
-    return []
-
-
-# == modeli i routing ==
-# Step 2 GENERATE. Vse urovni poka na DeepSeek v3.1 (deshevo/bezlimit).
+_OPUS_MODEL = "deepseek/deepseek-chat-v3.1"
+_PARALLEL_WORKERS = 5
+_MAX_REGEN_ROUNDS = 3
+_GEN_HARD_THRESHOLD = 4
 _GEN_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
 _GEN_MODEL_HARD = "deepseek/deepseek-r1"
-_GEN_HARD_THRESHOLD = 4
-_OPUS_MODEL = _GEN_MODEL_HARD  # alias dlya sovmestimosti s logami
-
-# Parallelizm. 5 potokov - stabilnee, 10 spec -> ~2 na vorker.
-_PARALLEL_WORKERS = 5
-
-# JSON-rezhim: zastavlyaet model vernut chistyj JSON-objekt bez markdown.
 _JSON_RESPONSE_FORMAT = {"type": "json_object"}
 
-# Skolko raundov peregeneracii sbojnyh/off-topic pozicij dopuskaem.
-_MAX_REGEN_ROUNDS = 3
+
+# == helpers dlya modeli ==
 
 
 def _model_for_level(difficulty_level: Any) -> str:
@@ -122,13 +55,17 @@ def _model_for_level(difficulty_level: Any) -> str:
 
 
 def _max_tokens_for_level(difficulty_level: Any) -> int:
-    """Bolshe tokenov dlya slozhnyh urovnej - inache JSON obrezaetsya."""
+    """Bolshe tokenov dlya slozhnyh urovnej - inache JSON obrezaetsya.
+
+    Uvelichen do 20000 dlya R1 (lvl >= 4), chtoby chain-of-thought
+    ne zhirala ves limit i model ne vozvrashchala pustoj JSON.
+    """
     try:
         lvl = int(difficulty_level or 1)
     except (TypeError, ValueError):
         lvl = 1
     if lvl >= _GEN_HARD_THRESHOLD:
-        return 8192
+        return 20000
     if lvl >= 4:
         return 6144
     return 4096
@@ -158,81 +95,73 @@ def _synthesize_fallback_task(spec: Dict[str, Any], reason: str) -> Dict[str, An
     pos = spec.get("position")
     return {
         "position": pos,
-        "task_text": (
-            f"[GEN_FAILED] Ne udalos sgenerirovat zadachu dlya pozicii {pos}. "
-            f"Prichina: {reason}"
-        ),
-        "correct_answer": "-",
-        "solution": "-",
-        "hints": ["Budet sgenerirovano na shage ispravleniya."],
         "_generation_failed": True,
-        "_failure_reason": reason,
+        "_fail_reason": reason,
+        "task_text": "",
+        "correct_answer": "",
+        "solution": "",
+        "hints": [],
     }
 
 
-# == AUDIT: proverka zadach na GEN_FAILED i tematicheskoe sootvetstvie ==
-# Stop-slova: chasto vstrechayutsya, no temu ne opredelyayut.
-_AUDIT_STOPWORDS = {
-    "naidite", "naiti", "reshite", "vychislite", "chemu", "raven", "ravno",
-    "esli", "dano", "izvestno", "skolko", "kakoe", "kakoj", "kakaya", "chto",
-    "dlya", "pri", "the", "and", "find", "solve", "value", "that", "with",
-}
+# == audit vnutri generatora (proverka GEN_FAILED i temy) ==
 
 
 def _tokenize(text: str) -> set:
-    """Razbit tekst na normalizovannye slova (kirillica+latinica, >=4 simvola)."""
-    words = re.findall(r"[\w\u0400-\u04FF]+", (text or "").lower())
-    return {w for w in words if len(w) >= 4 and w not in _AUDIT_STOPWORDS}
+    """Razbit tekst na mnozhestvo slov dlya sravneniya."""
+
+    def _norm(w):
+        return w.strip(".,!?;:()[]{}«»'\"-").lower()
+
+    return {_norm(w) for w in text.split() if len(_norm(w)) > 2}
 
 
 def _topic_keywords(spec: Dict[str, Any]) -> set:
-    """Klyuchevye slova temy iz spec (topic/subtopic/section/keywords)."""
-    parts: List[str] = []
-    for key in ("topic", "subtopic", "section", "category", "theme"):
-        val = spec.get(key)
-        if isinstance(val, str):
-            parts.append(val)
-    kw = spec.get("keywords")
-    if isinstance(kw, list):
-        parts.extend(str(k) for k in kw)
-    elif isinstance(kw, str):
-        parts.append(kw)
-    return _tokenize(" ".join(parts))
+    """Sobrat klyuchevye slova iz (sub)topic specifikacii."""
+    kw = set()
+    for field in ("topic", "subtopic", "subject", "domain"):
+        val = spec.get(field)
+        if val:
+            kw.update(_tokenize(str(val)))
+    return kw
 
 
-def _audit_task(task: Dict[str, Any], spec: Dict[str, Any]) -> Tuple[bool, str]:
-    """Proverit odnu zadachu. Vozvrashchaet (ok, reason).
-
-    Kriterii:
-      1) net flaga _generation_failed i markera [GEN_FAILED] v tekste;
-      2) tekst zadachi nepustoj i osmyslennyj (>= 15 simvolov);
-      3) tematicheskoe sootvetstvie: tekst zadachi peresekaetsya s klyuchevymi
-         slovami temy. Esli u temy net izvlekaemyh klyuchevyh slov - propuskaem
-         tematicheskuyu proverku (ne mozhem sudit), schitaem ok.
-    """
-    if not isinstance(task, dict):
-        return False, "task_not_dict"
+def _audit_task(task: Optional[Dict[str, Any]], spec: Dict[str, Any]) -> Tuple[bool, str]:
+    """Prostaya proverka: ne GEN_FAILED i sootvetstvie teme."""
+    if task is None:
+        return False, "missing"
     if task.get("_generation_failed"):
-        return False, task.get("_failure_reason") or "generation_failed"
-    text = (task.get("task_text") or "").strip()
-    if "[GEN_FAILED]" in text:
-        return False, "gen_failed_marker"
-    if len(text) < 15:
-        return False, "empty_or_too_short"
+        return False, task.get("_fail_reason", "generation_failed")
+    task_text = task.get("task_text", "")
+    if not task_text or len(task_text.strip()) < 20:
+        return False, "too_short"
+    # Proverka tematicheskogo sootvetstviya
+    spec_kw = _topic_keywords(spec)
+    if not spec_kw:
+        return True, "ok"  # net klyuchevyh slov - ne mozhem proverit
+    task_kw = _tokenize(task_text)
+    intersection = spec_kw & task_kw
+    if not intersection:
+        logger.warning(
+            "Step 2 AUDIT - pos=%s topic=%r subtopic=%r: "
+            "net peresecheniya klyuchevyh slov s temoj (spec_kw=%s)",
+            spec.get("position"),
+            spec.get("topic"),
+            spec.get("subtopic"),
+            spec_kw,
+        )
+        return False, "off_topic"
+    return True, "ok"
 
-    topic_kw = _topic_keywords(spec)
-    if not topic_kw:
-        # Net dannyh dlya tematicheskoj proverki - ne nakazyvaem zadachu.
-        return True, "ok_no_topic_data"
-    task_kw = _tokenize(text + " " + str(task.get("solution") or ""))
-    if topic_kw & task_kw:
-        return True, "ok"
-    return True, "ok_topic_unverified"  # FIX 2026-06-28: keyword-overlap audit gave false off_topic -> regen loop blew runtime 3min->10min (zombie reaper). DeepSeek tasks are valid but phrase topic via synonyms; treat thematic check as soft signal, do not requeue.
+
+# == generaciya odnoj zadachi ==
+
 
 async def _generate_one_spec(
     client: OpenRouterClient,
     semaphore: asyncio.Semaphore,
     spec: Dict[str, Any],
+    force_model: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], float]:
     """Sgenerirovat odnu zadachu pod odnu speku.
 
@@ -243,7 +172,7 @@ async def _generate_one_spec(
 
     pos = spec.get("position")
     lvl = spec.get("difficulty_level")
-    model = _model_for_level(lvl)
+    model = force_model if force_model is not None else _model_for_level(lvl)
     max_tokens = _max_tokens_for_level(lvl)
     formatted = _format_prompt_for_single_spec(spec)
     messages = [{"role": "user", "content": formatted}]
@@ -365,13 +294,36 @@ async def _generate_one_spec(
 
 
 # == osnovnaya funkciya ==
-async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+
+
+def _coerce_tasks_list(parsed: Any) -> List[Dict[str, Any]]:
+    """Bezopasno izvlech spisok zadach iz parsenogo JSON."""
+    if not isinstance(parsed, dict):
+        return []
+    tasks = parsed.get("tasks")
+    if isinstance(tasks, list):
+        return tasks
+    # poprobovat drugie klyuchi
+    for key in ("task", "problems", "items", "data"):
+        val = parsed.get(key)
+        if isinstance(val, list):
+            return val
+    return []
+
+
+async def generate_opus_tasks(
+    specs: List[Dict[str, Any]],
+    force_model: Optional[str] = None,
+) -> List[Dict[str, Any]]:
     """Sgenerirovat 10 zadach parallelno (semaphore=_PARALLEL_WORKERS).
 
     Vozvrashchaet 10 zadach (po odnoj na speku, otsortirovany po position).
     Posle generacii zapuskaetsya ETAP AUDITA (_audit_task): kazhdaya zadacha
     proveryaetsya na GEN_FAILED i tematicheskoe sootvetstvie. Sbojnye/off-topic
     pozicii peregeneriruyutsya po TEM ZHE usloviyam do _MAX_REGEN_ROUNDS raz.
+
+    force_model: esli peredan, ispolzuetsya DLya VSEH urovnej (vmesto _model_for_level).
+                Ispolzuetsya v rescue-pass dlya obhoda medlennogo R1.
     """
     if not specs:
         logger.error("Step 2 GENERATE - pustoj spisok spek, nechego generirovat")
@@ -395,7 +347,7 @@ async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any
 
     async with OpenRouterClient() as client:
         # --- Raund 0: pervichnaya generaciya vseh spek ---
-        coros = [_generate_one_spec(client, semaphore, spec) for spec in specs]
+        coros = [_generate_one_spec(client, semaphore, spec, force_model=force_model) for spec in specs]
         results = await asyncio.gather(*coros, return_exceptions=False)
 
         task_by_pos: Dict[Any, Dict[str, Any]] = {}
@@ -425,7 +377,7 @@ async def generate_opus_tasks(specs: List[Dict[str, Any]]) -> List[Dict[str, Any
                 _round, _MAX_REGEN_ROUNDS, len(bad_positions), bad_positions,
             )
             regen_specs = [spec_by_pos[p] for p in bad_positions]
-            regen_coros = [_generate_one_spec(client, semaphore, s) for s in regen_specs]
+            regen_coros = [_generate_one_spec(client, semaphore, s, force_model=force_model) for s in regen_specs]
             regen_results = await asyncio.gather(*regen_coros, return_exceptions=False)
             for task, cost in regen_results:
                 total_cost += cost

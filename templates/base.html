@@ -12,9 +12,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}?v={{ asset_version }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v=3">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_features.css') }}?v={{ asset_version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}?v={{ asset_version }}">
     <!-- Chart.js CDN -->
@@ -90,6 +90,25 @@
           }
         }
       });
+    </script>
+
+    <!-- Global KaTeX re-render helper (defined early so child templates can use it) -->
+    <script>
+    function reRenderMath(element) {
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(element || document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        } else {
+            console.warn('KaTeX auto-render not loaded yet — reRenderMath deferred');
+        }
+    }
     </script>
     
     <!-- Marked.js for Markdown rendering -->
@@ -406,6 +425,10 @@
                 <span class="drawer-link-icon">📚</span>
                 Теоретические методы
             </a>
+            <a href="{{ url_for('olympiad.predict_methods') }}" class="drawer-link">
+                <span class="drawer-link-icon">🔮</span>
+                Предикт методов
+            </a>
             {% if current_user.is_authenticated %}
             <a href="{{ url_for('olympiad.my_progress') }}" class="drawer-link">
                 <span class="drawer-link-icon">📈</span>
@@ -528,22 +551,7 @@
     <main class="main">
         {% block content %}{% endblock %}
     </main>
-    <!-- Global KaTeX re-render helper (replaces MathJax.typesetPromise) -->
-    <script>
-    function reRenderMath(element) {
-        if (typeof renderMathInElement === 'function') {
-            renderMathInElement(element || document.body, {
-                delimiters: [
-                    {left: '$$', right: '$$', display: true},
-                    {left: '$', right: '$', display: false},
-                    {left: '\\(', right: '\\)', display: false},
-                    {left: '\\[', right: '\\]', display: true}
-                ],
-                throwOnError: false
-            });
-        }
-    }
-    </script>
+    <!-- Global KaTeX re-render helper placeholder — real definition is in <head> -->
 
     {% if current_user.is_authenticated and not current_user.is_guest %}
     <script>

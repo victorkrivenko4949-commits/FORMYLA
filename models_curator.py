@@ -16,6 +16,7 @@ class CuratorState(db.Model):
     grade = db.Column(db.Integer, nullable=True)
     goal_text = db.Column(db.Text, nullable=True)
     prep_plan = db.Column(db.JSON, default=dict)
+    prep_state = db.Column(db.JSON, default=dict)
     onboarding_done = db.Column(db.Boolean, default=False, nullable=False)
     last_diagnostic_id = db.Column(db.Integer, db.ForeignKey('adaptive_test_results.id', ondelete='SET NULL'), nullable=True)
     summary = db.Column(db.Text, nullable=True)

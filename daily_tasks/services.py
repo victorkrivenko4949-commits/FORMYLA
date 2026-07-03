@@ -42,11 +42,20 @@ from .models import (
     TaskPool,
     UserTaskAssignment,
     ThematicDaySet,
+    PreGenQueue,
 )
 from .pipeline.orchestrator import (
     PipelineResult,
     run_daily_generation_pipeline,
 )
+
+# DeepSeek-клиент для AI-верификации ответа (опционально)
+try:
+    from pipeline.openrouter_client import OpenRouterClient
+    _HAVE_OPENROUTER = True
+except ImportError:
+    OpenRouterClient = None  # type: ignore[assignment]
+    _HAVE_OPENROUTER = False
 from .profile import build_profile, ProfileBuildError
 from . import task_bank as tb
 
@@ -579,12 +588,15 @@ def submit_answer(
 ) -> Dict[str, Any]:
     """Сохранить ответ пользователя на задачу.
 
+    Верификация ответа — через DeepSeek (сверяет ответ пользователя
+    с эталонным ``correct_answer`` и решением ``solution``).
+    Если DeepSeek недоступен — fallback на точное сравнение строк.
+
     Возвращает
     ----------
     dict
         * ``success`` — bool
-        * ``is_correct`` — bool (если ответ проверяем; пока всегда True/False
-          на основе точного сравнения с ``correct_answer``)
+        * ``is_correct`` — bool
         * ``correct_answer`` — правильный ответ (чтобы показать)
         * ``message`` — пояснение
     """
@@ -592,13 +604,21 @@ def submit_answer(
     if not item:
         return {"success": False, "message": "Задача не найдена"}
 
-    # ── проверка ответа (точное сравнение) ───────────────────────────
+    # ── AI-верификация ответа через DeepSeek ─────────────────────────
     is_correct = False
-    if item.correct_answer:
-        # Нормализуем: обрезаем пробелы, приводим к нижнему регистру
-        norm_user = answer.strip().lower()
-        norm_correct = item.correct_answer.strip().lower()
-        is_correct = norm_user == norm_correct
+    if item.correct_answer and _HAVE_OPENROUTER and OpenRouterClient is not None:
+        try:
+            is_correct = asyncio.run(_deepseek_verify_answer(
+                task_text=item.task_text or "",
+                correct_answer=item.correct_answer,
+                solution=item.solution or "",
+                user_answer=answer,
+            ))
+        except Exception:
+            logger.exception("DeepSeek verify failed — fallback to exact match")
+            is_correct = _fallback_exact_match(answer, item.correct_answer)
+    elif item.correct_answer:
+        is_correct = _fallback_exact_match(answer, item.correct_answer)
 
     item.user_answer = answer
     item.is_correct = is_correct
@@ -614,6 +634,60 @@ def submit_answer(
         "correct_answer": item.correct_answer,
         "message": "Ответ сохранён",
     }
+
+
+def _fallback_exact_match(user_answer: str, correct_answer: str) -> bool:
+    """Точное сравнение строк (fallback при недоступности AI)."""
+    return user_answer.strip().lower() == correct_answer.strip().lower()
+
+
+async def _deepseek_verify_answer(
+    task_text: str,
+    correct_answer: str,
+    solution: str,
+    user_answer: str,
+) -> bool:
+    """Проверить ответ пользователя через DeepSeek.
+
+    DeepSeek получает условие, эталонный ответ и решение, а также
+    ответ ученика, и возвращает JSON: ``{"is_correct": true/false}``.
+    """
+    system_prompt = (
+        "Ты — верификатор ответов математической платформы FORMYLA.\n\n"
+        "Тебе даны:\n"
+        "1) Условие задачи\n"
+        "2) Эталонный правильный ответ\n"
+        "3) Эталонное решение\n"
+        "4) Ответ ученика\n\n"
+        "Проверь, совпадает ли ответ ученика с эталонным по СМЫСЛУ.\n"
+        "Учитывай:\n"
+        "  - Разные формы записи: 2/4 и 1/2, 0.5 и 1/2, x=2 и просто 2\n"
+        "  - Порядок элементов в множестве: {1,2} и {2,1} — одно и то же\n"
+        "  - LaTeX-различия: $x^2$ и x^2 — не влияют на суть ответа\n"
+        "  - Пробелы, регистр, лишние символы — игнорируй\n\n"
+        'Ответь строго JSON: {"is_correct": true/false}\n'
+        "Только JSON, без markdown, без пояснений."
+    )
+    user_prompt = (
+        f"=== УСЛОВИЕ ===\n{task_text}\n\n"
+        f"=== ЭТАЛОННЫЙ ОТВЕТ ===\n{correct_answer}\n\n"
+        f"=== ЭТАЛОННОЕ РЕШЕНИЕ ===\n{solution}\n\n"
+        f"=== ОТВЕТ УЧЕНИКА ===\n{user_answer}\n\n"
+        "Верен ли ответ ученика?"
+    )
+
+    async with OpenRouterClient() as client:
+        data, _usage = await client.chat_json(
+            model="deepseek/deepseek-chat-v3.1",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=512,
+            temperature=0.0,
+        )
+
+    return bool(data.get("is_correct", False))
 
 
 def get_hint(
@@ -1118,6 +1192,17 @@ async def _run_pipeline_async(
         # ── завершение ──────────────────────────────────────────────
         if result.success:
             _complete_job(job_id)
+
+            # ── предгенерация на завтра ──────────────────────────────
+            # После успешной генерации сегодняшнего сета ставим в очередь
+            # генерацию на завтра (без блокировки ответа пользователю).
+            try:
+                _enqueue_tomorrow_pregen(user_id, profile)
+            except Exception as pregen_exc:
+                logger.warning(
+                    "[user=%d] Ошибка enqueue_tomorrow_pregen: %s",
+                    user_id, pregen_exc,
+                )
         else:
             _fail_job(job_id, result.error or "Пайплайн завершился с ошибкой")
 
@@ -1772,6 +1857,283 @@ def _run_and_fill_pool(app, pool_id: int, profile: Dict[str, Any]) -> None:
             except Exception:
                 logger.exception("Не удалось отметить пул #%s как failed", pool_id)
                 db.session.rollback()
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Предгенерация задач на завтра (PreGenQueue)
+# ══════════════════════════════════════════════════════════════════════
+
+MAX_CONCURRENT_PREGEN = 2
+"""Сколько предгенераций может выполняться параллельно."""
+
+PREGEN_SLOT_HOURS = 24
+"""Окно распределения очереди (часов). Если очередь занята, release_at
+новых запросов раздвигается равномерно на это окно."""
+
+PREGEN_POOL_TTL_HOURS = 12
+"""TaskPool, созданный для завтра, живёт 12 часов (достаточно дожить
+до полуночи, когда завтра станет сегодня)."""
+
+
+def _enqueue_tomorrow_pregen(user_id: int, profile: Dict[str, Any]) -> None:
+    """Поставить в очередь предгенерацию задач на завтра.
+
+    Вызывается **после** успешной генерации сегодняшнего сета.
+    Создаёт запись в ``pre_gen_queue`` и, если квота позволяет,
+    сразу запускает ``_run_and_fill_pool``.
+
+    Если очередь переполнена — запись ставится в статус ``queued``
+    с ``release_at``, раздвинутым на ``PREGEN_SLOT_HOURS``.
+    """
+    tomorrow = today_in_user_tz() + timedelta(days=1)
+    cache_key = compute_cache_key(profile)
+
+    # ── Guard: уже есть запись на завтра ──────────────────────────────
+    existing: Optional[PreGenQueue] = PreGenQueue.query.filter(
+        PreGenQueue.user_id == user_id,
+        PreGenQueue.target_date == tomorrow,
+    ).first()
+    if existing:
+        logger.info(
+            "Предгенерация на %s для user=%d уже существует (status=%s)",
+            tomorrow, user_id, existing.status,
+        )
+        return
+
+    subject = _extract_subject_from_profile(profile)
+    grade = profile.get("class_level", 0)
+    profile_json = json.dumps(profile, ensure_ascii=False, default=str)
+
+    # ── Создаём PreGenQueue entry ─────────────────────────────────────
+    now = datetime.utcnow()
+    expires_at = now + timedelta(hours=PREGEN_POOL_TTL_HOURS)
+
+    # Считаем, сколько записей уже в generating или queued
+    active_count = PreGenQueue.query.filter(
+        PreGenQueue.status.in_(["queued", "generating"]),
+        PreGenQueue.target_date == tomorrow,
+        PreGenQueue.id.isnot(None),  # тривиально true
+    ).count()
+
+    if active_count < MAX_CONCURRENT_PREGEN:
+        # ── Квота есть — сразу запускаем генерацию ────────────────────
+        # Пытаемся создать TaskPool (атомарно, ON CONFLICT DO NOTHING)
+        pool_id = _try_create_tomorrow_pool(cache_key, subject, grade, profile_json, expires_at)
+        if pool_id is None:
+            # Пул уже существует — просто привязываемся
+            pool: Optional[TaskPool] = TaskPool.query.filter_by(cache_key=cache_key).first()
+            pool_id = pool.id if pool else None
+
+        entry = PreGenQueue(
+            user_id=user_id,
+            target_date=tomorrow,
+            cache_key=cache_key,
+            pool_id=pool_id,
+            status="generating",
+            profile_json=profile_json,
+            release_at=now,
+            expires_at=expires_at,
+        )
+        db.session.add(entry)
+        db.session.commit()
+
+        if pool_id:
+            # Запускаем фоновую генерацию
+            app = current_app._get_current_object()
+            thread = threading.Thread(
+                target=_run_and_fill_pool,
+                args=(app, pool_id, profile),
+                daemon=True,
+            )
+            thread.start()
+            logger.info(
+                "Предгенерация на %s для user=%d запущена (пул #%s)",
+                tomorrow, user_id, pool_id,
+            )
+        else:
+            logger.warning(
+                "Предгенерация на %s для user=%d: пул не создан",
+                tomorrow, user_id,
+            )
+    else:
+        # ── Очередь переполнена — ставим в очередь ────────────────────
+        # Равномерно распределяем release_at на PREGEN_SLOT_HOURS
+        queue_position = active_count - MAX_CONCURRENT_PREGEN + 1
+        release_offset = timedelta(
+            hours=PREGEN_SLOT_HOURS * queue_position / (MAX_CONCURRENT_PREGEN + 1),
+        )
+        release_at = now + release_offset
+
+        entry = PreGenQueue(
+            user_id=user_id,
+            target_date=tomorrow,
+            cache_key=cache_key,
+            pool_id=None,
+            status="queued",
+            profile_json=profile_json,
+            release_at=release_at,
+            expires_at=expires_at,
+        )
+        db.session.add(entry)
+        db.session.commit()
+        logger.info(
+            "Предгенерация на %s для user=%d поставлена в очередь #%d "
+            "(release_at=%s)",
+            tomorrow, user_id, queue_position, release_at.isoformat(),
+        )
+
+
+def _try_create_tomorrow_pool(
+    cache_key: str,
+    subject: str,
+    grade: int,
+    profile_json: str,
+    expires_at: datetime,
+) -> Optional[int]:
+    """Атомарно создать TaskPool для tomorrow, если ещё нет.
+
+    Возвращает ``pool_id`` или ``None``, если такой ключ уже есть.
+    """
+    stmt = _dialect_insert(TaskPool).values(
+        cache_key=cache_key,
+        subject=subject,
+        grade=grade,
+        profile_snapshot=profile_json,
+        tasks="[]",
+        specs="[]",
+        status="generating",
+        valid_count=0,
+        expires_at=expires_at,
+    ).on_conflict_do_nothing(index_elements=['cache_key'])
+
+    try:
+        result = db.session.execute(stmt.returning(TaskPool.id))
+        row = result.fetchone()
+        db.session.commit()
+        return row[0] if row else None
+    except Exception:
+        logger.exception("ON CONFLICT insert failed for cache_key=%s", cache_key)
+        db.session.rollback()
+        return None
+
+
+def _process_pregen_queue() -> int:
+    """Обработать очередь предгенерации: запустить генерацию для entry,
+    чей ``release_at`` наступил, а статус ``queued``.
+
+    Вызывается по cron'у раз в N минут и при старте приложения.
+
+    Returns
+    -------
+    int
+        Количество запущенных генераций.
+    """
+    now = datetime.utcnow()
+    tomorrow = today_in_user_tz() + timedelta(days=1)
+
+    # Сколько слотов свободно
+    active_count = PreGenQueue.query.filter(
+        PreGenQueue.status == "generating",
+    ).count()
+    free_slots = max(0, MAX_CONCURRENT_PREGEN - active_count)
+
+    if free_slots == 0:
+        logger.debug("Все слоты предгенерации заняты (%d/%d)", active_count, MAX_CONCURRENT_PREGEN)
+        return 0
+
+    # Выбираем entry, готовые к запуску
+    ready_entries: List[PreGenQueue] = PreGenQueue.query.filter(
+        PreGenQueue.status == "queued",
+        PreGenQueue.release_at.isnot(None),
+        PreGenQueue.release_at <= now,
+    ).order_by(PreGenQueue.release_at.asc()).limit(free_slots).all()
+
+    launched = 0
+    for entry in ready_entries:
+        profile = _parse_json_field(entry.profile_json, {})
+        if not profile:
+            logger.warning("PreGenQueue #%d: нет profile_json, пропускаю", entry.id)
+            entry.status = "failed"
+            db.session.flush()
+            continue
+
+        cache_key = entry.cache_key
+        subject = _extract_subject_from_profile(profile)
+        grade = profile.get("class_level", 0)
+
+        pool_id = _try_create_tomorrow_pool(
+            cache_key, subject, grade,
+            entry.profile_json,
+            datetime.utcnow() + timedelta(hours=PREGEN_POOL_TTL_HOURS),
+        )
+        if pool_id is None:
+            # Пул уже существует — берём его
+            pool: Optional[TaskPool] = TaskPool.query.filter_by(cache_key=cache_key).first()
+            pool_id = pool.id if pool else None
+
+        if not pool_id:
+            logger.warning("PreGenQueue #%d: не удалось создать/найти пул", entry.id)
+            entry.status = "failed"
+            db.session.flush()
+            continue
+
+        entry.pool_id = pool_id
+        entry.status = "generating"
+        entry.release_at = datetime.utcnow()
+        db.session.flush()
+
+        app = current_app._get_current_object()
+        thread = threading.Thread(
+            target=_run_and_fill_pool,
+            args=(app, pool_id, profile),
+            daemon=True,
+        )
+        thread.start()
+        launched += 1
+        logger.info(
+            "PreGenQueue #%d: запущена генерация пула #%d (user=%d, date=%s)",
+            entry.id, pool_id, entry.user_id, entry.target_date,
+        )
+
+    if launched:
+        db.session.commit()
+    else:
+        db.session.rollback()
+
+    return launched
+
+
+def _reap_stale_pregen() -> int:
+    """Очистить зависшие PreGenQueue entry (status='generating', но
+    соответствующий TaskPool уже failed или истекло expires_at).
+
+    Returns
+    -------
+    int
+        Количество помеченных как failed.
+    """
+    now = datetime.utcnow()
+    stale: List[PreGenQueue] = PreGenQueue.query.filter(
+        PreGenQueue.status == "generating",
+        (
+            (PreGenQueue.expires_at.isnot(None)) & (PreGenQueue.expires_at < now)
+        ),
+    ).all()
+
+    marked = 0
+    for entry in stale:
+        # Проверяем пул
+        if entry.pool_id:
+            pool = db.session.get(TaskPool, entry.pool_id)
+            if pool and pool.status == "generating":
+                continue  # ещё живой
+        entry.status = "failed"
+        marked += 1
+
+    if marked:
+        db.session.commit()
+        logger.info("Очищено %d зависших PreGenQueue entry", marked)
+    return marked
 
 
 # ══════════════════════════════════════════════════════════════════════

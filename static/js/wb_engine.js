@@ -393,6 +393,15 @@
                 }
                 break;
 
+            case "board-selected":
+                // Пробрасываем событие выбора доски в родительское окно
+                _postToParent("board-selected", {
+                    board_id: data.board_id,
+                    board_name: data.board_name,
+                    selected_by: data.selected_by,
+                });
+                break;
+
             case "flag-changed":
                 if (data.flag && data.value !== undefined) {
                     roomFlags[data.flag] = data.value;
@@ -533,6 +542,11 @@
         // Сменить роль
         changeRole: function (targetPeerId, role) {
             if (sig) sig.changeRole(targetPeerId, role);
+        },
+
+        // Выбрать доску для всех участников
+        selectBoard: function (boardId, boardName) {
+            if (sig) sig.selectBoard(boardId, boardName);
         },
 
         // Установить флаг комнаты

@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-"""Blueprint olympiad_bp — раздел «Олимпиады» (/olympiads/*)."""
+﻿# -*- coding: utf-8 -*-
+"""Blueprint olympiad_bp вЂ” СЂР°Р·РґРµР» В«РћР»РёРјРїРёР°РґС‹В» (/olympiads/*)."""
 
 import json
 import logging
@@ -11,7 +11,7 @@ from flask_login import current_user, login_required
 from models import db, User
 from models_olympiad import (
     Probnik, OlympiadTask, TheoryBlock, ProbnikTheory,
-    TaskAttempt, StageAttempt, MethodTask,
+    TaskAttempt, StageAttempt, MethodTask, VserossCourseEntry,
     ATTEMPT_STATUSES, STAGE_RESULTS,
 )
 from services.figures_manifest import get_figures_for_probnik_task
@@ -20,29 +20,126 @@ logger = logging.getLogger(__name__)
 
 olympiad_bp = Blueprint("olympiad", __name__, url_prefix="/olympiads")
 
-_COMPETITION = "ВсОШ"
+_COMPETITION = "Р’СЃРћРЁ"
 _SEASON_YEAR = 2027
 
-# ──────────────────────────────────────────────
-# 1. CATALOG — список курсов
-# ──────────────────────────────────────────────
+_STAGES = ['Школьный', 'Муниципальный', 'Региональный', 'Заключительный']
+_STAGE_ICONS = {
+    'Школьный': '🏫',
+    'Муниципальный': '🏛️',
+    'Региональный': '🗺️',
+    'Заключительный': '🏆',
+}
+
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 1. CATALOG вЂ” СЃРїРёСЃРѕРє РєСѓСЂСЃРѕРІ
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+
+@olympiad_bp.route('/')
+def catalog_index():
+    """Redirect /olympiads/ to /olympiads/courses."""
+    return redirect(url_for('olympiad.catalog'))
+
 @olympiad_bp.route('/courses')
 def catalog():
-    """Список доступных курсов (9, 10, 11 класс)."""
-    return render_template('olympiad/catalog.html')
+    """РЎРїРёСЃРѕРє РґРѕСЃС‚СѓРїРЅС‹С… РєСѓСЂСЃРѕРІ Р’СЃРћРЁ (9, 10, 11 РєР»Р°СЃСЃ)."""
+    grade_ids = [9, 10, 11]
+    grades_data = []
+    total_conf = {1: 0, 2: 0, 3: 0}
+    total_included = 0
+
+    for g in grade_ids:
+        entries = VserossCourseEntry.query.filter_by(grade=g).all()
+        # confidence counts per grade
+        conf = {1: 0, 2: 0, 3: 0}
+        # stage -> count
+        stage_counts = {}
+        for e in entries:
+            c = e.confidence_level if e.confidence_level is not None else 1
+            conf[c] = conf.get(c, 0) + 1
+            s = e.stage or 'РќРµРёР·РІРµСЃС‚РЅРѕ'
+            stage_counts[s] = stage_counts.get(s, 0) + 1
+
+        # Build stages list in _STAGES order
+        stages_list = []
+        for s in _STAGES:
+            if s in stage_counts:
+                stages_list.append({'name': s, 'count': stage_counts[s]})
+                del stage_counts[s]
+        # Add any extra stages not in _STAGES
+        for s, cnt in stage_counts.items():
+            stages_list.append({'name': s, 'count': cnt})
+
+        # Aggregate global confidence counts
+        for k in (1, 2, 3):
+            total_conf[k] = total_conf.get(k, 0) + conf.get(k, 0)
+
+        grades_data.append({
+            'grade': g,
+            'total': len(entries),
+            'green': conf.get(3, 0),
+            'yellow': conf.get(2, 0),
+            'white': conf.get(1, 0),
+            'stages': stages_list,
+        })
+        total_included += len(entries)
+
+    return render_template('olympiad/catalog.html',
+                           grades=grades_data,
+                           conf_counts=total_conf,
+                           total_included=total_included,
+                           stages=_STAGES,
+                           stage_icons=_STAGE_ICONS)
+
+
+@olympiad_bp.route('/course/<int:grade>')
+def vsosh_course(grade: int):
+    """РЎС‚СЂР°РЅРёС†Р° РєСѓСЂСЃР° РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ РєР»Р°СЃСЃР° (Р’СЃРћРЁ)."""
+    if grade not in (9, 10, 11):
+        return redirect(url_for('olympiad.catalog'))
+    entries = (VserossCourseEntry.query
+              .filter(VserossCourseEntry.grade == grade)
+              .order_by(VserossCourseEntry.study_order,
+                        VserossCourseEntry.confidence_level.desc())
+              .all())
+    conf_counts = {}
+    total = 0
+    for e in entries:
+        c = e.confidence_level if e.confidence_level is not None else 1
+        conf_counts[c] = conf_counts.get(c, 0) + 1
+        total += 1
+    # Group entries by stage (_STAGES order)
+    stages_data = []
+    for stage_name in _STAGES:
+        stage_methods = [e for e in entries if e.stage == stage_name]
+        if stage_methods:
+            stages_data.append({
+                'name': stage_name,
+                'icon': _STAGE_ICONS.get(stage_name, '📘'),
+                'methods': stage_methods,
+            })
+
+    return render_template('olympiad/vsosh_course.html',
+                           grade=grade,
+                           entries=entries,
+                           conf_counts=conf_counts,
+                           total=total,
+                           stages=_STAGES,
+                           stage_icons=_STAGE_ICONS,
+                           stages_data=stages_data)
 
 
 def _course_view(grade: int):
-    """Общая логика для course / course/10 / course/11."""
+    """РћР±С‰Р°СЏ Р»РѕРіРёРєР° РґР»СЏ course / course/10 / course/11."""
     probniks = (Probnik.query
                 .filter_by(competition=_COMPETITION, grade=grade, season_year=_SEASON_YEAR)
                 .order_by(Probnik.sort_order).all())
-    # ВАЖНО: TheoryBlock.grades — db.JSON (на проде → JSONB).
-    # .contains(str(grade)) на JSONB генерирует оператор @> и падает с
+    # Р’РђР–РќРћ: TheoryBlock.grades вЂ” db.JSON (РЅР° РїСЂРѕРґРµ в†’ JSONB).
+    # .contains(str(grade)) РЅР° JSONB РіРµРЅРµСЂРёСЂСѓРµС‚ РѕРїРµСЂР°С‚РѕСЂ @> Рё РїР°РґР°РµС‚ СЃ
     # InvalidParameterValue: invalid input syntax for type json.
-    # Используем cast в TEXT и LIKE (работает и на SQLite, и на PostgreSQL).
-    # try/except + rollback: список разделов опционален — лучше пустой
-    # список, чем 500 на странице курса.
+    # РСЃРїРѕР»СЊР·СѓРµРј cast РІ TEXT Рё LIKE (СЂР°Р±РѕС‚Р°РµС‚ Рё РЅР° SQLite, Рё РЅР° PostgreSQL).
+    # try/except + rollback: СЃРїРёСЃРѕРє СЂР°Р·РґРµР»РѕРІ РѕРїС†РёРѕРЅР°Р»РµРЅ вЂ” Р»СѓС‡С€Рµ РїСѓСЃС‚РѕР№
+    # СЃРїРёСЃРѕРє, С‡РµРј 500 РЅР° СЃС‚СЂР°РЅРёС†Рµ РєСѓСЂСЃР°.
     method_sections = []
     try:
         from sqlalchemy import cast, String
@@ -81,27 +178,27 @@ def _course_view(grade: int):
                            method_sections=method_sections)
 
 
-@olympiad_bp.route('/course')
-def course():
+@olympiad_bp.route('/course-probnik')
+def course_probnik():
     return _course_view(9)
 
 
-@olympiad_bp.route('/course/10')
-def course_10():
+@olympiad_bp.route('/course-probnik/10')
+def course_probnik_10():
     return _course_view(10)
 
 
-@olympiad_bp.route('/course/11')
-def course_11():
+@olympiad_bp.route('/course-probnik/11')
+def course_probnik_11():
     return _course_view(11)
 
 
-# ──────────────────────────────────────────────
-# 3. PROBNIK — страница пробника
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 3. PROBNIK вЂ” СЃС‚СЂР°РЅРёС†Р° РїСЂРѕР±РЅРёРєР°
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/probnik/<code>')
 def probnik(code):
-    """Страница пробника: список задач, теория, чертежи."""
+    """РЎС‚СЂР°РЅРёС†Р° РїСЂРѕР±РЅРёРєР°: СЃРїРёСЃРѕРє Р·Р°РґР°С‡, С‚РµРѕСЂРёСЏ, С‡РµСЂС‚РµР¶Рё."""
     p = Probnik.query.filter_by(code=code).first_or_404()
     tasks = (OlympiadTask.query
              .filter_by(probnik_id=p.id)
@@ -114,7 +211,7 @@ def probnik(code):
                     .filter(TaskAttempt.task_id.in_([t.id for t in tasks]))
                     .all())
         attempt_map = {a.task_id: a.status for a in attempts}
-    # Теория для пробника
+    # РўРµРѕСЂРёСЏ РґР»СЏ РїСЂРѕР±РЅРёРєР°
     pt_links = (ProbnikTheory.query
                 .filter_by(probnik_id=p.id)
                 .order_by(ProbnikTheory.display_order)
@@ -124,7 +221,7 @@ def probnik(code):
         tb = TheoryBlock.query.get(pt.theory_block_id)
         if tb:
             theory_links.append(tb)
-    # Чертежи к задачам
+    # Р§РµСЂС‚РµР¶Рё Рє Р·Р°РґР°С‡Р°Рј
     task_figures = {}
     for t in tasks:
         figs = get_figures_for_probnik_task(p, t)
@@ -137,12 +234,12 @@ def probnik(code):
                            task_figures=task_figures)
 
 
-# ──────────────────────────────────────────────
-# 4. TASK — страница задачи
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 4. TASK вЂ” СЃС‚СЂР°РЅРёС†Р° Р·Р°РґР°С‡Рё
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/task/<int:task_id>')
 def task(task_id):
-    """Страница одной задачи."""
+    """РЎС‚СЂР°РЅРёС†Р° РѕРґРЅРѕР№ Р·Р°РґР°С‡Рё."""
     t = OlympiadTask.query.get_or_404(task_id)
     p = Probnik.query.get(t.probnik_id)
     attempt = None
@@ -157,13 +254,13 @@ def task(task_id):
                            condition_figures=condition_figures)
 
 
-# ──────────────────────────────────────────────
-# 5. TASK_ATTEMPT — сохранить попытку (JSON)
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 5. TASK_ATTEMPT вЂ” СЃРѕС…СЂР°РЅРёС‚СЊ РїРѕРїС‹С‚РєСѓ (JSON)
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/task/<int:task_id>/attempt', methods=['POST'])
 @login_required
 def task_attempt(task_id):
-    """Сохранить/обновить попытку решения задачи."""
+    """РЎРѕС…СЂР°РЅРёС‚СЊ/РѕР±РЅРѕРІРёС‚СЊ РїРѕРїС‹С‚РєСѓ СЂРµС€РµРЅРёСЏ Р·Р°РґР°С‡Рё."""
     t = OlympiadTask.query.get_or_404(task_id)
     data = request.get_json(force=True, silent=True) or {}
     status = data.get('status', 'started')
@@ -188,20 +285,20 @@ def task_attempt(task_id):
     return jsonify({'ok': True, 'status': attempt.status})
 
 
-# ──────────────────────────────────────────────
-# 6. TASK_SUBMIT — финальная отправка ответа (JSON)
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 6. TASK_SUBMIT вЂ” С„РёРЅР°Р»СЊРЅР°СЏ РѕС‚РїСЂР°РІРєР° РѕС‚РІРµС‚Р° (JSON)
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
 def task_submit(task_id):
-    """Финальная отправка ответа задачи.
+    """Р¤РёРЅР°Р»СЊРЅР°СЏ РѕС‚РїСЂР°РІРєР° РѕС‚РІРµС‚Р° Р·Р°РґР°С‡Рё.
 
-    Сравнивает ответ пользователя с task.answer (после нормализации).
-    Возвращает структуру, которую ожидает фронт:
+    РЎСЂР°РІРЅРёРІР°РµС‚ РѕС‚РІРµС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ СЃ task.answer (РїРѕСЃР»Рµ РЅРѕСЂРјР°Р»РёР·Р°С†РёРё).
+    Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂСѓРєС‚СѓСЂСѓ, РєРѕС‚РѕСЂСѓСЋ РѕР¶РёРґР°РµС‚ С„СЂРѕРЅС‚:
       {success, is_correct, correct_answer, xp_earned, ai_feedback}
-    Также проставляет TaskAttempt.status:
-      - 'solved'    — если ответ совпал;
-      - 'attempted' — если не совпал.
+    РўР°РєР¶Рµ РїСЂРѕСЃС‚Р°РІР»СЏРµС‚ TaskAttempt.status:
+      - 'solved'    вЂ” РµСЃР»Рё РѕС‚РІРµС‚ СЃРѕРІРїР°Р»;
+      - 'attempted' вЂ” РµСЃР»Рё РЅРµ СЃРѕРІРїР°Р».
     """
     import re as _re
     t = OlympiadTask.query.get_or_404(task_id)
@@ -215,47 +312,47 @@ def task_submit(task_id):
         if s is None:
             return ''
         s = str(s).strip().lower()
-        # снимаем $...$, \(...\), пробелы и популярную косметику
+        # СЃРЅРёРјР°РµРј $...$, \(...\), РїСЂРѕР±РµР»С‹ Рё РїРѕРїСѓР»СЏСЂРЅСѓСЋ РєРѕСЃРјРµС‚РёРєСѓ
         s = s.replace('$', '').replace('\\(', '').replace('\\)', '')
         s = s.replace('\\[', '').replace('\\]', '')
         s = s.replace(',', '.')
         s = _re.sub(r'\s+', '', s)
-        # 1/2 эквивалентно \frac{1}{2}
+        # 1/2 СЌРєРІРёРІР°Р»РµРЅС‚РЅРѕ \frac{1}{2}
         s = _re.sub(r'\\frac\{([^{}]+)\}\{([^{}]+)\}', r'\1/\2', s)
-        # \cdot → *
+        # \cdot в†’ *
         s = s.replace('\\cdot', '*').replace('\\times', '*')
-        # убираем финальную точку
+        # СѓР±РёСЂР°РµРј С„РёРЅР°Р»СЊРЅСѓСЋ С‚РѕС‡РєСѓ
         s = s.rstrip('.')
         return s
 
     is_correct = bool(correct_raw) and _norm(user_answer_raw) == _norm(correct_raw)
     ai_comment_extra = ''
 
-    # ── AI-эквивалентность ответа (если строгое сравнение не совпало) ──
-    # Используем DeepSeek, чтобы признать ответы вроде «y=39» эквивалентом «39»,
-    # «√2», «sqrt(2)», «1.414…» и т.п. Если ключа нет / сеть упала — тихо
-    # пропускаем (is_correct остаётся как был).
+    # в”Ђв”Ђ AI-СЌРєРІРёРІР°Р»РµРЅС‚РЅРѕСЃС‚СЊ РѕС‚РІРµС‚Р° (РµСЃР»Рё СЃС‚СЂРѕРіРѕРµ СЃСЂР°РІРЅРµРЅРёРµ РЅРµ СЃРѕРІРїР°Р»Рѕ) в”Ђв”Ђ
+    # РСЃРїРѕР»СЊР·СѓРµРј DeepSeek, С‡С‚РѕР±С‹ РїСЂРёР·РЅР°С‚СЊ РѕС‚РІРµС‚С‹ РІСЂРѕРґРµ В«y=39В» СЌРєРІРёРІР°Р»РµРЅС‚РѕРј В«39В»,
+    # В«в€љ2В», В«sqrt(2)В», В«1.414вЂ¦В» Рё С‚.Рї. Р•СЃР»Рё РєР»СЋС‡Р° РЅРµС‚ / СЃРµС‚СЊ СѓРїР°Р»Р° вЂ” С‚РёС…Рѕ
+    # РїСЂРѕРїСѓСЃРєР°РµРј (is_correct РѕСЃС‚Р°С‘С‚СЃСЏ РєР°Рє Р±С‹Р»).
     if (not is_correct) and correct_raw and user_answer_raw:
         try:
             import os as _os
             if _os.environ.get('DEEPSEEK_API_KEY'):
                 from ai.deepseek_client import DeepSeekClient
-                import json as _json
+                import json
                 _client = DeepSeekClient()
                 _sys = (
-                    'Ты проверяешь школьный ответ на олимпиадную задачу. '
-                    'Тебе дают эталонный ответ и ответ ученика. Реши, эквивалентны ли они математически. '
-                    'Игнорируй: лишние пробелы, регистр, формат («ответ:», «=», «x=», «y=» и т.п.), '
-                    'разные записи дробей (1/2 = 0.5 = \\frac{1}{2}), корней (sqrt(2) = \\sqrt{2}), '
-                    'единицы измерения если они совпадают по смыслу. '
-                    'Если ученик дал множество решений или диапазон, проверь полное совпадение с эталоном. '
-                    'Верни СТРОГО JSON-объект без markdown и кода: '
-                    '{"is_equivalent": true|false, "comment": "краткий комментарий 1-2 предложения"}'
+                    'РўС‹ РїСЂРѕРІРµСЂСЏРµС€СЊ С€РєРѕР»СЊРЅС‹Р№ РѕС‚РІРµС‚ РЅР° РѕР»РёРјРїРёР°РґРЅСѓСЋ Р·Р°РґР°С‡Сѓ. '
+                    'РўРµР±Рµ РґР°СЋС‚ СЌС‚Р°Р»РѕРЅРЅС‹Р№ РѕС‚РІРµС‚ Рё РѕС‚РІРµС‚ СѓС‡РµРЅРёРєР°. Р РµС€Рё, СЌРєРІРёРІР°Р»РµРЅС‚РЅС‹ Р»Рё РѕРЅРё РјР°С‚РµРјР°С‚РёС‡РµСЃРєРё. '
+                    'РРіРЅРѕСЂРёСЂСѓР№: Р»РёС€РЅРёРµ РїСЂРѕР±РµР»С‹, СЂРµРіРёСЃС‚СЂ, С„РѕСЂРјР°С‚ (В«РѕС‚РІРµС‚:В», В«=В», В«x=В», В«y=В» Рё С‚.Рї.), '
+                    'СЂР°Р·РЅС‹Рµ Р·Р°РїРёСЃРё РґСЂРѕР±РµР№ (1/2 = 0.5 = \\frac{1}{2}), РєРѕСЂРЅРµР№ (sqrt(2) = \\sqrt{2}), '
+                    'РµРґРёРЅРёС†С‹ РёР·РјРµСЂРµРЅРёСЏ РµСЃР»Рё РѕРЅРё СЃРѕРІРїР°РґР°СЋС‚ РїРѕ СЃРјС‹СЃР»Сѓ. '
+                    'Р•СЃР»Рё СѓС‡РµРЅРёРє РґР°Р» РјРЅРѕР¶РµСЃС‚РІРѕ СЂРµС€РµРЅРёР№ РёР»Рё РґРёР°РїР°Р·РѕРЅ, РїСЂРѕРІРµСЂСЊ РїРѕР»РЅРѕРµ СЃРѕРІРїР°РґРµРЅРёРµ СЃ СЌС‚Р°Р»РѕРЅРѕРј. '
+                    'Р’РµСЂРЅРё РЎРўР РћР“Рћ JSON-РѕР±СЉРµРєС‚ Р±РµР· markdown Рё РєРѕРґР°: '
+                    '{"is_equivalent": true|false, "comment": "РєСЂР°С‚РєРёР№ РєРѕРјРјРµРЅС‚Р°СЂРёР№ 1-2 РїСЂРµРґР»РѕР¶РµРЅРёСЏ"}'
                 )
                 _user = (
-                    'Эталонный ответ: ' + str(correct_raw) + '\n' +
-                    'Ответ ученика: ' + str(user_answer_raw) + '\n' +
-                    'Эквивалентны?'
+                    'Р­С‚Р°Р»РѕРЅРЅС‹Р№ РѕС‚РІРµС‚: ' + str(correct_raw) + '\n' +
+                    'РћС‚РІРµС‚ СѓС‡РµРЅРёРєР°: ' + str(user_answer_raw) + '\n' +
+                    'Р­РєРІРёРІР°Р»РµРЅС‚РЅС‹?'
                 )
                 _raw = _client.generate(prompt=_user, system_prompt=_sys, temperature=0.0, max_tokens=200)
                 _m = _re.search(r'\{[\s\S]*?\}', _raw or '')
@@ -265,10 +362,9 @@ def task_submit(task_id):
                         is_correct = True
                     ai_comment_extra = (_data.get('comment') or '').strip()
         except Exception as _e:
-            import logging as _lg
             _lg.getLogger(__name__).warning('AI-equivalence check failed: %r', _e)
 
-    # ── upsert TaskAttempt ──
+    # в”Ђв”Ђ upsert TaskAttempt в”Ђв”Ђ
     new_status = 'solved' if is_correct else 'attempted'
     attempt = (TaskAttempt.query
                .filter_by(user_id=current_user.id, task_id=task_id)
@@ -282,7 +378,7 @@ def task_submit(task_id):
         )
         db.session.add(attempt)
     else:
-        # не понижаем статус с solved → attempted
+        # РЅРµ РїРѕРЅРёР¶Р°РµРј СЃС‚Р°С‚СѓСЃ СЃ solved в†’ attempted
         if attempt.status != 'solved':
             attempt.status = new_status
         attempt.note = user_answer_raw
@@ -292,11 +388,11 @@ def task_submit(task_id):
 
     xp_earned = 10 if is_correct else 0
     if is_correct:
-        ai_feedback = 'Молодец! Ответ совпал с эталоном.'
+        ai_feedback = 'РњРѕР»РѕРґРµС†! РћС‚РІРµС‚ СЃРѕРІРїР°Р» СЃ СЌС‚Р°Р»РѕРЅРѕРј.'
     else:
         ai_feedback = (
-            'Ответ не совпал с эталоном. Загляни в «💡 Идея решения» — она теперь '
-            'открыта. Попробуй ещё раз или сверься с полным решением.'
+            'РћС‚РІРµС‚ РЅРµ СЃРѕРІРїР°Р» СЃ СЌС‚Р°Р»РѕРЅРѕРј. Р—Р°РіР»СЏРЅРё РІ В«рџ’Ў РРґРµСЏ СЂРµС€РµРЅРёСЏВ» вЂ” РѕРЅР° С‚РµРїРµСЂСЊ '
+            'РѕС‚РєСЂС‹С‚Р°. РџРѕРїСЂРѕР±СѓР№ РµС‰С‘ СЂР°Р· РёР»Рё СЃРІРµСЂСЊСЃСЏ СЃ РїРѕР»РЅС‹Рј СЂРµС€РµРЅРёРµРј.'
         )
     if ai_comment_extra:
         ai_feedback = ai_comment_extra + ' ' + ai_feedback
@@ -312,21 +408,21 @@ def task_submit(task_id):
     })
 
 
-# ──────────────────────────────────────────────
-# 7. STAGE_START — начать прохождение пробника
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 7. STAGE_START вЂ” РЅР°С‡Р°С‚СЊ РїСЂРѕС…РѕР¶РґРµРЅРёРµ РїСЂРѕР±РЅРёРєР°
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/probnik/<code>/start', methods=['POST'])
 @login_required
 def stage_start(code):
-    """Начать таймированное прохождение пробника."""
+    """РќР°С‡Р°С‚СЊ С‚Р°Р№РјРёСЂРѕРІР°РЅРЅРѕРµ РїСЂРѕС…РѕР¶РґРµРЅРёРµ РїСЂРѕР±РЅРёРєР°."""
     p = Probnik.query.filter_by(code=code).first_or_404()
-    # Завершаем предыдущие активные попытки
+    # Р—Р°РІРµСЂС€Р°РµРј РїСЂРµРґС‹РґСѓС‰РёРµ Р°РєС‚РёРІРЅС‹Рµ РїРѕРїС‹С‚РєРё
     active = (StageAttempt.query
               .filter_by(user_id=current_user.id, probnik_id=p.id, result=None)
               .all())
     for sa in active:
         sa.result = 'abandoned'
-    # Создаём новую попытку
+    # РЎРѕР·РґР°С‘Рј РЅРѕРІСѓСЋ РїРѕРїС‹С‚РєСѓ
     attempt = StageAttempt(
         user_id=current_user.id,
         probnik_id=p.id,
@@ -337,13 +433,13 @@ def stage_start(code):
     return redirect(url_for('olympiad.stage_active', code=code))
 
 
-# ──────────────────────────────────────────────
-# 8. STAGE_ACTIVE — активная попытка (таймер)
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 8. STAGE_ACTIVE вЂ” Р°РєС‚РёРІРЅР°СЏ РїРѕРїС‹С‚РєР° (С‚Р°Р№РјРµСЂ)
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/probnik/<code>/active')
 @login_required
 def stage_active(code):
-    """Страница активного прохождения пробника."""
+    """РЎС‚СЂР°РЅРёС†Р° Р°РєС‚РёРІРЅРѕРіРѕ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ РїСЂРѕР±РЅРёРєР°."""
     p = Probnik.query.filter_by(code=code).first_or_404()
     attempt = (StageAttempt.query
                .filter_by(user_id=current_user.id, probnik_id=p.id, result=None)
@@ -359,13 +455,13 @@ def stage_active(code):
                            probnik=p, attempt=attempt, tasks=tasks)
 
 
-# ──────────────────────────────────────────────
-# 9. STAGE_SUBMIT — сдать пробник / страница отчёта
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 9. STAGE_SUBMIT вЂ” СЃРґР°С‚СЊ РїСЂРѕР±РЅРёРє / СЃС‚СЂР°РЅРёС†Р° РѕС‚С‡С‘С‚Р°
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/probnik/<code>/submit', methods=['GET', 'POST'])
 @login_required
 def stage_submit(code):
-    """Сдача пробника (POST) или страница отчёта (GET)."""
+    """РЎРґР°С‡Р° РїСЂРѕР±РЅРёРєР° (POST) РёР»Рё СЃС‚СЂР°РЅРёС†Р° РѕС‚С‡С‘С‚Р° (GET)."""
     p = Probnik.query.filter_by(code=code).first_or_404()
     attempt = (StageAttempt.query
                .filter_by(user_id=current_user.id, probnik_id=p.id)
@@ -385,7 +481,7 @@ def stage_submit(code):
             attempt.result = 'participant'
         db.session.commit()
         return jsonify({'ok': True, 'result': attempt.result})
-    # GET — страница отчёта
+    # GET вЂ” СЃС‚СЂР°РЅРёС†Р° РѕС‚С‡С‘С‚Р°
     tasks = (OlympiadTask.query
              .filter_by(probnik_id=p.id)
              .order_by(OlympiadTask.sort_order)
@@ -394,33 +490,41 @@ def stage_submit(code):
                            probnik=p, attempt=attempt, tasks=tasks)
 
 
-# ──────────────────────────────────────────────
-# 10. METHODS — каталог методов
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 9.5 PREDICT-METHODS вЂ” РїСЂРµРґРёРєС‚ РјРµС‚РѕРґРѕРІ
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+@olympiad_bp.route('/predict-methods')
+def predict_methods():
+    """РЎС‚СЂР°РЅРёС†Р° РїСЂРµРґРёРєС‚Р° РјРµС‚РѕРґРѕРІ Р’СЃРћРЁ 2027."""
+    return render_template('olympiad/predict_methods.html')
+
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 10. METHODS вЂ” РєР°С‚Р°Р»РѕРі РјРµС‚РѕРґРѕРІ
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/methods')
 def methods():
-    """Список всех разделов методов с группировкой."""
+    """РЎРїРёСЃРѕРє РІСЃРµС… СЂР°Р·РґРµР»РѕРІ РјРµС‚РѕРґРѕРІ СЃ РіСЂСѓРїРїРёСЂРѕРІРєРѕР№."""
     blocks = (TheoryBlock.query
               .order_by(TheoryBlock.section, TheoryBlock.sort_order)
               .all())
-    # Группировка по разделам
+    # Р“СЂСѓРїРїРёСЂРѕРІРєР° РїРѕ СЂР°Р·РґРµР»Р°Рј
     grouped = {}
     for b in blocks:
-        sec = b.section or 'Без раздела'
+        sec = b.section or 'Р‘РµР· СЂР°Р·РґРµР»Р°'
         grouped.setdefault(sec, []).append(b)
     return render_template('olympiad/method.html',
                            sections=grouped, blocks=blocks, detail_block=None,
                            related_blocks=None, tasks_for_method=None)
 
 
-# ──────────────────────────────────────────────
-# 11. METHOD_DETAIL — страница одного метода
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 11. METHOD_DETAIL вЂ” СЃС‚СЂР°РЅРёС†Р° РѕРґРЅРѕРіРѕ РјРµС‚РѕРґР°
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/methods/<method_code>')
 def method_detail(method_code):
-    """Подробная страница метода (определение, теоремы, задачи)."""
+    """РџРѕРґСЂРѕР±РЅР°СЏ СЃС‚СЂР°РЅРёС†Р° РјРµС‚РѕРґР° (РѕРїСЂРµРґРµР»РµРЅРёРµ, С‚РµРѕСЂРµРјС‹, Р·Р°РґР°С‡Рё)."""
     block = TheoryBlock.query.filter_by(method_code=method_code).first_or_404()
-    # Связанные методы
+    # РЎРІСЏР·Р°РЅРЅС‹Рµ РјРµС‚РѕРґС‹
     related_codes = []
     if block.related_methods:
         try:
@@ -432,14 +536,14 @@ def method_detail(method_code):
         related_blocks = (TheoryBlock.query
                           .filter(TheoryBlock.method_code.in_(related_codes))
                           .all())
-    # Задачи по этому методу.
-    # ВАЖНО: OlympiadTask.method_codes объявлено как db.JSON (на проде → JSONB).
-    # Прямой `.contains(str)` на JSONB генерирует оператор `@>` и падает
-    # с InvalidParameterValue: "invalid input syntax for type json".
-    # Используем cast в TEXT и LIKE — работает и на SQLite (TEXT-хранилище),
-    # и на PostgreSQL (приведение jsonb → text). Дополнительно оборачиваем в
-    # try/except: любой DB-сбой не должен ломать страницу метода —
-    # «связанные задачи» опциональны.
+    # Р—Р°РґР°С‡Рё РїРѕ СЌС‚РѕРјСѓ РјРµС‚РѕРґСѓ.
+    # Р’РђР–РќРћ: OlympiadTask.method_codes РѕР±СЉСЏРІР»РµРЅРѕ РєР°Рє db.JSON (РЅР° РїСЂРѕРґРµ в†’ JSONB).
+    # РџСЂСЏРјРѕР№ `.contains(str)` РЅР° JSONB РіРµРЅРµСЂРёСЂСѓРµС‚ РѕРїРµСЂР°С‚РѕСЂ `@>` Рё РїР°РґР°РµС‚
+    # СЃ InvalidParameterValue: "invalid input syntax for type json".
+    # РСЃРїРѕР»СЊР·СѓРµРј cast РІ TEXT Рё LIKE вЂ” СЂР°Р±РѕС‚Р°РµС‚ Рё РЅР° SQLite (TEXT-С…СЂР°РЅРёР»РёС‰Рµ),
+    # Рё РЅР° PostgreSQL (РїСЂРёРІРµРґРµРЅРёРµ jsonb в†’ text). Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ РѕР±РѕСЂР°С‡РёРІР°РµРј РІ
+    # try/except: Р»СЋР±РѕР№ DB-СЃР±РѕР№ РЅРµ РґРѕР»Р¶РµРЅ Р»РѕРјР°С‚СЊ СЃС‚СЂР°РЅРёС†Сѓ РјРµС‚РѕРґР° вЂ”
+    # В«СЃРІСЏР·Р°РЅРЅС‹Рµ Р·Р°РґР°С‡РёВ» РѕРїС†РёРѕРЅР°Р»СЊРЅС‹.
     tasks_for_method = []
     try:
         from sqlalchemy import cast, String
@@ -463,27 +567,27 @@ def method_detail(method_code):
         except Exception:
             pass
         tasks_for_method = []
-    # Все блоки для grouped (каталог методов)
+    # Р’СЃРµ Р±Р»РѕРєРё РґР»СЏ grouped (РєР°С‚Р°Р»РѕРі РјРµС‚РѕРґРѕРІ)
     all_blocks = (TheoryBlock.query
                   .order_by(TheoryBlock.section, TheoryBlock.sort_order)
                   .all())
     grouped = {}
     for b in all_blocks:
-        sec = b.section or 'Без раздела'
+        sec = b.section or 'Р‘РµР· СЂР°Р·РґРµР»Р°'
         grouped.setdefault(sec, []).append(b)
     # CRITICAL FIX: pass sections=None so the template enters DETAIL MODE.
     # The template uses `{% if sections is not none %}` to switch between
     # catalog and detail. Previously sections=grouped (non-None), so clicking
     # any method opened the catalog page instead of the method's detail page
-    # — root cause of the "102 methods don't open" bug.
+    # вЂ” root cause of the "102 methods don't open" bug.
     # Also rename kwargs to what the template expects:
     #   block (was detail_block), related (was related_blocks),
     #   linked_tasks (was tasks_for_method).
     return render_template('olympiad/method.html',
                            sections=None,
                            block=block,
-                           # Новый шаблон (Group C) обращается к {{ theory.* }} —
-                           # передаём alias, чтобы работали обе версии разметки.
+                           # РќРѕРІС‹Р№ С€Р°Р±Р»РѕРЅ (Group C) РѕР±СЂР°С‰Р°РµС‚СЃСЏ Рє {{ theory.* }} вЂ”
+                           # РїРµСЂРµРґР°С‘Рј alias, С‡С‚РѕР±С‹ СЂР°Р±РѕС‚Р°Р»Рё РѕР±Рµ РІРµСЂСЃРёРё СЂР°Р·РјРµС‚РєРё.
                            theory=block,
                            related=related_blocks,
                            linked_tasks=tasks_for_method,
@@ -494,18 +598,18 @@ def method_detail(method_code):
                            tasks_for_method=tasks_for_method)
 
 
-# ──────────────────────────────────────────────
-# 12. METHOD_SECTION — задачи по разделу методов
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 12. METHOD_SECTION вЂ” Р·Р°РґР°С‡Рё РїРѕ СЂР°Р·РґРµР»Сѓ РјРµС‚РѕРґРѕРІ
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/methods/section/<int:grade>/<section_name>')
 def method_section(grade, section_name):
-    """Список задач из раздела методов для указанного класса."""
+    """РЎРїРёСЃРѕРє Р·Р°РґР°С‡ РёР· СЂР°Р·РґРµР»Р° РјРµС‚РѕРґРѕРІ РґР»СЏ СѓРєР°Р·Р°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР°."""
     blocks = (TheoryBlock.query
               .filter(TheoryBlock.section == section_name,
                       TheoryBlock.method_code.isnot(None))
               .order_by(TheoryBlock.sort_order)
               .all())
-    # Все MethodTask для этой секции
+    # Р’СЃРµ MethodTask РґР»СЏ СЌС‚РѕР№ СЃРµРєС†РёРё
     method_codes = [b.method_code for b in blocks if b.method_code]
     from sqlalchemy import or_
     grouped = {}
@@ -522,29 +626,29 @@ def method_section(grade, section_name):
                            section=section_name, grouped=grouped)
 
 
-# ──────────────────────────────────────────────
-# 13. METHOD_TASK — страница одной задачи из методов
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 13. METHOD_TASK вЂ” СЃС‚СЂР°РЅРёС†Р° РѕРґРЅРѕР№ Р·Р°РґР°С‡Рё РёР· РјРµС‚РѕРґРѕРІ
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/methods/task/<method_task_id>')
 def method_task(method_task_id):
-    """Страница одной MethodTask."""
+    """РЎС‚СЂР°РЅРёС†Р° РѕРґРЅРѕР№ MethodTask."""
     t = MethodTask.query.get_or_404(method_task_id)
     return render_template('olympiad/method_task.html', task=t)
 
 
-# ──────────────────────────────────────────────
-# 14. MY_PROGRESS — страница прогресса пользователя
-# ──────────────────────────────────────────────
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# 14. MY_PROGRESS вЂ” СЃС‚СЂР°РЅРёС†Р° РїСЂРѕРіСЂРµСЃСЃР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+# в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/my-progress')
 @login_required
 def my_progress():
-    """Сводка прогресса по всем пробникам.
+    """РЎРІРѕРґРєР° РїСЂРѕРіСЂРµСЃСЃР° РїРѕ РІСЃРµРј РїСЂРѕР±РЅРёРєР°Рј.
 
-    Шаблон olympiad/my_progress.html ожидает:
+    РЁР°Р±Р»РѕРЅ olympiad/my_progress.html РѕР¶РёРґР°РµС‚:
       - totals.tasks_solved / tasks_attempted / tasks_revealed / stages_finished
-      - by_probnik[*].probnik (объект с .code/.title/.type)
+      - by_probnik[*].probnik (РѕР±СЉРµРєС‚ СЃ .code/.title/.type)
       - by_probnik[*].solved / attempted / revealed / viewed
-      - stage_attempts (список StageAttempt)
+      - stage_attempts (СЃРїРёСЃРѕРє StageAttempt)
     """
     probniks = (Probnik.query
                 .filter_by(competition=_COMPETITION, season_year=_SEASON_YEAR)

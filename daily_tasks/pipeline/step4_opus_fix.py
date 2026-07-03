@@ -31,10 +31,12 @@ from .validators import (
 logger = logging.getLogger(__name__)
 
 # ── модели ────────────────────────────────────────────
-# Fix cost-routing. Сильная модель для реального усложнения до L5+ (уровень сложного муниципа).
+# All models now use DeepSeek API directly (no OpenRouter).
+# DeepSeek Chat v3.1 is fast (3-4s), supports json_object response_format,
+# and costs significantly less than Claude Sonnet via OpenRouter.
 _FIX_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
-_FIX_MODEL_HARD = "anthropic/claude-sonnet-4.5"
-_FIX_MODEL_ESCALATION = "anthropic/claude-sonnet-4.5"
+_FIX_MODEL_HARD = "deepseek/deepseek-chat-v3.1"
+_FIX_MODEL_ESCALATION = "deepseek/deepseek-chat-v3.1"
 _FIX_HARD_THRESHOLD = 4
 _OPUS_FIX_MODEL = _FIX_MODEL_HARD  # алиас для совместимости
 
