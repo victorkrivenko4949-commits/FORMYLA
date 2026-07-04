@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-curator/monthly_cycle.py — 30-day monthly preparation cycle orchestrator.
+curator/monthly_cycle.py — 28-day monthly preparation cycle orchestrator.
 
 Сценарий:
-  1. Куратор выбирает 7 подтем из 15–21 (через build_monthly_plan()).
-  2. Начинается месяц подготовки (~30 дней).
+  1. Куратор строит программу на ВСЕ подтемы класса, отсортированные
+     по слабости (слабые первые), сгруппированные по 7 в месяц.
+  2. Начинается месяц подготовки (28 дней).
   3. Утром ученик проходит адаптивный тест (5 задач) по подтеме дня.
   4. Вечером генерируются «Задачи дня» по той же подтеме.
   5. Первые 7 дней (цикла) — тестовые дни (по одной подтеме каждый день).
-  6. Остальные 23 дня — только задачи (без тестов).
+  6. Остальные 21 день — только задачи (без тестов).
+  7. После завершения месяца куратор поздравляет и показывает следующие 7 подтем.
 """
 
 import logging
@@ -33,9 +35,9 @@ logger = logging.getLogger(__name__)
 
 # ─── Constants ───────────────────────────────────────────────────────────────
 
-CYCLE_DAYS = 30          # Total days in one monthly cycle
-TEST_DAYS = 7            # First 7 days are test days
-TASK_ONLY_DAYS = 23      # Remaining 23 days are task-only
+CYCLE_DAYS = 28          # Total days in one monthly cycle (4 weeks)
+TEST_DAYS = 7            # First 7 days are test days (one per subtopic)
+TASK_ONLY_DAYS = 21      # Remaining 21 days are task-only
 CYCLE_VERSION = 1
 
 # ─── Prep State helpers ─────────────────────────────────────────────────────
@@ -46,6 +48,8 @@ def _default_prep_state() -> Dict[str, Any]:
     return {
         "version": CYCLE_VERSION,
         "cycle_day": 1,
+        "month_index": 1,             # текущий месяц (1-based)
+        "month_completed": False,     # True в первый день после перехода на новый месяц
         "tested_subtopics": [],
         "current_subtopic": None,
         "is_test_day": True,
@@ -124,6 +128,47 @@ def _select_weakest_subtopics(user_id: int, grade: int, count: int = 7) -> List[
     return chosen[:count]
 
 
+def _order_all_subtopics_by_weakness(user_id: int, grade: int) -> List[str]:
+    """Вернуть ВСЕ подтемы класса, отсортированные по слабости.
+
+    Использует ту же логику, что _select_weakest_subtopics, но без ограничения count:
+    - измеренные (measured=True) сортируются по pct (самые слабые первые)
+    - затем неизмеренные (measured=False)
+    """
+    profile = build_profile(user_id)
+    topics_full: List[Dict[str, Any]] = profile.get("topics_full", [])
+
+    from daily_tasks.monthly_plan import _ordered_subtopics_for_grade
+    grade_subs_list = _ordered_subtopics_for_grade(grade)
+    grade_subs_set = set(grade_subs_list)
+
+    # Словарь pct по slug-у из профиля
+    pct_map: Dict[str, float] = {}
+    measured_map: Dict[str, bool] = {}
+    for t in topics_full:
+        slug = t.get("topic")
+        if slug:
+            pct = t.get("pct")
+            pct_map[slug] = float(pct) if pct is not None else 50.0
+            measured_map[slug] = t.get("measured", False)
+
+    def _sort_key(slug: str) -> tuple:
+        measured = measured_map.get(slug, False)
+        pct = pct_map.get(slug, 50.0)
+        group = 0 if measured else 1
+        return (group, pct, slug)
+
+    # Сортируем только те подтемы, что есть в grade_subs_set
+    present = [s for s in grade_subs_list if s in grade_subs_set]
+    # Добавляем те, что есть в grade_subs_list но не в present (на случай битых данных)
+    for s in grade_subs_list:
+        if s not in present:
+            present.append(s)
+
+    present.sort(key=_sort_key)
+    return present
+
+
 # ─── Public API ──────────────────────────────────────────────────────────────
 
 
@@ -135,9 +180,9 @@ def get_curator_state(user_id: int) -> Optional[CuratorState]:
 def ensure_monthly_plan(user_id: int) -> Optional[Dict[str, Any]]:
     """Убедиться, что у пользователя есть monthly plan.
 
-    Если плана нет — строит интеллектуально: куратор анализирует профиль
-    ученика, выбирает 7 самых слабых подтем (через ``_select_weakest_subtopics``)
-    и строит план ровно из них на один месяц.
+    Строит программу на ВСЕ подтемы класса, отсортированные по слабости
+    (через ``_order_all_subtopics_by_weakness``) и сгруппированные по 7 в месяц.
+    Если план уже существует — возвращает его как есть.
     Возвращает dict плана или None, если grade не определён.
     """
     cs = get_curator_state(user_id)
@@ -163,14 +208,37 @@ def ensure_monthly_plan(user_id: int) -> Optional[Dict[str, Any]]:
     ):
         return plan
 
-    # Строим новый план с интеллектуальным подбором слабых подтем
+    # Строим НОВЫЙ план на ВСЕ подтемы класса
+    from daily_tasks.monthly_plan import SUBTOPICS_PER_MONTH
+
     today = date.today()
-    chosen = _select_weakest_subtopics(user_id, int(grade))
+    sorted_subs = _order_all_subtopics_by_weakness(user_id, int(grade))
+
+    if not sorted_subs:
+        logger.warning("ensure_monthly_plan: no subtopics for grade=%s", grade)
+        return None
+
     logger.info(
-        "ensure_monthly_plan: user_id=%s grade=%s chosen=%s",
-        user_id, grade, chosen,
+        "ensure_monthly_plan: user_id=%s grade=%s total_subs=%s",
+        user_id, grade, len(sorted_subs),
     )
-    plan = build_monthly_plan(int(grade), anchor=today, subtopics=chosen)
+
+    # Группируем по 7 в месяц
+    months: List[Dict[str, Any]] = []
+    for i in range(0, len(sorted_subs), SUBTOPICS_PER_MONTH):
+        chunk = sorted_subs[i:i + SUBTOPICS_PER_MONTH]
+        months.append({
+            "index": (i // SUBTOPICS_PER_MONTH) + 1,
+            "subtopics": chunk,
+        })
+
+    plan = {
+        "version": 1,
+        "anchor_date": today.isoformat(),
+        "subtopics_per_month": SUBTOPICS_PER_MONTH,
+        "grade": int(grade),
+        "months": months,
+    }
     cs.prep_plan = plan
     db.session.commit()
     return plan
@@ -179,15 +247,21 @@ def ensure_monthly_plan(user_id: int) -> Optional[Dict[str, Any]]:
 def get_today_info(user_id: int) -> Dict[str, Any]:
     """Получить информацию о сегодняшнем дне в цикле подготовки.
 
+    Также отслеживает переходы между месяцами: когда cycle_day == 1,
+    выставляет ``month_completed = True`` и обновляет ``month_index``.
+
     Returns:
         {
             "subtopic": str | None,       # slug подтемы дня
             "subtopic_title": str | None,  # русское название
             "is_test_day": bool,           # нужно ли проходить тест
             "tested": bool,                # подтема уже протестирована
-            "cycle_day": int,              # день в цикле (1-30)
+            "cycle_day": int,              # день в цикле (1-28)
             "has_tasks": bool,             # задачи уже сгенерированы
             "level": int,                  # текущий уровень сложности
+            "month_index": int,            # текущий месяц (1-based)
+            "month_completed": bool,       # True в первый день нового месяца
+            "next_month_subtopics": list,  # подтемы следующего месяца
         }
     """
     cs = get_curator_state(user_id)
@@ -206,7 +280,6 @@ def get_today_info(user_id: int) -> Dict[str, Any]:
     state = _get_or_create_prep_state(cs)
 
     # Определить день цикла по календарю от anchor
-    from daily_tasks.monthly_plan import current_month_index
     from datetime import date as _date
     anchor = today  # fallback
     try:
@@ -216,18 +289,36 @@ def get_today_info(user_id: int) -> Dict[str, Any]:
     days_since_anchor = max(0, (today - anchor).days)
     cycle_day = (days_since_anchor % CYCLE_DAYS) + 1
 
+    # Определить текущий месяц по календарю (от anchor_date, 28-дневные блоки)
+    months = plan.get("months") or []
+    total_months = len(months)
+    if total_months > 0:
+        month_idx = (days_since_anchor // 28) % total_months
+        cal_month_index = months[month_idx].get("index", 1)
+    else:
+        cal_month_index = 1
+
     is_test_day = cycle_day <= TEST_DAYS
     tested = subtopic_slug in (state.get("tested_subtopics") or [])
 
     # Обновить состояние, если день изменился
     if state.get("cycle_day") != cycle_day:
+        old_cycle_day = state.get("cycle_day", 1)
         state["cycle_day"] = cycle_day
         state["current_subtopic"] = subtopic_slug
         state["is_test_day"] = is_test_day
         state["generated_today"] = False
 
-        # При переходе на новый месяц — сбросить tested_subtopics
-        if cycle_day == 1:
+        # При переходе на НОВЫЙ месяц (cycle_day == 1 или день уменьшился)
+        if cycle_day == 1 or (cycle_day < old_cycle_day):
+            # Предыдущий месяц завершён — отмечаем month_completed
+            prev_month = state.get("month_index", 1)
+
+            # Если это не первый запуск (state не свежий)
+            if old_cycle_day != 1 or state.get("generated_today") is not None:
+                state["month_completed"] = True
+
+            state["month_index"] = cal_month_index
             state["tested_subtopics"] = []
 
         # Если подтема уже протестирована — это не тестовый день
@@ -239,6 +330,13 @@ def get_today_info(user_id: int) -> Dict[str, Any]:
 
     title = subtopic_title(subtopic_slug)
 
+    # Подтемы следующего месяца
+    next_month_subtopics: List[str] = []
+    if total_months > 0:
+        next_idx = (days_since_anchor // 28 + 1) % total_months
+        next_month = months[next_idx]
+        next_month_subtopics = next_month.get("subtopics", [])
+
     return {
         "subtopic": subtopic_slug,
         "subtopic_title": title,
@@ -247,6 +345,9 @@ def get_today_info(user_id: int) -> Dict[str, Any]:
         "cycle_day": cycle_day,
         "has_tasks": state.get("generated_today", False),
         "level": state.get("level", CALIBRATION_START_LEVEL),
+        "month_index": state.get("month_index", cal_month_index),
+        "month_completed": state.get("month_completed", False),
+        "next_month_subtopics": next_month_subtopics,
     }
 
 
@@ -382,7 +483,7 @@ def submit_test_and_generate_tasks(
 
 
 def generate_tasks_only(user_id: int, subtopic: Optional[str] = None) -> Dict[str, Any]:
-    """Сгенерировать задачи дня без теста (для дней 8-30).
+    """Сгенерировать задачи дня без теста (для дней 8-28).
 
     Вызывается вечером в task-only дни.
     """
@@ -437,7 +538,7 @@ def get_cycle_progress(user_id: int) -> Dict[str, Any]:
     Returns:
         {
             "cycle_day": int,
-            "total_days": 30,
+            "total_days": 28,
             "tested_subtopics": [str, ...],
             "remaining_tests": int,
             "subtopics_total": int,
@@ -456,8 +557,12 @@ def get_cycle_progress(user_id: int) -> Dict[str, Any]:
     if plan:
         months = plan.get("months") or []
         if months:
-            month_subs = months[0].get("subtopics") or []
-            subtopics_total = len(month_subs)
+            # Текущий месяц
+            from daily_tasks.monthly_plan import current_month_index as _curr_m
+            m_idx = _curr_m(plan) - 1
+            if 0 <= m_idx < len(months):
+                month_subs = months[m_idx].get("subtopics") or []
+                subtopics_total = len(month_subs)
 
     tested = state.get("tested_subtopics") or []
     remaining = max(0, subtopics_total - len(tested))

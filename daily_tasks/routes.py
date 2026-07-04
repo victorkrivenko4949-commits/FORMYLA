@@ -18,16 +18,18 @@ from __future__ import annotations
 import logging
 from datetime import datetime, date, timedelta
 from calendar import monthrange
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from flask import jsonify, render_template, request
 from flask_login import current_user, login_required
 
 from models import db
+from models_curator import CuratorState
 from . import daily_tasks_bp
 from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
 from .services import today_in_user_tz
+from .monthly_plan import get_or_build_plan, current_month_index, pick_day_subtopic, subtopic_title
 
 # 24h TTL для сета «Задач дня»: после истечения сет автоматически
 # помечается как expired при следующем GET /daily_tasks, и пользователю
@@ -268,9 +270,66 @@ def get_daily_tasks():
         "adaptive_tests_url": "/adaptive_test_simple",
     }
 
+    # ── 🗓  Monthly plan (prep_plan from CuratorState) ────────────
+    plan_data = _build_monthly_plan_data(user_id, today)
+    if plan_data:
+        data["plan_data"] = plan_data
+
     if wants_html:
         return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
     return jsonify(data), 200
+
+
+def _build_monthly_plan_data(user_id: int, today: date) -> Optional[Dict[str, Any]]:
+    """Построить plan_data для календаря подтем из CuratorState.prep_plan.
+
+    Возвращает dict с ключами:
+        current_month (int) — 1-based номер текущего месяца
+        today_subtopic (str) — русское название подтемы дня
+        today_subtopic_slug (str) — slug подтемы дня
+        months (list) — список месяцев с подтемами
+        anchor_date (str) — дата якоря
+        grade (int) — класс
+    или None, если у пользователя нет curator_state или плана.
+    """
+    from models_curator import CuratorState as _CS
+    try:
+        cs: Optional[_CS] = _CS.query.filter_by(user_id=user_id).first()
+        if not cs or not cs.grade:
+            return None
+        grade = cs.grade
+        plan = get_or_build_plan(cs, grade, today)
+        if not plan or not plan.get("months"):
+            return None
+
+        current_month = current_month_index(plan, today)
+        today_subtopic_slug = pick_day_subtopic(plan, today)
+        today_subtopic_title = subtopic_title(today_subtopic_slug) if today_subtopic_slug else None
+
+        months_data = []
+        for m in plan.get("months", []):
+            subs = []
+            for slug in m.get("subtopics", []):
+                subs.append({
+                    "slug": str(slug),
+                    "title": subtopic_title(str(slug)),
+                })
+            months_data.append({
+                "index": m["index"],
+                "subtopics": subs,
+            })
+
+        return {
+            "current_month": current_month,
+            "today_subtopic": today_subtopic_title,
+            "today_subtopic_slug": today_subtopic_slug,
+            "months": months_data,
+            "anchor_date": plan.get("anchor_date"),
+            "grade": grade,
+        }
+    except Exception as exc:
+        logger.warning("[monthly_plan] _build_monthly_plan_data failed: %s", exc, exc_info=True)
+        return None
 
 
 # ──────────────────────────────────────────────────────────────────────

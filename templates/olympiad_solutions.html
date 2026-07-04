@@ -28,8 +28,17 @@
 </p>
 <p style="color: #888; margin-bottom: 20px;">Ответы и подробные решения</p>
 
-
-{% for p in combo.problems %}
+{% for day_block in day_blocks %}
+{% if day_block.day is not none and day_blocks|length > 1 %}
+<div style="background:linear-gradient(135deg, rgba(56,189,248,0.15), rgba(99,102,241,0.10)); padding:16px 20px; margin:24px 0 16px 0; border-radius:12px; border:1px solid rgba(56,189,248,0.25); text-align:center;">
+    <span style="font-size:1.2em; font-weight:700; color:#38bdf8; letter-spacing:0.5px;">День {{ day_block.day }}</span>
+</div>
+{% elif combo_day is not none and day_blocks|length == 1 %}
+<div style="background:linear-gradient(135deg, rgba(56,189,248,0.15), rgba(99,102,241,0.10)); padding:16px 20px; margin:24px 0 16px 0; border-radius:12px; border:1px solid rgba(56,189,248,0.25); text-align:center;">
+    <span style="font-size:1.2em; font-weight:700; color:#38bdf8; letter-spacing:0.5px;">День {{ combo_day }}</span>
+</div>
+{% endif %}
+{% for p in day_block.problems %}
 <div style="background: #25252b; padding: 25px 30px; margin-bottom: 25px; border-radius: 12px; max-width: 900px;">
     <span style="background: #005bb5; color: #fff; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;">
         Задача {{ p.num }}
@@ -54,412 +63,72 @@
     </div>
     {% endif %}
 
-    {# ── Solution block: official vs AI ── #}
+    {# ── Solution block: official vs AI vs plain solution ── #}
     {% if p.get("solution_verified") and p.get("official_solution") %}
-        {# Official verified solution #}
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="background:#1b4332; color:#4caf50; border:1px solid #2d6a4f; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
-                ✅ Авторское решение
-            </span>
-            {% if p.get("source_url") %}
-            <a href="{{ p.source_url }}" target="_blank" rel="noopener noreferrer"
-               style="color:#81c784; font-size:12px; text-decoration:underline;">
-                источник ↗
-            </a>
-            {% elif combo.source_url %}
-            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
-               style="color:#81c784; font-size:12px; text-decoration:underline;">
-                {{ combo.source_name | truncate(60) }} ↗
-            </a>
-            {% endif %}
-        </div>
-        <div style="color: #ccc; font-size: 15px; line-height: 1.8; background: #1a2a1a; padding: 20px; border-radius: 10px; border-left: 3px solid #4caf50;">
-            {{ p.official_solution | safe }}
-        </div>
-
-    {% elif p.get("official_solution") %}
-        {# Found but low confidence — show with caution badge #}
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="background:#2a2a1a; color:#ffcc02; border:1px solid #665500; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
-                ⚠️ Решение (требует проверки)
-            </span>
-            {% if combo.source_url %}
-            <a href="{{ combo.source_url }}" target="_blank" rel="noopener noreferrer"
-               style="color:#ffd54f; font-size:12px; text-decoration:underline;">
-                архив ↗
-            </a>
-            {% endif %}
-        </div>
-        <div style="color: #ccc; font-size: 15px; line-height: 1.8; background: #1e1e10; padding: 20px; border-radius: 10px; border-left: 3px solid #ffcc02;">
-            {{ p.official_solution | safe }}
-        </div>
-
-    {% else %}
-        {# Решение из базы данных #}
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="background:#1b2a4a; color:#64b5f6; border:1px solid #1565c0; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
-                📖 Решение
-            </span>
-        </div>
-
-        <button onclick="var el=document.getElementById('solution-{{ loop.index }}'); el.style.display = el.style.display==='none' ? 'block' : 'none'; this.style.display='none';"
-                style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:linear-gradient(135deg,#1565c0,#64b5f6); color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity 0.2s; margin-bottom:12px;"
-                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-            📖 Показать разбор
-        </button>
-        <div id="solution-{{ loop.index }}" style="display:none; color:#ccc; font-size:15px; line-height:1.8; background:#1a1a2e; padding:20px; border-radius:10px; border-left:3px solid #64b5f6;">
-            {{ p.solution | default('Решение не найдено') | safe }}
-        </div>
-    {% endif %}
-
-    {# ── Solution figures (official PDF figures from all11_figures archive) ── #}
-    {% if p.get("solution_figures") %}
-    <div class="solution-figures-wrap">
-        {% for fig in p.solution_figures %}
-        <figure class="solution-fig{% if fig.assignment == 'pdf_pool_uncertain' %} solution-fig--uncertain{% endif %}">
-            <div class="solution-fig-frame"
-                 data-fig-src="{{ url_for('static', filename=fig.file) }}"
-                 data-fig-num="{{ p.num }}"
-                 role="button"
-                 tabindex="0"
-                 title="Кликни, чтобы увеличить">
-                <img src="{{ url_for('static', filename=fig.file) }}"
-                     alt="Рисунок к решению задачи {{ p.num }}"
-                     loading="lazy"
-                     class="solution-fig-img">
-                <span class="solution-fig-zoom-hint" aria-hidden="true">🔍 нажми для увеличения</span>
+        {# Official solution — always visible #}
+        <div style="margin-top: 20px;">
+            <div style="background: #1a1a2e; border-left: 4px solid #005bb5; padding: 20px; border-radius: 0 8px 8px 0;">
+                <span style="color: #005bb5; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Решение</span>
+                <div style="color: #d0d0d0; font-size: 15px; line-height: 1.85; margin-top: 12px;">
+                    {{ p.official_solution | safe }}
+                </div>
             </div>
-            <figcaption class="solution-fig-caption">
-                {% if fig.assignment == 'pdf_pool_uncertain' %}
-                    <em>возможный рисунок к решению</em>
-                {% else %}
-                    📐 Рисунок из официального решения
-                {% endif %}
-                {% if fig.source_url %}
-                    ·
-                    <a href="{{ fig.source_url }}" target="_blank"
-                       rel="noopener noreferrer"
-                       class="solution-fig-source">
-                        источник ↗
-                    </a>
-                {% endif %}
-            </figcaption>
-        </figure>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    {# Manual review flag #}
-    {% if p.get("needs_manual_review") %}
-    <div style="margin-top:10px; color:#888; font-size:12px; font-style:italic;">
-        ⚑ Отмечено для ручной проверки
-    </div>
+        </div>
+    {% elif p.get("ai_solution") %}
+        {# AI-generated solution — collapsible #}
+        <div style="margin-top: 5px;">
+            <button onclick="toggleSolution('solution-{{ p.num }}')" style="background: #2a2a3a; color: #aaa; border: 1px solid #444; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all .2s ease;"
+                    onmouseover="this.style.background='#333'; this.style.color='#fff';"
+                    onmouseout="this.style.background='#2a2a3a'; this.style.color='#aaa';">
+                🔍 Показать решение
+            </button>
+            <div id="solution-{{ p.num }}" style="display: none; margin-top: 15px;">
+                <div style="background: #1a1a2e; border-left: 4px solid #8b5cf6; padding: 20px; border-radius: 0 8px 8px 0;">
+                    <span style="color: #8b5cf6; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">AI-решение</span>
+                    <div style="color: #d0d0d0; font-size: 15px; line-height: 1.85; margin-top: 12px;">
+                        {{ p.ai_solution | safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif p.get("solution") %}
+        {# Plain solution field — collapsible (used by vsosh and other olympiads) #}
+        <div style="margin-top: 5px;">
+            <button onclick="toggleSolution('solution-{{ p.num }}')" style="background: #2a2a3a; color: #aaa; border: 1px solid #444; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all .2s ease;"
+                    onmouseover="this.style.background='#333'; this.style.color='#fff';"
+                    onmouseout="this.style.background='#2a2a3a'; this.style.color='#aaa';">
+                🔍 Показать решение
+            </button>
+            <div id="solution-{{ p.num }}" style="display: none; margin-top: 15px;">
+                <div style="background: #1a1a2e; border-left: 4px solid #005bb5; padding: 20px; border-radius: 0 8px 8px 0;">
+                    <span style="color: #005bb5; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Решение</span>
+                    <div style="color: #d0d0d0; font-size: 15px; line-height: 1.85; margin-top: 12px;">
+                        {{ p.solution | safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endif %}
 </div>
 {% endfor %}
+{% endfor %}
+
+<script>
+function toggleSolution(id) {
+    var el = document.getElementById(id);
+    if (el) {
+        if (el.style.display === 'none' || el.style.display === '') {
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+}
+</script>
 
 <div style="text-align: center; margin-top: 40px;">
-    <a href="/olympiads" class="btn-primary" style="padding: 14px 40px; font-size: 16px;">
-        Выбрать другой пробник
+    <a href="/olympiads" class="btn-secondary" style="padding: 14px 40px; font-size: 16px;">
+        ← Назад к каталогу
     </a>
 </div>
-
-<!-- Modal overlay for official archive -->
-<div id="solution-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#1a1a2e; border:1px solid #3949ab; border-radius:16px; padding:32px; max-width:520px; width:90%; box-shadow:0 10px 40px rgba(57,73,171,0.4); position:relative;">
-        <h3 style="color:#7986cb; font-size:1.3em; margin:0 0 16px 0;">📚 Официальное решение доступно</h3>
-        <p style="color:#ccc; margin:0 0 12px 0; line-height:1.6;">
-            Для этой задачи есть авторское решение от жюри олимпиады. Рекомендуем смотреть его — оно точнее AI-разбора.
-        </p>
-        <p id="modal-source-name" style="color:#81c784; font-weight:600; margin:0 0 24px 0;"></p>
-        <div style="display:flex; flex-wrap:wrap; gap:12px;">
-            <a id="modal-archive-link" href="#" target="_blank" rel="noopener noreferrer"
-               style="display:inline-flex; align-items:center; gap:6px; padding:12px 20px; background:linear-gradient(135deg,#2d6a4f,#4caf50); color:#fff; border-radius:10px; font-weight:600; font-size:14px; text-decoration:none; transition:opacity 0.2s;"
-               onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-                🔗 Открыть официальный архив →
-            </a>
-            <button id="modal-show-ai-btn" onclick=""
-                    style="padding:12px 20px; background:rgba(57,73,171,0.3); color:#7986cb; border:1px solid #3949ab; border-radius:10px; font-size:14px; cursor:pointer; transition:opacity 0.2s;"
-                    onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
-                🤖 Всё равно показать AI-разбор
-            </button>
-            <button onclick="closeSolutionModal()"
-                    style="padding:12px 20px; background:rgba(255,255,255,0.05); color:#888; border:1px solid #333; border-radius:10px; font-size:14px; cursor:pointer;">
-                Закрыть
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-function showSolutionModal(archiveUrl, sourceName, solutionDivId) {
-    document.getElementById('modal-source-name').textContent = sourceName;
-    document.getElementById('modal-archive-link').href = archiveUrl;
-    document.getElementById('modal-show-ai-btn').onclick = function() {
-        closeSolutionModal();
-        var div = document.getElementById(solutionDivId);
-        if (div) div.style.display = 'block';
-    };
-    var overlay = document.getElementById('solution-modal-overlay');
-    overlay.style.display = 'flex';
-}
-
-function closeSolutionModal() {
-    document.getElementById('solution-modal-overlay').style.display = 'none';
-}
-
-// Close on overlay click
-document.getElementById('solution-modal-overlay').addEventListener('click', function(e) {
-    if (e.target === this) closeSolutionModal();
-});
-</script>
-
-<!-- ───────────────────── Solution figures styling + lightbox ───────────────────── -->
-<style>
-    /* Сетка картинок-решений (на широких экранах — две в ряд) */
-    .solution-figures-wrap {
-        margin-top: 24px;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 18px;
-    }
-    @media (min-width: 900px) {
-        .solution-figures-wrap { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
-    }
-
-    /* Карточка картинки */
-    .solution-fig {
-        margin: 0;
-        padding: 0;
-        text-align: center;
-        animation: solFigIn 0.4s ease;
-    }
-    @keyframes solFigIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: none; }
-    }
-
-    /* Рамка картинки — кликабельная, с hover-эффектом */
-    .solution-fig-frame {
-        position: relative;
-        display: inline-block;
-        max-width: 100%;
-        background: #ffffff;
-        padding: 18px;
-        border-radius: 14px;
-        border: 2px solid rgba(76, 175, 80, 0.35);
-        box-shadow:
-            0 4px 16px rgba(0, 0, 0, 0.28),
-            0 1px 3px rgba(0, 0, 0, 0.4),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-        cursor: zoom-in;
-        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-        overflow: hidden;
-    }
-    .solution-fig-frame:hover {
-        transform: translateY(-3px) scale(1.015);
-        border-color: rgba(76, 175, 80, 0.7);
-        box-shadow:
-            0 12px 32px rgba(0, 0, 0, 0.45),
-            0 4px 12px rgba(76, 175, 80, 0.25),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-    }
-    .solution-fig-frame:focus-visible {
-        outline: 3px solid #4caf50;
-        outline-offset: 4px;
-    }
-
-    /* Менее яркая рамка для «возможных» картинок */
-    .solution-fig--uncertain .solution-fig-frame {
-        border-color: rgba(255, 204, 2, 0.4);
-        background: #fffef4;
-    }
-    .solution-fig--uncertain .solution-fig-frame:hover {
-        border-color: rgba(255, 204, 2, 0.7);
-        box-shadow:
-            0 12px 32px rgba(0, 0, 0, 0.45),
-            0 4px 12px rgba(255, 204, 2, 0.25);
-    }
-
-    /* Сама картинка */
-    .solution-fig-img {
-        display: block;
-        max-width: 100%;
-        width: 100%;
-        height: auto;
-        max-height: 520px;
-        object-fit: contain;
-        /* Чёткое масштабирование для PNG/GIF (особенно для маленьких чертежей) */
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: crisp-edges;
-        transition: transform 0.3s ease;
-    }
-    .solution-fig-frame:hover .solution-fig-img {
-        transform: scale(1.04);
-    }
-
-    /* Подсказка «нажми для увеличения» — появляется при hover */
-    .solution-fig-zoom-hint {
-        position: absolute;
-        bottom: 12px;
-        right: 12px;
-        background: rgba(0, 0, 0, 0.75);
-        color: #fff;
-        padding: 6px 12px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        opacity: 0;
-        transform: translateY(6px);
-        transition: opacity 0.2s ease, transform 0.2s ease;
-        pointer-events: none;
-        backdrop-filter: blur(4px);
-    }
-    .solution-fig-frame:hover .solution-fig-zoom-hint {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    /* Подпись */
-    .solution-fig-caption {
-        margin-top: 12px;
-        color: #94a3b8;
-        font-size: 13px;
-        line-height: 1.55;
-        font-style: normal;
-    }
-    .solution-fig--uncertain .solution-fig-caption { font-style: italic; }
-    .solution-fig-source {
-        color: #81c784;
-        text-decoration: underline;
-        text-decoration-color: rgba(129, 199, 132, 0.4);
-        text-underline-offset: 2px;
-    }
-    .solution-fig-source:hover {
-        color: #b9f6ca;
-        text-decoration-color: #b9f6ca;
-    }
-
-    /* ── Lightbox (zoom-on-click) ── */
-    .solfig-lightbox {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.92);
-        backdrop-filter: blur(6px);
-        z-index: 99999;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        animation: lbFadeIn 0.2s ease;
-        padding: 32px;
-    }
-    .solfig-lightbox.open { display: flex; }
-    @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .solfig-lightbox-img {
-        max-width: 95vw;
-        max-height: 90vh;
-        width: auto;
-        height: auto;
-        border-radius: 12px;
-        background: #fff;
-        padding: 16px;
-        box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
-        cursor: zoom-out;
-        animation: lbScaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: crisp-edges;
-    }
-    @keyframes lbScaleIn {
-        from { opacity: 0; transform: scale(0.85); }
-        to { opacity: 1; transform: scale(1); }
-    }
-    .solfig-lightbox-close {
-        position: absolute;
-        top: 22px;
-        right: 22px;
-        background: rgba(255, 255, 255, 0.12);
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        font-size: 22px;
-        line-height: 1;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s ease;
-    }
-    .solfig-lightbox-close:hover {
-        background: rgba(255, 255, 255, 0.22);
-        transform: rotate(90deg);
-    }
-    .solfig-lightbox-hint {
-        position: absolute;
-        bottom: 24px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: rgba(255, 255, 255, 0.65);
-        font-size: 13px;
-        background: rgba(0, 0, 0, 0.5);
-        padding: 6px 14px;
-        border-radius: 999px;
-        backdrop-filter: blur(4px);
-    }
-</style>
-
-<!-- Lightbox для увеличения картинки-решения -->
-<div id="solfig-lightbox" class="solfig-lightbox" role="dialog" aria-modal="true" aria-label="Увеличенный рисунок к решению">
-    <button class="solfig-lightbox-close" id="solfig-lightbox-close" aria-label="Закрыть">×</button>
-    <img class="solfig-lightbox-img" id="solfig-lightbox-img" alt="Рисунок к решению">
-    <div class="solfig-lightbox-hint">Кликни на картинку или нажми Esc, чтобы закрыть</div>
-</div>
-
-<script>
-(function initSolutionFigureLightbox() {
-    const lightbox = document.getElementById('solfig-lightbox');
-    const lightboxImg = document.getElementById('solfig-lightbox-img');
-    const closeBtn = document.getElementById('solfig-lightbox-close');
-    if (!lightbox || !lightboxImg) return;
-
-    function openLightbox(src, alt) {
-        lightboxImg.src = src;
-        lightboxImg.alt = alt || 'Рисунок к решению';
-        lightbox.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeLightbox() {
-        lightbox.classList.remove('open');
-        document.body.style.overflow = '';
-        // Не очищаем src сразу — будет неприятный flash; через 300мс
-        setTimeout(() => { if (!lightbox.classList.contains('open')) lightboxImg.src = ''; }, 300);
-    }
-
-    // Делегирование клика на все рамки картинок
-    document.querySelectorAll('.solution-fig-frame').forEach(frame => {
-        const open = () => {
-            const src = frame.dataset.figSrc;
-            const num = frame.dataset.figNum;
-            openLightbox(src, 'Рисунок к решению задачи ' + num);
-        };
-        frame.addEventListener('click', open);
-        frame.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                open();
-            }
-        });
-    });
-
-    closeBtn.addEventListener('click', closeLightbox);
-    lightboxImg.addEventListener('click', closeLightbox);
-    lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox) closeLightbox();
-    });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
-    });
-})();
-</script>
 {% endblock %}

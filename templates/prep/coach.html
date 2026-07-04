@@ -10,15 +10,7 @@
 .coach-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 18px; }
 .coach-card h2 { margin: 0 0 14px; font-size: 16px; color: #e5e7eb; }
 .radar-chart { display: flex; justify-content: center; }
-.radar-chart svg { width: 100%; max-width: 280px; height: auto; }
-.radar-grid-line { fill: none; stroke: rgba(255,255,255,0.10); }
-.radar-axis { stroke: rgba(255,255,255,0.12); }
-.radar-area { fill: rgba(99,102,241,0.30); stroke: #6366f1; stroke-width: 2; }
-.radar-dot { fill: #22c55e; }
-.radar-axis-label { fill: rgba(255,255,255,0.65); font-size: 9px; }
-.radar-legend { list-style: none; padding: 0; margin: 14px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
-.radar-legend li { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.75); }
-.radar-legend b { color: #6366f1; font-weight: 600; }
+.radar-chart canvas { width: 100%; max-width: 300px; height: auto; }
 .chat-box { display: flex; flex-direction: column; height: 420px; }
 .chat-log { flex: 1; overflow-y: auto; border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
 .chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
@@ -295,11 +287,10 @@ body.kb-open {
 <div class="coach-card">
 <h2>📊 Радар по подтемам</h2>
 <div class="radar-chart">
-<svg id="radarSvg" viewBox="0 0 240 240" data-radar='{% for topic, value in radar.items() %}{{ "," if not loop.first }}{{ value }}{% endfor %}' data-labels='{% for topic, value in radar.items() %}{{ "|" if not loop.first }}{{ topic_names.get(topic, topic) }}{% endfor %}'></svg>
+<canvas id="masteryRadar"
+        data-mastery='{{ mastery_list_json | tojson }}'
+        width="400" height="400"></canvas>
 </div>
-<ul class="radar-legend">
-{% for topic, value in radar.items() %}<li><span>{{ topic_names.get(topic, topic) }}</span><b>{{ value }}%</b></li>{% endfor %}
-</ul>
 </div>
 <div class="coach-card">
 <h2>💬 Чат с ИИ-куратором</h2>
@@ -477,36 +468,6 @@ body.kb-open {
 .cta-btn.secondary:hover { background: rgba(255,255,255,0.15); }
 </style>
 <script>
-(function () {
-var svg = document.getElementById('radarSvg');
-if (svg) {
-var vals = (svg.getAttribute('data-radar') || '').split(',').map(function (v) { return Math.max(0, Math.min(100, parseFloat(v) || 0)); });
-var labels = (svg.getAttribute('data-labels') || '').split('|');
-var n = vals.length;
-var cx = 120, cy = 120, R = 80;
-var NS = 'http://www.w3.org/2000/svg';
-function pt(i, r) { var a = (Math.PI * 2 * i / n) - Math.PI / 2; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
-function mk(tag, attrs, cls) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (cls) e.setAttribute('class', cls); return e; }
-if (n > 0) {
-[0.25, 0.5, 0.75, 1].forEach(function (f) {
-var pts = '';
-for (var i = 0; i < n; i++) { var p = pt(i, R * f); pts += p[0] + ',' + p[1] + ' '; }
-svg.appendChild(mk('polygon', { points: pts.trim() }, 'radar-grid-line'));
-});
-for (var i = 0; i < n; i++) {
-var e = pt(i, R);
-svg.appendChild(mk('line', { x1: cx, y1: cy, x2: e[0], y2: e[1] }, 'radar-axis'));
-var lp = pt(i, R + 16);
-var t = mk('text', { x: lp[0], y: lp[1], 'text-anchor': 'middle', 'dominant-baseline': 'middle' }, 'radar-axis-label');
-t.textContent = (labels[i] || '').slice(0, 12);
-svg.appendChild(t);
-}
-var dpts = '';
-for (var i = 0; i < n; i++) { var p = pt(i, R * vals[i] / 100); dpts += p[0] + ',' + p[1] + ' '; }
-svg.appendChild(mk('polygon', { points: dpts.trim() }, 'radar-area'));
-for (var i = 0; i < n; i++) { var p = pt(i, R * vals[i] / 100); svg.appendChild(mk('circle', { cx: p[0], cy: p[1], r: 3 }, 'radar-dot')); }
-}
-}
 
 // ─── Dynamic greeting via API ──────────────────────────────────────────
 var greetingEl = document.getElementById('greetingMsg');
@@ -643,6 +604,107 @@ fetch('{{ url_for("prep.coach_greeting") }}')
       } else {
         addCtaButton('📋 Создать план подготовки', '/prep/new', '');
       }
+
+    // ── Monthly prep cycle scenarios ──────────────────────────────────
+    } else if (data.scenario === 'prep_morning_test') {
+      // Test day (days 1–7), test NOT taken yet → offer inline test
+      var prepInfo = data.prep_info || {};
+      var topicTitle = prepInfo.subtopic_title || '';
+      var remaining = prepInfo.remaining_tests || 0;
+      addCtaAction('🧪 Начать тест: «' + topicTitle + '»', function () {
+        ctaRow.innerHTML = '';
+        greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + topicTitle + '</strong>…';
+        fetch('{{ url_for("prep.coach_greeting") }}?action=prep_test_tasks')
+          .then(function (r) { return r.json(); })
+          .then(function (taskData) {
+            if (taskData.tasks && taskData.tasks.length) {
+              var html = '<div style="max-height:350px;overflow-y:auto;">';
+              html += '<p><strong>📝 Тест по теме «' + (taskData.subtopic_title || topicTitle) + '»</strong></p>';
+              html += '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Отметь правильность каждой задачи (5 задач):</p>';
+              taskData.tasks.forEach(function (t, i) {
+                html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
+                html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + (t.task_text || t.text || '') + '</p>';
+                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">✅ Правильно</button> ';
+                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">❌ Неверно</button></div>';
+                html += '</div>';
+              });
+              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishPrepTest">📊 Завершить тест</button></div>';
+              html += '</div>';
+              greetingEl.innerHTML = html;
+              document.getElementById('finishPrepTest').addEventListener('click', function () {
+                var results = {};
+                document.querySelectorAll('[data-task]').forEach(function (btn) {
+                  var taskId = btn.getAttribute('data-task');
+                  if (!taskId) return;
+                  if (btn.classList.contains('cta-btn') && !btn.classList.contains('secondary')) {
+                    results[taskId] = 1;
+                  } else if (btn.classList.contains('secondary')) {
+                    if (!results[taskId]) results[taskId] = 0;
+                  }
+                });
+                greetingEl.innerHTML = '⏳ Отправляю результаты теста…';
+                fetch('{{ url_for("prep.coach_prep_submit_test") }}', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ results: results })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (res) {
+                  if (res.status === 'ok') {
+                    var msg = '✅ <strong>Тест завершён!</strong><br>';
+                    msg += 'Правильно: ' + res.correct + ' из ' + res.total + '<br>';
+                    msg += '🎯 Уровень: ' + res.level + '/8.';
+                    if (res.generation_queued) {
+                      msg += '<br><br>📚 Задачи дня уже готовятся под твой уровень. Они придут вечером!';
+                    }
+                    greetingEl.innerHTML = msg;
+                    ctaRow.innerHTML = '';
+                    if (res.generation_queued) {
+                      addCtaButton('📚 Перейти к задачам дня', '/daily-tasks', '');
+                    }
+                    addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+                  } else {
+                    greetingEl.innerHTML = '❌ Ошибка: ' + (res.error || 'попробуй ещё раз');
+                  }
+                })
+                .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
+              });
+            } else {
+              greetingEl.innerHTML = '😅 Нет задач для теста. Попробуй позже.';
+              ctaRow.innerHTML = '';
+              ctaRow.style.display = 'none';
+            }
+          })
+          .catch(function () { greetingEl.innerHTML = '❌ Ошибка загрузки теста.'; });
+      }, '');
+
+    } else if (data.scenario === 'prep_test_taken') {
+      // Test day, test already taken — show CTA to daily tasks if ready
+      if (data.cta_url && data.cta_text) {
+        addCtaButton(data.cta_text, data.cta_url, '');
+      }
+      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+
+    } else if (data.scenario === 'prep_tasks_ready') {
+      // Training day (days 8–30), tasks already generated
+      if (data.cta_url && data.cta_text) {
+        addCtaButton(data.cta_text, data.cta_url, '');
+      }
+      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+
+    } else if (data.scenario === 'prep_task_day') {
+      // Training day, tasks not ready yet — waiting for evening cron
+      if (data.cta_url && data.cta_text) {
+        addCtaButton(data.cta_text, data.cta_url, '');
+      }
+      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+
+    } else if (data.scenario === 'prep_month_complete') {
+      // Месяц завершён — показать следующие подтемы и CTA для старта нового месяца
+      if (data.cta_url && data.cta_text) {
+        addCtaButton(data.cta_text, data.cta_url, '');
+      }
+      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
     }
     if (ctaRow.children.length) {
       ctaRow.style.display = 'flex';
@@ -875,4 +937,7 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+
+<!-- Chart.js for Radar Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 {% endblock %}
