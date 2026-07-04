@@ -346,6 +346,27 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] daily_task_items.is_calibration Warning: {e}")
 
+# AUTO-MIGRATION: Add prep_state column to curator_state
+# Колонка добавлена в models_curator.py:19 (prep_state = db.Column(db.JSON, default=dict)).
+# Без неё /prep/coach падает с OperationalError «нет такого столбца: curator_state.prep_state».
+try:
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        if 'curator_state' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('curator_state')]
+            if 'prep_state' not in columns:
+                print("[AUTO-MIGRATION] Adding 'prep_state' column to curator_state...")
+                db.session.execute(text(
+                    "ALTER TABLE curator_state ADD COLUMN prep_state TEXT DEFAULT '{}'"
+                ))
+                db.session.commit()
+                print("[AUTO-MIGRATION] ✓ Column 'prep_state' added to curator_state!")
+            else:
+                print("[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] curator_state.prep_state Warning: {e}")
+
 # AUTO-MIGRATION: Create tutor_calls table for AI-тьютор v2 logging
 try:
     with app.app_context():
