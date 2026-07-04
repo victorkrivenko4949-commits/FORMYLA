@@ -26,6 +26,7 @@ from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan,
 from services.prep_planner import generate_prep_plan, RADAR_TOPICS, TOPIC_NAMES_RU
 from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE, get_db_topic, get_topic_entry
 from daily_tasks.profile import build_profile, ProfileBuildError, score_to_target_level
+from daily_tasks.monthly_plan import subtopic_title
 from services.olympiads_knowledge import build_olympiads_context, recommend_olympiads_for, get_olympiad_knowledge
 
 # Allowed MIME types for photo upload
@@ -1080,286 +1081,301 @@ def coach_greeting():
             cta_text='🎯 Выбрать класс',
         )
 
-    profile = _curator_profile()
-    ctx = _build_subtopic_ctx(profile)
-    test_done = ctx['test_done']
-    measured_count = profile.get('measured_topics_count', 0) if profile else 0
+    # ── coach_greeting SAFETY NET: wrap main logic in try/except ─────
+    try:
+        profile = _curator_profile()
+        ctx = _build_subtopic_ctx(profile)
+        test_done = ctx['test_done']
+        measured_count = profile.get('measured_topics_count', 0) if profile else 0
 
-    # ── Сценарий 2a: онбординг уже запущен ──────────────────────────────
-    existing_test = session.get('coach_test')
-    if existing_test and existing_test.get('active'):
-        task_ids = existing_test.get('task_ids', [])
-        idx = existing_test.get('current_index', 0)
-        total = len(task_ids)
+        # ── Сценарий 2a: онбординг уже запущен ──────────────────────────────
+        existing_test = session.get('coach_test')
+        if existing_test and existing_test.get('active'):
+            task_ids = existing_test.get('task_ids', [])
+            idx = existing_test.get('current_index', 0)
+            total = len(task_ids)
+            greeting = (
+                f'🧪 <strong>Диагностика уже запущена!</strong> '
+                f'Ты на задаче {idx + 1} из {total}. '
+                f'Просто напиши ответ в чат, чтобы продолжить.'
+            )
+            return jsonify(
+                greeting=greeting,
+                scenario='test_in_progress',
+                recommended_olympiad=None,
+                subtopics_to_test=[],
+                cta_url=None,
+                cta_text=None,
+            )
+
+        # ── Сценарий 2: онбординг ───────────────────────────────────────────
+        if measured_count == 0:
+            greeting = (
+                f'Привет! 👋 Рад знакомству! Ты в {grade} классе, но диагностика ещё не пройдена, '
+                f'и все подтемы пока с нуля — это нормально, сейчас начнём.\n\n'
+                f'🔹 <strong>Пройди диагностику</strong> (10–15 минут) — '
+                f'она покажет твой реальный уровень и поможет составить план.\n\n'
+                f'Начинаем? 😊'
+            )
+            return jsonify(
+                greeting=greeting,
+                scenario='onboarding_test',
+                recommended_olympiad=None,
+                subtopics_to_test=[],
+                cta_url=None,
+                cta_text='🧪 Начать диагностику',
+            )
+
+        # ── Проверка DailyQuest на сегодня ──────────────────────────────────
+        today = date.today()
+        daily_quest = DailyQuest.query.filter_by(
+            user_id=current_user.id, date=today
+        ).first()
+
+        # ── Сценарий 4: задачи дня в процессе ──────────────────────────────
+        if daily_quest and daily_quest.completed_at is None:
+            remaining = daily_quest.total_count - daily_quest.completed_count
+            greeting = (
+                f'👋 С возвращением! У тебя осталось **{remaining} из {daily_quest.total_count}** задач '
+                f'на сегодня. Продолжай в том же духе! 💪'
+            )
+            return jsonify(
+                greeting=greeting,
+                scenario='daily_tasks_ready',
+                recommended_olympiad=None,
+                subtopics_to_test=[],
+                cta_url=None,
+                cta_text='📝 Продолжить задачи дня',
+            )
+
+        # ── Сценарий 5: день завершён ──────────────────────────────────────
+        if daily_quest and daily_quest.completed_at is not None:
+            # Определяем слабые подтемы для рекомендации
+            weak_keys = ctx['weak_keys']
+            weak_names = ', '.join(ctx['topic_names'].get(k, k) for k in weak_keys[:3]) if weak_keys else ''
+            day_result = f'{daily_quest.completed_count}/{daily_quest.total_count}'
+            greeting = (
+                f'🎉 Отлично! Ты завершил день — {day_result}. '
+                f'Завтра будет новая подтема. Отдохни и набирайся сил!'
+            )
+            if weak_names:
+                greeting += f'\n\nОбрати внимание на: **{weak_names}** — стоит подтянуть.'
+
+            # Рекомендуем олимпиаду если есть слабые темы
+            recommended = None
+            try:
+                recommended_slugs = recommend_olympiads_for(
+                    grade, [t.get('topic_key') or t.get('topic', '') for t in (profile.get('weak_topics') or [])]
+                )
+                if recommended_slugs:
+                    olymp = OlympiadPrep.query.filter_by(
+                        slug=recommended_slugs[0], is_active=True
+                    ).first()
+                    if olymp:
+                        recommended = {'slug': olymp.slug, 'name': olymp.name, 'short_name': olymp.short_name}
+            except Exception:
+                pass
+
+            return jsonify(
+                greeting=greeting,
+                scenario='day_summary',
+                recommended_olympiad=recommended,
+                subtopics_to_test=ctx['subtopics_to_test'],
+                cta_url='/prep/new' if recommended else None,
+                cta_text='📋 Создать план подготовки' if recommended else None,
+                day_result=day_result,
+            )
+
+        # ── Сценарий 3a: monthly prep cycle — тестовый день ──────────────────
+        # Проверяем, есть ли у пользователя активный monthly prep plan
+        try:
+            _prep_info = None
+            _has_prep = False
+            # lazy import to avoid circular dependencies
+            from curator.monthly_cycle import get_today_info as _get_prep_info
+            _prep_info = _get_prep_info(current_user.id)
+            if _prep_info and _prep_info.get("subtopic"):
+                _has_prep = True
+        except Exception:
+            _prep_info = None
+            _has_prep = False
+
+        if _has_prep:
+            _cycle_day = _prep_info.get("cycle_day", 0)
+            _is_test_day = _prep_info.get("is_test_day", False)
+            _tested = _prep_info.get("tested", False)
+            _has_tasks = _prep_info.get("has_tasks", False)
+            _subtopic_title = _prep_info.get("subtopic_title", _prep_info.get("subtopic", ""))
+            _level = _prep_info.get("level", 2)
+            _remaining_tests = max(0, 7 - len(_prep_info.get("tested_subtopics", [])))
+            _cycle_progress = f"День {_cycle_day}/28"
+
+            # Сценарий 3a.0: Месяц завершён — показать следующие подтемы
+            _month_completed = _prep_info.get("month_completed", False)
+            if _month_completed:
+                _next_subs = _prep_info.get("next_month_subtopics", [])
+                try:
+                    _next_names = ', '.join(
+                        subtopic_title(s) for s in _next_subs[:7]
+                    ) if _next_subs else 'следующие подтемы'
+                except Exception:
+                    _next_names = 'следующие подтемы'
+                greeting = (
+                    f'🎉 <strong>Прошёл месяц!</strong> Поздравляю с завершением '
+                    f'очередного этапа подготовки!\n\n'
+                    f'Вот твои следующие подтемы, над которыми будем работать:\n'
+                    f'<strong>{_next_names}</strong>\n\n'
+                    f'Готов начать новый месяц? 🚀'
+                )
+                return jsonify(
+                    greeting=greeting,
+                    scenario='prep_month_complete',
+                    recommended_olympiad=None,
+                    prep_info={
+                        'cycle_day': _cycle_day,
+                        'month_completed': True,
+                        'next_month_subtopics': _next_subs,
+                        'subtopic': _prep_info.get('subtopic'),
+                    },
+                    cta_url='/coach',
+                    cta_text='🚀 Начать новый месяц',
+                )
+
+            if _is_test_day and not _tested:
+                # Сценарий 3a.1: Утренний тест — "7 дней чтобы пройти 7 тестов"
+                greeting = (
+                    f'🌅 Доброе утро! У тебя **7 дней, чтобы пройти 7 тестов** — '
+                    f'по одному на каждую подтему.\n\n'
+                    f'Сегодня **тестовый день** ({_cycle_progress}).\n\n'
+                    f'Тема дня: **«{_subtopic_title}»**.\n'
+                    f'Пройди тест из 5 задач — это займёт 5–10 минут. '
+                    f'По результатам я подберу задачи дня под твой уровень.\n\n'
+                    f'Осталось пройти тестов: **{_remaining_tests}**. 💪'
+                )
+                return jsonify(
+                    greeting=greeting,
+                    scenario='prep_morning_test',
+                    recommended_olympiad=None,
+                    prep_info={
+                        'cycle_day': _cycle_day,
+                        'subtopic': _prep_info.get('subtopic'),
+                        'subtopic_title': _subtopic_title,
+                        'is_test_day': True,
+                        'tested': False,
+                        'remaining_tests': _remaining_tests,
+                        'level': _level,
+                    },
+                    cta_url='/coach',
+                    cta_text='🧪 Начать тест',
+                )
+
+            elif _is_test_day and _tested:
+                # Сценарий 3a.2: Тест пройден, ждём задачи
+                greeting = (
+                    f'✅ Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
+                    f'Задачи дня уже готовятся под твой уровень (сложность {_level}/8). '
+                    f'Они придут вечером — проверь уведомления!\n\n'
+                    f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}** из 7. 💪'
+                )
+                return jsonify(
+                    greeting=greeting,
+                    scenario='prep_test_taken',
+                    recommended_olympiad=None,
+                    prep_info={
+                        'cycle_day': _cycle_day,
+                        'subtopic': _prep_info.get('subtopic'),
+                        'subtopic_title': _subtopic_title,
+                        'is_test_day': True,
+                        'tested': True,
+                        'remaining_tests': _remaining_tests,
+                        'level': _level,
+                    },
+                    cta_url='/daily-set',
+                    cta_text='📚 Перейти к задачам дня' if _has_tasks else None,
+                )
+
+            elif not _is_test_day:
+                if _has_tasks:
+                    # Сценарий 3a.3: Task-only день, задачи уже готовы
+                    greeting = (
+                        f'📚 Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
+                        f'Тема: **«{_subtopic_title}»**.\n'
+                        f'Задачи дня уже готовы — продолжай тренироваться! 💪\n\n'
+                        f'Уровень сложности: {_level}/8.'
+                    )
+                    return jsonify(
+                        greeting=greeting,
+                        scenario='prep_tasks_ready',
+                        recommended_olympiad=None,
+                        prep_info={
+                            'cycle_day': _cycle_day,
+                            'subtopic': _prep_info.get('subtopic'),
+                            'subtopic_title': _subtopic_title,
+                            'is_test_day': False,
+                            'has_tasks': True,
+                            'level': _level,
+                        },
+                        cta_url='/daily-set',
+                        cta_text='📚 Перейти к задачам дня',
+                    )
+                else:
+                    # Сценарий 3a.4: Task-only день, задачи ещё не готовы
+                    greeting = (
+                        f'🌅 Доброе утро! Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
+                        f'Тема недели: **«{_subtopic_title}»**.\n'
+                        f'Задачи придут вечером — настроим их под твой уровень ({_level}/8).\n\n'
+                        f'А пока можешь повторить теорию или решить несколько задач для разминки! 📖'
+                    )
+                    return jsonify(
+                        greeting=greeting,
+                        scenario='prep_task_day',
+                        recommended_olympiad=None,
+                        prep_info={
+                            'cycle_day': _cycle_day,
+                            'subtopic': _prep_info.get('subtopic'),
+                            'subtopic_title': _subtopic_title,
+                            'is_test_day': False,
+                            'has_tasks': False,
+                            'level': _level,
+                        },
+                        cta_url=None,
+                        cta_text='📖 Повторить теорию',
+                    )
+
+        # ── Сценарий 3b: daily_test — предложить тест по приоритетной подтеме ─
+        # Нет квеста сегодня, но профиль есть
+        priority_subtopic = None
+        if ctx.get('subtopics_to_test'):
+            priority_subtopic = ctx['subtopics_to_test'][0]
+        elif ctx['weak_keys']:
+            priority_subtopic = {'key': ctx['weak_keys'][0], 'name': ctx['topic_names'].get(ctx['weak_keys'][0], ctx['weak_keys'][0])}
+
+        subtopic_name = priority_subtopic['name'] if priority_subtopic else 'математике'
         greeting = (
-            f'🧪 <strong>Диагностика уже запущена!</strong> '
-            f'Ты на задаче {idx + 1} из {total}. '
-            f'Просто напиши ответ в чат, чтобы продолжить.'
+            f'👋 Привет! Ты в {grade}-м классе. Готов позаниматься? '
+            f'Предлагаю начать с темы **«{subtopic_name}»** — '
+            f'реши несколько задач, и я подберу задачи дня под твой уровень.'
         )
+
         return jsonify(
             greeting=greeting,
-            scenario='test_in_progress',
+            scenario='daily_test',
+            recommended_olympiad=None,
+            subtopics_to_test=ctx['subtopics_to_test'],
+            priority_subtopic=priority_subtopic,
+            cta_url=None,
+            cta_text='🧪 Пройти тест по теме',
+        )
+    except Exception as _greeting_err:
+        current_app.logger.exception('coach_greeting safety net caught error')
+        return jsonify(
+            greeting='👋 Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!',
+            scenario='fallback',
             recommended_olympiad=None,
             subtopics_to_test=[],
             cta_url=None,
             cta_text=None,
         )
-
-    # ── Сценарий 2: онбординг ───────────────────────────────────────────
-    if measured_count == 0:
-        greeting = (
-            f'Привет! 👋 Рад знакомству! Ты в {grade} классе, но диагностика ещё не пройдена, '
-            f'и все подтемы пока с нуля — это нормально, сейчас начнём.\n\n'
-            f'🔹 <strong>Пройди диагностику</strong> (10–15 минут) — '
-            f'она покажет твой реальный уровень и поможет составить план.\n\n'
-            f'Начинаем? 😊'
-        )
-        return jsonify(
-            greeting=greeting,
-            scenario='onboarding_test',
-            recommended_olympiad=None,
-            subtopics_to_test=[],
-            cta_url=None,
-            cta_text='🧪 Начать диагностику',
-        )
-
-    # ── Проверка DailyQuest на сегодня ──────────────────────────────────
-    today = date.today()
-    daily_quest = DailyQuest.query.filter_by(
-        user_id=current_user.id, date=today
-    ).first()
-
-    # ── Сценарий 4: задачи дня в процессе ──────────────────────────────
-    if daily_quest and daily_quest.completed_at is None:
-        remaining = daily_quest.total_count - daily_quest.completed_count
-        greeting = (
-            f'👋 С возвращением! У тебя осталось **{remaining} из {daily_quest.total_count}** задач '
-            f'на сегодня. Продолжай в том же духе! 💪'
-        )
-        return jsonify(
-            greeting=greeting,
-            scenario='daily_tasks_ready',
-            recommended_olympiad=None,
-            subtopics_to_test=[],
-            cta_url=None,
-            cta_text='📝 Продолжить задачи дня',
-        )
-
-    # ── Сценарий 5: день завершён ──────────────────────────────────────
-    if daily_quest and daily_quest.completed_at is not None:
-        # Определяем слабые подтемы для рекомендации
-        weak_keys = ctx['weak_keys']
-        weak_names = ', '.join(ctx['topic_names'].get(k, k) for k in weak_keys[:3]) if weak_keys else ''
-        day_result = f'{daily_quest.completed_count}/{daily_quest.total_count}'
-        greeting = (
-            f'🎉 Отлично! Ты завершил день — {day_result}. '
-            f'Завтра будет новая подтема. Отдохни и набирайся сил!'
-        )
-        if weak_names:
-            greeting += f'\n\nОбрати внимание на: **{weak_names}** — стоит подтянуть.'
-
-        # Рекомендуем олимпиаду если есть слабые темы
-        recommended = None
-        try:
-            recommended_slugs = recommend_olympiads_for(
-                grade, [t.get('topic_key') or t.get('topic', '') for t in (profile.get('weak_topics') or [])]
-            )
-            if recommended_slugs:
-                olymp = OlympiadPrep.query.filter_by(
-                    slug=recommended_slugs[0], is_active=True
-                ).first()
-                if olymp:
-                    recommended = {'slug': olymp.slug, 'name': olymp.name, 'short_name': olymp.short_name}
-        except Exception:
-            pass
-
-        return jsonify(
-            greeting=greeting,
-            scenario='day_summary',
-            recommended_olympiad=recommended,
-            subtopics_to_test=ctx['subtopics_to_test'],
-            cta_url='/prep/new' if recommended else None,
-            cta_text='📋 Создать план подготовки' if recommended else None,
-            day_result=day_result,
-        )
-
-    # ── Сценарий 3a: monthly prep cycle — тестовый день ──────────────────
-    # Проверяем, есть ли у пользователя активный monthly prep plan
-    try:
-        _prep_info = None
-        _has_prep = False
-        # lazy import to avoid circular dependencies
-        from curator.monthly_cycle import get_today_info as _get_prep_info
-        _prep_info = _get_prep_info(current_user.id)
-        if _prep_info and _prep_info.get("subtopic"):
-            _has_prep = True
-    except Exception:
-        _prep_info = None
-        _has_prep = False
-
-    if _has_prep:
-        _cycle_day = _prep_info.get("cycle_day", 0)
-        _is_test_day = _prep_info.get("is_test_day", False)
-        _tested = _prep_info.get("tested", False)
-        _has_tasks = _prep_info.get("has_tasks", False)
-        _subtopic_title = _prep_info.get("subtopic_title", _prep_info.get("subtopic", ""))
-        _level = _prep_info.get("level", 2)
-        _remaining_tests = max(0, 7 - len(_prep_info.get("tested_subtopics", [])))
-        _cycle_progress = f"День {_cycle_day}/28"
-
-        # Сценарий 3a.0: Месяц завершён — показать следующие подтемы
-        _month_completed = _prep_info.get("month_completed", False)
-        if _month_completed:
-            _next_subs = _prep_info.get("next_month_subtopics", [])
-            _next_names = ', '.join(
-                subtopic_title(s) for s in _next_subs[:7]
-            ) if _next_subs else 'следующие подтемы'
-            greeting = (
-                f'🎉 <strong>Прошёл месяц!</strong> Поздравляю с завершением '
-                f'очередного этапа подготовки!\n\n'
-                f'Вот твои следующие подтемы, над которыми будем работать:\n'
-                f'<strong>{_next_names}</strong>\n\n'
-                f'Готов начать новый месяц? 🚀'
-            )
-            return jsonify(
-                greeting=greeting,
-                scenario='prep_month_complete',
-                recommended_olympiad=None,
-                prep_info={
-                    'cycle_day': _cycle_day,
-                    'month_completed': True,
-                    'next_month_subtopics': _next_subs,
-                    'subtopic': _prep_info.get('subtopic'),
-                },
-                cta_url='/coach',
-                cta_text='🚀 Начать новый месяц',
-            )
-
-        if _is_test_day and not _tested:
-            # Сценарий 3a.1: Утренний тест — "7 дней чтобы пройти 7 тестов"
-            greeting = (
-                f'🌅 Доброе утро! У тебя **7 дней, чтобы пройти 7 тестов** — '
-                f'по одному на каждую подтему.\n\n'
-                f'Сегодня **тестовый день** ({_cycle_progress}).\n\n'
-                f'Тема дня: **«{_subtopic_title}»**.\n'
-                f'Пройди тест из 5 задач — это займёт 5–10 минут. '
-                f'По результатам я подберу задачи дня под твой уровень.\n\n'
-                f'Осталось пройти тестов: **{_remaining_tests}**. 💪'
-            )
-            return jsonify(
-                greeting=greeting,
-                scenario='prep_morning_test',
-                recommended_olympiad=None,
-                prep_info={
-                    'cycle_day': _cycle_day,
-                    'subtopic': _prep_info.get('subtopic'),
-                    'subtopic_title': _subtopic_title,
-                    'is_test_day': True,
-                    'tested': False,
-                    'remaining_tests': _remaining_tests,
-                    'level': _level,
-                },
-                cta_url='/coach',
-                cta_text='🧪 Начать тест',
-            )
-
-        elif _is_test_day and _tested:
-            # Сценарий 3a.2: Тест пройден, ждём задачи
-            greeting = (
-                f'✅ Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
-                f'Задачи дня уже готовятся под твой уровень (сложность {_level}/8). '
-                f'Они придут вечером — проверь уведомления!\n\n'
-                f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}** из 7. 💪'
-            )
-            return jsonify(
-                greeting=greeting,
-                scenario='prep_test_taken',
-                recommended_olympiad=None,
-                prep_info={
-                    'cycle_day': _cycle_day,
-                    'subtopic': _prep_info.get('subtopic'),
-                    'subtopic_title': _subtopic_title,
-                    'is_test_day': True,
-                    'tested': True,
-                    'remaining_tests': _remaining_tests,
-                    'level': _level,
-                },
-                cta_url='/daily-set',
-                cta_text='📚 Перейти к задачам дня' if _has_tasks else None,
-            )
-
-        elif not _is_test_day:
-            if _has_tasks:
-                # Сценарий 3a.3: Task-only день, задачи уже готовы
-                greeting = (
-                    f'📚 Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
-                    f'Тема: **«{_subtopic_title}»**.\n'
-                    f'Задачи дня уже готовы — продолжай тренироваться! 💪\n\n'
-                    f'Уровень сложности: {_level}/8.'
-                )
-                return jsonify(
-                    greeting=greeting,
-                    scenario='prep_tasks_ready',
-                    recommended_olympiad=None,
-                    prep_info={
-                        'cycle_day': _cycle_day,
-                        'subtopic': _prep_info.get('subtopic'),
-                        'subtopic_title': _subtopic_title,
-                        'is_test_day': False,
-                        'has_tasks': True,
-                        'level': _level,
-                    },
-                    cta_url='/daily-set',
-                    cta_text='📚 Перейти к задачам дня',
-                )
-            else:
-                # Сценарий 3a.4: Task-only день, задачи ещё не готовы
-                greeting = (
-                    f'🌅 Доброе утро! Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
-                    f'Тема недели: **«{_subtopic_title}»**.\n'
-                    f'Задачи придут вечером — настроим их под твой уровень ({_level}/8).\n\n'
-                    f'А пока можешь повторить теорию или решить несколько задач для разминки! 📖'
-                )
-                return jsonify(
-                    greeting=greeting,
-                    scenario='prep_task_day',
-                    recommended_olympiad=None,
-                    prep_info={
-                        'cycle_day': _cycle_day,
-                        'subtopic': _prep_info.get('subtopic'),
-                        'subtopic_title': _subtopic_title,
-                        'is_test_day': False,
-                        'has_tasks': False,
-                        'level': _level,
-                    },
-                    cta_url=None,
-                    cta_text='📖 Повторить теорию',
-                )
-
-    # ── Сценарий 3b: daily_test — предложить тест по приоритетной подтеме ─
-    # Нет квеста сегодня, но профиль есть
-    priority_subtopic = None
-    if ctx.get('subtopics_to_test'):
-        priority_subtopic = ctx['subtopics_to_test'][0]
-    elif ctx['weak_keys']:
-        priority_subtopic = {'key': ctx['weak_keys'][0], 'name': ctx['topic_names'].get(ctx['weak_keys'][0], ctx['weak_keys'][0])}
-
-    subtopic_name = priority_subtopic['name'] if priority_subtopic else 'математике'
-    greeting = (
-        f'👋 Привет! Ты в {grade}-м классе. Готов позаниматься? '
-        f'Предлагаю начать с темы **«{subtopic_name}»** — '
-        f'реши несколько задач, и я подберу задачи дня под твой уровень.'
-    )
-
-    return jsonify(
-        greeting=greeting,
-        scenario='daily_test',
-        recommended_olympiad=None,
-        subtopics_to_test=ctx['subtopics_to_test'],
-        priority_subtopic=priority_subtopic,
-        cta_url=None,
-        cta_text='🧪 Пройти тест по теме',
-    )
 
 # ─── Онбординг: inline-тест в чате ────────────────────────────────────────
 
