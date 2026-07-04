@@ -803,6 +803,205 @@
 .dt-card.is-flagged, .dt-card[data-flagged="true"] { opacity: 1 !important; display: flex !important; }
 .dt-card { opacity: 1 !important; }
 
+  /* ── 📖 Subtopic strip (curator prep_plan) ───────────────────── */
+  .dt-subtopic-strip {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .dt-subtopic-strip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .dt-subtopic-strip-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+  }
+  .dt-subtopic-strip-grade {
+    font-size: 12px;
+    color: rgba(56,239,125,0.6);
+    background: rgba(56,239,125,0.08);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .dt-subtopic-strip-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .dt-subtopic-strip-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 130px;
+    max-width: 200px;
+  }
+  .dt-subtopic-strip-item.is-today {
+    background: rgba(56,239,125,0.10);
+    border-color: rgba(56,239,125,0.35);
+    box-shadow: 0 0 12px rgba(56,239,125,0.08);
+  }
+  .dt-subtopic-strip-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    flex-shrink: 0;
+  }
+  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-badge {
+    background: rgba(56,239,125,0.2);
+    color: #38ef7d;
+  }
+  .dt-subtopic-strip-name {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-name {
+    color: #38ef7d;
+    font-weight: 600;
+  }
+  .dt-subtopic-strip-today-badge {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #38ef7d;
+    background: rgba(56,239,125,0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ── 🗓  Yearly calendar (curator prep_plan) ──────────────────── */
+  .dt-yearly-calendar {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .dt-yearly-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+  }
+  .dt-yearly-cal-header:hover {
+    background: rgba(255,255,255,0.02);
+  }
+  .dt-yearly-cal-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+  }
+  .dt-yearly-cal-toggle {
+    font-size: 18px;
+    color: rgba(255,255,255,0.3);
+    transition: transform 0.3s ease;
+  }
+  .dt-yearly-cal-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .dt-yearly-cal-body.is-open {
+    max-height: 5000px;
+  }
+  .dt-yearly-cal-inner {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dt-yearly-month {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .dt-yearly-month.is-current {
+    border-color: rgba(56,239,125,0.25);
+    background: rgba(56,239,125,0.04);
+  }
+  .dt-yearly-month-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .dt-yearly-month-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+  }
+  .dt-yearly-month.is-current .dt-yearly-month-label {
+    color: #38ef7d;
+  }
+  .dt-yearly-month-badge {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.04);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .dt-yearly-month.is-current .dt-yearly-month-badge {
+    color: rgba(56,239,125,0.7);
+    background: rgba(56,239,125,0.1);
+  }
+  .dt-yearly-month-subs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .dt-yearly-sub {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+  }
+  .dt-yearly-sub.is-today-sub {
+    background: rgba(56,239,125,0.10);
+    border-color: rgba(56,239,125,0.25);
+    color: #38ef7d;
+  }
+  .dt-yearly-sub-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.25);
+    width: 16px;
+    text-align: center;
+  }
+  .dt-yearly-sub.is-today-sub .dt-yearly-sub-num {
+    color: rgba(56,239,125,0.6);
+  }
+
 </style>
 {% endblock %}
 
@@ -847,6 +1046,31 @@
         </span>
         <span class="dt-countdown-time" id="dt-countdown-time">--:--:--</span>
       </div>
+
+      <!-- ═══ 📖 Weekly subtopic strip (from curator prep_plan) ═══ -->
+      {% if data and data.plan_data and data.plan_data.months %}
+      {% set _pd = data.plan_data %}
+      {% set _cur_month_idx = _pd.current_month %}
+      {% set _cur_month = _pd.months | selectattr('index', 'equalto', _cur_month_idx) | first %}
+      <div class="dt-subtopic-strip">
+        <div class="dt-subtopic-strip-header">
+          <span class="dt-subtopic-strip-title">📖 Месяц {{ _cur_month_idx }}: подтемы</span>
+          <span class="dt-subtopic-strip-grade">класс {{ _pd.grade }}</span>
+        </div>
+        <div class="dt-subtopic-strip-items">
+          {% if _cur_month and _cur_month.subtopics %}
+          {% for _sub in _cur_month.subtopics %}
+          {% set _is_today = (_sub.slug == _pd.today_subtopic_slug) %}
+          <div class="dt-subtopic-strip-item{% if _is_today %} is-today{% endif %}">
+            <span class="dt-subtopic-strip-badge">{{ loop.index }}</span>
+            <span class="dt-subtopic-strip-name">{{ _sub.title }}</span>
+            {% if _is_today %}<span class="dt-subtopic-strip-today-badge">Сегодня</span>{% endif %}
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
 
   <!-- ═══ Pipeline steps (always visible) ═══ -->
   <div class="dt-pipeline" id="dt-pipeline">
@@ -893,6 +1117,40 @@
       <span class="dt-ps-check">✓</span>
     </div>
   </div>
+
+      <!-- ═══ 🗓  Yearly calendar (all months with subtopics) ═══ -->
+      {% if data and data.plan_data and data.plan_data.months %}
+      {% set _pd = data.plan_data %}
+      {% set _cur_month_idx = _pd.current_month %}
+      <div class="dt-yearly-calendar" id="dt-yearly-calendar">
+        <div class="dt-yearly-cal-header" onclick="toggleYearlyCal()">
+          <span class="dt-yearly-cal-title">🗓 Годовой план подтем</span>
+          <span class="dt-yearly-cal-toggle" id="dt-yearly-cal-toggle">▶</span>
+        </div>
+        <div class="dt-yearly-cal-body" id="dt-yearly-cal-body">
+          <div class="dt-yearly-cal-inner">
+            {% for _m in _pd.months %}
+            {% set _is_cur = (_m.index == _cur_month_idx) %}
+            <div class="dt-yearly-month{% if _is_cur %} is-current{% endif %}">
+              <div class="dt-yearly-month-header">
+                <span class="dt-yearly-month-label">Месяц {{ _m.index }}</span>
+                {% if _is_cur %}<span class="dt-yearly-month-badge">📌 Текущий</span>{% endif %}
+              </div>
+              <div class="dt-yearly-month-subs">
+                {% for _sub in _m.subtopics %}
+                {% set _is_today_sub = (_sub.slug == _pd.today_subtopic_slug and _is_cur) %}
+                <span class="dt-yearly-sub{% if _is_today_sub %} is-today-sub{% endif %}">
+                  <span class="dt-yearly-sub-num">{{ loop.index }}</span>
+                  {{ _sub.title }}
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
   <!-- ═══ Empty state (no set) ═══ -->
   <div id="dt-empty-state" class="dt-hidden">
@@ -1043,6 +1301,7 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/daily_tasks.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='js/daily_tasks_modal.js') }}?v={{ asset_version }}"></script>
 
 <!-- ═══════════════════════════════════════════════════════════════════
      Inline JS: 24h countdown + календарь + day-history панель.
@@ -1405,7 +1664,7 @@ card.innerHTML='<div class="dt-card-number">'+escapeHtml(it.position||'')+'</div
 '<div class="dt-card-header"><span class="dt-topic-badge">'+escapeHtml(it.topic||'')+'</span><span class="dt-difficulty">'+escapeHtml(it.difficulty_level||'')+'</span></div>'+
 '<div class="dt-card-preview">'+escapeHtml(it.preview||it.text||'')+'</div>'+statusHtml;
 card.addEventListener('click', function(){ openTask(it); });
-grid.appendChild(card); try{ if(typeof reRenderMath==='function') reRenderMath(card); }catch(e){}
+grid.appendChild(card); if(typeof renderMath==='function') renderMath(card);
 });
 }
 // ── Fraction / answer normalization (1/4 => 0.25) ─────────────
@@ -1441,10 +1700,10 @@ function openTask(it){
 ensureModal();
 dtCurrentItem=it; dtOpenStart=Date.now();
 $('dt-modal-title').textContent=(it.topic||'')+(it.difficulty_level?(' \u00b7 '+it.difficulty_level):'');
-$('dt-modal-statement').textContent=(it.text||it.preview||''); try{ if(typeof reRenderMath==='function') reRenderMath($('dt-modal-statement')); }catch(e){}
+$('dt-modal-statement').innerHTML=escapeHtmlPreserveLatex(it.text||it.preview||''); if(typeof renderMath==='function') renderMath($('dt-modal-statement'));
 var inp=$('dt-answer-input'); inp.value=(it.user_answer||'');
 var res=$('dt-modal-result'); res.innerHTML='';
-if(it.is_answered){ res.innerHTML='<div style="color:'+(it.is_correct?'#38ef7d':'#ff6b6b')+';">'+(it.is_correct?'\u2713 \u0420\u0430\u043d\u0435\u0435 \u0440\u0435\u0448\u0435\u043d\u043e \u0432\u0435\u0440\u043d\u043e':'\u2717 \u0420\u0430\u043d\u0435\u0435 \u043e\u0442\u0432\u0435\u0447\u0435\u043d\u043e \u043d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>'; }
+if(it.is_answered){ res.innerHTML='<div style="color:'+(it.is_correct?'#38ef7d':'#ff6b6b')+';">'+(it.is_correct?'\u2713 \u0420\u0430\u043d\u0435\u0435 \u0440\u0435\u0448\u0435\u043d\u043e \u0432\u0435\u0440\u043d\u043e':'\u2717 \u0420\u0430\u043d\u0435\u0435 \u043e\u0442\u0432\u0435\u0447\u0435\u043d\u043e \u043d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>'; inp.disabled=true; $('dt-submit-btn').disabled=true; }else{ inp.disabled=false; $('dt-submit-btn').disabled=false; }
 $('dt-submit-btn').onclick=submitAnswer;
 $('dt-hint-btn').onclick=loadHint;
 inp.onkeydown=function(e){ if(e.key==='Enter') submitAnswer(); };
@@ -1452,7 +1711,7 @@ dtModalEl.style.display='flex';
 inp.focus();
 }
 function submitAnswer(){
-if(!dtCurrentItem) return;
+if(!dtCurrentItem || dtCurrentItem.is_answered) return;
 var inp=$('dt-answer-input'); var res=$('dt-modal-result'); var btn=$('dt-submit-btn');
 var raw=inp.value.trim(); if(!raw){ inp.focus(); return; }
 var normalized=normalizeAnswer(raw);
@@ -1466,10 +1725,10 @@ btn.disabled=false; btn.textContent=oldTxt;
 if(!p){ res.innerHTML='<div style="color:#ff6b6b;">\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438</div>'; return; }
 var _dtFinish=function(){ var ok=p.is_correct===true;
 var html='<div style="color:'+(ok?'#38ef7d':'#ff6b6b')+';font-weight:600;margin-bottom:8px;">'+(ok?'\u2713 \u0412\u0435\u0440\u043d\u043e!':'\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>';
-if(!ok && p.correct_answer!=null){ html+='<div style="margin-bottom:6px;">\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442: <b>'+escapeHtml(p.correct_answer)+'</b></div>'; }
-if(p.explanation){ html+='<div style="color:rgba(255,255,255,0.75);line-height:1.5;margin-top:6px;">'+escapeHtml(p.explanation)+'</div>'; }
-if(p.solution){ html+='<div style="color:rgba(255,255,255,0.6);line-height:1.5;margin-top:8px;white-space:pre-wrap;">'+escapeHtml(p.solution)+'</div>'; }
-res.innerHTML=html;
+if(!ok && p.correct_answer!=null){ html+='<div style="margin-bottom:6px;">\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442: <b>'+escapeHtmlPreserveLatex(p.correct_answer)+'</b></div>'; }
+if(p.explanation){ html+='<div style="color:rgba(255,255,255,0.75);line-height:1.5;margin-top:6px;">'+escapeHtmlPreserveLatex(p.explanation)+'</div>'; }
+if(p.solution){ html+='<div style="color:rgba(255,255,255,0.6);line-height:1.5;margin-top:8px;white-space:pre-wrap;">'+escapeHtmlPreserveLatex(p.solution)+'</div>'; }
+res.innerHTML=html; if(typeof renderMath==='function') renderMath(res);
 dtCurrentItem.is_answered=true; dtCurrentItem.is_correct=ok; dtCurrentItem.user_answer=raw;
 renderTasks();
 if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); } }; if(p.is_correct===true){ _dtFinish(); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.6);">DeepSeek проверяет ответ…</div>'; fetch('/daily_tasks/'+dtCurrentItem.id+'/submit_ai',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({user_answer:raw,user_solution:raw,time_spent_seconds:secs})}).then(function(r){return r.json();}).then(function(a){ if(a&&a.status==='success'){ p.is_correct=a.is_correct===true; if(a.correct_answer!=null)p.correct_answer=a.correct_answer; if(a.feedback)p.explanation=a.feedback; if(a.solution)p.solution=a.solution; if(a.set_progress)p.set_progress=a.set_progress; } _dtFinish(); }).catch(function(e){ console.warn('[dt-submit-ai]',e); _dtFinish(); }); }
@@ -1481,7 +1740,7 @@ if(!dtCurrentItem) return;
 var res=$('dt-modal-result');
 fetch('/daily_tasks/'+dtCurrentItem.id+'/hint', { credentials:'same-origin', headers:{'Accept':'application/json'} })
 .then(function(r){ return r.json(); })
-.then(function(p){ if(p&&p.hint){ res.innerHTML='<div style="color:#ffba49;line-height:1.5;">\ud83d\udca1 '+escapeHtml(p.hint)+'</div>'; } else { res.innerHTML='<div style="color:rgba(255,255,255,0.5);">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043e\u043a \u043d\u0435\u0442</div>'; } })
+.then(function(p){ if(p&&p.hint){ res.innerHTML='<div style="color:#ffba49;line-height:1.5;">\ud83d\udca1 '+escapeHtmlPreserveLatex(p.hint)+'</div>'; if(typeof renderMath==='function') renderMath(res); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.5);">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043e\u043a \u043d\u0435\u0442</div>'; } })
 .catch(function(err){ console.warn('[dt-hint]',err); });
 }
 function bindActionButtons(){
@@ -1503,5 +1762,16 @@ fetch('/daily_tasks/regenerate', { method:'POST', credentials:'same-origin', hea
 }
 
 })();
+
+// ── 🗓  Yearly calendar toggle ────────────────────────────────────
+function toggleYearlyCal() {
+  var body = document.getElementById('dt-yearly-cal-body');
+  var toggle = document.getElementById('dt-yearly-cal-toggle');
+  if (!body) return;
+  body.classList.toggle('is-open');
+  if (toggle) {
+    toggle.textContent = body.classList.contains('is-open') ? '▼' : '▶';
+  }
+}
 </script>
 {% endblock %}

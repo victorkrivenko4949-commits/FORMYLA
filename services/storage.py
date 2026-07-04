@@ -25,9 +25,9 @@ R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY', '')
 R2_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME', 'formyla-photos')
 R2_PUBLIC_URL = os.environ.get('R2_PUBLIC_URL', '')
 
-# Local fallback directory
+# Local fallback directory (key already contains 'photos/' prefix)
 LOCAL_PHOTO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                'uploads', 'photos')
+                                'uploads')
 
 
 def compute_photo_hash(photo_bytes):

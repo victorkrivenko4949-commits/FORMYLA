@@ -911,14 +911,120 @@ def get_subtopic_test(grade, subtopic_key, count=5):
 @prep_bp.route('/coach')
 @login_required
 def coach():
-    """Страница Куратора: радар по 7 подтемам + чат с ИИ-агентом."""
+    """Страница Куратора: радар по 7 выбранным куратором подтемам + чат с ИИ-агентом."""
     profile = _curator_profile()
     ctx = _build_subtopic_ctx(profile)
+
+    # ── Build mastery_list from TopicMastery + ADAPTIVE_TOPICS_BY_GRADE ──
+    from models import TopicMastery
+    from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
+    from models_curator import CuratorState as _CS
+    from daily_tasks.monthly_plan import current_month_index as _curr_month_idx
+
+    _user_grade = (
+        getattr(current_user, 'preferred_grade', None)
+        or getattr(current_user, 'class_level', None)
+        or getattr(current_user, 'grade', None)
+    )
+    try:
+        _user_grade_int = int(_user_grade) if _user_grade is not None else None
+    except (TypeError, ValueError):
+        _user_grade_int = None
+
+    _legacy_topic_meta = [
+        ('algebra',        'Алгебра'),
+        ('geometry',       'Геометрия'),
+        ('combinatorics',  'Комбинаторика'),
+        ('number_theory',  'Теория чисел'),
+        ('kl_movement',    'Задачи на движение'),
+        ('knights_liars',  'Рыцари и лжецы'),
+    ]
+
+    # ── Try to get 7 curator-selected subtopics from CuratorState.prep_plan ──
+    _selected_db_topics = None
+    _cs = _CS.query.filter_by(user_id=current_user.id).first()
+    if _cs and _cs.prep_plan:
+        _months = _cs.prep_plan.get('months', [])
+        if _months:
+            # Динамически выбираем месяц по календарю (не hardcoded months[0])
+            _month_idx_1based = _curr_month_idx(_cs.prep_plan)
+            _month_idx_0based = max(0, _month_idx_1based - 1)
+            if _month_idx_0based < len(_months):
+                _selected_db_topics = _months[_month_idx_0based].get('subtopics', [])
+            else:
+                _selected_db_topics = _months[0].get('subtopics', [])
+
+    topics_def = []
+    if _selected_db_topics:
+        # ── Only the 7 curator-selected subtopics (радар показывает именно их) ──
+        for _db_topic in _selected_db_topics:
+            _db_topic_str = str(_db_topic)
+            _entry = None
+            if _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
+                _entry = next(
+                    (t for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]
+                     if t.get('db_topic') == _db_topic_str),
+                    None
+                )
+            if _entry:
+                topics_def.append({
+                    'key': _entry['key'],
+                    'name_ru': _entry['name'],
+                    'match_keys': [_entry['key'], _db_topic_str] + (_entry.get('aliases', []) or []),
+                })
+            else:
+                topics_def.append({
+                    'key': _db_topic_str,
+                    'name_ru': _db_topic_str,
+                    'match_keys': [_db_topic_str],
+                })
+    elif _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
+        # ── Fallback: all grade topics ──
+        for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]:
+            match_keys = [t['key']]
+            if t.get('db_topic'):
+                match_keys.append(t['db_topic'])
+            match_keys.extend(t.get('aliases', []) or [])
+            topics_def.append({
+                'key': t['key'],
+                'name_ru': t['name'],
+                'match_keys': match_keys,
+            })
+    else:
+        # ── Legacy topics for grades 5-6 ──
+        for key, name_ru in _legacy_topic_meta:
+            topics_def.append({
+                'key': key,
+                'name_ru': name_ru,
+                'match_keys': [key],
+            })
+
+    mastery_rows = TopicMastery.query.filter_by(user_id=current_user.id).all()
+    mastery_by_topic = {row.topic: row for row in mastery_rows}
+
+    mastery_list = []
+    for td in topics_def:
+        row = None
+        for mk in td['match_keys']:
+            row = mastery_by_topic.get(mk)
+            if row is not None:
+                break
+        mastery_val = round(row.mastery, 3) if row is not None else 0.0
+        mastery_list.append({
+            'name': td['name_ru'],
+            'value': mastery_val,
+        })
+
+    import json as _json_coach
+    mastery_list_json = _json_coach.dumps(mastery_list, ensure_ascii=False)
+
     return render_template('prep/coach.html',
                            radar=ctx['radar'],
                            topic_names=ctx['topic_names'],
                            test_done=ctx['test_done'],
-                           subtopics_to_test=ctx['subtopics_to_test'])
+                           subtopics_to_test=ctx['subtopics_to_test'],
+                           mastery_list=mastery_list,
+                           mastery_list_json=mastery_list_json)
 
 
 # ─── Приветствие / определение сценария (C4 + C7) ─────────────────────────
@@ -950,6 +1056,18 @@ def coach_greeting():
         limit = request.args.get('limit', 21, type=int)
         tasks = get_onboarding_tasks(grade, limit=limit)
         return jsonify(tasks=tasks)
+
+    if action == 'prep_test_tasks':
+        """Вернуть 5 задач для утреннего теста в monthly prep cycle."""
+        from curator.monthly_cycle import get_morning_test
+        test_data = get_morning_test(current_user.id)
+        if test_data.get('is_test_day'):
+            return jsonify(
+                tasks=test_data.get('tasks', []),
+                subtopic=test_data.get('subtopic'),
+                subtopic_title=test_data.get('subtopic_title'),
+            )
+        return jsonify(tasks=[], subtopic=None)
 
     if not grade:
         return jsonify(
@@ -1087,12 +1205,42 @@ def coach_greeting():
         _subtopic_title = _prep_info.get("subtopic_title", _prep_info.get("subtopic", ""))
         _level = _prep_info.get("level", 2)
         _remaining_tests = max(0, 7 - len(_prep_info.get("tested_subtopics", [])))
-        _cycle_progress = f"День {_cycle_day}/30"
+        _cycle_progress = f"День {_cycle_day}/28"
+
+        # Сценарий 3a.0: Месяц завершён — показать следующие подтемы
+        _month_completed = _prep_info.get("month_completed", False)
+        if _month_completed:
+            _next_subs = _prep_info.get("next_month_subtopics", [])
+            _next_names = ', '.join(
+                subtopic_title(s) for s in _next_subs[:7]
+            ) if _next_subs else 'следующие подтемы'
+            greeting = (
+                f'🎉 <strong>Прошёл месяц!</strong> Поздравляю с завершением '
+                f'очередного этапа подготовки!\n\n'
+                f'Вот твои следующие подтемы, над которыми будем работать:\n'
+                f'<strong>{_next_names}</strong>\n\n'
+                f'Готов начать новый месяц? 🚀'
+            )
+            return jsonify(
+                greeting=greeting,
+                scenario='prep_month_complete',
+                recommended_olympiad=None,
+                prep_info={
+                    'cycle_day': _cycle_day,
+                    'month_completed': True,
+                    'next_month_subtopics': _next_subs,
+                    'subtopic': _prep_info.get('subtopic'),
+                },
+                cta_url='/coach',
+                cta_text='🚀 Начать новый месяц',
+            )
 
         if _is_test_day and not _tested:
-            # Сценарий 3a.1: Утренний тест
+            # Сценарий 3a.1: Утренний тест — "7 дней чтобы пройти 7 тестов"
             greeting = (
-                f'🌅 Доброе утро! Сегодня **тестовый день** ({_cycle_progress}).\n\n'
+                f'🌅 Доброе утро! У тебя **7 дней, чтобы пройти 7 тестов** — '
+                f'по одному на каждую подтему.\n\n'
+                f'Сегодня **тестовый день** ({_cycle_progress}).\n\n'
                 f'Тема дня: **«{_subtopic_title}»**.\n'
                 f'Пройди тест из 5 задач — это займёт 5–10 минут. '
                 f'По результатам я подберу задачи дня под твой уровень.\n\n'
@@ -1121,7 +1269,7 @@ def coach_greeting():
                 f'✅ Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
                 f'Задачи дня уже готовятся под твой уровень (сложность {_level}/8). '
                 f'Они придут вечером — проверь уведомления!\n\n'
-                f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}**.'
+                f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}** из 7. 💪'
             )
             return jsonify(
                 greeting=greeting,
@@ -1540,6 +1688,63 @@ def coach_daily_submit():
         db.session.rollback()
         current_app.logger.exception('coach_daily_submit failed')
         return jsonify(error='Ошибка при обработке теста'), 500
+
+
+# ─── Отправить результат теста monthly prep cycle ────────────────────────────
+
+@prep_bp.route('/coach/prep/submit_test', methods=['POST'])
+@login_required
+def coach_prep_submit_test():
+    """Принять результаты адаптивного теста в monthly prep cycle.
+
+    Ожидает JSON: {'results': {task_id: 0|1, ...}}  (0=неверно, 1=верно)
+
+    Делегирует curator.monthly_cycle.submit_test_and_generate_tasks(),
+    который:
+      - определяет подтему дня (pick_day_subtopic)
+      - вычисляет уровень (score_to_target_level)
+      - отмечает подтему как протестированную
+      - ставит в очередь генерацию задач дня (enqueue_daily_generation)
+    """
+    data = request.get_json(silent=True) or {}
+    results_raw = data.get('results')
+    if not results_raw or not isinstance(results_raw, dict):
+        return jsonify(error='Передайте results: {task_id: 0|1, ...}'), 400
+
+    # Преобразуем в формат, ожидаемый submit_test_and_generate_tasks
+    # results: список dict с ключами task_id, is_correct
+    results_list = []
+    for task_id_str, score in results_raw.items():
+        try:
+            task_id = int(task_id_str)
+            is_correct = bool(int(score))
+            results_list.append({'task_id': task_id, 'is_correct': is_correct})
+        except (ValueError, TypeError):
+            continue
+
+    if not results_list:
+        return jsonify(error='Нет валидных результатов'), 400
+
+    try:
+        from curator.monthly_cycle import submit_test_and_generate_tasks
+        result = submit_test_and_generate_tasks(current_user.id, results_list)
+    except Exception:
+        current_app.logger.exception('coach_prep_submit_test failed')
+        return jsonify(error='Ошибка при обработке теста'), 500
+
+    if result.get('success'):
+        return jsonify(
+            status='ok',
+            level=result.get('level'),
+            correct=result.get('correct'),
+            total=result.get('total'),
+            subtopic=result.get('subtopic'),
+            subtopic_title=result.get('subtopic_title'),
+            generation_queued=result.get('generation_queued', False),
+            message=result.get('message', 'Тест завершён. Задачи дня готовятся.'),
+        )
+    else:
+        return jsonify(error=result.get('message', 'Неизвестная ошибка')), 400
 
 
 # ─── Завершить день (C4) ──────────────────────────────────────────────────

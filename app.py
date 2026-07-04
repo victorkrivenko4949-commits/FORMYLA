@@ -6,7 +6,7 @@ from flask_mail import Mail, Message
 from utils.math_answer_utils import compare_math_answers
 from utils.rating_utils import add_xp_for_task, add_xp_for_adaptive_test, add_xp_for_mock_exam, get_xp_for_next_level
 from utils.answer_evaluator import check_answers_batch
-from utils.olympiad_days import split_problems_by_day
+from utils.olympiad_days import split_problems_by_day, detect_day_from_round
 from olympiads import OLYMPIADS_DB as _RAW_DB
 try:
     from olympiads import OLYMPIADS_INFO
@@ -3632,10 +3632,31 @@ def olympiad_open():
         app.logger.warning(f"[math_normalizer] olympiad_detail: {_e_norm}")
         _problems_norm = _problems_raw
 
+    # Разделение по дням
+    try:
+        _grade = combo.get('grade', grade or 0)
+        _round_key = combo.get('round', rnd or '')
+        day_blocks = split_problems_by_day(
+            _problems_norm,
+            slug,
+            _round_key,
+            _grade
+        )
+        combo_day = detect_day_from_round(
+            combo.get('round_title', ''),
+            _round_key
+        )
+    except Exception as _e_day:
+        app.logger.warning(f"[olympiad_days] olympiad_open: {_e_day}")
+        day_blocks = [{'day': None, 'problems': _problems_norm}]
+        combo_day = None
+
     return render_template('olympiad_detail.html',
         olympiad=olympiad,
         combo=combo,
-        problems=_problems_norm
+        problems=_problems_norm,
+        day_blocks=day_blocks,
+        combo_day=combo_day
     )
 
 
@@ -3710,9 +3731,29 @@ def olympiad_solution(combo_id):
     except Exception as _e_norm:
         app.logger.warning(f"[math_normalizer] olympiad_solution: {_e_norm}")
 
+    # Разделение по дням (работаем с уже нормализованными problems)
+    _solutions_problems = combo.get('problems', [])
+    try:
+        day_blocks = split_problems_by_day(
+            _solutions_problems,
+            combo.get('olympiad', ''),
+            combo.get('round', ''),
+            combo.get('grade', 0)
+        )
+        combo_day = detect_day_from_round(
+            combo.get('round_title', ''),
+            combo.get('round', '')
+        )
+    except Exception as _e_day:
+        app.logger.warning(f"[olympiad_days] olympiad_solution: {_e_day}")
+        day_blocks = [{'day': None, 'problems': _solutions_problems}]
+        combo_day = None
+
     return render_template('olympiad_solutions.html',
         olympiad=olympiad,
-        combo=combo
+        combo=combo,
+        day_blocks=day_blocks,
+        combo_day=combo_day
     )
 
 
