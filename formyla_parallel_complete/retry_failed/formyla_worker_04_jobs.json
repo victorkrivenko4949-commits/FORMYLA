@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0385",
+      "mode": "fill_missing",
+      "grade": 11,
+      "difficulty": 6,
+      "theme": "Теория чисел и диофантовы задачи",
+      "subtopic": "Простые и бесконечный спуск",
+      "method_code": "F3",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 5
+    },
+    {
+      "job_id": "replace-0835",
+      "mode": "replace_bad",
+      "id": "10-E3-5-L8-g911",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Теория чисел старшего уровня",
+      "subtopic": "Простые делители и НОД-конструкции",
+      "method_code": "E3",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 58,
+      "worker": 14
+    }
+  ]
+}

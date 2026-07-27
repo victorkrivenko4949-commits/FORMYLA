@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0469",
+      "mode": "replace_bad",
+      "id": "8-A2-4-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Олимпиадная задача",
+      "subtopic": "Formula of Unity, 2025, Заключительный этап",
+      "method_code": "OLY",
+      "reasons": [
+        "short_solution_L8"
+      ],
+      "priority": 36,
+      "worker": 2
+    },
+    {
+      "job_id": "audit-0492-9-E4-12",
+      "mode": "replace_bad",
+      "id": "9-E4-12",
+      "grade": 9,
+      "difficulty": 7,
+      "theme": "Комбинаторика и графы",
+      "subtopic": "Экстремальные задачи",
+      "method_code": "F3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

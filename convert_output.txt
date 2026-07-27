@@ -1,0 +1,21 @@
+Methods found: 102
+  A1: Прямые вычисления и арифметика -> Арифметика (lvl 1, diag:False)
+  A2: Текстовые задачи (общее) -> Арифметика (lvl 1, diag:False)
+  A2a: Движение -> Арифметика (lvl 1, diag:False)
+  A2b: Работа и производительность -> Арифметика (lvl 1, diag:False)
+  A2c: Проценты, концентрации, сплавы -> Арифметика (lvl 1, diag:False)
+
+Total articles: 102
+Stats by topic:
+  Алгебра: 14
+  Арифметика: 5
+  Геометрия: 21
+  Комбинаторика: 27
+  Логика: 7
+  Неравенства: 8
+  Теория чисел: 15
+  Функции и анализ: 5
+Articles with diagrams: 28
+
+Saved to secrets_dump.json
+File size: 2719830 bytes

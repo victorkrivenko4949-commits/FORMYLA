@@ -1,0 +1,20 @@
+{
+  "id": 801397,
+  "task_text": "Найдите все тройки действительных чисел $(x, y, z)$, удовлетворяющие уравнению\n$$(x^2+1)(y^2+1)(z^2+1) = (x+y+z-xyz)^2.$$",
+  "solution": "Раскроем левую часть:\n$$\n(x^2+1)(y^2+1)(z^2+1) = x^2y^2z^2 + x^2y^2 + y^2z^2 + z^2x^2 + x^2 + y^2 + z^2 + 1.\n$$\nРаскроем правую часть:\n$$\n(x+y+z-xyz)^2 = (x+y+z)^2 - 2xyz(x+y+z) + x^2y^2z^2 = x^2+y^2+z^2 + 2(xy+yz+zx) - 2xyz(x+y+z) + x^2y^2z^2.\n$$\nВычтем из левой части правую:\n$$\n(x^2+1)(y^2+1)(z^2+1) - (x+y+z-xyz)^2 = (x^2y^2+y^2z^2+z^2x^2) + 1 - 2(xy+yz+zx) + 2xyz(x+y+z).\n$$\nЗаметим, что $(xy+yz+zx-1)^2 = (xy+yz+zx)^2 - 2(xy+yz+zx) + 1 = x^2y^2+y^2z^2+z^2x^2 + 2xyz(x+y+z) - 2(xy+yz+zx) + 1$.\nСледовательно, разность равна в точности $(xy+yz+zx-1)^2$. Таким образом,\n$$(x^2+1)(y^2+1)(z^2+1) - (x+y+z-xyz)^2 = (xy+yz+zx-1)^2.$$\nИсходное уравнение равносильно равенству нулю правой части:\n$$(xy+yz+zx-1)^2 = 0 \\quad \\Leftrightarrow \\quad xy+yz+zx = 1.$$\nОтвет: все тройки действительных чисел, для которых $xy+yz+zx=1$.",
+  "correct_answer": "xy + yz + zx = 1",
+  "class_level": 9,
+  "topic": "Алгебра",
+  "difficulty_level": 6,
+  "real_level": 5,
+  "key_method": "Алгебраическое тождество (выделение полного квадрата)",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.765,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T12:45:51.226478+00:00"
+}

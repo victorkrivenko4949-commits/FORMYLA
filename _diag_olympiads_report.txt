@@ -1,0 +1,258 @@
+Total olympiads: 1622
+
+======================================================================
+TASKS WHERE CONDITION CONTAINS SOLUTION: 5
+======================================================================
+
+  [82] Формула Единства 2024 g7
+    Round: qualifying / Отборочный этап
+    Problem #5
+    TEXT: Костя и Маша по очереди ставят в клетки доски 8×8 знаки + и −(начинает Костя) по следующим правилам: • перед каждым ходом игрок выбирает знак и цвет (красный, зелёный или синий), которым напишет выбра
+    SOLUTION: Маша может обеспечить себе победу.
+
+Стратегия. Допустим, Костя первым ходом поставил $+1 $ синим цве
+
+  [85] Формула Единства 2024 g9
+    Round: final / Заключительный этап
+    Problem #2
+    TEXT: Существует ли такое тр¨eхзначное число 𝑛, что 𝑛(𝑛+ 1) + 2025 — точный квадрат? 18 (С. П. Павлов) Ответ: да, 152 (152 · 153 + 2025 = 1592) и 287 (287 · 288 + 2025 = 2912). Решение. 𝑛(𝑛+ 1) + 2025 = (𝑛+
+    SOLUTION: $n(n+1) + 2025 = (n+k)^2 $, откуда $n = \frac{2025-k^2}{2k-1} = \frac{(45-k)(45+k)}{2k-1}$. При $k=1
+
+  [540] ВсОШ 2023 g9
+    Round: regional / Региональный этап
+    Problem #2
+    TEXT: На доску записали 99 чисел, среди которых нет равных. В тетрадку выписали все разности двух чисел с доски (большее минус меньшее). Оказалось, что в тетрадке число 1 встречается ровно столько же раз, с
+    SOLUTION: Заметим, что условие задачи соответствует задаче № 9.7 Регионального этапа Всероссийской олимпиады ш
+
+  [556] ВсОШ 2025 g9
+    Round: regional / Региональный этап
+    Problem #4
+    TEXT: В каждой клетке доски 2 $\times$ 200 лежит по рублёвой монете. Даша и Соня играют по очереди, начинает Даша. Даша двигает монету на соседнюю по стороне клетку, Соня — на любую монету рядом. (Условие п
+    SOLUTION: **Ответ.** 300 рублей.
+
+**Решение.**
+Разобьём доску на 100 квадратов $2 \times 2 $. Если перед ходом
+
+  [607] Высшая проба 2021 g7
+    Round: final / Заключительный этап
+    Problem #2
+    TEXT: На доске написано положительное число, с которым разрешается делать следующие операции: 1) умножать на два; 2) прибавлять один. Каждый из трёх школьников один раз применил к имеющемуся числу первую оп
+    SOLUTION: **Задача 2**
+(Штерн А.) На доске написано положительное число, с которым разрешается делать следующи
+
+======================================================================
+UNIQUE ROUND VALUES
+======================================================================
+  round='1'                             round_title='1-й тур заключительного этапа'           count=18
+  round='1'                             round_title='отборочный этап'                         count=2
+  round='2'                             round_title='2-й тур заключительного этапа'           count=24
+  round='2'                             round_title='Заключительный этап'                     count=33
+  round='2'                             round_title='Заочный этап'                            count=20
+  round='2'                             round_title='заключительный этап'                     count=9
+  round='2'                             round_title='заключительный этап (Омск)'              count=2
+  round='2'                             round_title='заключительный этап, вариант 1'          count=2
+  round='2'                             round_title='заключительный этап, вариант 2'          count=2
+  round='2'                             round_title='заключительный этап, вариант 3'          count=2
+  round='2'                             round_title='заключительный этап, вариант 4'          count=2
+  round='autumn_base'                   round_title='Осенний тур (базовый)'                   count=22
+  round='autumn_hard'                   round_title='Осенний тур (сложный)'                   count=29
+  round='distance'                      round_title='Дистанционный этап'                      count=2
+  round='distance'                      round_title='Дистанционный этап, тур 1'               count=16
+  round='fall_basic'                    round_title='Осенний тур, базовый вариант'            count=24
+  round='fall_basic'                    round_title='Осенний тур, базовый вариант, 5 октября 2025 г.'  count=1
+  round='fall_hard'                     round_title='Осенний тур, сложный вариант'            count=32
+  round='fall_hard'                     round_title='Осенний тур, сложный вариант, 19 октября 2025 г.'  count=2
+  round='final'                         round_title='Заключительный'                          count=45
+  round='final'                         round_title='Заключительный этап'                     count=494
+  round='final'                         round_title='Заключительный этап (2 день)'            count=11
+  round='final'                         round_title='Заключительный этап 2019-20'             count=1
+  round='final'                         round_title='Заключительный этап 2020-21'             count=6
+  round='final'                         round_title='Заключительный этап 2021-22'             count=5
+  round='final'                         round_title='Заключительный этап 2022-23'             count=5
+  round='final'                         round_title='Заключительный этап 2024-25'             count=6
+  round='final'                         round_title='Заключительный этап. День 1'             count=4
+  round='municipal'                     round_title='Муниципальный'                           count=13
+  round='municipal'                     round_title='Муниципальный этап'                      count=35
+  round='qualifying'                    round_title='Отборочный'                              count=7
+  round='qualifying'                    round_title='Отборочный (заочный) этап'               count=13
+  round='qualifying'                    round_title='Отборочный тур'                          count=7
+  round='qualifying'                    round_title='Отборочный этап'                         count=430
+  round='qualifying'                    round_title='Отборочный этап (онлайн-этап)'           count=4
+  round='qualifying'                    round_title='Отборочный этап 2018-19'                 count=7
+  round='qualifying'                    round_title='Отборочный этап 2019-20'                 count=5
+  round='qualifying'                    round_title='Отборочный этап 2020-21'                 count=5
+  round='qualifying'                    round_title='Отборочный этап 2021-22'                 count=7
+  round='qualifying'                    round_title='Отборочный этап 2022-23'                 count=7
+  round='qualifying'                    round_title='Отборочный этап 2024-25'                 count=6
+  round='regional'                      round_title='Региональный'                            count=15
+  round='regional'                      round_title='Региональный этап'                       count=70
+  round='regional'                      round_title='Региональный этап. День 1'               count=1
+  round='school'                        round_title='Школьный этап'                           count=43
+  round='spring_base'                   round_title='Весенний тур (базовый)'                  count=22
+  round='spring_basic'                  round_title='Весенний тур, базовый вариант'           count=39
+  round='spring_basic'                  round_title='Весенний тур, базовый вариант, 28 февраля 2010 г.'  count=2
+  round='spring_hard'                   round_title='Весенний тур (сложный)'                  count=29
+  round='spring_hard'                   round_title='Весенний тур, сложный вариант'           count=32
+  round='spring_hard'                   round_title='Весенний тур, сложный вариант, 14 марта 2010 г.'  count=2
+
+======================================================================
+OLYMPIADS WITH MULTIPLE ROUND ENTRIES (potential two-day events)
+======================================================================
+Count: 415
+
+  euler 2009 g8
+    ids=2 | 1 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2010 g8
+    ids=4 | 3
+    rounds: regional/Региональный этап | final/Заключительный этап
+    problems: 5 задач | 5 задач
+
+  euler 2011 g8
+    ids=6 | 5 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2012 g8
+    ids=8 | 7 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2013 g8
+    ids=10 | 9 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2014 g8
+    ids=12 | 11 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2015 g8
+    ids=14 | 13 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2016 g8
+    ids=16 | 15 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2017 g8
+    ids=18 | 17 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2018 g8
+    ids=20 | 21 | 19 | 
+    rounds: regional/Региональный этап | regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач | 5 задач
+
+  euler 2019 g8
+    ids=23 | 22 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2020 g8
+    ids=25 | 26 | 24 | 
+    rounds: regional/Региональный этап | regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач | 5 задач
+
+  euler 2021 g8
+    ids=28 | 27 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2022 g8
+    ids=30 | 31 | 29 | 
+    rounds: regional/Региональный этап | regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач | 5 задач
+
+  euler 2023 g8
+    ids=33 | 32 | 
+    rounds: regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач
+
+  euler 2024 g8
+    ids=35 | 36 | 34 | 
+    rounds: regional/Региональный этап | regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач | 5 задач
+
+  euler 2025 g8
+    ids=38 | 39 | 37 | 
+    rounds: regional/Региональный этап | regional/Региональный этап | final/Заключительный этап | distance/Дистанционный этап, тур 1
+    problems: 5 задач | 5 задач | 5 задач | 5 задач
+
+  euler 2026 g8
+    ids=42 | 40 | 41
+    rounds: regional/Региональный этап | distance/Дистанционный этап | distance/Дистанционный этап
+    problems: 5 задач | 5 задач | 5 задач
+
+  formula_unity 2018 g5
+    ids= | 711
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2018-19
+    problems: 5 задач | 5 задач
+
+  formula_unity 2018 g6
+    ids= | 712
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2018-19
+    problems: 5 задач | 5 задач
+
+  formula_unity 2018 g7
+    ids= | 713
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2018-19
+    problems: 5 задач | 5 задач
+
+  formula_unity 2018 g8
+    ids= | 714
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2018-19
+    problems: 5 задач | 5 задач
+
+  formula_unity 2018 g9
+    ids= | 715
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2018-19
+    problems: 5 задач | 5 задач
+
+  formula_unity 2018 g10
+    ids= | 716
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2018-19
+    problems: 5 задач | 5 задач
+
+  formula_unity 2018 g11
+    ids= | 717
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2018-19
+    problems: 5 задач | 5 задач
+
+  formula_unity 2019 g5
+    ids=723 | 
+    rounds: final/Заключительный этап 2019-20 | qualifying/Отборочный этап
+    problems: 5 задач | 7 задач
+
+  formula_unity 2019 g6
+    ids= | 
+    rounds: final/Заключительный этап | qualifying/Отборочный этап
+    problems: 6 задач | 7 задач
+
+  formula_unity 2019 g7
+    ids= | 720
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2019-20
+    problems: 6 задач | 5 задач
+
+  formula_unity 2019 g8
+    ids= | 721
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2019-20
+    problems: 6 задач | 5 задач
+
+  formula_unity 2019 g9
+    ids= | 722
+    rounds: final/Заключительный этап | qualifying/Отборочный этап 2019-20
+    problems: 6 задач | 5 задач
+
+======================================================================
+ROUND VALUES THAT MENTION DAY/DEN
+======================================================================
+  round='final'                         round_title='Заключительный этап (2 день)'            count=11
+  round='final'                         round_title='Заключительный этап. День 1'             count=4
+  round='regional'                      round_title='Региональный этап. День 1'               count=1

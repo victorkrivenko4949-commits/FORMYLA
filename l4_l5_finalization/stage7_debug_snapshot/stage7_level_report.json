@@ -1,0 +1,116 @@
+{
+  "total_checked": 114,
+  "level_mismatches": 114,
+  "level_mismatch_rate_pct": 100.0,
+  "level_distribution": {
+    "L": 90,
+    "?": 24
+  },
+  "samples": [
+    {
+      "slot_key": "G10|L4|T013|S1",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.2,
+        "L4": 0.7,
+        "L5": 0.1,
+        "L6": 0.0
+      },
+      "details": "Estimated: L4, target: L, confidence: 0.70, match: False"
+    },
+    {
+      "slot_key": "G10|L5|T028|S0",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.7,
+        "L4": 0.25,
+        "L5": 0.04,
+        "L6": 0.01
+      },
+      "details": "Estimated: L3, target: L, confidence: 0.80, match: False"
+    },
+    {
+      "slot_key": "G10|L5|T028|S1",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.95,
+        "L4": 0.05,
+        "L5": 0.0,
+        "L6": 0.0
+      },
+      "details": "Estimated: L3, target: L, confidence: 0.95, match: False"
+    },
+    {
+      "slot_key": "G10|L4|T013|S2",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.2,
+        "L4": 0.7,
+        "L5": 0.08,
+        "L6": 0.02
+      },
+      "details": "Estimated: L4, target: L, confidence: 0.70, match: False"
+    },
+    {
+      "slot_key": "G10|L4|T013|S0",
+      "target_level": "?",
+      "probabilities": {},
+      "details": "Level calibrator failed: parse_failed"
+    },
+    {
+      "slot_key": "G10|L4|T039|S2",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.8,
+        "L4": 0.2,
+        "L5": 0.0,
+        "L6": 0.0
+      },
+      "details": "Estimated: L3, target: L, confidence: 0.90, match: False"
+    },
+    {
+      "slot_key": "G10|L4|T039|S1",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.7,
+        "L4": 0.25,
+        "L5": 0.05,
+        "L6": 0.0
+      },
+      "details": "Estimated: L3, target: L, confidence: 0.80, match: False"
+    },
+    {
+      "slot_key": "G10|L4|T039|S0",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.8,
+        "L4": 0.2,
+        "L5": 0.0,
+        "L6": 0.0
+      },
+      "details": "Estimated: L3, target: L, confidence: 0.80, match: False"
+    },
+    {
+      "slot_key": "G10|L5|T028|S2",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.8,
+        "L4": 0.2,
+        "L5": 0.0,
+        "L6": 0.0
+      },
+      "details": "Estimated: L3, target: L, confidence: 0.90, match: False"
+    },
+    {
+      "slot_key": "G10|L4|T028|S0",
+      "target_level": "L",
+      "probabilities": {
+        "L3": 0.95,
+        "L4": 0.05,
+        "L5": 0.0,
+        "L6": 0.0
+      },
+      "details": "Estimated: L3, target: L, confidence: 0.95, match: False"
+    }
+  ]
+}

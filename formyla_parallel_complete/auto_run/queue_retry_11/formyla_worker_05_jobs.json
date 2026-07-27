@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0530",
+      "mode": "replace_bad",
+      "id": "8-C3-3-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Системы и текстовые задачи",
+      "subtopic": "На проценты",
+      "method_code": "C3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 10
+    },
+    {
+      "job_id": "audit-0546-10-B2-1-L8-gh3",
+      "mode": "replace_bad",
+      "id": "10-B2-1-L8-gh3",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Тригонометрия",
+      "subtopic": "Уравнения",
+      "method_code": "B2",
+      "reasons": "mojibake, duplicate_task_text",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

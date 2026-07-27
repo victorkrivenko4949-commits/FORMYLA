@@ -1,0 +1,1076 @@
+2026-07-09 13:24:32,102 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-09 13:24:32,104 - app - INFO - === App started, logging to c:\Users\Victor\Desktop\Новая папка (2)\logs\app.log
+2026-07-09 13:24:33,246 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-09 13:24:33,247 - app - INFO - === App started, logging to c:\Users\Victor\Desktop\Новая папка (2)\logs\app.log
+2026-07-09 13:24:35,067 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-09 13:24:35,214 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-09 13:24:39,794 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:39,794 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:39,794 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:39,794 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:39,794 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:39,795 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:39,795 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:39,796 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-09 13:24:39,796 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-09 13:24:39,796 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-09 13:24:39,796 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-09 13:24:39,796 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-09 13:24:39,796 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-09 13:24:39,796 - apscheduler.scheduler - INFO - Added job "enqueue_pregen_all_users_job" to job store "default"
+2026-07-09 13:24:39,797 - apscheduler.scheduler - INFO - Scheduler started
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+DEBUG: Доступные переменные окружения:
+Всего переменных: 72
+SECRET_KEY = ЕСТЬ
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = ЕСТЬ
+DEEPSEEK_API_KEY = ЕСТЬ
+============================================================
+[DB] Using: sqlite:///formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+✅ База данных инициализирована
+[AUTO-MIGRATION] ✓ Column 'agent_type' already exists
+[AUTO-MIGRATION] ✓ Column 'subtopic' already exists
+[AUTO-MIGRATION] ✓ Column 'attempts_count' already exists
+[AUTO-MIGRATION] ✓ Column 'solves_count' already exists
+[AUTO-MIGRATION] ✓ Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] ✓ Column 'suggested_level' already exists
+[AUTO-MIGRATION] ✓ Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] ✓ Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] ✓ Column 'task_type' already exists
+[AUTO-MIGRATION] ✓ Column 'source' already exists
+[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state
+[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Group chat tables already exist
+[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized
+ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.
+DEBUG: Загружено 102 привязок картинок из problem_images.py
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+DEBUG: Доступные переменные окружения:
+Всего переменных: 72
+SECRET_KEY = ЕСТЬ
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = ЕСТЬ
+DEEPSEEK_API_KEY = ЕСТЬ
+============================================================
+[DB] Using: sqlite:///formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+✅ База данных инициализирована
+[AUTO-MIGRATION] ✓ Column 'agent_type' already exists
+[AUTO-MIGRATION] ✓ Column 'subtopic' already exists
+[AUTO-MIGRATION] ✓ Column 'attempts_count' already exists
+[AUTO-MIGRATION] ✓ Column 'solves_count' already exists
+[AUTO-MIGRATION] ✓ Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] ✓ Column 'suggested_level' already exists
+[AUTO-MIGRATION] ✓ Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] ✓ Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] ✓ Column 'task_type' already exists
+[AUTO-MIGRATION] ✓ Column 'source' already exists
+[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state
+[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Group chat tables already exist
+[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized
+  [pregen_queue migration] dialect = sqlite
+  ✅ pre_gen_queue: 11 колонок
+[migration] pre_gen_queue table ensured
+[AUTO-MIGRATION] ✓ friendships table schema OK
+[AUTO-MIGRATION] ✓ support_messages table already exists
+[AUTO-MIGRATION] ✓ site_reviews table already exists
+[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists
+[BP] prep_bp registered (/prep)
+[BP] olympiad_prep_bp registered (/olympiad-prep)
+[BP] account_bp registered (/account)
+[BP] drawing_bp registered (/drawing)
+[BP] drawing_diag_bp registered (/api/drawing/diag)
+[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)
+[BP] wb_call_bp registered (/api/wb_call/*)
+[BP] wb_meet_bp registered (/api/wb_meet/*)
+[BP] conference_api_bp registered (/api/conference/*)
+[BP] chat_presence_bp registered (/api/chat/*/presence, typing)
+[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)
+[BP] admin_support_bp registered (/admin/support, /my/support)
+[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)
+[SocketIO] Conference WebSocket signalling initialized (/ws-call)
+[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)
+[VSOSH10_11-ADD] result={'status': 'skipped', 'reason': 'already_present', 'count': 43}
+[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)
+[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 1140 rows
+[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 3337 rows
+[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 135 rows
+[LATEX-ROOT-DB-FIX] total rows updated: 0
+[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 1140}, 'method_tasks': {'updated': 0, 'scanned': 3337}, 'adaptive_tasks': {'updated': 0, 'scanned': 135}}
+[OLYMPIAD-SEED] Theory source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\methods_catalog_105.json (102 rows; in DB: 102 — ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_65_methods.json (65 rows)
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_24_methods.json (24 rows)
+[THEORY-SEED] Theory bodies filled: 0 methods updated
+[THEORY-MD] No MD content parsed from c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\formyla_vsosh9_10_methods_combined.md
+[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)
+[THEORY-FIX] No placeholder method names — nothing to do
+[SECRETS-SEED] Already populated (127 rows)
+[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)
+[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded
+[BP] telegram_auth_bp registered (/auth/telegram/callback)
+  [daily_tasks migration] dialect = sqlite
+  ✅ daily_task_sets: 10 колонок
+  ✅ daily_task_items: 27 колонок
+  ✅ daily_generation_jobs: 11 колонок
+  [task_pool migration] dialect = sqlite
+  ✅ task_pool: 12 колонок
+  ✅ user_task_assignments: 5 колонок
+[BP] daily_tasks_bp registered (/daily_tasks)
+  [curator migration] dialect = sqlite
+  ✅ student_diagnostics: 14 колонок
+  ✅ learning_plans: 18 колонок
+  ✅ task_attempts: 18 колонок
+  ✅ progress_log: 16 колонок
+  ✅ task_bank: 11 колонок
+[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress
+  [test_sessions migration] dialect = sqlite
+  ✅ test_sessions: 16 колонок
+[BP] test_sessions migration ensured
+[JINJA] filter md_render registered
+[JINJA] filter inject_geometry registered
+✅ VAPID keys loaded — Web Push notifications enabled
+✓ APScheduler started - Daily Quest cron jobs active
+olympiads.py: новый формат, 1542 пробников
+Пробников всего: 1542, с задачами: 1542
+Адаптивный тест: загружено 0 задач из adaptive_data
+OLYMPIADS_INFO: 11 олимпиад с grades/rounds
+  [pregen_queue migration] dialect = sqlite
+  ✅ pre_gen_queue: 11 колонок
+[migration] pre_gen_queue table ensured
+[AUTO-MIGRATION] ✓ friendships table schema OK
+[AUTO-MIGRATION] ✓ support_messages table already exists
+[AUTO-MIGRATION] ✓ site_reviews table already exists
+[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists
+2026-07-09 13:24:39,902 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-09 13:24:39,934 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-09 13:24:43,361 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:43,361 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:43,361 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:43,362 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:43,362 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:43,362 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:43,362 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 13:24:43,362 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-09 13:24:43,362 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-09 13:24:43,362 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-09 13:24:43,363 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-09 13:24:43,363 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-09 13:24:43,363 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-09 13:24:43,363 - apscheduler.scheduler - INFO - Added job "enqueue_pregen_all_users_job" to job store "default"
+2026-07-09 13:24:43,363 - apscheduler.scheduler - INFO - Scheduler started
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:9003: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  _cutoff_7d = _dt_now.utcnow() - _td_7d(days=7)
+(172080) wsgi starting up on http://127.0.0.1:5001
+(172080) accepted ('127.0.0.1', 56777)
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:1871: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+  return User.query.get(int(user_id))
+127.0.0.1 - - [09/Jul/2026 13:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.094654
+127.0.0.1 - - [09/Jul/2026 13:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009667
+(172080) accepted ('127.0.0.1', 59251)
+127.0.0.1 - - [09/Jul/2026 13:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008745
+127.0.0.1 - - [09/Jul/2026 13:25:25] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008179
+127.0.0.1 - - [09/Jul/2026 13:26:03] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006081
+(172080) accepted ('127.0.0.1', 61801)
+127.0.0.1 - - [09/Jul/2026 13:26:03] "GET /methods-catalog HTTP/1.1" 302 1009 0.008553
+(172080) accepted ('127.0.0.1', 61804)
+127.0.0.1 - - [09/Jul/2026 13:26:05] "GET /login?next=/methods-catalog HTTP/1.1" 200 38661 0.082509
+127.0.0.1 - - [09/Jul/2026 13:26:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.024081
+127.0.0.1 - - [09/Jul/2026 13:26:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.016065
+127.0.0.1 - - [09/Jul/2026 13:27:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009145
+127.0.0.1 - - [09/Jul/2026 13:27:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009435
+127.0.0.1 - - [09/Jul/2026 13:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010677
+127.0.0.1 - - [09/Jul/2026 13:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008371
+127.0.0.1 - - [09/Jul/2026 13:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007385
+127.0.0.1 - - [09/Jul/2026 13:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008593
+127.0.0.1 - - [09/Jul/2026 13:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006110
+2026-07-09 13:30:00,002 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 13:30:00 MSK)" (scheduled at 2026-07-09 13:30:00+03:00)
+2026-07-09 13:30:00,005 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 13:30:00 MSK)" (scheduled at 2026-07-09 13:30:00+03:00)
+2026-07-09 13:30:00,081 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 14:00:00 MSK)" executed successfully
+2026-07-09 13:30:00,082 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 14:00:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 13:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014431
+127.0.0.1 - - [09/Jul/2026 13:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007834
+127.0.0.1 - - [09/Jul/2026 13:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007643
+127.0.0.1 - - [09/Jul/2026 13:31:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007349
+127.0.0.1 - - [09/Jul/2026 13:31:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007828
+127.0.0.1 - - [09/Jul/2026 13:31:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007268
+127.0.0.1 - - [09/Jul/2026 13:32:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011004
+127.0.0.1 - - [09/Jul/2026 13:32:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009503
+127.0.0.1 - - [09/Jul/2026 13:32:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007949
+127.0.0.1 - - [09/Jul/2026 13:33:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.016307
+127.0.0.1 - - [09/Jul/2026 13:33:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013870
+127.0.0.1 - - [09/Jul/2026 13:33:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008690
+127.0.0.1 - - [09/Jul/2026 13:34:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009673
+127.0.0.1 - - [09/Jul/2026 13:34:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007839
+127.0.0.1 - - [09/Jul/2026 13:34:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006918
+127.0.0.1 - - [09/Jul/2026 13:35:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011582
+127.0.0.1 - - [09/Jul/2026 13:35:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008134
+127.0.0.1 - - [09/Jul/2026 13:35:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006840
+(172080) accepted ('127.0.0.1', 55736)
+127.0.0.1 - - [09/Jul/2026 13:36:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008791
+(172080) accepted ('127.0.0.1', 53519)
+127.0.0.1 - - [09/Jul/2026 13:36:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009131
+127.0.0.1 - - [09/Jul/2026 13:36:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007032
+127.0.0.1 - - [09/Jul/2026 13:37:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007374
+127.0.0.1 - - [09/Jul/2026 13:37:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007810
+127.0.0.1 - - [09/Jul/2026 13:37:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008280
+127.0.0.1 - - [09/Jul/2026 13:38:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009544
+127.0.0.1 - - [09/Jul/2026 13:38:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007550
+127.0.0.1 - - [09/Jul/2026 13:38:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007261
+127.0.0.1 - - [09/Jul/2026 13:39:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008596
+127.0.0.1 - - [09/Jul/2026 13:39:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008264
+127.0.0.1 - - [09/Jul/2026 13:39:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007970
+127.0.0.1 - - [09/Jul/2026 13:40:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010992
+127.0.0.1 - - [09/Jul/2026 13:40:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013798
+127.0.0.1 - - [09/Jul/2026 13:40:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008722
+127.0.0.1 - - [09/Jul/2026 13:41:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007592
+127.0.0.1 - - [09/Jul/2026 13:41:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008950
+127.0.0.1 - - [09/Jul/2026 13:41:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007681
+127.0.0.1 - - [09/Jul/2026 13:42:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008644
+127.0.0.1 - - [09/Jul/2026 13:42:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008941
+127.0.0.1 - - [09/Jul/2026 13:42:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008574
+127.0.0.1 - - [09/Jul/2026 13:43:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012519
+127.0.0.1 - - [09/Jul/2026 13:43:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009748
+127.0.0.1 - - [09/Jul/2026 13:43:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007580
+127.0.0.1 - - [09/Jul/2026 13:44:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010763
+127.0.0.1 - - [09/Jul/2026 13:44:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008768
+127.0.0.1 - - [09/Jul/2026 13:44:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008849
+127.0.0.1 - - [09/Jul/2026 13:45:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.016125
+127.0.0.1 - - [09/Jul/2026 13:45:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.017419
+127.0.0.1 - - [09/Jul/2026 13:45:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007357
+127.0.0.1 - - [09/Jul/2026 13:46:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009928
+127.0.0.1 - - [09/Jul/2026 13:46:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008821
+127.0.0.1 - - [09/Jul/2026 13:46:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007296
+127.0.0.1 - - [09/Jul/2026 13:47:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011371
+127.0.0.1 - - [09/Jul/2026 13:47:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009237
+127.0.0.1 - - [09/Jul/2026 13:47:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006901
+127.0.0.1 - - [09/Jul/2026 13:48:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008776
+127.0.0.1 - - [09/Jul/2026 13:48:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007381
+127.0.0.1 - - [09/Jul/2026 13:48:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009265
+127.0.0.1 - - [09/Jul/2026 13:49:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010266
+127.0.0.1 - - [09/Jul/2026 13:49:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008027
+127.0.0.1 - - [09/Jul/2026 13:49:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007402
+127.0.0.1 - - [09/Jul/2026 13:50:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007954
+127.0.0.1 - - [09/Jul/2026 13:50:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008057
+127.0.0.1 - - [09/Jul/2026 13:50:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012681
+127.0.0.1 - - [09/Jul/2026 13:51:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.016310
+127.0.0.1 - - [09/Jul/2026 13:51:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014192
+127.0.0.1 - - [09/Jul/2026 13:51:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007030
+127.0.0.1 - - [09/Jul/2026 13:52:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008610
+127.0.0.1 - - [09/Jul/2026 13:52:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006715
+127.0.0.1 - - [09/Jul/2026 13:52:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006370
+127.0.0.1 - - [09/Jul/2026 13:53:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007080
+127.0.0.1 - - [09/Jul/2026 13:53:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006840
+127.0.0.1 - - [09/Jul/2026 13:53:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007469
+127.0.0.1 - - [09/Jul/2026 13:54:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009370
+127.0.0.1 - - [09/Jul/2026 13:54:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009117
+127.0.0.1 - - [09/Jul/2026 13:54:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007893
+127.0.0.1 - - [09/Jul/2026 13:55:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010653
+127.0.0.1 - - [09/Jul/2026 13:55:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008668
+127.0.0.1 - - [09/Jul/2026 13:55:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012755
+127.0.0.1 - - [09/Jul/2026 13:56:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007669
+127.0.0.1 - - [09/Jul/2026 13:56:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007053
+127.0.0.1 - - [09/Jul/2026 13:56:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007483
+127.0.0.1 - - [09/Jul/2026 13:57:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008597
+127.0.0.1 - - [09/Jul/2026 13:57:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007900
+127.0.0.1 - - [09/Jul/2026 13:57:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010486
+127.0.0.1 - - [09/Jul/2026 13:58:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009266
+127.0.0.1 - - [09/Jul/2026 13:58:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007455
+127.0.0.1 - - [09/Jul/2026 13:58:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006310
+127.0.0.1 - - [09/Jul/2026 13:59:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010564
+127.0.0.1 - - [09/Jul/2026 13:59:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008482
+127.0.0.1 - - [09/Jul/2026 13:59:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006835
+2026-07-09 14:00:00,002 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 14:30:00 MSK)" (scheduled at 2026-07-09 14:00:00+03:00)
+2026-07-09 14:00:00,003 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 14:30:00 MSK)" (scheduled at 2026-07-09 14:00:00+03:00)
+2026-07-09 14:00:00,009 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 14:30:00 MSK)" executed successfully
+2026-07-09 14:00:00,013 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 14:30:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 14:00:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009815
+127.0.0.1 - - [09/Jul/2026 14:00:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008231
+127.0.0.1 - - [09/Jul/2026 14:00:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007921
+127.0.0.1 - - [09/Jul/2026 14:01:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011861
+127.0.0.1 - - [09/Jul/2026 14:01:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007553
+127.0.0.1 - - [09/Jul/2026 14:01:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008894
+127.0.0.1 - - [09/Jul/2026 14:02:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007648
+127.0.0.1 - - [09/Jul/2026 14:02:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007584
+127.0.0.1 - - [09/Jul/2026 14:02:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007619
+127.0.0.1 - - [09/Jul/2026 14:03:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012328
+127.0.0.1 - - [09/Jul/2026 14:03:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008437
+127.0.0.1 - - [09/Jul/2026 14:03:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008998
+127.0.0.1 - - [09/Jul/2026 14:04:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008529
+127.0.0.1 - - [09/Jul/2026 14:04:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007222
+127.0.0.1 - - [09/Jul/2026 14:04:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007530
+127.0.0.1 - - [09/Jul/2026 14:05:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012375
+127.0.0.1 - - [09/Jul/2026 14:05:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008736
+127.0.0.1 - - [09/Jul/2026 14:05:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007560
+(172080) accepted ('127.0.0.1', 51380)
+127.0.0.1 - - [09/Jul/2026 14:06:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010049
+(172080) accepted ('127.0.0.1', 54313)
+127.0.0.1 - - [09/Jul/2026 14:06:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012919
+127.0.0.1 - - [09/Jul/2026 14:06:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011262
+127.0.0.1 - - [09/Jul/2026 14:07:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009457
+127.0.0.1 - - [09/Jul/2026 14:07:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007795
+127.0.0.1 - - [09/Jul/2026 14:07:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007514
+127.0.0.1 - - [09/Jul/2026 14:08:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007813
+127.0.0.1 - - [09/Jul/2026 14:08:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007554
+127.0.0.1 - - [09/Jul/2026 14:08:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008668
+127.0.0.1 - - [09/Jul/2026 14:09:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.017990
+127.0.0.1 - - [09/Jul/2026 14:09:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008950
+127.0.0.1 - - [09/Jul/2026 14:09:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008019
+127.0.0.1 - - [09/Jul/2026 14:10:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009360
+127.0.0.1 - - [09/Jul/2026 14:10:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009053
+127.0.0.1 - - [09/Jul/2026 14:10:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007530
+127.0.0.1 - - [09/Jul/2026 14:11:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.018194
+127.0.0.1 - - [09/Jul/2026 14:11:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011960
+127.0.0.1 - - [09/Jul/2026 14:11:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014688
+127.0.0.1 - - [09/Jul/2026 14:12:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008512
+127.0.0.1 - - [09/Jul/2026 14:12:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008128
+127.0.0.1 - - [09/Jul/2026 14:12:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009807
+127.0.0.1 - - [09/Jul/2026 14:13:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008636
+127.0.0.1 - - [09/Jul/2026 14:13:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007114
+127.0.0.1 - - [09/Jul/2026 14:13:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009501
+127.0.0.1 - - [09/Jul/2026 14:14:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011702
+127.0.0.1 - - [09/Jul/2026 14:14:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009027
+127.0.0.1 - - [09/Jul/2026 14:14:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008620
+127.0.0.1 - - [09/Jul/2026 14:15:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010988
+127.0.0.1 - - [09/Jul/2026 14:15:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009982
+127.0.0.1 - - [09/Jul/2026 14:15:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008604
+127.0.0.1 - - [09/Jul/2026 14:16:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010282
+127.0.0.1 - - [09/Jul/2026 14:16:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013383
+127.0.0.1 - - [09/Jul/2026 14:16:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.015640
+127.0.0.1 - - [09/Jul/2026 14:17:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010149
+127.0.0.1 - - [09/Jul/2026 14:17:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010118
+127.0.0.1 - - [09/Jul/2026 14:17:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008501
+127.0.0.1 - - [09/Jul/2026 14:18:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007478
+127.0.0.1 - - [09/Jul/2026 14:18:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006942
+127.0.0.1 - - [09/Jul/2026 14:18:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007226
+127.0.0.1 - - [09/Jul/2026 14:19:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008702
+127.0.0.1 - - [09/Jul/2026 14:19:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009128
+127.0.0.1 - - [09/Jul/2026 14:19:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008769
+127.0.0.1 - - [09/Jul/2026 14:20:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008996
+127.0.0.1 - - [09/Jul/2026 14:20:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008301
+127.0.0.1 - - [09/Jul/2026 14:20:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008232
+127.0.0.1 - - [09/Jul/2026 14:21:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009303
+127.0.0.1 - - [09/Jul/2026 14:21:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010552
+127.0.0.1 - - [09/Jul/2026 14:21:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008261
+127.0.0.1 - - [09/Jul/2026 14:22:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013893
+127.0.0.1 - - [09/Jul/2026 14:22:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007255
+127.0.0.1 - - [09/Jul/2026 14:22:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008869
+127.0.0.1 - - [09/Jul/2026 14:23:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006926
+127.0.0.1 - - [09/Jul/2026 14:23:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006970
+127.0.0.1 - - [09/Jul/2026 14:23:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008893
+127.0.0.1 - - [09/Jul/2026 14:24:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007628
+127.0.0.1 - - [09/Jul/2026 14:24:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011273
+127.0.0.1 - - [09/Jul/2026 14:24:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008110
+127.0.0.1 - - [09/Jul/2026 14:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010972
+127.0.0.1 - - [09/Jul/2026 14:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008179
+127.0.0.1 - - [09/Jul/2026 14:25:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008471
+127.0.0.1 - - [09/Jul/2026 14:26:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006954
+127.0.0.1 - - [09/Jul/2026 14:26:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006408
+127.0.0.1 - - [09/Jul/2026 14:26:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008006
+127.0.0.1 - - [09/Jul/2026 14:27:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011386
+127.0.0.1 - - [09/Jul/2026 14:27:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.022763
+127.0.0.1 - - [09/Jul/2026 14:27:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009367
+127.0.0.1 - - [09/Jul/2026 14:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012357
+127.0.0.1 - - [09/Jul/2026 14:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008583
+127.0.0.1 - - [09/Jul/2026 14:28:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011352
+127.0.0.1 - - [09/Jul/2026 14:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009755
+127.0.0.1 - - [09/Jul/2026 14:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007462
+127.0.0.1 - - [09/Jul/2026 14:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007311
+2026-07-09 14:30:00,001 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:00:00 MSK)" (scheduled at 2026-07-09 14:30:00+03:00)
+2026-07-09 14:30:00,001 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:00:00 MSK)" (scheduled at 2026-07-09 14:30:00+03:00)
+2026-07-09 14:30:00,005 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:00:00 MSK)" executed successfully
+2026-07-09 14:30:00,008 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:00:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 14:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009116
+127.0.0.1 - - [09/Jul/2026 14:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007552
+127.0.0.1 - - [09/Jul/2026 14:30:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007530
+127.0.0.1 - - [09/Jul/2026 14:31:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010112
+127.0.0.1 - - [09/Jul/2026 14:31:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008945
+127.0.0.1 - - [09/Jul/2026 14:31:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008156
+127.0.0.1 - - [09/Jul/2026 14:32:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007582
+127.0.0.1 - - [09/Jul/2026 14:32:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007089
+127.0.0.1 - - [09/Jul/2026 14:32:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010817
+127.0.0.1 - - [09/Jul/2026 14:33:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009138
+127.0.0.1 - - [09/Jul/2026 14:33:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007747
+127.0.0.1 - - [09/Jul/2026 14:33:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006713
+127.0.0.1 - - [09/Jul/2026 14:34:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010686
+127.0.0.1 - - [09/Jul/2026 14:34:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006753
+127.0.0.1 - - [09/Jul/2026 14:34:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007448
+127.0.0.1 - - [09/Jul/2026 14:35:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007675
+127.0.0.1 - - [09/Jul/2026 14:35:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007106
+127.0.0.1 - - [09/Jul/2026 14:35:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007585
+(172080) accepted ('127.0.0.1', 60779)
+127.0.0.1 - - [09/Jul/2026 14:36:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008605
+(172080) accepted ('127.0.0.1', 54762)
+127.0.0.1 - - [09/Jul/2026 14:36:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008858
+127.0.0.1 - - [09/Jul/2026 14:36:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006459
+127.0.0.1 - - [09/Jul/2026 14:37:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007430
+127.0.0.1 - - [09/Jul/2026 14:37:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007000
+127.0.0.1 - - [09/Jul/2026 14:37:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014784
+127.0.0.1 - - [09/Jul/2026 14:38:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008799
+127.0.0.1 - - [09/Jul/2026 14:38:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006724
+127.0.0.1 - - [09/Jul/2026 14:38:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007463
+127.0.0.1 - - [09/Jul/2026 14:39:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010028
+127.0.0.1 - - [09/Jul/2026 14:39:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008583
+127.0.0.1 - - [09/Jul/2026 14:39:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007245
+127.0.0.1 - - [09/Jul/2026 14:40:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011264
+127.0.0.1 - - [09/Jul/2026 14:40:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008569
+127.0.0.1 - - [09/Jul/2026 14:40:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009197
+127.0.0.1 - - [09/Jul/2026 14:41:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008287
+127.0.0.1 - - [09/Jul/2026 14:41:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006562
+127.0.0.1 - - [09/Jul/2026 14:41:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006979
+127.0.0.1 - - [09/Jul/2026 14:42:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009147
+127.0.0.1 - - [09/Jul/2026 14:42:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007444
+127.0.0.1 - - [09/Jul/2026 14:42:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012022
+127.0.0.1 - - [09/Jul/2026 14:43:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007894
+127.0.0.1 - - [09/Jul/2026 14:43:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007062
+127.0.0.1 - - [09/Jul/2026 14:43:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007105
+127.0.0.1 - - [09/Jul/2026 14:44:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008698
+127.0.0.1 - - [09/Jul/2026 14:44:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007406
+127.0.0.1 - - [09/Jul/2026 14:44:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007671
+127.0.0.1 - - [09/Jul/2026 14:45:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009970
+127.0.0.1 - - [09/Jul/2026 14:45:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008461
+127.0.0.1 - - [09/Jul/2026 14:45:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007061
+127.0.0.1 - - [09/Jul/2026 14:46:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012934
+127.0.0.1 - - [09/Jul/2026 14:46:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008406
+127.0.0.1 - - [09/Jul/2026 14:47:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010351
+127.0.0.1 - - [09/Jul/2026 14:47:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008156
+127.0.0.1 - - [09/Jul/2026 14:48:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.019185
+127.0.0.1 - - [09/Jul/2026 14:48:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008861
+127.0.0.1 - - [09/Jul/2026 14:49:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011029
+127.0.0.1 - - [09/Jul/2026 14:49:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007533
+127.0.0.1 - - [09/Jul/2026 14:50:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009375
+127.0.0.1 - - [09/Jul/2026 14:50:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007476
+127.0.0.1 - - [09/Jul/2026 14:51:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012622
+127.0.0.1 - - [09/Jul/2026 14:51:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010263
+(172080) accepted ('127.0.0.1', 57055)
+2026-07-09 14:51:21,805 - services.methods_textbook_service - INFO - Textbook loaded: 3038609 chars HTML, 102 methods parsed
+127.0.0.1 - - [09/Jul/2026 14:51:22] "GET /olympiads/methods-textbook HTTP/1.1" 200 4107178 5.628937
+127.0.0.1 - - [09/Jul/2026 14:51:27] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.013716
+127.0.0.1 - - [09/Jul/2026 14:51:39] "GET /static/style.css?v=6 HTTP/1.1" 200 19303 0.158791
+(172080) accepted ('127.0.0.1', 51941)
+127.0.0.1 - - [09/Jul/2026 14:51:39] "GET /static/css/nav.css?v=1780955643 HTTP/1.1" 200 4477 0.021346
+127.0.0.1 - - [09/Jul/2026 14:51:39] "GET /static/css/mobile.css?v=4 HTTP/1.1" 200 31145 0.012398
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/css/mobile_features.css?v=1780955643 HTTP/1.1" 200 17206 0.010792
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/katex/katex.min.css?v=1780955643 HTTP/1.1" 200 24171 0.011149
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/css/errors.css?v=1780955643 HTTP/1.1" 200 2165 0.011212
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/katex/katex.min.js?v=1780955643 HTTP/1.1" 200 278021 0.017187
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/katex/auto-render.min.js?v=1780955643 HTTP/1.1" 200 4462 0.012001
+(172080) accepted ('127.0.0.1', 49949)
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_E18.png HTTP/1.1" 200 26207 0.010304
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/marked.min.js?v=1780955643 HTTP/1.1" 200 40884 0.013383
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F1.png HTTP/1.1" 200 45431 0.012570
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F11.png HTTP/1.1" 200 25037 0.010665
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/analytics.js?v=1780955643 HTTP/1.1" 200 4340 0.012310
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/mobile_home_slider.js?v=1780955643 HTTP/1.1" 200 7363 0.017033
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010110
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_E6.png HTTP/1.1" 200 52101 0.009424
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_B7.png HTTP/1.1" 200 25609 0.010596
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/caps_lock.js HTTP/1.1" 200 4546 0.008974
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_E6b.png HTTP/1.1" 200 52206 0.009852
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_E7.png HTTP/1.1" 200 25614 0.008869
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/mastery_radar.js?v=1780955643 HTTP/1.1" 200 3926 0.019046
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_E13.png HTTP/1.1" 200 45161 0.010207
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_E16.png HTTP/1.1" 200 25851 0.007665
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/mobile_nav.js?v=2 HTTP/1.1" 200 6478 0.008040
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F2.png HTTP/1.1" 200 52270 0.009729
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F3.png HTTP/1.1" 200 51181 0.008348
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/nav.js?v=1780955643 HTTP/1.1" 200 2566 0.007748
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F4.png HTTP/1.1" 200 45657 0.009718
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F4a.png HTTP/1.1" 200 46580 0.009295
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/paywall.js?v=1780955643 HTTP/1.1" 200 12476 0.008430
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F4b.png HTTP/1.1" 200 59522 0.008506
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F5.png HTTP/1.1" 200 45823 0.009129
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/api.js?v=1780955643 HTTP/1.1" 200 3233 0.007796
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F6.png HTTP/1.1" 200 45993 0.007594
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F7.png HTTP/1.1" 200 45680 0.008234
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/profile_sync.js?v=1780955643 HTTP/1.1" 200 14554 0.008361
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F8.png HTTP/1.1" 200 25781 0.007916
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F9.png HTTP/1.1" 200 24991 0.007390
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/share_with_friend.js?v=1780955643 HTTP/1.1" 200 16909 0.007532
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F9a.png HTTP/1.1" 200 25044 0.008398
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F9b.png HTTP/1.1" 200 47046 0.009137
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F10.png HTTP/1.1" 200 47107 0.008020
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/call_engine.html HTTP/1.1" 200 2114 0.007675
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F12.png HTTP/1.1" 200 53686 0.009326
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F13.png HTTP/1.1" 200 59920 0.009842
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F14.png HTTP/1.1" 200 46707 0.008680
+The client is using an unsupported version of the Socket.IO or Engine.IO protocols (further occurrences of this error will be logged with level INFO)
+2026-07-09 14:51:41,677 - engineio.server - ERROR - The client is using an unsupported version of the Socket.IO or Engine.IO protocols (further occurrences of this error will be logged with level INFO)
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /socket.io/socket.io.js HTTP/1.1" 400 219 0.007107
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/wb_signalling.js HTTP/1.1" 200 13435 0.007767
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F15.png HTTP/1.1" 200 52418 0.008062
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F16.png HTTP/1.1" 200 47065 0.008751
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/wb_engine.js HTTP/1.1" 200 22783 0.008114
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/diagrams/method_diagram_F17.png HTTP/1.1" 200 46725 0.008141
+127.0.0.1 - - [09/Jul/2026 14:51:41] "GET /static/js/wb_call_listener.js?v=1780955643 HTTP/1.1" 200 19944 0.008972
+127.0.0.1 - - [09/Jul/2026 14:51:42] "GET /static/js/push_notifications.js?v=1780955643 HTTP/1.1" 200 4707 0.015845
+127.0.0.1 - - [09/Jul/2026 14:51:42] "GET /static/js/wb_pip.js?v=1780955643 HTTP/1.1" 200 16359 0.018438
+127.0.0.1 - - [09/Jul/2026 14:51:42] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.009513
+127.0.0.1 - - [09/Jul/2026 14:51:46] "GET /api/test/active HTTP/1.1" 200 823 0.014753
+127.0.0.1 - - [09/Jul/2026 14:51:51] "GET /static/katex/fonts/KaTeX_Math-Italic.woff2 HTTP/1.1" 200 17426 0.008460
+127.0.0.1 - - [09/Jul/2026 14:51:51] "GET /static/katex/fonts/KaTeX_AMS-Regular.woff2 HTTP/1.1" 200 29062 0.009184
+127.0.0.1 - - [09/Jul/2026 14:51:51] "GET /static/katex/fonts/KaTeX_Main-Regular.woff2 HTTP/1.1" 200 27257 0.009025
+127.0.0.1 - - [09/Jul/2026 14:51:51] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006862
+127.0.0.1 - - [09/Jul/2026 14:51:52] "POST /api/push/subscribe HTTP/1.1" 200 843 0.056382
+127.0.0.1 - - [09/Jul/2026 14:51:52] "GET /static/katex/fonts/KaTeX_Size3-Regular.woff2 HTTP/1.1" 200 4609 0.008950
+127.0.0.1 - - [09/Jul/2026 14:51:52] "GET /static/katex/fonts/KaTeX_Size1-Regular.woff2 HTTP/1.1" 200 6453 0.007798
+127.0.0.1 - - [09/Jul/2026 14:51:52] "GET /static/katex/fonts/KaTeX_Size2-Regular.woff2 HTTP/1.1" 200 6193 0.008382
+127.0.0.1 - - [09/Jul/2026 14:51:57] "GET /static/katex/fonts/KaTeX_Size4-Regular.woff2 HTTP/1.1" 200 5913 0.007619
+127.0.0.1 - - [09/Jul/2026 14:52:03] "GET /static/favicon.ico HTTP/1.1" 200 16368 0.008504
+127.0.0.1 - - [09/Jul/2026 14:52:03] "GET /static/apple-touch-icon.png HTTP/1.1" 200 7416 0.007815
+127.0.0.1 - - [09/Jul/2026 14:52:07] "GET /static/sw.js HTTP/1.1" 200 3377 0.007463
+127.0.0.1 - - [09/Jul/2026 14:52:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009181
+127.0.0.1 - - [09/Jul/2026 14:53:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012142
+127.0.0.1 - - [09/Jul/2026 14:54:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006835
+127.0.0.1 - - [09/Jul/2026 14:55:06] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.005458
+127.0.0.1 - - [09/Jul/2026 14:55:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006723
+127.0.0.1 - - [09/Jul/2026 14:56:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006802
+127.0.0.1 - - [09/Jul/2026 14:57:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006567
+127.0.0.1 - - [09/Jul/2026 14:58:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008516
+127.0.0.1 - - [09/Jul/2026 14:59:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.021675
+2026-07-09 15:00:00,001 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:30:00 MSK)" (scheduled at 2026-07-09 15:00:00+03:00)
+2026-07-09 15:00:00,002 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:30:00 MSK)" (scheduled at 2026-07-09 15:00:00+03:00)
+2026-07-09 15:00:00,009 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:30:00 MSK)" executed successfully
+2026-07-09 15:00:00,011 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 15:30:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 15:00:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008264
+127.0.0.1 - - [09/Jul/2026 15:01:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009742
+127.0.0.1 - - [09/Jul/2026 15:02:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.005700
+127.0.0.1 - - [09/Jul/2026 15:02:50] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.005751
+127.0.0.1 - - [09/Jul/2026 15:03:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008531
+127.0.0.1 - - [09/Jul/2026 15:03:32] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.005694
+127.0.0.1 - - [09/Jul/2026 15:04:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013379
+127.0.0.1 - - [09/Jul/2026 15:04:23] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006216
+127.0.0.1 - - [09/Jul/2026 15:05:05] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.005988
+127.0.0.1 - - [09/Jul/2026 15:05:05] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012426
+127.0.0.1 - - [09/Jul/2026 15:05:08] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.005078
+127.0.0.1 - - [09/Jul/2026 15:05:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009345
+(172080) accepted ('127.0.0.1', 49736)
+127.0.0.1 - - [09/Jul/2026 15:05:51] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006868
+127.0.0.1 - - [09/Jul/2026 15:05:51] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.005964
+127.0.0.1 - - [09/Jul/2026 15:06:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006943
+127.0.0.1 - - [09/Jul/2026 15:06:29] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007561
+127.0.0.1 - - [09/Jul/2026 15:06:41] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008727
+(172080) accepted ('127.0.0.1', 60808)
+127.0.0.1 - - [09/Jul/2026 15:07:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008192
+127.0.0.1 - - [09/Jul/2026 15:07:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006084
+127.0.0.1 - - [09/Jul/2026 15:08:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006636
+127.0.0.1 - - [09/Jul/2026 15:08:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007496
+127.0.0.1 - - [09/Jul/2026 15:08:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006745
+127.0.0.1 - - [09/Jul/2026 15:09:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010137
+127.0.0.1 - - [09/Jul/2026 15:09:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.013485
+127.0.0.1 - - [09/Jul/2026 15:09:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008655
+127.0.0.1 - - [09/Jul/2026 15:10:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007881
+127.0.0.1 - - [09/Jul/2026 15:10:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.008778
+127.0.0.1 - - [09/Jul/2026 15:10:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011250
+127.0.0.1 - - [09/Jul/2026 15:11:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.017017
+127.0.0.1 - - [09/Jul/2026 15:11:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006898
+127.0.0.1 - - [09/Jul/2026 15:11:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007886
+127.0.0.1 - - [09/Jul/2026 15:12:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009930
+127.0.0.1 - - [09/Jul/2026 15:12:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.008062
+127.0.0.1 - - [09/Jul/2026 15:12:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008181
+127.0.0.1 - - [09/Jul/2026 15:13:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007741
+127.0.0.1 - - [09/Jul/2026 15:13:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.008681
+127.0.0.1 - - [09/Jul/2026 15:13:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009353
+127.0.0.1 - - [09/Jul/2026 15:14:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008595
+127.0.0.1 - - [09/Jul/2026 15:14:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.007514
+127.0.0.1 - - [09/Jul/2026 15:14:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008548
+127.0.0.1 - - [09/Jul/2026 15:15:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.017370
+127.0.0.1 - - [09/Jul/2026 15:15:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006314
+127.0.0.1 - - [09/Jul/2026 15:15:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006545
+127.0.0.1 - - [09/Jul/2026 15:16:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008484
+127.0.0.1 - - [09/Jul/2026 15:16:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.007622
+127.0.0.1 - - [09/Jul/2026 15:16:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007927
+127.0.0.1 - - [09/Jul/2026 15:17:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008499
+127.0.0.1 - - [09/Jul/2026 15:17:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.007115
+127.0.0.1 - - [09/Jul/2026 15:17:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007526
+127.0.0.1 - - [09/Jul/2026 15:18:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009583
+127.0.0.1 - - [09/Jul/2026 15:18:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006750
+127.0.0.1 - - [09/Jul/2026 15:18:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007232
+127.0.0.1 - - [09/Jul/2026 15:19:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011352
+127.0.0.1 - - [09/Jul/2026 15:19:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006180
+127.0.0.1 - - [09/Jul/2026 15:19:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007118
+127.0.0.1 - - [09/Jul/2026 15:20:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007514
+127.0.0.1 - - [09/Jul/2026 15:20:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.009325
+127.0.0.1 - - [09/Jul/2026 15:20:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006227
+127.0.0.1 - - [09/Jul/2026 15:21:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008822
+127.0.0.1 - - [09/Jul/2026 15:21:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.010574
+127.0.0.1 - - [09/Jul/2026 15:21:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008708
+127.0.0.1 - - [09/Jul/2026 15:22:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009093
+127.0.0.1 - - [09/Jul/2026 15:22:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006334
+127.0.0.1 - - [09/Jul/2026 15:22:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008558
+127.0.0.1 - - [09/Jul/2026 15:23:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010557
+127.0.0.1 - - [09/Jul/2026 15:23:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.007565
+127.0.0.1 - - [09/Jul/2026 15:23:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007030
+127.0.0.1 - - [09/Jul/2026 15:24:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008342
+127.0.0.1 - - [09/Jul/2026 15:24:10] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006755
+127.0.0.1 - - [09/Jul/2026 15:24:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007928
+127.0.0.1 - - [09/Jul/2026 15:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009036
+127.0.0.1 - - [09/Jul/2026 15:25:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.010802
+127.0.0.1 - - [09/Jul/2026 15:25:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007739
+127.0.0.1 - - [09/Jul/2026 15:26:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013047
+127.0.0.1 - - [09/Jul/2026 15:26:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006683
+127.0.0.1 - - [09/Jul/2026 15:26:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007067
+127.0.0.1 - - [09/Jul/2026 15:27:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009741
+127.0.0.1 - - [09/Jul/2026 15:27:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006674
+127.0.0.1 - - [09/Jul/2026 15:27:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006635
+127.0.0.1 - - [09/Jul/2026 15:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013201
+127.0.0.1 - - [09/Jul/2026 15:28:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.006627
+127.0.0.1 - - [09/Jul/2026 15:28:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007349
+127.0.0.1 - - [09/Jul/2026 15:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010183
+127.0.0.1 - - [09/Jul/2026 15:29:11] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.007912
+127.0.0.1 - - [09/Jul/2026 15:29:11] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010394
+2026-07-09 15:30:00,004 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:00:00 MSK)" (scheduled at 2026-07-09 15:30:00+03:00)
+2026-07-09 15:30:00,006 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:00:00 MSK)" (scheduled at 2026-07-09 15:30:00+03:00)
+2026-07-09 15:30:00,024 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:00:00 MSK)" executed successfully
+2026-07-09 15:30:00,040 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:00:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 15:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009789
+127.0.0.1 - - [09/Jul/2026 15:31:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012444
+127.0.0.1 - - [09/Jul/2026 15:32:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008671
+127.0.0.1 - - [09/Jul/2026 15:33:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008087
+127.0.0.1 - - [09/Jul/2026 15:34:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010495
+127.0.0.1 - - [09/Jul/2026 15:35:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007182
+(172080) accepted ('127.0.0.1', 65493)
+127.0.0.1 - - [09/Jul/2026 15:36:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011319
+127.0.0.1 - - [09/Jul/2026 15:37:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009836
+127.0.0.1 - - [09/Jul/2026 15:38:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007970
+127.0.0.1 - - [09/Jul/2026 15:39:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010469
+127.0.0.1 - - [09/Jul/2026 15:40:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.023596
+127.0.0.1 - - [09/Jul/2026 15:41:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014119
+127.0.0.1 - - [09/Jul/2026 15:42:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011184
+127.0.0.1 - - [09/Jul/2026 15:43:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013799
+127.0.0.1 - - [09/Jul/2026 15:44:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007475
+127.0.0.1 - - [09/Jul/2026 15:45:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012147
+127.0.0.1 - - [09/Jul/2026 15:46:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010725
+127.0.0.1 - - [09/Jul/2026 15:47:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011699
+127.0.0.1 - - [09/Jul/2026 15:48:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011285
+127.0.0.1 - - [09/Jul/2026 15:49:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008219
+127.0.0.1 - - [09/Jul/2026 15:50:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010529
+127.0.0.1 - - [09/Jul/2026 15:51:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010612
+127.0.0.1 - - [09/Jul/2026 15:52:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006958
+127.0.0.1 - - [09/Jul/2026 15:53:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.018675
+127.0.0.1 - - [09/Jul/2026 15:54:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.026066
+127.0.0.1 - - [09/Jul/2026 15:55:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013869
+127.0.0.1 - - [09/Jul/2026 15:56:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012751
+127.0.0.1 - - [09/Jul/2026 15:57:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008015
+127.0.0.1 - - [09/Jul/2026 15:58:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011688
+127.0.0.1 - - [09/Jul/2026 15:59:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011900
+2026-07-09 16:00:00,003 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:30:00 MSK)" (scheduled at 2026-07-09 16:00:00+03:00)
+2026-07-09 16:00:00,003 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:30:00 MSK)" (scheduled at 2026-07-09 16:00:00+03:00)
+2026-07-09 16:00:00,026 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:30:00 MSK)" executed successfully
+2026-07-09 16:00:00,026 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 16:30:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 16:00:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007755
+127.0.0.1 - - [09/Jul/2026 16:01:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010796
+127.0.0.1 - - [09/Jul/2026 16:02:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008348
+127.0.0.1 - - [09/Jul/2026 16:03:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009068
+127.0.0.1 - - [09/Jul/2026 16:04:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008174
+127.0.0.1 - - [09/Jul/2026 16:05:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014396
+(172080) accepted ('127.0.0.1', 49271)
+127.0.0.1 - - [09/Jul/2026 16:06:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009805
+127.0.0.1 - - [09/Jul/2026 16:07:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013280
+127.0.0.1 - - [09/Jul/2026 16:08:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008869
+127.0.0.1 - - [09/Jul/2026 16:09:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011140
+127.0.0.1 - - [09/Jul/2026 16:10:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.027322
+127.0.0.1 - - [09/Jul/2026 16:11:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008292
+127.0.0.1 - - [09/Jul/2026 16:12:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008373
+127.0.0.1 - - [09/Jul/2026 16:13:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010521
+127.0.0.1 - - [09/Jul/2026 16:14:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010026
+127.0.0.1 - - [09/Jul/2026 16:15:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013261
+127.0.0.1 - - [09/Jul/2026 16:16:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.016131
+127.0.0.1 - - [09/Jul/2026 16:17:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010267
+127.0.0.1 - - [09/Jul/2026 16:18:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008168
+127.0.0.1 - - [09/Jul/2026 16:19:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008572
+127.0.0.1 - - [09/Jul/2026 16:20:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007881
+127.0.0.1 - - [09/Jul/2026 16:21:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010004
+127.0.0.1 - - [09/Jul/2026 16:22:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013497
+127.0.0.1 - - [09/Jul/2026 16:23:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007423
+127.0.0.1 - - [09/Jul/2026 16:24:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009671
+127.0.0.1 - - [09/Jul/2026 16:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007478
+127.0.0.1 - - [09/Jul/2026 16:26:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008564
+127.0.0.1 - - [09/Jul/2026 16:27:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014916
+127.0.0.1 - - [09/Jul/2026 16:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.015569
+127.0.0.1 - - [09/Jul/2026 16:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.014644
+2026-07-09 16:30:00,004 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:00:00 MSK)" (scheduled at 2026-07-09 16:30:00+03:00)
+2026-07-09 16:30:00,005 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:00:00 MSK)" (scheduled at 2026-07-09 16:30:00+03:00)
+2026-07-09 16:30:00,011 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:00:00 MSK)" executed successfully
+2026-07-09 16:30:00,016 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:00:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 16:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010457
+127.0.0.1 - - [09/Jul/2026 16:31:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009617
+127.0.0.1 - - [09/Jul/2026 16:32:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008272
+127.0.0.1 - - [09/Jul/2026 16:33:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009820
+127.0.0.1 - - [09/Jul/2026 16:34:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.015265
+127.0.0.1 - - [09/Jul/2026 16:35:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010983
+(172080) accepted ('127.0.0.1', 52698)
+127.0.0.1 - - [09/Jul/2026 16:36:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007933
+127.0.0.1 - - [09/Jul/2026 16:37:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007535
+127.0.0.1 - - [09/Jul/2026 16:38:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010515
+127.0.0.1 - - [09/Jul/2026 16:39:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008307
+127.0.0.1 - - [09/Jul/2026 16:40:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012634
+127.0.0.1 - - [09/Jul/2026 16:41:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.019830
+127.0.0.1 - - [09/Jul/2026 16:42:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010942
+127.0.0.1 - - [09/Jul/2026 16:43:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009260
+127.0.0.1 - - [09/Jul/2026 16:44:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007392
+127.0.0.1 - - [09/Jul/2026 16:45:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011153
+127.0.0.1 - - [09/Jul/2026 16:46:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011262
+127.0.0.1 - - [09/Jul/2026 16:47:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007569
+127.0.0.1 - - [09/Jul/2026 16:48:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008609
+127.0.0.1 - - [09/Jul/2026 16:49:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009397
+127.0.0.1 - - [09/Jul/2026 16:50:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008491
+127.0.0.1 - - [09/Jul/2026 16:51:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011756
+127.0.0.1 - - [09/Jul/2026 16:52:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008517
+127.0.0.1 - - [09/Jul/2026 16:53:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006981
+127.0.0.1 - - [09/Jul/2026 16:54:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007035
+127.0.0.1 - - [09/Jul/2026 16:55:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009567
+127.0.0.1 - - [09/Jul/2026 16:56:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010829
+127.0.0.1 - - [09/Jul/2026 16:57:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.017706
+127.0.0.1 - - [09/Jul/2026 16:58:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007836
+127.0.0.1 - - [09/Jul/2026 16:59:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012148
+2026-07-09 17:00:00,001 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:30:00 MSK)" (scheduled at 2026-07-09 17:00:00+03:00)
+2026-07-09 17:00:00,002 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:30:00 MSK)" (scheduled at 2026-07-09 17:00:00+03:00)
+2026-07-09 17:00:00,007 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:30:00 MSK)" executed successfully
+2026-07-09 17:00:00,010 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 17:30:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 17:00:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009121
+127.0.0.1 - - [09/Jul/2026 17:01:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008674
+127.0.0.1 - - [09/Jul/2026 17:02:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011334
+127.0.0.1 - - [09/Jul/2026 17:03:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007663
+127.0.0.1 - - [09/Jul/2026 17:04:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013148
+127.0.0.1 - - [09/Jul/2026 17:05:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006153
+(172080) accepted ('127.0.0.1', 63275)
+127.0.0.1 - - [09/Jul/2026 17:06:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007119
+127.0.0.1 - - [09/Jul/2026 17:07:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008569
+127.0.0.1 - - [09/Jul/2026 17:08:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009539
+127.0.0.1 - - [09/Jul/2026 17:09:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007998
+127.0.0.1 - - [09/Jul/2026 17:10:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007764
+127.0.0.1 - - [09/Jul/2026 17:11:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008531
+127.0.0.1 - - [09/Jul/2026 17:12:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007249
+127.0.0.1 - - [09/Jul/2026 17:13:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010100
+127.0.0.1 - - [09/Jul/2026 17:14:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006968
+127.0.0.1 - - [09/Jul/2026 17:15:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.018817
+127.0.0.1 - - [09/Jul/2026 17:16:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008359
+127.0.0.1 - - [09/Jul/2026 17:17:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007034
+127.0.0.1 - - [09/Jul/2026 17:18:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006207
+127.0.0.1 - - [09/Jul/2026 17:19:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010785
+127.0.0.1 - - [09/Jul/2026 17:20:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008979
+127.0.0.1 - - [09/Jul/2026 17:21:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011293
+127.0.0.1 - - [09/Jul/2026 17:22:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009473
+127.0.0.1 - - [09/Jul/2026 17:23:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007311
+127.0.0.1 - - [09/Jul/2026 17:24:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006835
+127.0.0.1 - - [09/Jul/2026 17:25:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.039247
+127.0.0.1 - - [09/Jul/2026 17:26:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007945
+127.0.0.1 - - [09/Jul/2026 17:27:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007897
+127.0.0.1 - - [09/Jul/2026 17:28:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008102
+127.0.0.1 - - [09/Jul/2026 17:29:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013911
+2026-07-09 17:30:00,025 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:00:00 MSK)" (scheduled at 2026-07-09 17:30:00+03:00)
+2026-07-09 17:30:00,038 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:00:00 MSK)" (scheduled at 2026-07-09 17:30:00+03:00)
+2026-07-09 17:30:00,100 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:00:00 MSK)" executed successfully
+2026-07-09 17:30:00,110 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:00:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 17:30:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013441
+127.0.0.1 - - [09/Jul/2026 17:31:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.029255
+127.0.0.1 - - [09/Jul/2026 17:32:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.011868
+127.0.0.1 - - [09/Jul/2026 17:33:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007782
+(172080) accepted ('127.0.0.1', 56019)
+(172080) accepted ('127.0.0.1', 64649)
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /methods-catalog HTTP/1.1" 302 1014 0.034012
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /login?next=/methods-catalog HTTP/1.1" 200 38666 0.038379
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/style.css?v=6 HTTP/1.1" 200 19226 0.020645
+(172080) accepted ('127.0.0.1', 56279)
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/css/nav.css?v=1780955643 HTTP/1.1" 200 4400 0.013846
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/css/mobile.css?v=4 HTTP/1.1" 200 31068 0.014280
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/css/mobile_features.css?v=1780955643 HTTP/1.1" 200 17129 0.016807
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/css/errors.css?v=1780955643 HTTP/1.1" 200 2088 0.015078
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/katex/katex.min.css?v=1780955643 HTTP/1.1" 200 24094 0.016142
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/katex/katex.min.js?v=1780955643 HTTP/1.1" 200 277944 0.015605
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/katex/auto-render.min.js?v=1780955643 HTTP/1.1" 200 4385 0.009535
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/marked.min.js?v=1780955643 HTTP/1.1" 200 40807 0.011992
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/caps_lock.js HTTP/1.1" 200 4469 0.012567
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/mastery_radar.js?v=1780955643 HTTP/1.1" 200 3849 0.015833
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/mobile_nav.js?v=2 HTTP/1.1" 200 6401 0.012646
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/nav.js?v=1780955643 HTTP/1.1" 200 2489 0.011267
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/paywall.js?v=1780955643 HTTP/1.1" 200 12399 0.011081
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/profile_sync.js?v=1780955643 HTTP/1.1" 200 14477 0.011123
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/api.js?v=1780955643 HTTP/1.1" 200 3156 0.010830
+(172080) accepted ('127.0.0.1', 60090)
+(172080) accepted ('127.0.0.1', 62929)
+(172080) accepted ('127.0.0.1', 62439)
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/analytics.js?v=1780955643 HTTP/1.1" 200 4263 0.007201
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/wb_pip.js?v=1780955643 HTTP/1.1" 200 16282 0.007821
+127.0.0.1 - - [09/Jul/2026 17:34:01] "GET /static/js/mobile_home_slider.js?v=1780955643 HTTP/1.1" 200 7286 0.009331
+127.0.0.1 - - [09/Jul/2026 17:34:02] "GET /static/call_engine.html HTTP/1.1" 200 2037 0.007248
+127.0.0.1 - - [09/Jul/2026 17:34:02] "GET /socket.io/socket.io.js HTTP/1.1" 400 219 0.003033
+127.0.0.1 - - [09/Jul/2026 17:34:02] "GET /static/js/wb_engine.js HTTP/1.1" 200 22706 0.007281
+127.0.0.1 - - [09/Jul/2026 17:34:02] "GET /static/js/wb_signalling.js HTTP/1.1" 200 13358 0.007984
+127.0.0.1 - - [09/Jul/2026 17:34:02] "GET /api/test/active HTTP/1.1" 401 894 0.007649
+127.0.0.1 - - [09/Jul/2026 17:34:02] "GET /static/favicon.ico HTTP/1.1" 200 16291 0.010185
+127.0.0.1 - - [09/Jul/2026 17:34:02] "GET /static/apple-touch-icon.png HTTP/1.1" 200 7339 0.010818
+2026-07-09 17:34:09,002 - app - WARNING - LOGIN POST ВЫЗВАН
+2026-07-09 17:34:09,084 - app - WARNING - КОД СГЕНЕРИРОВАН: 197715 для victor.krivenko.4949@gmail.com
+2026-07-09 17:34:09,102 - app - WARNING - MAIL_USERNAME = kr1venkovictor@yandex.ru
+2026-07-09 17:34:09,102 - app - WARNING - MAIL_PASSWORD = **************** (16 символов)
+2026-07-09 17:34:09,102 - app - WARNING - Resend API key set = True
+2026-07-09 17:34:09,102 - app - WARNING - Mail configured = True
+2026-07-09 17:34:09,103 - app - WARNING - [EMAIL] Sending via Resend HTTP API to victor.krivenko.4949@gmail.com
+[BP] prep_bp registered (/prep)
+[BP] olympiad_prep_bp registered (/olympiad-prep)
+[BP] account_bp registered (/account)
+[BP] drawing_bp registered (/drawing)
+[BP] drawing_diag_bp registered (/api/drawing/diag)
+[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)
+[BP] wb_call_bp registered (/api/wb_call/*)
+[BP] wb_meet_bp registered (/api/wb_meet/*)
+[BP] conference_api_bp registered (/api/conference/*)
+[BP] chat_presence_bp registered (/api/chat/*/presence, typing)
+[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)
+[BP] admin_support_bp registered (/admin/support, /my/support)
+[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)
+[SocketIO] Conference WebSocket signalling initialized (/ws-call)
+[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)
+[VSOSH10_11-ADD] result={'status': 'skipped', 'reason': 'already_present', 'count': 43}
+[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)
+[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 1140 rows
+[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 3337 rows
+[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 135 rows
+[LATEX-ROOT-DB-FIX] total rows updated: 0
+[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 1140}, 'method_tasks': {'updated': 0, 'scanned': 3337}, 'adaptive_tasks': {'updated': 0, 'scanned': 135}}
+[OLYMPIAD-SEED] Theory source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\methods_catalog_105.json (102 rows; in DB: 102 — ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_65_methods.json (65 rows)
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_24_methods.json (24 rows)
+[THEORY-SEED] Theory bodies filled: 0 methods updated
+[THEORY-MD] No MD content parsed from c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\formyla_vsosh9_10_methods_combined.md
+[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)
+[THEORY-FIX] No placeholder method names — nothing to do
+[SECRETS-SEED] Already populated (127 rows)
+[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)
+[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded
+[BP] telegram_auth_bp registered (/auth/telegram/callback)
+  [daily_tasks migration] dialect = sqlite
+  ✅ daily_task_sets: 10 колонок
+  ✅ daily_task_items: 27 колонок
+  ✅ daily_generation_jobs: 11 колонок
+  [task_pool migration] dialect = sqlite
+  ✅ task_pool: 12 колонок
+  ✅ user_task_assignments: 5 колонок
+[BP] daily_tasks_bp registered (/daily_tasks)
+  [curator migration] dialect = sqlite
+  ✅ student_diagnostics: 14 колонок
+  ✅ learning_plans: 18 колонок
+  ✅ task_attempts: 18 колонок
+  ✅ progress_log: 16 колонок
+  ✅ task_bank: 11 колонок
+[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress
+  [test_sessions migration] dialect = sqlite
+  ✅ test_sessions: 16 колонок
+[BP] test_sessions migration ensured
+[JINJA] filter md_render registered
+[JINJA] filter inject_geometry registered
+✅ VAPID keys loaded — Web Push notifications enabled
+✓ APScheduler started - Daily Quest cron jobs active
+olympiads.py: новый формат, 1542 пробников
+Пробников всего: 1542, с задачами: 1542
+Адаптивный тест: загружено 0 задач из adaptive_data
+OLYMPIADS_INFO: 11 олимпиад с grades/rounds
+[EMAIL DEV] verification code for victor.krivenko.4949@gmail.com: 197715
+2026-07-09 17:34:10,017 - app - WARNING - [EMAIL] ✅ Resend accepted (id=0bd7e188-f91b-4f9d-a6de-79a838029d2b) for victor.krivenko.4949@gmail.com
+2026-07-09 17:34:10,017 - app - WARNING - EMAIL ОТПРАВЛЕН: victor.krivenko.4949@gmail.com, код: 197715
+127.0.0.1 - - [09/Jul/2026 17:34:10] "POST /login HTTP/1.1" 302 966 1.024704
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /verify-code HTTP/1.1" 200 35932 0.021988
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/style.css?v=6 HTTP/1.1" 304 795 0.011008
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/css/mobile_features.css?v=1780955643 HTTP/1.1" 304 805 0.009774
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/css/errors.css?v=1780955643 HTTP/1.1" 304 796 0.008298
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/katex/katex.min.css?v=1780955643 HTTP/1.1" 304 800 0.008805
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/css/mobile.css?v=4 HTTP/1.1" 304 797 0.007938
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/css/nav.css?v=1780955643 HTTP/1.1" 304 792 0.010589
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/katex/katex.min.js?v=1780955643 HTTP/1.1" 304 800 0.008760
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/katex/auto-render.min.js?v=1780955643 HTTP/1.1" 304 803 0.009191
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/marked.min.js?v=1780955643 HTTP/1.1" 304 799 0.009009
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/caps_lock.js HTTP/1.1" 304 797 0.008978
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/mastery_radar.js?v=1780955643 HTTP/1.1" 304 802 0.010996
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/mobile_nav.js?v=2 HTTP/1.1" 304 798 0.027419
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/nav.js?v=1780955643 HTTP/1.1" 304 791 0.024839
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/paywall.js?v=1780955643 HTTP/1.1" 304 797 0.035510
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/api.js?v=1780955643 HTTP/1.1" 304 791 0.016397
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/profile_sync.js?v=1780955643 HTTP/1.1" 304 802 0.019310
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/analytics.js?v=1780955643 HTTP/1.1" 304 797 0.033602
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/call_engine.html HTTP/1.1" 304 801 0.022036
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/wb_pip.js?v=1780955643 HTTP/1.1" 304 796 0.019454
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/mobile_home_slider.js?v=1780955643 HTTP/1.1" 304 806 0.017219
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.046835
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/wb_signalling.js HTTP/1.1" 304 803 0.014110
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /socket.io/socket.io.js HTTP/1.1" 400 219 0.000261
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /api/test/active HTTP/1.1" 401 894 0.025092
+127.0.0.1 - - [09/Jul/2026 17:34:10] "GET /static/js/wb_engine.js HTTP/1.1" 304 799 0.013641
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:4064: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  user.last_login = datetime.utcnow()
+Exception in thread Thread-3 (send_welcome_email):
+127.0.0.1 - - [09/Jul/2026 17:34:22] "POST /verify-code HTTP/1.1" 302 1327 0.043499
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:10907: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  current_user.onboarded_at = datetime.utcnow()
+Traceback (most recent call last):
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1043, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 994, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Victor\Desktop\Новая папка (2)\services\email_service.py", line 115, in send_welcome_email
+    email = getattr(user, "email", None)
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\attributes.py", line 569, in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1096, in get
+    value = self._fire_loader_callables(state, key, passive)
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1126, in _fire_loader_callables
+    return state._load_expired(state, passive)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\state.py", line 828, in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\loading.py", line 1674, in load_scalar_attributes
+    result = load_on_ident(
+        session,
+    ...<4 lines>...
+        no_autoflush=no_autoflush,
+    )
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\loading.py", line 510, in load_on_ident
+    return load_on_pk_identity(
+        session,
+    ...<11 lines>...
+        is_user_refresh=is_user_refresh,
+    )
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\loading.py", line 695, in load_on_pk_identity
+    session.execute(
+    ~~~~~~~~~~~~~~~^
+        q,
+        ^^
+    ...<2 lines>...
+        bind_arguments=bind_arguments,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\orm\session.py", line 2237, in _execute_internal
+    bind = self.get_bind(**bind_arguments)
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask_sqlalchemy\session.py", line 53, in get_bind
+    engines = self._db.engines
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask_sqlalchemy\extension.py", line 687, in engines
+    app = current_app._get_current_object()  # type: ignore[attr-defined]
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\site-packages\werkzeug\local.py", line 519, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /about?onboarding=1 HTTP/1.1" 200 151969 0.065289
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/style.css?v=6 HTTP/1.1" 304 872 0.011582
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/css/mobile_features.css?v=1780955643 HTTP/1.1" 304 882 0.011944
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/css/mobile.css?v=4 HTTP/1.1" 304 874 0.010466
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/css/nav.css?v=1780955643 HTTP/1.1" 304 869 0.017041
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/css/review_form.css?v=1780955643 HTTP/1.1" 200 1956 0.012656
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/css/about.css?v=1780955643 HTTP/1.1" 200 11775 0.010400
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/css/errors.css?v=1780955643 HTTP/1.1" 304 873 0.008777
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/katex/katex.min.css?v=1780955643 HTTP/1.1" 304 877 0.008293
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/css/site_concierge.css?v=1780955643 HTTP/1.1" 200 10774 0.010084
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/katex/katex.min.js?v=1780955643 HTTP/1.1" 304 877 0.007990
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/katex/auto-render.min.js?v=1780955643 HTTP/1.1" 304 880 0.008860
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/marked.min.js?v=1780955643 HTTP/1.1" 304 876 0.008792
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/analytics.js?v=1780955643 HTTP/1.1" 304 874 0.008758
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/mobile_home_slider.js?v=1780955643 HTTP/1.1" 304 883 0.009526
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/site_concierge.js?v=1780955643 HTTP/1.1" 200 11741 0.008247
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /api/my/support/messages HTTP/1.1" 200 861 0.016065
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.008008
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /api/reviews?limit=12&offset=0&sort=new HTTP/1.1" 200 1016 0.011481
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/wb_call_listener.js?v=1780955643 HTTP/1.1" 200 19944 0.011014
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/caps_lock.js HTTP/1.1" 304 874 0.010950
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/push_notifications.js?v=1780955643 HTTP/1.1" 200 4707 0.011373
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/mastery_radar.js?v=1780955643 HTTP/1.1" 304 879 0.008062
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/mobile_nav.js?v=2 HTTP/1.1" 304 875 0.007623
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/nav.js?v=1780955643 HTTP/1.1" 304 868 0.006346
+127.0.0.1 - - [09/Jul/2026 17:34:22] "GET /static/js/paywall.js?v=1780955643 HTTP/1.1" 304 874 0.007281
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/js/api.js?v=1780955643 HTTP/1.1" 304 868 0.006182
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/js/profile_sync.js?v=1780955643 HTTP/1.1" 304 879 0.007653
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/js/share_with_friend.js?v=1780955643 HTTP/1.1" 200 16909 0.006708
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/call_engine.html HTTP/1.1" 304 878 0.006299
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/sw.js HTTP/1.1" 200 3377 0.008892
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.007763
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /api/concierge/intents HTTP/1.1" 200 2536 0.013197
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/js/wb_pip.js?v=1780955643 HTTP/1.1" 304 873 0.009175
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/js/wb_engine.js HTTP/1.1" 304 876 0.013493
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /static/js/wb_signalling.js HTTP/1.1" 304 880 0.008524
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /socket.io/socket.io.js HTTP/1.1" 400 219 0.000152
+127.0.0.1 - - [09/Jul/2026 17:34:23] "GET /api/test/active HTTP/1.1" 200 823 0.011235
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET / HTTP/1.1" 200 83706 0.038574
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/style.css?v=6 HTTP/1.1" 200 19303 0.014608
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/katex/katex.min.css?v=1780955643 HTTP/1.1" 200 24171 0.013140
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/css/errors.css?v=1780955643 HTTP/1.1" 200 2165 0.013336
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/css/mobile_features.css?v=1780955643 HTTP/1.1" 200 17206 0.011755
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/css/mobile.css?v=4 HTTP/1.1" 200 31145 0.013769
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/css/nav.css?v=1780955643 HTTP/1.1" 200 4477 0.012989
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/katex/katex.min.js?v=1780955643 HTTP/1.1" 200 278021 0.016131
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/katex/auto-render.min.js?v=1780955643 HTTP/1.1" 200 4462 0.014683
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/marked.min.js?v=1780955643 HTTP/1.1" 200 40884 0.011123
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/caps_lock.js HTTP/1.1" 200 4546 0.012564
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/mastery_radar.js?v=1780955643 HTTP/1.1" 200 3926 0.017349
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/mobile_nav.js?v=2 HTTP/1.1" 200 6478 0.016723
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/nav.js?v=1780955643 HTTP/1.1" 200 2566 0.013032
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/paywall.js?v=1780955643 HTTP/1.1" 200 12476 0.014008
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/api.js?v=1780955643 HTTP/1.1" 200 3233 0.016855
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/profile_sync.js?v=1780955643 HTTP/1.1" 200 14554 0.015325
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/share_with_friend.js?v=1780955643 HTTP/1.1" 200 16909 0.010821
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.013013
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/analytics.js?v=1780955643 HTTP/1.1" 200 4340 0.009473
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/mobile_home_slider.js?v=1780955643 HTTP/1.1" 200 7363 0.009982
+127.0.0.1 - - [09/Jul/2026 17:34:25] "GET /static/js/wb_call_listener.js?v=1780955643 HTTP/1.1" 200 19944 0.011301
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /static/js/push_notifications.js?v=1780955643 HTTP/1.1" 200 4707 0.011150
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /static/js/wb_pip.js?v=1780955643 HTTP/1.1" 200 16359 0.009871
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /static/call_engine.html HTTP/1.1" 200 2114 0.010939
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.010079
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /static/js/wb_signalling.js HTTP/1.1" 200 13435 0.010256
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /static/js/wb_engine.js HTTP/1.1" 200 22783 0.008991
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /socket.io/socket.io.js HTTP/1.1" 400 219 0.000147
+127.0.0.1 - - [09/Jul/2026 17:34:26] "GET /api/test/active HTTP/1.1" 200 823 0.007581
+127.0.0.1 - - [09/Jul/2026 17:34:27] "GET /static/sw.js HTTP/1.1" 200 3377 0.011982
+127.0.0.1 - - [09/Jul/2026 17:34:28] "POST /api/push/subscribe HTTP/1.1" 200 843 0.023522
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /secrets HTTP/1.1" 200 4115753 0.077098
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/style.css?v=6 HTTP/1.1" 200 19303 0.014527
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/katex/katex.min.css?v=1780955643 HTTP/1.1" 200 24171 0.009959
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/css/errors.css?v=1780955643 HTTP/1.1" 200 2165 0.009216
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/css/mobile_features.css?v=1780955643 HTTP/1.1" 200 17206 0.010128
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/css/mobile.css?v=4 HTTP/1.1" 200 31145 0.010781
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/css/nav.css?v=1780955643 HTTP/1.1" 200 4477 0.009854
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/katex/katex.min.js?v=1780955643 HTTP/1.1" 200 278021 0.016172
+127.0.0.1 - - [09/Jul/2026 17:34:31] "GET /static/katex/auto-render.min.js?v=1780955643 HTTP/1.1" 200 4462 0.010155

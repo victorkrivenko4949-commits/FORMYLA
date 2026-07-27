@@ -1,0 +1,55 @@
+=== CURATED BANK L1-L5 OVERVIEW ===
+Total tasks: 674
+By level (field "level"): {'1': 54, '2': 127, '3': 122, '4': 99, '5': 48, 'None': 224}
+By target_level: {'L1': 135, 'L2': 135, 'L3': 134, 'L4': 135, 'L5': 135}
+By grade: {'10': 76, '11': 85, '2': 1, '5': 50, '6': 42, '7': 49, '8': 68, '9': 79, 'None': 224}
+
+=== L1-L3 TASKS (by level=1/2/3) ===
+Count: 303
+By level: {1: 54, 2: 127, 3: 122}
+By grade: {2: 1, 5: 33, 6: 30, 7: 31, 8: 51, 9: 48, 10: 54, 11: 55}
+
+=== L1-L3 BY target_level ===
+Count: 404
+By target_level: {'L1': 135, 'L2': 135, 'L3': 134}
+
+Tasks with target_level=L1/L2/L3 but level!=(1,2,3): 179
+  id=SEL1080-0002 level=None target=L1 grade=None
+  id=SEL1080-0003 level=None target=L1 grade=None
+  id=SEL1080-0004 level=None target=L1 grade=None
+  id=SEL1080-0005 level=None target=L1 grade=None
+  id=SEL1080-0006 level=None target=L1 grade=None
+  id=SEL1080-0007 level=None target=L1 grade=None
+  id=SEL1080-0010 level=None target=L1 grade=None
+  id=SEL1080-0012 level=None target=L1 grade=None
+  id=SEL1080-0014 level=None target=L1 grade=None
+  id=SEL1080-0008 level=None target=L2 grade=None
+
+=== LEVEL=None TASKS ===
+Count: 224
+By target_level: {'L1': 37, 'L2': 25, 'L3': 25, 'L4': 26, 'L5': 111}
+By grade: {'?': 224}
+
+=== CELL ANALYSIS (L1-L3 by level field) ===
+Fields available in task: ['original_id', 'source_index', 'class_level', 'original_difficulty', 'target_level', 'task_text', 'image', 'topic', 'audit_mode', 'evidence_source', 'decision_status', 'final_court_status', 'confidence', 'feature_score', 'mechanical_mapping', 'quality_score', 'rank_in_cell', 'total_in_cell_pool', 'issues', 'in_duplicate_cluster']...
+Unique cells: 22
+Fill distribution (tasks per cell): {1: 1, 4: 1, 6: 3, 8: 1, 9: 1, 10: 1, 11: 3, 14: 1, 15: 2, 19: 1, 20: 2, 22: 2, 23: 1, 25: 2}
+
+UNDER-FILLED CELLS (2):
+  G2|L1|T?|S?: 1 tasks
+  G6|L1|T?|S?: 4 tasks
+
+OVER-FILLED CELLS (20):
+  G10|L1|T?|S?: 9 tasks
+  G10|L2|T?|S?: 23 tasks
+  G10|L3|T?|S?: 22 tasks
+  G11|L1|T?|S?: 11 tasks
+  G11|L2|T?|S?: 25 tasks
+  G11|L3|T?|S?: 19 tasks
+  G5|L1|T?|S?: 11 tasks
+  G5|L2|T?|S?: 8 tasks
+  G5|L3|T?|S?: 14 tasks
+  G6|L2|T?|S?: 11 tasks
+  G6|L3|T?|S?: 15 tasks
+  G7|L1|T?|S?: 6 tasks
+  G7|L2|T?|S?: 15 tasks

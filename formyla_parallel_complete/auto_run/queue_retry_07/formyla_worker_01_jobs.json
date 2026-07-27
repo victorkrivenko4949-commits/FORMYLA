@@ -1,0 +1,19 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0809",
+      "mode": "replace_bad",
+      "id": "10-D2-5-L7-g911",
+      "grade": 10,
+      "difficulty": 7,
+      "theme": "Стереометрия и векторы",
+      "subtopic": "Объёмы",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 2
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "audit_timestamp": "2026-07-18T14:35:32+00:00",
+  "source": "pre_run_scope_audit.json :: cross_reference :: exclusion_details",
+  "status": "FORMULA_OK",
+  "terms": {
+    "base_cells": {
+      "count": 128,
+      "formula": "43 topics x 3 subtopics = 129 possible; 1 excluded (G8|T042|S1 - Kompleksnye chisla)",
+      "excluded": {
+        "cell_key": "G8|T042|S1",
+        "topic_id": "T042",
+        "topic_name": "Chisla, indukciya, algoritmy",
+        "subtopic_id": "S1",
+        "subtopic_name": "Kompleksnye chisla",
+        "grade": 8,
+        "reason": "Kompleksnye chisla ne vhodyat v programmu 8 klassa (izuchayutsya v 10-11 klasse).",
+        "source": "pedagogical_review"
+      }
+    },
+    "level_cells": {
+      "count": 384,
+      "formula": "128 base_cells x 3 levels = 384",
+      "per_level": {
+        "L1": 128,
+        "L2": 128,
+        "L3": 128
+      }
+    },
+    "tasks": {
+      "count": 1920,
+      "formula": "384 level_cells x 5 tasks = 1920",
+      "per_level_tasks": {
+        "L1": 640,
+        "L2": 640,
+        "L3": 640
+      },
+      "per_cell_tasks": 5,
+      "candidates_per_attempt": 3,
+      "max_attempts_per_position": 15,
+      "generation_strategy": "for level_cell: for position 1-5: generate_candidates_until_accepted()"
+    }
+  },
+  "grade_breakdown": {
+    "5": {
+      "topics": 6,
+      "allowed_cells": 18,
+      "excluded": 0,
+      "level_cells": 54,
+      "tasks": 270
+    },
+    "6": {
+      "topics": 6,
+      "allowed_cells": 18,
+      "excluded": 0,
+      "level_cells": 54,
+      "tasks": 270
+    },
+    "7": {
+      "topics": 6,
+      "allowed_cells": 18,
+      "excluded": 0,
+      "level_cells": 54,
+      "tasks": 270
+    },
+    "8": {
+      "topics": 6,
+      "allowed_cells": 17,
+      "excluded": 1,
+      "level_cells": 51,
+      "tasks": 255
+    },
+    "9": {
+      "topics": 6,
+      "allowed_cells": 18,
+      "excluded": 0,
+      "level_cells": 54,
+      "tasks": 270
+    },
+    "10": {
+      "topics": 6,
+      "allowed_cells": 18,
+      "excluded": 0,
+      "level_cells": 54,
+      "tasks": 270
+    },
+    "11": {
+      "topics": 7,
+      "allowed_cells": 21,
+      "excluded": 0,
+      "level_cells": 63,
+      "tasks": 315
+    }
+  },
+  "verification": {
+    "invariants": {
+      "base_cells_must_equal_target": 128,
+      "level_cells_must_equal_base_times_3": 384,
+      "tasks_must_equal_level_cells_times_5": 1920,
+      "grade_8_must_have_one_fewer": true,
+      "per_level_task_count_must_equal_640": true,
+      "total_all_grades_must_equal_1920": true
+    }
+  },
+  "verdict": "FORMULA_OK — task count formula verified: 128 base cells x 3 levels = 384 level cells x 5 tasks = 1920 total tasks.",
+  "all_invariants_pass": true
+}

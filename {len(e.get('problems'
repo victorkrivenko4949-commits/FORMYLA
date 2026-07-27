@@ -1,0 +1,4 @@
+  File "<string>", line 1
+    import sys; sys.path.insert(0, '.'); from olympiads import OLYMPIADS_DB; vsosh = [e for e in OLYMPIADS_DB if e.get('olympiad') == 'vsosh']; print('vsosh count:', len(vsosh)); [print(f"  {e.get('year')} grade={e.get('grade')} round={e.get('round')} ({e.get('round_title','')}) -,[]))} probs") for e in vsosh]
+                                                                                                                                                                                                                                                                                              ^
+SyntaxError: f-string: single '}' is not allowed

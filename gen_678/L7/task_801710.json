@@ -1,0 +1,20 @@
+{
+  "id": 801710,
+  "task_text": "В выпуклом четырехугольнике $ABCD$ на сторонах $AB$, $BC$, $CD$, $DA$ взяты точки $E$, $F$, $G$, $H$ соответственно. Отрезки $EG$ и $FH$ пересекаются в точке $P$. Известно, что $AE:EB = 2:1$, $BF:FC = 1:3$, $CG:GD = 1:2$. Площади треугольников $\\triangle APE$, $\\triangle BPF$, $\\triangle CPG$ равны $4$, $5$, $6$ соответственно. Площадь четырёхугольника $ABCD$ равна $60$. Найдите площадь треугольника $\\triangle DPH$.",
+  "solution": "Обозначим $S_{\\triangle APE}=4$, $S_{\\triangle BPF}=5$, $S_{\\triangle CPG}=6$.\n\n1. Используем свойство: если два треугольника имеют общую высоту, то их площади относятся как основания.\n   - Для $\\triangle APE$ и $\\triangle BEP$ общая высота из $P$ на $AB$, поэтому\n     $$\\frac{S_{\\triangle BEP}}{S_{\\triangle APE}} = \\frac{EB}{AE} = \\frac{1}{2}\\quad\\Rightarrow\\quad S_{\\triangle BEP}= \\frac{1}{2}\\cdot4=2.$$\n   - Для $\\triangle BPF$ и $\\triangle CFP$ общая высота из $P$ на $BC$:\n     $$\\frac{S_{\\triangle CFP}}{S_{\\triangle BPF}} = \\frac{FC}{BF} = \\frac{3}{1}\\quad\\Rightarrow\\quad S_{\\triangle CFP}=3\\cdot5=15.$$\n   - Для $\\triangle CPG$ и $\\triangle DGP$ общая высота из $P$ на $CD$:\n     $$\\frac{S_{\\triangle DGP}}{S_{\\triangle CPG}} = \\frac{DG}{CG} = \\frac{2}{1}\\quad\\Rightarrow\\quad S_{\\triangle DGP}=2\\cdot6=12.$$\n\n2. Находим площади треугольников с вершиной $P$ и сторонами четырёхугольника:\n   $$S_{\\triangle ABP}=S_{\\triangle APE}+S_{\\triangle BEP}=4+2=6,$$\n   $$S_{\\triangle BCP}=S_{\\triangle BPF}+S_{\\triangle CFP}=5+15=20,$$\n   $$S_{\\triangle CDP}=S_{\\triangle CPG}+S_{\\triangle DGP}=6+12=18.$$\n\n3. По теореме о пересечении отрезков, соединяющих точки на противоположных сторонах четырёхугольника (аналог теоремы Чевы), для пересечения $EG$ и $FH$ необходимо и достаточно выполнение равенства\n   $$\\frac{AE}{EB}\\cdot\\frac{BF}{FC}\\cdot\\frac{CG}{GD}\\cdot\\frac{DH}{HA}=1.$$\n   Подставляем известные отношения:\n   $$\\frac{2}{1}\\cdot\\frac{1}{3}\\cdot\\frac{1}{2}\\cdot\\frac{DH}{HA}=1 \\quad\\Rightarrow\\quad \\frac{1}{3}\\cdot\\frac{DH}{HA}=1 \\quad\\Rightarrow\\quad \\frac{DH}{HA}=3.$$\n   Значит, $DH:HA=3:1$.\n\n4. Выражаем площадь $\\triangle AHP$ через $S_{\\triangle DPH}$:\n   $$\\frac{S_{\\triangle AHP}}{S_{\\triangle DPH}} = \\frac{HA}{DH} = \\frac{1}{3} \\quad\\Rightarrow\\quad S_{\\triangle AHP}=\\frac{1}{3}S_{\\triangle DPH}.$$\n   Тогда\n   $$S_{\\triangle DAP}=S_{\\triangle DPH}+S_{\\triangle AHP}=S_{\\triangle DPH}+\\frac{1}{3}S_{\\triangle DPH}=\\frac{4}{3}S_{\\triangle DPH}.$$\n\n5. Площадь четырёхугольника $ABCD$ равна сумме площадей треугольников с вершиной $P$:\n   $$S_{ABCD}=S_{\\triangle ABP}+S_{\\triangle BCP}+S_{\\triangle CDP}+S_{\\triangle DAP}.$$\n   Подставляем известные значения:\n   $$6+20+18+\\frac{4}{3}S_{\\triangle DPH}=60 \\quad\\Rightarrow\\quad 44+\\frac{4}{3}S_{\\triangle DPH}=60 \\quad\\Rightarrow\\quad \\frac{4}{3}S_{\\triangle DPH}=16 \\quad\\Rightarrow\\quad S_{\\triangle DPH}=12.$$\n\nОтвет: $12$.",
+  "correct_answer": "12",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Теорема Чевы для четырёхугольника и свойство площадей треугольников с общей высотой",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T13:51:07.813214+00:00"
+}

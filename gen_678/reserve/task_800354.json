@@ -1,0 +1,20 @@
+{
+  "id": 800354,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$, $BC$, $CA$ взяты точки $D$, $E$, $F$ соответственно так, что $AD:DB = 1:2$, $BE:EC = 2:3$, $CF:FA = 3:4$. Найдите отношение площади треугольника $DEF$ к площади треугольника $ABC$.",
+  "solution": "Введем координаты: $A(0,0)$, $B(3,0)$ (так как $AD:DB=1:2$, то $D(1,0)$), $C(0,4)$ (удобный выбор для простоты вычислений; при этом $CF:FA=3:4$, следовательно, $F$ делит $AC$ в отношении $AF:FC=4:3$, поэтому $F\\bigl(0,\\frac{16}{7}\\bigr)$). Точка $E$ на $BC$: $BE:EC=2:3$, значит $E = B + \\frac{2}{5}(C-B) = \\bigl(\\frac{9}{5},\\frac{8}{5}\\bigr)$. Площадь $S_{ABC} = \\frac12\\cdot3\\cdot4 = 6$. Площадь $S_{DEF}$ вычислим по формуле Гаусса: $$S = \\frac12\\bigl| x_D(y_E-y_F) + x_E(y_F-y_D) + x_F(y_D-y_E) \\bigr|.$$ Подставляем: $x_D=1,\\,y_D=0$; $x_E=\\frac95,\\,y_E=\\frac85$; $x_F=0,\\,y_F=\\frac{16}{7}$. Тогда $$y_E-y_F = \\frac85 - \\frac{16}{7} = \\frac{56-80}{35} = -\\frac{24}{35},$$ $$y_F-y_D = \\frac{16}{7} - 0 = \\frac{16}{7},$$ $$y_D-y_E = 0-\\frac85 = -\\frac85.$$ Сумма: $1\\cdot\\bigl(-\\frac{24}{35}\\bigr) + \\frac95\\cdot\\frac{16}{7} + 0\\cdot\\bigl(-\\frac85\\bigr) = -\\frac{24}{35} + \\frac{144}{35} = \\frac{120}{35} = \\frac{24}{7}$. Половина модуля: $\\frac12\\cdot\\frac{24}{7} = \\frac{12}{7}$. Отношение: $\\frac{S_{DEF}}{S_{ABC}} = \\frac{12/7}{6} = \\frac{2}{7}$.",
+  "correct_answer": "$\\dfrac{2}{7}$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 5,
+  "key_method": "Координатный метод и формула площади Гаусса",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.714,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T11:16:00.462550+00:00"
+}

@@ -1,0 +1,73 @@
+{
+  "timestamp": "2026-07-18T02:54:47.518734",
+  "target_per_cell": 5,
+  "cells_trimmed": 5,
+  "tasks_removed": 13,
+  "removed_ids": [
+    "SEL1080-0038",
+    "SEL1080-0039",
+    "SEL1080-0043",
+    "SEL1080-0044",
+    "SEL1080-0297",
+    "SEL1080-0389",
+    "SEL1080-0491",
+    "SEL1080-0492",
+    "SEL1080-0493",
+    "SEL1080-0494",
+    "SEL1080-0495",
+    "SEL1080-0516",
+    "SEL1080-0526"
+  ],
+  "bank_size_before": 678,
+  "bank_size_after": 665,
+  "cells": [
+    {
+      "cell": "G10|2|С конца и на смеси",
+      "count_before": 10,
+      "count_after": 5,
+      "removed_ids": [
+        "SEL1080-0491",
+        "SEL1080-0492",
+        "SEL1080-0493",
+        "SEL1080-0494",
+        "SEL1080-0495"
+      ]
+    },
+    {
+      "cell": "G10|3|Принцип Дирихле и подсчёт",
+      "count_before": 7,
+      "count_after": 5,
+      "removed_ids": [
+        "SEL1080-0526",
+        "SEL1080-0516"
+      ]
+    },
+    {
+      "cell": "G5|3|Числовые ребусы и закономерности",
+      "count_before": 9,
+      "count_after": 5,
+      "removed_ids": [
+        "SEL1080-0038",
+        "SEL1080-0039",
+        "SEL1080-0043",
+        "SEL1080-0044"
+      ]
+    },
+    {
+      "cell": "G8|2|Игры и стратегии",
+      "count_before": 6,
+      "count_after": 5,
+      "removed_ids": [
+        "SEL1080-0297"
+      ]
+    },
+    {
+      "cell": "G9|2|Проценты",
+      "count_before": 6,
+      "count_after": 5,
+      "removed_ids": [
+        "SEL1080-0389"
+      ]
+    }
+  ]
+}

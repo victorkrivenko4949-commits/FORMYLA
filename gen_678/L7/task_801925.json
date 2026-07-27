@@ -1,0 +1,20 @@
+{
+  "id": 801925,
+  "task_text": "В треугольнике $ABC$ с углом $\\angle A = \\alpha$ на сторонах $AB$ и $AC$ выбраны точки $D$ и $E$ соответственно так, что $BD = BC$ и $CE = BC$. Отрезки $BE$ и $CD$ пересекаются в точке $F$. Найдите угол $\\angle BFC$ в зависимости от $\\alpha$.",
+  "solution": "Обозначим углы треугольника $ABC$: $\\angle B = \\beta$, $\\angle C = \\gamma = 180^\\circ - \\alpha - \\beta$. Рассмотрим треугольник $BDC$. В нём $BD = BC$, поэтому он равнобедренный с вершиной $B$. Тогда $\\angle BDC = \\angle BCD = \\frac{1}{2}(180^\\circ - \\angle DBC)$. Поскольку $D$ лежит на $AB$, $\\angle DBC = \\angle ABC = \\beta$. Следовательно, $$\\angle BCD = \\frac{180^\\circ - \\beta}{2} = 90^\\circ - \\frac{\\beta}{2}.$$ Теперь рассмотрим треугольник $BCE$. В нём $CE = BC$, поэтому он равнобедренный с вершиной $C$. Тогда $\\angle CBE = \\angle BEC = \\frac{1}{2}(180^\\circ - \\angle BCE)$. Угол $\\angle BCE = \\angle ACB = \\gamma = 180^\\circ - \\alpha - \\beta$. Значит, $$\\angle CBE = \\frac{180^\\circ - (180^\\circ - \\alpha - \\beta)}{2} = \\frac{\\alpha + \\beta}{2}.$$ В треугольнике $BFC$ известны два угла: $$\\angle FBC = \\angle CBE = \\frac{\\alpha + \\beta}{2}, \\qquad \\angle FCB = \\angle BCD = 90^\\circ - \\frac{\\beta}{2}.$$ Сумма этих углов: $$\\frac{\\alpha + \\beta}{2} + 90^\\circ - \\frac{\\beta}{2} = 90^\\circ + \\frac{\\alpha}{2}.$$ Следовательно, $$\\angle BFC = 180^\\circ - \\left(90^\\circ + \\frac{\\alpha}{2}\\right) = 90^\\circ - \\frac{\\alpha}{2}.$$ Таким образом, угол $\\angle BFC$ не зависит от $\\beta$ и выражается только через $\\alpha$.",
+  "correct_answer": "90° - α/2",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Геометрия, свойства равнобедренных треугольников",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T14:49:15.780704+00:00"
+}

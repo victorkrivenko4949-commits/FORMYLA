@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 TOTAL_SLOTS = 10
 MIN_LEVEL = 1
-MAX_LEVEL = 8
+MAX_LEVEL = 5
 
 # Fallback-список универсальных методов, если в каталоге нет данных
 SOLUTION_METHODS: List[str] = [
@@ -157,7 +157,7 @@ def _slot_kind_for(topic: Dict[str, Any], slot_difficulty: int) -> str:
     if topic.get("calibration") or not topic.get("measured", True):
         return "calibration"
     lo, hi = _topic_window(topic)
-    is_strong = (topic.get("target_level") or 0) >= 6 or (topic.get("pct") or 0) >= 75
+    is_strong = (topic.get("target_level") or 0) >= 4 or (topic.get("pct") or 0) >= 75
     if slot_difficulty >= hi:
         return "strong_challenge" if is_strong else "weak_challenge"
     if slot_difficulty <= lo:
@@ -188,7 +188,7 @@ def _pick_difficulty_for_topic(
             return _clamp(level, lo, hi)
         return target
     pct = float(topic.get("pct") or 0)
-    is_strong = target >= 6 or pct >= 75
+    is_strong = target >= 4 or pct >= 75
     is_weak = target <= 3
     if is_strong:
         if slot_index_in_topic == 0:

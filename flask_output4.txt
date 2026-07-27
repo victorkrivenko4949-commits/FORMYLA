@@ -1,0 +1,258 @@
+2026-07-09 17:57:19,565 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-09 17:57:19,568 - app - INFO - === App started, logging to c:\Users\Victor\Desktop\Новая папка (2)\logs\app.log
+2026-07-09 17:57:20,663 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-09 17:57:20,664 - app - INFO - === App started, logging to c:\Users\Victor\Desktop\Новая папка (2)\logs\app.log
+2026-07-09 17:57:22,411 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-09 17:57:22,565 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-09 17:57:26,837 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:26,837 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:26,837 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:26,837 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:26,837 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:26,837 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:26,838 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:26,839 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-09 17:57:26,839 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-09 17:57:26,839 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-09 17:57:26,839 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-09 17:57:26,840 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-09 17:57:26,840 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-09 17:57:26,840 - apscheduler.scheduler - INFO - Added job "enqueue_pregen_all_users_job" to job store "default"
+2026-07-09 17:57:26,840 - apscheduler.scheduler - INFO - Scheduler started
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+DEBUG: Доступные переменные окружения:
+Всего переменных: 72
+SECRET_KEY = ЕСТЬ
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = ЕСТЬ
+DEEPSEEK_API_KEY = ЕСТЬ
+============================================================
+[DB] Using: sqlite:///formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+✅ База данных инициализирована
+[AUTO-MIGRATION] ✓ Column 'agent_type' already exists
+[AUTO-MIGRATION] ✓ Column 'subtopic' already exists
+[AUTO-MIGRATION] ✓ Column 'attempts_count' already exists
+[AUTO-MIGRATION] ✓ Column 'solves_count' already exists
+[AUTO-MIGRATION] ✓ Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] ✓ Column 'suggested_level' already exists
+[AUTO-MIGRATION] ✓ Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] ✓ Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] ✓ Column 'task_type' already exists
+[AUTO-MIGRATION] ✓ Column 'source' already exists
+[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state
+[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Group chat tables already exist
+[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized
+ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.
+DEBUG: Загружено 102 привязок картинок из problem_images.py
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+DEBUG: Доступные переменные окружения:
+Всего переменных: 72
+SECRET_KEY = ЕСТЬ
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = ЕСТЬ
+DEEPSEEK_API_KEY = ЕСТЬ
+============================================================
+[DB] Using: sqlite:///formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+✅ База данных инициализирована
+[AUTO-MIGRATION] ✓ Column 'agent_type' already exists
+[AUTO-MIGRATION] ✓ Column 'subtopic' already exists
+[AUTO-MIGRATION] ✓ Column 'attempts_count' already exists
+[AUTO-MIGRATION] ✓ Column 'solves_count' already exists
+[AUTO-MIGRATION] ✓ Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] ✓ Column 'suggested_level' already exists
+[AUTO-MIGRATION] ✓ Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] ✓ Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] ✓ Column 'task_type' already exists
+[AUTO-MIGRATION] ✓ Column 'source' already exists
+[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state
+[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Group chat tables already exist
+[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized
+  [pregen_queue migration] dialect = sqlite
+  ✅ pre_gen_queue: 11 колонок
+[migration] pre_gen_queue table ensured
+[AUTO-MIGRATION] ✓ friendships table schema OK
+[AUTO-MIGRATION] ✓ support_messages table already exists
+[AUTO-MIGRATION] ✓ site_reviews table already exists
+[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists
+[BP] prep_bp registered (/prep)
+[BP] olympiad_prep_bp registered (/olympiad-prep)
+[BP] account_bp registered (/account)
+[BP] drawing_bp registered (/drawing)
+[BP] drawing_diag_bp registered (/api/drawing/diag)
+[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)
+[BP] wb_call_bp registered (/api/wb_call/*)
+[BP] wb_meet_bp registered (/api/wb_meet/*)
+[BP] conference_api_bp registered (/api/conference/*)
+[BP] chat_presence_bp registered (/api/chat/*/presence, typing)
+[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)
+[BP] admin_support_bp registered (/admin/support, /my/support)
+[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)
+[SocketIO] Conference WebSocket signalling initialized (/ws-call)
+[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)
+[VSOSH10_11-ADD] result={'status': 'skipped', 'reason': 'already_present', 'count': 43}
+[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)
+[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 1140 rows
+[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 3337 rows
+[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 135 rows
+[LATEX-ROOT-DB-FIX] total rows updated: 0
+[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 1140}, 'method_tasks': {'updated': 0, 'scanned': 3337}, 'adaptive_tasks': {'updated': 0, 'scanned': 135}}
+[OLYMPIAD-SEED] Theory source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\methods_catalog_105.json (102 rows; in DB: 102 — ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_65_methods.json (65 rows)
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_24_methods.json (24 rows)
+[THEORY-SEED] Theory bodies filled: 0 methods updated
+[THEORY-MD] No MD content parsed from c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\formyla_vsosh9_10_methods_combined.md
+[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)
+[THEORY-FIX] No placeholder method names — nothing to do
+[SECRETS-SEED] Already populated (127 rows)
+[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)
+[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded
+[BP] telegram_auth_bp registered (/auth/telegram/callback)
+  [daily_tasks migration] dialect = sqlite
+  ✅ daily_task_sets: 10 колонок
+  ✅ daily_task_items: 27 колонок
+  ✅ daily_generation_jobs: 11 колонок
+  [task_pool migration] dialect = sqlite
+  ✅ task_pool: 12 колонок
+  ✅ user_task_assignments: 5 колонок
+[BP] daily_tasks_bp registered (/daily_tasks)
+  [curator migration] dialect = sqlite
+  ✅ student_diagnostics: 14 колонок
+  ✅ learning_plans: 18 колонок
+  ✅ task_attempts: 18 колонок
+  ✅ progress_log: 16 колонок
+  ✅ task_bank: 11 колонок
+[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress
+  [test_sessions migration] dialect = sqlite
+  ✅ test_sessions: 16 колонок
+[BP] test_sessions migration ensured
+[JINJA] filter md_render registered
+[JINJA] filter inject_geometry registered
+✅ VAPID keys loaded — Web Push notifications enabled
+✓ APScheduler started - Daily Quest cron jobs active
+olympiads.py: новый формат, 1542 пробников
+Пробников всего: 1542, с задачами: 1542
+Адаптивный тест: загружено 0 задач из adaptive_data
+OLYMPIADS_INFO: 11 олимпиад с grades/rounds
+  [pregen_queue migration] dialect = sqlite
+  ✅ pre_gen_queue: 11 колонок
+[migration] pre_gen_queue table ensured
+[AUTO-MIGRATION] ✓ friendships table schema OK
+[AUTO-MIGRATION] ✓ support_messages table already exists
+[AUTO-MIGRATION] ✓ site_reviews table already exists
+[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists
+2026-07-09 17:57:26,964 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-09 17:57:26,998 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-09 17:57:30,273 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:30,274 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:30,274 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:30,274 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:30,274 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:30,274 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:30,274 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Added job "enqueue_pregen_all_users_job" to job store "default"
+2026-07-09 17:57:30,275 - apscheduler.scheduler - INFO - Scheduler started
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:9020: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  _cutoff_7d = _dt_now.utcnow() - _td_7d(days=7)
+(107556) wsgi starting up on http://127.0.0.1:5001
+(107556) accepted ('127.0.0.1', 59037)
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:1871: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+  return User.query.get(int(user_id))
+127.0.0.1 - - [09/Jul/2026 17:57:53] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.092130
+(107556) accepted ('127.0.0.1', 58624)
+(107556) accepted ('127.0.0.1', 54113)
+127.0.0.1 - - [09/Jul/2026 17:58:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.007159
+127.0.0.1 - - [09/Jul/2026 17:58:23] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.006891
+(107556) accepted ('127.0.0.1', 51523)
+2026-07-09 17:58:57,927 - services.methods_textbook_service - INFO - Textbook loaded: 3032665 chars HTML, 102 methods parsed
+127.0.0.1 - - [09/Jul/2026 17:58:58] "GET /secrets HTTP/1.1" 200 4045918 2.128629
+127.0.0.1 - - [09/Jul/2026 17:59:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.010698
+127.0.0.1 - - [09/Jul/2026 17:59:10] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.009157
+(107556) accepted ('127.0.0.1', 52559)
+127.0.0.1 - - [09/Jul/2026 17:59:12] "GET /secrets HTTP/1.1" 200 4045942 0.074882
+(107556) accepted ('127.0.0.1', 60038)
+127.0.0.1 - - [09/Jul/2026 17:59:33] "GET /secrets HTTP/1.1" 200 4045942 0.072340
+127.0.0.1 - - [09/Jul/2026 17:59:56] "GET /api/wb_call/invites/poll HTTP/1.1" 200 841 0.012717
+127.0.0.1 - - [09/Jul/2026 17:59:56] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.012315
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /secrets HTTP/1.1" 200 4087555 0.126987
+(107556) accepted ('127.0.0.1', 61453)
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/style.css?v=6 HTTP/1.1" 200 19303 0.130733
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/css/nav.css?v=1780955643 HTTP/1.1" 200 4477 0.009052
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/css/mobile.css?v=4 HTTP/1.1" 200 31145 0.009975
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/css/mobile_features.css?v=1780955643 HTTP/1.1" 200 17206 0.009594
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/css/errors.css?v=1780955643 HTTP/1.1" 200 2165 0.016224
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/katex/katex.min.css?v=1780955643 HTTP/1.1" 200 24171 0.013678
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/katex/katex.min.js?v=1780955643 HTTP/1.1" 200 278021 0.028725
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/katex/auto-render.min.js?v=1780955643 HTTP/1.1" 200 4462 0.014420
+127.0.0.1 - - [09/Jul/2026 17:59:57] "GET /static/js/marked.min.js?v=1780955643 HTTP/1.1" 200 40884 0.014268
+127.0.0.1 - - [09/Jul/2026 17:59:58] "GET /static/js/analytics.js?v=1780955643 HTTP/1.1" 200 4340 0.019243
+127.0.0.1 - - [09/Jul/2026 17:59:58] "GET /static/js/mobile_home_slider.js?v=1780955643 HTTP/1.1" 200 7363 0.016593
+(107556) accepted ('127.0.0.1', 61970)
+(107556) accepted ('127.0.0.1', 57921)
+(107556) accepted ('127.0.0.1', 52971)
+(107556) accepted ('127.0.0.1', 54241)
+127.0.0.1 - - [09/Jul/2026 17:59:58] "GET /api/chat/unread_total HTTP/1.1" 200 839 0.015416
+127.0.0.1 - - [09/Jul/2026 17:59:58] "GET /static/js/wb_call_listener.js?v=1780955643 HTTP/1.1" 200 19944 0.014093
+127.0.0.1 - - [09/Jul/2026 17:59:58] "GET /static/js/push_notifications.js?v=1780955643 HTTP/1.1" 200 4707 0.013537
+127.0.0.1 - - [09/Jul/2026 17:59:58] "GET /static/js/caps_lock.js HTTP/1.1" 200 4546 0.011229
+127.0.0.1 - - [09/Jul/2026 17:59:59] "GET /static/js/mastery_radar.js?v=1780955643 HTTP/1.1" 200 3926 0.022786
+127.0.0.1 - - [09/Jul/2026 17:59:59] "GET /static/js/mobile_nav.js?v=2 HTTP/1.1" 200 6478 0.028001
+2026-07-09 18:00:00,001 - apscheduler.executors.default - INFO - Running job "curator_evening_prep_generate_job (trigger: cron[hour='18', minute='0'], next run at: 2026-07-09 18:00:00 MSK)" (scheduled at 2026-07-09 18:00:00+03:00)
+127.0.0.1 - - [09/Jul/2026 18:00:00] "GET /static/js/nav.js?v=1780955643 HTTP/1.1" 200 2566 0.014448
+2026-07-09 18:00:00,002 - apscheduler.executors.default - INFO - Running job "daily_quest_deadline_reminder_job (trigger: cron[hour='18,21', minute='0'], next run at: 2026-07-09 18:00:00 MSK)" (scheduled at 2026-07-09 18:00:00+03:00)
+2026-07-09 18:00:00,011 - apscheduler.executors.default - INFO - Running job "curator_evening_prep_generate_job (trigger: cron[hour='18', minute='0'], next run at: 2026-07-09 18:00:00 MSK)" (scheduled at 2026-07-09 18:00:00+03:00)
+2026-07-09 18:00:00,035 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:00:00 MSK)" (scheduled at 2026-07-09 18:00:00+03:00)
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:1783: SADeprecationWarning: DISTINCT ON is currently supported only by the PostgreSQL dialect.  Use of DISTINCT ON for other backends is currently silently ignored, however this usage is deprecated, and will raise CompileError in a future release for all backends that do not support this syntax.
+  sub_rows = PushSubscription.query.distinct(PushSubscription.user_id).all()
+2026-07-09 18:00:00,054 - apscheduler.executors.default - INFO - Running job "daily_quest_deadline_reminder_job (trigger: cron[hour='18,21', minute='0'], next run at: 2026-07-09 18:00:00 MSK)" (scheduled at 2026-07-09 18:00:00+03:00)
+2026-07-09 18:00:00,056 - apscheduler.executors.default - INFO - Job "daily_quest_deadline_reminder_job (trigger: cron[hour='18,21', minute='0'], next run at: 2026-07-09 21:00:00 MSK)" executed successfully
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:1788: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+  user = User.query.get(sub.user_id)
+2026-07-09 18:00:00,061 - apscheduler.executors.default - INFO - Running job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:30:00 MSK)" (scheduled at 2026-07-09 18:00:00+03:00)
+2026-07-09 18:00:00,106 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:30:00 MSK)" executed successfully
+2026-07-09 18:00:00,107 - apscheduler.executors.default - INFO - Job "curator_evening_prep_generate_job (trigger: cron[hour='18', minute='0'], next run at: 2026-07-10 18:00:00 MSK)" executed successfully
+c:\Users\Victor\Desktop\Новая папка (2)\app.py:1622: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+  user = User.query.get(sub.user_id)
+2026-07-09 18:00:00,108 - apscheduler.executors.default - INFO - Job "curator_evening_prep_generate_job (trigger: cron[hour='18', minute='0'], next run at: 2026-07-10 18:00:00 MSK)" executed successfully
+2026-07-09 18:00:00,108 - apscheduler.executors.default - INFO - Job "process_pregen_queue_job (trigger: cron[minute='*/30'], next run at: 2026-07-09 18:30:00 MSK)" executed successfully
+2026-07-09 18:00:00,117 - apscheduler.executors.default - INFO - Job "daily_quest_deadline_reminder_job (trigger: cron[hour='18,21', minute='0'], next run at: 2026-07-09 21:00:00 MSK)" executed successfully
+127.0.0.1 - - [09/Jul/2026 18:00:00] "GET /static/js/paywall.js?v=1780955643 HTTP/1.1" 200 12476 0.088782
+127.0.0.1 - - [09/Jul/2026 18:00:00] "GET /static/js/api.js?v=1780955643 HTTP/1.1" 200 3233 0.013206
+127.0.0.1 - - [09/Jul/2026 18:00:00] "GET /static/js/profile_sync.js?v=1780955643 HTTP/1.1" 200 14554 0.027907
+127.0.0.1 - - [09/Jul/2026 18:00:00] "GET /static/js/share_with_friend.js?v=1780955643 HTTP/1.1" 200 16909 0.020743
+127.0.0.1 - - [09/Jul/2026 18:00:00] "GET /static/call_engine.html HTTP/1.1" 200 2114 0.021309
+127.0.0.1 - - [09/Jul/2026 18:00:00] "GET /static/js/wb_pip.js?v=1780955643 HTTP/1.1" 200 16359 0.021878
+The client is using an unsupported version of the Socket.IO or Engine.IO protocols (further occurrences of this error will be logged with level INFO)
+2026-07-09 18:00:00,333 - engineio.server - ERROR - The client is using an unsupported version of the Socket.IO or Engine.IO protocols (further occurrences of this error will be logged with level INFO)

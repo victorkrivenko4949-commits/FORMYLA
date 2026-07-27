@@ -1,0 +1,20 @@
+{
+  "id": 802170,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD:DC = 1:3$, $CE:EA = 1:3$, $AF:FB = 1:3$. Отрезки $AD$, $BE$, $CF$ попарно пересекаются, образуя треугольник (см. рис.). Найдите отношение площади этого треугольника к площади треугольника $ABC$.",
+  "solution": "Поместим треугольник в координатную плоскость: $A(0,0)$, $B(1,0)$, $C(0,1)$. Тогда площадь $S_{ABC}=1/2$. Найдём координаты точек деления:\n\n* $D$ на $BC$: $B(1,0)$, $C(0,1)$, $BD:DC=1:3$ ⇒ $D=\\left(\\frac{3\\cdot1+1\\cdot0}{4},\\frac{3\\cdot0+1\\cdot1}{4}\\right)=\\left(\\frac34,\\frac14\\right)$.\n* $E$ на $CA$: $C(0,1)$, $A(0,0)$, $CE:EA=1:3$ ⇒ $E=\\left(0,\\frac{3\\cdot1+1\\cdot0}{4}\\right)=\\left(0,\\frac34\\right)$.\n* $F$ на $AB$: $A(0,0)$, $B(1,0)$, $AF:FB=1:3$ ⇒ $F=\\left(\\frac{3\\cdot0+1\\cdot1}{4},0\\right)=\\left(\\frac14,0\\right)$.\n\nУравнения прямых:\n* $AD$: $y=\\frac{1}{3}x$.\n* $BE$: $\\frac{x}{1}+\\frac{y}{3/4}=1$ ⇒ $y=\\frac34(1-x)$.\n* $CF$: $\\frac{x}{1/4}+\\frac{y}{1}=1$ ⇒ $y=1-4x$.\n\nНайдём точки пересечения:\n* $AD \\cap BE$: $\\frac{x}{3}=\\frac34(1-x)$ ⇒ $13x=9$ ⇒ $x=\\frac9{13},\\;y=\\frac3{13}$ ⇒ $P\\left(\\frac9{13},\\frac3{13}\\right)$.\n* $AD \\cap CF$: $\\frac{x}{3}=1-4x$ ⇒ $13x=3$ ⇒ $x=\\frac3{13},\\;y=\\frac1{13}$ ⇒ $Q\\left(\\frac3{13},\\frac1{13}\\right)$.\n* $BE \\cap CF$: $\\frac34(1-x)=1-4x$ ⇒ $13x=1$ ⇒ $x=\\frac1{13},\\;y=1-\\frac4{13}=\\frac9{13}$ ⇒ $R\\left(\\frac1{13},\\frac9{13}\\right)$.\n\nПлощадь треугольника $PQR$: $\\overrightarrow{PQ}=\\left(\\frac3{13}-\\frac9{13},\\frac1{13}-\\frac3{13}\\right)=\\left(-\\frac6{13},-\\frac2{13}\\right)$, $\\overrightarrow{PR}=\\left(\\frac1{13}-\\frac9{13},\\frac9{13}-\\frac3{13}\\right)=\\left(-\\frac8{13},\\frac6{13}\\right)$. Определитель $\\det(\\overrightarrow{PQ},\\overrightarrow{PR})=\\left(-\\frac6{13}\\right)\\cdot\\frac6{13}-\\left(-\\frac2{13}\\right)\\cdot\\left(-\\frac8{13}\\right)=-\\frac{36}{169}-\\frac{16}{169}=-\\frac{52}{169}=-\\frac{4}{13}$. Площадь $S_{PQR}=\\frac12\\left|\\det\\right|=\\frac12\\cdot\\frac{4}{13}=\\frac{2}{13}$.\n\nОтношение площадей: $\\frac{S_{PQR}}{S_{ABC}}=\\frac{2/13}{1/2}=\\frac{4}{13}$.\n\nОтвет: $\\displaystyle\\frac{4}{13}$.",
+  "correct_answer": "\\frac{4}{13}",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 4,
+  "key_method": "Метод координат, нахождение точек пересечения прямых, вычисление площади по координатам",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.895,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T15:14:43.134535+00:00"
+}

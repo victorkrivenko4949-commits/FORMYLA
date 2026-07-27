@@ -26,7 +26,7 @@ if str(_project_root) not in sys.path:
 
 from typing import Any, Dict, List, Optional
 
-from pipeline.openrouter_client import OpenRouterClient, OpenRouterError, TokenUsage
+from services.openrouter_client import OpenRouterClient, OpenRouterError, TokenUsage, make_token_usage
 from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
 from services.taxonomy_grade6 import get_all_subtopics as get_grade6_subtopics
 from services.topic_taxonomy import get_all_subtopics_for_grade

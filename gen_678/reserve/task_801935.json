@@ -1,0 +1,20 @@
+{
+  "id": 801935,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ отмечены точки $D$, $E$, $F$ соответственно так, что прямые $AD$, $BE$, $CF$ пересекаются в одной точке $O$. Известно, что площади треугольников $AOF$, $BOD$ и $COE$ равны. Докажите, что точка $O$ является центром тяжести треугольника $ABC$.",
+  "solution": "Обозначим площади треугольников $[BOC] = S_A$, $[COA] = S_B$, $[AOB] = S_C$. Тогда $S_A+S_B+S_C = S$, где $S$ — площадь всего треугольника $ABC$.  \n\nВведём барицентрические координаты точки $O$ относительно вершин: $O = (\\alpha,\\beta,\\gamma)$, где $\\alpha = S_A/S$, $\\beta = S_B/S$, $\\gamma = S_C/S$, $\\alpha+\\beta+\\gamma=1$.  \n\nТочка $F$ лежит на $AB$, и по свойству барицентрических координат $AF:FB = \\beta:\\alpha$. Следовательно, $[AOF] = \\frac{AF}{AB}[AOB] = \\frac{\\beta}{\\alpha+\\beta} \\cdot S_C = \\gamma S \\cdot \\frac{\\beta}{\\alpha+\\beta}$.  \n\nАналогично, $[BOD] = \\frac{BD}{BC}[BOC] = \\frac{\\gamma}{\\beta+\\gamma} \\cdot S_A = \\alpha S \\cdot \\frac{\\gamma}{\\beta+\\gamma}$ и $[COE] = \\frac{CE}{CA}[COA] = \\frac{\\alpha}{\\gamma+\\alpha} \\cdot S_B = \\beta S \\cdot \\frac{\\alpha}{\\gamma+\\alpha}$.  \n\nПо условию $[AOF]=[BOD]=[COE]$. Сокращая на $S$, получаем:  \n$$\\frac{\\beta\\gamma}{\\alpha+\\beta} = \\frac{\\gamma\\alpha}{\\beta+\\gamma} = \\frac{\\alpha\\beta}{\\gamma+\\alpha}.$$  \n\nИз первого равенства: $\\frac{\\beta\\gamma}{\\alpha+\\beta} = \\frac{\\gamma\\alpha}{\\beta+\\gamma}$ ⇒ $\\beta(\\beta+\\gamma) = \\alpha(\\alpha+\\beta)$ ⇒ $\\beta^2+\\beta\\gamma = \\alpha^2+\\alpha\\beta$ ⇒ $(\\beta-\\alpha)(\\beta+\\alpha) = \\alpha\\beta-\\beta\\gamma$ ⇒ $(\\beta-\\alpha)(\\alpha+\\beta) = \\beta(\\alpha-\\gamma)$.  \n\nИз второго равенства: $\\frac{\\gamma\\alpha}{\\beta+\\gamma} = \\frac{\\alpha\\beta}{\\gamma+\\alpha}$ ⇒ $\\gamma(\\gamma+\\alpha) = \\beta(\\beta+\\gamma)$ ⇒ $\\gamma^2+\\gamma\\alpha = \\beta^2+\\beta\\gamma$ ⇒ $(\\gamma-\\beta)(\\gamma+\\beta) = \\beta\\gamma-\\gamma\\alpha$ ⇒ $(\\gamma-\\beta)(\\beta+\\gamma) = \\gamma(\\beta-\\alpha)$.  \n\nПредположим, $\\alpha \\neq \\beta$. Пусть $\\alpha > \\beta$. Тогда из первого равенства $\\beta(\\beta+\\gamma) = \\alpha(\\alpha+\\beta)$ следует, что левая часть $< \\beta(\\alpha+\\gamma)$? Лучше переписать иначе:  \n\nИз $\\beta(\\beta+\\gamma) = \\alpha(\\alpha+\\beta)$ ⇒ $\\beta^2+\\beta\\gamma = \\alpha^2+\\alpha\\beta$ ⇒ $(\\alpha^2-\\beta^2) = \\beta\\gamma-\\alpha\\beta = \\beta(\\gamma-\\alpha)$.  \nЕсли $\\alpha > \\beta$, то левая часть положительна ⇒ $\\gamma > \\alpha$. Таким образом, $\\beta < \\alpha < \\gamma$.  \n\nТеперь из второго равенства $\\gamma(\\gamma+\\alpha) = \\beta(\\beta+\\gamma)$ ⇒ $\\gamma^2+\\gamma\\alpha = \\beta^2+\\beta\\gamma$ ⇒ $(\\gamma^2-\\beta^2) = \\beta\\gamma-\\gamma\\alpha = \\gamma(\\beta-\\alpha)$.  \nТак как $\\gamma > \\beta$, левая часть положительна ⇒ $\\beta-\\alpha > 0$, т.е. $\\beta > \\alpha$, что противоречит $\\alpha > \\beta$.  \n\nСлучай $\\alpha < \\beta$ приводит к аналогичному противоречию. Следовательно, $\\alpha = \\beta = \\gamma = \\frac{1}{3}$.  \n\nЗначит, $S_A = S_B = S_C = S/3$, а это свойство центроида (точки пересечения медиан). Таким образом, $O$ — центроид треугольника $ABC$.",
+  "correct_answer": "Точка $O$ является центром тяжести (центроидом) треугольника $ABC$.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты и их связь с площадями, теорема Чевы, алгебраические преобразования.",
+  "idea_count": 5,
+  "is_clone": true,
+  "clone_similarity": 0.821,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:36:07.057968+00:00"
+}

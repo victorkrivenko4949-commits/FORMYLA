@@ -1,0 +1,20 @@
+{
+  "id": 802135,
+  "task_text": "В треугольнике $ABC$ точка $M$ — середина стороны $BC$. На отрезках $AB$ и $AC$ выбраны точки $D$ и $E$ соответственно такие, что $AD = 2\\cdot DB$ и $AE = 2\\cdot EC$. Прямая $DM$ пересекает $AC$ в точке $P$, а прямая $EM$ пересекает $AB$ в точке $Q$. Докажите, что отрезок $PQ$ параллелен стороне $BC$.",
+  "solution": "Применим теорему Менелая к треугольнику $ABC$ и прямой $DMP$. Точки $D$, $M$, $P$ лежат на сторонах $AB$, $BC$, $AC$ соответственно или их продолжениях. Для прямой, пересекающей стороны треугольника, выполняется: $\\frac{AD}{DB}\\cdot\\frac{BM}{MC}\\cdot\\frac{CP}{PA}=1$. Подставляем $\\frac{AD}{DB}=2$, $\\frac{BM}{MC}=1$ (так как $M$ — середина $BC$), получаем $\\frac{CP}{PA}=\\frac{1}{2}$, то есть $AP:PC=2:1$.\n\nАналогично, для прямой $EMQ$ с точками $E$ на $AC$, $M$ на $BC$, $Q$ на $AB$ по теореме Менелая: $\\frac{AE}{EC}\\cdot\\frac{CM}{MB}\\cdot\\frac{BQ}{QA}=1$. Имеем $\\frac{AE}{EC}=2$, $\\frac{CM}{MB}=1$, откуда $\\frac{BQ}{QA}=\\frac{1}{2}$, то есть $AQ:QB=2:1$.\n\nТаким образом, $\\frac{AQ}{AB}=\\frac{2}{3}$ и $\\frac{AP}{AC}=\\frac{2}{3}$. Следовательно, треугольник $AQP$ подобен треугольнику $ABC$ (по двум сторонам и углу $A$), причём $\\frac{AQ}{AB}=\\frac{AP}{AC}=k$ с $k=\\frac{2}{3}$. Отсюда $\\angle AQP = \\angle ABC$ и $\\angle APQ = \\angle ACB$, значит, $PQ \\parallel BC$.",
+  "correct_answer": "Утверждение доказано: PQ ∥ BC.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Теорема Менелая и подобие треугольников",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T15:24:32.166008+00:00"
+}

@@ -1,0 +1,151 @@
+Total PDF links in /olympiad/samples: 136
+
+=== Math PDFs (7) ===
+  https://olymp.mipt.ru/uploads/media/default/0001/01/97a5a40a9ac229f7dcae7e74e85b81908defe246/Физтех-22Матем. Критерии 1-4.pdf
+    -> Физтех-22Матем. Критерии 1-4.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/0a8b82c4a726f2c82221fee4924947a47629937b/Физтех-22Матем. Критерии 5-8.pdf
+    -> Физтех-22Матем. Критерии 5-8.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/b5a6a598f2cbe91a68ee417b07ae04b9b8b15671/Физтех-22Матем. Критерии 9-10.pdf
+    -> Физтех-22Матем. Критерии 9-10.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/61b19ac6dbbc5104fb1813bd0f1120a4d7a28538/Физтех-22Матем. Критерии 13-14.pdf
+    -> Физтех-22Матем. Критерии 13-14.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/dcab6857036fc0878252d36e57561520d995c730/Физтех2021МатематикаИнструкция9.pdf
+    -> Физтех2021МатематикаИнструкция9.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/1dedbd0a5a5913c54150f295f48e494e45c2a1ec/Физтех2021МатематикаИнструкция11.pdf
+    -> Физтех2021МатематикаИнструкция11.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/dd120e561977db5e0c47104adffef22d52a899fd/Критерии определения победителей и призеров по математике.pdf
+    -> Критерии определения победителей и призеров по математике.pdf
+
+=== Physics PDFs (12) ===
+  Fiztekh_2022_Fizika_11_klass_1-4_varianty.pdf
+  Физтех_2022_Физика_11_класс_5_8_варианты.pdf
+  Физтех_2022_Физика_10_класс_1_4_варианты.pdf
+  Физтех_2022_Физика_9_класс_1_4_варианты.pdf
+  Phystech2022 Solutions 1-4.pdf
+  Phystech2022 Solutions 5-8.pdf
+  Phystech2022 Solutions 9-10.pdf
+  Phystech2022 Solutions 11-12.pdf
+  Phystech2022 Solutions 13-14.pdf
+  Phystech2022 Solutions 15-16.pdf
+
+=== Other PDFs (117) ===
+  [SOLUTION] ReshVar_11-01_11-02_11-03_11-04.pdf
+  [SOLUTION] ReshVar_11-05_11-06_11-07_11-08.pdf
+  [SOLUTION] Решение 10 класс, билеты 1-2.pdf
+  [SOLUTION] Решение 10 класс, билеты 3-4.pdf
+  [SOLUTION] М Reshenie_9_klass_bilety_1-4_final.pdf
+  [CRITERIA] М Razball11-01_11-02_11-03_11-04_2022_final.pdf
+  [OTHER] Разбалл11-05,11-06,11-07,11-08_2022 финал.pdf
+  [CRITERIA] Критерии 10 класс, вар1-2.pdf
+  [CRITERIA] Критерии 10 класс, вар 3-4.pdf
+  [TASK] М Kriterii_9_klass_bilety_1-2_final.pdf
+  [TASK] М Kriterii_9_klass_bilety_3-4_final.pdf
+  [OTHER] 11 класс вест.pdf
+  [OTHER] 11 класс ист.pdf
+  [OTHER] 10 класс вест.pdf
+  [OTHER] 10 класс ист.pdf
+  [OTHER] 9 класс вест.pdf
+  [OTHER] 9 класс ист.pdf
+  [OTHER] MIPT_2022 Instruction 11-12.pdf
+  [OTHER] MIPT_2022 Instruction 15-16.pdf
+  [OTHER] Ф-11.pdf
+  [OTHER] Ответы Ф11-01-04.pdf
+  [OTHER] Ответы Ф11-05-08.pdf
+  [SOLUTION] Решения 11-01 -11-04.pdf
+  [SOLUTION] Решения 11-05 - 11-08.pdf
+  [OTHER] Разбалловка 11-01 - 11-04.pdf
+  [OTHER] Разбалловка 11-05 - 11-08.pdf
+  [OTHER] Ф-10.pdf
+  [OTHER] Олимпиада Физтех, ответы 10-03 и 10-04.pdf
+  [OTHER] РешВар10-01,10-02.pdf
+  [OTHER] РешВар10-03,10-04.pdf
+  [OTHER] Разбалл10-01,10-02.pdf
+  [OTHER] Разбалл10-03,10-04.pdf
+  [OTHER] Ф-9.pdf
+  [OTHER] Олимпиада Физтех 2021 ответы 09-01 и 09-02.pdf
+  [OTHER] Олимпиада Физтех, ответы 09-03 и 09-04 (1).pdf
+  [OTHER] РешВар09-01,09-02.pdf
+  [OTHER] РешВар09-03,09-04.pdf
+  [OTHER] Разбалл09-01,09-02.pdf
+  [OTHER] Разбалл09-03,09-04.pdf
+  [SOLUTION] Физтех2021-9класс Solutions.pdf
+  [SOLUTION] Физтех2021-10класс Solutions.pdf
+  [OTHER] MIPT_2021-10 Instruction.pdf
+  [SOLUTION] 11Solutions.pdf
+  [OTHER] 9 класс Физтех 21 закл биология задания + ответы.pdf
+  [OTHER] 10 класс Физтех 21 закл биология задания + ответы.pdf
+  [OTHER] 11 класс Физтех 21 закл биология задания + ответы.pdf
+  [CRITERIA] КРИТЕРИИ определения победителей и призёров (3).pdf
+  [TASK] Варианты 09-1-4 в3.pdf
+  [CRITERIA] Решения и критерии оценивания Ф 9 класс.pdf
+  [TASK] Варианты 10-1-4 в3.pdf
+  [CRITERIA] Решения и критерии оценивания Ф 10 класс.pdf
+  [TASK] Варианты 11-1-8 в3.pdf
+  [CRITERIA] Решения и критерии оценивания 11 класс.pdf
+  [CRITERIA] Критерии определения победителей и призёров Ф.pdf
+  [OTHER] М9.pdf
+  [CRITERIA] Решения и критерии М9-1-2.pdf
+  [CRITERIA] Решения и критерии М9-9-10.pdf
+  [OTHER] М10.pdf
+  [CRITERIA] Решения и критерии М10-3-4.pdf
+  [CRITERIA] Решения и критерии М10-11-12.pdf
+  [OTHER] М11.pdf
+  [CRITERIA] Решения и критерии 11-5-8.pdf
+  [CRITERIA] Решения и критерии М11-13-16.pdf
+  [CRITERIA] Критерии определения победителей и призеров М.pdf
+  [OTHER] a01a18ff0bb0aed6f0b52b1e872a4acaa4d739c3.pdf
+  [OTHER] 39a369226bf7b66fde6fffd8a947d9186bf507a3.pdf
+  [OTHER] d7157784085ca695225c6c9118a23a874cc037fb.pdf
+  [OTHER] c6771911e2b11108626b137fb646ec634aaadf63.pdf
+  [OTHER] aecd5e230051d619f6df0c3dd3938c248576abc9.pdf
+  [OTHER] baa971caa756294f676fa6c7104ca3fb8e9904ff.pdf
+  [OTHER] 4639ab7f502714ebbf6eebc76985f780f0816bd4.pdf
+  [OTHER] ac26f82f4d2f109a7f4e313e2541f9d339142d16.pdf
+  [OTHER] 838903d8463483bbce0202bf59fd280aa2bf8618.pdf
+  [OTHER] 75569e4124dba6f48c5b47772a6e8d53d589efbd.pdf
+  [OTHER] 405d2e1ca9e361a95768d84aa71a5c459a7a83a0.pdf
+  [OTHER] 9c009ec53acd2eded3034e1ba88a31e960fa0a1a.pdf
+  [OTHER] cdaae38911338dd4e314982ef071554bdd95fa34.pdf
+  [OTHER] 2cfe0843f10eccb97115bc9d905fa344fea9cc45.pdf
+  [OTHER] 3aee58185e3f1299ee8ea11dba1eeecb1ca42bdc.pdf
+  [OTHER] 42ce30a25423de59d261746dd9c1b188f712afe6.pdf
+  [OTHER] 7064263248784519fab9b80154fa69b9a969ed85.pdf
+  [OTHER] c25c190f80ddb73c6822cb45a8f355d88a3ac7ba.pdf
+  [OTHER] b12f16eaf0deed29c4203c3b4944472562b98613.pdf
+  [OTHER] 5042de89b5685bbcd45f98ac96bc5e1b2831a095.pdf
+  [OTHER] 79872b3306113ef158ecdbc124485c28a0e175f9.pdf
+  [OTHER] c24251eb497c94f45dae84ba4b25c989ba521c76.pdf
+  [OTHER] 565ec244de24d5c8fa6b2f52eeccf87aa5706fa9.pdf
+  [OTHER] e4db8ed9896bcbe777692016993e055ebbb220a8.pdf
+  [OTHER] ddf91f22b6426a4bc9c0f80f1eafde3a09709375.pdf
+  [OTHER] ec6d105ecaa16cff1e904d5de769cac4a63b881f.pdf
+  [OTHER] 845f314cfe80a08c4522fb438818a9aed74e7608.pdf
+  [OTHER] 2e56af585fc6527adeec83ba7a0714f22528a57e.pdf
+  [OTHER] ec25ab9687bbd96c5e9ca4539518860ffc484fe5.pdf
+  [OTHER] 804182d0672de5c1a4b33977321ae76b667df9f7.pdf
+  [OTHER] 05fcc0e32ce49623561ce1daf6bb2124a55d2d26.pdf
+  [OTHER] af30a443ccf21ec9c1470ed63fda2be07cc09f5c.pdf
+  [OTHER] 52646577bfabf82633aa2b5a63bec8bf0d5bc6b1.pdf
+  [OTHER] f6cdd7d600800c29a7fea9d1652e91e03f99f943.pdf
+  [OTHER] 90d267b284e39e1f6c170d8d6614e7ecba88e3f1.pdf
+  [OTHER] 335d67da7949f47370bb7ba2c4f78267f9048ca6.pdf
+  [OTHER] e931ac60390e3ae8138316972e8b0c88b04cdd62.pdf
+  [OTHER] e5980bde34ef0bc1987cdfcf1d2b1b6198a0ab92.pdf
+  [OTHER] 3b6be169de5c8fb233cdcaf43678895c6cc1dded.pdf
+  [OTHER] 35cbf31b5ce4650fe3a95ef99ab261b29d925411.pdf
+  [OTHER] 108b2a9d8fb9c4058a9f614a5f8d141650ffb29f.pdf
+  [OTHER] 90107fdb8bdb2ad8f06730773b8f69e0945e1f3f.pdf
+  [OTHER] d5ad0b044160761449a02f4d3777c1a0bdb29624.pdf
+  [OTHER] db28feb701b4c26a65c85f67a7d3bf098841758c.pdf
+  [OTHER] d3bc6b3084f7ebe58c010bca142a9e99346bae87.pdf
+  [OTHER] 2a7b0e644196ee1f1b2be37eeed867a53d39a069.pdf
+  [OTHER] 8b4c885ca3b467397d1c81fadb6665de5eda5006.pdf
+  [OTHER] 12244f4e68d7935d2e57ace0e89819d40c62b5b8.pdf
+  [OTHER] 5efe1eb2a85908933b8f8980ed307502ef442e9e.pdf
+  [OTHER] 732e8c66b3464d29eef15ef57e1e1716516955db.pdf
+  [OTHER] 28f242c7eda8b6eacecb1d6c0b8dc2162b1e7a02.pdf
+  [OTHER] ca1542cf5002724e2f037aaee6cfc542c0be32a3.pdf
+  [OTHER] 9a807b935d81b7971044f9e85199ede507c8608e.pdf
+
+=== Years found: ['2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2042', '2098'] ===
+Grades found: ['10', '11', '9']

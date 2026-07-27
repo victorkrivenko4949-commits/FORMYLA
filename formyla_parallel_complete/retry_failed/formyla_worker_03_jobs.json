@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0245",
+      "mode": "fill_missing",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Функции, последовательности и олимпиадные конструкции",
+      "subtopic": "Функциональные соотношения",
+      "method_code": "C2",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 5
+    },
+    {
+      "job_id": "fill-0354",
+      "mode": "fill_missing",
+      "grade": 11,
+      "difficulty": 3,
+      "theme": "Стереометрия, координаты и векторы",
+      "subtopic": "Расстояния и углы",
+      "method_code": "E3",
+      "quality_target": "соответствие уровню и теме",
+      "worker": 14
+    }
+  ]
+}

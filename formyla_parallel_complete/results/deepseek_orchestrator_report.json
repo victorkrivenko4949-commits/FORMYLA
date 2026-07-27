@@ -1,0 +1,122 @@
+[
+  {
+    "worker": 5,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 10,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 17,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 4,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 1,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 9,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 2,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 18,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 8,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 20,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 14,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 19,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 3,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 11,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 6,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 12,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 7,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 15,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 16,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 13,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "id": 802395,
+  "task_text": "В треугольнике $ABC$ точка $D$ — середина $BC$. На сторонах $AB$ и $AC$ выбраны точки $E$ и $F$ соответственно так, что $DE$ — биссектриса угла $ADB$, а $DF$ — биссектриса угла $ADC$. Докажите, что $EF \\parallel BC$.",
+  "solution": "Пусть $AD$ — медиана, поэтому $DB = DC$. По теореме о биссектрисе в треугольнике $ADB$ имеем $\\dfrac{AE}{EB} = \\dfrac{AD}{DB}$. В треугольнике $ADC$ аналогично $\\dfrac{AF}{FC} = \\dfrac{AD}{DC}$. Так как $DB = DC$, то $\\dfrac{AE}{EB} = \\dfrac{AF}{FC}$. Следовательно, по теореме Фалеса (обратной), прямая $EF$ параллельна $BC$.",
+  "correct_answer": "EF || BC",
+  "class_level": 7,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Теорема о биссектрисе и обратная теорема Фалеса",
+  "idea_count": 2,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T16:12:33.372785+00:00"
+}

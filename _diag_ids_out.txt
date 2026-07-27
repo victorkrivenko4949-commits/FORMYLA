@@ -1,0 +1,105 @@
+=== First 3 records - ALL keys ===
+
+Record 0:
+  answer: 37
+  audit_mode: deterministic_pre_live
+  changes_made: ['Изменил условие задачи: вместо сложения двух чисел требуется определить простое число среди 48 и 3
+  class_level: 5
+  confidence: high
+  decision_status: candidate
+  duplicate_clusters: []
+  evidence_source: deterministic_rules
+  feature_score: 2
+  final_court_status: pending_live_audit
+  fix_timestamp: 2026-07-15T19:03:10.409395+00:00
+  fixed_by_ai: True
+  grade: 5
+  image: 
+  in_duplicate_cluster: False
+  issues: []
+  level: 1
+  mechanical_mapping: L1
+  original_difficulty: 1
+  original_id: SEL1080-0001
+  quality_score: 90
+  rank_in_cell: 5
+  selection_notes: Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.
+  solution: Число 37 имеет только два делителя: 1 и 37, поэтому оно простое. Число 48 имеет более двух делителей
+  source_index: 0
+  statement: Из чисел 48 и 37 выберите простое число. Ответ обоснуйте.
+  target_level: L1
+  task_text: Найдите сумму чисел 48 и 37.
+  topic: Числа и делимость
+  total_in_cell_pool: 27
+  validation_warnings: 4
+
+Record 1:
+  audit_mode: deterministic_pre_live
+  changes_made: ['level_assigned: None->1 (audit=PASS)']
+  class_level: 5
+  confidence: high
+  decision_status: candidate
+  duplicate_clusters: []
+  evidence_source: deterministic_rules
+  feature_score: 1
+  final_court_status: pending_live_audit
+  fixed_by_ai: True
+  image: 
+  in_duplicate_cluster: False
+  issues: []
+  level: 1
+  mechanical_mapping: L1
+  original_difficulty: 1
+  original_id: SEL1080-0002
+  quality_score: 90
+  rank_in_cell: 6
+  selection_notes: Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.
+  source_index: 1
+  target_level: L1
+  task_text: Какую цифру нужно поставить вместо $A$ в числе $12A$, чтобы получилось число 125?
+  topic: Числа и делимость
+  total_in_cell_pool: 27
+  validation_warnings: 4
+
+Record 2:
+  audit_mode: deterministic_pre_live
+  changes_made: ['level_assigned: None->1 (audit=PASS)']
+  class_level: 5
+  confidence: high
+  decision_status: candidate
+  duplicate_clusters: []
+  evidence_source: deterministic_rules
+  feature_score: 2
+  final_court_status: pending_live_audit
+  fixed_by_ai: True
+  image: 
+  in_duplicate_cluster: False
+  issues: []
+  level: 1
+  mechanical_mapping: L1
+  original_difficulty: 1
+  original_id: SEL1080-0003
+  quality_score: 90
+  rank_in_cell: 7
+  selection_notes: Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.
+  source_index: 2
+  target_level: L1
+  task_text: Делится ли число 84 на 2?
+  topic: Числа и делимость
+  total_in_cell_pool: 27
+  validation_warnings: 4
+
+=== Lineage task_id format check ===
+Lineage has 366 unique task_ids
+Sample lineage IDs: ['gen_20260717_210220_8b22cac0', 'gen_20260717_205844_72763daf', 'gen_20260717_204716_6d9d6ac4', 'gen_20260717_210108_3be918ba', 'gen_20260717_210150_51953aef']
+
+Bank original_id samples: ['SEL1080-0410', 'SEL1080-0646', 'SEL1080-0542', 'SEL1080-0717', 'SEL1080-0603']
+Bank task_id samples: []
+
+Overlap original_id vs lineage: 0
+Overlap task_id vs lineage: 0
+
+=== Topic field samples ===
+  topic='Числа и делимость'
+  topic='Числа и делимость'
+  topic='Числа и делимость'

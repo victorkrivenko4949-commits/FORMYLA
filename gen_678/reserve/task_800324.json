@@ -1,0 +1,20 @@
+{
+  "id": 800324,
+  "task_text": "В треугольнике $ABC$ точки $D$, $E$, $F$ выбраны на сторонах $BC$, $CA$, $AB$ соответственно так, что $BD:DC = CE:EA = AF:FB = 4:1$. Отрезки $AD$, $BE$, $CF$ пересекаются, образуя треугольник $PQR$ ($P = AD \\cap BE$, $Q = BE \\cap CF$, $R = CF \\cap AD$). Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "Разместим треугольник $ABC$ в системе координат: $A(0,0)$, $B(1,0)$, $C(0,1)$. Тогда площадь $S_{ABC} = \\frac12$. \n\n1. Найдём точки $D$, $E$, $F$ по заданным отношениям: \n   $$ D = \\left( \\frac{1\\cdot1+4\\cdot0}{5},\\frac{0\\cdot1+4\\cdot1}{5} \\right) = \\left( \\frac15,\\frac45 \\right), $$\n   $$ E = \\left( 0,\\frac15 \\right), \\quad F = \\left( \\frac45,0 \\right). $$\n\n2. Точка $P = AD \\cap BE$. Параметризуем: $AD:\\ (t/5,4t/5)$, $BE:\\ (1-s,s/5)$. Приравнивая:\n   $$ \\frac{t}{5}=1-s,\\quad \\frac{4t}{5}=\\frac{s}{5}\\ \\Rightarrow\\ s=4t\\ \\Rightarrow\\ \\frac{t}{5}=1-4t\\ \\Rightarrow\\ t=\\frac{5}{21},\\ s=\\frac{20}{21}. $$\n   Итак, $P = \\left( \\frac{1}{21},\\frac{4}{21} \\right)$.\n   Аналогично, $Q = BE \\cap CF$: из систем получаем $Q = \\left( \\frac{16}{21},\\frac{1}{21} \\right)$.\n   $R = CF \\cap AD$: $R = \\left( \\frac{4}{21},\\frac{16}{21} \\right)$.\n\n3. Площадь $\\triangle PQR$:\n   $$ \\overrightarrow{QP} = \\left( \\frac{15}{21},-\\frac{3}{21} \\right) = \\left( \\frac57,-\\frac17 \\right),\\quad \\overrightarrow{RP} = \\left( \\frac{3}{21},\\frac{12}{21} \\right) = \\left( \\frac17,\\frac47 \\right). $$\n   $$ S_{PQR} = \\frac12 \\left| \\det \\begin{pmatrix} \\frac57 & -\\frac17 \\\\ \\frac17 & \\frac47 \\end{pmatrix} \\right| = \\frac12 \\left| \\frac57\\cdot\\frac47 - \\left(-\\frac17\\right)\\cdot\\frac17 \\right| = \\frac12\\cdot\\frac{21}{49} = \\frac{3}{14}. $$\n\n4. Искомое отношение:\n   $$ \\frac{S_{PQR}}{S_{ABC}} = \\frac{3/14}{1/2} = \\frac{3}{7}. $$\n\nОтвет: $\\dfrac{3}{7}$.",
+  "correct_answer": "3/7",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 5,
+  "key_method": "Координатный метод (или метод площадей)",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.701,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T11:15:45.517048+00:00"
+}

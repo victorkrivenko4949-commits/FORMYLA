@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0546",
+      "mode": "replace_bad",
+      "id": "8-D2-5-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Функции и графики",
+      "subtopic": "Графики с модулем",
+      "method_code": "D2",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 8
+    },
+    {
+      "job_id": "audit-0424-9-B2-4-L8-g911",
+      "mode": "replace_bad",
+      "id": "9-B2-4-L8-g911",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Системы, модули, радикалы, неравенства",
+      "subtopic": "Уравнения с модулем",
+      "method_code": "B2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

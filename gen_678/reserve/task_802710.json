@@ -1,0 +1,20 @@
+{
+  "id": 802710,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ взяты точки $A_1$, $B_1$, $C_1$ соответственно, такие что $$BA_1:A_1C = 2:1,\\quad CB_1:B_1A = 2:1,\\quad AC_1:C_1B = 2:1.$$ Прямые $AA_1$, $BB_1$, $CC_1$ попарно пересекаются, образуя треугольник $A_2B_2C_2$ ($A_2 = BB_1\\cap CC_1$, $B_2 = AA_1\\cap CC_1$, $C_2 = AA_1\\cap BB_1$). Найдите отношение площади треугольника $A_2B_2C_2$ к площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты относительно треугольника $ABC$: $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$. \n\nТочка $A_1$ делит $BC$ в отношении $BA_1:A_1C=2:1$, поэтому её координаты $A_1(0,\\frac13,\\frac23)$. Аналогично, $B_1(\\frac13,0,\\frac23)$, $C_1(\\frac23,\\frac13,0)$.\n\nНайдём пересечение $AA_1$ и $BB_1$ — точку $C_2$. Параметрически:\n- $AA_1$: $(1-\\mu,\\frac{\\mu}{3},\\frac{2\\mu}{3})$, $\\mu\\in\\mathbb{R}$.\n- $BB_1$: $(\\frac{s}{3},1-s,\\frac{2s}{3})$, $s\\in\\mathbb{R}$.\n\nПриравняем соответствующие координаты:\n$$\n\\begin{cases}\n1-\\mu = \\frac{s}{3}, \\\\\n\\frac{\\mu}{3} = 1-s, \\\\\n\\frac{2\\mu}{3} = \\frac{2s}{3}.\n\\end{cases}\n$$\nИз третьего уравнения $\\mu=s$. Из второго $\\frac{s}{3}=1-s \\Rightarrow s=\\frac34$, $\\mu=\\frac34$. Тогда $C_2 = (1-\\frac34,\\frac{3/4}{3},\\frac{2\\cdot3/4}{3}) = (\\frac14,\\frac14,\\frac12)$.\n\nАналогично находим $B_2 = AA_1\\cap CC_1$:\n- $AA_1$: $(1-\\mu,\\frac{\\mu}{3},\\frac{2\\mu}{3})$,\n- $CC_1$: $(\\frac{2t}{3},\\frac{t}{3},1-t)$.\n\nПриравнивая:\n$$\n\\begin{cases}\n1-\\mu = \\frac{2t}{3}, \\\\\n\\frac{\\mu}{3} = \\frac{t}{3}, \\\\\n\\frac{2\\mu}{3} = 1-t.\n\\end{cases}\n$$\nИз второго $\\mu=t$, из первого $1-t=\\frac{2t}{3}\\Rightarrow t=\\frac35$, $\\mu=\\frac35$. Тогда $B_2 = (1-\\frac35,\\frac{3/5}{3},\\frac{2\\cdot3/5}{3}) = (\\frac25,\\frac15,\\frac25)$.\n\nИ $A_2 = BB_1\\cap CC_1$:\n- $BB_1$: $(\\frac{s}{3},1-s,\\frac{2s}{3})$,\n- $CC_1$: $(\\frac{2t}{3},\\frac{t}{3},1-t)$.\n\nРавенства:\n$$\n\\begin{cases}\n\\frac{s}{3} = \\frac{2t}{3}, \\\\\n1-s = \\frac{t}{3}, \\\\\n\\frac{2s}{3} = 1-t.\n\\end{cases}\n$$\nИз первого $s=2t$, из второго $1-2t=\\frac{t}{3}\\Rightarrow t=\\frac37$, $s=\\frac67$. Тогда $A_2 = (\\frac{6/7}{3},1-\\frac67,\\frac{2\\cdot6/7}{3}) = (\\frac27,\\frac17,\\frac47)$.\n\nПлощадь треугольника $A_2B_2C_2$ относительно площади $S$ треугольника $ABC$ равна модулю определителя матрицы, составленной из барицентрических координат вершин:\n$$\n\\Delta = \\left|\\begin{matrix}\n\\frac27 & \\frac17 & \\frac47 \\\\[2mm]\n\\frac25 & \\frac15 & \\frac25 \\\\[2mm]\n\\frac14 & \\frac14 & \\frac12\n\\end{matrix}\\right|.\n$$\nВынесем общие множители из строк: из первой $\\frac17$, из второй $\\frac15$, из третьей $\\frac14$. Получим:\n$$\n\\Delta = \\frac{1}{7\\cdot5\\cdot4}\\left|\\begin{matrix}\n2 & 1 & 4 \\\\\n2 & 1 & 2 \\\\\n1 & 1 & 2\n\\end{matrix}\\right| = \\frac{1}{140}\\cdot(2(1\\cdot2-2\\cdot1)-1(2\\cdot2-2\\cdot1)+4(2\\cdot1-1\\cdot1)) = \\frac{1}{140}\\cdot(2\\cdot0-1\\cdot2+4\\cdot1) = \\frac{1}{140}\\cdot2 = \\frac{1}{70}.\n$$\nТаким образом, площадь треугольника $A_2B_2C_2$ составляет $\\frac{S}{70}$. Искомое отношение равно $\\frac{1}{70}$.",
+  "correct_answer": "$\\frac{1}{70}$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты и вычисление определителя",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.895,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T17:30:20.978571+00:00"
+}

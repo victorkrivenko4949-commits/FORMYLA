@@ -1,0 +1,20 @@
+{
+  "id": 801835,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно. Отрезки $AD$, $BE$, $CF$ пересекаются в одной точке $O$. Известно, что площади треугольников $AEF$, $BFD$, $CDE$ равны. Докажите, что $D$, $E$, $F$ — середины сторон треугольника $ABC$.",
+  "solution": "Обозначим $[XYZ]$ площадь треугольника $XYZ$. Пусть $S = [ABC]$, $S_a = [OBC]$, $S_b = [OCA]$, $S_c = [OAB]$, тогда $S_a+S_b+S_c = S$.\n\nПо свойству площадей, для точки $O$ внутри треугольника выполняются соотношения (следствие теоремы Чевы):\n$$\\frac{BD}{DC} = \\frac{S_b}{S_c},\\quad \\frac{CE}{EA} = \\frac{S_c}{S_a},\\quad \\frac{AF}{FB} = \\frac{S_a}{S_b}.$$\n\nВыразим площади треугольников $AEF$, $BFD$, $CDE$ через $S_a,S_b,S_c$.\n\nДля $[AEF]$: $AE/AC = 1/(1+CE/EA) = 1/(1+S_c/S_a) = S_a/(S_a+S_c)$,\n$AF/AB = (AF/FB)/(1+AF/FB) = (S_a/S_b)/(1+S_a/S_b) = S_a/(S_a+S_b)$. Так как $\\angle A$ общий,\n$$[AEF] = \\frac{AE}{AC}\\cdot\\frac{AF}{AB}\\cdot S = \\frac{S_a^2}{(S_a+S_b)(S_a+S_c)}\\cdot S.$$\n\nАналогично,\n$$[BFD] = \\frac{BF}{BA}\\cdot\\frac{BD}{BC}\\cdot S = \\frac{S_b}{(S_a+S_b)}\\cdot\\frac{S_b}{(S_b+S_c)}\\cdot S = \\frac{S_b^2}{(S_a+S_b)(S_b+S_c)}\\cdot S,$$\n$$[CDE] = \\frac{CD}{CB}\\cdot\\frac{CE}{CA}\\cdot S = \\frac{S_c}{(S_b+S_c)}\\cdot\\frac{S_c}{(S_a+S_c)}\\cdot S = \\frac{S_c^2}{(S_a+S_c)(S_b+S_c)}\\cdot S.$$\n\nПо условию $[AEF]=[BFD]=[CDE]$. Сравнивая $[AEF]=[BFD]$, получаем:\n$$\\frac{S_a^2}{(S_a+S_b)(S_a+S_c)} = \\frac{S_b^2}{(S_a+S_b)(S_b+S_c)} \\Rightarrow \\frac{S_a^2}{S_a+S_c} = \\frac{S_b^2}{S_b+S_c}.$$\nОтсюда $S_a^2(S_b+S_c)=S_b^2(S_a+S_c)$, что после преобразований даёт $(S_a-S_b)(S_aS_b+S_c(S_a+S_b))=0$. Множитель $S_aS_b+S_c(S_a+S_b) > 0$, поэтому $S_a=S_b$.\n\nАналогично из равенства $[AEF]=[CDE]$ следует $S_a=S_c$. Итак, $S_a=S_b=S_c=S/3$.\n\nТогда $BD/DC = S_b/S_c = 1$, значит $BD=DC$; $CE/EA=1$, значит $CE=EA$; $AF/FB=1$, значит $AF=FB$. Следовательно, $D,E,F$ — середины сторон $BC,CA,AB$ соответственно, что и требовалось доказать.",
+  "correct_answer": "Точки $D$, $E$, $F$ — середины сторон $BC$, $CA$, $AB$.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Связь отношений отрезков с площадями треугольников с общей вершиной; выражение площадей через эти отношения; приравнивание и алгебраическое упрощение",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.88,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:12:52.439175+00:00"
+}

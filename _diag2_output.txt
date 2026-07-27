@@ -1,0 +1,40 @@
+pre_live total: 674
+fixed total: 674
+
+Empty in pre_live: 674
+Empty in fixed: 250
+
+pre_live empty IDs count: 674
+fixed empty IDs count: 250
+
+Empty in BOTH pre_live AND fixed: 250
+Empty ONLY in fixed (had content in pre_live): 0
+Empty ONLY in pre_live (had content in fixed): 424
+
+=== Tasks that HAD content in pre_live but EMPTY in fixed (first 20) ===
+
+=== Tasks empty in BOTH (first 20) ===
+  SEL1080-0002: pre_live="..." fixed="..."
+  SEL1080-0003: pre_live="..." fixed="..."
+  SEL1080-0004: pre_live="..." fixed="..."
+  SEL1080-0005: pre_live="..." fixed="..."
+  SEL1080-0006: pre_live="..." fixed="..."
+  SEL1080-0007: pre_live="..." fixed="..."
+  SEL1080-0008: pre_live="..." fixed="..."
+  SEL1080-0010: pre_live="..." fixed="..."
+  SEL1080-0012: pre_live="..." fixed="..."
+  SEL1080-0014: pre_live="..." fixed="..."
+  SEL1080-0019: pre_live="..." fixed="..."
+  SEL1080-0020: pre_live="..." fixed="..."
+  SEL1080-0021: pre_live="..." fixed="..."
+  SEL1080-0023: pre_live="..." fixed="..."
+  SEL1080-0028: pre_live="..." fixed="..."
+  SEL1080-0030: pre_live="..." fixed="..."
+  SEL1080-0076: pre_live="..." fixed="..."
+  SEL1080-0077: pre_live="..." fixed="..."
+  SEL1080-0078: pre_live="..." fixed="..."
+  SEL1080-0079: pre_live="..." fixed="..."
+
+=== Checking fill_l3_holes_checkpoint.json ===
+no fill checkpoint found
+cell fill checkpoint keys: ['completed_cells', 'generated_tasks', 'timestamp']

@@ -1,0 +1,27 @@
+=== 250 empty tasks: audit coverage ===
+In audit results: 0
+NOT in audit results: 250
+
+First 20 empty task IDs NOT in audit:
+  SEL1080-0002
+  SEL1080-0003
+  SEL1080-0004
+  SEL1080-0005
+  SEL1080-0006
+  SEL1080-0007
+  SEL1080-0008
+  SEL1080-0010
+  SEL1080-0012
+  SEL1080-0014
+  SEL1080-0019
+  SEL1080-0020
+  SEL1080-0021
+  SEL1080-0023
+  SEL1080-0028
+  SEL1080-0030
+  SEL1080-0076
+  SEL1080-0077
+  SEL1080-0078
+  SEL1080-0079
+
+First 20 empty task IDs IN audit:

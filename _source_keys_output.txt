@@ -1,0 +1,20 @@
+Source tasks: 2686
+Source[0] keys: ['id', 'grade', 'method_code', 'difficulty', 'task_text', 'correct_answer', 'solution', 'theme', 'subtopic', 'original_difficulty', 'status', 'review_note', 'audit_note', 'compression_rule', 'compression_status']
+Has subtopic: True
+Has source_index: False
+Has original_id: False
+Has id: True
+Has _id: False
+Has index: False
+Has task_id: False
+  subtopic: Признаки делимости и чётность
+  theme: Числа и делимость
+  grade: 5
+  level: NOT FOUND
+  difficulty: 1
+  class_level: NOT FOUND
+  source_index: NOT FOUND
+  original_id: NOT FOUND
+  id: 5-A1-10-L2-g
+  task_id: NOT FOUND
+  index: NOT FOUND

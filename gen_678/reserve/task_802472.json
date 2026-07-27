@@ -1,0 +1,20 @@
+{
+  "id": 802472,
+  "task_text": "Даны действительные числа $a, b, c, d$ такие, что\n$$\n\\begin{cases}\na+b+c+d = 1, \\\\\na^2+b^2+c^2+d^2 = 2, \\\\\na^3+b^3+c^3+d^3 = 3, \\\\\na^4+b^4+c^4+d^4 = 4.\n\\end{cases}\n$$\nНайдите значение $a^5+b^5+c^5+d^5$.",
+  "solution": "Обозначим $S_k = a^k+b^k+c^k+d^k$ ($k=1,2,3,4,5$), а элементарные симметрические многочлены:\n$p_1 = a+b+c+d = S_1 = 1$,\n$p_2 = ab+ac+ad+bc+bd+cd$,\n$p_3 = abc+abd+acd+bcd$,\n$p_4 = abcd$.\n\nИспользуем формулы Ньютона (рекуррентные соотношения):\n$S_2 = p_1 S_1 - 2p_2$,\n$S_3 = p_1 S_2 - p_2 S_1 + 3p_3$,\n$S_4 = p_1 S_3 - p_2 S_2 + p_3 S_1 - 4p_4$,\n$S_5 = p_1 S_4 - p_2 S_3 + p_3 S_2 - p_4 S_1$.\n\nПодставляем известные $S_1=1$, $S_2=2$, $S_3=3$, $S_4=4$:\n\n1) $2 = 1\\cdot 1 - 2p_2 \\Rightarrow 2 = 1 - 2p_2 \\Rightarrow p_2 = -\\frac12$.\n\n2) $3 = 1\\cdot2 - (-\\frac12)\\cdot1 + 3p_3 = 2 + \\frac12 + 3p_3 \\Rightarrow 3 = 2.5 + 3p_3 \\Rightarrow 3p_3 = 0.5 \\Rightarrow p_3 = \\frac16$.\n\n3) $4 = 1\\cdot3 - (-\\frac12)\\cdot2 + \\frac16\\cdot1 - 4p_4 = 3 + 1 + \\frac16 - 4p_4 = 4 + \\frac16 - 4p_4$.\nОтсюда $4p_4 = \\frac16 \\Rightarrow p_4 = \\frac1{24}$.\n\n4) Теперь находим $S_5$:\n$S_5 = 1\\cdot4 - (-\\frac12)\\cdot3 + \\frac16\\cdot2 - \\frac1{24}\\cdot1 = 4 + \\frac32 + \\frac26 - \\frac1{24} = 4 + \\frac32 + \\frac13 - \\frac1{24}$.\nПриведём к общему знаменателю 24:\n$4 = \\frac{96}{24}$, $\\frac32 = \\frac{36}{24}$, $\\frac13 = \\frac{8}{24}$, $\\frac1{24} = \\frac{1}{24}$.\n$S_5 = \\frac{96+36+8-1}{24} = \\frac{139}{24}$.\n\nОтвет: $\\frac{139}{24}$.",
+  "correct_answer": "$\\frac{139}{24}$",
+  "class_level": 10,
+  "topic": "Алгебра",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Формулы Ньютона (рекуррентные соотношения для степенных сумм через элементарные симметрические многочлены)",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.812,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T16:14:18.937658+00:00"
+}

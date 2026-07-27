@@ -1,0 +1,206 @@
+Total tasks: 5181
+
+By level:
+  L1: 1637
+  L2: 2544
+  L3: 853
+  L4: 99
+  L5: 48
+
+Total unique cells: 237
+
+Cell size distribution:
+  1 tasks: 85 cells
+  2 tasks: 20 cells
+  3 tasks: 14 cells
+  4 tasks: 2 cells
+  5 tasks: 4 cells
+  6 tasks: 9 cells
+  7 tasks: 6 cells
+  8 tasks: 7 cells
+  9 tasks: 3 cells
+  10 tasks: 5 cells
+  11 tasks: 7 cells
+  12 tasks: 3 cells
+  13 tasks: 6 cells
+  14 tasks: 3 cells
+  15 tasks: 3 cells
+  16 tasks: 2 cells
+  18 tasks: 2 cells
+  19 tasks: 2 cells
+  20 tasks: 3 cells
+  21 tasks: 3 cells
+  22 tasks: 2 cells
+  24 tasks: 1 cells
+  27 tasks: 2 cells
+  29 tasks: 2 cells
+  30 tasks: 1 cells
+  31 tasks: 1 cells
+  32 tasks: 1 cells
+  33 tasks: 1 cells
+  35 tasks: 2 cells
+  36 tasks: 1 cells
+  40 tasks: 2 cells
+  41 tasks: 2 cells
+  43 tasks: 1 cells
+  44 tasks: 1 cells
+  46 tasks: 1 cells
+  47 tasks: 1 cells
+  55 tasks: 1 cells
+  61 tasks: 1 cells
+  65 tasks: 2 cells
+  69 tasks: 1 cells
+  74 tasks: 2 cells
+  75 tasks: 1 cells
+  80 tasks: 1 cells
+  82 tasks: 1 cells
+  94 tasks: 1 cells
+  96 tasks: 1 cells
+  99 tasks: 1 cells
+  112 tasks: 1 cells
+  114 tasks: 1 cells
+  128 tasks: 1 cells
+  133 tasks: 1 cells
+  161 tasks: 1 cells
+  170 tasks: 1 cells
+  180 tasks: 1 cells
+  194 tasks: 1 cells
+  201 tasks: 1 cells
+  215 tasks: 1 cells
+  230 tasks: 1 cells
+  318 tasks: 1 cells
+  351 tasks: 1 cells
+
+Overfilled cells (>5): 112
+Underfilled cells (<5): 121
+Exactly 5: 4
+
+By level breakdown:
+  L1: 42 cells, 1637 tasks, 39 over, 3 under, 0 exact
+  L2: 42 cells, 2544 tasks, 39 over, 1 under, 2 exact
+  L3: 42 cells, 853 tasks, 34 over, 6 under, 2 exact
+  L4: 69 cells, 99 tasks, 0 over, 69 under, 0 exact
+  L5: 42 cells, 48 tasks, 0 over, 42 under, 0 exact
+
+Worst overfilled cells (all 112):
+  G10_L2_math_?: 351 tasks
+  G9_L2_math_?: 318 tasks
+  G9_L1_math_?: 230 tasks
+  G10_L1_math_?: 215 tasks
+  G8_L2_math_?: 201 tasks
+  G6_L2_math_?: 194 tasks
+  G5_L2_math_?: 180 tasks
+  G8_L1_math_?: 170 tasks
+  G7_L2_math_?: 161 tasks
+  G10_L3_math_?: 133 tasks
+  G11_L2_math_?: 128 tasks
+  G7_L1_math_?: 114 tasks
+  G9_L2_algebra_?: 112 tasks
+  G5_L2_algebra_?: 99 tasks
+  G6_L1_math_?: 96 tasks
+  G5_L1_math_?: 94 tasks
+  G7_L2_algebra_?: 82 tasks
+  G9_L3_math_?: 80 tasks
+  G6_L2_algebra_?: 75 tasks
+  G8_L2_algebra_?: 74 tasks
+  G8_L3_math_?: 74 tasks
+  G11_L1_math_?: 69 tasks
+  G10_L2_algebra_?: 65 tasks
+  G7_L3_math_?: 65 tasks
+  G9_L1_algebra_?: 61 tasks
+  G10_L2_number_theory_?: 55 tasks
+  G11_L3_math_?: 47 tasks
+  G8_L1_algebra_?: 46 tasks
+  G5_L1_algebra_?: 44 tasks
+  G6_L3_math_?: 43 tasks
+  G10_L1_algebra_?: 41 tasks
+  G11_L2_algebra_?: 41 tasks
+  G7_L1_algebra_?: 40 tasks
+  G7_L3_algebra_?: 40 tasks
+  G10_L2_combinatorics_?: 36 tasks
+  G6_L1_algebra_?: 35 tasks
+  G5_L3_math_?: 35 tasks
+  G10_L2_logic_?: 33 tasks
+  G10_L3_algebra_?: 32 tasks
+  G11_L1_algebra_?: 31 tasks
+  G9_L2_combinatorics_?: 30 tasks
+  G8_L1_geometry_?: 29 tasks
+  G9_L1_combinatorics_?: 29 tasks
+  G5_L2_number_theory_?: 27 tasks
+  G11_L3_algebra_?: 27 tasks
+  G9_L3_algebra_?: 24 tasks
+  G8_L2_geometry_?: 22 tasks
+  G9_L2_logic_?: 22 tasks
+  G9_L2_number_theory_?: 21 tasks
+  G9_L2_geometry_?: 21 tasks
+  G9_L1_logic_?: 21 tasks
+  G10_L1_combinatorics_?: 20 tasks
+  G10_L3_combinatorics_?: 20 tasks
+  G8_L3_algebra_?: 20 tasks
+  G9_L1_number_theory_?: 19 tasks
+  G10_L1_geometry_?: 19 tasks
+  G9_L1_geometry_?: 18 tasks
+  G8_L2_number_theory_?: 18 tasks
+  G6_L2_geometry_?: 16 tasks
+  G11_L2_number_theory_?: 16 tasks
+  G6_L1_geometry_?: 15 tasks
+  G8_L1_combinatorics_?: 15 tasks
+  G10_L3_logic_?: 15 tasks
+  G6_L2_number_theory_?: 14 tasks
+  G7_L2_number_theory_?: 14 tasks
+  G8_L1_number_theory_?: 14 tasks
+  G7_L2_logic_?: 13 tasks
+  G10_L1_number_theory_?: 13 tasks
+  G9_L3_number_theory_?: 13 tasks
+  G8_L3_number_theory_?: 13 tasks
+  G11_L1_combinatorics_?: 13 tasks
+  G11_L1_number_theory_?: 13 tasks
+  G8_L3_geometry_?: 12 tasks
+  G5_L3_algebra_?: 12 tasks
+  G6_L3_algebra_?: 12 tasks
+  G5_L1_geometry_?: 11 tasks
+  G5_L1_logic_?: 11 tasks
+  G6_L1_number_theory_?: 11 tasks
+  G7_L2_combinatorics_?: 11 tasks
+  G10_L2_geometry_?: 11 tasks
+  G10_L1_logic_?: 11 tasks
+  G11_L3_number_theory_?: 11 tasks
+  G5_L1_number_theory_?: 10 tasks
+  G8_L2_combinatorics_?: 10 tasks
+  G9_L3_combinatorics_?: 10 tasks
+  G11_L2_combinatorics_?: 10 tasks
+  G6_L2_logic_?: 10 tasks
+  G5_L2_geometry_?: 9 tasks
+  G11_L2_geometry_?: 9 tasks
+  G7_L2_geometry_?: 9 tasks
+  G7_L1_combinatorics_?: 8 tasks
+  G7_L1_geometry_?: 8 tasks
+  G9_L3_geometry_?: 8 tasks
+  G10_L3_number_theory_?: 8 tasks
+  G11_L3_combinatorics_?: 8 tasks
+  G6_L3_geometry_?: 8 tasks
+  G6_L3_logic_?: 8 tasks
+  G5_L2_logic_?: 7 tasks
+  G7_L1_number_theory_?: 7 tasks
+  G5_L3_number_theory_?: 7 tasks
+  G6_L1_logic_?: 7 tasks
+  G7_L1_logic_?: 7 tasks
+  G11_L2_logic_?: 7 tasks
+  G6_L3_number_theory_?: 6 tasks
+  G6_L3_combinatorics_?: 6 tasks
+  G6_L1_combinatorics_?: 6 tasks
+  G10_L3_geometry_?: 6 tasks
+  G9_L3_logic_?: 6 tasks
+  G8_L3_combinatorics_?: 6 tasks
+  G11_L3_geometry_?: 6 tasks
+  G5_L3_logic_?: 6 tasks
+  G11_L1_geometry_?: 6 tasks
+
+Underfilled cells by level:
+  L1: 3 underfilled cells, avg size: 3.3, sizes: {3: 2, 4: 1}
+  L2: 1 underfilled cells, avg size: 2.0, sizes: {2: 1}
+  L3: 6 underfilled cells, avg size: 2.7, sizes: {1: 1, 2: 1, 3: 3, 4: 1}
+  L4: 69 underfilled cells, avg size: 1.4, sizes: {1: 47, 2: 14, 3: 8}
+  L5: 42 underfilled cells, avg size: 1.1, sizes: {1: 37, 2: 4, 3: 1}
+
+DONE

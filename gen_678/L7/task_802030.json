@@ -1,0 +1,20 @@
+{
+  "id": 802030,
+  "task_text": "В треугольнике $ABC$ проведены отрезки $AD$, $BE$, $CF$, пересекающиеся в точке $O$. Площади треугольников $AOF$, $BOD$, $COE$ равны соответственно $1$, $2$ и $3$. Найдите отношение $AO:OD$.",
+  "solution": "Обозначим неизвестные площади: $[AOE]=x$, $[BOF]=y$, $[COD]=z$. Из условия известны $[AOF]=1$, $[BOD]=2$, $[COE]=3$.\n\n**Шаг 1. Теорема Чевы в форме площадей.**\nОтношения отрезков на сторонах выражаются через площади:\n$$\n\\frac{AF}{FB} = \\frac{[AOF]}{[BOF]} = \\frac{1}{y}, \\quad \\frac{BD}{DC} = \\frac{[BOD]}{[COD]} = \\frac{2}{z}, \\quad \\frac{CE}{EA} = \\frac{[COE]}{[AOE]} = \\frac{3}{x}.\n$$\nПо теореме Чевы:\n$$\n\\frac{AF}{FB}\\cdot\\frac{BD}{DC}\\cdot\\frac{CE}{EA}=1 \\quad\\Rightarrow\\quad \\frac{1}{y}\\cdot\\frac{2}{z}\\cdot\\frac{3}{x}=1 \\quad\\Rightarrow\\quad xyz=6. \\tag{1}\n$$\n\n**Шаг 2. Отношение $AO:OD$ через площадь $AOB$ и $BOD$.**\nТреугольники $AOB$ и $BOD$ имеют общую высоту из вершины $B$ на $AD$, поэтому:\n$$\n\\frac{AO}{OD} = \\frac{[AOB]}{[BOD]} = \\frac{[AOF]+[AOE]}{[BOD]} = \\frac{1+x}{2}.\n$$\nТо же отношение можно получить через треугольники $AOC$ и $COD$ (общая высота из $C$):\n$$\n\\frac{AO}{OD} = \\frac{[AOC]}{[COD]} = \\frac{[AOE]+[COE]}{[COD]} = \\frac{x+3}{z}.\n$$\nПриравнивая, получаем:\n$$\n\\frac{1+x}{2} = \\frac{x+3}{z} \\quad\\Rightarrow\\quad z(1+x)=2(x+3). \\tag{2}\n$$\n\n**Шаг 3. Отношение $BO:OE$ через площадь $AOB$ и $AOE$.**\nТреугольники $AOB$ и $AOE$ имеют общую высоту из вершины $A$ на $BE$, поэтому:\n$$\n\\frac{BO}{OE} = \\frac{[AOB]}{[AOE]} = \\frac{1+x}{x}.\n$$\nС другой стороны, $BO:OE$ можно выразить через треугольники $BOC$ и $COE$ (общая высота из $C$):\n$$\n\\frac{BO}{OE} = \\frac{[BOC]}{[COE]} = \\frac{[BOD]+[COD]}{[COE]} = \\frac{2+z}{3}.\n$$\nПриравнивая:\n$$\n\\frac{1+x}{x} = \\frac{2+z}{3} \\quad\\Rightarrow\\quad 3(1+x)=x(2+z) \\quad\\Rightarrow\\quad xz = x+3. \\tag{3}\n$$\n\n**Шаг 4. Решение системы.**\nИз (3) выражаем $z = \\frac{x+3}{x}$ и подставляем в (2):\n$$\n\\frac{x+3}{x}\\cdot(1+x) = 2(x+3).\n$$\nПри $x+3\\neq0$ делим обе части на $x+3$:\n$$\n\\frac{1+x}{x} = 2 \\quad\\Rightarrow\\quad 1+x=2x \\quad\\Rightarrow\\quad x=1.\n$$\nТогда $z = \\frac{1+3}{1}=4$, и из (1) $y = \\frac{6}{xz}= \\frac{6}{4}=1.5$ (положительность не нарушается).\n\nИскомое отношение:\n$$\n\\frac{AO}{OD} = \\frac{1+x}{2} = \\frac{1+1}{2} = 1.\n$$\n\nОтвет: $AO:OD = 1:1$.",
+  "correct_answer": "1:1",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Теорема Чевы в форме площадей и метод общих высот",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T14:51:11.561826+00:00"
+}

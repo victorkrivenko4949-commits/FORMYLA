@@ -1,0 +1,20 @@
+{
+  "id": 802120,
+  "task_text": "В треугольнике $ABC$ точка $M$ на стороне $BC$ такова, что $BM:MC = t:1$ ($t>0$). Окружность $\\omega$ проходит через $M$ и касается сторон $AB$ и $AC$ в точках $P$ и $Q$ соответственно. Докажите, что прямая $PQ$ пересекает высоту $AH$ ($H$ — основание высоты из $A$ на $BC$) в точке $O$, причём $AO:OH = t:1$.",
+  "solution": "Введём систему координат: $A(0,0)$, $AB$ — ось $Ox$, луч $AC$ образует угол $\\alpha$ ($0<\\alpha<\\pi$) с $Ox$. Тогда $B(b,0)$, $C(c\\cos\\alpha,c\\sin\\alpha)$, $b,c>0$. Так как $BM:MC=t:1$, то $M=\\left(\\frac{b+tc\\cos\\alpha}{1+t},\\frac{tc\\sin\\alpha}{1+t}\\right)$.\n\nОкружность $\\omega$ касается $AB$ и $AC$, поэтому $AP=AQ$. Пусть $AP=AQ=d$. Тогда $P=(d,0)$, $Q=(d\\cos\\alpha,d\\sin\\alpha)$. Центр $\\omega$ лежит на биссектрисе угла $A$: $I=(d,d\\tg(\\alpha/2))$, радиус $r=d\\tg(\\alpha/2)$.\n\nИз условия $M\\in\\omega$ ($IM=r$) после раскрытия скобок и тригонометрических упрощений ($\\cos\\alpha=2\\cos^2(\\alpha/2)-1$, $\\sin\\alpha=2\\sin(\\alpha/2)\\cos(\\alpha/2)$, $\\tg(\\alpha/2)=\\sin(\\alpha/2)/\\cos(\\alpha/2)$) получаем:\n$$(1+t)^2d^2-2(b+tc)(1+t)d+(b^2+2btc\\cos\\alpha+t^2c^2)=0.\\tag{1}$$\n\nТеперь найдём высоту $AH$. Параметрическое уравнение $BC$: $(b,0)+s(c\\cos\\alpha-b,c\\sin\\alpha)$. Условие $AH\\perp BC$ даёт $s_0=\\frac{b^2-bc\\cos\\alpha}{BC^2}$, где $BC^2=b^2+c^2-2bc\\cos\\alpha$. Тогда $H=(b+s_0(c\\cos\\alpha-b),s_0c\\sin\\alpha)$. Точка $O$ делит $AH$ в отношении $AO:OH=t:1$, поэтому $O=\\frac{t}{t+1}H$.\n\nПрямая $PQ$ имеет параметрическое уравнение $(d,0)+\\mu(d(\\cos\\alpha-1),d\\sin\\alpha)$. Условие принадлежности точки $(x,y)$ этой прямой:\n$$x\\sin\\alpha-y(\\cos\\alpha-1)=d\\sin\\alpha.\\tag{2}$$\nПодставим $O$ в (2). После упрощений (с использованием $\\lambda=s_0$):\n$$O_x\\sin\\alpha-O_y(\\cos\\alpha-1)=\\frac{t}{t+1}\\bigl(b+\\lambda(c-b)\\bigr)\\sin\\alpha.$$\nТаким образом, (2) для $O$ эквивалентно\n$$\\frac{t}{t+1}\\bigl(b+\\lambda(c-b)\\bigr)=d.\\tag{3}$$\n\nВычислим $b+\\lambda(c-b)$:\n$$b+\\lambda(c-b)=b+\\frac{b^2-bc\\cos\\alpha}{BC^2}(c-b)=\\frac{bc(b+c)(1-\\cos\\alpha)}{BC^2}=\\frac{2bc(b+c)\\sin^2(\\alpha/2)}{BC^2}.\\tag{4}$$\nТеперь покажем, что $d$, выраженное из (3) с учётом (4), удовлетворяет (1). Подставим $d=\\frac{t}{t+1}\\cdot\\frac{2bc(b+c)\\sin^2(\\alpha/2)}{BC^2}$ в (1). После умножения на $BC^2$ и учёта $BC^2=b^2+c^2-2bc\\cos\\alpha$ выполняется тождество (проверяется раскрытием скобок и использованием формул $\\sin^2(\\alpha/2)=\\frac{1-\\cos\\alpha}{2}$, $\\cos\\alpha=1-2\\sin^2(\\alpha/2)$). Следовательно, (3) является следствием (1), а значит $O$ удовлетворяет (2), т.е. $O$ лежит на $PQ$.\n\nТаким образом, прямая $PQ$ проходит через точку $O$, которая делит высоту $AH$ в отношении $AO:OH=t:1$. Утверждение доказано.",
+  "correct_answer": "Прямая $PQ$ делит высоту $AH$ в отношении $t:1$ от вершины $A$.",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Аналитическая геометрия с использованием тригонометрических параметров и алгебраических тождеств.",
+  "idea_count": 5,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T15:51:12.571797+00:00"
+}

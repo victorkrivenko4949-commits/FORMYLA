@@ -1,0 +1,20 @@
+{
+  "id": 800089,
+  "task_text": "В тетраэдре $ABCD$ проведены медианы $AA_1$, $BB_1$, $CC_1$, $DD_1$, где $A_1$ — центроид грани $BCD$, $B_1$ — центроид $ACD$, $C_1$ — центроид $ABD$, $D_1$ — центроид $ABC$. Точки $A_2$, $B_2$, $C_2$, $D_2$ — середины отрезков $AA_1$, $BB_1$, $CC_1$, $DD_1$ соответственно. Докажите, что тетраэдр $A_2B_2C_2D_2$ подобен тетраэдру $ABCD$. Найдите отношение объёма тетраэдра $A_2B_2C_2D_2$ к объёму тетраэдра $ABCD$.",
+  "solution": "Пусть $G$ — центроид (точка пересечения медиан) тетраэдра $ABCD$. Известно, что $G$ делит каждую медиану в отношении $3:1$, считая от вершины, например, $AG:GA_1=3:1$. Введём векторы с началом в $G$: пусть $\\vec{a}=\\overrightarrow{GA}$, $\\vec{b}=\\overrightarrow{GB}$, $\\vec{c}=\\overrightarrow{GC}$, $\\vec{d}=\\overrightarrow{GD}$. По свойству центроида $\\vec{a}+\\vec{b}+\\vec{c}+\\vec{d}=0$.\n\nЦентроид грани $BCD$ — это $A_1$. По определению центроида треугольника $\\overrightarrow{GA_1}=\\frac{\\vec{b}+\\vec{c}+\\vec{d}}{3}$.\n\nТочка $A_2$ — середина отрезка $AA_1$, поэтому\n\\[\n\\overrightarrow{GA_2}=\\frac{\\overrightarrow{GA}+\\overrightarrow{GA_1}}{2}=\\frac{\\vec{a}+\\frac{\\vec{b}+\\vec{c}+\\vec{d}}{3}}{2}=\\frac{3\\vec{a}+\\vec{b}+\\vec{c}+\\vec{d}}{6}.\n\\]\nИспользуя $\\vec{b}+\\vec{c}+\\vec{d}=-\\vec{a}$, получаем:\n\\[\n\\overrightarrow{GA_2}=\\frac{3\\vec{a}-\\vec{a}}{6}=\\frac{2\\vec{a}}{6}=\\frac{\\vec{a}}{3}.\n\\]\nАналогично,\n\\[\n\\overrightarrow{GB_2}=\\frac{\\vec{b}}{3},\\quad \\overrightarrow{GC_2}=\\frac{\\vec{c}}{3},\\quad \\overrightarrow{GD_2}=\\frac{\\vec{d}}{3}.\n\\]\n\nТаким образом, тетраэдр $A_2B_2C_2D_2$ получен из тетраэдра $ABCD$ гомотетией с центром $G$ и коэффициентом $\\frac{1}{3}$. Следовательно, эти тетраэдры подобны с коэффициентом подобия $k=\\frac{1}{3}$. Отношение объёмов подобных фигур равно кубу коэффициента подобия: $\\dfrac{V_{A_2B_2C_2D_2}}{V_{ABCD}}=\\left(\\frac{1}{3}\\right)^3=\\frac{1}{27}$.",
+  "correct_answer": "1/27",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Векторный метод с использованием центроида тетраэдра",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T03:37:52.050857+00:00"
+}

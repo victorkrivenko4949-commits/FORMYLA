@@ -1,0 +1,20 @@
+{
+  "id": 802715,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ взяты точки $D$, $E$, $F$ соответственно так, что отрезки $AD$, $BE$, $CF$ пересекаются в одной точке $O$. Известно, что $AO:OD = 1:1$, $BO:OE = 3:1$, $CO:OF = 3:1$. Найдите отношение площади треугольника $DEF$ к площади треугольника $ABC$.",
+  "solution": "Обозначим площади треугольников с вершиной $O$: $[OBC]=x$, $[OCA]=y$, $[OAB]=z$. Тогда $[ABC]=x+y+z$.\n\n1) Из $AO:OD=1:1$ следует, что $[AOB]=[BOD]$ (общая вершина $B$), поэтому $[BOD]=z$. Аналогично $[COD]=y$. Тогда $[BOC]=[BOD]+[COD]=y+z$, откуда $x=y+z$.\n\n2) Из $BO:OE=3:1$ имеем $[AOB]:[AOE]=3:1$, значит $[AOE]=z/3$; $[COB]:[COE]=3:1$, значит $[COE]=x/3$. Тогда $[AOC]=[AOE]+[COE]=z/3+x/3$, откуда $y=(x+z)/3$.\n\n3) Из $CO:OF=3:1$ имеем $[AOC]:[AOF]=3:1$, значит $[AOF]=y/3$; $[BOC]:[BOF]=3:1$, значит $[BOF]=x/3$. Тогда $[AOB]=[AOF]+[BOF]=y/3+x/3$, откуда $z=(x+y)/3$.\n\nПолучаем систему: $x=y+z$, $3y=x+z$, $3z=x+y$. Из первого $x=y+z$, подставляем во второе: $3y = y+z+z = y+2z$, откуда $2y=2z$, $y=z$. Тогда $x=2y$. Третье выполняется автоматически. Итак, $x:y:z = 2:1:1$.\n\nТеперь найдём отношения на сторонах. Из $[ABD]=[ABO]+[BOD]=z+z=2z$, $[ADC]=[AOC]+[COD]=y+y=2y$, следовательно $BD:DC=[ABD]:[ADC]=2z:2y=z:y=1:1$. Аналогично, $CE:EA = x:z = 2:1$, $AF:FB = y:x = 1:2$.\n\nТаким образом, $D$ — середина $BC$, $AE:EC=1:2$ ($AE=\\frac13 AC$), $AF:FB=1:2$ ($AF=\\frac13 AB$).\n\nВычислим площади треугольников:\n$[AEF] = \\frac{AE}{AC}\\cdot\\frac{AF}{AB}\\cdot S = \\frac13\\cdot\\frac13\\cdot S = \\frac{S}{9}$,\n$[BFD] = \\frac{BF}{BA}\\cdot\\frac{BD}{BC}\\cdot S = \\frac23\\cdot\\frac12\\cdot S = \\frac{S}{3}$,\n$[CDE] = \\frac{CD}{CB}\\cdot\\frac{CE}{CA}\\cdot S = \\frac12\\cdot\\frac23\\cdot S = \\frac{S}{3}$.\n\nСумма площадей трёх внешних треугольников: $S_{AEF}+S_{BFD}+S_{CDE} = \\frac{S}{9}+\\frac{S}{3}+\\frac{S}{3} = \\frac{7S}{9}$.\n\nСледовательно, $S_{DEF} = S - \\frac{7S}{9} = \\frac{2S}{9}$.\n\nОтвет: $\\dfrac{2}{9}$.",
+  "correct_answer": "\\frac{2}{9}",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Метод площадей и барицентрические координаты",
+  "idea_count": 5,
+  "is_clone": true,
+  "clone_similarity": 0.79,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T17:41:55.383631+00:00"
+}

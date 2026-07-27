@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}404 — FORMYLA{% endblock %}
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
 {% block content %}
 <section class="error-page">
   <div class="error-code">404</div>
   <h1>Страница не найдена</h1>
   <p>Возможно, ссылка устарела или вы ввели неверный адрес.</p>
+  <p>Если вы искали что-то конкретное, попробуйте начать с <a href="{{ url_for('index') }}" style="color:var(--accent-1);">главной страницы</a> или перейдите в <a href="{{ url_for('about_page') }}" style="color:var(--accent-1);">раздел о проекте</a>.</p>
   <div class="error-actions">
     <a href="{{ url_for('index') }}" class="error-btn">На главную</a>
   </div>

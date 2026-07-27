@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ grade }} класс — Выбор раздела — FORMYLA{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
+    <a href="/olympiad-test" style="color: var(--text-soft); text-decoration: none; font-size: 0.9em;">← Выбор класса</a>
+    <div style="text-align: center; margin: 20px 0 30px;">
+        <h1 style="font-size: 1.8em; color: var(--text-main);">{{ grade }} класс</h1>
+        <p style="color: var(--text-soft);">Выбери раздел математики</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        {% for section in sections %}
+        <a href="/olympiad-test/select-theme?grade={{ grade }}&section={{ section|urlencode }}"
+           style="display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+                  background: var(--bg-card); border: 1px solid var(--border-soft);
+                  border-radius: var(--radius-lg); text-decoration: none; color: var(--text-main);
+                  font-size: 1.05em; font-weight: 500; transition: all 0.2s;"
+           onmouseover="this.style.borderColor='var(--accent-2)'; this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.25)'"
+           onmouseout="this.style.borderColor='var(--border-soft)'; this.style.transform=''; this.style.boxShadow=''">
+            <span style="font-size: 1.4em;">📘</span>
+            {{ section }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

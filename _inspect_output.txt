@@ -1,0 +1,6 @@
+Top keys: ['id', 'olympiad', 'olympiad_title', 'year', 'grade', 'round', 'round_title', 'problems', 'source_url', 'source_name']
+Problem keys: ['num', 'text', 'answer', 'solution', 'solution_status']
+solution_status: 
+solution type: str
+No generated solutions found
+All solution_status values: {''}

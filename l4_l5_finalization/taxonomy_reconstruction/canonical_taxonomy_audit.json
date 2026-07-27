@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "generated_at": "2026-07-18T13:18:11.118655",
+    "source": "taxonomy_by_grade.json"
+  },
+  "total_topics_in_source": 41,
+  "total_subtopics_in_source": 123,
+  "unique_topics_extracted": 41,
+  "unique_subtopics_extracted": 123,
+  "total_canonical_cells": 558,
+  "grades_summary": {
+    "5": {
+      "themes": 3,
+      "subtopics": 9,
+      "canonical_cells": 18,
+      "cells_per_level": {
+        "L4": 9,
+        "L5": 9
+      }
+    },
+    "6": {
+      "themes": 4,
+      "subtopics": 12,
+      "canonical_cells": 24,
+      "cells_per_level": {
+        "L4": 12,
+        "L5": 12
+      }
+    },
+    "7": {
+      "themes": 13,
+      "subtopics": 39,
+      "canonical_cells": 78,
+      "cells_per_level": {
+        "L4": 39,
+        "L5": 39
+      }
+    },
+    "8": {
+      "themes": 17,
+      "subtopics": 51,
+      "canonical_cells": 102,
+      "cells_per_level": {
+        "L4": 51,
+        "L5": 51
+      }
+    },
+    "9": {
+      "themes": 20,
+      "subtopics": 60,
+      "canonical_cells": 120,
+      "cells_per_level": {
+        "L4": 60,
+        "L5": 60
+      }
+    },
+    "10": {
+      "themes": 20,
+      "subtopics": 60,
+      "canonical_cells": 120,
+      "cells_per_level": {
+        "L4": 60,
+        "L5": 60
+      }
+    },
+    "11": {
+      "themes": 16,
+      "subtopics": 48,
+      "canonical_cells": 96,
+      "cells_per_level": {
+        "L4": 48,
+        "L5": 48
+      }
+    }
+  },
+  "integrity_checks": {
+    "all_topics_have_3_subtopics": true,
+    "all_cell_keys_unique": true,
+    "no_missing_topic_ids": true
+  }
+}

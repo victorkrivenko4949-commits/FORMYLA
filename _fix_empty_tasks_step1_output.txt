@@ -1,0 +1,25 @@
+=== STEP 1: FIX task_XXX IDs & MERGE EXISTING REGENERATIONS ===
+
+task_XXX entries in pre_live: 0
+
+SEL1080 IDs already used: 674
+Available SEL1080 IDs: 406 first=[15, 26, 27, 93, 136] last=[1076, 1077, 1078, 1079, 1080]
+Regenerated results with task_XXX IDs: 85
+
+Merge results:
+  Applied (regenerated content merged): 0
+  Regenerated but no fixed_task: 0
+  ID only (no regeneration): 0
+  Total task_XXX: 0
+
+=== AFTER MERGE: 250 tasks still empty ===
+
+Empty tasks by audit verdict:
+  None: 182
+  RECHECK: 61
+  QUARANTINE: 7
+
+Saved updated fixed.json with 0 merged tasks
+Generated _tasks_needing_regeneration.json: 250 tasks need AI regeneration
+
+Done step 1.

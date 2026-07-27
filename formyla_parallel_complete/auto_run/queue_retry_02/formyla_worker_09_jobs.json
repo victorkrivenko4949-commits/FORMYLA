@@ -1,0 +1,20 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0510",
+      "mode": "replace_bad",
+      "id": "8-C1-3-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Олимпиадная задача",
+      "subtopic": "Олимпиада Ломоносова, 2010, Отборочный тур",
+      "method_code": "OLY",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 20
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": 801510,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$, $BC$, $CA$ выбраны точки $D$, $E$, $F$ соответственно так, что $DE\\parallel AC$ и $EF\\parallel AB$. Известно, что площади треугольников $ADF$ и $BDE$ равны. Найдите отношение $AD:DB$.",
+  "solution": "Пусть $AB=c$, $AC=b$, $BC=a$. Обозначим $BD=x$, тогда $AD=c-x$. Из $DE\\parallel AC$ следует, что треугольник $BDE$ подобен треугольнику $BAC$ с коэффициентом $\\frac{BD}{BA}=\\frac{x}{c}$. Следовательно, $BE=\\frac{x}{c}a$. Из $EF\\parallel AB$ следует, что треугольник $CFE$ подобен треугольнику $CAB$ с коэффициентом $\\frac{CE}{CB}$. $CE=BC-BE=a-\\frac{x}{c}a=a\\left(1-\\frac{x}{c}\\right)$, поэтому $\\frac{CE}{CB}=1-\\frac{x}{c}$. Тогда $CF=b\\left(1-\\frac{x}{c}\\right)$, и $AF=AC-CF=b-b\\left(1-\\frac{x}{c}\\right)=\\frac{bx}{c}$.\n\nПлощадь треугольника $ADF$: \n$S_{ADF}=\\frac12 AD\\cdot AF\\cdot\\sin\\angle A=\\frac12(c-x)\\cdot\\frac{bx}{c}\\cdot\\sin A=\\frac{bx(c-x)}{2c}\\sin A$.\n\nПлощадь треугольника $BDE$: \n$S_{BDE}=\\frac12 BD\\cdot BE\\cdot\\sin\\angle B=\\frac12 x\\cdot\\frac{x}{c}a\\cdot\\sin B=\\frac{ax^2}{2c}\\sin B$.\n\nПо теореме синусов $\\frac{a}{\\sin A}=\\frac{b}{\\sin B}$, откуда $\\sin B=\\frac{b\\sin A}{a}$. Подставим в $S_{BDE}$:\n$S_{BDE}=\\frac{ax^2}{2c}\\cdot\\frac{b\\sin A}{a}=\\frac{bx^2}{2c}\\sin A$.\n\nПриравнивая площади $S_{ADF}=S_{BDE}$, получаем:\n$\\frac{bx(c-x)}{2c}\\sin A = \\frac{bx^2}{2c}\\sin A$.\nСокращая на $\\frac{b\\sin A}{2c}$ (все множители положительны), имеем $x(c-x)=x^2$, откуда $c-x=x$, $x=c/2$. Следовательно, $AD=c-x=c/2$, $DB=x=c/2$, и $AD:DB=1:1$.",
+  "correct_answer": "$AD:DB=1:1$",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 5,
+  "key_method": "Подобие треугольников и теорема синусов",
+  "idea_count": 3,
+  "is_clone": true,
+  "clone_similarity": 0.707,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T13:17:16.734990+00:00"
+}

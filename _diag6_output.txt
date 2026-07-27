@@ -1,0 +1,23 @@
+=== DIAG6 FORENSIC SUMMARY ===
+Fixed total: 674
+pre_live total: 674
+Audit results entries: 678
+Audit unique task_indices: 674
+
+Empty tasks: 250
+  final_court_status: {'pending_live_audit': 250}
+  In audit: 250
+  Not in audit: 0
+
+Filled tasks: 424
+  final_court_status: {'pending_live_audit': 424}
+  In audit: 424
+  Not in audit: 0
+
+Filled verdicts:
+  None: 341
+  RECHECK: 76
+  QUARANTINE: 7
+
+Missing IDs from 1..1080: 406
+First 20 missing: [15, 26, 27, 93, 136, 137, 139, 140, 141, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155]

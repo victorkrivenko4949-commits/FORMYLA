@@ -1,0 +1,20 @@
+{
+  "id": 801550,
+  "task_text": "В треугольнике $ABC$ проведены биссектрисы $AD$ и $CE$, пересекающиеся в точке $I$. Известно, что $\\angle B = 120^\\circ$ и $AI = IE$. Найдите углы треугольника $ABC$.",
+  "solution": "Так как $I$ — точка пересечения биссектрис, то $\\angle AIE = 90^\\circ + \\frac{\\angle B}{2}$ (свойство угла между биссектрисами). По условию $\\angle B = 120^\\circ$, поэтому $\\angle AIE = 90^\\circ + 60^\\circ = 150^\\circ$.\n\nВ треугольнике $AIE$ дано $AI = IE$, значит он равнобедренный с основанием $AE$. Следовательно, углы при основании равны: $\\angle IAE = \\angle IEA = \\frac{180^\\circ - 150^\\circ}{2} = 15^\\circ$.\n\nТак как $AD$ — биссектриса угла $A$, то $\\angle IAE = \\frac{\\angle A}{2}$, откуда $\\angle A = 30^\\circ$. Аналогично, $CE$ — биссектриса угла $C$, поэтому $\\angle IEA = \\frac{\\angle C}{2}$, откуда $\\angle C = 30^\\circ$.\n\nПроверка: $\\angle A + \\angle B + \\angle C = 30^\\circ + 120^\\circ + 30^\\circ = 180^\\circ$, что соответствует сумме углов треугольника.\n\nОтвет: углы треугольника $30^\\circ$, $120^\\circ$, $30^\\circ$.",
+  "correct_answer": "$30^\\circ$, $120^\\circ$, $30^\\circ$",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 4,
+  "key_method": "Свойство угла между биссектрисами и равнобедренный треугольник",
+  "idea_count": 3,
+  "is_clone": true,
+  "clone_similarity": 0.725,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T13:25:46.260617+00:00"
+}

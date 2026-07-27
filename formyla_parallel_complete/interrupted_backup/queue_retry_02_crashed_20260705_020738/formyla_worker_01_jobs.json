@@ -1,0 +1,44 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0581",
+      "mode": "replace_bad",
+      "id": "8-E3-3-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 6
+    },
+    {
+      "job_id": "audit-0148-9-D3-4-L8-gst2",
+      "mode": "replace_bad",
+      "id": "9-D3-4-L8-gst2",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Геометрия треугольника и окружности",
+      "subtopic": "Менелай/Чева (база)",
+      "method_code": "D3",
+      "reasons": "L8_solution_too_short",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0434-7-G1-1-L7-g678",
+      "mode": "replace_bad",
+      "id": "7-G1-1-L7-g678",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Логика и инварианты",
+      "subtopic": "Инварианты и чётность",
+      "method_code": "G1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

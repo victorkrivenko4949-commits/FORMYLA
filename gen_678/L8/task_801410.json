@@ -1,0 +1,20 @@
+{
+  "id": 801410,
+  "task_text": "В правильном $n$-угольнике $A_1A_2\\ldots A_n$ ($n\\geqslant 3$) с центром $O$ на сторонах $A_1A_2$ и $A_2A_3$ построены равносторонние треугольники $A_1A_2M$ и $A_2A_3N$, расположенные **внутри** многоугольника. Докажите, что:\n\n1) $OM = ON$ и $\\angle MON = \\dfrac{2\\pi}{n}$;\n2) прямая $MN$ параллельна диагонали $A_1A_3$.",
+  "solution": "Расположим многоугольник на комплексной плоскости так, чтобы его центр $O$ находился в начале координат, а вершины имели координаты $A_k = e^{2\\pi i(k-1)/n}$ ($k=1,\\ldots,n$). Тогда $A_1=1$, $A_2=\\omega$, $A_3=\\omega^2$, где $\\omega=e^{2\\pi i/n}$. Пусть $\\zeta=e^{i\\pi/3}$ — поворот на $60^\\circ$ против часовой стрелки.\n\nРавносторонний треугольник $A_1A_2M$, лежащий внутри многоугольника, получается поворотом вектора $A_2-A_1$ на $60^\\circ$ в сторону центра (т.е. против часовой стрелки при нашей нумерации). Следовательно,\n$$M = A_1 + (A_2-A_1)\\zeta = 1+(\\omega-1)\\zeta.$$\nАналогично,\n$$N = A_2 + (A_3-A_2)\\zeta = \\omega + (\\omega^2-\\omega)\\zeta = \\omega\\bigl(1+(\\omega-1)\\zeta\\bigr) = \\omega M.$$\nОтсюда немедленно получаем:\n$$|N| = |\\omega|\\,|M| = |M| \\quad\\Rightarrow\\quad OM=ON,$$\n$$\\arg N - \\arg M = \\arg\\omega = \\frac{2\\pi}{n} \\quad\\Rightarrow\\quad \\angle MON = \\frac{2\\pi}{n}.$$\nПервое утверждение доказано.\n\nДля второго вычислим вектор $MN = N-M = (\\omega-1)M$ и диагональ $A_1A_3 = A_3-A_1 = \\omega^2-1 = (\\omega-1)(\\omega+1)$. Тогда\n$$\\frac{MN}{A_1A_3} = \\frac{(\\omega-1)M}{(\\omega-1)(\\omega+1)} = \\frac{M}{\\omega+1}.$$\nПокажем, что число $\\dfrac{M}{\\omega+1}$ вещественно. Используем равенство $1-\\zeta = \\zeta^{-1}$ (проверяется: $1-(\\frac12+i\\frac{\\sqrt3}{2})=\\frac12-i\\frac{\\sqrt3}{2}=e^{-i\\pi/3}=\\zeta^{-1}$). Тогда\n$$M = 1+(\\omega-1)\\zeta = \\omega\\zeta + (1-\\zeta) = \\omega\\zeta + \\zeta^{-1}.$$\nСледовательно,\n$$\\frac{M}{\\omega+1} = \\frac{\\omega\\zeta + \\zeta^{-1}}{\\omega+1}.$$\nТеперь возьмём сопряжённое:\n$$\\overline{\\frac{M}{\\omega+1}} = \\frac{\\omega^{-1}\\zeta^{-1}+\\zeta}{\\omega^{-1}+1} = \\frac{\\zeta^{-1}+\\zeta\\omega}{1+\\omega} = \\frac{\\omega\\zeta+\\zeta^{-1}}{\\omega+1} = \\frac{M}{\\omega+1}.$$\nЗначит, число $M/(\\omega+1)$ вещественно, и векторы $MN$ и $A_1A_3$ коллинеарны. Следовательно, $MN\\parallel A_1A_3$. Второе утверждение доказано.",
+  "correct_answer": "1) $OM=ON$ и $\\angle MON = \\dfrac{2\\pi}{n}$; 2) $MN \\parallel A_1A_3$ для любого $n\\geqslant 3$.",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Комплексные числа, поворот на 60°",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T13:04:09.614645+00:00"
+}

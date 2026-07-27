@@ -1,0 +1,14 @@
+﻿<main class="main">
+        
+<div class="container" style="max-width: 500px; margin: 80px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
+            👋 Вход в FORMYLA
+        </h1>
+        <p style="font-size: 1.1em; color: var(--text-soft);">
+            Введите email - мы отправим вам код
+        </p>
+    </div>
+
+    <div style="background: var(--bg-card); backdrop-fil

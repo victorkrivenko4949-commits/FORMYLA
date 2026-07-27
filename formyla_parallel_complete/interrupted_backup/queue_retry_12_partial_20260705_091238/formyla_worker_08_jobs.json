@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0446-8-D3-L8-fill-0158",
+      "mode": "replace_bad",
+      "id": "8-D3-L8-fill-0158",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Пересечения",
+      "method_code": "D3",
+      "reasons": "mojibake, duplicate_task_text",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0357-5-B3-36-L8-g",
+      "mode": "replace_bad",
+      "id": "5-B3-36-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Дроби, доли, проценты",
+      "subtopic": "Задачи на части",
+      "method_code": "B3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

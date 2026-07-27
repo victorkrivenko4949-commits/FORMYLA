@@ -1,0 +1,34 @@
+Total tasks in snapshot: 1080
+Type of tasks: <class 'list'>
+
+First task keys (8):
+  class_level: 5
+  topic: 'Числа и делимость'
+  task_text: 'Найдите сумму чисел 48 и 37.'
+  correct_answer: '85'
+  solution: '$48+37=85$.'
+  difficulty_level: 1
+  is_flagged: False
+  image: ''
+
+Candidate ID fields: []
+
+--- Sample IDs (first 5) ---
+  [0] original_id=N/A, source_index=N/A
+  [1] original_id=N/A, source_index=N/A
+  [2] original_id=N/A, source_index=N/A
+  [3] original_id=N/A, source_index=N/A
+  [4] original_id=N/A, source_index=N/A
+
+--- Searching for hex ID fields ---
+  No hex-like ID fields found in first 100 tasks. Checking all fields more broadly...
+  All keys across all tasks: ['answer_check', 'class_level', 'correct_answer', 'difficulty_level', 'image', 'is_flagged', 'solution', 'task_text', 'topic']
+
+--- Checking for 'id' field ---
+  tasks with 'id' field: 0/1080
+  tasks with 'task_id' field: 0/1080
+
+--- Checking for nested structure ---
+
+--- Fields with 'original' or 'source' or 'task' ---
+  task_text: 'Найдите сумму чисел 48 и 37.'

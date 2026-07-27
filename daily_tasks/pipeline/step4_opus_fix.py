@@ -21,7 +21,7 @@ if str(_project_root) not in sys.path:
 
 from typing import Any, Dict, List, Optional
 
-from pipeline.openrouter_client import OpenRouterClient, TokenUsage
+from services.openrouter_client import OpenRouterClient, TokenUsage, make_token_usage
 from .validators import (
     OpusFixValidation,
     extract_json_safe,
@@ -117,7 +117,7 @@ async def _call_fix_model(
 ) -> tuple[Optional[Dict[str, Any]], Any]:
     """Один вызов модели + валидация. Возвращает (task|None, usage)."""
     async with OpenRouterClient() as client:
-        raw_response, usage = await client.chat(
+        raw_response, usage = await client.async_chat(
             model=model,
             messages=messages,
             temperature=0.4,

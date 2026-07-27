@@ -13,6 +13,7 @@ import logging
 import os
 import time
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from threading import Lock
 from typing import Optional
@@ -123,6 +124,24 @@ class CircuitBreaker:
                     f"[CircuitBreaker] {model}: {CIRCUIT_BREAKER_THRESHOLD} consecutive "
                     f"failures, pausing for {CIRCUIT_BREAKER_PAUSE_SEC}s"
                 )
+
+
+@dataclass
+class TokenUsage:
+    """Token and cost usage for an API call."""
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost_usd: float = 0.0
+
+
+def make_token_usage(api_result: dict) -> TokenUsage:
+    """Convert OpenRouter chat() result dict to TokenUsage."""
+    usage_raw = api_result.get("usage", {})
+    return TokenUsage(
+        input_tokens=usage_raw.get("prompt_tokens", 0),
+        output_tokens=usage_raw.get("completion_tokens", 0),
+        cost_usd=float(api_result.get("cost_usd", 0)),
+    )
 
 
 class OpenRouterClient:
@@ -287,6 +306,99 @@ class OpenRouterClient:
             db.session.commit()
         except Exception as e:
             logger.warning(f"Failed to log cost: {e}")
+
+
+    # ── async helpers ────────────────────────────────────────────────
+    async def async_chat(
+        self,
+        model: str,
+        messages: list,
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
+        response_format: dict = None,
+    ) -> tuple:
+        """Async version of chat(). Returns (content, TokenUsage) tuple.
+
+        Compatibility wrapper for the async pipeline (step2_opus, step3_gpt_audit, step4_opus_fix).
+        Uses the same retry/rate-limit/circuit-breaker logic but with httpx.AsyncClient.
+        """
+        import asyncio
+        if not self.circuit_breaker.check(model):
+            raise CircuitBreakerOpen(f"Model {model} is paused (circuit breaker)")
+
+        payload = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+        if response_format:
+            payload["response_format"] = response_format
+
+        for attempt in range(MAX_RETRIES):
+            self.rate_limiter.wait(model)
+
+            try:
+                async with httpx.AsyncClient(timeout=300.0) as client:
+                    resp = await client.post(
+                        f"{self.base_url}/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {self.api_key}",
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": "https://formyla.com",
+                            "X-Title": "FORMYLA Daily Pool",
+                        },
+                        json=payload,
+                    )
+
+                if resp.status_code == 200:
+                    data = resp.json()
+                    self.circuit_breaker.record_success(model)
+                    content = data["choices"][0]["message"]["content"]
+                    usage = data.get("usage", {})
+                    cost = self._calc_cost(model, usage)
+                    return content, TokenUsage(
+                        input_tokens=usage.get("prompt_tokens", 0),
+                        output_tokens=usage.get("completion_tokens", 0),
+                        cost_usd=cost,
+                    )
+
+                elif resp.status_code == 429:
+                    retry_after = int(resp.headers.get("Retry-After", 30))
+                    logger.warning(f"[429] {model}: rate limited, waiting {retry_after}s")
+                    await asyncio.sleep(retry_after)
+                    continue
+
+                elif resp.status_code >= 500:
+                    self.circuit_breaker.record_failure(model)
+                    delay = BASE_RETRY_DELAY * (2 ** attempt)
+                    logger.warning(f"[{resp.status_code}] {model}: server error, retry in {delay:.1f}s")
+                    await asyncio.sleep(delay)
+                    continue
+
+                else:
+                    error_body = resp.text[:500]
+                    raise OpenRouterError(f"HTTP {resp.status_code}: {error_body}")
+
+            except httpx.TimeoutException:
+                delay = BASE_RETRY_DELAY * (2 ** attempt)
+                logger.warning(f"[Timeout] {model}: attempt {attempt+1}, retry in {delay:.1f}s")
+                await asyncio.sleep(delay)
+                continue
+
+            except httpx.ConnectError as e:
+                delay = BASE_RETRY_DELAY * (2 ** attempt)
+                logger.warning(f"[ConnectError] {model}: {e}, retry in {delay:.1f}s")
+                await asyncio.sleep(delay)
+                continue
+
+        raise OpenRouterError(f"Failed after {MAX_RETRIES} retries for {model}")
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        pass
 
 
 class OpenRouterError(Exception):

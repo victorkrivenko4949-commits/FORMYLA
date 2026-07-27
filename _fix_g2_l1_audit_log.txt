@@ -1,0 +1,19 @@
+G2|L1 Audit Field Fix Log
+=========================
+Date: 20260717_225819
+Bank: curated_bank_L1_L5_fixed.json
+Total tasks: 545
+Tasks modified: 4
+
+Standard audit values applied:
+  audit_mode: deterministic_pre_live
+  decision_status: candidate
+  final_court_status: pending_live_audit
+  evidence_source: deterministic_rules
+  confidence: medium
+
+Tasks modified:
+  SEL1080-1066
+  SEL1080-1067
+  SEL1080-1068
+  SEL1080-1069

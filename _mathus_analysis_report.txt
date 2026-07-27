@@ -1,0 +1,202 @@
+olympiads.py: 1622 records
+mathus_olympiads.json: 254 records
+
+=== olympiads.py by olympiad ===
+  euler: 58
+  formula_unity: 143
+  kurchatov: 72
+  lomonosov: 148
+  mos: 409
+  phystech: 84
+  pvg: 129
+  spbgu: 46
+  turgor: 236
+  vsosh: 202
+  vysshaya_proba: 95
+
+=== mathus_olympiads.json by olympiad ===
+  lomonosov: 48
+  phystech: 73
+  pvg: 133
+
+=== Shared olympiads: {'lomonosov', 'pvg', 'phystech'} ===
+
+
+========== DETAILED PHYSTECH COMPARISON ==========
+
+olympiads.py phystech: 84 records
+  id=230, year=2014, grade=11, round=final, title=Заключительный этап, problems=5
+  id=, year=2014, grade=11, round=qualifying, title=Отборочный этап (онлайн-этап), problems=20
+  id=673, year=2015, grade=10, round=final, title=Заключительный, problems=5
+  id=, year=2015, grade=10, round=qualifying, title=Отборочный этап (онлайн-этап), problems=12
+  id=674, year=2015, grade=11, round=final, title=Заключительный, problems=5
+  id=, year=2015, grade=11, round=qualifying, title=Отборочный этап (онлайн-этап), problems=12
+  id=231, year=2016, grade=10, round=final, title=Заключительный этап, problems=5
+  id=232, year=2016, grade=10, round=qualifying, title=Отборочный этап, problems=5
+  id=, year=2016, grade=11, round=final, title=Заключительный этап, problems=7
+  id=, year=2016, grade=11, round=qualifying, title=Отборочный этап (онлайн-этап), problems=11
+  id=, year=2017, grade=9, round=final, title=Заключительный этап, problems=7
+  id=233, year=2017, grade=9, round=qualifying, title=Отборочный этап, problems=5
+  id=234, year=2017, grade=9, round=qualifying, title=Отборочный этап, problems=5
+  id=235, year=2017, grade=10, round=final, title=Заключительный этап, problems=5
+  id=236, year=2017, grade=10, round=qualifying, title=Отборочный этап, problems=5
+  id=237, year=2017, grade=10, round=qualifying, title=Отборочный этап, problems=5
+  id=, year=2017, grade=11, round=final, title=Заключительный этап, problems=7
+  id=238, year=2017, grade=11, round=qualifying, title=Отборочный этап, problems=5
+  id=239, year=2017, grade=11, round=qualifying, title=Отборочный этап, problems=5
+  id=, year=2018, grade=9, round=final, title=Заключительный этап, problems=7
+  id=240, year=2018, grade=9, round=qualifying, title=Отборочный этап, problems=5
+  id=241, year=2018, grade=9, round=qualifying, title=Отборочный этап, problems=5
+  id=242, year=2018, grade=10, round=final, title=Заключительный этап, problems=5
+  id=243, year=2018, grade=10, round=qualifying, title=Отборочный этап, problems=5
+  id=244, year=2018, grade=10, round=qualifying, title=Отборочный этап, problems=5
+  id=, year=2018, grade=11, round=final, title=Заключительный этап, problems=7
+  id=245, year=2018, grade=11, round=qualifying, title=Отборочный этап, problems=5
+  id=246, year=2018, grade=11, round=qualifying, title=Отборочный этап, problems=5
+  id=675, year=2019, grade=9, round=final, title=Заключительный, problems=5
+  id=676, year=2019, grade=9, round=final, title=Заключительный, problems=5
+  id=677, year=2019, grade=9, round=final, title=Заключительный, problems=5
+  id=678, year=2019, grade=9, round=final, title=Заключительный, problems=5
+  id=679, year=2019, grade=9, round=final, title=Заключительный, problems=5
+  id=, year=2019, grade=9, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=, year=2019, grade=10, round=final, title=Заключительный этап, problems=7
+  id=, year=2019, grade=10, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=680, year=2019, grade=11, round=final, title=Заключительный, problems=5
+  id=681, year=2019, grade=11, round=final, title=Заключительный, problems=5
+  id=682, year=2019, grade=11, round=final, title=Заключительный, problems=5
+  id=683, year=2019, grade=11, round=final, title=Заключительный, problems=5
+  id=684, year=2019, grade=11, round=final, title=Заключительный, problems=5
+  id=, year=2019, grade=11, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=685, year=2020, grade=9, round=final, title=Заключительный, problems=5
+  id=686, year=2020, grade=9, round=final, title=Заключительный, problems=5
+  id=687, year=2020, grade=9, round=final, title=Заключительный, problems=5
+  id=, year=2020, grade=9, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=688, year=2020, grade=10, round=final, title=Заключительный, problems=5
+  id=689, year=2020, grade=10, round=final, title=Заключительный, problems=5
+  id=, year=2020, grade=10, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=690, year=2020, grade=11, round=final, title=Заключительный, problems=5
+  id=, year=2020, grade=11, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=247, year=2021, grade=9, round=final, title=Заключительный этап, problems=5
+  id=, year=2021, grade=9, round=qualifying, title=Отборочный этап, problems=6
+  id=248, year=2021, grade=10, round=final, title=Заключительный этап, problems=5
+  id=, year=2021, grade=10, round=qualifying, title=Отборочный этап, problems=6
+  id=249, year=2021, grade=11, round=final, title=Заключительный этап, problems=5
+  id=, year=2021, grade=11, round=qualifying, title=Отборочный (заочный) этап, problems=6
+  id=691, year=2022, grade=9, round=final, title=Заключительный, problems=5
+  id=, year=2022, grade=9, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=692, year=2022, grade=10, round=final, title=Заключительный, problems=5
+  id=, year=2022, grade=10, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=693, year=2022, grade=11, round=final, title=Заключительный, problems=5
+  id=, year=2022, grade=11, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=, year=2023, grade=9, round=final, title=Заключительный этап, problems=7
+  id=, year=2023, grade=9, round=qualifying, title=Отборочный этап, problems=5
+  id=, year=2023, grade=10, round=final, title=Заключительный этап, problems=7
+  id=, year=2023, grade=10, round=qualifying, title=Отборочный этап, problems=5
+  id=, year=2023, grade=11, round=final, title=Заключительный этап, problems=7
+  id=, year=2023, grade=11, round=qualifying, title=Отборочный этап, problems=5
+  id=694, year=2024, grade=9, round=final, title=Заключительный, problems=5
+  id=, year=2024, grade=9, round=qualifying, title=Отборочный этап, problems=10
+  id=695, year=2024, grade=10, round=final, title=Заключительный, problems=5
+  id=, year=2024, grade=10, round=qualifying, title=Отборочный этап, problems=10
+  id=696, year=2024, grade=11, round=final, title=Заключительный, problems=5
+  id=, year=2024, grade=11, round=qualifying, title=Отборочный этап, problems=10
+  id=697, year=2025, grade=9, round=final, title=Заключительный, problems=5
+  id=, year=2025, grade=9, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=698, year=2025, grade=10, round=final, title=Заключительный, problems=5
+  id=, year=2025, grade=10, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=699, year=2025, grade=11, round=final, title=Заключительный, problems=5
+  id=, year=2025, grade=11, round=qualifying, title=Отборочный (заочный) этап, problems=7
+  id=708, year=2026, grade=9, round=final, title=Заключительный, problems=5
+  id=709, year=2026, grade=10, round=final, title=Заключительный, problems=5
+  id=710, year=2026, grade=11, round=final, title=Заключительный, problems=5
+
+mathus_olympiads.json phystech: 73 records
+  id=49, year=2009, grade=11, round=dolgopa, title=Московская область (Долгопрудный), problems=16
+  id=50, year=2009, grade=11, round=viezd, title=Выездной вариант, problems=14
+  id=51, year=2010, grade=11, round=dolgopa, title=Московская область (Долгопрудный), problems=14
+  id=52, year=2010, grade=11, round=viezd, title=Выездной вариант, problems=12
+  id=53, year=2011, grade=10, round=all, title=all, problems=82
+  id=54, year=2011, grade=11, round=dolgopa, title=Московская область (Долгопрудный), problems=26
+  id=55, year=2011, grade=11, round=viezd, title=Выездной вариант, problems=26
+  id=56, year=2011, grade=9, round=all, title=all, problems=80
+  id=57, year=2012, grade=10, round=all, title=all, problems=102
+  id=58, year=2012, grade=11, round=dolgopa, title=Московская область (Долгопрудный), problems=32
+  id=59, year=2012, grade=11, round=viezd, title=Выездной вариант, problems=32
+  id=60, year=2012, grade=9, round=all, title=all, problems=80
+  id=61, year=2013, grade=10, round=all, title=all, problems=82
+  id=62, year=2013, grade=11, round=dolgopa, title=Московская область (Долгопрудный), problems=34
+  id=63, year=2013, grade=11, round=viezd, title=Выездной вариант, problems=34
+  id=64, year=2013, grade=9, round=all, title=all, problems=84
+  id=65, year=2014, grade=10, round=all, title=all, problems=80
+  id=66, year=2014, grade=11, round=dolgopa, title=Московская область (Долгопрудный), problems=30
+  id=67, year=2014, grade=11, round=viezd, title=Выездной вариант, problems=30
+  id=68, year=2014, grade=9, round=all, title=all, problems=80
+  id=69, year=2015, grade=10, round=v1, title=Вариант 1, problems=12
+  id=70, year=2015, grade=10, round=v2, title=Вариант 2, problems=12
+  id=71, year=2015, grade=10, round=v3, title=Вариант 3, problems=12
+  id=72, year=2015, grade=11, round=v1, title=Вариант 1, problems=16
+  id=73, year=2015, grade=11, round=v2, title=Вариант 2, problems=14
+  id=74, year=2015, grade=11, round=v3, title=Вариант 3, problems=14
+  id=75, year=2015, grade=9, round=online, title=Онлайн-вариант, problems=24
+  id=76, year=2015, grade=otbor_11, round=online, title=Онлайн-вариант, problems=24
+  id=77, year=2016, grade=10, round=v1, title=Вариант 1, problems=14
+  id=78, year=2016, grade=10, round=v2, title=Вариант 2, problems=12
+  id=79, year=2016, grade=10, round=v3, title=Вариант 3, problems=12
+  id=80, year=2016, grade=11, round=v1, title=Вариант 1, problems=14
+  id=81, year=2016, grade=11, round=v2, title=Вариант 2, problems=14
+  id=82, year=2016, grade=11, round=v3, title=Вариант 3, problems=14
+  id=83, year=2016, grade=9, round=v1, title=Вариант 1, problems=12
+  id=84, year=2016, grade=9, round=v2, title=Вариант 2, problems=14
+  id=85, year=2016, grade=9, round=v3, title=Вариант 3, problems=12
+  id=86, year=2016, grade=otbor_11, round=online, title=Онлайн-вариант, problems=22
+  id=87, year=2017, grade=10, round=v1, title=Вариант 1, problems=14
+  id=88, year=2017, grade=10, round=v2, title=Вариант 2, problems=14
+  id=89, year=2017, grade=11, round=v1, title=Вариант 1, problems=14
+  id=90, year=2017, grade=11, round=v2, title=Вариант 2, problems=16
+  id=91, year=2017, grade=9, round=v1, title=Вариант 1, problems=14
+  id=92, year=2017, grade=9, round=v2, title=Вариант 2, problems=14
+  id=93, year=2017, grade=otbor_11, round=online, title=Онлайн-вариант, problems=36
+  id=94, year=2018, grade=10, round=v1, title=Вариант 1, problems=16
+  id=95, year=2018, grade=10, round=v2, title=Вариант 2, problems=14
+  id=96, year=2018, grade=11, round=v1, title=Вариант 1, problems=14
+  id=97, year=2018, grade=11, round=v2, title=Вариант 2, problems=14
+  id=98, year=2018, grade=9, round=v1, title=Вариант 1, problems=14
+  id=99, year=2018, grade=9, round=v2, title=Вариант 2, problems=14
+  id=100, year=2018, grade=otbor_11, round=online, title=Онлайн-вариант, problems=20
+  id=101, year=2019, grade=10, round=v1, title=Вариант 1, problems=14
+  id=102, year=2019, grade=10, round=v2, title=Вариант 2, problems=16
+  id=103, year=2019, grade=11, round=v1, title=Вариант 1, problems=14
+  id=104, year=2019, grade=11, round=v2, title=Вариант 2, problems=18
+  id=105, year=2019, grade=9, round=v1, title=Вариант 1, problems=14
+  id=106, year=2019, grade=9, round=v2, title=Вариант 2, problems=16
+  id=107, year=2024, grade=10, round=v1, title=Вариант 1, problems=21
+  id=108, year=2024, grade=10, round=v2, title=Вариант 2, problems=24
+  id=109, year=2024, grade=11, round=v1, title=Вариант 1, problems=21
+  id=110, year=2024, grade=11, round=v2, title=Вариант 2, problems=21
+  id=111, year=2024, grade=9, round=v1, title=Вариант 1, problems=24
+  id=112, year=2024, grade=9, round=v2, title=Вариант 2, problems=21
+  id=113, year=2024, grade=otbor_11, round=otbor1, title=Отборочный этап 1, problems=30
+  id=114, year=2024, grade=otbor_11, round=otbor2, title=Отборочный этап 2, problems=30
+  id=115, year=2024, grade=otbor_11, round=otbor3, title=Отборочный этап 3, problems=36
+  id=116, year=2025, grade=10, round=v1, title=Вариант 1, problems=14
+  id=117, year=2025, grade=10, round=v2, title=Вариант 2, problems=14
+  id=118, year=2025, grade=11, round=v1, title=Вариант 1, problems=14
+  id=119, year=2025, grade=11, round=v2, title=Вариант 2, problems=18
+  id=120, year=2025, grade=9, round=v1, title=Вариант 1, problems=14
+  id=121, year=2025, grade=9, round=v2, title=Вариант 2, problems=14
+
+
+=== Attempting to match by (year, grade, round) ===
+
+Matched phystech records: 0/73
+Unmatched mathus records: 73
+  id=49 year=2009 grade=11 round=dolgopa
+  id=50 year=2009 grade=11 round=viezd
+  id=51 year=2010 grade=11 round=dolgopa
+  id=52 year=2010 grade=11 round=viezd
+  id=53 year=2011 grade=10 round=all
+  id=54 year=2011 grade=11 round=dolgopa
+  id=55 year=2011 grade=11 round=viezd
+  id=56 year=2011 grade=9 round=all
+  id=57 year=2012 grade=10 round=all
+  id=58 year=2012 grade=11 round=dolgopa

@@ -1,0 +1,32 @@
+C:\Users\Victor\Desktop\Новая папка (2)\gen_solutions.py:8: SyntaxWarning: invalid escape sequence '\('
+  LaTeX: DeepSeek получает инструкцию использовать \(...\) и \[...\];
+C:\Users\Victor\Desktop\Новая папка (2)\gen_solutions.py:140: SyntaxWarning: invalid escape sequence '\('
+  """Convert DeepSeek LaTeX \(...\) and \[...\] to $...$ and $$...$$."""
+DB loaded: 1622 olympiads
+
+Testing matching for: |euler|2017|g8|distance|#1
+  Found: olympiad index 25, problem index 0
+  Olympiad: euler
+  Problem num: 1
+  Current solution_status: 'generated'
+  All 60 tasks match correctly!
+
+Testing LaTeX conversion:
+  Before: Решение: \(x^2 + y^2 = 1\) и \[\sum_{k=1}^{n} k\]
+  After:  Решение: $x^2 + y^2 = 1$ и $$\sum_{k=1}^{n} k$$
+  PASS
+
+Testing JSON sanitizer:
+  Valid JSON: {'solution': 'test', 'answer': '42'}
+  With control chars: {'solution': 'line1\nline2', 'answer': '42'}
+  With LaTeX escapes: {'solution': '\\(x^2\\)', 'answer': '42'}
+
+Done keys in DB: 60
+  First task key from _make_key: ('euler', '2017', '8', 'distance', '1')
+  First task in done_keys: True
+
+Tasks need solutions: 304
+Already in DB (generated): 60
+Remaining to process: 244
+
+=== ALL CHECKS PASSED ===

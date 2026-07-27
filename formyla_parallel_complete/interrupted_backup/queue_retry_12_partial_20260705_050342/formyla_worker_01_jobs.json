@@ -1,0 +1,19 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0815",
+      "mode": "replace_bad",
+      "id": "10-D3-1-L6-g911",
+      "grade": 10,
+      "difficulty": 6,
+      "theme": "Стереометрия и векторы",
+      "subtopic": "Сечения",
+      "method_code": "D3",
+      "reasons": [
+        "divisor_count"
+      ],
+      "priority": 31,
+      "worker": 2
+    }
+  ]
+}
