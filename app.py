@@ -11432,11 +11432,6 @@ def submit_feedback():
     """
     try:
         data = request.json or {}
-
-        message_text = (data.get('message') or '').strip()
-        if not (5 <= len(message_text) <= 4000):
-            return jsonify({'error': 'отзыв должен быть 5-4000 символов'}), 400
-
         rating_raw = data.get('rating')
         try:
             rating = int(rating_raw) if rating_raw not in (None, '',) else 0
