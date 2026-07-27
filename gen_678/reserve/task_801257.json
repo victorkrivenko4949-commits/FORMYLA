@@ -1,0 +1,20 @@
+{
+  "id": 801257,
+  "task_text": "Даны действительные числа $a, b, c, d$ такие, что\n$$\na+b+c+d=1,\\quad a^2+b^2+c^2+d^2=2,\\quad a^3+b^3+c^3+d^3=3,\\quad a^4+b^4+c^4+d^4=4.\n$$\nНайдите $a^5+b^5+c^5+d^5$.",
+  "solution": "Обозначим $s_k = a^k+b^k+c^k+d^k$ и пусть $\\sigma_1 = a+b+c+d$, $\\sigma_2 = ab+ac+ad+bc+bd+cd$, $\\sigma_3 = abc+abd+acd+bcd$, $\\sigma_4 = abcd$ – элементарные симметрические многочлены. Известны формулы Ньютона, связывающие суммы степеней с симметрическими многочленами:\n$$\ns_1 = \\sigma_1,\n$$\n$$\ns_2 = \\sigma_1^2 - 2\\sigma_2,\n$$\n$$\ns_3 = \\sigma_1^3 - 3\\sigma_1\\sigma_2 + 3\\sigma_3,\n$$\n$$\ns_4 = \\sigma_1^4 - 4\\sigma_1^2\\sigma_2 + 2\\sigma_2^2 + 4\\sigma_1\\sigma_3 - 4\\sigma_4.\n$$\nПодставляя данные значения $s_1=1$, $s_2=2$, $s_3=3$, $s_4=4$, получаем систему:\n$$\n1 = \\sigma_1,\n$$\n$$\n2 = \\sigma_1^2 - 2\\sigma_2 = 1 - 2\\sigma_2 \\quad\\Rightarrow\\quad \\sigma_2 = -\\frac12,\n$$\n$$\n3 = \\sigma_1^3 - 3\\sigma_1\\sigma_2 + 3\\sigma_3 = 1 - 3\\cdot1\\cdot\\left(-\\frac12\\right) + 3\\sigma_3 = 1+\\frac32+3\\sigma_3 \\quad\\Rightarrow\\quad \\sigma_3 = \\frac16,\n$$\n$$\n4 = \\sigma_1^4 - 4\\sigma_1^2\\sigma_2 + 2\\sigma_2^2 + 4\\sigma_1\\sigma_3 - 4\\sigma_4 = 1 - 4\\cdot1\\cdot\\left(-\\frac12\\right) + 2\\cdot\\frac14 + 4\\cdot1\\cdot\\frac16 - 4\\sigma_4 = 1+2+\\frac12+\\frac23 - 4\\sigma_4 = \\frac{25}{6} - 4\\sigma_4 \\quad\\Rightarrow\\quad \\sigma_4 = \\frac{1}{24}.\n$$\nДля $k\\ge 5$ суммы $s_k$ удовлетворяют рекуррентному соотношению (формулы Ньютона для случая $k \\ge n=4$):\n$$\ns_{k} = \\sigma_1 s_{k-1} - \\sigma_2 s_{k-2} + \\sigma_3 s_{k-3} - \\sigma_4 s_{k-4}.\n$$\nПолагая $k=5$, находим:\n$$\ns_5 = \\sigma_1 s_4 - \\sigma_2 s_3 + \\sigma_3 s_2 - \\sigma_4 s_1 = 1\\cdot4 - \\left(-\\frac12\\right)\\cdot3 + \\frac16\\cdot2 - \\frac1{24}\\cdot1 = 4 + \\frac32 + \\frac13 - \\frac1{24}.\n$$\nПриводим к общему знаменателю $24$: $4 = \\frac{96}{24}$, $\\frac32 = \\frac{36}{24}$, $\\frac13 = \\frac{8}{24}$, $\\frac1{24} = \\frac1{24}$. Сумма: $\\frac{96+36+8-1}{24} = \\frac{139}{24}$.\n\nТаким образом, $a^5+b^5+c^5+d^5 = \\dfrac{139}{24}$.",
+  "correct_answer": "$\\dfrac{139}{24}$",
+  "class_level": 9,
+  "topic": "Алгебра",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Симметрические многочлены и рекуррентные формулы Ньютона",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.802,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T12:07:47.266819+00:00"
+}

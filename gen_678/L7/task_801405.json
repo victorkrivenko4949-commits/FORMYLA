@@ -1,0 +1,20 @@
+{
+  "id": 801405,
+  "task_text": "В треугольнике $ABC$ проведены биссектрисы $AD$, $BE$, $CF$. Оказалось, что площади треугольников $AEF$, $BFD$ и $CDE$ равны. Докажите, что треугольник $ABC$ — равносторонний.",
+  "solution": "Пусть стороны треугольника $BC = a$, $CA = b$, $AB = c$. По свойству биссектрисы:\n- $AE = \\frac{bc}{a+c}$, $EC = \\frac{ab}{a+c}$;\n- $BF = \\frac{ac}{a+b}$, $FA = \\frac{bc}{a+b}$;\n- $CD = \\frac{ab}{b+c}$, $DB = \\frac{ac}{b+c}$.\n\nПлощадь треугольника $AEF$:\n$$S_{AEF} = \\frac12 \\cdot AE \\cdot AF \\cdot \\sin \\angle A = \\frac12 \\cdot \\frac{bc}{a+c} \\cdot \\frac{bc}{a+b} \\cdot \\sin A = \\frac{b^2 c^2 \\sin A}{2(a+b)(a+c)}.$$\nАналогично,\n$$S_{BFD} = \\frac{c^2 a^2 \\sin B}{2(b+c)(b+a)},\\quad S_{CDE} = \\frac{a^2 b^2 \\sin C}{2(c+a)(c+b)}.$$\n\nПо условию $S_{AEF}=S_{BFD}$, поэтому\n$$\\frac{b^2 c^2 \\sin A}{(a+b)(a+c)} = \\frac{c^2 a^2 \\sin B}{(b+c)(b+a)}.$$\nСокращаем $c^2$ и применяем теорему синусов $\\frac{\\sin A}{a} = \\frac{\\sin B}{b}$ (или $\\sin A : \\sin B = a : b$):\n$$\\frac{b^2 \\cdot a}{(a+b)(a+c)} = \\frac{a^2 \\cdot b}{(b+c)(b+a)}.$$\nУпрощаем:\n$$\\frac{ab}{(a+b)(a+c)} = \\frac{ab}{(b+c)(b+a)}$$\n(после сокращения $ab$). Отсюда $(a+b)(a+c) = (b+c)(b+a)$, что даёт $a^2+ac+ab+bc = b^2+ab+bc+ac$, т.е. $a^2=b^2$, и, поскольку длины сторон положительны, $a=b$.\n\nАналогично, из равенства $S_{BFD}=S_{CDE}$ получаем $b=c$. Следовательно, $a=b=c$, треугольник $ABC$ — равносторонний.",
+  "correct_answer": "Треугольник ABC — равносторонний",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Выражение площадей через стороны и приравнивание с использованием теоремы синусов.",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T13:07:00.162797+00:00"
+}

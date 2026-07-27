@@ -1,0 +1,32 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0047",
+      "mode": "replace_bad",
+      "id": "5-B2-38-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Дроби, доли, проценты",
+      "subtopic": "Проценты",
+      "method_code": "B2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 10
+    },
+    {
+      "job_id": "audit-0385-11-D3-1-L7-gh3",
+      "mode": "replace_bad",
+      "id": "11-D3-1-L7-gh3",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Функции, графики и параметры",
+      "subtopic": "Графические методы",
+      "method_code": "D3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

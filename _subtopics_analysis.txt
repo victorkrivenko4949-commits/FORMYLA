@@ -1,0 +1,16 @@
+=== јнализ подтем ===
+
+¬сего задач: 12130
+
+1. ”никальных section: 41
+2. ”никальных topic: 586
+3. ”никальных (grade, section): 95
+4. ”никальных (grade, topic): 768
+5. ”никальных (level, grade, topic) Ч €чеек: 1249
+6. ”никальных (level, grade, section): 452
+
+ лассы: [10, 11, 5, 6, 7, '7', 8, 9]
+Traceback (most recent call last):
+  File "c:\Users\Victor\Desktop\Ќова€ папка (2)\_analyze_subtopics.py", line 43, in <module>
+    levels = sorted(set(t.get('level') for t in data))
+TypeError: '<' not supported between instances of 'str' and 'int'

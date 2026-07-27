@@ -1,0 +1,20 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0171",
+      "mode": "replace_bad",
+      "id": "6-B1-4-L8-g678",
+      "grade": 6,
+      "difficulty": 8,
+      "theme": "Дроби, отношения, проценты",
+      "subtopic": "Пропорции",
+      "method_code": "B1",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 12
+    }
+  ]
+}

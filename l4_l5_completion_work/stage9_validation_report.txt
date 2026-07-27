@@ -1,0 +1,51 @@
+======================================================================
+  STAGE 9: FINAL VALIDATION REPORT
+  Generated: 2026-07-17T13:02:02.326035 UTC
+======================================================================
+
+  Total tasks in bank: 1289
+
+  --- 1. Required Fields ---
+    Missing fields (total): 1
+    Task(s) missing 'answer': 1
+    Result: WARN (pre-existing)
+
+  --- 2. Cell Analysis ---
+    Unique cell_keys found: 258
+    Expected cell count: 258
+
+    All cells are valid canonical cells.
+
+  --- 3. Per-Cell Task Count ---
+    Cells with exactly 5 tasks: 257
+    Under-filled cells (<5): 1
+    Over-filled cells (>5): 0
+
+    Under-filled cells:
+      G7|L5|T003|S1: 4 tasks
+
+  --- 4. Missing Canonical Cells ---
+    Cells not in bank at all: 0
+
+  --- 5. Duplicate Statements Check ---
+    Duplicate statements within cells: 0
+    Result: PASS
+
+  --- 6. Quality Score Stats ---
+    Average score: 81.1
+    Min score: 33.8
+    Max score: 92.5
+
+  --- 7. Grade & Level Distribution ---
+    Grade distribution: {5: 180, 6: 180, 7: 179, 8: 180, 9: 180, 10: 180, 11: 210}
+    Level distribution: {'4': 645, '5': 644}
+
+  --- SUMMARY ---
+    Total tasks: 1289
+    Total errors: 0
+    Total warnings: 1
+    Warnings:
+      [WARN] Field 'answer' missing in 1 task(s)
+
+  VERDICT: ALL CHECKS PASSED
+======================================================================

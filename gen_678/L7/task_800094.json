@@ -1,0 +1,20 @@
+{
+  "id": 800094,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD:DC = CE:EA = AF:FB = 1:3$. Через точку $D$ проведена прямая, параллельная $CA$, через точку $E$ — прямая, параллельная $AB$, а через точку $F$ — прямая, параллельная $BC$. Эти три прямые попарно пересекаются и образуют треугольник $PQR$. Найдите площадь треугольника $PQR$, если площадь треугольника $ABC$ равна $S$.",
+  "solution": "1) Площадь треугольника PQR не зависит от формы треугольника ABC, так как условие задачи инвариантно относительно аффинных преобразований (сохраняются параллельность и отношение площадей). Поэтому можно рассмотреть частный случай — прямоугольный треугольник с катетами 1. Пусть A(0,0), B(1,0), C(0,1). Тогда S_{ABC} = \\frac12.\n\n2) Из условия BD:DC = 1:3 точка D делит BC в отношении 1:3 от B к C: D = B + \\frac{1}{1+3}(C-B) = (1,0) + \\frac14(-1,1) = \\left(\\frac34, \\frac14\\right).\n   CE:EA = 1:3 даёт E на CA: E = C + \\frac14(A-C) = \\left(0, \\frac34\\right).\n   AF:FB = 1:3 даёт F на AB: F = A + \\frac14(B-A) = \\left(\\frac14, 0\\right).\n\n3) Прямая CA вертикальна (x=0), поэтому через D проводим вертикаль x = \\frac34.\n   Прямая AB горизонтальна (y=0), поэтому через E проводим горизонталь y = \\frac34.\n   Прямая BC имеет уравнение x+y=1, поэтому через F проводим прямую x+y = \\frac14.\n\n4) Найдём вершины треугольника PQR:\n   - P — пересечение x=\\frac34 и y=\\frac34: P\\left(\\frac34,\\frac34\\right).\n   - Q — пересечение x=\\frac34 и x+y=\\frac14: y = \\frac14-\\frac34 = -\\frac12, Q\\left(\\frac34,-\\frac12\\right).\n   - R — пересечение y=\\frac34 и x+y=\\frac14: x = \\frac14-\\frac34 = -\\frac12, R\\left(-\\frac12,\\frac34\\right).\n\n5) Вычислим площадь треугольнике PQR. Векторы \\overrightarrow{PQ} = \\left(0, -\\frac12-\\frac34\\right) = \\left(0, -\\frac54\\right), \\overrightarrow{PR} = \\left(-\\frac12-\\frac34, 0\\right) = \\left(-\\frac54, 0\\right). Площадь: \\frac12|\\det(\\overrightarrow{PQ},\\overrightarrow{PR})| = \\frac12\\left|0\\cdot0 - \\left(-\\frac54\\right)\\cdot\\left(-\\frac54\\right)\\right| = \\frac12\\cdot\\frac{25}{16} = \\frac{25}{32}.\n\n6) Исходная площадь S_{ABC} = \\frac12, поэтому отношение площадей \\frac{S_{PQR}}{S_{ABC}} = \\frac{25/32}{1/2} = \\frac{25}{16}. Следовательно, S_{PQR} = \\frac{25}{16}S.\n\nОтвет: \\frac{25}{16}S.",
+  "correct_answer": "\\frac{25}{16}S",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Аффинное преобразование",
+  "idea_count": 1,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T04:30:06.364499+00:00"
+}

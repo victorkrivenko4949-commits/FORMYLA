@@ -1,0 +1,28 @@
+=== raw_G5_L5_T004_S2.txt === len=13923
+  Strategy 6 (raw): OK: 1 tasks
+    Task 0: statement_len=295, answer_len=1865, solution_len=11680
+  Strategy 6 (sanitized): OK: 1 tasks
+    Task 0: statement_len=295, answer_len=1865, solution_len=11680
+  parse_json_response: OK (1 tasks)
+
+=== raw_G6_L5_T016_S1.txt === len=10430
+  Strategy 6 (raw): OK: 1 tasks
+    Task 0: statement_len=241, answer_len=15, solution_len=9841
+  Strategy 6 (sanitized): OK: 1 tasks
+    Task 0: statement_len=261, answer_len=18, solution_len=10677
+  parse_json_response: OK (1 tasks)
+
+=== raw_G6_L5_T018_S2.txt === len=10743
+  Strategy 6 (raw): OK: 1 tasks
+    Task 0: statement_len=284, answer_len=5, solution_len=10371
+  Strategy 6 (sanitized): OK: 1 tasks
+    Task 0: statement_len=308, answer_len=7, solution_len=11041
+  parse_json_response: OK (1 tasks)
+
+=== raw_G6_L5_T018_S1.txt === len=11691
+  Strategy 6 (raw): OK: 1 tasks
+    Task 0: statement_len=245, answer_len=6, solution_len=11357
+  Strategy 6 (sanitized): OK: 1 tasks
+    Task 0: statement_len=245, answer_len=6, solution_len=11357
+  parse_json_response: OK (1 tasks)
+

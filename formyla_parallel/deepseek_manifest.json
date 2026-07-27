@@ -1,0 +1,9 @@
+{
+  "created_or_updated": [
+    "deepseek_worker.py",
+    "orchestrator_deepseek.py",
+    "deepseek_env.example.sh"
+  ],
+  "note": "DeepSeek runner reads DEEPSEEK_API_KEY from environment; do not paste or hardcode secrets.",
+  "sandbox_limitation": "The notebook environment has no internet access, so API calls must be run locally or in an internet-enabled runtime."
+}

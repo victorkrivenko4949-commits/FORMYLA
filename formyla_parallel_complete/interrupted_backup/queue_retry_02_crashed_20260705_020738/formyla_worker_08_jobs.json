@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0243-8-C3-4-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-C3-4-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Системы и текстовые задачи",
+      "subtopic": "На проценты",
+      "method_code": "C3",
+      "reasons": "L8_probably_too_easy",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0349-9-B2-5-L8-g911",
+      "mode": "replace_bad",
+      "id": "9-B2-5-L8-g911",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Системы, модули, радикалы, неравенства",
+      "subtopic": "Уравнения с модулем",
+      "method_code": "B2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0257-11-D2-6-L7-gf",
+      "mode": "replace_bad",
+      "id": "11-D2-6-L7-gf",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Функции, графики и параметры",
+      "subtopic": "Задачи с параметром",
+      "method_code": "D2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

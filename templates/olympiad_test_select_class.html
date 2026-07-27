@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Олимпиадный тест — FORMYLA{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 2em; color: var(--text-main); margin-bottom: 10px;">🎯 Олимпиадный тест</h1>
+        <p style="font-size: 1em; color: var(--text-soft);">Выбери класс и узнай свой уровень подготовки к олимпиадам</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        {% for g in range(5, 12) %}
+        <a href="/olympiad-test/select-section?grade={{ g }}"
+           style="display: block; padding: 18px 8px; text-align: center;
+                  background: var(--bg-card); border: 1px solid var(--border-soft);
+                  border-radius: var(--radius-lg); text-decoration: none; color: var(--text-main);
+                  font-size: 1.1em; font-weight: 600; transition: all 0.2s;"
+           onmouseover="this.style.borderColor='var(--accent-2)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)'"
+           onmouseout="this.style.borderColor='var(--border-soft)'; this.style.transform=''; this.style.boxShadow=''">
+            {{ g }} класс
+        </a>
+        {% endfor %}
+    </div>
+    <p style="text-align: center; color: var(--text-soft); margin-top: 30px; font-size: 0.9em;">
+        5 задач · фиксированный уровень · старт L2<br>
+        В каждой теме по 25 задач (5 уровней × 5 задач)
+    </p>
+</div>
+{% endblock %}

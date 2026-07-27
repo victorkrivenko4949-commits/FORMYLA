@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0487-11-E2-3-L7-g911",
+      "mode": "replace_bad",
+      "id": "11-E2-3-L7-g911",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Стереометрия, координаты и векторы",
+      "subtopic": "Объёмы и сечения",
+      "method_code": "E2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0294-7-D3-2-L7-g678",
+      "mode": "replace_bad",
+      "id": "7-D3-2-L7-g678",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Геометрия треугольников и углов",
+      "subtopic": "Равнобедренный треугольник и медианы/высоты",
+      "method_code": "D3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0340-8-G2-L7-fill-0136",
+      "mode": "replace_bad",
+      "id": "8-G2-L7-fill-0136",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Комбинаторика, логика, инварианты",
+      "subtopic": "Инварианты и Дирихле",
+      "method_code": "G2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

@@ -453,7 +453,7 @@ def submit_test_and_generate_tasks(
     try:
         enqueue_daily_generation(
             user_id,
-            force_now=False,
+            triggered_by="test",
             forced_topic=slug,
         )
         state["generated_today"] = True
@@ -506,7 +506,7 @@ def generate_tasks_only(user_id: int, subtopic: Optional[str] = None) -> Dict[st
     try:
         enqueue_daily_generation(
             user_id,
-            force_now=False,
+            triggered_by="cron",
             forced_topic=slug,
         )
         state["generated_today"] = True

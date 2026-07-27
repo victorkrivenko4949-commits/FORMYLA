@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{{ grade }} класс · {{ theme[:30] }} — FORMYLA{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
+    <a href="/olympiad-test/select-theme?grade={{ grade }}&section={{ section|urlencode }}" style="color: var(--text-soft); text-decoration: none; font-size: 0.9em;">← Выбор темы</a>
+    <div style="text-align: center; margin: 20px 0 30px;">
+        <h1 style="font-size: 1.5em; color: var(--text-main);">{{ grade }} класс</h1>
+        <h2 style="font-size: 1.1em; color: var(--accent-2); margin-top: 4px;">{{ theme }}</h2>
+        <p style="color: var(--text-soft);">Выбери уровень сложности (по 5 задач на уровень)</p>
+    </div>
+    {% set colors = {1: '#6b7280', 2: '#3b82f6', 3: '#f59e0b', 4: '#ef4444', 5: '#8b5cf6'} %}
+    {% set names = {
+        1: 'уровень задач: Школьная математика',
+        2: 'уровень задач: Школьный этап ВОШ',
+        3: 'уровень задач: Муниципальный этап ВОШ',
+        4: 'уровень задач: Региональный этап ВОШ',
+        5: 'уровень задач: Заключительный / Всеросс'
+    } %}
+    {% set emojis = {1: '📗', 2: '📘', 3: '📙', 4: '📕', 5: '📓'} %}
+    {% set subtitles = {
+        1: '',
+        2: '',
+        3: '',
+        4: '🏆 Задачи взяты из реальных олимпиад',
+        5: '🏆 Задачи взяты из реальных олимпиад'
+    } %}
+
+    {% if recommended_level is not none %}
+    {# ── Пользователь уже прошёл диагностику: показываем только ОДИН рекомендуемый уровень ──}
+    <div style="margin-bottom: 28px; padding: 22px 24px; background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(249,115,22,0.08)); border: 1px solid rgba(245,158,11,0.45); border-radius: var(--radius-lg); box-shadow: 0 6px 20px rgba(245,158,11,0.18); text-align: center;">
+        <div style="font-size: 1.1em; font-weight: 700; color: #fbbf24; margin-bottom: 4px;">
+            🎯 Твой уровень: L{{ recommended_level }}
+        </div>
+        <div style="color: var(--text-soft); font-size: 0.9em;">
+            Уровень определён по результатам адаптивного теста. Выбери его ниже.
+        </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+        {% set lvl = recommended_level %}
+        <a href="/olympiad-test/start?grade={{ grade }}&theme={{ theme|urlencode }}&level={{ lvl }}"
+           style="display: flex; align-items: center; gap: 16px; padding: 20px;
+                  background: var(--bg-card); border: 2px solid {{ colors[lvl] }};
+                  border-radius: var(--radius-lg); text-decoration: none; color: var(--text-main);
+                  transition: all 0.2s; box-shadow: 0 4px 24px rgba(0,0,0,0.3);"
+           onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 8px 32px rgba(0,0,0,0.4)'"
+           onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.3)'">
+            <span style="font-size: 2em;">{{ emojis[lvl] }}</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 1.05em;">
+                    <span style="display:inline-block;background:{{ colors[lvl] }};color:white;padding:2px 10px;border-radius:20px;font-size:0.85em;margin-right:8px;">L{{ lvl }}</span>
+                    {{ names[lvl] }}
+                </div>
+                {% if subtitles[lvl] %}
+                <div style="color: #f59e0b; font-size: 0.85em; margin-top: 4px;">{{ subtitles[lvl] }}</div>
+                {% endif %}
+            </div>
+            <span style="color: var(--text-soft); font-size: 1.5em;">→</span>
+        </a>
+    </div>
+    {% else %}
+    {# ── Нет диагностики: показываем ВСЕ 5 уровней ──}
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+        {% for lvl in range(1, 6) %}
+        <a href="/olympiad-test/start?grade={{ grade }}&theme={{ theme|urlencode }}&level={{ lvl }}"
+           style="display: flex; align-items: center; gap: 16px; padding: 20px;
+                  background: var(--bg-card); border: 2px solid {{ colors[lvl] }}33;
+                  border-radius: var(--radius-lg); text-decoration: none; color: var(--text-main);
+                  transition: all 0.2s;"
+           onmouseover="this.style.borderColor='{{ colors[lvl] }}'; this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.3)'"
+           onmouseout="this.style.borderColor='{{ colors[lvl] }}33'; this.style.transform=''; this.style.boxShadow=''">
+            <span style="font-size: 2em;">{{ emojis[lvl] }}</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 1.05em;">
+                    <span style="display:inline-block;background:{{ colors[lvl] }};color:white;padding:2px 10px;border-radius:20px;font-size:0.85em;margin-right:8px;">L{{ lvl }}</span>
+                    {{ names[lvl] }}
+                </div>
+                {% if subtitles[lvl] %}
+                <div style="color: #f59e0b; font-size: 0.85em; margin-top: 4px;">{{ subtitles[lvl] }}</div>
+                {% endif %}
+            </div>
+            <span style="color: var(--text-soft); font-size: 1.5em;">→</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

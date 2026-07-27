@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0443-8-E3-L8-fill-0149",
+      "mode": "replace_bad",
+      "id": "8-E3-L8-fill-0149",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0306-8-F1-4-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-F1-4-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Теория чисел: остатки и диофантовы",
+      "subtopic": "Сравнения по модулю",
+      "method_code": "F1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

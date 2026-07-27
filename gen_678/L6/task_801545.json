@@ -1,0 +1,20 @@
+{
+  "id": 801545,
+  "task_text": "В треугольнике $ABC$ проведена медиана $AM$. На её продолжении за точку $M$ отложен отрезок $MD = AM$. Точка $N$ — середина отрезка $BD$. Докажите, что площадь треугольника $ANM$ составляет четверть площади треугольника $ABC$.",
+  "solution": "Рассмотрим параллелограмм $ABDC$: отрезки $AD$ и $BC$ — его диагонали, пересекающиеся в середине $M$, поэтому $ABDC$ — параллелограмм. Введём векторные обозначения: пусть $\\vec{A} = \\vec{0}$ (начало координат в точке $A$), $\\vec{B} = \\vec{b}$, $\\vec{C} = \\vec{c}$. Тогда $\\vec{M} = (\\vec{b}+\\vec{c})/2$, $\\vec{D} = \\vec{b}+\\vec{c}$ (так как $\\vec{D} = \\vec{A}+\\vec{B}+\\vec{C} = \\vec{b}+\\vec{c}$), $\\vec{N} = (\\vec{B}+\\vec{D})/2 = (\\vec{b}+(\\vec{b}+\\vec{c}))/2 = \\vec{b}+\\vec{c}/2$. Площадь треугольника $ANM$ равна $\\frac12|\\vec{N}\\times\\vec{M}|$ (векторное произведение). Вычислим:\n\n$$\n\\vec{N}\\times\\vec{M} = \\left(\\vec{b}+\\frac{\\vec{c}}{2}\\right)\\times\\frac{\\vec{b}+\\vec{c}}{2} = \\frac12\\vec{b}\\times\\vec{b} + \\frac12\\vec{b}\\times\\vec{c} + \\frac14\\vec{c}\\times\\vec{b} + \\frac14\\vec{c}\\times\\vec{c} = 0 + \\frac12\\vec{b}\\times\\vec{c} - \\frac14\\vec{b}\\times\\vec{c} + 0 = \\frac14\\vec{b}\\times\\vec{c}.\n$$\n\nЗначит, $S_{ANM} = \\frac12\\cdot\\frac14|\\vec{b}\\times\\vec{c}| = \\frac14\\cdot\\frac12|\\vec{b}\\times\\vec{c}| = \\frac14 S_{ABC}$, так как $S_{ABC} = \\frac12|\\vec{b}\\times\\vec{c}|$.",
+  "correct_answer": "Площадь треугольника ANM составляет четверть площади треугольника ABC.",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Векторный метод с использованием свойств параллелограмма",
+  "idea_count": 2,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T13:32:03.467369+00:00"
+}

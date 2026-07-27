@@ -1,0 +1,20 @@
+{
+  "id": 801940,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ взяты точки $D$, $E$, $F$ соответственно, такие что $BD:DC=3:1$, $CE:EA=2:3$, $AF:FB=4:1$. Пусть $X=AD\\cap BE$, $Y=BE\\cap CF$, $Z=CF\\cap AD$. Найдите отношение площади треугольника $XYZ$ к площади треугольника $ABC$.",
+  "solution": "Пусть площадь треугольника $ABC$ равна $1$. Введём барицентрические координаты относительно $ABC$: $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$. Тогда координаты точек на сторонах:\n- $D$ на $BC$: $BD:DC=3:1 \\Rightarrow D(0,\\frac14,\\frac34)$.\n- $E$ на $CA$: $CE:EA=2:3 \\Rightarrow AE:EC=3:2$, поэтому $E(\\frac25,0,\\frac35)$.\n- $F$ на $AB$: $AF:FB=4:1 \\Rightarrow F(\\frac15,\\frac45,0)$.\n\nНайдём точку $X=AD\\cap BE$. \nПараметризация $AD$: $(1-t,\\frac t4,\\frac{3t}4)$.\nПараметризация $BE$: $(\\frac{2s}5,1-s,\\frac{3s}5)$.\nПриравнивая, получаем $\\frac{3t}4=\\frac{3s}5 \\Rightarrow t=\\frac{4s}5$. Из первого уравнения $1-t=\\frac{2s}5 \\Rightarrow 1-\\frac{4s}5=\\frac{2s}5 \\Rightarrow 1=\\frac{6s}5 \\Rightarrow s=\\frac56$, $t=\\frac23$. Тогда $X(\\frac13,\\frac16,\\frac12)$.\n\nАналогично $Y=BE\\cap CF$:\n$BE$: $(\\frac{2s}5,1-s,\\frac{3s}5)$; $CF$: $(\\frac u5,\\frac{4u}5,1-u)$.\nПриравниваем: $\\frac{2s}5=\\frac u5 \\Rightarrow u=2s$; $1-s=\\frac{4u}5=\\frac{8s}5 \\Rightarrow 5-5s=8s \\Rightarrow 13s=5 \\Rightarrow s=\\frac5{13}$, $u=\\frac{10}{13}$. Тогда $Y(\\frac2{13},\\frac8{13},\\frac3{13})$.\n\n$Z=CF\\cap AD$:\n$CF$: $(\\frac v5,\\frac{4v}5,1-v)$; $AD$: $(1-t,\\frac t4,\\frac{3t}4)$.\nПриравниваем: $\\frac t4=\\frac{4v}5 \\Rightarrow t=\\frac{16v}5$; $1-t=\\frac v5 \\Rightarrow 1-\\frac{16v}5=\\frac v5 \\Rightarrow 1=\\frac{17v}5 \\Rightarrow v=\\frac5{17}$, $t=\\frac{16}{17}$. Тогда $Z(\\frac1{17},\\frac4{17},\\frac{12}{17})$.\n\nПлощадь треугольника $XYZ$ в барицентрических координатах равна модулю определителя матрицы из координат $X$, $Y$, $Z$:\n\\[\n\\det=\n\\begin{vmatrix}\n\\frac13 & \\frac16 & \\frac12 \\\\\n\\frac2{13} & \\frac8{13} & \\frac3{13} \\\\\n\\frac1{17} & \\frac4{17} & \\frac{12}{17}\n\\end{vmatrix}.\n\\]\nВычислим:\n\\[\n\\det = \\frac13\\left(\\frac8{13}\\cdot\\frac{12}{17}-\\frac4{17}\\cdot\\frac3{13}\\right) - \\frac16\\left(\\frac2{13}\\cdot\\frac{12}{17}-\\frac1{17}\\cdot\\frac3{13}\\right) + \\frac12\\left(\\frac2{13}\\cdot\\frac4{17}-\\frac1{17}\\cdot\\frac8{13}\\right).\n\\]\nПервая скобка: $\\frac{96}{221}-\\frac{12}{221}=\\frac{84}{221}$. Первое слагаемое: $\\frac13\\cdot\\frac{84}{221}=\\frac{28}{221}$.\nВторая скобка: $\\frac{24}{221}-\\frac{3}{221}=\\frac{21}{221}$. Второе слагаемое: $-\\frac16\\cdot\\frac{21}{221}=-\\frac{7}{442}$.\nТретья скобка: $\\frac{8}{221}-\\frac{8}{221}=0$. Третье слагаемое: $0$.\nСумма: $\\frac{28}{221}-\\frac{7}{442}=\\frac{56}{442}-\\frac{7}{442}=\\frac{49}{442}$.\nИтак, $[XYZ]=\\frac{49}{442}[ABC]$.\n\nОтвет: $\\dfrac{49}{442}$.",
+  "correct_answer": "\\frac{49}{442}",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Барицентрические координаты и вычисление определителя",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.821,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:40:39.001200+00:00"
+}

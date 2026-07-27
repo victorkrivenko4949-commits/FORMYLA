@@ -1,0 +1,403 @@
+#!/usr/bin/env python3
+"""Generate static index.html for olympiad problem database."""
+import os
+
+OUTPUT = os.path.join(os.path.dirname(__file__), 'index.html')
+
+CSS = r'''*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:#f5f5f5;color:#222;line-height:1.6}
+.app-container{max-width:1200px;margin:0 auto;padding:16px}
+.loading-container,.error-container{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:16px}
+.spinner{width:40px;height:40px;border:4px solid #e0e0e0;border-top-color:#1976d2;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-container h2{color:#d32f2f}
+.app-header{margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #e0e0e0}
+.app-header h1{font-size:1.6rem;color:#1565c0;margin-bottom:4px}
+.stats-bar{font-size:.9rem;color:#666}
+.app-layout{display:flex;gap:24px;align-items:flex-start}
+.filter-sidebar{flex:0 0 260px;position:sticky;top:16px;background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.filter-sidebar h3{font-size:1.05rem;margin-bottom:12px;color:#333}
+.filter-group{margin-bottom:14px}
+.filter-group label{display:block;font-size:.85rem;font-weight:600;color:#555;margin-bottom:4px}
+.filter-group select,.filter-group input[type="text"]{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:.9rem;background:#fafafa}
+.filter-group select:focus,.filter-group input[type="text"]:focus{outline:none;border-color:#1976d2;background:#fff}
+.filter-count{margin-top:12px;font-size:.9rem;color:#555}
+.problem-list{flex:1;min-width:0}
+.no-results{text-align:center;color:#888;padding:40px 16px;font-size:1rem}
+.problem-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px 18px;margin-bottom:12px;cursor:pointer;transition:box-shadow .15s,border-color .15s}
+.problem-card:hover{border-color:#1976d2;box-shadow:0 2px 8px rgba(25,118,210,.12)}
+.card-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.card-title{font-size:.9rem;font-weight:600;color:#1565c0}
+.card-num{font-size:.85rem;color:#888;font-weight:600;white-space:nowrap;margin-left:8px}
+.card-preview{font-size:.88rem;color:#444;line-height:1.5;overflow:hidden}
+.card-images-badge{display:inline-block;margin-top:8px;font-size:.78rem;background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:12px;font-weight:500}
+.problem-viewer{background:#fff;border:1px solid #ddd;border-radius:8px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.back-btn{display:inline-block;margin-bottom:16px;padding:8px 18px;background:#f0f0f0;border:1px solid #ccc;border-radius:6px;font-size:.9rem;cursor:pointer}
+.back-btn:hover{background:#e0e0e0}
+.problem-header{margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #eee}
+.problem-header h2{font-size:1.15rem;color:#333;margin-bottom:4px}
+.problem-num{font-size:1rem;font-weight:600;color:#1976d2;margin-right:12px}
+.source-link{font-size:.85rem;color:#1976d2;text-decoration:none}
+.source-link:hover{text-decoration:underline}
+.problem-section{margin-bottom:18px}
+.problem-section h3{font-size:1rem;color:#555;margin-bottom:8px}
+.problem-text{padding-bottom:14px;border-bottom:1px solid #f0f0f0}
+.katex-content{font-size:1rem;line-height:1.7}
+.collapsible{border:1px solid #e0e0e0;border-radius:6px;margin-bottom:12px;overflow:hidden}
+.collapsible summary{padding:10px 16px;font-weight:600;font-size:.95rem;cursor:pointer;background:#fafafa;user-select:none}
+.collapsible summary:hover{background:#f0f0f0}
+.collapsible[open] summary{border-bottom:1px solid #e0e0e0}
+.collapsible .katex-content{padding:14px 16px}
+.solution-placeholder{color:#999;font-style:italic}
+.problem-image{margin:14px 0;text-align:center}
+.image-label{font-size:.82rem;color:#777;margin-bottom:6px}
+.problem-image img{max-width:100%;height:auto;border-radius:4px;border:1px solid #e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.confidence-note{font-size:.8rem;color:#b71c1c;margin-top:4px}
+@media(max-width:768px){.app-layout{flex-direction:column}.filter-sidebar{flex:none;width:100%;position:static}.app-header h1{font-size:1.3rem}.problem-viewer{padding:16px}}'''
+
+JS = r'''
+// ============================================================
+// Constants
+// ============================================================
+const OLYMPIAD_TITLES = {
+  mos:'Московская олимпиада',turgor:'Тургор',kurchatov:'Курчатов',
+  spbgu:'СПбГУ',lomonosov:'Ломоносов',pvg:'ПВГ',
+  formula_unity:'Формула Единства',vsosh:'ВСОШ',
+  vysshaya_proba:'Высшая Проба',euler:'Олимпиада Эйлера',
+  phystech:'Физтех',math_holiday:'Математический праздник'
+};
+const ROUND_TITLES = {
+  final:'Финал',qualifying:'Отборочный',municipal:'Муниципальный',
+  school:'Школьный',regional:'Региональный',district:'Районный',city:'Городской'
+};
+const IMG_KIND_ORDER = ['statement','statement_page_crop','solution','solution_page_crop'];
+const IMG_KIND_LABELS = {
+  statement:'Рисунок к условию',solution:'Рисунок к решению',
+  statement_page_crop:'Скан условия',solution_page_crop:'Скан решения'
+};
+
+function olympiadTitle(k){return OLYMPIAD_TITLES[k]||k}
+function roundTitle(k){return ROUND_TITLES[k]||k}
+function imageSrc(fp){return '/'+fp.replace(/^out\//,'')}
+function escapeHtml(s){const d=document.createElement('div');d.appendChild(document.createTextNode(s));return d.innerHTML}
+
+// ============================================================
+// State
+// ============================================================
+const state = {
+  groups: null, loading: true, error: null,
+  view: 'list', currentProblem: null,
+  filters: { olympiad: '', year: '', grade: '', round: '', search: '' },
+  allProblems: [], filterOptions: null, stats: null
+};
+
+// ============================================================
+// Data Layer
+// ============================================================
+function flattenProblems(groups) {
+  const result = [];
+  for (const g of groups) {
+    for (const p of g.problems) {
+      result.push({
+        groupId: g.id, olympiad: g.olympiad, olympiadTitle: g.olympiad_title,
+        year: g.year, grade: g.grade, round: g.round, roundTitle: g.round_title,
+        sourceUrl: g.source_url || '', sourceName: g.source_name || '',
+        num: p.num, text: p.text, answer: p.answer || '', solution: p.solution || '',
+        images: p.images || [], day: p.day
+      });
+    }
+  }
+  return result;
+}
+
+function getFilterOptions(groups) {
+  const olympiads=new Set(), years=new Set(), grades=new Set(), rounds=new Set();
+  for (const g of groups) {
+    olympiads.add(g.olympiad); years.add(g.year);
+    grades.add(g.grade); rounds.add(g.round);
+  }
+  return {
+    olympiads: [...olympiads].sort(),
+    years: [...years].sort((a,b)=>b-a),
+    grades: [...grades].sort((a,b)=>a-b),
+    rounds: [...rounds].sort()
+  };
+}
+
+async function loadData() {
+  const resp = await fetch('./data/FORMYLA_olympiad_DB_no_holes_with_images.jsonl');
+  if (!resp.ok) throw new Error('Failed to load data: '+resp.status);
+  const text = await resp.text();
+  return text.trim().split('\n').map((line,i)=>{
+    try{return JSON.parse(line)}catch(e){console.warn('Failed to parse line '+(i+1),e);return null}
+  }).filter(g=>g!==null);
+}
+
+// ============================================================
+// Filtering & Sorting
+// ============================================================
+function getFilteredProblems() {
+  let result = state.allProblems;
+  const f = state.filters;
+  if (f.olympiad) result = result.filter(p=>p.olympiad===f.olympiad);
+  if (f.year) result = result.filter(p=>p.year===parseInt(f.year,10));
+  if (f.grade) result = result.filter(p=>p.grade===parseInt(f.grade,10));
+  if (f.round) result = result.filter(p=>p.round===f.round);
+  if (f.search.trim()) {
+    const q = f.search.trim().toLowerCase();
+    result = result.filter(p=>
+      p.text.toLowerCase().includes(q)||
+      p.answer.toLowerCase().includes(q)||
+      p.solution.toLowerCase().includes(q)
+    );
+  }
+  result.sort((a,b)=>{
+    if (a.olympiad!==b.olympiad) return a.olympiad.localeCompare(b.olympiad);
+    if (a.year!==b.year) return b.year-a.year;
+    if (a.grade!==b.grade) return a.grade-b.grade;
+    if (a.round!==b.round) return a.round.localeCompare(b.round);
+    return a.num-b.num;
+  });
+  return result;
+}
+
+// ============================================================
+// Render Functions
+// ============================================================
+function renderApp() {
+  if (state.loading) {
+    document.getElementById('root').innerHTML =
+      '<div class="loading-container"><div class="spinner"></div><p>Загрузка базы олимпиадных задач...</p></div>';
+    return;
+  }
+  if (state.error) {
+    document.getElementById('root').innerHTML =
+      '<div class="error-container"><h2>Ошибка загрузки данных</h2><p>'+escapeHtml(state.error)+'</p><p>Убедитесь, что файл данных находится в public/data/</p></div>';
+    return;
+  }
+  if (state.view === 'problem' && state.currentProblem) {
+    renderProblemView();
+    return;
+  }
+  renderListView();
+}
+
+function renderStats() {
+  if (!state.stats) return '';
+  return '<p class="stats-bar">'+state.stats.totalGroups+' групп, '+state.stats.totalProblems+' задач, '
+    +state.stats.totalImages+' изображений на '+state.stats.problemsWithImages+' задачах</p>';
+}
+
+function renderFilterOptions() {
+  if (!state.filterOptions) return '';
+  const fo = state.filterOptions;
+  const f = state.filters;
+  let html = '<h3>Фильтры</h3>';
+
+  html += '<div class="filter-group"><label for="fo">Олимпиада</label>'
+    +'<select id="fo" onchange="setFilter(\'olympiad\',this.value)"><option value="">Все</option>';
+  for (const k of fo.olympiads) html += '<option value="'+k+'"'+(f.olympiad===k?' selected':'')+'>'+olympiadTitle(k)+'</option>';
+  html += '</select></div>';
+
+  html += '<div class="filter-group"><label for="fy">Год</label>'
+    +'<select id="fy" onchange="setFilter(\'year\',this.value)"><option value="">Все</option>';
+  for (const y of fo.years) html += '<option value="'+y+'"'+(f.year==String(y)?' selected':'')+'>'+y+'</option>';
+  html += '</select></div>';
+
+  html += '<div class="filter-group"><label for="fg">Класс</label>'
+    +'<select id="fg" onchange="setFilter(\'grade\',this.value)"><option value="">Все</option>';
+  for (const g of fo.grades) html += '<option value="'+g+'"'+(f.grade==String(g)?' selected':'')+'>'+g+'</option>';
+  html += '</select></div>';
+
+  html += '<div class="filter-group"><label for="fr">Этап</label>'
+    +'<select id="fr" onchange="setFilter(\'round\',this.value)"><option value="">Все</option>';
+  for (const r of fo.rounds) html += '<option value="'+r+'"'+(f.round===r?' selected':'')+'>'+roundTitle(r)+'</option>';
+  html += '</select></div>';
+
+  html += '<div class="filter-group"><label for="fs">Поиск</label>'
+    +'<input id="fs" type="text" placeholder="Поиск по тексту..." value="'+escapeHtml(f.search)+'" oninput="setFilter(\'search\',this.value)"></div>';
+
+  const count = getFilteredProblems().length;
+  html += '<p class="filter-count">Найдено задач: <strong>'+count+'</strong></p>';
+  return html;
+}
+
+function renderProblemCards() {
+  const problems = getFilteredProblems();
+  if (problems.length === 0) return '<p class="no-results">Нет задач, соответствующих выбранным фильтрам.</p>';
+  let html = '';
+  for (let i = 0; i < problems.length; i++) {
+    const p = problems[i];
+    const preview = p.text.length > 200 ? escapeHtml(p.text.substring(0,200))+'...' : escapeHtml(p.text);
+    const badge = p.images.length > 0
+      ? '<span class="card-images-badge">'+p.images.length+' '+(p.images.length===1?'рисунок':'рисунков')+'</span>'
+      : '';
+    html += '<div class="problem-card" onclick="openProblem('+i+')">'
+      +'<div class="card-header"><span class="card-title">'+olympiadTitle(p.olympiad)+', '+p.year+', '+p.grade+' кл., '+roundTitle(p.round)+'</span>'
+      +'<span class="card-num">№'+p.num+'</span></div>'
+      +'<div class="card-preview">'+preview+'</div>'
+      +badge+'</div>';
+  }
+  return html;
+}
+
+function renderListView() {
+  const root = document.getElementById('root');
+  root.innerHTML = '<div class="app-container">'
+    +'<header class="app-header"><h1>База олимпиадных задач</h1>'+renderStats()+'</header>'
+    +'<div class="app-layout">'
+    +'<aside class="filter-sidebar" id="sidebar">'+renderFilterOptions()+'</aside>'
+    +'<main class="problem-list" id="problemList">'+renderProblemCards()+'</main>'
+    +'</div></div>';
+  window.renderMathInElement && window.renderMathInElement(root, {
+    delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]
+  });
+}
+
+function renderProblemView() {
+  const p = state.currentProblem;
+  let html = '<div class="app-container">';
+
+  // Back button
+  html += '<button class="back-btn" onclick="backToList()">← Назад к списку</button>';
+
+  // Header
+  html += '<div class="problem-viewer">';
+  html += '<div class="problem-header">'
+    +'<h2><span class="problem-num">№'+p.num+'</span>'
+    +olympiadTitle(p.olympiad)+', '+p.year+', '+p.grade+' кл., '+roundTitle(p.round)+'</h2>';
+  if (p.sourceUrl) {
+    html += '<a class="source-link" href="'+escapeHtml(p.sourceUrl)+'" target="_blank" rel="noopener">'+escapeHtml(p.sourceName||p.sourceUrl)+'</a>';
+  }
+  html += '</div>';
+
+  // Sort images
+  const sortedImgs = [...(p.images||[])].sort((a,b)=>{
+    const ai = IMG_KIND_ORDER.indexOf(a.kind);
+    const bi = IMG_KIND_ORDER.indexOf(b.kind);
+    return (ai===-1?999:ai)-(bi===-1?999:bi);
+  });
+  const stmtImgs = sortedImgs.filter(img=>img.kind==='statement'||img.kind==='statement_page_crop');
+  const solImgs = sortedImgs.filter(img=>img.kind==='solution'||img.kind==='solution_page_crop');
+
+  // Statement text section
+  html += '<div class="problem-section problem-text">';
+  html += '<div class="katex-content">'+p.text+'</div>';
+  html += '</div>';
+
+  // Statement images
+  for (const img of stmtImgs) {
+    html += '<div class="problem-image">';
+    html += '<p class="image-label">'+ (IMG_KIND_LABELS[img.kind]||img.kind) +'</p>';
+    html += '<img src="'+imageSrc(img.file)+'" loading="lazy" alt="'+escapeHtml(img.kind)+'">';
+    if (img.confidence==='low') html += '<p class="confidence-note">⚠ Качество изображения: низкое</p>';
+    html += '</div>';
+  }
+
+  // Answer collapsible
+  if (p.answer) {
+    html += '<details class="problem-section collapsible"><summary>Ответ</summary>'
+      +'<div class="katex-content">'+p.answer+'</div></details>';
+  }
+
+  // Solution collapsible
+  html += '<details class="problem-section collapsible"><summary>Решение</summary>';
+  if (p.solution) {
+    html += '<div class="katex-content">'+p.solution+'</div>';
+  } else {
+    html += '<p class="solution-placeholder">Решение скоро появится</p>';
+  }
+  html += '</details>';
+
+  // Solution images
+  for (const img of solImgs) {
+    html += '<div class="problem-image">';
+    html += '<p class="image-label">'+ (IMG_KIND_LABELS[img.kind]||img.kind) +'</p>';
+    html += '<img src="'+imageSrc(img.file)+'" loading="lazy" alt="'+escapeHtml(img.kind)+'">';
+    if (img.confidence==='low') html += '<p class="confidence-note">⚠ Качество изображения: низкое</p>';
+    html += '</div>';
+  }
+
+  html += '</div></div>'; // .problem-viewer and .app-container
+
+  const root = document.getElementById('root');
+  root.innerHTML = html;
+  window.renderMathInElement && window.renderMathInElement(root, {
+    delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]
+  });
+}
+
+// ============================================================
+// Event Handlers
+// ============================================================
+function setFilter(key, value) {
+  state.filters[key] = value;
+  if (state.view === 'list') renderListView();
+}
+
+function openProblem(index) {
+  const problems = getFilteredProblems();
+  state.currentProblem = problems[index];
+  state.view = 'problem';
+  renderProblemView();
+  window.scrollTo(0,0);
+}
+
+function backToList() {
+  state.view = 'list';
+  state.currentProblem = null;
+  renderListView();
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+// Init
+// ============================================================
+async function init() {
+  try {
+    state.groups = await loadData();
+    state.allProblems = flattenProblems(state.groups);
+    state.filterOptions = getFilterOptions(state.groups);
+    const tot = state.allProblems;
+    state.stats = {
+      totalGroups: state.groups.length,
+      totalProblems: tot.length,
+      totalImages: tot.reduce((s,p)=>s+p.images.length,0),
+      problemsWithImages: tot.filter(p=>p.images.length>0).length
+    };
+    state.loading = false;
+  } catch (err) {
+    state.error = err.message;
+    state.loading = false;
+  }
+  renderApp();
+}
+document.addEventListener('DOMContentLoaded', init);
+'''
+
+def main():
+    html = '<!DOCTYPE html>\n<html lang="ru">\n<head>\n'
+    html += '<meta charset="UTF-8">\n'
+    html += '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+    html += '<title>База олимпиадных задач</title>\n'
+    html += '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">\n'
+    html += '<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>\n'
+    html += '<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"'
+    html += '  onload="renderMathInElement(document.body, {delimiters:[{left:\'\\\\(\',right:\'\\\\)\',display:false},{left:\'\\\\[\',right:\'\\\\]\',display:true}]});"></script>\n'
+    html += '<style>' + CSS + '</style>\n'
+    html += '</head>\n<body>\n'
+    html += '<div id="root" class="app-container">\n'
+    html += '  <div class="loading-container">\n'
+    html += '    <div class="spinner"></div>\n'
+    html += '    <p>Загрузка базы олимпиадных задач...</p>\n'
+    html += '  </div>\n'
+    html += '</div>\n'
+    html += '<script>' + JS + '</script>\n'
+    html += '</body>\n</html>'
+
+    with open(OUTPUT, 'w', encoding='utf-8') as f:
+        f.write(html)
+    print('Generated', OUTPUT)
+
+if __name__ == '__main__':
+    main()

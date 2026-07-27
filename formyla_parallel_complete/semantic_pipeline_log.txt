@@ -1,0 +1,389 @@
+12:41:16 START model=deepseek-reasoner workers=4 max_attempts=3 pending=176
+12:44:00 semantic-replace-0101 try2: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+12:44:59 semantic-replace-0081 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:44:59 PROGRESS 1/176 OK=0 MANUAL=1
+12:45:19 semantic-replace-0061 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:45:19 PROGRESS 2/176 OK=0 MANUAL=2
+12:45:23 semantic-replace-0101 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:45:23 PROGRESS 3/176 OK=0 MANUAL=3
+12:45:47 semantic-replace-0001 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:45:47 PROGRESS 4/176 OK=0 MANUAL=4
+12:47:11 semantic-replace-0301 OK на попытке 1, level=6
+12:47:11 PROGRESS 5/176 OK=1 MANUAL=4
+12:49:34 semantic-replace-0161 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:49:34 PROGRESS 6/176 OK=1 MANUAL=5
+12:49:44 semantic-replace-0241 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:49:44 PROGRESS 7/176 OK=1 MANUAL=6
+12:50:07 semantic-replace-0261 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:50:07 PROGRESS 8/176 OK=1 MANUAL=7
+12:51:52 semantic-replace-0002 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:51:52 PROGRESS 9/176 OK=1 MANUAL=8
+12:53:22 semantic-replace-0122 OK на попытке 1, level=6
+12:53:22 PROGRESS 10/176 OK=2 MANUAL=8
+12:53:55 semantic-replace-0022 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:53:55 PROGRESS 11/176 OK=2 MANUAL=9
+12:54:11 semantic-replace-0082 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:54:11 PROGRESS 12/176 OK=2 MANUAL=10
+12:54:34 semantic-replace-0042 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:54:34 PROGRESS 13/176 OK=2 MANUAL=11
+12:57:02 semantic-replace-0182 OK на попытке 2, level=6
+12:57:02 PROGRESS 14/176 OK=3 MANUAL=11
+12:58:46 semantic-replace-0302 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:58:46 PROGRESS 15/176 OK=3 MANUAL=12
+12:59:00 semantic-replace-0282 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:59:00 PROGRESS 16/176 OK=3 MANUAL=13
+12:59:07 semantic-replace-0003 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+12:59:07 PROGRESS 17/176 OK=3 MANUAL=14
+13:01:37 semantic-replace-0023 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:01:37 PROGRESS 18/176 OK=3 MANUAL=15
+13:03:39 semantic-replace-0063 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:03:39 PROGRESS 19/176 OK=3 MANUAL=16
+13:03:42 semantic-replace-0083 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:03:42 PROGRESS 20/176 OK=3 MANUAL=17
+13:03:52 semantic-replace-0043 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:03:52 PROGRESS 21/176 OK=3 MANUAL=18
+13:06:30 semantic-replace-0103 try3: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+13:06:30 semantic-replace-0103 -> МУСОР (needs_manual) после 3 попыток: level 6<8
+13:06:30 PROGRESS 22/176 OK=3 MANUAL=19
+13:08:03 semantic-replace-0143 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:08:03 PROGRESS 23/176 OK=3 MANUAL=20
+13:08:07 semantic-replace-0283 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:08:07 PROGRESS 24/176 OK=3 MANUAL=21
+13:08:09 semantic-replace-0183 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:08:09 PROGRESS 25/176 OK=3 MANUAL=22
+13:10:50 semantic-replace-0303 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:10:50 PROGRESS 26/176 OK=3 MANUAL=23
+13:11:51 semantic-replace-0084 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:11:51 PROGRESS 27/176 OK=3 MANUAL=24
+13:12:03 semantic-replace-0144 try3: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+13:12:03 semantic-replace-0144 -> МУСОР (needs_manual) после 3 попыток: level 6<8
+13:12:03 PROGRESS 28/176 OK=3 MANUAL=25
+13:12:07 semantic-replace-0104 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:12:07 PROGRESS 29/176 OK=3 MANUAL=26
+13:14:50 semantic-replace-0284 OK на попытке 2, level=6
+13:14:50 PROGRESS 30/176 OK=4 MANUAL=26
+13:15:05 semantic-replace-0164 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:15:05 PROGRESS 31/176 OK=4 MANUAL=27
+13:15:48 semantic-replace-0204 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:15:48 PROGRESS 32/176 OK=4 MANUAL=28
+13:16:47 semantic-replace-0244 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:16:47 PROGRESS 33/176 OK=4 MANUAL=29
+13:19:05 semantic-replace-0304 try3: аудит ошибки -> Некорректный LaTeX: команды должны начинаться с одного обратного слеша, а не двух (например, \frac вместо \frac)
+13:19:05 semantic-replace-0304 -> МУСОР (needs_manual) после 3 попыток: audit: Некорректный LaTeX: команды должны начинаться с одного обратного слеша, а не двух (например, \frac вместо \frac)
+13:19:05 PROGRESS 34/176 OK=4 MANUAL=30
+13:19:26 semantic-replace-0025 OK на попытке 3, level=6
+13:19:26 PROGRESS 35/176 OK=5 MANUAL=30
+13:19:29 semantic-replace-0005 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:19:29 PROGRESS 36/176 OK=5 MANUAL=31
+13:21:14 semantic-replace-0045 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:21:14 PROGRESS 37/176 OK=5 MANUAL=32
+13:22:56 semantic-replace-0085 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:22:56 PROGRESS 38/176 OK=5 MANUAL=33
+13:23:35 semantic-replace-0125 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:23:35 PROGRESS 39/176 OK=5 MANUAL=34
+13:23:43 semantic-replace-0165 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:23:43 PROGRESS 40/176 OK=5 MANUAL=35
+13:25:21 semantic-replace-0205 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:25:21 PROGRESS 41/176 OK=5 MANUAL=36
+13:27:20 semantic-replace-0225 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:27:20 PROGRESS 42/176 OK=5 MANUAL=37
+13:27:31 semantic-replace-0265 try3: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+13:27:31 semantic-replace-0265 -> МУСОР (needs_manual) после 3 попыток: level 6<8
+13:27:31 PROGRESS 43/176 OK=5 MANUAL=38
+13:28:00 semantic-replace-0285 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:28:00 PROGRESS 44/176 OK=5 MANUAL=39
+13:29:47 semantic-replace-0305 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:29:47 PROGRESS 45/176 OK=5 MANUAL=40
+13:31:29 semantic-replace-0026 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:31:29 PROGRESS 46/176 OK=5 MANUAL=41
+13:31:31 semantic-replace-0066 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:31:31 PROGRESS 47/176 OK=5 MANUAL=42
+13:32:18 semantic-replace-0086 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:32:18 PROGRESS 48/176 OK=5 MANUAL=43
+13:34:02 semantic-replace-0106 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:34:02 PROGRESS 49/176 OK=5 MANUAL=44
+13:35:25 semantic-replace-0126 try3: сложность 5<6 -> перегенерация СЛОЖНЕЕ
+13:35:25 semantic-replace-0126 -> МУСОР (needs_manual) после 3 попыток: level 5<6
+13:35:25 PROGRESS 50/176 OK=5 MANUAL=45
+13:35:57 semantic-replace-0226 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:35:57 PROGRESS 51/176 OK=5 MANUAL=46
+13:36:44 semantic-replace-0286 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:36:44 PROGRESS 52/176 OK=5 MANUAL=47
+13:39:03 semantic-replace-0027 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:39:03 PROGRESS 53/176 OK=5 MANUAL=48
+13:39:53 semantic-replace-0067 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:39:53 PROGRESS 54/176 OK=5 MANUAL=49
+13:40:03 semantic-replace-0147 try1: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+13:40:07 semantic-replace-0087 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:40:07 PROGRESS 55/176 OK=5 MANUAL=50
+13:40:49 semantic-replace-0107 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:40:49 PROGRESS 56/176 OK=5 MANUAL=51
+13:42:27 semantic-replace-0187 try2: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+13:42:35 semantic-replace-0147 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:42:35 PROGRESS 57/176 OK=5 MANUAL=52
+13:42:47 semantic-replace-0227 try2: сложность 7<8 -> перегенерация СЛОЖНЕЕ
+13:43:37 semantic-replace-0187 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:43:37 PROGRESS 58/176 OK=5 MANUAL=53
+13:44:13 semantic-replace-0227 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:44:13 PROGRESS 59/176 OK=5 MANUAL=54
+13:44:49 semantic-replace-0287 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:44:49 PROGRESS 60/176 OK=5 MANUAL=55
+13:45:43 semantic-replace-0068 try1: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+13:46:21 semantic-replace-0307 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:46:21 PROGRESS 61/176 OK=5 MANUAL=56
+13:47:33 semantic-replace-0028 OK на попытке 3, level=6
+13:47:33 PROGRESS 62/176 OK=6 MANUAL=56
+13:48:15 semantic-replace-0068 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:48:15 PROGRESS 63/176 OK=6 MANUAL=57
+13:49:01 semantic-replace-0088 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:49:01 PROGRESS 64/176 OK=6 MANUAL=58
+13:49:18 semantic-replace-0108 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:49:18 PROGRESS 65/176 OK=6 MANUAL=59
+13:51:17 semantic-replace-0168 try3: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+13:51:17 semantic-replace-0168 -> МУСОР (needs_manual) после 3 попыток: level 6<7
+13:51:17 PROGRESS 66/176 OK=6 MANUAL=60
+13:51:40 semantic-replace-0248 try2: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+13:52:05 semantic-replace-0188 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:52:05 PROGRESS 67/176 OK=6 MANUAL=61
+13:52:58 semantic-replace-0248 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:52:58 PROGRESS 68/176 OK=6 MANUAL=62
+13:53:20 semantic-replace-0268 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:53:20 PROGRESS 69/176 OK=6 MANUAL=63
+13:54:54 semantic-replace-0308 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:54:54 PROGRESS 70/176 OK=6 MANUAL=64
+13:55:11 semantic-replace-0049 OK на попытке 2, level=6
+13:55:11 PROGRESS 71/176 OK=7 MANUAL=64
+13:56:10 semantic-replace-0029 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:56:10 PROGRESS 72/176 OK=7 MANUAL=65
+13:56:44 semantic-replace-0069 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:56:44 PROGRESS 73/176 OK=7 MANUAL=66
+13:57:15 semantic-replace-0189 try1: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+13:57:34 semantic-replace-0149 try2: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+13:58:45 semantic-replace-0089 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:58:45 PROGRESS 74/176 OK=7 MANUAL=67
+13:58:59 semantic-replace-0149 try3: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+13:58:59 semantic-replace-0149 -> МУСОР (needs_manual) после 3 попыток: level 6<7
+13:58:59 PROGRESS 75/176 OK=7 MANUAL=68
+13:59:48 semantic-replace-0189 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+13:59:48 PROGRESS 76/176 OK=7 MANUAL=69
+14:01:12 semantic-replace-0229 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:01:12 PROGRESS 77/176 OK=7 MANUAL=70
+14:03:04 semantic-replace-0269 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:03:04 PROGRESS 78/176 OK=7 MANUAL=71
+14:03:21 semantic-replace-0309 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:03:21 PROGRESS 79/176 OK=7 MANUAL=72
+14:04:14 semantic-replace-0030 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:04:14 PROGRESS 80/176 OK=7 MANUAL=73
+14:04:45 semantic-replace-0110 OK на попытке 1, level=6
+14:04:45 PROGRESS 81/176 OK=8 MANUAL=73
+14:05:04 semantic-replace-0050 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:05:04 PROGRESS 82/176 OK=8 MANUAL=74
+14:06:32 semantic-replace-0150 try2: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+14:07:09 semantic-replace-0090 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:07:09 PROGRESS 83/176 OK=8 MANUAL=75
+14:07:11 semantic-replace-0190 try2: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+14:07:53 semantic-replace-0150 try3: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+14:07:53 semantic-replace-0150 -> МУСОР (needs_manual) после 3 попыток: level 6<7
+14:07:53 PROGRESS 84/176 OK=8 MANUAL=76
+14:08:53 semantic-replace-0190 OK на попытке 3, level=7
+14:08:53 PROGRESS 85/176 OK=9 MANUAL=76
+14:09:08 semantic-replace-0290 try1: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+14:09:19 semantic-replace-0210 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:09:19 PROGRESS 86/176 OK=9 MANUAL=77
+14:10:55 semantic-replace-0011 try1: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+14:10:57 semantic-replace-0230 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:10:57 PROGRESS 87/176 OK=9 MANUAL=78
+14:11:51 semantic-replace-0290 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:11:51 PROGRESS 88/176 OK=9 MANUAL=79
+14:12:53 semantic-replace-0310 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:12:53 PROGRESS 89/176 OK=9 MANUAL=80
+14:13:41 semantic-replace-0011 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:13:41 PROGRESS 90/176 OK=9 MANUAL=81
+14:13:59 semantic-replace-0191 try1: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+14:14:57 semantic-replace-0151 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:14:57 PROGRESS 91/176 OK=9 MANUAL=82
+14:15:36 semantic-replace-0171 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:15:36 PROGRESS 92/176 OK=9 MANUAL=83
+14:16:33 semantic-replace-0191 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:16:33 PROGRESS 93/176 OK=9 MANUAL=84
+14:17:36 semantic-replace-0251 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:17:36 PROGRESS 94/176 OK=9 MANUAL=85
+14:19:05 semantic-replace-0271 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:19:05 PROGRESS 95/176 OK=9 MANUAL=86
+14:19:39 semantic-replace-0291 try3: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+14:19:39 semantic-replace-0291 -> МУСОР (needs_manual) после 3 попыток: level 6<7
+14:19:39 PROGRESS 96/176 OK=9 MANUAL=87
+14:20:33 semantic-replace-0012 OK на попытке 3, level=6
+14:20:33 PROGRESS 97/176 OK=10 MANUAL=87
+14:21:26 semantic-replace-0032 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:21:26 PROGRESS 98/176 OK=10 MANUAL=88
+14:22:59 semantic-replace-0092 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:22:59 PROGRESS 99/176 OK=10 MANUAL=89
+14:23:11 semantic-replace-0152 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:23:11 PROGRESS 100/176 OK=10 MANUAL=90
+14:24:52 semantic-replace-0192 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:24:52 PROGRESS 101/176 OK=10 MANUAL=91
+14:25:29 semantic-replace-0232 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:25:29 PROGRESS 102/176 OK=10 MANUAL=92
+14:26:52 semantic-replace-0272 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:26:52 PROGRESS 103/176 OK=10 MANUAL=93
+14:27:06 semantic-replace-0312 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:27:06 PROGRESS 104/176 OK=10 MANUAL=94
+14:28:52 semantic-replace-0033 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:28:52 PROGRESS 105/176 OK=10 MANUAL=95
+14:29:13 semantic-replace-0053 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:29:13 PROGRESS 106/176 OK=10 MANUAL=96
+14:29:27 semantic-replace-0073 OK на попытке 2, level=7
+14:29:27 PROGRESS 107/176 OK=11 MANUAL=96
+14:31:09 semantic-replace-0093 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:31:09 PROGRESS 108/176 OK=11 MANUAL=97
+14:33:21 semantic-replace-0153 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:33:21 PROGRESS 109/176 OK=11 MANUAL=98
+14:33:47 semantic-replace-0193 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:33:47 PROGRESS 110/176 OK=11 MANUAL=99
+14:33:51 semantic-replace-0213 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:33:51 PROGRESS 111/176 OK=11 MANUAL=100
+14:35:56 semantic-replace-0253 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:35:56 PROGRESS 112/176 OK=11 MANUAL=101
+14:38:06 semantic-replace-0273 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:38:06 PROGRESS 113/176 OK=11 MANUAL=102
+14:38:34 semantic-replace-0014 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:38:34 PROGRESS 114/176 OK=11 MANUAL=103
+14:38:53 semantic-replace-0313 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:38:53 PROGRESS 115/176 OK=11 MANUAL=104
+14:41:00 semantic-replace-0034 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:41:00 PROGRESS 116/176 OK=11 MANUAL=105
+14:43:43 semantic-replace-0054 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:43:43 PROGRESS 117/176 OK=11 MANUAL=106
+14:44:19 semantic-replace-0074 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:44:19 PROGRESS 118/176 OK=11 MANUAL=107
+14:45:06 semantic-replace-0114 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:45:06 PROGRESS 119/176 OK=11 MANUAL=108
+14:46:45 semantic-replace-0174 OK на попытке 3, level=7
+14:46:45 PROGRESS 120/176 OK=12 MANUAL=108
+14:47:05 semantic-replace-0194 try2: сложность 7<8 -> перегенерация СЛОЖНЕЕ
+14:47:44 semantic-replace-0234 try2: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+14:48:02 semantic-replace-0274 OK на попытке 2, level=6
+14:48:02 PROGRESS 121/176 OK=13 MANUAL=108
+14:48:36 semantic-replace-0314 try1: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+14:48:42 semantic-replace-0194 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:48:42 PROGRESS 122/176 OK=13 MANUAL=109
+14:49:13 semantic-replace-0234 try3: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+14:49:13 semantic-replace-0234 -> МУСОР (needs_manual) после 3 попыток: level 6<8
+14:49:13 PROGRESS 123/176 OK=13 MANUAL=110
+14:51:51 semantic-replace-0314 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:51:51 PROGRESS 124/176 OK=13 MANUAL=111
+14:53:18 semantic-replace-0015 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:53:18 PROGRESS 125/176 OK=13 MANUAL=112
+14:53:54 semantic-replace-0035 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:53:54 PROGRESS 126/176 OK=13 MANUAL=113
+14:53:59 semantic-replace-0055 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:53:59 PROGRESS 127/176 OK=13 MANUAL=114
+14:55:52 semantic-replace-0075 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:55:52 PROGRESS 128/176 OK=13 MANUAL=115
+14:56:43 semantic-replace-0215 try2: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+14:57:24 semantic-replace-0095 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:57:24 PROGRESS 129/176 OK=13 MANUAL=116
+14:58:00 semantic-replace-0215 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:58:00 PROGRESS 130/176 OK=13 MANUAL=117
+14:58:16 semantic-replace-0115 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+14:58:16 PROGRESS 131/176 OK=13 MANUAL=118
+15:00:02 semantic-replace-0275 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:00:02 PROGRESS 132/176 OK=13 MANUAL=119
+15:01:11 semantic-replace-0295 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:01:11 PROGRESS 133/176 OK=13 MANUAL=120
+15:01:34 semantic-replace-0056 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:01:34 PROGRESS 134/176 OK=13 MANUAL=121
+15:02:14 semantic-replace-0076 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:02:14 PROGRESS 135/176 OK=13 MANUAL=122
+15:04:13 semantic-replace-0096 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:04:13 PROGRESS 136/176 OK=13 MANUAL=123
+15:05:09 semantic-replace-0196 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:05:09 PROGRESS 137/176 OK=13 MANUAL=124
+15:05:30 semantic-replace-0216 try3: сложность 6<7 -> перегенерация СЛОЖНЕЕ
+15:05:30 semantic-replace-0216 -> МУСОР (needs_manual) после 3 попыток: level 6<7
+15:05:30 PROGRESS 138/176 OK=13 MANUAL=125
+15:05:39 semantic-replace-0276 try1: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+15:06:05 semantic-replace-0256 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:06:05 PROGRESS 139/176 OK=13 MANUAL=126
+15:08:00 semantic-replace-0276 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:08:00 PROGRESS 140/176 OK=13 MANUAL=127
+15:08:46 semantic-replace-0017 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:08:46 PROGRESS 141/176 OK=13 MANUAL=128
+15:08:54 semantic-replace-0296 OK на попытке 3, level=7
+15:08:54 PROGRESS 142/176 OK=14 MANUAL=128
+15:09:50 semantic-replace-0037 OK на попытке 3, level=6
+15:09:50 PROGRESS 143/176 OK=15 MANUAL=128
+15:11:08 semantic-replace-0077 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:11:08 PROGRESS 144/176 OK=15 MANUAL=129
+15:12:07 semantic-replace-0157 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:12:07 PROGRESS 145/176 OK=15 MANUAL=130
+15:12:14 semantic-replace-0117 try3: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+15:12:14 semantic-replace-0117 -> МУСОР (needs_manual) после 3 попыток: level 6<8
+15:12:14 PROGRESS 146/176 OK=15 MANUAL=131
+15:13:28 semantic-replace-0177 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:13:28 PROGRESS 147/176 OK=15 MANUAL=132
+15:13:31 semantic-replace-0217 try2: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+15:13:50 semantic-replace-0277 OK на попытке 1, level=7
+15:13:50 PROGRESS 148/176 OK=16 MANUAL=132
+15:14:42 semantic-replace-0217 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:14:42 PROGRESS 149/176 OK=16 MANUAL=133
+15:15:54 semantic-replace-0257 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:15:54 PROGRESS 150/176 OK=16 MANUAL=134
+15:17:29 semantic-replace-0078 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:17:29 PROGRESS 151/176 OK=16 MANUAL=135
+15:17:43 semantic-replace-0038 -> МУСОР (needs_manual) после 3 попыток: ValueError('short_solution 476')
+15:17:43 PROGRESS 152/176 OK=16 MANUAL=136
+15:18:25 semantic-replace-0098 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:18:25 PROGRESS 153/176 OK=16 MANUAL=137
+15:19:52 semantic-replace-0118 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:19:52 PROGRESS 154/176 OK=16 MANUAL=138
+15:21:39 semantic-replace-0218 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:21:39 PROGRESS 155/176 OK=16 MANUAL=139
+15:21:40 semantic-replace-0178 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:21:40 PROGRESS 156/176 OK=16 MANUAL=140
+15:22:11 semantic-replace-0238 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:22:11 PROGRESS 157/176 OK=16 MANUAL=141
+15:23:20 semantic-replace-0139 try1: сложность 4<6 -> перегенерация СЛОЖНЕЕ
+15:24:11 semantic-replace-0278 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:24:11 PROGRESS 158/176 OK=16 MANUAL=142
+15:25:23 semantic-replace-0159 try1: сложность 6<8 -> перегенерация СЛОЖНЕЕ
+15:25:42 semantic-replace-0059 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:25:42 PROGRESS 159/176 OK=16 MANUAL=143
+15:26:01 semantic-replace-0079 try3: аудит ошибки -> Ошибка в вычислении S4: 7 + 3 + 1 = 11, а не 13; Ошибка в вычислении S5: 11 + 7 + 3 = 21, а не 29; Неверный ответ: должн
+15:26:01 semantic-replace-0079 -> МУСОР (needs_manual) после 3 попыток: audit: Ошибка в вычислении S4: 7 + 3 + 1 = 11, а не 13; Ошибка в вычислении S5: 11 + 7 + 3 = 21, а не 29; Неверный ответ: должно быть 21
+15:26:01 PROGRESS 160/176 OK=16 MANUAL=144
+15:26:02 semantic-replace-0139 try3: сложность 5<6 -> перегенерация СЛОЖНЕЕ
+15:26:02 semantic-replace-0139 -> МУСОР (needs_manual) после 3 попыток: level 5<6
+15:26:02 PROGRESS 161/176 OK=16 MANUAL=145
+15:27:19 semantic-replace-0179 OK на попытке 1, level=6
+15:27:19 PROGRESS 162/176 OK=17 MANUAL=145
+15:27:58 semantic-replace-0159 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:27:58 PROGRESS 163/176 OK=17 MANUAL=146
+15:30:20 semantic-replace-0279 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:30:20 PROGRESS 164/176 OK=17 MANUAL=147
+15:30:27 semantic-replace-0219 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:30:27 PROGRESS 165/176 OK=17 MANUAL=148
+15:32:05 semantic-replace-0299 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:32:05 PROGRESS 166/176 OK=17 MANUAL=149
+15:32:21 semantic-replace-0319 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:32:21 PROGRESS 167/176 OK=17 MANUAL=150
+15:35:35 semantic-replace-0020 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:35:35 PROGRESS 168/176 OK=17 MANUAL=151
+15:35:43 semantic-replace-0040 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:35:43 PROGRESS 169/176 OK=17 MANUAL=152
+15:36:49 semantic-replace-0060 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:36:49 PROGRESS 170/176 OK=17 MANUAL=153
+15:37:07 semantic-replace-0240 OK на попытке 1, level=6
+15:37:07 PROGRESS 171/176 OK=18 MANUAL=153
+15:37:16 semantic-replace-0100 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:37:16 PROGRESS 172/176 OK=18 MANUAL=154
+15:40:33 semantic-replace-0220 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:40:33 PROGRESS 173/176 OK=18 MANUAL=155
+15:41:32 semantic-replace-0260 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:41:32 PROGRESS 174/176 OK=18 MANUAL=156
+15:42:01 semantic-replace-0320 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:42:01 PROGRESS 175/176 OK=18 MANUAL=157
+15:42:29 semantic-replace-0300 -> МУСОР (needs_manual) после 3 попыток: ValueError('no_json_object')
+15:42:29 PROGRESS 176/176 OK=18 MANUAL=158
+15:42:29 DONE OK=18 MANUAL=158

@@ -1,0 +1,120 @@
+{
+  "step": "14.11",
+  "description": "quality_not_weakened_validation",
+  "timestamp": "2026-07-18T20:49:31.182697",
+  "quality_verdict": "FAIL",
+  "passed": 21,
+  "total": 22,
+  "checks": [
+    {
+      "check": "1: cell_count == 558",
+      "passed": true,
+      "details": "actual=558"
+    },
+    {
+      "check": "2: all cell_keys valid + no dupes",
+      "passed": true,
+      "details": "parse_failures=0 dupes=0"
+    },
+    {
+      "check": "3: grade cell counts match expected",
+      "passed": true,
+      "details": "mismatches={}"
+    },
+    {
+      "check": "4: no extra/unexpected grades",
+      "passed": true,
+      "details": "extra=[]"
+    },
+    {
+      "check": "5: no phantom topic_ids",
+      "passed": true,
+      "details": "bad_count=0"
+    },
+    {
+      "check": "6: no missing topic_ids (all 41 present)",
+      "passed": true,
+      "details": "missing=[]"
+    },
+    {
+      "check": "7: no empty/null critical fields",
+      "passed": true,
+      "details": "empty_fields=0"
+    },
+    {
+      "check": "8: all 41 topics defined in topics section",
+      "passed": true,
+      "details": "missing=[]"
+    },
+    {
+      "check": "9: no phantom/extra topics",
+      "passed": true,
+      "details": "extra=[]"
+    },
+    {
+      "check": "10: each topic has >=1 subtopic",
+      "passed": true,
+      "details": "empty_topics=[]"
+    },
+    {
+      "check": "11: crosswalk has unresolved_task_ids key",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "check": "12: zero unresolved tasks",
+      "passed": false,
+      "details": "unresolved=50"
+    },
+    {
+      "check": "13: crosswalk has summary stats",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "check": "14: Stage6 audit has all expected sections",
+      "passed": true,
+      "details": "missing=[]"
+    },
+    {
+      "check": "15: Stage6 audit has meaningful entries",
+      "passed": true,
+      "details": "total_entries=257"
+    },
+    {
+      "check": "16: all Stage6 entries have required fields",
+      "passed": true,
+      "details": "entries_with_missing_fields=0"
+    },
+    {
+      "check": "17: combo_mismatch_breakdown has by_grade and by_topic",
+      "passed": true,
+      "details": "by_grade=True by_topic=True"
+    },
+    {
+      "check": "18: Stage7 audit loaded with meta and entries sections",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "check": "19: no c12 false rejections (c12_failures==0)",
+      "passed": true,
+      "details": "c12_failures=0"
+    },
+    {
+      "check": "20: topic_mismatch_breakdown populated",
+      "passed": true,
+      "details": "breakdown_entries=10"
+    },
+    {
+      "check": "21: step14_10 report has all 3 sections",
+      "passed": true,
+      "details": "missing=[]"
+    },
+    {
+      "check": "22: all step14_10 tests passed",
+      "passed": true,
+      "details": "failed_tests=[]"
+    }
+  ]
+}

@@ -282,13 +282,21 @@ body.kb-open {
 {% block content %}
 <div class="coach-wrap">
 <h1>🎓 Куратор подготовки</h1>
-<p style="color:rgba(255,255,255,0.6);">Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.</p>
+<p style="color:rgba(255,255,255,0.6);">
+  Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.
+  {% if user and user.preferred_grade %}
+  <br><span style="color:#38ef7d;">📚 Класс: {{ user.preferred_grade }}</span>
+  {% if level_label %}
+  &nbsp;&nbsp;<span style="color:#f59e0b;">⭐ {{ level_label }}</span>
+  {% endif %}
+  {% endif %}
+</p>
 <div class="coach-grid">
 <div class="coach-card">
 <h2>📊 Радар по подтемам</h2>
 <div class="radar-chart">
 <canvas id="masteryRadar"
-        data-mastery='{{ mastery_list_json | tojson }}'
+        data-mastery='{{ mastery_list_json | safe }}'
         width="400" height="400"></canvas>
 </div>
 </div>
@@ -450,6 +458,7 @@ body.kb-open {
     <div class="kb-backdrop" id="kbBackdrop" onclick="toggleKeyboard()"></div>
 </div>
 <div class="cta-row" id="ctaRow" style="display:none; margin-top:10px;"></div>
+<div id="quick-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
 <div style="margin-top:8px; text-align:right;">
   <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">🗑️ Очистить историю</button>
 </div>
@@ -466,8 +475,13 @@ body.kb-open {
 .cta-btn:hover { background: #4f46e5; }
 .cta-btn.secondary { background: rgba(255,255,255,0.08); color: #e5e7eb; }
 .cta-btn.secondary:hover { background: rgba(255,255,255,0.15); }
+.quick-action-btn { display: inline-flex; padding: 10px 18px; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
+.quick-action-btn:hover { opacity: 0.9; }
 </style>
 <script>
+
+// ─── Current grade from server ─────────────────────────────────────────
+var currentGrade = '{{ user_grade }}';
 
 // ─── Dynamic greeting via API ──────────────────────────────────────────
 var greetingEl = document.getElementById('greetingMsg');
@@ -499,8 +513,60 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     greetingEl.innerHTML = data.greeting || '👋 Привет! Я твой ИИ-куратор FORMYLA.';
     ctaRow.innerHTML = '';
     // Render CTA buttons based on scenario
-    if (data.scenario === 'need_grade') {
-      addCtaButton('🎯 Выбрать класс', '/profile', '');
+    if (data.scenario === 'start_questionnaire') {
+    startQuestionnaire();
+} else if (data.scenario === 'need_grade') {
+      // Inline выбор класса вместо перехода на /profile
+      greetingEl.innerHTML = '👋 Привет! Я твой ИИ-куратор FORMYLA.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
+      var grades = [5, 6, 7, 8, 9, 10, 11];
+      var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">';
+      grades.forEach(function(g) {
+        html += '<button class="cta-btn grade-btn" data-grade="' + g + '" style="min-width:48px;text-align:center;">' + g + ' класс</button>';
+      });
+      html += '</div>';
+      greetingEl.innerHTML += html;
+      ctaRow.style.display = 'none';
+      // Delegated click: grade buttons → сразу запускаем диагностику
+      greetingEl.addEventListener('click', function(e) {
+        var btn = e.target.closest('.grade-btn');
+        if (!btn) return;
+        var grade = btn.getAttribute('data-grade');
+        btn.textContent = '⏳…';
+        btn.disabled = true;
+        fetch('{{ url_for("prep.coach_set_grade") }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grade: grade })
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          if (res.status === 'ok') {
+            // Класс выбран → сразу запускаем анкету (первый вопрос)
+            greetingEl.innerHTML = '✅ Класс ' + grade + ' выбран! 🎉<br><br>⏳ Загружаю первый вопрос…';
+            ctaRow.innerHTML = '';
+            fetch('/prep/coach/questionnaire/start', { method: 'POST' })
+              .then(function (r) { return r.json(); })
+              .then(function (data) {
+                if (data.reply) {
+                  greetingEl.style.display = 'none';
+                  addMsg(data.reply, 'bot');
+                  var input = document.getElementById('chatInput');
+                  if (input) input.focus();
+                } else {
+                  greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать анкету.');
+                }
+              })
+              .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
+          } else {
+            btn.textContent = '❌ Ошибка';
+            btn.disabled = false;
+          }
+        })
+        .catch(function(){
+          btn.textContent = '❌ Сеть';
+          btn.disabled = false;
+        });
+      });
     } else if (data.scenario === 'test_in_progress') {
       // Diagnostic test already running — hide greeting, focus input
       greetingEl.style.display = 'none';
@@ -508,27 +574,22 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       var input = document.getElementById('chatInput');
       if (input) input.focus();
     } else if (data.scenario === 'onboarding_test') {
-      // Кнопка "Начать диагностику (21 задача)" — inline в чате
-      addCtaAction('🧪 Начать диагностику (21 задача)', function () {
-        ctaRow.innerHTML = '';
-        greetingEl.innerHTML = '⏳ Загружаю диагностические задачи…';
-        // Start test via API — returns first task as a chat message
-        fetch('{{ url_for("prep.coach_test_start") }}', { method: 'POST' })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (data.reply) {
-              // Hide greeting, show first task as bot message
-              greetingEl.style.display = 'none';
-              addMsg(data.reply, 'bot');
-              // Focus chat input
-              var input = document.getElementById('chatInput');
-              if (input) input.focus();
-            } else {
-              greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать диагностику.');
-            }
-          })
-          .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
-      }, '');
+      // Класс уже выбран → показываем анкету (первый вопрос)
+      greetingEl.innerHTML = '⏳ Загружаю анкету…';
+      ctaRow.innerHTML = '';
+      fetch('/prep/coach/questionnaire/start', { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.reply) {
+            greetingEl.style.display = 'none';
+            addMsg(data.reply, 'bot');
+            var input = document.getElementById('chatInput');
+            if (input) input.focus();
+          } else {
+            greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать анкету.');
+          }
+        })
+        .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
     } else if (data.scenario === 'daily_test') {
       addCtaAction('🧪 Пройти тест по теме', function () {
         var subtopicKey = data.priority_subtopic ? data.priority_subtopic.key : '';
@@ -655,7 +716,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
                   if (res.status === 'ok') {
                     var msg = '✅ <strong>Тест завершён!</strong><br>';
                     msg += 'Правильно: ' + res.correct + ' из ' + res.total + '<br>';
-                    msg += '🎯 Уровень: ' + res.level + '/8.';
+msg += '🎯 Уровень: ' + res.level + '/5.';
                     if (res.generation_queued) {
                       msg += '<br><br>📚 Задачи дня уже готовятся под твой уровень. Они придут вечером!';
                     }
@@ -765,13 +826,21 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ message: text })
 })
 .then(function (r) { return r.json(); })
-.then(function (data) {
-  pending.innerHTML = data.reply || 'Не удалось получить ответ.';
-  // Re-render KaTeX math in the updated reply content
-  if (typeof reRenderMath === 'function') {
-    reRenderMath(pending);
-  }
-})
+      .then(function (data) {
+          pending.innerHTML = data.reply || 'Не удалось получить ответ.';
+          // Re-render KaTeX math in the updated reply content
+          if (typeof reRenderMath === 'function') {
+            reRenderMath(pending);
+          }
+          // ── Questionnaire completed: reload page to show level in header ──
+          if (data.questionnaire_done) {
+            // Перезагружаем страницу, чтобы уровень появился в шапке
+            setTimeout(function () {
+              window.location.reload();
+            }, 1500);
+            return;
+          }
+        })
 .catch(function () { pending.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
 });
 
@@ -801,7 +870,28 @@ if (delBtn) {
       });
   });
 }
-})();
+
+// ─── Questionnaires functions ──────────────────────────────────────────
+function startQuestionnaire() {
+    greetingEl.innerHTML = '⏳ Загружаю анкету…';
+    fetch('/prep/coach/questionnaire/start', { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.reply) {
+                greetingEl.style.display = 'none';
+                addMsg(data.reply, 'bot');
+                var inp = document.getElementById('chatInput');
+                if (inp) inp.focus();
+            } else {
+                greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать анкету.');
+            }
+        })
+        .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения.'; });
+}
+
+function showBotMessage(text) {
+    addMsg(text, 'bot');
+}
 
 // ─── Единая клавиатура ввода (Математическая / Обычная) ───
 let _kbActiveField = null;
@@ -993,5 +1083,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Canvas #masteryRadar not found');
     }
 });
+function addQuickAction(text, url) {
+    const container = document.getElementById('quick-actions');
+    if (!container) return;
+    const btn = document.createElement('a');
+    btn.href = url;
+    btn.className = 'quick-action-btn';
+    btn.textContent = text;
+    container.appendChild(btn);
+}
 </script>
 {% endblock %}

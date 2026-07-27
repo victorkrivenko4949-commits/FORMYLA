@@ -1,0 +1,2 @@
+<class 'list'> 674
+['original_id', 'source_index', 'class_level', 'original_difficulty', 'target_level', 'task_text', 'image', 'topic', 'audit_mode', 'evidence_source', 'decision_status', 'final_court_status', 'confidence', 'feature_score', 'mechanical_mapping', 'quality_score', 'rank_in_cell', 'total_in_cell_pool', 'issues', 'in_duplicate_cluster', 'duplicate_clusters', 'validation_warnings', 'selection_notes', 'statement', 'answer', 'solution', 'level', 'grade', 'fixed_by_ai', 'fix_timestamp', 'changes_made']

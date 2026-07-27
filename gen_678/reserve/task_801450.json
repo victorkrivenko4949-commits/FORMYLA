@@ -1,0 +1,20 @@
+{
+  "id": 801450,
+  "task_text": "В треугольнике $ABC$ на стороне $AB$ взята точка $E$ такая, что $AE:EB = 2:1$. На стороне $AC$ взята точка $F$ такая, что $AF:FC = 1:2$. На стороне $BC$ взята точка $D$ такая, что $BD:DC = 1:2$. Отрезки $CE$ и $BF$ пересекаются в точке $G$. Найдите отношение площади треугольника $AGD$ к площади треугольника $ABC$.",
+  "solution": "Введём барицентрические координаты: $A(1,0,0)$, $B(0,1,0)$, $C(0,0,1)$. Тогда:\n- $E$ на $AB$: $AE:EB=2:1$ ⇒ $E\\left(\\frac13,\\frac23,0\\right)$.\n- $F$ на $AC$: $AF:FC=1:2$ ⇒ $F\\left(\\frac23,0,\\frac13\\right)$.\n- $D$ на $BC$: $BD:DC=1:2$ ⇒ $D\\left(0,\\frac23,\\frac13\\right)$.\n\nПрямая $CE$: $C(0,0,1)$, $E(\\frac13,\\frac23,0)$ ⇒ параметрически $\\left(\\frac t3,\\frac{2t}3,1-t\\right)$, $t\\in[0,1]$.\nПрямая $BF$: $B(0,1,0)$, $F(\\frac23,0,\\frac13)$ ⇒ $\\left(\\frac{2s}3,1-s,\\frac s3\\right)$, $s\\in[0,1]$.\n\nПересечение $G$: приравниваем координаты:\n$\\frac t3 = \\frac{2s}3$ ⇒ $t=2s$;\n$\\frac{2t}3 = 1-s$ ⇒ $2t=3-3s$ ⇒ $4s=3-3s$ ⇒ $7s=3$ ⇒ $s=\\frac37$, $t=\\frac67$.\nТретья координата: $1-t=1-\\frac67=\\frac17$, $\\frac s3=\\frac{1}{7}$ — совпадает.\nЗначит, $G\\left(\\frac27,\\frac47,\\frac17\\right)$.\n\nПлощадь треугольника по барицентрическим координатам: $S_{AGD} = |\\det|\\cdot S_{ABC}$, где определитель составлен из строк (координаты $A$, $D$, $G$):\n\\[\n\\begin{vmatrix}\n1 & 0 & 0 \\\\\n0 & \\frac23 & \\frac13 \\\\\n\\frac27 & \\frac47 & \\frac17\n\\end{vmatrix}\n= 1\\cdot\\left(\\frac23\\cdot\\frac17 - \\frac13\\cdot\\frac47\\right) = \\frac{2}{21} - \\frac{4}{21} = -\\frac{2}{21}.\n\\]\nАбсолютное значение: $\\frac{2}{21}$.\n\nТаким образом, $\\displaystyle \\frac{S_{AGD}}{S_{ABC}} = \\frac{2}{21}$.",
+  "correct_answer": "$$\\frac{2}{21}$$",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Метод барицентрических координат (или метод площадей с использованием отношений отрезков и теоремы Чевы/Менелая)",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.794,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T12:58:10.296731+00:00"
+}

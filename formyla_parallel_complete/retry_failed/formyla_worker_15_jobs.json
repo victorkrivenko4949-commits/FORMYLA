@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0763",
+      "mode": "replace_bad",
+      "id": "10-A2-8-L7-gf",
+      "grade": 10,
+      "difficulty": 7,
+      "theme": "Показательные и логарифмические выражения",
+      "subtopic": "Показательные уравнения",
+      "method_code": "A2",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8"
+      ],
+      "priority": 47,
+      "worker": 10
+    },
+    {
+      "job_id": "fill-0140",
+      "mode": "fill_missing",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Вписанные углы",
+      "method_code": "E2",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 20
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": 800084,
+  "task_text": "В треугольнике $ABC$ на сторонах $BC$, $CA$, $AB$ выбраны точки $D$, $E$, $F$ соответственно так, что $BD:DC = a:1$, $CE:EA = b:1$, $AF:FB = c:1$, где $a,b,c>0$. Отрезки $AD$, $BE$, $CF$ попарно пересекаются, образуя треугольник $PQR$ (где $P = AD \\cap BE$, $Q = BE \\cap CF$, $R = CF \\cap AD$). Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "Выберем систему координат: $A(0,0)$, $B(1,0)$, $C(0,1)$. Тогда $S_{ABC}=1/2$. \n\nТочки деления:\n- $D$ на $BC$: $BD:DC=a:1$ $\\Rightarrow$ $D=\\left(\\frac{1}{a+1},\\frac{a}{a+1}\\right)$.\n- $E$ на $CA$: $CE:EA=b:1$ $\\Rightarrow$ $E=\\left(0,\\frac{1}{b+1}\\right)$.\n- $F$ на $AB$: $AF:FB=c:1$ $\\Rightarrow$ $F=\\left(\\frac{c}{c+1},0\\right)$.\n\nУравнения прямых:\n- $AD$: $y = a x$.\n- $BE$: $y = \\frac{1-x}{b+1}$.\n- $CF$: $y = 1 - \\frac{c+1}{c}x$.\n\nНайдём точки пересечения:\n- $P = AD \\cap BE$: $a x = \\frac{1-x}{b+1}$ $\\Rightarrow$ $x = \\frac{1}{ab+a+1}$, $y = \\frac{a}{ab+a+1}$.\n- $Q = BE \\cap CF$: $\\frac{1-x}{b+1}=1-\\frac{c+1}{c}x$ $\\Rightarrow$ $x = \\frac{bc}{bc+b+1}$, $y = \\frac{1}{bc+b+1}$.\n- $R = CF \\cap AD$: $a x = 1-\\frac{c+1}{c}x$ $\\Rightarrow$ $x = \\frac{c}{ac+c+1}$, $y = \\frac{ac}{ac+c+1}$.\n\nОбозначим $A_1=ab+a+1$, $B_1=bc+b+1$, $C_1=ac+c+1$. Тогда\n$P=\\left(\\frac1{A_1},\\frac a{A_1}\\right)$, $Q=\\left(\\frac{bc}{B_1},\\frac1{B_1}\\right)$, $R=\\left(\\frac{c}{C_1},\\frac{ac}{C_1}\\right)$.\n\nПлощадь $S_{PQR}$ через определитель:\n$$\nS_{PQR} = \\frac12 \\left| x_P(y_Q-y_R)+x_Q(y_R-y_P)+x_R(y_P-y_Q) \\right|.\n$$\n\nПодставим координаты и упростим числитель:\n$$\n\\begin{aligned}\n& x_P(y_Q-y_R) = \\frac1{A_1}\\left(\\frac1{B_1}-\\frac{ac}{C_1}\\right) = \\frac{C_1-acB_1}{A_1B_1C_1},\\\\\n& x_Q(y_R-y_P) = \\frac{bc}{B_1}\\left(\\frac{ac}{C_1}-\\frac{a}{A_1}\\right) = \\frac{abc(cA_1-C_1)}{A_1B_1C_1},\\\\\n& x_R(y_P-y_Q) = \\frac{c}{C_1}\\left(\\frac{a}{A_1}-\\frac1{B_1}\\right) = \\frac{c(aB_1-A_1)}{A_1B_1C_1}.\n\\end{aligned}\n$$\n\nСумма числителей:\n$$\nC_1-acB_1+abc(cA_1-C_1)+c(aB_1-A_1) = (1-abc)(C_1-cA_1) = (1-abc)^2,\n$$\nпоскольку $C_1-cA_1 = (ac+c+1) - c(ab+a+1) = 1-abc$.\n\nТаким образом,\n$$\nS_{PQR} = \\frac12 \\cdot \\frac{(1-abc)^2}{A_1B_1C_1} = \\frac{(abc-1)^2}{2A_1B_1C_1}.\n$$\n\nОтношение площадей:\n$$\n\\frac{S_{PQR}}{S_{ABC}} = \\frac{\\frac{(abc-1)^2}{2A_1B_1C_1}}{\\frac12} = \\frac{(abc-1)^2}{A_1B_1C_1} = \\frac{(abc-1)^2}{(ab+a+1)(bc+b+1)(ca+c+1)}.\n$$\n\nОтвет: $\\frac{(abc-1)^2}{(ab+a+1)(bc+b+1)(ca+c+1)}$.",
+  "correct_answer": "\\frac{(abc-1)^2}{(ab+a+1)(bc+b+1)(ca+c+1)}",
+  "class_level": 10,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Координатный метод (аналитическая геометрия)",
+  "idea_count": 5,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T02:53:29.779324+00:00"
+}

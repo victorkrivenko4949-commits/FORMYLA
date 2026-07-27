@@ -1,0 +1,69 @@
+========================================================================
+V2.1 LIVE PRE-FLIGHT VERIFICATION REPORT
+Started: 2026-07-12T22:51:40+0300
+========================================================================
+
+[1] SOURCE SHA-256 VERIFICATION
+  Path: c:\Users\Victor\Downloads\FORMYLA_CONDITION_COURT\data\immutable_snapshots\SNAP_L1_L5_BASELINE\final_clean_dataset_5levels_L3_completed.json
+  Actual:   99b250eaa426a82813faf154e7f7184b663b950b33ecff8fae9bdc25193c4e61
+  Expected: 99b250eaa426a82813faf154e7f7184b663b950b33ecff8fae9bdc25193c4e61
+  MATCH: PASS
+
+[2] SOURCE COUNT
+  Actual: 2686, Expected: 2686
+  MATCH: PASS
+
+[3] VALIDATION MANIFEST
+  Phase: 4.2
+  All manifest checks: PASS
+
+[4] VALIDATION SET CONTENT
+  All validation set checks: PASS
+
+[5] PHASE 4.2 TESTS (29 expected)
+  pytest exit code: 0
+  Result: PASS
+  tests/test_validation_set_real_v2_1_corrected.py::TestCorrectedManifestIntegrity::test_manifest_total_matches PASSED [ 93%]
+  tests/test_validation_set_real_v2_1_corrected.py::TestCorrectedManifestIntegrity::test_manifest_split_matches PASSED [ 96%]
+  tests/test_validation_set_real_v2_1_corrected.py::TestCorrectedManifestIntegrity::test_manifest_source_sha_matches PASSED [100%]
+  
+  ============================= 29 passed in 0.95s ==============================
+
+[6] PROMPT VERSION CHECK
+  All prompt files exist: PASS
+  appeal_judge_v2.md exists: True
+  v1 size: 8214, v2 size: 12846
+  Different files: True
+
+[7] L3 CONFIDENCE PATCH (routing only)
+  l3_confidence_v2_1_patch.md exists: True
+  Contains 0.95 threshold: True
+  Routing-only semantics: False
+  L3 patch: REVIEW NEEDED
+
+[8] TIMEOUT POLICY
+  v2_1_timeout_policy.md exists: True
+  Contains worker timeout: True
+  Contains timeout mechanism: True
+  Timeout policy: PASS
+
+[9] COURT POLICY
+  court_policy.yaml exists: True
+
+[10] ENVIRONMENT (API KEY CHECK)
+  .env exists: True
+
+[11] V2.1 OUTPUT DIRECTORY
+  Directory: c:\Users\Victor\Downloads\FORMYLA_CONDITION_COURT\outputs\live_calibration_v2_1_20260712_184844
+  Contains 18 files
+  No live run artifacts (clean for new run)
+
+[12] OLD CALIBRATION PROCESS CHECK
+  Running Python processes: 3
+
+========================================================================
+PRE-FLIGHT SUMMARY
+========================================================================
+  ALL CHECKS: PASS
+
+Completed: 2026-07-12T22:51:44+0300

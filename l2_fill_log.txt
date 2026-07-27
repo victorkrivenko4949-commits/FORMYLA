@@ -1,0 +1,302 @@
+2026-07-15 16:48:25,967 - __main__ - INFO - Loaded 11260 total tasks
+2026-07-15 16:48:25,976 - __main__ - INFO - L1: 2473 tasks, L2: 4112 tasks
+2026-07-15 16:48:25,983 - __main__ - INFO - Found 117 cells with holes, need 396 tasks total
+2026-07-15 16:48:25,984 - __main__ - INFO - Need distribution: {1: 19, 2: 4, 3: 7, 4: 87}
+2026-07-15 16:48:26,033 - __main__ - INFO - Resumed: 326 cells already completed, 1162 tasks generated
+2026-07-15 16:48:26,034 - __main__ - INFO - Cells to process: 95 (skipping 22 completed)
+2026-07-15 16:48:26,034 - ai.deepseek_client - INFO - 🔄 Using official DeepSeek API (direct)
+2026-07-15 16:48:26,046 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:48:26,054 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:48:26,066 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:49:01,863 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:49:03,864 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:49:09,686 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:49:10,555 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:49:11,687 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:49:12,555 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:49:45,420 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:49:49,420 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:49:50,150 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:49:53,043 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:49:54,150 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:49:57,044 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:50:32,223 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:50:34,857 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:50:40,223 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:50:40,866 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:50:42,857 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:50:48,867 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:51:20,846 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:51:22,311 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:51:29,773 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:51:36,846 - __main__ - ERROR - [L2|5|Комбинаторика и теория игр] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:51:38,312 - __main__ - ERROR - [L2|5|Математические игры / Стратегии] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:51:41,847 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:51:43,313 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:51:45,774 - __main__ - ERROR - [L2|5|Чётность и нечётность] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:51:50,774 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:52:21,547 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:52:22,604 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:52:23,548 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:52:24,604 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:52:29,945 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:52:31,946 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:53:05,083 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:53:05,521 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:53:09,084 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:53:09,522 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:53:11,466 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:53:15,466 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:53:49,853 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:53:50,911 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:53:57,854 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:53:58,912 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:53:59,446 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:54:07,446 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:54:37,601 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:54:43,422 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:54:48,807 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:54:53,601 - __main__ - ERROR - [L2|5|Комбинаторика и теория игр] Attempt 2: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:54:58,601 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:54:59,422 - __main__ - ERROR - [L2|5|Математические игры / Стратегии] Attempt 2: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:55:04,423 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:55:04,808 - __main__ - ERROR - [L2|5|Чётность и нечётность] Attempt 2: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:55:09,808 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:55:39,037 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:55:41,038 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:55:41,195 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:55:43,196 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:55:49,025 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:55:51,025 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:56:22,807 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:56:23,588 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=9860 chars, content=1803 chars)
+2026-07-15 16:56:23,589 - __main__ - WARNING - [L2|5|Математические игры / Стратегии] Attempt 3: JSON parse failed, retrying...
+2026-07-15 16:56:26,589 - __main__ - ERROR - [L2|5|Математические игры / Стратегии] All 3 attempts failed!
+2026-07-15 16:56:26,590 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:56:26,590 - __main__ - ERROR - [1/95] ✗ L2|5|Математические игры / Стратегии — FAILED
+2026-07-15 16:56:26,807 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:56:31,902 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:56:35,903 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:57:06,588 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:57:07,110 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:57:09,111 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:57:14,588 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:57:17,242 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:57:25,243 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:57:49,924 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:57:53,924 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:57:57,020 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:58:10,410 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:58:13,021 - __main__ - ERROR - [L2|5|Комбинаторика и теория игр] Attempt 3: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:58:18,021 - __main__ - ERROR - [L2|5|Комбинаторика и теория игр] All 3 attempts failed!
+2026-07-15 16:58:18,022 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:58:18,022 - __main__ - ERROR - [2/95] ✗ L2|5|Комбинаторика и теория игр — FAILED
+2026-07-15 16:58:26,411 - __main__ - ERROR - [L2|5|Чётность и нечётность] Attempt 3: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:58:31,411 - __main__ - ERROR - [L2|5|Чётность и нечётность] All 3 attempts failed!
+2026-07-15 16:58:31,411 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:58:31,412 - __main__ - ERROR - [3/95] ✗ L2|5|Чётность и нечётность — FAILED
+2026-07-15 16:58:36,506 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 16:58:44,507 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 16:59:01,098 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:59:03,099 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:59:10,018 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 16:59:12,018 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 16:59:24,801 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 16:59:40,801 - __main__ - ERROR - [L2|6|Игры] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 16:59:45,802 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 16:59:46,446 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:59:50,446 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 16:59:52,009 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 16:59:56,009 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:00:28,587 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:00:30,587 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:00:34,526 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:00:34,600 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:00:42,526 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:00:42,601 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:01:13,808 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:01:17,809 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:01:25,486 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:01:33,596 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:01:41,487 - __main__ - ERROR - [L2|9|Квадратные уравнения, замена переменной] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:01:46,487 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:01:49,596 - __main__ - ERROR - [L2|6|Комбинаторные игры] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:01:54,597 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:02:04,594 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:02:12,595 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:02:21,964 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=7442 chars, content=2755 chars)
+2026-07-15 17:02:21,965 - __main__ - WARNING - [L2|9|Квадратные уравнения, замена переменной] Attempt 2: JSON parse failed, retrying...
+2026-07-15 17:02:24,965 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:02:41,626 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:02:43,627 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:02:57,577 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:03:06,782 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:03:08,783 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:03:13,577 - __main__ - ERROR - [L2|6|Игры] Attempt 2: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:03:18,578 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:03:34,486 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:03:38,487 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:03:48,938 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:03:52,939 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:04:06,047 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:04:08,048 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:04:22,958 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:04:30,958 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:04:33,594 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:04:41,594 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:04:49,061 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:04:53,062 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:05:16,978 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:05:19,339 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:05:32,978 - __main__ - ERROR - [L2|6|Комбинаторные игры] Attempt 2: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:05:35,340 - __main__ - ERROR - [L2|9|Квадратные уравнения, замена переменной] Attempt 3: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:05:36,844 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:05:37,979 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:05:40,340 - __main__ - ERROR - [L2|9|Квадратные уравнения, замена переменной] All 3 attempts failed!
+2026-07-15 17:05:40,341 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:05:40,341 - __main__ - ERROR - [4/95] ✗ L2|9|Квадратные уравнения, замена переменной — FAILED
+2026-07-15 17:05:44,844 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:06:18,936 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:06:20,937 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:06:21,290 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:06:23,290 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:06:28,934 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:06:44,934 - __main__ - ERROR - [L2|6|Игры] Attempt 3: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:06:49,935 - __main__ - ERROR - [L2|6|Игры] All 3 attempts failed!
+2026-07-15 17:06:49,936 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:06:49,936 - __main__ - ERROR - [5/95] ✗ L2|6|Игры — FAILED
+2026-07-15 17:06:50,016 - __main__ - INFO - Checkpoint saved: 1162 tasks so far
+2026-07-15 17:06:59,895 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:07:03,895 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:07:06,538 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:07:10,538 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:07:31,611 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:07:33,612 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:07:38,708 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=6600 chars, content=3406 chars)
+2026-07-15 17:07:38,709 - __main__ - WARNING - [L2|9|Системы рациональных уравнений] Attempt 1: JSON parse failed, retrying...
+2026-07-15 17:07:41,710 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:07:54,528 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:08:02,529 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:08:10,951 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:08:14,951 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:08:19,642 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:08:21,642 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:08:50,109 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:08:55,164 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=2291 chars, content=8025 chars)
+2026-07-15 17:08:55,165 - __main__ - WARNING - [L2|9|Дробно-рациональные уравнения] Attempt 1: JSON parse failed, retrying...
+2026-07-15 17:08:55,984 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=7503 chars, content=2012 chars)
+2026-07-15 17:08:55,986 - __main__ - WARNING - [L2|9|Системы рациональных уравнений] Attempt 2: JSON parse failed, retrying...
+2026-07-15 17:08:58,166 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:08:58,987 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:09:06,110 - __main__ - ERROR - [L2|6|Комбинаторные игры] Attempt 3: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:09:11,110 - __main__ - ERROR - [L2|6|Комбинаторные игры] All 3 attempts failed!
+2026-07-15 17:09:11,110 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:09:11,110 - __main__ - ERROR - [6/95] ✗ L2|6|Комбинаторные игры — FAILED
+2026-07-15 17:09:37,681 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:09:38,701 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=6378 chars, content=3921 chars)
+2026-07-15 17:09:38,704 - __main__ - WARNING - [L2|9|Системы рациональных уравнений] Attempt 3: JSON parse failed, retrying...
+2026-07-15 17:09:39,682 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:09:41,705 - __main__ - ERROR - [L2|9|Системы рациональных уравнений] All 3 attempts failed!
+2026-07-15 17:09:41,705 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:09:41,705 - __main__ - ERROR - [7/95] ✗ L2|9|Системы рациональных уравнений — FAILED
+2026-07-15 17:09:53,957 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:09:55,957 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:10:21,037 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:10:22,231 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=2550 chars, content=8093 chars)
+2026-07-15 17:10:22,233 - __main__ - WARNING - [L2|9|Дробно-рациональные уравнения] Attempt 2: JSON parse failed, retrying...
+2026-07-15 17:10:23,038 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:10:25,234 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:10:36,833 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:10:40,833 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:11:06,220 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:11:08,221 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:11:09,474 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:11:13,475 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:11:28,045 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:11:36,046 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:11:50,941 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:11:54,941 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:11:59,321 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:12:07,321 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:12:20,959 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:12:32,646 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=8912 chars, content=295 chars)
+2026-07-15 17:12:32,647 - __main__ - WARNING - [L2|9|Дробно-рациональные уравнения] Attempt 3: JSON parse failed, retrying...
+2026-07-15 17:12:35,647 - __main__ - ERROR - [L2|9|Дробно-рациональные уравнения] All 3 attempts failed!
+2026-07-15 17:12:35,647 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:12:35,648 - __main__ - ERROR - [8/95] ✗ L2|9|Дробно-рациональные уравнения — FAILED
+2026-07-15 17:12:36,960 - __main__ - ERROR - [L2|9|Метод интервалов] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:12:41,961 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:12:48,020 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:13:04,021 - __main__ - ERROR - [L2|9|Уравнения высших степеней (возвратные уравнения)] Attempt 1: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:13:09,021 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:13:14,492 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:13:16,493 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:13:25,999 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:13:27,999 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:13:48,019 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:13:50,019 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:13:54,305 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:13:58,306 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:14:09,315 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:14:13,315 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:14:27,767 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:14:31,768 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:14:33,851 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=7182 chars, content=2330 chars)
+2026-07-15 17:14:33,851 - __main__ - WARNING - [L2|9|Алгебра. Последовательности. Геометрическая прогрессия] Attempt 1: JSON parse failed, retrying...
+2026-07-15 17:14:36,852 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:14:57,825 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:15:05,826 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:15:14,270 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:15:16,153 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:15:18,154 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:15:22,270 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:15:49,041 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:15:53,040 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=3018 chars, content=6590 chars)
+2026-07-15 17:15:53,041 - __main__ - INFO - [L2|9|Алгебра. Последовательности. Геометрическая прогрессия] ✓ Generated 4/4 tasks
+2026-07-15 17:15:53,041 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:15:53,041 - __main__ - INFO - [9/95] ✓ L2|9|Алгебра. Последовательности. Геометрическая прогрессия — +4 tasks
+2026-07-15 17:16:04,819 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:16:05,042 - __main__ - ERROR - [L2|9|Метод интервалов] Attempt 2: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:16:10,042 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:16:20,820 - __main__ - ERROR - [L2|9|Уравнения высших степеней (возвратные уравнения)] Attempt 2: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:16:25,821 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:16:39,334 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:16:41,334 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:16:54,833 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:16:56,834 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:17:06,912 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:17:08,912 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:17:22,107 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:17:26,108 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:17:41,090 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:17:45,091 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:17:49,643 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:17:53,644 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner
+2026-07-15 17:18:06,406 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:18:14,407 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:18:27,389 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:18:33,578 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 8s
+2026-07-15 17:18:35,389 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:18:41,579 - ai.deepseek_client - INFO - [reasoner] Attempt 4/4: sending request to deepseek-reasoner
+2026-07-15 17:18:55,095 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=4036 chars, content=7060 chars)
+2026-07-15 17:18:55,096 - __main__ - WARNING - [L2|9|Квадратные неравенства с параметром] Attempt 1: JSON parse failed, retrying...
+2026-07-15 17:18:58,097 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:19:15,599 - ai.deepseek_client - INFO - [reasoner] ✓ ok (reasoning=1295 chars, content=8634 chars)
+2026-07-15 17:19:15,601 - __main__ - WARNING - [L2|9|Уравнения высших степеней (возвратные уравнения)] Attempt 3: JSON parse failed, retrying...
+2026-07-15 17:19:17,623 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 16s
+2026-07-15 17:19:18,601 - __main__ - ERROR - [L2|9|Уравнения высших степеней (возвратные уравнения)] All 3 attempts failed!
+2026-07-15 17:19:18,601 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:19:18,602 - __main__ - ERROR - [10/95] ✗ L2|9|Уравнения высших степеней (возвратные уравнения) — FAILED
+2026-07-15 17:19:18,657 - __main__ - INFO - Checkpoint saved: 1166 tasks so far
+2026-07-15 17:19:33,624 - __main__ - ERROR - [L2|9|Метод интервалов] Attempt 3: reasoner failed after 4 attempts: reasoner: empty content field
+2026-07-15 17:19:38,624 - __main__ - ERROR - [L2|9|Метод интервалов] All 3 attempts failed!
+2026-07-15 17:19:38,625 - ai.deepseek_client - INFO - [reasoner] Attempt 1/4: sending request to deepseek-reasoner
+2026-07-15 17:19:38,625 - __main__ - ERROR - [11/95] ✗ L2|9|Метод интервалов — FAILED
+2026-07-15 17:19:40,288 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:19:42,288 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:20:05,124 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:20:07,125 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:20:27,555 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 4s
+2026-07-15 17:20:27,849 - ai.deepseek_client - WARNING - [reasoner] bad response: reasoner: empty content field, waiting 2s
+2026-07-15 17:20:29,851 - ai.deepseek_client - INFO - [reasoner] Attempt 2/4: sending request to deepseek-reasoner
+2026-07-15 17:20:31,555 - ai.deepseek_client - INFO - [reasoner] Attempt 3/4: sending request to deepseek-reasoner

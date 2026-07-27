@@ -1,0 +1,19 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0060",
+      "mode": "replace_bad",
+      "id": "5-C1-4-L7-g5",
+      "grade": 5,
+      "difficulty": 7,
+      "theme": "Геометрия и измерения",
+      "subtopic": "Периметр и площадь",
+      "method_code": "C1",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 15
+    }
+  ]
+}

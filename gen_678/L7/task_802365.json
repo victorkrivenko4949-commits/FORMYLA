@@ -1,0 +1,20 @@
+{
+  "id": 802365,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$ и $AC$ выбраны точки $M$ и $N$. На отрезке $MN$ взята точка $P$. Прямые $BP$ и $CP$ пересекают стороны $AC$ и $AB$ соответственно в точках $Q$ и $R$. Докажите, что площади треугольников $BQC$ и $CRB$ равны тогда и только тогда, когда\n$$ \\frac{MP}{PN} = \\frac{AM \\cdot AC}{AN \\cdot AB}. $$",
+  "solution": "Введём векторную систему с началом в точке $A$. Пусть $\\vec{AB} = \\mathbf{b}$, $\\vec{AC} = \\mathbf{c}$. Обозначим $\\lambda = \\frac{AM}{AB}$, $\\mu = \\frac{AN}{AC}$, тогда $M = \\lambda\\mathbf{b}$, $N = \\mu\\mathbf{c}$. Пусть $P$ делит отрезок $MN$ в отношении $MP:PN = t:1-t$ ($0<t<1$). Тогда $P = (1-t)\\lambda\\mathbf{b} + t\\mu\\mathbf{c}$.\n\nНайдём точку $Q$ на $AC$: $Q = \\alpha\\mathbf{c}$. Из коллинеарности $B,P,Q$ имеем $\\det(\\overrightarrow{BQ}, \\overrightarrow{BP}) = 0$. Выразим:\n$\\overrightarrow{BQ} = \\alpha\\mathbf{c} - \\mathbf{b}$, $\\overrightarrow{BP} = ((1-t)\\lambda - 1)\\mathbf{b} + t\\mu\\mathbf{c}$. В базисе $\\{\\mathbf{b},\\mathbf{c}\\}$ их координаты $(-1,\\alpha)$ и $((1-t)\\lambda-1, t\\mu)$. Определитель:\n$$ -1\\cdot t\\mu - \\alpha((1-t)\\lambda-1) = 0 \\quad\\Rightarrow\\quad \\alpha = \\frac{t\\mu}{1-(1-t)\\lambda}. $$\n\nАналогично, точка $R$ на $AB$: $R = \\beta\\mathbf{b}$. Из коллинеарности $C,P,R$:\n$\\overrightarrow{CR} = \\beta\\mathbf{b} - \\mathbf{c}$, $\\overrightarrow{CP} = (1-t)\\lambda\\mathbf{b} + (t\\mu-1)\\mathbf{c}$. Координаты $(\\beta,-1)$ и $((1-t)\\lambda, t\\mu-1)$. Определитель:\n$$ \\beta(t\\mu-1) + (1-t)\\lambda = 0 \\quad\\Rightarrow\\quad \\beta = \\frac{(1-t)\\lambda}{1-t\\mu}. $$\n\nТеперь вычислим площади. Площадь $\\triangle BQC$:\n$\\overrightarrow{BQ} = -\\mathbf{b} + \\alpha\\mathbf{c}$, $\\overrightarrow{CQ} = \\alpha\\mathbf{c} - \\mathbf{c} = (\\alpha-1)\\mathbf{c}$. Их определитель:\n$$ \\det(-\\mathbf{b} + \\alpha\\mathbf{c}, (\\alpha-1)\\mathbf{c}) = (1-\\alpha)\\det(\\mathbf{b},\\mathbf{c}). $$\nЗначит $[BQC] = \\frac12 (1-\\alpha)|\\det(\\mathbf{b},\\mathbf{c})|$. Аналогично, для $\\triangle CRB$:\n$\\overrightarrow{CR} = \\beta\\mathbf{b} - \\mathbf{c}$, $\\overrightarrow{BR} = \\beta\\mathbf{b} - \\mathbf{b} = (\\beta-1)\\mathbf{b}$. Определитель:\n$$ \\det(\\beta\\mathbf{b} - \\mathbf{c}, (\\beta-1)\\mathbf{b}) = (1-\\beta)\\det(\\mathbf{b},\\mathbf{c}). $$\nТаким образом, $[CRB] = \\frac12(1-\\beta)|\\det(\\mathbf{b},\\mathbf{c})|$.\n\nРавенство площадей $[BQC] = [CRB]$ равносильно $1-\\alpha = 1-\\beta$, то есть $\\alpha = \\beta$. Получаем уравнение:\n$$ \\frac{t\\mu}{1-(1-t)\\lambda} = \\frac{(1-t)\\lambda}{1-t\\mu}. $$\nПосле перекрёстного умножения и упрощения:\n$$ t\\mu(1-t\\mu) = (1-t)\\lambda(1-(1-t)\\lambda) \\quad\\Rightarrow\\quad (t\\mu - (1-t)\\lambda)(1 - t\\mu - (1-t)\\lambda) = 0. $$\nПоскольку $0<\\lambda,\\mu,t<1$, сумма $t\\mu+(1-t)\\lambda < 1$ (как выпуклая комбинация чисел, меньших 1), второй множитель положителен. Следовательно, необходимо $t\\mu = (1-t)\\lambda$, то есть\n$$ \\frac{t}{1-t} = \\frac{\\lambda}{\\mu}. $$\nНо $\\frac{t}{1-t} = \\frac{MP}{PN}$, $\\lambda = \\frac{AM}{AB}$, $\\mu = \\frac{AN}{AC}$. Отсюда\n$$ \\frac{MP}{PN} = \\frac{AM/AB}{AN/AC} = \\frac{AM\\cdot AC}{AN\\cdot AB}. $$\nОбратно, если выполнено это соотношение, то $\\alpha = \\beta$ и площади равны. Утверждение доказано.",
+  "correct_answer": "\\frac{MP}{PN} = \\frac{AM \\cdot AC}{AN \\cdot AB}",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Векторный метод с параметризацией точек и вычислением площадей через определители",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T16:07:39.321162+00:00"
+}

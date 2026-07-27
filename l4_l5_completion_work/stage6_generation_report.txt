@@ -1,0 +1,62 @@
+======================================================================
+  STAGE 6: TARGETED GENERATION REPORT
+======================================================================
+
+TIMESTAMP: 2026-07-17T09:03:15.545134
+DURATION: 819.3s
+
+SUMMARY:
+  Cells needing generation: 41
+  Total adjusted_needed:   188
+  Total generated:          196
+  Total errors:             0
+  Coverage:                 196/188 (104.3%)
+
+PER-CELL RESULTS:
+Cell Key                 Need  Got   Status      
+----------------------------------------------------------------------
+G11|L5|T001|S1               5     5 OK          
+G11|L5|T001|S2               5     5 OK          
+G11|L5|T034|S0               5     5 OK          
+G11|L5|T043|S1               5     5 OK          
+G5|L4|T004|S2                5     5 OK          
+G5|L4|T005|S0                5     5 OK          
+G5|L4|T005|S1                5     5 OK          
+G5|L4|T008|S1                5     5 OK          
+G5|L5|T004|S1                5     5 OK          
+G5|L5|T004|S2                5     5 OK          
+G5|L5|T005|S0                5     5 OK          
+G5|L5|T005|S1                5     5 OK          
+G5|L5|T008|S0                5     5 OK          
+G5|L5|T008|S1                5     5 OK          
+G5|L5|T022|S0                5     5 OK          
+G5|L5|T022|S1                5     5 OK          
+G5|L5|T022|S2                5     5 OK          
+G5|L5|T024|S1                5     5 OK          
+G5|L5|T024|S2                5     5 OK          
+G6|L5|T006|S2                5     5 OK          
+G6|L5|T007|S0                5     5 OK          
+G6|L5|T007|S1                5     5 OK          
+G6|L5|T007|S2                5     5 OK          
+G6|L5|T016|S1                5    10 OK          
+G6|L5|T018|S2                5     7 OK          
+G6|L5|T032|S1                5     5 OK          
+G6|L5|T033|S0                5     5 OK          
+G6|L5|T033|S1                5     5 OK          
+G6|L5|T033|S2                5     6 OK          
+G7|L5|T003|S2                5     5 OK          
+G7|L5|T003|S1                4     4 OK          
+G11|L5|T021|S1               4     4 OK          
+G5|L5|T002|S1                4     4 OK          
+G5|L5|T002|S2                4     4 OK          
+G5|L5|T004|S0                4     4 OK          
+G5|L5|T005|S2                4     4 OK          
+G6|L5|T018|S1                4     4 OK          
+G5|L5|T024|S0                3     3 OK          
+G6|L5|T018|S0                3     3 OK          
+G5|L4|T022|S2                2     2 OK          
+G7|L5|T023|S1                2     2 OK          
+
+======================================================================
+  END OF STAGE 6 REPORT
+======================================================================

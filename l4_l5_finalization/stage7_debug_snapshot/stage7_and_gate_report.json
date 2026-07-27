@@ -1,0 +1,17 @@
+{
+  "total_rejected": 115,
+  "solver_b_not_called": 29,
+  "solver_b_called": 86,
+  "c05_missing": 29,
+  "c06_missing": 29,
+  "all_solver_a_passed": 28,
+  "all_solver_a_failed": 86,
+  "c01_c04_all_pass_but_rejected": 0,
+  "c07_c12_all_pass_but_rejected": 0,
+  "samples": [],
+  "solver_b_not_called_pct": 25.22,
+  "solver_b_called_pct": 74.78,
+  "solver_a_all_pass_pct": 24.35,
+  "c01_c04_all_pass_but_rejected_pct": 0.0,
+  "c07_c12_all_pass_but_rejected_pct": 0.0
+}

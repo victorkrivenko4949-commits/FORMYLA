@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0168-8-D2-L8-fill-0148",
+      "mode": "replace_bad",
+      "id": "8-D2-L8-fill-0148",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Графики с модулем",
+      "method_code": "D2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0112-8-E3-1-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-E3-1-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

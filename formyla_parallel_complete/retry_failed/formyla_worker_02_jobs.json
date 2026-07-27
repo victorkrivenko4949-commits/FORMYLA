@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "job_id": "fill-0283",
+      "mode": "fill_missing",
+      "grade": 10,
+      "difficulty": 7,
+      "theme": "Системы, параметры и неравенства",
+      "subtopic": "Оценки",
+      "method_code": "C3",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 3
+    },
+    {
+      "job_id": "fill-0234",
+      "mode": "fill_missing",
+      "grade": 9,
+      "difficulty": 8,
+      "theme": "Геометрия треугольника и окружности",
+      "subtopic": "Окружность и углы",
+      "method_code": "D2",
+      "quality_target": "L6=регион; L7=сложный регион; L8=финал/перечневые, не одношаговая техника",
+      "worker": 14
+    }
+  ]
+}

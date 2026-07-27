@@ -1,0 +1,777 @@
+{
+  "analysis_timestamp": "2026-07-18T03:10:31.920103",
+  "total_records": 665,
+  "root_type": "list",
+  "schema_fields": {
+    "answer": {
+      "frequency": "441/665 (66.3%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "37",
+        "24",
+        "216 марок"
+      ]
+    },
+    "audit_mode": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "str"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        "deterministic_pre_live",
+        "deterministic_pre_live",
+        "deterministic_pre_live"
+      ]
+    },
+    "changes_made": {
+      "frequency": "528/665 (79.4%)",
+      "types": [
+        "list"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        [
+          "Изменил условие задачи: вместо сложения двух чисел требуется определить простое число среди 48 и 37.",
+          "Тема теперь соответствует 'Числа и делимость' (простые числа — часть делимости).",
+          "Класс 5 — задача на простые числа входит в программу 5 класса."
+        ],
+        [
+          "level_assigned: None->1 (audit=PASS)"
+        ],
+        [
+          "level_assigned: None->1 (audit=PASS)"
+        ]
+      ]
+    },
+    "class_level": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "int"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        5,
+        5,
+        5
+      ]
+    },
+    "confidence": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "str"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        "high",
+        "high",
+        "high"
+      ]
+    },
+    "decision_status": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "str"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        "candidate",
+        "candidate",
+        "candidate"
+      ]
+    },
+    "duplicate_clusters": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "list"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        [],
+        [],
+        []
+      ]
+    },
+    "evidence_source": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "deterministic_rules",
+        "deterministic_rules",
+        "deterministic_rules"
+      ]
+    },
+    "feature_score": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "int"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        2,
+        1,
+        2
+      ]
+    },
+    "final_court_status": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "str"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        "pending_live_audit",
+        "pending_live_audit",
+        "pending_live_audit"
+      ]
+    },
+    "fix_timestamp": {
+      "frequency": "441/665 (66.3%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "2026-07-15T19:03:10.409395+00:00",
+        "2026-07-15T19:03:10.409797+00:00",
+        "2026-07-15T19:03:10.409811+00:00"
+      ]
+    },
+    "fixed_by_ai": {
+      "frequency": "528/665 (79.4%)",
+      "types": [
+        "bool"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        true,
+        true,
+        true
+      ]
+    },
+    "grade": {
+      "frequency": "441/665 (66.3%)",
+      "types": [
+        "int"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        5,
+        5,
+        5
+      ]
+    },
+    "image": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "str"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "in_duplicate_cluster": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "bool"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        false,
+        false,
+        false
+      ]
+    },
+    "issues": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "list"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        [],
+        [],
+        []
+      ]
+    },
+    "level": {
+      "frequency": "528/665 (79.4%)",
+      "types": [
+        "int"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        1,
+        1,
+        1
+      ]
+    },
+    "mechanical_mapping": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "str"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        "L1",
+        "L1",
+        "L1"
+      ]
+    },
+    "original_difficulty": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "int"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        1,
+        1,
+        1
+      ]
+    },
+    "original_id": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "SEL1080-0001",
+        "SEL1080-0002",
+        "SEL1080-0003"
+      ]
+    },
+    "pending_live_audit": {
+      "frequency": "4/665 (0.6%)",
+      "types": [
+        "bool"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        true,
+        true,
+        true
+      ]
+    },
+    "quality_score": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "int"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        90,
+        90,
+        90
+      ]
+    },
+    "rank_in_cell": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "int"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        5,
+        6,
+        7
+      ]
+    },
+    "selection_notes": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "str"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        "Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.",
+        "Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.",
+        "Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit."
+      ]
+    },
+    "solution": {
+      "frequency": "441/665 (66.3%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "Число 37 имеет только два делителя: 1 и 37, поэтому оно простое. Число 48 имеет более двух делителей (например, 2, 3, 4, 6, 8, 12, 16, 24, 48), поэтому оно составное.",
+        "Чтобы найти количество синих карандашей, нужно найти 30% от 80: 80 * 0,3 = 24.",
+        "127 + 89 = 216"
+      ]
+    },
+    "source_index": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "int"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        0,
+        1,
+        2
+      ]
+    },
+    "statement": {
+      "frequency": "441/665 (66.3%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "Из чисел 48 и 37 выберите простое число. Ответ обоснуйте.",
+        "В коробке было 80 карандашей. 30% из них — синие. Сколько синих карандашей в коробке?",
+        "У Пети было 127 марок, ему подарили ещё 89 марок. Сколько марок стало у Пети?"
+      ]
+    },
+    "target_level": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "L1",
+        "L1",
+        "L1"
+      ]
+    },
+    "task_text": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "Найдите сумму чисел 48 и 37.",
+        "Какую цифру нужно поставить вместо $A$ в числе $12A$, чтобы получилось число 125?",
+        "Делится ли число 84 на 2?"
+      ]
+    },
+    "topic": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "str"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        "Числа и делимость",
+        "Числа и делимость",
+        "Числа и делимость"
+      ]
+    },
+    "total_in_cell_pool": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "int"
+      ],
+      "null_count": 0,
+      "sample_values": [
+        27,
+        27,
+        27
+      ]
+    },
+    "validation_warnings": {
+      "frequency": "665/665 (100.0%)",
+      "types": [
+        "NoneType",
+        "int"
+      ],
+      "null_count": 4,
+      "sample_values": [
+        4,
+        4,
+        4
+      ]
+    }
+  },
+  "unique_keys_count": 32,
+  "record_type": "individual_task",
+  "record_type_evidence": {
+    "sample_has_tasks_array": false,
+    "sample_has_task_text": true,
+    "sample_has_statement": true
+  },
+  "grade_distribution": {
+    "2": 5,
+    "5": 46,
+    "6": 42,
+    "7": 49,
+    "8": 67,
+    "9": 78,
+    "10": 69,
+    "11": 85
+  },
+  "level_distribution": {
+    "1": 147,
+    "2": 144,
+    "3": 90,
+    "4": 99,
+    "5": 48
+  },
+  "grade_level_distribution": {
+    "G2|L1": 5,
+    "G5|L1": 11,
+    "G5|L2": 9,
+    "G5|L3": 9,
+    "G5|L4": 14,
+    "G5|L5": 3,
+    "G6|L1": 9,
+    "G6|L2": 11,
+    "G6|L3": 10,
+    "G6|L4": 12,
+    "G7|L1": 8,
+    "G7|L2": 16,
+    "G7|L3": 7,
+    "G7|L4": 13,
+    "G7|L5": 5,
+    "G8|L1": 18,
+    "G8|L2": 22,
+    "G8|L3": 10,
+    "G8|L4": 9,
+    "G8|L5": 8,
+    "G9|L1": 13,
+    "G9|L2": 25,
+    "G9|L3": 9,
+    "G9|L4": 20,
+    "G9|L5": 11,
+    "G10|L1": 11,
+    "G10|L2": 18,
+    "G10|L3": 18,
+    "G10|L4": 14,
+    "G10|L5": 8,
+    "G11|L1": 20,
+    "G11|L2": 25,
+    "G11|L3": 10,
+    "G11|L4": 17,
+    "G11|L5": 13
+  },
+  "topic_distribution": {
+    "Теория чисел": 50,
+    "Комбинаторика": 26,
+    "Геометрия": 20,
+    "Раскраска": 17,
+    "Числа и делимость": 14,
+    "Принцип Дирихле": 12,
+    "Текстовые задачи": 11,
+    "Инвариант": 11,
+    "Функции и графики": 10,
+    "Геометрия и измерения": 9,
+    "Тригонометрия": 9,
+    "Алгебра. Неравенства и оценки": 8,
+    "Делимость и НОК": 8,
+    "Комбинаторика и логика": 7,
+    "Теория графов": 7,
+    "Дроби, отношения, проценты": 7,
+    "Целые числа и координаты": 7,
+    "Игровые стратегии": 7,
+    "Линейные уравнения и системы": 7,
+    "Стереометрия и векторы": 7,
+    "Комбинаторика и графы": 6,
+    "Остатки по модулю": 6,
+    "Неравенства и оценки": 6,
+    "Функции и параметры": 6,
+    "Показательные и логарифмы": 6,
+    "Модули, радикалы, неравенства": 5,
+    "Комбинаторика и вероятность": 5,
+    "Принцип крайнего": 5,
+    "Геометрия, комбинаторика и логика": 5,
+    "Делимость": 5,
+    "Теория чисел / диофантовы уравнения": 5,
+    "Системы и текстовые задачи": 5,
+    "Векторы": 5,
+    "Алгебра. Тригонометрия": 5,
+    "Тригонометрия и смешанные уравнения": 5,
+    "Уравнения и текстовые задачи": 5,
+    "Алгебра. Неравенства и преобразования": 4,
+    "Квадратные уравнения и параметры": 4,
+    "Арифметическая прогрессия": 4,
+    "Множества и функции": 4,
+    "Теория чисел / делители": 4,
+    "Доли и проценты": 4,
+    "Алгебра": 4,
+    "Делимость и остатки": 4,
+    "Неравенства и преобразования": 4,
+    "Логика. Логика, множества, функции и отображения": 4,
+    "Стереометрия": 4,
+    "Раскраски и замощения": 4,
+    "Геометрия. Стереометрия и векторы": 4,
+    "Геометрический экстремум": 4
+  },
+  "topic_mapping": {
+    "total_records_with_topic": 665,
+    "mapped_to_taxonomy": 0,
+    "unmapped_count": 247,
+    "unmapped_examples": [
+      "G10|Экстремумы квадратичной функции",
+      "G11|Арифметическая прогрессия",
+      "G11|Раскраски",
+      "G11|Теория графов (число вершин по числу рёбер, турниры)",
+      "G11|Тригонометрические преобразования",
+      "G2|Задачи на стоимость",
+      "G2|Периметр",
+      "G6|Делимость",
+      "G6|Дроби",
+      "G6|Средняя скорость (движение)",
+      "G7|Делимость чисел",
+      "G7|Линейные уравнения и системы",
+      "G7|Принцип Дирихле (нетривиальное разбиение)",
+      "G7|Текстовые задачи",
+      "G8|Алгебра. Выражения и их преобразования",
+      "G8|Алгебра. Неравенства и преобразования",
+      "G8|Теорема Виета",
+      "G9|Делимость (формула Лежандра)",
+      "G9|Игровые стратегии",
+      "G9|Квадратичные функции"
+    ],
+    "topic_id_distribution": {}
+  },
+  "level_separation": {
+    "L4_count": 207,
+    "L5_count": 179,
+    "L4_only": 183,
+    "L5_only": 155,
+    "both_L4_and_L5": 327
+  },
+  "nested_fields": {
+    "issues": {
+      "types": [
+        "NoneType",
+        "list"
+      ],
+      "sample_nested_value": [
+        [],
+        []
+      ]
+    },
+    "duplicate_clusters": {
+      "types": [
+        "NoneType",
+        "list"
+      ],
+      "sample_nested_value": [
+        [],
+        []
+      ]
+    },
+    "changes_made": {
+      "types": [
+        "list"
+      ],
+      "sample_nested_value": [
+        [
+          "Изменил условие задачи: вместо сложения двух чисел требуется определить простое число среди 48 и 37.",
+          "Тема теперь соответствует 'Числа и делимость' (простые числа — часть делимости).",
+          "Класс 5 — задача на простые числа входит в программу 5 класса."
+        ],
+        [
+          "level_assigned: None->1 (audit=PASS)"
+        ]
+      ]
+    }
+  },
+  "cell_reconstruction_estimate": {
+    "unique_grade_level_topic_combinations": 0,
+    "example_cell_keys": []
+  },
+  "difficulty_distribution": {
+    "original_difficulty": {
+      "5": 130,
+      "1": 127,
+      "4": 117,
+      "7": 104,
+      "3": 95,
+      "2": 56,
+      "6": 21,
+      "8": 11
+    },
+    "target_level": {
+      "L1": 135,
+      "L4": 135,
+      "L5": 135,
+      "L2": 133,
+      "L3": 127
+    }
+  },
+  "quality_distribution": {
+    "quality_score": {
+      "90": 530,
+      "100": 135
+    },
+    "confidence": {
+      "high": 601,
+      "medium": 60
+    }
+  },
+  "duplicate_info": {
+    "in_duplicate_cluster_count": 128,
+    "unique_duplicate_cluster_ids": 0,
+    "cluster_ids_sample": []
+  },
+  "grade_level_summary": {
+    "G2|L1": {
+      "task_count": 5,
+      "unique_topic_names": 5
+    },
+    "G5|L1": {
+      "task_count": 11,
+      "unique_topic_names": 15
+    },
+    "G5|L2": {
+      "task_count": 9,
+      "unique_topic_names": 9
+    },
+    "G5|L3": {
+      "task_count": 9,
+      "unique_topic_names": 5
+    },
+    "G5|L4": {
+      "task_count": 14,
+      "unique_topic_names": 10
+    },
+    "G5|L5": {
+      "task_count": 3,
+      "unique_topic_names": 3
+    },
+    "G6|L1": {
+      "task_count": 9,
+      "unique_topic_names": 17
+    },
+    "G6|L2": {
+      "task_count": 11,
+      "unique_topic_names": 15
+    },
+    "G6|L3": {
+      "task_count": 10,
+      "unique_topic_names": 8
+    },
+    "G6|L4": {
+      "task_count": 12,
+      "unique_topic_names": 10
+    },
+    "G7|L1": {
+      "task_count": 8,
+      "unique_topic_names": 13
+    },
+    "G7|L2": {
+      "task_count": 16,
+      "unique_topic_names": 21
+    },
+    "G7|L3": {
+      "task_count": 7,
+      "unique_topic_names": 7
+    },
+    "G7|L4": {
+      "task_count": 13,
+      "unique_topic_names": 8
+    },
+    "G7|L5": {
+      "task_count": 5,
+      "unique_topic_names": 7
+    },
+    "G8|L1": {
+      "task_count": 18,
+      "unique_topic_names": 18
+    },
+    "G8|L2": {
+      "task_count": 22,
+      "unique_topic_names": 34
+    },
+    "G8|L3": {
+      "task_count": 10,
+      "unique_topic_names": 11
+    },
+    "G8|L4": {
+      "task_count": 9,
+      "unique_topic_names": 7
+    },
+    "G8|L5": {
+      "task_count": 8,
+      "unique_topic_names": 6
+    },
+    "G9|L1": {
+      "task_count": 13,
+      "unique_topic_names": 17
+    },
+    "G9|L2": {
+      "task_count": 25,
+      "unique_topic_names": 23
+    },
+    "G9|L3": {
+      "task_count": 9,
+      "unique_topic_names": 40
+    },
+    "G9|L4": {
+      "task_count": 20,
+      "unique_topic_names": 20
+    },
+    "G9|L5": {
+      "task_count": 11,
+      "unique_topic_names": 13
+    },
+    "G10|L1": {
+      "task_count": 11,
+      "unique_topic_names": 10
+    },
+    "G10|L2": {
+      "task_count": 18,
+      "unique_topic_names": 15
+    },
+    "G10|L3": {
+      "task_count": 18,
+      "unique_topic_names": 24
+    },
+    "G10|L4": {
+      "task_count": 14,
+      "unique_topic_names": 21
+    },
+    "G10|L5": {
+      "task_count": 8,
+      "unique_topic_names": 8
+    },
+    "G11|L1": {
+      "task_count": 20,
+      "unique_topic_names": 16
+    },
+    "G11|L2": {
+      "task_count": 25,
+      "unique_topic_names": 19
+    },
+    "G11|L3": {
+      "task_count": 10,
+      "unique_topic_names": 8
+    },
+    "G11|L4": {
+      "task_count": 17,
+      "unique_topic_names": 45
+    },
+    "G11|L5": {
+      "task_count": 13,
+      "unique_topic_names": 17
+    }
+  }
+}

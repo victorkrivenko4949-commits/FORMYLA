@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0401-10-A2-7-L8-gf",
+      "mode": "replace_bad",
+      "id": "10-A2-7-L8-gf",
+      "grade": 10,
+      "difficulty": 8,
+      "theme": "Олимпиадная задача",
+      "subtopic": "Formula of Unity, 2025, Отборочный этап",
+      "method_code": "OLY",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

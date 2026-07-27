@@ -1,0 +1,7 @@
+c = open(r'c:\Users\Redmi\Desktop\Новая папка (2)\app.py', 'r', encoding='utf-8').read()
+idx = c.find('app.route("/")')
+print("Found at", idx)
+print(repr(c[idx:idx+80]))
+idx2 = c.find('def index')
+print("def index at", idx2)
+print(repr(c[idx2-100:idx2+500]))

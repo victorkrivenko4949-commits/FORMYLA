@@ -1,0 +1,115 @@
+======================================================================
+1. PHYSICS ITEMS IN curated_bank_L1_L5_taxonomy_v2.json
+======================================================================
+Total items: 674
+Items with physics keywords: 3
+
+--- INDEX 206 (keyword: 'ньютон') ---
+{
+  "original_id": "SEL1080-0448",
+  "source_index": 447,
+  "class_level": 7,
+  "original_difficulty": 4,
+  "target_level": "L3",
+  "task_text": "Найдите остаток $7^{20}$ при делении на 10.",
+  "image": "",
+  "topic": "Многочлены / формулы Ньютона",
+  "audit_mode": "deterministic_pre_live",
+  "evidence_source": "deterministic_rules",
+  "decision_status": "candidate",
+  "final_court_status": "pending_live_audit",
+  "confidence": "high",
+  "feature_score": 4,
+  "mechanical_mapping": "L3",
+  "quality_score": 90,
+  "rank_in_cell": 15,
+  "total_in_cell_pool": 23,
+  "issues": [],
+  "in_duplicate_cluster": false,
+  "duplicate_clusters": [],
+  "validation_warnings": 4,
+  "selection_notes": "Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.",
+  "statement": "Дан многочлен $P(x) = x^4 - 10x^3 + 35x^2 - 50x + 24$, корни которого $x_1, x_2, x_3, x_4$ равны $1,2,3,4$ (но их значения не должны использоваться в решении). Используя формулы Ньютона (рекуррентные соотношения между степенными суммами корней и коэффициентами многочлена), выполните следующие задания:\n1) Найдите сумму четвёртых степеней корней $S_4 = x_1^4 + x_2^4 + x_3^4 + x_4^4$.\n2) Пользуясь тем же рекуррентным соотношением, вычислите суммы $S_8, S_{12}, S_{16}$ (где $S_k = x_1^k + x_2^k + x_3^k + x_4^k$).\n3) Пусть $y_i = x_i^4$ — четвёртые степени корней. Выразите элементарные симметрические многочлены от $y_1, y_2, y_3, y_4$ через $S_4, S_8, S_{12}, S_{16}$ и с помощью формул Ньютона найдите многочлен, корнями которого являются числа $y_1, y_2, y_3, y_4$.\nВсе вычисления производите без непосредственного использования значений корней (только через коэффициенты $P(x)$ и степенные суммы). Для проверки можно использовать тот факт, что $x_1=1, x_2=2, x_3=3, x_4=4$, но ответ должен быть получен формально.",
+  "answer": "1) $S_4 = 354$.\n2) $S_8 = 72354$, $S_{12} = 17312754$, $S_{16} = 4338079554$.\n3) Многочлен: $y^4 - 354 y^3 + 26481 y^2 - 357904 y + 331776 = 0$.",
+  "solution": "Пусть $a_1=-10$, $a_2=35$, $a_3=-50$, $a_4=24$ — коэффициенты $P(x)$. Формулы Ньютона для суммы степеней корней $S_k$:\n$S_1 + a_1 = 0 \\Rightarrow S_1 = 10$.\n$S_2 + a_1 S_1 + 2a_2 = 0 \\Rightarrow S_2 = 30$.\n$S_3 + a_1 S_2 + a_2 S_1 + 3a_3 = 0 \\Rightarrow S_3 = 100$.\n$S_4 + a_1 S_3 + a_2 S_2 + a_3 S_1 + 4a_4 = 0 \\Rightarrow S_4 = 354$.\n\nРекуррентное соотношение для $k>4$:\n$S_k + a_1 S_{k-1} + a_2 S_{k-2} + a_3 S_{k-3} + a_4 S_{k-4} = 0$.\nПоследовательно находим:\n$S_5 = -a_1 S_4 - a_2 S_3 - a_3 S_2 - a_4 S_1 = 1300$,\n$S_6 = 4890$,\n$S_7 = 17620$,\n$S_8 = 72354$,\n$S_9 = 277300$,\n$S_{10} = 1108650$,\n$S_{11} = 4417300$,\n$S_{12} = 17312754$,\n$S_{13} = 68934100$,\n$S_{14} = 274771650$,\n$S_{15} = 1093033300$,\n$S_{16} = 4338079554$.\n\nТеперь для $y_i = x_i^4$: их степенные суммы $T_1 = S_4 = 354$, $T_2 = S_8 = 72354$, $T_3 = S_{12} = 17312754$, $T_4 = S_{16} = 4338079554$. Формулы Ньютона для $y$ (коэффициенты $e_1, e_2, e_3, e_4$):\n$T_1 = e_1$,\n$T_2 = e_1 T_1 - 2e_2$,\n$T_3 = e_1 T_2 - e
+
+--- INDEX 447 (keyword: 'ньютон') ---
+{
+  "original_id": "SEL1080-0884",
+  "source_index": 883,
+  "class_level": 9,
+  "original_difficulty": 7,
+  "target_level": "L5",
+  "task_text": "Многочлен $x^{4}-10x^{3}+35x^{2}-50x+24$ имеет корни $1,2,3,4$. Не решая уравнение явно, выведите (используя рекуррентные соотношения между степенными суммами корней и коэффициентами многочлена — формулы Ньютона) значение суммы четвёртых степеней корней $x_1^4+x_2^4+x_3^4+x_4^4$.",
+  "image": "",
+  "topic": "Многочлены / формулы Ньютона",
+  "audit_mode": "deterministic_pre_live",
+  "evidence_source": "deterministic_rules",
+  "decision_status": "candidate",
+  "final_court_status": "pending_live_audit",
+  "confidence": "high",
+  "feature_score": 3,
+  "mechanical_mapping": "L5",
+  "quality_score": 90,
+  "rank_in_cell": 7,
+  "total_in_cell_pool": 45,
+  "issues": [],
+  "in_duplicate_cluster": false,
+  "duplicate_clusters": [],
+  "validation_warnings": 4,
+  "selection_notes": "Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit."
+}
+
+--- INDEX 621 (keyword: 'физик') ---
+{
+  "original_id": "SEL1080-0525",
+  "source_index": 524,
+  "class_level": 11,
+  "original_difficulty": 4,
+  "target_level": "L3",
+  "task_text": "Решите уравнение $\\sin^2x=1$ на $[0;2\\pi]$.",
+  "image": "",
+  "topic": "Комбинаторика и вероятность",
+  "audit_mode": "deterministic_pre_live",
+  "evidence_source": "deterministic_rules",
+  "decision_status": "candidate",
+  "final_court_status": "pending_live_audit",
+  "confidence": "high",
+  "feature_score": 4,
+  "mechanical_mapping": "L3",
+  "quality_score": 90,
+  "rank_in_cell": 14,
+  "total_in_cell_pool": 25,
+  "issues": [],
+  "in_duplicate_cluster": false,
+  "duplicate_clusters": [],
+  "validation_warnings": 4,
+  "selection_notes": "Deterministic pre-live candidate — NOT final. Awaiting LIVE V2 audit.",
+  "statement": "На полке стоят 8 книг: 3 по математике, 3 по физике и 2 по химии. Сколькими способами можно выбрать 4 книги так, чтобы среди них оказалась хотя бы одна книга по каждому предмету?",
+  "answer": "45",
+  "solution": "Общее число способов выбрать 4 книги из 8: C(8,4)=70. Вычтем неблагоприятные варианты, когда отсутствует хотя бы один предмет. Без книг по математике (выбираем только из 5 книг по физике и химии): C(5,4)=5. Без книг по физике: C(5,4)=5. Без книг по химии: C(6,4)=15 (выбираем из 6 книг по математике и физике). Случаи отсутствия двух предметов одновременно невозможны (нужно 4 книги, а доступно не более 3). По формуле включений-исключений: 70 - (5+5+15) = 45.",
+  "level": 3,
+  "grade": 10,
+  "fixed_by_ai": true,
+  "fix_timestamp": "2026-07-15T19:03:10.426154+00:00",
+  "changes_made": [
+    "Изменено условие: добавлены ограничения по предметам для усложнения задачи до уровня L3",
+    "Уровень исправлен с L1 на L3, чтобы соответствовать заявленному уровню",
+    "Класс оставлен 10, так как теперь задача соответствует сложности для 10 класса",
+    "Добавлены ответ и развёрнутое решение с применением включений-исключений"
+  ]
+}
+
+======================================================================
+2. PHYSICS ITEMS IN _grade_map_result.json
+======================================================================
+Grade 7[29] (keyword: 'ньютон'):
+"Многочлены / формулы Ньютона"
+
+Grade 9[33] (keyword: 'ньютон'):
+"Многочлены / формулы Ньютона"
+
+Topic: 'Многочлены / формулы Ньютона'
+Items count: 2
+"7"
+"9"

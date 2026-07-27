@@ -1,0 +1,97 @@
+=== All DailyTaskSets ===
+  id=6, user_id=1, target_date=2026-06-04, status=failed, items=10
+  id=5, user_id=1, target_date=2026-06-03, status=ready, items=10
+  id=4, user_id=1, target_date=2026-06-02, status=ready, items=10
+  id=3, user_id=1, target_date=2026-05-29, status=failed, items=10
+  id=2, user_id=2, target_date=2026-05-28, status=ready, items=10
+
+=== Items per set ===
+  set=2, pos=1, len=71, status=approved
+    txt: Mock-задача #1: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=2, len=71, status=approved
+    txt: Mock-задача #2: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=3, len=71, status=approved
+    txt: Mock-задача #3: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=4, len=71, status=approved
+    txt: Mock-задача #4: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=5, len=71, status=approved
+    txt: Mock-задача #5: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=6, len=71, status=approved
+    txt: Mock-задача #6: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=7, len=71, status=approved
+    txt: Mock-задача #7: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=8, len=71, status=approved
+    txt: Mock-задача #8: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=9, len=71, status=approved
+    txt: Mock-задача #9: при каких \(a\) уравнение \(x^2+ax+1=0\) име
+  set=2, pos=10, len=72, FLAGGED | status=flagged
+    txt: Mock-задача #10: при каких \(a\) уравнение \(x^2+ax+1=0\) им
+  set=3, pos=1, len=0, status=approved | EMPTY
+  set=3, pos=2, len=0, status=approved | EMPTY
+  set=3, pos=3, len=0, status=approved | EMPTY
+  set=3, pos=4, len=0, status=approved | EMPTY
+  set=3, pos=5, len=0, status=approved | EMPTY
+  set=3, pos=6, len=0, status=approved | EMPTY
+  set=3, pos=7, len=0, status=approved | EMPTY
+  set=3, pos=8, len=0, status=approved | EMPTY
+  set=3, pos=9, len=0, status=approved | EMPTY
+  set=3, pos=10, len=0, status=approved | EMPTY
+  set=4, pos=1, len=113, status=approved
+    txt: Ќайдите наименьшее натуральное число, которое при делении на
+  set=4, pos=2, len=165, status=approved
+    txt: »звестно, что числа \(x_1\) и \(x_2\) €вл€ютс€ корн€ми квадр
+  set=4, pos=3, len=386, status=approved
+    txt: ¬ школьной столовой есть 4 различных первых блюда, 5 различн
+  set=4, pos=4, len=172, FLAGGED | status=flagged
+    txt: ѕоследовательность \(a_1, a_2, a_3, \ldots\) задана услови€м
+  set=4, pos=5, len=160, status=approved
+    txt: ƒва натуральных числа \(a\) и \(b\) таковы, что их наименьше
+  set=4, pos=6, len=251, status=approved
+    txt: Ќа доске написано число 2024. «а одну операцию разрешаетс€ з
+  set=4, pos=7, len=170, FLAGGED | status=flagged
+    txt: ¬ треугольнике \(ABC\) со сторонами \(AB = 13\), \(BC = 14\)
+  set=4, pos=8, len=43, status=approved
+    txt: –ешите уравнение \(|x - 3| + |x + 1| = 8\).
+  set=4, pos=9, len=124, status=approved
+    txt: ѕри каких значени€х параметра \(a\) оба корн€ квадратного ур
+  set=4, pos=10, len=476, FLAGGED | status=flagged
+    txt: Ќа клетчатой доске размером \(6 \times 6\) робот стоит в лев
+  set=5, pos=1, len=150, status=approved
+    txt: Ќайдите все двузначные натуральные числа, которые дел€тс€ на
+  set=5, pos=2, len=182, status=approved
+    txt: Ќайдите все значени€ параметра \(a\), при которых квадратное
+  set=5, pos=3, len=456, status=approved
+    txt: Ќа доске нарисована таблица из 2 строк и 4 столбцов (8 клето
+  set=5, pos=4, len=293, status=approved
+    txt: Ќа доске написаны числа от 1 до 8 в р€д: \(1, 2, 3, 4, 5, 6,
+  set=5, pos=5, len=271, status=approved
+    txt: ѕоследовательность \((a_n)\) задана услови€ми \(a_1 = 3\), \
+  set=5, pos=6, len=224, status=approved
+    txt: ¬писанна€ окружность треугольника \(ABC\) касаетс€ стороны \
+  set=5, pos=7, len=94, status=approved
+    txt: Ќайдите все пары натуральных чисел \((x, y)\), удовлетвор€ющ
+  set=5, pos=8, len=81, FLAGGED | status=flagged
+    txt: [GEN_FAILED] Ќе удалось сгенерировать задачу дл€ позиции 8. 
+  set=5, pos=9, len=427, status=approved
+    txt: Ќа пр€моугольной решЄтке размера \(5 \times 5\) узлов (коорд
+  set=5, pos=10, len=365, status=approved
+    txt: ƒвое игроков по очереди став€т ладьи на клетки шахматной дос
+  set=6, pos=1, len=0, status=approved | EMPTY
+  set=6, pos=2, len=0, status=approved | EMPTY
+  set=6, pos=3, len=0, status=approved | EMPTY
+  set=6, pos=4, len=0, status=approved | EMPTY
+  set=6, pos=5, len=0, status=approved | EMPTY
+  set=6, pos=6, len=0, status=approved | EMPTY
+  set=6, pos=7, len=0, status=approved | EMPTY
+  set=6, pos=8, len=0, status=approved | EMPTY
+  set=6, pos=9, len=0, status=approved | EMPTY
+  set=6, pos=10, len=0, status=approved | EMPTY
+
+=== DailyGenerationJobs ===
+  id=6, date=2026-06-04, set_id=6, state=failed, err=Gemini вернул 0 specs (нужно 10)
+  id=5, date=2026-06-03, set_id=5, state=completed, err=
+  id=4, date=2026-06-02, set_id=4, state=completed, err=
+  id=3, date=2026-05-29, set_id=3, state=failed, err=Gemini вернул 0 specs (нужно 10)
+  id=2, date=2026-05-28, set_id=2, state=completed, err=
+
+Done

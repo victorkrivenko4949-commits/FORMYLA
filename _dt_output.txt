@@ -1,0 +1,200 @@
+python-dotenv could not parse statement starting at line 28
+python-dotenv could not parse statement starting at line 28
+2026-07-02 11:27:18,915 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-02 11:27:18,916 - app - INFO - === App started, logging to c:\Users\Victor\Desktop\Новая папка (2)\logs\app.log
+2026-07-02 11:27:20,835 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-02 11:27:23,457 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-02 11:27:23,457 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-02 11:27:23,458 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-02 11:27:23,458 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-02 11:27:23,458 - apscheduler.scheduler - INFO - Scheduler started
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+DEBUG: Доступные переменные окружения:
+Всего переменных: 73
+SECRET_KEY = ЕСТЬ
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = ЕСТЬ
+DEEPSEEK_API_KEY = ЕСТЬ
+============================================================
+[DB] Using: sqlite:///formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+✅ База данных инициализирована
+[AUTO-MIGRATION] ✓ Column 'agent_type' already exists
+[AUTO-MIGRATION] ✓ Column 'subtopic' already exists
+[AUTO-MIGRATION] ✓ Column 'attempts_count' already exists
+[AUTO-MIGRATION] ✓ Column 'solves_count' already exists
+[AUTO-MIGRATION] ✓ Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] ✓ Column 'suggested_level' already exists
+[AUTO-MIGRATION] ✓ Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] ✓ Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] ✓ Column 'task_type' already exists
+[AUTO-MIGRATION] ✓ Column 'source' already exists
+[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Group chat tables already exist
+[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized
+[AUTO-MIGRATION] ✓ friendships table schema OK
+[AUTO-MIGRATION] ✓ support_messages table already exists
+[AUTO-MIGRATION] ✓ site_reviews table already exists
+[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists
+[BP] prep_bp registered (/prep)
+[BP] olympiad_prep_bp registered (/olympiad-prep)
+[BP] account_bp registered (/account)
+[BP] drawing_bp registered (/drawing)
+[BP] drawing_diag_bp registered (/api/drawing/diag)
+[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)
+[BP] wb_call_bp registered (/api/wb_call/*)
+[BP] wb_meet_bp registered (/api/wb_meet/*)
+[BP] chat_presence_bp registered (/api/chat/*/presence, typing)
+[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)
+[BP] admin_support_bp registered (/admin/support, /my/support)
+[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)
+[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)
+[VSOSH10_11-ADD] result={'status': 'skipped', 'reason': 'already_present', 'count': 43}
+[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)
+[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 1140 rows
+[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 1696 rows
+[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 135 rows
+[LATEX-ROOT-DB-FIX] total rows updated: 0
+[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 1140}, 'method_tasks': {'updated': 0, 'scanned': 1696}, 'adaptive_tasks': {'updated': 0, 'scanned': 135}}
+[OLYMPIAD-SEED] Theory source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\methods_catalog_89.json (89 rows; in DB: 102 — ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_65_methods.json (65 rows)
+[THEORY-SEED] body source: c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\theory_24_methods.json (24 rows)
+[THEORY-SEED] Theory bodies filled: 0 methods updated
+[THEORY-MD] No MD content parsed from c:\Users\Victor\Desktop\Новая папка (2)\data\olympiads\formyla_vsosh9_10_methods_combined.md
+[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)
+[THEORY-FIX] No placeholder method names — nothing to do
+[SECRETS-SEED] Already populated (127 rows)
+[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)
+[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded
+[BP] telegram_auth_bp registered (/auth/telegram/callback)
+  [daily_tasks migration] dialect = sqlite
+  ✅ daily_task_sets: 10 колонок
+  ✅ daily_task_items: 27 колонок
+  ✅ daily_generation_jobs: 11 колонок
+  [task_pool migration] dialect = sqlite
+  ✅ task_pool: 12 колонок
+  ✅ user_task_assignments: 5 колонок
+[BP] daily_tasks_bp registered (/daily_tasks)
+  [curator migration] dialect = sqlite
+  ✅ student_diagnostics: 14 колонок
+  ✅ learning_plans: 18 колонок
+  ✅ task_attempts: 18 колонок
+  ✅ progress_log: 16 колонок
+  ✅ task_bank: 11 колонок
+[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress
+  [test_sessions migration] dialect = sqlite
+  ✅ test_sessions: 16 колонок
+[BP] test_sessions migration ensured
+[JINJA] filter md_render registered
+[JINJA] filter inject_geometry registered
+✅ VAPID keys loaded — Web Push notifications enabled
+✓ APScheduler started - Daily Quest cron jobs active
+olympiads.py: новый формат, 1622 пробников
+Пробников всего: 1622, с задачами: 1622
+Адаптивный тест: загружено 0 задач из adaptive_data
+OLYMPIADS_INFO: 11 олимпиад с grades/rounds
+=== LATEST DAILY TASK SET ===
+ID: 7 Status: ready Generated: 2026-07-02 07:36:30.660981
+Target date: 2026-07-02 Class: 9
+Triggered by: manual Cost: $0.0
+
+ITEMS: 10
+
+=== TASK #1 (id=61) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Правила сложения и умножения
+Difficulty: 4 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Сколько существует трёхзначных чисел (от 100 до 999), в записи которых встречается ровно одна чётная цифра?
+ANS: 350
+SOL: Чётные цифры: 0, 2, 4, 6, 8; нечётные: 1, 3, 5, 7, 9. Рассмотрим три случая в зависимости от позиции единственной чётной цифры. 
+
+1) Чётная цифра в разряде сотен. Сотни: 4 варианта (2, 4, 6, 8), десят
+
+=== TASK #2 (id=62) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Перестановки и факториал
+Difficulty: 4 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Сколько различных слов (не обязательно осмысленных) можно составить, переставляя буквы в слове «МАТЕМАТИКА»?
+ANS: 151200
+SOL: Слово «МАТЕМАТИКА» состоит из 10 букв. Среди них имеются повторяющиеся: буква А встречается 3 раза, буква М — 2 раза, буква Т — 2 раза, остальные буквы (Е, И, К) — по 1 разу. Число перестановок 10 раз
+
+=== TASK #3 (id=63) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Размещения и сочетания
+Difficulty: 4 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Сколько существует трехзначных чисел, все цифры которых различны, и которые делятся на 5?
+ANS: 136
+SOL: Так как число делится на 5, последняя цифра может быть 0 или 5. Рассмотрим два случая.
+
+1) Последняя цифра равна 0. Тогда первую цифру можно выбрать из 9 вариантов (1–9), вторую — из 8 оставшихся. Кол
+
+=== TASK #4 (id=64) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Сочетания и биномиальные коэффициенты
+Difficulty: 5 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Имеется 8 карамельных конфет, 6 шоколадных и 4 мармеладных. Сколькими способами можно выбрать 5 конфет так, чтобы среди них было хотя бы по две конфеты каких-либо двух сортов (т.е. либо не менее 2 карамелей и не менее 2 шоколадных, либо не менее 2 карамелей и не менее 2 мармеладных, либо не менее 2 шоколадных и не менее 2 мармеладных)?
+ANS: 5436
+SOL: Обозначим через \(A\) множество наборов, в которых не менее 2 карамелей и не менее 2 шоколадных, через \(B\) — не менее 2 карамелей и не менее 2 мармеладных, через \(C\) — не менее 2 шоколадных и не м
+
+=== TASK #5 (id=65) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Бином Ньютона
+Difficulty: 5 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Найдите свободный член (не содержащий \(x\)) в разложении бинома \(\left(2x^2 - \frac{1}{x^3}\right)^{10}\).
+ANS: 13440
+SOL: Используем формулу общего члена разложения бинома Ньютона: \(T_{k+1} = C_{10}^{k} (2x^2)^{10-k} \left(-\frac{1}{x^3}\right)^k\). Упрощая, получаем: \(T_{k+1}=C_{10}^{k} 2^{10-k} (-1)^k x^{20-5k}\). Дл
+
+=== TASK #6 (id=66) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Комбинаторика с ограничениями
+Difficulty: 5 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Сколько существует способов рассадить в ряд 5 различных людей: Алису, Бориса, Виктора, Глеба и Диану, если Алиса и Борис не должны сидеть рядом, Виктор и Глеб не должны сидеть рядом, а также Алиса и Виктор не должны сидеть рядом? (Люди различны, ряд — это линейное расположение.)
+ANS: 20
+SOL: Общее число перестановок 5 человек: \(5! = 120\). Используем принцип включений-исключений. Обозначим события: \(A\) — Алиса и Борис рядом, \(B\) — Виктор и Глеб рядом, \(C\) — Алиса и Виктор рядом. Чи
+
+=== TASK #7 (id=67) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Графы: основные понятия и степени вершин
+Difficulty: 5 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: В связном графе с \(n\) вершинами \((n \ge 3)\) степени всех вершин, кроме одной, равны 3. Степень оставшейся вершины равна \(k\), где \(k \ge 1\). Известно, что сумма степеней всех вершин делится на 10. Найдите наименьшее возможное значение \(n\).
+ANS: 7
+SOL: Обозначим степень особой вершины через \(k\). Сумма степеней всех вершин равна \(3(n-1) + k = 3n - 3 + k\). По лемме о рукопожатиях эта сумма чётна, следовательно, \(3n - 3 + k\) чётно. Поскольку \(3n
+
+=== TASK #8 (id=68) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Деревья и их свойства
+Difficulty: 6 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: В некотором дереве 4 вершины имеют степень 1, 4 вершины — степень 2, а остальные вершины имеют степень 3 или 4. Известно, что вершин степени 3 на 2 больше, чем вершин степени 4. Сколько рёбер в этом дереве?
+ANS: 9
+SOL: Обозначим через \(x\) количество вершин степени 4. Тогда вершин степени 3 — \(x+2\). Всего вершин: \(4 + 4 + (x+2) + x = 10 + 2x\). В дереве количество рёбер на 1 меньше числа вершин: \(E = (10+2x)-1 
+
+=== TASK #9 (id=69) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Эйлеровы циклы и пути
+Difficulty: 6 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Рассмотрим связный граф с 6 вершинами, степени которых равны \(1, 1, 2, 2, 3, 3\). а) Докажите, что такой граф существует, и постройте его пример. б) Докажите, что в любом таком графе существует эйлеров путь, соединяющий две вершины степени 1. в) Верно ли, что любой такой граф является двудольным? Ответ обоснуйте.
+ANS: а) Да, граф существует. б) Нет, эйлеров путь невозможен, так как имеется четыре вершины нечётной степени. в) Нет, не любой такой граф двудольный.
+SOL: а) Построим пример. Обозначим вершины \(v_1, v_2, v_3, v_4, v_5, v_6\) со степенями \(1, 1, 2, 2, 3, 3\). Соединим: \(v_5\) с \(v_1, v_3, v_4\); \(v_6\) с \(v_2, v_3, v_4\); \(v_3\) с \(v_5, v_6\); \(
+
+=== TASK #10 (id=70) ===
+Subject: combinatorics Topic: Комбинаторика. Комбинаторика и графы Subtopic: Раскраска графов и хроматическое число
+Difficulty: 6 Slot: calibration Calibration: False
+Status: approved Flagged: False Flag_reason: None
+TEXT: Рассмотрим граф \(G\), вершины которого соответствуют всем рёбрам полного графа \(K_5\) (то есть десяти рёбрам). Две вершины графа \(G\) смежны, если соответствующие рёбра \(K_5\) имеют общую концевую вершину. Найдите хроматическое число графа \(G\).
+ANS: 5
+SOL: Обозначим вершины \(K_5\) числами \(0,1,2,3,4\). Заметим, что все рёбра, инцидентные одной вершине \(K_5\), образуют клику в \(G\) размера 4, поэтому \(\chi(G) \ge 4\). Покажем, что 4 цветов недостато
+ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.
+[figures_manifest] MANIFEST.json not found - figures disabled
+DEBUG: Загружено 81 привязок картинок из problem_images.py

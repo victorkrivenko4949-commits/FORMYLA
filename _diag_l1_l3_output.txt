@@ -1,0 +1,7 @@
+=== CURATED BANK L1-L5 ===
+Total tasks: 674
+Traceback (most recent call last):
+  File "c:\Users\Victor\Desktop\Новая папка (2)\_diag_l1_l3.py", line 13, in <module>
+    print(f'By level: {dict(sorted(levels.items()))}')
+                            ~~~~~~^^^^^^^^^^^^^^^^
+TypeError: '<' not supported between instances of 'NoneType' and 'int'

@@ -1,0 +1,20 @@
+{
+  "id": 800319,
+  "task_text": "В треугольнике $ABC$ на стороне $BC$ выбрана точка $D$, на стороне $AB$ — точка $E$. Отрезки $AD$ и $CE$ пересекаются в точке $F$. Известно, что площади треугольников $AEF$, $CDF$ и $BEF$ относятся как $1:2:3$ (в указанном порядке). Найдите отношение $BD:DC$ и $AE:EB$.",
+  "solution": "Обозначим $S_{AEF}=x$, $S_{BEF}=3x$, $S_{CDF}=2x$. Так как треугольники $AEF$ и $BEF$ имеют общую высоту из $F$ на $AB$, то $AE:EB=S_{AEF}:S_{BEF}=1:3$.\n\nПусть $S$ — площадь $\\triangle ABC$, а $F$ имеет барицентрические координаты $(\\alpha,\\beta,\\gamma)$ с $\\alpha+\\beta+\\gamma=1$, где $S_{BFC}=\\alpha S$, $S_{CFA}=\\beta S$, $S_{AFB}=\\gamma S$.\n\nТочка $E$ на $AB$ с $AE:EB=1:3$ имеет координаты $\\left(\\frac34,\\frac14,0\\right)$. Точка $F$ лежит на $CE$, поэтому $F = \\lambda C + (1-\\lambda)E$, откуда\n$$(\\alpha,\\beta,\\gamma)=\\left(\\frac{3(1-\\lambda)}4,\\frac{1-\\lambda}4,\\lambda\\right).$$\n\nС другой стороны, $F$ лежит на $AD$, $D$ на $BC$. Пусть $BD:DC = p:q$, тогда $D=\\left(0,\\frac{q}{p+q},\\frac{p}{p+q}\\right)$. Запишем $F=\\mu A + (1-\\mu)D$ (или через $t$). Получаем\n$$(\\alpha,\\beta,\\gamma)=\\left(1-t,\\ t\\cdot\\frac{DC}{BC},\\ t\\cdot\\frac{BD}{BC}\\right).$$\n\nИз сравнения координат: $t = \\frac{1+3\\lambda}{4}$, $\\frac{DC}{BC} = \\frac{1-\\lambda}{1+3\\lambda}$.\n\nТеперь используем площади. $S_{AFB}=\\gamma S=\\lambda S = S_{AEF}+S_{BEF}=4x$, откуда $x=\\frac{\\lambda S}{4}$.\n\n$S_{BCF}=\\alpha S = \\frac{3(1-\\lambda)}{4}S$. Треугольник $CDF$ имеет с $BCF$ общую высоту из $F$, поэтому\n$$S_{CDF}=\\frac{DC}{BC}\\cdot S_{BCF} \\quad\\Rightarrow\\quad 2\\cdot\\frac{\\lambda S}{4} = \\frac{DC}{BC}\\cdot\\frac{3(1-\\lambda)}{4}S,$$\n$$\\frac{\\lambda S}{2} = \\frac{DC}{BC}\\cdot\\frac{3(1-\\lambda)}{4}S \\quad\\Rightarrow\\quad \\frac{DC}{BC} = \\frac{2\\lambda}{3(1-\\lambda)}.$$\n\nПриравниваем два выражения для $\\frac{DC}{BC}$:\n$$\\frac{1-\\lambda}{1+3\\lambda} = \\frac{2\\lambda}{3(1-\\lambda)} \\quad\\Rightarrow\\quad 2\\lambda(1+3\\lambda)=3(1-\\lambda)^2 \\quad\\Rightarrow\\quad 3\\lambda^2+8\\lambda-3=0.$$\nПоложительный корень $\\lambda=\\frac13$. Тогда $\\frac{DC}{BC}=\\frac{1-1/3}{1+1}=\\frac13$, $\\frac{BD}{BC}=1-\\frac13=\\frac23$, следовательно $BD:DC=2:1$.\n\nИтак, $AE:EB=1:3$, $BD:DC=2:1$.",
+  "correct_answer": "AE:EB = 1:3, BD:DC = 2:1",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 7,
+  "key_method": "Барицентрические координаты и метод площадей",
+  "idea_count": 4,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T11:18:09.115511+00:00"
+}

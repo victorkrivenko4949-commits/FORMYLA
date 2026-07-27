@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0683",
+      "mode": "replace_bad",
+      "id": "9-C3-5-L7-gstub",
+      "grade": 9,
+      "difficulty": 7,
+      "theme": "Функции, последовательности и олимпиадные конструкции",
+      "subtopic": "Конструкции",
+      "method_code": "C3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 19
+    },
+    {
+      "job_id": "audit-0162-5-C3-36-L8-g",
+      "mode": "replace_bad",
+      "id": "5-C3-36-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Геометрия и измерения",
+      "subtopic": "Разрезания",
+      "method_code": "C3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

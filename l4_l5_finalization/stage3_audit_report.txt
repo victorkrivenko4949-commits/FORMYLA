@@ -1,0 +1,84 @@
+======================================================================
+  STAGE 3: MULTI-ROLE AUDIT REPORT
+======================================================================
+
+  Total tasks audited: 63
+  Phase 1 (quality < 60):  25 / 25 audited
+  Phase 2 (quality 60-70): 38 / 38 audited
+
+  Role success rates:
+    SOLVER              : 32/63 (50.8%)
+    ARBITER             : 63/63 (100.0%)
+    TOPIC_CLASSIFIER    : 63/63 (100.0%)
+    LEVEL_CALIBRATOR    : 63/63 (100.0%)
+    DUPLICATE_JUDGE     : 63/63 (100.0%)
+
+  Per-task summary:
+  ------------------------------------------------------------
+  c5307bfa5ccd | cell=G6|L5|T006|S2        | Q= 38.2 | roles OK=4/5
+  c28e94076cc6 | cell=G6|L5|T006|S2        | Q= 42.8 | roles OK=5/5
+  72feb7a8c418 | cell=G6|L5|T006|S2        | Q= 43.3 | roles OK=5/5
+  ef0b407220bb | cell=G5|L5|T022|S1        | Q= 43.6 | roles OK=4/5
+  cdf76dff28bc | cell=G6|L5|T006|S2        | Q= 43.8 | roles OK=5/5
+  f7a0c59e2019 | cell=G6|L5|T006|S2        | Q= 44.9 | roles OK=5/5
+  053f552cec0f | cell=G5|L5|T022|S1        | Q= 46.0 | roles OK=4/5
+  668efb906002 | cell=G5|L5|T022|S1        | Q= 46.4 | roles OK=4/5
+  88d9f7084cd2 | cell=G5|L5|T002|S2        | Q= 49.0 | roles OK=4/5
+  d8b9d06cc096 | cell=G5|L5|T004|S2        | Q= 51.5 | roles OK=4/5
+  c48f84e6585b | cell=G5|L5|T022|S1        | Q= 52.1 | roles OK=4/5
+  7681c5edc853 | cell=G5|L5|T004|S2        | Q= 52.2 | roles OK=4/5
+  8b95dc7d5035 | cell=G5|L5|T004|S2        | Q= 52.2 | roles OK=4/5
+  ffac6a343086 | cell=G5|L5|T004|S2        | Q= 52.2 | roles OK=5/5
+  167562c3d464 | cell=G7|L5|T003|S1        | Q= 52.2 | roles OK=4/5
+  6787c2edde0d | cell=G7|L5|T003|S1        | Q= 53.8 | roles OK=5/5
+  a8a672e7f2b3 | cell=G5|L5|T002|S2        | Q= 54.4 | roles OK=4/5
+  04ad8880942f | cell=G5|L4|T022|S2        | Q= 55.0 | roles OK=5/5
+  d454a6c61c44 | cell=G5|L5|T002|S1        | Q= 55.6 | roles OK=5/5
+  e8e10be25736 | cell=G6|L5|T032|S1        | Q= 55.7 | roles OK=5/5
+  f29e647f9881 | cell=G5|L4|T022|S2        | Q= 55.8 | roles OK=5/5
+  486d7f4431a0 | cell=G5|L5|T004|S2        | Q= 56.1 | roles OK=5/5
+  581cc39bf4f0 | cell=G5|L4|T008|S1        | Q= 57.3 | roles OK=5/5
+  f5a31a5003df | cell=G6|L5|T032|S1        | Q= 59.0 | roles OK=5/5
+  495e06fc6844 | cell=G5|L5|T024|S1        | Q= 59.1 | roles OK=5/5
+  ab5bf34e626a | cell=G11|L5|T001|S2       | Q= 60.2 | roles OK=4/5
+  97762757cf9e | cell=G5|L5|T024|S1        | Q= 61.2 | roles OK=5/5
+  b0283feaaa8f | cell=G5|L4|T005|S0        | Q= 61.4 | roles OK=5/5
+  139c195d2b47 | cell=G5|L5|T022|S0        | Q= 61.4 | roles OK=4/5
+  d7b30d0953e4 | cell=G5|L5|T022|S2        | Q= 61.9 | roles OK=4/5
+  2411a1ae595e | cell=G5|L4|T005|S0        | Q= 62.0 | roles OK=5/5
+  6e06828e3d72 | cell=G5|L5|T022|S0        | Q= 62.0 | roles OK=4/5
+  defdb4650efb | cell=G5|L5|T002|S2        | Q= 62.8 | roles OK=4/5
+  db39686b4adf | cell=G5|L5|T005|S2        | Q= 63.4 | roles OK=4/5
+  b83ab2ce0b72 | cell=G5|L5|T024|S2        | Q= 64.0 | roles OK=5/5
+  69a8bb8eb7cb | cell=G7|L5|T003|S2        | Q= 64.2 | roles OK=4/5
+  274146cf37e5 | cell=G11|L5|T001|S2       | Q= 64.3 | roles OK=4/5
+  c4cfd64d2456 | cell=G7|L5|T003|S2        | Q= 64.3 | roles OK=5/5
+  e011d46e1c08 | cell=G5|L5|T022|S0        | Q= 64.9 | roles OK=4/5
+  f03be060f6b3 | cell=G11|L5|T001|S2       | Q= 65.0 | roles OK=4/5
+  4a1f362c3106 | cell=G11|L5|T034|S0       | Q= 65.0 | roles OK=4/5
+  aca199da7d47 | cell=G7|L5|T003|S1        | Q= 65.4 | roles OK=5/5
+  468aa9188b50 | cell=G11|L5|T001|S1       | Q= 65.5 | roles OK=4/5
+  5557f065526c | cell=G5|L5|T024|S1        | Q= 65.6 | roles OK=5/5
+  0cabbe464aa4 | cell=G6|L5|T032|S1        | Q= 65.6 | roles OK=5/5
+  41132df26c2a | cell=G5|L5|T002|S1        | Q= 66.0 | roles OK=4/5
+  bd869dd1c1d3 | cell=G5|L5|T002|S1        | Q= 66.5 | roles OK=5/5
+  7dbecced5add | cell=G5|L5|T024|S2        | Q= 66.9 | roles OK=5/5
+  623e35b0654d | cell=G11|L5|T001|S2       | Q= 67.2 | roles OK=5/5
+  75db01688ab4 | cell=G5|L4|T005|S0        | Q= 67.4 | roles OK=4/5
+  11ae5d991c89 | cell=G7|L5|T023|S1        | Q= 67.5 | roles OK=5/5
+  812f4b5f4d2c | cell=G7|L5|T023|S1        | Q= 67.6 | roles OK=4/5
+  d21e045486af | cell=G5|L5|T008|S0        | Q= 67.8 | roles OK=5/5
+  cf1b975a398e | cell=G5|L5|T024|S0        | Q= 68.0 | roles OK=4/5
+  a03ed1222b30 | cell=G11|L5|T043|S1       | Q= 68.1 | roles OK=4/5
+  a2974faf4afe | cell=G5|L5|T022|S0        | Q= 68.1 | roles OK=4/5
+  a0b8a1c1d792 | cell=G5|L5|T024|S1        | Q= 68.2 | roles OK=5/5
+  96c72e3bb0e7 | cell=G5|L5|T005|S0        | Q= 68.4 | roles OK=5/5
+  627b2ba84fe6 | cell=G5|L5|T005|S2        | Q= 68.8 | roles OK=5/5
+  5109f65b67aa | cell=G6|L5|T016|S1        | Q= 69.2 | roles OK=4/5
+  bff87d012432 | cell=G5|L5|T008|S1        | Q= 69.3 | roles OK=5/5
+  a7b6a236ee58 | cell=G11|L5|T021|S1       | Q= 69.9 | roles OK=4/5
+  4cf0c4d29402 | cell=G6|L5|T018|S1        | Q= 69.9 | roles OK=5/5
+
+======================================================================
+  END OF REPORT
+======================================================================

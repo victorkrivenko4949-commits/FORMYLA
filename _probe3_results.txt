@@ -1,0 +1,273 @@
+=== Year-specific olympiad pages ===
+/olympiad/math2022: HTTP 200 | size=726746b | PDFs=0 | links=1461
+/olympiad/math2021: HTTP 200 | size=904604b | PDFs=0 | links=1419
+/olympiad/Phys22: HTTP 200 | size=533897b | PDFs=0 | links=1077
+/olympiad/phys2021: HTTP 200 | size=861523b | PDFs=0 | links=1508
+/olympiad/bio2022: HTTP 200 | size=97656b | PDFs=0 | links=195
+/olympiad/bio2021: HTTP 200 | size=90565b | PDFs=0 | links=141
+/olympiad/math2023: HTTP 404
+/olympiad/math2020: HTTP 200 | size=609825b | PDFs=0 | links=24
+/olympiad/math2019: HTTP 200 | size=170302b | PDFs=0 | links=24
+/olympiad/math2018: HTTP 200 | size=222424b | PDFs=0 | links=24
+/olympiad/math2024: HTTP 404
+/olympiad/math2025: HTTP 404
+/olympiad/phys2022: HTTP 404
+/olympiad/phys2020: HTTP 200 | size=703148b | PDFs=0 | links=24
+/olympiad/phys2019: HTTP 200 | size=193948b | PDFs=0 | links=24
+
+=== Other olympiad sub-pages ===
+/olympiad/benefits: HTTP 200 | size=15461b | PDFs=0 | links=29
+  LINK: /olympiad/stages
+  LINK: /olympiad/preparation
+  LINK: /olympiad/samples
+  LINK: /olympiad/results
+  LINK: /olympiad/benefits
+  LINK: /olympiad/ege
+  LINK: /olympiad/contacts
+  LINK: /olympiad/about
+  LINK: /olympiad/organizers
+  LINK: https://pk.mipt.ru/bachelor/2022_olympiads/
+  LINK: https://pk.mipt.ru/bachelor/2022_olympiads
+  LINK: mailto:olymp@phystech.edu
+  LINK: /olympiad/contacts
+/olympiad/ege: HTTP 200 | size=14903b | PDFs=0 | links=44
+  LINK: /olympiad/stages
+  LINK: /olympiad/preparation
+  LINK: /olympiad/samples
+  LINK: /olympiad/results
+  LINK: /olympiad/benefits
+  LINK: /olympiad/ege
+  LINK: /olympiad/contacts
+  LINK: /olympiad/about
+  LINK: /olympiad/organizers
+  LINK: https://pk.mipt.ru/bachelor/2022_olympiads/
+  LINK: mailto:olymp@phystech.edu
+  LINK: /olympiad/contacts
+/olympiad/contacts: HTTP 200 | size=14696b | PDFs=0 | links=37
+  LINK: /olympiad/stages
+  LINK: /olympiad/preparation
+  LINK: /olympiad/samples
+  LINK: /olympiad/results
+  LINK: /olympiad/benefits
+  LINK: /olympiad/ege
+  LINK: /olympiad/contacts
+  LINK: /olympiad/about
+  LINK: /olympiad/organizers
+  LINK: mailto:olymp@phystech.edu
+  LINK: mailto:olymp@phystech.edu
+  LINK: mailto:abitu@phystech.edu
+  LINK: http://phystech.international/
+  LINK: http://www.abiturient.ru/olympiads/e/108594
+  LINK: mailto:olymp@phystech.edu
+/olympiad/organizers: HTTP 200 | size=13340b | PDFs=1 | links=45
+  PDF: /uploads/media/default/0001/01/3e5886a58c32226738dae3ee4660aebcb41cd884/Буклет Олимпиада ФИЗТЕХ 2021.pdf
+  LINK: /olympiad/stages
+  LINK: /olympiad/preparation
+  LINK: /olympiad/samples
+  LINK: /olympiad/results
+  LINK: /olympiad/benefits
+  LINK: /olympiad/ege
+  LINK: /olympiad/contacts
+  LINK: /olympiad/about
+  LINK: /olympiad/organizers
+  LINK: /uploads/media/default/0001/01/3e5886a58c32226738dae3ee4660aebcb41cd884/Буклет Олимпиада ФИЗТЕХ 2021.pdf
+  LINK: mailto:olymp@phystech.edu
+  LINK: /olympiad/contacts
+
+=== All PDFs from /olympiad/samples ===
+Total PDFs: 136
+  https://olymp.mipt.ru/uploads/media/default/0001/01/a2c0226b3c073a4f57bcb455e042b77b368b3cc5/Fiztekh_2022_Fizika_11_klass_1-4_varianty.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/6cf551bcee953fa98421c7e449da3a760936176b/ReshVar_11-01_11-02_11-03_11-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/7bc13f90390925162d142908d8468ead626b216b/Физтех_2022_Физика_11_класс_5_8_варианты.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/6b9af0a8dd1f19dd20eabfb89138eaa1325cb6cd/ReshVar_11-05_11-06_11-07_11-08.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/16662a5fd2d04f1f861551d1658a4de2d825496c/Физтех_2022_Физика_10_класс_1_4_варианты.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/eeb3819efe6ce4fd459a4559d4bcf62d419f6eed/Решение 10 класс, билеты 1-2.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/4b2b51669ff082f4ff884399cb4ae50554b33176/Решение 10 класс, билеты 3-4.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/74b93e84a601bbdb48f2eb2267fa9dd02e9b411c/Физтех_2022_Физика_9_класс_1_4_варианты.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/6fcadd063b7159fa766f35a71e551b6de23a22c0/М Reshenie_9_klass_bilety_1-4_final.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/07118cb8a8b77d746e3055ebfb3b1a33f9577814/М Razball11-01_11-02_11-03_11-04_2022_final.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/41c2b6d78d8fa973db4640346c5a33de9b08f742/Разбалл11-05,11-06,11-07,11-08_2022 финал.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/c43dbd7559b7d2fbdd8f9134ade1ecc4e1fd8f43/Критерии 10 класс, вар1-2.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/3c4ee653920d028958b7a9f339089604df0786ff/Критерии 10 класс, вар 3-4.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/a25faa020ebc683192d1ce4397dc29cf53057eed/М Kriterii_9_klass_bilety_1-2_final.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/cfc29a6a07f8b119d3d19c1c2da980a5aa0f3aa7/М Kriterii_9_klass_bilety_3-4_final.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/0a902259b7b7a4134baf18cf46f9f1a66a9c2f55/11 класс вест.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/7419064167043d4169bda266a28dce561d8f6193/11 класс ист.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/073105dc12833c5c4f328c728b017fa0e3dd2590/10 класс вест.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/5a989f725ddb642e5f6a62546869d8d790fb122c/10 класс ист.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/442d8b6a251638710ec9e9b8badb63a2eb603542/9 класс вест.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/5430016c53f801558d2e990b8e78879506670160/9 класс ист.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/55bc6cbafce5c5caae80ecaec50ab41ebb4dfe11/Phystech2022 Solutions 1-4.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/cb6bbc46b42fa63c4215d2d9d64de3b6b988f5a4/Phystech2022 Solutions 5-8.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/455badeccf8ff3377eb74537d9529b30b495c8ec/Phystech2022 Solutions 9-10.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/641fa4ed8e36b9d52c95de5623a6241630b79e0c/Phystech2022 Solutions 11-12.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/727138182728aab40c95ce8b0914dfa48bed0183/Phystech2022 Solutions 13-14.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/d583e79790a43728ac19a8590b88827f34c9e75b/Phystech2022 Solutions 15-16.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/97a5a40a9ac229f7dcae7e74e85b81908defe246/Физтех-22Матем. Критерии 1-4.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/0a8b82c4a726f2c82221fee4924947a47629937b/Физтех-22Матем. Критерии 5-8.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/b5a6a598f2cbe91a68ee417b07ae04b9b8b15671/Физтех-22Матем. Критерии 9-10.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/27621e524334263c995ec6dd7e62d22a95600357/MIPT_2022 Instruction 11-12.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/61b19ac6dbbc5104fb1813bd0f1120a4d7a28538/Физтех-22Матем. Критерии 13-14.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/9a2cecb3e36961501d0054ffc15b13c8fd8784ef/MIPT_2022 Instruction 15-16.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/55f599ede0580aad36bdf3236d1cd1a283248c6d/Ф-11.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ccc4bc209870850ff55524efd11c5a0f0fec4b8f/Ответы Ф11-01-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/d8cff9fda30a6b46c3b525f540d4b027b2770565/Ответы Ф11-05-08.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/0efb85fb4697e1c9214035d0c2ffcc0fab6489eb/Решения 11-01 -11-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/3c2ecbff06d4abe2ca87242a705615c891dc721e/Решения 11-05 - 11-08.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/aaf2b68c8ba06e08dbfcaa69ea0cb9bd14b0e2bb/Разбалловка 11-01 - 11-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/095d1d28f2b792428edb1b2346901c02818942ae/Разбалловка 11-05 - 11-08.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/b3cc713c60f6344d833a7d4fe3924eaa4ea5f3db/Ф-10.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/820420d3a6271d486c13319d3e904ff00df207f6/ОтветыФизика10-01,10-02Физтех2021.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/df2f07f3008b0f0956f338f6cb2ca9b8069cfaf8/Олимпиада Физтех, ответы 10-03 и 10-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/fecdba715f8491bed3c43ead0992f511913f84bd/РешВар10-01,10-02.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/dd9c1d2a010bec4c4787514abd63f2150145d5e4/РешВар10-03,10-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/92b2c4453367aa77b275ec4b931644c2e6177458/Разбалл10-01,10-02.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/d8acd65feab415cadc616471e4cbf480916c17ef/Разбалл10-03,10-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/765559b2bc06385a2822f0cc68e80fe31c7558be/Ф-9.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/4e4769913c0c4edabc6061de785e76792d12353b/Олимпиада Физтех 2021 ответы 09-01 и 09-02.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/88329753b10fdb9e39f94f0fdeb12cd29356da03/Олимпиада Физтех, ответы 09-03 и 09-04 (1).pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/fda0e1370a41274bdb74f74c5ec93ba1a8532183/РешВар09-01,09-02.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/27a3aa07b2a8b6b82fb68de2796adc0e313c8e69/РешВар09-03,09-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/931dd906c0c2330d7013bc41baf5e0d3e5fe07e3/Разбалл09-01,09-02.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/5ec67e6403eb2e2a8e8493b4f18c735991ed2570/Разбалл09-03,09-04.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/fcc5633cca8491465d240a31b180c229562d658c/Критерии определения победителей и призеров по физике (1).pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ef66a5f643be41d0838776dffe79f0f14de88e05/Физтех2021-9класс Solutions.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/dcab6857036fc0878252d36e57561520d995c730/Физтех2021МатематикаИнструкция9.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ef85f5deeac8f16139040a39bf7e39184d406e35/Физтех2021-10класс Solutions.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/c5ec494cb5a6b100553c8a4f6c180b896586d87f/MIPT_2021-10 Instruction.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/c7d688275b107b010c9d2ca55c6b1e1bc631d4e0/11Solutions.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/1dedbd0a5a5913c54150f295f48e494e45c2a1ec/Физтех2021МатематикаИнструкция11.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/dd120e561977db5e0c47104adffef22d52a899fd/Критерии определения победителей и призеров по математике.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/aa8a3d55783468069bd64a7fe2e907590dcd6951/9 класс Физтех 21 закл биология задания + ответы.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/2a03f7804e4c351b94c22b0ab49611b48496c023/10 класс Физтех 21 закл биология задания + ответы.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/12e976df2568d36dfa7dfeeb3b79068200f204f2/11 класс Физтех 21 закл биология задания + ответы.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/d1dd84fdc0c1e9a190de299285c0bc17785a721b/КРИТЕРИИ определения победителей и призёров (3).pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/9b86b29c311652312a5123061268ae1fef8cf69b/Варианты 09-1-4 в3.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/32ee869df0341288f5dccf735f4ba17e601836b3/Решения и критерии оценивания Ф 9 класс.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/0e1062e6a0b01edf277b3aca25a00ea45c90fc66/Варианты 10-1-4 в3.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/1b5f1ebd23476b764692d470b3e994a280fd8462/Решения и критерии оценивания Ф 10 класс.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/79dea811b60bb50f6bfbb103a86c815099ebb347/Варианты 11-1-8 в3.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/39e9f624df297a21e0c800dc939f8fa977e198d6/Решения и критерии оценивания 11 класс.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ea3914afdab045ff66519627a3be70c7ad8d47de/Критерии определения победителей и призёров Ф.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/e4c9b83ad72956782708cbb3a8a2dbddf2e0e2e4/М9.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/9d1b99611b927210755291d721dc4d45c6607e6a/Решения и критерии М9-1-2.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/5f76b2bd49bdc397457a70b2e4cc011da22f9e9f/Решения и критерии М9-9-10.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/f5b5e333e999d47ac8236ae4394f1dfaad1a4ce0/М10.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/814ded29c7628dfaf02d5a04a227fa2a08153ccf/Решения и критерии М10-3-4.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/c4c4bb230c860c220a14b3cba1903b1c98d3492e/Решения и критерии М10-11-12.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/bc8d7fe9298eb2fa58c511bfb163811ba9d6de76/М11.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/a34136344917ec64e53651dc260a150c961decaa/Решения и критерии 11-5-8.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/88d077ca7f051165c5abf7e36334adbdffa22126/Решения и критерии М11-13-16.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/8c145d08a25dc3d7f221e77cf76dff697f555b4f/Критерии определения победителей и призеров М.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/a01a18ff0bb0aed6f0b52b1e872a4acaa4d739c3.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/39a369226bf7b66fde6fffd8a947d9186bf507a3.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/d7157784085ca695225c6c9118a23a874cc037fb.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/c6771911e2b11108626b137fb646ec634aaadf63.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/aecd5e230051d619f6df0c3dd3938c248576abc9.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/baa971caa756294f676fa6c7104ca3fb8e9904ff.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/4639ab7f502714ebbf6eebc76985f780f0816bd4.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ac26f82f4d2f109a7f4e313e2541f9d339142d16.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/838903d8463483bbce0202bf59fd280aa2bf8618.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/75569e4124dba6f48c5b47772a6e8d53d589efbd.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/405d2e1ca9e361a95768d84aa71a5c459a7a83a0.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/9c009ec53acd2eded3034e1ba88a31e960fa0a1a.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/cdaae38911338dd4e314982ef071554bdd95fa34.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/2cfe0843f10eccb97115bc9d905fa344fea9cc45.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/3aee58185e3f1299ee8ea11dba1eeecb1ca42bdc.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/42ce30a25423de59d261746dd9c1b188f712afe6.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/7064263248784519fab9b80154fa69b9a969ed85.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/c25c190f80ddb73c6822cb45a8f355d88a3ac7ba.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/b12f16eaf0deed29c4203c3b4944472562b98613.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/5042de89b5685bbcd45f98ac96bc5e1b2831a095.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/79872b3306113ef158ecdbc124485c28a0e175f9.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/c24251eb497c94f45dae84ba4b25c989ba521c76.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/565ec244de24d5c8fa6b2f52eeccf87aa5706fa9.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/e4db8ed9896bcbe777692016993e055ebbb220a8.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ddf91f22b6426a4bc9c0f80f1eafde3a09709375.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ec6d105ecaa16cff1e904d5de769cac4a63b881f.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/845f314cfe80a08c4522fb438818a9aed74e7608.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/2e56af585fc6527adeec83ba7a0714f22528a57e.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ec25ab9687bbd96c5e9ca4539518860ffc484fe5.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/804182d0672de5c1a4b33977321ae76b667df9f7.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/05fcc0e32ce49623561ce1daf6bb2124a55d2d26.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/af30a443ccf21ec9c1470ed63fda2be07cc09f5c.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/52646577bfabf82633aa2b5a63bec8bf0d5bc6b1.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/f6cdd7d600800c29a7fea9d1652e91e03f99f943.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/90d267b284e39e1f6c170d8d6614e7ecba88e3f1.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/335d67da7949f47370bb7ba2c4f78267f9048ca6.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/e931ac60390e3ae8138316972e8b0c88b04cdd62.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/e5980bde34ef0bc1987cdfcf1d2b1b6198a0ab92.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/3b6be169de5c8fb233cdcaf43678895c6cc1dded.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/35cbf31b5ce4650fe3a95ef99ab261b29d925411.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/108b2a9d8fb9c4058a9f614a5f8d141650ffb29f.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/90107fdb8bdb2ad8f06730773b8f69e0945e1f3f.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/d5ad0b044160761449a02f4d3777c1a0bdb29624.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/db28feb701b4c26a65c85f67a7d3bf098841758c.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/d3bc6b3084f7ebe58c010bca142a9e99346bae87.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/2a7b0e644196ee1f1b2be37eeed867a53d39a069.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/8b4c885ca3b467397d1c81fadb6665de5eda5006.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/12244f4e68d7935d2e57ace0e89819d40c62b5b8.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/5efe1eb2a85908933b8f8980ed307502ef442e9e.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/732e8c66b3464d29eef15ef57e1e1716516955db.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/28f242c7eda8b6eacecb1d6c0b8dc2162b1e7a02.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/ca1542cf5002724e2f037aaee6cfc542c0be32a3.pdf
+  https://olymp.mipt.ru/uploads/media/default/0001/01/9a807b935d81b7971044f9e85199ede507c8608e.pdf
+
+Sections on page: 16
+  Section: Задания 2022 года
+  Section: Задания 2021 года
+  Section: Задания 2020 года
+  Section: Задания 2019 года
+  Section: Задания 2018 года
+  Section: Задания 2017 года
+  Section: Задания 2016 года
+  Section: Задания 2015 года
+  Section: Задания 2014 года
+  Section: Задания 2013 года
+  Section: Задания 2012 года
+  Section: Задания 2011 года
+  Section: Задания 2010 года
+  Section: Задания 2009 года
+  Section: Задания 2008 года
+  Section: Задания 2007 года
+
+=== phystech.ru deep probe ===
+https://phystech.ru: HTTP 200 | PDFs=0 | olymp_links=27
+  LINK: https://phystech.ru/
+  LINK: /bitrix/templates/phystech/print.css
+  LINK: /bitrix/templates/phystech/style_ie.css
+  LINK: /bitrix/templates/phystech/style_ie_all.css
+  LINK: mailto:office@phystech.ru
+  LINK: https://phystech.ru/catalog/automobile/
+  LINK: https://phystech.ru/catalog/automobile/
+  LINK: https://phystech.ru/catalog/automobile/
+  LINK: https://phystech.ru
+  LINK: https://phystech.ru
+  LINK: https://phystech.ru
+  LINK: /upload/iblock/742/pk-lukhovitskiy-_-blagodarstvennoe-pismo_6139454.jpg
+  LINK: https://phystech.ru
+  LINK: https://phystech.ru
+  LINK: /upload/iblock/5dc/snimok-ekrana-2020_09_28-v-14.35.16.png
+https://phystech.ru/olympiads/: ERROR - HTTP Error 404: Not Found
+https://phystech.ru/obuchenie/olimpiady/: HTTP 200 | PDFs=0 | olymp_links=27
+  LINK: https://phystech.ru/
+  LINK: /bitrix/templates/phystech/print.css
+  LINK: /bitrix/templates/phystech/style_ie.css
+  LINK: /bitrix/templates/phystech/style_ie_all.css
+  LINK: mailto:office@phystech.ru
+  LINK: https://phystech.ru/catalog/automobile/
+  LINK: https://phystech.ru/catalog/automobile/
+  LINK: https://phystech.ru/catalog/automobile/
+  LINK: https://phystech.ru
+  LINK: https://phystech.ru
+  LINK: https://phystech.ru
+  LINK: /upload/iblock/742/pk-lukhovitskiy-_-blagodarstvennoe-pismo_6139454.jpg
+  LINK: https://phystech.ru
+  LINK: https://phystech.ru
+  LINK: /upload/iblock/5dc/snimok-ekrana-2020_09_28-v-14.35.16.png
+
+=== abitu.net olympiad events ===
+https://abitu.net/events: HTTP 200 | PDFs=0 | fiztekh_links=1
+  LINK: https://exams.mipt.ru
+https://abitu.net/event/4935: HTTP 200 | PDFs=0 | fiztekh_links=0
+https://abitu.net/event/4877: HTTP 200 | PDFs=0 | fiztekh_links=0

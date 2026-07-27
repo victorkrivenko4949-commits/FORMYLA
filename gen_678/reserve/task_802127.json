@@ -1,0 +1,20 @@
+{
+  "id": 802127,
+  "task_text": "Пусть $a, b, c$ — корни многочлена $x^3 + px + q = 0$, где $p, q \\neq 0$. Найдите значение выражения\n$$\nS = \\frac{(a-b)^2}{a+b} + \\frac{(b-c)^2}{b+c} + \\frac{(c-a)^2}{c+a}.\n$$",
+  "solution": "По теореме Виета для многочлена $x^3+px+q$ (коэффициент при $x^2$ равен 0) имеем:\n$$\na+b+c = 0,\\quad ab+bc+ca = p,\\quad abc = -q.\n$$\nИз $a+b+c=0$ следует $a+b = -c$, $b+c = -a$, $c+a = -b$. Тогда\n$$\n\\frac{(a-b)^2}{a+b} = \\frac{(a-b)^2}{-c} = -\\frac{(a-b)^2}{c},\n$$\nи аналогично для остальных слагаемых. Следовательно,\n$$\nS = -\\left(\\frac{(a-b)^2}{c}+\\frac{(b-c)^2}{a}+\\frac{(c-a)^2}{b}\\right).\n$$\n\nДалее, используя $a+b=-c$, преобразуем $(a-b)^2$:\n$$\n(a-b)^2 = (a+b)^2 - 4ab = c^2 - 4ab.\n$$\nТаким же образом $(b-c)^2 = a^2 - 4bc$, $(c-a)^2 = b^2 - 4ca$. Подставляем:\n$$\n\\begin{aligned}\nS &= -\\left(\\frac{c^2-4ab}{c} + \\frac{a^2-4bc}{a} + \\frac{b^2-4ca}{b}\\right) \\\\\n&= -\\left(c-\\frac{4ab}{c} + a-\\frac{4bc}{a} + b-\\frac{4ca}{b}\\right) \\\\\n&= -(a+b+c) + 4\\left(\\frac{ab}{c}+\\frac{bc}{a}+\\frac{ca}{b}\\right).\n\\end{aligned}\n$$\nПоскольку $a+b+c=0$, остаётся\n$$\nS = 4\\left(\\frac{ab}{c}+\\frac{bc}{a}+\\frac{ca}{b}\\right).\n$$\n\nТеперь выразим каждую дробь через $p$ и $q$. Заметим, что $\\frac{ab}{c} = \\frac{abc}{c^2} = \\frac{-q}{c^2}$, аналогично $\\frac{bc}{a} = \\frac{-q}{a^2}$, $\\frac{ca}{b} = \\frac{-q}{b^2}$. Поэтому\n$$\nS = 4(-q)\\left(\\frac{1}{a^2}+\\frac{1}{b^2}+\\frac{1}{c^2}\\right) = -4q\\left(\\frac{1}{a^2}+\\frac{1}{b^2}+\\frac{1}{c^2}\\right).\n$$\n\nНайдём сумму обратных квадратов. Известно, что\n$$\n\\frac{1}{a^2}+\\frac{1}{b^2}+\\frac{1}{c^2} = \\frac{a^2b^2+b^2c^2+c^2a^2}{a^2b^2c^2}.\n$$\nЧислитель выразим через $(ab+bc+ca)^2$:\n$$\n(ab+bc+ca)^2 = a^2b^2+b^2c^2+c^2a^2 + 2abc(a+b+c).\n$$\nУчитывая $a+b+c=0$ и $ab+bc+ca=p$, получаем $a^2b^2+b^2c^2+c^2a^2 = p^2$. Знаменатель $a^2b^2c^2 = (abc)^2 = q^2$. Таким образом,\n$$\n\\frac{1}{a^2}+\\frac{1}{b^2}+\\frac{1}{c^2} = \\frac{p^2}{q^2}.\n$$\n\nОкончательно:\n$$\nS = -4q \\cdot \\frac{p^2}{q^2} = -\\frac{4p^2}{q}.\n$$",
+  "correct_answer": "$$-\\frac{4p^2}{q}$$",
+  "class_level": 10,
+  "topic": "Алгебра",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Использование теоремы Виета для кубического многочлена и симметрических преобразований",
+  "idea_count": 7,
+  "is_clone": true,
+  "clone_similarity": 0.747,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T15:07:54.658441+00:00"
+}

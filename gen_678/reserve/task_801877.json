@@ -1,0 +1,20 @@
+{
+  "id": 801877,
+  "task_text": "Найдите все натуральные числа $n$, для которых многочлен $$P_n(x) = (x+1)^n - x^n - 1$$ делится на многочлен $$Q(x) = x^2 + x + 1.$$",
+  "solution": "Корнями многочлена $Q(x)=x^2+x+1$ являются комплексные числа $\\omega = e^{2\\pi i/3} = \\frac{-1+i\\sqrt{3}}{2}$ и $\\omega^2 = \\frac{-1-i\\sqrt{3}}{2}$, удовлетворяющие $\\omega^3=1$, $\\omega\\neq 1$ и $1+\\omega+\\omega^2=0$. Условие делимости $Q(x) \\mid P_n(x)$ равносильно тому, что $P_n(\\omega)=0$ (тогда и $P_n(\\omega^2)=0$ в силу вещественности коэффициентов). Вычислим $P_n(\\omega)=(1+\\omega)^n-\\omega^n-1$. Заметим, что $1+\\omega = -\\omega^2$, поэтому $$P_n(\\omega)=(-\\omega^2)^n-\\omega^n-1=(-1)^n\\omega^{2n}-\\omega^n-1.$$ Поскольку $\\omega^3=1$, достаточно рассмотреть $n$ по модулю $6$. Рассмотрим все возможные остатки:\n\n- $n\\equiv 0\\pmod 6$: $n=6k$, тогда $(-1)^{6k}\\omega^{12k}-\\omega^{6k}-1=1-1-1=-1\\neq 0$.\n- $n\\equiv 1\\pmod 6$: $n=6k+1$, тогда $(-1)^{6k+1}\\omega^{12k+2}-\\omega^{6k+1}-1=(-1)\\cdot\\omega^2-\\omega-1=-(\\omega^2+\\omega+1)=0$.\n- $n\\equiv 2\\pmod 6$: $n=6k+2$, тогда $(-1)^{6k+2}\\omega^{12k+4}-\\omega^{6k+2}-1=\\omega-\\omega^2-1$; используя $\\omega^2+\\omega+1=0$, получаем $\\omega-\\omega^2-1 = (\\omega+\\omega^2+1)-2\\omega^2-2 = -2\\omega^2-2\\neq 0$.\n- $n\\equiv 3\\pmod 6$: $n=6k+3$, тогда $(-1)^{6k+3}\\omega^{12k+6}-\\omega^{6k+3}-1=(-1)\\cdot1-1-1=-3\\neq 0$.\n- $n\\equiv 4\\pmod 6$: $n=6k+4$, тогда $(-1)^{6k+4}\\omega^{12k+8}-\\omega^{6k+4}-1=\\omega^2-\\omega-1$; аналогично $\\omega^2-\\omega-1 = (\\omega^2+\\omega+1)-2\\omega-2 = -2\\omega-2\\neq 0$.\n- $n\\equiv 5\\pmod 6$: $n=6k+5$, тогда $(-1)^{6k+5}\\omega^{12k+10}-\\omega^{6k+5}-1=(-1)\\cdot\\omega-\\omega^2-1=-(\\omega+\\omega^2+1)=0$.\n\nИтак, условие выполнено при $n\\equiv 1$ или $n\\equiv 5\\pmod 6$. Таким образом, все натуральные $n$, не кратные $3$ и дающие при делении на $6$ остаток $1$ или $5$ (т.е. $n=1,5,7,11,13,\\dots$).\n\nОтвет: $n = 6k+1$ или $n = 6k+5$, $k\\in\\mathbb{N}_0$ (где $\\mathbb{N}_0 =\\{0,1,2,\\dots\\}$, причём $n$ натуральное).",
+  "correct_answer": "Все натуральные $n$, удовлетворяющие $n\\equiv 1$ или $5\\pmod{6}$, то есть $n=6k+1$ или $n=6k+5$ при $k\\in\\mathbb{N}_0$.",
+  "class_level": 9,
+  "topic": "Алгебра",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Использование комплексных корней многочлена и свойств кубических корней из единицы",
+  "idea_count": 3,
+  "is_clone": true,
+  "clone_similarity": 0.779,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T14:20:15.451328+00:00"
+}

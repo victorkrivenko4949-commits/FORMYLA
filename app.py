@@ -313,6 +313,8 @@ try:
                 # Используются для idempotency и трассировки источника датасета.
                 'task_type': 'TEXT',
                 'source': 'TEXT',
+                'origin': 'VARCHAR(16)',
+                'methods_json': 'TEXT',
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -623,6 +625,14 @@ try:
             db.session.execute(db.text("ALTER TABLE users ADD COLUMN preferred_grade INTEGER"))
             db.session.commit()
             print("[migration] Added preferred_grade to users")
+        except Exception:
+            db.session.rollback()
+
+                # --- questionnaire_state for DB-backed diagnostic questionnaire ---
+        try:
+            db.session.execute(db.text("ALTER TABLE users ADD COLUMN questionnaire_state TEXT"))
+            db.session.commit()
+            print("[migration] Added questionnaire_state to users")
         except Exception:
             db.session.rollback()
 
@@ -1831,10 +1841,131 @@ def process_pregen_queue_job():
         except Exception as e:
             app.logger.error(f"✗ Pre-gen queue processing failed: {e}")
 
+# Daily midnight auto-assignment (runs at 00:05 MSK)
+# CRITICAL: this is the job that actually creates DailyTaskSet for users
+# at the start of each day. Without it, users see "no_set" and must
+# click "Generate" manually, waiting ~5 minutes for AI pipeline.
+@scheduler.task('cron', id='daily_midnight_assign', hour=0, minute=5)
+def daily_midnight_assign_job():
+    """At 00:05 MSK, auto-assign daily tasks to active users.
+
+    Two-tier strategy:
+    1. Users with PreGenQueue for today → instant cache hit from TaskPool
+    2. Users active yesterday (had DailyTaskSet) → try cache, else AI pipeline
+
+    All assignments use ``enqueue_daily_generation()`` which internally
+    checks TaskPool cache — ready pools deliver tasks instantly (no AI wait).
+    """
+    with app.app_context():
+        from daily_tasks.models import (
+            DailyTaskSet, PreGenQueue, TaskPool,
+        )
+        from daily_tasks.services import (
+            today_in_user_tz, enqueue_daily_generation, _parse_json_field,
+        )
+        from datetime import timedelta
+
+        today = today_in_user_tz()
+        yesterday = today - timedelta(days=1)
+
+        assigned_ids: set = set()
+        instant_count = 0
+        generating_count = 0
+        skipped_count = 0
+
+        # ── Tier 1: Users with PreGenQueue for today ──────────────────
+        pregen_entries = PreGenQueue.query.filter(
+            PreGenQueue.target_date == today,
+            PreGenQueue.status.in_(["generating", "queued"]),
+        ).all()
+
+        for entry in pregen_entries:
+            uid = entry.user_id
+            assigned_ids.add(uid)
+
+            # Skip if already has a set for today
+            existing = DailyTaskSet.query.filter_by(
+                user_id=uid, target_date=today,
+            ).first()
+            if existing and existing.status in ("ready", "partial"):
+                skipped_count += 1
+                continue
+
+            # Reuse profile snapshot from queue (avoids build_profile cost)
+            profile = _parse_json_field(entry.profile_json, None)
+
+            try:
+                result = enqueue_daily_generation(
+                    user_id=uid,
+                    triggered_by="cron",
+                    profile=profile,
+                )
+                if result.get("status") == "ready":
+                    instant_count += 1
+                elif result.get("status") == "generating":
+                    generating_count += 1
+            except Exception as exc:
+                app.logger.warning(
+                    "Midnight assign: enqueue failed for user=%d: %s", uid, exc,
+                )
+
+        # ── Tier 2: Users active yesterday, no PreGenQueue ────────────
+        yesterday_sets = DailyTaskSet.query.filter(
+            DailyTaskSet.target_date == yesterday,
+            DailyTaskSet.status.in_(["ready", "partial"]),
+        ).all()
+        yesterday_user_ids = {s.user_id for s in yesterday_sets}
+
+        remaining = yesterday_user_ids - assigned_ids
+        for uid in remaining:
+            assigned_ids.add(uid)
+
+            existing = DailyTaskSet.query.filter_by(
+                user_id=uid, target_date=today,
+            ).first()
+            if existing and existing.status in ("ready", "partial"):
+                skipped_count += 1
+                continue
+
+            # Build profile to enable cache hit (if TaskPool exists)
+            from daily_tasks.profile import build_profile, ProfileBuildError
+            try:
+                profile = build_profile(uid)
+            except ProfileBuildError:
+                app.logger.info(
+                    "Midnight assign: user=%d no profile — skipping", uid,
+                )
+                continue
+
+            try:
+                result = enqueue_daily_generation(
+                    user_id=uid,
+                    triggered_by="cron",
+                    profile=profile,
+                )
+                if result.get("status") == "ready":
+                    instant_count += 1
+                elif result.get("status") == "generating":
+                    generating_count += 1
+            except Exception as exc:
+                app.logger.warning(
+                    "Midnight assign: enqueue failed for user=%d: %s", uid, exc,
+                )
+
+        total = instant_count + generating_count
+        if total or skipped_count:
+            app.logger.info(
+                "✓ Midnight assign: %d total (%d instant cache, %d generating, %d skipped)",
+                total, instant_count, generating_count, skipped_count,
+            )
+
 # Start scheduler
 try:
-    scheduler.start()
-    print("✓ APScheduler started - Daily Quest cron jobs active")
+    if os.environ.get("ENABLE_SCHEDULER", "1") != "0":
+        scheduler.start()
+        print("✓ APScheduler started - Daily Quest cron jobs active")
+    else:
+        print("[SCHEDULER] disabled via ENABLE_SCHEDULER=0")
 except Exception as e:
     print(f"⚠️  APScheduler failed to start: {e}")
 
@@ -1939,6 +2070,11 @@ _PUBLIC_PATHS = (
     '/link_yandex',
     '/api/reviews',   # Публичный список отзывов о сайте (для /about)
     '/api/conference/',  # Конференции (гостевой доступ, WebRTC + SocketIO)
+    '/',               # Главная страница — доступна без регистрации
+    '/topics',
+    '/problems',
+    '/leaderboard',
+    '/section/',
 )
 
 
@@ -3299,6 +3435,255 @@ def check_answer():
 def probniks_page():
     """Страница выбора типа пробника (бесплатный или адаптивный)."""
     return render_template('probniks.html', title="Пробники", active_page="probniks")
+
+# ════════════════════════════════════════════════════════════════════
+# NEW: Olympiad adaptive test (JSONL-based, 5 tasks, L1-L5)
+# ════════════════════════════════════════════════════════════════════
+
+@app.route("/olympiad-test")
+def olympiad_test_select_class():
+    """Step 1: Select grade (5-11)."""
+    return render_template('olympiad_test_select_class.html')
+
+
+@app.route("/olympiad-test/select-section")
+def olympiad_test_select_section():
+    """Step 2: Select section for chosen grade."""
+    try:
+        grade = int(request.args.get('grade', ''))
+    except (ValueError, TypeError):
+        flash('Выберите класс', 'error')
+        return redirect('/olympiad-test')
+    if grade not in range(5, 12):
+        flash('Неверный класс', 'error')
+        return redirect('/olympiad-test')
+    from services.olympiad_adaptive import get_sections
+    sections = get_sections(grade)
+    if not sections:
+        flash(f'Нет задач для {grade} класса', 'error')
+        return redirect('/olympiad-test')
+    return render_template('olympiad_test_select_section.html',
+                           grade=grade, sections=sections)
+
+
+@app.route("/olympiad-test/select-theme")
+def olympiad_test_select_theme():
+    """Step 3: Select theme for chosen grade+section."""
+    try:
+        grade = int(request.args.get('grade', ''))
+    except (ValueError, TypeError):
+        return redirect('/olympiad-test')
+    section = request.args.get('section', '').strip()
+    if not section:
+        return redirect(f'/olympiad-test/select-section?grade={grade}')
+    from services.olympiad_adaptive import get_themes
+    themes = get_themes(grade, section)
+    if not themes:
+        flash('Нет тем в этом разделе', 'error')
+        return redirect(f'/olympiad-test/select-section?grade={grade}')
+    return render_template('olympiad_test_select_theme.html',
+                           grade=grade, section=section, themes=themes)
+
+
+@app.route("/olympiad-test/select-level")
+def olympiad_test_select_level():
+    """Step 4: Select difficulty level (L1-L5) for chosen theme.
+
+    Если у пользователя уже есть пройденный адаптивный тест (measured > 0),
+    показываем только один рекомендуемый уровень. Иначе — все 5 уровней.
+    """
+    try:
+        grade = int(request.args.get('grade', ''))
+    except (ValueError, TypeError):
+        return redirect('/olympiad-test')
+    theme = request.args.get('theme', '').strip()
+    section = request.args.get('section', request.args.get('section', '')).strip()
+    if not theme or grade not in range(5, 12):
+        return redirect('/olympiad-test')
+
+    # ── Определить уровень пользователя ────────────────
+    # Приоритет: 1) анкета 2) адаптивный тест (build_profile)
+    recommended_level = None
+    try:
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            # Сначала проверяем анкету
+            try:
+                from services.questionnaire_storage import get_questionnaire_level
+                q_level = get_questionnaire_level(current_user.id)
+                if q_level is not None:
+                    recommended_level = q_level
+            except Exception:
+                pass
+
+            # Если анкеты нет — пробуем build_profile
+            if recommended_level is None:
+                from daily_tasks.profile import build_profile, ProfileBuildError
+                try:
+                    profile = build_profile(current_user.id)
+                    topics_full = profile.get('topics_full', []) or []
+                    # Ищем тему, совпадающую с выбранной theme (по section)
+                    for t in topics_full:
+                        t_topic = (t.get('topic') or '').lower()
+                        t_key = (t.get('topic_key') or '').lower()
+                        theme_lower = theme.lower()
+                        section_lower = (section or '').lower()
+                        if theme_lower in t_topic or t_topic in theme_lower or \
+                           theme_lower in t_key or theme_lower in section_lower:
+                            if t.get('measured'):
+                                lvl = t.get('target_level')
+                                if lvl is not None:
+                                    recommended_level = max(1, min(5, round(int(lvl) * 5 / 8)))
+                                    break
+                    if recommended_level is None:
+                        measured = [t for t in topics_full if t.get('measured')]
+                        if measured:
+                            avg = sum(t.get('target_level') or 0 for t in measured) / len(measured)
+                            recommended_level = max(1, min(5, round(avg * 5 / 8)))
+                except ProfileBuildError:
+                    pass
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return render_template('olympiad_test_select_level.html',
+                           grade=grade, theme=theme, section=section,
+                           recommended_level=recommended_level)
+
+
+@app.route("/olympiad-test/start", methods=['GET', 'POST'])
+def olympiad_test_run():
+    """Main test page: fixed-level, 5 tasks, no adaptive difficulty change."""
+    from services.olympiad_adaptive import (
+        get_task, _normalize_answer, _check_solution_quality,
+    )
+    import random
+
+    # ── GET: show task ───────────────────────────────────────────
+    if request.method == 'GET':
+        # Fresh start?
+        if 'olyad_uid' not in session or request.args.get('grade'):
+            try:
+                grade = int(request.args.get('grade', ''))
+            except (ValueError, TypeError):
+                return redirect('/olympiad-test')
+            theme = request.args.get('theme', '').strip()
+            level = int(request.args.get('level', '2'))
+            if not theme or grade not in range(5, 12) or level not in range(1, 6):
+                return redirect('/olympiad-test')
+            session['olyad_grade'] = grade
+            session['olyad_theme'] = theme
+            session['olyad_level'] = level
+            session['olyad_task_num'] = 0
+            session['olyad_shown'] = []
+            session['olyad_results'] = []
+
+        grade = session['olyad_grade']
+        theme = session['olyad_theme']
+        level = session['olyad_level']
+        shown = set(session.get('olyad_shown', []))
+
+        task = get_task(grade, theme, level, shown)
+        if not task:
+            flash('Задачи закончились', 'error')
+            return redirect('/olympiad-test')
+
+        session['olyad_shown'] = list(shown) + [task['task_uid']]
+        session['olyad_current_task'] = task['task_uid']
+        session.modified = True
+
+        tnum = session.get('olyad_task_num', 0) + 1
+        return render_template('olympiad_test_run.html',
+                               task=task, grade=grade, theme=theme,
+                               level=level, task_count=tnum, feedback=None, result=None)
+
+    # ── POST: process answer ─────────────────────────────────────
+    user_answer = (request.form.get('answer') or '').strip()
+    user_solution = (request.form.get('solution') or '').strip()
+    task_uid = session.get('olyad_current_task', '')
+
+    # Find the task
+    import json
+    task_data = None
+    with open('FORMYLA_L1_L5_TOP5.jsonl', encoding='utf-8') as f:
+        for line in f:
+            if line.strip() and json.loads(line).get('task_uid') == task_uid:
+                task_data = json.loads(line)
+                break
+    # Fallback: search in memory
+    if not task_data:
+        from services.olympiad_adaptive import _all_tasks
+        for t in _all_tasks:
+            if t.get('task_uid') == task_uid:
+                task_data = t
+                break
+
+    if not task_data:
+        flash('Ошибка: задача не найдена', 'error')
+        return redirect('/olympiad-test')
+
+    correct = (task_data.get('answer') or '').strip()
+    ref_sol = (task_data.get('solution') or '').strip()
+    statement = (task_data.get('statement') or '').strip()
+    level = session['olyad_level']
+
+    is_correct = _normalize_answer(user_answer) == _normalize_answer(correct)
+
+    # Simple scoring: correct=+1, wrong=-1, no partial (fixed level test)
+    ball = 1 if is_correct else -1
+
+    results = session.get('olyad_results', [])
+    results.append({
+        'level': level,
+        'ball': ball,
+        'task_uid': task_uid,
+        'user_answer': user_answer,
+        'correct_answer': correct,
+        'solution': ref_sol,
+        'statement': statement,
+        'is_correct': is_correct,
+    })
+    session['olyad_results'] = results
+    session['olyad_task_num'] = len(results)
+    session.modified = True
+
+    task_num = len(results)
+    grade = session['olyad_grade']
+    theme = session['olyad_theme']
+    level = session['olyad_level']
+
+    # Results if 5 tasks done
+    result = None
+    if task_num >= 5:
+        correct_count = sum(1 for r in results if r['is_correct'])
+        partial_count = sum(1 for r in results if not r['is_correct'] and r.get('ball', 0) == 0)
+        wrong_count = task_num - correct_count - partial_count
+        result = {
+            'results': results,
+            'correct_count': correct_count,
+            'partial_count': partial_count,
+            'wrong_count': wrong_count,
+            'grade': grade,
+            'theme': theme,
+            'level': level,
+        }
+
+    # Get next task for display
+    shown = set(session.get('olyad_shown', []))
+    task = get_task(grade, theme, level, shown) if not result else None
+
+    feedback = {
+        'is_correct': is_correct,
+        'ball': ball,
+        'correct_answer': correct,
+        'solution': ref_sol,
+    }
+
+    return render_template('olympiad_test_run.html',
+                           task=task, grade=grade, theme=theme,
+                           level=level, task_count=task_num,
+                           feedback=feedback, result=result)
 
 
 # NOTE: /practice/generate route removed together with the "Написать олимпиаду" section.
@@ -5890,84 +6275,15 @@ def _adaptive_in_progress_summary():
 
 @app.route("/adaptive_test/select_class")
 def adaptive_test_select_class():
-    """Шаг 1 адаптивного теста: выбор класса (5–11).
-
-    Класс выбирается ПЕРВЫМ, затем пользователь попадает на выбор темы,
-    которая зависит от класса (для 5/6 — школьные домены, для 7+ —
-    классические олимпиадные темы).
-
-    Cooldown: если последний тест был меньше 30 дней назад —
-    редиректим на результаты прошлого теста с flash-сообщением.
-
-    Дополнительно: ВСЕГДА чистим состояние предыдущего незавершённого
-    теста из Flask-сессии, чтобы при нажатии «Начать» пользователь
-    реально стартовал с экрана выбора, а не падал в стенд активного
-    теста.
-    """
-    # ── Очищаем все ключи незавершённого адаптивного теста ──
-    # Это поведение «Начать заново»: если юзер нажал «Начать» с probniks/
-    # profile/dt, мы должны показать выбор класса, а не вернуть его
-    # в середину старого теста.
-    _adaptive_keys_to_clear = [
-        'adaptive_filtered_tasks',
-        'adaptive_current_difficulty',
-        'adaptive_current_index',
-        'adaptive_current_slot',
-        'adaptive_current_task_id',
-        'adaptive_slots',
-        'adaptive_answers',
-        'adaptive_shown_task_ids',
-        'adaptive_topic',
-        'adaptive_topic_name',
-        'adaptive_grade',
-        'adaptive_db_topic',
-        'partial_correct_streak',
-        'adaptive_completed_at',
-    ]
-    for _k in _adaptive_keys_to_clear:
-        session.pop(_k, None)
-    session.modified = True
-
-    is_blocked, days_left, last_at = _adaptive_cooldown_status()
-    if is_blocked:
-        flash(
-            f'Адаптивный тест можно проходить раз в 30 дней. До следующего теста: {days_left} дн. '
-            f'Текущий уровень и подбор задач уже настроены по прошлому результату.',
-            'info',
-        )
-        return redirect('/adaptive_test_simple/results')
-    return render_template(
-        'adaptive_test_select_class.html',
-        in_progress=_adaptive_in_progress_summary(),
-    )
+    """Redirect old adaptive test to new JSONL-based olympiad test."""
+    return redirect('/olympiad-test')
 
 
 @app.route("/adaptive_test/select_topic")
 def adaptive_test_select_topic():
-    """Шаг 2 адаптивного теста: выбор темы под выбранный класс.
-
-    - Для 5 и 6 классов показываем домены из GradeTask (импорт 1600 задач).
-    - Для 7–11 классов — классические темы из AdaptiveTask.
-
-    Cooldown: те же 30 дней что и для select_class.
-    """
-    is_blocked, days_left, _ = _adaptive_cooldown_status()
-    if is_blocked:
-        flash(
-            f'Адаптивный тест можно проходить раз в 30 дней. До следующего теста: {days_left} дн.',
-            'info',
-        )
-        return redirect('/adaptive_test_simple/results')
-
-    try:
-        grade_int = int(request.args.get('grade', ''))
-    except (ValueError, TypeError):
-        flash('Сначала выберите класс', 'error')
-        return redirect(url_for('adaptive_test_select_class'))
-
-    if grade_int not in (5, 6, 7, 8, 9, 10, 11):
-        flash('Неверный класс', 'error')
-        return redirect(url_for('adaptive_test_select_class'))
+    """Redirect old adaptive test to new JSONL-based olympiad test."""
+    grade = request.args.get('grade', '')
+    return redirect(f'/olympiad-test/select-section?grade={grade}' if grade else '/olympiad-test')
 
     MIN_TASKS = 10
     topics = []
@@ -11763,13 +12079,13 @@ if __name__ == '__main__':
         _ws_socketio.run(
             app,
             debug=True,
-            port=5001,
+            port=5000,
             use_reloader=_use_reloader,
         )
     except (ImportError, AttributeError):
         app.run(
             debug=True,
-            port=5001,
+            port=5000,
             use_reloader=_use_reloader,
         )
 

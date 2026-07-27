@@ -1,0 +1,38 @@
+[
+  {
+    "worker": 6,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 1,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 4,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 2,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 5,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "worker": 3,
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

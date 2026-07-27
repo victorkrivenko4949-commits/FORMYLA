@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "pipeline_step": "smoke_test_audit",
+    "source": "smoke_test_deepseek.json",
+    "timestamp": "2026-07-18T14:38:06.374289+00:00"
+  },
+  "verdict": "PASS",
+  "all_tests_passed": true,
+  "tests_summary": [
+    {
+      "name": "dns_resolution",
+      "passed": true
+    },
+    {
+      "name": "tcp_connectivity",
+      "passed": true
+    },
+    {
+      "name": "tls_handshake",
+      "passed": true
+    },
+    {
+      "name": "models_endpoint",
+      "passed": true
+    },
+    {
+      "name": "model_availability",
+      "passed": true
+    },
+    {
+      "name": "chat_completion",
+      "passed": true
+    }
+  ],
+  "passed_count": 6,
+  "total_count": 6,
+  "invariants": {
+    "dns_resolution_ok": true,
+    "tcp_connectivity_ok": true,
+    "tls_handshake_ok": true,
+    "api_authentication_ok": true,
+    "model_available": true,
+    "chat_completion_ok": true
+  },
+  "status": "SMOKE_OK"
+}

@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0206-7-A3-1-L7-gh2",
+      "mode": "replace_bad",
+      "id": "7-A3-1-L7-gh2",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Выражения, степени, многочлены",
+      "subtopic": "Разложение на множители",
+      "method_code": "A3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

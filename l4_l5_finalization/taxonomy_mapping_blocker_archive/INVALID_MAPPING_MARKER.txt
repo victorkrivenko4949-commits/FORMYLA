@@ -1,0 +1,3 @@
+MARKED INVALID at 2026-07-18T12:05:35.742698
+Reason: Taxonomy mapping was incorrect (mapped_to_taxonomy=0)
+These results depend on grade+level-only indexing, not cell_key

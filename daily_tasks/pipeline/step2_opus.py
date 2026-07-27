@@ -21,7 +21,7 @@ import random
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
-from pipeline.openrouter_client import OpenRouterClient
+from services.openrouter_client import OpenRouterClient, TokenUsage, make_token_usage
 
 from .validators import (
     OpusGenerationValidation,
@@ -186,7 +186,7 @@ async def _generate_one_spec(
             pos, topic_short, subtopic_short, lvl, model, max_tokens,
         )
         try:
-            raw, usage = await client.chat(
+            raw, usage = await client.async_chat(
                 model=model,
                 messages=messages,
                 temperature=0.7,
@@ -234,7 +234,7 @@ async def _generate_one_spec(
         ]
         try:
             async with semaphore:
-                raw, _retry_usage = await client.chat(
+                raw, _retry_usage = await client.async_chat(
                     model=model,
                     messages=retry_messages,
                     temperature=0.2,

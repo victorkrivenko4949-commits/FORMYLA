@@ -1,0 +1,20 @@
+{
+  "id": 801457,
+  "task_text": "Даны действительные числа $a, b, c$, удовлетворяющие системе:\n$$\\begin{cases} a+b+c = 0, \\\\ a^2+b^2+c^2 = 6, \\\\ a^3+b^3+c^3 = -6. \\end{cases}$$\nНайдите $a^4+b^4+c^4$.",
+  "solution": "Из $a+b+c=0$ и $a^2+b^2+c^2=6$ находим $ab+bc+ca$:\n$$(a+b+c)^2 = a^2+b^2+c^2 + 2(ab+bc+ca) \\Rightarrow 0 = 6 + 2(ab+bc+ca) \\Rightarrow ab+bc+ca = -3.$$\n\nИз $a+b+c=0$ известно тождество $a^3+b^3+c^3 = 3abc$, поэтому\n$$3abc = -6 \\Rightarrow abc = -2.$$\n\nТеперь вычислим $a^4+b^4+c^4$. Воспользуемся равенством\n$$(a^2+b^2+c^2)^2 = a^4+b^4+c^4 + 2(a^2b^2+b^2c^2+c^2a^2).$$\nНайдём $a^2b^2+b^2c^2+c^2a^2$:\n$$a^2b^2+b^2c^2+c^2a^2 = (ab+bc+ca)^2 - 2abc(a+b+c) = (-3)^2 - 2\\cdot(-2)\\cdot0 = 9.$$\nСледовательно,\n$$a^4+b^4+c^4 = (a^2+b^2+c^2)^2 - 2\\cdot9 = 6^2 - 18 = 36 - 18 = 18.$$\n\nОтвет: $18$.",
+  "correct_answer": "18",
+  "class_level": 9,
+  "topic": "Алгебра",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Выражение симметрических многочленов через элементарные симметрические функции",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.798,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T13:01:20.654644+00:00"
+}

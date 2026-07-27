@@ -1,0 +1,37 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0130",
+      "mode": "replace_bad",
+      "id": "5-E2-37-L8-g",
+      "grade": 5,
+      "difficulty": 8,
+      "theme": "Комбинаторика и логика",
+      "subtopic": "Рыцари и лжецы",
+      "method_code": "E2",
+      "reasons": [
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 37,
+      "worker": 11
+    },
+    {
+      "job_id": "replace-0556",
+      "mode": "replace_bad",
+      "id": "8-D3-1-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Пересечения",
+      "method_code": "D3",
+      "reasons": [
+        "simple_mod",
+        "short_solution_L7L8",
+        "short_solution_L8"
+      ],
+      "priority": 58,
+      "worker": 20
+    }
+  ]
+}

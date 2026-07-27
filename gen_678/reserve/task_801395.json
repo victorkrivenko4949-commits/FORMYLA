@@ -1,0 +1,20 @@
+{
+  "id": 801395,
+  "task_text": "В треугольнике $ABC$ проведены медианы $AM$ и $BN$, пересекающиеся в точке $O$. На стороне $AC$ выбрана точка $K$ так, что $AK:KC = 1:3$. Прямые $BK$ и $AM$ пересекаются в точке $P$. Найдите отношение площади треугольника $POK$ к площади треугольника $ABC$.",
+  "solution": "Поместим треугольник в векторную систему: пусть $A$ — начало координат, $\\vec{AB} = \\vec{b}$, $\\vec{AC} = \\vec{c}$. Тогда $\\vec{AK} = \\frac14\\vec{c}$ (так как $AK:KC=1:3$). Точка $M$ — середина $BC$, поэтому $\\vec{AM} = \\frac12(\\vec{b}+\\vec{c})$. Точка $N$ — середина $AC$: $\\vec{AN} = \\frac12\\vec{c}$. Центр тяжести $O$: $\\vec{AO} = \\frac13(\\vec{b}+\\vec{c})$.\n\nНайдем точку $P$ — пересечение $BK$ и $AM$. Представим $P$ двумя способами:\n1) $P$ на $AM$: $P = A + s\\cdot\\vec{AM} = \\frac{s}{2}(\\vec{b}+\\vec{c})$.\n2) $P$ на $BK$: $\\vec{BP} = t\\cdot\\vec{BK}$, где $\\vec{BK} = \\vec{AK} - \\vec{AB} = \\frac14\\vec{c} - \\vec{b}$. Так как $B = \\vec{b}$, то $P = \\vec{b} + t\\left(\\frac14\\vec{c} - \\vec{b}\\right)$.\n\nПриравниваем: $\\frac{s}{2}(\\vec{b}+\\vec{c}) = \\vec{b} + t\\left(\\frac14\\vec{c} - \\vec{b}\\right)$. Раскрываем скобки и группируем коэффициенты при $\\vec{b}$ и $\\vec{c}$:\n\\[  \\frac{s}{2}\\vec{b} + \\frac{s}{2}\\vec{c} = (1-t)\\vec{b} + \\frac{t}{4}\\vec{c}. \\]\nПриравнивая коэффициенты, получаем систему:\n\\[ \\begin{cases} \\frac{s}{2} = 1 - t, \\\\ \\frac{s}{2} = \\frac{t}{4}. \\end{cases} \\]\nИз второго уравнения $s = \\frac{t}{2}$. Подставляем в первое: $\\frac{t}{4} = 1 - t \\Rightarrow \\frac{5t}{4}=1 \\Rightarrow t = \\frac45$, $s = \\frac25$. Тогда $\\vec{P} = \\frac{s}{2}(\\vec{b}+\\vec{c}) = \\frac15(\\vec{b}+\\vec{c})$.\n\nТеперь выразим векторы $\\vec{OP}$ и $\\vec{OK}$:\n\\[ \\vec{OP} = \\vec{P} - \\vec{O} = \\frac15(\\vec{b}+\\vec{c}) - \\frac13(\\vec{b}+\\vec{c}) = -\\frac{2}{15}(\\vec{b}+\\vec{c}), \\]\n\\[ \\vec{OK} = \\vec{K} - \\vec{O} = \\frac14\\vec{c} - \\frac13(\\vec{b}+\\vec{c}) = -\\frac13\\vec{b} + \\left(\\frac14-\\frac13\\right)\\vec{c} = -\\frac13\\vec{b} - \\frac1{12}\\vec{c}. \\]\n\nВекторное произведение в плоскости (ориентированная площадь) даёт:\n\\[ \\vec{OP}\\times\\vec{OK} = \\left(-\\frac{2}{15}(\\vec{b}+\\vec{c})\\right)\\times\\left(-\\frac13\\vec{b} - \\frac1{12}\\vec{c}\\right) = \\frac{2}{15}\\left((\\vec{b}+\\vec{c})\\times\\left(\\frac13\\vec{b} + \\frac1{12}\\vec{c}\\right)\\right). \\]\nЗаметим, что $\\vec{b}\\times\\vec{b}=0$, $\\vec{c}\\times\\vec{c}=0$, $\\vec{c}\\times\\vec{b} = -\\vec{b}\\times\\vec{c}$. Раскроем скобки:\n\\[ (\\vec{b}+\\vec{c})\\times\\left(\\frac13\\vec{b} + \\frac1{12}\\vec{c}\\right) = \\vec{b}\\times\\frac13\\vec{b} + \\vec{b}\\times\\frac1{12}\\vec{c} + \\vec{c}\\times\\frac13\\vec{b} + \\vec{c}\\times\\frac1{12}\\vec{c} = \\frac1{12}\\vec{b}\\times\\vec{c} + \\frac13\\vec{c}\\times\\vec{b} = \\frac1{12}\\vec{b}\\times\\vec{c} - \\frac13\\vec{b}\\times\\vec{c} = -\\frac14\\vec{b}\\times\\vec{c}. \\]\nСледовательно, $\\vec{OP}\\times\\vec{OK} = \\frac{2}{15}\\cdot\\left(-\\frac14\\right)\\vec{b}\\times\\vec{c} = -\\frac{1}{30}\\vec{b}\\times\\vec{c}$. Модуль векторного произведения равен $\\frac{1}{30}|\\vec{b}\\times\\vec{c}|$.\n\nПлощадь треугольника $POK$: $S_{POK} = \\frac12 |\\vec{OP}\\times\\vec{OK}| = \\frac{1}{60}|\\vec{b}\\times\\vec{c}|$.\nПлощадь треугольника $ABC$: $S_{ABC} = \\frac12 |\\vec{b}\\times\\vec{c}|$.\n\nИскомое отношение: $\\dfrac{S_{POK}}{S_{ABC}} = \\dfrac{1/60}{1/2} = \\dfrac{1}{30}$.\n\nТаким образом, отношение не зависит от формы треугольника и равно $\\frac{1}{30}$.",
+  "correct_answer": "$\\frac{1}{30}$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 6,
+  "key_method": "Векторный метод и свойства центра тяжести треугольника",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.7,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T12:48:34.332571+00:00"
+}

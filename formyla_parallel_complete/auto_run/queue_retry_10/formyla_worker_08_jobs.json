@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "job_id": "replace-0578",
+      "mode": "replace_bad",
+      "id": "8-E3-5-L7-g678",
+      "grade": 8,
+      "difficulty": 7,
+      "theme": "Геометрия: подобие и окружность",
+      "subtopic": "Касательные и хорды",
+      "method_code": "E3",
+      "reasons": [
+        "short_solution_L7L8"
+      ],
+      "priority": 26,
+      "worker": 18
+    },
+    {
+      "job_id": "audit-0120-9-G3-2-L7-gst2",
+      "mode": "replace_bad",
+      "id": "9-G3-2-L7-gst2",
+      "grade": 9,
+      "difficulty": 7,
+      "theme": "Логика, инварианты, стратегии",
+      "subtopic": "Принцип крайнего",
+      "method_code": "G3",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

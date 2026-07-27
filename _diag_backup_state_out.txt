@@ -1,0 +1,22 @@
+=== BACKUP CHECK ===
+Backup idx 1042: 8 problems
+  Problem 1 (day=1)
+  Problem 2 (day=1)
+  Problem 3 (day=1)
+  Problem 4 (day=1)
+  Problem 5 (day=1)
+  Problem 6 (day=2)
+  Problem 7 (day=2)
+  Problem 8 (day=2)
+
+=== CSV CHECK ===
+CSV exists at: C:\Users\Victor\Downloads\Bank_zadach_VsOSh_po_iacheikam.csv
+Headers (4): ['Ячейка', 'Номер', 'Условие', 'Ответ']
+Traceback (most recent call last):
+  File "C:\Users\Victor\Desktop\Новая папка (2)\_diag_backup_state.py", line 29, in <module>
+    OUT.write(f'Row {i}: cols={len(row)} first={str(row[:4])[:200]}\n')
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Victor\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\xd7' in position 43: character maps to <undefined>

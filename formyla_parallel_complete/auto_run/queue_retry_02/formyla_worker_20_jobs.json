@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0261-11-G2-3-L7-gh3",
+      "mode": "replace_bad",
+      "id": "11-G2-3-L7-gh3",
+      "grade": 11,
+      "difficulty": 7,
+      "theme": "Комбинаторика, графы, логика",
+      "subtopic": "Графы",
+      "method_code": "G2",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

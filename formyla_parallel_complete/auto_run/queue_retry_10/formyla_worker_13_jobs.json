@@ -1,0 +1,28 @@
+{
+  "jobs": [
+    {
+      "job_id": "audit-0422-7-E1-4-L7-g678",
+      "mode": "replace_bad",
+      "id": "7-E1-4-L7-g678",
+      "grade": 7,
+      "difficulty": 7,
+      "theme": "Делимость и остатки",
+      "subtopic": "Признаки делимости и остатки",
+      "method_code": "E1",
+      "reasons": "mojibake, duplicate_task_text",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    },
+    {
+      "job_id": "audit-0423-8-D1-5-L8-g678",
+      "mode": "replace_bad",
+      "id": "8-D1-5-L8-g678",
+      "grade": 8,
+      "difficulty": 8,
+      "theme": "Функции и графики",
+      "subtopic": "Квадратичная функция и парабола",
+      "method_code": "D1",
+      "reasons": "mojibake",
+      "quality_target": "исправить все ошибки аудита; сохранить тему, подтему, класс и уровень"
+    }
+  ]
+}

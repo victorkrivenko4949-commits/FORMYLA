@@ -1,0 +1,2195 @@
+{
+  "verified": {},
+  "rejected": {
+    "slot_0": {
+      "slot_key": "slot_0",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:24:41.861721",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "1. Докажем, что \\(HK\\) является подгруппой. Так как \\(H \\trianglelefteq G\\), для любого \\(k \\in K\\) имеем \\(kH = Hk\\). Тогда \\(HK = \\{hk \\mid h \\in H, k \\in K\\} = \\{kh \\mid h \\in H, k \\in K\\} = KH\\). Проверим замкнутость: для \\(h_1k_1, h_2k_2 \\in HK\\), \\((h_1k_1)(h_2k_2) = h_1(k_1h_2)k_2\\). Так как \\(k_1H = Hk_1\\), существует \\(h_2' \\in H\\) такой, что \\(k_1h_2 = h_2'k_1\\). Тогда произведение равно \\(h_1h_2'k_1k_2 \\in HK\\). Обратный элемент: \\((hk)^{-1} = k^{-1}h^{-1}\\). Поскольку \\(k^{-1}H = Hk^{-1}\\), существует \\(h' \\in H\\) такой, что \\(k^{-1}h^{-1} = h'k^{-1} \\in HK\\). Таким образом, \\(HK\\) — подгруппа \\(G\\).\n\n2. Докажем изоморфизм. Рассмотрим отображение \\(\\varphi: K \\to HK/H\\), определённое как \\(\\varphi(k) = kH\\). Оно является гомоморфизмом, так как \\(\\varphi(k_1k_2) = k_1k_2H = k_1H \\cdot k_2H = \\varphi(k_1)\\varphi(k_2)\\) (в силу нормальности \\(H\\)). Ядро: \\(\\ker\\varphi = \\{k \\in K \\mid kH = H\\} = K \\cap H\\). Образ: для любого элемента \\(hkH \\in HK/H\\) (где \\(hk \\in HK\\)) имеем \\(hkH = kH\\) (так как \\(h \\in H\\)), то есть \\(hkH = \\varphi(k)\\). Следовательно, \\(\\varphi\\) сюръективно. По первой теореме об изоморфизме, \\(K / (K \\cap H) \\cong HK/H\\).",
+            "solver_answer": "Доказано",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Доказано, что $HK \\leq G$ и $HK/H \\cong K/(H \\cap K)$.",
+            "arbiter_analysis": "Решение верное. Первая часть корректно доказывает, что HK является подгруппой, используя нормальность H. Вторая часть строит гомоморфизм из K в HK/H, находит его ядро и образ, и применяет теорему о гомоморфизме, что приводит к требуемому изоморфизму. Ответ совпадает с условием задачи.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "теория групп",
+          "classifier_subtopic": "теоремы об изоморфизме (вторая теорема об изоморфизме)"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.9,
+          "estimated_level": "L4",
+          "probabilities": {
+            "L3": 0.1,
+            "L4": 0.9,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.1111111111111111,
+          "duplicate_of": "ds6_f03be060f6b3"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:25:00.697933"
+    },
+    "slot_3": {
+      "slot_key": "slot_3",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:24:41.860885",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "{\n  \"solver_solution\": \"Пусть \\(X\\) — число сдавших экзамен среди 10 студентов. \\(X\\) имеет биномиальное распределение с параметрами \\(n=10\\), \\(p=0.8\\). Вероятность того, что \\(X\\) нечётно, можно найти по формуле: \\n\\\\[ P(\\\\text{нечёт}) = \\\\frac{1 - (1-2p)^n}{2}. \\\\] \\nПодставляем \\(p=0.8\\): \\(1-2p = 1-1.6 = -0.6\\). Так как степень чётная, \\((-0.6)^{10} = (0.6)^{10}\\). Вычислим \\(0.6^{10} = 0.0060466176\\). Тогда \\n\\\\[ P(\\\\text{нечёт}) = \\\\frac{1 - 0.0060466176}{2} = \\\\frac{0.9939533824}{2} = 0."
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "0.497",
+            "arbiter_analysis": "Генератор правильно вывел формулу для вероятности нечётного числа успехов: P = (1 - (q-p)^n)/2, где p=0.8, q=0.2, n=10. Вычисление (q-p)^n = (-0.6)^10 = 0.6^10 ≈ 0.0060466, затем P ≈ (1 - 0.0060466)/2 = 0.4969767, что после округления до трёх знаков даёт 0.497. Однако в конце генератор ошибочно утверждает, что точное значение равно 0.5, и путается в рассуждениях. Правильный ответ — 0.497, а не 0.5.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:25:28.579167"
+    },
+    "slot_2": {
+      "slot_key": "slot_2",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:24:41.860325",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "1. Пусть \\( G \\) — конечная группа, \\( N \\trianglelefteq G \\) и \\( G/N \\cong \\mathbb{Z}_2 \\). По определению факторгруппы, существует естественный эпиморфизм \\( \\pi: G \\to G/N \\), заданный формулой \\( \\pi(g) = gN \\). Поскольку \\( G/N \\) изоморфна \\( \\mathbb{Z}_2 \\), существует изоморфизм \\( \\psi: G/N \\to \\mathbb{Z}_2 \\). Тогда композиция \\( \\varphi = \\psi \\circ \\pi: G \\to \\mathbb{Z}_2 \\) является гомоморфизмом (как композиция гомоморфизмов). Найдём ядро \\( \\varphi \\): \\( \\ker \\varphi = \\{ g \\in G \\mid \\varphi(g) = 0 \\} = \\{ g \\in G \\mid \\psi(gN) = 0 \\} \\). Поскольку \\( \\psi \\) — изоморфизм, его ядро тривиально, то есть \\( \\psi(x) = 0 \\) тогда и только тогда, когда \\( x = N \\) — единица в \\( G/N \\). Следовательно, \\( gN = N \\), то есть \\( g \\in N \\). Таким образом, \\( \\ker \\varphi = N \\). Итак, искомый гомоморфизм существует.\n\n2. Пусть \\( H \\) — подгруппа индекса 2 в \\( G \\), то есть \\( |G:H| = 2 \\). Докажем, что \\( H \\) нормальна. Для любого \\( g \\in G \\) рассмотрим смежный класс \\( gHg^{-1} \\). Поскольку индекс равен 2, \\( G = H \\cup xH \\) для некоторого \\( x \\notin H \\). Если \\( g \\in H \\), то \\( gHg^{-1} = H \\). Если \\( g \\notin H \\), то \\( g = xh \\) для некоторого \\( h \\in H \\), и \\( gHg^{-1} = xhHh^{-1}x^{-1} = xHx^{-1} \\). Множество \\( xHx^{-1} \\) смежно с \\( H \\) и имеет тот же порядок, что и \\( H \\). Поскольку \\( H \\) и \\( xHx^{-1} \\) — подгруппы, их пересечение нетривиально (иначе объединение дало бы более двух смежных классов). На самом деле, можно строго: \\( xHx^{-1} \\cap H \\) — подгруппа, и из равенства индексов следует, что \\( xHx^{-1} = H \\). Другой способ: так как \\( |G:H| = 2 \\), \\( H \\) является нормальной подгруппой (это известный факт: подгруппа индекса 2 всегда нормальна). Действительно, для любого \\( g \\in G \\) либо \\( gH = H \\), либо \\( gH = G \\setminus H \\); аналогично для правых смежных классов. Но \\( gHg^{-1} \\) также имеет индекс 2, и поскольку \\( H \\) — единственная подгруппа индекса 2? Не обязательно, но можно провести прямое рассуждение: если \\( g \\notin H \\), то \\( gHg^{-1} \\) состоит из элементов, не принадлежащих \\( H \\), иначе бы получили противоречие. В любом случае, нормальность следует из того, что для любого \\( g \\in G \\), \\( gHg^{-1} = H \\). Далее, факторгруппа \\( G/H \\) имеет порядок 2, следовательно, \\( G/H \\cong \\mathbb{Z}_2 \\). Таким образом, утверждение доказано.",
+            "solver_answer": "Доказательство завершено.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Доказательство корректно: существует гомоморфизм φ: G → Z₂ с ядром N, и любая подгруппа индекса 2 нормальна с факторгруппой Z₂.",
+            "arbiter_analysis": "Решение генератора полностью соответствует условию задачи. Первая часть использует естественную проекцию и изоморфизм для построения гомоморфизма с ядром N. Вторая часть корректно доказывает нормальность подгруппы индекса 2 и изоморфизм факторгруппы Z₂. Дополнительное замечание про сюръективный гомоморфизм не противоречит условию. Ошибок нет.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "теория групп",
+          "classifier_subtopic": "факторгруппы и гомоморфизмы"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.9,
+          "estimated_level": "L4",
+          "probabilities": {
+            "L3": 0.1,
+            "L4": 0.9,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.16666666666666666,
+          "duplicate_of": "ds6_274146cf37e5"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:25:37.288680"
+    },
+    "slot_1": {
+      "slot_key": "slot_1",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:24:41.859418",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Рассмотрим факторгруппу \\( G/N \\). По условию \\( G/N \\cong \\mathbb{Z}_2 \\), т.е. это группа порядка 2. Естественный гомоморфизм \\( \\pi: G \\to G/N \\), заданный формулой \\( \\pi(g)=gN \\), имеет ядро \\( N \\). Выберем изоморфизм \\( \\psi: G/N \\to \\mathbb{Z}_2 \\) (например, \\( \\psi(N)=0 \\), \\( \\psi(g_0N)=1 \\) для любого \\( g_0\\notin N \\); такой изоморфизм единственен, так как \\( \\mathbb{Z}_2 \\) не имеет нетривиальных автоморфизмов). Композиция \\( \\phi = \\psi \\circ \\pi \\) является гомоморфизмом \\( G \\to \\mathbb{Z}_2 \\). Ядро \\( \\phi \\) равно \\( \\pi^{-1}(\\ker\\psi) = \\pi^{-1}(\\{N\\}) = N \\), и для любого \\( g \\in N \\) имеем \\( \\phi(g)=\\psi(\\pi(g))=\\psi(N)=0 \\). Таким образом, существование доказано. \n\nДокажем единственность. Пусть \\( \\phi': G \\to \\mathbb{Z}_2 \\) — любой гомоморфизм с ядром \\( N \\). По первой теореме об изоморфизме, \\( G/\\ker\\phi' \\cong \\operatorname{Im}\\phi' \\), т.е. \\( G/N \\cong \\operatorname{Im}\\phi' \\). Поскольку \\( G/N \\) имеет порядок 2, образ \\( \\operatorname{Im}\\phi' \\) также имеет порядок 2, поэтому \\( \\phi' \\) сюръективен. Тогда существует изоморфизм \\( \\psi': G/N \\to \\mathbb{Z}_2 \\) такой, что \\( \\phi' = \\psi' \\circ \\pi \\). Но изоморфизм \\( G/N \\) на \\( \\mathbb{Z}_2 \\) единственен (он отправляет единичный смежный класс \\( N \\) в 0, а другой — в 1). Следовательно, \\( \\psi' = \\psi \\) и \\( \\phi' = \\phi \\). Итак, существует ровно один такой гомоморфизм. Его можно явно описать: для \\( g \\in N \\) \\( \\phi(g)=0 \\), для \\( g \\notin N \\) \\( \\phi(g)=1 \\) (после отождествления \\( G/N \\) с \\( \\mathbb{Z}_2 \\)).",
+            "solver_answer": "Единственный гомоморфизм: \\( \\phi(g)=0 \\) для \\( g \\in N \\) и \\( \\phi(g)=1 \\) для \\( g \\notin N \\) (при отождествлении \\( G/N \\) с \\( \\mathbb{Z}_2 \\)).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2,
+          "solver_a_discrepancy": {
+            "solver_answer": "Единственный гомоморфизм: \\( \\phi(g)=0 \\) для \\( g \\in N \\) и \\( \\phi(g)=1 \\) для \\( g \\notin N \\) (при отождествлении \\( G/N \\) с \\( \\mathbb{Z}_2 \\)).",
+            "candidate_answer": "Гомоморфизм $\\phi$ определён однозначно: $\\phi(g)=0$ при $g\\in N$ и $\\phi(g)=1$ при $g\\notin N$. Других гомоморфизмов с ядром $N$ нет."
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"1. По условию, \\(G/N \\\\cong \\\\mathbb{Z}_2\\). Пусть \\(\\\\pi: G \\\\to G/N\\) — естественная проекция, \\(\\\\ker \\\\pi = N\\). 2. Так как \\(G/N \\\\cong \\\\mathbb{Z}_2\\), существует изоморфизм \\(\\\\psi: G/N \\\\to \\\\mathbb{Z}_2\\). Тогда композиция \\(\\\\phi = \\\\psi \\\\circ \\\\pi: G \\\\to \\\\mathbb{Z}_2\\) — гомоморфизм. 3. \\(\\\\ker \\\\phi = \\\\pi^{-1}(\\\\ker \\\\psi) = \\\\pi^{-1}(\\\\{eN\\\\}) = N\\). Для любого \\(g \\\\in N\\) имеем \\(\\\\pi(g)=eN\\), поэтому \\(\\\\phi(g)=\\\\psi(eN)=0\\). Таким образом, существован"
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Гомоморфизм φ определён однозначно: φ(g)=0 при g∈N и φ(g)=1 при g∉N. Других гомоморфизмов с ядром N нет.",
+            "arbiter_analysis": "Решение генератора корректно. Оно использует естественную проекцию и изоморфизм для построения гомоморфизма, проверяет ядро и значения на элементах, а также обосновывает единственность на основе структуры смежных классов. Ответ совпадает с решением.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "теория групп",
+          "classifier_subtopic": "гомоморфизмы и факторгруппы"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.85,
+          "estimated_level": "L4",
+          "probabilities": {
+            "L3": 0.1,
+            "L4": 0.85,
+            "L5": 0.05,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.125,
+          "duplicate_of": "ds6_f03be060f6b3"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:25:48.679055"
+    },
+    "slot_4": {
+      "slot_key": "slot_4",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:24:41.861418",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны доказать существование элемента g в G такого, что смежные классы gH и gK пересекаются, но не равны. Дано: H и K - подгруппы, H не содержится в K и K не содержится в H. Надо найти g такой, что gH ∩ gK ≠ ∅ и gH ≠ gK.\n\nЗаметим, что gH ∩ gK непусто тогда и только тогда, когда существует h∈H, k∈K такие, что gh = gk, т.е. h = k, или g^{-1}g = e, но точнее: gH ∩ gK ≠ ∅ ⇔ ∃ h∈H, k∈K: gh = gk ⇒ gh = gk ⇒ h = k (умножая слева на g^{-1}), так что gh = gk ⇔ h = k. Тогда gH ∩ gK содержит элемент ви"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "Элемент g = hk удовлетворяет условию, но решение содержит неточности в обосновании непустоты пересечения.",
+            "arbiter_analysis": "Решение генератора в целом верно, но содержит путаницу в первой части (рассуждения с kh^{-1} неверны и излишни). Правильное обоснование: g = hk, тогда gH содержит g (так как e ∈ H), и gK также содержит g (так как e ∈ K), поэтому g ∈ gH ∩ gK, пересечение непусто. Далее, если gH = gK, то H = K, что противоречит условию (H и K не содержатся друг в друге, следовательно, H ≠ K). Таким образом, gH ≠ gK. Ответ 'Доказано' корректен, но решение содержит лишние и ошибочные шаги.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:26:15.960727"
+    },
+    "slot_7": {
+      "slot_key": "slot_7",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:26:18.966853",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Для решения используем принцип Дирихле (ящики).\n\n1) Чтобы среди взятых книг обязательно нашлись 2 книги одного цвета. Цветов всего 3: красный, синий, зелёный. В худшем случае мы можем взять по одной книге каждого цвета, то есть 3 книги. Четвёртая книга, независимо от цвета, совпадёт с одним из уже имеющихся, образуя пару. Следовательно, минимальное количество книг, гарантирующее наличие двух одного цвета, равно \\(3+1=4\\).\n\n2) Чтобы среди взятых книг обязательно были книги всех трёх цветов. Рассмотрим наихудший сценарий: мы стараемся избежать одного цвета, выбирая книги только двух цветов. Наиболее многочисленные два цвета — синий (5 книг) и красный (4 книги), их сумма равна \\(5+4=9\\). Взяв 9 книг, мы можем получить все синие и все красные, не взяв ни одной зелёной. Десятая книга, если она есть, будет зелёной (так как зелёных книг 3), и тогда будут представлены все три цвета. Таким образом, необходимо взять \\(9+1=10\\) книг.\n\nОтвет: для двух одного цвета — 4 книги; для всех трёх цветов — 10 книг.",
+            "solver_answer": "4 и 10",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "4 и 10",
+            "candidate_answer": "4 книги; 12 книг"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "disputed",
+          "solver_b_data": {
+            "solver_solution": "Применим принцип Дирихле. Для того чтобы среди взятых книг гарантированно нашлись две книги одного цвета, рассмотрим наихудший случай: мы можем взять по одной книге каждого из трёх цветов (красный, синий, зелёный), т.е. 3 книги, и все они будут разных цветов. Четвёртая книга неизбежно совпадёт по цвету с одной из них, так как цветов всего три. Таким образом, наименьшее количество книг, которое нужно взять, чтобы гарантировать две книги одного цвета, равно 4.\n\nДля гарантии того, что среди взятых книг будут книги всех трёх цветов, рассмотрим наихудший сценарий: можно взять все книги двух самых многочисленных цветов. Самые многочисленные цвета — синий (5 книг) и красный (4 книги), их сумма равна 9. Если взять 9 книг, можно не получить ни одной зелёной книги. Десятая книга в любом случае окажется зелёной (поскольку всего зелёных книг 3, и они не все взяты в худшем случае). Следовательно, чтобы гарантировать наличие всех трёх цветов, необходимо взять 10 книг. Наименьшее количество — 10.",
+            "solver_answer": "4 и 10",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_b_discrepancy": {
+            "solver_answer": "4 и 10",
+            "candidate_answer": "4 книги; 12 книг"
+          }
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "4 и 10",
+            "arbiter_analysis": "Оба решения (SOLVER_B и генератора) верны и согласованы. Для гарантии двух книг одного цвета достаточно 4 книг (принцип Дирихле). Для гарантии книг всех трёх цветов необходимо 10 книг (сумма двух самых многочисленных цветов плюс 1). Ответы совпадают, решения логичны и полны.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "комбинаторика",
+          "classifier_subtopic": "принцип дирихле (задачи на гарантированное наличие)"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.11363636363636363,
+          "duplicate_of": "ds6_2411a1ae595e"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:26:56.266067"
+    },
+    "slot_5": {
+      "slot_key": "slot_5",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:26:18.965069",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Пусть \\(N \\trianglelefteq G\\), \\(H \\leq G\\), \\(N \\subseteq H\\). Рассмотрим множество \\(H/N = \\{ hN \\mid h \\in H \\} \\subseteq G/N\\). Проверим, что это подгруппа:\n- Замкнутость: для \\(aN, bN \\in H/N\\) (где \\(a,b \\in H\\)) имеем \\((aN)(bN) = abN\\), и \\(ab \\in H\\), так как \\(H\\) — подгруппа, поэтому \\(abN \\in H/N\\).\n- Обратный элемент: \\((aN)^{-1} = a^{-1}N\\), и \\(a^{-1} \\in H\\), значит \\(a^{-1}N \\in H/N\\).\n- Единица: \\(N = eN \\in H/N\\), так как \\(e \\in H\\).\nСледовательно, \\(H/N\\) — подгруппа \\(G/N\\).\n\nТеперь покажем, что любая подгруппа \\(K\\) группы \\(G/N\\) имеет вид \\(H/N\\) для некоторой подгруппы \\(H \\leq G\\), содержащей \\(N\\). Определим \\(H = \\{ g \\in G \\mid gN \\in K \\}\\).\n- \\(N \\subseteq H\\), ибо для \\(n \\in N\\) имеем \\(nN = N \\in K\\), так как \\(K\\) содержит единицу.\n- Проверим, что \\(H\\) — подгруппа: если \\(g_1, g_2 \\in H\\), то \\(g_1N, g_2N \\in K\\), тогда \\((g_1g_2)N = (g_1N)(g_2N) \\in K\\), значит \\(g_1g_2 \\in H\\); если \\(g \\in H\\), то \\(gN \\in K\\), тогда \\((g^{-1})N = (gN)^{-1} \\in K\\), откуда \\(g^{-1} \\in H\\). Единица \\(e\\) принадлежит \\(H\\), так как \\(eN = N \\in K\\).\n- По построению, \\(H/N = \\{ hN \\mid h \\in H \\} = K\\), так как каждый элемент \\(K\\) имеет вид \\(gN\\) с \\(g \\in H\\), и обратно каждый \\(hN\\) с \\(h \\in H\\) лежит в \\(K\\).\nТаким образом, соответствие \\(H \\mapsto H/N\\) задаёт биекцию между подгруппами \\(G\\), содержащими \\(N\\), и всеми подгруппами \\(G/N\\).",
+            "solver_answer": "Да, верно; любая подгруппа факторгруппы имеет вид \\(H/N\\), где \\(H\\) — подгруппа \\(G\\), содержащая \\(N\\).",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2,
+          "solver_a_discrepancy": {
+            "solver_answer": "Да, верно; любая подгруппа факторгруппы имеет вид \\(H/N\\), где \\(H\\) — подгруппа \\(G\\), содержащая \\(N\\).",
+            "candidate_answer": "Да, верно. Соответствие между подгруппами $G$, содержащими $N$, и подгруппами $G/N$ является биекцией."
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"**Доказательство:**\\n\\n1. **Прямое утверждение:** Пусть \\(N \\\\triangleleft G\\) и \\(H \\\\leq G\\) с \\(N \\\\subseteq H\\). Рассмотрим факторгруппу \\(G/N = \\\\{gN \\\\mid g \\\\in G\\\\}\\). Множество \\(H/N = \\\\{hN \\\\mid h \\\\in H\\\\}\\) является подмножеством \\(G/N\\). Проверим, что оно образует подгруппу:\\n   - **Замкнутость:** Для любых \\(h_1N, h_2N \\\\in H/N\\) имеем \\((h_1N)(h_2N) = h_1h_2N\\). Так как \\(h_1h_2 \\\\in H\\) (ибо \\(H\\) — подгруппа), то \\(h_1h_2N \\\\in H/N\\).\\n   - **Единица:** "
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Да, верно. Соответствие между подгруппами G, содержащими N, и подгруппами G/N является биекцией.",
+            "arbiter_analysis": "Решение генератора корректно и полное. Первая часть доказывает, что H/N является подгруппой G/N, используя свойство гомоморфизма. Вторая часть показывает, что любая подгруппа G/N имеет вид H/N для некоторой подгруппы H, содержащей N, через прообраз. Утверждение о биекции обосновано сюръективностью π и тем, что ядро равно N. Ответ совпадает с условием задачи.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "теория групп",
+          "classifier_subtopic": "факторгруппы и теорема о соответствии"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.13157894736842105,
+          "duplicate_of": "ds6_ab5bf34e626a"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:26:59.955381"
+    },
+    "slot_8": {
+      "slot_key": "slot_8",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:26:18.967254",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "{\n  \"solver_solution\": \"Найдем вторую производную функции \\\\( f(x) = x^4 - 4ax^3 + 6a^2 x^2 - 4a"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "нет таких a",
+            "arbiter_analysis": "Генератор верно нашел вторую производную f''(x)=12(x-a)^2, которая не меняет знак, поэтому точек перегиба нет ни при каких a. Однако в ответе генератора указано a ∈ ℝ \\ {0}, что неверно, так как при a=0 также нет точек перегиба. Правильный ответ — пустое множество.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:27:28.099136"
+    },
+    "slot_6": {
+      "slot_key": "slot_6",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:26:18.966176",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "{\n  \"solver_solution\": \"Пусть \\(k\\) — количество красных кубиков в башне из 15 кубиков. Чтобы никакие два кубика одного цвета не стояли рядом, красные кубики не могут быть соседними. Для \\(k\\) красных кубиков необходимо как минимум \\(k-1\\) не-красных кубиков между ними (в промежутках между красными). Общее число не-красных равно \\(15 - k\\). Условие возможности: \\(15 - k \\\\ge k - 1\\), откуда \\(2k \\\\le 16\\), \\(k \\\\le 8\\). Таким образом, максимальное возможное \\(k\\) равно 8. Проверим, хватит ли син"
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "8",
+            "arbiter_analysis": "Решение верное. Использован принцип Дирихле для оценки максимального количества красных кубиков: при 9 красных потребуется минимум 8 разделяющих кубиков других цветов, но их всего 6 (8 синих + 6 зеленых = 14, но в башне 15 кубиков, поэтому для 9 красных нужно 8 других, а доступно максимум 6 не красных, так как 15-9=6). Следовательно, 9 невозможно. Приведен пример на 8 красных, удовлетворяющий условию. Ответ совпадает с ответом генератора.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "комбинаторика",
+          "classifier_subtopic": "задачи на размещения с ограничениями (чередование цветов)"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.9,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.9,
+            "L4": 0.1,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.058823529411764705,
+          "duplicate_of": "ds6_c619da70af59"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:27:46.462907"
+    },
+    "slot_9": {
+      "slot_key": "slot_9",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:26:18.967962",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны решить задачу: \"В правильной треугольной призме ABCA1B1C1 все ребра равны a. Призма вращается вокруг прямой, проходящей через середины ребер AB и A1C1. Найдите объем тела вращения.\"\n\nНеобходимо найти объем тела, полученного при вращении правильной треугольной призмы с ребром a вокруг оси, проходящей через середины ребер AB и A1C1. Все ребра равны a. Призма правильная, значит в основании равносторонний треугольник, боковые ребра перпендикулярны основанию, все ребра равны a.\n\nВведем сист"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "Невозможно определить однозначно",
+            "arbiter_analysis": "Решение генератора неполное и содержит логические пробелы. Отсутствуют строгие выкладки для вычисления объема, метод разбиения на три равные части не обоснован, не указаны расстояния от оси до элементов призмы и не приведен интеграл или формула для объема. Утверждение о том, что объем каждой части равен πa³/8, не доказано. Поэтому корректность ответа не подтверждена.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:27:54.479214"
+    },
+    "slot_12": {
+      "slot_key": "slot_12",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:27:57.485939",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Дана система сравнений:\n\\[ n \\equiv 2 \\pmod{3}, \\quad n \\equiv 3 \\pmod{5}, \\quad n \\equiv 2 \\pmod{7}. \\]\nОбъединим сравнения по модулям 3 и 7: так как оба дают остаток 2, то \\( n \\equiv 2 \\pmod{21} \\), т.е. \\( n = 21k + 2 \\).\nПодставим в сравнение по модулю 5:\n\\[ 21k + 2 \\equiv 3 \\pmod{5} \\Rightarrow 21k \\equiv 1 \\pmod{5}. \\]\nТак как \\( 21 \\equiv 1 \\pmod{5} \\), то \\( k \\equiv 1 \\pmod{5} \\), значит \\( k = 5m + 1 \\).\nТогда \\( n = 21(5m+1) + 2 = 105m + 23 \\).\nНаименьшее натуральное \\( n \\) получается при \\( m = 0 \\): \\( n = 23 \\).\nПроверка: \\( 23 \\div 3 = 7 \\) остаток 2, \\( 23 \\div 5 = 4 \\) остаток 3, \\( 23 \\div 7 = 3 \\) остаток 2.",
+            "solver_answer": "23",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "23",
+            "arbiter_analysis": "Решение верное. Все шаги логичны, система сравнений решена корректно с использованием подстановки и обратных элементов по модулю. Проверка подтверждает, что 23 удовлетворяет всем условиям. Ответ совпадает с ответом генератора.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "теория чисел",
+          "classifier_subtopic": "китайская теорема об остатках"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.08695652173913043,
+          "duplicate_of": "ds6_07df5912d799"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:28:10.266641"
+    },
+    "slot_13": {
+      "slot_key": "slot_13",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:27:57.487273",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Заметим, что остатки при делении на 7, 8, 9 равны 5, 6, 7 соответственно, что на 2 меньше каждого делителя. Значит, число \\(x+2\\) делится на 7, 8 и 9. Наименьшее общее кратное чисел 7, 8 и 9 равно \\(7 \\cdot 8 \\cdot 9 = 504\\). Следовательно, \\(x+2 = 504k\\) для натурального \\(k\\). Наименьшее натуральное \\(x\\) получается при \\(k=1\\): \\(x = 504 - 2 = 502\\). Проверка: \\(502 \\div 7 = 71\\) (остаток 5), \\(502 \\div 8 = 62\\) (остаток 6), \\(502 \\div 9 = 55\\) (остаток 7).",
+            "solver_answer": "502",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "502",
+            "candidate_answer": "503"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "disputed",
+          "solver_b_data": {
+            "solver_solution": "Заметим, что остатки при делении на 7, 8 и 9 соответственно равны 5, 6 и 7. Эти остатки на 2 меньше делителей: 5 = 7-2, 6 = 8-2, 7 = 9-2. Следовательно, число x можно представить как x = 7k + 5 = 7k - 2 (mod 7), то есть x ≡ -2 (mod 7). Аналогично x ≡ -2 (mod 8) и x ≡ -2 (mod 9). Значит, x + 2 делится на 7, 8 и 9 одновременно. Наименьшее такое число x+2 — это наименьшее общее кратное чисел 7, 8 и 9. Так как 7, 8 и 9 попарно взаимно просты (7 — простое, 8 = 2^3, 9 = 3^2), то НОК(7,8,9) = 7 * 8 * 9 = 504. Тогда x = 504 - 2 = 502. Проверка: 502 ÷ 7 = 71 (остаток 5), 502 ÷ 8 = 62 (остаток 6), 502 ÷ 9 = 55 (остаток 7). Таким образом, наименьшее натуральное число, удовлетворяющее условиям, равно 502.",
+            "solver_answer": "502",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_b_discrepancy": {
+            "solver_answer": "502",
+            "candidate_answer": "503"
+          }
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "502",
+            "arbiter_analysis": "Оба решения (генератора и SOLVER_B) верны и совпадают. Условия задачи корректно сведены к виду x ≡ -2 (mod 7,8,9), откуда x+2 кратно НОК(7,8,9)=504, и наименьшее натуральное x = 504-2 = 502. Проверка подтверждает выполнение всех остатков. Ответ 502 является правильным.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "теория чисел",
+          "classifier_subtopic": "китайская теорема об остатках"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.125,
+          "duplicate_of": "ds6_07df5912d799"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:28:16.211598"
+    },
+    "slot_14": {
+      "slot_key": "slot_14",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:27:57.487960",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Дана система сравнений: \\( x \\equiv 2 \\pmod{3} \\), \\( x \\equiv 3 \\pmod{4} \\), \\( x \\equiv 5 \\pmod{7} \\). Так как модули 3, 4, 7 попарно взаимно просты, применим китайскую теорему об остатках. Вычислим \\( M = 3 \\cdot 4 \\cdot 7 = 84 \\). Найдём \\( M_1 = 84/3 = 28 \\), обратный к 28 по модулю 3: \\( 28 \\equiv 1 \\pmod{3} \\), обратный равен 1. Первое слагаемое: \\( 2 \\cdot 28 \\cdot 1 = 56 \\). \\( M_2 = 84/4 = 21 \\), обратный к 21 по модулю 4: \\( 21 \\equiv 1 \\pmod{4} \\), обратный равен 1. Второе слагаемое: \\( 3 \\cdot 21 \\cdot 1 = 63 \\). \\( M_3 = 84/7 = 12 \\), обратный к 12 по модулю 7: \\( 12 \\equiv 5 \\pmod{7} \\), обратный к 5 по модулю 7 — это 3, так как \\( 5 \\cdot 3 = 15 \\equiv 1 \\pmod{7} \\). Третье слагаемое: \\( 5 \\cdot 12 \\cdot 3 = 180 \\). Сумма: \\( 56 + 63 + 180 = 299 \\). Наименьшее натуральное решение — остаток от деления 299 на 84: \\( 299 \\mod 84 = 299 - 3 \\cdot 84 = 47 \\). Проверка: \\( 47 \\div 3 = 15 \\cdot 3 + 2 \\), \\( 47 \\div 4 = 11 \\cdot 4 + 3 \\), \\( 47 \\div 7 = 6 \\cdot 7 + 5 \\). Условия выполнены. Ответ: 47.",
+            "solver_answer": "47",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "47",
+            "candidate_answer": "23"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "disputed",
+          "solver_b_data": {
+            "solver_solution": "Дана система сравнений: \\(x \\equiv 2 \\pmod{3}\\), \\(x \\equiv 3 \\pmod{4}\\), \\(x \\equiv 5 \\pmod{7}\\). Модули 3, 4, 7 попарно взаимно просты, поэтому применяем китайскую теорему об остатках. \n\n1. Из первого сравнения: \\(x = 3k + 2\\).\n2. Подставляем во второе: \\(3k + 2 \\equiv 3 \\pmod{4}\\) → \\(3k \\equiv 1 \\pmod{4}\\). Так как \\(3 \\equiv -1 \\pmod{4}\\), то \\(-k \\equiv 1 \\pmod{4}\\) → \\(k \\equiv -1 \\equiv 3 \\pmod{4}\\). Следовательно, \\(k = 4m + 3\\).\n3. Тогда \\(x = 3(4m+3)+2 = 12m + 11\\).\n4. Подставляем в третье: \\(12m + 11 \\equiv 5 \\pmod{7}\\) → \\(12m \\equiv -6 \\equiv 1 \\pmod{7}\\). Так как \\(12 \\equiv 5 \\pmod{7}\\), получаем \\(5m \\equiv 1 \\pmod{7}\\). Обратный элемент к 5 по модулю 7 — это 3, так как \\(5 \\cdot 3 = 15 \\equiv 1 \\pmod{7}\\). Умножаем: \\(m \\equiv 3 \\pmod{7}\\), то есть \\(m = 7n + 3\\).\n5. Подставляем: \\(x = 12(7n+3)+11 = 84n + 36 + 11 = 84n + 47\\).\n\nНаименьшее натуральное \\(x\\) получается при \\(n = 0\\): \\(x = 47\\).\n\nПроверка: \\(47 \\div 3 = 15\\) остаток 2; \\(47 \\div 4 = 11\\) остаток 3; \\(47 \\div 7 = 6\\) остаток 5. Все условия выполнены.",
+            "solver_answer": "47",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_b_discrepancy": {
+            "solver_answer": "47",
+            "candidate_answer": "23"
+          }
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "47",
+            "arbiter_analysis": "Оба решения (генератора и SOLVER_B) верны и совпадают. Решение полное, логичное, использует китайскую теорему об остатках, все шаги корректны, ответ проверен подстановкой. Расхождений нет.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 1.0,
+          "classifier_topic": "теория чисел",
+          "classifier_subtopic": "китайская теорема об остатках"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "disputed",
+          "duplicate_check_passed": false,
+          "max_similarity": 0.6190476190476191,
+          "duplicate_of": "ds6_07df5912d799"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:28:18.800500"
+    },
+    "slot_11": {
+      "slot_key": "slot_11",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:27:57.484982",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Используем свойство: \\(a \\cdot b = \\text{НОД}(a,b) \\cdot \\text{НОК}(a,b) = 6 \\cdot 180 = 1080\\). Пусть \\(a = 6x\\), \\(b = 6y\\), где \\(x, y\\) — натуральные взаимно простые числа. Тогда \\(\\text{НОК}(a,b) = 6xy = 180\\), откуда \\(xy = 30\\). Условие \\(a\\) делится на 9: \\(6x\\) делится на 9, то есть \\(2x/3\\) — целое, значит \\(x\\) кратно 3. Пары взаимно простых \\((x,y)\\) с произведением 30: \\((1,30), (2,15), (3,10), (5,6), (6,5), (10,3), (15,2), (30,1)\\). Из них \\(x\\) кратно 3: \\((3,10), (6,5), (15,2), (30,1)\\). Тогда \\(a = 6x, b = 6y\\): \\((18,60), (36,30), (90,12), (180,6)\\). Проверка: НОД равен 6, НОК равен 180, \\(a\\) делится на 9.",
+            "solver_answer": "\\((180, 6), (90, 12), (18, 60), (36, 30)\\)",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "\\((180, 6), (90, 12), (18, 60), (36, 30)\\)",
+            "candidate_answer": "$(18, 60)$ и $(36, 30)$"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"1. Используем свойство: \\\\\\\\(a \\\\cdot b = \\\\text{НОД}(a,b) \\\\cdot \\\\text{НОК}(a,b) = 6 \\\\cdot 180 = 1080\\\\\\\\).\\n2. Пусть \\\\\\\\(a = 6x\\\\\\\\), \\\\\\\\(b = 6y\\\\\\\\), где \\\\\\\\(x, y \\\\in \\\\mathbb{N}\\\\\\\\), \\\\\\\\(\\\\text{НОД}(x,y) = 1\\\\\\\\). Тогда \\\\\\\\(\\\\text{НОК}(a,b) = 6 \\\\cdot \\\\text{НОК}(x,y) = 180 \\\\Rightarrow \\\\text{НОК}(x,y) = 30\\\\\\\\).\\n3. Из \\\\\\\\(a \\\\cdot b = 36xy = 1080 \\\\Rightarrow xy = 30\\\\\\\\).\\n4. Так как \\\\\\\\(x\\\\\\\\) и \\\\\\\\(y\\\\\\\\) взаимно просты, то \\\\\\\\(\\\\text{НОК}(x,y) = xy"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "(18, 60), (36, 30), (90, 12), (180, 6)",
+            "arbiter_analysis": "Генератор в начале указал только две пары (18,60) и (36,30), но в решении обосновал и получил четыре пары. Ответ генератора неполный, хотя решение верное. Таким образом, ответ не соответствует полному решению.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:28:38.736412"
+    },
+    "slot_10": {
+      "slot_key": "slot_10",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:27:57.484649",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "{\n  \"solver_solution\": \"Пусть \\( x \\) — коэффициент пропорциональности. Тогда масса яблок равна \\( 5x \\), груш — \\( 3x \\), сахара — \\( 2x \\). По условию задачи груш взяли на 1,2 кг меньше, чем сахара, что означает \\( 3x = 2x - 1,2 \\). Однако это уравнение даёт \\( x = -1,2 \\), что невозможно. Следовательно, условие противоречиво. Если же предположить, что груш на 1,2 кг больше сахара (или сахара на 1,2 кг меньше груш), то \\( 3x - 2x = 1,2 \\), откуда \\( x = 1,2 \\). Тогда масса яблок: \\( 5 \\\\cdot 1"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "3 кг",
+            "arbiter_analysis": "В решении генератора допущена ошибка: условие 'груш на 1,2 кг меньше, чем сахара' противоречит отношению 5:3:2, так как груш (3 части) больше сахара (2 части). Правильное условие должно быть 'груш на 1,2 кг меньше, чем яблок', что приводит к ответу 3 кг. Генератор исправил условие в процессе решения, но исходное условие задачи некорректно.",
+            "solution_complete": false,
+            "answer_correct": true
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:29:06.325761"
+    },
+    "slot_15": {
+      "slot_key": "slot_15",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:29:09.330659",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Пусть \\(a = 12x\\), \\(b = 12y\\), где \\(x, y\\) — натуральные числа и \\(\\text{НОД}(x, y) = 1\\). Тогда \\(\\text{НОК}(a, b) = 12xy = 240\\), откуда \\(xy = 20\\). Необходимо найти все взаимно простые натуральные \\(x, y\\) с произведением 20. Делители 20: 1, 2, 4, 5, 10, 20. Пары \\((x, y)\\) с точностью до порядка: \\((1,20)\\), \\((4,5)\\), \\((2,10)\\), \\((5,4)\\), \\((10,2)\\), \\((20,1)\\). Условию взаимной простоты удовлетворяют только \\((1,20)\\) и \\((4,5)\\) (и соответствующие перестановки). Поскольку порядок не важен, получаем две различные неупорядоченные пары: \\(\\{12,240\\}\\) и \\(\\{48,60\\}\\).",
+            "solver_answer": "2",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "2",
+            "candidate_answer": "4"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"Пусть \\( a = 12x, b = 12y \\), где \\( \\text{НОД}(x, y) = 1 \\). Тогда \\( a \\cdot b = 144xy = \\text{НОД}(a,b) \\cdot \\text{НОК}(a,b) = 12 \\cdot 240 = 2880 \\), откуда \\( xy = 20 \\). Перебираем все пары взаимно простых натуральных чисел, произведение которых равно 20: \\( (1,20), (20,1), (4,5), (5,4) \\). Поскольку порядок не важен, получаем две различные пары \\( (a,b) \\): \\( (12,240) \\) и \\( (48,60) \\).\",\n  \"solver_answer\": \"2\",\n  \"solver_confidence\": 1.0,\n  \"solver_notes\": \"\"\n}"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "2",
+            "arbiter_analysis": "В решении генератора допущена ошибка: при подсчете пар (a, b) с учетом того, что порядок не важен, пары (12,240) и (240,12) считаются одной и той же парой, так же как (48,60) и (60,48). Таким образом, различных пар всего две: {12,240} и {48,60}. Генератор ошибочно посчитал их как четыре.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:29:30.099906"
+    },
+    "slot_19": {
+      "slot_key": "slot_19",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:29:09.333852",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Рассмотрим все возможные комбинации типов A, B, C (Р — рыцарь, Л — лжец). Для каждой комбинации проверим истинность высказываний в соответствии с типом говорящего.\n\n1) A=Р, B=Р, C=Р:\n   A: \"B и C однотипны\" — истина, A=Р → OK.\n   B: \"Если A рыцарь, то C лжец\". A=Р, C=Р ⇒ посылка истина, заключение ложь ⇒ импликация ложь, но B=Р должен говорить правду → противоречие.\n\n2) A=Р, B=Р, C=Л:\n   A: \"B и C однотипны\" — ложно (разные типы), A=Р → противоречие.\n\n3) A=Р, B=Л, C=Р:\n   A: ложно → противоречие.\n\n4) A=Р, B=Л, C=Л:\n   A: \"B и C однотипны\" — истина (оба Л), A=Р → OK.\n   B: \"Если A рыцарь, то C лжец\". A=Р, C=Л ⇒ посылка истина, заключение истина ⇒ импликация истина, но B=Л должен лгать → противоречие.\n\n5) A=Л, B=Р, C=Р:\n   A: \"B и C однотипны\" — истина, A=Л должен лгать → противоречие.\n\n6) A=Л, B=Р, C=Л:\n   A: \"B и C однотипны\" — ложно (разные), A=Л говорит ложь → OK.\n   B: \"Если A рыцарь, то C лжец\". A=Л ⇒ посылка ложна ⇒ импликация истинна, B=Р говорит правду → OK.\n   C: \"B лжец\" — ложно (B=Р), C=Л говорит ложь → OK.\n   Все согласовано.\n\n7) A=Л, B=Л, C=Р:\n   A: ложно → OK.\n   B: \"Если A рыцарь, то C лжец\". A=Л ⇒ посылка ложна ⇒ импликация истинна, B=Л должен лгать → противоречие.\n\n8) A=Л, B=Л, C=Л:\n   A: \"B и C однотипны\" — истина, A=Л должен лгать → противоречие.\n\nЕдинственное решение: A — лжец, B — рыцарь, C — лжец.",
+            "solver_answer": "A — лжец, B — рыцарь, C — лжец",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2,
+          "solver_a_discrepancy": {
+            "solver_answer": "A — лжец, B — рыцарь, C — лжец",
+            "candidate_answer": "А — лжец, В — рыцарь, С — лжец."
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "disputed",
+          "solver_b_data": {
+            "solver_solution": "Обозначим истинностные значения: A, B, C — рыцарь (истина) или лжец (ложь).\n\nУтверждения:\n- A: «B и C однотипны» — (B == C).\n- B: «Если A рыцарь, то C лжец» — (A → ¬C).\n- C: «B лжец» — ¬B.\n\nРассмотрим случаи.\n\n**Случай 1: A — рыцарь (A = ист).** Тогда (B == C) истинно. \n- Если B рыцарь, то B = ист, тогда C = ист. Проверим B: (ист → ¬ист) = (ист → ложь) = ложь, но B рыцарь, должен говорить правду — противоречие.\n- Если B лжец, то B = ложь, тогда C = ложь. B: (ист → ¬ложь) = (ист → ист) = ист, но B лжец, говорит правду — противоречие.\nЗначит, A не может быть рыцарем.\n\n**Случай 2: A — лжец (A = ложь).** Тогда (B == C) ложно, т.е. B ≠ C.\nУтверждение B: (ложь → ¬C) = ист (импликация с ложной посылкой всегда истинна).\n- Если B рыцарь, он говорит правду — согласуется.\n- Если B лжец, он должен лгать, но утверждение истинно — противоречие.\nСледовательно, B — рыцарь (B = ист).\nТогда из B ≠ C получаем C = ложь (лжец).\nПроверим C: утверждение ¬B = ¬ист = ложь. C лжец, его высказывание ложно — согласуется.\n\nИтак: A — лжец, B — рыцарь, C — лжец.",
+            "solver_answer": "A — лжец, B — рыцарь, C — лжец",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_b_discrepancy": {
+            "solver_answer": "A — лжец, B — рыцарь, C — лжец",
+            "candidate_answer": "А — лжец, В — рыцарь, С — лжец."
+          }
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "А — лжец, В — рыцарь, С — лжец",
+            "arbiter_analysis": "Оба решения (генератора и SOLVER_B) приводят к одному и тому же ответу: А — лжец, В — рыцарь, С — лжец. Решения полные, логически обоснованные и не содержат ошибок. Ответ совпадает с эталонным.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 1.0,
+          "classifier_topic": "логические задачи",
+          "classifier_subtopic": "рыцари и лжецы"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.9,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.9,
+            "L4": 0.1,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.1875,
+          "duplicate_of": "ds6_ecf313d58ca1"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:30:00.830237"
+    },
+    "slot_16": {
+      "slot_key": "slot_16",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:29:09.331144",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны решить задачу: В стране 12 городов, 18 дорог (ребер), граф связный. Доказать, что можно выбрать 4 города, попарно не соединенные дорогами (т.е. независимое множество размера 4). Это утверждение: в любом связном графе с 12 вершинами и 18 ребрами существует независимое множество из 4 вершин.\n\nНам нужно предоставить пошаговое решение на русском, с формулами. Итоговый ответ: \"Утверждение доказано\" или что-то подобное? Задача на доказательство, поэтому ответ - это само доказательство, но в "
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Утверждение доказано.",
+            "arbiter_analysis": "Решение корректно. Используется метод от противного: предполагается, что нет независимого множества из 4 вершин (α(G) ≤ 3). Рассматривается дополнение G', в котором 48 ребер и нет K4. По теореме Турана, максимальное число ребер в графе без K4 на 12 вершинах равно 48, и достигается на полном 3-дольном графе с долями по 4 вершины. Дополнение такого графа — объединение трех K4, что противоречит связности исходного графа. Таким образом, предположение неверно, и независимое множество из 4 вершин существует. Решение полное и логичное, ответ верен.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": false,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.9,
+          "classifier_topic": "теория графов",
+          "classifier_subtopic": "экстремальные задачи на графах"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.85,
+          "estimated_level": "L4",
+          "probabilities": {
+            "L3": 0.1,
+            "L4": 0.85,
+            "L5": 0.05,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.15555555555555556,
+          "duplicate_of": "ds6_8b95dc7d5035"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:30:40.381992"
+    },
+    "slot_18": {
+      "slot_key": "slot_18",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:29:09.332930",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Рассмотрим граф \\( G \\), вершины которого — города, а ребра — дороги. Тогда \\( |V(G)| = 25 \\), \\( |E(G)| = 30 \\). Дополнительный граф \\( H = \\overline{G} \\) имеет те же вершины, а ребра — это отсутствующие дороги. Число ребер в \\( H \\) равно \\( \\binom{25}{2} - 30 = 300 - 30 = 270 \\).\n\nПредположим, что в \\( G \\) нет независимого множества из 5 городов, то есть в \\( H \\) нет полного подграфа \\( K_5 \\). Тогда по теореме Турана (или экстремальному принципу) для графа на \\( n = 25 \\) вершинах, не содержащего \\( K_{r+1} \\) с \\( r = 4 \\), максимально возможное число ребер достигается на полном \\( r \\)-дольном графе с почти равными долями. Разобьем 25 вершин на 4 доли: 6, 6, 6, 7. В полном 4-дольном графе ребра соединяют только вершины из разных долей. Число ребер такого графа равно \\( \\frac{1}{2}\\left(25^2 - (6^2+6^2+6^2+7^2)\\right) = \\frac{1}{2}(625 - 157) = \\frac{468}{2} = 234 \\). Таким образом, граф без \\( K_5 \\) может иметь не более 234 ребер. Но \\( |E(H)| = 270 > 234 \\), что противоречит предположению. Следовательно, в \\( H \\) существует \\( K_5 \\), а значит, в \\( G \\) есть 5 попарно несоединенных городов.\n\nТаким образом, найдется группа из 5 городов, никакие два из которых не соединены дорогой.",
+            "solver_answer": "Доказано, что найдется группа из 5 городов, никакие два из которых не соединены дорогой.",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 3,
+          "solver_a_discrepancy": {
+            "solver_answer": "Доказано, что найдется группа из 5 городов, никакие два из которых не соединены дорогой.",
+            "candidate_answer": "Доказательство"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "Мы должны решить задачу: в стране 25 городов, 30 дорог (ребер). Нужно доказать, что найдется группа из 5 городов, никакие два из которых не соединены дорогой. Это задача на теорию графов: дано 25 вершин, 30 ребер. Доказать существование независимого множества размера 5. Это связано с теоремой Турана или с оценкой числа ребер в графе без большого независимого множества.\n\nФактически, нужно показать, что в любом графе на 25 вершинах с 30 ребрами есть независимое множество размером не менее 5. Или д"
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Найдется группа из 5 городов, никакие два из которых не соединены дорогой.",
+            "arbiter_analysis": "Решение верно. Используется теорема Турана для дополнения графа: если бы не было независимого множества из 5 вершин, то в исходном графе было бы не менее 66 ребер, но их всего 30 — противоречие. Доказательство полное и логичное.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": false,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "комбинаторика",
+          "classifier_subtopic": "экстремальные задачи на графы"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.85,
+          "estimated_level": "L4",
+          "probabilities": {
+            "L3": 0.1,
+            "L4": 0.85,
+            "L5": 0.05,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.175,
+          "duplicate_of": "ds6_8b95dc7d5035"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:30:42.954401"
+    },
+    "slot_17": {
+      "slot_key": "slot_17",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:29:09.331842",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны решить задачу: В стране 12 городов. Некоторые пары городов соединены дорогами с двусторонним движением. Известно, что любые два города соединены дорогой, если они оба соединены с некоторым третьим городом. Докажите, что страну можно разделить на две части так, что между этими частями нет ни одной дороги.\n\nТребуется доказать, что граф можно разбить на две части (возможно, пустые?) без ребер между ними. То есть граф несвязен? Или можно разделить на две компоненты? Условие: \"любые два гор"
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Страну можно разделить на две части без дорог между ними.",
+            "arbiter_analysis": "Решение верно. Граф, удовлетворяющий условию, является объединением клик (полных подграфов) без общих вершин. Если граф несвязен, то разбиение очевидно: одна компонента и все остальные. Если граф связен, то он является полным графом, но в этом случае разбиение на две части без дорог невозможно. Однако из условия следует, что граф не может быть связным, так как иначе задача не имела бы решения. Таким образом, граф обязательно несвязен, и разбиение существует. Ответ генератора корректен.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": false,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.9,
+          "classifier_topic": "теория графов",
+          "classifier_subtopic": "связность и компоненты связности"
+        },
+        "level": {
+          "level_status": "confirmed",
+          "level_match": true,
+          "level_confidence": 0.85,
+          "estimated_level": "L5",
+          "probabilities": {
+            "L3": 0.0,
+            "L4": 0.2,
+            "L5": 0.7,
+            "L6": 0.1
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.30952380952380953,
+          "duplicate_of": "ds6_8b95dc7d5035"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:30:46.764154"
+    },
+    "slot_21": {
+      "slot_key": "slot_21",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:30:49.769431",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Обозначим цену апельсинового сока за \\(x\\). Тогда цена яблочного сока составляет 80% от \\(x\\), то есть \\(0,8x\\). Цена виноградного сока составляет 150% от цены яблочного, то есть \\(1,5 \\cdot 0,8x = 1,2x\\). Разница между ценой виноградного и апельсинового: \\(1,2x - x = 0,2x\\). В процентах от цены апельсинового: \\(\\frac{0,2x}{x} \\cdot 100\\% = 20\\%\\).",
+            "solver_answer": "20%",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "20%",
+            "arbiter_analysis": "Решение верное. Цена апельсинового сока принята за x, яблочного — 0.8x, виноградного — 1.5 * 0.8x = 1.2x. Разница между виноградным и апельсиновым: 1.2x - x = 0.2x, что составляет 20% от x. Ответ совпадает с генератором.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "проценты",
+          "classifier_subtopic": "процентное соотношение величин"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.1875,
+          "duplicate_of": "ds6_a2974faf4afe"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:31:01.185332"
+    },
+    "slot_20": {
+      "slot_key": "slot_20",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:30:49.768942",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Пусть цена карамельных конфет равна \\(x\\). Тогда цена шоколадных конфет составляет \\(120\\%\\) от \\(x\\), то есть \\(1.2x\\). Цена желейных конфет составляет \\(80\\%\\) от цены шоколадных, то есть \\(0.8 \\cdot 1.2x = 0.96x\\). Таким образом, цена желейных конфет равна \\(0.96x\\), что составляет \\(96\\%\\) от цены карамельных \\(x\\). Ответ: \\(96\\%\\).",
+            "solver_answer": "96%",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "96%",
+            "arbiter_analysis": "Решение верное. Цена карамельных принята за x, шоколадные — 1.2x, желейные — 0.8 * 1.2x = 0.96x, что составляет 96% от x. Все вычисления корректны, ответ совпадает с генератором.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "проценты",
+          "classifier_subtopic": "процентное отношение величин"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "disputed",
+          "duplicate_check_passed": false,
+          "max_similarity": 0.6875,
+          "duplicate_of": "ds6_a2974faf4afe"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:31:01.417551"
+    },
+    "slot_22": {
+      "slot_key": "slot_22",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:30:49.770203",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "{\n  \"solver_solution\": \"Пусть первоначально было \\(x\\) яблонь и \\(y\\) груш. Из условия: \\(\\frac{x}{y} = \\frac{5}{3}\\). После посадки 6 яблонь: \\(\\frac{x+6}{y} = \\frac{7}{3}\\). Из первого уравнения \\(x = \\frac{5}{3}y\\). Подставляем во второе: \\(\\frac{\\frac{5}{3}y + 6}{y} = \\frac{7}{3}\\). Умножаем на \\(y\\): \\(\\frac{5}{3}y + 6 = \\frac{7}{3}y\\). Переносим: \\(6 = \\frac{7}{3}y - \\frac{5}{3}y = \\frac{2}{3}y\\), откуда \\(y = 6 \\cdot \\frac{3}{2} = 9\\). Тогда \\(x = \\frac{5}{3} \\cdot 9 = 15\\). Проверка: \\(\\"
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "15 яблонь и 9 груш",
+            "arbiter_analysis": "Решение полностью корректно. Уравнение составлено верно, решено правильно, ответ совпадает с условием задачи.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "задачи на отношения и пропорции",
+          "classifier_subtopic": "изменение отношения при добавлении элементов"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.04,
+            "L5": 0.01,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.0,
+          "duplicate_of": null
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:31:19.736269"
+    },
+    "slot_23": {
+      "slot_key": "slot_23",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:30:49.772515",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны решить задачу. Яблоки и груши. Сначала яблоки составляли 40% всех фруктов. Обозначим общее количество фруктов первоначально за X. Тогда яблок было 0.4X, груш 0.6X. Продали 20% яблок и 30% груш. Осталось: яблок: 0.4X * (1 - 0.2) = 0.4X * 0.8 = 0.32X; груш: 0.6X * (1 - 0.3) = 0.6X * 0.7 = 0.42X. Всего осталось 0.32X + 0.42X = 0.74X. По условию осталось 112 фруктов. Значит, 0.74X = 112. Находим X = 112 / 0.74. Вычислим: 112 / 0.74 = 11200/74 = 5600/37 ≈ 151.351... Но это не целое число? П"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "яблок: 60, груш: 90 (при остатке 111); при остатке 112 — нецелое решение",
+            "arbiter_analysis": "Решение генератора содержит ошибку: при подстановке y=1.5x в уравнение 0.8x+0.7y=112 получается нецелое x≈60.54, что противоречит условию целочисленности количества фруктов. Генератор сам замечает это и предлагает изменить условие на 111, но в исходной задаче указано 112. Таким образом, задача в исходной формулировке не имеет целочисленного решения, что делает её некорректной. Ответ генератора (яблок 80, груш 120) не соответствует решению и также неверен, так как при этих числах остаток равен 148, а не 112.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:32:10.254479"
+    },
+    "slot_24": {
+      "slot_key": "slot_24",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:30:49.773301",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мысленно решаю задачу. Пусть изначально общее количество фруктов = 100 единиц (или любое). Яблоки составляли 40%, то есть 40 единиц, груши 60 единиц. Затем продали 20% яблок, то есть 0.2*40 = 8 яблок, осталось 32 яблока. Продали 30% груш, то есть 0.3*60 = 18 груш, осталось 42 груши. После продажи осталось всего 32+42=74 фрукта. Оставшиеся яблоки составляют 35% от оставшихся: 32/74 ≈ 0.4324, а не 0.35. Условие не выполняется. Значит, исходное предположение неверно? Подождите, задача: \"Сначала ябл"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "Задача некорректна: исходные данные противоречивы, решение невозможно.",
+            "arbiter_analysis": "Решение генератора показывает, что при заданных условиях (яблоки 40% изначально, продано 20% яблок и 30% груш, после чего яблоки стали 35% остатка) возникает противоречие (1.6 = 1.295). Это означает, что условие задачи не может быть выполнено ни при каких положительных количествах фруктов. Следовательно, задача не имеет решения, а ответ генератора (60%) неверен, так как он не следует из корректного решения.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:32:13.835319"
+    },
+    "slot_26": {
+      "slot_key": "slot_26",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:32:16.843708",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Для минимизации суммы модулей разностей между соседними числами необходимо, чтобы каждое соседнее число отличалось как можно меньше. Поскольку все числа различны, минимальная возможная разность между двумя числами равна 1. В ряду из 10 чисел имеется 9 пар соседних чисел. Следовательно, сумма не может быть меньше 9. Примером, достигающим этого значения, является расположение чисел в порядке возрастания: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10. Сумма модулей разностей равна \\(|1-2| + |2-3| + \\dots + |9-10| = 1+1+\\dots+1 = 9\\). Таким образом, наименьшее возможное значение суммы равно 9.",
+            "solver_answer": "9",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "9",
+            "arbiter_analysis": "Решение верно. Минимальная сумма модулей разностей соседних чисел достигается при упорядочивании чисел по возрастанию или убыванию, что даёт сумму 9. Нижняя оценка 9 обоснована тем, что каждая из 9 разностей не меньше 1, так как числа различны. Ответ совпадает с ответом генератора.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.9,
+          "classifier_topic": "комбинаторика",
+          "classifier_subtopic": "экстремальные задачи на перестановки"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.9,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.9,
+            "L4": 0.1,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.12280701754385964,
+          "duplicate_of": "ds6_8840f3387feb"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:33:05.406055"
+    },
+    "slot_29": {
+      "slot_key": "slot_29",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:32:16.847848",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Пусть количество городов \\( n = 15 \\). Каждый город соединён дорогами ровно с 7 другими, то есть степень каждой вершины \\( d(v) = 7 \\). Сумма степеней всех вершин: \\( S = 15 \\cdot 7 = 105 \\). По лемме о рукопожатиях, сумма степеней равна удвоенному числу рёбер: \\( S = 2E \\), где \\( E \\) — количество дорог. Тогда \\( E = \\frac{S}{2} = \\frac{105}{2} = 52.5 \\), что не является целым числом. Следовательно, такого графа не существует. Дополнительное условие о двух компонентах связности не меняет ситуацию: в каждой компоненте сумма степеней должна быть чётной, что требует чётного числа вершин в каждой компоненте, но \\( 15 \\) не разбивается на два чётных числа. Таким образом, не существует графа, удовлетворяющего всем условиям. Задача некорректна.",
+            "solver_answer": "Нет решений",
+            "solver_confidence": 1.0,
+            "solver_notes": "Сумма степеней нечётна, что противоречит лемме о рукопожатиях. Условия несовместны."
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "Нет решений",
+            "candidate_answer": "42 или 49"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"Пусть в стране \\(n = 15\\) городов, каждый соединён ровно с 7 другими. Сумма степеней всех вершин равна \\(15 \\cdot 7 = 105\\). По лемме о рукопожатиях, сумма степеней должна быть чётной (равна удвоенному числу рёбер), но 105 нечётно. Следовательно, граф с такими свойствами не существует. Дополнительно, если предположить две компоненты связности, то в каждой компоненте число вершин должно быть не менее 8 (так как степень 7 требует не менее 8 вершин в простом графе). Сумма дв"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "Задача не имеет решения, так как граф с 15 вершинами, степенью 7 и двумя компонентами связности невозможен.",
+            "arbiter_analysis": "Решение генератора верно показывает противоречие: для компоненты из a вершин максимальная степень a-1, поэтому a ≥ 8 и b ≥ 8, что в сумме даёт не менее 16, а у нас 15. Следовательно, такого графа не существует. Ответ генератора (42 или 49) не обоснован и не следует из решения. Задача некорректна.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:33:09.416745"
+    },
+    "slot_25": {
+      "slot_key": "slot_25",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:32:16.842706",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "{\n  \"solver_solution\": \"Обозначим количество шоколадок за \\(x\\), количество пачек печенья за \\(y\\). Условия: \\(x \\ge 1\\), \\(y \\ge 1\\), целые числа, и \\(25x + 15y = 200\\). Сократим уравнение на 5: \\(5x + 3y = 40\\). Выразим \\(y\\): \\(y = \\\\frac{40 - 5x}{3}\\). Чтобы \\(y\\) было целым, \\(40 - 5x\\) должно делиться на 3. Проверим по модулю 3: \\(40 \\\\equiv 1 \\\\pmod{3}\\), \\(5x \\\\equiv 2x \\\\pmod{3}\\), тогда \\(40 - 5x \\\\equiv 1 - 2x \\\\equiv 0 \\\\pmod{3}\\) ⇒ \\(2x \\\\equiv 1 \\\\pmod{3}\\) ⇒ \\(x \\\\equiv 2 \\\\pmod{3"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "2",
+            "arbiter_analysis": "Генератор в решении правильно нашел два набора: (2,10) и (5,5). Однако в ответе он указал 3 набора, что противоречит его же решению. Правильный ответ — 2 набора.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:33:23.679666"
+    },
+    "slot_28": {
+      "slot_key": "slot_28",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:32:16.846053",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны решить задачу: три жителя A, B, C. Каждый либо рыцарь (всегда говорит правду), либо лжец (всегда лжет). Их заявления:\n- A: \"B — лжец.\"\n- B: \"C — лжец.\"\n- C: \"A — лжец.\"\n\nНужно определить, кто рыцарь, кто лжец.\n\nЭто классическая задача на логику. Решим.\n\nОбозначим: пусть A_truth = 1, если A рыцарь, 0 если лжец. Аналогично B, C.\n\nТогда высказывание A \"B — лжец\" истинно тогда и только тогда, когда B лжец, т.е. B_truth = 0. Если A рыцарь, то он говорит правду, значит B_truth = 0. Если A лж"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "Ситуация невозможна (нет непротиворечивого распределения)",
+            "arbiter_analysis": "Генератор ошибочно утверждает, что все трое — рыцари. На самом деле система логических уравнений A = ¬B, B = ¬C, C = ¬A приводит к противоречию A = ¬A, что означает отсутствие решений. Ни одна комбинация рыцарей и лжецов не удовлетворяет всем высказываниям. Ответ генератора неверен.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:33:38.763877"
+    },
+    "slot_27": {
+      "slot_key": "slot_27",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:32:16.844741",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны решить задачу: построить СДНФ для функции f(x_M, x_Ф, x_Х, x_Б), которая равна 1, если ученик посещает ровно два кружка. Затем минимизировать с помощью карты Карно. В ответе указать минимальное выражение в виде дизъюнкции конъюнкций (полученное после минимизации). Требуется вернуть JSON.\n\nСначала определим переменные: пусть x_M, x_Ф, x_Х, x_Б - булевы переменные, 1 - посещает, 0 - не посещает. Функция равна 1, когда ровно две из четырех переменных равны 1. Это означает, что число едини"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "f = ¬x_M ¬x_Ф x_Х x_Б + ¬x_M x_Ф (¬x_Х x_Б + x_Х ¬x_Б) + x_M ¬x_Ф (¬x_Х x_Б + x_Х ¬x_Б) + x_M x_Ф ¬x_Х ¬x_Б",
+            "arbiter_analysis": "В решении генератора есть ошибка: в исходной СДНФ последний член записан как x_M x_Ф ¬x_Ф ¬x_Б, что равно 0, но правильная конъюнкция для набора (1,1,0,0) должна быть x_M x_Ф ¬x_Х ¬x_Б. После исправления СДНФ и минимизации получено корректное минимальное выражение. Ответ генератора содержит неверный член и не является минимальным, хотя в конце приведено исправление. Таким образом, задача решена с ошибкой, но итоговый ответ после исправления верен.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:33:40.494503"
+    },
+    "slot_34": {
+      "slot_key": "slot_34",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:33:43.503584",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Пусть количество шоколадных конфет равно \\(4x\\), карамельных — \\(3x\\) (из отношения 4:3). Из отношения карамельных к фруктовым 6:5, имеем \\(3x = 6y\\), откуда \\(x = 2y\\). Тогда шоколадных: \\(4x = 8y\\), фруктовых: \\(5y\\). По условию \\(8y = 5y + 30\\), получаем \\(3y = 30\\), \\(y = 10\\). Отсюда шоколадных: 80, карамельных: 60, фруктовых: 50. Общее количество: \\(80+60+50 = 190\\).",
+            "solver_answer": "190",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "190",
+            "candidate_answer": "330 конфет"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"Пусть \\( x \\) — общий множитель для отношений. Из отношения карамельных к фруктовым \\( 6:5 \\) положим, что количество карамельных конфет равно \\( 6x \\), тогда фруктовых \\( 5x \\). Из отношения шоколадных к карамельным \\( 4:3 \\) получаем, что количество шоколадных конфет равно \\( \\\\frac{4}{3} \\\\cdot 6x = 8x \\\\). По условию шоколадных на 30 больше, чем фруктовых: \\( 8x = 5x + 30 \\\\). Решая уравнение, находим \\( x = 10 \\\\). Тогда шоколадных \\( 8 \\\\cdot 10 = 80 \\\\), карамельны"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "190",
+            "arbiter_analysis": "Решение генератора содержит ошибку: при правильном вычислении получается 190, а не 330. Генератор сам заметил несоответствие и исправил ответ на 190, но в итоговом ответе указал 330. Правильный ответ — 190.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:33:55.145642"
+    },
+    "slot_32": {
+      "slot_key": "slot_32",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:33:43.501717",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Пусть во второй главе \\( b \\) страниц. Тогда из отношения первой главы ко второй \\( 2:3 \\) получаем, что первая глава содержит \\( a = \\frac{2}{3}b \\) страниц. Из отношения второй главы к третьей \\( 4:5 \\) получаем, что третья глава содержит \\( c = \\frac{5}{4}b \\) страниц. Сумма страниц всех глав равна 210: \\( a + b + c = \\frac{2}{3}b + b + \\frac{5}{4}b = 210 \\). Приводим к общему знаменателю 12: \\( \\frac{8}{12}b + \\frac{12}{12}b + \\frac{15}{12}b = \\frac{35}{12}b = 210 \\). Отсюда \\( b = 210 \\cdot \\frac{12}{35} = \\frac{210 \\cdot 12}{35} = 6 \\cdot 12 = 72 \\). Тогда \\( a = \\frac{2}{3} \\cdot 72 = 48 \\), \\( c = \\frac{5}{4} \\cdot 72 = 90 \\). Проверка: \\( 48 + 72 + 90 = 210 \\). Ответ: в первой главе 48 страниц, во второй — 72, в третьей — 90.",
+            "solver_answer": "48, 72, 90",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Первая глава: 48 страниц, вторая: 72 страницы, третья: 90 страниц.",
+            "arbiter_analysis": "Решение верное. Уравнение составлено корректно, вычисления правильные, проверка подтверждает сумму 210. Ответ совпадает с ответом генератора.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "арифметика",
+          "classifier_subtopic": "задачи на отношения и пропорции"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.04,
+            "L5": 0.01,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.030303030303030304,
+          "duplicate_of": "ds6_668efb906002"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:33:55.895402"
+    },
+    "slot_31": {
+      "slot_key": "slot_31",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:33:43.500790",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Пусть \\(x\\) — количество съеденных конфет сначала, \\(y\\) — количество оставшихся. Тогда из первого условия: \\(\\frac{x}{y} = \\frac{2}{3}\\), откуда \\(3x = 2y\\). После того, как она съела еще 4 конфеты, съеденных стало \\(x+4\\), оставшихся \\(y-4\\). Второе условие: \\(\\frac{x+4}{y-4} = \\frac{3}{2}\\), откуда \\(2(x+4) = 3(y-4)\\) или \\(2x + 8 = 3y - 12\\), то есть \\(2x - 3y = -20\\). Решаем систему:\n\\[\n\\begin{cases}\n3x - 2y = 0, \\\\\n2x - 3y = -20.\n\\end{cases}\n\\]\nУмножим первое уравнение на 3, второе на 2:\n\\[\n\\begin{cases}\n9x - 6y = 0, \\\\\n4x - 6y = -40.\n\\end{cases}\n\\]\nВычитаем: \\(9x - 6y - (4x - 6y) = 0 - (-40)\\), \\(5x = 40\\), \\(x = 8\\). Подставляем в первое: \\(3 \\cdot 8 = 2y\\), \\(24 = 2y\\), \\(y = 12\\). Всего конфет: \\(x + y = 8 + 12 = 20\\). Проверка: сначала \\(\\frac{8}{12} = \\frac{2}{3}\\), после добавления 4: \\(\\frac{12}{8} = \\frac{3}{2}\\). Ответ: 20.",
+            "solver_answer": "20",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "20",
+            "arbiter_analysis": "Решение генератора верное. Пропорция составлена правильно, уравнение решено без ошибок, ответ 20 конфет соответствует условию задачи.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "задачи на отношения",
+          "classifier_subtopic": "решение задач с помощью уравнений"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.022727272727272728,
+          "duplicate_of": "ds6_73d0c5b995ea"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:33:57.347984"
+    },
+    "slot_30": {
+      "slot_key": "slot_30",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:33:43.500287",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Общее количество способов выбрать 3 учеников из 15 без ограничений: \\( C(15,3) = \\frac{15 \\cdot 14 \\cdot 13}{3 \\cdot 2 \\cdot 1} = 455 \\). Из них необходимо исключить случаи, когда Антон и Борис выбраны одновременно. Если оба выбраны, то третьего можно выбрать из оставшихся 13 учеников: \\( C(13,1) = 13 \\). Таким образом, количество способов с условием: \\( 455 - 13 = 442 \\). Альтернативное решение: рассмотреть случаи: 1) ни Антон, ни Борис не выбраны: \\( C(13,3) = 286 \\); 2) выбран только Антон: \\( C(13,2) = 78 \\); 3) выбран только Борис: \\( C(13,2) = 78 \\). Сумма: \\( 286 + 78 + 78 = 442 \\).",
+            "solver_answer": "442",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "442",
+            "candidate_answer": "455 способов"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"Общее количество способов выбрать 3 учеников из 15 равно числу сочетаний \\( C_{15}^3 = \\\\frac{15!}{3!12!} = \\\\frac{15 \\\\cdot 14 \\\\cdot 13}{6} = 455 \\). Количество способов, при которых Антон и Борис выбраны одновременно (тогда третий ученик выбирается из оставшихся 13), равно \\( C_{13}^1 = 13 \\). Вычитая недопустимые случаи, получаем \\( 455 - 13 = 442 \\). Альтернативное решение: разбить на случаи (только Антон, только Борис, никто из них) — \\( C_{13}^2 + C_{13}^2 + C_{13}"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "442",
+            "arbiter_analysis": "Ответ генератора (455) неверен, так как не учтено ограничение. Правильное решение: общее число способов C(15,3)=455, число способов с одновременным выбором Антона и Бориса C(13,1)=13, искомое число 455-13=442. Решение в условии верное, но ответ генератора ошибочен.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:33:59.329390"
+    },
+    "slot_33": {
+      "slot_key": "slot_33",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:33:43.502944",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Пусть скорость течения реки равна \\(x\\) км/ч. Тогда скорость лодки по течению: \\(10 + x\\) км/ч, скорость катера против течения: \\(20 - x\\) км/ч. Расстояние между A и B обозначим \\(S\\). Через 2 часа они встречаются: \\(S = 2(10 + x) + 2(20 - x) = 20 + 2x + 40 - 2x = 60\\) км. После встречи лодке до B остаётся \\(2(20 - x)\\) км, время лодки: \\(t_л = \\frac{2(20 - x)}{10 + x}\\). Катеру до A остаётся \\(2(10 + x)\\) км, время катера: \\(t_к = \\frac{2(10 + x)}{20 - x}\\). По условию катер прибывает на 1 час раньше: \\(t_л = t_к + 1\\). Уравнение: \\(\\frac{2(20 - x)}{10 + x} = \\frac{2(10 + x)}{20 - x} + 1\\). Умножаем на \\((10 + x)(20 - x)\\): \\(2(20 - x)^2 - 2(10 + x)^2 = (10 + x)(20 - x)\\). Вычисляем: \\(2(400 - 40x + x^2 - 100 - 20x - x^2) = 200 + 10x - x^2\\), \\(2(300 - 60x) = 200 + 10x - x^2\\), \\(600 - 120x = 200 + 10x - x^2\\), \\(x^2 - 130x + 400 = 0\\). Дискриминант: \\(D = 130^2 - 4\\cdot400 = 16900 - 1600 = 15300\\), \\(\\sqrt{D} = 30\\sqrt{17}\\). Корни: \\(x = \\frac{130 \\pm 30\\sqrt{17}}{2} = 65 \\pm 15\\sqrt{17}\\). Подходит только \\(x = 65 - 15\\sqrt{17}\\), так как \\(x < 20\\). Таким образом, скорость течения реки равна \\(65 - 15\\sqrt{17}\\) км/ч.",
+            "solver_answer": "65 - 15√17 км/ч",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 3,
+          "solver_a_discrepancy": {
+            "solver_answer": "65 - 15√17 км/ч",
+            "candidate_answer": "2 км/ч"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"Пусть скорость течения реки \\( v \\) км/ч. Тогда скорость лодки по течению \\( 10+v \\) км/ч, скорость катера против течения \\( 20-v \\) км/ч. Через 2 часа они встретились, поэтому расстояние между пунктами A и B: \\( S = 2(10+v) + 2(20-v) = 20+2v+40-2v = 60 \\) км. После встречи лодке осталось пройти расстояние, которое прошёл катер до встречи: \\( 2(20-v) \\) км, а катеру — расстояние, которое прошла лодка: \\( 2(10+v) \\) км. Время, затраченное лодкой на оставшийся путь: \\( \\\\fr"
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "2 км/ч",
+            "arbiter_analysis": "Решение генератора полное, логичное и приводит к правильному ответу. Уравнение составлено верно, корни найдены корректно, посторонний корень отброшен. Ответ совпадает с ожидаемым.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "задачи на движение",
+          "classifier_subtopic": "движение по воде (течение реки)"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.85,
+          "estimated_level": "L4",
+          "probabilities": {
+            "L3": 0.1,
+            "L4": 0.85,
+            "L5": 0.05,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.3225806451612903,
+          "duplicate_of": "ds6_d6367c5a44f5"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:35:16.328909"
+    },
+    "slot_37": {
+      "slot_key": "slot_37",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:35:19.337727",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Пусть расстояние между пунктами A и B равно \\( S \\) км. Скорость лодки по течению: \\( 10 + 2 = 12 \\) км/ч. Скорость против течения: \\( 10 - 2 = 8 \\) км/ч. Время по течению: \\( \\frac{S}{12} \\) ч, время против течения: \\( \\frac{S}{8} \\) ч. Разность времен составляет 1 час: \\( \\frac{S}{8} - \\frac{S}{12} = 1 \\). Приводим к общему знаменателю 24: \\( \\frac{3S - 2S}{24} = 1 \\), откуда \\( \\frac{S}{24} = 1 \\), следовательно \\( S = 24 \\) км.",
+            "solver_answer": "24",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "24",
+            "candidate_answer": "36 км"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "disputed",
+          "solver_b_data": {
+            "solver_solution": "Обозначим расстояние между пунктами A и B как \\( S \\) км. Собственная скорость лодки 10 км/ч, скорость течения 2 км/ч. Тогда скорость по течению: \\( v_{\\text{по}} = 10 + 2 = 12 \\) км/ч. Скорость против течения: \\( v_{\\text{против}} = 10 - 2 = 8 \\) км/ч. Время в пути по течению: \\( t_{\\text{по}} = S / 12 \\). Время против течения: \\( t_{\\text{против}} = S / 8 \\). По условию, \\( t_{\\text{против}} - t_{\\text{по}} = 1 \\) час. Составляем уравнение: \\( \\frac{S}{8} - \\frac{S}{12} = 1 \\). Приводим к общему знаменателю 24: \\( \\frac{3S}{24} - \\frac{2S}{24} = 1 \\), откуда \\( \\frac{S}{24} = 1 \\), следовательно \\( S = 24 \\) км.",
+            "solver_answer": "24 км",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_b_discrepancy": {
+            "solver_answer": "24 км",
+            "candidate_answer": "36 км"
+          }
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "24 км",
+            "arbiter_analysis": "Оба решения (генератора и SOLVER_B) верны и идентичны. Уравнение составлено правильно, вычисления корректны, ответ 24 км удовлетворяет условию задачи. Ответ генератора 36 км ошибочен, но в решении генератора указан правильный ответ 24 км, поэтому задача решена верно.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "текстовые задачи",
+          "classifier_subtopic": "задачи на движение по реке"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.13559322033898305,
+          "duplicate_of": "ds6_216310c24207"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:35:36.676610"
+    },
+    "slot_36": {
+      "slot_key": "slot_36",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:35:19.336555",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Пусть x — количество карандашей, y — количество ручек. По условию: x ≥ 1, y ≥ 1, 7x + 12y = 100. Выразим x: x = (100 - 12y)/7. Перебираем y от 1 до 8 (так как 12·8=96 ≤ 100, 12·9=108 > 100). Проверяем:\n\ny=1: 100-12=88, 88/7 не целое;\ny=2: 100-24=76, 76/7 не целое;\ny=3: 100-36=64, 64/7 не целое;\ny=4: 100-48=52, 52/7 не целое;\ny=5: 100-60=40, 40/7 не целое;\ny=6: 100-72=28, 28/7=4, x=4 (целое, ≥1);\ny=7: 100-84=16, 16/7 не целое;\ny=8: 100-96=4, 4/7 не целое.\n\nТаким образом, единственное решение: x=4, y=6. Следовательно, существует только один набор из 4 карандашей и 6 ручек. Ошибка ученика, вероятно, в том, что он не учёл условие «хотя бы один предмет каждого вида» или неправильно перебрал варианты.",
+            "solver_answer": "1",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "1",
+            "arbiter_analysis": "Решение генератора верное. Уравнение 7x + 12y = 100 при условии x ≥ 1, y ≥ 1 имеет единственное решение: x = 4, y = 6. Ученик ошибся, получив 2 набора, возможно, из-за неверного перебора или неучёта условия.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "комбинаторика",
+          "classifier_subtopic": "диофантовы уравнения и подсчёт количества решений"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.2,
+          "duplicate_of": "ds6_a0b8a1c1d792"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:35:53.004260"
+    },
+    "slot_39": {
+      "slot_key": "slot_39",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:35:19.340916",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Пусть \\(AD = b\\), \\(BC = 6\\). Так как трапеция равнобедренная (\\(AB = CD\\)), то \\(\\angle ABC = 60^\\circ\\) и \\(\\angle BAD = 120^\\circ\\). Опустим высоту \\(BM\\) на \\(AD\\). В прямоугольном треугольнике \\(ABM\\) угол \\(\\angle BAM = 60^\\circ\\), поэтому \\(AM = AB \\cos 60^\\circ = \\frac{AB}{2}\\), \\(BM = AB \\sin 60^\\circ = \\frac{AB\\sqrt{3}}{2}\\). С другой стороны, \\(AM = \\frac{b-6}{2}\\), откуда \\(AB = b-6\\). Высота трапеции \\(H = BM = \\frac{(b-6)\\sqrt{3}}{2}\\).\n\nДиагонали пересекаются в точке \\(O\\). Треугольники \\(AOD\\) и \\(BOC\\) подобны с коэффициентом \\(\\frac{b}{6}\\). Их высоты, опущенные на основания, относятся так же: \\(\\frac{h_2}{h_1} = \\frac{b}{6}\\), причем \\(h_1 + h_2 = H\\). Отсюда \\(h_2 = \\frac{b}{6+b}H\\), \\(h_1 = \\frac{6}{6+b}H\\).\n\nПлощадь треугольника \\(AOD\\) равна:\n\\[ S_{AOD} = \\frac{1}{2} \\cdot AD \\cdot h_2 = \\frac{1}{2} \\cdot b \\cdot \\frac{b}{6+b}H = \\frac{b^2 H}{2(6+b)}. \\]\nПодставляем \\(H\\) и \\(S_{AOD} = 12\\sqrt{3}\\):\n\\[ \\frac{b^2 \\cdot \\frac{(b-6)\\sqrt{3}}{2}}{2(6+b)} = 12\\sqrt{3} \\Rightarrow \\frac{b^2(b-6)\\sqrt{3}}{4(6+b)} = 12\\sqrt{3} \\Rightarrow \\frac{b^2(b-6)}{4(6+b)} = 12. \\]\nУмножаем на \\(4(6+b)\\):\n\\[ b^2(b-6) = 48(6+b) \\Rightarrow b^3 - 6b^2 = 288 + 48b \\Rightarrow b^3 - 6b^2 - 48b - 288 = 0. \\]\nРазлагаем на множители: \\((b-12)(b^2+6b+24)=0\\). Единственный положительный корень \\(b=12\\). Тогда \\(H = \\frac{(12-6)\\sqrt{3}}{2} = 3\\sqrt{3}\\).\n\nПлощадь трапеции:\n\\[ S = \\frac{BC+AD}{2} \\cdot H = \\frac{6+12}{2} \\cdot 3\\sqrt{3} = 9 \\cdot 3\\sqrt{3} = 27\\sqrt{3}. \\]",
+            "solver_answer": "27√3",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "27√3",
+            "candidate_answer": "$36\\sqrt{3}$"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "Мы должны решить задачу: трапеция ABCD с основаниями AD и BC, AB=CD, ∠ABC=60°, BC=6, площадь треугольника AOD равна 12√3. Найти площадь трапеции.\n\nДано: трапеция ABCD, AD и BC - основания, BC, вероятно, меньшее основание? Не сказано, но обычно AD - большее основание. AB=CD, значит трапеция равнобедренная. ∠ABC=60°, это угол при вершине B, между AB и BC. В равнобедренной трапеции углы при основании равны: ∠ABC = ∠DCB = 60°, ∠BAD = ∠CDA = 120° (так как сумма углов при боковой стороне 180°). BC=6. "
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "27√3",
+            "arbiter_analysis": "Генератор в начале решения ошибочно указал ответ 36√3, но в процессе решения получил 27√3 и подтвердил его проверкой. Правильный ответ — 27√3. Решение полное и логичное, но итоговый ответ в начале не соответствует вычислениям.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:36:09.329057"
+    },
+    "slot_38": {
+      "slot_key": "slot_38",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:35:19.338731",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Рассмотрим числа по модулю 3. Числа от 1 до 9 дают остатки: 1→1, 2→2, 3→0, 4→1, 5→2, 6→0, 7→1, 8→2, 9→0. Таким образом, имеем три группы по 3 числа: остаток 0 (3,6,9), остаток 1 (1,4,7), остаток 2 (2,5,8). Условие делимости суммы соседних чисел на 3 означает, что \\(a+b\\equiv 0 \\pmod{3}\\). Это возможно только в двух случаях: \\(a\\equiv b\\equiv 0\\pmod{3}\\) или \\(a\\equiv 1,\\, b\\equiv 2\\pmod{3}\\) (и наоборот). Следовательно, числа с остатком 0 могут соседствовать только друг с другом; числа с остатками 1 и 2 могут соседствовать только с числами противоположного остатка. Поэтому все числа с остатком 0 должны образовывать непрерывный блок (иначе на границе с не-нулём возникнет недопустимая пара), а все числа с остатками 1 и 2 должны образовывать другой непрерывный блок, в котором они чередуются. Однако эти два блока не могут быть соединены, так как на стыке возникнет пара \\(0\\) и \\(1\\) или \\(0\\) и \\(2\\), сумма которых не делится на 3. Таким образом, невозможно разместить все 9 карточек в один ряд, удовлетворяющий условию.",
+            "solver_answer": "Невозможно",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "Невозможно",
+            "arbiter_analysis": "Решение генератора корректно. Оно использует анализ остатков по модулю 3, показывает, что для выполнения условия необходимо чередование остатков 1 и 2, а также возможность соседства двух нулей. Однако при попытке разместить три нуля в последовательности из чередующихся 1 и 2 возникает противоречие: нули не могут соседствовать с 1 или 2, так как сумма не делится на 3, а единственная возможность — поставить нули рядом, но тогда крайние нули всё равно граничат с 1 или 2. Таким образом, задача не имеет решения.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.9,
+          "classifier_topic": "комбинаторика",
+          "classifier_subtopic": "задачи на делимость и раскладку чисел"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.85,
+          "estimated_level": "L4",
+          "probabilities": {
+            "L3": 0.1,
+            "L4": 0.85,
+            "L5": 0.05,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.5384615384615384,
+          "duplicate_of": "ds6_f58848d2a8f0"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:36:20.967117"
+    },
+    "slot_35": {
+      "slot_key": "slot_35",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:35:19.335719",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "failed",
+          "solver_a_data": null,
+          "solver_a_retries": 3,
+          "solver_a_error": "Мы должны решить задачу. В условии даны два трактора. Сначала говорится: \"Если первый трактор вспашет поле за 6 часов, а второй — за 8 часов, то за сколько часов они вспашут поле вместе?\" Это стандартная задача: первый трактор за час вспахивает 1/6 поля, второй 1/8, вместе за час 1/6+1/8 = 7/24, значит время = 24/7 часа. Но затем: \"Однако, если первый трактор будет работать 2 часа, а второй — 3 часа, то они вспашут 5/12 поля. Найдите производительность каждого трактора в долях поля в час.\"\n\nПолу"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "Производительность первого трактора: 4/21 поля в час, второго: 1/84 поля в час.",
+            "arbiter_analysis": "Исходное условие задачи противоречиво: из первого условия (первый трактор вспахивает поле за 6 часов, второй — за 8 часов) следуют производительности 1/6 и 1/8, которые не удовлетворяют второму условию (2 часа работы первого и 3 часа второго дают 5/12 поля). Генератор исправил условие, заменив его на непротиворечивое: первый работает 5 часов, второй — 4 часа, чтобы вместе вспахать всё поле. При этом решена новая задача, а не исходная. Ответ генератора (1/12 и 1/24) не соответствует ни исходному, ни исправленному условию. Правильный ответ для исправленной задачи — 4/21 и 1/84.",
+            "solution_complete": false,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:36:47.809652"
+    },
+    "slot_40": {
+      "slot_key": "slot_40",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:36:50.825484",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Обозначим события: \\(A_1\\) — машина из первого таксопарка, \\(A_2\\) — из второго; \\(B\\) — машина белая. Дано: \\(P(A_1)=0.6\\), \\(P(A_2)=0.4\\), \\(P(B|A_1)=0.7\\), \\(P(B|A_2)=0.4\\). Нужно найти \\(P(A_1|B)\\). По формуле Байеса: \\(P(A_1|B) = \\frac{P(B|A_1)P(A_1)}{P(B|A_1)P(A_1)+P(B|A_2)P(A_2)} = \\frac{0.7\\cdot0.6}{0.7\\cdot0.6+0.4\\cdot0.4} = \\frac{0.42}{0.42+0.16} = \\frac{0.42}{0.58} = \\frac{42}{58} = \\frac{21}{29}\\).",
+            "solver_answer": "21/29",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "21/29",
+            "arbiter_analysis": "Решение верное. Использована формула Байеса с корректными вероятностями: P(A)=0.6, P(B)=0.4, P(C|A)=0.7, P(C|B)=0.4. Вычисления приводят к правильному ответу 21/29.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "confirmed",
+          "topic_match": true,
+          "subtopic_match": true,
+          "subtopic_confidence": 1.0,
+          "classifier_topic": "теория вероятностей",
+          "classifier_subtopic": "формула байеса"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.9,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.9,
+            "L4": 0.1,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.046511627906976744,
+          "duplicate_of": "ds6_69a8bb8eb7cb"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:37:03.461792"
+    },
+    "slot_43": {
+      "slot_key": "slot_43",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:36:50.827845",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Общее количество исходов: выбрать 5 чисел из 20 — \\( C(20,5) = 15504 \\). Числа, кратные 3: 3, 6, 9, 12, 15, 18 — всего 6. Остальные 14 чисел не кратны 3. Благоприятные исходы: выбрать 2 из 6 кратных и 3 из 14 не кратных — \\( C(6,2) \\cdot C(14,3) = 15 \\cdot 364 = 5460 \\). Вероятность: \\( \\frac{5460}{15504} = \\frac{455}{1292} \\). Дробь несократима.",
+            "solver_answer": "455/1292",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2,
+          "solver_a_discrepancy": {
+            "solver_answer": "455/1292",
+            "candidate_answer": "\\frac{385}{3876}"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "disputed",
+          "solver_b_data": {
+            "solver_solution": "1. Числа от 1 до 20. Определим количество чисел, кратных 3: это 6 чисел (3, 6, 9, 12, 15, 18). Остальные 14 чисел не кратны 3.\n2. Общее число способов выбрать 5 чисел из 20: \\( C(20,5) = \\frac{20!}{5!15!} = 15504 \\).\n3. Число способов выбрать ровно 2 числа, кратных 3, из 6: \\( C(6,2) = 15 \\).\n4. Число способов выбрать 3 числа, не кратных 3, из 14: \\( C(14,3) = 364 \\).\n5. Количество благоприятных исходов: \\( 15 \\times 364 = 5460 \\).\n6. Искомая вероятность: \\( P = \\frac{5460}{15504} = \\frac{455}{1292} \\).\n7. Ответ: \\( \\frac{455}{1292} \\).",
+            "solver_answer": "455/1292",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_b_discrepancy": {
+            "solver_answer": "455/1292",
+            "candidate_answer": "\\frac{385}{3876}"
+          }
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "455/1292",
+            "arbiter_analysis": "Генератор допустил ошибку при сокращении дроби: 5460/15504 = 455/1292, а не 385/3876. SOLVER_B верно вычислил вероятность и привел правильный несократимый ответ. Решение генератора в остальном корректно, но итоговый ответ неверен.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:37:22.449916"
+    },
+    "slot_42": {
+      "slot_key": "slot_42",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:36:50.826675",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "Общее количество карточек: 15, из них четных: 7 (2,4,6,8,10,12,14), нечетных: 8 (1,3,5,7,9,11,13,15). Извлекаем две карточки без возвращения. Произведение чётно, если хотя бы одно из чисел чётное. Событие A — оба номера чётные, событие B — произведение чётно. Требуется найти условную вероятность P(A|B) = P(A∩B)/P(B). Так как A влечёт B, то P(A∩B)=P(A). Найдём P(A) и P(B) с помощью числа сочетаний (или упорядоченных выборок). Число способов выбрать 2 карточки из 15: C(15,2)=105. Число способов выбрать две чётные: C(7,2)=21. Число способов выбрать две нечётные: C(8,2)=28. Тогда P(A)=21/105=1/5. P(B)=1−P(обе нечётные)=1−28/105=77/105=11/15. Следовательно, P(A|B)= (21/105)/(77/105)=21/77=3/11. Альтернативно с упорядоченными парами: всего 15·14=210 исходов. Чётные-чётные: 7·6=42, нечётные-нечётные: 8·7=56, произведение чётно в 210−56=154 случаях, искомая вероятность 42/154=3/11. Ответ: 3/11.",
+            "solver_answer": "3/11",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "3/11",
+            "candidate_answer": "$\\frac{2}{19}$"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "We need to solve a probability problem: There are 15 cards numbered 1 to 15. Two cards are drawn without replacement. Given that the product of the numbers is even, find the probability that both numbers are even.\n\nLet A be event that product is even, B be event that both numbers are even. We need P(B|A) = P(A∩B)/P(A).\n\nFirst, determine total number of ways to draw two cards without replacement: 15*14 = 210 (ordered) or combinations? Usually drawing without replacement, order matters? Since they"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "3/11",
+            "arbiter_analysis": "Решение генератора верно и приводит к ответу 3/11. Ответ генератора 2/19 не соответствует решению и является ошибочным.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:37:30.164695"
+    },
+    "slot_44": {
+      "slot_key": "slot_44",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:36:50.828693",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "ОДЗ: \\(x \\neq -2\\). Заметим, что \\(x^2+4x+5 = (x+2)^2+1 > 0\\). Введём замену \\(t = \\frac{x^2+4x+5}{x+2}\\). Тогда уравнение принимает вид \\(t + \\frac{1}{t} = \\frac{17}{4}\\). Умножаем на \\(t\\): \\(t^2 + 1 = \\frac{17}{4}t\\), приводим к квадратному: \\(4t^2 - 17t + 4 = 0\\). Дискриминант \\(D = 289 - 64 = 225\\), корни \\(t = \\frac{17 \\pm 15}{8}\\), то есть \\(t_1 = 4\\), \\(t_2 = \\frac{1}{4}\\). Обратная замена:\n\n1) \\(\\frac{x^2+4x+5}{x+2} = 4\\) ⇒ \\(x^2+4x+5 = 4x+8\\) ⇒ \\(x^2 = 3\\) ⇒ \\(x = \\pm \\sqrt{3}\\). Оба корня удовлетворяют ОДЗ.\n\n2) \\(\\frac{x^2+4x+5}{x+2} = \\frac{1}{4}\\) ⇒ \\(4x^2+16x+20 = x+2\\) ⇒ \\(4x^2+15x+18 = 0\\). Дискриминант \\(225 - 288 = -63 < 0\\), действительных корней нет.\n\nТаким образом, уравнение имеет два корня: \\(x = \\sqrt{3}\\) и \\(x = -\\sqrt{3}\\).",
+            "solver_answer": "x = ±√3",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 3,
+          "solver_a_discrepancy": {
+            "solver_answer": "x = ±√3",
+            "candidate_answer": "$$x = -1 \\pm \\sqrt{2}$$"
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"Пусть \\( t = \\\\frac{x^2+4x+5}{x+2} \\). Тогда уравнение принимает вид \\( t + \\\\frac{1}{t} = \\\\frac{17}{4} \\). Умножаем на \\( t \\): \\( t^2 + 1 = \\\\frac{17}{4}t \\), откуда \\( 4t^2 - 17t + 4 = 0 \\). Дискриминант: \\( D = 289 - 64 = 225 \\), корни \\( t = \\\\frac{17 \\\\pm 15}{8} \\), то есть \\( t_1 = 4 \\), \\( t_2 = \\\\frac{1}{4} \\).\\n\\n1) \\( \\\\frac{x^2+4x+5}{x+2} = 4 \\) ⇒ \\( x^2+4x+5 = 4x+8 \\) ⇒ \\( x^2 = 3 \\) ⇒ \\( x = \\\\pm \\\\sqrt{3} \\). ОДЗ: \\( x \\\\neq -2 \\), оба корня подходят.\\n\\n2"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "x = ±√3",
+            "arbiter_analysis": "Ответ генератора (x = -1 ± √2) не совпадает с решением генератора, которое приводит к x = ±√3. Решение генератора верное, а ответ ошибочный.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:37:31.914528"
+    },
+    "slot_41": {
+      "slot_key": "slot_41",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:36:50.825875",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "confirmed",
+          "solver_a_data": {
+            "solver_solution": "Общее число способов разбить 8 игроков на 4 пары равно \\(\\frac{8!}{2^4 \\cdot 4!} = 105\\). Два сильнейших игрока могут встретиться в первом туре, если они окажутся в одной паре. Число исходов, когда они в одной паре: фиксируем эту пару, остальных 6 игроков разбиваем на 3 пары: \\(\\frac{6!}{2^3 \\cdot 3!} = 15\\). Вероятность встречи равна \\(\\frac{15}{105} = \\frac{1}{7}\\). Тогда вероятность того, что они не встретятся, равна \\(1 - \\frac{1}{7} = \\frac{6}{7}\\). Или проще: для первого сильного второй сильный с равной вероятностью может быть любым из 7 остальных, поэтому вероятность не встретиться равна \\(\\frac{6}{7}\\).",
+            "solver_answer": "6/7",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 2
+        },
+        "arbiter": {
+          "arbiter_status": "confirmed",
+          "arbiter_data": {
+            "arbiter_verdict": "confirmed",
+            "arbiter_answer": "6/7",
+            "arbiter_analysis": "Решение генератора верно. Общее количество способов разбить 8 игроков на 4 неупорядоченные пары вычислено правильно (105). Количество способов, когда два сильнейших игрока оказываются в одной паре, также вычислено верно (15). Тогда количество благоприятных исходов (они не в одной паре) равно 105 - 15 = 90, и вероятность равна 90/105 = 6/7. Ответ совпадает с ожидаемым.",
+            "solution_complete": true,
+            "answer_correct": true
+          }
+        },
+        "topic": {
+          "topic_status": "disputed",
+          "topic_match": true,
+          "subtopic_match": false,
+          "subtopic_confidence": 0.95,
+          "classifier_topic": "теория вероятностей",
+          "classifier_subtopic": "классическое определение вероятности и комбинаторика"
+        },
+        "level": {
+          "level_status": "disputed",
+          "level_match": false,
+          "level_confidence": 0.95,
+          "estimated_level": "L3",
+          "probabilities": {
+            "L3": 0.95,
+            "L4": 0.05,
+            "L5": 0.0,
+            "L6": 0.0
+          }
+        },
+        "duplicate": {
+          "dup_status": "confirmed",
+          "duplicate_check_passed": true,
+          "max_similarity": 0.06666666666666667,
+          "duplicate_of": "ds6_b2c26962928d"
+        }
+      },
+      "math_accepted": true,
+      "completed_at": "2026-07-17T17:37:41.915393"
+    },
+    "slot_45": {
+      "slot_key": "slot_45",
+      "candidate_id": "unknown",
+      "started_at": "2026-07-17T17:37:44.927009",
+      "overall_accepted": false,
+      "verifiers": {
+        "solver_a": {
+          "solver_a_status": "disputed",
+          "solver_a_data": {
+            "solver_solution": "ОДЗ: \\( x \\neq -2 \\). Введем замену: \\( t = \\frac{x^2+4x+5}{x+2} \\). Тогда уравнение принимает вид: \\( t + \\frac{1}{t} = \\frac{17}{4} \\). Умножаем на \\( 4t \\): \\( 4t^2 + 4 = 17t \\), или \\( 4t^2 - 17t + 4 = 0 \\). Решаем: дискриминант \\( D = 289 - 64 = 225 \\), корни \\( t = \\frac{17 \\pm 15}{8} \\), т.е. \\( t = 4 \\) или \\( t = \\frac{1}{4} \\). Возвращаемся к \\( x \\).\n\n1) \\( \\frac{x^2+4x+5}{x+2} = 4 \\). Умножаем: \\( x^2+4x+5 = 4x+8 \\), отсюда \\( x^2 = 3 \\), \\( x = \\pm \\sqrt{3} \\). Оба корня удовлетворяют ОДЗ.\n\n2) \\( \\frac{x^2+4x+5}{x+2} = \\frac{1}{4} \\). Умножаем: \\( 4(x^2+4x+5) = x+2 \\), получаем \\( 4x^2+16x+20 = x+2 \\), \\( 4x^2+15x+18=0 \\). Дискриминант \\( D = 225 - 288 = -63 < 0 \\), действительных корней нет.\n\nОтвет: \\( x = \\pm \\sqrt{3} \\).",
+            "solver_answer": "\\( x = \\pm \\sqrt{3} \\)",
+            "solver_confidence": 1.0,
+            "solver_notes": ""
+          },
+          "solver_a_retries": 1,
+          "solver_a_discrepancy": {
+            "solver_answer": "\\( x = \\pm \\sqrt{3} \\)",
+            "candidate_answer": "\\(x = -1\\) или \\(x = -3\\)."
+          }
+        },
+        "solver_b": {
+          "solver_b_status": "failed",
+          "solver_b_data": null,
+          "solver_b_error": "{\n  \"solver_solution\": \"Начнем с ОДЗ: \\\\(x \\\\neq -2\\\\). Заметим, что \\\\(x^2+4x+5 > 0\\\\) для всех \\\\(x\\\\). Введем замену \\\\(t = \\\\frac{x^2+4x+5}{x+2}\\\\). Тогда уравнение примет вид: \\\\(t + \\\\frac{1}{t} = \\\\frac{17}{4}\\\\). Умножаем на \\\\(4t\\\\): \\\\(4t^2 + 4 = 17t\\\\), откуда \\\\(4t^2 - 17t + 4 = 0\\\\). Решаем квадратное уравнение: \\\\(D = 289 - 64 = 225\\\\), \\\\(t = \\\\frac{17 \\\\pm 15}{8}\\\\). Получаем \\\\(t_1 = 4\\\\), \\\\(t_2 = \\\\frac{1}{4}\\\\).\\n\\nПри \\\\(t = 4\\\\): \\\\(\\\\frac{x^2+4x+5}{x+2} = 4\\\\) ⇒ \\\\(x^2+4x+"
+        },
+        "arbiter": {
+          "arbiter_status": "disputed",
+          "arbiter_data": {
+            "arbiter_verdict": "disputed",
+            "arbiter_answer": "x = √3 или x = -√3",
+            "arbiter_analysis": "Ответ генератора (x = -1 или x = -3) не соответствует решению. В решении получены корни x = √3 и x = -√3, и они верны. Ошибка в ответе генератора, возможно, опечатка.",
+            "solution_complete": true,
+            "answer_correct": false
+          }
+        }
+      },
+      "math_accepted": false,
+      "completed_at": "2026-07-17T17:38:31.597536"
+    }
+  },
+  "conflicts": []
+}

@@ -73,6 +73,9 @@ class User(UserMixin, db.Model):
     # Telegram Login Widget — связка с Telegram-аккаунтом
     telegram_id = db.Column(db.String(64), unique=True, nullable=True, index=True)
     telegram_username = db.Column(db.String(64), nullable=True)
+
+    # Состояние диагностической анкеты (JSON), чтобы не хранить в cookie-сессии
+    questionnaire_state = db.Column(db.Text, nullable=True)
     
     @property
     def is_admin(self):
@@ -849,6 +852,11 @@ class AdaptiveTask(db.Model):
     # Колонки уже существуют в БД (ALTER TABLE при первом запуске).
     task_type = db.Column(db.Text)
     source = db.Column(db.Text, index=True)
+
+    # Происхождение задачи: 'generated' | 'olympiad'
+    origin = db.Column(db.String(16), nullable=True)
+    # JSON-сериализованные методы решения (список строк)
+    methods_json = db.Column(db.Text, nullable=True)
 
     # AI-тьютор self-check (см. auto-migration в app.py)
     needs_review = db.Column(db.Boolean, default=False, index=True)

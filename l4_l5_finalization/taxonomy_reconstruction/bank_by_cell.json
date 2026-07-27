@@ -1,0 +1,821 @@
+{
+  "report": {
+    "generated_at": "2026-07-18T13:18:11.244725",
+    "total_canonical_cells_available": 558,
+    "cells_with_tasks": 39,
+    "total_tasks_mapped": 74,
+    "cells_with_L4_only": 26,
+    "cells_with_L5_only": 13,
+    "cells_with_both_levels": 0,
+    "coverage": "39/558 (7.0%)",
+    "avg_tasks_per_cell": 1.9,
+    "grade_distribution": {
+      "10": {
+        "cells": 7,
+        "tasks": 11
+      },
+      "11": {
+        "cells": 6,
+        "tasks": 7
+      },
+      "5": {
+        "cells": 2,
+        "tasks": 3
+      },
+      "6": {
+        "cells": 1,
+        "tasks": 3
+      },
+      "7": {
+        "cells": 6,
+        "tasks": 11
+      },
+      "8": {
+        "cells": 5,
+        "tasks": 9
+      },
+      "9": {
+        "cells": 12,
+        "tasks": 30
+      }
+    }
+  },
+  "cells": {
+    "G10|L4|T005|S0": {
+      "cell_key": "G10|L4|T005|S0",
+      "task_count": 3,
+      "task_ids": [
+        "SEL1080-0545",
+        "SEL1080-0546",
+        "SEL1080-0547"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 3,
+      "canonical_info": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T005",
+        "theme_name": "Дополнительные задачи и смешанные темы",
+        "subtopic_index": 0,
+        "subtopic_name": "Задачи на оптимизацию"
+      }
+    },
+    "G10|L4|T010|S0": {
+      "cell_key": "G10|L4|T010|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0536"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T010",
+        "theme_name": "Метод координат: векторы",
+        "subtopic_index": 0,
+        "subtopic_name": "Векторы: сложение, умножение на число"
+      }
+    },
+    "G10|L4|T036|S0": {
+      "cell_key": "G10|L4|T036|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0531",
+        "SEL1080-0532"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T036",
+        "theme_name": "Тригонометрия: преобразования",
+        "subtopic_index": 0,
+        "subtopic_name": "Основное тригонометрическое тождество"
+      }
+    },
+    "G10|L4|T039|S0": {
+      "cell_key": "G10|L4|T039|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0528",
+        "SEL1080-0530"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 10,
+        "level": "L4",
+        "topic_id": "T039",
+        "theme_name": "Уравнения: показательные и логарифмические",
+        "subtopic_index": 0,
+        "subtopic_name": "Логарифмические уравнения"
+      }
+    },
+    "G10|L5|T001|S0": {
+      "cell_key": "G10|L5|T001|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0555"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T001",
+        "theme_name": "Алгебра: теория групп",
+        "subtopic_index": 0,
+        "subtopic_name": "Группы: определения и примеры"
+      }
+    },
+    "G10|L5|T008|S0": {
+      "cell_key": "G10|L5|T008|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0550"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T008",
+        "theme_name": "Логика и множества",
+        "subtopic_index": 0,
+        "subtopic_name": "Булевы функции и их минимизация"
+      }
+    },
+    "G10|L5|T036|S0": {
+      "cell_key": "G10|L5|T036|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0549"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 10,
+        "level": "L5",
+        "topic_id": "T036",
+        "theme_name": "Тригонометрия: преобразования",
+        "subtopic_index": 0,
+        "subtopic_name": "Основное тригонометрическое тождество"
+      }
+    },
+    "G11|L4|T005|S0": {
+      "cell_key": "G11|L4|T005|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0642",
+        "SEL1080-0643"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 11,
+        "level": "L4",
+        "topic_id": "T005",
+        "theme_name": "Дополнительные задачи и смешанные темы",
+        "subtopic_index": 0,
+        "subtopic_name": "Задачи на оптимизацию"
+      }
+    },
+    "G11|L4|T010|S0": {
+      "cell_key": "G11|L4|T010|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0644"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 11,
+        "level": "L4",
+        "topic_id": "T010",
+        "theme_name": "Метод координат: векторы",
+        "subtopic_index": 0,
+        "subtopic_name": "Векторы: сложение, умножение на число"
+      }
+    },
+    "G11|L4|T028|S0": {
+      "cell_key": "G11|L4|T028|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0645"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 11,
+        "level": "L4",
+        "topic_id": "T028",
+        "theme_name": "Стереометрия: аксиомы и прямые",
+        "subtopic_index": 0,
+        "subtopic_name": "Аксиомы стереометрии"
+      }
+    },
+    "G11|L5|T005|S0": {
+      "cell_key": "G11|L5|T005|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0655"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 11,
+        "level": "L5",
+        "topic_id": "T005",
+        "theme_name": "Дополнительные задачи и смешанные темы",
+        "subtopic_index": 0,
+        "subtopic_name": "Задачи на оптимизацию"
+      }
+    },
+    "G11|L5|T008|S0": {
+      "cell_key": "G11|L5|T008|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0666"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 11,
+        "level": "L5",
+        "topic_id": "T008",
+        "theme_name": "Логика и множества",
+        "subtopic_index": 0,
+        "subtopic_name": "Булевы функции и их минимизация"
+      }
+    },
+    "G11|L5|T010|S0": {
+      "cell_key": "G11|L5|T010|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0656"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 11,
+        "level": "L5",
+        "topic_id": "T010",
+        "theme_name": "Метод координат: векторы",
+        "subtopic_index": 0,
+        "subtopic_name": "Векторы: сложение, умножение на число"
+      }
+    },
+    "G5|L4|T022|S0": {
+      "cell_key": "G5|L4|T022|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0050"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 5,
+        "level": "L4",
+        "topic_id": "T022",
+        "theme_name": "Проценты, отношения и пропорции",
+        "subtopic_index": 0,
+        "subtopic_name": "Задачи на проценты"
+      }
+    },
+    "G5|L4|T032|S0": {
+      "cell_key": "G5|L4|T032|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0054",
+        "SEL1080-0055"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 5,
+        "level": "L4",
+        "topic_id": "T032",
+        "theme_name": "Текстовые задачи: движение",
+        "subtopic_index": 0,
+        "subtopic_name": "Движение в противоположных направлениях"
+      }
+    },
+    "G6|L4|T002|S0": {
+      "cell_key": "G6|L4|T002|S0",
+      "task_count": 3,
+      "task_ids": [
+        "SEL1080-0122",
+        "SEL1080-0133",
+        "SEL1080-0121"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 3,
+      "canonical_info": {
+        "grade": 6,
+        "level": "L4",
+        "topic_id": "T002",
+        "theme_name": "Арифметика и теория чисел",
+        "subtopic_index": 0,
+        "subtopic_name": "Делимость и остатки"
+      }
+    },
+    "G7|L4|T006|S0": {
+      "cell_key": "G7|L4|T006|S0",
+      "task_count": 3,
+      "task_ids": [
+        "SEL1080-0229",
+        "SEL1080-0230",
+        "SEL1080-0231"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 3,
+      "canonical_info": {
+        "grade": 7,
+        "level": "L4",
+        "topic_id": "T006",
+        "theme_name": "Комбинаторика и вероятность",
+        "subtopic_index": 0,
+        "subtopic_name": "Перестановки и факториалы"
+      }
+    },
+    "G7|L4|T008|S0": {
+      "cell_key": "G7|L4|T008|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0232",
+        "SEL1080-0233"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 7,
+        "level": "L4",
+        "topic_id": "T008",
+        "theme_name": "Логика и множества",
+        "subtopic_index": 0,
+        "subtopic_name": "Булевы функции и их минимизация"
+      }
+    },
+    "G7|L4|T026|S0": {
+      "cell_key": "G7|L4|T026|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0566",
+        "SEL1080-0216"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 7,
+        "level": "L4",
+        "topic_id": "T026",
+        "theme_name": "Решение уравнений: разложение на множители",
+        "subtopic_index": 0,
+        "subtopic_name": "Вынесение общего множителя и группировка"
+      }
+    },
+    "G7|L5|T004|S0": {
+      "cell_key": "G7|L5|T004|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0241"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 7,
+        "level": "L5",
+        "topic_id": "T004",
+        "theme_name": "Графы: основные понятия",
+        "subtopic_index": 0,
+        "subtopic_name": "Графы: определения, изоморфизм"
+      }
+    },
+    "G7|L5|T008|S0": {
+      "cell_key": "G7|L5|T008|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0850",
+        "SEL1080-0251"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 7,
+        "level": "L5",
+        "topic_id": "T008",
+        "theme_name": "Логика и множества",
+        "subtopic_index": 0,
+        "subtopic_name": "Булевы функции и их минимизация"
+      }
+    },
+    "G7|L5|T016|S0": {
+      "cell_key": "G7|L5|T016|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0254"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 7,
+        "level": "L5",
+        "topic_id": "T016",
+        "theme_name": "Планиметрия: многоугольники",
+        "subtopic_index": 0,
+        "subtopic_name": "Многоугольники: виды, свойства"
+      }
+    },
+    "G8|L4|T006|S0": {
+      "cell_key": "G8|L4|T006|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0741"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 8,
+        "level": "L4",
+        "topic_id": "T006",
+        "theme_name": "Комбинаторика и вероятность",
+        "subtopic_index": 0,
+        "subtopic_name": "Перестановки и факториалы"
+      }
+    },
+    "G8|L4|T011|S0": {
+      "cell_key": "G8|L4|T011|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0318",
+        "SEL1080-0323"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 8,
+        "level": "L4",
+        "topic_id": "T011",
+        "theme_name": "Неравенства: алгебраические неравенства",
+        "subtopic_index": 0,
+        "subtopic_name": "Доказательство неравенств"
+      }
+    },
+    "G8|L4|T016|S0": {
+      "cell_key": "G8|L4|T016|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0336"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 8,
+        "level": "L4",
+        "topic_id": "T016",
+        "theme_name": "Планиметрия: многоугольники",
+        "subtopic_index": 0,
+        "subtopic_name": "Многоугольники: виды, свойства"
+      }
+    },
+    "G8|L4|T019|S0": {
+      "cell_key": "G8|L4|T019|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0330"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 8,
+        "level": "L4",
+        "topic_id": "T019",
+        "theme_name": "Планиметрия: треугольники",
+        "subtopic_index": 0,
+        "subtopic_name": "Подобие треугольников"
+      }
+    },
+    "G8|L5|T006|S0": {
+      "cell_key": "G8|L5|T006|S0",
+      "task_count": 4,
+      "task_ids": [
+        "SEL1080-0347",
+        "SEL1080-0352",
+        "SEL1080-0353",
+        "SEL1080-0355"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 4,
+      "canonical_info": {
+        "grade": 8,
+        "level": "L5",
+        "topic_id": "T006",
+        "theme_name": "Комбинаторика и вероятность",
+        "subtopic_index": 0,
+        "subtopic_name": "Перестановки и факториалы"
+      }
+    },
+    "G9|L4|T002|S0": {
+      "cell_key": "G9|L4|T002|S0",
+      "task_count": 5,
+      "task_ids": [
+        "SEL1080-0827",
+        "SEL1080-0436",
+        "SEL1080-0437",
+        "SEL1080-0442",
+        "SEL1080-0356"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 5,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T002",
+        "theme_name": "Арифметика и теория чисел",
+        "subtopic_index": 0,
+        "subtopic_name": "Делимость и остатки"
+      }
+    },
+    "G9|L4|T006|S0": {
+      "cell_key": "G9|L4|T006|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0438",
+        "SEL1080-0443"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T006",
+        "theme_name": "Комбинаторика и вероятность",
+        "subtopic_index": 0,
+        "subtopic_name": "Перестановки и факториалы"
+      }
+    },
+    "G9|L4|T007|S0": {
+      "cell_key": "G9|L4|T007|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0062",
+        "SEL1080-0069"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T007",
+        "theme_name": "Комбинаторика и теория игр",
+        "subtopic_index": 0,
+        "subtopic_name": "Выигрышные и проигрышные позиции"
+      }
+    },
+    "G9|L4|T008|S0": {
+      "cell_key": "G9|L4|T008|S0",
+      "task_count": 4,
+      "task_ids": [
+        "SEL1080-0424",
+        "SEL1080-0429",
+        "SEL1080-0440",
+        "SEL1080-0441"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 4,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T008",
+        "theme_name": "Логика и множества",
+        "subtopic_index": 0,
+        "subtopic_name": "Булевы функции и их минимизация"
+      }
+    },
+    "G9|L4|T011|S0": {
+      "cell_key": "G9|L4|T011|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0427",
+        "SEL1080-0428"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T011",
+        "theme_name": "Неравенства: алгебраические неравенства",
+        "subtopic_index": 0,
+        "subtopic_name": "Доказательство неравенств"
+      }
+    },
+    "G9|L4|T016|S0": {
+      "cell_key": "G9|L4|T016|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0432"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T016",
+        "theme_name": "Планиметрия: многоугольники",
+        "subtopic_index": 0,
+        "subtopic_name": "Многоугольники: виды, свойства"
+      }
+    },
+    "G9|L4|T017|S0": {
+      "cell_key": "G9|L4|T017|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0433"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T017",
+        "theme_name": "Планиметрия: окружность",
+        "subtopic_index": 0,
+        "subtopic_name": "Вписанные углы и их свойства"
+      }
+    },
+    "G9|L4|T020|S0": {
+      "cell_key": "G9|L4|T020|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0430"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T020",
+        "theme_name": "Последовательности и прогрессии",
+        "subtopic_index": 0,
+        "subtopic_name": "Арифметическая прогрессия"
+      }
+    },
+    "G9|L4|T023|S0": {
+      "cell_key": "G9|L4|T023|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0423",
+        "SEL1080-0426"
+      ],
+      "levels_present": [
+        "L4"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L4",
+        "topic_id": "T023",
+        "theme_name": "Рациональные уравнения и неравенства",
+        "subtopic_index": 0,
+        "subtopic_name": "Дробно-рациональные уравнения"
+      }
+    },
+    "G9|L5|T002|S0": {
+      "cell_key": "G9|L5|T002|S0",
+      "task_count": 7,
+      "task_ids": [
+        "SEL1080-0446",
+        "SEL1080-0447",
+        "SEL1080-0457",
+        "SEL1080-0458",
+        "SEL1080-0461",
+        "SEL1080-0462",
+        "SEL1080-0891"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 7,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L5",
+        "topic_id": "T002",
+        "theme_name": "Арифметика и теория чисел",
+        "subtopic_index": 0,
+        "subtopic_name": "Делимость и остатки"
+      }
+    },
+    "G9|L5|T006|S0": {
+      "cell_key": "G9|L5|T006|S0",
+      "task_count": 2,
+      "task_ids": [
+        "SEL1080-0450",
+        "SEL1080-0451"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 2,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L5",
+        "topic_id": "T006",
+        "theme_name": "Комбинаторика и вероятность",
+        "subtopic_index": 0,
+        "subtopic_name": "Перестановки и факториалы"
+      }
+    },
+    "G9|L5|T007|S0": {
+      "cell_key": "G9|L5|T007|S0",
+      "task_count": 1,
+      "task_ids": [
+        "SEL1080-0453"
+      ],
+      "levels_present": [
+        "L5"
+      ],
+      "unique_statements": 1,
+      "canonical_info": {
+        "grade": 9,
+        "level": "L5",
+        "topic_id": "T007",
+        "theme_name": "Комбинаторика и теория игр",
+        "subtopic_index": 0,
+        "subtopic_name": "Выигрышные и проигрышные позиции"
+      }
+    }
+  }
+}

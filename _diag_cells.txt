@@ -1,0 +1,31 @@
+=== Over-filled cells (>5) in L1-L3 ===
+Total over-filled: 0
+
+=== Under-filled cells (<5) in L1-L3 ===
+Total under-filled: 1
+  G11|L1: 1 tasks
+
+=== Perfect cells (==5) in L1-L3 ===
+Total perfect: 19
+
+=== All cells ===
+  G10|L1: 5 tasks
+  G10|L2: 5 tasks
+  G10|L3: 5 tasks
+  G11|L1: 1 tasks UNDER
+  G2|L1: 5 tasks
+  G5|L1: 5 tasks
+  G5|L2: 5 tasks
+  G5|L3: 5 tasks
+  G6|L1: 5 tasks
+  G6|L2: 5 tasks
+  G6|L3: 5 tasks
+  G7|L1: 5 tasks
+  G7|L2: 5 tasks
+  G7|L3: 5 tasks
+  G8|L1: 5 tasks
+  G8|L2: 5 tasks
+  G8|L3: 5 tasks
+  G9|L1: 5 tasks
+  G9|L2: 5 tasks
+  G9|L3: 5 tasks

@@ -1,0 +1,17 @@
+# PowerShell quickstart
+# 1. Распакуй этот архив в папку formyla_parallel_complete
+# 2. Зайди в папку:
+# cd .\formyla_parallel_complete
+# 3. Установи requests:
+# pip install requests
+# 4. Вставь свой ключ:
+# $env:DEEPSEEK_API_KEY="sk-..."
+# $env:DEEPSEEK_MODEL="deepseek-reasoner"
+# 5. Тест:
+# python .\orchestrator_deepseek.py --workers 20 --queue-dir . --out-dir .\results_test --limit-per-worker 1
+# 6. Полный запуск:
+# python .\orchestrator_deepseek.py --workers 20 --queue-dir . --out-dir .\results
+# 7. Слияние:
+# python .\merge_results.py --base .\formyla_dataset_slightly_fixed.json --results-dir .\results --out .\formyla_final_rebuilt.json
+# 8. Проверка:
+# python .\validator.py .\formyla_final_rebuilt.json

@@ -16,7 +16,7 @@ if str(_project_root) not in sys.path:
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from pipeline.openrouter_client import OpenRouterClient, TokenUsage
+from services.openrouter_client import OpenRouterClient, TokenUsage, make_token_usage
 
 from .validators import (
     GPTAuditValidation,
@@ -129,7 +129,7 @@ async def _audit_batch(
     )
 
     try:
-        raw, usage = await client.chat(
+        raw, usage = await client.async_chat(
             model=(_AUDIT_MODEL_HARD if max((int((it.get("spec") or {}).get("difficulty_level") or 0) for it in items), default=0) >= _AUDIT_HARD_THRESHOLD else _AUDIT_MODEL_EASY),
             messages=messages,
             temperature=0.2,

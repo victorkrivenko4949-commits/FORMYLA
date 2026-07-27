@@ -1,0 +1,20 @@
+{
+  "id": 801485,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$, $BC$, $CA$ выбраны точки $K$, $L$, $M$ соответственно так, что $AK:KB = 2:1$, $BL:LC = 3:2$, $CM:MA = 4:3$. Прямые $AL$, $BM$, $CK$ попарно пересекаются, образуя треугольник $PQR$ (где $P = AL \\cap BM$, $Q = BM \\cap CK$, $R = CK \\cap AL$). Найдите отношение площади треугольника $PQR$ к площади треугольника $ABC$.",
+  "solution": "Поместим треугольник $ABC$ в аффинные координаты: $A(0,0)$, $B(1,0)$, $C(0,1)$. Площадь $\\triangle ABC$ при этом равна $\\frac{1}{2}$. Найдем координаты точек:\n- $K$ на $AB$: $AK:KB=2:1$, значит $K = A + \\frac{2}{3}(B-A) = \\left(\\frac{2}{3},0\\right)$.\n- $L$ на $BC$: $BL:LC=3:2$, значит $L = B + \\frac{3}{5}(C-B) = \\left(1-\\frac{3}{5},\\frac{3}{5}\\right) = \\left(\\frac{2}{5},\\frac{3}{5}\\right)$.\n- $M$ на $CA$: $CM:MA=4:3$, т.е. $AM:MC=3:4$, поэтому $M = A + \\frac{3}{7}(C-A) = \\left(0,\\frac{3}{7}\\right)$.\n\nУравнения прямых:\n- $AL$ через $A(0,0)$ и $L(\\frac{2}{5},\\frac{3}{5})$: $y = \\frac{3}{2}x$.\n- $BM$ через $B(1,0)$ и $M(0,\\frac{3}{7})$: $y = -\\frac{3}{7}x + \\frac{3}{7}$.\n- $CK$ через $C(0,1)$ и $K(\\frac{2}{3},0)$: $y = -\\frac{3}{2}x + 1$.\n\nНайдем точки пересечения:\n- $P = AL \\cap BM$: $\\frac{3}{2}x = -\\frac{3}{7}x + \\frac{3}{7} \\Rightarrow \\frac{27}{14}x = \\frac{3}{7} \\Rightarrow x = \\frac{2}{9}$, $y = \\frac{3}{2}\\cdot\\frac{2}{9} = \\frac{1}{3}$.\n- $Q = BM \\cap CK$: $-\\frac{3}{7}x + \\frac{3}{7} = -\\frac{3}{2}x + 1 \\Rightarrow \\frac{15}{14}x = \\frac{4}{7} \\Rightarrow x = \\frac{8}{15}$, $y = -\\frac{3}{7}\\cdot\\frac{8}{15}+\\frac{3}{7} = \\frac{1}{5}$.\n- $R = CK \\cap AL$: $-\\frac{3}{2}x + 1 = \\frac{3}{2}x \\Rightarrow x = \\frac{1}{3}$, $y = \\frac{3}{2}\\cdot\\frac{1}{3} = \\frac{1}{2}$.\n\nПлощадь $\\triangle PQR$ вычислим по формуле через координаты:\n\\[\nS_{PQR} = \\frac{1}{2}\\left| x_P(y_Q-y_R) + x_Q(y_R-y_P) + x_R(y_P-y_Q) \\right|.\n\\]\nПодставляем:\n$x_P = \\frac{2}{9},\\, y_P = \\frac{1}{3}$; $x_Q = \\frac{8}{15},\\, y_Q = \\frac{1}{5}$; $x_R = \\frac{1}{3},\\, y_R = \\frac{1}{2}$.\n\n$y_Q - y_R = \\frac{1}{5} - \\frac{1}{2} = -\\frac{3}{10}$;\n$x_P(y_Q-y_R) = \\frac{2}{9}\\cdot\\left(-\\frac{3}{10}\\right) = -\\frac{1}{15}$.\n\n$y_R - y_P = \\frac{1}{2} - \\frac{1}{3} = \\frac{1}{6}$;\n$x_Q(y_R-y_P) = \\frac{8}{15}\\cdot\\frac{1}{6} = \\frac{4}{45}$.\n\n$y_P - y_Q = \\frac{1}{3} - \\frac{1}{5} = \\frac{2}{15}$;\n$x_R(y_P-y_Q) = \\frac{1}{3}\\cdot\\frac{2}{15} = \\frac{2}{45}$.\n\nСумма: $-\\frac{1}{15} + \\frac{4}{45} + \\frac{2}{45} = -\\frac{3}{45} + \\frac{6}{45} = \\frac{3}{45} = \\frac{1}{15}$.\n\nИтак, $S_{PQR} = \\frac{1}{2}\\cdot\\frac{1}{15} = \\frac{1}{30}$. Отношение к площади $\\triangle ABC$ ($\\frac{1}{2}$) равно $\\frac{1/30}{1/2} = \\frac{1}{15}$.\n\nТаким образом, площадь треугольника $PQR$ составляет $\\frac{1}{15}$ площади треугольника $ABC$.",
+  "correct_answer": "$\\dfrac{1}{15}$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 7,
+  "real_level": 5,
+  "key_method": "Аффинные координаты и нахождение пересечений прямых",
+  "idea_count": 4,
+  "is_clone": true,
+  "clone_similarity": 0.782,
+  "lang_ok": true,
+  "_status": "clone_exhausted",
+  "fix_rounds": 0,
+  "quality_score": 0.5,
+  "source": "gen_678",
+  "generated_at": "2026-06-30T13:12:15.002590+00:00"
+}

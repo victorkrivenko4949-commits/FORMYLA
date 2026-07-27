@@ -1,0 +1,20 @@
+{
+  "id": 801470,
+  "task_text": "В треугольнике $ABC$ на сторонах $AB$ и $AC$ выбраны точки $M$ и $N$ соответственно. На стороне $BC$ нашлась точка $K$ такая, что $MK \\perp AB$, $NK \\perp AC$ и $MK \\perp NK$. Докажите, что $\\angle A = 90^\\circ$ и выполняется равенство $AM \\cdot AN = MB \\cdot NC$.",
+  "solution": "Введём прямоугольную систему координат с началом в точке $A$, осью $Ox$ вдоль $AB$. Пусть $A(0,0)$, $B(b,0)$ ($b>0$), $C(c_x,c_y)$ ($c_y>0$). Тогда $AB$ горизонтален. Точка $M$ на $AB$: $M(m,0)$, $0<m<b$. Точка $N$ на $AC$: $N=(n c_x, n c_y)$, где $n=AN/AC$, $0<n<1$. Точка $K$ на $BC$: $K=(b+s(c_x-b), s c_y)$, $s=BK/BC$, $0<s<1$.\n\n1. $MK \\perp AB$: вектор $MK=(b+s(c_x-b)-m,\\; s c_y)$ перпендикулярен $AB=(b,0)$, поэтому $b\\bigl(b+s(c_x-b)-m\\bigr)=0$, откуда $m = b + s(c_x-b)$.\n2. $NK \\perp AC$: $NK=(b-n c_x + s(c_x-b),\\; c_y(s-n))$. Скалярное произведение с $AC=(c_x,c_y)$:\n   $(b-n c_x + s(c_x-b))c_x + c_y^2(s-n)=0$.\n3. $MK \\perp NK$: $MK\\cdot NK=0$. Из п.1 $MK=(0, s c_y)$, поэтому\n   $MK\\cdot NK = s c_y^2(s-n)=0$. Так как $s>0$ и $c_y>0$, получаем $s=n$.\n\nПодставим $s=n$ в уравнение п.2:\n$(b - n c_x + n(c_x-b))c_x + c_y^2(n-n) = (b - n b)c_x = b(1-n)c_x = 0$.\nПоскольку $b>0$ и $n\\neq1$ (иначе $N=C$, что исключено), имеем $c_x=0$. Значит, $AC$ вертикален, т.е. $AC\\perp AB$, откуда $\\angle A = 90^\\circ$.\n\nИз п.1 при $c_x=0$ получаем $m = b + s(0-b) = b(1-s) = b(1-n)$. Следовательно:\n$AM = m = b(1-n)$, $MB = b - m = bn$,\n$AN = n\\cdot AC = n\\sqrt{c_y^2}=n c_y$, $NC = (1-n)c_y$.\nТогда $AM\\cdot AN = b(1-n)\\cdot n c_y = bn(1-n)c_y = MB\\cdot NC$, что и требовалось доказать.",
+  "correct_answer": "$\\angle A = 90^\\circ$ и $AM\\cdot AN = MB\\cdot NC$",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Координатный метод с использованием скалярного произведения",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T13:13:12.640901+00:00"
+}

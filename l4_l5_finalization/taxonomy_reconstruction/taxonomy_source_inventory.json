@@ -1,0 +1,196 @@
+{
+  "meta": {
+    "generated_at": "2026-07-18T12:57:33.800901",
+    "total_sources": 15,
+    "authoritative_sources": 11,
+    "purpose": "Catalog all files containing authoritative task_id->cell_key mappings"
+  },
+  "sources": [
+    {
+      "path": "taxonomy_by_grade.json",
+      "type": "authoritative_taxonomy",
+      "total_themes": 41,
+      "total_subtopics": 123,
+      "grades": [
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "total_unique_themes",
+        "total_unique_subtopics"
+      ],
+      "has_topic_ids": true,
+      "has_subtopic_names": true,
+      "authority_rank": 0,
+      "usable": true,
+      "notes": "THE AUTHORITATIVE TAXONOMY SOURCE - defines all themes, topic_ids, subtopics per grade"
+    },
+    {
+      "path": "checkpoints_failed_chat_run/stage6_candidates.json",
+      "type": "generated_candidates",
+      "record_count": 46,
+      "unique_cell_keys": 46,
+      "unique_task_ids": 46,
+      "has_full_cell_key_as_key": true,
+      "has_task_id": true,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Stage 6 generated candidates keyed by full cell_key"
+    },
+    {
+      "path": "stage3_audit_results.json",
+      "type": "audit_results",
+      "record_count": 63,
+      "has_task_id": true,
+      "has_full_cell_key": true,
+      "cell_key_coverage": "63/63",
+      "unique_cell_keys": 28,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Same data as stage3_checkpoint but as flat array"
+    },
+    {
+      "path": "stage3_checkpoint.json",
+      "type": "checkpoint",
+      "record_count": 63,
+      "has_task_id": true,
+      "has_full_cell_key": true,
+      "has_topic_id": true,
+      "has_subtopic_id": true,
+      "cell_key_coverage": "63/63",
+      "unique_cell_keys": 28,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Direct task_id->cell_key mapping from Stage 3 multi-role audit"
+    },
+    {
+      "path": "stage45_forensics/",
+      "type": "forensics_directory",
+      "record_count": 17,
+      "unique_task_ids": 17,
+      "has_full_cell_key_in_filename": true,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Task forensics files with cell_key encoded in filename"
+    },
+    {
+      "path": "stage45_reclassification.json",
+      "type": "reclassification",
+      "record_count": 40,
+      "has_task_id": true,
+      "has_full_cell_key": true,
+      "cell_key_coverage": "40/40",
+      "unique_cell_keys": 22,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Stage 45 reclassification with cell_key"
+    },
+    {
+      "path": "stage4_classification.json",
+      "type": "classification",
+      "record_count": 63,
+      "has_task_id": true,
+      "has_full_cell_key": true,
+      "cell_key_coverage": "63/63",
+      "unique_cell_keys": 28,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Stage 4 task classifications with cell_key"
+    },
+    {
+      "path": "stage5_fix_results.json",
+      "type": "fix_results",
+      "record_count": 14,
+      "has_task_id": true,
+      "has_full_cell_key": true,
+      "cell_key_coverage": "14/14",
+      "unique_cell_keys": 10,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Stage 5 fix results with cell_key"
+    },
+    {
+      "path": "stage5_fixes/",
+      "type": "fix_logs_directory",
+      "record_count": 14,
+      "unique_task_ids": 14,
+      "unique_cell_keys": 10,
+      "has_task_id": true,
+      "has_full_cell_key": true,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Individual fix logs with cell_key per task"
+    },
+    {
+      "path": "stage6_candidate_selection.jsonl",
+      "type": "candidate_selection",
+      "record_count": 257,
+      "unique_flat_keys": 257,
+      "unique_task_ids": 257,
+      "has_flat_key": true,
+      "has_cell_key_without_subtopic": true,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Selected candidates with flat_key (G|L|T|S format)"
+    },
+    {
+      "path": "stage6_candidates.json",
+      "type": "generated_candidates",
+      "record_count": 257,
+      "unique_cell_keys": 257,
+      "unique_task_ids": 257,
+      "has_full_cell_key_as_key": true,
+      "has_task_id": true,
+      "authority_rank": 1,
+      "usable": true,
+      "notes": "Stage 6 generated candidates keyed by full cell_key"
+    },
+    {
+      "path": "reconciliation_report.json",
+      "type": "reconciliation_report",
+      "record_count": 1,
+      "total_tasks": 63,
+      "keep_count": 13,
+      "fixed_count": 4,
+      "replace_count": 46,
+      "cells_with_replace_ids": 26,
+      "has_cell_keys": true,
+      "has_task_id_mappings": true,
+      "authority_rank": 2,
+      "usable": true,
+      "notes": "Reconciliation of all pipeline stages with cell_key->task_id mapping"
+    },
+    {
+      "path": "corrected_slot_report.json",
+      "type": "slot_report",
+      "record_count": 1,
+      "authority_rank": 3,
+      "usable": true,
+      "notes": "Report on corrected slot mapping"
+    },
+    {
+      "path": "stage7_checkpoint.json",
+      "type": "checkpoint",
+      "record_count": 2,
+      "slot_keys_found": 30,
+      "has_slot_keys": true,
+      "authority_rank": 3,
+      "usable": true,
+      "notes": "Stage 7 checkpoint with slot_key entries (may have stale data)"
+    },
+    {
+      "path": "curated_bank_L1_L5_fixed.json",
+      "type": "bank",
+      "estimated_records": "See bank_schema_report for exact count",
+      "has_cell_keys": false,
+      "has_topic_names": true,
+      "has_grade_level": true,
+      "authority_rank": 4,
+      "usable": false,
+      "notes": "The bank itself. Lacks cell_keys. Needs mapping from authoritative sources."
+    }
+  ]
+}

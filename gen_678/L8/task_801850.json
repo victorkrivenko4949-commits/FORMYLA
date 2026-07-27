@@ -1,0 +1,20 @@
+{
+  "id": 801850,
+  "task_text": "В треугольнике $ABC$ точки $D$ и $E$ лежат на сторонах $AB$ и $AC$ соответственно. Точка $M$ лежит на стороне $BC$. Прямые $DM$ и $EM$ пересекают прямые $AC$ и $AB$ в точках $P$ и $Q$ соответственно. Докажите, что $PQ\\parallel BC$ тогда и только тогда, когда $$\n\\frac{AD}{DB}\\cdot\\left(\\frac{BM}{MC}\\right)^2 = \\frac{AE}{EC}.$$",
+  "solution": "Рассмотрим направленные отрезки. Применим теорему Менелая к треугольнику $ABC$ и трансверсали $DMP$ (точки $D\\in AB$, $M\\in BC$, $P\\in CA$):\n$$\\frac{AD}{DB}\\cdot\\frac{BM}{MC}\\cdot\\frac{CP}{PA} = -1,$$\nоткуда\n$$\\frac{AD}{DB}\\cdot\\frac{BM}{MC} = -\\frac{PA}{CP}.$$\nНо $\\frac{PA}{CP} = \\frac{AP}{PC}$ (так как $PA = -AP$, $CP = -PC$). Поэтому\n$$\\frac{AD}{DB}\\cdot\\frac{BM}{MC} = -\\frac{AP}{PC}. \\qquad (1)$$\n\nАналогично, для трансверсали $EMQ$:\n$$\\frac{AE}{EC}\\cdot\\frac{CM}{MB}\\cdot\\frac{BQ}{QA} = -1,$$\nчто даёт\n$$\\frac{AE}{EC}\\cdot\\frac{CM}{MB} = -\\frac{QA}{BQ} = -\\frac{AQ}{QB}.$$\nЗаменяя $\\frac{CM}{MB} = \\frac{MC}{BM}$, получаем\n$$\\frac{AE}{EC}\\cdot\\frac{MC}{BM} = -\\frac{AQ}{QB}. \\qquad (2)$$\n\nТеперь, если $PQ\\parallel BC$, то по теореме Фалеса (или её обратной) в треугольнике $ABC$ выполняется $\\frac{AP}{PC} = \\frac{AQ}{QB}$. С учётом равенств (1) и (2) имеем\n$$\\frac{AD}{DB}\\cdot\\frac{BM}{MC} = \\frac{AE}{EC}\\cdot\\frac{MC}{BM}.$$\nУмножая обе части на $\\frac{BM}{MC}$, получаем необходимое условие\n$$\\frac{AD}{DB}\\cdot\\left(\\frac{BM}{MC}\\right)^2 = \\frac{AE}{EC}.$$\n\nОбратно, если данное равенство выполнено, то из (1) и (2) следует $\\frac{AP}{PC} = \\frac{AQ}{QB}$, что по обратной теореме Фалеса влечёт $PQ\\parallel BC$.\n\nТаким образом, утверждение доказано.",
+  "correct_answer": "Условие $PQ\\parallel BC$ эквивалентно равенству $\\frac{AD}{DB}\\cdot\\left(\\frac{BM}{MC}\\right)^2 = \\frac{AE}{EC}$.",
+  "class_level": 9,
+  "topic": "Геометрия",
+  "difficulty_level": 8,
+  "real_level": 8,
+  "key_method": "Теорема Менелая",
+  "idea_count": 3,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": true,
+  "generated_at": "2026-06-30T14:21:15.528088+00:00"
+}

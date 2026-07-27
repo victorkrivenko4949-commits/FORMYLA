@@ -1,0 +1,20 @@
+{
+  "id": 802410,
+  "task_text": "В треугольнике $ABC$ выбрана произвольная точка $M$. Точки $G_1$, $G_2$, $G_3$ — центроиды треугольников $MBC$, $MCA$ и $MAB$ соответственно. Докажите, что площадь треугольника $G_1G_2G_3$ в 9 раз меньше площади треугольника $ABC$.",
+  "solution": "Введём координаты: $A(x_A,y_A)$, $B(x_B,y_B)$, $C(x_C,y_C)$, $M(x_M,y_M)$. \nЦентроид треугольника $MBC$: $G_1\\left(\\frac{x_M+x_B+x_C}{3},\\frac{y_M+y_B+y_C}{3}\\right)$. \nАналогично: $G_2\\left(\\frac{x_M+x_C+x_A}{3},\\frac{y_M+y_C+y_A}{3}\\right)$, \n$G_3\\left(\\frac{x_M+x_A+x_B}{3},\\frac{y_M+y_A+y_B}{3}\\right)$. \nВычислим векторы: \n$\\overrightarrow{G_1G_2} = \\left(\\frac{x_C-x_A}{3},\\frac{y_C-y_A}{3}\\right) = \\frac13\\overrightarrow{CA}$, \n$\\overrightarrow{G_1G_3} = \\left(\\frac{x_B-x_A}{3},\\frac{y_B-y_A}{3}\\right) = \\frac13\\overrightarrow{BA}$. \nСледовательно, треугольник $G_1G_2G_3$ подобен треугольнику $ABC$ с коэффициентом $\\frac13$ (соответствие вершин: $G_1 \\leftrightarrow A$, $G_2 \\leftrightarrow C$, $G_3 \\leftrightarrow B$). \nТогда площадь $S_{G_1G_2G_3} = \\left(\\frac13\\right)^2 S_{ABC} = \\frac19 S_{ABC}$, что и требовалось доказать.",
+  "correct_answer": "Площадь треугольника G1G2G3 равна 1/9 площади треугольника ABC.",
+  "class_level": 8,
+  "topic": "Геометрия",
+  "difficulty_level": 6,
+  "real_level": 6,
+  "key_method": "Координатный метод и формула центроида",
+  "idea_count": 1,
+  "is_clone": false,
+  "lang_ok": true,
+  "_status": "active",
+  "fix_rounds": 0,
+  "quality_score": 1.0,
+  "source": "gen_678",
+  "was_improved": false,
+  "generated_at": "2026-06-30T16:16:08.219196+00:00"
+}
