@@ -60,16 +60,15 @@ def _get_user_radar():
         radar = {}
         for t in topics_full:
             key = t.get('topic_key') or t.get('topic', '')
-            pct = t.get('pct', 0)
-            if key:
-                radar[key] = min(100, max(0, int(pct)))
+        pct = t.get('pct') or 0
+        if key:
+          radar[key] = min(100, max(0, int(pct)))
         return radar
     except ProfileBuildError:
         return {}
     except Exception:
         current_app.logger.exception('_get_user_radar failed')
         return {}
-
 
 def _get_user_grade():
     """Return current user's preferred grade or None."""
@@ -762,11 +761,10 @@ def _build_subtopic_ctx(profile):
         measured = t.get('measured', False)
         name = t.get('topic_name') or t.get('topic', key)
         if key:
-            radar[key] = min(100, max(0, int(pct)))
-            topic_names[key] = name
-            if not measured:
-                subtopics_to_test.append({'key': key, 'name': name})
-
+          radar[key] = min(100, max(0, int(pct)))
+          topic_names[key] = name
+          if not measured:
+            subtopics_to_test.append({'key': key, 'name': name})
     # Weak = lowest pct among measured topics
     measured_radar = {k: v for k, v in radar.items()
                       if any(t.get('measured') and (t.get('topic_key') or t.get('topic')) == k
