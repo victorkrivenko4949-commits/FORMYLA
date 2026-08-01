@@ -336,6 +336,74 @@ body.kb-open {
 </div>
 {% endif %}
 
+<!-- ═══ CURATOR FACTS CARD (P10 V2): primary content, DB only, no external API ═══ -->
+{% if curator_card and onboarding_done %}
+<div class="coach-card" id="curatorFactsCard" style="margin-bottom:20px; border-color: rgba(99,102,241,0.4);">
+  <h2 style="color:#a5b4fc;">📊 Сводка куратора</h2>
+  {% set f = curator_card.facts %}
+  {% if curator_card.message %}
+  <div style="background:rgba(99,102,241,0.12); border-left:3px solid #6366f1; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:14px; font-size:15px; line-height:1.5; color:rgba(255,255,255,0.9);">
+    {{ curator_card.message }}
+  </div>
+  {% endif %}
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:10px;">
+    {% if f.cycle_day is not none and f.slice_total %}
+    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">🔄 День цикла</div>
+      <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.cycle_day }} / {{ f.slice_total }}</div>
+    </div>
+    {% endif %}
+    {% if f.today_total %}
+    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">📝 Сегодня</div>
+      <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.today_solved }} / {{ f.today_total }}</div>
+      {% if f.today_solved == 0 %}<div style="font-size:11px; color:#f59e0b;">ещё не решал</div>{% endif %}
+    </div>
+    {% endif %}
+    {% if f.debt_size and f.debt_size > 0 %}
+    <div style="background:rgba(239,68,68,0.06); border-radius:8px; padding:10px;">
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">⚠️ Долг</div>
+      <div style="font-size:18px; font-weight:700; color:#ef4444;">{{ f.debt_size }} задач</div>
+      {% if f.debt_burns_tomorrow %}<div style="font-size:11px; color:#ef4444;">{{ f.debt_burns_tomorrow }} сгорят завтра</div>{% endif %}
+    </div>
+    {% endif %}
+    {% if f.level_now is not none %}
+    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">⭐ Уровень</div>
+      <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.level_now }}/5</div>
+      {% if f.level_delta is not none and f.level_delta > 0 %}
+      <div style="font-size:11px; color:#38ef7d;">+{{ f.level_delta }} за неделю</div>
+      {% elif f.level_delta is not none and f.level_delta < 0 %}
+      <div style="font-size:11px; color:#ef4444;">{{ f.level_delta }} за неделю</div>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if f.streak_days is not none and f.streak_days > 0 %}
+    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">🔥 Серия</div>
+      <div style="font-size:18px; font-weight:700; color:#38ef7d;">{{ f.streak_days }} дн.</div>
+    </div>
+    {% endif %}
+    {% if f.method_code %}
+    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">📐 Метод</div>
+      <div style="font-size:14px; font-weight:600; color:#a5b4fc;">{{ f.method_code }} «{{ f.method_name }}»</div>
+    </div>
+    {% endif %}
+    {% if f.weakest_sections %}
+    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">🎯 Слабый раздел</div>
+      <div style="font-size:14px; font-weight:600; color:#f59e0b;">
+        {% set ws = f.weakest_sections[0] %}
+        {% set snames = {"algebra":"Алгебра","geometry":"Геометрия","combinatorics":"Комбинаторика","logic":"Логика","number_theory":"Теория чисел"} %}
+        {{ snames.get(ws.section, ws.section) }} — {{ ("%.0f"|format(ws.accuracy_pct)) if ws.accuracy_pct == ws.accuracy_pct|int else ws.accuracy_pct|string }}%
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
 <div class="coach-grid">
 <div class="coach-card">
 <h2>📊 Радар по подтемам</h2>

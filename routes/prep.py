@@ -1263,6 +1263,32 @@ def coach():
     # ── Onboarding gate for template ──
     _onboarding_done = _is_onboarding_done(current_user.id)
 
+    # ── Curator facts card (P10 V2): built from DB only, no external API ──
+    curator_card = None
+    curator_debt_breakdown = None
+    if _onboarding_done:
+        try:
+            from curator.messenger import get_student_facts, build_curator_message, get_curator_card
+            curator_card = get_curator_card(current_user.id)
+            if curator_card is None:
+                # No triggers — still show neutral state card
+                facts = get_student_facts(current_user.id)
+                if facts:
+                    curator_card = {
+                        'message': None,
+                        'facts': facts,
+                        'neutral': True,
+                    }
+                    # Build debt breakdown for neutral card
+                    if facts.get('debt_size', 0) > 0:
+                        curator_debt_breakdown = {
+                            'size': facts['debt_size'],
+                            'days': facts.get('debt_days_count', 0),
+                            'burns_tomorrow': facts.get('debt_burns_tomorrow', 0),
+                        }
+        except Exception as _cc_err:
+            current_app.logger.warning('coach: curator_card failed: %s', _cc_err)
+
     return render_template('prep/coach.html',
                            radar=ctx['radar'],
                            topic_names=ctx['topic_names'],
@@ -1281,7 +1307,9 @@ def coach():
                            cycle_cta_url=cycle_cta_url,
                            cycle_cta_text=cycle_cta_text,
                            measured_subtopics_list=measured_subtopics_list,
-                           onboarding_done=_onboarding_done)
+                           onboarding_done=_onboarding_done,
+                           curator_card=curator_card,
+                           curator_debt_breakdown=curator_debt_breakdown)
 
 
 # ─── Morning probe (monthly cycle) ─────────────────────────────────────
@@ -2918,16 +2946,41 @@ def coach_chat():
             f"ВОПРОС УЧЕНИКА: {message}"
         )
 
+    reply = None
     try:
-        from ai.deepseek_client import DeepSeekClient
-        client = DeepSeekClient()
-        reply = client.generate_with_reasoning(
-            prompt, system_prompt=system_prompt, max_tokens=2000
+        from ai.deepseek_client import DeepSeekClient, DeepSeekAPIError
+        import os as _os
+        _api_key = _os.environ.get('DEEPSEEK_API_KEY', '').strip()
+        if not _api_key:
+            current_app.logger.warning(
+                "COACH_CHAT_EXTERNAL_FAIL reason=no_key "
+                "detail=DEEPSEEK_API_KEY_not_set user=%d", current_user.id
+            )
+        else:
+            client = DeepSeekClient()
+            reply = client.generate_with_reasoning(
+                prompt, system_prompt=system_prompt, max_tokens=2000
+            )
+    except DeepSeekAPIError as e:
+        current_app.logger.error(
+            "COACH_CHAT_EXTERNAL_FAIL reason=deepseek_api "
+            "status=error detail=%r user=%d",
+            str(e)[:300], current_user.id
         )
     except Exception as e:
-        current_app.logger.error(f"DeepSeek coach_chat error: {e}")
-        fallback = weak_names_str if weak_names_str else 'подтянуть пробелы в математике'
-        reply = f"Сейчас не могу связаться с ИИ-куратором. Стоит подтянуть: {fallback}."
+        error_type = type(e).__name__
+        error_msg = str(e)[:300]
+        current_app.logger.error(
+            "COACH_CHAT_EXTERNAL_FAIL reason=exception "
+            "type=%s detail=%r user=%d",
+            error_type, error_msg, current_user.id
+        )
+    if reply is None:
+        reply = (
+            "🤖 ИИ-куратор сейчас недоступен — сервис не отвечает. "
+            "Это не влияет на задачи дня и твой прогресс. "
+            "Попробуй позже или задай вопрос в чате в другое время."
+        )
 
     # Save user message and bot reply to chat history
     _save_chat_message(current_user.id, 'user', message)
