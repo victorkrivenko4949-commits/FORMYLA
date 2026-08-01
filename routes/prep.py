@@ -19,7 +19,7 @@ import hashlib
 import random
 from datetime import date, datetime, timedelta
 
-from flask import Blueprint, jsonify, request, abort, render_template, current_app, session
+from flask import Blueprint, jsonify, request, abort, render_template, current_app, session, redirect
 from flask_login import current_user, login_required
 
 from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution, DailyQuest, ChatMessage
@@ -34,6 +34,32 @@ ALLOWED_PHOTO_MIMES = {'image/jpeg', 'image/png', 'image/webp', 'image/heic'}
 MAX_PHOTO_SIZE = 5 * 1024 * 1024  # 5 MB
 
 prep_bp = Blueprint('prep', __name__, url_prefix='/prep')
+
+
+def _is_onboarding_done(user_id):
+    """Check old (questionnaire), new (onboarding), and P9 intake completion."""
+    from models_curator import CuratorState as _CS2
+    try:
+        cs = _CS2.query.filter_by(user_id=user_id).first()
+        if not cs:
+            return False
+        ps = getattr(cs, 'prep_state', None) or {}
+        if not isinstance(ps, dict):
+            return False
+        # P9 intake (routes/intake.py:finish) — key 'intake'
+        if ps.get('intake', {}).get('completed'):
+            return True
+        # new onboarding (services/onboarding.py:finish) — key 'onboarding'
+        if ps.get('onboarding', {}).get('completed_at'):
+            return True
+        # old questionnaire (services/questionnaire_storage.py) — key 'questionnaire'
+        q = ps.get('questionnaire', {}) or {}
+        if q.get('completed') and q.get('completed_at'):
+            return True
+        # fallback: DB flag
+        return bool(getattr(cs, 'onboarding_done', False))
+    except Exception:
+        return False
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -963,11 +989,13 @@ def coach():
             except Exception:
                 pass
 
-    # ── Build mastery_list from TopicMastery + ADAPTIVE_TOPICS_BY_GRADE ──
+    # ── Build mastery_list: PRIMARY = level_by_section (level_engine, canonical 1..5)
+    #    FALLBACK = old TopicMastery + ADAPTIVE_TOPICS_BY_GRADE (kept as-is)
     from models import TopicMastery
     from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
     from models_curator import CuratorState as _CS
     from daily_tasks.monthly_plan import current_month_index as _curr_month_idx
+    from services.level_engine import get_state as _get_level_state
 
     _user_grade = (
         getattr(current_user, 'preferred_grade', None)
@@ -988,88 +1016,253 @@ def coach():
         ('knights_liars',  'Рыцари и лжецы'),
     ]
 
-    # ── Try to get 7 curator-selected subtopics from CuratorState.prep_plan ──
-    _selected_db_topics = None
-    _cs = _CS.query.filter_by(user_id=current_user.id).first()
-    if _cs and _cs.prep_plan:
-        _months = _cs.prep_plan.get('months', [])
-        if _months:
-            # Динамически выбираем месяц по календарю (не hardcoded months[0])
-            _month_idx_1based = _curr_month_idx(_cs.prep_plan)
-            _month_idx_0based = max(0, _month_idx_1based - 1)
-            if _month_idx_0based < len(_months):
-                _selected_db_topics = _months[_month_idx_0based].get('subtopics', [])
-            else:
-                _selected_db_topics = _months[0].get('subtopics', [])
-
-    topics_def = []
-    if _selected_db_topics:
-        # ── Only the 7 curator-selected subtopics (радар показывает именно их) ──
-        for _db_topic in _selected_db_topics:
-            _db_topic_str = str(_db_topic)
-            _entry = None
-            if _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
-                _entry = next(
-                    (t for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]
-                     if t.get('db_topic') == _db_topic_str),
-                    None
-                )
-            if _entry:
-                topics_def.append({
-                    'key': _entry['key'],
-                    'name_ru': _entry['name'],
-                    'match_keys': [_entry['key'], _db_topic_str] + (_entry.get('aliases', []) or []),
-                })
-            else:
-                topics_def.append({
-                    'key': _db_topic_str,
-                    'name_ru': _db_topic_str,
-                    'match_keys': [_db_topic_str],
-                })
-    elif _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
-        # ── Fallback: all grade topics ──
-        for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]:
-            match_keys = [t['key']]
-            if t.get('db_topic'):
-                match_keys.append(t['db_topic'])
-            match_keys.extend(t.get('aliases', []) or [])
-            topics_def.append({
-                'key': t['key'],
-                'name_ru': t['name'],
-                'match_keys': match_keys,
-            })
-    else:
-        # ── Legacy topics for grades 5-6 ──
-        for key, name_ru in _legacy_topic_meta:
-            topics_def.append({
-                'key': key,
-                'name_ru': name_ru,
-                'match_keys': [key],
-            })
-
-    mastery_rows = TopicMastery.query.filter_by(user_id=current_user.id).all()
-    mastery_by_topic = {row.topic: row for row in mastery_rows}
+    # ── Section name → Russian display name mapping ──
+    _SECTION_NAMES_RU = {
+        'algebra':        'Алгебра',
+        'geometry':       'Геометрия',
+        'combinatorics':  'Комбинаторика',
+        'logic':          'Логика и методы',
+        'number_theory':  'Теория чисел',
+    }
 
     mastery_list = []
-    for td in topics_def:
-        row = None
-        for mk in td['match_keys']:
-            row = mastery_by_topic.get(mk)
-            if row is not None:
-                break
-        mastery_val = round(row.mastery, 3) if row is not None else 0.0
-        mastery_list.append({
-            'name': td['name_ru'],
-            'value': mastery_val,
-        })
+    _used_level_by_section = False
+
+    # ── PRIMARY: Try level_by_section from level_engine ──
+    try:
+        _lvl_state = _get_level_state(current_user.id)
+        _by_section = _lvl_state.get('by_section', {}) or {}
+        if _by_section:
+            for _section, _sec_data in _by_section.items():
+                _section_str = str(_section)
+                _name = _SECTION_NAMES_RU.get(_section_str, _section_str)
+                _mu = _sec_data.get('mu', 0) if isinstance(_sec_data, dict) else 0
+                mastery_list.append({
+                    'name': _name,
+                    'value': round(float(_mu), 1),
+                })
+            _used_level_by_section = True
+    except Exception:
+        current_app.logger.debug('coach: level_by_section unavailable, using fallback')
+
+    # ── FALLBACK: Old TopicMastery + topics_def (kept as-is) ──
+    if not _used_level_by_section:
+        # ── Try to get 7 curator-selected subtopics from CuratorState.prep_plan ──
+        _selected_db_topics = None
+        _cs = _CS.query.filter_by(user_id=current_user.id).first()
+        if _cs and _cs.prep_plan:
+            _months = _cs.prep_plan.get('months', [])
+            if _months:
+                _month_idx_1based = _curr_month_idx(_cs.prep_plan)
+                _month_idx_0based = max(0, _month_idx_1based - 1)
+                if _month_idx_0based < len(_months):
+                    _selected_db_topics = _months[_month_idx_0based].get('subtopics', [])
+                else:
+                    _selected_db_topics = _months[0].get('subtopics', [])
+
+        topics_def = []
+        if _selected_db_topics:
+            for _db_topic in _selected_db_topics:
+                _db_topic_str = str(_db_topic)
+                _entry = None
+                if _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
+                    _entry = next(
+                        (t for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]
+                         if t.get('db_topic') == _db_topic_str),
+                        None
+                    )
+                if _entry:
+                    topics_def.append({
+                        'key': _entry['key'],
+                        'name_ru': _entry['name'],
+                        'match_keys': [_entry['key'], _db_topic_str] + (_entry.get('aliases', []) or []),
+                    })
+                else:
+                    topics_def.append({
+                        'key': _db_topic_str,
+                        'name_ru': _db_topic_str,
+                        'match_keys': [_db_topic_str],
+                    })
+        elif _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
+            for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]:
+                match_keys = [t['key']]
+                if t.get('db_topic'):
+                    match_keys.append(t['db_topic'])
+                match_keys.extend(t.get('aliases', []) or [])
+                topics_def.append({
+                    'key': t['key'],
+                    'name_ru': t['name'],
+                    'match_keys': match_keys,
+                })
+        else:
+            for key, name_ru in _legacy_topic_meta:
+                topics_def.append({
+                    'key': key,
+                    'name_ru': name_ru,
+                    'match_keys': [key],
+                })
+
+        mastery_rows = TopicMastery.query.filter_by(user_id=current_user.id).all()
+        mastery_by_topic = {row.topic: row for row in mastery_rows}
+
+        for td in topics_def:
+            row = None
+            for mk in td['match_keys']:
+                row = mastery_by_topic.get(mk)
+                if row is not None:
+                    break
+            mastery_val = round(row.mastery, 3) if row is not None else 0.0
+            mastery_list.append({
+                'name': td['name_ru'],
+                'value': mastery_val,
+            })
+
+        # Нормализуем mastery_val (0.0-1.0 → 0-5) для radar chart
+        for _m in mastery_list:
+            _m['value'] = round(_m['value'] * 5, 1)
+
+    # ── D4: Ensure radar ALWAYS has 5 canonical axes, even at zero ──
+    # Applies regardless of PRIMARY or FALLBACK path.
+    _canonical_names = set(_SECTION_NAMES_RU.values())
+    _existing_names = {m['name'] for m in mastery_list}
+    # Remove non-canonical entries (subtopic-level names from fallback)
+    mastery_list = [m for m in mastery_list if m['name'] in _canonical_names]
+    # Pad missing canonical sections with zero
+    for _sec_slug, _sec_name in _SECTION_NAMES_RU.items():
+        if _sec_name not in _existing_names:
+            mastery_list.append({'name': _sec_name, 'value': 0.0})
 
     import json as _json_coach
-    # Нормализуем mastery_val (0.0-1.0 → 0-5) для radar chart
-    for _m in mastery_list:
-        _m['value'] = round(_m['value'] * 5, 1)
     mastery_list_json = _json_coach.dumps(mastery_list, ensure_ascii=False)
 
+    # ── Monthly cycle info (Screen 3) ──────────────────────────────────
+    cycle_info = None
+    cycle_themes = []
+    cycle_measured_count = 0
+    cycle_total = 0
+    cycle_probe_url = '/prep/probe'
+    cycle_cta_url = '/daily_tasks'
+    cycle_cta_text = 'Перейти к задачам дня'
+
+    try:
+        from curator.monthly_cycle import get_cycle_info as _get_cycle_info
+        from curator.monthly_cycle import build_or_get_cycle
+        from daily_tasks.monthly_plan import subtopic_title
+        from services.theme_registry import section_of_theme as _section_of
+        from services.level_engine import get_level_by_theme as _get_lbt
+        import json as _j
+
+        user_grade_int = _user_grade_int  # keep as None if unknown
+
+        ci = _get_cycle_info(current_user.id)
+        # ── D2: Validate active cycle — rebuild if max-2 violated ──
+        if ci.get('active') and ci.get('themes'):
+            try:
+                sec_counts = {}
+                for tid in ci['themes']:
+                    sec = _section_of(tid) or '?'
+                    sec_counts[sec] = sec_counts.get(sec, 0) + 1
+                if any(cnt > 2 for cnt in sec_counts.values()):
+                    current_app.logger.info(
+                        'coach: active cycle violates max-2 rule — forcing rebuild. '
+                        'Counts: %s  Themes: %s', sec_counts, ci['themes']
+                    )
+                    build_or_get_cycle(current_user.id, _user_grade_int, force_new=True)
+                    ci = _get_cycle_info(current_user.id)
+            except Exception:
+                pass
+
+        # ── Auto-init cycle only when onboarding is COMPLETE and grade is KNOWN ──
+        if not ci.get('active'):
+            _cs_onb = _CS.query.filter_by(user_id=current_user.id).first()
+            _onboarding_done = (
+                _cs_onb is not None
+                and bool(getattr(_cs_onb, 'onboarding_done', False))
+            )
+            if _onboarding_done and _user_grade_int:
+                current_app.logger.info(
+                    'coach: auto-initializing monthly_cycle for user=%s grade=%s',
+                    current_user.id, _user_grade_int
+                )
+                _built = build_or_get_cycle(current_user.id, _user_grade_int)
+                ci = _get_cycle_info(current_user.id)
+        if ci.get('active'):
+            cycle_info = ci
+            cycle_total = len(ci.get('themes', []))
+            done_themes = ci.get('done_themes', [])
+            cycle_measured_count = len(done_themes)
+            current_theme_id = ci.get('current_theme')
+
+            # Build theme list with names, sections (RU), and states
+            lbt = _get_lbt(current_user.id)
+            for tid in ci.get('themes', []):
+                t_name = subtopic_title(tid)
+                t_section_raw = _section_of(tid) or ''
+                t_section = _SECTION_NAMES_RU.get(t_section_raw, t_section_raw)
+                if tid in lbt:
+                    mu = lbt[tid].get('mu')
+                    state = f'замерена: {mu:.1f}' if mu is not None else 'замерена'
+                elif tid == current_theme_id and tid not in done_themes:
+                    state = 'сегодняшняя'
+                else:
+                    state = 'впереди'
+                cycle_themes.append({
+                    'id': tid,
+                    'name': t_name,
+                    'section': t_section,
+                    'state': state,
+                    'mu': lbt.get(tid, {}).get('mu') if tid in lbt else None,
+                })
+
+            # Determine CTA
+            if ci.get('blocked') and not ci.get('finished'):
+                cycle_cta_url = '/prep/probe'
+                cycle_cta_text = 'Пройти утренний срез'
+            elif ci.get('finished'):
+                cycle_cta_url = '/daily_tasks'
+                cycle_cta_text = 'Перейти к задачам дня'
+            else:
+                cycle_cta_url = '/daily_tasks'
+                cycle_cta_text = 'Перейти к задачам дня'
+    except Exception:
+        pass
+
+    # ── Subtopics below radar (Screen 4): measured themes sorted by mu ascending ──
+    measured_subtopics_list = []
+    try:
+        from services.level_engine import get_level_by_theme as _get_lbt2
+        from daily_tasks.monthly_plan import subtopic_title as _st
+        from services.theme_registry import section_of_theme as _sec_of
+        lbt = _get_lbt2(current_user.id)
+        if lbt and _user_grade_int:
+            grade_themes = []
+            try:
+                from services.theme_registry import themes_of_grade
+                grade_themes = themes_of_grade(_user_grade_int)
+            except Exception:
+                pass
+            for tid in lbt:
+                mu_val = lbt[tid].get('mu')
+                if mu_val is None:
+                    continue
+                if grade_themes and tid not in grade_themes:
+                    continue
+                sec_raw = _sec_of(tid) or ''
+                measured_subtopics_list.append({
+                    'id': tid,
+                    'name': _st(tid),
+                    'section': _SECTION_NAMES_RU.get(sec_raw, sec_raw),
+                    'mu': float(mu_val),
+                })
+            measured_subtopics_list.sort(key=lambda x: x['mu'])
+    except Exception:
+        pass
+
     _grade_val = _user_grade_int if _user_grade_int else ''
+
+    # ── Onboarding gate for template ──
+    _onboarding_done = _is_onboarding_done(current_user.id)
+
     return render_template('prep/coach.html',
                            radar=ctx['radar'],
                            topic_names=ctx['topic_names'],
@@ -1079,7 +1272,259 @@ def coach():
                            mastery_list_json=mastery_list_json,
                            user_grade=_grade_val,
                            overall_level=overall_level,
-                           level_label=level_label)
+                           level_label=level_label,
+                           cycle_info=cycle_info,
+                           cycle_themes=cycle_themes,
+                           cycle_measured_count=cycle_measured_count,
+                           cycle_total=cycle_total,
+                           cycle_probe_url=cycle_probe_url,
+                           cycle_cta_url=cycle_cta_url,
+                           cycle_cta_text=cycle_cta_text,
+                           measured_subtopics_list=measured_subtopics_list,
+                           onboarding_done=_onboarding_done)
+
+
+# ─── Morning probe (monthly cycle) ─────────────────────────────────────
+@prep_bp.route('/probe')
+@login_required
+def morning_probe():
+    """Страница утреннего среза подтемы (5 задач, лесенка)."""
+    from curator.monthly_cycle import get_cycle_info, build_or_get_cycle, advance_day
+    from services.theme_probe import (
+        has_active_probe, get_active_probe_theme, start_probe,
+        record_answer as probe_record_answer, resolve_start_level,
+    )
+    from services.theme_registry import section_of_theme
+    from daily_tasks.monthly_plan import subtopic_title
+    from models_curator import CuratorState
+    import json
+
+    user_id = current_user.id
+
+    # 1. Guard: onboarding must be complete and grade must be known
+    onboarding_done = _is_onboarding_done(user_id)
+    grade = getattr(current_user, 'preferred_grade', None)
+    if not grade:
+        # Try from questionnaire level if stored
+        from services.questionnaire_storage import get_questionnaire_level
+        ql = get_questionnaire_level(user_id)
+        if ql:
+            grade = None  # level != grade
+    if not onboarding_done or not grade:
+        if _wants_json():
+            return jsonify(redirect='/intake', message='Сначала пройди анкету.')
+        return redirect('/intake')
+
+    # 2. Ensure monthly cycle exists
+    cycle = get_cycle_info(user_id)
+    if not cycle.get('active'):
+        # No active cycle → build one
+        cycle_info = build_or_get_cycle(user_id, grade)
+        cycle = get_cycle_info(user_id)
+
+    if cycle.get('finished'):
+        # Cycle finished → redirect to daily tasks
+        if _wants_json():
+            return jsonify(redirect='/daily_tasks', message='Цикл завершён. Переходи к задачам дня.')
+        return redirect('/daily_tasks')
+
+    current_theme = cycle.get('current_theme')
+    if not current_theme:
+        if _wants_json():
+            return jsonify(redirect='/daily_tasks', message='Нет активной подтемы.')
+        return redirect('/daily_tasks')
+
+    theme_title = subtopic_title(current_theme)
+    section = section_of_theme(current_theme) or ''
+
+    # 2. Check for existing active probe
+    probe_active = has_active_probe(user_id)
+    probe_theme = get_active_probe_theme(user_id)
+
+    if not probe_active and cycle.get('blocked'):
+        # Need to start the probe
+        result = start_probe(user_id, current_theme, grade)
+        if result.get('error'):
+            if _wants_json():
+                return jsonify(redirect='/daily_tasks',
+                               message=f'Не удалось начать срез: {result.get("error")}')
+            return redirect('/daily_tasks')
+
+    # 3. Get current probe state
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if not cs:
+        if _wants_json():
+            return jsonify(redirect='/prep/coach', message='Нет состояния.')
+        return redirect('/prep/coach')
+
+    from services.theme_probe import _get_probe_state
+    probe = _get_probe_state(cs)
+
+    if not probe:
+        # No probe started yet → start it
+        result = start_probe(user_id, current_theme, grade)
+        if result.get('error'):
+            if _wants_json():
+                return jsonify(redirect='/daily_tasks',
+                               message='Не удалось начать срез.')
+            return redirect('/daily_tasks')
+        probe = _get_probe_state(cs)
+
+    if not probe:
+        if _wants_json():
+            return jsonify(redirect='/daily_tasks', message='Нет активного среза.')
+        return redirect('/daily_tasks')
+
+    # 4. Check if probe is done
+    current_index = probe.get('current_index', 0)
+    total_tasks = 5
+
+    if current_index >= total_tasks:
+        # Probe complete → get final result
+        from services.theme_probe import _finish_probe
+        # Actually, probe is already finished. Clean up.
+        # Get last answer data
+        answers = probe.get('answers', [])
+        final_mu = probe.get('current_level', 1)
+
+        # Get previous measurement if any
+        previous_mu = None
+        lbt = {}
+        try:
+            if cs.level_by_theme:
+                lbt_raw = cs.level_by_theme
+                lbt = json.loads(lbt_raw) if isinstance(lbt_raw, str) else lbt_raw
+                prev_data = lbt.get(current_theme, {})
+                prev_mu_val = prev_data.get('mu')
+                if prev_mu_val is not None:
+                    previous_mu = float(prev_mu_val)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # Advance cycle day
+        try:
+            advance_day(user_id)
+        except Exception:
+            pass
+
+        if _wants_json():
+            return jsonify({
+                'done': True,
+                'theme_id': current_theme,
+                'theme_title': theme_title,
+                'section': section,
+                'final_mu': float(final_mu),
+                'previous_mu': previous_mu,
+                'answers': answers,
+                'total': total_tasks,
+            })
+
+        return render_template('prep/probe.html',
+                               done=True,
+                               theme_id=current_theme,
+                               theme_title=theme_title,
+                               section=section,
+                               final_mu=float(final_mu),
+                               previous_mu=previous_mu,
+                               answers=answers,
+                               total=total_tasks)
+
+    # 5. Get current task
+    current_task = None
+    task_level = probe.get('current_level', 1)
+    seen_ids = probe.get('seen_task_ids', [])
+
+    if seen_ids and current_index > 0:
+        # Get the last seen task (the current one)
+        last_seen_id = seen_ids[-1]
+        from models import AdaptiveTask
+        current_task_obj = db.session.get(AdaptiveTask, last_seen_id)
+        if current_task_obj:
+            current_task = {
+                'id': current_task_obj.id,
+                'task_text': current_task_obj.task_text,
+                'difficulty_level': current_task_obj.difficulty_level,
+                'topic': current_task_obj.topic,
+            }
+
+    if current_task is None:
+        # No task yet — start probe
+        result = start_probe(user_id, current_theme, grade)
+        if result.get('task'):
+            current_task = result['task']
+            task_level = result.get('current_level', 1)
+        elif result.get('error'):
+            if _wants_json():
+                return jsonify(error=result.get('error'))
+            return render_template('prep/probe.html', error=result.get('error'))
+
+    if current_task is None:
+        if _wants_json():
+            return jsonify(error='no_tasks')
+        return render_template('prep/probe.html', error='Нет доступных задач.')
+
+    if _wants_json():
+        return jsonify({
+            'done': False,
+            'theme_id': current_theme,
+            'theme_title': theme_title,
+            'section': section,
+            'current_index': current_index,
+            'total': total_tasks,
+            'current_level': task_level,
+            'task': current_task,
+        })
+
+    return render_template('prep/probe.html',
+                           done=False,
+                           theme_id=current_theme,
+                           theme_title=theme_title,
+                           section=section,
+                           current_index=current_index,
+                           total=total_tasks,
+                           current_level=task_level,
+                           task=current_task)
+
+
+@prep_bp.route('/probe/submit', methods=['POST'])
+@login_required
+def probe_submit():
+    """Submit an answer for the morning probe. AI evaluates correctness."""
+    data = request.get_json(silent=True) or {}
+    task_id = data.get('task_id')
+    user_answer = (data.get('answer') or '').strip()
+    user_solution = (data.get('solution') or data.get('user_solution', '')).strip()
+
+    if not task_id:
+        return jsonify(error='task_id required'), 400
+    if not user_answer and not user_solution:
+        return jsonify(error='Введи ответ или решение.'), 400
+
+    from services.theme_probe import record_answer as probe_record_answer
+    from models import AdaptiveTask as _PTask
+
+    # Evaluate via AI — the system decides correct/partial/wrong
+    task = db.session.get(_PTask, int(task_id))
+    is_correct, feedback = _evaluate_solution(task, user_answer, user_solution)
+    verdict = feedback.get('verdict', 'wrong')
+
+    result = probe_record_answer(
+        current_user.id, int(task_id), verdict,
+        user_solution or user_answer
+    )
+
+    # Include AI feedback in the response
+    result['ai_feedback'] = {
+        'verdict': verdict,
+        'message': feedback.get('message', ''),
+        'hint': feedback.get('hint', ''),
+        'solution': feedback.get('solution', ''),
+        'correct_answer': feedback.get('correct_answer', ''),
+    }
+    if feedback.get('ai_checked'):
+        result['ai_checked'] = True
+
+    return jsonify(result)
 
 
 # ─── Приветствие / определение сценария (C4 + C7) ─────────────────────────
@@ -1139,6 +1584,45 @@ def coach_greeting():
             subtopics_to_test=[],
             cta_url='/profile',
             cta_text='🎯 Выбрать класс',
+        )
+
+    # ── NEW (STEP 1): try next_action first ──
+    # Returns a single, curator-chosen action. Fallback to legacy 16-branch
+    # logic only if next_action raises an exception.
+    try:
+        from services.next_action import get_next_action
+        na = get_next_action(current_user.id)
+
+        user_name = (
+            getattr(current_user, 'name', None)
+            or getattr(current_user, 'nickname', None)
+            or 'ученик'
+        )
+        name_greeting = f'👋 Привет, {user_name}!'
+
+        greeting = f'{name_greeting}\n\n<strong>{na["title"]}</strong>\n\n{na["reason"]}'
+
+        # Log next_action success for debugging defect 1
+        current_app.logger.info(
+            'coach_greeting: next_action succeeded '
+            'kind=%s title=%r',
+            na.get('kind'), na.get('title')
+        )
+
+        return jsonify(
+            greeting=greeting,
+            scenario='next_action',
+            next_action=na,
+            cta_url=na.get('url'),
+            cta_text=na.get('cta_label'),
+            recommended_olympiad=None,
+            subtopics_to_test=[],
+        )
+    except Exception as _next_action_err:
+        current_app.logger.warning(
+            'coach_greeting: next_action failed (%s), '
+            'falling back to legacy 16-branch logic',
+            _next_action_err
         )
 
     # ── coach_greeting SAFETY NET: wrap main logic in try/except ─────
@@ -1371,7 +1855,7 @@ def coach_greeting():
                         'remaining_tests': _remaining_tests,
                         'level': _level,
                     },
-                    cta_url='/daily-set',
+                    cta_url='/daily_tasks',
                     cta_text='📚 Перейти к задачам дня' if _has_tasks else None,
                 )
 
@@ -1396,7 +1880,7 @@ def coach_greeting():
                             'has_tasks': True,
                             'level': _level,
                         },
-                        cta_url='/daily-set',
+                        cta_url='/daily_tasks',
                         cta_text='📚 Перейти к задачам дня',
                     )
                 else:
@@ -1464,90 +1948,11 @@ def coach_greeting():
 @prep_bp.route('/coach/test/start', methods=['POST'])
 @login_required
 def coach_test_start():
-    """Начать онбординг-диагностику прямо в чате.
-
-    Сохраняет список задач в сессии, возвращает первую задачу
-    как сообщение бота. Последующие ответы обрабатываются через
-    coach_chat (тест-режим).
-    """
-    # ── Guard: test already in progress ──────────────────────────────────
-    existing = session.get('coach_test')
-    if existing and existing.get('active'):
-        task_ids = existing.get('task_ids', [])
-        current_index = existing.get('current_index', 0)
-        if current_index < len(task_ids):
-            # Return current task instead of restarting
-            current_task_id = task_ids[current_index]
-            task = AdaptiveTask.query.get(current_task_id)
-            if task:
-                from services.math_text_normalizer import normalize_math_text
-                task_text = normalize_math_text(task.task_text) if task.task_text else task.task_text
-                total = len(task_ids)
-                num = current_index + 1
-                reply = (
-                    f"🧪 <strong>Диагностика уже запущена!</strong>\n\n"
-                    f"<hr>\n"
-                    f"<strong>Задача {num} из {total}:</strong><br>"
-                    f"{task_text}\n\n"
-                    f"<hr>\n"
-                    f"✏️ <em>Запиши свой ответ.</em>"
-                )
-                return jsonify(reply=reply)
-        # All tasks answered but not submitted yet
-        return jsonify(
-            reply='📊 Ты уже ответил на все вопросы! Напиши свой ответ на последний, чтобы завершить тест.'
-        ), 400
-
-    profile = _curator_profile()
-    measured_count = profile.get('measured_topics_count', 0) if profile else 0
-    if measured_count > 0:
-        return jsonify(reply='Диагностика уже пройдена!'), 400
-
-    grade = _get_user_grade()
-    if not grade:
-        return jsonify(reply='Сначала выберите класс в профиле.'), 400
-
-    tasks = get_onboarding_tasks(grade, limit=21)
-    if not tasks:
-        return jsonify(reply='😅 Диагностические задачи временно недоступны. Попробуй позже.'), 503
-
-    task_ids = [t['id'] for t in tasks]
-
-    # Store minimal test state in session (only IDs, not full task text)
-    session['coach_test'] = {
-        'active': True,
-        'task_ids': task_ids,
-        'current_index': 0,
-        'answers': {},
-        'awaiting_difficulty_for': None,
-        'difficulty_ratings': {},
-    }
-
-    # Build reply with first task
-    first_task = tasks[0]
-    total = len(tasks)
-    reply = (
-        f"🧪 <strong>Диагностика начата!</strong> Всего {total} задач.\n\n"
-        f"<hr>\n"
-        f"<strong>Задача 1 из {total}:</strong><br>"
-        f"{first_task['task_text']}\n\n"
-        f"<hr>\n"
-        f"✏️ <em>Запиши свой ответ.</em>"
+    """Редирект: старая диагностика (21 задача) → /intake."""
+    return jsonify(
+        reply='📋 Диагностика заменена на новую анкету входа!',
+        redirect_url='/intake',
     )
-
-    # Save bot message to history
-    try:
-        db.session.add(ChatMessage(
-            user_id=current_user.id,
-            agent_type='coach',
-            role='assistant',
-            content=reply,
-        ))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-    return jsonify(reply=reply)
 
 
 # ─── Онбординг: сохранить результаты (C4) ─────────────────────────────────
@@ -1996,40 +2401,6 @@ def coach_set_grade():
         return jsonify(error='Ошибка сохранения'), 500
 
 
-# ─── Диагностическая анкета ────────────────────────────────────────────────
-
-@prep_bp.route('/coach/questionnaire/start', methods=['POST'])
-@login_required
-def coach_questionnaire_start():
-    """Запустить анкету из 3 вопросов для определения уровня."""
-    from services.diagnostic_questionnaire import get_question, QUESTIONNAIRE_FLOW
-    from services.questionnaire_storage import init_questionnaire, save_questionnaire_state
-
-    # Инициализируем анкету
-    total = len(QUESTIONNAIRE_FLOW)
-    init_questionnaire(total)
-
-    # Показываем первый вопрос
-    first_q = get_question(0)
-    if not first_q:
-        return jsonify(reply='❌ Не удалось загрузить анкету.')
-
-    reply = (
-        f"📋 <strong>Анкета — вопрос 1 из {total}:</strong><br>"
-        f"{first_q['question']}\n\n"
-        f"<hr>\n"
-        f"✏️ <em>Напиши свой ответ.</em>"
-    )
-    return jsonify(reply=reply)
-
-
-@prep_bp.route('/coach/questionnaire/answer', methods=['POST'])
-@login_required
-def coach_questionnaire_answer():
-    """Обработка ответа на вопрос анкеты (устаревший endpoint — теперь через coach_chat)."""
-    return jsonify(reply='Используй чат куратора для ответов на анкету.')
-
-
 # ─── Helpers: chat persistence and onboarding submission ─────────────────
 
 def _save_chat_message(user_id, role, content):
@@ -2219,7 +2590,12 @@ def coach_chat():
         else:
             q_state['active'] = False
             save_questionnaire_state(q_state)
-            level = compute_provisional_level(q_state['answers'])
+            try:
+                level, full_result = compute_provisional_level(q_state['answers'], return_full=True)
+            except Exception as _cpl_err:
+                current_app.logger.warning(f"[questionnaire] compute_provisional_level failed: {_cpl_err}")
+                level = 3  # безопасный дефолт
+                full_result = None
             summary = build_summary(q_state['answers'], level)
 
             # Сохраняем уровень анкеты в БД (CuratorState)
@@ -2229,6 +2605,58 @@ def coach_chat():
                 current_app.logger.info(f"[questionnaire] saved to DB: user={current_user.id} level={level}")
             except Exception as _e:
                 current_app.logger.error(f"[questionnaire] failed to save to DB: {_e}")
+
+            # Записываем уровень в level_engine (чтобы pick_daily_set мог найти)
+            try:
+                from services.level_engine import set_prior
+                set_prior(current_user.id, level, 1.5, source="questionnaire_chat")
+                current_app.logger.info(f"[questionnaire] level_engine set_prior: user={current_user.id} level={level}")
+            except Exception as _le_err:
+                current_app.logger.warning(f"[questionnaire] level_engine set_prior failed: {_le_err}")
+
+            # Записываем полный OnboardingResult в prep_state.onboarding
+            # для pick_daily_set и level_engine
+            if full_result is not None:
+                try:
+                    from models_curator import CuratorState
+                    from datetime import datetime as _dt
+                    cs = CuratorState.query.filter_by(user_id=current_user.id).first()
+                    if cs is None:
+                        cs = CuratorState(user_id=current_user.id)
+                        db.session.add(cs)
+                    prep_state = getattr(cs, 'prep_state', None) or {}
+                    if not isinstance(prep_state, dict):
+                        prep_state = {}
+                    prep_state['onboarding'] = {
+                        'grade': full_result.grade,
+                        'target_level': full_result.target_level,
+                        'olymp_reach': full_result.olymp_reach,
+                        'daily_tasks': full_result.daily_tasks,
+                        'deadline_date': full_result.deadline_date,
+                        'days_left': full_result.days_left,
+                        'deadline_bucket': full_result.deadline_bucket,
+                        'prior_mu': full_result.prior_mu,
+                        'prior_sigma': full_result.prior_sigma,
+                        'start_level': full_result.start_level,
+                        'route_ceiling': full_result.route_ceiling,
+                        'conflict': full_result.conflict,
+                        'anchors': [],
+                        'anchor_fallback_reasons': [],
+                        'answers': dict(q_state.get('answers', {})),
+                        'completed_at': _dt.utcnow().isoformat(),
+                    }
+                    cs.prep_state = prep_state
+                    cs.onboarding_done = True
+                    db.session.commit()
+                    current_app.logger.info(
+                        f"[questionnaire] full OnboardingResult saved to prep_state.onboarding: "
+                        f"user={current_user.id} grade={full_result.grade} "
+                        f"daily_tasks={full_result.daily_tasks} mu={full_result.prior_mu}"
+                    )
+                except Exception as _onb_err:
+                    current_app.logger.warning(
+                        f"[questionnaire] failed to save OnboardingResult to prep_state: {_onb_err}"
+                    )
 
             # Save the user answer
             _save_chat_message(current_user.id, 'user', message)
@@ -2408,30 +2836,87 @@ def coach_chat():
         except Exception:
             pass
 
+    # ── Build student card from onboarding + level_engine ────────────
+    try:
+        from services.daily_task_rotation import build_student_card, format_student_card_for_prompt
+        student_card = build_student_card(current_user.id)
+        card_text = format_student_card_for_prompt(student_card)
+        current_app.logger.info("coach_chat: student_card built for user=%d", current_user.id)
+    except Exception as _card_err:
+        current_app.logger.warning("coach_chat: build_student_card failed: %s", _card_err)
+        card_text = "(карточка ученика недоступна — используй данные ниже)"
+
+    # ── Get daily_tasks count from prep_state.onboarding ───────────────
+    _onboarding = {}
+    try:
+        cs = CuratorState.query.filter_by(user_id=current_user.id).first()
+        if cs and getattr(cs, 'prep_state', None):
+            _ps = cs.prep_state if isinstance(cs.prep_state, dict) else {}
+            _onboarding = _ps.get('onboarding', {}) or {}
+    except Exception:
+        pass
+    _daily_count = _onboarding.get('daily_tasks', student_card.get('daily_tasks', 3) if student_card else 3)
+    _daily_count = max(1, int(_daily_count))
+
     # Build rich system prompt
     system_prompt = (
         "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам. "
-        "Твоя задача — помогать ученику 5–11 классов улучшать свои знания по подтемам математики. "
+        "Ты работаешь ТОЛЬКО внутри платформы FORMYLA. "
+        "Ты не советуешь внешние учебники, сайты, задачники (Атанасян, problems.ru и т.п.) — "
+        "все материалы для подготовки уже есть в FORMYLA. "
+        "Ты не выдумываешь кнопки и действия, которых нет на странице. "
+        "Ты не назначаешь число задач в день и разделы/подтемы — это уже определено системой. "
         "Отвечай кратко, на русском, давай конкретные шаги на ближайшие дни. "
-        "Используй эмодзи для наглядности. Не выдумывай данные — опирайся только на те, что переданы. "
+        "Используй эмодзи для наглядности.\n\n"
+        "ЖЁСТКОЕ ПРАВИЛО: НЕ ВЫДУМЫВАЙ ДАННЫХ, которых нет в карточке ученика. "
+        "Все числа (уровень, mu, sigma, количество задач) бери ТОЛЬКО из карточки. "
+        "Если данных нет — честно скажи об этом. "
+        "Называй конкретные числа: «твой уровень mu=2.7», «в разделе Геометрия у тебя mu=1.5», "
+        "«ты решил 12 задач за неделю».\n\n"
+        f"КОЛИЧЕСТВО ЗАДАЧ В ДЕНЬ: ученику назначено {_daily_count} задач в день "
+        "анкетой онбординга. НЕ меняй это число и не предлагай другое — "
+        "оно уже подобрано под нагрузку ученика.\n\n"
+        "ПОДТЕМЫ ЦИКЛА: они уже выбраны системой и видны в блоке «Цикл месяца». "
+        "Ты не можешь назначать или менять подтемы — только объяснять, как решать ту, "
+        "которая сейчас активна.\n\n"
+        "ДОСТУПНЫЕ КНОПКИ И СТРАНИЦЫ В FORMYLA (ссылайся только на них):\n"
+        "  • /prep/coach — страница куратора (ты здесь)\n"
+        "  • /prep/probe — \"Пройти утренний срез\" (замер текущей подтемы, 5 задач)\n"
+        "  • /daily_tasks — \"Перейти к задачам дня\" ({_daily_count} задач из текущей подтемы)\n"
+        "  • /adaptive-test — \"Пройти адаптивный тест\" (диагностика по всем темам)\n"
+        "  • /intake — \"Пройти анкету\" (анкета входа, если не пройдена)\n"
+        "  • /profile — профиль ученика\n"
+        "  • /prep/today — задачи на сегодня\n"
+        "\n"
+        "ЕСЛИ АНКЕТА НЕ ПРОЙДЕНА: скажи только одно — пройди анкету на /intake. "
+        "Никаких планов, советов по темам, числа задач.\n\n"
         "Если ученик спрашивает про незнакомую тему — честно скажи, что данных нет."
         + olympiad_block
     )
 
-    radar_block = "\n".join(radar_lines) or "  (нет данных)"
     plan_block = "\n".join(plan_lines) or "  (планов нет)"
-    test_status = "диагностика пройдена" if test_done else "диагностика не пройдена"
-    grade_info = f"Класс: {grade}" if grade else "Класс: не выбран"
 
-    prompt = (
-        f"ДАННЫЕ ОБ УЧЕНИКЕ:\n"
-        f"{grade_info}\n"
-        f"Статус: {test_status}\n"
-        f"Радар подтем (навык 0-100):\n{radar_block}\n\n"
-        f"Слабые подтемы: {weak_names_str}\n\n"
-        f"Планы подготовки:\n{plan_block}\n\n"
-        f"ВОПРОС УЧЕНИКА: {message}"
-    )
+    # Q3 (2026-07-28): if level_by_section exists, card_text already has mu 1..5;
+    # remove old radar (0-100) to avoid two conflicting scales in one prompt.
+    _has_by_section = bool(student_card.get("level_by_section")) if student_card else False
+    if _has_by_section:
+        prompt = (
+            f"{card_text}\n\n"
+            f"Слабые подтемы: {weak_names_str}\n\n"
+            f"Планы подготовки:\n{plan_block}\n\n"
+            f"ВОПРОС УЧЕНИКА: {message}"
+        )
+    else:
+        # Fallback for users without level_by_section data
+        radar_block = "\n".join(radar_lines) or "  (нет данных)"
+        prompt = (
+            f"{card_text}\n\n"
+            f"ДАННЫЕ ОБ УЧЕНИКЕ (из профиля):\n"
+            f"Радар подтем (навык 0-100):\n{radar_block}\n\n"
+            f"Слабые подтемы: {weak_names_str}\n\n"
+            f"Планы подготовки:\n{plan_block}\n\n"
+            f"ВОПРОС УЧЕНИКА: {message}"
+        )
 
     try:
         from ai.deepseek_client import DeepSeekClient
@@ -2449,3 +2934,90 @@ def coach_chat():
     _save_chat_message(current_user.id, 'assistant', reply)
 
     return jsonify(reply=reply)
+
+
+# ─── Новая анкета онбординга (onboarding_tree + onboarding.py) ──────────────
+
+@prep_bp.route('/onboarding')
+@login_required
+def onboarding_page():
+    """GET /prep/onboarding — страница ветвящейся анкеты онбординга.
+    
+    Если анкета уже пройдена — редирект на /prep/coach, повторно не пускаем.
+    """
+    # /prep/onboarding now redirects to /intake
+    return redirect('/intake')
+
+
+@prep_bp.route('/onboarding/answer', methods=['POST'])
+@login_required
+def onboarding_answer():
+    """POST /prep/onboarding/answer — ответ на вопрос анкеты.
+
+    Принимает JSON: {qid: str, key: str}
+    Специальные значения qid:
+      '_start'  — инициализировать поток, вернуть первый вопрос
+      '_finish' — завершить поток, вызвать finish()
+    """
+    from services.onboarding import start, answer, finish
+    data = request.get_json(silent=True) or {}
+    qid = (data.get('qid') or '').strip()
+    key = (data.get('key') or '').strip()
+
+    if qid == '_start':
+        return jsonify(start(current_user.id))
+
+    if qid == '_finish':
+        return jsonify(finish(current_user.id))
+
+    if not qid or not key:
+        return jsonify(error='qid и key обязательны'), 400
+
+    return jsonify(answer(current_user.id, qid, key))
+
+
+@prep_bp.route('/onboarding/anchor', methods=['POST'])
+@login_required
+def onboarding_anchor():
+    """POST /prep/onboarding/anchor — ответ на якорную задачу.
+
+    Принимает JSON: {task_id: int, answer: str}
+    Любой текстовый ответ допустим (включая пустую строку) —
+    неверный ответ не ошибка, а просто correct=false.
+    """
+    from services.onboarding import submit_anchor, finish
+    data = request.get_json(silent=True) or {}
+    task_id = data.get('task_id')
+    user_answer = (data.get('answer') or '').strip()
+
+    if task_id is None:
+        return jsonify(error='task_id обязателен'), 400
+
+    try:
+        task_id = int(task_id)
+    except (ValueError, TypeError):
+        return jsonify(error='task_id должен быть числом'), 400
+
+    return jsonify(submit_anchor(current_user.id, task_id, user_answer))
+
+
+# ─── Старые маршруты анкеты — редиректят на новую ──────────────────────────
+
+@prep_bp.route('/coach/questionnaire/start', methods=['POST'])
+@login_required
+def coach_questionnaire_start_redirect():
+    """Редирект: старая анкета → новая ветвящаяся анкета."""
+    return jsonify(
+        reply='📋 Переходим на новую анкету!',
+        redirect_url='/intake',
+    )
+
+
+@prep_bp.route('/coach/questionnaire/answer', methods=['POST'])
+@login_required
+def coach_questionnaire_answer_redirect():
+    """Редирект: старый endpoint ответа → новая анкета."""
+    return jsonify(
+        reply='Используй новую анкету: /intake',
+        redirect_url='/intake',
+    )

@@ -1,0 +1,10 @@
+=== D1: CuratorState BEFORE ===
+onboarding_done=True
+prep_state type=dict
+prep_state keys=['onboarding', 'test_queue', 'monthly_cycle', 'active_probe']
+  onboarding.completed_at=2026-07-28T12:14:23.971333
+  monthly_cycle themes=['G9_T05', 'G9_T16', 'G9_T10', 'G9_T13', 'G9_T01', 'G9_T06', 'G9_T11']
+  monthly_cycle day_index=1
+level_by_section={"algebra": {"mu": 1.0, "sigma": 0.6245991679999999, "n": 3}, "geometry": {"mu": 1.1951671079424, "sigma": 0.5518958248447998, "n": 4}, "combinatorics": {"mu": 1.0, "sigma": 0.5518958248447998, "n": 3}, "number_theory": {"mu": 1.0655135999999996, "sigma": 0.6644671999999999, "n": 2}}
+level_mu=1.0  level_sigma=0.75
+probe_json len=214

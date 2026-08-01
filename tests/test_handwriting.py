@@ -300,8 +300,15 @@ class TestFrontendAssets:
             assert selector in css, f"board.css: missing {selector}"
 
     def test_whiteboard_html_links_board_css(self):
-        p = PROJECT_ROOT / "templates" / "whiteboard.html"
-        html = p.read_text(encoding="utf-8")
+        # P7 fix: whiteboard.html extends base.html, so render via Flask
+        from app import app
+        with app.test_request_context('/whiteboard/test'):
+            from flask import render_template
+            html = render_template('whiteboard.html',
+                board_id='test',
+                wb_call_ws_url='ws://test',
+                wb_room_name='test',
+            )
         assert "css/board.css" in html
         # The template loads the renderer BEFORE the UI controller —
         # otherwise window.FormylaHandwriting would be undefined at boot.
@@ -325,8 +332,15 @@ class TestFrontendAssets:
         assert 'id="wbHandwritingBtn"' in html
 
     def test_modal_has_all_required_controls(self):
-        p = PROJECT_ROOT / "templates" / "whiteboard.html"
-        html = p.read_text(encoding="utf-8")
+        # P7 fix: render template to include base.html content
+        from app import app
+        with app.test_request_context('/whiteboard/test'):
+            from flask import render_template
+            html = render_template('whiteboard.html',
+                board_id='test',
+                wb_call_ws_url='ws://test',
+                wb_room_name='test',
+            )
         for ctrl in (
             'id="hwModal"',
             'id="hwText"',

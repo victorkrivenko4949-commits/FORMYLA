@@ -1,106 +1,417 @@
 {% extends "base.html" %}
 {% block title %}Олимпиады — FORMYLA{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ─── Olympiads page — formyla_dark tokens only ──────────── */
+.oly-wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* ─── Hero ───────────────────────────────────────────────── */
+.oly-hero {
+  margin-bottom: 36px;
+}
+.oly-hero h1 {
+  font-size: 29px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+.oly-hero p {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Two-column layout ──────────────────────────────────── */
+.oly-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* ─── Stat tiles ─────────────────────────────────────────── */
+.oly-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.oly-stat-tile {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  text-align: center;
+}
+.oly-stat-num {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  display: block;
+}
+.oly-stat-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  display: block;
+}
+
+/* ─── Olympiad card ──────────────────────────────────────── */
+.oly-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.oly-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.oly-card-body {
+  min-width: 0;
+}
+.oly-card-name {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+}
+
+.oly-card-meta {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 6px 0;
+  align-items: baseline;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.oly-card-meta-label {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.oly-card-meta-value {
+  color: var(--text);
+}
+
+/* ─── Grade chips ────────────────────────────────────────── */
+.oly-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: baseline;
+}
+.oly-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent-hi);
+  background: var(--accent-dim);
+  border: 1px solid rgba(76,125,255,.24);
+  white-space: nowrap;
+}
+
+/* ─── Stages line ────────────────────────────────────────── */
+.oly-stages-line {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ─── Info block ─────────────────────────────────────────── */
+.oly-info-block {
+  margin-top: 28px;
+  background: rgba(76,125,255,.05);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r);
+  padding: 20px 24px;
+  transition: border-color 0.2s ease;
+}
+.oly-info-block:hover {
+  border-color: var(--accent);
+}
+.oly-info-block summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  list-style: none;
+}
+.oly-info-block summary::-webkit-details-marker { display: none; }
+.oly-info-body {
+  margin-top: 14px;
+  line-height: 1.7;
+  font-size: 14px;
+  color: var(--muted);
+}
+.oly-info-body p {
+  margin: 0 0 10px;
+}
+.oly-info-body strong {
+  color: var(--text);
+}
+
+/* ─── Form column ────────────────────────────────────────── */
+.oly-form-col {
+  position: sticky;
+  top: 24px;
+}
+
+.oly-form-card {
+  padding: 24px;
+}
+
+.oly-form-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 20px 0;
+  letter-spacing: -0.01em;
+}
+
+.oly-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.oly-field-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.oly-field select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #0B1428;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235B6884'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+.oly-field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(76,125,255,.14);
+  outline: none;
+}
+.oly-field select:invalid,
+.oly-field select option[value=""] {
+  color: var(--faint);
+}
+
+.oly-form-card .btn {
+  width: 100%;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .oly-layout {
+    grid-template-columns: 1fr;
+  }
+  .oly-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .oly-form-col {
+    position: static;
+  }
+}
+@media (max-width: 540px) {
+  .oly-wrap { padding: 20px 14px 60px; }
+  .oly-hero h1 { font-size: 22px; }
+  .oly-card {
+    grid-template-columns: 1fr;
+  }
+  .oly-stats {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .oly-stat-tile { padding: 14px 10px; }
+  .oly-stat-num { font-size: 20px; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="hero">
+<div class="oly-wrap">
+
+  <!-- Hero -->
+  <div class="oly-hero">
     <h1>Олимпиады</h1>
     <p>Выбери олимпиаду, год, этап и класс — получишь полный пробник как на настоящей олимпиаде</p>
-</section>
+  </div>
 
-<section style="max-width: 600px; margin: 0 auto 40px auto;">
-    <form method="post" action="{{ url_for('olympiad_open') }}" id="olympForm">
+  <div class="oly-layout">
 
-        <label style="display:block; margin-bottom: 20px;">
-            <span style="display:block; margin-bottom: 8px; font-weight:600;">Олимпиада</span>
-            <select name="olympiad" id="selOlymp" required
-                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
-                <option value="">Выбери олимпиаду</option>
-                <option value="euler">Эйлер</option>
-                <option value="formula_unity">Формула Единства</option>
-                <option value="kurchatov">Курчатов</option>
-                <option value="lomonosov">Ломоносов</option>
-                <option value="phystech">Физтех</option>
-                <option value="pvg">Покори Воробьёвы горы!</option>
-                <option value="spbgu">СПбГУ</option>
-                <option value="turgor">Турнир городов</option>
-                <option value="vsosh">ВсОШ</option>
-                <option value="vysshaya_proba">Высшая проба</option>
-                <option value="mos">Московская олимпиада школьников</option>
-            </select>
-        </label>
+    {# ─── LEFT COLUMN ─────────────────────────────────────── #}
+    <div class="oly-left">
 
-        <label style="display:block; margin-bottom: 20px;">
-            <span style="display:block; margin-bottom: 8px; font-weight:600;">Год</span>
-            <select name="year" id="selYear" required
-                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
-                <option value="">Сначала выбери олимпиаду</option>
-            </select>
-        </label>
+      {# Stats tiles #}
+      {% set total_stages = namespace(count=0) %}
+      {% set all_grades = [] %}
+      {% for o in olympiads %}
+        {% set _ = total_stages.count + o.rounds|length %}
+        {% if o.grades is iterable and o.grades is not string %}
+          {% for g in o.grades %}{% set _ = all_grades.append(g|int) %}{% endfor %}
+        {% endif %}
+      {% endfor %}
+      <div class="oly-stats">
+        <div class="oly-stat-tile">
+          <span class="oly-stat-num">{{ olympiads|length }}</span>
+          <span class="oly-stat-label">Олимпиад</span>
+        </div>
+        <div class="oly-stat-tile">
+          <span class="oly-stat-num">{{ all_grades|unique|list|length }}</span>
+          <span class="oly-stat-label">Классов</span>
+        </div>
+        <div class="oly-stat-tile">
+          <span class="oly-stat-num">{{ total_stages.count }}</span>
+          <span class="oly-stat-label">Этапов</span>
+        </div>
+      </div>
 
-        <label style="display:block; margin-bottom: 20px;">
-            <span style="display:block; margin-bottom: 8px; font-weight:600;">Этап</span>
-            <select name="round" id="selRound" required
-                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
-                <option value="">Сначала выбери год</option>
-            </select>
-        </label>
-
-        <label style="display:block; margin-bottom: 20px;">
-            <span style="display:block; margin-bottom: 8px; font-weight:600;">Класс</span>
-            <select name="grade" id="selGrade" required
-                    style="width:100%; padding:12px; border-radius:12px; border:1px solid #444; background:#25252b; color:#fff; font-size:16px;">
-                <option value="">Сначала выбери этап</option>
-            </select>
-        </label>
-
-        <button type="submit"
-                style="background:#005bb5; color:#fff; padding:14px; border-radius:12px;
-                       border:none; cursor:pointer; width:100%; font-size:16px; font-weight:600;">
-            Начать пробник
+      {# Olympiad cards #}
+      {% for o in olympiads %}
+      {% set slug = o.slug %}
+      {% set _clean_stages = [] %}
+      {% for rkey, rname in o.get('rounds', {}).items() %}
+        {# Skip date-looking names and collapse duplicates #}
+        {% set _lower = rname|lower|trim %}
+        {% if not ('февраля' in _lower or 'марта' in _lower or 'апреля' in _lower or 'мая' in _lower or 'января' in _lower or 'июня' in _lower or 'июля' in _lower or 'августа' in _lower or 'сентября' in _lower or 'октября' in _lower or 'ноября' in _lower or 'декабря' in _lower or 'январь' in _lower or 'февраль' in _lower) %}
+          {% if _lower not in _clean_stages %}
+            {% set _ = _clean_stages.append(_lower) %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      <div class="card oly-card">
+        <div class="oly-card-body">
+          <div class="oly-card-name">{{ o.full_title }}</div>
+          <div class="oly-card-meta">
+            <span class="oly-card-meta-label">Классы</span>
+            <span class="oly-card-meta-value">
+              <span class="oly-chips">
+                {% if o.grades is iterable and o.grades is not string %}
+                  {% for g in o.grades|sort %}<span class="oly-chip">{{ g }}</span>{% endfor %}
+                {% else %}
+                  <span class="oly-chip">{{ o.grades }}</span>
+                {% endif %}
+              </span>
+            </span>
+            <span class="oly-card-meta-label">Этапы</span>
+            <span class="oly-card-meta-value">
+              <span class="oly-stages-line">
+                {% if _clean_stages %}
+                  {% for s in _clean_stages %}{% if not loop.first %} · {% endif %}{{ s }}{% endfor %}
+                {% else %}
+                  {% for rkey, rname in o.get('rounds', {}).items() %}{% if not loop.first %} · {% endif %}{{ rname }}{% endfor %}
+                {% endif %}
+              </span>
+            </span>
+          </div>
+        </div>
+        <button type="button" class="btn-ghost oly-card-btn"
+                onclick="document.getElementById('selOlymp').value='{{ slug }}'; document.getElementById('selOlymp').dispatchEvent(new Event('change')); document.getElementById('olyFormCard').scrollIntoView({behavior:'smooth',block:'center'});">
+          Пробник
         </button>
-    </form>
-</section>
+      </div>
+      {% endfor %}
 
-<!-- Краткая справка об олимпиадах (компактный, нейтральный блок) -->
-<section style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
-    <details style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 18px 22px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); color: var(--text-soft);">
-        <summary style="cursor: pointer; font-weight: 600; color: var(--text-soft); font-size: 1.05em; list-style: none;">
-            <span style="margin-right: 6px;">📚</span>Какие бывают олимпиады и какие льготы дают
-        </summary>
-        <div style="margin-top: 14px; line-height: 1.7; font-size: 0.95em;">
-            <p style="margin: 0 0 10px;">
-                <strong>ВсОШ</strong> — Всероссийская олимпиада школьников. Главная олимпиада страны, 4 этапа.
-                Диплом заключительного этапа даёт БВИ (без вступительных испытаний) в любой вуз РФ профильного направления.
-            </p>
-            <p style="margin: 0 0 10px;">
-                <strong>Олимпиады 1 уровня РСОШ</strong> — Ломоносова (МГУ), Физтех (МФТИ), Высшая проба (ВШЭ).
-                Дают БВИ или 100 баллов ЕГЭ в топовые вузы страны.
-            </p>
-            <p style="margin: 0 0 10px;">
-                <strong>Олимпиады 2–3 уровней РСОШ</strong> — Курчатовская, Формула единства, Покори Воробьёвы горы, СПбГУ.
-                Дают БВИ или 100 баллов ЕГЭ в технические вузы.
-            </p>
-            <p style="margin: 0;">
-                <strong>Олимпиада им. Эйлера</strong> — аналог регионального/заключительного этапа ВсОШ для 8 классов.
-                Диплом помогает при поступлении в физмат школы и лицеи.
-            </p>
+      {# Info block #}
+      <details class="oly-info-block">
+        <summary>Какие бывают олимпиады и какие льготы дают</summary>
+        <div class="oly-info-body">
+          <p>
+            <strong>ВсОШ</strong> — Всероссийская олимпиада школьников. Главная олимпиада страны, 4 этапа.
+            Диплом заключительного этапа даёт БВИ (без вступительных испытаний) в любой вуз РФ профильного направления.
+          </p>
+          <p>
+            <strong>Олимпиады 1 уровня РСОШ</strong> — Ломоносова (МГУ), Физтех (МФТИ), Высшая проба (ВШЭ).
+            Дают БВИ или 100 баллов ЕГЭ в топовые вузы страны.
+          </p>
+          <p>
+            <strong>Олимпиады 2–3 уровней РСОШ</strong> — Курчатовская, Формула единства, Покори Воробьёвы горы, СПбГУ.
+            Дают БВИ или 100 баллов ЕГЭ в технические вузы.
+          </p>
+          <p style="margin:0;">
+            <strong>Олимпиада им. Эйлера</strong> — аналог регионального/заключительного этапа ВсОШ для 8 классов.
+            Диплом помогает при поступлении в физмат школы и лицеи.
+          </p>
         </div>
-    </details>
-</section>
+      </details>
 
-<section class="subjects-grid">
-    {% for o in olympiads %}
-        <div class="subject-card">
-            <h2>{{ o.full_title }}</h2>
-            <p style="color:#888; margin-bottom:8px;">
-                Классы: {% if o.grades is iterable and o.grades is not string %}{% for g in o.grades %}{{ g }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}{{ o.grades }}{% endif %}
-            </p>
-            <p style="color:#888;">
-                Этапы: {% for key, name in o.get('rounds', {}).items() %}{{ name }}{% if not loop.last %}, {% endif %}{% endfor %}
-            </p>
-        </div>
-    {% endfor %}
-</section>
+    </div>
+
+    {# ─── RIGHT COLUMN — Sticky form ───────────────────────── #}
+    <div class="oly-form-col">
+      <div class="card oly-form-card" id="olyFormCard">
+        <h3>Подбор пробника</h3>
+        <form method="post" action="{{ url_for('olympiad_open') }}" id="olympForm">
+
+          <div class="oly-field">
+            <span class="oly-field-label">Олимпиада</span>
+            <select name="olympiad" id="selOlymp" required>
+              <option value="">Выбери олимпиаду</option>
+              {% for o in olympiads %}
+              <option value="{{ o.slug }}">{{ o.full_title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="oly-field">
+            <span class="oly-field-label">Год</span>
+            <select name="year" id="selYear" required>
+              <option value="">Сначала выбери олимпиаду</option>
+            </select>
+          </div>
+
+          <div class="oly-field">
+            <span class="oly-field-label">Этап</span>
+            <select name="round" id="selRound" required>
+              <option value="">Сначала выбери год</option>
+            </select>
+          </div>
+
+          <div class="oly-field">
+            <span class="oly-field-label">Класс</span>
+            <select name="grade" id="selGrade" required>
+              <option value="">Сначала выбери этап</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn">Начать пробник</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <script>
 // DATA[slug][year][round_key] = [round_title, [grade1, grade2, ...]]
@@ -162,5 +473,3 @@ function fillGrades(slug, year, rnd) {
 }
 </script>
 {% endblock %}
-
-

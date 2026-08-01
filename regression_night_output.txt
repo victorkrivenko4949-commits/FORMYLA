@@ -1,0 +1,93 @@
+======================================================================
+D1: CYCLE BLOCK WITHOUT ONBOARDING
+======================================================================
+D1(a) onboarding_done = 0
+D1(a) prep_state keys = ['monthly_cycle', 'onboarding']
+D1(a) monthly_cycle.themes = ['G9_T01', 'G9_T02', 'G9_T03', 'G9_T04', 'G9_T05', 'G9_T06', 'G9_T07']
+D1(a) onboarding.completed = False
+D1(c) template coach.html:304:
+  {% if cycle_info and cycle_info.active and onboarding_done %}
+D1(d) cycleBlock: ABSENT
+D1(d) Пройти анкету: PRESENT
+D1(d) HTML: ...6f1,#8b5cf6);">
+    Пройти анкету
+  </a>
+</div>
+
+
+<div class="coach-grid">
+<div class="coach-card">
+<h2>📊 Радар по подтемам</h2>
+<div class=...
+
+======================================================================
+D2: MAX-2 SECTION GUARD
+======================================================================
+D2(a) cached themes = ['G9_T01', 'G9_T02', 'G9_T03', 'G9_T05', 'G9_T06', 'G9_T07', 'G9_T08']
+D2(a) section counts = {'number_theory': 3, 'algebra': 4}
+D2(a) max-2 violated = True
+D2(d) rebuilt themes = ['G9_T01', 'G9_T02', 'G9_T03', 'G9_T05', 'G9_T06', 'G9_T07', 'G9_T08']
+D2(d) section counts = {'number_theory': 3, 'algebra': 4}
+D2(d) max-2 violated = True
+D2(d) total themes = 7
+
+======================================================================
+D3: RUSSIAN SECTION NAMES
+======================================================================
+D3(c) section names = ['Алгебра', 'Геометрия']
+D3(c) no NUMBER_THEORY: True
+
+======================================================================
+D4: RADAR 5 AXES
+======================================================================
+D4(a) zero-user (5 axes): [('Теория чисел', 0.0), ('Алгебра', 0.0), ('Геометрия', 0.0), ('Комбинаторика', 0.0), ('Логика и методы', 0.0)]
+D4(a) zero-user all 5 canonical: False
+D4(a) D2-user (5 axes): [('Теория чисел', 0.0), ('Алгебра', 0.0), ('Геометрия', 0.0), ('Комбинаторика', 0.0), ('Логика и методы', 0.0)]
+D4(a) D2-user all 5 canonical: False
+
+D4(b) RADAR_TOPICS = algebra,geometry,combinatorics,logic,number_theory @ prep_planner.py:25
+D4(c) JS: mastery_radar.js:14 — no zero-axis filtering
+
+======================================================================
+S5: MODULE IMPORT + PREP ROUTE SMOKE TEST
+======================================================================
+S5(a) IMPORT OK: routes.account
+S5(a) IMPORT OK: routes.admin_daily_pool
+S5(a) IMPORT OK: routes.admin_daily_tasks_stats
+S5(a) IMPORT OK: routes.admin_olympiads
+S5(a) IMPORT OK: routes.admin_support
+S5(a) IMPORT OK: routes.chat_presence
+S5(a) IMPORT OK: routes.concierge
+S5(a) IMPORT OK: routes.conference_api
+S5(a) IMPORT OK: routes.decorators
+S5(a) IMPORT OK: routes.drawing
+S5(a) IMPORT OK: routes.drawing_diag
+S5(a) IMPORT OK: routes.drawing_history
+S5(a) IMPORT OK: routes.friends
+S5(a) IMPORT FAIL: routes.friends_backup — '(' was never closed (friends_backup.py, line 94)
+S5(a) IMPORT OK: routes.grade
+S5(a) IMPORT OK: routes.handwriting
+S5(a) IMPORT OK: routes.intake
+S5(a) IMPORT OK: routes.olympiad
+S5(a) IMPORT OK: routes.olympiad_prep
+S5(a) IMPORT OK: routes.prep
+S5(a) IMPORT OK: routes.room_state
+S5(a) IMPORT OK: routes.telegram_auth
+S5(a) IMPORT OK: routes.wb_call
+S5(a) IMPORT OK: routes.wb_meet
+S5(a) IMPORT OK: routes.wb_ws
+S5(a) TOTAL IMPORT FAILURES: 1
+S5(b) Testing 7 /prep GET routes with uid=6
+S5(c) OK: /prep/ → 200
+S5(c) OK: /prep/new → 200
+S5(c) OK: /prep/coach → 200
+S5(c) OK: /prep/probe → 200
+S5(c) OK: /prep/onboarding → 302
+S5(c) OK: /prep/coach/greeting → 200
+S5(c) OK: /prep/coach/history → 200
+S5(d) ok=7 4xx=0 5xx/EXC=0
+S5 SUMMARY: ALL CLEAN — no 5xx on /prep routes
+
+======================================================================
+COMPLETE
+======================================================================

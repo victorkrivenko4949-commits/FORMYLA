@@ -94,7 +94,7 @@ def select_tasks(
     # ВАЖНО: разрешено расширять уровень — НЕЛЬЗЯ менять subject.
     for offset in nearby_levels:
         l = int(level) + offset
-        if l < 1 or l > 8:
+        if l < 1 or l > 5:
             continue
         widened = q_all.filter(AdaptiveTask.difficulty_level == l) \
                        .order_by(AdaptiveTask.id.asc()).all()

@@ -1,579 +1,570 @@
 # -*- coding: utf-8 -*-
 """
-curator/monthly_cycle.py — 28-day monthly preparation cycle orchestrator.
+curator/monthly_cycle.py — Monthly preparation cycle (new version).
 
-Сценарий:
-  1. Куратор строит программу на ВСЕ подтемы класса, отсортированные
-     по слабости (слабые первые), сгруппированные по 7 в месяц.
-  2. Начинается месяц подготовки (28 дней).
-  3. Утром ученик проходит адаптивный тест (5 задач) по подтеме дня.
-  4. Вечером генерируются «Задачи дня» по той же подтеме.
-  5. Первые 7 дней (цикла) — тестовые дни (по одной подтеме каждый день).
-  6. Остальные 21 день — только задачи (без тестов).
-  7. После завершения месяца куратор поздравляет и показывает следующие 7 подтем.
+Month = cycle. Days 1-7: morning probe (5 tasks per subtopic), evening daily tasks.
+Days 8+: daily tasks only. Daily tasks are BLOCKED until morning probe is completed.
+
+Key concepts:
+  - 7 subtopics per cycle, one per active day
+  - Probe uses services/theme_probe.py ladder mechanism
+  - level_by_theme records mu per theme_id
+  - monthly_cycle in prep_state tracks progress
 """
-
+import json
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from models import db, User
 from models_curator import CuratorState
-from daily_tasks.monthly_plan import (
-    build_monthly_plan,
-    get_or_build_plan,
-    pick_day_subtopic,
-    subtopic_title,
-    parent_topic_for_subtopic,
-    current_month_index,
-)
-from daily_tasks.services import enqueue_daily_generation
-from daily_tasks.profile import build_profile, score_to_target_level, CALIBRATION_START_LEVEL
-from routes.prep import get_subtopic_test
 
 logger = logging.getLogger(__name__)
 
-# ─── Constants ───────────────────────────────────────────────────────────────
+# ─── Constants ──────────────────────────────────────────────────────────
 
-CYCLE_DAYS = 28          # Total days in one monthly cycle (4 weeks)
-TEST_DAYS = 7            # First 7 days are test days (one per subtopic)
-TASK_ONLY_DAYS = 21      # Remaining 21 days are task-only
-CYCLE_VERSION = 1
+ACTIVE_DAYS = 7           # days with morning probes
+CANONICAL_SECTIONS = ('algebra', 'geometry', 'combinatorics', 'logic', 'number_theory')
 
-# ─── Prep State helpers ─────────────────────────────────────────────────────
+# ─── Prep state helpers ─────────────────────────────────────────────────
 
 
-def _default_prep_state() -> Dict[str, Any]:
-    """Вернуть структуру prep_state по умолчанию."""
+def _default_monthly_cycle() -> Dict[str, Any]:
     return {
-        "version": CYCLE_VERSION,
-        "cycle_day": 1,
-        "month_index": 1,             # текущий месяц (1-based)
-        "month_completed": False,     # True в первый день после перехода на новый месяц
-        "tested_subtopics": [],
-        "current_subtopic": None,
-        "is_test_day": True,
-        "level": CALIBRATION_START_LEVEL,
-        "generated_today": False,
+        'started_at': None,
+        'themes': [],           # 7 theme_ids
+        'day_index': 1,         # 1..7
+        'done_themes': [],      # completed theme_ids
+        'finished_at': None,
     }
 
 
-def _get_or_create_prep_state(curator_state: CuratorState) -> Dict[str, Any]:
-    """Вернуть prep_state из CuratorState, создав при отсутствии."""
-    state = getattr(curator_state, "prep_state", None) or {}
-    if not isinstance(state, dict) or state.get("version") != CYCLE_VERSION:
-        state = _default_prep_state()
-        curator_state.prep_state = state
-    return state
+def _get_monthly_cycle(cs: CuratorState) -> Dict[str, Any]:
+    ps = cs.prep_state or {}
+    mc = ps.get('monthly_cycle')
+    if not isinstance(mc, dict) or not mc.get('themes'):
+        return _default_monthly_cycle()
+    return mc
 
 
-def _save_prep_state(curator_state: CuratorState, state: Dict[str, Any]) -> None:
-    """Записать prep_state в CuratorState (в памяти, без коммита)."""
-    curator_state.prep_state = state
+def _save_monthly_cycle(cs: CuratorState, mc: Dict[str, Any]):
+    ps = dict(cs.prep_state) if cs.prep_state else {}
+    ps['monthly_cycle'] = mc
+    cs.prep_state = ps
 
 
-# ─── Intelligent subtopic selection ──────────────────────────────────────────
+# ─── Theme selection ────────────────────────────────────────────────────
 
 
-def _select_weakest_subtopics(user_id: int, grade: int, count: int = 7) -> List[str]:
-    """Выбрать ``count`` слабейших подтем ученика через анализ профиля.
+def _section_aware_extras(all_grade_themes, selected, grade, section_order,
+                          section_mus=None, max_per_section=2):
+    """Pick additional themes with section diversity constraint.
 
-    Алгоритм:
-      1. Строит профиль через ``build_profile(user_id)``.
-      2. Извлекает ``topics_full`` — список всех подтем с ``pct`` (0–100) и ``measured``.
-      3. Сортирует:
-         - Сначала измеренные (``measured=True``) по возрастанию ``pct`` (самые слабые).
-         - Затем неизмеренные (``measured=False``) — тоже по ``pct`` (или 50, если None).
-      4. Берёт первые ``count`` подтем.
-      5. Если в профиле меньше ``count`` подтем — дополняет из полного списка класса.
+    Each extra must be from a different section; no section may exceed
+    max_per_section (2) total themes in the final set.
 
-    Возвращает список slug-ов подтем (не более ``count``).
+    Args:
+        all_grade_themes: list of all theme_ids for this grade
+        selected: already selected themes
+        grade: integer grade
+        section_order: list of (section_slug, priority) tuples, sorted by priority
+        section_mus: optional dict {section: mu} for weakness-based priority
+        max_per_section: max themes per section (default 2)
+    Returns: updated selected list (modified in place)
     """
-    profile = build_profile(user_id)
-    topics_full: List[Dict[str, Any]] = profile.get("topics_full", [])
+    from services.theme_registry import section_of_theme, themes_of_section
 
-    # Фильтр: оставляем только те подтемы, которые есть в списке класса
-    from daily_tasks.monthly_plan import _ordered_subtopics_for_grade
-    grade_subs = set(_ordered_subtopics_for_grade(grade))
+    def t_number(tid):
+        try:
+            parts = tid.split('_')
+            for p in parts:
+                if p.startswith('T') and p[1:].isdigit():
+                    return int(p[1:])
+            return 999
+        except Exception:
+            return 999
 
-    def _sort_key(t: Dict[str, Any]) -> tuple:
-        topic = t.get("topic", "")
-        pct = t.get("pct")
-        measured = t.get("measured", False)
-        # measured=False → группа 1 (после измеренных)
-        # measured=True  → группа 0
-        group = 0 if measured else 1
-        # pct=None → ставим 50 как нейтральное значение
-        pct_val = float(pct) if pct is not None else 50.0
-        return (group, pct_val, topic)
+    # Count current themes per section
+    section_counts = {}
+    for tid in selected:
+        sec = section_of_theme(tid) or ''
+        section_counts[sec] = section_counts.get(sec, 0) + 1
 
-    # Сортируем, отбираем слабейшие
-    candidates = sorted(topics_full, key=_sort_key)
-    chosen = []
-    for t in candidates:
-        slug = t.get("topic")
-        if slug and slug in grade_subs:
-            chosen.append(slug)
-        if len(chosen) >= count:
-            break
+    # Need exactly 7 total
+    needed = 7 - len(selected)
+    if needed <= 0:
+        return selected
 
-    # Если не хватило — добираем из полного списка класса
-    if len(chosen) < count:
-        for sub in _ordered_subtopics_for_grade(grade):
-            if sub not in chosen:
-                chosen.append(sub)
-            if len(chosen) >= count:
-                break
+    # Sort sections by priority (lower mu first, then alternating)
+    # For sections with no mu data, use a high default
+    def section_priority(sec):
+        if section_mus:
+            return section_mus.get(sec, 3.0)
+        return 0
 
-    return chosen[:count]
-
-
-def _order_all_subtopics_by_weakness(user_id: int, grade: int) -> List[str]:
-    """Вернуть ВСЕ подтемы класса, отсортированные по слабости.
-
-    Использует ту же логику, что _select_weakest_subtopics, но без ограничения count:
-    - измеренные (measured=True) сортируются по pct (самые слабые первые)
-    - затем неизмеренные (measured=False)
-    """
-    profile = build_profile(user_id)
-    topics_full: List[Dict[str, Any]] = profile.get("topics_full", [])
-
-    from daily_tasks.monthly_plan import _ordered_subtopics_for_grade
-    grade_subs_list = _ordered_subtopics_for_grade(grade)
-    grade_subs_set = set(grade_subs_list)
-
-    # Словарь pct по slug-у из профиля
-    pct_map: Dict[str, float] = {}
-    measured_map: Dict[str, bool] = {}
-    for t in topics_full:
-        slug = t.get("topic")
-        if slug:
-            pct = t.get("pct")
-            pct_map[slug] = float(pct) if pct is not None else 50.0
-            measured_map[slug] = t.get("measured", False)
-
-    def _sort_key(slug: str) -> tuple:
-        measured = measured_map.get(slug, False)
-        pct = pct_map.get(slug, 50.0)
-        group = 0 if measured else 1
-        return (group, pct, slug)
-
-    # Сортируем только те подтемы, что есть в grade_subs_set
-    present = [s for s in grade_subs_list if s in grade_subs_set]
-    # Добавляем те, что есть в grade_subs_list но не в present (на случай битых данных)
-    for s in grade_subs_list:
-        if s not in present:
-            present.append(s)
-
-    present.sort(key=_sort_key)
-    return present
-
-
-# ─── Public API ──────────────────────────────────────────────────────────────
-
-
-def get_curator_state(user_id: int) -> Optional[CuratorState]:
-    """Получить CuratorState для пользователя."""
-    return CuratorState.query.filter_by(user_id=user_id).first()
-
-
-def ensure_monthly_plan(user_id: int) -> Optional[Dict[str, Any]]:
-    """Убедиться, что у пользователя есть monthly plan.
-
-    Строит программу на ВСЕ подтемы класса, отсортированные по слабости
-    (через ``_order_all_subtopics_by_weakness``) и сгруппированные по 7 в месяц.
-    Если план уже существует — возвращает его как есть.
-    Возвращает dict плана или None, если grade не определён.
-    """
-    cs = get_curator_state(user_id)
-    if cs is None:
-        logger.warning("ensure_monthly_plan: no CuratorState for user_id=%s", user_id)
-        return None
-
-    grade = cs.grade
-    if not grade:
-        user = User.query.get(user_id)
-        if user and hasattr(user, 'grade') and user.grade:
-            grade = user.grade
-        else:
-            logger.warning("ensure_monthly_plan: grade not set for user_id=%s", user_id)
-            return None
-
-    # Проверить, есть ли уже валидный план
-    plan = getattr(cs, "prep_plan", None)
-    if (
-        isinstance(plan, dict)
-        and plan.get("months")
-        and plan.get("version") == 1
-    ):
-        return plan
-
-    # Строим НОВЫЙ план на ВСЕ подтемы класса
-    from daily_tasks.monthly_plan import SUBTOPICS_PER_MONTH
-
-    today = date.today()
-    sorted_subs = _order_all_subtopics_by_weakness(user_id, int(grade))
-
-    if not sorted_subs:
-        logger.warning("ensure_monthly_plan: no subtopics for grade=%s", grade)
-        return None
-
-    logger.info(
-        "ensure_monthly_plan: user_id=%s grade=%s total_subs=%s",
-        user_id, grade, len(sorted_subs),
+    sorted_sections = sorted(
+        CANONICAL_SECTIONS,
+        key=lambda s: (section_priority(s), s)
     )
 
-    # Группируем по 7 в месяц
-    months: List[Dict[str, Any]] = []
-    for i in range(0, len(sorted_subs), SUBTOPICS_PER_MONTH):
-        chunk = sorted_subs[i:i + SUBTOPICS_PER_MONTH]
-        months.append({
-            "index": (i // SUBTOPICS_PER_MONTH) + 1,
-            "subtopics": chunk,
-        })
+    # Pick one from each eligible section, round-robin until done
+    extra_count = 0
+    while extra_count < needed:
+        picked_this_round = False
+        for sec in sorted_sections:
+            if extra_count >= needed:
+                break
+            if section_counts.get(sec, 0) >= max_per_section:
+                continue
+            sec_themes = themes_of_section(grade, sec)
+            if not sec_themes:
+                continue
+            # Pick the smallest T that's not already selected
+            sec_themes.sort(key=t_number)
+            for t in sec_themes:
+                if t not in selected:
+                    selected.append(t)
+                    section_counts[sec] = section_counts.get(sec, 0) + 1
+                    extra_count += 1
+                    picked_this_round = True
+                    break
+        if not picked_this_round:
+            # No more sections can accept themes
+            break
 
-    plan = {
-        "version": 1,
-        "anchor_date": today.isoformat(),
-        "subtopics_per_month": SUBTOPICS_PER_MONTH,
-        "grade": int(grade),
-        "months": months,
+    return selected
+
+
+def _select_first_cycle_themes(grade: int) -> List[str]:
+    """Select up to 7 themes for the FIRST cycle: one from each available section + extras.
+
+    Themes are strictly scoped to the student's grade. Sections missing for this
+    grade are skipped (not backfilled from other grades). If the grade has fewer
+    than 7 themes, the cycle is simply shorter.
+
+    П2: extras must come from DIFFERENT sections; no section may exceed 2 themes.
+    """
+    from services.theme_registry import themes_of_section, themes_of_grade
+
+    all_grade_themes = themes_of_grade(grade)
+    if not all_grade_themes:
+        return []
+
+    grade_prefix = f"G{grade}"
+
+    def t_number(tid):
+        try:
+            # G10_T039_S0 → 39
+            parts = tid.split('_')
+            for p in parts:
+                if p.startswith('T') and p[1:].isdigit():
+                    return int(p[1:])
+            return 999
+        except Exception:
+            return 999
+
+    selected = []
+
+    # Step 1: one base theme from each available section
+    for section in CANONICAL_SECTIONS:
+        sec_themes = themes_of_section(grade, section)
+        if not sec_themes:
+            continue
+        sec_themes.sort(key=t_number)
+        selected.append(sec_themes[0])
+
+    # Step 2: extras with section diversity (no mu data → alternating)
+    _section_aware_extras(all_grade_themes, selected, grade,
+                          CANONICAL_SECTIONS, section_mus=None)
+
+    # Guard: every theme MUST belong to the student's grade
+    for tid in selected:
+        if not tid.startswith(grade_prefix):
+            raise RuntimeError(
+                f"GRADE GUARD: theme {tid} does not start with "
+                f"{grade_prefix} (grade={grade}) — cross-grade leak detected"
+            )
+
+    # П2(в): validate — no more than 2 themes from any section
+    from services.theme_registry import section_of_theme
+    sec_counts = {}
+    for tid in selected:
+        sec = section_of_theme(tid) or '?'
+        sec_counts[sec] = sec_counts.get(sec, 0) + 1
+    for sec, cnt in sec_counts.items():
+        if cnt > 2:
+            raise RuntimeError(
+                f"CYCLE GUARD: section '{sec}' has {cnt} themes "
+                f"(max 2 allowed) — selection logic broken. "
+                f"Selected: {selected}"
+            )
+
+    return selected[:7]
+
+
+def _select_subsequent_cycle_themes(user_id: int, grade: int) -> List[str]:
+    """Select up to 7 themes for subsequent cycles, strictly within the student's grade.
+
+    Rule: 4 from 2 weakest sections, 3 new unmeasured.
+    Low-mu themes from the previous cycle carry over.
+    If the grade has fewer than 7 themes, the cycle is shorter.
+    """
+    from services.theme_registry import themes_of_grade, themes_of_section, section_of_theme
+    from services.level_engine import get_state as _get_level_state
+
+    grade_themes = themes_of_grade(grade)
+    if not grade_themes:
+        return _select_first_cycle_themes(grade)
+
+    grade_prefix = f"G{grade}"
+
+    # Get level_by_theme
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    measured_themes = {}
+    if cs and cs.level_by_theme:
+        try:
+            lbt = json.loads(cs.level_by_theme) if isinstance(cs.level_by_theme, str) else cs.level_by_theme
+            measured_themes = {k: v.get('mu', 3) for k, v in lbt.items()}
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # Section mu from level_by_section
+    lvl_state = _get_level_state(user_id)
+    by_section = lvl_state.get('by_section', {})
+
+    section_mus = {}
+    for sec in CANONICAL_SECTIONS:
+        sec_data = by_section.get(sec, {})
+        section_mus[sec] = float(sec_data.get('mu', 3.0))
+
+    # Sort sections by weakness
+    weakest_sections = sorted(CANONICAL_SECTIONS, key=lambda s: section_mus.get(s, 3.0))
+
+    selected = []
+    # 4 themes from 2 weakest sections
+    needed_from_weak = 4
+    for sec in weakest_sections[:2]:
+        sec_themes = themes_of_section(grade, sec)
+        # Sort by measured mu (lowest first), then unmeasured
+        sec_themes.sort(key=lambda t: measured_themes.get(t, 5.0))
+        for t in sec_themes:
+            if t not in selected and len(selected) < needed_from_weak:
+                selected.append(t)
+
+        # If the 2 weakest sections didn't yield 4 themes,
+        # try the next sections (still within the same grade)
+        if len(selected) >= needed_from_weak:
+            break
+    else:
+        # Still need more from weak sections — try remaining sections
+        for sec in weakest_sections[2:]:
+            if len(selected) >= needed_from_weak:
+                break
+            sec_themes = themes_of_section(grade, sec)
+            sec_themes.sort(key=lambda t: measured_themes.get(t, 5.0))
+            for t in sec_themes:
+                if t not in selected and len(selected) < needed_from_weak:
+                    selected.append(t)
+
+    # 3+ extras with section diversity using weakness priority
+    _section_aware_extras(grade_themes, selected, grade,
+                          CANONICAL_SECTIONS, section_mus=section_mus)
+
+    # Guard: every theme MUST belong to the student's grade
+    for tid in selected:
+        if not tid.startswith(grade_prefix):
+            raise RuntimeError(
+                f"GRADE GUARD: theme {tid} does not start with "
+                f"{grade_prefix} (grade={grade}) — cross-grade leak detected"
+            )
+
+    # П2(в): validate — no more than 2 themes from any section
+    sec_counts = {}
+    for tid in selected:
+        sec = section_of_theme(tid) or '?'
+        sec_counts[sec] = sec_counts.get(sec, 0) + 1
+    for sec, cnt in sec_counts.items():
+        if cnt > 2:
+            raise RuntimeError(
+                f"CYCLE GUARD: section '{sec}' has {cnt} themes "
+                f"(max 2 allowed) — selection logic broken. "
+                f"Selected: {selected}"
+            )
+
+    return selected[:7]
+
+
+def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dict[str, Any]:
+    """Build or retrieve the monthly cycle for a user.
+
+    If no cycle exists or force_new=True, selects 7 themes and starts a new cycle.
+    """
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if not cs:
+        cs = CuratorState(user_id=user_id)
+        db.session.add(cs)
+        db.session.commit()
+
+    mc = _get_monthly_cycle(cs)
+
+    if mc.get('themes') and not force_new:
+        # Validate cached cycle: max 2 themes per section.
+        # P11 FIX: only rebuild if a KNOWN section exceeds 2.
+        # Unknown sections ('?') mean theme IDs are synthetic/test data —
+        # don't destroy the cached started_at date.
+        from services.theme_registry import section_of_theme
+        sec_counts = {}
+        unknown_count = 0
+        for tid in mc['themes']:
+            sec = section_of_theme(tid) or '?'
+            if sec == '?':
+                unknown_count += 1
+            else:
+                sec_counts[sec] = sec_counts.get(sec, 0) + 1
+        # Only rebuild if a known section exceeds 2 (ignore '?' for all-unknown cycles)
+        if any(cnt > 2 for cnt in sec_counts.values()):
+            logger.info(
+                'build_or_get_cycle: cached cycle violates max-2 rule — rebuilding. '
+                'Counts: %s  Themes: %s', sec_counts, mc['themes']
+            )
+        elif unknown_count == len(mc['themes']) and mc.get('started_at'):
+            # All themes unknown (test/fake data) — preserve started_at, return as-is
+            return mc
+        else:
+            return mc
+
+    # Determine if first cycle
+    if mc.get('finished_at') or not mc.get('started_at'):
+        # Check if any cycle was ever completed
+        had_prev = bool(mc.get('finished_at')) or bool(mc.get('done_themes'))
+        if had_prev:
+            themes = _select_subsequent_cycle_themes(user_id, grade)
+        else:
+            themes = _select_first_cycle_themes(grade)
+    else:
+        themes = _select_first_cycle_themes(grade)
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    mc = {
+        'started_at': now_iso,
+        'themes': themes,
+        'day_index': 1,
+        'done_themes': [],
+        'finished_at': None,
     }
-    cs.prep_plan = plan
+    _save_monthly_cycle(cs, mc)
     db.session.commit()
-    return plan
+
+    return mc
+
+
+# ─── Public API ─────────────────────────────────────────────────────────
+
+
+def _compute_day_index(started_at_iso: Optional[str], themes_count: int = 0) -> int:
+    """Compute day_index from started_at date: (today - started_at).days + 1.
+
+    **Not clamped** — returns the actual calendar day count.
+    For theme lookup (get_cycle_info), clamper caps to themes_count.
+    For daily norm (get_daily_task_count), the raw count is used.
+
+    P11 FIX: Previously day_index was a stored static counter that never
+    advanced. Now it's computed from the actual calendar date, so day 8
+    correctly returns day_index 8 (and thus 15 tasks instead of 5).
+    """
+    if not started_at_iso:
+        return 1
+    try:
+        started_date = date.fromisoformat(started_at_iso[:10])
+        today = date.today()
+        delta = (today - started_date).days
+        if delta < 0:
+            return 1
+        return delta + 1
+    except Exception:
+        return 1
+
+
+def get_cycle_info(user_id: int) -> Dict[str, Any]:
+    """Get current cycle status for the user.
+
+    day_index is computed from started_at date (calendar arithmetic),
+    NOT from a stored static counter. This means day_index auto-advances
+    as calendar days pass.
+
+    Returns:
+        {
+            'active': bool,
+            'started_at': iso_str | None,
+            'day_index': 1..7 (computed from started_at),
+            'themes': [theme_id, ...],
+            'done_themes': [theme_id, ...],
+            'finished': bool,
+            'current_theme': str | None,   # theme for current day
+            'blocked': bool,               # True if probe not done for current day
+        }
+    """
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if not cs:
+        return {'active': False}
+
+    mc = _get_monthly_cycle(cs)
+    if not mc.get('themes'):
+        return {'active': False}
+
+    # P11 FIX: compute day_index from started_at date, not stored counter
+    day_idx = _compute_day_index(mc.get('started_at'))
+    themes = mc.get('themes', [])
+    done = mc.get('done_themes', [])
+    finished = len(done) >= ACTIVE_DAYS
+
+    # theme_index clamps to themes_count for safe array access
+    theme_idx = min(day_idx, len(themes)) if themes else 1
+    current_theme = themes[theme_idx - 1] if theme_idx <= len(themes) else None
+
+    # Check if probe is pending
+    from services.theme_probe import has_active_probe, get_active_probe_theme
+    probe_pending = has_active_probe(user_id)
+    probe_theme = get_active_probe_theme(user_id)
+    blocked = False
+
+    if not finished and current_theme and current_theme not in done and not probe_pending:
+        blocked = True  # No probe started yet for today
+
+    if probe_pending and probe_theme and probe_theme != current_theme:
+        blocked = True  # Probe for different theme is pending
+
+    return {
+        'active': True,
+        'started_at': mc.get('started_at'),
+        'day_index': day_idx,
+        'themes': themes,
+        'done_themes': done,
+        'finished': finished,
+        'current_theme': current_theme,
+        'blocked': blocked,
+    }
+
+
+def advance_day(user_id: int) -> Dict[str, Any]:
+    """Mark current day's probe as done. Day index stays — the done_themes
+    list tells get_cycle_info that the current theme is measured, unblocking
+    daily tasks for today. Day index only advances when get_cycle_info is
+    called on a different calendar day (outside this function).
+
+    Called after a probe is completed.
+    """
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if not cs:
+        return {'error': 'no_state'}
+
+    mc = _get_monthly_cycle(cs)
+    day_idx = mc.get('day_index', 1)
+    themes = mc.get('themes', [])
+    done = list(mc.get('done_themes', []))
+
+    if day_idx > len(themes):
+        return {'error': 'cycle_already_done'}
+
+    current_theme = themes[day_idx - 1]
+    if current_theme not in done:
+        done.append(current_theme)
+
+    mc['done_themes'] = done
+
+    # DO NOT advance day_index — stay on current day.
+    # When the student visits /daily_tasks, get_cycle_info will see
+    # current_theme in done_themes → blocked=False → tasks are shown.
+    # Day index only advances when get_cycle_info is called on a
+    # calendar day where the student already finished the previous probe.
+
+    if len(done) >= ACTIVE_DAYS:
+        mc['finished_at'] = datetime.now(timezone.utc).isoformat()
+
+    _save_monthly_cycle(cs, mc)
+    db.session.commit()
+
+    return {
+        'day_index': mc['day_index'],
+        'done_count': len(mc['done_themes']),
+        'finished': len(mc['done_themes']) >= ACTIVE_DAYS,
+        'current_theme': themes[mc['day_index'] - 1] if mc['day_index'] <= len(themes) else None,
+    }
 
 
 def get_today_info(user_id: int) -> Dict[str, Any]:
-    """Получить информацию о сегодняшнем дне в цикле подготовки.
+    """Return today's subtopic info for morning/evening push notifications.
 
-    Также отслеживает переходы между месяцами: когда cycle_day == 1,
-    выставляет ``month_completed = True`` и обновляет ``month_index``.
-
-    Returns:
-        {
-            "subtopic": str | None,       # slug подтемы дня
-            "subtopic_title": str | None,  # русское название
-            "is_test_day": bool,           # нужно ли проходить тест
-            "tested": bool,                # подтема уже протестирована
-            "cycle_day": int,              # день в цикле (1-28)
-            "has_tasks": bool,             # задачи уже сгенерированы
-            "level": int,                  # текущий уровень сложности
-            "month_index": int,            # текущий месяц (1-based)
-            "month_completed": bool,       # True в первый день нового месяца
-            "next_month_subtopics": list,  # подтемы следующего месяца
-        }
+    Built on get_cycle_info — no extra DB writes.
+    Returns dict with keys: subtopic, subtopic_title, is_test_day, tested, has_tasks, level.
     """
-    cs = get_curator_state(user_id)
-    if cs is None:
-        return {"subtopic": None, "is_test_day": False, "cycle_day": 0}
+    info = get_cycle_info(user_id)
+    if not info.get('active'):
+        return {}
 
-    plan = ensure_monthly_plan(user_id)
-    if plan is None:
-        return {"subtopic": None, "is_test_day": False, "cycle_day": 0}
+    current_theme = info.get('current_theme')
+    if not current_theme:
+        return {}
 
-    today = date.today()
-    subtopic_slug = pick_day_subtopic(plan, today)
-    if not subtopic_slug:
-        return {"subtopic": None, "is_test_day": False, "cycle_day": 0}
+    from services.theme_registry import theme_title as _theme_title
+    from services.theme_probe import has_active_probe
 
-    state = _get_or_create_prep_state(cs)
+    subtopic_title = _theme_title(current_theme)
 
-    # Определить день цикла по календарю от anchor
-    from datetime import date as _date
-    anchor = today  # fallback
+    # test day = blocked (probe not done) or probe still active
+    is_test_day = info.get('blocked', False) or has_active_probe(user_id)
+    tested = current_theme in info.get('done_themes', [])
+
+    # has_tasks = daily task set exists for today for this user
+    has_tasks = False
     try:
-        anchor = _date.fromisoformat(str(plan.get("anchor_date")))
-    except (TypeError, ValueError):
+        from daily_tasks.models import DailyTaskSet
+        from datetime import date
+        has_tasks = DailyTaskSet.query.filter_by(
+            user_id=user_id, target_date=date.today()
+        ).first() is not None
+    except Exception:
         pass
-    days_since_anchor = max(0, (today - anchor).days)
-    cycle_day = (days_since_anchor % CYCLE_DAYS) + 1
 
-    # Определить текущий месяц по календарю (от anchor_date, 28-дневные блоки)
-    months = plan.get("months") or []
-    total_months = len(months)
-    if total_months > 0:
-        month_idx = (days_since_anchor // 28) % total_months
-        cal_month_index = months[month_idx].get("index", 1)
-    else:
-        cal_month_index = 1
-
-    is_test_day = cycle_day <= TEST_DAYS
-    tested = subtopic_slug in (state.get("tested_subtopics") or [])
-
-    # Обновить состояние, если день изменился
-    if state.get("cycle_day") != cycle_day:
-        old_cycle_day = state.get("cycle_day", 1)
-        state["cycle_day"] = cycle_day
-        state["current_subtopic"] = subtopic_slug
-        state["is_test_day"] = is_test_day
-        state["generated_today"] = False
-
-        # При переходе на НОВЫЙ месяц (cycle_day == 1 или день уменьшился)
-        if cycle_day == 1 or (cycle_day < old_cycle_day):
-            # Предыдущий месяц завершён — отмечаем month_completed
-            prev_month = state.get("month_index", 1)
-
-            # Если это не первый запуск (state не свежий)
-            if old_cycle_day != 1 or state.get("generated_today") is not None:
-                state["month_completed"] = True
-
-            state["month_index"] = cal_month_index
-            state["tested_subtopics"] = []
-
-        # Если подтема уже протестирована — это не тестовый день
-        if tested and is_test_day:
-            state["is_test_day"] = False
-
-        _save_prep_state(cs, state)
-        db.session.commit()
-
-    title = subtopic_title(subtopic_slug)
-
-    # Подтемы следующего месяца
-    next_month_subtopics: List[str] = []
-    if total_months > 0:
-        next_idx = (days_since_anchor // 28 + 1) % total_months
-        next_month = months[next_idx]
-        next_month_subtopics = next_month.get("subtopics", [])
+    from services.level_engine import get_state as _get_level_state
+    lvl_state = _get_level_state(user_id)
+    level = max(1, min(7, int(lvl_state.get('mu', 2))))
 
     return {
-        "subtopic": subtopic_slug,
-        "subtopic_title": title,
-        "is_test_day": state.get("is_test_day", False) and not tested,
-        "tested": tested,
-        "cycle_day": cycle_day,
-        "has_tasks": state.get("generated_today", False),
-        "level": state.get("level", CALIBRATION_START_LEVEL),
-        "month_index": state.get("month_index", cal_month_index),
-        "month_completed": state.get("month_completed", False),
-        "next_month_subtopics": next_month_subtopics,
+        'subtopic': current_theme,
+        'subtopic_title': subtopic_title,
+        'is_test_day': is_test_day,
+        'tested': tested,
+        'has_tasks': has_tasks,
+        'level': level,
     }
 
 
-def get_morning_test(user_id: int) -> Dict[str, Any]:
-    """Получить тестовые задачи для утреннего теста.
+def generate_tasks_only(user_id: int, subtopic: str = None) -> Dict[str, Any]:
+    """Queue daily task generation for task-only days (8-30) without a probe.
 
-    Если сегодня тестовый день и подтема ещё не протестирована —
-    возвращает 5 задач для адаптивного теста.
-
-    Returns:
-        {
-            "subtopic": str,
-            "subtopic_title": str,
-            "tasks": [{"id": int, "task_text": str, "topic": str, "difficulty_level": int}, ...],
-            "is_test_day": bool,
-        }
-        или {"is_test_day": False} если сегодня не тестовый день.
+    Returns {success: bool, subtopic: str, generation_queued: bool, message: str}.
     """
-    info = get_today_info(user_id)
-    if not info.get("subtopic"):
-        return {"is_test_day": False, "reason": "Нет подтемы на сегодня"}
+    from services.level_engine import get_state as _get_level_state
+    lvl_state = _get_level_state(user_id)
+    level = max(1, min(7, int(lvl_state.get('mu', 2))))
 
-    if not info.get("is_test_day"):
-        return {"is_test_day": False, "reason": "Сегодня не тестовый день"}
+    if subtopic is None:
+        info = get_today_info(user_id)
+        subtopic = info.get('subtopic', '')
 
-    if info.get("tested"):
-        return {"is_test_day": False, "reason": "Подтема уже протестирована"}
-
-    cs = get_curator_state(user_id)
-    grade = cs.grade if cs else None
-    if not grade:
-        user = User.query.get(user_id)
-        if user and hasattr(user, 'grade') and user.grade:
-            grade = user.grade
-
-    if not grade:
-        return {"is_test_day": False, "reason": "Класс не определён"}
-
-    tasks = get_subtopic_test(int(grade), info["subtopic"], count=5)
-    return {
-        "subtopic": info["subtopic"],
-        "subtopic_title": info.get("subtopic_title"),
-        "tasks": tasks,
-        "is_test_day": True,
-    }
-
-
-def submit_test_and_generate_tasks(
-    user_id: int,
-    results: List[Dict[str, Any]],
-    subtopic: Optional[str] = None,
-) -> Dict[str, Any]:
-    """Принять результаты теста и запустить вечернюю генерацию задач.
-
-    Results: список dict с ключами:
-        - task_id (int): ID задачи из утреннего теста
-        - is_correct (bool): правильный/неправильный ответ
-        - user_answer (str, optional): ответ ученика
-        - difficulty_level (int, optional): оценка сложности учеником
-
-    Returns:
-        {
-            "success": bool,
-            "subtopic": str,
-            "level": int,              # определённый уровень
-            "generation_queued": bool, # поставлена ли генерация в очередь
-            "message": str,
-        }
-    """
-    cs = get_curator_state(user_id)
-    if cs is None:
-        return {"success": False, "message": "CuratorState не найден"}
-
-    plan = ensure_monthly_plan(user_id)
-    if plan is None:
-        return {"success": False, "message": "План не найден"}
-
-    today = date.today()
-    if subtopic:
-        slug = subtopic
-    else:
-        slug = pick_day_subtopic(plan, today)
-    if not slug:
-        return {"success": False, "message": "Не удалось определить подтему дня"}
-
-    state = _get_or_create_prep_state(cs)
-
-    # Вычислить уровень из результатов теста
-    correct = sum(1 for r in results if r.get("is_correct"))
-    total = len(results) if results else 5
-    level = score_to_target_level(correct, total)
-    if level is None:
-        level = CALIBRATION_START_LEVEL
-
-    # Сохранить уровень и отметить подтему как протестированную
-    state["level"] = level
-    tested = state.get("tested_subtopics") or []
-    if slug not in tested:
-        tested.append(slug)
-    state["tested_subtopics"] = tested
-
-    # Поставить генерацию задач дня в очередь
+    queued = False
     try:
-        enqueue_daily_generation(
-            user_id,
-            triggered_by="test",
-            forced_topic=slug,
-        )
-        state["generated_today"] = True
-        gen_status = "queued"
-    except Exception as e:
-        logger.exception("submit_test_and_generate_tasks: enqueue failed for user=%s", user_id)
-        gen_status = f"error: {e}"
-
-    _save_prep_state(cs, state)
-    db.session.commit()
+        from daily_tasks.services import enqueue_daily_generation
+        enqueue_daily_generation(user_id)
+        queued = True
+    except Exception:
+        pass
 
     return {
-        "success": True,
-        "subtopic": slug,
-        "subtopic_title": subtopic_title(slug),
-        "level": level,
-        "correct": correct,
-        "total": total,
-        "generation_queued": gen_status == "queued",
-        "generation_status": gen_status,
-        "message": (
-            f"Тест по теме «{subtopic_title(slug)}» завершён. "
-            f"Решено {correct}/{total}. Уровень: {level}. "
-            f"{'Задачи поставлены в очередь генерации.' if gen_status == 'queued' else 'Ошибка генерации: ' + str(gen_status)}"
-        ),
-    }
-
-
-def generate_tasks_only(user_id: int, subtopic: Optional[str] = None) -> Dict[str, Any]:
-    """Сгенерировать задачи дня без теста (для дней 8-28).
-
-    Вызывается вечером в task-only дни.
-    """
-    cs = get_curator_state(user_id)
-    if cs is None:
-        return {"success": False, "message": "CuratorState не найден"}
-
-    plan = ensure_monthly_plan(user_id)
-    if plan is None:
-        return {"success": False, "message": "План не найден"}
-
-    today = date.today()
-    slug = subtopic or pick_day_subtopic(plan, today)
-    if not slug:
-        return {"success": False, "message": "Не удалось определить подтему дня"}
-
-    state = _get_or_create_prep_state(cs)
-    level = state.get("level", CALIBRATION_START_LEVEL)
-
-    try:
-        enqueue_daily_generation(
-            user_id,
-            triggered_by="cron",
-            forced_topic=slug,
-        )
-        state["generated_today"] = True
-        gen_status = "queued"
-    except Exception as e:
-        logger.exception("generate_tasks_only: enqueue failed for user=%s", user_id)
-        gen_status = f"error: {e}"
-
-    _save_prep_state(cs, state)
-    db.session.commit()
-
-    return {
-        "success": gen_status == "queued",
-        "subtopic": slug,
-        "subtopic_title": subtopic_title(slug),
-        "level": level,
-        "generation_queued": gen_status == "queued",
-        "generation_status": gen_status,
-        "message": (
-            f"Задачи по теме «{subtopic_title(slug)}» "
-            f"{'поставлены в очередь' if gen_status == 'queued' else 'ошибка: ' + str(gen_status)}."
-        ),
-    }
-
-
-def get_cycle_progress(user_id: int) -> Dict[str, Any]:
-    """Получить общий прогресс по циклу подготовки.
-
-    Returns:
-        {
-            "cycle_day": int,
-            "total_days": 28,
-            "tested_subtopics": [str, ...],
-            "remaining_tests": int,
-            "subtopics_total": int,
-            "level": int,
-            "is_complete": bool,
-        }
-    """
-    cs = get_curator_state(user_id)
-    if cs is None:
-        return {"cycle_day": 0, "total_days": CYCLE_DAYS}
-
-    state = _get_or_create_prep_state(cs)
-    plan = ensure_monthly_plan(user_id)
-
-    subtopics_total = TEST_DAYS  # 7 подтем в месяц
-    if plan:
-        months = plan.get("months") or []
-        if months:
-            # Текущий месяц
-            from daily_tasks.monthly_plan import current_month_index as _curr_m
-            m_idx = _curr_m(plan) - 1
-            if 0 <= m_idx < len(months):
-                month_subs = months[m_idx].get("subtopics") or []
-                subtopics_total = len(month_subs)
-
-    tested = state.get("tested_subtopics") or []
-    remaining = max(0, subtopics_total - len(tested))
-    is_complete = remaining == 0 and state.get("cycle_day", 0) >= CYCLE_DAYS
-
-    return {
-        "cycle_day": state.get("cycle_day", 0),
-        "total_days": CYCLE_DAYS,
-        "tested_subtopics": tested,
-        "remaining_tests": remaining,
-        "subtopics_total": subtopics_total,
-        "level": state.get("level", CALIBRATION_START_LEVEL),
-        "is_complete": is_complete,
+        'success': queued,
+        'subtopic': subtopic,
+        'level': level,
+        'generation_queued': queued,
+        'message': 'Tasks generation queued' if queued else 'Daily set already exists or generation not available',
     }

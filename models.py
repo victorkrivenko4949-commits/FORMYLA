@@ -181,10 +181,10 @@ class User(UserMixin, db.Model):
     def get_leaderboard_score(self):
         """Вычислить общий рейтинг для leaderboard"""
         # Формула рейтинга: XP + бонусы за достижения
-        score = self.experience_points
-        score += self.mock_exams_passed * 100  # Большой бонус за пробники
-        score += self.adaptive_tests_completed * 50
-        score += self.highest_difficulty_solved * 20
+        score = self.experience_points or 0
+        score += (self.mock_exams_passed or 0) * 100  # Большой бонус за пробники
+        score += (self.adaptive_tests_completed or 0) * 50
+        score += (self.highest_difficulty_solved or 0) * 20
         return score
     
     def get_friends(self):
@@ -817,7 +817,7 @@ class AdaptiveTask(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     class_level = db.Column(db.Integer, nullable=False, index=True)  # Класс (5, 6, 7, etc.)
-    difficulty_level = db.Column(db.Integer, nullable=False, index=True)  # Уровень сложности 1-7
+    difficulty_level = db.Column(db.Integer, nullable=False, index=True)  # Уровень сложности 1-5
     topic = db.Column(db.String(200), nullable=False, index=True)  # Тема из матрицы 25 тем
     subtopic = db.Column(db.String(100), nullable=True, index=True)  # Подтема для уникальности в пробнике
     task_text = db.Column(db.Text, nullable=False)  # Условие задачи (с LaTeX)
@@ -859,6 +859,7 @@ class AdaptiveTask(db.Model):
     methods_json = db.Column(db.Text, nullable=True)
 
     # AI-тьютор self-check (см. auto-migration в app.py)
+    theme_id = db.Column(db.String(50), nullable=True, index=True)
     needs_review = db.Column(db.Boolean, default=False, index=True)
     llm_suggested_answer = db.Column(db.Text)
     llm_suggested_solution = db.Column(db.Text)
@@ -1395,6 +1396,37 @@ class TaskSolution(db.Model):
 
     def __repr__(self):
         return f'<TaskSolution id={self.id} user={self.user_id} task={self.task_id}>'
+
+
+class TaskAssignmentHistory(db.Model):
+    """Shared assignment history: which task was assigned to which student.
+
+    Used by the daily rotation engine to prevent repeat assignments.
+    One row per unique (user_id, task_id) pair.
+    """
+    __tablename__ = 'task_assignment_history'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'), nullable=False, index=True,
+    )
+    task_id = db.Column(
+        db.Integer, db.ForeignKey('adaptive_tasks.id'), nullable=False, index=True,
+    )
+    assigned_date = db.Column(db.Date, nullable=False)
+    source = db.Column(
+        db.String(32), nullable=False, default='daily_set',
+    )  # 'diagnostic' | 'daily_set' | 'daily_quest'
+    result = db.Column(db.String(16), nullable=True)  # 'correct' | 'incorrect' | None
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'task_id', name='uq_tah_user_task'),
+    )
+
+    def __repr__(self):
+        return (f'<TaskAssignmentHistory user={self.user_id} '
+                f'task={self.task_id} src={self.source}>')
 
 
 class DrawingGeneration(db.Model):

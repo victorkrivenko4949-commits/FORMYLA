@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Smoke-tests for the public video-call lobby page.
+"""Smoke-tests for the video-call lobby page.
 
 Цель: гарантировать, что:
   * GET /call возвращает 200 (а не 404 — как было до фикса).
   * В ответе действительно отрендерен шаблон call.html (видны опорные тексты).
   * Blueprint /api/wb_call/* зарегистрирован и его endpoints не дают 404.
+
+Со времени P13 /call стал @login_required — тесты теперь входят в аккаунт
+перед обращением к странице.
 
 Эти тесты — страховка от повторения регрессии «404 на /call»: если кто-то
 снесёт роут или забудет templates/call.html, CI завалится здесь, а не в проде.
@@ -31,18 +34,50 @@ def client():
         yield c
 
 
+def _ensure_user_1_and_login(client):
+    """Создать user #1 в БД (если нет) и войти через сессию."""
+    from app import app  # noqa: WPS433
+    from models import db, User  # noqa: WPS433
+
+    with app.app_context():
+        u = db.session.get(User, 1)
+        if u is None:
+            u = User(
+                id=1,
+                email='test1@test.ru',
+                name='Test User 1',
+                preferred_grade=9,
+                is_guest=False,
+            )
+            db.session.add(u)
+            db.session.commit()
+        else:
+            # Пользователь уже существует — убедимся что не гость
+            if u.is_guest:
+                u.is_guest = False
+                db.session.commit()
+
+    with client.session_transaction() as sess:
+        sess['_user_id'] = '1'
+        sess['_fresh'] = True
+
+
 def test_call_page_returns_200(client):
-    """GET /call должен отдавать 200 OK (страница лобби видеозвонка)."""
+    """GET /call должен отдавать 200 OK после входа (P13: @login_required)."""
+    _ensure_user_1_and_login(client)
+
     resp = client.get("/call")
     assert resp.status_code == 200, (
         "GET /call вернул "
         + str(resp.status_code)
-        + " — публичная страница лобби видеозвонка должна быть 200."
+        + " — страница лобби видеозвонка должна быть 200 после входа."
     )
 
 
 def test_call_page_renders_lobby(client):
     """В HTML должны быть опорные тексты страницы лобби."""
+    _ensure_user_1_and_login(client)
+
     resp = client.get("/call")
     body = resp.get_data(as_text=True)
     # Проверяем по нескольким независимым маркерам, чтобы тест не ломался

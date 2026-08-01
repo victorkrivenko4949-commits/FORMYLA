@@ -7,6 +7,7 @@
 Запись только по флагу --apply.
 
 Идемпотентность: по полю source_id = task_uid.
+Дополнительная дедупликация по task_text.
 """
 
 import argparse
@@ -82,6 +83,7 @@ class FormylaImporter:
         self.empty_statement = []
         self.empty_answer = []
         self.geo_no_diagram = 0
+        self.text_duplicates = 0
         self.validation_errors = []
         self.write_errors = []
         self.created = 0
@@ -170,7 +172,7 @@ class FormylaImporter:
         self.schema_ok = True
         return True
 
-    def validate_and_normalize(self, row, seen_uids):
+    def validate_and_normalize(self, row, seen_uids, seen_texts):
         """Проверить одну строку, вернуть (нормализованный dict или None, код ошибки).
 
         ВАЖНО: все счётчики и сбор аналитики выполняются ДО проверок,
@@ -253,6 +255,18 @@ class FormylaImporter:
             errors.append("empty answer")
             return None, errors
 
+        # ── дедупликация по тексту задачи ─────────────────────────────────
+        text_key = str(statement).strip()
+        if text_key in seen_texts:
+            self.text_duplicates += 1
+            errors.append(f"duplicate text: {task_uid}")
+            return None, errors
+        seen_texts.add(text_key)
+
+        # ── нормализация section через level_engine ───────────────────────
+        from services.level_engine import _normalize_section as le_norm
+        normalized_section = le_norm(section)
+
         # ── level_name канонизация ────────────────────────────────────────
         level_name_canon = LEVEL_NAME_CANON.get(
             level, row.get("level_name", "unknown")
@@ -267,7 +281,7 @@ class FormylaImporter:
             "difficulty_level": level,
             "topic": theme,
             "subtopic": theme_id,
-            "subject": section,
+            "subject": normalized_section,
             "task_text": statement,
             "solution": solution,
             "correct_answer": answer,
@@ -306,10 +320,11 @@ class FormylaImporter:
 
         # 3. Валидация + нормализация
         seen_uids = set()
+        seen_texts = set()
         valid_rows = []
 
         for row in rows:
-            normalized, errs = self.validate_and_normalize(row, seen_uids)
+            normalized, errs = self.validate_and_normalize(row, seen_uids, seen_texts)
             if normalized is None:
                 self.validation_errors.append((row.get("task_uid", "??"), errs))
                 continue
@@ -513,6 +528,7 @@ class FormylaImporter:
         print(f"Ошибок парсинга: {len(self.parse_errors)}")
         print(f"Ошибок валидации: {len(self.validation_errors)}")
         print(f"Дубликатов task_uid: {len(self.duplicate_uids)}")
+        print(f"Дубликатов по тексту: {self.text_duplicates}")
         print(f"Пустых statement: {len(self.empty_statement)}")
         print(f"Пустых answer: {len(self.empty_answer)}")
         print(f"Геометрий без diagram_spec: {self.geo_no_diagram}")
@@ -669,6 +685,7 @@ class FormylaImporter:
         lines.append(f"- **Parse errors**: {len(self.parse_errors)}")
         lines.append(f"- **Validation errors**: {len(self.validation_errors)}")
         lines.append(f"- **Duplicate task_uid**: {len(self.duplicate_uids)}")
+        lines.append(f"- **Duplicate by task_text**: {self.text_duplicates}")
         lines.append(f"- **Empty statement**: {len(self.empty_statement)}")
         lines.append(f"- **Empty answer**: {len(self.empty_answer)}")
         lines.append(

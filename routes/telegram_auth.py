@@ -187,9 +187,9 @@ def telegram_callback():
         except Exception as exc:
             log.warning("Welcome email failed (telegram): %s", exc)
 
-    # Редирект для нового пользователя — на онбординг
+    # Редирект для нового пользователя — на /intake
     if getattr(user, "onboarded_at", None) is None:
-        return redirect(url_for("about_page", onboarding=1))
+        return redirect(url_for("intake.intake_page"))
     return redirect(url_for("index"))
 
 

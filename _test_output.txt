@@ -1,32 +1,142 @@
-C:\Users\Victor\Desktop\����� ����� (2)\gen_solutions.py:8: SyntaxWarning: invalid escape sequence '\('
-  LaTeX: DeepSeek �������� ���������� ������������ \(...\) � \[...\];
-C:\Users\Victor\Desktop\����� ����� (2)\gen_solutions.py:140: SyntaxWarning: invalid escape sequence '\('
-  """Convert DeepSeek LaTeX \(...\) and \[...\] to $...$ and $$...$$."""
-DB loaded: 1622 olympiads
-
-Testing matching for: |euler|2017|g8|distance|#1
-  Found: olympiad index 25, problem index 0
-  Olympiad: euler
-  Problem num: 1
-  Current solution_status: 'generated'
-  All 60 tasks match correctly!
-
-Testing LaTeX conversion:
-  Before: �������: \(x^2 + y^2 = 1\) � \[\sum_{k=1}^{n} k\]
-  After:  �������: $x^2 + y^2 = 1$ � $$\sum_{k=1}^{n} k$$
-  PASS
-
-Testing JSON sanitizer:
-  Valid JSON: {'solution': 'test', 'answer': '42'}
-  With control chars: {'solution': 'line1\nline2', 'answer': '42'}
-  With LaTeX escapes: {'solution': '\\(x^2\\)', 'answer': '42'}
-
-Done keys in DB: 60
-  First task key from _make_key: ('euler', '2017', '8', 'distance', '1')
-  First task in done_keys: True
-
-Tasks need solutions: 304
-Already in DB (generated): 60
-Remaining to process: 244
-
-=== ALL CHECKS PASSED ===
+2026-07-31 00:12:45,525 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-31 00:12:45,527 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+2026-07-31 00:12:46,641 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-31 00:12:46,725 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-31 00:12:50,233 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-31 00:12:50,233 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-31 00:12:50,233 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-31 00:12:50,233 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-31 00:12:50,233 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-31 00:12:50,233 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-31 00:12:50,233 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-07-31 00:12:50,241 - apscheduler.scheduler - INFO - Scheduler started
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+DEBUG: Доступные переменные окружения:
+Всего переменных: 75
+SECRET_KEY = ЕСТЬ
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = ЕСТЬ
+DEEPSEEK_API_KEY = ЕСТЬ
+============================================================
+[DB] Using: sqlite:///formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+✅ База данных инициализирована
+[AUTO-MIGRATION] ✓ Column 'agent_type' already exists
+[AUTO-MIGRATION] ✓ Column 'subtopic' already exists
+[AUTO-MIGRATION] ✓ Column 'attempts_count' already exists
+[AUTO-MIGRATION] ✓ Column 'solves_count' already exists
+[AUTO-MIGRATION] ✓ Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] ✓ Column 'suggested_level' already exists
+[AUTO-MIGRATION] ✓ Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] ✓ Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] ✓ Column 'task_type' already exists
+[AUTO-MIGRATION] ✓ Column 'source' already exists
+[AUTO-MIGRATION] ✓ Column 'origin' already exists
+[AUTO-MIGRATION] ✓ Column 'methods_json' already exists
+[AUTO-MIGRATION] ✓ Column 'theme_id' already exists
+[AUTO-MIGRATION] ✓ Column 'theme_title' already exists
+[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_mu' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_sigma' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_by_section' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_updated_at' already exists on curator_state
+[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Group chat tables already exist
+[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized
+  [pregen_queue migration] dialect = sqlite
+  ✅ pre_gen_queue: 11 колонок
+[migration] pre_gen_queue table ensured
+[AUTO-MIGRATION] ✓ friendships table schema OK
+[AUTO-MIGRATION] ✓ support_messages table already exists
+[AUTO-MIGRATION] ✓ site_reviews table already exists
+[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists
+[BP] prep_bp registered (/prep)
+[BP] olympiad_prep_bp registered (/olympiad-prep)
+[BP] account_bp registered (/account)
+[BP] drawing_bp registered (/drawing)
+[BP] drawing_diag_bp registered (/api/drawing/diag)
+[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)
+[BP] wb_call_bp registered (/api/wb_call/*)
+[BP] wb_meet_bp registered (/api/wb_meet/*)
+[BP] conference_api_bp registered (/api/conference/*)
+[BP] chat_presence_bp registered (/api/chat/*/presence, typing)
+[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)
+[BP] admin_support_bp registered (/admin/support, /my/support)
+[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)
+[SocketIO] Conference WebSocket signalling initialized (/ws-call)
+[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)
+[VSOSH10_11-ADD] result={'status': 'skipped', 'reason': 'already_present', 'count': 43}
+[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)
+[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 1140 rows
+[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 3337 rows
+[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 3348 rows
+[LATEX-ROOT-DB-FIX] total rows updated: 0
+[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 1140}, 'method_tasks': {'updated': 0, 'scanned': 3337}, 'adaptive_tasks': {'updated': 0, 'scanned': 3348}}
+[OLYMPIAD-SEED] Theory source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\methods_catalog_105.json (102 rows; in DB: 102 — ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
+[THEORY-SEED] body source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\theory_65_methods.json (65 rows)
+[THEORY-SEED] body source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\theory_24_methods.json (24 rows)
+[THEORY-SEED] Theory bodies filled: 0 methods updated
+[THEORY-MD] No MD content parsed from c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\formyla_vsosh9_10_methods_combined.md
+[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)
+[THEORY-FIX] No placeholder method names — nothing to do
+[SECRETS-SEED] Already populated (102 rows)
+[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)
+[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded
+[BP] telegram_auth_bp registered (/auth/telegram/callback)
+  [daily_tasks migration] dialect = sqlite
+  ✅ daily_task_sets: 10 колонок
+  ✅ daily_task_items: 27 колонок
+  ✅ daily_generation_jobs: 11 колонок
+  [task_pool migration] dialect = sqlite
+  ✅ task_pool: 12 колонок
+  ✅ user_task_assignments: 5 колонок
+[BP] daily_tasks_bp registered (/daily_tasks)
+  [curator migration] dialect = sqlite
+  ✅ student_diagnostics: 14 колонок
+  ✅ learning_plans: 18 колонок
+  ✅ task_attempts: 18 колонок
+  ✅ progress_log: 16 колонок
+  ✅ task_bank: 11 колонок
+[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress
+  [test_sessions migration] dialect = sqlite
+  ✅ test_sessions: 16 колонок
+[BP] test_sessions migration ensured
+[JINJA] filter md_render registered
+[JINJA] filter inject_geometry registered
+✅ VAPID keys loaded — Web Push notifications enabled
+✓ APScheduler started - Daily Quest cron jobs active
+olympiads.py: старый формат, 5267 задач -> 1289 пробников
+Пробников всего: 1289, с задачами: 1289
+Адаптивный тест: загружено 0 задач из adaptive_data
+OLYMPIADS_INFO: 12 олимпиад с grades/rounds
+STATUS: 200
+LEN: 35971
+Планирование False
+Аудит False
+Исправление False
+00c853 False
+1DB954 False
+css True
+[olympiads.py] Loaded 5267 entries from JSONL
+��������: ���� adaptive_data.py �� ������ ��� ����.
+[figures_manifest] MANIFEST.json not found - figures disabled
+DEBUG: ��������� 81 �������� �������� �� problem_images.py

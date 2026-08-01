@@ -79,11 +79,35 @@
 
   /* ── DRAWER ACTIVE STATE ── */
 
+  // «Прочее» active rules: same paths as desktop nav.js
+  var _miscPaths = ['/misc', '/profile', '/friends', '/leaderboard',
+    '/chat', '/drawing', '/about', '/probniks', '/secrets',
+    '/problems', '/matstat', '/'];
+  function _isMiscPath(p) {
+    for (var i = 0; i < _miscPaths.length; i++) {
+      if (p === _miscPaths[i] || p.indexOf(_miscPaths[i] + '/') === 0 ||
+          p.indexOf(_miscPaths[i] + '?') === 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   function highlightDrawerLinks() {
     var path = window.location.pathname;
+    var isMisc = _isMiscPath(path);
     document.querySelectorAll('.drawer-link[href]').forEach(function (link) {
       var href = link.getAttribute('href');
-      if (href && href !== '#' && path === href) {
+      if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
+
+      var isActive = false;
+      if (href === '/misc') {
+        isActive = isMisc;
+      } else if (path === href) {
+        isActive = true;
+      }
+
+      if (isActive) {
         link.classList.add('active');
       }
     });

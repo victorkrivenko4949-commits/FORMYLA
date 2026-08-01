@@ -149,7 +149,23 @@ def pick_day_subtopic(plan: Dict[str, Any], today: Optional[date] = None) -> Opt
 
 
 def subtopic_title(slug: str) -> str:
-    """Русское название подтемы для UI/промпта (фолбэк на slug)."""
+    """Русское название подтемы для UI/промпта (фолбэк на slug).
+
+    Если slug имеет формат GX_TXX (theme_id из JSONL), делегирует
+    в services.theme_registry.theme_title(), которая возвращает
+    человеческое название из JSONL (например "Многочлены и алгебраические тождества").
+    """
+    if not slug:
+        return slug
+    # Detect GX_TXX pattern (e.g. G9_T05, G10_T01)
+    if len(slug) >= 6 and slug[0] == 'G' and '_T' in slug:
+        try:
+            from services.theme_registry import theme_title as _theme_title
+            title = _theme_title(slug)
+            if title and title != slug:
+                return title
+        except Exception:
+            pass
     return SUBTOPIC_NAMES_RU.get(slug, slug)
 
 

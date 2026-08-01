@@ -6,24 +6,21 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks.css') }}?v={{ asset_version }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/daily_tasks_modal.css') }}?v={{ asset_version }}">
 <style>
-      /* скрываем названия моделей/подписи в пайплайне */
-    .dt-ps-model { display: none !important; }
-  /* ── Темная тема для daily_tasks ─────────────────────────────── */
-  body.page-daily-tasks {
-    background: #0b0f1a;
-    color: rgba(255,255,255,0.88);
-  }
-  body.page-daily-tasks .header {
-    background: rgba(11,15,26,0.92);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
+  /* скрываем названия моделей/подписи в пайплайне */
+  .dt-ps-model { display: none !important; }
 
-  /* fallback LaTeX */     /* FIX: модалка и история дня всегда видимы (нет чёрного поля от has-math visibility:hidden) */     #dt-modal, #dt-modal *, .dt-modal-body, #dt-modal-statement, .dt-day-history, .dt-dh-item { visibility: visible !important; }     #dt-modal-statement { background: transparent !important; }
-      /* FIX2: модалка по высоте контента — убираем пустое чёрное поле снизу */ .dt-modal-box{height:auto !important;min-height:0 !important;max-height:calc(100vh - 80px) !important;overflow-y:auto !important;} .dt-modal-body,#dt-modal-statement{min-height:0 !important;height:auto !important;margin-bottom:12px !important;} #dt-modal-result{min-height:0 !important;height:auto !important;} #dt-modal-result:empty{display:none !important;margin:0 !important;}
+  /* fallback LaTeX */
+  #dt-modal, #dt-modal *, .dt-modal-body, #dt-modal-statement, .dt-day-history, .dt-dh-item { visibility: visible !important; }
+  #dt-modal-statement { background: transparent !important; }
+  .dt-modal-box{height:auto !important;min-height:0 !important;max-height:calc(100vh - 80px) !important;overflow-y:auto !important;}
+  .dt-modal-body,#dt-modal-statement{min-height:0 !important;height:auto !important;margin-bottom:12px !important;}
+  #dt-modal-result{min-height:0 !important;height:auto !important;}
+  #dt-modal-result:empty{display:none !important;margin:0 !important;}
+
   .dt-latex-fallback {
     font-style: italic;
-    color: rgba(255,255,255,0.88);
-    background: rgba(56,239,125,0.06);
+    color: var(--text);
+    background: var(--accent-dim);
     padding: 1px 6px;
     border-radius: 4px;
     font-family: 'Times New Roman', serif;
@@ -32,532 +29,341 @@
     display: block;
     margin: 8px 0;
     padding: 8px 12px;
-    background: rgba(56,239,125,0.04);
-    border-left: 3px solid rgba(56,239,125,0.3);
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent);
   }
 
-  /* ── Pipeline steps (persistent) ──────────────────────────────── */
-  .dt-pipeline {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 4px;
-    padding: 24px 16px 32px;
-    margin-bottom: 24px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.06);
-    position: relative;
-    overflow: hidden;
-  }
+  /* ── Hidden class ──────────────────────────────────── */
+  .dt-hidden { display: none !important; }
 
-  .dt-pipeline-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    min-width: 0;
-    position: relative;
-    transition: all 0.4s ease;
-    opacity: 0.4;
-    filter: grayscale(0.6);
-  }
-  .dt-pipeline-step.is-done {
-    opacity: 0.85;
-    filter: grayscale(0);
-  }
-  .dt-pipeline-step.is-active {
-    opacity: 1;
-    filter: grayscale(0);
-  }
-
-  /* Connecting line between steps */
-  .dt-pipeline-step::after {
-    content: '';
-    position: absolute;
-    top: 26px;
-    left: 55%;
-    width: calc(90%);
-    height: 2px;
-    background: rgba(255,255,255,0.1);
-    z-index: 0;
-    transition: background 0.5s ease;
-  }
-  .dt-pipeline-step:last-child::after {
-    display: none;
-  }
-  .dt-pipeline-step.is-done::after {
-    background: rgba(56,239,125,0.5);
-  }
-  .dt-pipeline-step.is-active::after {
-    background: linear-gradient(90deg, rgba(56,239,125,0.7), rgba(56,239,125,0.15));
-  }
-
-  /* Step circle */
-  .dt-ps-circle {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-    border: 2px solid rgba(255,255,255,0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.35);
-    position: relative;
-    z-index: 1;
-    transition: all 0.4s ease;
-    flex-shrink: 0;
-  }
-  .dt-pipeline-step.is-done .dt-ps-circle {
-    background: rgba(56,239,125,0.15);
-    border-color: rgba(56,239,125,0.5);
-    color: #38ef7d;
-    box-shadow: 0 0 16px rgba(56,239,125,0.15);
-  }
-  .dt-pipeline-step.is-active .dt-ps-circle {
-    background: rgba(56,239,125,0.12);
-    border-color: #38ef7d;
-    color: #38ef7d;
-    box-shadow: 0 0 24px rgba(56,239,125,0.25);
-    animation: dt-pulse-glow 1.8s ease-in-out infinite;
-  }
-
-  @keyframes dt-pulse-glow {
-    0%, 100% { box-shadow: 0 0 16px rgba(56,239,125,0.2); }
-    50% { box-shadow: 0 0 32px rgba(56,239,125,0.4); }
-  }
-
-  /* Step label */
-  .dt-ps-label {
-    margin-top: 10px;
-    font-size: 12px;
-    line-height: 1.3;
-    text-align: center;
-    color: rgba(255,255,255,0.4);
-    transition: color 0.4s ease;
-    max-width: 120px;
-    word-break: break-word;
-  }
-  .dt-pipeline-step.is-done .dt-ps-label {
-    color: rgba(255,255,255,0.65);
-  }
-  .dt-pipeline-step.is-active .dt-ps-label {
-    color: #38ef7d;
-  }
-
-  /* Step model name (sub-label) */
-  .dt-ps-model {
-    font-size: 10px;
-    line-height: 1.2;
-    text-align: center;
-    color: rgba(255,255,255,0.25);
-    margin-top: 3px;
-    transition: color 0.4s ease;
-    max-width: 120px;
-    word-break: break-word;
-  }
-  .dt-pipeline-step.is-done .dt-ps-model {
-    color: rgba(255,255,255,0.4);
-  }
-  .dt-pipeline-step.is-active .dt-ps-model {
-    color: rgba(56,239,125,0.55);
-  }
-
-  /* Checkmark overlay for done steps */
-  .dt-ps-check {
-    display: none;
-    position: absolute;
-    top: -4px;
-    right: calc(50% - 30px);
-    font-size: 16px;
-    color: #38ef7d;
-    z-index: 2;
-  }
-  .dt-pipeline-step.is-done .dt-ps-check {
-    display: block;
-    animation: dt-check-pop 0.3s ease;
-  }
-  @keyframes dt-check-pop {
-    0% { transform: scale(0); opacity: 0; }
-    60% { transform: scale(1.3); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  /* Active step shimmer overlay */
-  .dt-pipeline-step.is-active .dt-ps-circle::after {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    background: linear-gradient(135deg, #38ef7d, #38ef7d, transparent, transparent) border-box;
-    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: dt-rotate-border 2s linear infinite;
-  }
-  @keyframes dt-rotate-border {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* ── State sections ──────────────────────────────────────────── */
-  .dt-hidden {
-    display: none !important;
-  }
-
+  /* ── Empty / Generating / Failed cards ────────────── */
   .dt-empty-card,
   .dt-generating-card,
   .dt-ready-header {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
     padding: 32px;
     text-align: center;
   }
-
   .dt-empty-title {
     font-size: 22px;
     font-weight: 600;
+    color: var(--text);
     margin-bottom: 12px;
   }
   .dt-empty-sub {
-    color: rgba(255,255,255,0.55);
+    color: var(--muted);
     margin-bottom: 24px;
     line-height: 1.5;
   }
   .dt-btn-primary {
     display: inline-block;
     padding: 12px 32px;
-    background: linear-gradient(135deg, #38ef7d, #2bcb6a);
-    color: #0b0f1a;
+    background: var(--accent);
+    color: #fff;
     font-weight: 700;
     font-size: 16px;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.25s ease;
+    text-decoration: none;
   }
   .dt-btn-primary:hover {
+    background: var(--accent-hi);
     transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(56,239,125,0.3);
+    box-shadow: 0 6px 24px rgba(76,125,255,0.3);
   }
   .dt-btn-primary:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+
+  /* ── P4 DEBT block ─────────────────────────────── */
+  .dt-debt-block {
+    margin-bottom: 20px;
+    border: 1px solid rgba(229, 172, 58, 0.35);
+    border-radius: 12px;
+    background: rgba(229, 172, 58, 0.06);
+    padding: 16px 20px;
+  }
+  .dt-debt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(229, 172, 58, 0.15);
+  }
+  .dt-debt-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #E5AC3A;
+  }
+  .dt-debt-hint {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .dt-debt-group {
+    margin-bottom: 10px;
+  }
+  .dt-debt-group-date {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .dt-debt-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    margin-bottom: 4px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .dt-debt-item-topic {
+    color: var(--text);
+    flex: 1;
+  }
+  .dt-debt-item-level {
+    color: var(--muted);
+    margin: 0 16px;
+  }
+  .dt-debt-item-days {
+    color: #E5AC3A;
+    font-weight: 600;
+    white-space: nowrap;
+  }
     transform: none;
     box-shadow: none;
   }
 
   /* Generating state */
-  .dt-generating-card {
-    padding: 40px 32px;
-  }
-  .dt-gen-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .dt-gen-sub {
-    color: rgba(255,255,255,0.5);
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
+  .dt-generating-card { padding: 40px 32px; }
+  .dt-gen-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .dt-gen-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
   .dt-progress-bar {
-    width: 100%;
-    max-width: 400px;
-    height: 8px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 0 auto 12px;
+    width: 100%; max-width: 400px; height: 8px;
+    background: rgba(255,255,255,0.08); border-radius: 4px;
+    overflow: hidden; margin: 0 auto 12px;
   }
   .dt-progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #38ef7d, #7bf0a5);
+    height: 100%; width: 0%;
+    background: var(--accent);
     border-radius: 4px;
     transition: width 0.6s ease;
   }
-  .dt-progress-text {
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-    margin-bottom: 6px;
-  }
-  .dt-step-name {
-    font-size: 15px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.75);
-    margin-bottom: 4px;
-  }
-  .dt-eta {
-    font-size: 13px;
-    color: rgba(255,255,255,0.4);
-  }
+  .dt-progress-text { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dt-step-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .dt-eta { font-size: 13px; color: var(--faint); }
 
-  /* Ready state */
+  /* Ready header */
   .dt-ready-header {
-    text-align: left;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    text-align: left; padding: 20px 24px; margin-bottom: 20px;
+    display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 12px;
   }
-  .dt-ready-title {
-    font-size: 18px;
-    font-weight: 600;
-  }
-  .dt-ready-meta {
-    font-size: 14px;
-    color: rgba(255,255,255,0.5);
-  }
-  .dt-ready-actions {
-    display: flex;
-    gap: 10px;
-  }
+  .dt-ready-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .dt-ready-meta { font-size: 14px; color: var(--muted); }
+  .dt-ready-actions { display: flex; gap: 10px; }
   .dt-btn-secondary {
-    display: inline-block;
-    padding: 8px 20px;
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.8);
-    font-weight: 600;
-    font-size: 14px;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 10px;
-    cursor: pointer;
+    display: inline-block; padding: 8px 20px;
+    background: transparent; color: var(--text);
+    font-weight: 600; font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer;
     transition: all 0.2s ease;
   }
   .dt-btn-secondary:hover {
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.2);
+    background: var(--accent-dim);
+    border-color: var(--accent);
   }
 
   .dt-summary-card {
-    background: rgba(56,239,125,0.06);
-    border: 1px solid rgba(56,239,125,0.15);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.75);
+    background: var(--accent-dim);
+    border: 1px solid rgba(76,125,255,0.15);
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+    font-size: 14px; line-height: 1.5; color: var(--text);
   }
-  .dt-summary-card strong {
-    color: #38ef7d;
-  }
+  .dt-summary-card strong { color: var(--accent-hi); }
 
   .dt-partial-notice {
-    background: rgba(255,193,7,0.1);
-    border: 1px solid rgba(255,193,7,0.2);
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    color: rgba(255,193,7,0.8);
+    background: rgba(229,172,58,0.1);
+    border: 1px solid rgba(229,172,58,0.2);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
+    font-size: 14px; color: var(--warn);
   }
 
-  /* Task Grid */
+  /* ── Task Grid ────────────────────────────────────── */
   #dt-task-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     margin-top: 16px;
   }
+  @media (max-width: 768px) {
+    #dt-task-grid { grid-template-columns: 1fr; }
+  }
   .dt-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
     padding: 18px;
     cursor: pointer;
     transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   .dt-card:hover {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.15);
+    border-color: var(--accent);
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(76,125,255,0.12);
   }
-  .dt-card.dt-flagged {
-    border-color: rgba(255,193,7,0.3);
-  }
-  .dt-card.dt-done {
-    border-color: rgba(56,239,125,0.2);
-  }
-  .dt-card-number {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+  .dt-card.dt-flagged { border-color: rgba(229,172,58,0.3); }
+  .dt-card.dt-done { border-color: rgba(62,207,142,0.2); }
+
+  /* Subtopic badge at top */
+  .dt-card-subtopic {
+    font-size: 11.5px;
     font-weight: 700;
-    color: rgba(255,255,255,0.3);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent-hi);
+    margin-bottom: 8px;
   }
+
+  /* Card header with task number */
   .dt-card-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 10px;
-    padding-right: 32px;
+  }
+  .dt-card-number {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
   }
   .dt-topic-badge {
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(56,239,125,0.6);
-    background: rgba(56,239,125,0.08);
+    color: var(--accent-hi);
+    background: var(--accent-dim);
     padding: 2px 8px;
     border-radius: 4px;
   }
   .dt-difficulty {
     font-size: 13px;
-    color: rgba(255,255,255,0.35);
+    color: var(--muted);
   }
   .dt-card-preview {
     font-size: 14px;
     line-height: 1.5;
-    color: rgba(255,255,255,0.7);
+    color: var(--text);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+  }
+
+  /* Card footer with status — separated by shadow line */
+  .dt-card-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    box-shadow: 0 -1px 0 var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
   }
   .dt-card-status {
     font-size: 12px;
     font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
-  .dt-card-status.dt-correct { color: #38ef7d; }
-  .dt-card-status.dt-incorrect { color: #ff6b6b; }
-  .dt-card-status.dt-pending { color: rgba(255,255,255,0.35); }
+  .dt-card-status.dt-correct { color: var(--ok); }
+  .dt-card-status.dt-incorrect { color: var(--bad); }
+  .dt-card-status.dt-pending { color: var(--faint); }
   .dt-flag-badge {
     font-size: 11px;
-    color: rgba(255,193,7,0.7);
-    background: rgba(255,193,7,0.1);
+    color: var(--warn);
+    background: rgba(229,172,58,0.1);
     padding: 1px 6px;
     border-radius: 4px;
   }
 
-  /* ── PR percent_to_level + calibration ──────────────────────── */
-  /* Баннер «Профиль ещё в калибровке» */
+  /* ── Calibration banner ───────────────────────────── */
   .dt-calibration-banner {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    background: linear-gradient(135deg, rgba(255, 186, 73, 0.10), rgba(255, 186, 73, 0.04));
-    border: 1px solid rgba(255, 186, 73, 0.35);
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin: 14px 0 18px;
-    color: rgba(255, 255, 255, 0.92);
+    display: flex; align-items: flex-start; gap: 14px;
+    background: rgba(229,172,58,0.08);
+    border: 1px solid rgba(229,172,58,0.25);
+    border-radius: var(--r); padding: 14px 16px;
+    margin: 14px 0 18px; color: var(--text);
   }
-  .dt-cal-banner-icon {
-    font-size: 24px;
-    line-height: 1;
-    flex-shrink: 0;
-  }
+  .dt-cal-banner-icon { font-size: 24px; line-height: 1; flex-shrink: 0; }
   .dt-cal-banner-body { flex: 1; min-width: 0; }
-  .dt-cal-banner-title {
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #ffd089;
-  }
-  .dt-cal-banner-text {
-    font-size: 13.5px;
-    line-height: 1.45;
-    color: rgba(255, 255, 255, 0.72);
-  }
+  .dt-cal-banner-title { font-weight: 600; margin-bottom: 4px; color: var(--warn); }
+  .dt-cal-banner-text { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
   .dt-cal-banner-btn {
-    display: inline-flex;
-    align-items: center;
-    align-self: center;
-    padding: 8px 14px;
-    background: #ffba49;
-    color: #1a1206;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; align-self: center;
+    padding: 8px 14px; background: var(--warn); color: #1a1206;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    text-decoration: none; white-space: nowrap;
     transition: transform .15s ease, background .15s ease;
   }
-  .dt-cal-banner-btn:hover {
-    background: #ffc764;
-    transform: translateY(-1px);
-  }
+  .dt-cal-banner-btn:hover { background: #f0b84d; transform: translateY(-1px); }
   @media (max-width: 600px) {
     .dt-calibration-banner { flex-direction: column; align-items: stretch; }
     .dt-cal-banner-btn { align-self: flex-start; }
   }
 
-  /* Бейдж «🧪 Калибровка» на карточке задачи */
+  /* Calibration badge on card */
   .dt-calibration-badge {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 2px 8px;
-    background: rgba(255, 186, 73, 0.16);
-    border: 1px solid rgba(255, 186, 73, 0.4);
-    color: #ffd089;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.2px;
-    line-height: 1.5;
+    display: inline-block; margin-left: 6px; padding: 2px 8px;
+    background: rgba(229,172,58,0.16);
+    border: 1px solid rgba(229,172,58,0.4);
+    color: var(--warn); border-radius: 999px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.2px; line-height: 1.5;
   }
-  /* Лёгкая визуальная отличимость карточки калибровки */
-  .dt-card.dt-calibration {
-    border-color: rgba(255, 186, 73, 0.28);
-  }
+  .dt-card.dt-calibration { border-color: rgba(229,172,58,0.28); }
 
-  /* ── ⏱  Countdown 24h ───────────────────────────────────────── */
+  /* ── Timer (24h countdown) ────────────────────────── */
   .dt-countdown {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     gap: 12px;
-    background: linear-gradient(135deg, rgba(56,239,125,0.10), rgba(56,239,125,0.04));
-    border: 1px solid rgba(56,239,125,0.28);
-    border-radius: 14px;
-    padding: 12px 18px;
-    margin-bottom: 18px;
-    color: rgba(255,255,255,0.88);
-    font-size: 14px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(76,125,255,0.18);
+    border-radius: var(--r); padding: 12px 18px; margin-bottom: 18px;
+    color: var(--text); font-size: 14px;
   }
   .dt-countdown-icon { font-size: 22px; line-height: 1; }
   .dt-countdown-text { flex: 1; line-height: 1.4; }
   .dt-countdown-time {
-    font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 700;
-    color: #38ef7d;
-    letter-spacing: 1px;
+    color: var(--accent-hi);
+    font-variant-numeric: tabular-nums;
     min-width: 110px;
     text-align: right;
   }
-  .dt-countdown.dt-expiring .dt-countdown-time {
-    color: #ffba49;
-  }
-  .dt-countdown.dt-expired .dt-countdown-time {
-    color: #ff6b6b;
-  }
+  .dt-countdown.dt-expiring .dt-countdown-time { color: var(--warn); }
+  .dt-countdown.dt-expired .dt-countdown-time { color: var(--bad); }
 
-  /* ── 📅 Calendar sidebar ────────────────────────────────────── */
+  /* ── Calendar sidebar ─────────────────────────────── */
   .dt-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 380px;
@@ -570,460 +376,276 @@
   }
 
   .dt-sidebar {
-    position: sticky;
-    top: 16px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
+    position: sticky; top: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
     padding: 18px 18px 16px;
   }
   .dt-cal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-    gap: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; gap: 10px;
   }
   .dt-cal-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.92);
-    text-align: center;
-    flex: 1;
-    letter-spacing: 0.2px;
+    font-size: 17px; font-weight: 700;
+    color: var(--text); text-align: center; flex: 1; letter-spacing: 0.2px;
   }
   .dt-cal-nav-btn {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.10);
-    color: rgba(255,255,255,0.75);
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-    flex: 0 0 36px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--muted); width: 36px; height: 36px;
+    border-radius: 10px; cursor: pointer; font-size: 18px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease; flex: 0 0 36px;
   }
-  .dt-cal-nav-btn:hover {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-  }
+  .dt-cal-nav-btn:hover { background: var(--accent-dim); color: var(--text); border-color: var(--accent); }
   .dt-cal-nav-btn:active { transform: scale(0.95); }
   .dt-cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    min-height: 240px;
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 6px; min-height: 240px;
   }
   .dt-cal-dow {
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    text-align: center;
-    padding: 4px 0 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    font-weight: 600;
+    font-size: 11px; color: var(--faint); text-align: center;
+    padding: 4px 0 6px; text-transform: uppercase;
+    letter-spacing: 0.6px; font-weight: 600;
   }
   .dt-cal-day {
-    aspect-ratio: 1 / 1;
-    min-height: 44px;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    font-size: 14px;
-    font-weight: 600;
-    position: relative;
-    cursor: pointer;
-    border: 1px solid transparent;
+    aspect-ratio: 1 / 1; min-height: 44px; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px;
+    font-size: 14px; font-weight: 600; position: relative;
+    cursor: pointer; border: 1px solid transparent;
     transition: all 0.15s ease;
-    color: rgba(255,255,255,0.7);
-    background: rgba(255,255,255,0.05);
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
+    color: var(--faint);
+    background: rgba(255,255,255,0.03);
+    user-select: none; -webkit-tap-highlight-color: transparent;
   }
-  .dt-cal-daynum {
-    font-size: 11px;
-    line-height: 1;
-    opacity: 0.6;
-  }
-  /* ГЛАВНОЕ — кол-во решённых задач, X/10 в каждой клетке */
+  .dt-cal-daynum { font-size: 11px; line-height: 1; opacity: 0.6; }
   .dt-cal-solved {
-    font-size: 13px;
-    line-height: 1;
-    font-weight: 800;
-    letter-spacing: 0.2px;
-    padding: 2px 5px;
-    border-radius: 6px;
-    background: rgba(0,0,0,0.32);
-    color: inherit;
+    font-size: 13px; line-height: 1; font-weight: 800;
+    letter-spacing: 0.2px; padding: 2px 5px; border-radius: 6px;
+    background: rgba(0,0,0,0.32); color: inherit;
   }
   .dt-cal-day.dt-cal-empty {
-    cursor: default;
-    background: transparent;
-    border: none;
+    cursor: default; background: transparent; border: none;
   }
-  .dt-cal-day.dt-cal-future {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
+  .dt-cal-day.dt-cal-future { opacity: 0.3; cursor: not-allowed; }
   .dt-cal-day:hover:not(.dt-cal-empty):not(.dt-cal-future) {
     transform: translateY(-1px);
-    border-color: rgba(255,255,255,0.30);
+    border-color: var(--accent);
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
-  /* tiers (по числу решённых задач) */
-  .dt-cal-day.dt-tier-empty { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.35); }
-  .dt-cal-day.dt-tier-gray  { background: rgba(140,140,140,0.18); color: rgba(255,255,255,0.55); }
-  .dt-cal-day.dt-tier-pale  { background: rgba(56,239,125,0.15); color: #b6f7c8; }
-  .dt-cal-day.dt-tier-green { background: rgba(56,239,125,0.35); color: #062012; }
-  .dt-cal-day.dt-tier-bright{ background: rgba(56,239,125,0.65); color: #0a1e10; }
+
+  /* Calendar day tiers (days with sets) */
+  .dt-cal-day.dt-tier-empty { background: rgba(255,255,255,0.02); color: var(--faint); }
+  .dt-cal-day.dt-tier-gray  { background: rgba(76,125,255,0.05); color: var(--muted); }
+  .dt-cal-day.dt-tier-pale  { background: rgba(76,125,255,0.08); color: var(--muted); }
+  .dt-cal-day.dt-tier-green { background: rgba(76,125,255,0.14); color: var(--text); }
+  .dt-cal-day.dt-tier-bright{ background: rgba(76,125,255,0.25); color: var(--text); }
   .dt-cal-day.dt-tier-gold  {
-    background: linear-gradient(135deg, #f7d774, #d6a437);
-    color: #2b1d05;
-    box-shadow: 0 0 14px rgba(247,215,116,0.45);
+    background: var(--accent); color: #fff;
+    box-shadow: 0 0 14px rgba(76,125,255,0.45);
   }
+
+  /* Today — accent background, white text */
   .dt-cal-day.dt-cal-today {
-    outline: 2px solid #38ef7d;
-    outline-offset: 1px;
+    background: var(--accent);
+    color: #fff;
+    outline: none;
+    border-color: var(--accent-hi);
   }
+  .dt-cal-day.dt-cal-today .dt-cal-daynum { opacity: 1; color: #fff; }
+  .dt-cal-day.dt-cal-today .dt-cal-solved { background: rgba(0,0,0,0.25); color: #fff; }
+
   .dt-cal-crown {
-    position: absolute;
-    top: -8px;
-    right: -2px;
-    font-size: 12px;
-    line-height: 1;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+    position: absolute; top: -8px; right: -2px; font-size: 12px;
+    line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
     pointer-events: none;
   }
   .dt-cal-legend {
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    font-size: 11.5px;
-    color: rgba(255,255,255,0.55);
-    line-height: 1.5;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 12px;
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 11.5px; color: var(--faint); line-height: 1.5;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
   }
-  .dt-cal-legend-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .dt-cal-legend-row { display: flex; align-items: center; gap: 8px; }
   .dt-cal-legend-sw {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    flex-shrink: 0;
+    display: inline-block; width: 14px; height: 14px;
+    border-radius: 4px; flex-shrink: 0;
   }
 
-  /* ── 📱 Mobile tuning ─────────────────────────────────────── */
+  /* Mobile calendar */
   @media (max-width: 1080px) {
-    .dt-sidebar {
-      margin-top: 16px;
-      padding: 16px;
-    }
+    .dt-sidebar { margin-top: 16px; padding: 16px; }
     .dt-cal-day { font-size: 15px; min-height: 44px; }
     .dt-cal-nav-btn { width: 40px; height: 40px; font-size: 20px; flex: 0 0 40px; }
     .dt-cal-title { font-size: 18px; }
     .dt-cal-grid { gap: 5px; min-height: 280px; }
   }
   @media (max-width: 480px) {
-    .dt-sidebar { padding: 14px 12px; border-radius: 14px; }
+    .dt-sidebar { padding: 14px 12px; border-radius: var(--r); }
     .dt-cal-day { font-size: 14px; min-height: 40px; border-radius: 8px; }
     .dt-cal-grid { gap: 4px; }
     .dt-cal-legend { grid-template-columns: 1fr; }
   }
 
-  /* ── Day-history panel (под календарём) ─────────────────────── */
+  /* Day-history panel */
   .dt-day-history {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
   }
-  .dt-day-history-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.85);
-    margin-bottom: 6px;
-  }
-  .dt-day-history-sub {
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    margin-bottom: 8px;
-  }
+  .dt-day-history-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .dt-day-history-sub { font-size: 11px; color: var(--faint); margin-bottom: 8px; }
   .dt-day-history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 320px;
-    overflow-y: auto;
-    padding-right: 4px;
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 320px; overflow-y: auto; padding-right: 4px;
   }
   .dt-dh-item {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 12px;
-    line-height: 1.4;
-    color: rgba(255,255,255,0.7);
+    background: var(--surface-2); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 8px 10px; font-size: 12px;
+    line-height: 1.4; color: var(--text);
   }
-  .dt-dh-item-head {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
-  }
-  .dt-dh-pos {
-    font-weight: 700;
-    color: rgba(255,255,255,0.45);
-  }
+  .dt-dh-item-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .dt-dh-pos { font-weight: 700; color: var(--faint); }
   .dt-dh-topic {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    color: rgba(56,239,125,0.7);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--accent-hi);
   }
-  .dt-dh-status-correct { color: #38ef7d; }
-  .dt-dh-status-incorrect { color: #ff6b6b; }
-  .dt-dh-status-pending { color: rgba(255,255,255,0.35); }
-  /* === FIX: центрирование задач + видимость flagged (added) === */
-.dt-layout { max-width: 1180px; margin: 0 auto; }
-#dt-task-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important; justify-content: center; }
-.dt-card.is-flagged, .dt-card[data-flagged="true"] { opacity: 1 !important; display: flex !important; }
-.dt-card { opacity: 1 !important; }
+  .dt-dh-status-correct { color: var(--ok); }
+  .dt-dh-status-incorrect { color: var(--bad); }
+  .dt-dh-status-pending { color: var(--faint); }
 
-  /* ── 📖 Subtopic strip (curator prep_plan) ───────────────────── */
+  /* Task grid centering */
+  .dt-layout { max-width: 1180px; margin: 0 auto; }
+  #dt-task-grid { justify-content: center; }
+  .dt-card.is-flagged, .dt-card[data-flagged="true"] { opacity: 1 !important; display: flex !important; }
+  .dt-card { opacity: 1 !important; }
+
+  /* ── Subtopic strip ──────────────────────────────── */
   .dt-subtopic-strip {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 20px 24px;
-    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+    padding: 20px 24px; margin-bottom: 24px;
   }
   .dt-subtopic-strip-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
   }
-  .dt-subtopic-strip-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.8);
-  }
+  .dt-subtopic-strip-title { font-size: 15px; font-weight: 600; color: var(--text); }
   .dt-subtopic-strip-grade {
-    font-size: 12px;
-    color: rgba(56,239,125,0.6);
-    background: rgba(56,239,125,0.08);
-    padding: 3px 10px;
-    border-radius: 20px;
+    font-size: 12px; color: var(--accent-hi);
+    background: var(--accent-dim); padding: 3px 10px; border-radius: 20px;
   }
-  .dt-subtopic-strip-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+  .dt-subtopic-strip-items { display: flex; flex-wrap: wrap; gap: 10px; }
   .dt-subtopic-strip-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    transition: all 0.2s ease;
-    flex: 1;
-    min-width: 130px;
-    max-width: 200px;
+    display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: var(--surface-2); border: 1px solid var(--border-soft);
+    border-radius: 10px; transition: all 0.2s ease;
+    flex: 1; min-width: 130px; max-width: 200px;
   }
   .dt-subtopic-strip-item.is-today {
-    background: rgba(56,239,125,0.10);
-    border-color: rgba(56,239,125,0.35);
-    box-shadow: 0 0 12px rgba(56,239,125,0.08);
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(76,125,255,0.08);
   }
   .dt-subtopic-strip-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-    font-size: 11px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.45);
-    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); font-size: 11px;
+    font-weight: 700; color: var(--faint); flex-shrink: 0;
   }
   .dt-subtopic-strip-item.is-today .dt-subtopic-strip-badge {
-    background: rgba(56,239,125,0.2);
-    color: #38ef7d;
+    background: var(--accent-dim); color: var(--accent-hi);
   }
-  .dt-subtopic-strip-name {
-    font-size: 13px;
-    color: rgba(255,255,255,0.75);
-    line-height: 1.3;
-    word-break: break-word;
-  }
-  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-name {
-    color: #38ef7d;
-    font-weight: 600;
-  }
+  .dt-subtopic-strip-name { font-size: 13px; color: var(--text); line-height: 1.3; word-break: break-word; }
+  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-name { color: var(--accent-hi); font-weight: 600; }
   .dt-subtopic-strip-today-badge {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #38ef7d;
-    background: rgba(56,239,125,0.15);
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-left: auto;
-    white-space: nowrap;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--accent-hi); background: var(--accent-dim);
+    padding: 1px 6px; border-radius: 4px; margin-left: auto; white-space: nowrap;
   }
 
-  /* ── 🗓  Yearly calendar (curator prep_plan) ──────────────────── */
+  /* ── Yearly calendar ─────────────────────────────── */
   .dt-yearly-calendar {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 16px;
-    margin-bottom: 24px;
-    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r); margin-bottom: 24px; overflow: hidden;
   }
   .dt-yearly-cal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    cursor: pointer;
-    user-select: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; cursor: pointer; user-select: none;
     transition: background 0.2s ease;
   }
-  .dt-yearly-cal-header:hover {
-    background: rgba(255,255,255,0.02);
-  }
-  .dt-yearly-cal-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.8);
-  }
-  .dt-yearly-cal-toggle {
-    font-size: 18px;
-    color: rgba(255,255,255,0.3);
-    transition: transform 0.3s ease;
-  }
-  .dt-yearly-cal-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease;
-  }
-  .dt-yearly-cal-body.is-open {
-    max-height: 5000px;
-  }
-  .dt-yearly-cal-inner {
-    padding: 0 20px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+  .dt-yearly-cal-header:hover { background: var(--surface-2); }
+  .dt-yearly-cal-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .dt-yearly-cal-toggle { font-size: 18px; color: var(--faint); transition: transform 0.3s ease; }
+  .dt-yearly-cal-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+  .dt-yearly-cal-body.is-open { max-height: 5000px; }
+  .dt-yearly-cal-inner { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px; }
   .dt-yearly-month {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px;
-    padding: 14px 16px;
+    background: var(--surface-2); border: 1px solid var(--border-soft);
+    border-radius: 12px; padding: 14px 16px;
   }
-  .dt-yearly-month.is-current {
-    border-color: rgba(56,239,125,0.25);
-    background: rgba(56,239,125,0.04);
-  }
-  .dt-yearly-month-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  .dt-yearly-month-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.75);
-  }
-  .dt-yearly-month.is-current .dt-yearly-month-label {
-    color: #38ef7d;
-  }
+  .dt-yearly-month.is-current { border-color: rgba(76,125,255,0.25); background: var(--accent-dim); }
+  .dt-yearly-month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .dt-yearly-month-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .dt-yearly-month.is-current .dt-yearly-month-label { color: var(--accent-hi); }
   .dt-yearly-month-badge {
-    font-size: 11px;
-    color: rgba(255,255,255,0.35);
-    background: rgba(255,255,255,0.04);
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-size: 11px; color: var(--faint); background: rgba(255,255,255,0.04);
+    padding: 2px 8px; border-radius: 10px;
   }
-  .dt-yearly-month.is-current .dt-yearly-month-badge {
-    color: rgba(56,239,125,0.7);
-    background: rgba(56,239,125,0.1);
-  }
-  .dt-yearly-month-subs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  .dt-yearly-month.is-current .dt-yearly-month-badge { color: var(--accent-hi); background: var(--accent-dim); }
+  .dt-yearly-month-subs { display: flex; flex-wrap: wrap; gap: 6px; }
   .dt-yearly-sub {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 8px;
-    font-size: 12px;
-    color: rgba(255,255,255,0.6);
+    display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border-soft);
+    border-radius: 8px; font-size: 12px; color: var(--muted);
   }
   .dt-yearly-sub.is-today-sub {
-    background: rgba(56,239,125,0.10);
-    border-color: rgba(56,239,125,0.25);
-    color: #38ef7d;
+    background: var(--accent-dim); border-color: rgba(76,125,255,0.25); color: var(--accent-hi);
   }
-  .dt-yearly-sub-num {
-    font-size: 10px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.25);
-    width: 16px;
-    text-align: center;
-  }
-  .dt-yearly-sub.is-today-sub .dt-yearly-sub-num {
-    color: rgba(56,239,125,0.6);
-  }
-
+  .dt-yearly-sub-num { font-size: 10px; font-weight: 700; color: var(--faint); width: 16px; text-align: center; }
+  .dt-yearly-sub.is-today-sub .dt-yearly-sub-num { color: var(--accent-hi); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-daily-tasks" style="max-width:1200px;margin:0 auto;padding:24px 16px 60px;">
 
-  <!-- ═══ Page header ═══ -->
-  <h2 style="font-size:26px;font-weight:700;margin-bottom:8px;">📅 Задачи дня</h2>
-  <p style="color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:24px;">
+  <!-- Page header -->
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:8px;color:var(--text);">Задачи дня</h2>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
     Персональные задачи на основе твоего уровня — каждый день новый набор
   </p>
 
-  <!-- ═══ Two-column layout: основной блок + календарь справа ═══ -->
+  <!-- P4 DEBT BLOCK -->
+  {% if data and data.debt and data.debt.total > 0 %}
+  <div class="dt-debt-block">
+    <div class="dt-debt-header">
+      <span class="dt-debt-title">Долг: {{ data.debt.total }} задач</span>
+      <span class="dt-debt-hint">реши до истечения срока, иначе сгорят</span>
+    </div>
+    {% for group in data.debt.by_date %}
+    <div class="dt-debt-group">
+      <div class="dt-debt-group-date">{{ group.date }} &mdash; {{ group.count }} задач</div>
+      {% for item in group.tasks %}
+      <div class="dt-debt-item">
+        <span class="dt-debt-item-topic">{{ item.topic or item.subject or 'Задача' }}</span>
+        <span class="dt-debt-item-level">уровень {{ item.difficulty_level }}</span>
+        <span class="dt-debt-item-days">осталось {{ item.days_left }} дн.</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Two-column layout -->
   <div class="dt-layout">
     <div class="dt-main">
 
-      <!-- ═══ ⏱  24-часовой обратный отсчёт ═══ -->
+      <!-- 24-hour countdown -->
       <div id="dt-countdown" class="dt-countdown dt-hidden">
-        <span class="dt-countdown-icon">⏱</span>
-        {# Кол-во задач для подписи под таймером: берём из progress.total,
-           с фолбэком на длину items. Грамматика: 1 задача / 2-4 задачи /
-           5+ задач (русское склонение). #}
+        <span class="dt-countdown-icon">&#9201;</span>
         {% set _dt_progress = (data.progress if data and data.progress is mapping else {}) %}
         {% set _dt_items = (data.items if data and data.items is iterable and data.items is not string else []) %}
         {% set _dt_total = (_dt_progress.get('total') or (_dt_items|length) or 0) %}
@@ -1040,21 +662,21 @@
         {% endif %}
         <span class="dt-countdown-text">
           До истечения 24 часов:
-          <span style="display:block;font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">
             После {{ _dt_total }} {{ _dt_word }} удалятся и можно будет сгенерировать новые
           </span>
         </span>
         <span class="dt-countdown-time" id="dt-countdown-time">--:--:--</span>
       </div>
 
-      <!-- ═══ 📖 Weekly subtopic strip (from curator prep_plan) ═══ -->
+      <!-- Weekly subtopic strip -->
       {% if data and data.plan_data and data.plan_data.months %}
       {% set _pd = data.plan_data %}
       {% set _cur_month_idx = _pd.current_month %}
       {% set _cur_month = _pd.months | selectattr('index', 'equalto', _cur_month_idx) | first %}
       <div class="dt-subtopic-strip">
         <div class="dt-subtopic-strip-header">
-          <span class="dt-subtopic-strip-title">📖 Месяц {{ _cur_month_idx }}: подтемы</span>
+          <span class="dt-subtopic-strip-title">Месяц {{ _cur_month_idx }}: подтемы</span>
           <span class="dt-subtopic-strip-grade">класс {{ _pd.grade }}</span>
         </div>
         <div class="dt-subtopic-strip-items">
@@ -1072,60 +694,14 @@
       </div>
       {% endif %}
 
-  <!-- ═══ Pipeline steps (always visible) ═══ -->
-  <div class="dt-pipeline" id="dt-pipeline">
-    <!-- Step 1: Profile -->
-    <div class="dt-pipeline-step" data-step="profile">
-      <div class="dt-ps-circle">👤</div>
-      <span class="dt-ps-label">Профиль</span>
-      <span class="dt-ps-model"></span>
-      <span class="dt-ps-check">✓</span>
-    </div>
-    <!-- Step 2: Gemini (Planning) -->
-    <div class="dt-pipeline-step" data-step="gemini">
-      <div class="dt-ps-circle">📋</div>
-      <span class="dt-ps-label">Планирование</span>
-      <span class="dt-ps-model"></span>
-      <span class="dt-ps-check">✓</span>
-    </div>
-    <!-- Step 3: Opus (Generation) -->
-    <div class="dt-pipeline-step" data-step="opus">
-      <div class="dt-ps-circle">✍️</div>
-      <span class="dt-ps-label">Генерация</span>
-      <span class="dt-ps-model"></span>
-      <span class="dt-ps-check">✓</span>
-    </div>
-    <!-- Step 4: Audit -->
-    <div class="dt-pipeline-step" data-step="audit">
-      <div class="dt-ps-circle">🔍</div>
-      <span class="dt-ps-label">Аудит</span>
-      <span class="dt-ps-model"></span>
-      <span class="dt-ps-check">✓</span>
-    </div>
-    <!-- Step 5: Fix -->
-    <div class="dt-pipeline-step" data-step="fix">
-      <div class="dt-ps-circle">🔧</div>
-      <span class="dt-ps-label">Исправление</span>
-      <span class="dt-ps-model"></span>
-      <span class="dt-ps-check">✓</span>
-    </div>
-    <!-- Step 6: Persist -->
-    <div class="dt-pipeline-step" data-step="persist">
-      <div class="dt-ps-circle">💾</div>
-      <span class="dt-ps-label">Сохранение</span>
-      <span class="dt-ps-model"></span>
-      <span class="dt-ps-check">✓</span>
-    </div>
-  </div>
-
-      <!-- ═══ 🗓  Yearly calendar (all months with subtopics) ═══ -->
+      <!-- Yearly calendar -->
       {% if data and data.plan_data and data.plan_data.months %}
       {% set _pd = data.plan_data %}
       {% set _cur_month_idx = _pd.current_month %}
       <div class="dt-yearly-calendar" id="dt-yearly-calendar">
         <div class="dt-yearly-cal-header" onclick="toggleYearlyCal()">
-          <span class="dt-yearly-cal-title">🗓 Годовой план подтем</span>
-          <span class="dt-yearly-cal-toggle" id="dt-yearly-cal-toggle">▶</span>
+          <span class="dt-yearly-cal-title">Годовой план подтем</span>
+          <span class="dt-yearly-cal-toggle" id="dt-yearly-cal-toggle">&#9654;</span>
         </div>
         <div class="dt-yearly-cal-body" id="dt-yearly-cal-body">
           <div class="dt-yearly-cal-inner">
@@ -1134,7 +710,7 @@
             <div class="dt-yearly-month{% if _is_cur %} is-current{% endif %}">
               <div class="dt-yearly-month-header">
                 <span class="dt-yearly-month-label">Месяц {{ _m.index }}</span>
-                {% if _is_cur %}<span class="dt-yearly-month-badge">📌 Текущий</span>{% endif %}
+                {% if _is_cur %}<span class="dt-yearly-month-badge">Текущий</span>{% endif %}
               </div>
               <div class="dt-yearly-month-subs">
                 {% for _sub in _m.subtopics %}
@@ -1152,102 +728,104 @@
       </div>
       {% endif %}
 
-  <!-- ═══ Empty state (no set) ═══ -->
+  <!-- Blocked state -->
+  <div id="dt-blocked-state" class="dt-hidden">
+    <div class="dt-empty-card" style="border-color: rgba(99,102,241,0.35);">
+      <div class="dt-empty-title" style="color: #a5b4fc;">Сначала утренний срез</div>
+      <div class="dt-empty-sub" id="dt-blocked-message">
+        Сначала утренний срез: «тема дня». 5 задач, примерно 15 минут.
+      </div>
+      <a id="dt-probe-link" href="/prep/probe" class="dt-btn-primary" style="text-decoration:none; background: #6366f1;">
+        Пройти утренний срез
+      </a>
+    </div>
+  </div>
+
+  <!-- Empty state -->
   <div id="dt-empty-state" class="dt-hidden">
     <div class="dt-empty-card">
-      <div class="dt-empty-title">🚀 Начнём?</div>
+      <div class="dt-empty-title">Начнём?</div>
       <div class="dt-empty-sub">
         Нажми «Сгенерировать», чтобы получить 10 персонализированных задач<br>
         на основе твоего уровня и прогресса.
       </div>
-<input type="text" id="dt-topic-input" class="dt-topic-input" value="{{ data.theme_today or 'Теория чисел' }}" placeholder="Тема (необязательно)" autocomplete="off" style="display:block;margin:0 auto 12px;max-width:320px;width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.9);font-size:15px;text-align:center;">
+<input type="text" id="dt-topic-input" class="dt-topic-input" value="{{ data.theme_today or 'Теория чисел' }}" placeholder="Тема (необязательно)" autocomplete="off" style="display:block;margin:0 auto 12px;max-width:320px;width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0B1428;color:var(--text);font-size:15px;text-align:center;">
       <button class="dt-btn-primary" id="dt-btn-generate" onclick="startGeneration()">
-        ⚡ Сгенерировать
+        Сгенерировать
       </button>
     </div>
   </div>
 
-  <!-- ═══ Generating state ═══ -->
+  <!-- Generating state -->
   <div id="dt-generating-state" class="dt-hidden">
     <div class="dt-generating-card">
-      <div class="dt-gen-title">🧠 Генерируем задачи…</div>
+      <div class="dt-gen-title">Генерируем задачи…</div>
       <div class="dt-gen-sub" id="dt-elapsed">прошло 0:00</div>
-
       <div class="dt-progress-bar">
         <div class="dt-progress-fill" id="dt-progress-fill"></div>
       </div>
       <div class="dt-progress-text" id="dt-progress-text">0%</div>
-
       <div class="dt-step-name" id="dt-step-name">Запуск…</div>
-      {# ETA «осталось примерно…» убрана по запросу пользователя.
-         Скрытый div сохранён только чтобы JS не падал при попытке записи. #}
       <div class="dt-eta" id="dt-eta" style="display:none !important;"></div>
     </div>
   </div>
 
-  <!-- ═══ Failed state ═══ -->
+  <!-- Failed state -->
   <div id="dt-failed-state" class="dt-hidden">
-    <div class="dt-empty-card" style="border-color:rgba(255,107,107,0.35);">
-      <div class="dt-empty-title" style="color:#ff9b9b;">❌ Не удалось сгенерировать задачи</div>
+    <div class="dt-empty-card" style="border-color:rgba(232,106,98,0.35);">
+      <div class="dt-empty-title" style="color:var(--bad);">Не удалось сгенерировать задачи</div>
       <div class="dt-empty-sub">
         <div id="dt-failed-message"
-             style="color:#ff9b9b;margin-bottom:14px;line-height:1.45;
+             style="color:var(--bad);margin-bottom:14px;line-height:1.45;
                     word-break:break-word;"></div>
-        <div style="color:rgba(255,255,255,0.55);font-size:14px;">
+        <div style="color:var(--muted);font-size:14px;">
           Это не отняло твою дневную попытку — можно попробовать снова.
         </div>
       </div>
       <button class="dt-btn-primary" id="dt-btn-retry" onclick="startGeneration()">
-        🔄 Попробовать снова
+        Попробовать снова
       </button>
     </div>
   </div>
 
-  <!-- ═══ Ready state ═══ -->
+  <!-- Ready state -->
   <div id="dt-ready-state" class="dt-hidden">
     <div class="dt-ready-header">
       <div>
-        <div class="dt-ready-title">📚 Твои задачи на <span id="dt-date"></span></div>
+        <div class="dt-ready-title">Твои задачи на <span id="dt-date"></span></div>
         <div class="dt-ready-meta">
           Выполнено <span id="dt-progress-summary">0/0</span>
         </div>
       </div>
-      <div class="dt-ready-actions"><button class="dt-btn-secondary" id="dt-btn-regenerate" onclick="startGeneration()">🔄 Перегенерировать</button></div> {# «Сгенерировать заново» убрана — новый набор появится автоматически
-         после истечения 24-часового окна (см. #dt-countdown). #}
+      <div class="dt-ready-actions"><button class="dt-btn-secondary" id="dt-btn-regenerate" onclick="startGeneration()">Перегенерировать</button></div>
     </div>
 
     <!-- Summary card -->
     <div id="dt-summary-card" class="dt-summary-card dt-hidden">
-      <strong>💡 Рекомендация:</strong> <span id="dt-summary-text"></span>
+      <strong>Рекомендация:</strong> <span id="dt-summary-text"></span>
     </div>
 
     <!-- Partial notice -->
     <div id="dt-partial-notice" class="dt-partial-notice dt-hidden">
-      ⚠️ Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
+      Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
     </div>
 
-    {# ── Calibration banner (PR percent_to_level + calibration) ──
-       Рисуется, если в сегодняшнем сете есть хотя бы одна
-       калибровочная задача — то есть профиль пользователя ещё
-       неполный (пройдено < 7 адаптивных тестов). #}
     {% if data and data.has_calibration %}
     <div class="dt-calibration-banner" role="status">
-      <div class="dt-cal-banner-icon">🧪</div>
+      <div class="dt-cal-banner-icon">&#9888;</div>
       <div class="dt-cal-banner-body">
-        <div class="dt-cal-banner-title">
-          Профиль ещё в калибровке
-        </div>
+        <div class="dt-cal-banner-title">Профиль ещё в калибровке</div>
         <div class="dt-cal-banner-text">
           {{ data.calibration_items_count }} из {{ data.progress.total }}
           задач — по темам, по которым ты пока не проходил адаптивный
-          тест. Они помечены бейджем 🧪 «Калибровка» и подобраны на
+          тест. Они помечены бейджем «Калибровка» и подобраны на
           среднем уровне. Пройди диагностику, чтобы задачи стали
           точнее под твой уровень.
         </div>
       </div>
       <a class="dt-cal-banner-btn"
          href="{{ data.adaptive_tests_url or '/adaptive_test/select_class' }}">
-        Пройти тест →
+        Пройти тест &rarr;
       </a>
     </div>
     {% endif %}
@@ -1258,19 +836,16 @@
 
     </div>{# /.dt-main #}
 
-    <!-- ═══ 📅 Calendar sidebar ═══ -->
+    <!-- Calendar sidebar -->
     <aside class="dt-sidebar" id="dt-sidebar">
       <div class="dt-cal-header">
-        <button class="dt-cal-nav-btn" id="dt-cal-prev" title="Предыдущий месяц">‹</button>
+        <button class="dt-cal-nav-btn" id="dt-cal-prev" title="Предыдущий месяц">&#8249;</button>
         <div class="dt-cal-title" id="dt-cal-title">—</div>
-        <button class="dt-cal-nav-btn" id="dt-cal-next" title="Следующий месяц">›</button>
+        <button class="dt-cal-nav-btn" id="dt-cal-next" title="Следующий месяц">&#8250;</button>
       </div>
-
       <div class="dt-cal-grid" id="dt-cal-grid">
-        {# Дни недели + дни месяца рисует JS #}
+        {# JS renders days #}
       </div>
-
-      <!-- Панель с задачами выбранного дня (показывается под календарём) -->
       <div class="dt-day-history dt-hidden" id="dt-day-history">
         <div class="dt-day-history-title" id="dt-day-history-title">—</div>
         <div class="dt-day-history-sub" id="dt-day-history-sub"></div>
@@ -1282,7 +857,7 @@
 
 </div>
 
-<!-- ═══ Modal ═══ -->
+<!-- Modal -->
 <div id="dt-modal-overlay" class="dt-hidden">
   <div class="dt-modal">
     <button class="dt-modal-close" id="dt-modal-close">&times;</button>
@@ -1294,7 +869,6 @@
   </div>
 </div>
 
-<!-- ═══ Initial data ── читается в daily_tasks.js ═══ -->
 <script id="dt-init-data" type="application/json">{{ data | tojson | safe }}</script>
 
 {% endblock %}
@@ -1303,18 +877,10 @@
 <script src="{{ url_for('static', filename='js/daily_tasks.js') }}?v={{ asset_version }}"></script>
 <script src="{{ url_for('static', filename='js/daily_tasks_modal.js') }}?v={{ asset_version }}"></script>
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     Inline JS: 24h countdown + календарь + day-history панель.
-     Использует те же серверные эндпоинты:
-       GET /daily_tasks/calendar?year=YYYY&month=MM
-       GET /daily_tasks/day_history/<YYYY-MM-DD>
-     Данные для countdown берутся из <script id="dt-init-data">.
-   ══════════════════════════════════════════════════════════════════════ -->
 <script>
 (function() {
   'use strict';
 
-  // ── helpers ────────────────────────────────────────────────────────
   function $(id) { return document.getElementById(id); }
 
   function parseInitData() {
@@ -1330,11 +896,7 @@
 
   function pad2(n) { n = String(Math.max(0, Math.floor(n))); return n.length < 2 ? '0' + n : n; }
 
-  // ── ⏱ 24h countdown ───────────────────────────────────────────────
-  // Берём expires_at из init-data. Если страница в empty/generating/expired —
-  // блока countdown не показываем. При expire — автоматически перезагружаем
-  // страницу, чтобы пользователь увидел чистое empty-state с кнопкой
-  // «Сгенерировать» (бэкенд уже пометит сет как expired).
+  // ── 24h countdown ──────────────────────────────────────
   var countdownTimer = null;
 
   function initCountdown() {
@@ -1359,8 +921,6 @@
         box.classList.remove('dt-expiring');
         box.classList.add('dt-expired');
         if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
-        // Дадим серверу шанс пометить expired при перезагрузке.
-        // Небольшая задержка, чтобы пользователь увидел 00:00:00.
         setTimeout(function() { window.location.reload(); }, 1200);
         return;
       }
@@ -1380,9 +940,9 @@
     countdownTimer = setInterval(tick, 1000);
   }
 
-  // ── 📅 Calendar ────────────────────────────────────────────────────
+  // ── Calendar ────────────────────────────────────────────
   var currentYear = null;
-  var currentMonth = null;  // 1..12
+  var currentMonth = null;
   var todayIso = null;
   var selectedDate = null;
   var calCache = {};
@@ -1394,8 +954,6 @@
   var DOW_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
   function buildSkeletonPayload(year, month) {
-    // Локальная генерация дней месяца (на случай если бэкенд недоступен).
-    // tier='empty' — все клетки пустые до прихода данных с сервера.
     var lastDay = new Date(year, month, 0).getDate();
     var today = new Date();
     var todayIsoLocal = today.getFullYear() + '-' +
@@ -1407,14 +965,9 @@
       var isToday = (iso === todayIsoLocal);
       var isFuture = dDate > today && !isToday;
       days.push({
-        date: iso,
-        day: d,
-        solved: 0,
-        total: 0,
-        status: null,
-        tier: 'empty',
-        is_today: isToday,
-        is_future: isFuture
+        date: iso, day: d, solved: 0, total: 0,
+        status: null, tier: 'empty',
+        is_today: isToday, is_future: isFuture
       });
     }
     return { success: true, year: year, month: month, today: todayIsoLocal, days: days };
@@ -1423,7 +976,6 @@
   function renderCalendarSkeleton(year, month) {
     var titleEl = $('dt-cal-title');
     if (titleEl) titleEl.textContent = MONTH_NAMES_RU[month - 1] + ' ' + year;
-    // Сразу рисуем сетку с днями — даже до прихода данных от сервера.
     renderCalendar(buildSkeletonPayload(year, month));
   }
 
@@ -1456,7 +1008,7 @@
         renderCalendar(payload);
       })
       .catch(function(err) {
-        console.warn('[dt-cal] fetch error — оставляем скелетон', err);
+        console.warn('[dt-cal] fetch error - skeleton', err);
       });
   }
 
@@ -1465,7 +1017,6 @@
     if (!grid) return;
     grid.innerHTML = '';
 
-    // дни недели
     DOW_RU.forEach(function(d) {
       var el = document.createElement('div');
       el.className = 'dt-cal-dow';
@@ -1473,9 +1024,7 @@
       grid.appendChild(el);
     });
 
-    // пустые ячейки до 1-го числа (понедельник как первый день)
     var first = new Date(Date.UTC(payload.year, payload.month - 1, 1));
-    // getUTCDay: 0=вс, 1=пн … 6=сб → переведём в индекс «пн-первый»
     var leadIdx = (first.getUTCDay() + 6) % 7;
     for (var i = 0; i < leadIdx; i++) {
       var blank = document.createElement('div');
@@ -1483,7 +1032,6 @@
       grid.appendChild(blank);
     }
 
-    // дни месяца
     payload.days.forEach(function(d) {
       var el = document.createElement('div');
       var cls = ['dt-cal-day', 'dt-tier-' + d.tier];
@@ -1496,14 +1044,11 @@
           ? (d.day + ' число — решено ' + d.solved + ' / ' + d.total)
           : (d.is_future ? 'Ещё не наступило' : (d.day + ' число — без задач')));
 
-      // ── Главное содержимое клетки: число месяца сверху, СНИЗУ — кол-во решённых
       var num = document.createElement('span');
       num.className = 'dt-cal-daynum';
       num.textContent = d.day;
       el.appendChild(num);
 
-      // Кол-во решённых задач (для прошлых дней с задачами).
-      // Это «самое главное» — показываем числом X/10 в самой клетке.
       if (!d.is_future && d.total > 0) {
         var solvedBadge = document.createElement('span');
         solvedBadge.className = 'dt-cal-solved';
@@ -1514,12 +1059,10 @@
       if (d.tier === 'gold') {
         var crown = document.createElement('span');
         crown.className = 'dt-cal-crown';
-        crown.textContent = '👑';
+        crown.textContent = '\uD83D\uDC51';
         el.appendChild(crown);
       }
 
-      // Кликабельны ВСЕ прошлые дни и сегодня (даже без задач) — покажем
-      // пустое состояние в панели истории. Будущие — без клика.
       if (!d.is_future) {
         el.style.cursor = 'pointer';
         (function(dateIso) {
@@ -1532,7 +1075,7 @@
     });
   }
 
-  // ── 📋 Day history panel ───────────────────────────────────────────
+  // ── Day history panel ───────────────────────────────────
   function openDayHistory(dateIso) {
     selectedDate = dateIso;
     var panel = $('dt-day-history');
@@ -1542,7 +1085,7 @@
     if (!panel || !listEl) return;
 
     panel.classList.remove('dt-hidden');
-    titleEl.textContent = '📋 ' + formatDateRu(dateIso);
+    titleEl.textContent = formatDateRu(dateIso);
     subEl.textContent = 'Загружаю…';
     listEl.innerHTML = '';
 
@@ -1591,10 +1134,10 @@
     var status = document.createElement('span');
     if (it.is_correct === true) {
       status.className = 'dt-dh-status-correct';
-      status.textContent = '✓ верно';
+      status.textContent = '\u2713 верно';
     } else if (it.is_answered) {
       status.className = 'dt-dh-status-incorrect';
-      status.textContent = '✗ неверно';
+      status.textContent = '\u2717 неверно';
     } else {
       status.className = 'dt-dh-status-pending';
       status.textContent = '— не решено';
@@ -1604,7 +1147,8 @@
 
     if (it.preview) {
       var body = document.createElement('div');
-      body.textContent = it.preview; try{ if(typeof reRenderMath==='function') reRenderMath(body); }catch(e){}
+      body.textContent = it.preview;
+      try{ if(typeof reRenderMath==='function') reRenderMath(body); }catch(e){}
       wrap.appendChild(body);
     }
     return wrap;
@@ -1619,7 +1163,6 @@
     return d + ' ' + (MONTH_NAMES_RU[m - 1] || '').toLowerCase() + ' ' + y;
   }
 
-  // ── nav buttons ────────────────────────────────────────────────────
   function bindNav() {
     var prev = $('dt-cal-prev');
     var next = $('dt-cal-next');
@@ -1635,7 +1178,7 @@
     });
   }
 
-  // ── init ───────────────────────────────────────────────────────────
+  // ── Init ────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
     initCountdown();
     bindNav();
@@ -1644,134 +1187,262 @@
     renderTasks();
     bindActionButtons();
   });
-  // ── Task cards rendering + answer modal (restored) ──────────────
-function escapeHtml(s){ s=(s==null?'':String(s)); return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function renderTasks(){
-var data=parseInitData(); if(!data) return;
-var grid=$('dt-task-grid'); if(!grid) return;
-var items=(data.items&&data.items.length)?data.items:[];
-if(!items.length){ return; }
-grid.innerHTML='';
-items.forEach(function(it){
-var card=document.createElement('div');
-card.className='dt-card'+(it.is_answered?(it.is_correct?' dt-done':' dt-flagged'):'');
-card.setAttribute('data-item-id', it.id);
-var statusHtml;
-if(it.is_answered && it.is_correct){ statusHtml='<div class="dt-card-status dt-correct">\u2713 \u0420\u0435\u0448\u0435\u043d\u043e</div>'; }
-else if(it.is_answered){ statusHtml='<div class="dt-card-status dt-incorrect">\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e</div>'; }
-else{ statusHtml='<div class="dt-card-status dt-pending">\u2014 \u041d\u0435 \u0440\u0435\u0448\u0435\u043d\u043e</div>'; }
-card.innerHTML='<div class="dt-card-number">'+escapeHtml(it.position||'')+'</div>'+
-'<div class="dt-card-header"><span class="dt-topic-badge">'+escapeHtml(it.topic||'')+'</span><span class="dt-difficulty">'+escapeHtml(it.difficulty_level||'')+'</span></div>'+
-'<div class="dt-card-preview">'+escapeHtml(it.preview||it.text||'')+'</div>'+statusHtml;
-card.addEventListener('click', function(){ openTask(it); });
-grid.appendChild(card); if(typeof renderMath==='function') renderMath(card);
-});
-}
-// ── Fraction / answer normalization (1/4 => 0.25) ─────────────
-function normalizeAnswer(raw){
-if(raw==null) return '';
-var s=String(raw).trim().replace(',', '.');
-var m=s.match(/^\s*(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)\s*$/);
-if(m){ var num=parseFloat(m[1]), den=parseFloat(m[2]); if(den!==0&&isFinite(num)&&isFinite(den)){ var v=num/den; return String(Math.round(v*1e9)/1e9); } }
-return s;
-}
-// ── Answer modal ────────────────────────────────────────────
-var dtModalEl=null; var dtOpenStart=0;
-function ensureModal(){
-if(dtModalEl) return dtModalEl;
-var ov=document.createElement('div'); ov.className='dt-modal'; ov.id='dt-modal';
-ov.style.cssText='position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,0.7);overflow-y:auto;padding:40px 16px;';
-ov.innerHTML='<div class="dt-modal-box" style="background:#10151f;border:1px solid rgba(255,255,255,0.1);border-radius:16px;max-width:680px;width:100%;padding:24px 26px;color:rgba(255,255,255,0.9);position:relative;">'+
-'<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>'+
-'<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:rgba(56,239,125,0.7);margin-bottom:10px;"></div>'+
-'<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>'+
-'<input type="text" id="dt-answer-input" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-size:16px;margin-bottom:14px;">'+
-'<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button><button id="dt-hint-btn" class="dt-btn-secondary">\ud83d\udca1 \u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430</button></div>'+
-'<div id="dt-modal-result" style="margin-top:16px;"></div>'+
-'</div>';
-document.body.appendChild(ov);
-ov.addEventListener('click', function(e){ if(e.target===ov) closeModal(); });
-ov.querySelector('#dt-modal-close').addEventListener('click', closeModal);
-dtModalEl=ov; return ov;
-}
-function closeModal(){ if(dtModalEl) dtModalEl.style.display='none'; }
-var dtCurrentItem=null;
-function openTask(it){
-ensureModal();
-dtCurrentItem=it; dtOpenStart=Date.now();
-$('dt-modal-title').textContent=(it.topic||'')+(it.difficulty_level?(' \u00b7 '+it.difficulty_level):'');
-$('dt-modal-statement').innerHTML=escapeHtmlPreserveLatex(it.text||it.preview||''); if(typeof renderMath==='function') renderMath($('dt-modal-statement'));
-var inp=$('dt-answer-input'); inp.value=(it.user_answer||'');
-var res=$('dt-modal-result'); res.innerHTML='';
-if(it.is_answered){ res.innerHTML='<div style="color:'+(it.is_correct?'#38ef7d':'#ff6b6b')+';">'+(it.is_correct?'\u2713 \u0420\u0430\u043d\u0435\u0435 \u0440\u0435\u0448\u0435\u043d\u043e \u0432\u0435\u0440\u043d\u043e':'\u2717 \u0420\u0430\u043d\u0435\u0435 \u043e\u0442\u0432\u0435\u0447\u0435\u043d\u043e \u043d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>'; inp.disabled=true; $('dt-submit-btn').disabled=true; }else{ inp.disabled=false; $('dt-submit-btn').disabled=false; }
-$('dt-submit-btn').onclick=submitAnswer;
-$('dt-hint-btn').onclick=loadHint;
-inp.onkeydown=function(e){ if(e.key==='Enter') submitAnswer(); };
-dtModalEl.style.display='flex';
-inp.focus();
-}
-function submitAnswer(){
-if(!dtCurrentItem || dtCurrentItem.is_answered) return;
-var inp=$('dt-answer-input'); var res=$('dt-modal-result'); var btn=$('dt-submit-btn');
-var raw=inp.value.trim(); if(!raw){ inp.focus(); return; }
-var normalized=normalizeAnswer(raw);
-btn.disabled=true; var oldTxt=btn.textContent; btn.textContent='\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u044e\u2026';
-res.innerHTML='<div style="color:rgba(255,255,255,0.6);">\ud83d\udd0d DeepSeek \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u0442 \u043e\u0442\u0432\u0435\u0442\u2026</div>';
-var secs=Math.max(0, Math.round((Date.now()-dtOpenStart)/1000));
-fetch('/daily_tasks/'+dtCurrentItem.id+'/submit', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({ answer: raw, normalized_answer: normalized, time_spent_seconds: secs }) })
-.then(function(r){ return r.json(); })
-.then(function(p){
-btn.disabled=false; btn.textContent=oldTxt;
-if(!p){ res.innerHTML='<div style="color:#ff6b6b;">\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438</div>'; return; }
-var _dtFinish=function(){ var ok=p.is_correct===true;
-var html='<div style="color:'+(ok?'#38ef7d':'#ff6b6b')+';font-weight:600;margin-bottom:8px;">'+(ok?'\u2713 \u0412\u0435\u0440\u043d\u043e!':'\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>';
-if(!ok && p.correct_answer!=null){ html+='<div style="margin-bottom:6px;">\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442: <b>'+escapeHtmlPreserveLatex(p.correct_answer)+'</b></div>'; }
-if(p.explanation){ html+='<div style="color:rgba(255,255,255,0.75);line-height:1.5;margin-top:6px;">'+escapeHtmlPreserveLatex(p.explanation)+'</div>'; }
-if(p.solution){ html+='<div style="color:rgba(255,255,255,0.6);line-height:1.5;margin-top:8px;white-space:pre-wrap;">'+escapeHtmlPreserveLatex(p.solution)+'</div>'; }
-res.innerHTML=html; if(typeof renderMath==='function') renderMath(res);
-dtCurrentItem.is_answered=true; dtCurrentItem.is_correct=ok; dtCurrentItem.user_answer=raw;
-renderTasks();
-if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); } }; if(p.is_correct===true){ _dtFinish(); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.6);">DeepSeek проверяет ответ…</div>'; fetch('/daily_tasks/'+dtCurrentItem.id+'/submit_ai',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({user_answer:raw,user_solution:raw,time_spent_seconds:secs})}).then(function(r){return r.json();}).then(function(a){ if(a&&a.status==='success'){ p.is_correct=a.is_correct===true; if(a.correct_answer!=null)p.correct_answer=a.correct_answer; if(a.feedback)p.explanation=a.feedback; if(a.solution)p.solution=a.solution; if(a.set_progress)p.set_progress=a.set_progress; } _dtFinish(); }).catch(function(e){ console.warn('[dt-submit-ai]',e); _dtFinish(); }); }
-})
-.catch(function(err){ btn.disabled=false; btn.textContent=oldTxt; res.innerHTML='<div style="color:#ff6b6b;">\u0421\u0435\u0442\u0435\u0432\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430</div>'; console.warn('[dt-submit]',err); });
-}
-function loadHint(){
-if(!dtCurrentItem) return;
-var res=$('dt-modal-result');
-fetch('/daily_tasks/'+dtCurrentItem.id+'/hint', { credentials:'same-origin', headers:{'Accept':'application/json'} })
-.then(function(r){ return r.json(); })
-.then(function(p){ if(p&&p.hint){ res.innerHTML='<div style="color:#ffba49;line-height:1.5;">\ud83d\udca1 '+escapeHtmlPreserveLatex(p.hint)+'</div>'; if(typeof renderMath==='function') renderMath(res); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.5);">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043e\u043a \u043d\u0435\u0442</div>'; } })
-.catch(function(err){ console.warn('[dt-hint]',err); });
-}
-function bindActionButtons(){
-var gen=document.querySelector('.dt-btn-primary');
-var buttons=document.querySelectorAll('.dt-btn-primary, .dt-btn-secondary');
-buttons.forEach(function(b){
-var t=(b.textContent||'').toLowerCase();
-if(t.indexOf('\u0441\u0433\u0435\u043d\u0435\u0440')>=0 || t.indexOf('\u043f\u0435\u0440\u0435\u0433\u0435\u043d')>=0 || t.indexOf('\u043f\u043e\u043f\u0440\u043e\u0431')>=0){
-b.addEventListener('click', triggerGenerate);
-}
-});
-}
-function triggerGenerate(){
-var topicEl=$('dt-topic-input'); var topic=topicEl?topicEl.value.trim():'';
-fetch('/daily_tasks/regenerate', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({ topic: topic }) })
-.then(function(r){ return r.json().catch(function(){ return {}; }); })
-.then(function(){ setTimeout(function(){ window.location.reload(); }, 1500); })
-.catch(function(err){ console.warn('[dt-gen]',err); });
-}
 
+  // ── Task cards rendering ────────────────────────────────
+  function escapeHtml(s) {
+    s = (s == null ? '' : String(s));
+    return s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+  }
+
+  function renderTasks() {
+    var data = parseInitData(); if (!data) return;
+    var grid = $('dt-task-grid'); if (!grid) return;
+    var items = (data.items && data.items.length) ? data.items : [];
+    if (!items.length) { return; }
+    grid.innerHTML = '';
+    items.forEach(function(it) {
+      var card = document.createElement('div');
+      card.className = 'dt-card' + (it.is_answered ? (it.is_correct ? ' dt-done' : ' dt-flagged') : '');
+      if (it.is_calibration) card.className += ' dt-calibration';
+      card.setAttribute('data-item-id', it.id);
+
+      var subtopicHtml = '';
+      if (it.subtopic) {
+        subtopicHtml = '<div class="dt-card-subtopic">' + escapeHtml(it.subtopic) + '</div>';
+      }
+
+      var statusHtml;
+      if (it.is_answered && it.is_correct) {
+        statusHtml = '<span class="dt-card-status dt-correct">\u2713 Решено верно</span>';
+      } else if (it.is_answered) {
+        statusHtml = '<span class="dt-card-status dt-incorrect">\u2717 Неверно</span>';
+      } else {
+        statusHtml = '<span class="dt-card-status dt-pending">— Не решено</span>';
+      }
+
+      var calBadge = '';
+      if (it.is_calibration) {
+        calBadge = '<span class="dt-calibration-badge">Калибровка</span>';
+      }
+
+      card.innerHTML =
+        subtopicHtml +
+        '<div class="dt-card-header">' +
+          '<span class="dt-card-number">' + escapeHtml(it.position || '') + '</span>' +
+          '<span class="dt-topic-badge">' + escapeHtml(it.topic || '') + '</span>' +
+          '<span class="dt-difficulty">' + escapeHtml(it.difficulty_level || '') + '</span>' +
+          calBadge +
+        '</div>' +
+        '<div class="dt-card-preview">' + escapeHtml(it.preview || it.text || '') + '</div>' +
+        '<div class="dt-card-footer">' +
+          statusHtml +
+        '</div>';
+
+      card.addEventListener('click', function() { openTask(it); });
+      grid.appendChild(card);
+      if (typeof renderMath === 'function') renderMath(card);
+    });
+  }
+
+  // ── Fraction / answer normalization ─────────────────────
+  function normalizeAnswer(raw) {
+    if (raw == null) return '';
+    var s = String(raw).trim().replace(',', '.');
+    var m = s.match(/^\s*(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (m) {
+      var num = parseFloat(m[1]), den = parseFloat(m[2]);
+      if (den !== 0 && isFinite(num) && isFinite(den)) {
+        var v = num / den;
+        return String(Math.round(v * 1e9) / 1e9);
+      }
+    }
+    return s;
+  }
+
+  // ── Answer modal ────────────────────────────────────────
+  var dtModalEl = null;
+  var dtOpenStart = 0;
+
+  function ensureModal() {
+    if (dtModalEl) return dtModalEl;
+    var ov = document.createElement('div');
+    ov.className = 'dt-modal';
+    ov.id = 'dt-modal';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,0.7);overflow-y:auto;padding:40px 16px;';
+    ov.innerHTML =
+      '<div class="dt-modal-box" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);max-width:680px;width:100%;padding:24px 26px;color:var(--text);position:relative;">' +
+      '<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>' +
+      '<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent-hi);margin-bottom:10px;"></div>' +
+      '<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>' +
+      '<input type="text" id="dt-answer-input" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0B1428;color:var(--text);font-size:16px;margin-bottom:14px;">' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button><button id="dt-hint-btn" class="dt-btn-secondary">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430</button></div>' +
+      '<div id="dt-modal-result" style="margin-top:16px;"></div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e) { if (e.target === ov) closeModal(); });
+    ov.querySelector('#dt-modal-close').addEventListener('click', closeModal);
+    dtModalEl = ov;
+    return ov;
+  }
+
+  function closeModal() { if (dtModalEl) dtModalEl.style.display = 'none'; }
+
+  var dtCurrentItem = null;
+
+  function openTask(it) {
+    ensureModal();
+    dtCurrentItem = it;
+    dtOpenStart = Date.now();
+    $('dt-modal-title').textContent = (it.topic || '') + (it.difficulty_level ? (' \u00b7 ' + it.difficulty_level) : '');
+    $('dt-modal-statement').innerHTML = escapeHtmlPreserveLatex(it.text || it.preview || '');
+    if (typeof renderMath === 'function') renderMath($('dt-modal-statement'));
+    var inp = $('dt-answer-input');
+    inp.value = (it.user_answer || '');
+    var res = $('dt-modal-result');
+    res.innerHTML = '';
+    if (it.is_answered) {
+      res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';">' +
+        (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>';
+      inp.disabled = true;
+      $('dt-submit-btn').disabled = true;
+    } else {
+      inp.disabled = false;
+      $('dt-submit-btn').disabled = false;
+    }
+    $('dt-submit-btn').onclick = submitAnswer;
+    $('dt-hint-btn').onclick = loadHint;
+    inp.onkeydown = function(e) { if (e.key === 'Enter') submitAnswer(); };
+    dtModalEl.style.display = 'flex';
+    inp.focus();
+  }
+
+  function submitAnswer() {
+    if (!dtCurrentItem || dtCurrentItem.is_answered) return;
+    var inp = $('dt-answer-input');
+    var res = $('dt-modal-result');
+    var btn = $('dt-submit-btn');
+    var raw = inp.value.trim();
+    if (!raw) { inp.focus(); return; }
+    var normalized = normalizeAnswer(raw);
+    btn.disabled = true;
+    var oldTxt = btn.textContent;
+    btn.textContent = 'Проверяю…';
+    res.innerHTML = '<div style="color:var(--muted);">DeepSeek проверяет ответ…</div>';
+    var secs = Math.max(0, Math.round((Date.now() - dtOpenStart) / 1000));
+    fetch('/daily_tasks/' + dtCurrentItem.id + '/submit', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ answer: raw, normalized_answer: normalized, time_spent_seconds: secs })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(p) {
+      btn.disabled = false;
+      btn.textContent = oldTxt;
+      if (!p) { res.innerHTML = '<div style="color:var(--bad);">Ошибка проверки</div>'; return; }
+      var _dtFinish = function() {
+        var ok = p.is_correct === true;
+        var html = '<div style="color:' + (ok ? '#3ECF8E' : '#E86A62') + ';font-weight:600;margin-bottom:8px;">' +
+          (ok ? '\u2713 Верно!' : '\u2717 Неверно') + '</div>';
+        if (!ok && p.correct_answer != null) {
+          html += '<div style="margin-bottom:6px;">Правильный ответ: <b>' + escapeHtmlPreserveLatex(p.correct_answer) + '</b></div>';
+        }
+        if (p.explanation) {
+          html += '<div style="color:var(--text);line-height:1.5;margin-top:6px;">' + escapeHtmlPreserveLatex(p.explanation) + '</div>';
+        }
+        if (p.solution) {
+          html += '<div style="color:var(--muted);line-height:1.5;margin-top:8px;white-space:pre-wrap;">' + escapeHtmlPreserveLatex(p.solution) + '</div>';
+        }
+        res.innerHTML = html;
+        if (typeof renderMath === 'function') renderMath(res);
+        dtCurrentItem.is_answered = true;
+        dtCurrentItem.is_correct = ok;
+        dtCurrentItem.user_answer = raw;
+        renderTasks();
+      };
+      if (p.is_correct === true) {
+        _dtFinish();
+      } else {
+        res.innerHTML = '<div style="color:var(--muted);">DeepSeek проверяет ответ…</div>';
+        fetch('/daily_tasks/' + dtCurrentItem.id + '/submit_ai', {
+          method: 'POST', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_answer: raw, user_solution: raw, time_spent_seconds: secs })
+        }).then(function(r) { return r.json(); }).then(function(a) {
+          if (a && a.status === 'success') {
+            p.is_correct = a.is_correct === true;
+            if (a.correct_answer != null) p.correct_answer = a.correct_answer;
+            if (a.feedback) p.explanation = a.feedback;
+            if (a.solution) p.solution = a.solution;
+          }
+          _dtFinish();
+        }).catch(function(e) { console.warn('[dt-submit-ai]', e); _dtFinish(); });
+      }
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.textContent = oldTxt;
+      res.innerHTML = '<div style="color:var(--bad);">Сетевая ошибка</div>';
+      console.warn('[dt-submit]', err);
+    });
+  }
+
+  function loadHint() {
+    if (!dtCurrentItem) return;
+    var res = $('dt-modal-result');
+    fetch('/daily_tasks/' + dtCurrentItem.id + '/hint', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+    .then(function(r) { return r.json(); })
+    .then(function(p) {
+      if (p && p.hint) {
+        res.innerHTML = '<div style="color:var(--warn);line-height:1.5;">\uD83D\uDCA1 ' + escapeHtmlPreserveLatex(p.hint) + '</div>';
+        if (typeof renderMath === 'function') renderMath(res);
+      } else {
+        res.innerHTML = '<div style="color:var(--muted);">Подсказок нет</div>';
+      }
+    })
+    .catch(function(err) { console.warn('[dt-hint]', err); });
+  }
+
+  function bindActionButtons() {
+    var buttons = document.querySelectorAll('.dt-btn-primary, .dt-btn-secondary');
+    buttons.forEach(function(b) {
+      var t = (b.textContent || '').toLowerCase();
+      if (t.indexOf('\u0441\u0433\u0435\u043d\u0435\u0440') >= 0 ||
+          t.indexOf('\u043f\u0435\u0440\u0435\u0433\u0435\u043d') >= 0 ||
+          t.indexOf('\u043f\u043e\u043f\u0440\u043e\u0431') >= 0) {
+        b.addEventListener('click', triggerGenerate);
+      }
+    });
+  }
+
+  function triggerGenerate() {
+    var topicEl = $('dt-topic-input');
+    var topic = topicEl ? topicEl.value.trim() : '';
+    fetch('/daily_tasks/regenerate', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ topic: topic })
+    })
+    .then(function(r) { return r.json().catch(function() { return {}; }); })
+    .then(function() { setTimeout(function() { window.location.reload(); }, 1500); })
+    .catch(function(err) { console.warn('[dt-gen]', err); });
+  }
 })();
 
-// ── 🗓  Yearly calendar toggle ────────────────────────────────────
+// Yearly calendar toggle
 function toggleYearlyCal() {
   var body = document.getElementById('dt-yearly-cal-body');
   var toggle = document.getElementById('dt-yearly-cal-toggle');
   if (!body) return;
   body.classList.toggle('is-open');
   if (toggle) {
-    toggle.textContent = body.classList.contains('is-open') ? '▼' : '▶';
+    toggle.innerHTML = body.classList.contains('is-open') ? '&#9660;' : '&#9654;';
   }
+}
+
+function escapeHtmlPreserveLatex(s) {
+  s = (s == null ? '' : String(s));
+  s = s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+  return s;
 }
 </script>
 {% endblock %}

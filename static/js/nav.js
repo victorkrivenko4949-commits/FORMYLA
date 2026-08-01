@@ -37,9 +37,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Highlight active nav item
   var path = window.location.pathname;
+
+  // «Прочее» active rules: any page that lives under /misc itself,
+  // or any of the misc-linked pages (profile, friends, leaderboard, chat,
+  // drawing, about, probniks, secrets, problems, matstat, index).
+  var miscPaths = ['/misc', '/profile', '/friends', '/leaderboard',
+    '/chat', '/drawing', '/about', '/probniks', '/secrets',
+    '/problems', '/matstat', '/'];
+  function isMiscPath(p) {
+    for (var i = 0; i < miscPaths.length; i++) {
+      if (p === miscPaths[i] || p.indexOf(miscPaths[i] + '/') === 0 ||
+          p.indexOf(miscPaths[i] + '?') === 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+  var isMisc = isMiscPath(path);
+
   document.querySelectorAll('.nav-item, .nav-menu a').forEach(function (a) {
     var href = a.getAttribute('href');
-    if (href && href !== '#' && path === href) {
+    if (!href || href === '#') return;
+
+    var isActive = false;
+
+    // Для пункта «Прочее» проверяем по списку
+    if (href === '/misc') {
+      isActive = isMisc;
+    } else if (href === path ||
+               (href !== '/' && path.indexOf(href) === 0)) {
+      isActive = true;
+    }
+
+    if (isActive) {
       a.classList.add('active');
       var parent = a.closest('.nav-dropdown');
       if (parent) {

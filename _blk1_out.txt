@@ -1,0 +1,3 @@
+Total students with non-empty level_by_section: 2
+  user_id=1 sections=['algebra', 'geometry', 'combinatorics', 'logic', 'number_theory'] mu=4.95205755464034
+  user_id=3 sections=['algebra', 'geometry', 'combinatorics', 'number_theory'] mu=1.95

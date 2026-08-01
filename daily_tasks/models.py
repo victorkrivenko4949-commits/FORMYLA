@@ -103,6 +103,13 @@ class DailyTaskItem(db.Model):
     status = db.Column(db.String(32), nullable=False, default='pending')
     # status values: pending, approved, flagged, skipped
 
+    # ── P4 DEBT ─────────────────────────────────────────────────────
+    # Задача, не решённая до конца суток выдачи, попадает в долг.
+    # debt_status: NULL (не в долге) / 'active' (в долге) / 'burned' (сгорела)
+    # debt_until:   дата сгорания = target_date родительского сета + 7 дней
+    debt_status = db.Column(db.String(16), nullable=True, default=None)
+    debt_until  = db.Column(db.Date, nullable=True)
+
     # --- ответ пользователя ---
     user_answer = db.Column(db.Text, nullable=True)
     is_correct = db.Column(db.Boolean, nullable=True)

@@ -660,6 +660,29 @@ def _load_topic_final_level(
 
 
 # ══════════════════════════════════════════════════════════════════════
+# P9 Intake weak sections helper
+# ══════════════════════════════════════════════════════════════════════
+
+def _load_intake_weak_sections(user_id: int) -> list:
+    """Read self-reported weak sections from P9 intake in prep_state."""
+    try:
+        from models_curator import CuratorState
+        cs = CuratorState.query.filter_by(user_id=user_id).first()
+        if not cs:
+            return []
+        ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+        intake = ps.get('intake', {}) or {}
+        if not intake.get('completed'):
+            return []
+        weak = intake.get('weak_sections', [])
+        if isinstance(weak, str):
+            weak = [w.strip() for w in weak.split(',') if w.strip()]
+        return [w for w in weak if w and w != 'dont_know']
+    except Exception:
+        return []
+
+
+# ══════════════════════════════════════════════════════════════════════
 # Основная функция — build_profile()
 # ══════════════════════════════════════════════════════════════════════
 
@@ -945,6 +968,17 @@ def build_profile(
         'overall_accuracy': overall_accuracy,
         'avg_level_solved': overall_avg_level,
     }
+
+    # ── 7a. P9 Intake boost: приоритет по self-reported слабым разделам ──
+    _intake_weak = _load_intake_weak_sections(user_id)
+    if _intake_weak:
+        _intake_set = set(_intake_weak)
+        for t in topics_full:
+            if t['subject'] in _intake_set:
+                # Boost priority above normal range (>100)
+                t['priority'] = t.get('priority', 50) + 60
+                # Mark as intake-flagged for stronger weighting
+                t['intake_weak'] = True
 
     # ── 8. Отбор weak_topics ─────────────────────────────────────────
     # Стратегия:

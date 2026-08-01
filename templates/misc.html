@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Прочее — FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+    .misc-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .misc-page h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin-bottom: 36px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #1e293b;
+    }
+    .misc-group {
+        margin-bottom: 32px;
+    }
+    .misc-group-title {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #64748b;
+        margin-bottom: 12px;
+        padding-left: 4px;
+    }
+    .misc-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #cbd5e1;
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid transparent;
+        transition: background 0.18s, border-color 0.18s;
+        margin-bottom: 4px;
+    }
+    .misc-link:hover {
+        background: rgba(30, 41, 59, 0.9);
+        border-color: #334155;
+        color: #f1f5f9;
+    }
+    .misc-link-label {
+        font-size: 15px;
+        font-weight: 500;
+    }
+    .misc-link-desc {
+        font-size: 13px;
+        color: #64748b;
+        flex-shrink: 0;
+        margin-left: 12px;
+        text-align: right;
+    }
+    @media (max-width: 600px) {
+        .misc-page {
+            padding: 24px 16px 100px;
+        }
+        .misc-link {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .misc-link-desc {
+            margin-left: 0;
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="misc-page">
+    <h1>Прочее</h1>
+
+    <div class="misc-group">
+        <div class="misc-group-title">Тренировка</div>
+        <a href="{{ url_for('index') }}" class="misc-link">
+            <span class="misc-link-label">Темы</span>
+            <span class="misc-link-desc">Каталог тем и подтем</span>
+        </a>
+        <a href="/probniks" class="misc-link">
+            <span class="misc-link-label">Тест по темам</span>
+            <span class="misc-link-desc">Адаптивный тест</span>
+        </a>
+        <a href="{{ url_for('secrets') }}" class="misc-link">
+            <span class="misc-link-label">Секреты</span>
+            <span class="misc-link-desc">Специальные подборки задач</span>
+        </a>
+    </div>
+
+    <div class="misc-group">
+        <div class="misc-group-title">Доска и чертежи</div>
+        <a href="/drawing" class="misc-link">
+            <span class="misc-link-label">ИИ-чертёж по задаче</span>
+            <span class="misc-link-desc">Генерация чертежа</span>
+        </a>
+        <a href="/drawing?tab=whiteboard" class="misc-link">
+            <span class="misc-link-label">Доска и встреча</span>
+            <span class="misc-link-desc">Интерактивная доска, камера и звук</span>
+        </a>
+        {% if current_user.is_authenticated %}
+        <a href="/drawing/history" class="misc-link">
+            <span class="misc-link-label">История чертежей</span>
+            <span class="misc-link-desc">Сохранённые чертежи</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="misc-group">
+        <div class="misc-group-title">Сообщество</div>
+        <a href="{{ url_for('leaderboard') }}" class="misc-link">
+            <span class="misc-link-label">Лидеры</span>
+            <span class="misc-link-desc">Таблица лидеров</span>
+        </a>
+        <a href="/friends" class="misc-link">
+            <span class="misc-link-label">Друзья</span>
+            <span class="misc-link-desc">Список друзей</span>
+        </a>
+        <a href="/chat" class="misc-link">
+            <span class="misc-link-label">Чат</span>
+            <span class="misc-link-desc">Общий чат</span>
+        </a>
+    </div>
+
+    <div class="misc-group">
+        <div class="misc-group-title">Инструменты</div>
+        {% if current_user.is_authenticated %}
+        <a href="javascript:void(0)" class="misc-link"
+           onclick="event.preventDefault(); var b=document.getElementById('tutorBtn'); if(b){b.click();} return false;">
+            <span class="misc-link-label">AI Тьютор</span>
+            <span class="misc-link-desc">Персональный разбор задач</span>
+        </a>
+        {% endif %}
+        <a href="/problems" class="misc-link">
+            <span class="misc-link-label">Поиск задач</span>
+            <span class="misc-link-desc">Поиск по базе задач</span>
+        </a>
+        {% if current_user.is_authenticated and (((current_user.nickname or '')|lower in ['pavelznaka','victorkrivenko','victor']) or ((current_user.username or '')|lower in ['pavelznaka','victorkrivenko','victor'])) %}
+        <a href="/matstat" class="misc-link">
+            <span class="misc-link-label">Матстатистика</span>
+            <span class="misc-link-desc">Познать мат статистику</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="misc-group">
+        <div class="misc-group-title">Информация</div>
+        <a href="/about" class="misc-link">
+            <span class="misc-link-label">О сайте</span>
+            <span class="misc-link-desc">О платформе FORMYLA</span>
+        </a>
+        <a href="/about#review-form" class="misc-link">
+            <span class="misc-link-label">Написать отзыв</span>
+            <span class="misc-link-desc">Предложения и пожелания</span>
+        </a>
+    </div>
+
+    {% if current_user.is_authenticated and not current_user.is_guest %}
+    <div class="misc-group">
+        <div class="misc-group-title">Аккаунт</div>
+        <a href="{{ url_for('profile') }}" class="misc-link">
+            <span class="misc-link-label">Профиль</span>
+            <span class="misc-link-desc">Личный кабинет</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="misc-link">
+            <span class="misc-link-label">Выйти</span>
+            <span class="misc-link-desc">Завершить сеанс</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

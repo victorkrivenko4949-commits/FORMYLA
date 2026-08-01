@@ -1,0 +1,607 @@
+{% extends "base.html" %}
+{% block title %}Онбординг — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/prep.css') }}?v={{ asset_version }}">
+<style>
+.onboarding-wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+.onboarding-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+}
+.onboarding-card h2 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    color: #e5e7eb;
+    font-weight: 600;
+}
+.onboarding-card .q-text {
+    font-size: 16px;
+    color: #e5e7eb;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.opt-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    color: #e5e7eb;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+.opt-btn:hover {
+    background: rgba(99,102,241,0.15);
+    border-color: rgba(99,102,241,0.4);
+    transform: translateX(2px);
+}
+.opt-btn:active {
+    transform: scale(0.98);
+}
+.opt-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Date input row */
+.date-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+.date-input-row input[type="date"] {
+    flex: 1;
+    padding: 11px 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    font-size: 15px;
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+}
+.date-input-row input[type="date"]:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+.date-input-row button {
+    padding: 11px 22px;
+    border: 0;
+    border-radius: 10px;
+    background: #6366f1;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.date-input-row button:hover { opacity: 0.9; }
+.date-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Anchor task */
+.anchor-task-text {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #e5e7eb;
+    overflow-x: auto;
+}
+.anchor-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.anchor-input-row input {
+    flex: 1;
+    padding: 11px 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    font-size: 15px;
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+}
+.anchor-input-row input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+.anchor-input-row button {
+    padding: 11px 22px;
+    border: 0;
+    border-radius: 10px;
+    background: #6366f1;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.anchor-input-row button:hover { opacity: 0.9; }
+.anchor-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Progress bar */
+.progress-wrap {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}
+.progress-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+}
+
+/* Result stage */
+.result-card {
+    text-align: center;
+}
+.result-card .result-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+.result-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+}
+.result-stat {
+    text-align: center;
+    min-width: 80px;
+}
+.result-stat .val {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6366f1;
+}
+.result-stat .lbl {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+}
+.cta-btn {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: opacity 0.2s, transform 0.15s;
+}
+.cta-btn:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; text-decoration: none; }
+.cta-btn:active { transform: scale(0.97); }
+
+/* Error / message */
+.msg-box {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-top: 16px;
+    font-size: 14px;
+}
+.msg-error {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #fca5a5;
+}
+.msg-info {
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #a5b4fc;
+}
+.spinner-sm {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-top: 2px solid #6366f1;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboarding-wrap">
+    <div id="onboarding-app"></div>
+</div>
+
+<script>
+(function() {
+    // Total steps: Q1(grade) + Q2(target) + Q3(olymp_reach) + Q4(load) + Q5(deadline) + 3 anchors = 8
+    // If grade is auto-filled from profile, Q1 is skipped → 7 steps
+    var TOTAL_QUESTIONS = 5; // grade, target, olymp_reach, load, deadline
+    var TOTAL_ANCHORS = 5;
+    var currentStep = 0;
+    var totalSteps = null; // computed dynamically
+
+    function computeTotalSteps(q) {
+        // If grade was auto-filled (grade_auto present), skip Q1
+        if (q && q.grade_auto !== undefined) {
+            return TOTAL_QUESTIONS - 1 + TOTAL_ANCHORS; // 4 questions + 3 anchors = 7
+        }
+        return TOTAL_QUESTIONS + TOTAL_ANCHORS; // 5 + 3 = 8
+    }
+
+    function getProgressPct() {
+        if (totalSteps === null) return 0;
+        return Math.min(100, Math.round((currentStep / totalSteps) * 100));
+    }
+
+    function render(q, stepId, gradeAuto) {
+        var app = document.getElementById('onboarding-app');
+        if (!app) return;
+
+        if (totalSteps === null && (q || gradeAuto !== undefined)) {
+            totalSteps = computeTotalSteps({grade_auto: gradeAuto});
+        }
+
+        var pct = getProgressPct();
+        var html = '';
+
+        html += '<div class="progress-wrap">';
+        html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>';
+        html += '<span class="progress-label">Шаг ' + (currentStep + 1) + ' из ' + (totalSteps || '?') + '</span>';
+        html += '</div>';
+
+        html += '<div class="onboarding-card">';
+        html += '<h2>📋 ' + (q.anchor_label || 'Вопрос') + '</h2>';
+
+        if (q.task_text) {
+            // Anchor task
+            html += '<div class="anchor-task-text">' + q.task_text + '</div>';
+            html += '<div class="anchor-input-row">';
+            html += '<input type="text" id="anchorAnswer" placeholder="Введи ответ…" autocomplete="off">';
+            html += '<button onclick="submitAnchor(' + q.task_id + ')">Ответить</button>';
+            html += '</div>';
+            if (q.idx) {
+                var sectionInfo = q.section_ru ? ' (' + q.section_ru + ')' : (q.section ? ' (' + q.section + ')' : '');
+                html += '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;">Якорь ' + q.idx + ' из ' + q.total + sectionInfo + '</div>';
+            }
+        } else if (q.has_date_input) {
+            // Deadline question with date input
+            html += '<div class="q-text">' + q.text + '</div>';
+            html += '<div class="options-grid">';
+            for (var i = 0; i < q.options.length; i++) {
+                var o = q.options[i];
+                html += '<button class="opt-btn" onclick="submitAnswer(\'' + q.id + '\', \'' + o.key + '\')">' + o.label + '</button>';
+            }
+            html += '</div>';
+            html += '<div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.4);">Или укажи точную дату:</div>';
+            html += '<div class="date-input-row">';
+            html += '<input type="date" id="deadlineDate" placeholder="YYYY-MM-DD">';
+            html += '<button onclick="submitDate()">Подтвердить</button>';
+            html += '</div>';
+        } else if (q.options && q.options.length) {
+            // Choice question
+            html += '<div class="q-text">' + q.text + '</div>';
+            html += '<div class="options-grid">';
+            for (var i = 0; i < q.options.length; i++) {
+                var o = q.options[i];
+                html += '<button class="opt-btn" onclick="submitAnswer(\'' + q.id + '\', \'' + o.key + '\')">' + o.label + '</button>';
+            }
+            html += '</div>';
+        } else {
+            // Error / done
+            html += '<div class="q-text">' + (q.text || '') + '</div>';
+            html += '<div class="msg-box msg-error">' + (q.error || 'Что-то пошло не так.') + '</div>';
+            if (q.done) {
+                html += '<a href="/prep/coach" class="cta-btn">🚀 Перейти к куратору</a>';
+            }
+        }
+
+        html += '</div>'; // .onboarding-card
+
+        if (q.message) {
+            var cls = q.error ? 'msg-error' : 'msg-info';
+            html += '<div class="msg-box ' + cls + '">' + q.message + '</div>';
+        }
+
+        app.innerHTML = html;
+
+        // Focus anchor input if present
+        setTimeout(function() {
+            var inp = document.getElementById('anchorAnswer');
+            if (inp) {
+                inp.focus();
+                inp.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        var taskId = q.task_id;
+                        if (taskId) submitAnchor(taskId);
+                    }
+                });
+            }
+            // Focus date input if present
+            var dateInp = document.getElementById('deadlineDate');
+            if (dateInp) {
+                // Set min to today
+                var todayStr = new Date().toISOString().split('T')[0];
+                dateInp.setAttribute('min', todayStr);
+            }
+        }, 100);
+    }
+
+    window.submitDate = function() {
+        var inp = document.getElementById('deadlineDate');
+        if (!inp) return;
+        var dateVal = inp.value.trim();
+        if (!dateVal) { alert('Сначала выбери дату.'); return; }
+
+        // Validate YYYY-MM-DD format
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+            alert('Введи дату в формате ГГГГ-ММ-ДД');
+            return;
+        }
+
+        showLoading();
+
+        fetch('/prep/onboarding/answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qid: 'deadline', key: dateVal })
+        })
+        .then(function(r) { return r.json(); })
+        .then(handleResponse)
+        .catch(function() { showError('Ошибка соединения. Попробуй обновить страницу.'); });
+    };
+
+    function showError(msg) {
+        var app = document.getElementById('onboarding-app');
+        if (app) {
+            app.innerHTML = '<div class="onboarding-card"><div class="msg-box msg-error">' + msg + '</div></div>';
+        }
+    }
+
+    function showLoading() {
+        var app = document.getElementById('onboarding-app');
+        if (app) {
+            app.innerHTML = '<div class="onboarding-card" style="text-align:center;padding:60px 28px;">' +
+                '<span class="spinner-sm"></span> Загружаю…' +
+                '</div>';
+        }
+    }
+
+    window.submitAnswer = function(qid, key) {
+        var buttons = document.querySelectorAll('.opt-btn, .date-input-row button');
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+        showLoading();
+        fetch('/prep/onboarding/answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qid: qid, key: key })
+        })
+        .then(function(r) { return r.json(); })
+        .then(handleResponse)
+        .catch(function() { showError('Ошибка соединения. Попробуй обновить страницу.'); });
+    };
+
+    window.submitAnchor = function(taskId) {
+        var inp = document.getElementById('anchorAnswer');
+        if (!inp) return;
+        var answer = inp.value.trim();
+        if (!answer) return;
+        var btn = document.querySelector('.anchor-input-row button');
+        if (btn) btn.disabled = true;
+        showLoading();
+        fetch('/prep/onboarding/anchor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task_id: taskId, answer: answer })
+        })
+        .then(function(r) { return r.json(); })
+        .then(handleResponse)
+        .catch(function() { showError('Ошибка соединения. Попробуй обновить страницу.'); });
+    };
+
+    var flashTimeout = null;
+    function showFlash(msg, isCorrect) {
+        var app = document.getElementById('onboarding-app');
+        if (!app) return;
+        var existing = document.getElementById('anchor-flash');
+        if (existing) existing.remove();
+        if (flashTimeout) clearTimeout(flashTimeout);
+        var cls = isCorrect ? 'msg-info' : 'msg-error';
+        var icon = isCorrect ? '\u2705' : '\u274C';
+        var div = document.createElement('div');
+        div.id = 'anchor-flash';
+        div.className = 'msg-box ' + cls;
+        div.style.cssText = 'margin-bottom:12px;text-align:center;animation:fadeIn 0.3s ease;';
+        div.innerHTML = icon + ' ' + msg;
+        app.insertBefore(div, app.firstChild);
+        flashTimeout = setTimeout(function() {
+            var el = document.getElementById('anchor-flash');
+            if (el) el.remove();
+        }, 2500);
+    }
+
+    function handleResponse(data) {
+        if (data.error) {
+            showError(data.error);
+            return;
+        }
+        if (data.done && data.result) {
+            // Show final result with anchor breakdown
+            var r = data.result;
+            var app = document.getElementById('onboarding-app');
+            var html = '<div class="onboarding-card result-card">';
+            html += '<div class="result-icon">🎉</div>';
+            html += '<h2>Онбординг завершён!</h2>';
+            html += '<div class="result-row">';
+            html += '<div class="result-stat"><div class="val">' + (data.display_mu || r.prior_mu) + '</div><div class="lbl">Твой уровень</div></div>';
+            html += '<div class="result-stat"><div class="val">' + r.start_level + '</div><div class="lbl">Стартовый уровень задач</div></div>';
+            html += '<div class="result-stat"><div class="val">' + (r.target_level || r.grade) + '</div><div class="lbl">Целевой уровень</div></div>';
+            html += '<div class="result-stat"><div class="val">' + r.daily_tasks + '</div><div class="lbl">Задач в день</div></div>';
+            html += '</div>';
+            html += '<div class="msg-box msg-info">';
+            html += '🎯 Потолок маршрута: <strong>' + r.route_ceiling + '</strong> &nbsp;|&nbsp; ';
+            html += 'Класс: <strong>' + r.grade + '</strong> &nbsp;|&nbsp; ';
+            html += 'Дедлайн: <strong>' + (data.deadline_ru || r.deadline_bucket) + '</strong>';
+            if (r.conflict) {
+                html += '<br>⚠️ Обнаружено расхождение между самооценкой и якорями.';
+            }
+            html += '</div>';
+
+            // Anchor breakdown table
+            if (data.anchor_breakdown && data.anchor_breakdown.length > 0) {
+                html += '<h3 style="margin:24px 0 12px;font-size:15px;color:#e5e7eb;">📋 Разбор якорных задач</h3>';
+                html += '<table class="anchor-table" style="width:100%;border-collapse:collapse;font-size:13px;">';
+                html += '<thead><tr style="color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);">';
+                html += '<th style="padding:8px 6px;text-align:left;">Раздел</th>';
+                html += '<th style="padding:8px 6px;text-align:center;">Уровень</th>';
+                html += '<th style="padding:8px 6px;text-align:left;">Твой ответ</th>';
+                html += '<th style="padding:8px 6px;text-align:left;">Верный ответ</th>';
+                html += '<th style="padding:8px 6px;text-align:center;">Вердикт</th>';
+                html += '<th style="padding:8px 6px;text-align:center;">Уровень раздела</th>';
+                html += '</tr></thead><tbody>';
+                for (var i = 0; i < data.anchor_breakdown.length; i++) {
+                    var a = data.anchor_breakdown[i];
+                    var ok = a.correct;
+                    var rowColor = ok ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
+                    var verdictHtml = ok ? '<span style="color:#22c55e;">✓ верно</span>' : '<span style="color:#ef4444;">✗ неверно</span>';
+                    var muStr = (a.section_mu !== null && a.section_mu !== undefined) ? a.section_mu.toFixed(2) : '—';
+                    html += '<tr style="background:' + rowColor + ';border-bottom:1px solid rgba(255,255,255,0.05);">';
+                    html += '<td style="padding:8px 6px;">' + a.section_ru + '</td>';
+                    html += '<td style="padding:8px 6px;text-align:center;">' + a.level + '</td>';
+                    html += '<td style="padding:8px 6px;">' + (a.user_answer || '—') + '</td>';
+                    html += '<td style="padding:8px 6px;">' + (a.correct_answer || '—') + '</td>';
+                    html += '<td style="padding:8px 6px;text-align:center;">' + verdictHtml + '</td>';
+                    html += '<td style="padding:8px 6px;text-align:center;">' + muStr + '</td>';
+                    html += '</tr>';
+                }
+                html += '</tbody></table>';
+
+                // Summary line: strongest/weakest
+                if (data.strongest_ru || data.weakest_ru) {
+                    html += '<div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.7);">';
+                    if (data.strongest_ru && data.weakest_ru && data.strongest_ru !== data.weakest_ru) {
+                        html += 'Сильнейший раздел: <strong style="color:#22c55e;">' + data.strongest_ru + '</strong> &nbsp;|&nbsp; ';
+                        html += 'Слабейший раздел: <strong style="color:#ef4444;">' + data.weakest_ru + '</strong>';
+                    } else if (data.strongest_ru) {
+                        html += 'Разделы: <strong>' + data.strongest_ru + '</strong>';
+                    }
+                    html += '</div>';
+                }
+            }
+
+            html += '<a href="/prep/coach" class="cta-btn" style="margin-top:20px;">🚀 Перейти к куратору</a>';
+            html += '</div>';
+            if (app) app.innerHTML = html;
+            return;
+        }
+        if (data.done) {
+            var app2 = document.getElementById('onboarding-app');
+            if (data.message && app2) {
+                app2.innerHTML = '<div class="onboarding-card" style="text-align:center;padding:40px 28px;">' +
+                    '<div class="msg-box msg-info">' + data.message + '</div>' +
+                    '<a href="/prep/coach" class="cta-btn">🚀 Перейти к куратору</a>' +
+                    '</div>';
+            }
+            return;
+        }
+        currentStep++;
+        // Show correctness feedback if present
+        if (data.correct !== null && data.correct !== undefined) {
+            var fb = data.correct ? ' Верно!' : ' Неверно.';
+            if (data.message) fb = data.message;
+            else if (!data.correct && data.anchor) fb = ' Неверно, пробуем другую задачу.';
+            showFlash(fb, data.correct);
+        }
+        if (data.question) {
+            render(data.question, data.step || '', data.grade_auto);
+        } else if (data.anchor) {
+            data.anchor.anchor_label = '⚓ Якорная задача';
+            render(data.anchor, data.step || '');
+        } else if (data.finish_ready || data.anchors_unavailable) {
+            // Call finish
+            showLoading();
+            fetch('/prep/onboarding/answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ qid: '_finish', key: '_finish' })
+            })
+            .then(function(r) { return r.json(); })
+            .then(handleResponse)
+            .catch(function() { showError('Ошибка при завершении.'); });
+        } else if (data.message) {
+            var app3 = document.getElementById('onboarding-app');
+            if (app3) {
+                var cls = data.error ? 'msg-error' : 'msg-info';
+                app3.innerHTML = '<div class="onboarding-card" style="text-align:center;padding:40px 28px;">' +
+                    '<div class="msg-box ' + cls + '">' + data.message + '</div>' +
+                    '<a href="/prep/coach" class="cta-btn">\u{1F680} Перейти к куратору</a>' +
+                    '</div>';
+            }
+        } else {
+            console.error('onboarding: неизвестный ответ сервера', JSON.stringify(data, null, 2));
+            showError('Неизвестный ответ сервера. Сообщите администратору.');
+        }
+    }
+
+    // Start on load
+    function init() {
+        showLoading();
+        fetch('/prep/onboarding/answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qid: '_start', key: '_start' })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.question) {
+                currentStep = 0;
+                render(data.question, data.step || '', data.grade_auto);
+            } else {
+                handleResponse(data);
+            }
+        })
+        .catch(function() { showError('Ошибка соединения. Попробуй обновить страницу.'); });
+    }
+
+    init();
+})();
+</script>
+{% endblock %}

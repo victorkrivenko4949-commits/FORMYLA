@@ -11,9 +11,6 @@ LEVEL_LABELS = {
     3: 'Олимпиада (школа)',
     4: 'Муниципальный',
     5: 'Региональный',
-    6: 'Всерос финал',
-    7: 'IMO / ELITE',
-    8: 'Сверхэлита',
 }
 
 # Level colors for UI
@@ -22,10 +19,7 @@ LEVEL_COLORS = {
     2: '#22c55e',
     3: '#fbbf24',
     4: '#f97316',
-    5: '#f97316',
-    6: '#ef4444',
-    7: '#ec4899',
-    8: '#8b5cf6',
+    5: '#ef4444',
 }
 
 # Expected solve rates per level (for calibration)
@@ -34,10 +28,7 @@ LEVEL_EXPECTED_RATES = {
     2: 0.85,
     3: 0.60,
     4: 0.35,
-    5: 0.15,
-    6: 0.08,
-    7: 0.03,
-    8: 0.01,
+    5: 0.10,
 }
 
 # Level descriptions for prompts
@@ -46,10 +37,7 @@ LEVEL_DESCRIPTIONS = {
     2: "Школьный уровень. 2-3 шага, стандартные техники. Решается за 2-5 минут. 80-90% учеников решат.",
     3: "Школьная олимпиада. Требует нестандартного подхода или доказательства. 5-15 минут. 50-70% решат.",
     4: "Муниципальный этап. Комбинаторика или теория чисел с инсайтом. 15-30 минут. 25-40% решат.",
-    5: "Региональный/Зональный. Турнир городов, зональный Всерос. 30-60 минут. 10-20% решат.",
-    6: "Заключительный этап Всерос. Сложные задачи финала. 60-90 минут. 5-10% решат.",
-    7: "IMO / ELITE. Задачи уровня IMO, суперфинал. 90+ минут. 1-5% (только топ-олимпиадники) решат.",
-    8: "Сверхэлита. Задачи уровня международных олимпиад с глубокой нестандартной идеей. 90+ минут. Менее 1% учеников решат.",
+    5: "Региональный/Заключительный. Турнир городов, финал Всерос, IMO. 60-120 минут. 5-15% решат.",
 }
 
 # Few-shot examples for each level (real olympiad problems)
@@ -79,21 +67,6 @@ LEVEL_EXAMPLES = {
         "Найди все простые числа p, для которых p^2 + 2 тоже простое.",
         "В выпуклом многоугольнике проведены все диагонали. Докажи, что не все они могут пересекаться в одной точке.",
     ],
-    6: [
-        "Всерос 2019, 11 класс: Найди все функции f: R -> R такие, что f(x+y) = f(x) + f(y) + xy для всех x, y.",
-        "Докажи, что для любого натурального n существует простое число p > n.",
-        "Всерос финал: В треугольнике ABC точка I - центр вписанной окружности. Докажи, что AI^2 = r * R, где r - радиус вписанной, R - описанной.",
-    ],
-    7: [
-        "IMO 2019 P4: Найдите все пары (k, n) натуральных чисел такие, что k! = (2^n - 1)(2^n - 2)(2^n - 4)...(2^n - 2^(n-1)).",
-        "IMO 2016 P6: Пусть S - конечное множество точек плоскости, не все на одной прямой. Для каждой прямой l, проходящей хотя бы через 2 точки S, обозначим через l(S) множество точек S на l. Докажи, что существует прямая l такая, что l(S) не является подмножеством никакой другой прямой.",
-        "Putnam 2018 B6: Докажи, что для любого натурального n существует простое p такое, что p делит n^n + 1.",
-    ],
-    8: [
-        "IMO 2019 P6: Найдите все функции f: Z → Z такие, что f(2a) + 2f(b) = f(f(a+b)) для всех a, b ∈ Z.",
-        "IMO 2020 P3: Пусть N = {1, 2, 3, …}. Для каждого положительного целого n пусть f(n) = \frac{4n + \sqrt{4n^2 - 1}}{\sqrt{2n + 1} + \sqrt{2n - 1}}. Найдите f(1) + f(2) + … + f(2020).",
-        "Putnam 2019 A6: Докажи, что для любого натурального n найдутся n различных натуральных чисел, сумма любых двух из которых является точным квадратом.",
-    ],
 }
 
 
@@ -115,18 +88,19 @@ def build_generation_prompt(grade, topic, subtopic, level):
         grade: School grade (5-11)
         topic: Main topic (algebra, geometry, etc.)
         subtopic: Specific subtopic
-        level: Difficulty level (1-8)
+        level: Difficulty level (1-5)
         
     Returns:
         Formatted prompt string
     """
-    examples = LEVEL_EXAMPLES.get(level, LEVEL_EXAMPLES[3])[:3]
+    level_clamped = max(1, min(5, int(level)))
+    examples = LEVEL_EXAMPLES.get(level_clamped, LEVEL_EXAMPLES[3])[:3]
     examples_text = '\n\n'.join([
-        f'ПРИМЕР {i+1} (уровень {level}):\n{ex}'
+        f'ПРИМЕР {i+1} (уровень {level_clamped}):\n{ex}'
         for i, ex in enumerate(examples)
     ])
     
-    description = LEVEL_DESCRIPTIONS.get(level, LEVEL_DESCRIPTIONS[3])
+    description = LEVEL_DESCRIPTIONS.get(level_clamped, LEVEL_DESCRIPTIONS[3])
     
     prompt = f"""Ты — генератор олимпиадных задач для платформы FORMYLA.
 
@@ -134,25 +108,25 @@ def build_generation_prompt(grade, topic, subtopic, level):
 - Класс: {grade}
 - Тема: {topic}
 - Подтема: {subtopic}
-- Уровень сложности: {level} из 8
+- Уровень сложности: {level_clamped} из 5
 
-КРИТИЧНО: Уровень {level} означает:
+КРИТИЧНО: Уровень {level_clamped} означает:
 {description}
 
-Вот ТРИ эталона задач точно такого же уровня {level}:
+Вот ТРИ эталона задач точно такого же уровня {level_clamped}:
 
 {examples_text}
 
 Сгенерируй НОВУЮ задачу, которая по сложности эквивалентна этим эталонам.
-НЕ упрощай. Если уровень {level} — задача должна соответствовать описанию выше.
+НЕ упрощай. Если уровень {level_clamped} — задача должна соответствовать описанию выше.
 
 Формат ответа (JSON):
 {{
   "text": "текст задачи с LaTeX формулами в \\\\( \\\\) и \\\\[ \\\\]",
   "answer": "правильный ответ",
   "solution": "подробное решение",
-  "estimated_time_minutes": {level * 10},
-  "self_assessed_level": {level}
+  "estimated_time_minutes": {level_clamped * 10},
+  "self_assessed_level": {level_clamped}
 }}"""
     
     return prompt
@@ -169,22 +143,23 @@ def validate_generated_task(task_data, expected_level):
     Returns:
         (is_valid, reason) tuple
     """
-    self_level = task_data.get('self_assessed_level', expected_level)
+    exp = max(1, min(5, int(expected_level)))
+    self_level = task_data.get('self_assessed_level', exp)
     estimated_time = task_data.get('estimated_time_minutes', 0)
     text = task_data.get('text', '')
     
     # Check self-assessed level
-    if abs(self_level - expected_level) >= 2:
-        return False, f"Self-assessed level {self_level} differs too much from expected {expected_level}"
+    if abs(self_level - exp) >= 2:
+        return False, f"Self-assessed level {self_level} differs too much from expected {exp}"
     
-    # Check text length (level 7 tasks should be longer)
-    if expected_level >= 6 and len(text) < 150:
-        return False, f"Level {expected_level} task text too short ({len(text)} chars)"
+    # Check text length (level 5 tasks should be longer)
+    if exp >= 5 and len(text) < 150:
+        return False, f"Level {exp} task text too short ({len(text)} chars)"
     
     # Check estimated time
-    min_time = {1: 1, 2: 2, 3: 5, 4: 15, 5: 30, 6: 60, 7: 90, 8: 120}.get(expected_level, 5)
+    min_time = {1: 1, 2: 2, 3: 5, 4: 15, 5: 60}.get(exp, 5)
     if estimated_time < min_time * 0.5:
-        return False, f"Estimated time {estimated_time} min too low for level {expected_level}"
+        return False, f"Estimated time {estimated_time} min too low for level {exp}"
     
     return True, "OK"
 
@@ -197,9 +172,9 @@ def get_level_by_solve_rate(actual_rate):
         actual_rate: Fraction of users who solved the task (0.0-1.0)
         
     Returns:
-        Suggested level (1-8)
+        Suggested level (1-5)
     """
-    for level in range(8, 0, -1):
+    for level in range(5, 0, -1):
         expected = LEVEL_EXPECTED_RATES[level]
         if actual_rate <= expected * 1.5:
             return level

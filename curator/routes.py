@@ -89,16 +89,18 @@ logger = logging.getLogger(__name__)
 
 
 def _get_current_user_id() -> int:
-    """Получить ID текущего пользователя из Flask-Login или guest-сессии."""
+    """Получить ID текущего пользователя ТОЛЬКО из Flask-Login сессии.
+
+    Fallback на параметры запроса (request.args / request.json) УБРАН —
+    нельзя действовать от чужого имени, передав ?user_id=X.
+    """
     try:
         from flask_login import current_user
         if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
             return current_user.id
     except (ImportError, Exception):
         pass
-    # Fallback: из GET/POST параметра или JSON
-    user_id = request.args.get('user_id', type=int) or request.json.get('user_id') if request.is_json else None
-    return user_id
+    return None
 
 
 def _json_response(data, status=200):
@@ -170,7 +172,7 @@ def api_diagnostics_start():
     Body: {"user_id": 123, "grade": 9} (grade optional)
     """
     data = request.get_json(silent=True) or {}
-    user_id = data.get('user_id') or _get_current_user_id()
+    user_id = _get_current_user_id()
     if not user_id:
         return _error_response('user_id is required', 401)
 
@@ -306,7 +308,7 @@ def api_plans_create():
     }
     """
     data = request.get_json(silent=True) or {}
-    user_id = data.get('user_id') or _get_current_user_id()
+    user_id = _get_current_user_id()
     if not user_id:
         return _error_response('user_id is required', 401)
 
@@ -345,7 +347,7 @@ def api_plans_list():
 
     GET /curator/plans?user_id=123
     """
-    user_id = request.args.get('user_id', type=int) or _get_current_user_id()
+    user_id = _get_current_user_id()
     if not user_id:
         return _error_response('user_id is required', 401)
 
@@ -547,7 +549,7 @@ def api_tutor_review():
     }
     """
     data = request.get_json(silent=True) or {}
-    user_id = data.get('user_id') or _get_current_user_id()
+    user_id = _get_current_user_id()
     if not user_id:
         return _error_response('user_id is required', 401)
 
@@ -803,7 +805,7 @@ def api_onboarding():
     4. Затем /plans для создания плана
     """
     data = request.get_json(silent=True) or {}
-    user_id = data.get('user_id') or _get_current_user_id()
+    user_id = _get_current_user_id()
     if not user_id:
         return _error_response('user_id is required', 401)
 
@@ -1083,7 +1085,7 @@ def api_curator_evening_check():
     """
     try:
         data = request.get_json(silent=True) or {}
-        user_id = data.get('user_id') or _get_current_user_id()
+        user_id = _get_current_user_id()
 
         if not user_id:
             return _error_response('user_id is required', 401)
@@ -1101,6 +1103,14 @@ def api_curator_evening_check():
     except Exception as e:
         logger.error(f"[routes] Evening check failed: {e}")
         return _error_response(f'Evening check failed: {e}', 500)
+
+
+@curator_bp.route('/', methods=['GET'])
+@curator_bp.route('', methods=['GET'])
+def curator_index():
+    """Корневой маршрут куратора — редирект на /prep/coach."""
+    from flask import redirect, url_for
+    return redirect(url_for('prep.coach'))
 
 
 @curator_bp.route('/health', methods=['GET'])

@@ -119,15 +119,27 @@ def get_daily_tasks():
         target_date=today,
     ).first()
 
+    # ── P4 DEBT: при первом заходе ученика обновляем долг ────────────────
+    try:
+        from services.daily_debt import refresh_debt_for_user
+        refresh_debt_for_user(user_id)
+    except Exception as _debt_err:
+        logger.warning("daily_debt refresh failed for user=%d: %s", user_id, _debt_err)
+
     # ── 24h-TTL: если сет старше 24 часов от generated_at — помечаем
-    # expired «лениво» прямо в этом запросе (вариант (b) из ТЗ).
-    # После expire показываем чистое empty-state с кнопкой «Сгенерировать»,
-    # чтобы ученик мог собрать новый набор.
+    # expired «лениво» прямо в этом запросе.
+    # P4: ПЕРЕД expire мигрируем нерешённые задачи в долг.
     if (
         daily_set
         and daily_set.status not in ("expired", "generating")
         and _is_expired(daily_set)
     ):
+        # Мигрируем нерешённое этого сета в долг перед expire
+        try:
+            from services.daily_debt import migrate_to_debt
+            migrate_to_debt(user_id, daily_set.target_date + __import__('datetime').timedelta(days=1))
+        except Exception:
+            pass
         try:
             daily_set.status = "expired"
             db.session.commit()
@@ -137,11 +149,72 @@ def get_daily_tasks():
             )
         except Exception:  # pragma: no cover
             db.session.rollback()
-        # Для отображения на странице — считаем как «нет сегодняшнего сета»,
-        # чтобы пользователь увидел кнопку «Сгенерировать».
         daily_set = None
 
+    # ── BLOCKED: morning probe not done ─────────────────────────────────
+    # Проверяем monthly cycle: если probe ещё не пройден — блокируем задачи дня
+    blocked = False
+    blocked_theme = None
+    blocked_theme_title = None
+    try:
+        from curator.monthly_cycle import get_cycle_info
+        cycle = get_cycle_info(user_id)
+        if cycle.get('active') and cycle.get('blocked') and not cycle.get('finished'):
+            blocked = True
+            blocked_theme = cycle.get('current_theme', '')
+            from daily_tasks.monthly_plan import subtopic_title
+            blocked_theme_title = subtopic_title(blocked_theme) if blocked_theme else 'тема дня'
+    except Exception:
+        pass
+
+    if blocked:
+        data = {
+            "status": "blocked",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "message": (
+                f"Сначала утренний срез: «{blocked_theme_title}». "
+                f"5 задач, примерно 15 минут."
+            ),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+            "blocked": True,
+            "blocked_theme": blocked_theme,
+            "blocked_theme_title": blocked_theme_title,
+            "probe_url": "/prep/probe",
+        }
+        if wants_html:
+            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+        return jsonify({
+            "status": "blocked",
+            "message": data["message"],
+            "probe_url": "/prep/probe",
+        }), 200
+
     # ── нет сета (или только что протух) ─────────────────────────────
+    if not daily_set:
+        # Попытка создать набор через pick_daily_set
+        # (анкета + level_engine). Если нет данных — классический empty-state.
+        try:
+            from services.daily_task_rotation import pick_daily_set
+            pick_daily_set(user_id, force_regenerate=False)
+            # Перезапрашиваем только что созданный сет
+            daily_set = DailyTaskSet.query.filter_by(
+                user_id=user_id, target_date=today,
+            ).first()
+            if daily_set and daily_set.status in ("ready", "partial"):
+                logger.info(
+                    "DailyTaskSet auto-created via pick_daily_set for user=%d", user_id,
+                )
+        except Exception as _pds_err:
+            logger.warning(
+                "pick_daily_set fallback failed for user=%d: %s", user_id, _pds_err,
+            )
+
     if not daily_set:
         data = {
             "status": "no_set",
@@ -269,6 +342,28 @@ def get_daily_tasks():
         # подсказка на которой страницу идти за тестами (для баннера)
         "adaptive_tests_url": "/adaptive_test_simple",
     }
+
+    # ── P4 DEBT: добавляем долг в data ──────────────────────────────────
+    try:
+        from services.daily_debt import get_debt_items, get_debt_count
+        debt_items = get_debt_items(user_id)
+        if debt_items:
+            # Группируем по дате выдачи
+            from collections import defaultdict
+            by_date: dict = defaultdict(list)
+            for di in debt_items:
+                by_date[di['issued_date'] or '?'].append(di)
+            debt_summary = {
+                'total': len(debt_items),
+                'by_date': [
+                    {'date': d, 'count': len(tasks), 'tasks': tasks}
+                    for d, tasks in sorted(by_date.items(), reverse=True)
+                ],
+            }
+            data['debt'] = debt_summary
+        # debt=None означает «долга нет» — шаблон его не отрисует
+    except Exception as _debt_err:
+        logger.warning("get_debt_items failed: %s", _debt_err)
 
     # ── 🗓  Monthly plan (prep_plan from CuratorState) ────────────
     plan_data = _build_monthly_plan_data(user_id, today)
@@ -757,6 +852,17 @@ def submit_answer_ai(item_id: int):
         except (TypeError, ValueError):
             item.time_spent_seconds = 0
         db.session.commit()
+
+        # ── Записать результат в level_engine ──────────────────────────
+        try:
+            from services.daily_task_rotation import record_daily_answer
+            record_daily_answer(current_user.id, item.id, is_correct)
+            logger.info(
+                "submit_answer_ai: level_engine updated user=%d item=%d correct=%s",
+                current_user.id, item.id, is_correct,
+            )
+        except Exception as _le_err:
+            logger.warning("submit_answer_ai: level_engine update failed: %s", _le_err)
     except Exception as e:  # pragma: no cover
         db.session.rollback()
         logger.exception("submit_answer_ai: db commit failed: %s", e)

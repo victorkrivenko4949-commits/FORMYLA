@@ -336,8 +336,10 @@ def enqueue_daily_generation(
 
             tasks_data = _parse_json_field(pool.tasks, [])
             specs_data = _parse_json_field(pool.specs, [])
+            # P12 TASK1: use single source of truth for daily task count
+            count = _get_daily_count_for_user(user_id)
             selected_indices = _select_best_task_indices(
-                tasks_data, n=10, rotation=pool.used_count or 0,
+                tasks_data, n=count, rotation=pool.used_count or 0,
             )
 
             daily_set = DailyTaskSet(
@@ -415,8 +417,8 @@ def enqueue_daily_generation(
             db.session.commit()
 
             logger.info(
-                "Cache HIT для user=%d key=%s pool=%d → сет #%d (10 задач)",
-                user_id, cache_key[:12], pool.id, daily_set.id,
+                "Cache HIT для user=%d key=%s pool=%d → сет #%d (%d задач)",
+                user_id, cache_key[:12], pool.id, daily_set.id, count,
             )
 
             return {
@@ -533,8 +535,9 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "time_spent_seconds": item.time_spent_seconds,
         })
 
-    # ── отбираем 10 лучших (чистые сначала, флагованные только если чистых < 10) ──
-    best_indices = _select_best_task_indices(all_items, n=10)
+    # ── отбираем лучших (число — из единого источника правды) ──
+    count = _get_daily_count_for_user(user_id)
+    best_indices = _select_best_task_indices(all_items, n=count)
     items = [all_items[i] for i in best_indices]
 
     # ── сериализуем джоб ─────────────────────────────────────────────
@@ -627,6 +630,20 @@ def submit_answer(
         item.time_spent_seconds = time_spent
 
     db.session.commit()
+
+    # ── Записать результат в level_engine ──────────────────────────
+    try:
+        from services.daily_task_rotation import record_daily_answer
+        # Получаем user_id из DailyTaskSet
+        daily_set = DailyTaskSet.query.get(item.daily_set_id)
+        if daily_set:
+            record_daily_answer(daily_set.user_id, item.id, is_correct)
+            logger.info(
+                "submit_answer: level_engine updated user=%d item=%d correct=%s",
+                daily_set.user_id, item.id, is_correct,
+            )
+    except Exception as e:
+        logger.warning("submit_answer: level_engine update failed: %s", e)
 
     return {
         "success": True,
@@ -837,6 +854,23 @@ def _select_best_tasks(tasks: List[Dict[str, Any]], n: int = 5) -> List[Dict[str
     return [tasks[i] for i in indices if i < len(tasks)]
 
 
+def _get_daily_count_for_user(user_id: int) -> int:
+    """P12 TASK1: прокси к единому источнику правды get_daily_task_count.
+
+    Все ветки выдачи (банк, кэш пула, персист) обязаны спрашивать
+    эту функцию, а не хардкодить 5/10/15/20.
+    При ошибке возвращает безопасный дефолт 5.
+    """
+    try:
+        from services.daily_task_rotation import get_daily_task_count
+        return get_daily_task_count(user_id)
+    except Exception:
+        logger.warning(
+            "get_daily_task_count failed for user=%d — fallback to 5", user_id,
+        )
+        return 5
+
+
 def _extract_subject_from_profile(profile: Dict[str, Any]) -> str:
     """Извлечь доминирующий subject из профиля (первая слабая тема)."""
     weak = profile.get("weak_topics", [])
@@ -951,9 +985,8 @@ async def _try_bank_first(
         ``True``, если задачи взяты из банка (LLM пайплайн не нужен).
         ``False``, если банк не подошёл — вызывающий код запускает LLM.
     """
-    # FORCE LLM: банк отключён, чтобы задачи всегда генерировались по уровню
-    logger.info("[user=%d] Банк отключён (FORCE_LLM) — генерируем через LLM", user_id)
-    return False
+    # Банк включён — задачи из банка имеют приоритет перед LLM-генерацией
+    logger.info("[user=%d] Банк включён — проверяю готовые задачи", user_id)
     try:
         return await _try_bank_first_impl(
             user_id, target_date, daily_set_id, job_id, profile,
@@ -1039,7 +1072,9 @@ async def _try_bank_first_impl(
     # Удаляем старые items (если были)
     DailyTaskItem.query.filter_by(daily_set_id=daily_set_id).delete()
 
-    for pos, t in enumerate(bank_tasks, start=1):
+    # P12 TASK1: банковская ветка спрашивает единый источник объёма
+    bank_count = _get_daily_count_for_user(user_id)
+    for pos, t in enumerate(bank_tasks[:bank_count], start=1):
         item = DailyTaskItem(
             daily_set_id=daily_set_id,
             position=pos,
@@ -1081,8 +1116,8 @@ async def _try_bank_first_impl(
     db.session.commit()
 
     logger.info(
-        "[user=%d] Банк HIT: 10 задач из банка (grade=%d level=%d day=%d тема='%s')",
-        user_id, grade, bank_level, day_num, probe_theme,
+        "[user=%d] Банк HIT: %d задач из банка (grade=%d level=%d day=%d тема='%s')",
+        user_id, bank_count, grade, bank_level, day_num, probe_theme,
     )
 
     _complete_job(job_id)
@@ -1254,7 +1289,12 @@ def _persist_pipeline_result(
         if isinstance(t, str)
     }
     if not is_failed:
-        n_real = min(10, len(result.tasks))
+        # P12 TASK1: count from single source, fallback to len(result.tasks)
+        _persist_user_id = getattr(daily_set, 'user_id', None)
+        _max_count = len(result.tasks)
+        if _persist_user_id:
+            _max_count = min(_max_count, _get_daily_count_for_user(_persist_user_id))
+        n_real = min(_max_count, len(result.tasks))
         for i in range(n_real):
             spec = result.specs[i] if i < len(result.specs) else {}
             task = result.tasks[i] if i < len(result.tasks) else {}

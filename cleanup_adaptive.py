@@ -1,122 +1,122 @@
 """Полная очистка адаптивного теста: БД + файлы.
 
 ЗАПУСКАТЬ ОСТОРОЖНО — данные не восстанавливаются!
-Перед запуском сделай бэкап БД: copy database.db database.db.bak_adaptive
+Требуется явно указать путь к базе через CLEANUP_DB_PATH или --db-path.
+Без этого скрипт отказывается работать, чтобы случайно не затереть рабочую базу.
 """
 
 import os
 import sys
+import argparse
+import sqlite3
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(BASE_DIR)
 
-# ── 1. Очистка БД ──────────────────────────────────────────────────────
+# ── 0. Mandatory DB path ───────────────────────────────────────────────
+parser = argparse.ArgumentParser(description='Cleanup adaptive test data')
+parser.add_argument('--db-path', type=str, default=None,
+                    help='Path to the database file to clean (REQUIRED)')
+args = parser.parse_args()
+
+db_path = args.db_path or os.environ.get('CLEANUP_DB_PATH', '').strip()
+
+if not db_path:
+    print("=" * 60)
+    print("ОШИБКА: путь к базе не указан!")
+    print("=" * 60)
+    print()
+    print("Этот скрипт удаляет данные. Укажите путь явно:")
+    print("  python cleanup_adaptive.py --db-path instance/test_cleanup.db")
+    print("  или задайте переменную CLEANUP_DB_PATH")
+    print()
+    print("Рабочая база (instance/formyla.db) НЕ будет задета.")
+    sys.exit(1)
+
+if not os.path.isabs(db_path):
+    db_path = os.path.join(BASE_DIR, db_path)
+
+db_path = os.path.abspath(db_path)
+print(f"Целевая БД: {db_path}")
+print(f"Тип: {'SQLite' if db_path.endswith('.db') else 'определяется по расширению'}")
+
+if not os.path.exists(db_path):
+    print(f"ПРЕДУПРЕЖДЕНИЕ: файл {db_path} не существует, работаем с SQLAlchemy SQLite URI")
+
+# ── 1. Resolve SQLAlchemy URI ─────────────────────────────────────────
+from dotenv import load_dotenv
+load_dotenv()
+
+# Set CLEANUP_DB_PATH as effective database for this run
+if db_path.endswith('.db'):
+    _effective_uri = 'sqlite:///' + db_path.replace('\\', '/')
+    os.environ['CLEANUP_DATABASE_URI'] = _effective_uri
+else:
+    _effective_uri = db_path  # PostgreSQL URI
+
+print(f"URI: {_effective_uri.split('@')[0] + '@***' if '@' in _effective_uri else _effective_uri}")
+
+# Use Flask app but override DB URI
+from app import app as flask_app
+from models import db as _db
+
+# Override the URI for this run only
+flask_app.config['SQLALCHEMY_DATABASE_URI'] = _effective_uri
 
 print("=" * 60)
 print("ШАГ 1: Очистка таблиц адаптивного теста в БД")
 print("=" * 60)
 
-# Загружаем .env
-from dotenv import load_dotenv
-load_dotenv()
-db_url = os.environ.get("DATABASE_URL", "").strip()
-
-if db_url:
-    print(f"Тип БД: {'PostgreSQL' if 'postgresql' in db_url else 'SQLite'}")
-    print(f"DATABASE_URL найден — работаем с production БД")
+with flask_app.app_context():
+    from sqlalchemy import text
+    # Re-init engine with overridden URI
+    _db.engine.dispose()
     
-    from app import app as flask_app
-    from models import db
+    tables = [
+        "task_solutions",
+        "curator_state",
+        "adaptive_test_problems",
+        "adaptive_tests",
+        "adaptive_test_results",
+        "adaptive_tasks",
+        "user_topic_progress",
+        "test_results_detail",
+        "subtopic_progress",
+        "subtopics",
+        "diagnostic_draft_answers",
+        "questionnaire_state",
+    ]
     
-    with flask_app.app_context():
-        from sqlalchemy import text
-        
-        # Порядок важен: сначала дочерние таблицы с FK, потом родительские
-        tables = [
-            "task_solutions",         # FK → adaptive_tasks
-            "curator_state",          # FK → adaptive_test_results
-            "adaptive_test_problems", # FK → adaptive_tests
-            "adaptive_tests",
-            "adaptive_test_results",
-            "adaptive_tasks",
-            "user_topic_progress",
-            "test_results_detail",
-            "subtopic_progress",
-            "subtopics",
-            # Дополнительно: кэш черновиков ответов
-            "diagnostic_draft_answers",
-            "questionnaire_state",
+    for table in tables:
+        try:
+            result = _db.session.execute(text(f"DELETE FROM {table}"))
+            _db.session.commit()
+            count = result.rowcount
+            print(f"  ✓ {table}: удалено {count} строк")
+        except Exception as e:
+            _db.session.rollback()
+            err_msg = str(e)
+            if "does not exist" in err_msg.lower() or "no such table" in err_msg.lower():
+                print(f"  - {table}: таблица не существует, пропускаем")
+            else:
+                print(f"  ✗ {table}: ОШИБКА — {e}")
+    
+    # PostgreSQL sequences
+    if not db_path.endswith('.db'):
+        seqs = [
+            "adaptive_tasks_id_seq", "adaptive_tests_id_seq",
+            "adaptive_test_problems_id_seq", "adaptive_test_results_id_seq",
+            "user_topic_progress_id_seq", "test_results_detail_id_seq",
+            "subtopic_progress_id_seq", "subtopics_id_seq",
+            "task_solutions_id_seq",
         ]
-        
-        for table in tables:
+        for seq in seqs:
             try:
-                result = db.session.execute(text(f"DELETE FROM {table}"))
-                db.session.commit()
-                count = result.rowcount
-                print(f"  ✓ {table}: удалено {count} строк")
-            except Exception as e:
-                db.session.rollback()
-                # Пропускаем таблицы, которых может не быть
-                err_msg = str(e)
-                if "does not exist" in err_msg.lower() or "no such table" in err_msg.lower():
-                    print(f"  - {table}: таблица не существует, пропускаем")
-                else:
-                    print(f"  ✗ {table}: ОШИБКА — {e}")
-        
-        # Для PostgreSQL: сбрасываем sequences
-        if "postgresql" in db_url:
-            seqs = [
-                "adaptive_tasks_id_seq",
-                "adaptive_tests_id_seq",
-                "adaptive_test_problems_id_seq",
-                "adaptive_test_results_id_seq",
-                "user_topic_progress_id_seq",
-                "test_results_detail_id_seq",
-                "subtopic_progress_id_seq",
-                "subtopics_id_seq",
-                "task_solutions_id_seq",
-            ]
-            for seq in seqs:
-                try:
-                    db.session.execute(text(f"ALTER SEQUENCE {seq} RESTART WITH 1"))
-                    db.session.commit()
-                    print(f"  ✓ sequence {seq} сброшен")
-                except Exception:
-                    db.session.rollback()
-else:
-    print("DATABASE_URL не найден в .env — работаем с SQLite (database.db)")
-    
-    from app import app as flask_app
-    from models import db
-    
-    with flask_app.app_context():
-        from sqlalchemy import text
-        
-        tables = [
-            "task_solutions",
-            "curator_state",
-            "adaptive_test_problems",
-            "adaptive_tests",
-            "adaptive_test_results",
-            "adaptive_tasks",
-            "user_topic_progress",
-            "test_results_detail",
-            "subtopic_progress",
-            "subtopics",
-        ]
-        
-        for table in tables:
-            try:
-                result = db.session.execute(text(f"DELETE FROM {table}"))
-                db.session.commit()
-                count = result.rowcount
-                print(f"  ✓ {table}: удалено {count} строк")
-            except Exception as e:
-                db.session.rollback()
-                if "no such table" in str(e).lower():
-                    print(f"  - {table}: не существует, пропускаем")
-                else:
-                    print(f"  ✗ {table}: ОШИБКА — {e}")
+                _db.session.execute(text(f"ALTER SEQUENCE {seq} RESTART WITH 1"))
+                _db.session.commit()
+                print(f"  ✓ sequence {seq} сброшен")
+            except Exception:
+                _db.session.rollback()
 
 # ── 2. Очистка файлов ─────────────────────────────────────────────────
 

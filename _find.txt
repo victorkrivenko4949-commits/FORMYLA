@@ -1,0 +1,23 @@
+=== SECTION_NAMES ===
+services/daily_task_rotation.py:43-48: SECTION_NAMES_RU has logic->"Логика и методы"
+
+=== CONCIERGE/COACH ===
+size=13774
+3:Site Concierge — AI-помощник по сайту FORMYLA.
+
+=== RADAR in coach.html ===
+12:.radar-chart { display: flex; justify-content: center; }
+13:.radar-chart canvas { width: 100%; max-width: 300px; height: auto; }
+342:<div class="radar-chart">
+343:<canvas id="masteryRadar"
+344:        data-mastery='{{ mastery_list_json | safe }}'
+1089:<!-- Chart.js for Radar Chart -->
+1092:// Radar chart initialization
+1094:    var canvas = document.getElementById('masteryRadar');
+1097:            var raw = canvas.getAttribute('data-mastery');
+1099:                var mastery = JSON.parse(raw);
+1100:                var labels = mastery.map(function(m) { return m.label || m.name || m.key || '?'; });
+1101:                var scores = mastery.map(function(m) { return m.score || m.value || m.level || 0; });
+1104:                    type: 'radar',
+1136:            console.error('Radar chart init error:', e);
+1139:        console.log('Canvas #masteryRadar not found');

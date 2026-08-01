@@ -13,11 +13,31 @@ return;
 
 if (!data || data.length === 0) return;
 
-const values = data.map(d => Math.round((d.value || 0) * 8));
+// Values now come in canonical 1..5 scale from level_by_section mu.
+// If the data was already 0..5 (from level_engine), use directly.
+// If data appears in 0..1 scale (old TopicMastery), map to 1..5.
+const values = data.map(d => {
+    const v = d.value || 0;
+    // Heuristic: if all values <= 1.0, treat as 0..1 ratio and scale to 5
+    if (v <= 1.0 && data.every(dd => (dd.value || 0) <= 1.0)) {
+        return Math.round(v * 5);
+    }
+    // Already in 1..5 scale from level_engine
+    return Math.round(v);
+});
 const names = data.map(d => d.name || '');
 // Wrap long topic labels into multiple lines so they are not clipped
 function wrapLabel(label, maxLen) {
-const words = String(label).split(' ');
+const s = String(label);
+// If label is a single long word, break it into pieces
+if (!s.includes(' ')) {
+const lines = [];
+for (let i = 0; i < s.length; i += maxLen) {
+lines.push(s.slice(i, i + maxLen));
+}
+return lines;
+}
+const words = s.split(' ');
 const lines = [];
 let cur = '';
 for (const w of words) {
@@ -31,11 +51,11 @@ cur = (cur + ' ' + w).trim();
 if (cur) lines.push(cur.trim());
 return lines;
 }
-const wrappedLabels = names.map(n => wrapLabel(n, 16));
+const wrappedLabels = names.map(n => wrapLabel(n, 14));
 
 const pointColors = values.map(v => {
-    if (v >= 6) return '#38ef7d';
-    if (v >= 3) return '#fbbf24';
+    if (v >= 4) return '#38ef7d';
+    if (v >= 2) return '#fbbf24';
     if (v > 0) return '#f87171';
     return 'rgba(255,255,255,0.25)';
 });
@@ -91,7 +111,7 @@ return `${v.toFixed(0)}%`;
 scales: {
 r: {
       min: 1,
-      max: 8,
+      max: 5,
 ticks: {
         stepSize: 1,
 color: 'rgba(255,255,255,0.3)',
@@ -109,12 +129,12 @@ lineWidth: 1,
 pointLabels: {
 color: (ctx) => {
 const v = values[ctx.index] || 0;
-          if (v >= 6) return '#38ef7d';
-          if (v >= 3) return '#fbbf24';
+          if (v >= 4) return '#38ef7d';
+          if (v >= 2) return '#fbbf24';
 if (v > 0) return '#f87171';
 return 'rgba(255,255,255,0.45)';
 },
-font: { size: 12, weight: '600' },
+font: { size: 11, weight: '600' },
 padding: 10,
 }
 }

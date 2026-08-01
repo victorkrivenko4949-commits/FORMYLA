@@ -1,0 +1,18 @@
+Total curator_state rows: 24
+HAS onboarding:    6
+HAS questionnaire: 0
+HAS BOTH:          0
+HAS monthly_cycle: 18
+ALL keys ever used: ['active_probe', 'monthly_cycle', 'onboarding', 'test_queue']
+
+=== user_id=1 ===
+  onboarding:
+    daily_tasks: 8
+    days_left: 156
+    deadline_bucket: 3_months_plus
+    deadline_date: 2026-12-31
+    goals: ['olympiad']
+    grade: 9
+    route_ceiling: 5
+    source: load=m60
+    target_level: 4

@@ -1,3 +1,9 @@
-total:1542
-keys:['id', 'olympiad', 'olympiad_title', 'year', 'grade', 'round', 'round_title', 'problems', 'source_url', 'source_name']
-id:2
+select-section status: 200 location: NONE
+start url: http://127.0.0.1:5000/olympiad-test
+start has olympiad_test_run: False
+page len: 34674
+SAVED _task_page.html
+TAG 'h1' at 12523: ...h1 style="font-size: 2em; color: var(--text-main); margin-bottom: 10px;">🎯 Олимпиадный тест</h1>
+   ...
+TAG 'answer-form' at 18405: ...answer-form-${problemId}`);
+        const solutionEl = document.getElementById(`solution-container-$...

@@ -55,12 +55,12 @@ def _domain_stats(grade: int):
 
 @grade_bp.route('/grade-5', endpoint='overview_5')
 def overview_5():
-    return _render_overview(5)
+    return _render_overview_safe(5)
 
 
 @grade_bp.route('/grade-6', endpoint='overview_6')
 def overview_6():
-    return _render_overview(6)
+    return _render_overview_safe(6)
 
 
 def _render_overview(grade: int):
@@ -75,16 +75,34 @@ def _render_overview(grade: int):
     )
 
 
+def _render_overview_safe(grade: int):
+    """Render grade overview, catching DB errors (e.g. missing table)."""
+    try:
+        return _render_overview(grade)
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning(
+            "grade-{} overview failed: {} — rendering empty page".format(grade, exc),
+        )
+        return render_template(
+            'grade/overview.html',
+            grade=grade,
+            stats=[],
+            total=0,
+            error=f'Таблица не найдена (grade={grade}). Импортируйте банк задач.',
+        ), 200
+
+
 # ─── Domain list ──────────────────────────────────────────────────────────────
 
 @grade_bp.route('/grade-5/<string:domain>', endpoint='domain_5')
 def domain_5(domain):
-    return _render_domain(5, domain)
+    return _render_domain_safe(5, domain)
 
 
 @grade_bp.route('/grade-6/<string:domain>', endpoint='domain_6')
 def domain_6(domain):
-    return _render_domain(6, domain)
+    return _render_domain_safe(6, domain)
 
 
 def _render_domain(grade: int, domain: str):
@@ -122,12 +140,27 @@ def _render_domain(grade: int, domain: str):
     )
 
 
+def _render_domain_safe(grade: int, domain: str):
+    """Render domain page, catching DB errors (e.g. missing table)."""
+    try:
+        return _render_domain(grade, domain)
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning(
+            "grade-{}/{} domain failed: {} — aborting 404".format(grade, domain, exc),
+        )
+        abort(404)
+
+
 # ─── Task detail ──────────────────────────────────────────────────────────────
 
 @grade_bp.route('/grade-task/<int:task_id>', endpoint='task')
 def task_page(task_id):
-    task = db.session.get(GradeTask, task_id)
-    if task is None:
+    try:
+        task = db.session.get(GradeTask, task_id)
+        if task is None:
+            abort(404)
+        return render_template('grade/task.html', task=task,
+                               domain_label=DOMAIN_LABELS.get(task.domain, task.domain))
+    except Exception:
         abort(404)
-    return render_template('grade/task.html', task=task,
-                           domain_label=DOMAIN_LABELS.get(task.domain, task.domain))

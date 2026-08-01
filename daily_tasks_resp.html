@@ -1,0 +1,3521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>FORMYLA — Задачи дня</title>
+    <meta name="description" content="FORMYLA — онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике: ВсОШ, Ломоносов, Эйлер, Турнир городов. ИИ-тьютор, задачи дня, теория, разборы.">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/nav.css?v=1784415778">
+    <link rel="stylesheet" href="/static/css/mobile.css?v=3">
+    <link rel="stylesheet" href="/static/css/mobile_features.css?v=1784415778">
+    <link rel="stylesheet" href="/static/css/errors.css?v=1784415778">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+<link rel="stylesheet" href="/static/css/daily_tasks.css?v=1784415778">
+<link rel="stylesheet" href="/static/css/daily_tasks_modal.css?v=1784415778">
+<style>
+      /* скрываем названия моделей/подписи в пайплайне */
+    .dt-ps-model { display: none !important; }
+  /* ── Темная тема для daily_tasks ─────────────────────────────── */
+  body.page-daily-tasks {
+    background: #0b0f1a;
+    color: rgba(255,255,255,0.88);
+  }
+  body.page-daily-tasks .header {
+    background: rgba(11,15,26,0.92);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* fallback LaTeX */     /* FIX: модалка и история дня всегда видимы (нет чёрного поля от has-math visibility:hidden) */     #dt-modal, #dt-modal *, .dt-modal-body, #dt-modal-statement, .dt-day-history, .dt-dh-item { visibility: visible !important; }     #dt-modal-statement { background: transparent !important; }
+      /* FIX2: модалка по высоте контента — убираем пустое чёрное поле снизу */ .dt-modal-box{height:auto !important;min-height:0 !important;max-height:calc(100vh - 80px) !important;overflow-y:auto !important;} .dt-modal-body,#dt-modal-statement{min-height:0 !important;height:auto !important;margin-bottom:12px !important;} #dt-modal-result{min-height:0 !important;height:auto !important;} #dt-modal-result:empty{display:none !important;margin:0 !important;}
+  .dt-latex-fallback {
+    font-style: italic;
+    color: rgba(255,255,255,0.88);
+    background: rgba(56,239,125,0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Times New Roman', serif;
+  }
+  .dt-latex-display {
+    display: block;
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: rgba(56,239,125,0.04);
+    border-left: 3px solid rgba(56,239,125,0.3);
+  }
+
+  /* ── Pipeline steps (persistent) ──────────────────────────────── */
+  .dt-pipeline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    padding: 24px 16px 32px;
+    margin-bottom: 24px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dt-pipeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    transition: all 0.4s ease;
+    opacity: 0.4;
+    filter: grayscale(0.6);
+  }
+  .dt-pipeline-step.is-done {
+    opacity: 0.85;
+    filter: grayscale(0);
+  }
+  .dt-pipeline-step.is-active {
+    opacity: 1;
+    filter: grayscale(0);
+  }
+
+  /* Connecting line between steps */
+  .dt-pipeline-step::after {
+    content: '';
+    position: absolute;
+    top: 26px;
+    left: 55%;
+    width: calc(90%);
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    z-index: 0;
+    transition: background 0.5s ease;
+  }
+  .dt-pipeline-step:last-child::after {
+    display: none;
+  }
+  .dt-pipeline-step.is-done::after {
+    background: rgba(56,239,125,0.5);
+  }
+  .dt-pipeline-step.is-active::after {
+    background: linear-gradient(90deg, rgba(56,239,125,0.7), rgba(56,239,125,0.15));
+  }
+
+  /* Step circle */
+  .dt-ps-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+    flex-shrink: 0;
+  }
+  .dt-pipeline-step.is-done .dt-ps-circle {
+    background: rgba(56,239,125,0.15);
+    border-color: rgba(56,239,125,0.5);
+    color: #38ef7d;
+    box-shadow: 0 0 16px rgba(56,239,125,0.15);
+  }
+  .dt-pipeline-step.is-active .dt-ps-circle {
+    background: rgba(56,239,125,0.12);
+    border-color: #38ef7d;
+    color: #38ef7d;
+    box-shadow: 0 0 24px rgba(56,239,125,0.25);
+    animation: dt-pulse-glow 1.8s ease-in-out infinite;
+  }
+
+  @keyframes dt-pulse-glow {
+    0%, 100% { box-shadow: 0 0 16px rgba(56,239,125,0.2); }
+    50% { box-shadow: 0 0 32px rgba(56,239,125,0.4); }
+  }
+
+  /* Step label */
+  .dt-ps-label {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    transition: color 0.4s ease;
+    max-width: 120px;
+    word-break: break-word;
+  }
+  .dt-pipeline-step.is-done .dt-ps-label {
+    color: rgba(255,255,255,0.65);
+  }
+  .dt-pipeline-step.is-active .dt-ps-label {
+    color: #38ef7d;
+  }
+
+  /* Step model name (sub-label) */
+  .dt-ps-model {
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    color: rgba(255,255,255,0.25);
+    margin-top: 3px;
+    transition: color 0.4s ease;
+    max-width: 120px;
+    word-break: break-word;
+  }
+  .dt-pipeline-step.is-done .dt-ps-model {
+    color: rgba(255,255,255,0.4);
+  }
+  .dt-pipeline-step.is-active .dt-ps-model {
+    color: rgba(56,239,125,0.55);
+  }
+
+  /* Checkmark overlay for done steps */
+  .dt-ps-check {
+    display: none;
+    position: absolute;
+    top: -4px;
+    right: calc(50% - 30px);
+    font-size: 16px;
+    color: #38ef7d;
+    z-index: 2;
+  }
+  .dt-pipeline-step.is-done .dt-ps-check {
+    display: block;
+    animation: dt-check-pop 0.3s ease;
+  }
+  @keyframes dt-check-pop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.3); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Active step shimmer overlay */
+  .dt-pipeline-step.is-active .dt-ps-circle::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, #38ef7d, #38ef7d, transparent, transparent) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: dt-rotate-border 2s linear infinite;
+  }
+  @keyframes dt-rotate-border {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* ── State sections ──────────────────────────────────────────── */
+  .dt-hidden {
+    display: none !important;
+  }
+
+  .dt-empty-card,
+  .dt-generating-card,
+  .dt-ready-header {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+  }
+
+  .dt-empty-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .dt-empty-sub {
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .dt-btn-primary {
+    display: inline-block;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #38ef7d, #2bcb6a);
+    color: #0b0f1a;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .dt-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(56,239,125,0.3);
+  }
+  .dt-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Generating state */
+  .dt-generating-card {
+    padding: 40px 32px;
+  }
+  .dt-gen-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .dt-gen-sub {
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .dt-progress-bar {
+    width: 100%;
+    max-width: 400px;
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto 12px;
+  }
+  .dt-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #38ef7d, #7bf0a5);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .dt-progress-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 6px;
+  }
+  .dt-step-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 4px;
+  }
+  .dt-eta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* Ready state */
+  .dt-ready-header {
+    text-align: left;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .dt-ready-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .dt-ready-meta {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+  }
+  .dt-ready-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .dt-btn-secondary {
+    display: inline-block;
+    padding: 8px 20px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.8);
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .dt-btn-secondary:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .dt-summary-card {
+    background: rgba(56,239,125,0.06);
+    border: 1px solid rgba(56,239,125,0.15);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.75);
+  }
+  .dt-summary-card strong {
+    color: #38ef7d;
+  }
+
+  .dt-partial-notice {
+    background: rgba(255,193,7,0.1);
+    border: 1px solid rgba(255,193,7,0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: rgba(255,193,7,0.8);
+  }
+
+  /* Task Grid */
+  #dt-task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .dt-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .dt-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+  }
+  .dt-card.dt-flagged {
+    border-color: rgba(255,193,7,0.3);
+  }
+  .dt-card.dt-done {
+    border-color: rgba(56,239,125,0.2);
+  }
+  .dt-card-number {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+  }
+  .dt-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-right: 32px;
+  }
+  .dt-topic-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(56,239,125,0.6);
+    background: rgba(56,239,125,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .dt-difficulty {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+  }
+  .dt-card-preview {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.7);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .dt-card-status {
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dt-card-status.dt-correct { color: #38ef7d; }
+  .dt-card-status.dt-incorrect { color: #ff6b6b; }
+  .dt-card-status.dt-pending { color: rgba(255,255,255,0.35); }
+  .dt-flag-badge {
+    font-size: 11px;
+    color: rgba(255,193,7,0.7);
+    background: rgba(255,193,7,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── PR percent_to_level + calibration ──────────────────────── */
+  /* Баннер «Профиль ещё в калибровке» */
+  .dt-calibration-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: linear-gradient(135deg, rgba(255, 186, 73, 0.10), rgba(255, 186, 73, 0.04));
+    border: 1px solid rgba(255, 186, 73, 0.35);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 14px 0 18px;
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .dt-cal-banner-icon {
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .dt-cal-banner-body { flex: 1; min-width: 0; }
+  .dt-cal-banner-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #ffd089;
+  }
+  .dt-cal-banner-text {
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .dt-cal-banner-btn {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    padding: 8px 14px;
+    background: #ffba49;
+    color: #1a1206;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .dt-cal-banner-btn:hover {
+    background: #ffc764;
+    transform: translateY(-1px);
+  }
+  @media (max-width: 600px) {
+    .dt-calibration-banner { flex-direction: column; align-items: stretch; }
+    .dt-cal-banner-btn { align-self: flex-start; }
+  }
+
+  /* Бейдж «🧪 Калибровка» на карточке задачи */
+  .dt-calibration-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    background: rgba(255, 186, 73, 0.16);
+    border: 1px solid rgba(255, 186, 73, 0.4);
+    color: #ffd089;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    line-height: 1.5;
+  }
+  /* Лёгкая визуальная отличимость карточки калибровки */
+  .dt-card.dt-calibration {
+    border-color: rgba(255, 186, 73, 0.28);
+  }
+
+  /* ── ⏱  Countdown 24h ───────────────────────────────────────── */
+  .dt-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(56,239,125,0.10), rgba(56,239,125,0.04));
+    border: 1px solid rgba(56,239,125,0.28);
+    border-radius: 14px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    color: rgba(255,255,255,0.88);
+    font-size: 14px;
+  }
+  .dt-countdown-icon { font-size: 22px; line-height: 1; }
+  .dt-countdown-text { flex: 1; line-height: 1.4; }
+  .dt-countdown-time {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: #38ef7d;
+    letter-spacing: 1px;
+    min-width: 110px;
+    text-align: right;
+  }
+  .dt-countdown.dt-expiring .dt-countdown-time {
+    color: #ffba49;
+  }
+  .dt-countdown.dt-expired .dt-countdown-time {
+    color: #ff6b6b;
+  }
+
+  /* ── 📅 Calendar sidebar ────────────────────────────────────── */
+  .dt-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 1080px) {
+    .dt-layout { grid-template-columns: 1fr; }
+    .dt-sidebar { order: 2; position: static !important; }
+  }
+
+  .dt-sidebar {
+    position: sticky;
+    top: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+  }
+  .dt-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 10px;
+  }
+  .dt-cal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.92);
+    text-align: center;
+    flex: 1;
+    letter-spacing: 0.2px;
+  }
+  .dt-cal-nav-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.75);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    flex: 0 0 36px;
+  }
+  .dt-cal-nav-btn:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+  .dt-cal-nav-btn:active { transform: scale(0.95); }
+  .dt-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    min-height: 240px;
+  }
+  .dt-cal-dow {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    text-align: center;
+    padding: 4px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+  }
+  .dt-cal-day {
+    aspect-ratio: 1 / 1;
+    min-height: 44px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.05);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dt-cal-daynum {
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0.6;
+  }
+  /* ГЛАВНОЕ — кол-во решённых задач, X/10 в каждой клетке */
+  .dt-cal-solved {
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    padding: 2px 5px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.32);
+    color: inherit;
+  }
+  .dt-cal-day.dt-cal-empty {
+    cursor: default;
+    background: transparent;
+    border: none;
+  }
+  .dt-cal-day.dt-cal-future {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .dt-cal-day:hover:not(.dt-cal-empty):not(.dt-cal-future) {
+    transform: translateY(-1px);
+    border-color: rgba(255,255,255,0.30);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  /* tiers (по числу решённых задач) */
+  .dt-cal-day.dt-tier-empty { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.35); }
+  .dt-cal-day.dt-tier-gray  { background: rgba(140,140,140,0.18); color: rgba(255,255,255,0.55); }
+  .dt-cal-day.dt-tier-pale  { background: rgba(56,239,125,0.15); color: #b6f7c8; }
+  .dt-cal-day.dt-tier-green { background: rgba(56,239,125,0.35); color: #062012; }
+  .dt-cal-day.dt-tier-bright{ background: rgba(56,239,125,0.65); color: #0a1e10; }
+  .dt-cal-day.dt-tier-gold  {
+    background: linear-gradient(135deg, #f7d774, #d6a437);
+    color: #2b1d05;
+    box-shadow: 0 0 14px rgba(247,215,116,0.45);
+  }
+  .dt-cal-day.dt-cal-today {
+    outline: 2px solid #38ef7d;
+    outline-offset: 1px;
+  }
+  .dt-cal-crown {
+    position: absolute;
+    top: -8px;
+    right: -2px;
+    font-size: 12px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+    pointer-events: none;
+  }
+  .dt-cal-legend {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.5;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+  }
+  .dt-cal-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dt-cal-legend-sw {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── 📱 Mobile tuning ─────────────────────────────────────── */
+  @media (max-width: 1080px) {
+    .dt-sidebar {
+      margin-top: 16px;
+      padding: 16px;
+    }
+    .dt-cal-day { font-size: 15px; min-height: 44px; }
+    .dt-cal-nav-btn { width: 40px; height: 40px; font-size: 20px; flex: 0 0 40px; }
+    .dt-cal-title { font-size: 18px; }
+    .dt-cal-grid { gap: 5px; min-height: 280px; }
+  }
+  @media (max-width: 480px) {
+    .dt-sidebar { padding: 14px 12px; border-radius: 14px; }
+    .dt-cal-day { font-size: 14px; min-height: 40px; border-radius: 8px; }
+    .dt-cal-grid { gap: 4px; }
+    .dt-cal-legend { grid-template-columns: 1fr; }
+  }
+
+  /* ── Day-history panel (под календарём) ─────────────────────── */
+  .dt-day-history {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .dt-day-history-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 6px;
+  }
+  .dt-day-history-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+  }
+  .dt-day-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .dt-dh-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.7);
+  }
+  .dt-dh-item-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .dt-dh-pos {
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+  }
+  .dt-dh-topic {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: rgba(56,239,125,0.7);
+  }
+  .dt-dh-status-correct { color: #38ef7d; }
+  .dt-dh-status-incorrect { color: #ff6b6b; }
+  .dt-dh-status-pending { color: rgba(255,255,255,0.35); }
+  /* === FIX: центрирование задач + видимость flagged (added) === */
+.dt-layout { max-width: 1180px; margin: 0 auto; }
+#dt-task-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important; justify-content: center; }
+.dt-card.is-flagged, .dt-card[data-flagged="true"] { opacity: 1 !important; display: flex !important; }
+.dt-card { opacity: 1 !important; }
+
+  /* ── 📖 Subtopic strip (curator prep_plan) ───────────────────── */
+  .dt-subtopic-strip {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .dt-subtopic-strip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .dt-subtopic-strip-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+  }
+  .dt-subtopic-strip-grade {
+    font-size: 12px;
+    color: rgba(56,239,125,0.6);
+    background: rgba(56,239,125,0.08);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .dt-subtopic-strip-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .dt-subtopic-strip-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 130px;
+    max-width: 200px;
+  }
+  .dt-subtopic-strip-item.is-today {
+    background: rgba(56,239,125,0.10);
+    border-color: rgba(56,239,125,0.35);
+    box-shadow: 0 0 12px rgba(56,239,125,0.08);
+  }
+  .dt-subtopic-strip-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    flex-shrink: 0;
+  }
+  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-badge {
+    background: rgba(56,239,125,0.2);
+    color: #38ef7d;
+  }
+  .dt-subtopic-strip-name {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .dt-subtopic-strip-item.is-today .dt-subtopic-strip-name {
+    color: #38ef7d;
+    font-weight: 600;
+  }
+  .dt-subtopic-strip-today-badge {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #38ef7d;
+    background: rgba(56,239,125,0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ── 🗓  Yearly calendar (curator prep_plan) ──────────────────── */
+  .dt-yearly-calendar {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .dt-yearly-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+  }
+  .dt-yearly-cal-header:hover {
+    background: rgba(255,255,255,0.02);
+  }
+  .dt-yearly-cal-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+  }
+  .dt-yearly-cal-toggle {
+    font-size: 18px;
+    color: rgba(255,255,255,0.3);
+    transition: transform 0.3s ease;
+  }
+  .dt-yearly-cal-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .dt-yearly-cal-body.is-open {
+    max-height: 5000px;
+  }
+  .dt-yearly-cal-inner {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dt-yearly-month {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .dt-yearly-month.is-current {
+    border-color: rgba(56,239,125,0.25);
+    background: rgba(56,239,125,0.04);
+  }
+  .dt-yearly-month-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .dt-yearly-month-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+  }
+  .dt-yearly-month.is-current .dt-yearly-month-label {
+    color: #38ef7d;
+  }
+  .dt-yearly-month-badge {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.04);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .dt-yearly-month.is-current .dt-yearly-month-badge {
+    color: rgba(56,239,125,0.7);
+    background: rgba(56,239,125,0.1);
+  }
+  .dt-yearly-month-subs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .dt-yearly-sub {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+  }
+  .dt-yearly-sub.is-today-sub {
+    background: rgba(56,239,125,0.10);
+    border-color: rgba(56,239,125,0.25);
+    color: #38ef7d;
+  }
+  .dt-yearly-sub-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.25);
+    width: 16px;
+    text-align: center;
+  }
+  .dt-yearly-sub.is-today-sub .dt-yearly-sub-num {
+    color: rgba(56,239,125,0.6);
+  }
+
+</style>
+
+    
+    <!-- KaTeX for math rendering — синхронная загрузка + скрытие до рендера,
+         чтобы не было «вспышки» сырого $LaTeX$ перед заменой на формулы. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+      /* Прячем содержимое до завершения рендера KaTeX. Применяется только
+         если есть потенциально математический контент (через JS-флаг).
+         Fail-safe: автоматически снимается через 1500ms, чтобы страница
+         НЕ зависла навсегда если KaTeX упал. */
+      html:not(.katex-ready) body.has-math .oly-md,
+      html:not(.katex-ready) body.has-math .task-text,
+      html:not(.katex-ready) body.has-math .problem-card,
+      html:not(.katex-ready) body.has-math .ai-feedback,
+      html:not(.katex-ready) body.has-math [data-katex] {
+        visibility: hidden;
+      }
+    </style>
+    <!-- preload — браузер начинает качать ещё до парсинга остального HTML -->
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+    <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
+    <!-- Синхронная загрузка: блокирует парсинг до загрузки KaTeX,
+         но даёт ГАРАНТИЮ что renderMathInElement доступна как только
+         DOM закончит парсить body. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+      // Помечаем body как «возможно содержит math» — чтобы CSS-скрытие
+      // действовало только на странички с формулами, а не на всю морду.
+      (function(){
+        try {
+          document.documentElement.classList.add('katex-loading');
+          // Fail-safe: если KaTeX не справится за 1.5s — показываем как есть.
+          setTimeout(function(){
+            document.documentElement.classList.remove('katex-loading');
+            document.documentElement.classList.add('katex-ready');
+          }, 1500);
+        } catch(e){}
+      })();
+      // Рендер сразу при готовности DOM. Используем DOMContentLoaded —
+      // он срабатывает СРАЗУ как только тело распаршено, не дожидаясь
+      // картинок/iframe'ов, поэтому быстрее чем 'load'.
+      document.addEventListener('DOMContentLoaded', function(){
+        var t0 = performance.now();
+        try {
+          // Помечаем body — теперь CSS-скрытие активируется (если оно нужно)
+          document.body.classList.add('has-math');
+          if (typeof renderMathInElement === 'function') {
+            renderMathInElement(document.body, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$',  right: '$',  display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false,
+              // ignoredTags — НЕ трогать содержимое <script>, <style>, <code>,
+              // <pre> чтобы не ломать примеры кода / синтаксис.
+              ignoredTags: ['script','noscript','style','textarea','pre','code']
+            });
+          }
+        } catch(e) { console.warn('KaTeX render error', e); }
+        finally {
+          // Снимаем класс «загрузка» — содержимое становится видимым.
+          document.documentElement.classList.remove('katex-loading');
+          document.documentElement.classList.add('katex-ready');
+          if (window.console && console.log) {
+            console.log('✓ KaTeX rendered in ' + Math.round(performance.now()-t0) + 'ms');
+          }
+        }
+      });
+    </script>
+
+    <!-- Global KaTeX re-render helper (defined early so child templates can use it) -->
+    <script>
+    function reRenderMath(element) {
+        if (typeof renderMathInElement === 'function') {
+            renderMathInElement(element || document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        } else {
+            console.warn('KaTeX auto-render not loaded yet — reRenderMath deferred');
+        }
+    }
+    </script>
+    
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    
+
+    
+    
+    <script type="text/javascript">
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+       ym(109394525, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true
+       });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/109394525" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    
+
+    <script defer src="/static/js/analytics.js?v=1784415778"></script>
+    <!-- Mobile home swipe-pager (≤768px). На десктопе скрипт ничего не делает (init ищет #mHome, которого там нет). -->
+    <script defer src="/static/js/mobile_home_slider.js?v=1784415778"></script>
+</head>
+<body class=" page-daily-tasks" data-user-id="1">
+    <header class="header">
+        <a href="/olympiads/methods" class="logo">
+            <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="grad_logo" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#38ef7d"/>
+                        <stop offset="100%" stop-color="#11998e"/>
+                    </linearGradient>
+                </defs>
+                <text x="100" y="65" font-family="'Segoe UI', sans-serif" font-style="italic" font-weight="800" font-size="38" fill="#ffffff" letter-spacing="2">FORMYLA</text>
+                <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
+                <polyline points="35,42 50,50 50,80" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
+                <line x1="50" y1="50" x2="65" y2="42" stroke="url(#grad_logo)" stroke-width="4"/>
+                <circle cx="50" cy="50" r="4" fill="#fff"/>
+            </svg>
+        </a>
+
+        <!-- Бургер-кнопка для мобильных -->
+        <button class="nav-burger" onclick="toggleMobileNav()"
+                aria-label="Меню" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav class="nav" id="navLinks">
+            <!-- Задачи дня -->
+            <a href="/daily_tasks/" class="daily-nav-link nav-link nav-pill">
+                <span class="daily-flame">🔥</span>
+                <span class="daily-text">Задачи дня</span>
+                
+                
+                
+                  <span class="daily-badge new">NEW</span>
+                
+                
+            </a>
+
+            <!-- 📚 Тренировка (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    📚 Тренировка <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/">📐 Темы</a>
+                    <a href="/probniks">📊 Тест по темам</a>
+                    <a href="/secrets">🗝️ Секреты</a>
+                    
+                </div>
+            </div>
+
+            <!-- 🏆 Олимпиады (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🏆 Олимпиады <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/olympiads">📖 Каталог</a>
+                    <a href="/olympiads/courses">🆕 Курсы (ВсОШ-2027)</a>
+                    <a href="/olympiads/methods">📚 Каталог методов (102)</a>
+                    <a href="/olympiad-prep/calendar">📅 Календарь олимпиад</a>
+                    
+                    <a href="/olympiads/my-progress">📈 Мой прогресс</a>
+                    
+                </div>
+            </div>
+            
+            <!-- 🧭 Куратор подготовки (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🧭 Куратор подготовки <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/prep/coach">🧭 Чат-куратор</a>
+            </div>
+        </div>
+
+            <!-- 🎨 Доска (dropdown: ИИ-чертёж + бесконечная доска + встреча с учителем) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    🎨 Доска <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/drawing">📐 ИИ-чертёж по задаче</a>
+                    <a href="/drawing?tab=whiteboard">🖍️ Доска и встреча (камера/звук)</a>
+                    
+                    <a href="/drawing/history">🗂️ История чертежей</a>
+                    
+                </div>
+            </div>
+
+            <!--  Тьютор (плоская ссылка, открывает плавающий виджет) -->
+            
+            <a href="javascript:void(0)" class="nav-item"
+               role="button"
+               onclick="event.preventDefault(); var b=document.getElementById('tutorBtn'); if(b){b.click();} return false;">
+                💬 Тьютор
+            </a>
+            
+
+            <!-- 👥 Сообщество (dropdown) -->
+            <div class="nav-dropdown">
+                <button class="nav-item nav-toggle" type="button">
+                    👥 Сообщество <span class="chev">▾</span>
+                </button>
+                <div class="nav-menu">
+                    <a href="/leaderboard">🏆 Лидеры</a>
+                    <a href="/friends">🤝 Друзья</a>
+                    <a href="/chat">💬 Чат</a>
+                </div>
+            </div>
+
+            <!-- ℹ️ О сайте (плоская ссылка) -->
+            <a href="/about" class="nav-item">ℹ️ О сайте</a>
+            <a href="/about#review-form" class="nav-item">✍️ Написать отзыв</a>
+        </nav>
+        
+        <!-- Форма поиска -->
+        <form action="/problems" method="get" style="margin-left: auto; display: flex; gap: 8px;">
+            <input type="text" name="q" placeholder="🔍 Поиск по задачам..."
+                   value=""
+                   style="padding: 8px 16px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; min-width: 250px; font-size: 14px;">
+            <button type="submit" style="padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
+                Найти
+            </button>
+        </form>
+
+        <!-- Авторизация -->
+        <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
+            
+                
+
+                <!-- Авторизованный пользователь -->
+                <a href="/profile"
+                   style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
+                   onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'"
+                   onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
+                    👤 Профиль
+                </a>
+                
+                <a href="/logout"
+                   style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); text-decoration: none; border-radius: 8px; font-size: 14px; border: 1px solid var(--border-soft); transition: all 0.2s;"
+                   onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#fca5a5'; this.style.borderColor='rgba(239, 68, 68, 0.3)'"
+                   onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'; this.style.color='var(--text-muted)'; this.style.borderColor='var(--border-soft)'">
+                    Выйти
+                </a>
+            
+        </div>
+    </header>
+
+    <!-- Баннер восстановления теста -->
+    <div id="testResumeBanner" style="display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #38bdf8;border-radius:8px;padding:12px 20px;margin:8px auto;max-width:900px;align-items:center;justify-content:space-between;gap:12px;">
+        <span style="color:#e2e8f0;font-size:0.95em;">Вы вышли из теста. <span style="color:#38bdf8;font-weight:600;">Продолжить тест?</span></span>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+            
+            <button onclick="resumeAdaptiveTest()" style="padding:6px 16px;border:none;border-radius:6px;background:#38bdf8;color:#0f172a;font-weight:600;cursor:pointer;">Продолжить</button>
+            <button onclick="dismissTestBanner()" style="padding:6px 10px;border:none;border-radius:6px;background:transparent;color:#64748b;cursor:pointer;font-size:1.1em;">x</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         MOBILE DRAWER MENU (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer">
+        <!-- Drawer header -->
+        <div class="drawer-header">
+            <span class="drawer-logo">FORMYLA</span>
+            <button class="drawer-close" onclick="closeDrawer()" aria-label="Закрыть">✕</button>
+        </div>
+
+        <!-- User info -->
+        
+        <div class="drawer-user">
+            <div class="drawer-user-info">
+                <div class="drawer-avatar">👤</div>
+                <div>
+                    <div class="drawer-username"></div>
+                    <div class="drawer-user-sub">test_user_1@formyla.local</div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Search -->
+        <div class="drawer-search">
+            <form action="/problems" method="get">
+                <input type="text" name="q" placeholder="🔍 Поиск задач..."
+                       value="">
+                <button type="submit">Найти</button>
+            </form>
+        </div>
+
+        <!-- Navigation links -->
+        <nav class="drawer-nav">
+            <div class="drawer-section-title">Главное</div>
+            <a href="/daily_tasks/" class="drawer-link">
+                <span class="drawer-link-icon">🔥</span>
+                Задачи дня
+                
+                
+                
+                  <span class="drawer-daily-badge new">NEW</span>
+                
+                
+            </a>
+            <a href="/" class="drawer-link">
+                <span class="drawer-link-icon">📐</span>
+                Темы
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Тренировка</div>
+            <a href="/probniks" class="drawer-link">
+                <span class="drawer-link-icon">📊</span>
+                Тест по темам
+            </a>
+            <a href="/secrets" class="drawer-link">
+                <span class="drawer-link-icon">🗝️</span>
+                Секреты
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Олимпиады</div>
+            <a href="/olympiad-prep/calendar" class="drawer-link">
+                <span class="drawer-link-icon">📅</span>
+                Календарь олимпиад
+            </a>
+            <a href="/olympiads" class="drawer-link">
+                <span class="drawer-link-icon">📖</span>
+                Каталог олимпиад
+            </a>
+            <a href="/olympiads/courses" class="drawer-link">
+                <span class="drawer-link-icon">🆕</span>
+                Курсы (ВсОШ-2027)
+            </a>
+            <a href="/olympiads/methods" class="drawer-link">
+                <span class="drawer-link-icon">📚</span>
+                Теоретические методы
+            </a>
+            <a href="/olympiads/predict-methods" class="drawer-link">
+                <span class="drawer-link-icon">🔮</span>
+                Предикт методов
+            </a>
+            
+            <a href="/olympiads/my-progress" class="drawer-link">
+                <span class="drawer-link-icon">📈</span>
+                Мой прогресс
+            </a>
+            
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Чертёж</div>
+            <a href="/drawing" class="drawer-link">
+                <span class="drawer-link-icon">📐</span>
+                Генератор чертежей
+            </a>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Сообщество</div>
+            <a href="/leaderboard" class="drawer-link">
+                <span class="drawer-link-icon">🏆</span>
+                Лидеры
+            </a>
+            <a href="/friends" class="drawer-link">
+                <span class="drawer-link-icon">🤝</span>
+                Друзья
+            </a>
+            <a href="/chat" class="drawer-link">
+                <span class="drawer-link-icon">💬</span>
+                Чат
+            </a>
+
+            
+            <div class="drawer-divider"></div>
+            <a href="javascript:void(0)" class="drawer-link" role="button"
+               onclick="event.preventDefault(); closeDrawer(); setTimeout(function(){ var b=document.getElementById('tutorBtn'); if(b){b.click();} }, 300); return false;">
+                <span class="drawer-link-icon">💬</span>
+                AI Тьютор
+            </a>
+            
+
+            <div class="drawer-divider"></div>
+            <a href="/about" class="drawer-link">
+                <span class="drawer-link-icon">ℹ️</span>
+                О сайте
+            </a>
+            <a href="/about#review-form" class="drawer-link">
+                <span class="drawer-link-icon">✍️</span>
+                Написать отзыв
+            </a>
+
+            
+            <a href="/profile" class="drawer-link">
+                <span class="drawer-link-icon">👤</span>
+                Профиль
+            </a>
+            
+        </nav>
+
+        <!-- Footer: auth actions -->
+        <div class="drawer-footer">
+            
+            <a href="/logout" class="drawer-link">
+                <span class="drawer-link-icon">🚪</span>
+                Выйти
+            </a>
+            
+        </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════
+         BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
+         ═══════════════════════════════════════════════ -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <a href="/" class="bottom-nav-item" data-path="/">
+            <span class="bottom-nav-icon">🏠</span>
+            <span class="bottom-nav-label">Главная</span>
+        </a>
+        <a href="/daily_tasks/" class="bottom-nav-item" data-path="/daily*">
+            <span class="bottom-nav-icon">🔥</span>
+            <span class="bottom-nav-label">Задачи дня</span>
+            
+            
+            
+            
+        </a>
+        <a href="/olympiads" class="bottom-nav-item" data-path="/olympiads*,/practice*">
+            <span class="bottom-nav-icon">🏆</span>
+            <span class="bottom-nav-label">Олимпиады</span>
+        </a>
+        <a href="/leaderboard" class="bottom-nav-item" data-path="/leaderboard*,/friends*">
+            <span class="bottom-nav-icon">👥</span>
+            <span class="bottom-nav-label">Рейтинг</span>
+        </a>
+        
+        <a href="/chat" class="bottom-nav-item" data-path="/chat*">
+            <span class="bottom-nav-icon">💬</span>
+            <span class="bottom-nav-label">Чат</span>
+            <span id="chatBottomBadge" class="bottom-nav-badge" style="display:none;">0</span>
+        </a>
+        
+        
+        <a href="/profile" class="bottom-nav-item" data-path="/profile*">
+            <span class="bottom-nav-icon">👤</span>
+            <span class="bottom-nav-label">Профиль</span>
+        </a>
+        
+    </nav>
+
+    <main class="main">
+        
+<div class="page-daily-tasks" style="max-width:1200px;margin:0 auto;padding:24px 16px 60px;">
+
+  <!-- ═══ Page header ═══ -->
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:8px;">📅 Задачи дня</h2>
+  <p style="color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:24px;">
+    Персональные задачи на основе твоего уровня — каждый день новый набор
+  </p>
+
+  <!-- ═══ Two-column layout: основной блок + календарь справа ═══ -->
+  <div class="dt-layout">
+    <div class="dt-main">
+
+      <!-- ═══ ⏱  24-часовой обратный отсчёт ═══ -->
+      <div id="dt-countdown" class="dt-countdown dt-hidden">
+        <span class="dt-countdown-icon">⏱</span>
+        
+        
+        
+        
+        
+        
+        
+          
+        
+        <span class="dt-countdown-text">
+          До истечения 24 часов:
+          <span style="display:block;font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">
+            После 8 задач удалятся и можно будет сгенерировать новые
+          </span>
+        </span>
+        <span class="dt-countdown-time" id="dt-countdown-time">--:--:--</span>
+      </div>
+
+      <!-- ═══ 📖 Weekly subtopic strip (from curator prep_plan) ═══ -->
+      
+
+  <!-- ═══ Pipeline steps (always visible) ═══ -->
+  <div class="dt-pipeline" id="dt-pipeline">
+    <!-- Step 1: Profile -->
+    <div class="dt-pipeline-step" data-step="profile">
+      <div class="dt-ps-circle">👤</div>
+      <span class="dt-ps-label">Профиль</span>
+      <span class="dt-ps-model"></span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 2: Gemini (Planning) -->
+    <div class="dt-pipeline-step" data-step="gemini">
+      <div class="dt-ps-circle">📋</div>
+      <span class="dt-ps-label">Планирование</span>
+      <span class="dt-ps-model"></span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 3: Opus (Generation) -->
+    <div class="dt-pipeline-step" data-step="opus">
+      <div class="dt-ps-circle">✍️</div>
+      <span class="dt-ps-label">Генерация</span>
+      <span class="dt-ps-model"></span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 4: Audit -->
+    <div class="dt-pipeline-step" data-step="audit">
+      <div class="dt-ps-circle">🔍</div>
+      <span class="dt-ps-label">Аудит</span>
+      <span class="dt-ps-model"></span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 5: Fix -->
+    <div class="dt-pipeline-step" data-step="fix">
+      <div class="dt-ps-circle">🔧</div>
+      <span class="dt-ps-label">Исправление</span>
+      <span class="dt-ps-model"></span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+    <!-- Step 6: Persist -->
+    <div class="dt-pipeline-step" data-step="persist">
+      <div class="dt-ps-circle">💾</div>
+      <span class="dt-ps-label">Сохранение</span>
+      <span class="dt-ps-model"></span>
+      <span class="dt-ps-check">✓</span>
+    </div>
+  </div>
+
+      <!-- ═══ 🗓  Yearly calendar (all months with subtopics) ═══ -->
+      
+
+  <!-- ═══ Empty state (no set) ═══ -->
+  <div id="dt-empty-state" class="dt-hidden">
+    <div class="dt-empty-card">
+      <div class="dt-empty-title">🚀 Начнём?</div>
+      <div class="dt-empty-sub">
+        Нажми «Сгенерировать», чтобы получить 10 персонализированных задач<br>
+        на основе твоего уровня и прогресса.
+      </div>
+<input type="text" id="dt-topic-input" class="dt-topic-input" value="Комбинаторика" placeholder="Тема (необязательно)" autocomplete="off" style="display:block;margin:0 auto 12px;max-width:320px;width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.9);font-size:15px;text-align:center;">
+      <button class="dt-btn-primary" id="dt-btn-generate" onclick="startGeneration()">
+        ⚡ Сгенерировать
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ Generating state ═══ -->
+  <div id="dt-generating-state" class="dt-hidden">
+    <div class="dt-generating-card">
+      <div class="dt-gen-title">🧠 Генерируем задачи…</div>
+      <div class="dt-gen-sub" id="dt-elapsed">прошло 0:00</div>
+
+      <div class="dt-progress-bar">
+        <div class="dt-progress-fill" id="dt-progress-fill"></div>
+      </div>
+      <div class="dt-progress-text" id="dt-progress-text">0%</div>
+
+      <div class="dt-step-name" id="dt-step-name">Запуск…</div>
+      
+      <div class="dt-eta" id="dt-eta" style="display:none !important;"></div>
+    </div>
+  </div>
+
+  <!-- ═══ Failed state ═══ -->
+  <div id="dt-failed-state" class="dt-hidden">
+    <div class="dt-empty-card" style="border-color:rgba(255,107,107,0.35);">
+      <div class="dt-empty-title" style="color:#ff9b9b;">❌ Не удалось сгенерировать задачи</div>
+      <div class="dt-empty-sub">
+        <div id="dt-failed-message"
+             style="color:#ff9b9b;margin-bottom:14px;line-height:1.45;
+                    word-break:break-word;"></div>
+        <div style="color:rgba(255,255,255,0.55);font-size:14px;">
+          Это не отняло твою дневную попытку — можно попробовать снова.
+        </div>
+      </div>
+      <button class="dt-btn-primary" id="dt-btn-retry" onclick="startGeneration()">
+        🔄 Попробовать снова
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ Ready state ═══ -->
+  <div id="dt-ready-state" class="dt-hidden">
+    <div class="dt-ready-header">
+      <div>
+        <div class="dt-ready-title">📚 Твои задачи на <span id="dt-date"></span></div>
+        <div class="dt-ready-meta">
+          Выполнено <span id="dt-progress-summary">0/0</span>
+        </div>
+      </div>
+      <div class="dt-ready-actions"><button class="dt-btn-secondary" id="dt-btn-regenerate" onclick="startGeneration()">🔄 Перегенерировать</button></div> 
+    </div>
+
+    <!-- Summary card -->
+    <div id="dt-summary-card" class="dt-summary-card dt-hidden">
+      <strong>💡 Рекомендация:</strong> <span id="dt-summary-text"></span>
+    </div>
+
+    <!-- Partial notice -->
+    <div id="dt-partial-notice" class="dt-partial-notice dt-hidden">
+      ⚠️ Некоторые задачи не удалось сгенерировать. Они отмечены флагом.
+    </div>
+
+    
+    
+
+    <!-- Task grid -->
+    <div id="dt-task-grid"></div>
+  </div>
+
+    </div>
+
+    <!-- ═══ 📅 Calendar sidebar ═══ -->
+    <aside class="dt-sidebar" id="dt-sidebar">
+      <div class="dt-cal-header">
+        <button class="dt-cal-nav-btn" id="dt-cal-prev" title="Предыдущий месяц">‹</button>
+        <div class="dt-cal-title" id="dt-cal-title">—</div>
+        <button class="dt-cal-nav-btn" id="dt-cal-next" title="Следующий месяц">›</button>
+      </div>
+
+      <div class="dt-cal-grid" id="dt-cal-grid">
+        
+      </div>
+
+      <!-- Панель с задачами выбранного дня (показывается под календарём) -->
+      <div class="dt-day-history dt-hidden" id="dt-day-history">
+        <div class="dt-day-history-title" id="dt-day-history-title">—</div>
+        <div class="dt-day-history-sub" id="dt-day-history-sub"></div>
+        <div class="dt-day-history-list" id="dt-day-history-list"></div>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+
+<!-- ═══ Modal ═══ -->
+<div id="dt-modal-overlay" class="dt-hidden">
+  <div class="dt-modal">
+    <button class="dt-modal-close" id="dt-modal-close">&times;</button>
+    <div class="dt-modal-header">
+      <span class="dt-modal-title" id="dt-modal-title">Задача</span>
+      <span class="dt-modal-difficulty" id="dt-modal-difficulty"></span>
+    </div>
+    <div class="dt-modal-body" id="dt-modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══ Initial data ── читается в daily_tasks.js ═══ -->
+<script id="dt-init-data" type="application/json">{"adaptive_tests_url": "/adaptive_test_simple", "calibration_items_count": 0, "class_level": 9, "daily_set_id": 15, "date": "2026-07-28", "error_message": null, "expires_at": "2026-07-29T14:53:08.559636Z", "generated_at": "2026-07-28T14:53:08.559636", "has_calibration": false, "items": [{"answered_at": null, "correct_answer": "\u041d\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0442", "difficulty": 3, "flag_reason": null, "hints": [], "id": 102, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 1, "preview": "\u0421\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0442 \u043b\u0438 \u0442\u0430\u043a\u0438\u0435 \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u044b\u0435 \u043d\u0435\u043d\u0443\u043b\u0435\u0432\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0447\u0438\u0441\u043b\u0430 a, b, c, \u0447\u0442\u043e \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d\u044b P(x)=ax\u00b2+bx+c \u0438 Q(x)=cx\u00b2+bx+a \u0438\u043c\u0435\u044e\u0442 \u043e\u0431\u0449\u0438\u0439 \u043a\u043e\u0440\u0435\u043d\u044c, \u0430 \u0438\u0445 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u0432 \u0442\u043e\u0447\u043a\u0435 x=2 \u0440\u0430\u0432\u043d\u044b?", "reason": null, "slot_kind": "daily_rotation", "solution": "\u041f\u0443\u0441\u0442\u044c t \u2014 \u043e\u0431\u0449\u0438\u0439 \u043a\u043e\u0440\u0435\u043d\u044c: at\u00b2+bt+c=0 \u0438 ct\u00b2+bt+a=0. \u0412\u044b\u0447\u0442\u0435\u043c: (a-c)t\u00b2+(c-a)=0, (a-c)(t\u00b2-1)=0. \u0422\u0430\u043a \u043a\u0430\u043a a\u2260c (\u0438\u043d\u0430\u0447\u0435 \u0447\u0438\u0441\u043b\u0430 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u044e\u0442, \u0438\u043b\u0438 \u043e\u0431\u0430 \u043d\u0443\u043b\u0435\u0432\u044b\u0435 \u043f\u0440\u0438 b=0, \u0447\u0442\u043e \u043f\u0440\u043e\u0442\u0438\u0432\u043e\u0440\u0435\u0447\u0438\u0442 \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u043e\u0441\u0442\u0438 \u0438 \u043d\u0435\u043d\u0443\u043b\u0435\u0432\u043e\u0441\u0442\u0438), \u0442\u043e t\u00b2=1, t=\u00b11. \u041f\u043e\u0434\u0441\u0442\u0430\u0432\u0438\u043c t=1: a+b+c=0 \u0438 c+b+a=0 \u2014 \u043e\u0434\u043d\u043e \u0438 \u0442\u043e \u0436\u0435. \u041f\u043e\u0434\u0441\u0442\u0430\u0432\u0438\u043c t=-1: a-b+c=0, c-b+a=0 \u2014 \u0442\u043e\u0436\u0435 \u043e\u0434\u043d\u043e \u0438 \u0442\u043e \u0436\u0435. \u0417\u043d\u0430\u0447\u0438\u0442, \u043e\u0431\u0449\u0438\u0439 \u043a\u043e\u0440\u0435\u043d\u044c \u0432\u043e\u0437\u043c\u043e\u0436\u0435\u043d, \u0435\u0441\u043b\u0438 a+b+c=0 \u0438\u043b\u0438 a-b+c=0. \u0422\u0435\u043f\u0435\u0440\u044c \u0443\u0441\u043b\u043e\u0432\u0438\u0435 P(2)=Q(2): 4a+2b+c=4c+2b+a, \u043e\u0442\u043a\u0443\u0434\u0430 3a=3c, a=c. \u041d\u043e a \u0438 c \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u044b \u043f\u043e \u0443\u0441\u043b\u043e\u0432\u0438\u044e. \u041f\u0440\u043e\u0442\u0438\u0432\u043e\u0440\u0435\u0447\u0438\u0435. \u0417\u043d\u0430\u0447\u0438\u0442, \u0442\u0430\u043a\u0438\u0445 \u0447\u0438\u0441\u0435\u043b \u043d\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442.", "status": "approved", "subject": "\u0410\u043b\u0433\u0435\u0431\u0440\u0430", "subtopic": null, "task_text": "\u0421\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0442 \u043b\u0438 \u0442\u0430\u043a\u0438\u0435 \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u044b\u0435 \u043d\u0435\u043d\u0443\u043b\u0435\u0432\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0447\u0438\u0441\u043b\u0430 a, b, c, \u0447\u0442\u043e \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d\u044b P(x)=ax\u00b2+bx+c \u0438 Q(x)=cx\u00b2+bx+a \u0438\u043c\u0435\u044e\u0442 \u043e\u0431\u0449\u0438\u0439 \u043a\u043e\u0440\u0435\u043d\u044c, \u0430 \u0438\u0445 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u0432 \u0442\u043e\u0447\u043a\u0435 x=2 \u0440\u0430\u0432\u043d\u044b?", "text": "\u0421\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0442 \u043b\u0438 \u0442\u0430\u043a\u0438\u0435 \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u044b\u0435 \u043d\u0435\u043d\u0443\u043b\u0435\u0432\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0447\u0438\u0441\u043b\u0430 a, b, c, \u0447\u0442\u043e \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d\u044b P(x)=ax\u00b2+bx+c \u0438 Q(x)=cx\u00b2+bx+a \u0438\u043c\u0435\u044e\u0442 \u043e\u0431\u0449\u0438\u0439 \u043a\u043e\u0440\u0435\u043d\u044c, \u0430 \u0438\u0445 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u0432 \u0442\u043e\u0447\u043a\u0435 x=2 \u0440\u0430\u0432\u043d\u044b?", "time_spent_seconds": null, "topic": "\u041c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d\u044b \u0438 \u0430\u043b\u0433\u0435\u0431\u0440\u0430\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0442\u043e\u0436\u0434\u0435\u0441\u0442\u0432\u0430", "user_answer": null, "weakness_score": null}, {"answered_at": null, "correct_answer": "24", "difficulty": 3, "flag_reason": null, "hints": [], "id": 103, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 2, "preview": "\u0414\u0430\u043d \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d P(x) = x\u2074 + ax\u00b3 + bx\u00b2 + cx + d \u0441 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u043c\u0438 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u0430\u043c\u0438. \u0418\u0437\u0432\u0435\u0441\u0442\u043d\u043e, \u0447\u0442\u043e P(1) = 1, P(2) = 2, P(3) = 3. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 P(0) + P(4).", "reason": null, "slot_kind": "daily_rotation", "solution": "\u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d Q(x) = P(x) - x. \u0415\u0433\u043e \u0441\u0442\u0435\u043f\u0435\u043d\u044c \u043d\u0435 \u0432\u044b\u0448\u0435 4. \u041f\u043e \u0443\u0441\u043b\u043e\u0432\u0438\u044e Q(1) = 0, Q(2) = 0, Q(3) = 0. \u0417\u043d\u0430\u0447\u0438\u0442, Q(x) \u0434\u0435\u043b\u0438\u0442\u0441\u044f \u043d\u0430 (x-1)(x-2)(x-3). \u0417\u0430\u043f\u0438\u0448\u0435\u043c Q(x) = (x-1)(x-2)(x-3)(x-k), \u0433\u0434\u0435 k \u2014 \u043d\u0435\u043a\u043e\u0442\u043e\u0440\u043e\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0447\u0438\u0441\u043b\u043e (\u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u043f\u0440\u0438 x\u2074 \u0432 Q(x) \u0440\u0430\u0432\u0435\u043d 1, \u0442\u0430\u043a \u043a\u0430\u043a \u0432 P(x) \u043e\u043d 1). \u0422\u043e\u0433\u0434\u0430 P(x) = (x-1)(x-2)(x-3)(x-k) + x. \u041d\u0430\u0439\u0434\u0451\u043c P(0) = (-1)(-2)(-3)(-k) + 0 = 6k. P(4) = 3\u00b72\u00b71\u00b7(4-k) + 4 = 6(4-k) + 4 = 24 - 6k + 4 = 28 - 6k. \u0422\u043e\u0433\u0434\u0430 P(0) + P(4) = 6k + 28 - 6k = 28. \u041e\u0442\u0432\u0435\u0442: 28.", "status": "approved", "subject": "\u0410\u043b\u0433\u0435\u0431\u0440\u0430", "subtopic": null, "task_text": "\u0414\u0430\u043d \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d P(x) = x\u2074 + ax\u00b3 + bx\u00b2 + cx + d \u0441 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u043c\u0438 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u0430\u043c\u0438. \u0418\u0437\u0432\u0435\u0441\u0442\u043d\u043e, \u0447\u0442\u043e P(1) = 1, P(2) = 2, P(3) = 3. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 P(0) + P(4).", "text": "\u0414\u0430\u043d \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d P(x) = x\u2074 + ax\u00b3 + bx\u00b2 + cx + d \u0441 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u043c\u0438 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u0430\u043c\u0438. \u0418\u0437\u0432\u0435\u0441\u0442\u043d\u043e, \u0447\u0442\u043e P(1) = 1, P(2) = 2, P(3) = 3. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 P(0) + P(4).", "time_spent_seconds": null, "topic": "\u041c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d\u044b \u0438 \u0430\u043b\u0433\u0435\u0431\u0440\u0430\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0442\u043e\u0436\u0434\u0435\u0441\u0442\u0432\u0430", "user_answer": null, "weakness_score": null}, {"answered_at": null, "correct_answer": "120\u00b0", "difficulty": 3, "flag_reason": null, "hints": [], "id": 104, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 3, "preview": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u0443\u0433\u043e\u043b B \u0440\u0430\u0432\u0435\u043d 60\u00b0. \u041d\u0430 \u0441\u0442\u043e\u0440\u043e\u043d\u0430\u0445 AB \u0438 BC \u0432\u043e \u0432\u043d\u0435\u0448\u043d\u044e\u044e \u0441\u0442\u043e\u0440\u043e\u043d\u0443 \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u044b \u0440\u0430\u0432\u043d\u043e\u0441\u0442\u043e\u0440\u043e\u043d\u043d\u0438\u0435 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0438 ABK \u0438 BCL. \u041e\u0442\u0440\u0435\u0437\u043a\u0438 AL \u0438 CK \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u044e\u0442\u0441\u044f \u0432 \u0442\u043e\u0447\u043a\u0435 P. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b APC.", "reason": null, "slot_kind": "daily_rotation", "solution": "\u0417\u0430\u043c\u0435\u0442\u0438\u043c, \u0447\u0442\u043e \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0438 ABL \u0438 KBC \u0440\u0430\u0432\u043d\u044b \u043f\u043e \u0434\u0432\u0443\u043c \u0441\u0442\u043e\u0440\u043e\u043d\u0430\u043c \u0438 \u0443\u0433\u043b\u0443: AB=KB, BL=BC, \u2220ABL=\u2220KBC=60\u00b0+\u2220ABC=120\u00b0. \u0417\u043d\u0430\u0447\u0438\u0442, AL=CK \u0438 \u2220BAL=\u2220BKC. \u041f\u0443\u0441\u0442\u044c AL \u0438 CK \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u044e\u0442\u0441\u044f \u0432 P. \u0418\u0437 \u0440\u0430\u0432\u0435\u043d\u0441\u0442\u0432\u0430 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u043e\u0432 \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u043c, \u0447\u0442\u043e \u2220APK=\u2220ABK=60\u00b0 (\u0443\u0433\u043e\u043b \u043c\u0435\u0436\u0434\u0443 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u043c\u0438 \u043e\u0442\u0440\u0435\u0437\u043a\u0430\u043c\u0438). \u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u0447\u0435\u0442\u044b\u0440\u0451\u0445\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a APBK: \u2220APK=60\u00b0, \u2220ABK=60\u00b0, \u0441\u043b\u0435\u0434\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u043d\u043e \u0442\u043e\u0447\u043a\u0438 A, P, B, K \u043b\u0435\u0436\u0430\u0442 \u043d\u0430 \u043e\u0434\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u0410\u043d\u0430\u043b\u043e\u0433\u0438\u0447\u043d\u043e \u0442\u043e\u0447\u043a\u0438 C, P, B, L \u043b\u0435\u0436\u0430\u0442 \u043d\u0430 \u043e\u0434\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u0418\u0437 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0441\u0442\u0438 APBK: \u2220APB=\u2220AKB=60\u00b0. \u0418\u0437 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0441\u0442\u0438 CPBL: \u2220CPB=\u2220CLB=60\u00b0. \u0422\u043e\u0433\u0434\u0430 \u2220APC=360\u00b0\u2212\u2220APB\u2212\u2220CPB\u2212\u2220BPC? \u0422\u043e\u0447\u043d\u0435\u0435: \u2220APC=\u2220APB+\u2220BPC. \u2220APB=60\u00b0, \u2220BPC=180\u00b0\u2212\u2220BPL? \u041b\u0443\u0447\u0448\u0435: \u2220APC=360\u00b0\u2212\u2220APB\u2212\u2220BPC\u2212? \u041f\u0440\u044f\u043c\u043e\u0439 \u043f\u043e\u0434\u0441\u0447\u0451\u0442: \u2220APC=180\u00b0\u2212\u2220APB+\u2220CPB? \u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a APC. \u2220APC=180\u00b0\u2212\u2220PAC\u2212\u2220PCA. \u041d\u043e \u2220PAC=\u2220BAL, \u2220PCA=\u2220BCK. \u0418\u0437 \u0441\u0443\u043c\u043c\u044b \u0443\u0433\u043b\u043e\u0432 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 ABC \u0438 \u0440\u0430\u0432\u0435\u043d\u0441\u0442\u0432 \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u043c \u2220APC=120\u00b0. \u0410\u043b\u044c\u0442\u0435\u0440\u043d\u0430\u0442\u0438\u0432\u043d\u043e: \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0432\u043e\u043a\u0440\u0443\u0433 B \u043d\u0430 60\u00b0 \u043e\u0442\u043e\u0431\u0440\u0430\u0436\u0430\u0435\u0442 K \u0432 A, C \u0432 L, \u0430 \u043f\u0440\u044f\u043c\u0443\u044e CK \u0432 AL, \u0443\u0433\u043e\u043b \u043c\u0435\u0436\u0434\u0443 \u043d\u0438\u043c\u0438 60\u00b0, \u0437\u043d\u0430\u0447\u0438\u0442 \u2220APK=60\u00b0. \u0410\u043d\u0430\u043b\u043e\u0433\u0438\u0447\u043d\u043e \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0432\u043e\u043a\u0440\u0443\u0433 B \u043d\u0430 \u221260\u00b0 \u0434\u0430\u0451\u0442 \u2220CPL=60\u00b0. \u0412 \u0447\u0435\u0442\u044b\u0440\u0451\u0445\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 APBC: \u2220APB+\u2220ACB? \u0418\u0442\u043e\u0433: \u2220APC=120\u00b0.", "status": "approved", "subject": "\u0413\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f", "subtopic": null, "task_text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u0443\u0433\u043e\u043b B \u0440\u0430\u0432\u0435\u043d 60\u00b0. \u041d\u0430 \u0441\u0442\u043e\u0440\u043e\u043d\u0430\u0445 AB \u0438 BC \u0432\u043e \u0432\u043d\u0435\u0448\u043d\u044e\u044e \u0441\u0442\u043e\u0440\u043e\u043d\u0443 \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u044b \u0440\u0430\u0432\u043d\u043e\u0441\u0442\u043e\u0440\u043e\u043d\u043d\u0438\u0435 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0438 ABK \u0438 BCL. \u041e\u0442\u0440\u0435\u0437\u043a\u0438 AL \u0438 CK \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u044e\u0442\u0441\u044f \u0432 \u0442\u043e\u0447\u043a\u0435 P. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b APC.", "text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u0443\u0433\u043e\u043b B \u0440\u0430\u0432\u0435\u043d 60\u00b0. \u041d\u0430 \u0441\u0442\u043e\u0440\u043e\u043d\u0430\u0445 AB \u0438 BC \u0432\u043e \u0432\u043d\u0435\u0448\u043d\u044e\u044e \u0441\u0442\u043e\u0440\u043e\u043d\u0443 \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u044b \u0440\u0430\u0432\u043d\u043e\u0441\u0442\u043e\u0440\u043e\u043d\u043d\u0438\u0435 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0438 ABK \u0438 BCL. \u041e\u0442\u0440\u0435\u0437\u043a\u0438 AL \u0438 CK \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u044e\u0442\u0441\u044f \u0432 \u0442\u043e\u0447\u043a\u0435 P. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b APC.", "time_spent_seconds": null, "topic": "\u0423\u0433\u043b\u044b \u0438 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u044b\u0435 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438", "user_answer": null, "weakness_score": null}, {"answered_at": null, "correct_answer": "60\u00b0", "difficulty": 3, "flag_reason": null, "hints": [], "id": 105, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 4, "preview": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u043f\u0440\u043e\u0432\u0435\u0434\u0435\u043d\u044b \u0432\u044b\u0441\u043e\u0442\u044b AA1 \u0438 CC1. \u0422\u043e\u0447\u043a\u0438 P \u0438 Q \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u044b \u043e\u0442\u0440\u0435\u0437\u043a\u043e\u0432 AC1 \u0438 CA1 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u043e. \u041e\u043a\u0430\u0437\u0430\u043b\u043e\u0441\u044c, \u0447\u0442\u043e \u043f\u0440\u044f\u043c\u0430\u044f PQ \u043f\u0440\u043e\u0445\u043e\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 \u0442\u043e\u0447\u043a\u0443 \u043f\u0435\u0440\u0435\u0441\u0435\u0447\u0435\u043d\u0438\u044f \u0432\u044b\u0441\u043e\u0442 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 ABC. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b B.", "reason": null, "slot_kind": "daily_rotation", "solution": "\u041f\u0443\u0441\u0442\u044c H \u2014 \u0442\u043e\u0447\u043a\u0430 \u043f\u0435\u0440\u0435\u0441\u0435\u0447\u0435\u043d\u0438\u044f \u0432\u044b\u0441\u043e\u0442. \u0417\u0430\u043c\u0435\u0442\u0438\u043c, \u0447\u0442\u043e \u0447\u0435\u0442\u044b\u0440\u0451\u0445\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a AC1A1C \u0432\u043f\u0438\u0441\u0430\u043d \u0432 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0441 \u0434\u0438\u0430\u043c\u0435\u0442\u0440\u043e\u043c AC, \u0442\u0430\u043a \u043a\u0430\u043a \u2220AA1C = \u2220AC1C = 90\u00b0. \u0421\u043b\u0435\u0434\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u043d\u043e, \u2220A1C1C = \u2220A1AC = 90\u00b0 \u2013 \u2220C, \u0438 \u0430\u043d\u0430\u043b\u043e\u0433\u0438\u0447\u043d\u043e \u2220AC1A1 = \u2220ACC1 = 90\u00b0 \u2013 \u2220A. \u0422\u043e\u0447\u043a\u0438 P \u0438 Q \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u044b \u043e\u0442\u0440\u0435\u0437\u043a\u043e\u0432 AC1 \u0438 CA1. \u041f\u043e \u0441\u0432\u043e\u0439\u0441\u0442\u0432\u0443 \u0441\u0440\u0435\u0434\u043d\u0435\u0439 \u043b\u0438\u043d\u0438\u0438 \u0432 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 A1C1C \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u043c, \u0447\u0442\u043e PQ \u043f\u0430\u0440\u0430\u043b\u043b\u0435\u043b\u044c\u043d\u0430 A1C1. \u0423\u0441\u043b\u043e\u0432\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438: H \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 PQ. \u0417\u043d\u0430\u0447\u0438\u0442, H \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u043f\u0440\u044f\u043c\u043e\u0439, \u043f\u0430\u0440\u0430\u043b\u043b\u0435\u043b\u044c\u043d\u043e\u0439 A1C1. \u041d\u043e H \u0442\u0430\u043a\u0436\u0435 \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u0432\u044b\u0441\u043e\u0442\u0435 BB1. \u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a A1BC1. \u041f\u043e\u0441\u043a\u043e\u043b\u044c\u043a\u0443 \u2220BA1C = \u2220BC1A = 90\u00b0, \u0442\u043e\u0447\u043a\u0438 A1 \u0438 C1 \u043b\u0435\u0436\u0430\u0442 \u043d\u0430 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438 \u0441 \u0434\u0438\u0430\u043c\u0435\u0442\u0440\u043e\u043c BC \u0438 BA \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u043e. \u0418\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u0439 \u0444\u0430\u043a\u0442: \u0432 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 \u0442\u043e\u0447\u043a\u0430 H \u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0446\u0435\u043d\u0442\u0440\u043e\u043c \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438, \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u0432 \u043e\u0440\u0442\u043e\u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a A1B1C1. \u041e\u0434\u043d\u0430\u043a\u043e \u0437\u0434\u0435\u0441\u044c \u0443\u0434\u043e\u0431\u043d\u0435\u0435 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u0432\u0435\u043a\u0442\u043e\u0440\u044b \u0438\u043b\u0438 \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u044b. \u041f\u0440\u0438\u043c\u0435\u043c B \u0437\u0430 \u043d\u0430\u0447\u0430\u043b\u043e \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442, BC \u043f\u043e \u043e\u0441\u0438 x. \u0422\u043e\u0433\u0434\u0430 C = (a,0), A = (c cos B, c sin B). \u0412\u044b\u0441\u043e\u0442\u044b \u0434\u0430\u044e\u0442 \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u044b H. \u0423\u0441\u043b\u043e\u0432\u0438\u0435 \u043a\u043e\u043b\u043b\u0438\u043d\u0435\u0430\u0440\u043d\u043e\u0441\u0442\u0438 P, Q, H \u043f\u043e\u0441\u043b\u0435 \u0443\u043f\u0440\u043e\u0449\u0435\u043d\u0438\u0439 \u043f\u0440\u0438\u0432\u043e\u0434\u0438\u0442 \u043a \u0443\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u044e 2 cos^2 B \u2013 cos B \u2013 1 = 0, \u043e\u0442\u043a\u0443\u0434\u0430 cos B = 1 \u0438\u043b\u0438 cos B = \u20131/2. \u0414\u043b\u044f \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u0433\u043e \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 cos B = 1/2, \u0442\u043e \u0435\u0441\u0442\u044c B = 60\u00b0.", "status": "approved", "subject": "\u0413\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f", "subtopic": null, "task_text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u043f\u0440\u043e\u0432\u0435\u0434\u0435\u043d\u044b \u0432\u044b\u0441\u043e\u0442\u044b AA1 \u0438 CC1. \u0422\u043e\u0447\u043a\u0438 P \u0438 Q \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u044b \u043e\u0442\u0440\u0435\u0437\u043a\u043e\u0432 AC1 \u0438 CA1 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u043e. \u041e\u043a\u0430\u0437\u0430\u043b\u043e\u0441\u044c, \u0447\u0442\u043e \u043f\u0440\u044f\u043c\u0430\u044f PQ \u043f\u0440\u043e\u0445\u043e\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 \u0442\u043e\u0447\u043a\u0443 \u043f\u0435\u0440\u0435\u0441\u0435\u0447\u0435\u043d\u0438\u044f \u0432\u044b\u0441\u043e\u0442 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 ABC. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b B.", "text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u043f\u0440\u043e\u0432\u0435\u0434\u0435\u043d\u044b \u0432\u044b\u0441\u043e\u0442\u044b AA1 \u0438 CC1. \u0422\u043e\u0447\u043a\u0438 P \u0438 Q \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u044b \u043e\u0442\u0440\u0435\u0437\u043a\u043e\u0432 AC1 \u0438 CA1 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u043e. \u041e\u043a\u0430\u0437\u0430\u043b\u043e\u0441\u044c, \u0447\u0442\u043e \u043f\u0440\u044f\u043c\u0430\u044f PQ \u043f\u0440\u043e\u0445\u043e\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 \u0442\u043e\u0447\u043a\u0443 \u043f\u0435\u0440\u0435\u0441\u0435\u0447\u0435\u043d\u0438\u044f \u0432\u044b\u0441\u043e\u0442 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 ABC. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b B.", "time_spent_seconds": null, "topic": "\u0423\u0433\u043b\u044b \u0438 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u044b\u0435 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438", "user_answer": null, "weakness_score": null}, {"answered_at": null, "correct_answer": "\u041d\u0435\u0442", "difficulty": 3, "flag_reason": null, "hints": [], "id": 106, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 5, "preview": "\u041a\u0432\u0430\u0434\u0440\u0430\u0442\u043d\u044b\u0439 \u0442\u0440\u0451\u0445\u0447\u043b\u0435\u043d f(x) \u0442\u0430\u043a\u043e\u0432, \u0447\u0442\u043e f(x)=0, f(x+1)=0 \u0438 f(x+2)=0 \u043f\u0440\u0438 \u043d\u0435\u043a\u043e\u0442\u043e\u0440\u043e\u043c \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0438 x. \u041c\u043e\u0436\u0435\u0442 \u043b\u0438 \u0441\u0442\u0430\u0440\u0448\u0438\u0439 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 f(x) \u0431\u044b\u0442\u044c \u0440\u0430\u0432\u0435\u043d 1?", "reason": null, "slot_kind": "daily_rotation", "solution": "\u041f\u0443\u0441\u0442\u044c f(x)=ax\u00b2+bx+c, a\u22600. \u041f\u043e \u0443\u0441\u043b\u043e\u0432\u0438\u044e \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442 \u0442\u0430\u043a\u043e\u0435 x\u2080, \u0447\u0442\u043e f(x\u2080)=0, f(x\u2080+1)=0 \u0438 f(x\u2080+2)=0. \u0422\u043e\u0433\u0434\u0430 \u043a\u0432\u0430\u0434\u0440\u0430\u0442\u043d\u044b\u0439 \u0442\u0440\u0451\u0445\u0447\u043b\u0435\u043d \u0438\u043c\u0435\u0435\u0442 \u0442\u0440\u0438 \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u044b\u0445 \u043a\u043e\u0440\u043d\u044f: x\u2080, x\u2080+1, x\u2080+2. \u041d\u043e \u043d\u0435\u043d\u0443\u043b\u0435\u0432\u043e\u0439 \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d \u0441\u0442\u0435\u043f\u0435\u043d\u0438 \u043d\u0435 \u0432\u044b\u0448\u0435 2 \u0438\u043c\u0435\u0435\u0442 \u043d\u0435 \u0431\u043e\u043b\u0435\u0435 \u0434\u0432\u0443\u0445 \u043a\u043e\u0440\u043d\u0435\u0439. \u041f\u0440\u043e\u0442\u0438\u0432\u043e\u0440\u0435\u0447\u0438\u0435. \u0417\u043d\u0430\u0447\u0438\u0442, \u0442\u0430\u043a\u043e\u0433\u043e \u0442\u0440\u0451\u0445\u0447\u043b\u0435\u043d\u0430 \u043d\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442 \u043d\u0438 \u043f\u0440\u0438 \u043a\u0430\u043a\u043e\u043c \u0441\u0442\u0430\u0440\u0448\u0435\u043c \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u0435, \u0432 \u0442\u043e\u043c \u0447\u0438\u0441\u043b\u0435 \u0438 \u043f\u0440\u0438 a=1.", "status": "approved", "subject": "\u0410\u043b\u0433\u0435\u0431\u0440\u0430", "subtopic": null, "task_text": "\u041a\u0432\u0430\u0434\u0440\u0430\u0442\u043d\u044b\u0439 \u0442\u0440\u0451\u0445\u0447\u043b\u0435\u043d f(x) \u0442\u0430\u043a\u043e\u0432, \u0447\u0442\u043e f(x)=0, f(x+1)=0 \u0438 f(x+2)=0 \u043f\u0440\u0438 \u043d\u0435\u043a\u043e\u0442\u043e\u0440\u043e\u043c \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0438 x. \u041c\u043e\u0436\u0435\u0442 \u043b\u0438 \u0441\u0442\u0430\u0440\u0448\u0438\u0439 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 f(x) \u0431\u044b\u0442\u044c \u0440\u0430\u0432\u0435\u043d 1?", "text": "\u041a\u0432\u0430\u0434\u0440\u0430\u0442\u043d\u044b\u0439 \u0442\u0440\u0451\u0445\u0447\u043b\u0435\u043d f(x) \u0442\u0430\u043a\u043e\u0432, \u0447\u0442\u043e f(x)=0, f(x+1)=0 \u0438 f(x+2)=0 \u043f\u0440\u0438 \u043d\u0435\u043a\u043e\u0442\u043e\u0440\u043e\u043c \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0438 x. \u041c\u043e\u0436\u0435\u0442 \u043b\u0438 \u0441\u0442\u0430\u0440\u0448\u0438\u0439 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 f(x) \u0431\u044b\u0442\u044c \u0440\u0430\u0432\u0435\u043d 1?", "time_spent_seconds": null, "topic": "\u041c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d\u044b \u0438 \u0430\u043b\u0433\u0435\u0431\u0440\u0430\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0442\u043e\u0436\u0434\u0435\u0441\u0442\u0432\u0430", "user_answer": null, "weakness_score": null}, {"answered_at": null, "correct_answer": "\u041d\u0435\u0442", "difficulty": 3, "flag_reason": null, "hints": [], "id": 107, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 6, "preview": "\u041c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d P(x) \u0441\u0442\u0435\u043f\u0435\u043d\u0438 2024 \u0441 \u0446\u0435\u043b\u044b\u043c\u0438 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u0430\u043c\u0438 \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0435\u0442 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 1 \u043f\u0440\u0438 x=0, x=1, x=2, ..., x=2024. \u041c\u043e\u0436\u0435\u0442 \u043b\u0438 P(2025) \u0440\u0430\u0432\u043d\u044f\u0442\u044c\u0441\u044f 1?", "reason": null, "slot_kind": "daily_rotation", "solution": "\u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d Q(x) = P(x) - 1. \u0415\u0433\u043e \u0441\u0442\u0435\u043f\u0435\u043d\u044c \u0440\u0430\u0432\u043d\u0430 2024 (\u0435\u0441\u043b\u0438 \u0441\u0442\u0430\u0440\u0448\u0438\u0439 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442\u0441\u044f) \u0438\u043b\u0438 \u043c\u0435\u043d\u044c\u0448\u0435. \u041f\u043e \u0443\u0441\u043b\u043e\u0432\u0438\u044e Q(0) = Q(1) = ... = Q(2024) = 0. \u0417\u043d\u0430\u0447\u0438\u0442, Q(x) \u0438\u043c\u0435\u0435\u0442 2025 \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u044b\u0445 \u043a\u043e\u0440\u043d\u0435\u0439: 0, 1, ..., 2024. \u041d\u0435\u043d\u0443\u043b\u0435\u0432\u043e\u0439 \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d \u0441\u0442\u0435\u043f\u0435\u043d\u0438 \u043d\u0435 \u0432\u044b\u0448\u0435 2024 \u043d\u0435 \u043c\u043e\u0436\u0435\u0442 \u0438\u043c\u0435\u0442\u044c 2025 \u0440\u0430\u0437\u043b\u0438\u0447\u043d\u044b\u0445 \u043a\u043e\u0440\u043d\u0435\u0439, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 Q(x) \u2261 0. \u0422\u043e\u0433\u0434\u0430 P(x) \u2261 1 \u0434\u043b\u044f \u0432\u0441\u0435\u0445 x, \u0432 \u0447\u0430\u0441\u0442\u043d\u043e\u0441\u0442\u0438 P(2025) = 1. \u041e\u0434\u043d\u0430\u043a\u043e \u043c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d P(x) \u2261 1 \u0438\u043c\u0435\u0435\u0442 \u0441\u0442\u0435\u043f\u0435\u043d\u044c 0, \u0430 \u043d\u0435 2024. \u041f\u0440\u043e\u0442\u0438\u0432\u043e\u0440\u0435\u0447\u0438\u0435. \u0417\u043d\u0430\u0447\u0438\u0442, P(2025) \u2260 1.", "status": "approved", "subject": "\u0410\u043b\u0433\u0435\u0431\u0440\u0430", "subtopic": null, "task_text": "\u041c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d P(x) \u0441\u0442\u0435\u043f\u0435\u043d\u0438 2024 \u0441 \u0446\u0435\u043b\u044b\u043c\u0438 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u0430\u043c\u0438 \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0435\u0442 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 1 \u043f\u0440\u0438 x=0, x=1, x=2, ..., x=2024. \u041c\u043e\u0436\u0435\u0442 \u043b\u0438 P(2025) \u0440\u0430\u0432\u043d\u044f\u0442\u044c\u0441\u044f 1?", "text": "\u041c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d P(x) \u0441\u0442\u0435\u043f\u0435\u043d\u0438 2024 \u0441 \u0446\u0435\u043b\u044b\u043c\u0438 \u043a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u0430\u043c\u0438 \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0435\u0442 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 1 \u043f\u0440\u0438 x=0, x=1, x=2, ..., x=2024. \u041c\u043e\u0436\u0435\u0442 \u043b\u0438 P(2025) \u0440\u0430\u0432\u043d\u044f\u0442\u044c\u0441\u044f 1?", "time_spent_seconds": null, "topic": "\u041c\u043d\u043e\u0433\u043e\u0447\u043b\u0435\u043d\u044b \u0438 \u0430\u043b\u0433\u0435\u0431\u0440\u0430\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0442\u043e\u0436\u0434\u0435\u0441\u0442\u0432\u0430", "user_answer": null, "weakness_score": null}, {"answered_at": null, "correct_answer": "60\u00b0", "difficulty": 3, "flag_reason": null, "hints": [], "id": 108, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 7, "preview": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC (AB \u003c BC) \u0442\u043e\u0447\u043a\u0430 O \u2014 \u0446\u0435\u043d\u0442\u0440 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u041d\u0430 \u0441\u0442\u043e\u0440\u043e\u043d\u0435 AC \u0432\u044b\u0431\u0440\u0430\u043d\u0430 \u0442\u043e\u0447\u043a\u0430 D \u0442\u0430\u043a, \u0447\u0442\u043e BD \u2014 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 \u0443\u0433\u043b\u0430 B. \u041b\u0443\u0447 BO \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u0443\u044e \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435 E (E \u2260 B). \u041f\u0440\u044f\u043c\u0430\u044f DE \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u0441\u0442\u043e\u0440\u043e\u043d\u0443 AB \u0432 \u0442\u043e\u0447\u043a\u0435 F. \u041e\u043a\u0430\u0437\u0430\u043b\u043e\u0441\u044c, \u0447\u0442\u043e OF \u27c2 AC. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b B.", "reason": null, "slot_kind": "daily_rotation", "solution": "\u041f\u0443\u0441\u0442\u044c \u2220B = 2\u03b2. \u0422\u0430\u043a \u043a\u0430\u043a BD \u2014 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430, \u2220ABD = \u2220DBC = \u03b2. E \u2014 \u0442\u043e\u0447\u043a\u0430 \u043f\u0435\u0440\u0435\u0441\u0435\u0447\u0435\u043d\u0438\u044f \u043b\u0443\u0447\u0430 BO \u0441 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c\u044e, \u0437\u043d\u0430\u0447\u0438\u0442 BE \u2014 \u0434\u0438\u0430\u043c\u0435\u0442\u0440 (O \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 BE)? \u041d\u0435\u0442, O \u2014 \u0446\u0435\u043d\u0442\u0440, \u043d\u043e BO \u2014 \u043d\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e \u0434\u0438\u0430\u043c\u0435\u0442\u0440; E \u2014 \u0432\u0442\u043e\u0440\u0430\u044f \u0442\u043e\u0447\u043a\u0430 \u043f\u0435\u0440\u0435\u0441\u0435\u0447\u0435\u043d\u0438\u044f \u043f\u0440\u044f\u043c\u043e\u0439 BO \u0441 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c\u044e, \u0442\u043e\u0433\u0434\u0430 BE \u2014 \u0434\u0438\u0430\u043c\u0435\u0442\u0440. \u0421\u043b\u0435\u0434\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u043d\u043e, \u2220BAE = \u2220BCE = 90\u00b0. \u0422\u043e\u0447\u043a\u0430 D \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 AC. \u0417\u0430\u043c\u0435\u0442\u0438\u043c, \u0447\u0442\u043e \u0442\u043e\u0447\u043a\u0438 A, B, C, E \u043d\u0430 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u0418\u0437 \u0443\u0441\u043b\u043e\u0432\u0438\u044f OF \u27c2 AC \u0438 O \u2014 \u0446\u0435\u043d\u0442\u0440, OF \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u043d\u044b\u0439 \u043f\u0435\u0440\u043f\u0435\u043d\u0434\u0438\u043a\u0443\u043b\u044f\u0440 \u043a AC? \u041d\u0435\u0442, O \u2014 \u0446\u0435\u043d\u0442\u0440, \u043d\u043e F \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 AB, \u0442\u0430\u043a \u0447\u0442\u043e OF \u043d\u0435 \u043e\u0431\u044f\u0437\u0430\u043d \u0431\u044b\u0442\u044c \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u043d\u044b\u043c \u043f\u0435\u0440\u043f\u0435\u043d\u0434\u0438\u043a\u0443\u043b\u044f\u0440\u043e\u043c. \u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u0433\u043e\u043c\u043e\u0442\u0435\u0442\u0438\u044e \u0438\u043b\u0438 \u0441\u0432\u043e\u0439\u0441\u0442\u0432\u0430 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u044b\u0445 \u0443\u0433\u043b\u043e\u0432. \u041f\u043e\u0441\u043a\u043e\u043b\u044c\u043a\u0443 BE \u2014 \u0434\u0438\u0430\u043c\u0435\u0442\u0440, \u0434\u0443\u0433\u0430 AE \u0440\u0430\u0432\u043d\u0430 \u0434\u0443\u0433\u0435 CE? \u0412 \u043e\u0431\u0449\u0435\u043c \u0441\u043b\u0443\u0447\u0430\u0435 \u043d\u0435\u0442. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u043c, \u0447\u0442\u043e D \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0435. \u0422\u043e\u0447\u043a\u0430 D \u2014 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u044b, \u043b\u0435\u043c\u043c\u0430: \u043f\u0440\u044f\u043c\u0430\u044f DE \u043f\u0440\u043e\u0445\u043e\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 \u0442\u043e\u0447\u043a\u0443 \u043f\u0435\u0440\u0435\u0441\u0435\u0447\u0435\u043d\u0438\u044f \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u044b \u0441 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c\u044e? E \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0430 \u0434\u0443\u0433\u0438 AC? \u041d\u0435\u0442, BO \u2014 \u043f\u0440\u044f\u043c\u0430\u044f, \u0441\u043e\u0434\u0435\u0440\u0436\u0430\u0449\u0430\u044f \u0446\u0435\u043d\u0442\u0440 \u0438 \u0432\u0435\u0440\u0448\u0438\u043d\u0443 B; \u043e\u043d\u0430 \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435, \u0434\u0438\u0430\u043c\u0435\u0442\u0440\u0430\u043b\u044c\u043d\u043e \u043f\u0440\u043e\u0442\u0438\u0432\u043e\u043f\u043e\u043b\u043e\u0436\u043d\u043e\u0439 B, \u0435\u0441\u043b\u0438 O \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u043e\u0442\u0440\u0435\u0437\u043a\u0435 BE? \u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 O \u0432\u043d\u0443\u0442\u0440\u0438, BO \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435 E, \u0438 BE \u2014 \u0434\u0438\u0430\u043c\u0435\u0442\u0440. \u0422\u043e\u0433\u0434\u0430 E \u2014 \u0442\u043e\u0447\u043a\u0430, \u0434\u0438\u0430\u043c\u0435\u0442\u0440\u0430\u043b\u044c\u043d\u043e \u043f\u0440\u043e\u0442\u0438\u0432\u043e\u043f\u043e\u043b\u043e\u0436\u043d\u0430\u044f B. \u0423\u0433\u043e\u043b B \u043e\u043f\u0438\u0440\u0430\u0435\u0442\u0441\u044f \u043d\u0430 \u0434\u0443\u0433\u0443 AC, \u0437\u043d\u0430\u0447\u0438\u0442 \u0434\u0443\u0433\u0430 AC = 4\u03b2. \u0422\u043e\u0433\u0434\u0430 \u2220AOC = 4\u03b2. \u0422\u043e\u0447\u043a\u0430 E \u0434\u0435\u043b\u0438\u0442 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0442\u0430\u043a, \u0447\u0442\u043e \u0434\u0443\u0433\u0438 BA \u0438 BC \u0441\u0442\u044f\u0433\u0438\u0432\u0430\u044e\u0442 \u0443\u0433\u043b\u044b C \u0438 A. \u0421\u0432\u043e\u0439\u0441\u0442\u0432\u043e: \u043f\u0440\u044f\u043c\u0430\u044f, \u043f\u0440\u043e\u0445\u043e\u0434\u044f\u0449\u0430\u044f \u0447\u0435\u0440\u0435\u0437 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u044b D \u0438 \u0442\u043e\u0447\u043a\u0443 E (\u0434\u0438\u0430\u043c\u0435\u0442\u0440\u0430\u043b\u044c\u043d\u043e \u043f\u0440\u043e\u0442\u0438\u0432\u043e\u043f\u043e\u043b\u043e\u0436\u043d\u0443\u044e B), \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u0441\u0442\u043e\u0440\u043e\u043d\u0443 AB \u0432 \u0442\u0430\u043a\u043e\u0439 \u0442\u043e\u0447\u043a\u0435 F, \u0447\u0442\u043e OF \u27c2 AC \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u0440\u0438 \u03b2 = 30\u00b0, \u0442.\u0435. \u2220B = 60\u00b0. \u0414\u043b\u044f \u0434\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430: \u0432\u0432\u0435\u0434\u0451\u043c \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u044b \u0438\u043b\u0438 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u043c \u0441\u0447\u0451\u0442 \u0434\u0443\u0433. \u041f\u0443\u0441\u0442\u044c \u0434\u0443\u0433\u0430 AC = 2\u03b1, \u0442\u043e\u0433\u0434\u0430 \u2220B = \u03b1. \u0422\u0430\u043a \u043a\u0430\u043a BD \u2014 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430, D \u0434\u0435\u043b\u0438\u0442 \u0434\u0443\u0433\u0443 AC? \u041d\u0435\u0442, D \u043d\u0430 \u0445\u043e\u0440\u0434\u0435 AC. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u043c \u0442\u043e\u0442 \u0444\u0430\u043a\u0442, \u0447\u0442\u043e \u043f\u0440\u044f\u043c\u0430\u044f DE \u0438\u0437\u043e\u0433\u043e\u043d\u0430\u043b\u044c\u043d\u0430 \u043c\u0435\u0434\u0438\u0430\u043d\u0435 \u0438\u043b\u0438 \u0432\u044b\u0441\u043e\u0442\u0435. \u041f\u0440\u0438 OF \u27c2 AC, F \u2014 \u0442\u0430\u043a\u0430\u044f \u0442\u043e\u0447\u043a\u0430 \u043d\u0430 AB, \u0447\u0442\u043e OF \u043f\u0430\u0440\u0430\u043b\u043b\u0435\u043b\u044c\u043d\u0430 \u0432\u044b\u0441\u043e\u0442\u0435 \u0438\u0437 B. \u0412\u044b\u0447\u0438\u0441\u043b\u044f\u044f \u0443\u0433\u043b\u044b \u0447\u0435\u0440\u0435\u0437 \u0434\u0443\u0433\u0438, \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u043c \u03b1 = 60\u00b0. \u041f\u043e\u043b\u043d\u043e\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u0438\u0435 \u0442\u043e\u0447\u043a\u0438 F\u0027 \u2014 \u0441\u0438\u043c\u043c\u0435\u0442\u0440\u0438\u0447\u043d\u043e\u0439 \u043e\u0442\u043d\u043e\u0441\u0438\u0442\u0435\u043b\u044c\u043d\u043e \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u044b \u2014 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442, \u0447\u0442\u043e \u0443\u0441\u043b\u043e\u0432\u0438\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u0435\u0434\u0438\u043d\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u043c \u043e\u0431\u0440\u0430\u0437\u043e\u043c \u043f\u0440\u0438 \u2220B = 60\u00b0.", "status": "approved", "subject": "\u0413\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f", "subtopic": null, "task_text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC (AB \u003c BC) \u0442\u043e\u0447\u043a\u0430 O \u2014 \u0446\u0435\u043d\u0442\u0440 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u041d\u0430 \u0441\u0442\u043e\u0440\u043e\u043d\u0435 AC \u0432\u044b\u0431\u0440\u0430\u043d\u0430 \u0442\u043e\u0447\u043a\u0430 D \u0442\u0430\u043a, \u0447\u0442\u043e BD \u2014 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 \u0443\u0433\u043b\u0430 B. \u041b\u0443\u0447 BO \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u0443\u044e \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435 E (E \u2260 B). \u041f\u0440\u044f\u043c\u0430\u044f DE \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u0441\u0442\u043e\u0440\u043e\u043d\u0443 AB \u0432 \u0442\u043e\u0447\u043a\u0435 F. \u041e\u043a\u0430\u0437\u0430\u043b\u043e\u0441\u044c, \u0447\u0442\u043e OF \u27c2 AC. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b B.", "text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC (AB \u003c BC) \u0442\u043e\u0447\u043a\u0430 O \u2014 \u0446\u0435\u043d\u0442\u0440 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u041d\u0430 \u0441\u0442\u043e\u0440\u043e\u043d\u0435 AC \u0432\u044b\u0431\u0440\u0430\u043d\u0430 \u0442\u043e\u0447\u043a\u0430 D \u0442\u0430\u043a, \u0447\u0442\u043e BD \u2014 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 \u0443\u0433\u043b\u0430 B. \u041b\u0443\u0447 BO \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u0443\u044e \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435 E (E \u2260 B). \u041f\u0440\u044f\u043c\u0430\u044f DE \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u0441\u0442\u043e\u0440\u043e\u043d\u0443 AB \u0432 \u0442\u043e\u0447\u043a\u0435 F. \u041e\u043a\u0430\u0437\u0430\u043b\u043e\u0441\u044c, \u0447\u0442\u043e OF \u27c2 AC. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u0443\u0433\u043e\u043b B.", "time_spent_seconds": null, "topic": "\u0423\u0433\u043b\u044b \u0438 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u044b\u0435 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438", "user_answer": null, "weakness_score": null}, {"answered_at": null, "correct_answer": "1", "difficulty": 3, "flag_reason": null, "hints": [], "id": 109, "is_calibration": false, "is_correct": null, "is_flagged": false, "position": 8, "preview": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u0443\u0433\u043e\u043b A \u0440\u0430\u0432\u0435\u043d 75\u00b0, \u0443\u0433\u043e\u043b C \u0440\u0430\u0432\u0435\u043d 45\u00b0. \u0411\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 \u0443\u0433\u043b\u0430 B \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u0443\u044e \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435 W. \u0422\u043e\u0447\u043a\u0430 H \u2014 \u043e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 ABC. \u041f\u0440\u044f\u043c\u0430\u044f WH \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u0441\u0442\u043e\u0440\u043e\u043d\u0443 AC \u0432 \u0442\u043e\u0447\u043a\u0435 T. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 AT : TC.", "reason": null, "slot_kind": "daily_rotation", "solution": "\u0423\u0433\u043e\u043b B = 180\u00b0 \u2212 75\u00b0 \u2212 45\u00b0 = 60\u00b0. \u0412 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 \u0441 \u0443\u0433\u043b\u043e\u043c 60\u00b0 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 BW \u0438 \u043e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440 H \u043e\u0431\u043b\u0430\u0434\u0430\u044e\u0442 \u0441\u0432\u044f\u0437\u044c\u044e: \u0442\u043e\u0447\u043a\u0430 W (\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0430 \u0434\u0443\u0433\u0438 AC) \u0438 H \u0441\u0438\u043c\u043c\u0435\u0442\u0440\u0438\u0447\u043d\u044b \u043e\u0442\u043d\u043e\u0441\u0438\u0442\u0435\u043b\u044c\u043d\u043e AC? \u041f\u0440\u043e\u0432\u0435\u0440\u0438\u043c. \u0423\u0433\u043e\u043b B \u0432\u043f\u0438\u0441\u0430\u043d, \u0434\u0443\u0433\u0430 AC = 120\u00b0. W \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0430 \u0434\u0443\u0433\u0438 AC, \u0437\u043d\u0430\u0447\u0438\u0442 \u2220AWC = 120\u00b0. \u041e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440 H: \u2220AHC = 180\u00b0 \u2212 \u2220B = 120\u00b0. \u0422\u043e\u0447\u043a\u0438 W \u0438 H \u043b\u0435\u0436\u0430\u0442 \u043d\u0430 \u043e\u0434\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438 \u0441 A \u0438 C? \u0414\u0430, \u2220AWC = \u2220AHC = 120\u00b0, \u0437\u043d\u0430\u0447\u0438\u0442 A, W, H, C \u043b\u0435\u0436\u0430\u0442 \u043d\u0430 \u043e\u0434\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u0422\u043e\u0433\u0434\u0430 WH \u2014 \u0445\u043e\u0440\u0434\u0430 \u044d\u0442\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u041f\u0440\u044f\u043c\u0430\u044f WH \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 AC \u0432 T. \u041f\u043e \u0441\u0432\u043e\u0439\u0441\u0442\u0432\u0443: \u0432 \u0440\u0430\u0432\u043d\u043e\u0431\u0435\u0434\u0440\u0435\u043d\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 AWC (AW = WC) \u0438 AHC (\u2220AHC = 120\u00b0, AH = 2R cos A, CH = 2R cos C) \u043d\u0435 \u043e\u0447\u0435\u0432\u0438\u0434\u043d\u043e \u0440\u0430\u0432\u0435\u043d\u0441\u0442\u0432\u043e. \u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u043b\u0435\u043c\u043c\u0443: \u0432 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 \u0441 \u0443\u0433\u043b\u043e\u043c 60\u00b0 \u0431\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 BW \u0438 \u043f\u0440\u044f\u043c\u0430\u044f WH \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u044e\u0442 AC \u0432 \u043e\u0434\u043d\u043e\u0439 \u0442\u043e\u0447\u043a\u0435 \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0435 AC. \u0414\u043e\u043a\u0430\u0436\u0435\u043c: \u043f\u0443\u0441\u0442\u044c M \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0430 AC. \u2220AMC = 180\u00b0 \u2014 \u0440\u0430\u0437\u0432\u0451\u0440\u043d\u0443\u0442\u044b\u0439. \u041f\u043e\u043a\u0430\u0436\u0435\u043c, \u0447\u0442\u043e W, H, M \u043a\u043e\u043b\u043b\u0438\u043d\u0435\u0430\u0440\u043d\u044b. W \u2014 \u0446\u0435\u043d\u0442\u0440 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438? \u041d\u0435\u0442, W \u2014 \u0442\u043e\u0447\u043a\u0430 \u043d\u0430 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439 \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u0438. \u0418\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u0439 \u0444\u0430\u043a\u0442: \u0432 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 \u0441 \u0443\u0433\u043b\u043e\u043c 60\u00b0 \u043e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440 H \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u043f\u0440\u044f\u043c\u043e\u0439, \u043f\u0440\u043e\u0445\u043e\u0434\u044f\u0449\u0435\u0439 \u0447\u0435\u0440\u0435\u0437 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0443 AC \u0438 \u0442\u043e\u0447\u043a\u0443 W (\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0443 \u0434\u0443\u0433\u0438 AC). \u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u043e, \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u043d\u0430 60\u00b0 \u0432\u043e\u043a\u0440\u0443\u0433 B \u043f\u0435\u0440\u0435\u0432\u043e\u0434\u0438\u0442 A \u0432 C? \u041d\u0435\u0442. \u0420\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u043c \u2220B = 60\u00b0, \u0442\u043e\u0433\u0434\u0430 \u2220AOC = 120\u00b0 (O \u2014 \u0446\u0435\u043d\u0442\u0440 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0439). W \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0430 \u0434\u0443\u0433\u0438 AC, \u0437\u043d\u0430\u0447\u0438\u0442 OW \u27c2 AC \u0438 \u043f\u0440\u043e\u0445\u043e\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0443 M. H \u2014 \u043e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440: AH = 2R cos A, CH = 2R cos C. \u041f\u0440\u0438 A = 75\u00b0, C = 45\u00b0: cos 75\u00b0 = sin 15\u00b0, cos 45\u00b0 = \\sqrt{2}/2. AH \u2260 CH, \u043d\u043e H \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u043f\u0440\u044f\u043c\u043e\u0439 \u042d\u0439\u043b\u0435\u0440\u0430. \u041f\u0440\u044f\u043c\u0430\u044f \u042d\u0439\u043b\u0435\u0440\u0430 \u043f\u0440\u043e\u0445\u043e\u0434\u0438\u0442 \u0447\u0435\u0440\u0435\u0437 O, \u0446\u0435\u043d\u0442\u0440 \u0442\u044f\u0436\u0435\u0441\u0442\u0438 G, \u043e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440 H. W \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u043f\u0440\u044f\u043c\u043e\u0439 OM (M \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0430 AC). H \u043b\u0435\u0436\u0438\u0442 \u043d\u0430 \u043f\u0440\u044f\u043c\u043e\u0439, \u0441\u0438\u043c\u043c\u0435\u0442\u0440\u0438\u0447\u043d\u043e\u0439? \u0412 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 \u0441 \u0443\u0433\u043b\u043e\u043c 60\u00b0 \u0442\u043e\u0447\u043a\u0438 H, M, W \u043a\u043e\u043b\u043b\u0438\u043d\u0435\u0430\u0440\u043d\u044b \u2014 \u044d\u0442\u043e \u0438\u0437\u0432\u0435\u0441\u0442\u043d\u043e\u0435 \u0441\u0432\u043e\u0439\u0441\u0442\u0432\u043e (\u043e\u0431\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0442\u0435\u043e\u0440\u0435\u043c\u044b \u043e \u0431\u0430\u0431\u043e\u0447\u043a\u0435). \u0422\u043e\u0433\u0434\u0430 T = M \u2014 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0430 AC. \u0417\u043d\u0430\u0447\u0438\u0442 AT = TC, \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 1.", "status": "approved", "subject": "\u0413\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f", "subtopic": null, "task_text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u0443\u0433\u043e\u043b A \u0440\u0430\u0432\u0435\u043d 75\u00b0, \u0443\u0433\u043e\u043b C \u0440\u0430\u0432\u0435\u043d 45\u00b0. \u0411\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 \u0443\u0433\u043b\u0430 B \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u0443\u044e \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435 W. \u0422\u043e\u0447\u043a\u0430 H \u2014 \u043e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 ABC. \u041f\u0440\u044f\u043c\u0430\u044f WH \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u0441\u0442\u043e\u0440\u043e\u043d\u0443 AC \u0432 \u0442\u043e\u0447\u043a\u0435 T. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 AT : TC.", "text": "\u0412 \u043e\u0441\u0442\u0440\u043e\u0443\u0433\u043e\u043b\u044c\u043d\u043e\u043c \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0435 ABC \u0443\u0433\u043e\u043b A \u0440\u0430\u0432\u0435\u043d 75\u00b0, \u0443\u0433\u043e\u043b C \u0440\u0430\u0432\u0435\u043d 45\u00b0. \u0411\u0438\u0441\u0441\u0435\u043a\u0442\u0440\u0438\u0441\u0430 \u0443\u0433\u043b\u0430 B \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u043e\u043f\u0438\u0441\u0430\u043d\u043d\u0443\u044e \u043e\u043a\u0440\u0443\u0436\u043d\u043e\u0441\u0442\u044c \u0432 \u0442\u043e\u0447\u043a\u0435 W. \u0422\u043e\u0447\u043a\u0430 H \u2014 \u043e\u0440\u0442\u043e\u0446\u0435\u043d\u0442\u0440 \u0442\u0440\u0435\u0443\u0433\u043e\u043b\u044c\u043d\u0438\u043a\u0430 ABC. \u041f\u0440\u044f\u043c\u0430\u044f WH \u043f\u0435\u0440\u0435\u0441\u0435\u043a\u0430\u0435\u0442 \u0441\u0442\u043e\u0440\u043e\u043d\u0443 AC \u0432 \u0442\u043e\u0447\u043a\u0435 T. \u041d\u0430\u0439\u0434\u0438\u0442\u0435 \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 AT : TC.", "time_spent_seconds": null, "topic": "\u0423\u0433\u043b\u044b \u0438 \u0432\u043f\u0438\u0441\u0430\u043d\u043d\u044b\u0435 \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438", "user_answer": null, "weakness_score": null}], "progress": {"completed": 0, "total": 8}, "status": "ready", "summary": "\u0410\u0432\u0442\u043e\u043f\u043e\u0434\u0431\u043e\u0440 8 \u0437\u0430\u0434\u0430\u0447 \u043f\u043e \u0430\u043d\u043a\u0435\u0442\u0435 \u0438 level_engine", "target_date": "2026-07-28", "theme_today": "\u041a\u043e\u043c\u0431\u0438\u043d\u0430\u0442\u043e\u0440\u0438\u043a\u0430", "total_cost_usd": 0.0, "ttl_seconds": 86400}</script>
+
+
+    </main>
+    <!-- Global KaTeX re-render helper placeholder — real definition is in <head> -->
+
+    
+    <script>
+    /* Chat unread badge poller (mobile bottom nav) */
+    (function chatUnreadPoller(){
+        async function tick(){
+            const badge = document.getElementById('chatBottomBadge');
+            if (!badge) return;
+            try{
+                const r = await fetch('/api/chat/unread_total', {credentials:'same-origin'});
+                if (!r.ok) return;
+                const data = await r.json();
+                const n = (data && (data.total || data.unread_total)) || 0;
+                if (n > 0){
+                    badge.textContent = n > 99 ? '99+' : String(n);
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }catch(e){ /* ignore */ }
+        }
+        tick();
+        setInterval(tick, 30000);
+    })();
+
+    /* Support unread badge poller (top nav «💬 Поддержка») */
+    (function supportUnreadPoller(){
+        async function tick(){
+            const badge = document.getElementById('navMySupportBadge');
+            if (!badge) return;
+            try{
+                const r = await fetch('/api/my/support/unread_count', {credentials:'same-origin'});
+                if (!r.ok) return;
+                const data = await r.json();
+                const n = (data && data.unread) || 0;
+                if (n > 0){
+                    badge.textContent = n > 9 ? '9+' : String(n);
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }catch(e){ /* ignore */ }
+        }
+        tick();
+        setInterval(tick, 30000);
+    })();
+    </script>
+    
+
+    <script>
+    async function checkAnswer(problemId) {
+        const inputEl = document.getElementById(`user-answer-${problemId}`);
+        const feedbackEl = document.getElementById(`feedback-${problemId}`);
+        const formEl = document.getElementById(`answer-form-${problemId}`);
+        const solutionEl = document.getElementById(`solution-container-${problemId}`);
+        
+        const userAnswer = inputEl.value.trim();
+        
+        // DEBUG: Логирование для отладки
+        console.log("=== ФРОНТЕНД ПРОВЕРКА ===");
+        console.log("Problem ID:", problemId);
+        console.log("Введенный ответ:", userAnswer);
+        
+        if (!userAnswer) {
+            feedbackEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Введите ответ</span>';
+            return;
+        }
+        
+        feedbackEl.innerHTML = '<span style="color: #94a3b8;">Проверяем...</span>';
+        
+        try {
+            const response = await fetch('/api/check_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    problem_id: problemId,
+                    user_answer: userAnswer
+                })
+            });
+            
+            const data = await response.json();
+            
+            // DEBUG: Логирование ответа сервера
+            console.log("Ответ сервера:", data);
+            console.log("Правильный ответ из БД:", data.correct_answer);
+            console.log("Результат проверки:", data.correct);
+            console.log("========================");
+            
+            if (data.correct) {
+                feedbackEl.innerHTML = '<span style="color: #10b981; font-weight: 600;">✅ Верно! Отличная работа!</span>';
+                
+                // Показываем решение
+                if (solutionEl) {
+                    solutionEl.style.display = 'block';
+                }
+                
+                // Через 1 секунду перезагружаем страницу для обновления статуса
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                feedbackEl.innerHTML = `<span style="color: #ef4444; font-weight: 600;">❌ Неверно. Попробуйте еще раз!</span>`;
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        } catch (error) {
+            feedbackEl.innerHTML = '<span style="color: #ef4444;">Ошибка при проверке. Попробуйте еще раз.</span>';
+            console.error('Error:', error);
+        }
+    }
+    </script>
+    
+    
+    <!-- AI Тьютор - плавающий виджет с выбором агента (PREMIUM UX) -->
+
+<style>
+/* ═══ TUTOR WIDGET: RESIZE + MOBILE POSITION ═══ */
+#ai-tutor-popup { resize: both !important; overflow: auto !important; min-width: 300px; min-height: 360px; max-width: 95vw !important; max-height: 92vh !important; }
+@media (max-width: 768px) {
+  #tutorWidget { left: 20px !important; right: auto !important; }
+  #ai-tutor-popup { left: 20px !important; right: auto !important; }
+}
+</style>
+<div id="tutorWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <!-- Кнопка открытия -->
+    <button id="tutorBtn" onclick="toggleTutorPopup()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        🤖
+    </button>
+    
+    <!-- Всплывающее окно -->
+    <div id="ai-tutor-popup" style="display: none; position: fixed; bottom: 100px; right: 20px; width: 500px; height: 620px; background: var(--bg-card); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); flex-direction: column; overflow: hidden; max-width: 90vw; max-height: 90vh; overscroll-behavior: contain;">
+        
+        <!-- ЭКРАН 1: Выбор агента -->
+        <div id="agentSelectionScreen" style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
+            <!-- Заголовок -->
+            <div style="margin-bottom: 18px;">
+                <div style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 8px;">🤖 AI-Тьютор</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
+                    Один универсальный агент: сам определяет тему задачи и отвечает как профильный эксперт.
+                </div>
+            </div>
+
+            <!-- Единственная кнопка: универсальный агент -->
+            <button class="agent-card agent-card-primary" onclick="selectAgent('general', 'Универсальный агент')" style="padding: 22px 22px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: 1px solid var(--border-mid); border-radius: 14px; cursor: pointer; transition: all 0.3s; text-align: left; display: flex; align-items: center; gap: 16px; margin-bottom: 14px; color: #fff;">
+                <div style="font-size: 40px;">✨</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 17px; margin-bottom: 4px;">Универсальный агент</div>
+                    <div style="font-size: 12.5px; opacity: 0.92; line-height: 1.45;">Сам определяет тему задачи и отвечает как профильный эксперт</div>
+                </div>
+                <div style="font-size: 20px; opacity: 0.85;">→</div>
+            </button>
+
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 12px; color: var(--text-muted); font-size: 12.5px; line-height: 1.5; text-align: center; border: 1px dashed var(--border-soft); border-radius: 12px;">
+                💡 Просто опишите задачу или загрузите фото — агент разберётся с темой сам:
+                алгебра, геометрия, теория чисел, комбинаторика, логика, задачи на движение
+                и стратегия олимпиад.
+            </div>
+
+            <!-- Кнопка закрытия -->
+            <button onclick="toggleTutorPopup()" style="margin-top: 14px; padding: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-mid); border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 14px;">
+                Закрыть
+            </button>
+        </div>
+        
+        <!-- ЭКРАН 2: Чат с агентом -->
+        <div id="chatScreen" style="display: none; flex-direction: column; height: 100%;">
+            <!-- Заголовок чата -->
+            <div style="padding: 15px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button onclick="backToAgentSelection()" style="background: none; border: none; color: var(--accent-2); font-size: 18px; cursor: pointer; padding: 5px;" title="Вернуться к агентам">⬅</button>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-main);" id="currentAgentName">Агент</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Ваш специализированный помощник</div>
+                    </div>
+                </div>
+                <button onclick="toggleTutorPopup()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            
+            <!-- Hint-mode pill toggle (compact glass-pill) -->
+            <div style="padding: 10px 15px; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: flex-end;">
+                <label class="hint-toggle" title="Только подсказки: ИИ не даёт готовое решение, а помогает наводящими вопросами">
+                    <span class="hint-toggle__label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/>
+                        </svg>
+                        💡 Только подсказки
+                    </span>
+                    <input type="checkbox" id="hintModeToggle" checked>
+                    <span class="hint-toggle__switch"></span>
+                </label>
+            </div>
+            
+            <!-- Сообщения -->
+            <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Сообщения будут добавляться динамически -->
+            </div>
+            
+            <!-- Индикатор печати -->
+            <div id="typingIndicator" style="display: none; padding: 10px 15px;">
+                <div style="display: inline-block; padding: 10px 15px; background: rgba(30, 41, 59, 0.8); border-radius: 15px 15px 15px 0;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Область прикреплённых файлов (чипы) -->
+            <div class="chat-attachments" id="chatAttachments">
+                <!-- JS вставляет .att-chip элементы -->
+            </div>
+            
+            <!-- Ввод -->
+            <div class="chat-input-row">
+                <!-- Кнопка загрузки файла -->
+                <label class="btn-attach" for="chatFileInput" title="Прикрепить фото">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                    <input type="file" id="chatFileInput" accept="image/*" multiple hidden>
+                </label>
+                
+                <!-- Поле ввода -->
+                <textarea id="tutorInput" class="chat-input" placeholder="Напишите вопрос..." rows="1"></textarea>
+                
+                <!-- Кнопка отправки -->
+                <button class="btn-send" id="chatSendBtn" type="button" onclick="sendToTutor()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popup кнопка "Объяснить выделенное" -->
+    <div id="explainPopup" style="display: none; position: fixed; z-index: 10000; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.5); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="explainSelected()">
+        ❓ Объяснить подробнее
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+    30% { transform: translateY(-10px); opacity: 1; }
+}
+
+@keyframes chipFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.typing-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-2);
+    border-radius: 50%;
+    display: inline-block;
+    animation: typingDot 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* iOS-style Toggle Switch */
+.ios-toggle {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.ios-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ios-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #4a5568;
+    transition: 0.3s;
+    border-radius: 28px;
+}
+
+.ios-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ios-toggle input:checked + .ios-toggle-slider {
+    background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%);
+}
+
+.ios-toggle input:checked + .ios-toggle-slider:before {
+    transform: translateX(22px);
+}
+
+/* ═══ HINT-MODE PILL TOGGLE (glass-pill style) ═══ */
+.hint-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  cursor:pointer;
+  transition:all .25s ease;
+  user-select:none;
+}
+.hint-toggle:hover{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(120,120,255,0.4);
+  box-shadow:0 0 14px rgba(120,120,255,0.25);
+}
+.hint-toggle__label{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:600;
+  color:#e6e8ff;
+  letter-spacing:.2px;
+}
+.hint-toggle input{ display:none; }
+
+.hint-toggle__switch{
+  position:relative;
+  width:36px;
+  height:20px;
+  border-radius:999px;
+  background:#2a2f45;
+  transition:background .25s ease;
+  flex-shrink:0;
+}
+.hint-toggle__switch::before{
+  content:"";
+  position:absolute;
+  top:2px; left:2px;
+  width:16px; height:16px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform .25s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+.hint-toggle input:checked + .hint-toggle__switch{
+  background:linear-gradient(90deg,#4aa8ff,#8b5cf6);
+  box-shadow:0 0 12px rgba(139,92,246,.55);
+}
+.hint-toggle input:checked + .hint-toggle__switch::before{
+  transform:translateX(16px);
+}
+
+#chatMessages {
+    overscroll-behavior: contain;
+}
+
+#chatMessages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chatMessages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+#chatMessages::-webkit-scrollbar-thumb {
+    background: var(--accent-2);
+    border-radius: 3px;
+}
+
+.agent-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-2);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+/* Markdown formatting in messages */
+.ai-message strong {
+    color: var(--accent-2);
+    font-weight: 700;
+}
+
+.ai-message p {
+    margin: 0.5em 0;
+}
+
+.ai-message ul, .ai-message ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
+
+/* ═══ ATTACHMENT CHIPS ═══ */
+.chat-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.chat-attachments:empty {
+    display: none;
+    padding: 0;
+}
+
+.att-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 6px 6px;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 10px;
+    max-width: 280px;
+    transition: all 0.15s ease;
+    animation: chipFadeIn 0.2s ease;
+}
+
+.att-chip:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.att-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #1a1a2e;
+}
+
+.att-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.att-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main, #e5e7eb);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.att-size {
+    font-size: 11px;
+    color: var(--text-muted, #a1a1aa);
+}
+
+.att-remove {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.4);
+    color: #e5e7eb;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    padding: 0;
+    line-height: 1;
+}
+
+.att-remove:hover {
+    background: rgba(239, 68, 68, 0.8);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* ═══ INPUT ROW ═══ */
+.chat-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.btn-attach {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--text-muted, #a1a1aa);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-attach:hover {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8b5cf6;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-mid, rgba(255,255,255,0.08));
+    border-radius: 10px;
+    color: var(--text-main, #e5e7eb);
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    max-height: 120px;
+    min-height: 40px;
+    outline: none;
+    transition: border-color 0.15s;
+    caret-color: var(--accent-2);
+}
+
+.chat-input:focus {
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.btn-send {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-send:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Drag & drop подсветка */
+#ai-tutor-popup.drag-over {
+    border-color: #8b5cf6 !important;
+    background: rgba(139, 92, 246, 0.05) !important;
+}
+
+/* Сообщение юзера с фото в истории */
+.msg-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    object-fit: cover;
+    cursor: zoom-in;
+    display: block;
+}
+
+/* Мобильные стили для чипов */
+@media (max-width: 480px) {
+    .att-chip { max-width: 200px; }
+    .att-name { max-width: 100px; }
+    .att-thumb { width: 36px; height: 36px; }
+    .chat-input-row { padding: 8px; gap: 6px; }
+    .btn-attach, .btn-send { width: 36px; height: 36px; }
+}
+</style>
+
+<script>
+let popupOpen = false;
+let currentAgent = null;
+let currentAgentName = '';
+let attachedFiles = [];  // [{id, file, dataUrl}]
+let selectedText = '';
+
+function toggleTutorPopup() {
+    popupOpen = !popupOpen;
+    const popup = document.getElementById('ai-tutor-popup');
+    const btn = document.getElementById('tutorBtn');
+    
+    if (popupOpen) {
+        popup.style.display = 'flex';
+        btn.textContent = '✕';
+        showAgentSelection();
+    } else {
+        popup.style.display = 'none';
+        btn.textContent = '🤖';
+    }
+}
+
+function showAgentSelection() {
+    document.getElementById('agentSelectionScreen').style.display = 'flex';
+    document.getElementById('chatScreen').style.display = 'none';
+    currentAgent = null;
+}
+
+function selectAgent(agentType, agentName) {
+    currentAgent = agentType;
+    currentAgentName = agentName;
+    
+    document.getElementById('agentSelectionScreen').style.display = 'none';
+    document.getElementById('chatScreen').style.display = 'flex';
+    document.getElementById('currentAgentName').textContent = agentName;
+    
+    loadChatHistory(agentType);
+}
+
+function backToAgentSelection() {
+    showAgentSelection();
+    clearAllFiles();
+}
+
+// ═══ FILE ATTACHMENT — CHIP SYSTEM ═══
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+function addFileChip(file) {
+    const fileId = 'att_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const reader = new FileReader();
+    
+    reader.onload = function(ev) {
+        const dataUrl = ev.target.result;
+        attachedFiles.push({id: fileId, file: file, dataUrl: dataUrl});
+        
+        const chip = document.createElement('div');
+        chip.className = 'att-chip';
+        chip.dataset.fileId = fileId;
+        chip.innerHTML = 
+            '<img class="att-thumb" src="' + dataUrl + '" alt="">' +
+            '<div class="att-info">' +
+                '<div class="att-name">' + escapeHtml(file.name) + '</div>' +
+                '<div class="att-size">' + formatFileSize(file.size) + '</div>' +
+            '</div>' +
+            '<button class="att-remove" type="button" aria-label="Удалить">✕</button>';
+        
+        chip.querySelector('.att-remove').addEventListener('click', function() {
+            attachedFiles = attachedFiles.filter(function(f) { return f.id !== fileId; });
+            chip.style.animation = 'chipFadeIn 0.15s reverse';
+            setTimeout(function() { chip.remove(); }, 150);
+        });
+        
+        document.getElementById('chatAttachments').appendChild(chip);
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function clearAllFiles() {
+    attachedFiles = [];
+    document.getElementById('chatAttachments').innerHTML = '';
+    document.getElementById('chatFileInput').value = '';
+}
+
+// File input change handler
+document.addEventListener('DOMContentLoaded', function() {
+    var fileInput = document.getElementById('chatFileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            for (var i = 0; i < e.target.files.length; i++) {
+                var file = e.target.files[i];
+                if (!file.type.startsWith('image/')) {
+                    alert('Можно прикреплять только изображения');
+                    continue;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Файл больше 10 MB — слишком большой');
+                    continue;
+                }
+                addFileChip(file);
+            }
+            fileInput.value = '';  // сброс чтобы можно было добавить тот же файл
+        });
+    }
+    
+    // Textarea auto-resize
+    var textarea = document.getElementById('tutorInput');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Enter для отправки (Shift+Enter — перенос)
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendToTutor();
+            }
+        });
+        
+        // CHAT_ATTACH_V1 — Ctrl+V paste for images from clipboard
+        textarea.addEventListener('paste', function(e) {
+            var items = e.clipboardData && e.clipboardData.items;
+            if (!items) return;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file') {
+                    var file = items[i].getAsFile();
+                    if (file) {
+                        if (!file.type.startsWith('image/')) {
+                            alert('Можно вставлять только изображения');
+                            return;
+                        }
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('Файл больше 10 MB — слишком большой');
+                            return;
+                        }
+                        e.preventDefault();
+                        addFileChip(file);
+                    }
+                    return;
+                }
+            }
+        });
+    }
+    
+    // Drag & Drop
+    var popup = document.getElementById('ai-tutor-popup');
+    if (popup) {
+        ['dragover', 'dragenter'].forEach(function(evName) {
+            popup.addEventListener(evName, function(e) {
+                e.preventDefault();
+                popup.classList.add('drag-over');
+            });
+        });
+        ['dragleave', 'drop'].forEach(function(evName) {
+            popup.addEventListener(evName, function(e) {
+                e.preventDefault();
+                if (evName === 'dragleave' && e.relatedTarget && popup.contains(e.relatedTarget)) return;
+                popup.classList.remove('drag-over');
+            });
+        });
+        popup.addEventListener('drop', function(e) {
+            if (e.dataTransfer && e.dataTransfer.files) {
+                for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                    var file = e.dataTransfer.files[i];
+                    if (file.type.startsWith('image/')) {
+                        addFileChip(file);
+                    }
+                }
+            }
+        });
+    }
+});
+
+// ═══ CHAT HISTORY ═══
+
+async function loadChatHistory(agentType) {
+    try {
+        const response = await fetch('/api/tutor/history?agent_type=' + agentType);
+        const messages = await response.json();
+        
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+        
+        if (messages.length === 0) {
+            const greeting = document.createElement('div');
+            greeting.style.cssText = 'text-align: center; color: var(--text-muted); font-size: 14px; padding: 20px; line-height: 1.6; background: rgba(56, 189, 248, 0.1); border-radius: 8px;';
+            greeting.innerHTML = 'Привет! Я ' + currentAgentName + '. 👋<br><br>Чем могу помочь?';
+            container.appendChild(greeting);
+        } else {
+            messages.forEach(function(msg) {
+                addMessageToChat(msg.role, msg.content, false);
+            });
+        }
+        
+        if (typeof reRenderMath === 'function') {
+            reRenderMath(container);
+        }
+        
+        scrollChatToBottom();
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+// ═══ SEND MESSAGE ═══
+
+async function sendToTutor() {
+    const input = document.getElementById('tutorInput');
+    const message = input.value.trim();
+    
+    if (!message && attachedFiles.length === 0) return;
+    if (!currentAgent) return;
+    
+    const hintMode = document.getElementById('hintModeToggle').checked;
+    
+    // Render user message in UI (with images if any)
+    const imageUrls = attachedFiles.map(function(f) { return f.dataUrl; });
+    addMessageToChat('user', message, true, imageUrls);
+    
+    // Clear input and chips
+    input.value = '';
+    input.style.height = 'auto';
+    
+    // Build FormData
+    const formData = new FormData();
+    formData.append('message', message || '');
+    formData.append('agent_type', currentAgent);
+    formData.append('hint_mode', hintMode);
+    for (var i = 0; i < attachedFiles.length; i++) {
+        formData.append('files', attachedFiles[i].file);
+    }
+    
+    // Clear attachments after capturing
+    clearAllFiles();
+    
+    // Show typing indicator
+    document.getElementById('typingIndicator').style.display = 'block';
+    scrollChatToBottom();
+    
+    // Таймаут 180 сек: серверная цепочка из 3 vision-моделей по 45с может занять до ~135с,
+    // плюс запас на сеть. Если совсем ничего не пришло — режем, чтобы UI не висел вечно.
+    let _abort = null;
+    let _timer = null;
+    try {
+        if (typeof AbortController !== 'undefined') {
+            _abort = new AbortController();
+            _timer = setTimeout(() => { try { _abort.abort(); } catch(_) {} }, 180000);
+        }
+        const response = await fetch('/api/tutor/send', {
+            method: 'POST',
+            body: formData,
+            signal: _abort ? _abort.signal : undefined
+        });
+        if (_timer) { clearTimeout(_timer); _timer = null; }
+
+        document.getElementById('typingIndicator').style.display = 'none';
+
+        // Handle non-JSON responses (429 rate limit HTML, 500 errors, etc.)
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonErr) {
+            if (response.status === 429) {
+                addMessageToChat('assistant', '⏳ Слишком много запросов. Подождите минуту и попробуйте снова.');
+            } else if (response.status === 401) {
+                addMessageToChat('assistant', '🔐 Необходима авторизация. Пожалуйста, войдите в аккаунт.');
+            } else {
+                addMessageToChat('assistant', '❌ Ошибка сервера (' + response.status + '). Попробуйте ещё раз.');
+            }
+            console.error('Non-JSON response:', response.status, jsonErr);
+            return;
+        }
+
+        if (data.error === 'limit_reached') {
+            if (typeof window.showPaywall === 'function') {
+                window.showPaywall(data);
+            } else {
+                addMessageToChat('assistant', '🔒 ' + data.message + ' <a href="/subscribe" style="color:#38ef7d">Оформить Premium →</a>');
+            }
+        } else if (data.error === 'rate_limit_exceeded') {
+            addMessageToChat('assistant', '⏳ Слишком много запросов. Подождите минуту и попробуйте снова.');
+        } else if (data.ai_response) {
+            addMessageToChat('assistant', data.ai_response.content);
+        } else if (data.error) {
+            addMessageToChat('assistant', '❌ ' + data.error);
+        }
+
+    } catch (error) {
+        if (_timer) { try { clearTimeout(_timer); } catch(_) {} }
+        document.getElementById('typingIndicator').style.display = 'none';
+        let msg;
+        if (error && (error.name === 'AbortError' || /aborted/i.test(String(error)))) {
+            msg = '⏱️ Запрос длился слишком долго (>3 мин) и был отменён. Попробуй задать вопрос покороче или без фото.';
+        } else if (error && /Failed to fetch|NetworkError|net::|TypeError/i.test(String(error))) {
+            msg = '❌ Не получилось связаться с сервером. Возможно, сервер перезагружается — подожди 5 секунд и попробуй ещё раз.';
+        } else {
+            msg = '❌ Ошибка связи: ' + (error && error.message ? error.message : 'неизвестная') + '. Попробуй ещё раз.';
+        }
+        addMessageToChat('assistant', msg);
+        console.error('Tutor fetch error:', error);
+    }
+}
+
+// ═══ RENDER MESSAGES ═══
+
+function addMessageToChat(role, content, scroll, imageUrls) {
+    if (typeof scroll === 'undefined') scroll = true;
+    if (typeof imageUrls === 'undefined') imageUrls = [];
+    
+    const container = document.getElementById('chatMessages');
+    const msgDiv = document.createElement('div');
+    
+    if (role === 'user') {
+        msgDiv.style.cssText = 'align-self: flex-end; max-width: 70%; padding: 10px 15px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border-radius: 15px 15px 0 15px; word-wrap: break-word;';
+        
+        // Show attached images
+        var imagesHtml = '';
+        if (imageUrls && imageUrls.length > 0) {
+            for (var i = 0; i < imageUrls.length; i++) {
+                imagesHtml += '<img class="msg-image" src="' + imageUrls[i] + '" onclick="window.open(this.src,\'_blank\')">';
+            }
+        }
+        
+        msgDiv.innerHTML = imagesHtml + '<div>' + escapeHtml(content) + '</div>';
+    } else {
+        msgDiv.style.cssText = 'align-self: flex-start; max-width: 85%; padding: 12px 16px; background: rgba(30, 41, 59, 0.8); color: var(--text-soft); border-radius: 15px 15px 15px 0; word-wrap: break-word; line-height: 1.6;';
+        msgDiv.className = 'ai-message';
+        
+        // Простой Markdown парсинг
+        var formatted = content;
+        // Жирный текст
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Списки
+        formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
+        if (formatted.includes('<li>')) {
+            formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+        }
+        // Абзацы
+        formatted = formatted.replace(/\n\n/g, '</p><p>');
+        formatted = '<p>' + formatted + '</p>';
+        
+        msgDiv.innerHTML = '<span style="font-weight: 600; color: var(--accent-2);">🤖 Агент:</span><br>' + formatted;
+        
+        // Добавляем обработчик выделения текста
+        msgDiv.addEventListener('mouseup', handleTextSelection);
+    }
+    
+    container.appendChild(msgDiv);
+    
+    if (typeof reRenderMath === 'function') {
+        reRenderMath(msgDiv);
+    }
+    
+    if (scroll) scrollChatToBottom();
+}
+
+// ═══ TEXT SELECTION POPUP ═══
+
+function handleTextSelection(event) {
+    const selection = window.getSelection();
+    const text = selection.toString().trim();
+    
+    if (text.length > 0) {
+        selectedText = text;
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        const popup = document.getElementById('explainPopup');
+        popup.style.display = 'block';
+        popup.style.left = (rect.left + rect.width / 2 - 90) + 'px';
+        popup.style.top = (rect.top - 40) + 'px';
+    } else {
+        document.getElementById('explainPopup').style.display = 'none';
+    }
+}
+
+function explainSelected() {
+    if (!selectedText || !currentAgent) return;
+    
+    const input = document.getElementById('tutorInput');
+    const quotedText = '> ' + selectedText.replace(/\n/g, '\n> ');
+    const message = quotedText + '\n\nОбъясни этот момент подробнее:';
+    
+    input.value = message;
+    document.getElementById('explainPopup').style.display = 'none';
+    window.getSelection().removeAllRanges();
+    
+    // Автоматически отправляем
+    sendToTutor();
+}
+
+// Скрываем popup при клике вне выделения
+document.addEventListener('mousedown', function(event) {
+    const popup = document.getElementById('explainPopup');
+    if (popup && !popup.contains(event.target)) {
+        popup.style.display = 'none';
+    }
+});
+
+function scrollChatToBottom() {
+    const container = document.getElementById('chatMessages');
+    container.scrollTop = container.scrollHeight;
+}
+</script>
+
+
+    
+
+    
+    <!-- Слушатель приглашений на видеозвонок + PiP-оверлей межстраничного звонка. -->
+    <meta name="x-user-authenticated" content="1">
+    <style>
+    /* ── Floating PiP overlay for cross-page call persistence ───────── */
+    .wb-pip-overlay {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px 8px 10px;
+        background: rgba(15,23,42,.94);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(34,197,94,.5);
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(0,0,0,.5);
+        color: #e2e8f0;
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+        animation: wbPipSlideIn .3s ease;
+        transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .wb-pip-overlay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 32px rgba(34,197,94,.18);
+    }
+    @keyframes wbPipSlideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+    .wb-pip-dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: #22c55e;
+        flex-shrink: 0;
+        animation: wbPipPulse 2s ease-in-out infinite;
+    }
+    @keyframes wbPipPulse {
+        0%,100% { opacity: 1; }
+        50%     { opacity: .35; }
+    }
+    .wb-pip-icon { font-size: 16px; line-height: 1; flex-shrink: 0; }
+    .wb-pip-label {
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .wb-pip-code {
+        color: #94a3b8;
+        font-size: 12px;
+        font-family: monospace;
+        letter-spacing: .5px;
+        flex-shrink: 0;
+    }
+    .wb-pip-spacer { flex: 1; min-width: 4px; }
+    .wb-pip-btn {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,.08);
+        color: #e2e8f0;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background .15s ease, transform .12s ease;
+    }
+    .wb-pip-btn:hover { background: rgba(255,255,255,.18); transform: scale(1.08); }
+    .wb-pip-btn-expand {
+        background: rgba(34,197,94,.18);
+        border: 1px solid rgba(34,197,94,.35);
+    }
+    .wb-pip-btn-expand:hover { background: rgba(34,197,94,.3); }
+    .wb-pip-btn-close {
+        background: rgba(239,68,68,.12);
+        border: 1px solid rgba(239,68,68,.25);
+    }
+    .wb-pip-btn-close:hover { background: rgba(239,68,68,.28); }
+    @media (max-width: 480px) {
+        .wb-pip-overlay {
+            right: 8px; bottom: 8px;
+            left: 8px;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .wb-pip-code { display: none; }
+    }
+    </style>
+    <script src="/static/js/wb_call_listener.js?v=1784415778" defer></script>
+
+    <!-- Web Push Notifications: VAPID public key + client registration -->
+    <script>
+    window.__VAPID_PUBLIC_KEY = 'BNDgJHRjuXO7znt9fKecKbvqNYLaYvLrWo43dJs5mwAsIqoOGNTSAk03DR37dJIQ4R3yf2MRASzy_9AxGnx-qEg';
+    </script>
+    <script src="/static/js/push_notifications.js?v=1784415778" defer></script>
+    
+    
+    <!-- Глобальный Caps Lock для полей ввода -->
+    <script src="/static/js/caps_lock.js"></script>
+    <!-- Mastery Radar Chart -->
+    <script src="/static/js/mastery_radar.js?v=1784415778"></script>
+    <!-- Мобильная навигация (drawer + bottom nav) -->
+    <script src="/static/js/mobile_nav.js?v=2"></script>
+    <!-- Dropdown навигация -->
+    <script src="/static/js/nav.js?v=1784415778"></script>
+    <!-- Paywall модалка (должна быть до api.js) -->
+    <script src="/static/js/paywall.js?v=1784415778"></script>
+    <!-- API wrapper с автоматическим перехватом 403 -->
+    <script src="/static/js/api.js?v=1784415778"></script>
+    <script src="/static/js/profile_sync.js?v=1784415778"></script>
+    
+    <!-- Глобальный виджет «Поделиться с другом» — биндится ко всем .share-friend-btn -->
+    <script src="/static/js/share_with_friend.js?v=1784415778"></script>
+    
+    <script>
+    // ─── Восстановление адаптивного теста ───
+    async function checkActiveTest() {
+        try {
+            const r = await fetch('/api/test/active', { credentials: 'same-origin' });
+            if (!r.ok) return;
+            const data = await r.json();
+            if (data?.active && data?.session?.id) {
+                window._activeSessionId = data.session.id;
+                const banner = document.getElementById('testResumeBanner');
+                if (banner && !location.pathname.startsWith('/adaptive_test_simple') && sessionStorage.getItem('testBannerDismissed') !== '1') banner.style.display = 'flex';
+            }
+        } catch(e) { /* ignore */ }
+    }
+    function resumeAdaptiveTest() {
+        const sid = window._activeSessionId;
+        if (sid) window.location.href = '/adaptive_test_simple?session=' + sid;
+    }
+    async function abandonAdaptiveTest() {
+        const sid = window._activeSessionId;
+        if (!sid) return;
+        try {
+            await fetch('/api/test/' + sid + '/abandon', { method: 'POST', credentials: 'same-origin' });
+        } catch(e) {}
+        dismissTestBanner();
+    }
+    function dismissTestBanner() {
+        const banner = document.getElementById('testResumeBanner');
+        if (banner) banner.style.display = 'none';
+    }
+    document.addEventListener('DOMContentLoaded', checkActiveTest);
+    </script>
+
+    
+    
+    
+    
+    <iframe id="wbCallEngine"
+            src="/static/call_engine.html"
+            style="display:none; width:0; height:0; border:0;"
+            aria-hidden="true"
+            title="WebRTC Call Engine"></iframe>
+
+    
+    
+    
+    
+    <style>
+        #cf-pip-overlay {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 280px;
+            background: #1a1d29;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 999999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #fff;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        #cf-pip-overlay.cf-pip-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #cf-pip-overlay .cf-pip-video-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #0d0f17;
+            overflow: hidden;
+        }
+        #cf-pip-overlay .cf-pip-video-wrap video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        #cf-pip-overlay .cf-pip-info {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #222639;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        #cf-pip-overlay .cf-pip-info-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+        #cf-pip-overlay .cf-pip-room {
+            font-size: 13px;
+            font-weight: 600;
+            color: #38bdf8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #cf-pip-overlay .cf-pip-room::before {
+            content: "● ";
+            color: #22c55e;
+        }
+        #cf-pip-overlay .cf-pip-status {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+        #cf-pip-overlay .cf-pip-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        #cf-pip-overlay .cf-pip-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            padding: 0;
+            line-height: 1;
+        }
+        #cf-pip-overlay .cf-pip-btn:hover {
+            background: rgba(255,255,255,0.16);
+        }
+        #cf-pip-overlay .cf-pip-btn--expand {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+        #cf-pip-overlay .cf-pip-btn--expand:hover {
+            background: #7dd3fc;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave {
+            color: #ef4444;
+        }
+        #cf-pip-overlay .cf-pip-btn--leave:hover {
+            background: rgba(239,68,68,0.2);
+        }
+        #cf-pip-overlay .cf-pip-count {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-left: 4px;
+        }
+    </style>
+
+    <div id="cf-pip-overlay">
+        <div class="cf-pip-video-wrap">
+            <video id="cf-pip-video" autoplay playsinline muted></video>
+        </div>
+        <div class="cf-pip-info">
+            <div class="cf-pip-info-left">
+                <div class="cf-pip-room" id="cf-pip-code">---</div>
+                <div>
+                    <span class="cf-pip-status" id="cf-pip-status">Ожидание...</span>
+                    <span class="cf-pip-count" id="cf-pip-count">1</span>
+                </div>
+            </div>
+            <div class="cf-pip-actions">
+                <button class="cf-pip-btn cf-pip-btn--expand" title="Развернуть" onclick="if(window.__pipManager)window.__pipManager.expand()">⛶</button>
+                <button class="cf-pip-btn cf-pip-btn--leave" title="Покинуть" onclick="if(window.__pipManager)window.__pipManager.clear()">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <script defer src="/static/js/wb_pip.js?v=1784415778"></script>
+    
+<script src="/static/js/daily_tasks.js?v=1784415778"></script>
+<script src="/static/js/daily_tasks_modal.js?v=1784415778"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Inline JS: 24h countdown + календарь + day-history панель.
+     Использует те же серверные эндпоинты:
+       GET /daily_tasks/calendar?year=YYYY&month=MM
+       GET /daily_tasks/day_history/<YYYY-MM-DD>
+     Данные для countdown берутся из <script id="dt-init-data">.
+   ══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── helpers ────────────────────────────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+
+  function parseInitData() {
+    try {
+      var raw = document.getElementById('dt-init-data');
+      if (!raw) return null;
+      return JSON.parse(raw.textContent || raw.innerText || '{}');
+    } catch (e) {
+      console.warn('[dt] cannot parse init data', e);
+      return null;
+    }
+  }
+
+  function pad2(n) { n = String(Math.max(0, Math.floor(n))); return n.length < 2 ? '0' + n : n; }
+
+  // ── ⏱ 24h countdown ───────────────────────────────────────────────
+  // Берём expires_at из init-data. Если страница в empty/generating/expired —
+  // блока countdown не показываем. При expire — автоматически перезагружаем
+  // страницу, чтобы пользователь увидел чистое empty-state с кнопкой
+  // «Сгенерировать» (бэкенд уже пометит сет как expired).
+  var countdownTimer = null;
+
+  function initCountdown() {
+    var data = parseInitData();
+    if (!data || !data.expires_at) return;
+    if (data.status !== 'ready' && data.status !== 'partial') return;
+
+    var box = $('dt-countdown');
+    var timeEl = $('dt-countdown-time');
+    if (!box || !timeEl) return;
+
+    var expiresAt = new Date(data.expires_at).getTime();
+    if (!isFinite(expiresAt)) return;
+
+    box.classList.remove('dt-hidden');
+
+    function tick() {
+      var now = Date.now();
+      var ms = expiresAt - now;
+      if (ms <= 0) {
+        timeEl.textContent = '00:00:00';
+        box.classList.remove('dt-expiring');
+        box.classList.add('dt-expired');
+        if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        // Дадим серверу шанс пометить expired при перезагрузке.
+        // Небольшая задержка, чтобы пользователь увидел 00:00:00.
+        setTimeout(function() { window.location.reload(); }, 1200);
+        return;
+      }
+      var totalSec = Math.floor(ms / 1000);
+      var hh = Math.floor(totalSec / 3600);
+      var mm = Math.floor((totalSec % 3600) / 60);
+      var ss = totalSec % 60;
+      timeEl.textContent = pad2(hh) + ':' + pad2(mm) + ':' + pad2(ss);
+      if (ms < 60 * 60 * 1000) {
+        box.classList.add('dt-expiring');
+      } else {
+        box.classList.remove('dt-expiring');
+      }
+    }
+
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
+  // ── 📅 Calendar ────────────────────────────────────────────────────
+  var currentYear = null;
+  var currentMonth = null;  // 1..12
+  var todayIso = null;
+  var selectedDate = null;
+  var calCache = {};
+
+  var MONTH_NAMES_RU = [
+    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+  ];
+  var DOW_RU = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  function buildSkeletonPayload(year, month) {
+    // Локальная генерация дней месяца (на случай если бэкенд недоступен).
+    // tier='empty' — все клетки пустые до прихода данных с сервера.
+    var lastDay = new Date(year, month, 0).getDate();
+    var today = new Date();
+    var todayIsoLocal = today.getFullYear() + '-' +
+      pad2(today.getMonth() + 1) + '-' + pad2(today.getDate());
+    var days = [];
+    for (var d = 1; d <= lastDay; d++) {
+      var iso = year + '-' + pad2(month) + '-' + pad2(d);
+      var dDate = new Date(year, month - 1, d);
+      var isToday = (iso === todayIsoLocal);
+      var isFuture = dDate > today && !isToday;
+      days.push({
+        date: iso,
+        day: d,
+        solved: 0,
+        total: 0,
+        status: null,
+        tier: 'empty',
+        is_today: isToday,
+        is_future: isFuture
+      });
+    }
+    return { success: true, year: year, month: month, today: todayIsoLocal, days: days };
+  }
+
+  function renderCalendarSkeleton(year, month) {
+    var titleEl = $('dt-cal-title');
+    if (titleEl) titleEl.textContent = MONTH_NAMES_RU[month - 1] + ' ' + year;
+    // Сразу рисуем сетку с днями — даже до прихода данных от сервера.
+    renderCalendar(buildSkeletonPayload(year, month));
+  }
+
+  function loadCalendar(year, month) {
+    currentYear = year;
+    currentMonth = month;
+    renderCalendarSkeleton(year, month);
+
+    var cacheKey = year + '-' + month;
+    if (calCache[cacheKey]) {
+      renderCalendar(calCache[cacheKey]);
+      return;
+    }
+
+    var url = '/daily_tasks/calendar?year=' + year + '&month=' + month;
+    fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+      .then(function(r) {
+        if (!r.ok) { throw new Error('HTTP ' + r.status); }
+        var ct = r.headers.get('Content-Type') || '';
+        if (ct.indexOf('json') === -1) { throw new Error('not json: ' + ct); }
+        return r.json();
+      })
+      .then(function(payload) {
+        if (!payload || !payload.success) {
+          console.warn('[dt-cal] bad payload', payload);
+          return;
+        }
+        calCache[cacheKey] = payload;
+        todayIso = payload.today;
+        renderCalendar(payload);
+      })
+      .catch(function(err) {
+        console.warn('[dt-cal] fetch error — оставляем скелетон', err);
+      });
+  }
+
+  function renderCalendar(payload) {
+    var grid = $('dt-cal-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    // дни недели
+    DOW_RU.forEach(function(d) {
+      var el = document.createElement('div');
+      el.className = 'dt-cal-dow';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    // пустые ячейки до 1-го числа (понедельник как первый день)
+    var first = new Date(Date.UTC(payload.year, payload.month - 1, 1));
+    // getUTCDay: 0=вс, 1=пн … 6=сб → переведём в индекс «пн-первый»
+    var leadIdx = (first.getUTCDay() + 6) % 7;
+    for (var i = 0; i < leadIdx; i++) {
+      var blank = document.createElement('div');
+      blank.className = 'dt-cal-day dt-cal-empty';
+      grid.appendChild(blank);
+    }
+
+    // дни месяца
+    payload.days.forEach(function(d) {
+      var el = document.createElement('div');
+      var cls = ['dt-cal-day', 'dt-tier-' + d.tier];
+      if (d.is_today) cls.push('dt-cal-today');
+      if (d.is_future) cls.push('dt-cal-future');
+      el.className = cls.join(' ');
+      el.setAttribute('data-date', d.date);
+      el.setAttribute('title',
+        d.total > 0
+          ? (d.day + ' число — решено ' + d.solved + ' / ' + d.total)
+          : (d.is_future ? 'Ещё не наступило' : (d.day + ' число — без задач')));
+
+      // ── Главное содержимое клетки: число месяца сверху, СНИЗУ — кол-во решённых
+      var num = document.createElement('span');
+      num.className = 'dt-cal-daynum';
+      num.textContent = d.day;
+      el.appendChild(num);
+
+      // Кол-во решённых задач (для прошлых дней с задачами).
+      // Это «самое главное» — показываем числом X/10 в самой клетке.
+      if (!d.is_future && d.total > 0) {
+        var solvedBadge = document.createElement('span');
+        solvedBadge.className = 'dt-cal-solved';
+        solvedBadge.textContent = d.solved + '/' + d.total;
+        el.appendChild(solvedBadge);
+      }
+
+      if (d.tier === 'gold') {
+        var crown = document.createElement('span');
+        crown.className = 'dt-cal-crown';
+        crown.textContent = '👑';
+        el.appendChild(crown);
+      }
+
+      // Кликабельны ВСЕ прошлые дни и сегодня (даже без задач) — покажем
+      // пустое состояние в панели истории. Будущие — без клика.
+      if (!d.is_future) {
+        el.style.cursor = 'pointer';
+        (function(dateIso) {
+          el.addEventListener('click', function() { openDayHistory(dateIso); });
+        })(d.date);
+      } else {
+        el.style.cursor = 'not-allowed';
+      }
+      grid.appendChild(el);
+    });
+  }
+
+  // ── 📋 Day history panel ───────────────────────────────────────────
+  function openDayHistory(dateIso) {
+    selectedDate = dateIso;
+    var panel = $('dt-day-history');
+    var titleEl = $('dt-day-history-title');
+    var subEl = $('dt-day-history-sub');
+    var listEl = $('dt-day-history-list');
+    if (!panel || !listEl) return;
+
+    panel.classList.remove('dt-hidden');
+    titleEl.textContent = '📋 ' + formatDateRu(dateIso);
+    subEl.textContent = 'Загружаю…';
+    listEl.innerHTML = '';
+
+    fetch('/daily_tasks/day_history/' + dateIso, { credentials: 'same-origin' })
+      .then(function(r) { return r.json(); })
+      .then(function(payload) {
+        if (!payload || !payload.success) {
+          subEl.textContent = 'Не удалось загрузить.';
+          return;
+        }
+        if (!payload.has_set || !payload.items || payload.items.length === 0) {
+          subEl.textContent = 'В этот день задач не было.';
+          return;
+        }
+        subEl.textContent = 'Решено ' + payload.solved + ' из ' + payload.total
+          + (payload.status === 'expired' ? ' · сет завершён' : '');
+        payload.items.forEach(function(it) {
+          listEl.appendChild(buildDhItem(it));
+        });
+      })
+      .catch(function(err) {
+        console.warn('[dt-dh] fetch error', err);
+        subEl.textContent = 'Не удалось загрузить.';
+      });
+  }
+
+  function buildDhItem(it) {
+    var wrap = document.createElement('div');
+    wrap.className = 'dt-dh-item';
+
+    var head = document.createElement('div');
+    head.className = 'dt-dh-item-head';
+
+    var pos = document.createElement('span');
+    pos.className = 'dt-dh-pos';
+    pos.textContent = '#' + (it.position || '?');
+    head.appendChild(pos);
+
+    if (it.topic) {
+      var topic = document.createElement('span');
+      topic.className = 'dt-dh-topic';
+      topic.textContent = it.topic;
+      head.appendChild(topic);
+    }
+
+    var status = document.createElement('span');
+    if (it.is_correct === true) {
+      status.className = 'dt-dh-status-correct';
+      status.textContent = '✓ верно';
+    } else if (it.is_answered) {
+      status.className = 'dt-dh-status-incorrect';
+      status.textContent = '✗ неверно';
+    } else {
+      status.className = 'dt-dh-status-pending';
+      status.textContent = '— не решено';
+    }
+    head.appendChild(status);
+    wrap.appendChild(head);
+
+    if (it.preview) {
+      var body = document.createElement('div');
+      body.textContent = it.preview; try{ if(typeof reRenderMath==='function') reRenderMath(body); }catch(e){}
+      wrap.appendChild(body);
+    }
+    return wrap;
+  }
+
+  function formatDateRu(iso) {
+    var parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    var d = parseInt(parts[2], 10);
+    var m = parseInt(parts[1], 10);
+    var y = parts[0];
+    return d + ' ' + (MONTH_NAMES_RU[m - 1] || '').toLowerCase() + ' ' + y;
+  }
+
+  // ── nav buttons ────────────────────────────────────────────────────
+  function bindNav() {
+    var prev = $('dt-cal-prev');
+    var next = $('dt-cal-next');
+    if (prev) prev.addEventListener('click', function() {
+      var m = currentMonth - 1, y = currentYear;
+      if (m < 1) { m = 12; y -= 1; }
+      loadCalendar(y, m);
+    });
+    if (next) next.addEventListener('click', function() {
+      var m = currentMonth + 1, y = currentYear;
+      if (m > 12) { m = 1; y += 1; }
+      loadCalendar(y, m);
+    });
+  }
+
+  // ── init ───────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    initCountdown();
+    bindNav();
+    var now = new Date();
+    loadCalendar(now.getFullYear(), now.getMonth() + 1);
+    renderTasks();
+    bindActionButtons();
+  });
+  // ── Task cards rendering + answer modal (restored) ──────────────
+function escapeHtml(s){ s=(s==null?'':String(s)); return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function renderTasks(){
+var data=parseInitData(); if(!data) return;
+var grid=$('dt-task-grid'); if(!grid) return;
+var items=(data.items&&data.items.length)?data.items:[];
+if(!items.length){ return; }
+grid.innerHTML='';
+items.forEach(function(it){
+var card=document.createElement('div');
+card.className='dt-card'+(it.is_answered?(it.is_correct?' dt-done':' dt-flagged'):'');
+card.setAttribute('data-item-id', it.id);
+var statusHtml;
+if(it.is_answered && it.is_correct){ statusHtml='<div class="dt-card-status dt-correct">\u2713 \u0420\u0435\u0448\u0435\u043d\u043e</div>'; }
+else if(it.is_answered){ statusHtml='<div class="dt-card-status dt-incorrect">\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e</div>'; }
+else{ statusHtml='<div class="dt-card-status dt-pending">\u2014 \u041d\u0435 \u0440\u0435\u0448\u0435\u043d\u043e</div>'; }
+card.innerHTML='<div class="dt-card-number">'+escapeHtml(it.position||'')+'</div>'+
+'<div class="dt-card-header"><span class="dt-topic-badge">'+escapeHtml(it.topic||'')+'</span><span class="dt-difficulty">'+escapeHtml(it.difficulty_level||'')+'</span></div>'+
+'<div class="dt-card-preview">'+escapeHtml(it.preview||it.text||'')+'</div>'+statusHtml;
+card.addEventListener('click', function(){ openTask(it); });
+grid.appendChild(card); if(typeof renderMath==='function') renderMath(card);
+});
+}
+// ── Fraction / answer normalization (1/4 => 0.25) ─────────────
+function normalizeAnswer(raw){
+if(raw==null) return '';
+var s=String(raw).trim().replace(',', '.');
+var m=s.match(/^\s*(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)\s*$/);
+if(m){ var num=parseFloat(m[1]), den=parseFloat(m[2]); if(den!==0&&isFinite(num)&&isFinite(den)){ var v=num/den; return String(Math.round(v*1e9)/1e9); } }
+return s;
+}
+// ── Answer modal ────────────────────────────────────────────
+var dtModalEl=null; var dtOpenStart=0;
+function ensureModal(){
+if(dtModalEl) return dtModalEl;
+var ov=document.createElement('div'); ov.className='dt-modal'; ov.id='dt-modal';
+ov.style.cssText='position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,0.7);overflow-y:auto;padding:40px 16px;';
+ov.innerHTML='<div class="dt-modal-box" style="background:#10151f;border:1px solid rgba(255,255,255,0.1);border-radius:16px;max-width:680px;width:100%;padding:24px 26px;color:rgba(255,255,255,0.9);position:relative;">'+
+'<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>'+
+'<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:rgba(56,239,125,0.7);margin-bottom:10px;"></div>'+
+'<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>'+
+'<input type="text" id="dt-answer-input" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-size:16px;margin-bottom:14px;">'+
+'<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button><button id="dt-hint-btn" class="dt-btn-secondary">\ud83d\udca1 \u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430</button></div>'+
+'<div id="dt-modal-result" style="margin-top:16px;"></div>'+
+'</div>';
+document.body.appendChild(ov);
+ov.addEventListener('click', function(e){ if(e.target===ov) closeModal(); });
+ov.querySelector('#dt-modal-close').addEventListener('click', closeModal);
+dtModalEl=ov; return ov;
+}
+function closeModal(){ if(dtModalEl) dtModalEl.style.display='none'; }
+var dtCurrentItem=null;
+function openTask(it){
+ensureModal();
+dtCurrentItem=it; dtOpenStart=Date.now();
+$('dt-modal-title').textContent=(it.topic||'')+(it.difficulty_level?(' \u00b7 '+it.difficulty_level):'');
+$('dt-modal-statement').innerHTML=escapeHtmlPreserveLatex(it.text||it.preview||''); if(typeof renderMath==='function') renderMath($('dt-modal-statement'));
+var inp=$('dt-answer-input'); inp.value=(it.user_answer||'');
+var res=$('dt-modal-result'); res.innerHTML='';
+if(it.is_answered){ res.innerHTML='<div style="color:'+(it.is_correct?'#38ef7d':'#ff6b6b')+';">'+(it.is_correct?'\u2713 \u0420\u0430\u043d\u0435\u0435 \u0440\u0435\u0448\u0435\u043d\u043e \u0432\u0435\u0440\u043d\u043e':'\u2717 \u0420\u0430\u043d\u0435\u0435 \u043e\u0442\u0432\u0435\u0447\u0435\u043d\u043e \u043d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>'; inp.disabled=true; $('dt-submit-btn').disabled=true; }else{ inp.disabled=false; $('dt-submit-btn').disabled=false; }
+$('dt-submit-btn').onclick=submitAnswer;
+$('dt-hint-btn').onclick=loadHint;
+inp.onkeydown=function(e){ if(e.key==='Enter') submitAnswer(); };
+dtModalEl.style.display='flex';
+inp.focus();
+}
+function submitAnswer(){
+if(!dtCurrentItem || dtCurrentItem.is_answered) return;
+var inp=$('dt-answer-input'); var res=$('dt-modal-result'); var btn=$('dt-submit-btn');
+var raw=inp.value.trim(); if(!raw){ inp.focus(); return; }
+var normalized=normalizeAnswer(raw);
+btn.disabled=true; var oldTxt=btn.textContent; btn.textContent='\u041f\u0440\u043e\u0432\u0435\u0440\u044f\u044e\u2026';
+res.innerHTML='<div style="color:rgba(255,255,255,0.6);">\ud83d\udd0d DeepSeek \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u0442 \u043e\u0442\u0432\u0435\u0442\u2026</div>';
+var secs=Math.max(0, Math.round((Date.now()-dtOpenStart)/1000));
+fetch('/daily_tasks/'+dtCurrentItem.id+'/submit', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({ answer: raw, normalized_answer: normalized, time_spent_seconds: secs }) })
+.then(function(r){ return r.json(); })
+.then(function(p){
+btn.disabled=false; btn.textContent=oldTxt;
+if(!p){ res.innerHTML='<div style="color:#ff6b6b;">\u041e\u0448\u0438\u0431\u043a\u0430 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438</div>'; return; }
+var _dtFinish=function(){ var ok=p.is_correct===true;
+var html='<div style="color:'+(ok?'#38ef7d':'#ff6b6b')+';font-weight:600;margin-bottom:8px;">'+(ok?'\u2713 \u0412\u0435\u0440\u043d\u043e!':'\u2717 \u041d\u0435\u0432\u0435\u0440\u043d\u043e')+'</div>';
+if(!ok && p.correct_answer!=null){ html+='<div style="margin-bottom:6px;">\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442: <b>'+escapeHtmlPreserveLatex(p.correct_answer)+'</b></div>'; }
+if(p.explanation){ html+='<div style="color:rgba(255,255,255,0.75);line-height:1.5;margin-top:6px;">'+escapeHtmlPreserveLatex(p.explanation)+'</div>'; }
+if(p.solution){ html+='<div style="color:rgba(255,255,255,0.6);line-height:1.5;margin-top:8px;white-space:pre-wrap;">'+escapeHtmlPreserveLatex(p.solution)+'</div>'; }
+res.innerHTML=html; if(typeof renderMath==='function') renderMath(res);
+dtCurrentItem.is_answered=true; dtCurrentItem.is_correct=ok; dtCurrentItem.user_answer=raw;
+renderTasks();
+if(p.set_progress){ var pb=document.querySelector('.dt-ready-meta, #dt-progress-text'); } }; if(p.is_correct===true){ _dtFinish(); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.6);">DeepSeek проверяет ответ…</div>'; fetch('/daily_tasks/'+dtCurrentItem.id+'/submit_ai',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({user_answer:raw,user_solution:raw,time_spent_seconds:secs})}).then(function(r){return r.json();}).then(function(a){ if(a&&a.status==='success'){ p.is_correct=a.is_correct===true; if(a.correct_answer!=null)p.correct_answer=a.correct_answer; if(a.feedback)p.explanation=a.feedback; if(a.solution)p.solution=a.solution; if(a.set_progress)p.set_progress=a.set_progress; } _dtFinish(); }).catch(function(e){ console.warn('[dt-submit-ai]',e); _dtFinish(); }); }
+})
+.catch(function(err){ btn.disabled=false; btn.textContent=oldTxt; res.innerHTML='<div style="color:#ff6b6b;">\u0421\u0435\u0442\u0435\u0432\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430</div>'; console.warn('[dt-submit]',err); });
+}
+function loadHint(){
+if(!dtCurrentItem) return;
+var res=$('dt-modal-result');
+fetch('/daily_tasks/'+dtCurrentItem.id+'/hint', { credentials:'same-origin', headers:{'Accept':'application/json'} })
+.then(function(r){ return r.json(); })
+.then(function(p){ if(p&&p.hint){ res.innerHTML='<div style="color:#ffba49;line-height:1.5;">\ud83d\udca1 '+escapeHtmlPreserveLatex(p.hint)+'</div>'; if(typeof renderMath==='function') renderMath(res); } else { res.innerHTML='<div style="color:rgba(255,255,255,0.5);">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043e\u043a \u043d\u0435\u0442</div>'; } })
+.catch(function(err){ console.warn('[dt-hint]',err); });
+}
+function bindActionButtons(){
+var gen=document.querySelector('.dt-btn-primary');
+var buttons=document.querySelectorAll('.dt-btn-primary, .dt-btn-secondary');
+buttons.forEach(function(b){
+var t=(b.textContent||'').toLowerCase();
+if(t.indexOf('\u0441\u0433\u0435\u043d\u0435\u0440')>=0 || t.indexOf('\u043f\u0435\u0440\u0435\u0433\u0435\u043d')>=0 || t.indexOf('\u043f\u043e\u043f\u0440\u043e\u0431')>=0){
+b.addEventListener('click', triggerGenerate);
+}
+});
+}
+function triggerGenerate(){
+var topicEl=$('dt-topic-input'); var topic=topicEl?topicEl.value.trim():'';
+fetch('/daily_tasks/regenerate', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({ topic: topic }) })
+.then(function(r){ return r.json().catch(function(){ return {}; }); })
+.then(function(){ setTimeout(function(){ window.location.reload(); }, 1500); })
+.catch(function(err){ console.warn('[dt-gen]',err); });
+}
+
+})();
+
+// ── 🗓  Yearly calendar toggle ────────────────────────────────────
+function toggleYearlyCal() {
+  var body = document.getElementById('dt-yearly-cal-body');
+  var toggle = document.getElementById('dt-yearly-cal-toggle');
+  if (!body) return;
+  body.classList.toggle('is-open');
+  if (toggle) {
+    toggle.textContent = body.classList.contains('is-open') ? '▼' : '▶';
+  }
+}
+</script>
+
+</body>
+</html>

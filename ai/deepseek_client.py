@@ -47,7 +47,10 @@ class DeepSeekClient:
         """
         self.api_key = api_key or os.environ.get('DEEPSEEK_API_KEY')
         if not self.api_key:
-            raise ValueError("DEEPSEEK_API_KEY not provided and not found in environment")
+            logger.warning(
+                "DEEPSEEK_API_KEY не задан — AI-функции (проверка ответов, "
+                "решение задач) недоступны. Задайте DEEPSEEK_API_KEY в .env"
+            )
         
         # Прямой DeepSeek API (api.deepseek.com).
         # Маршрутизация через OpenRouter оставлена ТОЛЬКО для vision-фолбэка

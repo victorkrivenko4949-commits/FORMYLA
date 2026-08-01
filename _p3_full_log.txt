@@ -1,0 +1,11 @@
+[olympiads.py] Loaded 5267 entries from JSONL
+ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.
+[figures_manifest] MANIFEST.json not found - figures disabled
+DEBUG: Загружено 81 привязок картинок из problem_images.py
+Traceback (most recent call last):
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\_p3_final.py", line 8, in <module>
+    from app import app, db
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\app.py", line 92, in <module>
+    print("ℹ️  SENTRY_DSN не задан — Sentry отключен.")
+  File "<frozen codecs>", line 378, in write
+ValueError: write to closed file

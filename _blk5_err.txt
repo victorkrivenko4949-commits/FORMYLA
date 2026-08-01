@@ -1,0 +1,34 @@
+2026-07-29 02:45:13,733 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-29 02:45:13,733 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\scripts\..\logs\app.log
+2026-07-29 02:45:15,314 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-29 02:45:15,430 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-29 02:45:19,834 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-07-29 02:45:19,858 - apscheduler.scheduler - INFO - Scheduler started
+Traceback (most recent call last):
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\scripts\block5_smoke.py", line 25, in <module>
+    u = User(
+        ^^^^^
+  File "<string>", line 4, in __init__
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\state.py", line 596, in _initialize_instance
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\state.py", line 594, in _initialize_instance
+    manager.original_init(*mixed[1:], **kwargs)
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2179, in _declarative_constructor
+    raise TypeError(
+TypeError: 'password_hash' is an invalid keyword argument for User
