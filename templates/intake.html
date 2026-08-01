@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+{% block title %}Анкета — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #4c7dff;
+    --accent-hi: #6b9aff;
+    --accent-dim: rgba(76,125,255,0.08);
+    --text: #e2e8f0;
+    --text-soft: #cbd5e1;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --border-soft: rgba(255,255,255,0.05);
+    --ok: #3ecf8e;
+    --bad: #ef4444;
+    --warn: #E5AC3A;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+
+  .intake-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 60px 20px 80px;
+  }
+
+  .intake-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .intake-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .intake-header p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ── Progress bar ─────────────────────────────── */
+  .intake-progress-wrap {
+    margin-bottom: 32px;
+  }
+
+  .intake-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .intake-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .intake-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Card ──────────────────────────────────────── */
+  .intake-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+
+  .intake-card h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  /* ── Options ───────────────────────────────────── */
+  .intake-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .intake-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    color: var(--text-soft);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .intake-option:hover {
+    background: var(--accent-dim);
+    border-color: rgba(76,125,255,0.25);
+    color: var(--text);
+  }
+
+  .intake-option.selected {
+    background: rgba(76,125,255,0.12);
+    border-color: var(--accent);
+    color: var(--accent-hi);
+  }
+
+  .intake-option.multi-selected {
+    background: rgba(76,125,255,0.12);
+    border-color: var(--accent);
+    color: var(--accent-hi);
+  }
+
+  /* ── Anchor section ────────────────────────────── */
+  .intake-anchor-section {
+    margin-bottom: 16px;
+  }
+
+  .intake-anchor-statement {
+    background: var(--surface2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .intake-anchor-label {
+    font-size: 12px;
+    color: var(--accent-hi);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .intake-answer-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .intake-answer-input:focus {
+    border-color: var(--accent);
+  }
+
+  /* ── Buttons ───────────────────────────────────── */
+  .intake-btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .intake-btn {
+    padding: 12px 28px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: none;
+  }
+
+  .intake-btn-primary {
+    background: var(--accent);
+    color: #fff;
+    flex: 1;
+  }
+
+  .intake-btn-primary:hover {
+    background: var(--accent-hi);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(76,125,255,0.25);
+  }
+
+  .intake-btn-primary:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .intake-btn-back {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .intake-btn-back:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  /* ── Multi-select hint ─────────────────────────── */
+  .intake-multi-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── Finish screen ─────────────────────────────── */
+  .intake-finish {
+    text-align: center;
+    padding: 48px 20px;
+  }
+
+  .intake-finish h2 {
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .intake-finish p {
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  /* ── Loading spinner ───────────────────────────── */
+  .intake-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── Error ─────────────────────────────────────── */
+  .intake-error {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    margin-top: 16px;
+    color: #f87171;
+    font-size: 13px;
+  }
+
+  /* ── Responsive ────────────────────────────────── */
+  @media (max-width: 480px) {
+    .intake-container { padding: 30px 14px 60px; }
+    .intake-card { padding: 24px 18px; }
+    .intake-card h2 { font-size: 16px; }
+    .intake-option { padding: 12px 14px; font-size: 14px; }
+    .intake-btn { padding: 10px 20px; font-size: 14px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="intake-container">
+  <div class="intake-header">
+    <h1>Анкета</h1>
+    <p>Ответь на 5 вопросов, чтобы мы подобрали задачи под тебя</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="intake-progress-wrap">
+    <div class="intake-progress-label">
+      <span id="intake-progress-text">Вопрос 1 из 5</span>
+      <span id="intake-progress-pct">20%</span>
+    </div>
+    <div class="intake-progress-bar">
+      <div class="intake-progress-fill" id="intake-progress-fill" style="width: 20%;"></div>
+    </div>
+  </div>
+
+  <!-- Dynamic content -->
+  <div id="intake-card" class="intake-card">
+    <div style="text-align: center; padding: 40px;">
+      <div class="intake-spinner"></div>
+      <span style="color: var(--muted);">Загрузка...</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = '/intake';
+  let currentState = null;
+  let selectedMulti = [];
+
+  async function apiCall(url, body) {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return await resp.json();
+  }
+
+  function updateProgress(qIndex, total) {
+    const pct = Math.round((qIndex / total) * 100);
+    document.getElementById('intake-progress-text').textContent =
+      total > 5 ? `Задача ${qIndex - 5} из 5 (якорь)` : `Вопрос ${qIndex} из ${total}`;
+    document.getElementById('intake-progress-pct').textContent = pct + '%';
+    document.getElementById('intake-progress-fill').style.width = pct + '%';
+  }
+
+  function renderQuestion(q, qIndex, total) {
+    updateProgress(qIndex, total);
+    const isMulti = q.multi;
+    let html = `<h2>${q.text}</h2>`;
+
+    if (isMulti) {
+      html += '<div class="intake-multi-hint">Можно выбрать несколько вариантов</div>';
+      html += '<div class="intake-options">';
+      for (const opt of q.options) {
+        const sel = selectedMulti.includes(opt.key) ? ' multi-selected' : '';
+        html += `<button class="intake-option${sel}" data-key="${opt.key}" onclick="toggleMulti(this, '${opt.key}')">${opt.label}</button>`;
+      }
+      html += '</div>';
+      html += '<div class="intake-btn-row">';
+      html += `<button class="intake-btn intake-btn-back" onclick="goBack()">← Назад</button>`;
+      html += `<button class="intake-btn intake-btn-primary" id="intake-submit-btn" onclick="submitMulti()">Далее →</button>`;
+      html += '</div>';
+    } else {
+      html += '<div class="intake-options">';
+      for (const opt of q.options) {
+        html += `<button class="intake-option" onclick="selectSingle('${q.id}', '${opt.key}')">${opt.label}</button>`;
+      }
+      html += '</div>';
+      if (qIndex > 1) {
+        html += '<div class="intake-btn-row">';
+        html += `<button class="intake-btn intake-btn-back" onclick="goBack()">← Назад</button>`;
+        html += '</div>';
+      }
+    }
+
+    document.getElementById('intake-card').innerHTML = html;
+  }
+
+  function renderAnchor(anchor, qIndex, total) {
+    updateProgress(qIndex, total);
+    const html = `
+      <div class="intake-anchor-label">Задача по разделу «${anchor.section_ru}» (${anchor.anchor_idx} из ${anchor.total_anchors})</div>
+      <div class="intake-anchor-statement">${anchor.statement}</div>
+      <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
+      <div class="intake-btn-row">
+        <button class="intake-btn intake-btn-primary" onclick="submitAnchor(${anchor.task_id})">Проверить</button>
+      </div>
+    `;
+    document.getElementById('intake-card').innerHTML = html;
+    document.getElementById('anchor-answer').focus();
+    document.getElementById('anchor-answer').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') submitAnchor(anchor.task_id);
+    });
+  }
+
+  function renderFinish(result) {
+    updateProgress(10, 10);
+    const correct = result.anchors_correct || 0;
+    const html = `
+      <div class="intake-finish">
+        <h2>Анкета пройдена!</h2>
+        <p>Якоря: ${correct} из 5 верно. Уровень: ${result.prior_mu}</p>
+        <p>Дневная норма: ${result.daily_tasks} задач</p>
+        ${result.goal_auto ? '<p style="color:var(--warn);">Цель назначена автоматически</p>' : ''}
+        <a href="/daily_tasks" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;margin-top:8px;">К задачам дня →</a>
+      </div>
+    `;
+    document.getElementById('intake-card').innerHTML = html;
+  }
+
+  function renderError(msg) {
+    document.getElementById('intake-card').innerHTML = `
+      <div class="intake-finish">
+        <h2>Ошибка</h2>
+        <p>${msg}</p>
+        <a href="/intake" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;">Начать заново</a>
+      </div>
+    `;
+  }
+
+  async function selectSingle(qid, key) {
+    const result = await apiCall(API_BASE + '/answer', { qid, key });
+    processResponse(result);
+  }
+
+  function toggleMulti(btn, key) {
+    if (selectedMulti.includes(key)) {
+      selectedMulti = selectedMulti.filter(k => k !== key);
+      btn.classList.remove('multi-selected');
+    } else {
+      selectedMulti.push(key);
+      btn.classList.add('multi-selected');
+    }
+  }
+
+  async function submitMulti() {
+    if (selectedMulti.length === 0) {
+      selectedMulti = ['dont_know'];
+    }
+    const key = selectedMulti.join(',');
+    const qid = currentState.question ? currentState.question.id : 'weak_sections';
+    const result = await apiCall(API_BASE + '/answer', { qid, key });
+    selectedMulti = [];
+    processResponse(result);
+  }
+
+  async function submitAnchor(taskId) {
+    const answerEl = document.getElementById('anchor-answer');
+    if (!answerEl) return;
+    const answer = answerEl.value.trim();
+    if (!answer) return;
+
+    document.getElementById('intake-card').innerHTML =
+      '<div style="text-align:center;padding:40px;"><div class="intake-spinner"></div><span style="color:var(--muted);">Проверяю...</span></div>';
+
+    const result = await apiCall(API_BASE + '/anchor', { task_id: taskId, answer });
+    processResponse(result);
+  }
+
+  async function goBack() {
+    const result = await apiCall(API_BASE + '/back', {});
+    processResponse(result);
+  }
+
+  function processResponse(data) {
+    if (data.error) {
+      renderError(data.error);
+      return;
+    }
+
+    if (data.done) {
+      if (data.result) {
+        renderFinish(data.result);
+      } else {
+        renderError('Анкета уже пройдена.');
+      }
+      return;
+    }
+
+    currentState = data;
+
+    if (data.anchor) {
+      renderAnchor(data.anchor, data.q_index, data.total_questions);
+    } else if (data.question) {
+      renderQuestion(data.question, data.q_index, data.total_questions);
+    }
+  }
+
+  // Start on load
+  (async function init() {
+    const result = await apiCall(API_BASE + '/start', {});
+    processResponse(result);
+  })();
+</script>
+{% endblock %}

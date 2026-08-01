@@ -1,0 +1,6 @@
+/daily -> 404
+/daily-set -> 302
+/daily_tasks -> 308
+/daily_tasks/ -> 302
+/prep/coach -> 302
+/prep/onboarding -> 302

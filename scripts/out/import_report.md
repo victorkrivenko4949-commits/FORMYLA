@@ -1,7 +1,7 @@
 # FORMYLA JSONL Import Report
-**Date:** 2026-07-27 17:50:47
+**Date:** 2026-07-31 23:33:58
 **File:** `FORMYLA_L1_L5_TOP5.jsonl`
-**Mode:** `DRY-RUN` (no write)
+**Mode:** `--apply` (WRITE)
 
 ## A. Schema Suitability
 
@@ -2396,6 +2396,7 @@
 - **Parse errors**: 0
 - **Validation errors**: 12
 - **Duplicate task_uid**: 0
+- **Duplicate by task_text**: 0
 - **Empty statement**: 0
 - **Empty answer**: 12
 - **Геометрия без diagram_spec**: 647
@@ -2420,4 +2421,7 @@
 
 ## D. Write Results
 
-(dry-run — no writes performed)
+- **Created**: 3288
+- **Updated**: 0
+- **Skipped**: 12
+- **Write errors**: 0

@@ -163,19 +163,54 @@ def _inject_asset_version():
         _asset_version = new_ver
     return dict(asset_version=_asset_version, csrf_token=get_csrf_token)
 
-# DEBUG: Проверка переменных окружения
-print("="*60)
-print("DEBUG: Доступные переменные окружения:")
-env_keys = list(os.environ.keys())
-print(f"Всего переменных: {len(env_keys)}")
-print(f"SECRET_KEY = {'ЕСТЬ' if os.environ.get('SECRET_KEY') else 'НЕТ (используется автогенерация)'}")
-print(f"MAIL_USERNAME = {os.environ.get('MAIL_USERNAME')}")
-print(f"MAIL_PASSWORD = {'ЕСТЬ' if os.environ.get('MAIL_PASSWORD') else 'НЕТ'}")
-print(f"DEEPSEEK_API_KEY = {'ЕСТЬ' if os.environ.get('DEEPSEEK_API_KEY') else 'НЕТ'}")
-print("="*60)
+# ─── P12 TASK3: Валидация критических переменных окружения ──────────
+# Каждый ключ читается ТОЛЬКО из os.environ. При отсутствии пишем
+# в лог, какая именно переменная не задана. Приложение стартует
+# без падения; страницы с AI-генерацией честно сообщают о недоступности.
+
+_CRITICAL_ENV_VARS = [
+    ("SECRET_KEY",        True,  "сессии Flask, CSRF-токены"),
+    ("OPENROUTER_API_KEY", False, "AI-генерация задач (OpenRouter)"),
+    ("DEEPSEEK_API_KEY",  False, "AI-проверка ответов (DeepSeek)"),
+    ("MAIL_PASSWORD",     False, "отправка почты (SMTP)"),
+    ("RESEND_API_KEY",    False, "отправка почты (Resend API)"),
+    ("YANDEX_CLIENT_ID",  False, "Яндекс OAuth вход"),
+    ("YANDEX_CLIENT_SECRET", False, "Яндекс OAuth вход"),
+    ("VAPID_PUBLIC_KEY",  False, "Push-уведомления"),
+    ("VAPID_PRIVATE_KEY", False, "Push-уведомления"),
+]
+
+_MISSING_CRITICAL = []
+_MISSING_OPTIONAL = []
+for _var_name, _is_critical, _purpose in _CRITICAL_ENV_VARS:
+    _val = os.environ.get(_var_name, "").strip()
+    if not _val:
+        if _is_critical:
+            _MISSING_CRITICAL.append((_var_name, _purpose))
+        else:
+            _MISSING_OPTIONAL.append((_var_name, _purpose))
+
+print("=" * 60)
+print("P12 TASK3: проверка переменных окружения")
+print(f"  Всего переменных в окружении: {len(os.environ)}")
+if _MISSING_CRITICAL:
+    print("  [КРИТИЧЕСКИЕ] ОТСУТСТВУЮТ (приложение может работать нестабильно):")
+    for _n, _p in _MISSING_CRITICAL:
+        print(f"    - {_n} ({_p})")
+if _MISSING_OPTIONAL:
+    print("  [ОПЦИОНАЛЬНЫЕ] не заданы (соответствующие функции отключены):")
+    for _n, _p in _MISSING_OPTIONAL:
+        print(f"    - {_n} ({_p})")
+if not _MISSING_CRITICAL and not _MISSING_OPTIONAL:
+    print("  Все 9 проверяемых переменных заданы.")
+print("=" * 60)
 
 # Database configuration -- supports SQLite (local) and PostgreSQL (production)
-_database_url = os.environ.get('DATABASE_URL', 'sqlite:///formyla.db')
+# АБСОЛЮТНЫЙ ПУТЬ: всегда вычисляется от корня проекта (app.py),
+# независимо от папки запуска и от instance_path Flask.
+_default_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'formyla.db')
+_default_db_uri = 'sqlite:///' + _default_db_path.replace('\\', '/')
+_database_url = os.environ.get('DATABASE_URL', _default_db_uri)
 # Render provides postgres:// or postgresql:// but psycopg3 needs postgresql+psycopg://
 if _database_url.startswith('postgres://'):
     _database_url = _database_url.replace('postgres://', 'postgresql+psycopg://', 1)
@@ -315,6 +350,9 @@ try:
                 'source': 'TEXT',
                 'origin': 'VARCHAR(16)',
                 'methods_json': 'TEXT',
+                # П1: theme_id и theme_title для человеческого названия подтем
+                'theme_id': 'VARCHAR(50)',
+                'theme_title': 'VARCHAR(300)',
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -368,6 +406,39 @@ try:
                 print("[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state")
 except Exception as e:
     print(f"[AUTO-MIGRATION] curator_state.prep_state Warning: {e}")
+
+# AUTO-MIGRATION: Add level_engine columns to curator_state
+# Колонки добавлены в models_curator.py (level_mu, level_sigma, level_by_section,
+# level_updated_at). Используются services/level_engine.py как единый держатель
+# канонического уровня FORMYLA (шкала 1..5). Идемпотентно.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_le, text as _text_le
+        _inspector_le = _inspect_le(db.engine)
+        if 'curator_state' in _inspector_le.get_table_names():
+            _columns_le = [col['name'] for col in _inspector_le.get_columns('curator_state')]
+            _new_level_cols = {
+                'level_mu': 'REAL',
+                'level_sigma': 'REAL',
+                'level_by_section': 'TEXT',
+                'level_updated_at': 'TEXT',
+            }
+            for _col_name_le, _col_type_le in _new_level_cols.items():
+                if _col_name_le not in _columns_le:
+                    try:
+                        db.session.execute(_text_le(
+                            f"ALTER TABLE curator_state ADD COLUMN {_col_name_le} {_col_type_le}"
+                        ))
+                        db.session.commit()
+                        print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_le}' added to curator_state")
+                    except Exception as _e_col_le:
+                        db.session.rollback()
+                        print(f"[AUTO-MIGRATION] curator_state.{_col_name_le} skipped: {_e_col_le}")
+                else:
+                    print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_le}' already exists on curator_state")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] curator_state level_engine Warning: {e}")
+
 
 # AUTO-MIGRATION: Create tutor_calls table for AI-тьютор v2 logging
 try:
@@ -1421,6 +1492,16 @@ try:
 except Exception as _e:
     import traceback as _tb
     print(f"[BP] curator_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
+# /intake/* — P9 Intake: новая анкета входа (5 вопросов + 5 якорей).
+try:
+    from routes.intake import intake_bp
+    app.register_blueprint(intake_bp)
+    print("[BP] intake_bp registered (/intake)")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] intake_bp NOT registered: {_e}")
     print(_tb.format_exc())
 
 # ── AUTO-MIGRATION: test_sessions (для восстановления адаптивного теста) ──
@@ -2994,6 +3075,7 @@ def __diag_method(method_code):
 
 
 @app.route("/call")
+@login_required
 def call_page():
     """Видеозвонок по коду (Task 6).
 
@@ -3006,6 +3088,7 @@ def call_page():
 
 
 @app.route("/conference")
+@login_required
 def conference_page():
     """Групповая видеоконференция (SocketIO-backed, до 8 участников).
 
@@ -3348,6 +3431,7 @@ def problem_detail(problem_id):
 
 
 @app.route("/api/check_answer", methods=["POST"])
+@login_required
 def check_answer():
     """API для проверки ответа пользователя."""
     data = request.get_json()
@@ -3442,13 +3526,23 @@ def probniks_page():
 
 @app.route("/olympiad-test")
 def olympiad_test_select_class():
-    """Step 1: Select grade (5-11)."""
+    """Step 1: Select grade (5-11).
+    Save test parameters from URL query into session (length, level_hint, scope)."""
+    if request.args.get('length'):
+        session['olyad_length'] = request.args.get('length')
+    if request.args.get('level_hint'):
+        session['olyad_level_hint'] = request.args.get('level_hint')
+    if request.args.get('scope'):
+        session['olyad_scope'] = request.args.get('scope')
+    session.modified = True
     return render_template('olympiad_test_select_class.html')
 
 
 @app.route("/olympiad-test/select-section")
 def olympiad_test_select_section():
-    """Step 2: Select section for chosen grade."""
+    """Step 2: Select section for chosen grade.
+    If scope=all_sections in session, redirect to test start."""
+    scope = session.get('olyad_scope', None)
     try:
         grade = int(request.args.get('grade', ''))
     except (ValueError, TypeError):
@@ -3457,6 +3551,8 @@ def olympiad_test_select_section():
     if grade not in range(5, 12):
         flash('Неверный класс', 'error')
         return redirect('/olympiad-test')
+    if scope == 'all_sections':
+        return redirect(f'/olympiad-test/start?grade={grade}')
     from services.olympiad_adaptive import get_sections
     sections = get_sections(grade)
     if not sections:
@@ -3554,11 +3650,18 @@ def olympiad_test_select_level():
 
 @app.route("/olympiad-test/start", methods=['GET', 'POST'])
 def olympiad_test_run():
-    """Main test page: fixed-level, 5 tasks, no adaptive difficulty change."""
+    """Main test page: configurable length/level/scope from session."""
     from services.olympiad_adaptive import (
-        get_task, _normalize_answer, _check_solution_quality,
+        get_task, get_task_by_section,
+        _normalize_answer, _check_solution_quality,
+        pick_all_sections_tasks, _all_tasks,
     )
-    import random
+    import random, logging
+    _ol_log = logging.getLogger(__name__)
+
+    scope = session.get('olyad_scope', None)
+    total_len = int(session.get('olyad_length', 5))
+    level_hint = int(session.get('olyad_level_hint', 2))
 
     # ── GET: show task ───────────────────────────────────────────
     if request.method == 'GET':
@@ -3568,35 +3671,87 @@ def olympiad_test_run():
                 grade = int(request.args.get('grade', ''))
             except (ValueError, TypeError):
                 return redirect('/olympiad-test')
-            theme = request.args.get('theme', '').strip()
-            level = int(request.args.get('level', '2'))
-            if not theme or grade not in range(5, 12) or level not in range(1, 6):
+            if grade not in range(5, 12):
                 return redirect('/olympiad-test')
-            session['olyad_grade'] = grade
-            session['olyad_theme'] = theme
-            session['olyad_level'] = level
-            session['olyad_task_num'] = 0
-            session['olyad_shown'] = []
-            session['olyad_results'] = []
+
+            if scope == 'all_sections':
+                try:
+                    from services.level_engine import get_state
+                    st = get_state(current_user.id) if current_user.is_authenticated else {}
+                except Exception:
+                    st = {}
+                by_sec = st.get('by_section', {}) if st else {}
+                picked = pick_all_sections_tasks(grade, total_len, by_sec, level_hint)
+                queue = picked.get('tasks', [])
+                session['olyad_task_queue'] = queue
+                session['olyad_queue_pos'] = 0
+                session['olyad_uid'] = '1'
+                session['olyad_grade'] = grade
+                session['olyad_theme'] = 'all_sections'
+                session['olyad_level'] = level_hint
+                session['olyad_task_num'] = 0
+                session['olyad_shown'] = []
+                session['olyad_results'] = []
+                session['olyad_total'] = len(queue)
+                session.modified = True
+                if not queue:
+                    flash('Нет задач для выбранного класса', 'error')
+                    return redirect('/olympiad-test')
+            else:
+                theme = request.args.get('theme', '').strip()
+                level = int(request.args.get('level', str(level_hint)))
+                if not theme or level not in range(1, 6):
+                    return redirect('/olympiad-test')
+                session['olyad_uid'] = '1'
+                session['olyad_grade'] = grade
+                session['olyad_theme'] = theme
+                session['olyad_level'] = level
+                session['olyad_task_num'] = 0
+                session['olyad_shown'] = []
+                session['olyad_results'] = []
+                session['olyad_task_queue'] = []
+                session['olyad_total'] = total_len
+                session.modified = True
 
         grade = session['olyad_grade']
         theme = session['olyad_theme']
         level = session['olyad_level']
-        shown = set(session.get('olyad_shown', []))
 
-        task = get_task(grade, theme, level, shown)
+        if scope == 'all_sections':
+            queue = session.get('olyad_task_queue', [])
+            pos = session.get('olyad_queue_pos', 0)
+            if pos >= len(queue):
+                task = None
+            else:
+                task = queue[pos]
+                session['olyad_current_task'] = task['task_uid']
+                session['olyad_level'] = task.get('level', level_hint)
+                session['olyad_current_section'] = (task.get('section') or '').strip()
+                shown = set(session.get('olyad_shown', []))
+                shown.add(task['task_uid'])
+                session['olyad_shown'] = list(shown)
+                session['olyad_queue_pos'] = pos + 1
+                session.modified = True
+        else:
+            shown = set(session.get('olyad_shown', []))
+            task = get_task(grade, theme, level, shown)
+            if task:
+                session['olyad_shown'] = list(shown) + [task['task_uid']]
+                session['olyad_current_task'] = task['task_uid']
+                session['olyad_current_section'] = (task.get('section') or '').strip()
+                session.modified = True
+
         if not task:
             flash('Задачи закончились', 'error')
             return redirect('/olympiad-test')
 
-        session['olyad_shown'] = list(shown) + [task['task_uid']]
-        session['olyad_current_task'] = task['task_uid']
-        session.modified = True
-
         tnum = session.get('olyad_task_num', 0) + 1
+        display_level = task.get('level', level)
+        display_theme = task.get('theme', '') if scope == 'all_sections' else theme
         return render_template('olympiad_test_run.html',
-                               task=task, grade=grade, theme=theme,
-                               level=level, task_count=tnum, feedback=None, result=None)
+                               task=task, grade=grade, theme=display_theme,
+                               level=display_level, task_count=tnum, feedback=None, result=None,
+                               total=session.get('olyad_total', total_len))
 
     # ── POST: process answer ─────────────────────────────────────
     user_answer = (request.form.get('answer') or '').strip()
@@ -3613,7 +3768,6 @@ def olympiad_test_run():
                 break
     # Fallback: search in memory
     if not task_data:
-        from services.olympiad_adaptive import _all_tasks
         for t in _all_tasks:
             if t.get('task_uid') == task_uid:
                 task_data = t
@@ -3626,12 +3780,28 @@ def olympiad_test_run():
     correct = (task_data.get('answer') or '').strip()
     ref_sol = (task_data.get('solution') or '').strip()
     statement = (task_data.get('statement') or '').strip()
-    level = session['olyad_level']
+    level = task_data.get('level', session.get('olyad_level', level_hint))
 
     is_correct = _normalize_answer(user_answer) == _normalize_answer(correct)
 
-    # Simple scoring: correct=+1, wrong=-1, no partial (fixed level test)
+    # Simple scoring: correct=+1, wrong=-1
     ball = 1 if is_correct else -1
+
+    # ── Step 4: Call level_engine.record_result ───────────────────
+    task_section = session.get('olyad_current_section', (task_data.get('section') or '').strip())
+    if current_user.is_authenticated and task_section:
+        try:
+            record_result(
+                current_user.id,
+                task_section,
+                int(level),
+                is_correct,
+            )
+        except Exception as _le_err:
+            _ol_log.warning(
+                "record_result failed user=%s section=%s level=%s err=%s",
+                current_user.id, task_section, level, _le_err
+            )
 
     results = session.get('olyad_results', [])
     results.append({
@@ -3651,14 +3821,47 @@ def olympiad_test_run():
     task_num = len(results)
     grade = session['olyad_grade']
     theme = session['olyad_theme']
-    level = session['olyad_level']
 
-    # Results if 5 tasks done
+    # Results if total_len tasks done
     result = None
-    if task_num >= 5:
+    if task_num >= total_len:
         correct_count = sum(1 for r in results if r['is_correct'])
         partial_count = sum(1 for r in results if not r['is_correct'] and r.get('ball', 0) == 0)
         wrong_count = task_num - correct_count - partial_count
+
+        # ── Step 5: Update prep_state ─────────────────────────────
+        if current_user.is_authenticated:
+            try:
+                from models_curator import CuratorState
+                cs = CuratorState.query.filter_by(user_id=current_user.id).first()
+                if cs and isinstance(getattr(cs, 'prep_state', None), dict):
+                    from datetime import datetime as _dt
+                    now_iso = _dt.utcnow().isoformat()
+                    mu_before = None
+                    mu_after = None
+                    try:
+                        st = get_state(current_user.id)
+                        mu_after = st.get('mu')
+                    except Exception:
+                        pass
+                    ps = dict(cs.prep_state)
+                    if ps.get('test_queue'):
+                        ps['test_queue'] = ps['test_queue'][1:]
+                    ps['last_test'] = {
+                        'date': now_iso,
+                        'total': task_num,
+                        'correct': correct_count,
+                        'mu_before': mu_before,
+                        'mu_after': mu_after,
+                        'level_before': round(mu_before) if mu_before else None,
+                        'level_after': round(mu_after) if mu_after else None,
+                    }
+                    cs.prep_state = ps
+                    from models import db
+                    db.session.commit()
+            except Exception as _ps_err:
+                _ol_log.warning("prep_state update failed: %s", _ps_err)
+
         result = {
             'results': results,
             'correct_count': correct_count,
@@ -3670,8 +3873,26 @@ def olympiad_test_run():
         }
 
     # Get next task for display
-    shown = set(session.get('olyad_shown', []))
-    task = get_task(grade, theme, level, shown) if not result else None
+    if result:
+        task = None
+    elif scope == 'all_sections':
+        queue = session.get('olyad_task_queue', [])
+        pos = session.get('olyad_queue_pos', 0)
+        if pos < len(queue):
+            task = queue[pos]
+            session['olyad_current_task'] = task['task_uid']
+            session['olyad_level'] = task.get('level', level_hint)
+            session['olyad_current_section'] = (task.get('section') or '').strip()
+            shown = set(session.get('olyad_shown', []))
+            shown.add(task['task_uid'])
+            session['olyad_shown'] = list(shown)
+            session['olyad_queue_pos'] = pos + 1
+            session.modified = True
+        else:
+            task = None
+    else:
+        shown = set(session.get('olyad_shown', []))
+        task = get_task(grade, theme, level, shown)
 
     feedback = {
         'is_correct': is_correct,
@@ -3680,10 +3901,13 @@ def olympiad_test_run():
         'solution': ref_sol,
     }
 
+    display_level = task.get('level', level) if task else level
+    display_theme = (task.get('theme', '') if task and scope == 'all_sections' else theme)
     return render_template('olympiad_test_run.html',
-                           task=task, grade=grade, theme=theme,
-                           level=level, task_count=task_num,
-                           feedback=feedback, result=result)
+                           task=task, grade=grade, theme=display_theme,
+                           level=display_level, task_count=task_num,
+                           feedback=feedback, result=result,
+                           total=session.get('olyad_total', total_len))
 
 
 # NOTE: /practice/generate route removed together with the "Написать олимпиаду" section.
@@ -3970,6 +4194,7 @@ def olympiads():
 
 
 @app.route("/olympiads/open", methods=["POST"])
+@login_required
 def olympiad_open():
     slug = request.form.get("olympiad")
     year = request.form.get("year")
@@ -4067,6 +4292,7 @@ def olympiad_open():
 
 
 @app.route("/olympiads/solution/<int:combo_id>")
+@login_required
 def olympiad_solution(combo_id):
     """Показ решений пробника."""
     combo = next((c for c in COMBOS if c["id"] == combo_id), None)
@@ -4177,6 +4403,7 @@ def send_auth_email(recipient_email, code):
     Gmail SMTP больше не используется (после 2026-05 Google отклоняет
     App Passwords для этой учётки — см. инцидент SMTPAuthenticationError 535).
     """
+    import traceback
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background: #ffffff; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -4446,7 +4673,7 @@ def verify_code():
             if next_page:
                 return redirect(next_page)
             if getattr(user, 'onboarded_at', None) is None:
-                return redirect(url_for('about_page', onboarding=1))
+                return redirect(url_for('intake.intake_page'))
             return redirect(url_for('index'))
         
         flash('Неверный или просроченный код', 'error')
@@ -4638,9 +4865,9 @@ def yandex_login():
         session.permanent = True  # Делаем сессию постоянной (30 дней)
         login_user(user, remember=True)
 
-        # Редирект: новым пользователям (onboarded_at IS NULL) — на онбординг
+        # Редирект: новым пользователям (onboarded_at IS NULL) — на /intake
         if getattr(user, 'onboarded_at', None) is None:
-            redirect_url = url_for('about_page', onboarding=1)
+            redirect_url = url_for('intake.intake_page')
         else:
             redirect_url = url_for('index')
 
@@ -5199,8 +5426,12 @@ def submit_exam(exam_id):
                 ai_msg = ChatMessage(user_id=current_user.id, role='assistant', content=chat_msg)
                 db.session.add(ai_msg)
                 db.session.commit()
-            except:
-                pass  # Не критично если не отправилось
+            except Exception as _chat_err:
+                import logging
+                logging.getLogger(__name__).warning(
+                    "Не удалось отправить ChatMessage для exam_id=%s: %s",
+                    exam_id, _chat_err
+                )
             
             return jsonify({'success': True, 'exam_id': exam_id})
             
@@ -7114,6 +7345,7 @@ def _load_adaptive_state_from_db(session_id):
 
 
 @app.route("/api/test/start", methods=["POST"])
+@login_required
 def api_test_start():
     """Создаёт (или возвращает существующую) запись test_sessions для
     активного адаптивного теста. Используется JS на странице теста."""
@@ -7126,6 +7358,7 @@ def api_test_start():
 
 
 @app.route("/api/test/active", methods=["GET"])
+@login_required
 def api_test_active():
     """Проверяет, есть ли активная (in_progress) сессия для текущего
     пользователя/устройства. Возвращает {active: True, session: {...}} или {}."""
@@ -7147,6 +7380,7 @@ def api_test_active():
 
 
 @app.route("/api/test/<int:session_id>/resume", methods=["GET"])
+@login_required
 def api_test_resume(session_id):
     """Возвращает полное состояние сессии + восстанавливает Flask-сессию."""
     from sqlalchemy import text as _sql
@@ -7504,6 +7738,7 @@ def adaptive_test_simple_submit():
 
 
 @app.route("/api/check_adaptive_answer", methods=["POST"])
+@login_required
 def check_adaptive_answer():
     """
     API endpoint для проверки ответа через DeepSeek AI.
@@ -7751,6 +7986,7 @@ def check_adaptive_answer():
 
 
 @app.route("/api/report_task/<int:task_id>", methods=["POST"])
+@login_required
 def report_task(task_id):
     """API для жалоб на некорректные задачи."""
     try:
@@ -8912,6 +9148,7 @@ def student_profile(student_id):
 # ============================================================================
 
 @app.route("/secrets")
+@login_required
 def secrets():
     """Главная страница раздела 'Секреты олимпиадной математики'"""
     from models import OlympiadSecret
@@ -8964,6 +9201,7 @@ def secret_detail(secret_id):
 
 
 @app.route("/api/secrets")
+@login_required
 def api_secrets():
     """API для получения списка секретов (для будущих фич)"""
     from models import OlympiadSecret
@@ -9623,16 +9861,13 @@ def api_daily_task():
 @app.route('/daily-set')
 @login_required
 def daily_set_page():
-    """Страница «Задачи дня» — тематический набор из 10 задач (Вариант А).
+    """GET /daily-set → 302 redirect на /daily_tasks (живой маршрут задач дня).
 
-    GET /daily-set — показывает сегодняшний набор задач с кнопкой
-    «Перегенерировать», которая запрашивает /api/daily-task?regenerate=1
-    и перезагружает страницу.
+    Ранее шаблон daily_set.html отсутствовал — маршрут отдавал 500.
+    Теперь это простой редирект. Кнопка куратора ведёт сюда же,
+    поэтому ученик больше не получает ошибку.
     """
-    from services.daily_task_rotation import pick_daily_set
-
-    result = pick_daily_set(current_user.id)
-    return render_template('daily_set.html', data=result)
+    return redirect('/daily_tasks', code=302)
 
 
 # ============================================================================
@@ -10698,6 +10933,7 @@ def public_profile(user_id):
 MIGRATE_SECRET = os.environ.get('MIGRATE_SECRET', 'formyla-migrate-2026')
 
 @app.route('/api/migrate/tables', methods=['GET'])
+@login_required
 def migrate_list_tables():
     """Список таблиц и количество строк в Postgres."""
     secret = request.args.get('secret', '')
@@ -10794,6 +11030,7 @@ def migrate_push_data():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 @app.route('/api/migrate/export', methods=['GET'])
+@login_required
 def migrate_export_table():
     """Export table rows as JSON (paginated). Usage: ?secret=...&table=adaptive_task&offset=0&limit=500"""
     secret = request.args.get('secret', '')
@@ -10833,6 +11070,7 @@ def migrate_export_table():
 # ============================================================
 
 @app.route('/api/save_test_result', methods=['POST'])
+@login_required
 def api_save_test_result():
     """Сохранение результата теста в БД"""
     try:
@@ -10905,6 +11143,7 @@ def api_save_test_result():
 
 
 @app.route('/api/profile', methods=['GET'])
+@login_required
 def api_get_profile():
     """Загрузка профиля пользователя"""
     try:
@@ -10953,6 +11192,7 @@ def api_get_profile():
 
 
 @app.route('/api/set_nickname', methods=['POST'])
+@login_required
 def api_set_nickname():
     """Установка никнейма пользователя"""
     try:
@@ -11173,6 +11413,7 @@ _SUPPORT_RATE_LIMIT = {}  # in-memory, для prod лучше Redis
 
 
 @app.route('/sql')
+@login_required
 def sql_page():
     return render_template('sql.html')
 
@@ -11193,7 +11434,14 @@ def about_page():
     return render_template('about.html')
 
 
+@app.route('/misc')
+def misc_page():
+    """Страница «Прочее» — все остальные разделы, не вошедшие в три основных."""
+    return render_template('misc.html')
+
+
 @app.route('/api/support', methods=['POST'])
+@login_required
 def submit_support():
     try:
         # Поддерживаем оба варианта: JSON и multipart/form-data (для прикреплённых файлов)
@@ -11423,6 +11671,7 @@ _REVIEW_RATE_LIMIT = {}
 
 
 @app.route('/api/feedback', methods=['POST'])
+@login_required
 def submit_feedback():
     """Принять отзыв пользователя и отправить его на почту владельцу.
 
@@ -11560,6 +11809,7 @@ def submit_feedback():
 
 
 @app.route('/api/reviews', methods=['GET'])
+@login_required
 def list_site_reviews():
     """Публичный список отзывов о сайте для страницы /about.
 

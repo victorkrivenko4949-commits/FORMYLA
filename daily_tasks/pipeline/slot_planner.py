@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-daily_tasks/pipeline/slot_planner.py - deterministic 10-slot planner.
+daily_tasks/pipeline/slot_planner.py - daily slot planner driven by onboarding + level_engine.
 
-THEMATIC DAY MODE (DETERMINISTIC CALENDAR, 2026-06-22):
-    Each day ALL 10 tasks belong to ONE topic. The topic of the day is
-    chosen by a DETERMINISTIC CALENDAR (no randomness): the full topic
-    catalog of the user is sorted stably, and the day index
-    (today - ANCHOR_DATE) % len(topics) selects exactly one topic. Thus
-    every topic appears exactly once per cycle (cycle length == number of
-    topics), and when the cycle restarts the topics repeat in the same
-    order. The same calendar date always maps to the same topic.
-    Difficulty per slot is still picked inside that topic's level window and
-    spread out via _enforce_spread, so the 10 tasks share one topic but vary
-    in difficulty. Subtopics within the day are diversified from
-    DIVERSITY_CATALOG so the 10 tasks cover different facets of the topic
-    (e.g. for quadratics: Vieta, parameters, root placement, ...).
+NEW LOGIC (2026-07-28):
+    - COUNT  = daily_tasks from onboarding (default 5). Hardcoded 10 removed.
+    - LEVEL  = level_engine.allowed_difficulty by current mu,
+               capped by route_ceiling = min(5, target_level + 1).
+    - SECTIONS = priority to sections with lowest mu in level_by_section;
+                 section without data is priority (needs measurement).
+                 No more than 2 consecutive slots from same section.
+    - THEMATIC DAY = FALLBACK only: when level_by_section is empty
+                     AND onboarding is not done (no анкета).
+    - Task generation inside slots is NOT touched — AI pipeline stays as-is.
 
 The LLM (Step 1) only fills in topic content (archetype, must_use_concepts,
 reason_for_student, ...) for spec objects whose topic + difficulty_level
@@ -23,6 +20,7 @@ are already locked in by us.
 from __future__ import annotations
 
 import logging
+from collections import Counter as _CounterCol
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
@@ -32,7 +30,7 @@ from daily_tasks.pipeline.diversity_catalog import DIVERSITY_CATALOG
 
 logger = logging.getLogger(__name__)
 
-TOTAL_SLOTS = 10
+TOTAL_SLOTS = 10  # kept for backwards compat; new logic ignores this
 MIN_LEVEL = 1
 MAX_LEVEL = 5
 
@@ -273,7 +271,152 @@ def plan_slots(
     total_slots: int = TOTAL_SLOTS,
     today: Optional[date] = None,
 ) -> List[PlannedSlot]:
-    """Build the deterministic list of 10 PlannedSlot objects (THEMATIC DAY)."""
+    """Build a list of PlannedSlot objects driven by onboarding + level_engine.
+
+    NEW LOGIC (2026-07-28):
+      1. COUNT  — daily_tasks from onboarding (default 5).  total_slots
+         param is ONLY used if onboarding is absent.
+      2. LEVEL  — level_engine.allowed_difficulty by current mu,
+         capped above by route_ceiling = min(5, target_level + 1).
+      3. SECTIONS — priority to sections with lowest mu in level_by_section;
+         section without data counts as priority (mu=1.0, needs measurement).
+         No more than 2 consecutive slots from the same section.
+      4. THEMATIC DAY — FALLBACK only: when level_by_section is empty
+         AND onboarding is not done (анкета не пройдена).
+
+    Task generation inside each slot (AI pipeline) is NOT touched.
+    """
+    user_id = profile.get("user_id")
+    if not user_id:
+        # No user_id → try thematic fallback with whatever we have
+        logger.warning("plan_slots: no user_id in profile — using thematic fallback")
+        return _plan_thematic_fallback(profile, max(total_slots, 5), today)
+
+    # ── 1. Check if we should use the new engine-based logic ──────────
+    from services.level_engine import get_state, allowed_difficulty
+    from services.daily_task_rotation import (
+        _get_onboarding, get_daily_task_count, _section_priorities,
+    )
+
+    onboard = _get_onboarding(user_id)
+    state = get_state(user_id)
+    by_section = state.get("by_section", {})
+
+    # Determine if onboarding is done
+    onboarding_done = bool(onboard) if onboard else False
+
+    # ── FALLBACK: thematic day when level_by_section is empty AND
+    #    onboarding not done (no анкета). ───────────────────────────────
+    if not by_section and not onboarding_done:
+        logger.info(
+            "plan_slots: level_by_section empty + no onboarding → "
+            "thematic day fallback for user=%d", user_id,
+        )
+        return _plan_thematic_fallback(profile, max(total_slots, 5), today)
+
+    # ── 2. Count: daily_tasks from ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ ─────────────
+    count = get_daily_task_count(user_id)
+
+    # ── 3. Level: allowed_difficulty by current mu, capped by route_ceiling ─
+    mu = state.get("mu", 3.0)
+    rounded_level = max(1, min(5, int(round(mu))))
+
+    # route_ceiling = min(5, target_level + 1)
+    target_level = 5
+    if onboard:
+        tl = onboard.get("target_level")
+        if isinstance(tl, (int, float)):
+            target_level = int(tl)
+    route_ceiling = min(5, target_level + 1)
+    logger.info(
+        "plan_slots: user=%d target_level=%d route_ceiling=%d",
+        user_id, target_level, route_ceiling,
+    )
+
+    allowed_levels = allowed_difficulty(rounded_level, "formyla_L1_L5_TOP5")
+    allowed_levels = [l for l in allowed_levels if l <= route_ceiling]
+    if not allowed_levels:
+        allowed_levels = [route_ceiling]
+
+    # ── 4. Section priorities (lowest mu first) ───────────────────────
+    sections_ordered = _section_priorities(by_section)
+
+    # ── 5. Build slots ───────────────────────────────────────────────
+    grade = _profile_grade(profile)
+
+    slots: List[PlannedSlot] = []
+    section_counts: Dict[str, int] = {s: 0 for s, _ in sections_ordered}
+    last_section = ""
+
+    for pos in range(count):
+        # Pick next section: priority to lowest counts, max 2 consecutive
+        chosen_sec = ""
+        for sec, _ in sections_ordered:
+            if sec == last_section and section_counts.get(sec, 0) >= 2:
+                continue
+            chosen_sec = sec
+            break
+        if not chosen_sec:
+            # All blocked → pick any
+            for sec, _ in sections_ordered:
+                chosen_sec = sec
+                break
+        if not chosen_sec:
+            break
+
+        # Pick difficulty: spread evenly across allowed_levels
+        diff_idx = pos % len(allowed_levels)
+        difficulty = allowed_levels[diff_idx]
+
+        section_counts[chosen_sec] = section_counts.get(chosen_sec, 0) + 1
+        last_section = chosen_sec
+
+        # Determine if this section has measurements
+        sec_data = by_section.get(chosen_sec, {}) if isinstance(by_section, dict) else {}
+        measured = isinstance(sec_data, dict) and sec_data.get("n", 0) > 0
+        sec_mu = float(sec_data.get("mu", 1.0)) if isinstance(sec_data, dict) else 1.0
+
+        slot_kind = "weak_main" if sec_mu < 3.0 else "strong_review"
+
+        reason_bits: List[str] = []
+        reason_bits.append(f"Раздел: {chosen_sec} (mu={sec_mu:.1f})")
+        reason_bits.append(f"уровень {difficulty} из [{min(allowed_levels)}, {max(allowed_levels)}]")
+
+        slots.append(PlannedSlot(
+            position=pos + 1,
+            slot_kind=slot_kind,
+            subject="math",
+            topic=chosen_sec,
+            topic_key=chosen_sec,
+            difficulty_level=difficulty,
+            target_level=difficulty,
+            level_window=(min(allowed_levels), max(allowed_levels)),
+            is_calibration=not measured,
+            measured=measured,
+            pct=None,
+            test_correct=None,
+            test_total=None,
+            final_level=None,
+            subtopic_hints=[],
+            reason_hint="; ".join(reason_bits),
+        ))
+
+    # Enforce spread and log
+    _enforce_spread(slots, max_same_level=2)
+    _log_plan(slots)
+    return slots
+
+
+def _plan_thematic_fallback(
+    profile: Dict[str, Any],
+    total_slots: int,
+    today: Optional[date] = None,
+) -> List[PlannedSlot]:
+    """Original thematic-day logic preserved as fallback.
+
+    Used when level_by_section is empty AND onboarding is not done.
+    All slots belong to ONE topic chosen by deterministic calendar.
+    """
     all_topics = list(profile.get("topics_full") or [])
     if not all_topics:
         logger.warning("plan_slots: empty topics_full, cannot build thematic day")
@@ -297,11 +440,6 @@ def plan_slots(
             _floor, _new_lo, _new_hi,
         )
 
-    # DIVERSITY FIX (2026-06-24): make sure the day's subtopics are varied.
-    # If the topic carries no subtopic_hints of its own, pull the full list
-    # from DIVERSITY_CATALOG so the 10 tasks cover different facets of the
-    # topic (e.g. for quadratics: Vieta, parameters, root placement, ...)
-    # instead of collapsing into 10 identical plain-equation tasks.
     _existing_hints = list(day_topic.get("subtopic_hints") or [])
     _catalog_subs = _catalog_subtopics(
         grade,
@@ -309,19 +447,9 @@ def plan_slots(
         day_topic.get("topic", ""),
     )
     _day_hints = _existing_hints or _catalog_subs
-    if _catalog_subs:
-        logger.info(
-            "plan_slots: diversity subtopics from catalog grade=%s topic=%s count=%d",
-            grade, day_topic.get("topic"), len(_catalog_subs),
-        )
-    else:
-        logger.warning(
-            "plan_slots: no catalog subtopics for grade=%s topic_key=%s topic=%s",
-            grade, day_topic.get("topic_key"), day_topic.get("topic"),
-        )
 
     logger.info(
-        "plan_slots THEMATIC DAY (calendar): topic=%s subject=%s measured=%s "
+        "plan_slots THEMATIC DAY FALLBACK: topic=%s subject=%s measured=%s "
         "day_index=%d/%d cycle_len=%d",
         day_topic.get("topic"), day_topic.get("subject"), day_topic.get("measured"),
         day_index, cycle_len, cycle_len,

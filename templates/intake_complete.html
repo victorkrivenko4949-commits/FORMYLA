@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Анкета пройдена — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --accent: #4c7dff;
+    --accent-hi: #6b9aff;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: rgba(255,255,255,0.08);
+    --radius: 12px;
+  }
+
+  .intake-complete {
+    max-width: 500px;
+    margin: 80px auto;
+    padding: 60px 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .intake-complete h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .intake-complete p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .intake-complete a {
+    display: inline-block;
+    padding: 12px 32px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.25s;
+  }
+
+  .intake-complete a:hover {
+    background: var(--accent-hi);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(76,125,255,0.25);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="intake-complete">
+  <h2>Анкета уже пройдена</h2>
+  <p>Ты уже ответил на все вопросы. Твой профиль настроен, задачи дня подбираются персонально.</p>
+  <a href="/daily_tasks">К задачам дня</a>
+</div>
+{% endblock %}

@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── Route to the correct state ──
     switch (data.status) {
+        case 'blocked':
+            showBlockedState(data);
+            break;
         case 'no_set':
             showEmptyState();
             break;
@@ -86,6 +89,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ── State Display Functions ──
+
+function showBlockedState(data) {
+    var el = document.getElementById('dt-blocked-state');
+    if (el) {
+        // Update message with theme title
+        var msgEl = document.getElementById('dt-blocked-message');
+        if (msgEl && data.blocked_theme_title) {
+            msgEl.textContent = 'Сначала утренний срез: «' + data.blocked_theme_title + '». 5 задач, примерно 15 минут.';
+        }
+        // Update probe link
+        var linkEl = document.getElementById('dt-probe-link');
+        if (linkEl && data.probe_url) {
+            linkEl.href = data.probe_url;
+        }
+        el.classList.remove('dt-hidden');
+    }
+}
 
 function showEmptyState() {
     var el = document.getElementById('dt-empty-state');

@@ -1,0 +1,130 @@
+2026-07-30 01:20:37,611 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-07-30 01:20:37,611 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+2026-07-30 01:20:38,849 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-07-30 01:20:38,932 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-07-30 01:20:43,127 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-07-30 01:20:43,133 - apscheduler.scheduler - INFO - Scheduler started
+Traceback (most recent call last):
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such column: thematic_day_sets.created_at
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\regression_night.py", line 22, in <module>
+    u = User.query.filter_by(email=e).first()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 2228, in _execute_internal
+    ) = compile_state_cls.orm_pre_session_exec(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\context.py", line 577, in orm_pre_session_exec
+    session._autoflush()
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 3051, in _autoflush
+    raise e.with_traceback(sys.exc_info()[2])
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 3040, in _autoflush
+    self.flush()
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 4331, in flush
+    self._flush(objects)
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 4466, in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 4427, in _flush
+    flush_context.execute()
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 442, in execute
+    postsort_actions = self._generate_actions()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 400, in _generate_actions
+    if action.execute(self):
+       ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 532, in execute
+    self.dependency_processor.presort_deletes(uow, delete_states)
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\dependency.py", line 448, in presort_deletes
+    history = uowcommit.get_attribute_history(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 283, in get_attribute_history
+    history = impl.get_history(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\writeonly.py", line 376, in get_history
+    c = self._get_collection_history(state, passive)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\writeonly.py", line 400, in _get_collection_history
+    return self.collection_history_cls(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\typing.py", line 1184, in __call__
+    result = self.__origin__(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\dynamic.py", line 71, in __init__
+    self.unchanged_items = util.OrderedIdentitySet(coll)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\_collections.py", line 324, in __init__
+    for o in iterable:
+             ^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\query.py", line 2843, in __iter__
+    result = self._iter()
+             ^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
+(sqlite3.OperationalError) no such column: thematic_day_sets.created_at
+[SQL: SELECT thematic_day_sets.id AS thematic_day_sets_id, thematic_day_sets.user_id AS thematic_day_sets_user_id, thematic_day_sets.target_date AS thematic_day_sets_target_date, thematic_day_sets.subject AS thematic_day_sets_subject, thematic_day_sets.class_level AS thematic_day_sets_class_level, thematic_day_sets.status AS thematic_day_sets_status, thematic_day_sets.triggered_by AS thematic_day_sets_triggered_by, thematic_day_sets.current_step AS thematic_day_sets_current_step, thematic_day_sets.progress_pct AS thematic_day_sets_progress_pct, thematic_day_sets.tasks_json AS thematic_day_sets_tasks_json, thematic_day_sets.pipeline_log AS thematic_day_sets_pipeline_log, thematic_day_sets.error_message AS thematic_day_sets_error_message, thematic_day_sets.total_cost_usd AS thematic_day_sets_total_cost_usd, thematic_day_sets.started_at AS thematic_day_sets_started_at, thematic_day_sets.finished_at AS thematic_day_sets_finished_at, thematic_day_sets.generated_at AS thematic_day_sets_generated_at, thematic_day_sets.created_at AS thematic_day_sets_created_at 
+FROM thematic_day_sets 
+WHERE ? = thematic_day_sets.user_id]
+[parameters: (10027,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)

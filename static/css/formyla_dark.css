@@ -1,0 +1,108 @@
+/* formyla_dark.css — unified dark design tokens for FORMYLA */
+
+:root {
+  --bg: #070C18;
+  --surface: #0E1830;
+  --surface-2: #121F3C;
+  --border: #1C2B4F;
+  --border-soft: #16233F;
+  --text: #E6EBF7;
+  --muted: #8C9ABC;
+  --faint: #5B6884;
+  --accent: #4C7DFF;
+  --accent-hi: #6B95FF;
+  --accent-dim: rgba(76,125,255,.12);
+  --ok: #3ECF8E;
+  --warn: #E5AC3A;
+  --bad: #E86A62;
+  --r: 14px;
+}
+
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700');
+
+body {
+  background:
+    radial-gradient(900px 480px at 12% -8%, rgba(76,125,255,.13), transparent 60%),
+    radial-gradient(700px 420px at 92% 4%, rgba(76,125,255,.07), transparent 62%),
+    var(--bg);
+  font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+}
+
+.container {
+  max-width: 1120px;
+}
+
+/* ── Card ──────────────────────────────────────────── */
+.card {
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r);
+}
+
+/* ── Buttons ───────────────────────────────────────── */
+.btn {
+  background: var(--accent);
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-weight: 700;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  background: var(--accent-hi);
+  box-shadow: 0 0 20px rgba(76,125,255,.25);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-ghost:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+/* ── Tags & Chips ──────────────────────────────────── */
+.tag,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent-dim);
+  color: var(--accent-hi);
+  border: 1px solid transparent;
+}
+
+/* ── Input / Select ────────────────────────────────── */
+input,
+select {
+  background: #0B1428;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(76,125,255,.14);
+  outline: none;
+}

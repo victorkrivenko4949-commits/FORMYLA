@@ -90,6 +90,160 @@ def get_task(
         return None
     return random.choice(pool)
 
+
+# ── Distribution plan for scope="all_sections" ──────────────────────
+
+def distribution_plan(grade: int, length: int,
+                      by_section: dict = None,
+                      level_hint: int = 2) -> List[Dict[str, Any]]:
+    """Distribute *length* tasks across all sections for the given grade.
+
+    Rules:
+      - Sections come from the actual JSONL data for this grade (not hardcoded).
+      - Tasks are spread as evenly as possible; any remainder goes to sections
+        with the fewest measurements (smallest *n*) in *by_section*.
+      - Start level per section: round(mu) if there are measurements for that
+        section in *by_section*, otherwise *level_hint*.
+      - Section order in the result is shuffled so the pupil does not solve
+        five tasks from the same topic in a row.
+
+    Returns:
+        [{section, count, start_level}, ...]
+        May be empty if no sections exist for the grade.
+    """
+    by_section = by_section or {}
+    sections = get_sections(grade)
+    if not sections:
+        return []
+
+    n_sec = len(sections)
+    base = length // n_sec
+    remainder = length % n_sec
+
+    plan = []
+    for sec in sections:
+        plan.append({
+            'section': sec,
+            'count': base,
+            'start_level': int(level_hint),
+        })
+
+    # ── Distribute remainder: sections with fewest measurements first ──
+    if remainder > 0:
+        sorted_indices = sorted(
+            range(n_sec),
+            key=lambda i: (
+                by_section.get(plan[i]['section'], {}).get('n', 0),
+                plan[i]['section'],
+            )
+        )
+        for i in sorted_indices[:remainder]:
+            plan[i]['count'] += 1
+
+    # ── Determine start_level per section ──
+    for p in plan:
+        sec_data = by_section.get(p['section'])
+        if sec_data and isinstance(sec_data, dict) and sec_data.get('n', 0) > 0:
+            p['start_level'] = max(1, min(5, round(sec_data.get('mu', level_hint))))
+        else:
+            p['start_level'] = int(level_hint)
+
+    # ── Shuffle order ──
+    random.shuffle(plan)
+
+    return plan
+
+
+def get_task_by_section(
+    grade: int,
+    section: str,
+    level: int,
+    shown_uids: Set[str],
+) -> Optional[Dict[str, Any]]:
+    """Get a random task matching grade + section + level, excluding shown_uids.
+
+    Falls back to adjacent level if none found at the requested level.
+    Returns None if no task available.
+    """
+    pool = [
+        t for t in _all_tasks
+        if t.get('grade') == grade
+        and (t.get('section') or '').strip() == section
+        and t.get('level') == level
+        and t.get('task_uid') not in shown_uids
+    ]
+    if not pool:
+        # Try adjacent level (prefer up, then down)
+        alt_level = level + 1 if level < 5 else level - 1
+        pool = [
+            t for t in _all_tasks
+            if t.get('grade') == grade
+            and (t.get('section') or '').strip() == section
+            and t.get('level') == alt_level
+            and t.get('task_uid') not in shown_uids
+        ]
+    if not pool:
+        return None
+    return random.choice(pool)
+
+
+def pick_all_sections_tasks(
+    grade: int,
+    length: int,
+    by_section: dict = None,
+    level_hint: int = 2,
+) -> Dict[str, Any]:
+    """Pick *length* tasks distributed across all sections for the grade.
+
+    Uses *distribution_plan* to determine how many tasks per section and at
+    what starting level, then calls *get_task_by_section* for each task.
+
+    If a section has no task at the required level, the allocation for that
+    section is skipped (not silently substituted to another section) and
+    recorded in *skipped*.
+
+    Returns:
+        {
+            tasks: [{task_uid, section, level, ...}, ...],
+            skipped: [{section, level, reason}, ...],
+        }
+    """
+    by_section = by_section or {}
+    plan = distribution_plan(grade, length, by_section, level_hint)
+    shown: Set[str] = set()
+    tasks: List[Dict[str, Any]] = []
+    skipped: List[Dict[str, Any]] = []
+
+    for p in plan:
+        needed = p['count']
+        if needed <= 0:
+            continue
+        sec = p['section']
+        lvl = p['start_level']
+        for _ in range(needed):
+            t = get_task_by_section(grade, sec, lvl, shown)
+            if t is not None:
+                shown.add(t['task_uid'])
+                tasks.append(t)
+            else:
+                skipped.append({
+                    'section': sec,
+                    'level': lvl,
+                    'reason': (
+                        f"No task at level {lvl} (or adjacent) "
+                        f"in section '{sec}' for grade={grade}"
+                    ),
+                })
+
+    # Shuffle tasks so pupil doesn't get 5 same-topic in a row
+    random.shuffle(tasks)
+
+    return {
+        'tasks': tasks,
+        'skipped': skipped,
+    }
+
+
 # ── Test state management (Flask session) ───────────────────────────
 
 def init_test_state(session, grade: int, theme: str):

@@ -1,0 +1,21 @@
+INFO:app:=== App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+======================================================================
+ACCEPTANCE TESTING - STEP 6
+======================================================================
+
+--- 6.1: 100 fictitious students, 10 tasks x 30 days ---
+Traceback (most recent call last):
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\_recon\step6_acceptance.py", line 64, in <module>
+    user = User(
+           ^^^^^
+  File "<string>", line 4, in __init__
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\state.py", line 596, in _initialize_instance
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\state.py", line 594, in _initialize_instance
+    manager.original_init(*mixed[1:], **kwargs)
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2179, in _declarative_constructor
+    raise TypeError(
+TypeError: 'username' is an invalid keyword argument for User

@@ -26,7 +26,7 @@
     } %}
 
     {% if recommended_level is not none %}
-    {# ── Пользователь уже прошёл диагностику: показываем только ОДИН рекомендуемый уровень ──}
+    {# -- Пользователь уже прошёл диагностику: показываем только ОДИН рекомендуемый уровень -- #}
     <div style="margin-bottom: 28px; padding: 22px 24px; background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(249,115,22,0.08)); border: 1px solid rgba(245,158,11,0.45); border-radius: var(--radius-lg); box-shadow: 0 6px 20px rgba(245,158,11,0.18); text-align: center;">
         <div style="font-size: 1.1em; font-weight: 700; color: #fbbf24; margin-bottom: 4px;">
             🎯 Твой уровень: L{{ recommended_level }}
@@ -58,7 +58,7 @@
         </a>
     </div>
     {% else %}
-    {# ── Нет диагностики: показываем ВСЕ 5 уровней ──}
+    {# -- Нет диагностики: показываем ВСЕ 5 уровней -- #}
     <div style="display: flex; flex-direction: column; gap: 14px;">
         {% for lvl in range(1, 6) %}
         <a href="/olympiad-test/start?grade={{ grade }}&theme={{ theme|urlencode }}&level={{ lvl }}"

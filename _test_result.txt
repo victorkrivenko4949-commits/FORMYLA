@@ -1,0 +1,225 @@
+======================================================================
+PART 1: FILE STATS (data/anchors.jsonl)
+======================================================================
+Lines: 35
+
+anchor_uid list:
+   1. A_G5_ALG        G5 algebra            L3 ans=40
+   2. A_G5_GEO        G5 geometry           L3 ans=8
+   3. A_G5_COMB       G5 combinatorics      L3 ans=10
+   4. A_G5_LOG        G5 logic              L3 ans=13
+   5. A_G5_NT         G5 number_theory      L3 ans=7
+   6. A_G6_ALG        G6 algebra            L3 ans=28
+   7. A_G6_GEO        G6 geometry           L3 ans=12
+   8. A_G6_COMB       G6 combinatorics      L3 ans=84
+   9. A_G6_LOG        G6 logic              L3 ans=5
+  10. A_G6_NT         G6 number_theory      L3 ans=48
+  11. A_G7_ALG        G7 algebra            L3 ans=194
+  12. A_G7_GEO        G7 geometry           L3 ans=22
+  13. A_G7_COMB       G7 combinatorics      L3 ans=252
+  14. A_G7_LOG        G7 logic              L3 ans=11
+  15. A_G7_NT         G7 number_theory      L3 ans=24
+  16. A_G8_ALG        G8 algebra            L3 ans=18
+  17. A_G8_GEO        G8 geometry           L3 ans=24
+  18. A_G8_COMB       G8 combinatorics      L3 ans=151200
+  19. A_G8_LOG        G8 logic              L3 ans=25
+  20. A_G8_NT         G8 number_theory      L3 ans=144
+  21. A_G9_ALG        G9 algebra            L3 ans=28
+  22. A_G9_GEO        G9 geometry           L3 ans=128
+  23. A_G9_COMB       G9 combinatorics      L3 ans=56
+  24. A_G9_LOG        G9 logic              L3 ans=46
+  25. A_G9_NT         G9 number_theory      L3 ans=54
+  26. A_G10_ALG       G10 algebra            L3 ans=25
+  27. A_G10_GEO       G10 geometry           L3 ans=5
+  28. A_G10_COMB      G10 combinatorics      L3 ans=945
+  29. A_G10_LOG       G10 logic              L3 ans=16
+  30. A_G10_NT        G10 number_theory      L3 ans=29
+  31. A_G11_ALG       G11 algebra            L3 ans=9
+  32. A_G11_GEO       G11 geometry           L3 ans=14
+  33. A_G11_COMB      G11 combinatorics      L3 ans=231
+  34. A_G11_LOG       G11 logic              L3 ans=12
+  35. A_G11_NT        G11 number_theory      L3 ans=49
+
+By grade:  {5: 5, 6: 5, 7: 5, 8: 5, 9: 5, 10: 5, 11: 5}
+By section: {'algebra': 7, 'combinatorics': 7, 'geometry': 7, 'logic': 7, 'number_theory': 7}
+VERIFIED: 35 anchors, 5 per grade (5-11), 7 per section
+
+======================================================================
+PART 2: LOAD INTO DB + theme_id MAPPING
+======================================================================
+loaded = 35
+skipped = 0
+errors = 0
+
+theme_id filled: 0
+theme_id empty:  35
+  Empty theme_id anchors:
+    anchor_uid=A_G5_ALG grade=5 section=algebra
+    anchor_uid=A_G5_GEO grade=5 section=geometry
+    anchor_uid=A_G5_COMB grade=5 section=combinatorics
+    anchor_uid=A_G5_LOG grade=5 section=logic
+    anchor_uid=A_G5_NT grade=5 section=number_theory
+    anchor_uid=A_G6_ALG grade=6 section=algebra
+    anchor_uid=A_G6_GEO grade=6 section=geometry
+    anchor_uid=A_G6_COMB grade=6 section=combinatorics
+    anchor_uid=A_G6_LOG grade=6 section=logic
+    anchor_uid=A_G6_NT grade=6 section=number_theory
+    anchor_uid=A_G7_ALG grade=7 section=algebra
+    anchor_uid=A_G7_GEO grade=7 section=geometry
+    anchor_uid=A_G7_COMB grade=7 section=combinatorics
+    anchor_uid=A_G7_LOG grade=7 section=logic
+    anchor_uid=A_G7_NT grade=7 section=number_theory
+    anchor_uid=A_G8_ALG grade=8 section=algebra
+    anchor_uid=A_G8_GEO grade=8 section=geometry
+    anchor_uid=A_G8_COMB grade=8 section=combinatorics
+    anchor_uid=A_G8_LOG grade=8 section=logic
+    anchor_uid=A_G8_NT grade=8 section=number_theory
+    anchor_uid=A_G9_ALG grade=9 section=algebra
+    anchor_uid=A_G9_GEO grade=9 section=geometry
+    anchor_uid=A_G9_COMB grade=9 section=combinatorics
+    anchor_uid=A_G9_LOG grade=9 section=logic
+    anchor_uid=A_G9_NT grade=9 section=number_theory
+    anchor_uid=A_G10_ALG grade=10 section=algebra
+    anchor_uid=A_G10_GEO grade=10 section=geometry
+    anchor_uid=A_G10_COMB grade=10 section=combinatorics
+    anchor_uid=A_G10_LOG grade=10 section=logic
+    anchor_uid=A_G10_NT grade=10 section=number_theory
+    anchor_uid=A_G11_ALG grade=11 section=algebra
+    anchor_uid=A_G11_GEO grade=11 section=geometry
+    anchor_uid=A_G11_COMB grade=11 section=combinatorics
+    anchor_uid=A_G11_LOG grade=11 section=logic
+    anchor_uid=A_G11_NT grade=11 section=number_theory
+
+unmapped_themes (35):
+  Строка 1: anchor_uid=A_G5_ALG grade=5 section=algebra — нет однозначного theme_id
+  Строка 2: anchor_uid=A_G5_GEO grade=5 section=geometry — нет однозначного theme_id
+  Строка 3: anchor_uid=A_G5_COMB grade=5 section=combinatorics — нет однозначного theme_id
+  Строка 4: anchor_uid=A_G5_LOG grade=5 section=logic — нет однозначного theme_id
+  Строка 5: anchor_uid=A_G5_NT grade=5 section=number_theory — нет однозначного theme_id
+  Строка 6: anchor_uid=A_G6_ALG grade=6 section=algebra — нет однозначного theme_id
+  Строка 7: anchor_uid=A_G6_GEO grade=6 section=geometry — нет однозначного theme_id
+  Строка 8: anchor_uid=A_G6_COMB grade=6 section=combinatorics — нет однозначного theme_id
+  Строка 9: anchor_uid=A_G6_LOG grade=6 section=logic — нет однозначного theme_id
+  Строка 10: anchor_uid=A_G6_NT grade=6 section=number_theory — нет однозначного theme_id
+  Строка 11: anchor_uid=A_G7_ALG grade=7 section=algebra — нет однозначного theme_id
+  Строка 12: anchor_uid=A_G7_GEO grade=7 section=geometry — нет однозначного theme_id
+  Строка 13: anchor_uid=A_G7_COMB grade=7 section=combinatorics — нет однозначного theme_id
+  Строка 14: anchor_uid=A_G7_LOG grade=7 section=logic — нет однозначного theme_id
+  Строка 15: anchor_uid=A_G7_NT grade=7 section=number_theory — нет однозначного theme_id
+  Строка 16: anchor_uid=A_G8_ALG grade=8 section=algebra — нет однозначного theme_id
+  Строка 17: anchor_uid=A_G8_GEO grade=8 section=geometry — нет однозначного theme_id
+  Строка 18: anchor_uid=A_G8_COMB grade=8 section=combinatorics — нет однозначного theme_id
+  Строка 19: anchor_uid=A_G8_LOG grade=8 section=logic — нет однозначного theme_id
+  Строка 20: anchor_uid=A_G8_NT grade=8 section=number_theory — нет однозначного theme_id
+  Строка 21: anchor_uid=A_G9_ALG grade=9 section=algebra — нет однозначного theme_id
+  Строка 22: anchor_uid=A_G9_GEO grade=9 section=geometry — нет однозначного theme_id
+  Строка 23: anchor_uid=A_G9_COMB grade=9 section=combinatorics — нет однозначного theme_id
+  Строка 24: anchor_uid=A_G9_LOG grade=9 section=logic — нет однозначного theme_id
+  Строка 25: anchor_uid=A_G9_NT grade=9 section=number_theory — нет однозначного theme_id
+  Строка 26: anchor_uid=A_G10_ALG grade=10 section=algebra — нет однозначного theme_id
+  Строка 27: anchor_uid=A_G10_GEO grade=10 section=geometry — нет однозначного theme_id
+  Строка 28: anchor_uid=A_G10_COMB grade=10 section=combinatorics — нет однозначного theme_id
+  Строка 29: anchor_uid=A_G10_LOG grade=10 section=logic — нет однозначного theme_id
+  Строка 30: anchor_uid=A_G10_NT grade=10 section=number_theory — нет однозначного theme_id
+  Строка 31: anchor_uid=A_G11_ALG grade=11 section=algebra — нет однозначного theme_id
+  Строка 32: anchor_uid=A_G11_GEO grade=11 section=geometry — нет однозначного theme_id
+  Строка 33: anchor_uid=A_G11_COMB grade=11 section=combinatorics — нет однозначного theme_id
+  Строка 34: anchor_uid=A_G11_LOG grade=11 section=logic — нет однозначного theme_id
+  Строка 35: anchor_uid=A_G11_NT grade=11 section=number_theory — нет однозначного theme_id
+
+======================================================================
+PART 3: pick_anchors for GRADE 9 (3 runs)
+======================================================================
+
+Run 1: 5 anchors, total_available=5
+#    anchor_uid      section              subtopic                            level  answer
+---- --------------- -------------------- ----------------------------------- ------ ------
+1    A_G9_ALG        algebra              Целые корни квадратного уравнения   3      28    
+2    A_G9_NT         number_theory        Степень двойки в факториале, обрат  3      54    
+3    A_G9_GEO        geometry             Диагонали трапеции и подобие        3      128   
+4    A_G9_COMB       combinatorics        Выбор без соседних элементов        3      56    
+5    A_G9_LOG        logic                Инварианты                          3      46    
+  sections: ['algebra', 'number_theory', 'geometry', 'combinatorics', 'logic']  dups=False
+
+Run 2: 5 anchors, total_available=5
+#    anchor_uid      section              subtopic                            level  answer
+---- --------------- -------------------- ----------------------------------- ------ ------
+1    A_G9_ALG        algebra              Целые корни квадратного уравнения   3      28    
+2    A_G9_NT         number_theory        Степень двойки в факториале, обрат  3      54    
+3    A_G9_GEO        geometry             Диагонали трапеции и подобие        3      128   
+4    A_G9_COMB       combinatorics        Выбор без соседних элементов        3      56    
+5    A_G9_LOG        logic                Инварианты                          3      46    
+  sections: ['algebra', 'number_theory', 'geometry', 'combinatorics', 'logic']  dups=False
+
+Run 3: 5 anchors, total_available=5
+#    anchor_uid      section              subtopic                            level  answer
+---- --------------- -------------------- ----------------------------------- ------ ------
+1    A_G9_ALG        algebra              Целые корни квадратного уравнения   3      28    
+2    A_G9_NT         number_theory        Степень двойки в факториале, обрат  3      54    
+3    A_G9_GEO        geometry             Диагонали трапеции и подобие        3      128   
+4    A_G9_COMB       combinatorics        Выбор без соседних элементов        3      56    
+5    A_G9_LOG        logic                Инварианты                          3      46    
+  sections: ['algebra', 'number_theory', 'geometry', 'combinatorics', 'logic']  dups=False
+
+======================================================================
+PART 4: pick_anchors for GRADE 6 (3 runs)
+======================================================================
+
+Run 1: 5 anchors, total_available=5
+#    anchor_uid      section              subtopic                            level  answer
+---- --------------- -------------------- ----------------------------------- ------ ------
+1    A_G6_ALG        algebra              Проценты и обратная задача          3      28    
+2    A_G6_NT         number_theory        Количество делителей числа          3      48    
+3    A_G6_GEO        geometry             Куб, покраска и распил              3      12    
+4    A_G6_COMB       combinatorics        Подсчёт возрастающих наборов цифр   3      84    
+5    A_G6_LOG        logic                Рыцари и лжецы                      3      5     
+  sections: ['algebra', 'number_theory', 'geometry', 'combinatorics', 'logic']  dups=False
+
+Run 2: 5 anchors, total_available=5
+#    anchor_uid      section              subtopic                            level  answer
+---- --------------- -------------------- ----------------------------------- ------ ------
+1    A_G6_ALG        algebra              Проценты и обратная задача          3      28    
+2    A_G6_NT         number_theory        Количество делителей числа          3      48    
+3    A_G6_GEO        geometry             Куб, покраска и распил              3      12    
+4    A_G6_COMB       combinatorics        Подсчёт возрастающих наборов цифр   3      84    
+5    A_G6_LOG        logic                Рыцари и лжецы                      3      5     
+  sections: ['algebra', 'number_theory', 'geometry', 'combinatorics', 'logic']  dups=False
+
+Run 3: 5 anchors, total_available=5
+#    anchor_uid      section              subtopic                            level  answer
+---- --------------- -------------------- ----------------------------------- ------ ------
+1    A_G6_ALG        algebra              Проценты и обратная задача          3      28    
+2    A_G6_NT         number_theory        Количество делителей числа          3      48    
+3    A_G6_GEO        geometry             Куб, покраска и распил              3      12    
+4    A_G6_COMB       combinatorics        Подсчёт возрастающих наборов цифр   3      84    
+5    A_G6_LOG        logic                Рыцари и лжецы                      3      5     
+  sections: ['algebra', 'number_theory', 'geometry', 'combinatorics', 'logic']  dups=False
+
+======================================================================
+PART 5: ANSWER CHECK — all 35 correct answers
+======================================================================
+Correct self-checks: 35/35
+
+Wrong answer tests:
+  A_G5_ALG: answer='31' vs correct='40' → correct=False PASS(not matched)
+  A_G5_GEO: answer='7' vs correct='8' → correct=False PASS(not matched)
+  A_G9_ALG: answer='13' vs correct='28' → correct=False PASS(not matched)
+  A_G11_NT: answer='26' vs correct='49' → correct=False PASS(not matched)
+
+Edge cases:
+  '30' vs '30' → True
+  ' 30 ' vs '30' → True
+  '0.99' vs '0,99' → True
+  '0,99' vs '0.99' → True
+
+======================================================================
+PART 6: EXCLUSION — formyla_anchors not in daily tasks / morning probe
+======================================================================
+anchor_ids count: 35
+_pick_tasks_for_section(9, algebra): 5 tasks, leaked=[]
+_pick_tasks_fallback(9): 20 tasks, leaked=[]
+Morning probe leaks: 0
+
+======================================================================
+ALL DONE
+======================================================================

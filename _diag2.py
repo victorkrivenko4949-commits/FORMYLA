@@ -1,95 +1,70 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Compare pre_live vs fixed - are empty tasks in both?"""
-import json
+"""Diagnose session content and page HTML pattern."""
+import requests, os, json
+from dotenv import load_dotenv
+from itsdangerous import URLSafeTimedSerializer
+from flask.sessions import TaggedJSONSerializer
 
-pre = json.load(open(r'../../Downloads/FORMYLA_CONDITION_COURT/runs/selection_1080_20260712_134037/curated_bank_L1_L5_pre_live.json', 'r', encoding='utf-8'))
-fixed = json.load(open('curated_bank_L1_L5_fixed.json', 'r', encoding='utf-8'))
+ROOT = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(ROOT, '.env'))
+SECRET = os.environ.get('SECRET_KEY','')
 
-lines = []
-lines.append(f'pre_live total: {len(pre)}')
-lines.append(f'fixed total: {len(fixed)}')
-lines.append('')
+print("SECRET:", SECRET[:30] + "...")
 
-# Empty in pre_live
-empty_pre = [t for t in pre if not t.get('statement')]
-empty_fixed = [t for t in fixed if not t.get('statement')]
-lines.append(f'Empty in pre_live: {len(empty_pre)}')
-lines.append(f'Empty in fixed: {len(empty_fixed)}')
-lines.append('')
+s = requests.Session()
+s.get('http://127.0.0.1:5000/dev_login?uid=1', allow_redirects=True)
+s.get('http://127.0.0.1:5000/olympiad-test?length=10&level_hint=2&scope=all_sections')
+r = s.get('http://127.0.0.1:5000/olympiad-test/select-section?grade=7', allow_redirects=True)
+r = s.get('http://127.0.0.1:5000/olympiad-test/start?grade=7', allow_redirects=True)
 
-# Build ID sets
-def get_oids(bank):
-    result = {}
-    for t in bank:
-        o = t.get('original_id', '')
-        if o:
-            try:
-                oid = int(o.replace('SEL1080-', ''))
-                result[oid] = t
-            except: pass
-    return result
+cookie = s.cookies.get('session','')
+ser = URLSafeTimedSerializer(SECRET, salt='cookie-session',
+                             signer_kwargs={'key_derivation':'hmac'},
+                             serializer=TaggedJSONSerializer())
+data = ser.loads(cookie)
+print("SESSION KEYS:", list(data.keys()))
 
-pre_dict = get_oids(pre)
-fixed_dict = get_oids(fixed)
+# Look for task-related keys
+for k in sorted(data.keys()):
+    v = data[k]
+    if isinstance(v, str) and len(v) > 100:
+        print(f"  {k}: [{len(v)}] {v[:120]}...")
+    else:
+        print(f"  {k}: {repr(v)[:250]}")
 
-pre_empty_ids = set()
-for t in empty_pre:
-    o = t.get('original_id','')
-    if o:
-        try: pre_empty_ids.add(int(o.replace('SEL1080-','')))
-        except: pass
+# Get olyad_current_task
+task_uid = data.get('olyad_current_task', None)
+print("\nolyad_current_task:", repr(task_uid))
 
-fixed_empty_ids = set()
-for t in empty_fixed:
-    o = t.get('original_id','')
-    if o:
-        try: fixed_empty_ids.add(int(o.replace('SEL1080-','')))
-        except: pass
+# Also check other possible keys
+for k in data:
+    if 'task' in k.lower() or 'olyad' in k.lower() or 'oly' in k.lower():
+        print(f"  TASK-KEY {k}: {repr(data[k])[:200]}")
 
-lines.append(f'pre_live empty IDs count: {len(pre_empty_ids)}')
-lines.append(f'fixed empty IDs count: {len(fixed_empty_ids)}')
-lines.append('')
+# Save full page body text
+with open('_diag_full.html', 'w', encoding='utf-8') as f:
+    f.write(r.text)
+print("PAGE_LEN:", len(r.text))
 
-# Check if pre_live has content for tasks that are empty in fixed
-fixed_only_empty = fixed_empty_ids - pre_empty_ids
-pre_only_empty = pre_empty_ids - fixed_empty_ids
-both_empty = pre_empty_ids & fixed_empty_ids
+# Look for any "task" or "statement" patterns in HTML
+import re
+# Search for common task rendering patterns
+for pat in ['task-text', 'task_statement', 'problem-card', 'task-body', 'olympiad_task',
+            'task_uid', 'taskUid', 'data-task', 'font-size.*1\\.05', 'font-size:1\\.05']:
+    matches = list(re.finditer(pat, r.text, re.IGNORECASE))
+    print(f"  Pattern '{pat}': {len(matches)} matches")
 
-lines.append(f'Empty in BOTH pre_live AND fixed: {len(both_empty)}')
-lines.append(f'Empty ONLY in fixed (had content in pre_live): {len(fixed_only_empty)}')
-lines.append(f'Empty ONLY in pre_live (had content in fixed): {len(pre_only_empty)}')
-lines.append('')
-
-# Show some examples of tasks that were filled in pre_live but empty in fixed
-lines.append('=== Tasks that HAD content in pre_live but EMPTY in fixed (first 20) ===')
-for oid in sorted(fixed_only_empty)[:20]:
-    pre_t = pre_dict.get(oid, {})
-    fixed_t = fixed_dict.get(oid, {})
-    pre_st = (pre_t.get('statement') or '')[:80]
-    lines.append(f'  SEL1080-{oid:04d}: pre_live had "{pre_st}..." -> fixed EMPTY')
-
-lines.append('')
-lines.append('=== Tasks empty in BOTH (first 20) ===')
-for oid in sorted(both_empty)[:20]:
-    pre_t = pre_dict.get(oid, {})
-    fixed_t = fixed_dict.get(oid, {})
-    pre_st = (pre_t.get('statement') or '')[:80]
-    fixed_st = (fixed_t.get('statement') or '')[:80]
-    lines.append(f'  SEL1080-{oid:04d}: pre_live="{pre_st}..." fixed="{fixed_st}..."')
-
-# Also check the source JSON - maybe these are fill tasks
-lines.append('')
-lines.append('=== Checking fill_l3_holes_checkpoint.json ===')
-try:
-    fill = json.load(open('fill_l3_holes_checkpoint.json', 'r', encoding='utf-8'))
-    lines.append(f'fill checkpoint keys: {list(fill.keys())[:5]}')
-except: lines.append('no fill checkpoint found')
-
-try:
-    fill2 = json.load(open('fill_cell_holes_checkpoint.json', 'r', encoding='utf-8'))
-    lines.append(f'cell fill checkpoint keys: {list(fill2.keys())[:5]}')
-except: lines.append('no cell fill checkpoint found')
-
-open('_diag2_output.txt', 'w', encoding='utf-8').write('\n'.join(lines))
-print('DONE')
+# Show body content snippet
+body_match = re.search(r'<body[^>]*>(.*?)</body>', r.text, re.DOTALL)
+if body_match:
+    body = body_match.group(1)
+    print(f"BODY LEN: {len(body)}")
+    # Find first non-script, non-style substantial content
+    clean = re.sub(r'<script[^>]*>.*?</script>', '', body, flags=re.DOTALL)
+    clean = re.sub(r'<style[^>]*>.*?</style>', '', clean, flags=re.DOTALL)
+    clean = re.sub(r'<nav[^>]*>.*?</nav>', '', clean, flags=re.DOTALL)
+    clean = re.sub(r'<header[^>]*>.*?</header>', '', clean, flags=re.DOTALL)
+    clean = re.sub(r'<[^>]+>', ' ', clean)
+    clean = re.sub(r'\s+', ' ', clean).strip()
+    print(f"CLEAN BODY (first 500): {clean[:500]}")

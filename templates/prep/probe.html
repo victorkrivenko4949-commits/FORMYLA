@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}Утренний срез — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+.probe-wrap { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+.probe-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 24px; }
+.probe-header { margin-bottom: 20px; }
+.probe-header h1 { margin: 0 0 6px; font-size: 20px; color: #e5e7eb; }
+.probe-header .sub { color: rgba(255,255,255,0.55); font-size: 14px; }
+.probe-progress { margin-bottom: 20px; font-size: 14px; color: rgba(255,255,255,0.65); }
+.progress-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #38ef7d, #2bcb6a); border-radius: 3px; transition: width 0.3s; }
+
+.task-text { font-size: 16px; line-height: 1.6; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+.task-text .katex { font-size: 1.1em; }
+
+.answer-section { margin-bottom: 16px; }
+.answer-label { display: block; font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 6px; }
+.answer-input { width: 100%; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 15px; background: rgba(0,0,0,0.25); color: #fff; box-sizing: border-box; }
+.answer-input:focus { outline: none; border-color: rgba(99,102,241,0.6); box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
+textarea.answer-input { resize: vertical; min-height: 100px; font-family: inherit; }
+
+.submit-btn { display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-weight: 700; font-size: 15px; border: none; border-radius: 12px; cursor: pointer; transition: all 0.25s ease; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99,102,241,0.3); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.next-btn { display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #38ef7d, #2bcb6a); color: #0b0f1a; font-weight: 700; font-size: 15px; border: none; border-radius: 12px; cursor: pointer; transition: all 0.25s ease; text-decoration: none; }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(56,239,125,0.3); }
+
+.verdict-section { margin: 16px 0; padding: 16px; border-radius: 10px; }
+.verdict-correct { background: rgba(56,239,125,0.10); border: 1px solid rgba(56,239,125,0.25); }
+.verdict-partial { background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.25); }
+.verdict-wrong { background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.25); }
+
+.verdict-text { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.verdict-correct .verdict-text { color: #38ef7d; }
+.verdict-partial .verdict-text { color: #f59e0b; }
+.verdict-wrong .verdict-text { color: #ef4444; }
+
+.verdict-explain { font-size: 14px; color: rgba(255,255,255,0.7); }
+
+.final-card { text-align: center; padding: 32px; }
+.final-card .big-number { font-size: 48px; font-weight: 800; color: #38ef7d; }
+.final-card .comparison { margin: 12px 0; font-size: 14px; color: rgba(255,255,255,0.55); }
+.final-card .action-row { margin-top: 24px; }
+
+.error-msg { padding: 16px; background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; color: #ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="probe-wrap">
+{% if error %}
+  <div class="probe-card">
+    <div class="error-msg">{{ error }}</div>
+    <div style="margin-top:16px; text-align:center;">
+      <a href="/daily_tasks" class="next-btn">Перейти к задачам дня</a>
+    </div>
+  </div>
+
+{% elif done %}
+  <!-- ── Итог среза ── -->
+  <div class="probe-card final-card">
+    <h1>✅ Срез завершён</h1>
+    <p style="color:rgba(255,255,255,0.65);">{{ theme_title }} &middot; {{ section }}</p>
+    <div class="big-number">{{ "%.1f"|format(final_mu) }}</div>
+    <p style="color:rgba(255,255,255,0.55);">уровень подтемы</p>
+    {% if previous_mu is not none %}
+    <div class="comparison">
+      {% set diff = final_mu - previous_mu %}
+      {% if diff > 0.1 %}
+        Повышение с {{ "%.1f"|format(previous_mu) }} → {{ "%.1f"|format(final_mu) }}
+        <span style="color:#38ef7d;">▲ +{{ "%.1f"|format(diff) }}</span>
+      {% elif diff < -0.1 %}
+        Снижение с {{ "%.1f"|format(previous_mu) }} → {{ "%.1f"|format(final_mu) }}
+        <span style="color:#ef4444;">▼ {{ "%.1f"|format(diff) }}</span>
+      {% else %}
+        Без изменений: было {{ "%.1f"|format(previous_mu) }}
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="action-row">
+      <a href="/daily_tasks" class="next-btn">Перейти к задачам дня</a>
+    </div>
+  </div>
+
+{% else %}
+  <!-- ── Активная задача ── -->
+  <div class="probe-card">
+    <div class="probe-header">
+      <h1>🌅 Утренний срез</h1>
+      <div class="sub">{{ theme_title }} &middot; {{ section }}</div>
+    </div>
+    <div class="probe-progress">
+      Задача {{ current_index + 1 }} из {{ total }}
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: {{ (current_index / total * 100)|int }}%;"></div>
+      </div>
+    </div>
+
+    <div class="task-text" id="taskText">
+      {{ task.task_text|safe if task else '' }}
+    </div>
+
+    <div id="verdictBlock" style="display:none;">
+      <div class="verdict-section" id="verdictEl">
+        <div class="verdict-text" id="verdictText"></div>
+        <div class="verdict-explain" id="verdictExplain"></div>
+      </div>
+      <div style="text-align:center; margin-top:16px;">
+        <button class="next-btn" id="nextBtn" onclick="goNext()">Дальше →</button>
+      </div>
+    </div>
+
+    <div id="inputBlock">
+      <div class="answer-section">
+        <label class="answer-label" for="userAnswer">Ваш ответ:</label>
+        <input type="text" id="userAnswer" class="answer-input"
+               placeholder="Введите краткий ответ (число, выражение)"
+               autocomplete="off">
+      </div>
+      <div class="answer-section">
+        <label class="answer-label" for="userSolution">Решение (обязательно):</label>
+        <textarea id="userSolution" class="answer-input"
+                  placeholder="Опишите ход решения — ИИ проверит правильность..."
+                  rows="4"></textarea>
+      </div>
+      <button class="submit-btn" id="submitBtn" onclick="submitAnswer()" style="width:100%;">
+        Отправить решение
+      </button>
+    </div>
+  </div>
+{% endif %}
+</div>
+
+<script>
+let taskId = {{ task.id if task else 0 }};
+let taskIndex = {{ current_index if current_index is defined else 0 }};
+let totalTasks = {{ total if total is defined else 5 }};
+
+async function submitAnswer() {
+  const answerInput = document.getElementById('userAnswer');
+  const solutionInput = document.getElementById('userSolution');
+  const answer = answerInput ? answerInput.value.trim() : '';
+  const solution = solutionInput ? solutionInput.value.trim() : '';
+
+  if (!answer && !solution) {
+    alert('Введи ответ или решение.');
+    return;
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Проверяем...';
+
+  try {
+    const resp = await fetch('{{ url_for("prep.probe_submit") }}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        task_id: taskId,
+        answer: answer,
+        solution: solution
+      })
+    });
+    const data = await resp.json();
+
+    // Show verdict from AI
+    const verdictBlock = document.getElementById('verdictBlock');
+    const inputBlock = document.getElementById('inputBlock');
+    const verdictText = document.getElementById('verdictText');
+    const verdictExplain = document.getElementById('verdictExplain');
+    const verdictEl = document.getElementById('verdictEl');
+
+    const ai = data.ai_feedback || {};
+    const verdict = ai.verdict || 'wrong';
+
+    verdictEl.className = 'verdict-section verdict-' + verdict;
+    if (verdict === 'correct') {
+      verdictText.textContent = '✅ Верно!';
+    } else if (verdict === 'partial') {
+      verdictText.textContent = '≈ Частично верно';
+    } else {
+      verdictText.textContent = '❌ Неверно';
+    }
+
+    let explainHtml = ai.message || '';
+    if (ai.correct_answer) {
+      explainHtml += '<br><br>📌 <strong>Правильный ответ:</strong> ' + ai.correct_answer;
+    }
+    if (ai.solution) {
+      explainHtml += '<br><br>📝 <strong>Решение:</strong><br>' + ai.solution;
+    }
+    if (ai.hint && verdict !== 'correct') {
+      explainHtml += '<br><br>💡 <strong>Подсказка:</strong> ' + ai.hint;
+    }
+    verdictExplain.innerHTML = explainHtml;
+
+    inputBlock.style.display = 'none';
+    verdictBlock.style.display = 'block';
+
+    if (data.done) {
+      document.getElementById('nextBtn').textContent = 'Смотреть итог →';
+    }
+
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Отправить решение';
+  }
+}
+
+function goNext() {
+  // Reload page — backend will handle next task or final screen
+  window.location.reload();
+}
+</script>
+{% endblock %}

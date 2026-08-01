@@ -21,16 +21,15 @@ from services.latex_validator import is_task_text_renderable
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
-# 6 canonical radar topics
-RADAR_TOPICS = ['algebra', 'geometry', 'combinatorics', 'number_theory', 'movement', 'knights_liars']
+# 5 canonical radar topics (matching CANONICAL_SECTIONS from daily_task_rotation)
+RADAR_TOPICS = ['algebra', 'geometry', 'combinatorics', 'logic', 'number_theory']
 
 TOPIC_NAMES_RU = {
     'algebra': 'Алгебра',
     'geometry': 'Геометрия',
     'combinatorics': 'Комбинаторика',
+    'logic': 'Логика',
     'number_theory': 'Теория чисел',
-    'movement': 'Движение',
-    'knights_liars': 'Рыцари и лжецы',
 }
 
 MIN_PLAN_DAYS = 7

@@ -291,6 +291,51 @@ body.kb-open {
   {% endif %}
   {% endif %}
 </p>
+
+<!-- ═══ MAIN ACTION BLOCK: curator-chosen single action ═══ -->
+<div id="mainActionBlock" style="display:none; background: linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.20)); border: 1px solid rgba(139,92,246,0.5); border-radius: 16px; padding: 20px 24px; margin-bottom: 20px; text-align: center;">
+  <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">🎯 Куратор говорит</div>
+  <div id="mainActionTitle" style="font-size:20px; font-weight:700; color:#fff; margin-bottom:10px;"></div>
+  <div id="mainActionReason" style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:16px; line-height:1.5;"></div>
+  <a id="mainActionCta" href="#" class="quick-action-btn" style="display:inline-block; padding:12px 28px; font-size:15px; text-decoration:none;">Действие</a>
+</div>
+
+<!-- ═══ CYCLE BLOCK (Screen 3): Месячный цикл ═══ -->
+{% if cycle_info and cycle_info.active and onboarding_done %}
+<div id="cycleBlock" class="coach-card" style="margin-bottom:20px;">
+  <h2>🔄 Цикл месяца</h2>
+  <div style="margin-bottom:12px; font-size:14px; color:rgba(255,255,255,0.65);">
+    Замерено {{ cycle_measured_count }} из {{ cycle_total }}
+    <span style="margin-left:12px; color:#38ef7d;">▰</span>
+    <span style="color:rgba(255,255,255,0.2);">▱</span>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    {% for t in cycle_themes %}
+    <div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+      <span style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.3); min-width:20px;">{{ loop.index }}.</span>
+      <span style="flex:1; font-size:14px; color:rgba(255,255,255,0.85);">{{ t.name }}</span>
+      <span style="font-size:11px; color:rgba(255,255,255,0.35); text-transform:uppercase;">{{ t.section }}</span>
+      <span style="font-size:12px; {% if t.state.startswith('замерена') %}color:#38ef7d;{% elif t.state == 'сегодняшняя' %}color:#6366f1;{% else %}color:rgba(255,255,255,0.35);{% endif %}">
+        {{ t.state }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══ ONBOARDING GATE: if not done, show only onboarding CTA ═══ -->
+{% if not onboarding_done %}
+<div style="text-align:center; margin: 40px 0;">
+  <p style="color:rgba(255,255,255,0.7); font-size:16px; margin-bottom:20px;">
+    🎯 Чтобы начать подготовку, заполни анкету — она займёт 2 минуты.
+  </p>
+  <a href="/prep/onboarding" class="quick-action-btn" style="display:inline-block; padding:14px 36px; font-size:16px; text-decoration:none; background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+    Пройти анкету
+  </a>
+</div>
+{% endif %}
+
 <div class="coach-grid">
 <div class="coach-card">
 <h2>📊 Радар по подтемам</h2>
@@ -299,6 +344,24 @@ body.kb-open {
         data-mastery='{{ mastery_list_json | safe }}'
         width="400" height="400"></canvas>
 </div>
+<!-- ═══ Screen 4: Measured subtopics sorted by level ═══ -->
+{% if measured_subtopics_list %}
+<div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+  <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);">📋 Замеренные подтемы</h2>
+  <div style="display:flex; flex-direction:column; gap:4px; max-height:260px; overflow-y:auto;">
+    {% for st in measured_subtopics_list %}
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.04);">
+      <span style="font-size:12px; color:rgba(255,255,255,0.5); min-width:18px;">{{ loop.index }}.</span>
+      <span style="flex:1; font-size:13px; color:rgba(255,255,255,0.8);">{{ st.name }}</span>
+      <span style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">{{ st.section }}</span>
+      <span style="font-size:13px; font-weight:700; {% if st.mu <= 2.0 %}color:#ef4444;{% elif st.mu <= 3.0 %}color:#f59e0b;{% elif st.mu <= 4.0 %}color:#6366f1;{% else %}color:#38ef7d;{% endif %}">
+        {{ "%.1f"|format(st.mu) }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 </div>
 <div class="coach-card">
 <h2>💬 Чат с ИИ-куратором</h2>
@@ -462,6 +525,22 @@ body.kb-open {
 <div style="margin-top:8px; text-align:right;">
   <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">🗑️ Очистить историю</button>
 </div>
+
+<!-- ═══ OTHER 6 ENTRY POINTS (hidden in <details>) ═══ -->
+<details id="otherTestsDetails" style="margin-top:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 16px;">
+  <summary style="cursor:pointer; color:rgba(255,255,255,0.55); font-size:13px; font-weight:600; user-select:none;">
+    📋 Другие тесты и инструменты
+  </summary>
+  <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+    <a href="/olympiad-test" class="cta-btn secondary" style="text-align:left;">🎯 Адаптивный тест по темам</a>
+    <a href="/probniks" class="cta-btn secondary" style="text-align:left;">📝 Пробники</a>
+    <a href="/profile" class="cta-btn secondary" style="text-align:left;">⚙️ Профиль и класс</a>
+    <a href="/daily-set" class="cta-btn secondary" style="text-align:left;">📚 Задачи дня</a>
+    <a href="/prep/onboarding" class="cta-btn secondary" style="text-align:left;">📋 Анкета онбординга</a>
+  </div>
+</details>
+
+</div>
 </div>
 </div>
 </div>
@@ -513,8 +592,24 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     greetingEl.innerHTML = data.greeting || '👋 Привет! Я твой ИИ-куратор FORMYLA.';
     ctaRow.innerHTML = '';
     // Render CTA buttons based on scenario
-    if (data.scenario === 'start_questionnaire') {
-    startQuestionnaire();
+    if (data.scenario === 'next_action') {
+      // NEW: curator-chosen single action — show in mainActionBlock
+      var na = data.next_action || {};
+      var mainBlock = document.getElementById('mainActionBlock');
+      var titleEl = document.getElementById('mainActionTitle');
+      var reasonEl = document.getElementById('mainActionReason');
+      var ctaEl = document.getElementById('mainActionCta');
+      if (mainBlock) mainBlock.style.display = 'block';
+      if (titleEl) titleEl.textContent = na.title || '';
+      if (reasonEl) reasonEl.textContent = na.reason || '';
+      if (ctaEl) {
+        ctaEl.textContent = na.cta_label || 'Перейти';
+        ctaEl.href = na.url || '#';
+      }
+      greetingEl.style.display = 'none';
+      ctaRow.style.display = 'none';
+    } else if (data.scenario === 'start_questionnaire') {
+    window.location.href = '/prep/onboarding';
 } else if (data.scenario === 'need_grade') {
       // Inline выбор класса вместо перехода на /profile
       greetingEl.innerHTML = '👋 Привет! Я твой ИИ-куратор FORMYLA.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
@@ -541,22 +636,10 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
         .then(function(r){ return r.json(); })
         .then(function(res){
           if (res.status === 'ok') {
-            // Класс выбран → сразу запускаем анкету (первый вопрос)
-            greetingEl.innerHTML = '✅ Класс ' + grade + ' выбран! 🎉<br><br>⏳ Загружаю первый вопрос…';
+            // Класс выбран → перенаправляем на онбординг
+            greetingEl.innerHTML = '✅ Класс ' + grade + ' выбран! 🎉<br><br>Перенаправляю на анкету…';
             ctaRow.innerHTML = '';
-            fetch('/prep/coach/questionnaire/start', { method: 'POST' })
-              .then(function (r) { return r.json(); })
-              .then(function (data) {
-                if (data.reply) {
-                  greetingEl.style.display = 'none';
-                  addMsg(data.reply, 'bot');
-                  var input = document.getElementById('chatInput');
-                  if (input) input.focus();
-                } else {
-                  greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать анкету.');
-                }
-              })
-              .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
+            setTimeout(function() { window.location.href = '/prep/onboarding'; }, 800);
           } else {
             btn.textContent = '❌ Ошибка';
             btn.disabled = false;
@@ -574,22 +657,8 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       var input = document.getElementById('chatInput');
       if (input) input.focus();
     } else if (data.scenario === 'onboarding_test') {
-      // Класс уже выбран → показываем анкету (первый вопрос)
-      greetingEl.innerHTML = '⏳ Загружаю анкету…';
-      ctaRow.innerHTML = '';
-      fetch('/prep/coach/questionnaire/start', { method: 'POST' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data.reply) {
-            greetingEl.style.display = 'none';
-            addMsg(data.reply, 'bot');
-            var input = document.getElementById('chatInput');
-            if (input) input.focus();
-          } else {
-            greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать анкету.');
-          }
-        })
-        .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
+      // Класс уже выбран → перенаправляем на онбординг
+      window.location.href = '/prep/onboarding';
     } else if (data.scenario === 'daily_test') {
       addCtaAction('🧪 Пройти тест по теме', function () {
         var subtopicKey = data.priority_subtopic ? data.priority_subtopic.key : '';
@@ -873,20 +942,7 @@ if (delBtn) {
 
 // ─── Questionnaires functions ──────────────────────────────────────────
 function startQuestionnaire() {
-    greetingEl.innerHTML = '⏳ Загружаю анкету…';
-    fetch('/prep/coach/questionnaire/start', { method: 'POST' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (data.reply) {
-                greetingEl.style.display = 'none';
-                addMsg(data.reply, 'bot');
-                var inp = document.getElementById('chatInput');
-                if (inp) inp.focus();
-            } else {
-                greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать анкету.');
-            }
-        })
-        .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения.'; });
+    window.location.href = '/prep/onboarding';
 }
 
 function showBotMessage(text) {

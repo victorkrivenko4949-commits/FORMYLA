@@ -330,9 +330,9 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
         )
     else:
         planned_slots = plan_slots(profile)
-    if len(planned_slots) != 10:
+    if not planned_slots:
         raise GeminiPlanError(
-            f"slot_planner вернул {len(planned_slots)} слотов вместо 10 — "
+            f"slot_planner вернул 0 слотов — "
             "проверь профиль (weak_topics/strong_topics/calibration пусты?)",
             category="validate",
         )
