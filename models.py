@@ -1694,3 +1694,23 @@ class FigureJob(db.Model):
             f'<FigureJob id={self.id} user={self.user_id} '
             f'status={self.status}>'
         )
+
+
+class SolutionAttempt(db.Model):
+    """D9: solution method for morning probe tasks (text or photo)."""
+    __tablename__ = 'solution_attempts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('adaptive_tasks.id'), nullable=False, index=True)
+    probe_id = db.Column(db.Integer, nullable=True, index=True)  # ThemeProbe id
+    attempt_type = db.Column(db.String(8), nullable=False)  # 'text' or 'photo'
+    solution_text = db.Column(db.Text, nullable=True)
+    file_path = db.Column(db.String(512), nullable=True)
+    file_size = db.Column(db.Integer, nullable=True)  # bytes after compression
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('solution_attempts', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<SolutionAttempt id={self.id} user={self.user_id} type={self.attempt_type}>'

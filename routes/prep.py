@@ -14,6 +14,7 @@ Endpoints:
   DELETE /prep/<plan_id>                     — удалить план
 """
 
+import io
 import json
 import hashlib
 import random
@@ -22,7 +23,7 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, jsonify, request, abort, render_template, current_app, session, redirect
 from flask_login import current_user, login_required
 
-from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution, DailyQuest, ChatMessage
+from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution, DailyQuest, ChatMessage, SolutionAttempt
 from services.prep_planner import generate_prep_plan, RADAR_TOPICS, TOPIC_NAMES_RU
 from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE, get_db_topic, get_topic_entry
 from daily_tasks.profile import build_profile, ProfileBuildError, score_to_target_level
@@ -1595,6 +1596,140 @@ def probe_submit():
     )
 
     # Include AI feedback in the response
+    result['ai_feedback'] = {
+        'verdict': verdict,
+        'message': feedback.get('message', ''),
+        'hint': feedback.get('hint', ''),
+        'solution': feedback.get('solution', ''),
+        'correct_answer': feedback.get('correct_answer', ''),
+    }
+    if feedback.get('ai_checked'):
+        result['ai_checked'] = True
+
+    return jsonify(result)
+
+
+# ─── D9: Submit answer with required solution ────────────────────────────
+
+@prep_bp.route('/api/prep/answer', methods=['POST'])
+@prep_bp.route('/answer', methods=['POST'])
+@login_required
+def prep_answer():
+    """Submit an answer for the morning probe WITH required solution method.
+
+    Expects JSON:
+      - task_id: int
+      - answer: str (short answer)
+      - solution_method: 'text' or 'photo'
+      - solution_text: str (min 30 chars, if method=text)
+      - solution_photo: file upload (if method=photo, jpg/png/heic, max 12MB)
+
+    Returns 400 with clear text if solution is missing.
+    """
+    data = request.get_json(silent=True) or {}
+    task_id = data.get('task_id')
+    user_answer = (data.get('answer') or '').strip()
+    solution_method = (data.get('solution_method') or '').strip().lower()
+    solution_text = (data.get('solution_text') or '').strip()
+
+    if not task_id:
+        return jsonify(error='task_id обязателен'), 400
+
+    # Validate solution method presence
+    if solution_method not in ('text', 'photo'):
+        return jsonify(error='Выберите способ решения: текстом или фотографией. Блок «Как решал» обязателен.'), 400
+
+    if solution_method == 'text':
+        if len(solution_text) < 30:
+            return jsonify(error='Текстовое решение должно содержать минимум 30 символов. Опишите ход решения подробнее.'), 400
+    elif solution_method == 'photo':
+        if 'solution_photo' not in request.files:
+            return jsonify(error='Прикрепите фотографию решения (jpg, png, heic).'), 400
+        photo_file = request.files['solution_photo']
+        if not photo_file or not photo_file.filename:
+            return jsonify(error='Файл фотографии пуст.'), 400
+        photo_bytes = photo_file.read()
+        if len(photo_bytes) > 12 * 1024 * 1024:
+            return jsonify(error='Размер фотографии превышает 12 МБ.'), 400
+        if len(photo_bytes) == 0:
+            return jsonify(error='Файл фотографии пуст.'), 400
+        # Validate MIME
+        content_type = photo_file.content_type or 'application/octet-stream'
+        allowed = {'image/jpeg', 'image/png', 'image/heic', 'image/heif'}
+        if content_type not in allowed and not any(photo_file.filename.lower().endswith(ext) for ext in ('.jpg','.jpeg','.png','.heic','.heif')):
+            return jsonify(error='Неподдерживаемый формат. Принимаются jpg, png, heic.'), 400
+
+        # Convert HEIC to JPEG if needed
+        if content_type in ('image/heic', 'image/heif') or photo_file.filename.lower().endswith(('.heic', '.heif')):
+            photo_bytes, content_type = _convert_heic_to_jpeg(photo_bytes)
+
+        # Compress in browser style: resize to max 1500px long side, quality 0.8
+        try:
+            from PIL import Image
+            img = Image.open(io.BytesIO(photo_bytes))
+            img = img.convert('RGB')
+            w, h = img.size
+            max_side = 1500
+            if max(w, h) > max_side:
+                ratio = max_side / max(w, h)
+                new_w = int(w * ratio)
+                new_h = int(h * ratio)
+                img = img.resize((new_w, new_h), Image.LANCZOS)
+            out_buf = io.BytesIO()
+            img.save(out_buf, format='JPEG', quality=80)
+            photo_bytes = out_buf.getvalue()
+            content_type = 'image/jpeg'
+        except Exception:
+            pass  # Keep original if compression fails
+
+        # Save photo
+        import os as _os
+        from datetime import datetime as _dt
+        year_month = _dt.utcnow().strftime('%Y-%m')
+        uid = str(current_user.id)
+        upload_dir = _os.path.join(current_app.static_folder, 'uploads', 'solutions', year_month)
+        _os.makedirs(upload_dir, exist_ok=True)
+        # Generate unique filename
+        import uuid as _uuid
+        filename = f'{_uuid.uuid4().hex[:16]}.jpg'
+        file_path_rel = f'uploads/solutions/{year_month}/{filename}'
+        file_path_abs = _os.path.join(current_app.static_folder, file_path_rel)
+        with open(file_path_abs, 'wb') as f:
+            f.write(photo_bytes)
+        file_size = len(photo_bytes)
+    else:
+        file_path_rel = None
+        file_size = None
+
+    # Evaluate via AI
+    from services.theme_probe import record_answer as probe_record_answer
+    from models import AdaptiveTask as _PTask
+
+    task = db.session.get(_PTask, int(task_id))
+    if not task:
+        return jsonify(error='Задача не найдена'), 404
+
+    is_correct, feedback = _evaluate_solution(task, user_answer, solution_text)
+    verdict = feedback.get('verdict', 'wrong')
+
+    result = probe_record_answer(
+        current_user.id, int(task_id), verdict,
+        solution_text or user_answer
+    )
+
+    # Save SolutionAttempt
+    attempt = SolutionAttempt(
+        user_id=current_user.id,
+        task_id=int(task_id),
+        probe_id=result.get('probe_id'),
+        attempt_type=solution_method,
+        solution_text=solution_text if solution_method == 'text' else None,
+        file_path=file_path_rel if solution_method == 'photo' else None,
+        file_size=file_size if solution_method == 'photo' else None,
+    )
+    db.session.add(attempt)
+    db.session.commit()
+
     result['ai_feedback'] = {
         'verdict': verdict,
         'message': feedback.get('message', ''),
