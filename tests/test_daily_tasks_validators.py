@@ -1140,7 +1140,7 @@ class TestConstants:
         assert "logic" in VALID_SUBJECTS
 
     def test_difficulty_range(self) -> None:
-        assert VALID_DIFFICULTY_RANGE == (1, 8)
+        assert VALID_DIFFICULTY_RANGE == (1, 5)
 
     def test_valid_verdicts(self) -> None:
         assert "approved" in VALID_VERDICTS

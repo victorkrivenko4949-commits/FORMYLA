@@ -193,9 +193,9 @@ class TestGetTasksMiss:
             tb.get_tasks(grade=4, level=4, day=1)
 
     def test_miss_wrong_level(self):
-        """get_tasks для уровня вне [4,8] → None (если нет в банке)."""
-        tasks = tb.get_tasks(grade=6, level=3, day=1)
-        assert tasks is None, "Уровень 3 не должен быть в банке"
+        """get_tasks для уровня вне [1,5] → None (если нет в банке)."""
+        tasks = tb.get_tasks(grade=6, level=6, day=1)
+        assert tasks is None, "Уровень 6 не должен быть в банке"
 
     def test_miss_wrong_day(self):
         """get_tasks для дня вне [1,100] → None."""
@@ -348,37 +348,36 @@ class TestPickBankLevel:
         }
         assert tb.pick_bank_level(profile) == 5
 
-    def test_average_5_and_8_rounds_to_6(self):
-        """(5+8)/2 = 6.5 → round -> 6 (математически). Но clamped в [4,8]."""
+
+    def test_average_2_and_4_rounds_to_3(self):
+        """(2+4)/2 = 3.0 -=3. Clamped in [1,5]."""
         profile = {
             "topics_full": [
-                {"target_level": 5, "calibration": False},
-                {"target_level": 8, "calibration": False},
+                {"target_level": 2, "calibration": False},
+                {"target_level": 4, "calibration": False},
             ],
         }
         result = tb.pick_bank_level(profile)
-        # round((5+8)/2) = round(6.5) = 6 (Python banker's rounding → 6)
-        assert result == 6, f"Ожидалось 6, получено {result}"
-
+        assert result == 3, f"Expected 3, got {result}"
     def test_calibration_topics_ignored(self):
         """Калибровочные темы не учитываются в среднем."""
         profile = {
             "topics_full": [
-                {"target_level": 8, "calibration": False},   # measured → учтём
-                {"target_level": 2, "calibration": True},    # calibration → игнор
-                {"target_level": 8, "calibration": False},   # measured → учтём
+                {"target_level": 5, "calibration": False},   # measured → учтём
+                {"target_level": 0, "calibration": True},    # calibration → игнор
+                {"target_level": 5, "calibration": False},   # measured → учтём
             ],
         }
         # Среднее: (8+8)/2 = 8 → level=8
-        assert tb.pick_bank_level(profile) == 8
+        assert tb.pick_bank_level(profile) == 5
 
     def test_no_measured_topics_uses_class_expected(self):
         """Без measured тем — class_expected_level."""
         profile = {
             "topics_full": [],
-            "class_expected_level": 7,
+            "class_expected_level": 4,
         }
-        assert tb.pick_bank_level(profile) == 7
+        assert tb.pick_bank_level(profile) == 4
 
     def test_no_measured_no_class_expected_uses_default(self):
         """Без measured тем и без class_expected_level — default=5."""
@@ -395,10 +394,10 @@ class TestPickBankLevel:
         assert tb.pick_bank_level(profile) == tb.MAX_BANK_LEVEL
 
     def test_clamp_below_min(self):
-        """Уровень < 4 зажимается в 4."""
+        """Уровень < 1 зажимается в 1."""
         profile = {
             "topics_full": [
-                {"target_level": 2, "calibration": False},
+                {"target_level": 0, "calibration": False},
             ],
         }
         assert tb.pick_bank_level(profile) == tb.MIN_BANK_LEVEL
@@ -406,7 +405,7 @@ class TestPickBankLevel:
     def test_custom_default(self):
         """Параметр default_level переопределяет стандартный 5."""
         profile = {"topics_full": []}
-        assert tb.pick_bank_level(profile, default_level=6) == 6
+        assert tb.pick_bank_level(profile, default_level=3) == 3
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -472,10 +471,10 @@ class TestConstants:
     """Проверка констант модуля."""
 
     def test_bank_levels(self):
-        """BANK_LEVELS = (4,5,6,7,8)."""
-        assert tb.BANK_LEVELS == (4, 5, 6, 7, 8)
-        assert tb.MIN_BANK_LEVEL == 4
-        assert tb.MAX_BANK_LEVEL == 8
+        """BANK_LEVELS = (1,2,3,4,5)."""
+        assert tb.BANK_LEVELS == (1, 2, 3, 4, 5)
+        assert tb.MIN_BANK_LEVEL == 1
+        assert tb.MAX_BANK_LEVEL == 5
 
     def test_days_per_cell(self):
         """DAYS_PER_CELL = 100."""

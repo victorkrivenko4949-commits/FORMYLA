@@ -8,7 +8,7 @@
   • `topic`           (db_topic, строго из TOPICS_REFERENCE)
   • `subject`
   • `topic_key`
-  • `difficulty_level` (1..8, в пределах окна темы)
+  • `difficulty_level` (1..5, в пределах окна темы)
   • `slot_kind`
   • `target_level`, `level_window`, `is_calibration`, `measured`, `pct`, `test_correct`, `test_total`, `final_level`
 

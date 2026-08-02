@@ -44,10 +44,10 @@ _GRADE_FILES: Dict[int, str] = {
 # In-memory cache: grade → List[probe_dict]
 _bank_cache: Dict[int, List[Dict[str, Any]]] = {}
 
-# Валидные уровни в банке
-BANK_LEVELS: Tuple[int, ...] = (4, 5, 6, 7, 8)
-MIN_BANK_LEVEL = 4
-MAX_BANK_LEVEL = 8
+# Валидные уровни в банке (каноническая шкала 1..5)
+BANK_LEVELS: Tuple[int, ...] = (1, 2, 3, 4, 5)
+MIN_BANK_LEVEL = 1
+MAX_BANK_LEVEL = 5
 DAYS_PER_CELL = 100
 TASKS_PER_PROBE = 10
 
@@ -140,7 +140,7 @@ def get_tasks(
     grade : int
         Класс (5–11).
     level : int
-        Уровень сложности (4–8).
+        Уровень сложности (1–5).
     day : int
         День (1–100).
     theme_hint : str, optional

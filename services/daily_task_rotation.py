@@ -394,13 +394,12 @@ def _get_bank_day(user_id: int) -> int:
 
 
 def _map_canonical_to_bank_level(canonical_level: int) -> int:
-    """Отобразить канонический уровень (1–5) в банковский (4–8).
+    """Отобразить канонический уровень (1–5) в банковский (1–5).
 
-    Банк задач оперирует уровнями сложности 4–8.
-    Каноническая шкала level_engine — 1-5.
-    Отображение: canonical + 3 → bank, зажато в [4, 8].
+    Банк задач оперирует уровнями сложности 1–5 (каноническая шкала).
+    Отображение: тождественное (bank level = canonical level), зажато в [1, 5].
     """
-    return max(4, min(8, canonical_level + 3))
+    return max(1, min(5, canonical_level))
 
 
 def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, Any]:

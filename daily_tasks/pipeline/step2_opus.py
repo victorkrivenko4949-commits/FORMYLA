@@ -7,8 +7,8 @@ Step 2: генерация задач через DeepSeek API (parallelopus).
 Каждая задача генерируется отдельным вызовом модели параллельно.
 
 Доступные модели (настраиваются в pipeline/config.py):
-  - deepseek/deepseek-chat-v3.1 — для уровней 1..3 (быстро, ~3-4 сек)
-  - deepseek/deepseek-r1 — для уровней 4..8 (медленно, ~40-110 сек)
+  - deepseek/deepseek-chat-v3.1 — для уровней 1..2 (быстро, ~3-4 сек)
+  - deepseek/deepseek-r1 — для уровней 3..5 (медленно, ~40-110 сек)
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 _OPUS_MODEL = "deepseek/deepseek-chat-v3.1"
 _PARALLEL_WORKERS = 5
 _MAX_REGEN_ROUNDS = 3
-_GEN_HARD_THRESHOLD = 4
+_GEN_HARD_THRESHOLD = 3
 _GEN_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
 _GEN_MODEL_HARD = "deepseek/deepseek-r1"
 _JSON_RESPONSE_FORMAT = {"type": "json_object"}
@@ -46,7 +46,7 @@ _JSON_RESPONSE_FORMAT = {"type": "json_object"}
 
 
 def _model_for_level(difficulty_level: Any) -> str:
-    """Vybor modeli po urovnyu slozhnosti (8-ballnaya shkala)."""
+    """Vybor modeli po urovnyu slozhnosti (5-ballnaya shkala)."""
     try:
         lvl = int(difficulty_level or 1)
     except (TypeError, ValueError):
