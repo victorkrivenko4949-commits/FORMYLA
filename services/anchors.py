@@ -324,9 +324,25 @@ def pick_anchors(grade: int) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
 
 
 def _task_to_anchor_dict(task: AdaptiveTask) -> Dict[str, Any]:
-    """Конвертировать AdaptiveTask → словарь якоря."""
+    """Конвертировать AdaptiveTask → словарь якоря.
+
+    Связь задачи с чертежом — по anchor_uid: A_G5_GEO → A_G5_GEO.svg
+    в static/figures/anchors/. Не требует поля в БД, не требует файла
+    соответствия. Для будущих обычных задач зарезервировано поле
+    figure_json (описание построения) в таблице задач.
+    """
+    import os as _os
+    uid = task.source_id or ''
+    anchors_dir = _os.path.join(
+        _os.path.dirname(__file__), '..', 'static', 'figures', 'anchors'
+    )
+    svg_path = _os.path.join(anchors_dir, f'{uid}.svg')
+    figure_url = None
+    if _os.path.isfile(svg_path):
+        figure_url = f'/static/figures/anchors/{uid}.svg'
+
     return {
-        'anchor_uid': task.source_id or '',
+        'anchor_uid': uid,
         'grade': task.class_level,
         'section': task.subject or task.topic or '',
         'subtopic': task.subtopic or '',
@@ -335,6 +351,7 @@ def _task_to_anchor_dict(task: AdaptiveTask) -> Dict[str, Any]:
         'answer': task.correct_answer or '',
         'theme_id': task.theme_id or '',
         'db_id': task.id,
+        'figure_url': figure_url,
     }
 
 

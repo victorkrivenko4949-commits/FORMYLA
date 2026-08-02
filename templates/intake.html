@@ -155,6 +155,27 @@
     color: var(--text);
   }
 
+  /* ── Anchor figure ─────────────────────────────── */
+  .intake-anchor-figure {
+    width: 100%;
+    margin-bottom: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .intake-anchor-figure img {
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+  }
+
   .intake-anchor-label {
     font-size: 12px;
     color: var(--accent-hi);
@@ -373,8 +394,13 @@
 
   function renderAnchor(anchor, qIndex, total) {
     updateProgress(qIndex, total);
+    let figureHtml = '';
+    if (anchor.figure_url) {
+      figureHtml = `<div class="intake-anchor-figure"><img src="${anchor.figure_url}" alt="Чертёж" loading="lazy"></div>`;
+    }
     const html = `
       <div class="intake-anchor-label">Задача по разделу «${anchor.section_ru}» (${anchor.anchor_idx} из ${anchor.total_anchors})</div>
+      ${figureHtml}
       <div class="intake-anchor-statement">${anchor.statement}</div>
       <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
       <div class="intake-btn-row">

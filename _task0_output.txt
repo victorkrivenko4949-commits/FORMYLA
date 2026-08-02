@@ -1,0 +1,158 @@
+
+============================================================
+adaptive_tasks: difficulty_level distribution
+============================================================
+  level=1 src=1 count=1271
+  level=1 src=2 count=2485
+  level=2 src=3 count=1332
+  level=3 src=4 count=720
+  level=3 src=5 count=904
+  level=4 src=6 count=832
+  level=4 src=7 count=602
+  level=5 src=8 count=627
+
+============================================================
+adaptive_tasks: class_level distribution
+============================================================
+  class=5 count=1128
+  class=6 count=1128
+  class=7 count=1324
+  class=8 count=1384
+  class=9 count=1300
+  class=10 count=1277
+  class=11 count=1232
+
+============================================================
+grade_tasks: grade + level distribution
+============================================================
+  grade=5 level=1 count=145
+  grade=5 level=2 count=145
+  grade=5 level=3 count=285
+  grade=5 level=4 count=285
+  grade=5 level=5 count=140
+  grade=6 level=1 count=90
+  grade=6 level=2 count=85
+  grade=6 level=3 count=170
+  grade=6 level=4 count=170
+  grade=6 level=5 count=85
+
+============================================================
+task_solutions structure
+============================================================
+  id                             INTEGER
+  user_id                        INTEGER
+  task_id                        INTEGER
+  plan_id                        INTEGER
+  day_id                         INTEGER
+  user_answer                    TEXT
+  user_solution                  TEXT
+  original_photo_url             VARCHAR(500)
+  photo_hash                     VARCHAR(64)
+  ocr_raw_output                 TEXT
+  ocr_corrected                  TEXT
+  was_corrected                  BOOLEAN
+  is_correct                     BOOLEAN
+  feedback_json                  TEXT
+  consent_for_training           BOOLEAN
+  quality_score                  FLOAT
+  created_at                     DATETIME
+  total rows: 84
+
+============================================================
+method_tasks structure
+============================================================
+  id                             VARCHAR(20)
+  grade                          INTEGER
+  olympiad                       VARCHAR(50)
+  subject                        VARCHAR(20)
+  year                           INTEGER
+  num                            INTEGER
+  stage                          VARCHAR(50)
+  method_code                    VARCHAR(20)
+  method_name                    VARCHAR(300)
+  section                        VARCHAR(100)
+  difficulty                     INTEGER
+  difficulty_label               VARCHAR(100)
+  difficulty_color               VARCHAR(20)
+  method_probability             VARCHAR(200)
+  method_probability_tier        VARCHAR(8)
+  method_probability_color       VARCHAR(20)
+  text                           TEXT
+  answer                         TEXT
+  solution_idea                  TEXT
+  task_type                      VARCHAR(50)
+  created_at                     DATETIME
+
+============================================================
+adaptive_tasks: solution length stats by difficulty_level
+============================================================
+  level=1 cnt=3756 avg_sol_len=233 avg_text_len=121 avg_ans_len=15
+  level=2 cnt=1332 avg_sol_len=341 avg_text_len=120 avg_ans_len=22
+  level=3 cnt=1624 avg_sol_len=352 avg_text_len=118 avg_ans_len=23
+  level=4 cnt=1434 avg_sol_len=394 avg_text_len=150 avg_ans_len=40
+  level=5 cnt=627 avg_sol_len=417 avg_text_len=141 avg_ans_len=30
+
+============================================================
+grade_tasks: solution length stats by level
+============================================================
+  level=1 cnt=235 avg_sol_len=74 avg_stmt_len=60
+  level=2 cnt=230 avg_sol_len=74 avg_stmt_len=60
+  level=3 cnt=455 avg_sol_len=134 avg_stmt_len=88
+  level=4 cnt=455 avg_sol_len=134 avg_stmt_len=92
+  level=5 cnt=225 avg_sol_len=192 avg_stmt_len=95
+
+============================================================
+Searching for migration/level-shift patterns in adaptive_tasks
+============================================================
+Rows where difficulty_level != difficulty_level_src:
+  cur=1 src=2 cnt=2485
+  cur=2 src=3 cnt=1332
+  cur=3 src=4 cnt=720
+  cur=3 src=5 cnt=904
+  cur=4 src=6 cnt=832
+  cur=4 src=7 cnt=602
+  cur=5 src=8 cnt=627
+
+============================================================
+5 examples from each difficulty_level in adaptive_tasks
+============================================================
+
+--- Level 1 ---
+  id=1 class=5 src_lvl=1 topic=Теория чисел subtopic=None sol_len=206 text_len=142
+    text: У Пети есть карточки с числами от \(14\) до \(20\). Можно ли разложить все карточки на две группы так, чтобы суммы чисел
+  id=2 class=5 src_lvl=2 topic=Логика subtopic=None sol_len=114 text_len=116
+    text: На доске написаны числа от \(1\) до \(61\). За ход два числа заменяют их суммой. Можно ли в конце получить \(1892\)?
+  id=3 class=5 src_lvl=2 topic=Теория чисел subtopic=None sol_len=306 text_len=131
+    text: Найдите наименьшее натуральное число, которое при делении на \(2\), \(3\) и \(4\) даёт остатки соответственно \(1\), \(2
+  id=4 class=5 src_lvl=2 topic=Логика subtopic=None sol_len=114 text_len=116
+    text: На доске написаны числа от \(1\) до \(68\). За ход два числа заменяют их суммой. Можно ли в конце получить \(2347\)?
+  id=5 class=5 src_lvl=2 topic=Логика subtopic=None sol_len=114 text_len=116
+    text: На доске написаны числа от \(1\) до \(48\). За ход два числа заменяют их суммой. Можно ли в конце получить \(1177\)?
+
+--- Level 2 ---
+  id=117 class=6 src_lvl=3 topic=Теория чисел subtopic=None sol_len=429 text_len=73
+    text: Докажите, что если простое число \(p>3\), то \(p^2-1\) делится на \(24\).
+  id=119 class=6 src_lvl=3 topic=Теория чисел subtopic=None sol_len=192 text_len=82
+    text: Докажите, что для любого нечётного целого \(n\) число \(n^4-1\) делится на \(16\).
+  id=135 class=6 src_lvl=3 topic=Алгебра subtopic=None sol_len=223 text_len=86
+    text: В компании \(17\) человек. Может ли каждый знать ровно \(4\) человек из этой компании?
+  id=139 class=6 src_lvl=3 topic=Комбинаторика subtopic=None sol_len=252 text_len=73
+    text: В графе степени вершин равны \(1,2,2,3,3,4,5\). Существует ли такой граф?
+  id=213 class=7 src_lvl=3 topic=Комбинаторика. Комбинаторика и графы subtopic=None sol_len=939 text_len=133
+    text: Сколькими способами можно выбрать \(3\) вершины выпуклого \(7\)-угольника так, чтобы никакие две выбранные вершины не бы
+
+--- Level 3 ---
+  id=305 class=9 src_lvl=4 topic=Алгебра. Функции, последовательности и олимпиадные конструкции subtopic=None sol_len=589 text_len=114
+    text: При каких значениях параметра \(a\) уравнение \(x^2-(a+1)x+a-2=0\) имеет ровно один корень из интервала \((0;2)\)?
+  id=360 class=9 src_lvl=4 topic=Комбинаторика. Комбинаторика и графы subtopic=None sol_len=450 text_len=141
+    text: Докажите, что среди любых \(n+1\) чисел, выбранных из множества \(\{1,2,\ldots,2n\}\), найдутся два числа, одно из котор
+  id=361 class=9 src_lvl=4 topic=Логика. Логика, инварианты, стратегии subtopic=None sol_len=1519 text_len=517
+    text: Двое игроков по очереди записывают вещественные числа в три позиции \(a,b,c\) квадратного трёхчлена \(ax^2+bx+c\). Игрок
+  id=363 class=9 src_lvl=4 topic=Алгебра. Квадратные уравнения, Виет, параметры subtopic=None sol_len=509 text_len=66
+Traceback (most recent call last):
+  File "c:\Users\Redmi\Desktop\Новая папка (2)\_task0_explore.py", line 124, in <module>
+    OUT.write(f"    text: {r['task_preview']}\n")
+  File "C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u221a' in position 37: character maps to <undefined>

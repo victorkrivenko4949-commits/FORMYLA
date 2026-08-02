@@ -1,0 +1,9 @@
+{
+  "canvas": {"width": 420, "height": 420, "margin": 30},
+  "constructions": [
+    {"type": "free_point", "id": "O", "x": 210, "y": 210},
+    {"type": "circle_center_radius", "id": "c", "center": "O", "radius": 150},
+    {"type": "midpoint", "id": "mid_left", "p1": {"type": "free_point", "id": "__dummy1", "x": 60, "y": 210}, "p2": {"type": "free_point", "id": "__dummy2", "x": 60, "y": 210}},
+    {"type": "point_label", "id": "lbl_O", "p1": "O", "label": "O", "side": "right"}
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "canvas": {"width": 500, "height": 320, "margin": 30},
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 60, "y": 250},
+    {"type": "free_point", "id": "B", "x": 440, "y": 250},
+    {"type": "free_point", "id": "C", "x": 440, "y": 60},
+    {"type": "free_point", "id": "D", "x": 60, "y": 60},
+
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "CD", "p1": "C", "p2": "D"},
+    {"type": "segment", "id": "DA", "p1": "D", "p2": "A"},
+
+    {"type": "quadrilateral_rectangle", "id": "rect", "p1": "A", "p2": "B", "p3": "C", "p4": "D"},
+
+    {"type": "point_on_segment", "id": "E", "p1": "A", "p2": "B", "ratio": 0.45},
+    {"type": "point_on_segment", "id": "F", "p1": "D", "p2": "C", "ratio": 0.45},
+    {"type": "segment", "id": "cut", "p1": "E", "p2": "F", "dashed": true},
+
+    {"type": "point_label", "id": "lbl_E", "p1": "E", "label": "E", "side": "bottom"},
+    {"type": "point_label", "id": "lbl_F", "p1": "F", "label": "F", "side": "top"}
+  ]
+}

@@ -293,6 +293,7 @@ def _format_anchor_response(state: Dict, idx: int) -> Dict[str, Any]:
             }.get(anchor['section'], anchor['section']),
             'anchor_idx': idx + 1,
             'total_anchors': len(state['anchor_tasks']),
+            'figure_url': anchor.get('figure_url'),
         },
     }
 

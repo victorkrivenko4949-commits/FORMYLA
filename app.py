@@ -9823,6 +9823,75 @@ def admin_fix_theory_blocks():
 
 
 # ============================================================================
+# FIGURES VITRINE (admin only)
+# ============================================================================
+
+@app.route("/figures")
+@login_required
+def figures_vitrine():
+    """Витрина чертежей якорных задач. Только для администраторов."""
+    if not current_user.is_admin:
+        abort(403)
+    from services.figures_service import get_anchor_figures, get_counts
+    figures = get_anchor_figures()
+    counts = get_counts()
+    # Ensure counts cover all figures even if some not in REVIEW_STATUS
+    if counts['total'] == 0 and figures:
+        counts = {
+            'total': len(figures),
+            'accepted': sum(1 for f in figures if f['status'] == 'accepted'),
+            'rejected': sum(1 for f in figures if f['status'] == 'rejected'),
+            'pending': sum(1 for f in figures if f['status'] == 'pending'),
+        }
+    return render_template('figures.html', figures=figures, counts=counts)
+
+
+@app.route("/figures/rebuild/<anchor_uid>", methods=["POST"])
+@login_required
+def figures_rebuild(anchor_uid):
+    """Перерисовать чертёж с новым семенем."""
+    if not current_user.is_admin:
+        abort(403)
+    from services.figures_service import rebuild_figure
+    result = rebuild_figure(anchor_uid)
+    if result.get('build_error'):
+        return jsonify({'error': result['build_error'], **result}), 500
+    return jsonify(result)
+
+
+@app.route("/figures/accept/<anchor_uid>", methods=["POST"])
+@login_required
+def figures_accept(anchor_uid):
+    """Пометить чертёж как проверенный."""
+    if not current_user.is_admin:
+        abort(403)
+    from services.figures_service import accept_figure
+    result = accept_figure(anchor_uid)
+    return jsonify(result)
+
+
+@app.route("/figures/reject/<anchor_uid>", methods=["POST"])
+@login_required
+def figures_reject(anchor_uid):
+    """Пометить чертёж как отклонённый."""
+    if not current_user.is_admin:
+        abort(403)
+    from services.figures_service import reject_figure
+    result = reject_figure(anchor_uid)
+    return jsonify(result)
+
+
+@app.route("/figures/counts")
+@login_required
+def figures_counts():
+    """API: счётчики статусов."""
+    if not current_user.is_admin:
+        abort(403)
+    from services.figures_service import get_counts
+    return jsonify(get_counts())
+
+
+# ============================================================================
 # DAILY QUEST ROUTES
 # ============================================================================
 

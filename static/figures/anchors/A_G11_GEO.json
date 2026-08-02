@@ -1,0 +1,20 @@
+{
+  "canvas": {"width": 420, "height": 380, "margin": 30},
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 60, "y": 320},
+    {"type": "free_point", "id": "B", "x": 340, "y": 320},
+    {"type": "free_point", "id": "C", "x": 380, "y": 80},
+    {"type": "free_point", "id": "D", "x": 100, "y": 80},
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "CD", "p1": "C", "p2": "D"},
+    {"type": "segment", "id": "DA", "p1": "D", "p2": "A"},
+    {"type": "segment", "id": "AC", "p1": "A", "p2": "C", "dashed": true},
+    {"type": "segment", "id": "BD", "p1": "B", "p2": "D", "dashed": true},
+    {"type": "quadrilateral_parallelogram", "id": "par", "p1": "A", "p2": "B", "p3": "C", "p4": "D"},
+    {"type": "point_label", "id": "lbl_A", "p1": "A", "label": "A", "side": "bottom_left"},
+    {"type": "point_label", "id": "lbl_B", "p1": "B", "label": "B", "side": "bottom_right"},
+    {"type": "point_label", "id": "lbl_C", "p1": "C", "label": "C", "side": "top_right"},
+    {"type": "point_label", "id": "lbl_D", "p1": "D", "label": "D", "side": "top_left"}
+  ]
+}

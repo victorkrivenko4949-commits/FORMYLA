@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+{% block title %}Витрина чертежей — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #4c7dff;
+    --accent-hi: #6b9aff;
+    --accent-dim: rgba(76,125,255,0.08);
+    --text: #e2e8f0;
+    --text-soft: #cbd5e1;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --ok: #3ecf8e;
+    --bad: #ef4444;
+    --warn: #E5AC3A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+
+  .figures-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .figures-header {
+    margin-bottom: 32px;
+  }
+
+  .figures-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .figures-header p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* Counters */
+  .counters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .counter-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .counter-card .number {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .counter-card .label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .counter-total .number { color: var(--accent-hi); }
+  .counter-accepted .number { color: var(--ok); }
+  .counter-rejected .number { color: var(--bad); }
+  .counter-pending .number { color: var(--warn); }
+
+  /* Grid */
+  .figures-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .figure-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s;
+  }
+
+  .figure-card:hover {
+    border-color: rgba(76,125,255,0.25);
+  }
+
+  .figure-card.status-accepted {
+    border-left: 3px solid var(--ok);
+  }
+
+  .figure-card.status-rejected {
+    border-left: 3px solid var(--bad);
+  }
+
+  .figure-card.status-pending {
+    border-left: 3px solid var(--warn);
+  }
+
+  .figure-image {
+    width: 100%;
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .figure-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .figure-image .no-figure {
+    color: var(--faint);
+    font-size: 14px;
+  }
+
+  .figure-info {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .figure-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    align-self: flex-start;
+  }
+
+  .badge-accepted { background: rgba(62,207,142,0.12); color: var(--ok); }
+  .badge-rejected { background: rgba(239,68,68,0.12); color: var(--bad); }
+  .badge-pending  { background: rgba(229,172,58,0.12); color: var(--warn); }
+
+  .figure-id {
+    font-size: 13px;
+    color: var(--accent-hi);
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+  }
+
+  .figure-statement {
+    font-size: 13px;
+    color: var(--text-soft);
+    line-height: 1.5;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .figure-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .figure-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 16px;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    font-family: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-rebuild {
+    background: rgba(76,125,255,0.1);
+    color: var(--accent-hi);
+    border-color: rgba(76,125,255,0.2);
+  }
+
+  .btn-rebuild:hover {
+    background: rgba(76,125,255,0.2);
+  }
+
+  .btn-rebuild:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-accept {
+    background: rgba(62,207,142,0.1);
+    color: var(--ok);
+    border-color: rgba(62,207,142,0.2);
+  }
+
+  .btn-accept:hover {
+    background: rgba(62,207,142,0.2);
+  }
+
+  .btn-reject {
+    background: rgba(239,68,68,0.1);
+    color: var(--bad);
+    border-color: rgba(239,68,68,0.2);
+  }
+
+  .btn-reject:hover {
+    background: rgba(239,68,68,0.2);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 9999;
+    animation: toastIn 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast-ok { background: rgba(62,207,142,0.15); color: var(--ok); border: 1px solid rgba(62,207,142,0.3); }
+  .toast-err { background: rgba(239,68,68,0.15); color: var(--bad); border: 1px solid rgba(239,68,68,0.3); }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="figures-container">
+
+  <div class="figures-header">
+    <h1>Витрина чертежей</h1>
+    <p>Геометрические якорные задачи с построенными чертежами. Перерисовка с новым семенем, приёмка.</p>
+  </div>
+
+  <!-- Counters -->
+  <div class="counters" id="counters">
+    <div class="counter-card counter-total">
+      <div class="number" id="cnt-total">{{ counts.total }}</div>
+      <div class="label">Всего</div>
+    </div>
+    <div class="counter-card counter-accepted">
+      <div class="number" id="cnt-accepted">{{ counts.accepted }}</div>
+      <div class="label">Проверено</div>
+    </div>
+    <div class="counter-card counter-rejected">
+      <div class="number" id="cnt-rejected">{{ counts.rejected }}</div>
+      <div class="label">Отклонено</div>
+    </div>
+    <div class="counter-card counter-pending">
+      <div class="number" id="cnt-pending">{{ counts.pending }}</div>
+      <div class="label">Не смотрели</div>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="figures-grid" id="figures-grid">
+    {% for f in figures %}
+    <div class="figure-card status-{{ f.status }}" id="card-{{ f.anchor_uid }}" data-uid="{{ f.anchor_uid }}">
+      <div class="figure-image">
+        {% if f.figure_url %}
+        <img src="{{ f.figure_url }}?v={{ f.seed }}" alt="{{ f.anchor_uid }}" loading="lazy">
+        {% else %}
+        <div class="no-figure">Нет чертежа</div>
+        {% endif %}
+      </div>
+      <div class="figure-info">
+        <span class="figure-id">{{ f.anchor_uid }}</span>
+        <span class="figure-badge badge-{{ f.status }}">{{ f.status }}</span>
+        <div class="figure-statement">{{ f.statement }}</div>
+        <div class="figure-meta">
+          <span>Класс {{ f.grade }}</span>
+          <span>Попыток: {{ f.attempts }}</span>
+        </div>
+      </div>
+      <div class="figure-actions">
+        <button class="btn btn-rebuild" onclick="rebuildFigure('{{ f.anchor_uid }}')">
+          Перерисовать
+        </button>
+        {% if f.status != 'accepted' %}
+        <button class="btn btn-accept" onclick="acceptFigure('{{ f.anchor_uid }}')">
+          Принять
+        </button>
+        {% endif %}
+        {% if f.status != 'rejected' and f.status != 'accepted' %}
+        <button class="btn btn-reject" onclick="rejectFigure('{{ f.anchor_uid }}')">
+          Отклонить
+        </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+function showToast(msg, ok) {
+  let t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+async function rebuildFigure(uid) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Строю...';
+  try {
+    const r = await fetch('/figures/rebuild/' + uid, {method: 'POST'});
+    const d = await r.json();
+    if (d.error) {
+      showToast(d.error, false);
+    } else {
+      showToast('Перерисовано, seed=' + d.seed, true);
+      // Update card image
+      const card = document.getElementById('card-' + uid);
+      const img = card.querySelector('.figure-image img');
+      const noFig = card.querySelector('.no-figure');
+      const attempts = card.querySelector('.figure-meta span:last-child');
+      if (img) {
+        img.src = d.figure_url + '?v=' + d.seed + '&t=' + Date.now();
+      } else if (noFig && d.figure_url) {
+        noFig.outerHTML = '<img src="' + d.figure_url + '?v=' + d.seed + '&t=' + Date.now() + '" alt="' + uid + '" loading="lazy">';
+      }
+      if (attempts) attempts.textContent = 'Попыток: ' + (d.attempts || 0);
+      card.className = 'figure-card status-pending';
+      const badge = card.querySelector('.figure-badge');
+      if (badge) { badge.className = 'figure-badge badge-pending'; badge.textContent = 'pending'; }
+      // Reload counters
+      loadCounters();
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, false);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Перерисовать';
+}
+
+async function acceptFigure(uid) {
+  const r = await fetch('/figures/accept/' + uid, {method: 'POST'});
+  const d = await r.json();
+  if (d.error) {
+    showToast(d.error, false);
+  } else {
+    showToast('Принято: ' + uid, true);
+    const card = document.getElementById('card-' + uid);
+    card.className = 'figure-card status-accepted';
+    const badge = card.querySelector('.figure-badge');
+    if (badge) { badge.className = 'figure-badge badge-accepted'; badge.textContent = 'accepted'; }
+    // Remove accept/reject buttons
+    const actions = card.querySelector('.figure-actions');
+    actions.innerHTML = '<button class="btn btn-rebuild" onclick="rebuildFigure(\'' + uid + '\')">Перерисовать</button>';
+    loadCounters();
+  }
+}
+
+async function rejectFigure(uid) {
+  const r = await fetch('/figures/reject/' + uid, {method: 'POST'});
+  const d = await r.json();
+  if (d.error) {
+    showToast(d.error, false);
+  } else {
+    showToast('Отклонено: ' + uid, true);
+    const card = document.getElementById('card-' + uid);
+    card.className = 'figure-card status-rejected';
+    const badge = card.querySelector('.figure-badge');
+    if (badge) { badge.className = 'figure-badge badge-rejected'; badge.textContent = 'rejected'; }
+    loadCounters();
+  }
+}
+
+async function loadCounters() {
+  const r = await fetch('/figures/counts');
+  const d = await r.json();
+  document.getElementById('cnt-total').textContent = d.total;
+  document.getElementById('cnt-accepted').textContent = d.accepted;
+  document.getElementById('cnt-rejected').textContent = d.rejected;
+  document.getElementById('cnt-pending').textContent = d.pending;
+}
+</script>
+{% endblock %}
