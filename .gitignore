@@ -128,6 +128,10 @@ response_body.txt
 diag.txt
 
 # Investigation / garbage check artifacts (root-level)
+
+# Recon reports and investigation files (local only, not for repo)
+_recon/
+
 /_GARBAGE_*
 /_check_*
 /_investigate*
