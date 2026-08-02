@@ -289,6 +289,18 @@ function renderTaskGrid(items) {
             statusRow.appendChild(calBadge);
         }
 
+        // D3: figure image (только отдача готового файла, не рисуется на лету)
+        if (item.figure_url) {
+            var figContainer = document.createElement('div');
+            figContainer.className = 'dt-card-figure';
+            var figImg = document.createElement('img');
+            figImg.src = item.figure_url;
+            figImg.alt = 'Чертёж';
+            figImg.loading = 'lazy';
+            figContainer.appendChild(figImg);
+            card.appendChild(figContainer);
+        }
+
         // Assemble card
         card.appendChild(number);
         card.appendChild(header);

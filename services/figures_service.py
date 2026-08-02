@@ -261,3 +261,74 @@ def get_figure_for_anchor(anchor_uid: str) -> Optional[str]:
     if os.path.isfile(svg_path):
         return url_for('static', filename=f'figures/anchors/{anchor_uid}.svg')
     return None
+
+
+# ── D3: Extended vitrine for regular (adaptive) tasks ──────────────────────
+
+def get_regular_task_figures(
+    class_level: Optional[int] = None,
+    subject_filter: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    page: int = 1,
+    per_page: int = 20,
+) -> Dict[str, Any]:
+    """Получить обычные задачи из adaptive_tasks с фигурами.
+
+    Фильтры: class_level, subject, figure_status.
+    Постраничный вывод: page, per_page.
+    """
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from app import app as _flask_app
+    from models import db as _db, AdaptiveTask
+
+    with _flask_app.app_context():
+        q = _db.session.query(AdaptiveTask).filter(
+            AdaptiveTask.figure_json.isnot(None)
+        )
+
+        if class_level:
+            q = q.filter(AdaptiveTask.class_level == class_level)
+        if subject_filter:
+            q = q.filter(AdaptiveTask.subject == subject_filter)
+        if status_filter:
+            q = q.filter(AdaptiveTask.figure_status == status_filter)
+
+        total = q.count()
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        offset = (page - 1) * per_page
+        tasks = q.order_by(AdaptiveTask.id.desc()).offset(offset).limit(per_page).all()
+
+        from services.figure_cache import figure_hash, svg_exists
+
+        results = []
+        for t in tasks:
+            figure_url = None
+            if t.figure_json and t.figure_status == 'figure_built':
+                try:
+                    h = figure_hash(t.figure_json)
+                    if svg_exists(h):
+                        figure_url = f'/static/figures/cache/{h}.svg'
+                except Exception:
+                    pass
+
+            results.append({
+                'task_id': t.id,
+                'class_level': t.class_level,
+                'subject': t.subject or '',
+                'topic': t.topic or '',
+                'subtopic': t.subtopic or '',
+                'statement': (t.task_text or '')[:200],
+                'figure_status': t.figure_status,
+                'figure_url': figure_url,
+                'has_figure_json': bool(t.figure_json),
+            })
+
+        return {
+            'tasks': results,
+            'total': total,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': total_pages,
+            'has_next': page < total_pages,
+            'has_prev': page > 1,
+        }

@@ -866,6 +866,12 @@ class AdaptiveTask(db.Model):
     review_reason = db.Column(db.Text)
     review_flagged_at = db.Column(db.DateTime, default=None)
 
+    # D3 PIPELINE: описание геометрических построений и статус чертежа
+    figure_json = db.Column(db.Text, nullable=True)
+    # Статусы: no_description, has_description, figure_built,
+    #          engine_rejected, human_verified, human_rejected
+    figure_status = db.Column(db.String(32), nullable=False, default='no_description', index=True)
+
     def to_dict(self):
         """Конвертация в словарь для JSON"""
         return {

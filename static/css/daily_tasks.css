@@ -774,6 +774,26 @@
     margin-bottom: 8px;
 }
 
+/* ── Card Figure (D3 pipeline) ── */
+.dt-card-figure {
+    width: 100%;
+    max-height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.dt-card-figure img {
+    width: 100%;
+    height: auto;
+    max-height: 180px;
+    object-fit: contain;
+    display: block;
+}
+
 /* ── Card Status variants (JS uses .dt-correct / .dt-incorrect / .dt-pending) ── */
 .dt-card-status.dt-correct {
     color: var(--daily-neon);

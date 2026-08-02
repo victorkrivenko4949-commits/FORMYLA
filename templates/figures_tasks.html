@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Задачи с чертежами — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --bg: #0a0e1a; --surface: #111827; --surface2: #1a2235;
+    --accent: #4c7dff; --accent-hi: #6b9aff; --accent-dim: rgba(76,125,255,0.08);
+    --text: #e2e8f0; --text-soft: #cbd5e1; --muted: #94a3b8; --faint: #64748b;
+    --border: rgba(255,255,255,0.08); --radius: 12px; --radius-sm: 8px;
+    --ok: #3ecf8e; --bad: #ef4444; --warn: #E5AC3A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+  .container { max-width: 1300px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+  .filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .filters select, .filters input { padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; }
+  .filters button { padding: 8px 16px; background: var(--accent); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .card-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .card-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .badge-grade { background: var(--accent-dim); color: var(--accent-hi); }
+  .badge-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .status-figure_built { background: rgba(62,207,142,0.12); color: var(--ok); }
+  .status-has_description { background: rgba(229,172,58,0.12); color: var(--warn); }
+  .status-engine_rejected { background: rgba(239,68,68,0.12); color: var(--bad); }
+  .status-no_description { background: rgba(255,255,255,0.04); color: var(--faint); }
+  .card-figure { margin: 8px 0; }
+  .card-figure img { width: 100%; max-height: 180px; object-fit: contain; border-radius: 6px; background: rgba(255,255,255,0.03); }
+  .card-statement { font-size: 13px; color: var(--text-soft); line-height: 1.4; }
+  .pagination { display: flex; gap: 8px; margin-top: 24px; justify-content: center; align-items: center; }
+  .pagination a, .pagination span { padding: 8px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); text-decoration: none; font-size: 14px; }
+  .pagination a:hover { background: var(--accent-dim); }
+  .pagination .current { background: var(--accent); color: #fff; }
+  .pagination .disabled { opacity: 0.3; pointer-events: none; }
+  .count { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Задачи с чертежами</h1>
+  <p class="subtitle">Расширенная витрина: обычные задачи с отбором и постраничным выводом</p>
+
+  <form class="filters" method="get">
+    <select name="class">
+      <option value="">Все классы</option>
+      {% for g in [5,6,7,8,9,10,11] %}
+      <option value="{{ g }}" {% if filters['class'] == g %}selected{% endif %}>{{ g }} класс</option>
+      {% endfor %}
+    </select>
+    <select name="subject">
+      <option value="">Все разделы</option>
+      {% for s in ['algebra','geometry','combinatorics','number_theory','logic'] %}
+      <option value="{{ s }}" {% if filters['subject'] == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <select name="status">
+      <option value="">Все статусы</option>
+      {% for st in ['no_description','has_description','figure_built','engine_rejected','human_verified','human_rejected'] %}
+      <option value="{{ st }}" {% if filters['status'] == st %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Фильтр</button>
+  </form>
+
+  <div class="count">Найдено: {{ total }} задач{% if total %} (страница {{ page }} из {{ total_pages }}){% endif %}</div>
+
+  {% if tasks %}
+  <div class="grid">
+    {% for t in tasks %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-grade">Класс {{ t.class_level }}</span>
+        <span class="badge-status status-{{ t.figure_status }}">{{ t.figure_status }}</span>
+      </div>
+      {% if t.figure_url %}
+      <div class="card-figure">
+        <img src="{{ t.figure_url }}" alt="Чертёж к задаче #{{ t.task_id }}" loading="lazy">
+      </div>
+      {% endif %}
+      <div class="card-statement">{{ t.statement }}</div>
+      <div style="font-size:11px;color:var(--faint);margin-top:6px;">#{{ t.task_id }} | {{ t.subject }} | {{ t.topic }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="pagination">
+    {% if has_prev %}
+    <a href="?page={{ page - 1 }}&class={{ filters['class'] or '' }}&subject={{ filters['subject'] or '' }}&status={{ filters['status'] or '' }}">← Назад</a>
+    {% else %}
+    <span class="disabled">← Назад</span>
+    {% endif %}
+    <span class="current">{{ page }} / {{ total_pages }}</span>
+    {% if has_next %}
+    <a href="?page={{ page + 1 }}&class={{ filters['class'] or '' }}&subject={{ filters['subject'] or '' }}&status={{ filters['status'] or '' }}">Вперёд →</a>
+    {% else %}
+    <span class="disabled">Вперёд →</span>
+    {% endif %}
+  </div>
+  {% else %}
+  <p style="color:var(--muted)">Нет задач, удовлетворяющих фильтрам.</p>
+  {% endif %}
+</div>
+{% endblock %}

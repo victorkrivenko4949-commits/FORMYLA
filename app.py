@@ -504,6 +504,82 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] needs_review columns Warning: {e}")
 
+# AUTO-MIGRATION D3: Add figure_json + figure_status to adaptive_tasks
+# Колонки добавлены в models.py:867-871 (D3 PIPELINE).
+# figure_json — описание геометрических построений (JSON geometric_engine).
+# figure_status — статус чертежа: no_description/has_description/figure_built/
+#                engine_rejected/human_verified/human_rejected.
+# Идемпотентно — через inspect, а не try/except на ALTER.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_fig, text as _text_fig
+        _inspector_fig = _inspect_fig(db.engine)
+        if 'adaptive_tasks' in _inspector_fig.get_table_names():
+            _columns_fig = [col['name'] for col in _inspector_fig.get_columns('adaptive_tasks')]
+            _new_fig_cols = {
+                'figure_json': 'TEXT',
+                'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
+            }
+            for _col_name_fig, _col_type_fig in _new_fig_cols.items():
+                if _col_name_fig not in _columns_fig:
+                    try:
+                        db.session.execute(_text_fig(
+                            f"ALTER TABLE adaptive_tasks ADD COLUMN {_col_name_fig} {_col_type_fig}"
+                        ))
+                        db.session.commit()
+                        print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_fig}' added to adaptive_tasks")
+                    except Exception as _e_col_fig:
+                        db.session.rollback()
+                        print(f"[AUTO-MIGRATION] adaptive_tasks.{_col_name_fig} skipped: {_e_col_fig}")
+                else:
+                    print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_fig}' already exists on adaptive_tasks")
+            # Ensure index on figure_status
+            try:
+                db.session.execute(_text_fig(
+                    "CREATE INDEX IF NOT EXISTS ix_adaptive_tasks_figure_status "
+                    "ON adaptive_tasks(figure_status)"
+                ))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+except Exception as e:
+    print(f"[AUTO-MIGRATION] figure_fields Warning: {e}")
+
+# AUTO-MIGRATION D3: Add figure_json + figure_status to daily_task_items
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_dtf, text as _text_dtf
+        _inspector_dtf = _inspect_dtf(db.engine)
+        if 'daily_task_items' in _inspector_dtf.get_table_names():
+            _columns_dtf = [col['name'] for col in _inspector_dtf.get_columns('daily_task_items')]
+            _new_dtf_cols = {
+                'figure_json': 'TEXT',
+                'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
+            }
+            for _col_name_dtf, _col_type_dtf in _new_dtf_cols.items():
+                if _col_name_dtf not in _columns_dtf:
+                    try:
+                        db.session.execute(_text_dtf(
+                            f"ALTER TABLE daily_task_items ADD COLUMN {_col_name_dtf} {_col_type_dtf}"
+                        ))
+                        db.session.commit()
+                        print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_dtf}' added to daily_task_items")
+                    except Exception as _e_col_dtf:
+                        db.session.rollback()
+                        print(f"[AUTO-MIGRATION] daily_task_items.{_col_name_dtf} skipped: {_e_col_dtf}")
+                else:
+                    print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_dtf}' already exists on daily_task_items")
+            try:
+                db.session.execute(_text_dtf(
+                    "CREATE INDEX IF NOT EXISTS ix_daily_task_items_figure_status "
+                    "ON daily_task_items(figure_status)"
+                ))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+except Exception as e:
+    print(f"[AUTO-MIGRATION] daily_task_items figure_fields Warning: {e}")
+
 # AUTO-MIGRATION: Создаём таблицы group_chats / group_members / group_messages
 # на проде, если их ещё нет. На локалке db.create_all() в init_db уже создал
 # их, но на проде Postgres может быть старая БД, где этих таблиц нет.

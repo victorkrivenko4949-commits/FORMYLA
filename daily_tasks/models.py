@@ -116,6 +116,12 @@ class DailyTaskItem(db.Model):
     answered_at = db.Column(db.DateTime, nullable=True)
     time_spent_seconds = db.Column(db.Integer, nullable=True)
 
+    # D3 PIPELINE: описание геометрических построений и статус чертежа
+    figure_json = db.Column(db.Text, nullable=True)
+    # Статусы: no_description, has_description, figure_built,
+    #          engine_rejected, human_verified, human_rejected
+    figure_status = db.Column(db.String(32), nullable=False, default='no_description', index=True)
+
     # --- relationships ---
     daily_set = db.relationship('DailyTaskSet', back_populates='items')
 
