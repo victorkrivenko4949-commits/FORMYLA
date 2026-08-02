@@ -1,0 +1,493 @@
+[
+  {
+    "id": "method_F1_circumcircle",
+    "target": "static/images/methods/F1_circumcircle.png",
+    "mode": "code",
+    "generator": "triangle_with_circumcircle",
+    "params": {"a": [0, 0], "b": [4.0, 0], "c": [1.4, 3.0]}
+  },
+  {
+    "id": "method_F1_incircle",
+    "target": "static/images/methods/F1_incircle.png",
+    "mode": "code",
+    "generator": "triangle_with_incircle",
+    "params": {"a": [0, 0], "b": [5.0, 0], "c": [1.6, 3.2]}
+  },
+  {
+    "id": "method_F1_median",
+    "target": "static/images/methods/F1_median.png",
+    "mode": "code",
+    "generator": "triangle_with_median",
+    "params": {}
+  },
+  {
+    "id": "method_F1_altitude",
+    "target": "static/images/methods/F1_altitude.png",
+    "mode": "code",
+    "generator": "triangle_with_altitude",
+    "params": {}
+  },
+  {
+    "id": "method_F1_isoceles",
+    "target": "static/images/methods/F1_isoceles.png",
+    "mode": "code",
+    "generator": "isoceles_triangle",
+    "params": {"base": 4.0, "height": 3.2}
+  },
+  {
+    "id": "method_F1_right_hypotenuse_circle",
+    "target": "static/images/methods/F1_right_hypotenuse_circle.png",
+    "mode": "code",
+    "generator": "right_triangle_with_hypotenuse_circle",
+    "params": {}
+  },
+  {
+    "id": "method_F2_two_circles_external",
+    "target": "static/images/methods/F2_two_circles_external_tangent.png",
+    "mode": "code",
+    "generator": "two_circles_external_tangent",
+    "params": {}
+  },
+  {
+    "id": "method_F2_two_circles_internal",
+    "target": "static/images/methods/F2_two_circles_internal_tangent.png",
+    "mode": "code",
+    "generator": "two_circles_internal_tangent",
+    "params": {}
+  },
+  {
+    "id": "method_F2_inscribed_angle",
+    "target": "static/images/methods/F2_inscribed_angle.png",
+    "mode": "code",
+    "generator": "chord_with_inscribed_angle",
+    "params": {}
+  },
+  {
+    "id": "method_F2_tangent_from_external",
+    "target": "static/images/methods/F2_tangent_from_external_point.png",
+    "mode": "code",
+    "generator": "tangent_from_external_point",
+    "params": {}
+  },
+  {
+    "id": "method_F2_intersecting_chords",
+    "target": "static/images/methods/F2_intersecting_chords.png",
+    "mode": "code",
+    "generator": "two_intersecting_chords",
+    "params": {}
+  },
+  {
+    "id": "method_F3_cyclic_quadrilateral",
+    "target": "static/images/methods/F3_cyclic_quadrilateral.png",
+    "mode": "code",
+    "generator": "cyclic_quadrilateral",
+    "params": {}
+  },
+  {
+    "id": "method_F3_tangential_quadrilateral",
+    "target": "static/images/methods/F3_tangential_quadrilateral.png",
+    "mode": "code",
+    "generator": "tangential_quadrilateral",
+    "params": {}
+  },
+  {
+    "id": "method_F3_parallelogram",
+    "target": "static/images/methods/F3_parallelogram.png",
+    "mode": "code",
+    "generator": "parallelogram",
+    "params": {}
+  },
+  {
+    "id": "method_F3_trapezoid",
+    "target": "static/images/methods/F3_trapezoid.png",
+    "mode": "code",
+    "generator": "trapezoid",
+    "params": {}
+  },
+  {
+    "id": "method_F8_regular_hexagon",
+    "target": "static/images/methods/F8_regular_hexagon.png",
+    "mode": "code",
+    "generator": "regular_polygon",
+    "params": {"n": 6, "R": 2.0}
+  },
+  {
+    "id": "method_F8_regular_pentagon",
+    "target": "static/images/methods/F8_regular_pentagon.png",
+    "mode": "code",
+    "generator": "regular_polygon",
+    "params": {"n": 5, "R": 2.0}
+  },
+  {
+    "id": "method_F8_grid_4x4",
+    "target": "static/images/methods/F8_grid_4x4.png",
+    "mode": "code",
+    "generator": "grid_of_points",
+    "params": {"n": 5, "m": 5}
+  },
+  {
+    "id": "method_E5_chessboard_4x4",
+    "target": "static/images/methods/E5_chessboard_4x4.png",
+    "mode": "code",
+    "generator": "colored_squares_4x4",
+    "params": {"n": 4}
+  },
+  {
+    "id": "method_D12_number_line",
+    "target": "static/images/methods/D12_number_line.png",
+    "mode": "code",
+    "generator": "number_line_segment",
+    "params": {"a": 0, "b": 6, "label_a": "a", "label_b": "b"}
+  },
+
+  {
+    "id": "problem_fu_2018_g5_fig1_replacement",
+    "target": "static/images/problems/fu_2018_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2018_g10_fig1_replacement",
+    "target": "static/images/problems/fu_2018_g10_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2018_g11_fig1_replacement",
+    "target": "static/images/problems/fu_2018_g11_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2019_g5_fig3_replacement",
+    "target": "static/images/problems/fu_2019_g5_fig3.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2019_g8_fig1_replacement",
+    "target": "static/images/problems/fu_2019_g8_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2019_g9_fig1_replacement",
+    "target": "static/images/problems/fu_2019_g9_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g10_fig1_replacement",
+    "target": "static/images/problems/fu_2020_g10_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g5_fig1_replacement",
+    "target": "static/images/problems/fu_2020_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g5_fig3_replacement",
+    "target": "static/images/problems/fu_2020_g5_fig3.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g6_fig2_replacement",
+    "target": "static/images/problems/fu_2020_g6_fig2.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g6_fig5_replacement",
+    "target": "static/images/problems/fu_2020_g6_fig5.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g7_fig3_replacement",
+    "target": "static/images/problems/fu_2020_g7_fig3.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g8_fig1_replacement",
+    "target": "static/images/problems/fu_2020_g8_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g8_fig3_replacement",
+    "target": "static/images/problems/fu_2020_g8_fig3.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2020_g9_fig2_replacement",
+    "target": "static/images/problems/fu_2020_g9_fig2.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2021_g5_fig1_replacement",
+    "target": "static/images/problems/fu_2021_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2021_g6_fig1_replacement",
+    "target": "static/images/problems/fu_2021_g6_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2023_g5_fig1_replacement",
+    "target": "static/images/problems/fu_2023_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2023_g6_fig1_replacement",
+    "target": "static/images/problems/fu_2023_g6_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2023_g7_fig1_replacement",
+    "target": "static/images/problems/fu_2023_g7_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2023_g10_fig1_replacement",
+    "target": "static/images/problems/fu_2023_g10_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2023_g11_fig1_replacement",
+    "target": "static/images/problems/fu_2023_g11_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2024_g5_fig1_replacement",
+    "target": "static/images/problems/fu_2024_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2024_g5_fig2_replacement",
+    "target": "static/images/problems/fu_2024_g5_fig2.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2024_g5_fig3_replacement",
+    "target": "static/images/problems/fu_2024_g5_fig3.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2024_g5_fig5_replacement",
+    "target": "static/images/problems/fu_2024_g5_fig5.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2024_g6_fig1_replacement",
+    "target": "static/images/problems/fu_2024_g6_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_fu_2024_g10_fig1_replacement",
+    "target": "static/images/problems/fu_2024_g10_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2011_g7_fig3_replacement",
+    "target": "static/images/problems/lomonosov_2011_g7_fig3.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2011_g8_fig1_replacement",
+    "target": "static/images/problems/lomonosov_2011_g8_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2011_g9_fig1_replacement",
+    "target": "static/images/problems/lomonosov_2011_g9_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2019_g5_fig1_replacement",
+    "target": "static/images/problems/lomonosov_2019_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2019_g6_fig1_replacement",
+    "target": "static/images/problems/lomonosov_2019_g6_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2020_g7_fig2_replacement",
+    "target": "static/images/problems/lomonosov_2020_g7_fig2.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2020_g8_fig2_replacement",
+    "target": "static/images/problems/lomonosov_2020_g8_fig2.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2024_g5_fig1_replacement",
+    "target": "static/images/problems/lomonosov_2024_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_lomonosov_2024_g6_fig1_replacement",
+    "target": "static/images/problems/lomonosov_2024_g6_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_pvg_2019_g5_fig1_replacement",
+    "target": "static/images/problems/pvg_2019_g5_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_pvg_2019_g6_fig1_replacement",
+    "target": "static/images/problems/pvg_2019_g6_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_pvg_2019_g7_fig1_replacement",
+    "target": "static/images/problems/pvg_2019_g7_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_pvg_2019_g8_fig1_replacement",
+    "target": "static/images/problems/pvg_2019_g8_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_vysshaya_proba_2016_g10_fig2_replacement",
+    "target": "static/images/problems/vysshaya_proba_2016_g10_fig2.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_vysshaya_proba_2018_g10_fig1_replacement",
+    "target": "static/images/problems/vysshaya_proba_2018_g10_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_vysshaya_proba_2018_g9_fig1_replacement",
+    "target": "static/images/problems/vysshaya_proba_2018_g9_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_vysshaya_proba_2019_g7_fig1_replacement",
+    "target": "static/images/problems/vysshaya_proba_2019_g7_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_vysshaya_proba_2022_g7_fig1_replacement",
+    "target": "static/images/problems/vysshaya_proba_2022_g7_fig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_vysshaya_proba_2025_g7_fig2_replacement",
+    "target": "static/images/problems/vysshaya_proba_2025_g7_fig2.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_euler_2026_g8_vfig1_replacement",
+    "target": "static/images/problems/euler_2026_g8_vfig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_kurchatov_2015_g9_vfig1_replacement",
+    "target": "static/images/problems/kurchatov_2015_g9_vfig1.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  },
+  {
+    "id": "problem_vsosh_2024_g11_vfig5_replacement",
+    "target": "static/images/problems/vsosh_2024_g11_vfig5.png",
+    "mode": "llm",
+    "generator": "triangle_with_circumcircle",
+    "params": {}
+  }
+]

@@ -209,9 +209,14 @@ _WRAPPER = textwrap.dedent(
     _user_buf = _io.BytesIO()
 
     def _formyla_save(fmt="png", dpi=128):
+        # pad_inches=0.35 gives ~0.3 inch of margin on every side at
+        # bbox="tight"; combined with the prompt requirement of >= 18 %
+        # bbox padding inside the axes this keeps labels (vertex letters,
+        # angle degrees, length numbers) safely away from the card edge
+        # when the PNG is later embedded into a dark FORMYLA card.
         plt.gcf().savefig(_user_buf, format=fmt, dpi=dpi,
                           facecolor="white", bbox_inches="tight",
-                          pad_inches=0.15)
+                          pad_inches=0.35)
 
     # ---- USER CODE BEGIN ----
     {USER_CODE}
