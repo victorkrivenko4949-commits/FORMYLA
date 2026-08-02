@@ -47,6 +47,11 @@ class User(UserMixin, db.Model):
     generation_reset_date = db.Column(db.Date, nullable=True)  # which day the counter belongs to
     gens_extra_purchased = db.Column(db.Integer, default=0, server_default='0')  # extra generations bought (500₽/10)
     gens_unlimited = db.Column(db.Boolean, default=False, server_default='0')  # unlimited flag (1500₽)
+
+    # Figure credits (D4 — geometric figure generation)
+    figure_credits = db.Column(db.Integer, default=3, server_default='3')
+    # Total figures built by this user (for zero-balance display)
+    figures_built = db.Column(db.Integer, default=0, server_default='0')
     
     # Guest access
     is_guest = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
@@ -1568,3 +1573,81 @@ from models_olympiad import (  # noqa: E402  (intentional late import)
     ATTEMPT_STATUSES,
     STAGE_RESULTS,
 )
+
+
+# ── D4: Figure Generation Models ───────────────────────────────────────
+
+class FigureGeneration(db.Model):
+    """Лог одной генерации чертежа через ризонер (reasoner + engine pipeline)."""
+    __tablename__ = 'figure_generations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'),
+        nullable=True, index=True,
+    )
+    problem_sha256 = db.Column(db.String(64), nullable=False, index=True)
+    problem = db.Column(db.Text, nullable=False)
+    solution = db.Column(db.Text, nullable=True)
+    status = db.Column(
+        db.String(20), nullable=False, default='ok', index=True,
+    )  # 'ok' | 'error' | 'validation_failed'
+    json_description = db.Column(db.Text, nullable=True)
+    model = db.Column(db.String(120), nullable=True)
+    cost_usd = db.Column(db.Float, nullable=False, default=0.0)
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False, index=True,
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('figure_generations', lazy='dynamic'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<FigureGeneration id={self.id} status={self.status} '
+            f'model={self.model}>'
+        )
+
+
+class FigureCreditTransaction(db.Model):
+    """Журнал операций с чертежами (начисление/списание)."""
+    __tablename__ = 'figure_credit_transactions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'),
+        nullable=False, index=True,
+    )
+    amount = db.Column(db.Integer, nullable=False)      # positive = credit, negative = debit
+    reason = db.Column(db.String(64), nullable=False)   # 'initial', 'spend', 'streak_7day', 'slice_pass', 'purchase'
+    reference = db.Column(db.String(128), nullable=True) # e.g. streak_week_id or purchase_id
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False, index=True,
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('figure_credit_transactions', lazy='dynamic'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<FigureCreditTransaction user={self.user_id} '
+            f'amount={self.amount} reason={self.reason}>'
+        )
+
+
+class FigureEmailSubscription(db.Model):
+    """Emails collected from «сообщить мне, когда заработает» payment stub."""
+    __tablename__ = 'figure_email_subscriptions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), nullable=False, index=True)
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False,
+    )
+
+    def __repr__(self):
+        return f'<FigureEmailSubscription email={self.email}>'

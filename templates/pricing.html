@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Пакеты чертежей — FORMYLA{% endblock %}
+
+{% block content %}
+<div class="pricing-page">
+    <section class="pricing-inner">
+        <header class="pricing-header">
+            <h1 class="pricing-title">Пакеты чертежей</h1>
+            <p class="pricing-hint">Приобретите дополнительные чертежи для построения геометрических фигур.</p>
+            {% if current_user.is_authenticated %}
+            <div class="pricing-balance">
+                <span class="pricing-balance-label">Ваш остаток:</span>
+                <span class="pricing-balance-value">{{ credits }} чертежей</span>
+            </div>
+            {% endif %}
+        </header>
+
+        <div class="pricing-cards">
+            {% for pkg in packages %}
+            <div class="pricing-card glass {% if pkg.featured %}pricing-card--featured{% endif %}">
+                {% if pkg.featured %}
+                <div class="pricing-badge">Выгоднее всего</div>
+                {% endif %}
+                <div class="pricing-amount">{{ pkg.amount }}</div>
+                <div class="pricing-label">{{ pkg.label }}</div>
+                <div class="pricing-price">{{ pkg.price_rub }} ₽</div>
+                <div class="pricing-per-unit">{{ "%.2f"|format(pkg.price_rub / pkg.amount) }} ₽ / чертёж</div>
+                <a href="/payment-stub?package={{ pkg.id }}" class="pricing-btn">Купить</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="pricing-note glass">
+            <p>Оплата временно недоступна. Нажмите «Купить», чтобы оставить заявку — мы сообщим, когда оплата заработает.</p>
+        </div>
+    </section>
+</div>
+
+<style>
+    :root {
+        --pr-bg: #0b0d12;
+        --pr-text: #e2e8f0;
+        --pr-muted: #94a3b8;
+        --pr-accent: #3b82f6;
+        --pr-accent2: #8b5cf6;
+        --pr-border: rgba(255,255,255,0.08);
+        --pr-glass: rgba(15,23,42,0.7);
+    }
+    .glass {
+        background: var(--pr-glass);
+        border: 1px solid var(--pr-border);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 14px;
+    }
+    .pricing-page {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 40px 16px 80px;
+        color: var(--pr-text);
+    }
+    .pricing-inner { display: flex; flex-direction: column; gap: 28px; }
+    .pricing-header { text-align: center; }
+    .pricing-title { font-size: 30px; font-weight: 700; margin: 0 0 8px; color: #c8d6e5; }
+    .pricing-hint { color: var(--pr-muted); margin: 0 0 16px; }
+    .pricing-balance {
+        display: inline-flex; gap: 8px; align-items: center;
+        padding: 8px 20px; background: rgba(59,130,246,0.1);
+        border: 1px solid rgba(59,130,246,0.2); border-radius: 10px;
+    }
+    .pricing-balance-label { color: var(--pr-muted); font-size: 14px; }
+    .pricing-balance-value { font-weight: 700; color: var(--pr-accent); font-size: 16px; }
+    .pricing-cards {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;
+    }
+    .pricing-card {
+        padding: 32px 24px; text-align: center; position: relative;
+        transition: transform 0.2s, border-color 0.2s;
+    }
+    .pricing-card:hover { transform: translateY(-4px); }
+    .pricing-card--featured {
+        border-color: rgba(139,92,246,0.35);
+        background: rgba(139,92,246,0.06);
+    }
+    .pricing-badge {
+        position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+        background: var(--pr-accent2); color: #fff; font-size: 12px; font-weight: 600;
+        padding: 4px 16px; border-radius: 20px; white-space: nowrap;
+    }
+    .pricing-amount {
+        font-size: 48px; font-weight: 800; color: #f1f5f9; margin-bottom: 4px;
+    }
+    .pricing-label { font-size: 15px; color: var(--pr-muted); margin-bottom: 16px; }
+    .pricing-price { font-size: 28px; font-weight: 700; color: var(--pr-text); margin-bottom: 4px; }
+    .pricing-per-unit { font-size: 13px; color: var(--pr-muted); margin-bottom: 20px; }
+    .pricing-btn {
+        display: block; padding: 12px 0; background: var(--pr-accent); color: #fff;
+        text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+        transition: background 0.2s;
+    }
+    .pricing-btn:hover { background: #2563eb; }
+    .pricing-note { padding: 16px 24px; text-align: center; }
+    .pricing-note p { color: var(--pr-muted); font-size: 14px; margin: 0; }
+    @media (max-width: 600px) {
+        .pricing-page { padding: 24px 12px 100px; }
+        .pricing-title { font-size: 24px; }
+        .pricing-cards { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}

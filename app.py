@@ -1141,6 +1141,13 @@ try:
 except Exception as _e:
     print(f"[BP] drawing_history_bp NOT registered: {_e}")
 
+try:
+    from routes.figures import figures_bp
+    app.register_blueprint(figures_bp)
+    print("[BP] figures_bp registered (/figures)")
+except Exception as _e:
+    print(f"[BP] figures_bp NOT registered: {_e}")
+
 # Whiteboard 1-to-1 video call signalling (WebRTC, no SocketIO).
 try:
     from routes.wb_call import wb_call_bp
