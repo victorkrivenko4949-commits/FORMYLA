@@ -67,73 +67,6 @@
     margin: 18px auto 0;
   }
 
-  /* ── 3-column plan grid override ── */
-  .plans-row-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-    margin-top: 24px;
-  }
-  @media (max-width: 900px) {
-    .plans-row-3 { grid-template-columns: 1fr; }
-  }
-  .plan-year {
-    border-color: rgba(247, 178, 41, 0.45) !important;
-    position: relative;
-  }
-  .plan-badge-discount {
-    position: absolute;
-    top: -12px;
-    right: 16px;
-    background: linear-gradient(135deg, #f59e0b, #ef4444);
-    color: #fff;
-    padding: 4px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
-  }
-  .plan-year .plan-price-tag {
-    background: linear-gradient(135deg, #f59e0b, #ef4444);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .plan-price-old {
-    color: #64748b;
-    text-decoration: line-through;
-    font-size: 0.95rem;
-    margin-bottom: -4px;
-    text-align: center;
-  }
-  .plan-price-note {
-    color: #94a3b8;
-    font-size: 13px;
-    text-align: center;
-    margin-bottom: 14px;
-  }
-  .plan-trial-hint {
-    color: #38ef7d;
-    font-size: 13px;
-    text-align: center;
-    margin: -8px 0 10px;
-  }
-  .plan-btn-year {
-    background: linear-gradient(135deg, #f59e0b, #ef4444);
-    color: #fff;
-  }
-  .plan-btn-year:hover { transform: translateY(-2px); }
-
-  /* ── Disclaimer for comparison ── */
-  .comparison-disclaimer {
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.55;
-    margin-top: 12px;
-    font-style: italic;
-  }
-
   /* ── Final CTA section ── */
   .final-cta {
     text-align: center;
@@ -186,6 +119,151 @@
   .mobile-notice .mn-icon { font-size: 20px; flex-shrink: 0; }
   .mobile-notice .mn-text strong { color: #fcd34d; }
   @media (min-width: 1024px) { .mobile-notice { display: none; } }
+
+  /* ── Concept cards (анкета, якорные, задачи дня) ── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 20px;
+  }
+  @media (min-width: 768px) {
+    .concept-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .concept-card {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(15, 23, 42, 0.55));
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    border-radius: 16px;
+    padding: 20px;
+    transition: border-color 0.15s ease;
+  }
+  .concept-card:hover { border-color: rgba(56, 189, 248, 0.35); }
+  .concept-icon {
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .concept-body h3 {
+    color: #f1f5f9;
+    font-size: 1.05em;
+    margin: 0 0 6px;
+  }
+  .concept-body p {
+    color: #94a3b8;
+    font-size: 0.93em;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* ── Concept highlight (уровень, серия, долг, куратор) ── */
+  .concept-highlight {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.06), rgba(15, 23, 42, 0.5));
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 18px;
+    padding: 22px;
+    margin-top: 16px;
+  }
+  .concept-highlight-badge {
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 80px; height: 36px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 0 16px;
+  }
+  .concept-highlight-body {
+    flex: 1;
+  }
+  .concept-highlight-body p {
+    color: #cbd5e1;
+    font-size: 0.95em;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ── Subjects grid (разделы) ── */
+  .subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 18px;
+  }
+  @media (max-width: 480px) {
+    .subjects-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .subject-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 12px;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(15, 23, 42, 0.5));
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    border-radius: 14px;
+    transition: border-color 0.15s ease;
+  }
+  .subject-tile:hover { border-color: rgba(56, 189, 248, 0.35); }
+  .subject-icon {
+    font-size: 28px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .subject-name {
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .subjects-note {
+    color: #64748b;
+    font-size: 0.9em;
+    line-height: 1.55;
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  /* ── Stats grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 18px;
+  }
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+  .stat-card {
+    text-align: center;
+    padding: 20px 14px;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(15, 23, 42, 0.55));
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    border-radius: 14px;
+  }
+  .stat-num {
+    font-size: 2em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label {
+    color: #94a3b8;
+    font-size: 0.9em;
+    margin-top: 4px;
+    line-height: 1.45;
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -208,7 +286,7 @@
     <span class="mn-text"><strong>Удобнее на компьютере</strong> — на телефоне доступны не все функции</span>
   </div>
 
-  {# ── 2.1 Onboarding banner (only after signup) ── #}
+  {# ── 1. Onboarding banner (only after signup) ── #}
   {% if request.args.get('onboarding') %}
   <div class="onboarding-banner">
     <span>🎉 <strong>Добро пожаловать в FORMYLA!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
@@ -216,111 +294,165 @@
   </div>
   {% endif %}
 
-  {# ── 2.2 Hero — переписано: фокус на чтение, без CTA «Начать бесплатно» ── #}
-  <section class="about-hero formyla-hero-v2">
+  {# ── 2. Hero ── #}
+  <section class="about-hero formyla-hero-v2" id="how-it-works">
     <h1 class="about-title">FORMYLA</h1>
-    <p class="about-subtitle">Подготовка к математическим олимпиадам с персональным ИИ-наставником.</p>
-    <div style="text-align:center;margin-top:6px;">
-      <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);color:#fbbf24;font-size:13px;font-weight:600;">💻 удобнее на компьютере</span>
-    </div>
+    <p class="about-subtitle">Персональная подготовка к олимпиадам по математике.</p>
+
     <p class="hero-description">
-      Платформа для учеников <strong>5–11 классов</strong>: адаптивная диагностика по 6 темам (≈30 минут с возможностью разбить на сессии),
-      ежедневные задачи под слабые места, банк <strong>8 000+ реальных задач ВсОШ, Турнира городов, Эйлера и Ломоносова</strong>,
-      и универсальный ИИ-наставник, который объясняет, а не подсовывает ответ. Без VPN, на русском.
+      Это не школьный курс и не подготовка к экзаменам. Здесь только олимпиадные задачи:
+      всероссийская олимпиада, Эйлер, Физтех, Курчатов, Матпраздник и другие.
     </p>
+  </section>
 
-    <ol class="hero-flow" aria-label="Как FORMYLA работает за 4 шага">
-      <li class="hero-flow-item">
-        <span class="hero-flow-num">1</span>
-        <div>
-          <strong>Диагностика</strong>
-          <span>25 задач на 6 тем — оцениваем твой уровень и собираем радар сильных и слабых сторон.</span>
-        </div>
-      </li>
-      <li class="hero-flow-item">
-        <span class="hero-flow-num">2</span>
-        <div>
-          <strong>Ежедневные задачи</strong>
-          <span>10 задач в день, подобранных алгоритмом под твои пробелы. Каждая с разбором.</span>
-        </div>
-      </li>
-      <li class="hero-flow-item">
-        <span class="hero-flow-num">3</span>
-        <div>
-          <strong>Универсальный ИИ-наставник</strong>
-          <span>Один умный агент: разбирает алгебру, геометрию, теорию чисел, комбинаторику, логику и стратегию олимпиад. Сам определяет тему задачи.</span>
-        </div>
-      </li>
-      <li class="hero-flow-item">
-        <span class="hero-flow-num">4</span>
-        <div>
-          <strong>Реальные олимпиады</strong>
-          <span>Тренируйся на задачах ВсОШ, Турнира городов и Ломоносова прошлых лет — с разборами по 89 методам.</span>
-        </div>
-      </li>
-    </ol>
-
-    <div class="hero-cta-row">
-      <a href="#how-it-works" class="hero-cta hero-cta-secondary">Подробнее, как это работает ↓</a>
-    </div>
-
-  <style>
-    .formyla-hero-v2 .hero-flow{
-      list-style:none; padding:0; margin:24px auto 12px; max-width:760px;
-      display:grid; gap:12px;
-    }
-    .formyla-hero-v2 .hero-flow-item{
-      display:flex; align-items:flex-start; gap:14px;
-      padding:14px 16px;
-      background:rgba(30,41,59,.55);
-      border:1px solid var(--border-soft, #334155);
-      border-radius:14px;
-      text-align:left;
-    }
-    .formyla-hero-v2 .hero-flow-num{
-      flex-shrink:0; width:34px; height:34px; border-radius:50%;
-      background:linear-gradient(135deg, var(--accent-1, #38bdf8), var(--accent-2, #8b5cf6));
-      color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center;
-      font-size:15px;
-    }
-    .formyla-hero-v2 .hero-flow-item strong{ display:block; color:#e2e8f0; margin-bottom:2px; }
-    .formyla-hero-v2 .hero-flow-item span{ color:#94a3b8; font-size:14px; line-height:1.5; }
-    .formyla-hero-v2 .hero-foot{
-      margin-top:14px; color:#94a3b8; font-size:13px; line-height:1.55;
-      max-width:680px; margin-left:auto; margin-right:auto;
-    }
-    @media (max-width: 640px){
-      .formyla-hero-v2 .hero-flow{ gap:10px; }
-      .formyla-hero-v2 .hero-flow-item{ padding:12px 12px; gap:10px; }
-      .formyla-hero-v2 .hero-flow-num{ width:28px; height:28px; font-size:13px; }
-      .formyla-hero-v2 .hero-flow-item span{ font-size:13.5px; }
-    }
-  </style>
-
-  {# ── 2.3 Metrics ── #}
+  {# ── 3. Как это работает: анкета, якорные задачи, задачи дня ── #}
   <section class="about-section">
+    <h2>🎯 Как это работает</h2>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="concept-icon">📋</div>
+        <div class="concept-body">
+          <h3>Анкета</h3>
+          <p>Сначала короткая анкета: класс, цель, опыт, сколько времени готов уделять, какие разделы даются тяжелее. По ответам система подбирает стартовый уровень.</p>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <div class="concept-icon">⚓</div>
+        <div class="concept-body">
+          <h3>Якорные задачи</h3>
+          <p>Затем <strong>пять якорных задач</strong>. Они нужны, чтобы понять, где ты сейчас, а не чтобы поставить оценку. Ошибиться на них нормально.</p>
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <div class="concept-icon">📅</div>
+        <div class="concept-body">
+          <h3>Задачи дня</h3>
+          <p>Дальше начинаются <strong>задачи дня</strong>. Первую неделю их пять в день — это срез, система присматривается к тебе. После среза объём становится тем, который ты выбрал в анкете.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── 4. Уровень ── #}
+  <section class="about-section">
+    <h2>📈 Уровень</h2>
+    <div class="concept-highlight">
+      <div class="concept-highlight-badge">1 → 5</div>
+      <div class="concept-highlight-body">
+        <p>Уровень от <strong>1 до 5</strong> показывает сложность задач, которые тебе выдаются. Он меняется постепенно: решил верно — уровень подрастает, ошибся — опускается. Резких скачков не бывает, одна неудачная задача ничего не ломает.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── 5. Серия ── #}
+  <section class="about-section">
+    <h2>🔥 Серия</h2>
+    <div class="concept-highlight">
+      <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">Streak</div>
+      <div class="concept-highlight-body">
+        <p>Серия — это сколько дней подряд ты решаешь верно <strong>больше 80 процентов</strong> задач дня. Пропустил день или решил меньше — серия обнуляется и начинается заново.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── 6. Долг ── #}
+  <section class="about-section">
+    <h2>📦 Долг</h2>
+    <div class="concept-highlight">
+      <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">Debt</div>
+      <div class="concept-highlight-body">
+        <p>Если не успел решить задачи, они не пропадают, а переходят в долг и ждут тебя сверху над сегодняшними. Каждая задача живёт в долге <strong>неделю</strong>, потом тихо исчезает без всяких штрафов. Пропуск дня ничего не ломает.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── 7. Методы ── #}
+  <section class="about-section">
+    <h2>🧩 Методы</h2>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="concept-icon">📚</div>
+        <div class="concept-body">
+          <h3>Раздел «Олимпиады»</h3>
+          <p>В разделе «Олимпиады» собраны <strong>методы решения</strong> — приёмы, которые повторяются в олимпиадных задачах из года в год. Куратор называет подходящий метод к завтрашней теме, чтобы ты знал, что почитать заранее.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── 8. Куратор ── #}
+  <section class="about-section">
+    <h2>🤖 Куратор</h2>
+    <div class="concept-highlight">
+      <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#38ef7d,#11998e);">AI</div>
+      <div class="concept-highlight-body">
+        <p>Куратор смотрит на твои настоящие данные: сколько решено, где проседаешь, что в долге, какая тема завтра. Он не хвалит просто так и не ругает — говорит по делу. Радары по подтемам показывают, где у тебя пусто, а где уже есть уверенность.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── 9. Разделы ── #}
+  <section class="about-section">
+    <h2>📐 Разделы</h2>
+    <div class="subjects-grid">
+      <div class="subject-tile">
+        <span class="subject-icon">x²</span>
+        <span class="subject-name">Алгебра</span>
+      </div>
+      <div class="subject-tile">
+        <span class="subject-icon">№</span>
+        <span class="subject-name">Теория чисел</span>
+      </div>
+      <div class="subject-tile">
+        <span class="subject-icon">△</span>
+        <span class="subject-name">Геометрия</span>
+      </div>
+      <div class="subject-tile">
+        <span class="subject-icon">🎲</span>
+        <span class="subject-name">Комбинаторика</span>
+      </div>
+      <div class="subject-tile">
+        <span class="subject-icon">🧠</span>
+        <span class="subject-name">Логика</span>
+      </div>
+      <div class="subject-tile">
+        <span class="subject-icon">🔧</span>
+        <span class="subject-name">Методы</span>
+      </div>
+    </div>
+    <p class="subjects-note">
+      В наборе дня всегда есть несколько разделов, даже если какой-то даётся тяжело:
+      слабое подтягивается, но остальное не забывается.
+    </p>
+  </section>
+
+  {# ── 10. ИИ-наставник ── #}
+  <section class="about-section">
+    <h2>✨ Универсальный ИИ-наставник</h2>
+    <div class="features-grid" style="grid-template-columns: 1fr;">
+      <div class="feature-card" style="text-align:center;">
+        <span class="feature-icon">🤖</span>
+        <h3>Один агент — все темы</h3>
+        <p>Сам определяет тему задачи (алгебра, геометрия, теория чисел, комбинаторика, логика) и отвечает как профильный эксперт. Никогда не говорит «это не моя специализация» — работает со всем, что есть в олимпиадной математике 5–11 классов. Режим «только подсказки» помогает дойти до ответа самому.</p>
+      </div>
+    </div>
+  </section>
+
+  {# ── 11. Олимпиады ── #}
+  <section class="about-section">
+    <h2>🏆 Реальные олимпиады</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-num">8 000+</div>
-        <div class="stat-label">олимпиадных задач из реальных туров ВсОШ, Турнира городов, Эйлера и Ломоносова....</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">295+</div>
-        <div class="stat-label">задач ВсОШ за 17 лет, разобранных по 102 методам</div>
+        <div class="stat-label">задач из реальных туров ВсОШ, Турнира городов, Эйлера и Ломоносова</div>
       </div>
       <div class="stat-card">
         <div class="stat-num">3 500+</div>
-        <div class="stat-label">адаптивных задач, подбирающихся под уровень ученика</div>
+        <div class="stat-label">адаптивных задач, подбирающихся под твой уровень</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-num">102</div>
-        <div class="stat-label">102 метода решения задач используемые в олимпиадной математике</div>
-      </div>
-       <div class="stat-card">
-        <div class="stat-num">1</div>
-        <div class="stat-label">ИИ-агентов с разными специализациями</div>
-      </div>
-      
       <div class="stat-card">
         <div class="stat-num">5–11</div>
         <div class="stat-label">классы: от первой олимпиады до выпускных туров</div>
@@ -328,265 +460,113 @@
     </div>
   </section>
 
-  {# ── 2.4 How it works ── #}
-  <section class="about-section" id="how-it-works">
-    <h2>🎯 Как это работает</h2>
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-number">1</div>
-        <h3>Пройди диагностику ~ за 45 минут на тему>
-        <p>Адаптивная диагностика: 25 задач по каждой из нескольких тем. После каждой темы получаешь радар сильных и слабых разделов.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-number">2</div>
-        <h3>Получай 10 задач в день>
-        <p>Каждое утро ИИ подбирает квест из 10 задач по твоим слабым темам и подходящему уровню. За полный квест дня — бонус +100 XP и сохранение стрика.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-number">3</div>
-        <h3>Спрашивай у 7 ИИ-агентов, совветуем включать режим подстказки</h3>
-        <p>По алгебре, геометрии, теории чисел, комбинаторике, движению, логике и отдельный наставник по стратегии олимпиад. Режим «только подсказки» — агент не даст ответ, поможет дойти самому.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-number">4</div>
-        <h3>Тренируйся на реальных олимпиадах</h3>
-        <p>База ВсОШ, Турнира городов, Эйлера, Ломоносова, Высшей пробы, Матпраздника. AI-планировщик строит персональный график подготовки к выбранному этапу.</p>
-      </div>
-      <div class="step-card">
-          <div class="step-number">5</div>
-        <h3>Проходи бесплатные курсы</h3>
-        <p>Бесплатные курсы, специализированные под олимпиады: ВсОШ, Турнир городов, Эйлер. Теория, разборы и практика — прямо на платформе.</p>
-        </div>
-    </div>
-  </section>
-
-  {# ── 2.5 What makes FORMYLA different ── #}
+  {# ── 12. Отличия ── #}
   <section class="about-section">
-    <h2>⚡ Что делает FORMYLA непохожей</h2>
+    <h2>⚡ Что делает FORMYLA особенной</h2>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon">🎯</span>
-        <h3>Связка, которой нет у других</h3>
-        <p>Не репетитор за деньги, не сухая теория — единственная связка «адаптивный тест + ИИ-наставник + база олимпиад РФ» в одном продукте.</p>
+        <h3>Только олимпиады</h3>
+        <p>Не школьная программа, не ЕГЭ — только олимпиадная математика: ВсОШ, Эйлер, Физтех, Курчатов, Матпраздник.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🤖</span>
-        <h3>7 разных агентов вместо одного</h3>
-        <p>Каждый агент знает приёмы своей темы, а не «обо всём сразу». Алгебра, геометрия, теория чисел, комбинаторика и другие — у каждой свой эксперт.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🛡️</span>
-        <h3>Режим «только подсказки»</h3>
-        <p>Toggle прямо в чате: ИИ помогает наводящими вопросами, не даёт готовый ответ. Ты учишься, а не списываешь.</p>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">📐</span>
-        <h3>Доска и AI-чертежи</h3>
-        <p>Бесконечный холст для черновика + ИИ строит чертёж по тексту задачи. Геометрию больше не надо рисовать вручную.</p>
+        <span class="feature-icon">📊</span>
+        <h3>Адаптивная сложность</h3>
+        <p>Уровень от 1 до 5 подстраивается под тебя. Решаешь — растёт, ошибаешься — плавно опускается. Без резких скачков.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🇷🇺</span>
         <h3>Работает без VPN</h3>
-        <p>Серверы в РФ, оплата российскими картами, вход через Яндекс ID. Никаких VPN, иностранных карт и сложностей с доступом.</p>
+        <p>Серверы в РФ, оплата российскими картами. Никаких VPN, иностранных карт и сложностей с доступом.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">📊</span>
-        <h3>Радар навыков и Pro-родительский доступ</h3>
-        <p>Видно слабые темы и динамику по дням. Родитель получает свой логин и наблюдает прогресс ребёнка в реальном времени.</p>
+        <span class="feature-icon">🛡️</span>
+        <h3>Режим «только подсказки»</h3>
+        <p>ИИ помогает наводящими вопросами и не даёт готовый ответ. Ты учишься решать, а не списывать.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">📈</span>
-        <h3>Радар 102 методов ВсОШ</h3>
-        <p>Видишь, какие методы ты уже умеешь, а какие надо подтянуть. Покрытие реальной программы заключительного этапа ВсОШ-9, выстроенное за 17 лет.</p>
+        <h3>Радары по подтемам</h3>
+        <p>Видно, где у тебя пробелы, а где уже уверенность. Куратор опирается на реальные данные, а не на догадки.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📦</span>
+        <h3>Система долга</h3>
+        <p>Не решил сегодня — задачи ждут тебя завтра. Неделя на каждую, потом исчезают без штрафов. Никакого давления.</p>
       </div>
     </div>
   </section>
 
-  {# ── 2.6 Comparison table ── #}
-  <section class="about-section">
-    <h2>📊 Почему FORMYLA — единственная в своём роде в РФ</h2>
-    <div class="comparison-table-wrapper">
-      <table class="comparison-table">
-        <thead>
-          <tr><th>Возможность</th><th class="highlight-col">FORMYLA</th><th>Khanmigo</th><th>Photomath</th><th>Учи.ру</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Работает в РФ без VPN</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td>частично</td><td class="check">✓</td></tr>
-          <tr><td>Русский язык</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td>частично</td><td class="check">✓</td></tr>
-          <tr><td>7 специализированных ИИ-агентов</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
-          <tr><td>База олимпиад РФ (ВсОШ, ТГ, Эйлер)</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
-          <tr><td>Адаптивные задачи под слабые темы</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
-          <tr><td>Радар навыков ученика</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
-          <tr><td>Родитель видит прогресс ребёнка</td><td class="highlight-col check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td>частично</td></tr>
-          <tr><td>Цена в месяц</td><td class="highlight-col"><strong><del style="opacity:0.55;color:#94a3b8;">390 ₽</del> <span style="color:#38ef7d;">0 ₽</span></strong></td><td>~400 ₽</td><td>~950 ₽</td><td>990 ₽</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="comparison-disclaimer">
-      *Сравнение составлено на основе публичной информации с сайтов сервисов на май 2026. Khanmigo — на момент проверки недоступен в РФ без VPN. Photomath — мобильное приложение с распознаванием по фото без специализации на олимпиадах. Учи.ру — школьная программа 1–9 классы.
-    </p>
-  </section>
-
-  {# ── 2.7 For whom ── #}
+  {# ── 13. Для кого ── #}
   <section class="about-section">
     <h2>👨‍🎓 Для кого FORMYLA</h2>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon">📚</span>
         <h3>Ученикам 5–7 класса</h3>
-        <p>Школьный этап ВсОШ, мат. раскраски, игры, «Рыцари и лжецы». Развитие логики в формате, который не скучно.</p>
+        <p>Школьный этап ВсОШ, Матпраздник, логические игры. Первые олимпиады — без стресса и с поддержкой.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🏆</span>
         <h3>Ученикам 8–11 класса</h3>
-        <p>Муниципальный, региональный и заключительный этапы. Турнир городов, Эйлер, Сириус. Готовься с ИИ-наставником.</p>
+        <p>Муниципальный, региональный и заключительный этапы. Турнир городов, Эйлер, Физтех, Курчатов. Полный охват.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">👨‍👩‍👦</span>
         <h3>Родителям</h3>
-        <p>Полный родительский доступ на тарифе Pro. Видишь, какие темы ребёнок осилил, где буксует, сколько занимается каждый день. Без слежки — ребёнок знает, что ты подключён, и сам выбирает делиться или нет.</p>
+        <p>Видишь, какие темы ребёнок осилил, где буксует, сколько занимается каждый день. Без слежки — ребёнок сам выбирает, делиться или нет.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon">👩‍🏫</span>
         <h3>Учителям</h3>
-        <p>8 000+ задач с подробными разборами, отсортированных по темам, классам и уровню. Используй как готовую методичку для кружка или индивидуальных занятий. Бесплатно для учителей — напишите нам в Telegram.</p>
+        <p>8 000+ задач с разборами по темам, классам и уровню. Готовая методичка для кружка. Бесплатно для учителей — напишите нам.</p>
       </div>
     </div>
   </section>
 
-  {# ── 2.8 Универсальный ИИ-агент ── #}
-  <section class="about-section">
-    <h2>🤖 Универсальный ИИ-агент</h2>
-    <div class="features-grid agents-grid" style="grid-template-columns: 1fr;">
-      <div class="feature-card agent-card" style="text-align:center;">
-        <span class="feature-icon">✨</span>
-        <h3>Один агент — все темы</h3>
-        <p>Сам определяет тему задачи (алгебра, геометрия, теория чисел, комбинаторика, логика, задачи на движение) и отвечает как профильный эксперт. Помогает с диалогом по стратегии олимпиад. Никогда не говорит «это не моя специализация» — он работает со всем, что есть в школьной и олимпиадной математике 5–11 классов.</p>
-      </div>
-    </div>
-    <p style="text-align:center; color:#94a3b8; font-size:13px; margin-top:14px;">
-      Один универсальный помощник вместо десятка узких. Просто опиши задачу или загрузи фото.
-    </p>
-  </section>
-
-  {# ── 2.9 Pricing — 3 tiers ── #}
-  <section class="about-section">
-    <h2>💎 Тарифы</h2>
-    <div class="plans-row plans-row-3">
-
-      {# Free #}
-      <div class="plan-box plan-free">
-        <h3>Free</h3>
-        <div class="plan-price-tag">0 ₽ / навсегда</div>
-        <ul>
-          <li>3 задачи дня</li>
-          <li>1 олимпиадный вариант в неделю</li>
-          <li>10 сообщений ИИ-тьютору в день</li>
-          <li>Базовый радар навыков</li>
-          <li>Сообщество и Telegram-канал</li>
-        </ul>
-        <a href="/login" class="plan-btn plan-btn-free">Войти и начать</a>
-      </div>
-
-      {# Pro Month — popular #}
-      <div class="plan-box plan-pro">
-        <div class="plan-badge-pro">⭐ POPULAR</div>
-        <h3>Pro Месяц</h3>
-        <div class="plan-price-tag"><del style="opacity:0.55;color:#94a3b8;font-weight:600;">390 ₽ / мес</del> <span style="color:#38ef7d;">0 ₽</span></div>
-        <p class="plan-trial-hint" style="color:#38ef7d;font-weight:700;">🎁 Сейчас всё доступно бесплатно</p>
-        <ul>
-          <li>Безлимит задач и олимпиад</li>
-          <li>Безлимит сообщений ИИ-тьютору</li>
-          <li>Универсальный ИИ-агент без лимитов на темы</li>
-          <li>Полный радар навыков + еженедельный анализ</li>
-          <li>Родительский доступ к прогрессу</li>
-          <li>Проверка фото решений</li>
-          <li>Приоритетная поддержка</li>
-        </ul>
-        <a href="/subscribe?plan=premium_monthly" class="plan-btn plan-btn-pro">Подключить бесплатно</a>
-      </div>
-
-      {# Pro Year — discount 40% #}
-      <div class="plan-box plan-pro plan-year">
-        <div class="plan-badge-discount">−100%</div>
-        <h3>Pro Год</h3>
-        <p class="plan-price-old"><del>было 4 680 ₽</del></p>
-        <div class="plan-price-tag"><del style="opacity:0.55;color:#94a3b8;font-weight:600;">2 790 ₽ / год</del> <span style="color:#38ef7d;">0 ₽</span></div>
-        <p class="plan-price-note" style="color:#38ef7d;font-weight:700;">🎁 Сейчас всё доступно бесплатно</p>
-        <ul>
-          <li>Всё из Pro Месяц</li>
-          <li>Доступ к новым курсам и методам</li>
-          <li>Эксклюзивные разборы прошедших туров</li>
-          <li>Закрытое сообщество в Telegram</li>
-        </ul>
-        <a href="/subscribe?plan=premium_yearly" class="plan-btn plan-btn-year">Подключить бесплатно</a>
-      </div>
-
-    </div>
-    <p class="guarantee">
-      💎 <strong>Сейчас всё доступно бесплатно.</strong> Цены вернутся, когда мы выйдем из бета-периода — напиши в Telegram
-      <a href="https://t.me/FormylaSupport" target="_blank" style="color:#38ef7d;text-decoration:none;">@FormylaSupport</a>,
-      если хочешь зафиксировать бесплатный доступ навсегда.
-    </p>
-  </section>
-
-  {# ── 2.10 Founder story ── #}
-  <section class="about-section founder-section">
-    <h2>👋 История проекта</h2>
-    <div class="founder-card">
-      <div class="founder-avatar">V</div>
-      <div class="founder-text">
-        <p>FORMYLA — не очередной EdTech-стартап, который придумали маркетологи. Это продукт изнутри олимпиадной среды.</p>
-        <p>Меня зовут <strong>Виктор Кривенко</strong>. Я сам готовлюсь к олимпиадам по математике — ВсОШ, Ломоносов, Турнир городов. И я знаю проблему изнутри: чтобы готовиться нормально, надо одновременно держать открытыми 10 вкладок — задачник, разборы, ИИ-чат на английском, ютуб с лекциями, ещё одна тетрадка для чертежей. Это бесит и убивает мотивацию быстрее, чем сами задачи.</p>
-        <p>Я сделал FORMYLA, чтобы всё было в одном месте: адаптивный тест, ежедневные задачи под слабые темы, 7 специализированных ИИ-агентов, база реальных туров олимпиад РФ, доска для чертежей. Это инструмент, которого мне самому не хватало.</p>
-        <p>Над платформой работаю не один — со мной команда консультантов-олимпиадников, которые помогают вычитывать задачи и тренировать ИИ-агентов. Если ты учитель или олимпиадник и хочешь подключиться — напиши в Telegram, всегда рад.</p>
-        <p><em>— Виктор, основатель FORMYLA</em></p>
-        <p class="founder-contacts">
-          📧 <a href="mailto:hello@formyla.ru" style="color:#94a3b8;">hello@formyla.ru</a>
-          · ✈️ <a href="https://t.me/FormylaMaths" target="_blank" style="color:#94a3b8;">@FormylaMaths</a>
-        </p>
-      </div>
-    </div>
-  </section>
-
-  {# ── 2.11 FAQ ── #}
+  {# ── 14. FAQ ── #}
   <section class="about-section">
     <h2>❓ Частые вопросы</h2>
     <div class="faq-list">
 
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Для какого класса подходит FORMYLA? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Платформа рассчитана на 5–11 классы. Контент сегментирован по классам и уровням сложности (1–8). Для 5–7 классов — школьный этап ВсОШ, мат. праздник, логические игры. Для 8–11 — муниципальный/региональный этапы, Турнир городов, Эйлер, Сириус. Адаптивный тест сам определит подходящий уровень за 15 минут.</div>
+        <div class="faq-a">Платформа рассчитана на 5–11 классы. Уровень сложности от 1 до 5 подстраивается под ученика автоматически. Для 5–7 классов — школьный этап ВсОШ, Матпраздник, логические игры. Для 8–11 — муниципальный/региональный этапы, Турнир городов, Эйлер, Физтех, Курчатов.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Как определяется уровень? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Сначала ты проходишь короткую анкету (класс, цель, опыт, время) и решаешь 5 якорных задач. Это не экзамен — ошибаться нормально. Дальше уровень от 1 до 5 меняется плавно по результатам задач дня: решил верно — подрастает, ошибся — чуть опускается. Одна неудачная задача ничего не ломает.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что такое серия и долг? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a"><strong>Серия</strong> — сколько дней подряд ты решаешь верно больше 80% задач дня. Пропустил день или решил меньше — обнуляется. <strong>Долг</strong> — нерешённые задачи не пропадают, а висят над сегодняшними. Живут неделю, потом исчезают без штрафов. Пропуск дня ничего не ломает.</div>
       </div>
 
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Нужен ли VPN? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Нет. Все серверы в РФ, ИИ-модели работают через российские прокси, оплата через российские карты. Никаких VPN, иностранных аккаунтов или валютных карт не требуется.</div>
+        <div class="faq-a">Нет. Все серверы в РФ, ИИ-модели работают через российские прокси. Никаких VPN, иностранных аккаунтов или валютных карт не требуется.</div>
       </div>
 
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Чем FORMYLA отличается от ChatGPT? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">ChatGPT — общий ИИ. FORMYLA — 7 специализированных агентов, дообученных именно на олимпиадных задачах ВсОШ, Турнира городов, Эйлера. Плюс структурированный банк 8000+ задач, адаптивная диагностика, родительский доступ, AI-планировщик подготовки. ChatGPT не подберёт квест на день и не построит план к ВсОШ-2027.</div>
+        <div class="faq-a">ChatGPT — общий ИИ. FORMYLA заточена именно под олимпиадную математику: адаптивный уровень, персональный куратор, радары по подтемам, система долга и серий, банк 8000+ реальных олимпиадных задач с разборами. ChatGPT не подберёт задачи дня под твои пробелы и не построит план подготовки к ВсОШ.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что такое куратор? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Куратор — это ИИ-помощник, который видит твои реальные данные: сколько решено, где проседаешь, что в долге, какая тема завтра. Он не хвалит просто так и не ругает — говорит по делу. Подсказывает, какой метод почитать перед завтрашней темой.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Какие разделы охватывает платформа? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Алгебра, теория чисел, геометрия, комбинаторика, логика и методы. В наборе дня всегда есть несколько разделов, даже если какой-то даётся тяжело: слабое подтягивается, но остальное не забывается.</div>
       </div>
 
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Можно ли отменить подписку? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Да, в любой момент в личном кабинете. Подписка действует до конца оплаченного периода и не продлевается автоматически после отмены. В первые 7 дней — полный возврат без вопросов.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Как родители могут следить за прогрессом? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">На тарифе Pro доступен родительский кабинет: отдельный логин, прикреплённый к аккаунту ребёнка. Видишь радар тем, статистику по дням, серию решённых задач, время в платформе.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Безопасно ли ИИ для ребёнка? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Универсальный ИИ-агент обучен отвечать только на вопросы по математике и подготовке к олимпиадам. Все диалоги логируются и доступны родителю на тарифе Pro. Режим «только подсказки» запрещает агенту давать готовое решение — только наводящие вопросы.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Что если ребёнку не подошло? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">В первые 7 дней оплаты — полный возврат денег без вопросов через Telegram-поддержку. После — можно отменить подписку и пользоваться бесплатной версией без ограничения по времени.</div>
+        <div class="faq-a">Да, в любой момент в личном кабинете. Подписка действует до конца оплаченного периода. В первые 7 дней — полный возврат без вопросов.</div>
       </div>
 
       <div class="faq-item">
@@ -597,11 +577,11 @@
     </div>
   </section>
 
-  {# ── 2.12 Final CTA — без кнопки «Начать бесплатно», только «Войти» ── #}
+  {# ── 15. Final CTA ── #}
   <section class="about-section">
     <div class="final-cta">
-      <h2>🚀 Готов попробовать?</h2>
-      <p>67</p>
+      <h2>🚀 Готов начать?</h2>
+      <p>Пройди анкету, реши якорные задачи — и получи персональный план подготовки.</p>
       <div class="final-cta-row">
         <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA →</a>
       </div>
@@ -1146,75 +1126,8 @@
     </div>
   </section>
 
-  {# ── AI-помощник FORMYLA — встроенная карточка (3-я секция) ───────────── #}
-  <section class="about-section support-section ai-helper-section">
-    <h2>🤖 Помощник FORMYLA</h2>
-    <p>Спроси у ИИ о сайте, тарифах, разделах, как начать или подготовиться к олимпиаде. Это не репетитор по задачам — для подсказок по решению используй задачи на сайте.</p>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/site_concierge.css') }}?v={{ asset_version|default('1') }}">
-
-    {# Override стилей ПЕРЕД виджетом, чтобы перекрыть `position:fixed`. #}
-    <style>
-      /* Корневой контейнер — снять fixed-позицию, влезть в карточку */
-      .ai-helper-section #siteConciergeRoot {
-        position: static !important;
-        bottom: auto !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        z-index: auto !important;
-        width: 100% !important;
-        margin-top: 16px;
-      }
-      /* FAB вообще убираем */
-      .ai-helper-section #siteConciergeRoot .site-concierge-fab { display: none !important; }
-      /* Панель — всегда раскрыта, в потоке страницы */
-      .ai-helper-section #siteConciergeRoot .site-concierge-panel {
-        position: static !important;
-        display: flex !important;
-        flex-direction: column !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: none !important;
-        pointer-events: auto !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        min-height: 460px !important;
-        bottom: auto !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        border-radius: 14px;
-      }
-      /* Скрываем крестик закрытия — закрывать нечего */
-      .ai-helper-section #siteConciergeRoot .scf-close { display: none !important; }
-      .ai-helper-section #siteConciergeRoot .scf-body { min-height: 280px; }
-    </style>
-
-    <div id="siteConciergeRoot">
-      <button type="button" class="site-concierge-fab" aria-label="Помощь по сайту">
-        <span aria-hidden="true">💬</span>
-      </button>
-
-      <section class="site-concierge-panel is-open" role="dialog" aria-label="Помощник FORMYLA">
-        <header class="scf-header">
-          <h3>💬 Помощник FORMYLA</h3>
-          <button type="button" class="scf-close" aria-label="Закрыть">✕</button>
-        </header>
-        <div class="scf-body" role="log" aria-live="polite">
-          {# История и quick-replies рендерятся JS-скриптом. #}
-        </div>
-        <div class="scf-input-row">
-          <input type="text" placeholder="Введите вопрос…" maxlength="500" autocomplete="off">
-          <button type="button" class="scf-send" aria-label="Отправить">⏎</button>
-        </div>
-      </section>
-    </div>
-
-    <script src="{{ url_for('static', filename='js/site_concierge.js') }}?v={{ asset_version|default('1') }}" defer></script>
-  </section>
+  {# ── AI-помощник FORMYLA перенесён в чат куратора (/prep/coach). #}
+  {# ── Секция убрана по задаче V4. ───────────── #}
 
 </div>
 
@@ -1305,8 +1218,8 @@
 
   function escapeHtml(s) {
     return String(s || '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      .replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')
+      .replace(/"/g, '"').replace(/'/g, ''');
   }
 
   function addMessage(kind, text, attachments) {
@@ -1539,7 +1452,7 @@
     });
   }
   function updateLabel(n) {
-    if (rLabel) rLabel.textContent = n > 0 ? n + " \u0438\u0437 5" : "";
+    if (rLabel) rLabel.textContent = n > 0 ? n + " из 5" : "";
   }
   rStars.forEach((star, idx) => {
     star.addEventListener("mouseenter", () => paintHover(idx + 1));
@@ -1633,11 +1546,11 @@
 
   function escHtml(s) {
     return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """)
+      .replace(/'/g, "'");
   }
 
   function renderStars(n) {

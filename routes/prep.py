@@ -826,7 +826,7 @@ def get_onboarding_tasks(grade, limit=12):
         tasks = (
             AdaptiveTask.query
             .filter_by(class_level=grade_int, difficulty_level=CALIBRATION_START_LEVEL)
-            .filter(AdaptiveTask.is_flagged.is_(False))
+            .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
             .order_by(db.func.random())
             .limit(limit)
             .all()
@@ -836,7 +836,7 @@ def get_onboarding_tasks(grade, limit=12):
             tasks = (
                 AdaptiveTask.query
                 .filter_by(class_level=grade_int, difficulty_level=CALIBRATION_START_LEVEL - 1)
-                .filter(AdaptiveTask.is_flagged.is_(False))
+                .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
                 .order_by(db.func.random())
                 .limit(limit)
                 .all()
@@ -850,7 +850,7 @@ def get_onboarding_tasks(grade, limit=12):
             tasks = (
                 AdaptiveTask.query
                 .filter_by(class_level=grade_int)
-                .filter(AdaptiveTask.is_flagged.is_(False))
+                .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
                 .order_by(db.func.random())
                 .limit(limit)
                 .all()
@@ -895,7 +895,7 @@ def get_subtopic_test(grade, subtopic_key, count=5):
                 .filter(AdaptiveTask.topic.ilike(f'%{keyword}%'))
                 .filter(AdaptiveTask.difficulty_level.between(
                     CALIBRATION_START_LEVEL, CALIBRATION_START_LEVEL + 1))
-                .filter(AdaptiveTask.is_flagged.is_(False))
+                .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
                 .order_by(db.func.random())
                 .limit(count)
                 .all()
@@ -906,7 +906,7 @@ def get_subtopic_test(grade, subtopic_key, count=5):
                 .filter_by(class_level=grade_int, topic=db_topic)
                 .filter(AdaptiveTask.difficulty_level.between(
                     CALIBRATION_START_LEVEL, CALIBRATION_START_LEVEL + 1))
-                .filter(AdaptiveTask.is_flagged.is_(False))
+                .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
                 .order_by(db.func.random())
                 .limit(count)
                 .all()
@@ -916,7 +916,7 @@ def get_subtopic_test(grade, subtopic_key, count=5):
             tasks = (
                 AdaptiveTask.query
                 .filter_by(class_level=grade_int, difficulty_level=CALIBRATION_START_LEVEL)
-                .filter(AdaptiveTask.is_flagged.is_(False))
+                .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
                 .order_by(db.func.random())
                 .limit(count)
                 .all()
@@ -1288,28 +1288,81 @@ def coach():
                         }
         except Exception as _cc_err:
             current_app.logger.warning('coach: curator_card failed: %s', _cc_err)
-
-    return render_template('prep/coach.html',
-                           radar=ctx['radar'],
-                           topic_names=ctx['topic_names'],
-                           test_done=ctx['test_done'],
-                           subtopics_to_test=ctx['subtopics_to_test'],
-                           mastery_list=mastery_list,
-                           mastery_list_json=mastery_list_json,
-                           user_grade=_grade_val,
-                           overall_level=overall_level,
-                           level_label=level_label,
-                           cycle_info=cycle_info,
-                           cycle_themes=cycle_themes,
-                           cycle_measured_count=cycle_measured_count,
-                           cycle_total=cycle_total,
-                           cycle_probe_url=cycle_probe_url,
-                           cycle_cta_url=cycle_cta_url,
-                           cycle_cta_text=cycle_cta_text,
-                           measured_subtopics_list=measured_subtopics_list,
-                           onboarding_done=_onboarding_done,
-                           curator_card=curator_card,
-                           curator_debt_breakdown=curator_debt_breakdown)
+    
+        # ── Build per-section radars (TASK 1 V4): one radar per canonical section ──
+        section_radars = []
+        if _user_grade_int:
+            try:
+                from services.theme_registry import themes_of_section, theme_title
+                from services.level_engine import get_level_by_theme as _lbt_radar
+                _lbt = _lbt_radar(current_user.id)
+    
+                _SECTION_ORDER = ['algebra', 'geometry', 'combinatorics', 'logic', 'number_theory']
+                _SECTION_RU = {
+                    'algebra': 'Алгебра',
+                    'geometry': 'Геометрия',
+                    'combinatorics': 'Комбинаторика',
+                    'logic': 'Логика и методы',
+                    'number_theory': 'Теория чисел',
+                }
+    
+                for _sec in _SECTION_ORDER:
+                    _theme_ids = themes_of_section(_user_grade_int, _sec)
+                    _subtopics = []
+                    for _tid in _theme_ids:
+                        _name = theme_title(_tid)
+                        _td = _lbt.get(_tid, {})
+                        _mu = _td.get('mu')
+                        _n = _td.get('n', 0)
+                        if _mu is not None and _n > 0:
+                            _pct = round((float(_mu) - 1.0) / 4.0 * 100.0, 1)
+                            _has_data = True
+                        else:
+                            _pct = 0.0
+                            _has_data = False
+                        _subtopics.append({
+                            'id': _tid,
+                            'name': _name,
+                            'pct': _pct,
+                            'has_data': _has_data,
+                        })
+                    _data_count = sum(1 for s in _subtopics if s['has_data'])
+                    section_radars.append({
+                        'section_slug': _sec,
+                        'section_name': _SECTION_RU.get(_sec, _sec),
+                        'subtopics': _subtopics,
+                        'data_count': _data_count,
+                        'total_count': len(_subtopics),
+                    })
+            except Exception as _radar_err:
+                current_app.logger.warning('coach: section_radars build failed: %s', _radar_err)
+    
+        import json as _json_coach
+        section_radars_json = _json_coach.dumps(section_radars, ensure_ascii=False)
+    
+        return render_template('prep/coach.html',
+                               radar=ctx['radar'],
+                               topic_names=ctx['topic_names'],
+                               test_done=ctx['test_done'],
+                               subtopics_to_test=ctx['subtopics_to_test'],
+                               mastery_list=mastery_list,
+                               mastery_list_json=mastery_list_json,
+                               section_radars=section_radars,
+                               section_radars_json=section_radars_json,
+                               user_grade=_grade_val,
+                               overall_level=overall_level,
+                               level_label=level_label,
+                               cycle_info=cycle_info,
+                               cycle_themes=cycle_themes,
+                               cycle_measured_count=cycle_measured_count,
+                               cycle_total=cycle_total,
+                               cycle_probe_url=cycle_probe_url,
+                               cycle_cta_url=cycle_cta_url,
+                               cycle_cta_text=cycle_cta_text,
+                               measured_subtopics_list=measured_subtopics_list,
+                               onboarding_done=_onboarding_done,
+                               curator_card=curator_card,
+                               curator_debt_breakdown=curator_debt_breakdown)
 
 
 # ─── Morning probe (monthly cycle) ─────────────────────────────────────
@@ -2156,7 +2209,7 @@ def coach_daily_submit():
                 AdaptiveTask.query
                 .filter_by(class_level=grade, topic=db_topic)
                 .filter(AdaptiveTask.difficulty_level.between(min_level, max_level))
-                .filter(AdaptiveTask.is_flagged.is_(False))
+                .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
                 .order_by(db.func.random())
                 .limit(10)
                 .all()
@@ -2170,7 +2223,7 @@ def coach_daily_submit():
                 AdaptiveTask.query
                 .filter_by(class_level=grade)
                 .filter(AdaptiveTask.difficulty_level.between(min_level, max_level))
-                .filter(AdaptiveTask.is_flagged.is_(False))
+                .filter(db.or_(AdaptiveTask.is_flagged.is_(False), AdaptiveTask.is_flagged.is_(None)))
                 .order_by(db.func.random())
                 .limit(10)
                 .all()
@@ -2987,6 +3040,70 @@ def coach_chat():
     _save_chat_message(current_user.id, 'assistant', reply)
 
     return jsonify(reply=reply)
+
+
+# ─── FAQ endpoint (TASK 2 V4): local answers without external service ────
+
+@prep_bp.route('/coach/faq', methods=['POST'])
+@login_required
+def coach_faq():
+    """Ответить на частый вопрос по данным из curator_faq.json.
+    
+    Не использует внешний сервис — ответы локальные.
+    Работает даже при недоступном DeepSeek API.
+    """
+    import json as _json_
+    import os as _os_
+    import re as _re_
+
+    data = request.get_json(silent=True) or {}
+    question = (data.get('question') or '').strip()
+    if not question:
+        return jsonify(answer='Задайте вопрос о сайте FORMYLA.')
+
+    # Load FAQ data
+    faq_path = _os_.path.join(_os_.path.dirname(__file__), '..', 'data', 'curator_faq.json')
+    faq_entries = []
+    try:
+        with open(faq_path, 'r', encoding='utf-8') as f:
+            faq_data = _json_.load(f)
+            faq_entries = faq_data.get('faq', [])
+    except Exception:
+        current_app.logger.warning('coach_faq: cannot load curator_faq.json')
+
+    # Simple keyword matching
+    q_lower = question.lower()
+    q_tokens = _re_.findall(r'[\w\-]+', q_lower, _re_.UNICODE)
+
+    best_entry = None
+    best_score = 0
+    for entry in faq_entries:
+        keywords = (entry.get('keywords', '')).lower()
+        score = 0
+        for tok in q_tokens:
+            if tok in keywords or tok in entry.get('question', '').lower():
+                score += 1
+        # Bonus for exact question match
+        if q_lower == entry.get('question', '').lower():
+            score += 10
+        if score > best_score:
+            best_score = score
+            best_entry = entry
+
+    if best_entry and best_score > 0:
+        # Save to chat history
+        _save_chat_message(current_user.id, 'user', question)
+        _save_chat_message(current_user.id, 'assistant', best_entry['answer'])
+        return jsonify(answer=best_entry['answer'])
+
+    # Fallback: generic response
+    fallback = (
+        'Пока у меня нет точной информации по этому вопросу. '
+        'Попробуйте спросить иначе или напишите в поддержку через раздел «О сайте».'
+    )
+    _save_chat_message(current_user.id, 'user', question)
+    _save_chat_message(current_user.id, 'assistant', fallback)
+    return jsonify(answer=fallback)
 
 
 # ─── Новая анкета онбординга (onboarding_tree + onboarding.py) ──────────────

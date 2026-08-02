@@ -174,8 +174,8 @@ class TestHelpers:
         assert len(priorities) == 3
         assert priorities[0] == 'combinatorics'  # weakest (20)
         assert priorities[1] == 'algebra'         # second weakest (30)
-        # third could be number_theory (50)
-        assert priorities[2] == 'number_theory'
+        # third weakest is logic (now in RADAR_TOPICS; not in test radar dict, defaults to 50)
+        assert priorities[2] == 'logic'
 
     def test_calculate_days_total_normal(self):
         start = date(2026, 9, 1)

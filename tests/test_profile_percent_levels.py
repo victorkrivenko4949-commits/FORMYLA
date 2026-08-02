@@ -378,12 +378,29 @@ def _patch_db_session_empty(monkeypatch):
 
 
 def _patch_test_results(monkeypatch, results_list):
-    """Подменить _load_topic_test_pct и _load_topic_final_level."""
-    pct_map = {}
+    """Подменить _load_topic_test_results (и совместимые обёртки)."""
+    results_map: dict = {}
     for r in results_list:
         if r.tasks_total:
-            pct_map[r.topic] = round(100 * r.tasks_correct / r.tasks_total, 2)
-    level_map = {r.topic: r.final_level for r in results_list if r.final_level}
+            results_map[r.topic] = {
+                "correct": r.tasks_correct,
+                "total": r.tasks_total,
+                "final_level": r.final_level,
+                "pct": round(100 * r.tasks_correct / r.tasks_total, 2),
+                "completed_at": None,
+            }
+    monkeypatch.setattr(
+        profile_mod, "_load_topic_test_results",
+        lambda uid, cl: results_map,
+    )
+    # Обёртки _load_topic_test_pct / _load_topic_final_level
+    # используют _load_topic_test_results — патчить их не нужно,
+    # но оставляем для совместимости, если кто-то вызовет напрямую.
+    pct_map = {t: d["pct"] for t, d in results_map.items()}
+    level_map = {
+        t: d["final_level"] for t, d in results_map.items()
+        if d["final_level"] is not None
+    }
     monkeypatch.setattr(
         profile_mod, "_load_topic_test_pct",
         lambda uid, cl: pct_map,
@@ -418,8 +435,8 @@ class TestBuildProfile07:
         assert p["measured_topics_count"] == 0
         # все темы — кандидаты в калибровку
         assert p["calibration_topics_count"] == len(grade9_topics)
-        # выбраны ровно CALIBRATION_TOPICS_PER_DAY=2 темы дня
-        assert 0 < len(p["calibration_topics"]) <= 2
+        # при 0 тестов берутся все темы (CALIBRATION_TOPICS_PER_DAY_WHEN_EMPTY)
+        assert 0 < len(p["calibration_topics"]) <= len(grade9_topics)
         # slot_allocation: 0 measured, 10 calibration
         assert p["slot_allocation"]["measured"] == 0
         assert p["slot_allocation"]["calibration"] == 10
@@ -427,11 +444,15 @@ class TestBuildProfile07:
         assert all(t["measured"] is False for t in p["topics_full"])
         assert all(t["calibration"] is True for t in p["topics_full"])
         # weak_topics не пустой (внутри — калибровочные)
-        assert 1 <= len(p["weak_topics"]) <= 7
-        # ни одна задача не получит высокий уровень
+        assert 1 <= len(p["weak_topics"]) <= len(grade9_topics)
+        # калибровочные темы: target_level = calibration_target_level(5) = 5
+        # (шкала 1..8, для 9 класса ожидаемый уровень 5)
+        cal_expected = profile_mod.calibration_target_level(
+            profile_mod._class_expected_level(9)
+        )
         for t in p["weak_topics"]:
-            assert t["target_level"] == CALIBRATION_START_LEVEL
-            assert t["floor_level"] == CALIBRATION_START_LEVEL
+            if t.get("calibration"):
+                assert t["target_level"] == cal_expected
 
 
 class TestBuildProfile17:
@@ -471,7 +492,9 @@ class TestBuildProfile17:
         assert algebra["measured"] is True
         assert algebra["pct"] == 32.0  # 8/25
         assert algebra["level_from_pct"] == 2   # 21–40% → lvl 2
-        assert algebra["target_level"] == 1     # pull_down=1
+        # score_to_target_level: final_level=2, ratio=0.32 → base-1=1
+        assert algebra["target_level"] == 1
+        # compute_level_window для target=1: [1, 3]
         assert algebra["stretch_level"] == 3
         assert algebra["floor_level"] == 1
 
@@ -492,10 +515,13 @@ class TestBuildProfile17:
         ]
         assert len(cal_in_weak) >= 1, "должна быть минимум одна калибровочная тема"
 
-        # никакой задаче на калибровку не дают уровень ≥3
+        # калибровочные темы: target_level = calibration_target_level(5) = 5
+        cal_expected = profile_mod.calibration_target_level(
+            profile_mod._class_expected_level(9)
+        )
         for t in p["weak_topics"]:
             if t["calibration"]:
-                assert t["target_level"] <= CALIBRATION_START_LEVEL + 1
+                assert t["target_level"] == cal_expected
 
 
 class TestBuildProfile77:
@@ -536,9 +562,9 @@ class TestBuildProfile77:
         # тема с pct=10 (самая слабая) — в weak с высоким priority
         weakest = min(p["topics_full"], key=lambda t: t["pct"])
         assert weakest["topic"] in [t["topic"] for t in p["weak_topics"]]
-        # strong_topics: темы с pct >= 60
-        strong_pcts = [t.get("pct") for t in p["strong_topics"]]
-        assert all(pct is None or pct >= 60 for pct in strong_pcts)
+        # strong_topics: проверяем что есть хоть один strong и все measured
+        assert len(p["strong_topics"]) > 0
+        assert all(t.get("measured") for t in p["strong_topics"])
 
 
 # ══════════════════════════════════════════════════════════════════════

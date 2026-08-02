@@ -8,7 +8,14 @@ Implements the "лесенка" (ladder) adaptive test:
   - After each answer: correct → +1, partial → 0, wrong → -2
   - Level clamped [1, 5] and ≤ route_ceiling
   - Final mu = level after 5th answer → saved to level_by_theme
-  - State is persisted so user can close tab and resume
+  - State is persisted AFTER EVERY OPERATION so user can close tab and resume
+  - "Продолжить утренний срез" returns to the exact same question
+
+V3 FIXES:
+  - is_flagged NULL treated as NOT flagged (was: .is_(False) missed 8738 NULL rows)
+  - Fallback: if no tasks in grade+level, try same section other themes, 
+    then same section any grade, then any task
+  - Save probe state AFTER every task selection (previously only on answer)
 """
 import json
 import logging
@@ -32,6 +39,26 @@ MAX_LEVEL = 5
 CORRECT_DELTA = +1
 PARTIAL_DELTA = 0
 WRONG_DELTA = -2
+
+# ══════════════════════════════════════════════════════════════════════
+# Helper: is_flagged filter (treats NULL as NOT flagged)
+# ══════════════════════════════════════════════════════════════════════
+
+def _not_flagged():
+    """Filter: task is NOT flagged (NULL or False)."""
+    return db.or_(
+        AdaptiveTask.is_flagged.is_(False),
+        AdaptiveTask.is_flagged.is_(None),
+    )
+
+
+def _not_anchor():
+    """Filter: task is not an anchor (source is NULL or not 'formyla_anchors')."""
+    return db.or_(
+        AdaptiveTask.source.is_(None),
+        AdaptiveTask.source != 'formyla_anchors',
+    )
+
 
 # ══════════════════════════════════════════════════════════════════════
 # Probe state helpers
@@ -185,8 +212,8 @@ def start_probe(user_id: int, theme_id: str, grade: int) -> Dict[str, Any]:
     existing = _get_probe_state(cs)
     if existing and existing.get('current_index', 0) < PROBE_SIZE:
         if existing.get('theme_id') == theme_id:
-            # Resume
-            return _next_task_in_probe(cs, existing, grade)
+            # Resume — just return the current task
+            return _current_task_state(cs, existing, grade)
         # Different theme – silently replace? No, block.
         return {
             'error': 'active_probe_exists',
@@ -206,18 +233,54 @@ def start_probe(user_id: int, theme_id: str, grade: int) -> Dict[str, Any]:
         'started_at': datetime.now(timezone.utc).isoformat(),
     }
 
-    _save_probe_state(cs, probe)
-    db.session.commit()
+    # Select first task and save state immediately
+    result = _select_and_advance(cs, probe, grade)
+    if result.get('error'):
+        return result
+    return result
 
-    return _next_task_in_probe(cs, probe, grade)
+
+def _current_task_state(cs: CuratorState, probe: Dict[str, Any], grade: int) -> Dict[str, Any]:
+    """Return the current task state without selecting a new task (for resume)."""
+    theme_id = probe['theme_id']
+    current_level = probe['current_level']
+    seen_ids = probe.get('seen_task_ids', [])
+    idx = probe['current_index']
+
+    if not seen_ids or idx >= len(seen_ids):
+        # No task selected yet — select one
+        return _select_and_advance(cs, probe, grade)
+
+    # Return the current (last seen) task
+    last_task_id = seen_ids[-1]
+    task = db.session.get(AdaptiveTask, last_task_id)
+    if not task:
+        # Task deleted — select new one
+        return _select_and_advance(cs, probe, grade)
+
+    return {
+        'theme_id': theme_id,
+        'current_index': idx,
+        'total': PROBE_SIZE,
+        'current_level': current_level,
+        'task': {
+            'id': task.id,
+            'task_text': task.task_text,
+            'difficulty_level': task.difficulty_level,
+            'topic': task.topic,
+        },
+    }
 
 
-def _next_task_in_probe(cs: CuratorState, probe: Dict[str, Any], grade: int) -> Dict[str, Any]:
-    """Select the next task for the current probe.
-
-    Tasks are selected by grade + level without filtering by theme_id,
-    since DB topic names don't directly correspond to taxonomy theme_ids.
-    The probe's theme_id is used for recording results, not for task selection.
+def _select_and_advance(cs: CuratorState, probe: Dict[str, Any], grade: int) -> Dict[str, Any]:
+    """Select the next task, save state, and return result.
+    
+    V3: Multi-stage fallback ensures probe always finds tasks:
+      1. Same grade + same level (±0, ±1, ±2)
+      2. Same grade, any level
+      3. Same section (from theme), nearby grades, any level  
+      4. Any non-flagged, non-anchor task
+    Also saves probe state immediately after selection.
     """
     theme_id = probe['theme_id']
     current_level = probe['current_level']
@@ -226,17 +289,22 @@ def _next_task_in_probe(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
 
     task = None
 
-    # Try exact level first, then ±1, then ±2
+    # Determine section from theme_id for fallback
+    section = None
+    try:
+        from services.theme_registry import section_of_theme
+        section = section_of_theme(theme_id)
+    except Exception:
+        pass
+
+    # Stage 1: Try exact grade + level ladder (same as before, but with NULL-safe filter)
     for offset in [0, -1, 1, -2, 2]:
         level = max(1, min(5, current_level + offset))
         candidate = (
             AdaptiveTask.query
             .filter_by(class_level=grade, difficulty_level=level)
-            .filter(AdaptiveTask.is_flagged.is_(False))
-            .filter(db.or_(
-                AdaptiveTask.source.is_(None),
-                AdaptiveTask.source != 'formyla_anchors',
-            ))
+            .filter(_not_flagged())
+            .filter(_not_anchor())
             .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
             .order_by(db.func.random())
             .first()
@@ -245,15 +313,45 @@ def _next_task_in_probe(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
             task = candidate
             break
 
+    # Stage 2: Same grade, any level
     if not task:
-        # Fallback: any task for any grade, not seen (excluding anchors)
+        candidate = (
+            AdaptiveTask.query
+            .filter_by(class_level=grade)
+            .filter(_not_flagged())
+            .filter(_not_anchor())
+            .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
+            .order_by(db.func.random())
+            .first()
+        )
+        if candidate:
+            task = candidate
+
+    # Stage 3: Same section, nearby grades, any level
+    if not task and section:
+        # Try grades near the student's grade
+        for g in [grade - 1, grade + 1, grade - 2, grade + 2, grade - 3, grade + 3]:
+            if g < 5 or g > 11:
+                continue
+            candidate = (
+                AdaptiveTask.query
+                .filter_by(class_level=g)
+                .filter(_not_flagged())
+                .filter(_not_anchor())
+                .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
+                .order_by(db.func.random())
+                .first()
+            )
+            if candidate:
+                task = candidate
+                break
+
+    # Stage 4: Any non-flagged, non-anchor task
+    if not task:
         task = (
             AdaptiveTask.query
-            .filter(AdaptiveTask.is_flagged.is_(False))
-            .filter(db.or_(
-                AdaptiveTask.source.is_(None),
-                AdaptiveTask.source != 'formyla_anchors',
-            ))
+            .filter(_not_flagged())
+            .filter(_not_anchor())
             .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
             .order_by(db.func.random())
             .first()
@@ -262,7 +360,11 @@ def _next_task_in_probe(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
     if not task:
         return {'error': 'no_tasks', 'theme_id': theme_id, 'current_index': idx}
 
+    # Save seen task IDs to probe state
     probe['seen_task_ids'] = list(seen_ids) + [task.id]
+    # Save state IMMEDIATELY (V3 fix: previously only saved on answer)
+    _save_probe_state(cs, probe)
+    db.session.commit()
 
     return {
         'theme_id': theme_id,
@@ -326,7 +428,8 @@ def record_answer(user_id: int, task_id: int, verdict: str,
     _save_probe_state(cs, probe)
     db.session.commit()
 
-    return _next_task_in_probe(cs, probe, probe.get('grade', 9))
+    # Select next task and save state
+    return _select_and_advance(cs, probe, probe.get('grade', 9))
 
 
 def _finish_probe(cs: CuratorState, probe: Dict[str, Any], user_id: int) -> Dict[str, Any]:

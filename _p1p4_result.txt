@@ -81,7 +81,8 @@ Section mu after  anchors: updated per correct answers on L2-L4 tasks
 ======================================================================
 P4: regression_night.py full output
 ======================================================================
- rows
+hods_catalog_105.json (102 rows; in DB: 102 вЂ” ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
 [THEORY-SEED] body source: c:\Users\Redmi\Desktop\РќРѕРІР°СЏ РїР°РїРєР° (2)\data\olympiads\theory_65_methods.json (65 rows)
 [THEORY-SEED] body source: c:\Users\Redmi\Desktop\РќРѕРІР°СЏ РїР°РїРєР° (2)\data\olympiads\theory_24_methods.json (24 rows)
 [THEORY-SEED] Theory bodies filled: 0 methods updated
@@ -101,7 +102,7 @@ P4: regression_night.py full output
 [BP] telegram_auth_bp registered (/auth/telegram/callback)
   [daily_tasks migration] dialect = sqlite
   вњ… daily_task_sets: 10 РєРѕР»РѕРЅРѕРє
-  вњ… daily_task_items: 27 РєРѕР»РѕРЅРѕРє
+  вњ… daily_task_items: 25 РєРѕР»РѕРЅРѕРє
   вњ… daily_generation_jobs: 11 РєРѕР»РѕРЅРѕРє
   [task_pool migration] dialect = sqlite
   вњ… task_pool: 12 РєРѕР»РѕРЅРѕРє
@@ -122,19 +123,29 @@ P4: regression_night.py full output
 [JINJA] filter inject_geometry registered
 вњ… VAPID keys loaded вЂ” Web Push notifications enabled
 вњ“ APScheduler started - Daily Quest cron jobs active
-olympiads.py: СЃС‚Р°СЂС‹Р№ С„РѕСЂРјР°С‚, 5267 Р·Р°РґР°С‡ -> 1209 РїСЂРѕР±РЅРёРєРѕРІ
+olympiads.py: СЃС‚Р°СЂС‹Р№ С„РѕСЂРјР°С‚, 5218 Р·Р°РґР°С‡ -> 1209 РїСЂРѕР±РЅРёРєРѕРІ
 РџСЂРѕР±РЅРёРєРѕРІ РІСЃРµРіРѕ: 1209, СЃ Р·Р°РґР°С‡Р°РјРё: 1209
 РђРґР°РїС‚РёРІРЅС‹Р№ С‚РµСЃС‚: Р·Р°РіСЂСѓР¶РµРЅРѕ 0 Р·Р°РґР°С‡ РёР· adaptive_data
 OLYMPIADS_INFO: 13 РѕР»РёРјРїРёР°Рґ СЃ grades/rounds
-[regression_night] Creating test DB from working schema: c:\Users\Redmi\Desktop\Новая папка (2)\instance\regression_test.db
-[olympiads.py] Loaded 5267 entries from JSONL
+[olympiads.py] Loaded 5218 entries from JSONL
 ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.
 [figures_manifest] MANIFEST.json not found - figures disabled
 DEBUG: Загружено 81 привязок картинок из problem_images.py
 
 
 STDERR:
-===========
+====================
+D4: RADAR 5 AXES
+======================================================================
+D4(a) zero-user data-mastery NOT FOUND
+D4(a) D2-user data-mastery NOT FOUND
+
+D4(b) RADAR_TOPICS = algebra,geometry,combinatorics,logic,number_theory @ prep_planner.py:25
+D4(c) JS: mastery_radar.js:14 вЂ” no zero-axis filtering
+
+======================================================================
+S5: MODULE IMPORT + PREP ROUTE SMOKE TEST
+======================================================================
 S5(a) IMPORT OK: routes.account
 S5(a) IMPORT OK: routes.admin_daily_pool
 S5(a) IMPORT OK: routes.admin_daily_tasks_stats
@@ -162,16 +173,13 @@ S5(a) IMPORT OK: routes.wb_meet
 S5(a) IMPORT OK: routes.wb_ws
 S5(a) TOTAL IMPORT FAILURES: 1
 S5(b) Testing 7 /prep GET routes with uid=6
-S5(c) OK: /prep/ в†’ 200
-2026-08-01 15:59:52,153 - daily_tasks.profile - INFO - build_profile: user=6 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
-S5(c) OK: /prep/new в†’ 200
-2026-08-01 15:59:52,201 - daily_tasks.profile - INFO - build_profile: user=6 grade=9 completeness=0.00 measured=0/7 weak=7 (cal=7) strong=0 slots=(m=0,c=10)
-S5(c) OK: /prep/coach в†’ 200
-S5(c) OK: /prep/probe в†’ 200
+S5(c) OK: /prep/ в†’ 302
+S5(c) OK: /prep/new в†’ 302
+S5(c) OK: /prep/coach в†’ 302
+S5(c) OK: /prep/probe в†’ 302
 S5(c) OK: /prep/onboarding в†’ 302
-2026-08-01 15:59:52,395 - app - INFO - coach_greeting: next_action succeeded kind=probe title='РЈС‚СЂРµРЅРЅРёР№ СЃСЂРµР·: РњРЅРѕРіРѕС‡Р»РµРЅС‹ Рё Р°Р»РіРµР±СЂР°РёС‡РµСЃРєРёРµ С‚РѕР¶РґРµСЃС‚РІР°'
-S5(c) OK: /prep/coach/greeting в†’ 200
-S5(c) OK: /prep/coach/history в†’ 200
+S5(c) OK: /prep/coach/greeting в†’ 302
+S5(c) OK: /prep/coach/history в†’ 302
 S5(d) ok=7 4xx=0 5xx/EXC=0
 S5 SUMMARY: ALL CLEAN вЂ” no 5xx on /prep routes
 
