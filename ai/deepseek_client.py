@@ -56,7 +56,7 @@ class DeepSeekClient:
         # Маршрутизация через OpenRouter оставлена ТОЛЬКО для vision-фолбэка
         # (см. _call_api ниже), который использует свой OPENROUTER_API_KEY.
         self.base_url = "https://api.deepseek.com/v1/chat/completions"
-        self.model = "deepseek-chat"
+        self.model = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash")
         logger.info("🔄 Using official DeepSeek API (direct)")
         
         self.max_retries = 2  # 2 попытки для устойчивости к ошибкам парсинга JSON
@@ -206,7 +206,7 @@ class DeepSeekClient:
         # If the client was configured for OpenRouter, point this single call back
         # to the official API so reasoner works.
         url = "https://api.deepseek.com/v1/chat/completions"
-        model = "deepseek-reasoner"
+        model = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash")
 
         messages = []
         if system_prompt:
@@ -893,7 +893,7 @@ class DeepSeekClient:
                     )
 
             # Используем DeepSeek для текста
-            content = _call_api(self.base_url, "deepseek-chat", self.api_key, messages)
+            content = _call_api(self.base_url, os.environ.get("FIGURE_MODEL", "deepseek-v4-flash"), self.api_key, messages)
             logger.info(f"Tutor response generated for user {user.id}")
             return content
 

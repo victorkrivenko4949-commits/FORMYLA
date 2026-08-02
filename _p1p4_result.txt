@@ -102,7 +102,7 @@ hods_catalog_105.json (102 rows; in DB: 102 вЂ” ensuring all present)
 [BP] telegram_auth_bp registered (/auth/telegram/callback)
   [daily_tasks migration] dialect = sqlite
   вњ… daily_task_sets: 10 РєРѕР»РѕРЅРѕРє
-  вњ… daily_task_items: 25 РєРѕР»РѕРЅРѕРє
+  вњ… daily_task_items: 27 РєРѕР»РѕРЅРѕРє
   вњ… daily_generation_jobs: 11 РєРѕР»РѕРЅРѕРє
   [task_pool migration] dialect = sqlite
   вњ… task_pool: 12 РєРѕР»РѕРЅРѕРє
@@ -134,8 +134,7 @@ DEBUG: Загружено 81 привязок картинок из problem_imag
 
 
 STDERR:
-====================
-D4: RADAR 5 AXES
+ AXES
 ======================================================================
 D4(a) zero-user data-mastery NOT FOUND
 D4(a) D2-user data-mastery NOT FOUND
@@ -158,6 +157,7 @@ S5(a) IMPORT OK: routes.decorators
 S5(a) IMPORT OK: routes.drawing
 S5(a) IMPORT OK: routes.drawing_diag
 S5(a) IMPORT OK: routes.drawing_history
+S5(a) IMPORT OK: routes.figures
 S5(a) IMPORT OK: routes.friends
 S5(a) IMPORT FAIL: routes.friends_backup вЂ” '(' was never closed (friends_backup.py, line 94)
 S5(a) IMPORT OK: routes.grade

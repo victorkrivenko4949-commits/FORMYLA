@@ -1651,3 +1651,46 @@ class FigureEmailSubscription(db.Model):
 
     def __repr__(self):
         return f'<FigureEmailSubscription email={self.email}>'
+
+
+# ── D5: Background Figure Generation Queue ─────────────────────────────
+
+class FigureJob(db.Model):
+    """Фоновое задание на построение чертежа (D5 queue).
+
+    Статусы: queued → thinking → drawing → done | failed.
+    Кредит списывается только в момент перехода в done.
+    """
+    __tablename__ = 'figure_jobs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    problem = db.Column(db.Text, nullable=False)
+    solution = db.Column(db.Text, nullable=True)
+    status = db.Column(
+        db.String(20), nullable=False, default='queued', index=True,
+    )  # queued | thinking | drawing | done | failed
+    step_label = db.Column(db.String(80), nullable=True)
+    json_description = db.Column(db.Text, nullable=True)
+    svg_result = db.Column(db.Text, nullable=True)
+    error_message = db.Column(db.Text, nullable=True)
+    credit_spent = db.Column(db.Boolean, nullable=False, default=False)
+    model_used = db.Column(db.String(120), nullable=True)
+    cost_usd = db.Column(db.Float, nullable=False, default=0.0)
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False, index=True,
+    )
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False,
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('figure_jobs', lazy='dynamic'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<FigureJob id={self.id} user={self.user_id} '
+            f'status={self.status}>'
+        )

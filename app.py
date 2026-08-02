@@ -877,6 +877,101 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] pre_gen_queue table: {e}")
 
+# AUTO-MIGRATION D5: Create figure_jobs table for background figure generation queue
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_fj, text as _text_fj
+        _inspector_fj = _inspect_fj(db.engine)
+        if 'figure_jobs' not in _inspector_fj.get_table_names():
+            _is_pg_fj = _database_url.startswith('postgresql')
+            if _is_pg_fj:
+                db.session.execute(_text_fj("""
+                    CREATE TABLE IF NOT EXISTS figure_jobs (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        problem TEXT NOT NULL,
+                        solution TEXT,
+                        status VARCHAR(20) NOT NULL DEFAULT 'queued',
+                        step_label VARCHAR(80),
+                        json_description TEXT,
+                        svg_result TEXT,
+                        error_message TEXT,
+                        credit_spent BOOLEAN NOT NULL DEFAULT FALSE,
+                        model_used VARCHAR(120),
+                        cost_usd DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    )
+                """))
+                db.session.execute(_text_fj(
+                    "CREATE INDEX IF NOT EXISTS ix_figure_jobs_status ON figure_jobs(status)"
+                ))
+                db.session.execute(_text_fj(
+                    "CREATE INDEX IF NOT EXISTS ix_figure_jobs_user_id ON figure_jobs(user_id)"
+                ))
+            else:
+                db.session.execute(_text_fj("""
+                    CREATE TABLE IF NOT EXISTS figure_jobs (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        problem TEXT NOT NULL,
+                        solution TEXT,
+                        status VARCHAR(20) NOT NULL DEFAULT 'queued',
+                        step_label VARCHAR(80),
+                        json_description TEXT,
+                        svg_result TEXT,
+                        error_message TEXT,
+                        credit_spent BOOLEAN NOT NULL DEFAULT 0,
+                        model_used VARCHAR(120),
+                        cost_usd REAL NOT NULL DEFAULT 0.0,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                db.session.execute(_text_fj(
+                    "CREATE INDEX IF NOT EXISTS ix_figure_jobs_status ON figure_jobs(status)"
+                ))
+                db.session.execute(_text_fj(
+                    "CREATE INDEX IF NOT EXISTS ix_figure_jobs_user_id ON figure_jobs(user_id)"
+                ))
+            db.session.commit()
+            print("[AUTO-MIGRATION] ✓ Created figure_jobs table")
+        else:
+            print("[AUTO-MIGRATION] ✓ figure_jobs table already exists")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] figure_jobs Warning: {e}")
+
+# D5 STALE JOB RECOVERY: Mark jobs stuck for >10 min as failed, refund credits.
+try:
+    with app.app_context():
+        from datetime import datetime as _dt, timedelta as _td
+        from models import FigureJob as _FJ, User as _U
+        _cutoff = _dt.utcnow() - _td(minutes=10)
+        _stale = _FJ.query.filter(
+            _FJ.status.in_(['queued', 'thinking', 'drawing']),
+            _FJ.updated_at < _cutoff,
+        ).all()
+        for _job in _stale:
+            _old_status = _job.status
+            _job.status = 'failed'
+            _job.error_message = f"Stale job timed out (was {_old_status} for >10 min)"
+            _job.step_label = None
+            _job.updated_at = _dt.utcnow()
+            if _job.credit_spent:
+                try:
+                    _user = _U.query.get(_job.user_id)
+                    if _user:
+                        credits = getattr(_user, 'figure_credits', 0) or 0
+                        _user.figure_credits = credits + 1
+                        _job.credit_spent = False
+                except Exception:
+                    pass
+        if _stale:
+            db.session.commit()
+            print(f"[D5 RECOVERY] Marked {len(_stale)} stale figure_jobs as failed")
+except Exception as _e_rec:
+    print(f"[D5 RECOVERY] Warning: {_e_rec}")
+
 # AUTO-MIGRATION: Fix friendships table (old schema had user_1_id/user_2_id, new has requester_id/addressee_id)
 try:
     with app.app_context():
@@ -9906,10 +10001,10 @@ def admin_fix_theory_blocks():
 
 
 # ============================================================================
-# FIGURES VITRINE (admin only)
+# FIGURES VITRINE (admin only) — moved from /figures to /admin/figures
 # ============================================================================
 
-@app.route("/figures")
+@app.route("/admin/figures")
 @login_required
 def figures_vitrine():
     """Витрина чертежей якорных задач. Только для администраторов."""
@@ -9929,7 +10024,16 @@ def figures_vitrine():
     return render_template('figures.html', figures=figures, counts=counts)
 
 
-@app.route("/figures/rebuild/<anchor_uid>", methods=["POST"])
+@app.route("/admin/figures/tasks")
+@login_required
+def figures_tasks_vitrine():
+    """Таблица задач с чертежами. Только для администраторов."""
+    if not current_user.is_admin:
+        abort(403)
+    return render_template('figures_tasks.html')
+
+
+@app.route("/admin/figures/rebuild/<anchor_uid>", methods=["POST"])
 @login_required
 def figures_rebuild(anchor_uid):
     """Перерисовать чертёж с новым семенем."""
@@ -9942,7 +10046,7 @@ def figures_rebuild(anchor_uid):
     return jsonify(result)
 
 
-@app.route("/figures/accept/<anchor_uid>", methods=["POST"])
+@app.route("/admin/figures/accept/<anchor_uid>", methods=["POST"])
 @login_required
 def figures_accept(anchor_uid):
     """Пометить чертёж как проверенный."""
@@ -9953,7 +10057,7 @@ def figures_accept(anchor_uid):
     return jsonify(result)
 
 
-@app.route("/figures/reject/<anchor_uid>", methods=["POST"])
+@app.route("/admin/figures/reject/<anchor_uid>", methods=["POST"])
 @login_required
 def figures_reject(anchor_uid):
     """Пометить чертёж как отклонённый."""
@@ -9964,7 +10068,7 @@ def figures_reject(anchor_uid):
     return jsonify(result)
 
 
-@app.route("/figures/counts")
+@app.route("/admin/figures/counts")
 @login_required
 def figures_counts():
     """API: счётчики статусов."""

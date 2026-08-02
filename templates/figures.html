@@ -314,6 +314,8 @@
     const balanceValue = document.getElementById('balanceValue');
     const zeroBalance = document.getElementById('figureZeroBalance');
 
+    let pollTimer = null;
+
     // Character counters
     problemEl.addEventListener('input', function() {
         document.getElementById('problemCounter').textContent = this.value.length + ' / {{ max_problem_length }} символов';
@@ -360,6 +362,64 @@
         resultWrap.hidden = true;
     }
 
+    function clearPoll() {
+        if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
+    }
+
+    async function pollJobStatus(jobId) {
+        try {
+            const resp = await fetch('/api/figures/status/' + jobId);
+            const data = await resp.json();
+
+            if (!resp.ok) {
+                clearPoll();
+                showError(data.error || 'Ошибка при проверке статуса.');
+                generateBtn.disabled = false;
+                return;
+            }
+
+            // Update loader text with step label
+            if (data.step_label && !loader.hidden) {
+                loader.querySelector('.fig-note').textContent = data.step_label + '…';
+            }
+
+            if (data.status === 'done') {
+                clearPoll();
+                loader.hidden = true;
+                if (data.svg) {
+                    svgContainer.innerHTML = data.svg;
+                    resultWrap.hidden = false;
+                    const svgBlob = new Blob([data.svg], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(svgBlob);
+                    downloadBtn.onclick = function() {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'drawing.svg';
+                        a.click();
+                    };
+                    if (data.credits_remaining !== undefined) {
+                        updateBalance(data.credits_remaining);
+                        metaEl.textContent = 'Осталось чертежей: ' + data.credits_remaining;
+                    }
+                }
+                generateBtn.disabled = false;
+            } else if (data.status === 'failed') {
+                clearPoll();
+                showError(data.error || 'Построение не удалось.');
+                await fetchBalance();
+                generateBtn.disabled = false;
+            }
+            // else: still queued/thinking/drawing — keep polling
+        } catch(e) {
+            clearPoll();
+            showError('Ошибка соединения. Проверьте интернет и попробуйте снова.');
+            generateBtn.disabled = false;
+        }
+    }
+
     generateBtn.addEventListener('click', async function() {
         const problem = problemEl.value.trim();
         if (!problem) {
@@ -368,11 +428,13 @@
         }
 
         hideAll();
+        clearPoll();
         loader.hidden = false;
+        loader.querySelector('.fig-note').textContent = 'читаю условие…';
         generateBtn.disabled = true;
 
         try {
-            const resp = await fetch('/api/figures/generate', {
+            const resp = await fetch('/api/figures/build', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -384,46 +446,31 @@
             const data = await resp.json();
 
             if (!resp.ok) {
-                showError(data.error || 'Ошибка при генерации чертежа.');
+                showError(data.error || 'Ошибка при создании задания.');
                 await fetchBalance();
                 generateBtn.disabled = false;
-                loader.hidden = true;
                 return;
             }
 
-            // Success
-            if (data.svg) {
-                svgContainer.innerHTML = data.svg;
-                resultWrap.hidden = false;
-                loader.hidden = true;
+            // Start polling
+            const jobId = data.job_id;
+            pollTimer = setInterval(function() {
+                pollJobStatus(jobId);
+            }, 2000);
+            // Immediate first poll
+            pollJobStatus(jobId);
 
-                // Setup download
-                const svgBlob = new Blob([data.svg], { type: 'image/svg+xml' });
-                const url = URL.createObjectURL(svgBlob);
-                downloadBtn.onclick = function() {
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'drawing.svg';
-                    a.click();
-                };
-
-                if (data.credits_remaining !== undefined) {
-                    updateBalance(data.credits_remaining);
-                    metaEl.textContent = 'Осталось чертежей: ' + data.credits_remaining;
-                }
-            } else {
-                showError('Не удалось построить чертёж.');
-            }
         } catch(e) {
             showError('Ошибка соединения. Проверьте интернет и попробуйте снова.');
-        } finally {
             generateBtn.disabled = false;
-            loader.hidden = true;
         }
     });
 
     // Refresh balance on page focus
     window.addEventListener('focus', fetchBalance);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', clearPoll);
 })();
 </script>
 {% endblock %}

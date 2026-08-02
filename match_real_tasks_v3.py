@@ -11,7 +11,7 @@ FORMYLA — матчинг v3: точное извлечение из базы.
 Преимущество: условие и решение берутся из базы as-is, 
 DeepSeek только добавляет рассуждение.
 """
-import json, re, time, requests, sys, random
+import json, re, time, requests, sys, random, os
 import urllib3
 urllib3.disable_warnings()
 
@@ -185,10 +185,36 @@ def call_with_retry(url, payload, max_tokens, timeout, max_retries=100):
     return '', {}
 
 # ─── Main ───
-to_process = [m for m in methods if not METHOD_FILTER or m['method_code'] in METHOD_FILTER]
+# Load existing output to skip already-processed methods
+existing = {}
+if os.path.exists(OUTPUT):
+    with open(OUTPUT, 'r', encoding='utf-8') as f:
+        existing_data = json.load(f)
+        existing = {m['method_code']: m for m in existing_data}
+    print(f'Loaded {len(existing)} existing entries from {OUTPUT}', flush=True)
+
+to_process = []
+for m in methods:
+    if METHOD_FILTER and m['method_code'] not in METHOD_FILTER:
+        continue
+    # Skip if already has a real task (first task not training)
+    if m['method_code'] in existing:
+        we = existing[m['method_code']].get('worked_example_md','')
+        if 'тренировочная' not in we[:500]:
+            print(f'[{m["method_code"]}] already has real task, skip', flush=True)
+            continue
+    to_process.append(m)
+
 print(f'Processing {len(to_process)} methods', flush=True)
 
 stats = {'ok': 0, 'no_match': 0, 'failed': 0}
+
+# Use existing data as base
+methods_map = {m['method_code']: m for m in methods}
+for code, ex in existing.items():
+    if code in methods_map:
+        methods_map[code] = ex
+methods = [methods_map[m['method_code']] for m in methods]
 
 for m in to_process:
     code = m['method_code']

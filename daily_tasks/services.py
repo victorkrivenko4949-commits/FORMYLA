@@ -61,6 +61,28 @@ from . import task_bank as tb
 
 logger = logging.getLogger(__name__)
 
+
+def _get_item_figure_url(item) -> Optional[str]:
+    """Получить URL готового SVG-чертежа для элемента задачи дня.
+
+    Только отдача готового файла, ничего не рисуется в момент показа.
+    Если figure_json заполнен и figure_status == 'figure_built' — возвращает URL.
+    Иначе None.
+    """
+    figure = getattr(item, 'figure_json', None)
+    status = getattr(item, 'figure_status', None)
+    if not figure or status != 'figure_built':
+        return None
+    try:
+        from services.figure_cache import figure_hash, svg_exists
+        h = figure_hash(figure)
+        if svg_exists(h):
+            return f'/static/figures/cache/{h}.svg'
+    except Exception:
+        pass
+    return None
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Часовой пояс пользователя (МСК, UTC+3)
 # ──────────────────────────────────────────────────────────────────────
@@ -533,6 +555,7 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "is_correct": item.is_correct,
             "answered_at": item.answered_at.isoformat() if item.answered_at else None,
             "time_spent_seconds": item.time_spent_seconds,
+            "figure_url": _get_item_figure_url(item),
         })
 
     # ── отбираем лучших (число — из единого источника правды) ──

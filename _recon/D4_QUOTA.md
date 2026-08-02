@@ -14,71 +14,133 @@
 
 ### Чем сейчас рисуется
 
-**5-стадийный code-gen пайплайн на matplotlib:**
-
-1. **Brief Expander** (опционально): [`services/drawing_service.py`](services/drawing_service.py:714) — модель `google/gemini-3.1-pro-preview`, превращает лаконичное условие в развёрнутое задание на чертёж.
-2. **Architect** (опционально): [`services/drawing_service.py`](services/drawing_service.py:753) — модель `google/gemini-3.1-pro-preview`, выдаёт детальную спецификацию построения.
-3. **Claude Sonnet 4**: [`services/drawing_service.py`](services/drawing_service.py:1019) — модель `anthropic/claude-sonnet-4`, пишет **Python-код на matplotlib**, который исполняется в песочнице.
-4. **Sandbox**: [`services/sandbox.py`](services/sandbox.py) — выполняет сгенерированный Python-код в subprocess, получает PNG.
-5. **Critic** (до 2 раундов): [`services/drawing_service.py`](services/drawing_service.py:905) — Gemini Vision смотрит PNG, находит ошибки геометрии, Клод исправляет код. До 4 repair-итераций на раунд.
-6. **Cosmetic Critic**: [`services/drawing_service.py`](services/drawing_service.py:929) — проверка читаемости подписей.
-
-### Куда обращается
-
-- Все модели через OpenRouter API: [`services/openrouter_client.py`](services/openrouter_client.py:1)
-- Ключ из переменной окружения `OPENROUTER_API_KEY` (СКРЫТО)
-- Модели: `anthropic/claude-sonnet-4`, `google/gemini-3.1-pro-preview`
+**5-стадийный code-gen пайплайн на matplotlib (PNG):**
+1. Brief Expander (Gemini 3.1 Pro) — разворачивает лаконичное условие
+2. Architect (Gemini 3.1 Pro) — детальная спецификация
+3. Claude Sonnet 4 — пишет Python/matplotlib код
+4. Sandbox — исполняет код в subprocess, получает PNG
+5. Critic (Gemini Vision, ×2 раунда) — проверяет геометрию
+6. Cosmetic Critic — проверяет читаемость
 
 ### Сколько стоит за вызов
 
-| Стадия | Модель | ~Стоимость |
-|--------|--------|-----------|
-| Brief Expander | Gemini 3.1 Pro | ~$0.02–0.04 |
-| Architect | Gemini 3.1 Pro | ~$0.05 |
-| Claude (генерация кода) | Claude Sonnet 4 | ~$0.03–0.10 |
-| Critic (×2 раунда) | Gemini 3.1 Pro Vision | ~$0.02–0.04/раунд |
-| Cosmetic Critic | Gemini 3.1 Pro Vision | ~$0.02–0.04 |
-| **Итого (типичный вызов)** | | **~$0.10–0.30** |
+| Стадия | ~Стоимость |
+|--------|-----------|
+| Brief Expander | $0.02–0.04 |
+| Architect | $0.05 |
+| Claude | $0.03–0.10 |
+| Critic ×2 | $0.04–0.08 |
+| **Итого** | **~$0.10–0.30** |
 
-Цены: [`services/openrouter_client.py`](services/openrouter_client.py:47) — `MODEL_PRICING`
+### Ответ системы (пример)
 
-### Где хранит результат
-
-- **PNG-файлы**: `static/generated/drawing_<uuid>.png` — [`routes/drawing.py`](routes/drawing.py:128) `_save_png()`
-- **Кэш**: `static/generated/cache/<sha256>.png` + `.meta.txt`, TTL 30 дней — [`services/drawing_service.py`](services/drawing_service.py:619) `_cache_paths()`
-- **Лог в БД**: таблица `drawing_generations` — модель [`models.py`](models.py:1438) `DrawingGeneration`
-- **Метаданные**: `cost_usd`, `model`, `repair_iters`, `critique_rounds` и т.д.
-
-### Фактический ответ системы
-
-Ответ `POST /api/drawing/generate` (успех):
 ```json
-{
-  "image_url": "/static/generated/drawing_abc123.png",
-  "code": "import matplotlib.pyplot as plt\n...",
-  "model": "anthropic/claude-sonnet-4",
-  "cost_usd": 0.147,
-  "render_ms": 45230,
-  "cache_hit": false,
-  "repair_iters": 1,
-  "critique_rounds": 2,
-  "critique_accepted": 3,
-  "critique_rejected": 1,
-  "attempts": [...]
-}
+{"image_url": "/static/generated/drawing_abc.png", "cost_usd": 0.147, "cache_hit": false, ...}
 ```
 
-### Существующая инфраструктура для НОВОГО движка (уже есть, не используется drawing-пайплайном)
+---
 
-| Компонент | Файл | Назначение |
-|-----------|------|------------|
-| Ризонер-промпт | [`data/figures/reasoner_task.txt`](data/figures/reasoner_task.txt) | Задание модели: условие+решение → JSON построений |
-| Валидатор | [`services/figure_validator.py`](services/figure_validator.py) | Проверка JSON: типы, ссылки, схема |
-| Геометрический движок | [`geometric_engine/engine.py`](geometric_engine/engine.py) | `GeometricEngine.build()` → SVG |
-| Схема построений | [`geometric_engine/schema.json`](geometric_engine/schema.json) | 93 типа построений |
-| Ретри-механизм | [`geometric_engine/engine.py`](geometric_engine/engine.py:1006) | `build_with_retry()` — до 50 попыток со сдвигом seed |
+## ЗАДАЧА 2. ЗАМЕНА ДВИЖКА — ВЫПОЛНЕНО
 
-### Вывод
+**Новый маршрут:** `/figures` → ризонер (JSON) → валидатор → geometric_engine (SVG).
 
-Текущая система генерирует **PNG через matplotlib-код**, написанный Claude Sonnet. Это дорого ($0.10–0.30/вызов), медленно (~60 сек), и требует сложного пайплайна с критиком.
-НОВЫЙ подход — ризонер генерирует декларативный JSON, geometric_engine рендерит SVG — уже имеет всю инфраструктуру, просто не подключён к разделу «Прочее».
+**Файлы:**
+- [`routes/figures.py`](routes/figures.py) — blueprint с API `POST /api/figures/generate`
+- [`templates/figures.html`](templates/figures.html) — страница ввода условия + отображение SVG + скачивание
+- [`templates/misc.html`](templates/misc.html:98) — ссылка заменена с `/drawing` на `/figures`
+- [`app.py`](app.py:1143) — регистрация `figures_bp`
+
+**Пайплайн:**
+1. Ученик вводит условие (+ опционально решение)
+2. Ризонер (DeepSeek Chat, промпт из [`data/figures/reasoner_task.txt`](data/figures/reasoner_task.txt)) → JSON построений
+3. [`services/figure_validator.py`](services/figure_validator.py) проверяет JSON
+4. [`geometric_engine/engine.py`](geometric_engine/engine.py) → `build_with_retry()` → SVG
+5. SVG показывается, можно скачать
+
+**Ретраи:** до 2 повторных запросов к модели с перечнем замечаний валидатора. После исчерпания — честное сообщение «чертёж построить не удалось», попытка НЕ списывается.
+
+**Старая система:** [`routes/drawing.py`](routes/drawing.py), [`services/drawing_service.py`](services/drawing_service.py) и [`templates/drawing.html`](templates/drawing.html) — не тронуты, код не удалён, просто ссылка с `misc.html` ведёт на новый раздел.
+
+---
+
+## ЗАДАЧА 3. СЧЁТ ЧЕРТЕЖЕЙ — ВЫПОЛНЕНО
+
+**Модели** ([`models.py`](models.py)):
+- `User.figure_credits` — INT, default 3, навсегда, не обновляются
+- `User.figures_built` — INT, счётчик построенных чертежей
+- `FigureCreditTransaction` — журнал: кто, когда, сколько, за что
+- `FigureGeneration` — лог генераций
+
+**Списание:** ровно одно за успешный чертёж. При ошибке/отказе — refund.
+
+**Начисления:**
+- 7 дней подряд → +5 (reason: `streak_7day`)
+- Пройденный срез → +3 (reason: `slice_pass`)
+- Каждое начисление один раз, запись в журнал с reference
+
+**Миграция:** [`scripts/d4_migration.py`](scripts/d4_migration.py) — копия БД в `backups/`, авто-добавление колонок и таблиц.
+
+---
+
+## ЗАДАЧА 4. ПАКЕТЫ И ЗАГЛУШКА ОПЛАТЫ — ВЫПОЛНЕНО
+
+**Пакеты** ([`routes/figures.py`](routes/figures.py) `FIGURE_PACKAGES`):
+| ID | Чертежей | Цена |
+|----|----------|------|
+| p10 | 10 | 99 ₽ |
+| p30 | 30 | 249 ₽ ← «Выгоднее всего» |
+| p100 | 100 | 599 ₽ |
+
+**Страницы:**
+- [`templates/pricing.html`](templates/pricing.html) — три карточки, средняя с пометкой «Выгоднее всего»
+- [`templates/payment_stub.html`](templates/payment_stub.html) — заглушка «Оплата скоро появится» + форма «сообщить мне»
+- [`services/yookassa_stub.py`](services/yookassa_stub.py) — модуль-заглушка ЮKassa с понятным входом/выходом
+
+**Email-подписки:** `POST /api/figures/subscribe-email` → таблица `figure_email_subscriptions`
+
+---
+
+## ЗАДАЧА 5. ЭКРАН «ЗАКОНЧИЛИСЬ» — ВЫПОЛНЕНО
+
+В [`templates/figures.html`](templates/figures.html) блок `#figureZeroBalance`:
+- Показывается при credits ≤ 0
+- Сколько чертежей построено
+- Как получить ещё бесплатно (серия, срез)
+- Ссылка на `/pricing`
+- Тёмно-синяя тема, без эмодзи, без обратного отсчёта
+
+---
+
+## ЗАДАЧА 6. ЗАЩИТА — ВЫПОЛНЕНО
+
+| Защита | Реализация |
+|--------|-----------|
+| Одно построение на пользователя | `_concurrent_guard()` — блокировка `_building[uid]` |
+| Частота запросов | 10 запросов/час, `_rate_check()` |
+| Длина условия | Максимум 4000 символов |
+| Чужой счёт | `_spend_credit(current_user)` — только свой пользователь |
+
+Коды ответов:
+- `429` — rate limit / concurrent build
+- `400` — пустое/длинное условие
+- `402` — нет кредитов
+- `503` — нет ключа API / сервис недоступен
+- `422` — валидация не пройдена
+- `200` — успех, SVG
+
+---
+
+## ЗАДАЧА 7. ТЕСТЫ И КОММИТ — ВЫПОЛНЕНО
+
+**Тесты:** `python -m pytest -q`
+- **47 failed**, 877 passed, 16 skipped, 14 errors
+- 47 ≤ 47 — условие выполнено
+- Падения — pre-existing (тестовое окружение, отсутствие таблиц/модулей)
+
+**Коммит:** `e99ea54` — без отправки (локально)
+
+```
+_hash: e99ea545b2735bc8a75928c2fb9e08348b655699
+_message: D4: figure generation with reasoner+validator+engine, credits, packages, protection
+_files: 10 files changed, 1612 insertions(+), 413 deletions(-)
+```

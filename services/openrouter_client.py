@@ -28,7 +28,7 @@ DEFAULT_RPM = {
     "anthropic/claude-sonnet-4.5": 40,
     "anthropic/claude-opus-4.7": 15,
     "anthropic/claude-opus-4.1": 20,
-    "deepseek/deepseek-chat": 60,
+    "deepseek/deepseek-v4-flash": 60,
     "google/gemini-3.1-pro-preview": 30,
     "google/gemini-3.1-pro": 30,           # legacy alias (404s in current OpenRouter; kept for safety)
     "google/gemini-2.5-pro": 30,
@@ -49,7 +49,7 @@ MODEL_PRICING = {
     "anthropic/claude-sonnet-4.5": (3.0, 15.0),
     "anthropic/claude-opus-4.7": (15.0, 75.0),   # placeholder; mirror opus-4.1 until verified
     "anthropic/claude-opus-4.1": (15.0, 75.0),
-    "deepseek/deepseek-chat": (0.27, 1.10),
+    "deepseek/deepseek-v4-flash": (0.27, 1.10),
     "google/gemini-3.1-pro-preview": (1.25, 5.0),
     "google/gemini-3.1-pro": (1.25, 5.0),  # legacy alias, see DEFAULT_RPM note
     "google/gemini-2.5-pro": (1.25, 5.0),

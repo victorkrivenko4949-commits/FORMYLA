@@ -18,8 +18,10 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 from collections import defaultdict
+from datetime import datetime
 from threading import Lock
 
 from flask import (
@@ -47,7 +49,7 @@ logger = logging.getLogger(__name__)
 figures_bp = Blueprint("figures", __name__)
 
 # ── Config ──────────────────────────────────────────────────────────────
-REASONER_MODEL = os.environ.get("FIGURE_REASONER_MODEL", "deepseek/deepseek-chat").strip()
+REASONER_MODEL = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash").strip()
 MAX_RETRIES = 2                    # max retries on validation failure
 MAX_PROBLEM_LENGTH = 4000          # max characters in problem text
 MAX_SOLUTION_LENGTH = 8000         # max characters in solution text
@@ -319,13 +321,13 @@ def api_subscribe_email():
         return jsonify({"error": "Ошибка сохранения. Попробуйте позже."}), 500
 
 
-@figures_bp.route("/api/figures/generate", methods=["POST"])
+@figures_bp.route("/api/figures/build", methods=["POST"])
 @login_required
-def api_figures_generate():
-    """Generate a geometric figure from problem text.
+def api_figures_build():
+    """D5: Create a background figure generation job. Returns job_id immediately.
 
     Request JSON: {"problem": "...", "solution": "..."}
-    Response: {"svg": "<svg>...</svg>", "credits_remaining": N}
+    Response: {"job_id": 42, "status": "queued"}
     """
     # ── Rate limit check ──
     allowed, retry_after = _rate_check()
@@ -335,62 +337,151 @@ def api_figures_generate():
             "retry_after": retry_after,
         }), 429
 
-    # ── Concurrent guard ──
-    ok, msg = _concurrent_guard()
-    if not ok:
-        return jsonify({"error": msg}), 429
+    # ── Parse request ──
+    data = request.get_json(silent=True) or {}
+    problem = (data.get("problem") or "").strip()
+    solution = (data.get("solution") or "").strip()
 
+    if not problem:
+        return jsonify({"error": "Введите условие задачи."}), 400
+    if len(problem) > MAX_PROBLEM_LENGTH:
+        return jsonify({
+            "error": f"Условие слишком длинное (максимум {MAX_PROBLEM_LENGTH} символов)."
+        }), 400
+    if len(solution) > MAX_SOLUTION_LENGTH:
+        return jsonify({
+            "error": f"Решение слишком длинное (максимум {MAX_SOLUTION_LENGTH} символов)."
+        }), 400
+
+    # ── Check credits exist (but don't spend yet — spend only on done) ──
+    credits = _get_figure_credits(current_user)
+    if credits <= 0:
+        return jsonify({
+            "error": "У вас закончились чертежи.",
+            "credits": credits,
+        }), 402
+
+    # ── Check API key ──
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        return jsonify({
+            "error": "Ключ API не настроен. Генерация чертежей временно недоступна."
+        }), 503
+
+    # ── Create job record ──
     try:
-        # ── Parse request ──
-        data = request.get_json(silent=True) or {}
-        problem = (data.get("problem") or "").strip()
-        solution = (data.get("solution") or "").strip()
+        from models import db, FigureJob
+        from datetime import datetime as _dt
+        job = FigureJob(
+            user_id=current_user.id,
+            problem=problem,
+            solution=solution if solution else None,
+            status="queued",
+            step_label="читаю условие",
+        )
+        db.session.add(job)
+        db.session.commit()
+        job_id = job.id
+    except Exception as e:
+        logger.error("[figures] failed to create FigureJob: %s", e)
+        try:
+            from models import db
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({"error": "Не удалось создать задание. Попробуйте позже."}), 500
 
-        if not problem:
-            return jsonify({"error": "Введите условие задачи."}), 400
-        if len(problem) > MAX_PROBLEM_LENGTH:
-            return jsonify({
-                "error": f"Условие слишком длинное (максимум {MAX_PROBLEM_LENGTH} символов)."
-            }), 400
-        if len(solution) > MAX_SOLUTION_LENGTH:
-            return jsonify({
-                "error": f"Решение слишком длинное (максимум {MAX_SOLUTION_LENGTH} символов)."
-            }), 400
+    # ── Spawn background worker thread ──
+    thread = threading.Thread(
+        target=_run_figure_job,
+        args=(job_id,),
+        daemon=True,
+    )
+    thread.start()
+    logger.info("[figures] spawned build thread for job_id=%d", job_id)
 
-        # ── Check credits ──
-        ok, msg = _spend_credit(current_user)
-        if not ok:
-            return jsonify({
-                "error": msg,
-                "credits": _get_figure_credits(current_user)
-            }), 402
+    return jsonify({
+        "job_id": job_id,
+        "status": "queued",
+        "credits": credits,
+    })
 
-        credits_remaining = _get_figure_credits(current_user)
 
-        # ── Build user message ──
-        user_message = f"Условие задачи:\n{problem}"
-        if solution:
-            user_message += f"\n\nРешение:\n{solution}"
+@figures_bp.route("/api/figures/status/<int:job_id>", methods=["GET"])
+@login_required
+def api_figures_status(job_id):
+    """D5: Poll job status. Returns svg when done."""
+    try:
+        from models import FigureJob
+        job = FigureJob.query.filter_by(
+            id=job_id, user_id=current_user.id,
+        ).first()
+        if not job:
+            return jsonify({"error": "Задание не найдено."}), 404
 
-        # ── Check reasoner prompt ──
+        resp = {
+            "job_id": job.id,
+            "status": job.status,
+            "step_label": job.step_label,
+        }
+        if job.status == "done":
+            resp["svg"] = job.svg_result or ""
+            resp["credits_remaining"] = _get_figure_credits(current_user)
+            resp["figures_built"] = getattr(current_user, "figures_built", 0) or 0
+        elif job.status == "failed":
+            resp["error"] = job.error_message or "Построение не удалось."
+            resp["credits"] = _get_figure_credits(current_user)
+
+        return jsonify(resp)
+    except Exception as e:
+        logger.error("[figures] status error for job %d: %s", job_id, e)
+        return jsonify({"error": "Ошибка при проверке статуса."}), 500
+
+
+# ── Background worker ──────────────────────────────────────────────────
+
+def _run_figure_job(job_id: int):
+    """Run the full reasoner + engine pipeline in a background thread.
+
+    Updates FigureJob status: queued → thinking → drawing → done | failed.
+    Credit is spent only on transition to done.
+    """
+    from models import db, FigureJob, FigureGeneration, User
+    from flask import current_app as _app
+
+    # Use a fresh app context for the thread
+    app = _app._get_current_object()
+    with app.app_context():
+        job = FigureJob.query.get(job_id)
+        if not job or job.status != "queued":
+            return
+
+        user = None
+        try:
+            user = User.query.get(job.user_id)
+        except Exception:
+            pass
+
+        user_message = f"Условие задачи:\n{job.problem}"
+        if job.solution:
+            user_message += f"\n\nРешение:\n{job.solution}"
+
+        # ── Step 1: Thinking (reasoner) ──
+        job.status = "thinking"
+        job.step_label = "строю описание"
+        job.updated_at = datetime.utcnow()
+        db.session.commit()
+
         if not _REASONER_SYSTEM_PROMPT:
-            _refund_credit(current_user)
-            return jsonify({
-                "error": "Системный промпт ризонера не загружен. Обратитесь к администратору."
-            }), 500
+            job.status = "failed"
+            job.error_message = "Системный промпт ризонера не загружен."
+            job.step_label = None
+            job.updated_at = datetime.utcnow()
+            db.session.commit()
+            return
 
-        # ── Check API key ──
-        api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
-        if not api_key:
-            _refund_credit(current_user)
-            return jsonify({
-                "error": "Ключ API не настроен. Генерация чертежей временно недоступна."
-            }), 503
-
-        # ── Reasoner loop (up to 1 + MAX_RETRIES) ──
-        svg_result = None
-        last_errors = []
         final_json = None
+        last_errors = []
         last_resp = None
 
         for attempt in range(1 + MAX_RETRIES):
@@ -420,18 +511,22 @@ def api_figures_generate():
                 logger.error("[figures] reasoner API error (attempt %d): %s", attempt, e)
                 if attempt < MAX_RETRIES:
                     continue
-                _refund_credit(current_user)
-                return jsonify({
-                    "error": "Сервис генерации временно недоступен. Попробуйте позже."
-                }), 503
+                job.status = "failed"
+                job.error_message = "Сервис генерации временно недоступен."
+                job.step_label = None
+                job.updated_at = datetime.utcnow()
+                db.session.commit()
+                return
             except Exception as e:
                 logger.error("[figures] unexpected reasoner error (attempt %d): %s", attempt, e)
                 if attempt < MAX_RETRIES:
                     continue
-                _refund_credit(current_user)
-                return jsonify({
-                    "error": "Ошибка при обращении к сервису генерации."
-                }), 503
+                job.status = "failed"
+                job.error_message = "Ошибка при обращении к сервису генерации."
+                job.step_label = None
+                job.updated_at = datetime.utcnow()
+                db.session.commit()
+                return
 
             content = (last_resp.get("content") or "").strip()
             json_str = _extract_json(content)
@@ -440,15 +535,13 @@ def api_figures_generate():
                 last_errors = ["Ответ модели не содержит JSON-объекта."]
                 if attempt < MAX_RETRIES:
                     continue
-                _refund_credit(current_user)
-                return jsonify({
-                    "error": (
-                        "Не удалось получить описание чертежа от модели. "
-                        "Попробуйте переформулировать условие."
-                    )
-                }), 422
+                job.status = "failed"
+                job.error_message = "Не удалось получить описание чертежа от модели."
+                job.step_label = None
+                job.updated_at = datetime.utcnow()
+                db.session.commit()
+                return
 
-            # ── Validate ──
             validation = validate_figure_json(json_str)
             if validation.get("valid"):
                 final_json = json_str
@@ -457,20 +550,26 @@ def api_figures_generate():
                 last_errors = validation.get("errors", ["Неизвестная ошибка валидации"])
                 if attempt < MAX_RETRIES:
                     continue
-                _refund_credit(current_user)
-                return jsonify({
-                    "error": (
-                        "Чертёж построить не удалось. "
-                        "Модель не смогла создать корректное описание после нескольких попыток. "
-                        "Попробуйте упростить условие или переформулировать его."
-                    ),
-                    "validation_errors": last_errors[:5],
-                }), 422
+                job.status = "failed"
+                job.error_message = "Модель не смогла создать корректное описание."
+                job.step_label = None
+                job.updated_at = datetime.utcnow()
+                db.session.commit()
+                return
 
-        # ── Build SVG ──
         if final_json is None:
-            _refund_credit(current_user)
-            return jsonify({"error": "Не удалось построить чертёж."}), 500
+            job.status = "failed"
+            job.error_message = "Не удалось построить описание чертежа."
+            job.step_label = None
+            job.updated_at = datetime.utcnow()
+            db.session.commit()
+            return
+
+        # ── Step 2: Drawing (SVG engine) ──
+        job.status = "drawing"
+        job.step_label = "рисую"
+        job.updated_at = datetime.utcnow()
+        db.session.commit()
 
         try:
             from geometric_engine.engine import GeometricEngine
@@ -479,49 +578,99 @@ def api_figures_generate():
             svg, ctx, attempts_used, violations = engine.build_with_retry(figure_data)
 
             if not svg and violations:
-                _refund_credit(current_user)
-                return jsonify({
-                    "error": (
-                        "Чертёж построить не удалось — геометрические ограничения не выполнены. "
-                        "Попробуйте переформулировать условие."
-                    ),
-                    "violations": violations[:5],
-                }), 422
+                job.status = "failed"
+                job.error_message = "Геометрические ограничения не выполнены."
+                job.step_label = None
+                job.updated_at = datetime.utcnow()
+                db.session.commit()
+                return
 
             if not svg:
-                _refund_credit(current_user)
-                return jsonify({"error": "Не удалось построить SVG. Попробуйте позже."}), 500
+                job.status = "failed"
+                job.error_message = "Не удалось построить SVG."
+                job.step_label = None
+                job.updated_at = datetime.utcnow()
+                db.session.commit()
+                return
 
-            # ── Success: log to DB ──
+            # ── Step 3: Done — spend credit ──
+            if not job.credit_spent:
+                ok, msg = _spend_credit_in_job(job_id)
+                if ok:
+                    job.credit_spent = True
+
+            job.status = "done"
+            job.svg_result = svg
+            job.json_description = final_json
+            job.model_used = REASONER_MODEL
+            job.cost_usd = float(last_resp.get("cost_usd", 0.0)) if last_resp else 0.0
+            job.step_label = None
+            job.updated_at = datetime.utcnow()
+            db.session.commit()
+
+            # Log to FigureGeneration
             _log_figure_generation(
-                problem=problem,
-                solution=solution,
+                problem=job.problem,
+                solution=job.solution or "",
                 status="success",
                 json_description=final_json,
                 model=REASONER_MODEL,
-                cost_usd=float(last_resp.get("cost_usd", 0.0)) if last_resp else 0.0,
+                cost_usd=job.cost_usd,
             )
 
-            return jsonify({
-                "svg": svg,
-                "credits_remaining": credits_remaining,
-                "figures_built": getattr(current_user, "figures_built", 0) or 0,
-            })
-
         except json.JSONDecodeError as e:
-            _refund_credit(current_user)
-            return jsonify({"error": f"Ошибка разбора JSON описания: {e}"}), 422
-        except ImportError as e:
-            _refund_credit(current_user)
-            logger.error("[figures] geometric_engine import failed: %s", e)
-            return jsonify({"error": "Движок построения чертежей недоступен."}), 500
+            job.status = "failed"
+            job.error_message = f"Ошибка разбора JSON: {e}"
+            job.step_label = None
+            job.updated_at = datetime.utcnow()
+            db.session.commit()
+        except ImportError:
+            job.status = "failed"
+            job.error_message = "Движок построения недоступен."
+            job.step_label = None
+            job.updated_at = datetime.utcnow()
+            db.session.commit()
         except Exception as e:
-            _refund_credit(current_user)
-            logger.error("[figures] build error: %s", e)
-            return jsonify({"error": "Ошибка при построении чертежа."}), 500
+            logger.error("[figures] build error in job %d: %s", job_id, e)
+            job.status = "failed"
+            job.error_message = "Ошибка при построении чертежа."
+            job.step_label = None
+            job.updated_at = datetime.utcnow()
+            db.session.commit()
 
-    finally:
-        _release_concurrent_guard()
+
+def _spend_credit_in_job(job_id: int) -> tuple[bool, str]:
+    """Spend 1 credit for a background job. Returns (success, message)."""
+    try:
+        from models import db, FigureJob, FigureCreditTransaction, User
+        job = FigureJob.query.get(job_id)
+        if not job:
+            return False, "Job not found"
+        user = User.query.get(job.user_id)
+        if not user:
+            return False, "User not found"
+        credits = _get_figure_credits(user)
+        if credits <= 0:
+            return False, "No credits"
+        user.figure_credits = credits - 1
+        user.figures_built = (getattr(user, "figures_built", 0) or 0) + 1
+        txn = FigureCreditTransaction(
+            user_id=user.id,
+            amount=-1,
+            reason="spend_bg",
+            reference=f"job:{job_id}",
+        )
+        db.session.add(txn)
+        db.session.commit()
+        return True, ""
+    except Exception as e:
+        logger.error("[figures] _spend_credit_in_job failed for %d: %s", job_id, e)
+        try:
+            from models import db
+            db.session.rollback()
+        except Exception:
+            pass
+        return False, str(e)
 
 
 # ── Logging helpers ─────────────────────────────────────────────────────

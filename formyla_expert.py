@@ -1,31 +1,20 @@
 #!/usr/bin/env python3
-"""
-FORMYLA L4-L5: РИЗОНЕР (исправленный)
-======================================
-max_tokens=32000 (место для ответа после рассуждений)
-Отладка: печатает что получил если не парсится
-"""
+"""FORMYLA L4-L5: ЭКСПЕРТ (adaptive), 2 попытки, 32000 токенов."""
 import json, time, re, os, requests
-from collections import Counter
 
 API_KEY = "sk-ad477f779a1045cba3cc09100e908370"
 API_URL = "https://api.deepseek.com/chat/completions"
 MODEL = "deepseek-v4-pro"
 INPUT_FILE = "FORMYLA_L1_L5_TOP5.jsonl"
 FIXES_FILE = "L4L5_REASONER_FIXES.jsonl"
-MAX_RETRIES = 3
+MAX_RETRIES = 2
 
 session = requests.Session()
-session.headers.update({
-    "Authorization": f"Bearer {API_KEY}",
-    "Content-Type": "application/json",
-})
+session.headers.update({"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"})
 
 def api_call(messages, max_tokens=32000, timeout=300):
-    payload = {
-        "model": MODEL, "messages": messages, "max_tokens": max_tokens,
-        "temperature": 0.1, "thinking": {"type": "enabled"},
-    }
+    payload = {"model": MODEL, "messages": messages, "max_tokens": max_tokens,
+        "temperature": 0.1, "thinking": {"type": "adaptive"}}
     for attempt in range(MAX_RETRIES):
         try:
             r = session.post(API_URL, json=payload, timeout=timeout)
@@ -35,7 +24,7 @@ def api_call(messages, max_tokens=32000, timeout=300):
                 content = msg.get("content", "")
                 finish = d["choices"][0].get("finish_reason", "")
                 if finish == "length" and not content:
-                    print(f"    (обрезано на рассуждениях, не хватило токенов)")
+                    print(f"    (обрезано, не хватило токенов)")
                     return None
                 return content
             err = str(d.get("error", {}).get("message", ""))
@@ -44,8 +33,7 @@ def api_call(messages, max_tokens=32000, timeout=300):
                 continue
             print(f"  API error: {err[:60]}")
         except Exception as e:
-            s = str(e)
-            print(f"  Ошибка (попытка {attempt+1}): {s[:80]}")
+            print(f"  Ошибка (попытка {attempt+1}/{MAX_RETRIES}): {str(e)[:60]}")
             time.sleep(3)
     return None
 
@@ -55,21 +43,13 @@ def parse_json(text):
     if text.startswith("```"):
         text = re.sub(r'^```(json)?\s*', '', text)
         text = re.sub(r'\s*```$', '', text)
-    # Ищем последний JSON в тексте (ризонер может написать несколько)
     s = text.rfind('{')
     e = text.rfind('}')
     if s >= 0 and e > s:
-        # Берём от последней { к последней }
-        # Но JSON может быть вложенный — попробуем с конца
         while s >= 0:
-            try:
-                return json.loads(text[s:e+1])
-            except:
-                # Пробуем предыдущую {
-                s = text.rfind('{', 0, s)
-        # Если не получилось — пробуем первую {
-        s = text.find('{')
-        e = text.rfind('}')
+            try: return json.loads(text[s:e+1])
+            except: s = text.rfind('{', 0, s)
+        s = text.find('{'); e = text.rfind('}')
         if s >= 0 and e > s:
             try: return json.loads(text[s:e+1])
             except: pass
@@ -97,14 +77,15 @@ def load_fixes():
 
 def save_fix(uid, answer, solution):
     with open(FIXES_FILE, 'a', encoding='utf-8') as f:
-        f.write(json.dumps({'task_uid': uid, 'answer': answer, 'solution': solution},
-            ensure_ascii=False) + '\n')
+        f.write(json.dumps({'task_uid': uid, 'answer': answer, 'solution': solution}, ensure_ascii=False) + '\n')
 
-FIX_SYS = 'Реши задачу. Ответ ВЕРНЫЙ. После всех рассуждений ОБЯЗАТЕЛЬНО заверши коротким JSON (решение до 100 слов): {"answer":"...","solution":"..."}\n\nВАЖНО: не пиши очень длинные рассуждения, будь краток. Обязательно закончи JSONом в конце.'
+FIX_SYS = ('Реши задачу. Ответ ВЕРНЫЙ. После рассуждений ОБЯЗАТЕЛЬНО заверши коротким JSON '
+           '(решение до 100 слов): {"answer":"...","solution":"..."}\n\n'
+           'ВАЖНО: не пиши очень длинные рассуждения, будь краток. Обязательно закончи JSONом в конце.')
 
 def main():
     print('=' * 60)
-    print('FORMYLA L4-L5: РИЗОНЕР (max_tokens=32000, отладка)')
+    print('FORMYLA L4-L5: ЭКСПЕРТ (adaptive), 2 попытки, 32000 токенов')
     print('=' * 60)
 
     tasks = load_tasks()
@@ -125,7 +106,7 @@ def main():
     to_fix = [uid for uid in prev_wrong if uid in tasks_by_uid and uid not in already]
 
     print(f'Задач для фикса: {len(to_fix)}')
-    print(f'max_tokens=32000, thinking=enabled, 1 поток')
+    print(f'Уже исправлено: {len(already)}')
     print()
 
     fixed = 0
@@ -134,37 +115,31 @@ def main():
         stmt = (t.get("statement","") or "")[:800]
         user = (f'Класс: {t["grade"]}\nУровень: L{t["level"]}\nТема: {t.get("theme","")}\n\n'
                 f'Задача:\n{stmt}\n\nРеши. Выдай JSON с answer и solution.')
-
         t0 = time.time()
         resp = api_call([{"role":"system","content":FIX_SYS},{"role":"user","content":user}],
                         max_tokens=32000, timeout=300)
         elapsed = time.time() - t0
-
         if not resp:
             print(f'  [{i+1}/{len(to_fix)}] FAIL — пустой ответ ({elapsed:.0f}с)')
+            time.sleep(1)
             continue
-
         result = parse_json(resp)
-
         if result and result.get('answer') and result.get('solution'):
             save_fix(uid, result['answer'], result['solution'])
             tasks_by_uid[uid]['answer'] = result['answer']
             tasks_by_uid[uid]['solution'] = result['solution']
-            tasks_by_uid[uid]['fixed_reasoner'] = True
+            tasks_by_uid[uid]['fixed_expert'] = True
             fixed += 1
             print(f'  [{i+1}/{len(to_fix)}] OK ({elapsed:.0f}с) — {result["answer"][:50]}')
         else:
-            # Отладка — покажи что получили
-            print(f'  [{i+1}/{len(to_fix)}] PARSE FAIL ({elapsed:.0f}с)')
-            print(f'    Ответ ({len(resp)} симв): {resp[:200]}')
-            print()
-
-        if fixed % 10 == 0 and fixed > 0:
+            print(f'  [{i+1}/{len(to_fix)}] PARSE FAIL ({elapsed:.0f}с, {len(resp)} симв)')
+        if fixed % 5 == 0 and fixed > 0:
             save_tasks(list(tasks_by_uid.values()))
         time.sleep(1)
 
     save_tasks(list(tasks_by_uid.values()))
     print(f'\nИтого: исправлено {fixed}/{len(to_fix)}')
+    print('Если остались PARSE FAIL/пустые — запусти скрипт ещё раз.')
 
 if __name__ == '__main__':
     main()
