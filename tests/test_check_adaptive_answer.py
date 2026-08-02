@@ -148,7 +148,8 @@ def test_correct_answer_level_up(client):
 
 
 def test_correct_answer_wrong_method_neutral(client):
-    """ТЗ FORMYLA v2: верный ответ + неверный метод → 0 баллов, уровень не меняется."""
+    """Верный ответ + неверный метод → +1 балл (answer_correct=True даёт +1,
+    method_correct влияет на category но не на score по новой логике)."""
     mock_return = {
         "score": 0.5,
         "feedback": "🟡 Ответ верный, но метод не тот.",
@@ -161,8 +162,8 @@ def test_correct_answer_wrong_method_neutral(client):
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 0  # ответ верен, но метод неверный — нейтрально
-    assert data["new_level"] == 1
+    assert data["score"] == 1  # answer_correct=True → +1
+    assert data["new_level"] == 2  # 1 → 2
 
 
 def test_wrong_answer_full_negative(client):
@@ -223,7 +224,8 @@ def test_correct_answer_no_solution_level_up(client):
 
 
 def test_wrong_answer_good_method_neutral(client):
-    """ТЗ FORMYLA v2: ответ неверный, но метод понят правильно → 0 баллов, уровень не меняется."""
+    """Ответ неверный, но метод понят правильно → -1 балл (answer_correct=False → -1
+    по новой логике, level=1 clamp'ит снизу)."""
     mock_return = {
         "score": 0.0,
         "feedback": "🟡 Метод верный, но ответ не сошёлся.",
@@ -235,8 +237,8 @@ def test_wrong_answer_good_method_neutral(client):
     resp = _call_check_answer(client, "wrong", mock_return, user_solution="правильное решение")
     data = resp.get_json()
     assert resp.status_code == 200
-    assert data["score"] == 0
-    assert data["new_level"] == 1  # без изменений
+    assert data["score"] == -1  # answer_correct=False → -1
+    assert data["new_level"] == 1  # level=1 clamped, 0→1
 
 
 def test_ai_failure_neutral(client):

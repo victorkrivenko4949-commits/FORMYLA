@@ -203,7 +203,7 @@ with app.app_context():
     p(f"_pick_tasks_fallback(9): {len(ftasks)} tasks, leaked={leaked_f}")
 
     # Morning probe
-    from services.theme_probe import _next_task_in_probe
+    from services.theme_probe import _select_and_advance
     from models_curator import CuratorState
 
     cs = CuratorState(user_id=99991)
@@ -216,7 +216,7 @@ with app.app_context():
     }
     probe_leaks = 0
     for _ in range(5):
-        result = _next_task_in_probe(cs, probe_state, 9)
+        result = _select_and_advance(cs, probe_state, 9)
         if 'task' in result:
             tid = result['task']['id']
             if tid in anchor_id_set:

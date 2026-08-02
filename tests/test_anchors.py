@@ -461,7 +461,7 @@ class TestAnchorExclusion:
 
     def test_theme_probe_excludes_anchors(self, app_for_exclusion):
         """Утренний срез (theme_probe) не содержит formyla_anchors."""
-        from services.theme_probe import _next_task_in_probe
+        from services.theme_probe import _select_and_advance
         from models import AdaptiveTask
         from models_curator import CuratorState
         from models import db as _db
@@ -491,7 +491,7 @@ class TestAnchorExclusion:
             print(f"\nAnchor IDs: {anchor_ids}")
 
             for i in range(5):
-                result = _next_task_in_probe(cs, probe, 9)
+                result = _select_and_advance(cs, probe, 9)
                 if 'task' in result:
                     task_id = result['task']['id']
                     print(f"  probe task {i+1}: id={task_id} "

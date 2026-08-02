@@ -8,238 +8,149 @@
 .coach-grid { display: grid; grid-template-columns: 0.85fr 1fr; gap: 20px; align-items: start; }
 @media (max-width: 860px) { .coach-grid { grid-template-columns: 1fr; } }
 .coach-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 18px; }
+
+/* ── Section radars grid ── */
+.section-radars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.section-radar-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 14px;
+}
+.section-radar-card h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+.section-radar-card .radar-subtitle {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 8px;
+}
+.section-radar-card .radar-chart {
+  display: flex;
+  justify-content: center;
+}
+.section-radar-card .radar-chart canvas {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+}
+.section-radar-card .radar-legend {
+  margin-top: 8px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  max-height: 120px;
+  overflow-y: auto;
+}
+.section-radar-card .radar-legend-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 4px;
+}
+.section-radar-card .radar-legend-item .legend-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.section-radar-card .radar-legend-item .legend-pct {
+  min-width: 36px;
+  text-align: right;
+  font-weight: 600;
+}
+.section-radar-card .radar-legend-item.no-data .legend-pct {
+  color: rgba(255,255,255,0.25);
+}
+
 .coach-card h2 { margin: 0 0 14px; font-size: 16px; color: #e5e7eb; }
-.radar-chart { display: flex; justify-content: center; }
-.radar-chart canvas { width: 100%; max-width: 300px; height: auto; }
 .chat-box { display: flex; flex-direction: column; height: 420px; }
 .chat-log { flex: 1; overflow-y: auto; border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
 .chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
 .chat-msg.user { background: #6366f1; color: #fff; margin-left: auto; }
 .chat-msg.bot { background: rgba(255,255,255,0.08); color: #e5e7eb; }
-/* Prevent KaTeX from breaking characters inside chat bubbles */
 .chat-msg .katex { white-space: nowrap; overflow-x: auto; max-width: 100%; display: inline-block; vertical-align: middle; }
 .chat-input-row { display: flex; gap: 8px; }
 .chat-input-row input { flex: 1; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 14px; background: rgba(0,0,0,0.25); color: #fff; }
 .chat-input-row button { padding: 10px 18px; border: 0; border-radius: 10px; background: #6366f1; color: #fff; font-weight: 600; cursor: pointer; }
 
-/* ---- Клавиатура ввода (единая, как в адаптивном тесте) ---- */
+/* FAQ quick buttons */
+.faq-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.faq-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 8px;
+  background: rgba(139,92,246,0.08);
+  color: #c4b5fd;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.faq-btn:hover {
+  background: rgba(139,92,246,0.18);
+  border-color: rgba(139,92,246,0.5);
+}
+.faq-btn-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+
+/* ---- Клавиатура ввода ---- */
 .unified-kb-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    margin-top: 4px;
-    user-select: none;
-    -webkit-user-select: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff; border: none; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s; margin-top: 4px;
+    user-select: none; -webkit-user-select: none;
 }
 .unified-kb-toggle:hover { opacity: 0.9; }
 .unified-kb-toggle:active { transform: scale(0.96); }
-.unified-kb-toggle.active {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
+.unified-kb-toggle.active { background: linear-gradient(135deg, #ef4444, #dc2626); }
 .unified-keyboard {
-    display: none;
-    margin-top: 16px;
-    margin-bottom: 10px;
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid var(--border-mid);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-    position: relative;
-    z-index: 100;
+    display: none; margin-top: 16px; margin-bottom: 10px;
+    background: rgba(15, 23, 42, 0.95); border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm); overflow: hidden;
+    user-select: none; -webkit-user-select: none; position: relative; z-index: 100;
 }
 .unified-keyboard.open { display: block; }
-.kb-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 99;
-}
-.kb-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 14px;
-    background: rgba(30, 41, 59, 0.8);
-    border-bottom: 1px solid var(--border-mid);
-}
-.kb-field-indicator {
-    font-size: 12px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.kb-field-indicator .dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent-1);
-    animation: pulse-dot 1.5s infinite;
-}
-@keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-.kb-close-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-}
+.kb-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+.kb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid var(--border-mid); }
+.kb-field-indicator { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.kb-field-indicator .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-1); animation: pulse-dot 1.5s infinite; }
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.kb-close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
 .kb-close-btn:hover { color: #fff; }
-.kb-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-mid);
-}
-.kb-tab {
-    flex: 1;
-    padding: 10px 8px;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    position: relative;
-}
+.kb-tabs { display: flex; border-bottom: 1px solid var(--border-mid); }
+.kb-tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-muted); background: transparent; border: none; cursor: pointer; transition: background 0.2s, color 0.2s; position: relative; }
 .kb-tab:hover { color: var(--text-main); background: rgba(59,130,246,0.08); }
-.kb-tab.active {
-    color: var(--accent-1);
-    background: rgba(59,130,246,0.12);
-}
-.kb-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 20%;
-    right: 20%;
-    height: 2px;
-    background: var(--accent-1);
-    border-radius: 1px;
-}
-.kb-layout {
-    display: none;
-    padding: 10px 8px;
-}
+.kb-tab.active { color: var(--accent-1); background: rgba(59,130,246,0.12); }
+.kb-tab.active::after { content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 2px; background: var(--accent-1); border-radius: 1px; }
+.kb-layout { display: none; padding: 10px 8px; }
 .kb-layout.active { display: block; }
-.kb-row {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    margin-bottom: 6px;
-}
+.kb-row { display: flex; gap: 5px; justify-content: center; margin-bottom: 6px; }
 .kb-row:last-child { margin-bottom: 0; }
-.kb-key {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 42px;
-    padding: 0 8px;
-    background: rgba(30, 41, 59, 0.85);
-    border: 1px solid rgba(100, 116, 139, 0.25);
-    border-radius: 6px;
-    color: #e2e8f0;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.12s, transform 0.08s, border-color 0.12s;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    flex-shrink: 0;
-}
-.kb-key:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: rgba(59, 130, 246, 0.4);
-}
-.kb-key:active {
-    transform: scale(0.92);
-    background: rgba(59, 130, 246, 0.3);
-}
-.kb-key.math-symbol {
-    font-size: 18px;
-    min-width: 42px;
-}
-.kb-key.math-greek {
-    font-size: 17px;
-    min-width: 40px;
-    font-style: italic;
-}
-.kb-key.math-command {
-    font-size: 12px;
-    font-weight: 600;
-    min-width: 52px;
-    padding: 0 10px;
-    background: rgba(139, 92, 246, 0.15);
-    border-color: rgba(139, 92, 246, 0.2);
-}
-.kb-key.math-command:hover {
-    background: rgba(139, 92, 246, 0.3);
-    border-color: rgba(139, 92, 246, 0.4);
-}
+.kb-key { display: flex; align-items: center; justify-content: center; min-width: 36px; height: 42px; padding: 0 8px; background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(100, 116, 139, 0.25); border-radius: 6px; color: #e2e8f0; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.12s, transform 0.08s, border-color 0.12s; user-select: none; -webkit-user-select: none; touch-action: manipulation; flex-shrink: 0; }
+.kb-key:hover { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); }
+.kb-key:active { transform: scale(0.92); background: rgba(59, 130, 246, 0.3); }
+.kb-key.math-symbol { font-size: 18px; min-width: 42px; }
+.kb-key.math-greek { font-size: 17px; min-width: 40px; font-style: italic; }
+.kb-key.math-command { font-size: 12px; font-weight: 600; min-width: 52px; padding: 0 10px; background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.2); }
+.kb-key.math-command:hover { background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.4); }
 .kb-key.wide { min-width: 60px; }
-.kb-key.space {
-    min-width: 140px;
-    font-size: 12px;
-    color: var(--text-muted);
-}
-.kb-key.action {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.2);
-    min-width: 50px;
-    font-size: 13px;
-}
-.kb-key.action:hover {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: rgba(239, 68, 68, 0.4);
-}
-.kb-key.enter {
-    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-    border-color: transparent;
-    color: #fff;
-    font-weight: 700;
-    min-width: 60px;
-}
+.kb-key.space { min-width: 140px; font-size: 12px; color: var(--text-muted); }
+.kb-key.action { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.2); min-width: 50px; font-size: 13px; }
+.kb-key.action:hover { background: rgba(239, 68, 68, 0.3); border-color: rgba(239, 68, 68, 0.4); }
+.kb-key.enter { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); border-color: transparent; color: #fff; font-weight: 700; min-width: 60px; }
 .kb-key.enter:hover { opacity: 0.9; }
 @media (max-width: 640px) {
-    .unified-keyboard {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: 0;
-        border-radius: 12px 12px 0 0;
-        max-height: 55vh;
-        overflow-y: auto;
-        z-index: 200;
-        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
-    }
-    .unified-keyboard.open + .kb-backdrop,
-    .unified-keyboard.open ~ .kb-backdrop { display: block; }
-    .kb-key {
-        height: 38px;
-        min-width: 32px;
-        font-size: 14px;
-    }
+    .unified-keyboard { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; border-radius: 12px 12px 0 0; max-height: 55vh; overflow-y: auto; z-index: 200; box-shadow: 0 -8px 32px rgba(0,0,0,0.5); }
+    .unified-keyboard.open + .kb-backdrop, .unified-keyboard.open ~ .kb-backdrop { display: block; }
+    .kb-key { height: 38px; min-width: 32px; font-size: 14px; }
     .kb-key.math-symbol { font-size: 16px; min-width: 36px; }
     .kb-key.math-greek { font-size: 15px; min-width: 36px; }
     .kb-key.math-command { font-size: 11px; min-width: 44px; }
@@ -251,31 +162,12 @@
     .kb-tab { font-size: 12px; padding: 8px 4px; }
 }
 @media (min-width: 641px) and (max-width: 1024px) {
-    .unified-keyboard {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: 0;
-        border-radius: 12px 12px 0 0;
-        max-height: 50vh;
-        overflow-y: auto;
-        z-index: 200;
-        box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
-    }
+    .unified-keyboard { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; border-radius: 12px 12px 0 0; max-height: 50vh; overflow-y: auto; z-index: 200; box-shadow: 0 -8px 32px rgba(0,0,0,0.5); }
     .unified-keyboard.open + .kb-backdrop { display: block; }
-    .kb-key {
-        height: 44px;
-        min-width: 40px;
-        font-size: 16px;
-    }
+    .kb-key { height: 44px; min-width: 40px; font-size: 16px; }
     .kb-key.space { min-width: 180px; }
 }
-body.kb-open {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-}
+body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 </style>
 {% endblock %}
 
@@ -292,7 +184,7 @@ body.kb-open {
   {% endif %}
 </p>
 
-<!-- ═══ MAIN ACTION BLOCK: curator-chosen single action ═══ -->
+<!-- ═══ MAIN ACTION BLOCK ═══ -->
 <div id="mainActionBlock" style="display:none; background: linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.20)); border: 1px solid rgba(139,92,246,0.5); border-radius: 16px; padding: 20px 24px; margin-bottom: 20px; text-align: center;">
   <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">🎯 Куратор говорит</div>
   <div id="mainActionTitle" style="font-size:20px; font-weight:700; color:#fff; margin-bottom:10px;"></div>
@@ -300,7 +192,7 @@ body.kb-open {
   <a id="mainActionCta" href="#" class="quick-action-btn" style="display:inline-block; padding:12px 28px; font-size:15px; text-decoration:none;">Действие</a>
 </div>
 
-<!-- ═══ CYCLE BLOCK (Screen 3): Месячный цикл ═══ -->
+<!-- ═══ CYCLE BLOCK ═══ -->
 {% if cycle_info and cycle_info.active and onboarding_done %}
 <div id="cycleBlock" class="coach-card" style="margin-bottom:20px;">
   <h2>🔄 Цикл месяца</h2>
@@ -324,7 +216,7 @@ body.kb-open {
 </div>
 {% endif %}
 
-<!-- ═══ ONBOARDING GATE: if not done, show only onboarding CTA ═══ -->
+<!-- ═══ ONBOARDING GATE ═══ -->
 {% if not onboarding_done %}
 <div style="text-align:center; margin: 40px 0;">
   <p style="color:rgba(255,255,255,0.7); font-size:16px; margin-bottom:20px;">
@@ -336,7 +228,7 @@ body.kb-open {
 </div>
 {% endif %}
 
-<!-- ═══ CURATOR FACTS CARD (P10 V2): primary content, DB only, no external API ═══ -->
+<!-- ═══ CURATOR FACTS CARD ═══ -->
 {% if curator_card and onboarding_done %}
 <div class="coach-card" id="curatorFactsCard" style="margin-bottom:20px; border-color: rgba(99,102,241,0.4);">
   <h2 style="color:#a5b4fc;">📊 Сводка куратора</h2>
@@ -382,6 +274,7 @@ body.kb-open {
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);">🔥 Серия</div>
       <div style="font-size:18px; font-weight:700; color:#38ef7d;">{{ f.streak_days }} дн.</div>
+      <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;" title="Дней подряд, когда решено верно больше 80% задач дня">дней подряд с 80%+ верных</div>
     </div>
     {% endif %}
     {% if f.method_code %}
@@ -404,15 +297,44 @@ body.kb-open {
 </div>
 {% endif %}
 
+<!-- ═══ SECTION RADARS GRID (TASK 1 V4) ═══ -->
+{% if section_radars and onboarding_done %}
+<div class="section-radars-grid" id="sectionRadarsGrid">
+  {% for sr in section_radars %}
+  <div class="section-radar-card" id="radarCard{{ loop.index }}">
+    <h3>{{ sr.section_name }}</h3>
+    <div class="radar-subtitle">данные по {{ sr.data_count }} из {{ sr.total_count }} подтем</div>
+    <div class="radar-chart">
+      <canvas id="sectionRadar{{ loop.index }}"
+              data-section='{{ sr | tojson }}'
+              width="240" height="240"></canvas>
+    </div>
+    <div class="radar-legend">
+      {% for st in sr.subtopics %}
+      <div class="radar-legend-item {% if not st.has_data %}no-data{% endif %}">
+        <span class="legend-name" title="{{ st.name }}">{{ st.name }}</span>
+        <span class="legend-pct">{% if st.has_data %}{{ st.pct }}%{% else %}нет данных{% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% elif onboarding_done %}
+<div class="coach-card" style="text-align:center; margin-bottom:20px;">
+  <p style="color:rgba(255,255,255,0.4);">Нет данных для радаров по разделам. Пройдите диагностику или тест по темам.</p>
+</div>
+{% endif %}
+
 <div class="coach-grid">
 <div class="coach-card">
-<h2>📊 Радар по подтемам</h2>
+<h2>📊 Радар по разделам (общий)</h2>
 <div class="radar-chart">
 <canvas id="masteryRadar"
         data-mastery='{{ mastery_list_json | safe }}'
         width="400" height="400"></canvas>
 </div>
-<!-- ═══ Screen 4: Measured subtopics sorted by level ═══ -->
+<!-- ═══ Screen 4: Measured subtopics ═══ -->
 {% if measured_subtopics_list %}
 <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
   <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);">📋 Замеренные подтемы</h2>
@@ -433,11 +355,20 @@ body.kb-open {
 </div>
 <div class="coach-card">
 <h2>💬 Чат с ИИ-куратором</h2>
+<!-- ═══ FAQ QUICK BUTTONS (TASK 2 V4) ═══ -->
+<div class="faq-buttons" id="faqButtons">
+  <button class="faq-btn" onclick="askFaq('Как начать?')">Как начать?</button>
+  <button class="faq-btn" onclick="askFaq('Как работает адаптивный тест?')">Адаптивный тест</button>
+  <button class="faq-btn" onclick="askFaq('Где найти задачи?')">Где задачи?</button>
+  <button class="faq-btn" onclick="askFaq('Что такое методы?')">Что такое методы?</button>
+  <button class="faq-btn" onclick="askFaq('Как работают пробники?')">Пробники</button>
+  <button class="faq-btn" onclick="askFaq('Как следить за прогрессом?')">Прогресс</button>
+</div>
 <div class="chat-box">
 <div class="chat-log" id="chatLog"><div class="chat-msg bot" id="greetingMsg">⏳ Загружаю приветствие…</div></div>
 <form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Спроси куратора…" autocomplete="off"><button type="submit">Отправить</button></form>
 
-<!-- Клавиатура ввода (единая, как в адаптивном тесте) -->
+<!-- Клавиатура ввода -->
 <div class="kb-wrapper" style="margin-bottom: 0;">
     <button type="button" id="kbToggleBtn" class="unified-kb-toggle" onclick="toggleKeyboard()">
         ⌨️ Клавиатура
@@ -457,7 +388,6 @@ body.kb-open {
             <button type="button" class="kb-tab" data-layout="regular" onclick="switchKbTab('regular')">⌨️ Обычная</button>
         </div>
 
-        <!-- ===== Математическая раскладка ===== -->
         <div id="kbLayoutMath" class="kb-layout active">
             <div class="kb-row">
                 <button type="button" class="kb-key math-greek" onclick="kbInsert('\\alpha')">α</button>
@@ -524,7 +454,6 @@ body.kb-open {
             </div>
         </div>
 
-        <!-- ===== Обычная раскладка ===== -->
         <div id="kbLayoutRegular" class="kb-layout">
             <div class="kb-row">
                 <button type="button" class="kb-key" onclick="kbInsert('й')">й</button>
@@ -594,7 +523,7 @@ body.kb-open {
   <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">🗑️ Очистить историю</button>
 </div>
 
-<!-- ═══ OTHER 6 ENTRY POINTS (hidden in <details>) ═══ -->
+<!-- ═══ OTHER 6 ENTRY POINTS ═══ -->
 <details id="otherTestsDetails" style="margin-top:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 16px;">
   <summary style="cursor:pointer; color:rgba(255,255,255,0.55); font-size:13px; font-weight:600; user-select:none;">
     📋 Другие тесты и инструменты
@@ -659,9 +588,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
   .then(function (data) {
     greetingEl.innerHTML = data.greeting || '👋 Привет! Я твой ИИ-куратор FORMYLA.';
     ctaRow.innerHTML = '';
-    // Render CTA buttons based on scenario
     if (data.scenario === 'next_action') {
-      // NEW: curator-chosen single action — show in mainActionBlock
       var na = data.next_action || {};
       var mainBlock = document.getElementById('mainActionBlock');
       var titleEl = document.getElementById('mainActionTitle');
@@ -679,7 +606,6 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     } else if (data.scenario === 'start_questionnaire') {
     window.location.href = '/prep/onboarding';
 } else if (data.scenario === 'need_grade') {
-      // Inline выбор класса вместо перехода на /profile
       greetingEl.innerHTML = '👋 Привет! Я твой ИИ-куратор FORMYLA.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
       var grades = [5, 6, 7, 8, 9, 10, 11];
       var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">';
@@ -689,7 +615,6 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       html += '</div>';
       greetingEl.innerHTML += html;
       ctaRow.style.display = 'none';
-      // Delegated click: grade buttons → сразу запускаем диагностику
       greetingEl.addEventListener('click', function(e) {
         var btn = e.target.closest('.grade-btn');
         if (!btn) return;
@@ -704,7 +629,6 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
         .then(function(r){ return r.json(); })
         .then(function(res){
           if (res.status === 'ok') {
-            // Класс выбран → перенаправляем на онбординг
             greetingEl.innerHTML = '✅ Класс ' + grade + ' выбран! 🎉<br><br>Перенаправляю на анкету…';
             ctaRow.innerHTML = '';
             setTimeout(function() { window.location.href = '/prep/onboarding'; }, 800);
@@ -719,13 +643,11 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
         });
       });
     } else if (data.scenario === 'test_in_progress') {
-      // Diagnostic test already running — hide greeting, focus input
       greetingEl.style.display = 'none';
       ctaRow.style.display = 'none';
       var input = document.getElementById('chatInput');
       if (input) input.focus();
     } else if (data.scenario === 'onboarding_test') {
-      // Класс уже выбран → перенаправляем на онбординг
       window.location.href = '/prep/onboarding';
     } else if (data.scenario === 'daily_test') {
       addCtaAction('🧪 Пройти тест по теме', function () {
@@ -733,7 +655,6 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
         var subtopicName = data.priority_subtopic ? data.priority_subtopic.name : 'математике';
         greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + subtopicName + '</strong>…';
         ctaRow.innerHTML = '';
-        // Fetch subtopic test tasks from onboarding endpoint (reuse)
         fetch('{{ url_for("prep.coach_greeting") }}?action=subtopic_test&subtopic_key=' + subtopicKey)
           .then(function (r) { return r.json(); })
           .then(function (taskData) {
@@ -786,7 +707,6 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       }, '');
     } else if (data.scenario === 'daily_tasks_ready') {
       addCtaAction('📝 Продолжить задачи дня', function () {
-        // Navigate to daily tasks page
         window.location.href = '/daily-tasks';
       }, '');
     } else if (data.scenario === 'day_summary') {
@@ -795,7 +715,6 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       }
       addCtaButton('📊 Профиль', '/profile', 'secondary');
     } else if (data.scenario === 'recommend_olympiad' || data.scenario === 'need_test') {
-      // Legacy/backward-compatible
       if (data.recommended_olympiad) {
         addCtaButton('📋 Создать план подготовки', '/prep/new?olympiad=' + data.recommended_olympiad.slug, '');
         addCtaButton('🔍 Другие олимпиады', '/prep/new', 'secondary');
@@ -804,10 +723,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       } else {
         addCtaButton('📋 Создать план подготовки', '/prep/new', '');
       }
-
-    // ── Monthly prep cycle scenarios ──────────────────────────────────
     } else if (data.scenario === 'prep_morning_test') {
-      // Test day (days 1–7), test NOT taken yet → offer inline test
       var prepInfo = data.prep_info || {};
       var topicTitle = prepInfo.subtopic_title || '';
       var remaining = prepInfo.remaining_tests || 0;
@@ -853,7 +769,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
                   if (res.status === 'ok') {
                     var msg = '✅ <strong>Тест завершён!</strong><br>';
                     msg += 'Правильно: ' + res.correct + ' из ' + res.total + '<br>';
-msg += '🎯 Уровень: ' + res.level + '/5.';
+                    msg += '🎯 Уровень: ' + res.level + '/5.';
                     if (res.generation_queued) {
                       msg += '<br><br>📚 Задачи дня уже готовятся под твой уровень. Они придут вечером!';
                     }
@@ -877,30 +793,22 @@ msg += '🎯 Уровень: ' + res.level + '/5.';
           })
           .catch(function () { greetingEl.innerHTML = '❌ Ошибка загрузки теста.'; });
       }, '');
-
     } else if (data.scenario === 'prep_test_taken') {
-      // Test day, test already taken — show CTA to daily tasks if ready
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
       addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
-
     } else if (data.scenario === 'prep_tasks_ready') {
-      // Training day (days 8–30), tasks already generated
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
       addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
-
     } else if (data.scenario === 'prep_task_day') {
-      // Training day, tasks not ready yet — waiting for evening cron
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
       addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
-
     } else if (data.scenario === 'prep_month_complete') {
-      // Месяц завершён — показать следующие подтемы и CTA для старта нового месяца
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
@@ -921,7 +829,6 @@ fetch('{{ url_for("prep.coach_history") }}')
   .then(function (r) { return r.json(); })
   .then(function (data) {
     if (data.messages && data.messages.length) {
-      // Remove greeting — history will be rendered instead
       var greetingEl = document.getElementById('greetingMsg');
       if (greetingEl) greetingEl.style.display = 'none';
       data.messages.forEach(function (msg) {
@@ -944,7 +851,6 @@ div.className = 'chat-msg ' + who;
 div.innerHTML = text;
 log.appendChild(div);
 log.scrollTop = log.scrollHeight;
-// Re-render KaTeX math ($...$) in newly added message
 if (typeof reRenderMath === 'function') {
   reRenderMath(div);
 }
@@ -965,13 +871,10 @@ body: JSON.stringify({ message: text })
 .then(function (r) { return r.json(); })
       .then(function (data) {
           pending.innerHTML = data.reply || 'Не удалось получить ответ.';
-          // Re-render KaTeX math in the updated reply content
           if (typeof reRenderMath === 'function') {
             reRenderMath(pending);
           }
-          // ── Questionnaire completed: reload page to show level in header ──
           if (data.questionnaire_done) {
-            // Перезагружаем страницу, чтобы уровень появился в шапке
             setTimeout(function () {
               window.location.reload();
             }, 1500);
@@ -980,6 +883,25 @@ body: JSON.stringify({ message: text })
         })
 .catch(function () { pending.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
 });
+
+// ─── FAQ handler (TASK 2 V4): uses local FAQ data ───
+function askFaq(question) {
+  addMsg(question, 'user');
+  var pending = addMsg('💭 Ищу ответ…', 'bot');
+  fetch('{{ url_for("prep.coach_faq") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: question })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    pending.innerHTML = data.answer || 'Ответ не найден. Попробуйте другой вопрос.';
+    if (typeof reRenderMath === 'function') {
+      reRenderMath(pending);
+    }
+  })
+  .catch(function() { pending.innerHTML = '❌ Ошибка соединения.'; });
+}
 
 // ─── Delete history button ──────────────────────────────────────────────
 var delBtn = document.getElementById('deleteHistoryBtn');
@@ -992,7 +914,6 @@ if (delBtn) {
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.status === 'ok') {
-          // Reload page to clear chat
           window.location.reload();
         } else {
           alert('❌ Ошибка: ' + (data.error || 'не удалось удалить историю'));
@@ -1017,7 +938,7 @@ function showBotMessage(text) {
     addMsg(text, 'bot');
 }
 
-// ─── Единая клавиатура ввода (Математическая / Обычная) ───
+// ─── Единая клавиатура ввода ───
 let _kbActiveField = null;
 
 document.addEventListener('focusin', function(e) {
@@ -1035,15 +956,12 @@ function _kbIsTextarea(el) {
 function _kbGetValue(el) {
     if (!el) return '';
     if (_kbIsTextarea(el)) return el.value || '';
-    if (typeof el.getValue === 'function') return el.getValue('latex') || '';
     return el.value || '';
 }
 function _kbSetValue(el, val) {
     if (!el) return;
     if (_kbIsTextarea(el)) {
         el.value = val;
-    } else if (typeof el.setValue === 'function') {
-        el.setValue(val);
     } else {
         el.value = val;
     }
@@ -1157,7 +1075,7 @@ document.addEventListener('click', function(e) {
 <!-- Chart.js for Radar Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// Radar chart initialization
+// ─── Overall radar chart (legacy, 5 sections) ───
 document.addEventListener('DOMContentLoaded', function() {
     var canvas = document.getElementById('masteryRadar');
     if (canvas) {
@@ -1203,10 +1121,86 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e) {
             console.error('Radar chart init error:', e);
         }
-    } else {
-        console.log('Canvas #masteryRadar not found');
     }
+
+    // ─── Section radars (TASK 1 V4): one per section, rays = subtopics ───
+    var sectionCanvases = document.querySelectorAll('[id^="sectionRadar"]');
+    sectionCanvases.forEach(function(cvs) {
+        try {
+            var raw = cvs.getAttribute('data-section');
+            if (!raw) return;
+            var data = JSON.parse(raw);
+            var subtopics = data.subtopics || [];
+            var labels = subtopics.map(function(s) { return s.name || s.id || '?'; });
+            var scores = subtopics.map(function(s) { return s.has_data ? s.pct : 0; });
+
+            // Collect "no data" indices for special rendering
+            var noDataIndices = [];
+            subtopics.forEach(function(s, i) { if (!s.has_data) noDataIndices.push(i); });
+
+            var ctx = cvs.getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '% верных ответов',
+                        data: scores,
+                        backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                        borderColor: 'rgba(99, 102, 241, 0.8)',
+                        borderWidth: 2,
+                        pointBackgroundColor: subtopics.map(function(s) {
+                            return s.has_data ? 'rgba(99, 102, 241, 1)' : 'rgba(255,255,255,0.2)';
+                        }),
+                        pointBorderColor: '#1e293b',
+                        pointRadius: subtopics.map(function(s) { return s.has_data ? 3 : 2; }),
+                        pointHoverRadius: 5,
+                        spanGaps: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 25,
+                                font: { size: 9 },
+                                color: 'rgba(255,255,255,0.3)',
+                                backdropColor: 'transparent'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.08)' },
+                            pointLabels: {
+                                font: { size: 9 },
+                                color: 'rgba(255,255,255,0.6)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var idx = ctx.dataIndex;
+                                    var st = subtopics[idx];
+                                    if (st && st.has_data) {
+                                        return st.name + ': ' + st.pct + '% верных';
+                                    }
+                                    return (st ? st.name : '') + ': нет данных';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch(e) {
+            console.error('Section radar init error:', e);
+        }
+    });
 });
+
 function addQuickAction(text, url) {
     const container = document.getElementById('quick-actions');
     if (!container) return;
