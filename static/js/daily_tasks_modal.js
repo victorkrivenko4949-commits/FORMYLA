@@ -710,6 +710,23 @@ function _dtShowResult(result){
   // Заменяем \n на <br> ПОСЛЕ KaTeX, чтобы не сломать LaTeX-окружения
   fb.innerHTML = fb.innerHTML.replace(/\n/g, '<br>');
 
+  // CH8/X8: show aux figure if available after answer
+  if (result.has_aux && result.aux_svg_path) {
+    var auxDiv = document.getElementById('dt-aux-figure-block');
+    if (!auxDiv) {
+      auxDiv = document.createElement('div');
+      auxDiv.id = 'dt-aux-figure-block';
+      auxDiv.style.cssText = 'margin-top:16px;padding:16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.08);';
+      auxDiv.innerHTML = '<div style="font-size:12px;color:var(--text-dim, #8C9ABC);margin-bottom:8px;">Чертёж с построением:</div><div id="dt-aux-figure-svg" style="overflow-x:auto;"></div>';
+      rb.appendChild(auxDiv);
+    }
+    var auxSvg = document.getElementById('dt-aux-figure-svg');
+    if (auxSvg) {
+      auxSvg.innerHTML = result.aux_svg_path;
+      auxDiv.style.display = '';
+    }
+  }
+
   rb.classList.add('show');
 }
 
