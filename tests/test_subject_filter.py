@@ -302,12 +302,13 @@ class TestProductionImportIntegrity:
     def test_total_count(self, conn):
         """FORMYLA polished dataset. History:
            3430 (legacy) -> 8394 (polished) -> 8389 (2026-05 final cleanup,
-           5 broken tasks removed) -> 8773 (2026-07 after is_flagged NULL fix).
+           5 broken tasks removed) -> 8773 (2026-07 after is_flagged NULL fix)
+           -> 9000 (2026-07 after adaptive_full_seed import).
         """
         n = conn.execute("SELECT COUNT(*) FROM adaptive_tasks").fetchone()[0]
-        assert n in (3430, 8394, 8389, 8773), (
-            "Expected 3430 (legacy), 8394 (polished), 8389 (final-clean) or 8773 "
-            "(post-NULL-fix), got " + str(n)
+        assert n in (3430, 8394, 8389, 8773, 9000), (
+            "Expected 3430 (legacy), 8394 (polished), 8389 (final-clean), 8773 "
+            "(post-NULL-fix) or 9000 (after adaptive_full_seed), got " + str(n)
         )
 
     def test_no_duplicate_source_id(self, conn):

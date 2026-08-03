@@ -402,7 +402,18 @@ class OpenRouterClient:
 
 
 class OpenRouterError(Exception):
-    pass
+    """HTTP/network error from OpenRouter API.
+
+    Optional keyword args ``status_code`` (int) and ``body`` (str)
+    are stored as attributes for classification and diagnostics.
+    Production callers may omit them; the ``_classify_openrouter_error``
+    helper uses ``getattr`` to safely fall back to 0 / empty string.
+    """
+
+    def __init__(self, *args, status_code=0, body=""):
+        super().__init__(*args)
+        self.status_code: int = status_code
+        self.body: str = body
 
 
 class CircuitBreakerOpen(OpenRouterError):

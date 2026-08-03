@@ -97,7 +97,7 @@ def clean_today_set(app_ctx):
 def test_classify_openrouter_402():
     """Sanity: 402 → 'http_402', 503 → 'http_503', 0 → 'network'."""
     from daily_tasks.pipeline.step1_gemini import _classify_openrouter_error
-    from pipeline.openrouter_client import OpenRouterError
+    from services.openrouter_client import OpenRouterError
     assert _classify_openrouter_error(OpenRouterError("", status_code=402)) == "http_402"
     assert _classify_openrouter_error(OpenRouterError("", status_code=429)) == "http_429"
     assert _classify_openrouter_error(OpenRouterError("", status_code=503)) == "http_503"
@@ -110,7 +110,8 @@ def test_gemini_plan_raises_classified_error_on_402():
     from daily_tasks.pipeline.step1_gemini import (
         generate_gemini_plan, GeminiPlanError,
     )
-    from pipeline.openrouter_client import OpenRouterError
+    from daily_tasks.pipeline.slot_planner import PlannedSlot
+    from services.openrouter_client import OpenRouterError
 
     profile = {
         "user_id": 1, "class_level": 9, "class_expected_level": 4,
@@ -123,7 +124,20 @@ def test_gemini_plan_raises_classified_error_on_402():
         body='{"error":{"message":"insufficient credits"}}',
     ))
 
-    with patch("daily_tasks.pipeline.step1_gemini.OpenRouterClient") as MockClient:
+    # plan_slots requires DB access (CuratorState query). Mock it so the
+    # test stays focused on OpenRouter 402 -> classified error propagation.
+    fake_slots = [
+        PlannedSlot(
+            position=1, slot_kind="weak", subject="algebra",
+            topic="T1", topic_key="T1_key", difficulty_level=4,
+            target_level=4, level_window=(3, 5), is_calibration=False,
+            measured=False, pct=None, test_correct=None, test_total=None,
+            final_level=None, reason_hint="test",
+        )
+    ]
+
+    with patch("daily_tasks.pipeline.step1_gemini.OpenRouterClient") as MockClient, \
+         patch("daily_tasks.pipeline.step1_gemini.plan_slots", return_value=fake_slots):
         instance = MockClient.return_value.__aenter__.return_value
         instance.chat = fake_chat
         with pytest.raises(GeminiPlanError) as exc_info:

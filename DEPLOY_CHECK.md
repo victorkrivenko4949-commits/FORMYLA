@@ -1,5 +1,8 @@
 # DEPLOY CHECK — ручная выкладка FORMYLA на Render
 
+Проект развёрнут на Render как Web Service. База данных: PostgreSQL (на Render),
+SQLite локально. Домен: `formyla.net`. Сервис: `srv-d73br5ffte5s73euc56g`.
+
 ## До выкладки
 
 1. Убедись, что все тесты проходят локально: `python -m pytest tests/ --tb=short -q`.

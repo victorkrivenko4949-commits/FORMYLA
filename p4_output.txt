@@ -1,0 +1,22 @@
+HASH=072bb767
+KEYS=['applied_migrations', 'branch', 'build_time', 'commit', 'commit_source', 'schema_version']
+TMPL|conference.html|/conference|200|True
+TMPL|admin/support_inbox.html|/admin/support|200|True
+TMPL|chat.html|/chat|200|True
+TMPL|daily_complete.html|/daily_complete|404|True
+TMPL|daily_task.html|/daily_task|404|True
+TMPL|group_chat.html|/group_chat|404|True
+TMPL|my_support.html|/my/support|200|True
+TMPL|profile.html|/profile|200|True
+TMPL|subject.html|/subject/algebra|404|True
+CSS_LINKS=['/static/style.css?v=072bb767', '/static/css/nav.css?v=072bb767', '/static/css/mobile.css?v=072bb767', '/static/css/mobile_features.css?v=072bb767', '/static/css/errors.css?v=072bb767']
+JS_LINKS=['https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js', 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js', 'https://cdn.jsdelivr.net/npm/marked/marked.min.js', '/static/js/analytics.js?v=072bb767']
+VERSIONED_CSS=['/static/style.css?v=072bb767', '/static/css/nav.css?v=072bb767', '/static/css/mobile.css?v=072bb767', '/static/css/mobile_features.css?v=072bb767', '/static/css/errors.css?v=072bb767']
+VERSIONED_JS=['/static/js/analytics.js?v=072bb767', '/static/js/mobile_home_slider.js?v=072bb767', '/static/js/wb_call_listener.js?v=072bb767', '/static/js/push_notifications.js?v=072bb767', '/static/js/caps_lock.js?v=072bb767']
+STATIC_CSS_FILES=['about.css', 'board.css', 'daily.css', 'daily_olympiad.css', 'daily_tasks.css', 'daily_tasks_modal.css', 'errors.css', 'formyla_dark.css', 'friends.css', 'mastery.css']
+DEPLOY|srv-d73br5ffte5s73euc56g|True
+DEPLOY|formyla.net|True
+DEPLOY|PostgreSQL|True
+DEPLOY|Auto-Deploy|True
+MIG_PY_FILES=['002_add_subscriptions.py', 'add_adaptive_pipeline_tables.py', 'add_broken_task_log.py', 'add_chat_features.py', 'add_curator_tables.py', 'add_daily_calibration_flag.py', 'add_daily_pool_tables.py', 'add_daily_quest_system.py', 'add_daily_tasks_tables.py', 'add_drawing_critique_columns.py', 'add_drawing_generations.py', 'add_figure_fields.py', 'add_friendships_v2.py', 'add_grade_tasks_table.py', 'add_grade_to_adaptive_test.py', 'add_methods_catalog_fields.py', 'add_methods_final_fields.py', 'add_olympiad_generation_log.py', 'add_olympiad_pipeline_tables.py', 'add_olympiad_prep.py', 'add_olympiad_section.py', 'add_olympiad_tasks_number_column.py', 'add_olympiad_waitlist.py', 'add_pregen_queue.py', 'add_prep_plans.py', 'add_prep_streaks.py', 'add_prep_target_grade.py', 'add_subtopic_field.py', 'add_task_pool_cache.py', 'add_task_solutions.py', 'add_task_source.py', 'add_telegram_id_to_user.py', 'add_test_sessions.py', 'add_vsosh9_method_fields.py', 'drop_legacy_daily_variants_cols.py']
+MIG_TRACK|NONE
