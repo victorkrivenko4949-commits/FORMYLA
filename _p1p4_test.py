@@ -112,20 +112,20 @@ p("=" * 70)
 
 p("""
 [services/theme_registry.py:104-109] section_of_theme(None) -> None
-  → anchors with theme_id=None bypass section lookups (returns None)
+  -> anchors with theme_id=None bypass section lookups (returns None)
 
 [services/level_engine.py:304] _theme_prior_mu(user_id, theme_id)
-  → only called for theme_ids in theme lists, never for anchors
+  -> only called for theme_ids in theme lists, never for anchors
 
 [services/theme_probe.py:119] resolve_start_level(user_id, theme_id, grade)
-  → only called for active probes (theme_id from cycle, not anchors)
+  -> only called for active probes (theme_id from cycle, not anchors)
 
 [services/theme_probe.py:336] _finish_probe
-  → saves mu to level_by_theme[theme_id], not used by anchors
+  -> saves mu to level_by_theme[theme_id], not used by anchors
 
 [curator/monthly_cycle.py:181-186] _select_first_cycle_themes grade guard
-  → checks themes in cycle start with G{grade}_ prefix
-  → anchors with theme_id=None are never IN the cycle list
+  -> checks themes in cycle start with G{grade}_ prefix
+  -> anchors with theme_id=None are never IN the cycle list
 
 No code path forces theme_id on formyla_anchors tasks.
 """)
@@ -137,13 +137,13 @@ p("P3: record_result writes to SECTION mu")
 p("=" * 70)
 p("""
 [services/onboarding.py:8] submit_anchor(user_id, task_id, user_answer) -> dict
-  → calls _check_anchor_answer + records to level_engine
+  -> calls _check_anchor_answer + records to level_engine
 
 Anchor result path:
-  1. POST /prep/onboarding/anchor → routes/prep.py
-  2. → services/onboarding.py:submit_anchor()
-  3. → services/level_engine.py:record_result(user_id, section, mu_canonical, verdict)
-  4. → updates by_section[section].mu (4-line EMA update at lines 139-175)
+  1. POST /prep/onboarding/anchor -> routes/prep.py
+  2. -> services/onboarding.py:submit_anchor()
+  3. -> services/level_engine.py:record_result(user_id, section, mu_canonical, verdict)
+  4. -> updates by_section[section].mu (4-line EMA update at lines 139-175)
 
 Section mu before anchors: algebra=3.0 geometry=3.0 combinatorics=3.0 logic=3.0 number_theory=3.0
 Section mu after  anchors: updated per correct answers on L2-L4 tasks

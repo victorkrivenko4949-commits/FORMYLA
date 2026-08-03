@@ -120,7 +120,7 @@ def run():
         _print_action("A: новый ученик (onboarding_done=False)", action_a)
         assert action_a['kind'] == 'onboarding', \
             f"EXPECTED kind='onboarding', GOT '{action_a['kind']}'"
-        print("  ✅ PASS: kind=onboarding, url=/prep/onboarding")
+        print("  [OK] PASS: kind=onboarding, url=/prep/onboarding")
 
         # ══════════════════════════════════════════════════════════
         # B. Анкета пройдена, test_queue = [diagnostic]
@@ -163,7 +163,7 @@ def run():
             f"EXPECTED kind='test', GOT '{action_b['kind']}'"
         assert action_b.get('url') == '/olympiad-test', \
             f"EXPECTED url='/olympiad-test', GOT '{action_b.get('url')}'"
-        print("  ✅ PASS: kind=test, url=/olympiad-test")
+        print("  [OK] PASS: kind=test, url=/olympiad-test")
 
         # ══════════════════════════════════════════════════════════
         # C. Очередь пуста, daily_quest не завершён
@@ -193,7 +193,7 @@ def run():
             f"EXPECTED kind='daily', GOT '{action_c['kind']}'"
         assert action_c['meta'].get('remaining') == 3, \
             f"EXPECTED remaining=3, GOT {action_c['meta'].get('remaining')}"
-        print("  ✅ PASS: kind=daily, remaining=3, url=/daily-set")
+        print("  [OK] PASS: kind=daily, remaining=3, url=/daily-set")
 
         # ══════════════════════════════════════════════════════════
         # D. Очередь пуста, задачи дня завершены
@@ -221,23 +221,23 @@ def run():
         _print_action("D: всё завершено, idle", action_d)
         assert action_d['kind'] == 'idle', \
             f"EXPECTED kind='idle', GOT '{action_d['kind']}'"
-        print("  ✅ PASS: kind=idle")
+        print("  [OK] PASS: kind=idle")
 
         # ── ОТКАТ ────────────────────────────────────────────────
         print(f"\n{FMT_HEADER}")
         print("  ОТКАТ тестовых данных")
         print(f"{FMT_HEADER}")
         _restore()
-        print("  ✓ Исходные данные восстановлены.")
+        print("  [OK] Исходные данные восстановлены.")
 
     # ── ИТОГИ ────────────────────────────────────────────────────
     print(f"\n{FMT_HEADER}")
     print("  ВСЕ 4 ТЕСТА ПРОЙДЕНЫ УСПЕШНО")
     print(f"{FMT_HEADER}")
-    print("  A: onboarding ✅")
-    print("  B: test       ✅")
-    print("  C: daily      ✅")
-    print("  D: idle       ✅")
+    print("  A: onboarding [OK]")
+    print("  B: test       [OK]")
+    print("  C: daily      [OK]")
+    print("  D: idle       [OK]")
 
 
 if __name__ == '__main__':

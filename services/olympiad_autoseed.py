@@ -24,7 +24,7 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'oly
 
 # Полный каталог 102 методов (последняя версия — с метаданными И с полными
 # текстами definition_md/main_theorems_md/etc). Используется в первую очередь.
-# Fallback: каталог 89 методов → исторический theory_65_methods.json.
+# Fallback: каталог 89 методов -> исторический theory_65_methods.json.
 THEORY_JSON_CATALOG_102 = os.path.join(DATA_DIR, 'methods_catalog_105.json')
 THEORY_JSON_CATALOG_89 = os.path.join(DATA_DIR, 'methods_catalog_89.json')
 THEORY_JSON_LEGACY_65 = os.path.join(DATA_DIR, 'theory_65_methods.json')
@@ -473,7 +473,7 @@ def _seed_probniks(db, Probnik) -> dict:
     return code_to_id
 
 
-# ─── Probnik ↔ Theory links ──────────────────────────────────────────────────
+# ─── Probnik <-> Theory links ──────────────────────────────────────────────────
 
 def _seed_probnik_theory(db, TheoryBlock, Probnik, ProbnikTheory) -> None:
     """Привязывает TheoryBlock'и к Probnik'ам через method_code из задач.
@@ -508,7 +508,7 @@ def _seed_probnik_theory(db, TheoryBlock, Probnik, ProbnikTheory) -> None:
         print("[PROBNIK-THEORY] No probnik-method mappings found in tasks — nothing to seed")
         return
 
-    # Шаг 2: построить карту method_code → TheoryBlock.id (одним запросом).
+    # Шаг 2: построить карту method_code -> TheoryBlock.id (одним запросом).
     all_codes = sorted({c for codes in probnik_methods.values() for c in codes})
     theory_rows = TheoryBlock.query.filter(
         TheoryBlock.method_code.in_(all_codes)
@@ -517,7 +517,7 @@ def _seed_probnik_theory(db, TheoryBlock, Probnik, ProbnikTheory) -> None:
         t.method_code: t.id for t in theory_rows
     }
 
-    # Шаг 3: построить карту probnik_code → Probnik.id.
+    # Шаг 3: построить карту probnik_code -> Probnik.id.
     all_probnik_codes = list(probnik_methods.keys())
     probnik_rows = Probnik.query.filter(
         Probnik.code.in_(all_probnik_codes)
@@ -590,7 +590,7 @@ def _seed_tasks(db, OlympiadTask, Probnik, code_to_id: dict) -> None:
         print(f"[OLYMPIAD-SEED] No data in {TASKS_JSON} — skipping tasks seed")
         return
 
-    # Если probnik'и существовали, но мы не получили карту code→id — построим её.
+    # Если probnik'и существовали, но мы не получили карту code->id — построим её.
     if not code_to_id:
         try:
             for p in Probnik.query.all():

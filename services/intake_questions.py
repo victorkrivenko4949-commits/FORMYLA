@@ -11,10 +11,10 @@ services/intake_questions.py — Новая анкета входа (P9 Intake).
   5) слабые разделы (можно выбрать несколько)
 
 Правила обработки:
-  - цель "не знаю" → авто-назначение по классу + опыту (таблица)
-  - время → дневная норма задач: 15мин→5, 30мин→10, час→15, >часа→20
-  - слабые разделы → приоритет при подборе, не ломая разнообразие
-  - "не знаю" в слабых разделах → приоритет не применяется
+  - цель "не знаю" -> авто-назначение по классу + опыту (таблица)
+  - время -> дневная норма задач: 15мин->5, 30мин->10, час->15, >часа->20
+  - слабые разделы -> приоритет при подборе, не ломая разнообразие
+  - "не знаю" в слабых разделах -> приоритет не применяется
 """
 
 from __future__ import annotations
@@ -109,12 +109,12 @@ Q5_WEAK_SECTIONS = {
 # ТАБЛИЦА АВТО-НАЗНАЧЕНИЯ ЦЕЛИ (когда цель = "не знаю")
 # ══════════════════════════════════════════════════════════════════════
 
-# Формат: (min_class, max_class, experience) → goal_key
+# Формат: (min_class, max_class, experience) -> goal_key
 # Логика:
-#   - Младшие классы (5-6) без опыта → "just_grow"
-#   - Средние классы (7-8) без опыта → "school_muni"
-#   - Старшие (9-11) без опыта → "region"
-#   - С опытом любого уровня → на ступень выше базы
+#   - Младшие классы (5-6) без опыта -> "just_grow"
+#   - Средние классы (7-8) без опыта -> "school_muni"
+#   - Старшие (9-11) без опыта -> "region"
+#   - С опытом любого уровня -> на ступень выше базы
 AUTO_GOAL_TABLE: List[Tuple[int, int, str, str]] = [
     # (min_class, max_class, experience_key, assigned_goal)
     # 5-6 класс
@@ -232,7 +232,7 @@ def compute_prior(answers: Dict[str, Any], anchors: List[Dict]) -> IntakeResult:
         exp_for_goal = answers.get("experience", "none")
         goal, goal_auto = assign_goal(class_level, exp_for_goal)
 
-    # ── Опыт → prior mu/sigma ─────────────────────────────────────
+    # ── Опыт -> prior mu/sigma ─────────────────────────────────────
     exp_key = answers.get("experience", "none")
     exp_opt = EXPERIENCE_PRIOR.get(exp_key, EXPERIENCE_PRIOR["none"])
     mu = exp_opt["mu"]
@@ -246,7 +246,7 @@ def compute_prior(answers: Dict[str, Any], anchors: List[Dict]) -> IntakeResult:
 
     mu = min(5.0, max(1.0, mu))
 
-    # ── Время → дневная норма ─────────────────────────────────────
+    # ── Время -> дневная норма ─────────────────────────────────────
     time_key = answers.get("time", "m30")
     for opt in Q4_TIME["options"]:
         if opt["key"] == time_key:

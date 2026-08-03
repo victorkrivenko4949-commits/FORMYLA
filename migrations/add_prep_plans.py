@@ -13,12 +13,12 @@ from app import app
 def migrate():
     """Выполнить миграцию — создать таблицы prep_plans и prep_days."""
     with app.app_context():
-        print("🔄 Миграция: создание таблиц prep_plans, prep_days...")
+        print(" Миграция: создание таблиц prep_plans, prep_days...")
         try:
             db.create_all()
-            print("✅ Таблицы prep_plans и prep_days созданы (или уже существуют).")
+            print("[OK] Таблицы prep_plans и prep_days созданы (или уже существуют).")
         except Exception as e:
-            print(f"❌ Ошибка миграции: {e}")
+            print(f"[ERROR] Ошибка миграции: {e}")
             db.session.rollback()
             raise
 

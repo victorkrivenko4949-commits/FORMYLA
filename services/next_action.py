@@ -17,10 +17,10 @@ services/next_action.py — ЕДИНСТВЕННЫЙ следующий шаг �
         }
 
 Порядок проверок СТРОГО — первое сработавшее возвращаем:
-    1. onboarding_done != True  → kind="onboarding"
-    2. test_queue непустая      → kind="test"
-    3. задачи дня не завершены   → kind="daily"
-    4. иначе                    → kind="idle"
+    1. onboarding_done != True  -> kind="onboarding"
+    2. test_queue непустая      -> kind="test"
+    3. задачи дня не завершены   -> kind="daily"
+    4. иначе                    -> kind="idle"
 """
 
 from __future__ import annotations

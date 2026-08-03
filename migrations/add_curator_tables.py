@@ -260,7 +260,7 @@ def _ensure_curator_tables() -> bool:
                 db.session.execute(text(stmt))
             except Exception as e:
                 db.session.rollback()
-                print(f"  ❌ curator migration: failed on stmt: {e}")
+                print(f"  [ERROR] curator migration: failed on stmt: {e}")
                 raise
         db.session.commit()
 
@@ -271,9 +271,9 @@ def _ensure_curator_tables() -> bool:
         for expected in ("student_diagnostics", "learning_plans", "task_attempts", "progress_log", "task_bank"):
             if expected in tables:
                 cols = [c["name"] for c in inspector.get_columns(expected)]
-                print(f"  ✅ {expected}: {len(cols)} колонок")
+                print(f"  [OK] {expected}: {len(cols)} колонок")
             else:
-                print(f"  ❌ {expected} НЕ создана!")
+                print(f"  [ERROR] {expected} НЕ создана!")
                 ok = False
 
         return ok
@@ -286,9 +286,9 @@ def run_migration() -> bool:
     print("=" * 70)
     success = _ensure_curator_tables()
     if success:
-        print("\n🎉 Миграция Куратора завершена успешно!")
+        print("\n Миграция Куратора завершена успешно!")
     else:
-        print("\n❌ Миграция Куратора завершилась с ошибками")
+        print("\n[ERROR] Миграция Куратора завершилась с ошибками")
     return success
 
 

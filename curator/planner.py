@@ -330,7 +330,7 @@ def _get_topic_priorities(profile: dict) -> List[str]:
         pct = data.get('pct', 0) if isinstance(data, dict) else 0
         scored.append((topic, pct))
 
-    # Сортируем по возрастанию процента (слабые → сильные)
+    # Сортируем по возрастанию процента (слабые -> сильные)
     scored.sort(key=lambda x: x[1])
     return [s[0] for s in scored]
 

@@ -160,7 +160,7 @@ def send_support_email(mail_instance, *, nickname, email, category,
 def send_review_email(mail_instance, *, nickname, email, rating, message,
                       page_url, user_agent, ip, ticket_id):
     """Отправить отзыв пользователя владельцу.
-       Получатель: env REVIEW_NOTIFY_EMAIL → SUPPORT_NOTIFY_EMAIL → MAIL_USERNAME.
+       Получатель: env REVIEW_NOTIFY_EMAIL -> SUPPORT_NOTIFY_EMAIL -> MAIL_USERNAME.
        Возвращает (ok, error).
 
        Стратегия отправки:
@@ -187,7 +187,7 @@ def send_review_email(mail_instance, *, nickname, email, rating, message,
         r = 0
     if r > 5:
         r = 5
-    stars = ('★' * r) + ('☆' * (5 - r)) if r > 0 else '(без оценки)'
+    stars = ('' * r) + ('' * (5 - r)) if r > 0 else '(без оценки)'
 
     subject = '[FORMYLA отзыв #' + str(ticket_id) + '] '
     subject += stars + ' от ' + (nickname or 'Гость')

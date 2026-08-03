@@ -240,7 +240,7 @@ def test_method_detail_404(client):
 def test_task_attempt_requires_login(client):
     r = client.post('/olympiads/task/101/attempt',
                     json={'status': 'attempted'})
-    # login_required → redirect 302 (или 401 если настроено).
+    # login_required -> redirect 302 (или 401 если настроено).
     assert r.status_code in (302, 401)
 
 
@@ -256,7 +256,7 @@ def test_task_attempt_create_and_update(auth_client):
     assert j['attempt']['status'] == 'attempted'
     assert j['attempt']['self_score'] == 5
 
-    # 2) Тот же task → обновление, без новой строки.
+    # 2) Тот же task -> обновление, без новой строки.
     r2 = auth_client.post(
         '/olympiads/task/101/attempt',
         json={'status': 'solved', 'self_score': 7, 'note': 'got it'},
@@ -322,7 +322,7 @@ def test_stage_submit_computes_total_and_result(auth_client):
     )
     attempt_id = r.get_json()['attempt_id']
 
-    # 2) Submit с оценками 7+7+1 = 15 → пороги: prize=10, winner=15 → winner.
+    # 2) Submit с оценками 7+7+1 = 15 -> пороги: prize=10, winner=15 -> winner.
     r2 = auth_client.post(
         '/olympiads/stage/vsosh-9-2027-stage-1/submit',
         json={
@@ -342,7 +342,7 @@ def test_stage_submit_computes_total_and_result(auth_client):
 
 
 def test_stage_submit_double_finalize_blocked(auth_client):
-    # Start + submit + submit again → 409.
+    # Start + submit + submit again -> 409.
     r = auth_client.post(
         '/olympiads/stage/vsosh-9-2027-stage-1/start',
         headers={'X-Requested-With': 'XMLHttpRequest'},

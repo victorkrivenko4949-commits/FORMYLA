@@ -45,8 +45,8 @@ function shareOlymp() {
       .then(function() {
         var btn = document.querySelector('.btn-share');
         if (btn) {
-          btn.textContent = '✅ Ссылка скопирована!';
-          setTimeout(function() { btn.textContent = '📤 Поделиться'; }, 2000);
+          btn.textContent = '[OK] Ссылка скопирована!';
+          setTimeout(function() { btn.textContent = ' Поделиться'; }, 2000);
         }
       });
   }
@@ -65,7 +65,7 @@ function previewPhoto(input, taskNum) {
              ' style="max-width:100%;border-radius:12px;margin-top:10px;">' +
         '<button type="button" class="remove-photo"' +
                 ' onclick="removePhoto(' + taskNum + ')">' +
-          '✕ Удалить фото' +
+          ' Удалить фото' +
         '</button>' +
       '</div>';
   };

@@ -110,7 +110,7 @@ class User(UserMixin, db.Model):
 
     @property
     def display_name(self):
-        """Отображаемое имя: nickname (если не Гость-*) → name → email username → Аноним"""
+        """Отображаемое имя: nickname (если не Гость-*) -> name -> email username -> Аноним"""
         # If user has a real nickname (not auto-generated guest)
         if self.nickname and not self.nickname.startswith('Гость-'):
             return self.nickname
@@ -1498,7 +1498,7 @@ class GroupChat(db.Model):
     __tablename__ = 'group_chats'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    avatar_emoji = db.Column(db.String(8), nullable=True, default='👥')
+    avatar_emoji = db.Column(db.String(8), nullable=True, default='')
     owner_id = db.Column(
         db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False, index=True
@@ -1558,7 +1558,7 @@ def init_db(app):
     db.init_app(app)
     with app.app_context():
         db.create_all()
-        print("✅ База данных инициализирована")
+        print("[OK] База данных инициализирована")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -1668,7 +1668,7 @@ class FigureEmailSubscription(db.Model):
 class FigureJob(db.Model):
     """Фоновое задание на построение чертежа (D5 queue).
 
-    Статусы: queued → thinking → drawing → done | failed.
+    Статусы: queued -> thinking -> drawing -> done | failed.
     Кредит списывается только в момент перехода в done.
     """
     __tablename__ = 'figure_jobs'

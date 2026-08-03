@@ -71,7 +71,7 @@ def list_intents():
 
 @concierge_bp.route('/ask', methods=['POST'])
 def ask():
-    """Главный endpoint: пользователь задаёт вопрос → отвечаем."""
+    """Главный endpoint: пользователь задаёт вопрос -> отвечаем."""
     ip = _client_ip()
     allowed, remaining = _check_rate_limit(ip)
     if not allowed:

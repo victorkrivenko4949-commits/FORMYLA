@@ -53,7 +53,7 @@ class TestStage1Find:
         assert result.year == 2019
 
     def test_low_confidence_retries_then_fails(self, mock_deepseek):
-        """Confidence < 0.7 → retry 3 раза → Stage1Error."""
+        """Confidence < 0.7 -> retry 3 раза -> Stage1Error."""
         mock_deepseek.generate.return_value = _good_response(confidence=0.4)
         s1 = Stage1Find(mock_deepseek)
         with pytest.raises(Stage1Error, match="Confidence"):
@@ -61,7 +61,7 @@ class TestStage1Find:
         assert mock_deepseek.generate.call_count == 3
 
     def test_invalid_json_retries_then_succeeds(self, mock_deepseek):
-        """Невалидный JSON → retry → на 3-й попытке успех."""
+        """Невалидный JSON -> retry -> на 3-й попытке успех."""
         mock_deepseek.generate.side_effect = [
             "это не json вообще",
             "{broken json",
@@ -73,7 +73,7 @@ class TestStage1Find:
         assert mock_deepseek.generate.call_count == 3
 
     def test_latex_leak_backslash_rejected(self, mock_deepseek):
-        """Обратный слэш в original_text → отклонение."""
+        """Обратный слэш в original_text -> отклонение."""
         mock_deepseek.generate.return_value = _good_response(
             original_text="Докажите \\sqrt{x^2+1} \\geq 1 для всех x."
         )
@@ -82,7 +82,7 @@ class TestStage1Find:
             s1.find("ВсОШ", "regional", 9)
 
     def test_dollar_sign_rejected(self, mock_deepseek):
-        """Символ $ в original_text → отклонение."""
+        """Символ $ в original_text -> отклонение."""
         mock_deepseek.generate.return_value = _good_response(
             original_text="Решите уравнение $x^2 = 4$ для x из R."
         )
@@ -91,7 +91,7 @@ class TestStage1Find:
             s1.find("ВсОШ", "regional", 9)
 
     def test_short_text_rejected(self, mock_deepseek):
-        """Слишком короткий текст → отклонение."""
+        """Слишком короткий текст -> отклонение."""
         mock_deepseek.generate.return_value = _good_response(
             original_text="Короткая."
         )
@@ -100,28 +100,28 @@ class TestStage1Find:
             s1.find("ВсОШ", "regional", 9)
 
     def test_year_out_of_range_rejected(self, mock_deepseek):
-        """Год вне 2015-2024 → отклонение."""
+        """Год вне 2015-2024 -> отклонение."""
         mock_deepseek.generate.return_value = _good_response(year=2008)
         s1 = Stage1Find(mock_deepseek)
         with pytest.raises(Stage1Error, match="Год"):
             s1.find("ВсОШ", "regional", 9)
 
     def test_invalid_stage_input(self, mock_deepseek):
-        """Невалидный stage → Stage1Error без вызова LLM."""
+        """Невалидный stage -> Stage1Error без вызова LLM."""
         s1 = Stage1Find(mock_deepseek)
         with pytest.raises(Stage1Error, match="stage"):
             s1.find("ВсОШ", "invalid_stage", 9)
         mock_deepseek.generate.assert_not_called()
 
     def test_invalid_grade_input(self, mock_deepseek):
-        """Невалидный grade → Stage1Error без вызова LLM."""
+        """Невалидный grade -> Stage1Error без вызова LLM."""
         s1 = Stage1Find(mock_deepseek)
         with pytest.raises(Stage1Error, match="grade"):
             s1.find("ВсОШ", "regional", 15)
         mock_deepseek.generate.assert_not_called()
 
     def test_missing_required_field_raises(self, mock_deepseek):
-        """Отсутствие обязательного поля original_text → ошибка."""
+        """Отсутствие обязательного поля original_text -> ошибка."""
         mock_deepseek.generate.return_value = json.dumps({
             "year": 2019,
             "confidence": 0.9,
@@ -131,7 +131,7 @@ class TestStage1Find:
             s1.find("ВсОШ", "regional", 9)
 
     def test_temperature_increases_per_attempt(self, mock_deepseek):
-        """Температура растёт с каждой попыткой: 0.3 → 0.5 → 0.7."""
+        """Температура растёт с каждой попыткой: 0.3 -> 0.5 -> 0.7."""
         mock_deepseek.generate.side_effect = [
             "bad json 1",
             "bad json 2",

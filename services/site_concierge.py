@@ -11,7 +11,7 @@ Site Concierge — AI-помощник по сайту FORMYLA.
        * {"action": "redirect", "target": "tutor" | "off_topic"}  — мат-задача / не про сайт
        * {"action": "free",     "answer": "<...>",                — нет KB-кандидата, своя реплика
                                  "suggested_actions": [...]}
-  3. Если LLM недоступен → консервативный fallback (показываем главные ссылки).
+  3. Если LLM недоступен -> консервативный fallback (показываем главные ссылки).
 
 Публичный API:
     answer_site_question(message: str, context: dict) -> dict
@@ -263,7 +263,7 @@ def _deepseek_router(message: str, context: dict) -> Optional[dict]:
 # ── Public API ───────────────────────────────────────────────────────────────
 
 _REDIRECT_TUTOR_ANSWER = (
-    "Похоже, это вопрос по математике. Открой 🤖 ИИ-тьютора в правом нижнем углу — "
+    "Похоже, это вопрос по математике. Открой  ИИ-тьютора в правом нижнем углу — "
     "он специально под решение задач, у него 7 агентов по темам и режим «только подсказки». "
     "Я помогаю только по сайту FORMYLA."
 )
@@ -272,9 +272,9 @@ _OFFTOPIC_ANSWER = (
     "Если хотел другое — попробуй переформулировать вопрос про сам сервис."
 )
 _FALLBACK_ACTIONS = [
-    {"label": "🚀 Задачи дня", "url": "/daily"},
-    {"label": "📖 О сервисе",  "url": "/about"},
-    {"label": "💎 Тарифы",     "url": "/about#pricing"},
+    {"label": " Задачи дня", "url": "/daily"},
+    {"label": " О сервисе",  "url": "/about"},
+    {"label": " Тарифы",     "url": "/about#pricing"},
 ]
 
 
@@ -301,7 +301,7 @@ def _from_kb_entry(entry: dict, source: str) -> dict:
 
 
 def answer_site_question(message: str, context: Optional[dict] = None) -> dict:
-    """Главный entry-point: KB → DeepSeek-router → fallback."""
+    """Главный entry-point: KB -> DeepSeek-router -> fallback."""
     context = context or {}
     message = (message or '').strip()
     if not message:
@@ -372,6 +372,6 @@ def get_top_intents(limit: int = 10) -> list:
         items.append({
             "id": entry.get('id'),
             "intent": entry.get('intent'),
-            "icon": entry.get('icon', '💬'),
+            "icon": entry.get('icon', ''),
         })
     return items

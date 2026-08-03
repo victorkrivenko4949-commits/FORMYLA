@@ -133,11 +133,11 @@ def safe_parse_single_object(text: str):
         try:
             result = strategy(stripped)
             if isinstance(result, dict):
-                print(f"  ✓ {name}: SUCCESS")
+                print(f"  [OK] {name}: SUCCESS")
                 print(f"    keys: {list(result.keys())}")
                 return result, None
         except json.JSONDecodeError as e:
-            print(f"  ✗ {name}: FAILED")
+            print(f"   {name}: FAILED")
             print(f"    Error: {e}")
             # Show context around error position
             pos = e.pos if hasattr(e, 'pos') else 0
@@ -180,12 +180,12 @@ def main():
     result, error = safe_parse_single_object(raw)
     if result:
         print(f"\n{'='*60}")
-        print(f"✅ PARSING SUCCEEDED!")
+        print(f"[OK] PARSING SUCCEEDED!")
         print(f"statement: {result.get('statement', '')[:100]}")
         print(f"answer: {result.get('answer', '')[:100]}")
     else:
         print(f"\n{'='*60}")
-        print(f"❌ PARSING FAILED: {error}")
+        print(f"[ERROR] PARSING FAILED: {error}")
 
 
 if __name__ == '__main__':

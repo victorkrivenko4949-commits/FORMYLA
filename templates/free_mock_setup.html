@@ -7,7 +7,7 @@
     
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            📝 Бесплатный пробник
+             Бесплатный пробник
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft); line-height: 1.6;">
             Настрой параметры и получи персональный вариант из 25 задач
@@ -20,7 +20,7 @@
         <!-- Выбор класса -->
         <div style="margin-bottom: 30px;">
             <label style="display: block; color: var(--text-main); margin-bottom: 15px; font-weight: 600; font-size: 1.1em;">
-                📚 Выбери свой класс:
+                 Выбери свой класс:
             </label>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
                 {% for grade in [4, 5, 6, 7, 8, 9, 10, 11] %}
@@ -39,7 +39,7 @@
         <!-- Выбор уровня -->
         <div style="margin-bottom: 35px;">
             <label style="display: block; color: var(--text-main); margin-bottom: 15px; font-weight: 600; font-size: 1.1em;">
-                🎯 Выбери уровень сложности:
+                 Выбери уровень сложности:
             </label>
             <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
                 
@@ -49,7 +49,7 @@
                     <div class="level-option" 
                          style="padding: 20px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: 10px; transition: all 0.3s;">
                         <div style="font-weight: 600; color: var(--text-main); margin-bottom: 5px;">
-                            🟢 Базовый уровень
+                             Базовый уровень
                         </div>
                         <div style="font-size: 0.9em; color: var(--text-muted);">
                             Задачи школьной программы, подходит для закрепления основ
@@ -63,7 +63,7 @@
                     <div class="level-option" 
                          style="padding: 20px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: 10px; transition: all 0.3s;">
                         <div style="font-weight: 600; color: var(--text-main); margin-bottom: 5px;">
-                            🟡 Продвинутый уровень
+                             Продвинутый уровень
                         </div>
                         <div style="font-size: 0.9em; color: var(--text-muted);">
                             Задачи повышенной сложности, требуют нестандартного подхода
@@ -77,7 +77,7 @@
                     <div class="level-option" 
                          style="padding: 20px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: 10px; transition: all 0.3s;">
                         <div style="font-weight: 600; color: var(--text-main); margin-bottom: 5px;">
-                            🔴 Олимпиадный уровень
+                             Олимпиадный уровень
                         </div>
                         <div style="font-size: 0.9em; color: var(--text-muted);">
                             Сложные олимпиадные задачи для подготовки к соревнованиям
@@ -94,7 +94,7 @@
                     style="padding: 18px 50px; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); transition: transform 0.3s;"
                     onmouseover="this.style.transform='translateY(-2px)'"
                     onmouseout="this.style.transform='translateY(0)'">
-                🚀 Сгенерировать мой вариант
+                 Сгенерировать мой вариант
             </button>
         </div>
 
@@ -102,7 +102,7 @@
         <div id="loadingSpinner" style="display: none; text-align: center; margin-top: 30px;">
             <div style="display: inline-block; width: 60px; height: 60px; border: 6px solid rgba(56, 189, 248, 0.2); border-top-color: var(--accent-2); border-radius: 50%; animation: spin 1s linear infinite;"></div>
             <p style="color: var(--text-main); font-size: 1.1em; margin-top: 20px; font-weight: 600;">
-                🤖 ИИ-тьютор генерирует ваш уникальный вариант...
+                 ИИ-тьютор генерирует ваш уникальный вариант...
             </p>
             <p style="color: var(--text-muted); font-size: 0.95em; margin-top: 10px;">
                 Это может занять до 60 секунд. Пожалуйста, не закрывайте страницу.
@@ -114,7 +114,7 @@
     <div style="text-align: center; margin-top: 30px;">
         <a href="{{ url_for('probniks_page') }}"
            style="color: var(--text-muted); text-decoration: none; font-size: 0.95em;">
-            ← Вернуться к выбору теста
+            <- Вернуться к выбору теста
         </a>
     </div>
 

@@ -48,15 +48,15 @@ def run_migration():
         tables = inspector.get_table_names()
 
         if 'olympiad_generation_log' in tables:
-            print("✅ Таблица olympiad_generation_log создана (или уже существовала)")
+            print("[OK] Таблица olympiad_generation_log создана (или уже существовала)")
             cols = [c['name'] for c in inspector.get_columns('olympiad_generation_log')]
             print(f"   Колонки: {', '.join(cols)}")
         else:
-            print("❌ Ошибка: таблица olympiad_generation_log не создана")
+            print("[ERROR] Ошибка: таблица olympiad_generation_log не создана")
             sys.exit(1)
 
 
 if __name__ == '__main__':
-    print("🔄 Запуск миграции: add_olympiad_generation_log")
+    print(" Запуск миграции: add_olympiad_generation_log")
     run_migration()
-    print("✅ Миграция завершена")
+    print("[OK] Миграция завершена")

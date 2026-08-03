@@ -174,7 +174,7 @@
             _addTracksToPeer(pc, localStream);
         }
 
-        // ICE candidate → отправляем пиру
+        // ICE candidate -> отправляем пиру
         pc.onicecandidate = function (event) {
             if (event.candidate && sig) {
                 sig.sendSignal(peerId, "ice", event.candidate);

@@ -242,7 +242,7 @@ new_task = {
     "fixed_by_ai": True,
     "fix_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f+00:00"),
     "changes_made": [
-        "cell_fill: Generated via DeepSeek Reasoner for (8, L3) shortage (20→21)"
+        "cell_fill: Generated via DeepSeek Reasoner for (8, L3) shortage (20->21)"
     ]
 }
 
@@ -265,9 +265,9 @@ print(f"\nClass 8 L3 tasks after: {len(c8l3_after)} (quota=21)")
 
 new_count = len(c8l3_after)
 if new_count >= 21:
-    print("✓ SHORTAGE RESOLVED: Cell (8, L3) now has 21 tasks")
+    print("[OK] SHORTAGE RESOLVED: Cell (8, L3) now has 21 tasks")
 else:
-    print(f"✗ SHORTAGE PERSISTS: Cell (8, L3) has {new_count}, needs 21")
+    print(f" SHORTAGE PERSISTS: Cell (8, L3) has {new_count}, needs 21")
     sys.exit(1)
 
 # ─── Save bank ──────────────────────────────────────────────────────

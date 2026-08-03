@@ -3,7 +3,7 @@
 daily_tasks — Пакет «Задачи дня» (Daily Tasks).
 
 Генерирует 10 персонализированных задач через мульти-LLM пайплайн:
-  Gemini 3.1 Pro (план) → Opus 4.7 (генерация) → GPT-5.5 (аудит) → Opus 4.7 (фикс).
+  Gemini 3.1 Pro (план) -> Opus 4.7 (генерация) -> GPT-5.5 (аудит) -> Opus 4.7 (фикс).
 """
 
 from flask import Blueprint

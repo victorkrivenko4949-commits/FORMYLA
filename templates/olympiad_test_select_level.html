@@ -2,7 +2,7 @@
 {% block title %}{{ grade }} класс · {{ theme[:30] }} — FORMYLA{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
-    <a href="/olympiad-test/select-theme?grade={{ grade }}&section={{ section|urlencode }}" style="color: var(--text-soft); text-decoration: none; font-size: 0.9em;">← Выбор темы</a>
+    <a href="/olympiad-test/select-theme?grade={{ grade }}&section={{ section|urlencode }}" style="color: var(--text-soft); text-decoration: none; font-size: 0.9em;"><- Выбор темы</a>
     <div style="text-align: center; margin: 20px 0 30px;">
         <h1 style="font-size: 1.5em; color: var(--text-main);">{{ grade }} класс</h1>
         <h2 style="font-size: 1.1em; color: var(--accent-2); margin-top: 4px;">{{ theme }}</h2>
@@ -16,20 +16,20 @@
         4: 'уровень задач: Региональный этап ВОШ',
         5: 'уровень задач: Заключительный / Всеросс'
     } %}
-    {% set emojis = {1: '📗', 2: '📘', 3: '📙', 4: '📕', 5: '📓'} %}
+    {% set emojis = {1: '', 2: '', 3: '', 4: '', 5: ''} %}
     {% set subtitles = {
         1: '',
         2: '',
         3: '',
-        4: '🏆 Задачи взяты из реальных олимпиад',
-        5: '🏆 Задачи взяты из реальных олимпиад'
+        4: ' Задачи взяты из реальных олимпиад',
+        5: ' Задачи взяты из реальных олимпиад'
     } %}
 
     {% if recommended_level is not none %}
     {# -- Пользователь уже прошёл диагностику: показываем только ОДИН рекомендуемый уровень -- #}
     <div style="margin-bottom: 28px; padding: 22px 24px; background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(249,115,22,0.08)); border: 1px solid rgba(245,158,11,0.45); border-radius: var(--radius-lg); box-shadow: 0 6px 20px rgba(245,158,11,0.18); text-align: center;">
         <div style="font-size: 1.1em; font-weight: 700; color: #fbbf24; margin-bottom: 4px;">
-            🎯 Твой уровень: L{{ recommended_level }}
+             Твой уровень: L{{ recommended_level }}
         </div>
         <div style="color: var(--text-soft); font-size: 0.9em;">
             Уровень определён по результатам адаптивного теста. Выбери его ниже.
@@ -54,7 +54,7 @@
                 <div style="color: #f59e0b; font-size: 0.85em; margin-top: 4px;">{{ subtitles[lvl] }}</div>
                 {% endif %}
             </div>
-            <span style="color: var(--text-soft); font-size: 1.5em;">→</span>
+            <span style="color: var(--text-soft); font-size: 1.5em;">-></span>
         </a>
     </div>
     {% else %}
@@ -78,7 +78,7 @@
                 <div style="color: #f59e0b; font-size: 0.85em; margin-top: 4px;">{{ subtitles[lvl] }}</div>
                 {% endif %}
             </div>
-            <span style="color: var(--text-soft); font-size: 1.5em;">→</span>
+            <span style="color: var(--text-soft); font-size: 1.5em;">-></span>
         </a>
         {% endfor %}
     </div>

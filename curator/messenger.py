@@ -3,10 +3,10 @@
 curator/messenger.py — Факты, сообщения и проверка куратора (P10).
 
 Функции:
-  get_student_facts(user_id)     → dict фактов на сегодня (только данные, без текста)
-  build_curator_message(facts)   → str | None (короткое обращение из фактов)
-  validate_message(message, facts) → (bool, str) — проверка перед показом
-  get_curator_card(user_id)      → dict | None (готовые данные для HTML-карточки)
+  get_student_facts(user_id)     -> dict фактов на сегодня (только данные, без текста)
+  build_curator_message(facts)   -> str | None (короткое обращение из фактов)
+  validate_message(message, facts) -> (bool, str) — проверка перед показом
+  get_curator_card(user_id)      -> dict | None (готовые данные для HTML-карточки)
 """
 
 from __future__ import annotations
@@ -352,7 +352,7 @@ def _get_weakest_sections(user_id: int) -> List[Dict[str, Any]]:
             n = data.get("n", 0)
             if mu is None or n == 0:
                 continue
-            # mu (1..5) → переводим в проценты: (mu-1)/4 * 100
+            # mu (1..5) -> переводим в проценты: (mu-1)/4 * 100
             accuracy_pct = round((mu - 1) / 4 * 100, 1)
             entries.append({
                 "section": sec,
@@ -424,7 +424,7 @@ def _pick_method(section: str, grade: int) -> Optional[Dict[str, Any]]:
         logger.warning("messenger: cannot load methods_catalog_105.json: %s", e)
         return None
 
-    # Маппинг section slug → буква раздела в каталоге
+    # Маппинг section slug -> буква раздела в каталоге
     section_map = {
         "algebra": "A",
         "geometry": "G",

@@ -308,9 +308,9 @@
 
   <!-- Hero -->
   <div class="vs-hero">
-    <a class="back-link" href="{{ url_for('olympiad.catalog') }}">← Все курсы</a>
+    <a class="back-link" href="{{ url_for('olympiad.catalog') }}"><- Все курсы</a>
     <h1>
-      🔮 Предикт ВсОШ {{ grade }} класс · 2027
+       Предикт ВсОШ {{ grade }} класс · 2027
       <span class="grade-tag"><span class="dot"></span> {{ grade }} класс</span>
     </h1>
     <p class="subtitle">
@@ -396,7 +396,7 @@
 
           <div class="meta-row">
             {% if m.study_order %}
-            <span class="study-order">📋 очередь {{ m.study_order }}</span>
+            <span class="study-order"> очередь {{ m.study_order }}</span>
             {% endif %}
             {% if m.importance %}
             <span class="importance {{ imp_class }}">{{ m.importance }}</span>
@@ -416,7 +416,7 @@
     {% endfor %}
   {% else %}
     <div class="vs-empty">
-      <p>❌ Данные для {{ grade }} класса ещё не загружены.</p>
+      <p>[ERROR] Данные для {{ grade }} класса ещё не загружены.</p>
     </div>
   {% endif %}
 

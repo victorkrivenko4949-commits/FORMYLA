@@ -875,7 +875,7 @@ def get_onboarding_tasks(grade, limit=12):
 def get_subtopic_test(grade, subtopic_key, count=5):
     """Подобрать задачи для теста по подтеме дня.
 
-    Использует registry для маппинга (grade, subtopic_key) → db_topic.
+    Использует registry для маппинга (grade, subtopic_key) -> db_topic.
     Берёт задачи на уровне [CALIBRATION_START_LEVEL, CALIBRATION_START_LEVEL+1].
     Если db_topic не найден — пытается найти LIKE-совпадение по topic.
     """
@@ -961,9 +961,9 @@ def coach():
                 display_level = 4
             else:
                 display_level = 5
-            level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
-                            4: '🟠 Продвинутый', 5: '🔴 Высокий'}
-            level_label = f'{level_labels.get(display_level, "🟡 Средний")} (уровень {display_level}/5)'
+            level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
+                            4: ' Продвинутый', 5: ' Высокий'}
+            level_label = f'{level_labels.get(display_level, " Средний")} (уровень {display_level}/5)'
         # Также пробуем взять из анкеты (наивысший приоритет)
         if overall_level is None:
             try:
@@ -971,9 +971,9 @@ def coach():
                 q_level = get_questionnaire_level(current_user.id)
                 if q_level is not None:
                     overall_level = q_level
-                    level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
-                                    4: '🟠 Продвинутый', 5: '🔴 Высокий'}
-                    level_label = f'{level_labels.get(min(q_level, 5), "🟡 Средний")} (уровень {min(q_level, 5)}/5)'
+                    level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
+                                    4: ' Продвинутый', 5: ' Высокий'}
+                    level_label = f'{level_labels.get(min(q_level, 5), " Средний")} (уровень {min(q_level, 5)}/5)'
             except Exception:
                 pass
         # Затем пробуем взять из CuratorState.prep_state.level (monthly cycle)
@@ -984,9 +984,9 @@ def coach():
                 if _cs2 and _cs2.prep_state and _cs2.prep_state.get('level'):
                     prep_lvl = _cs2.prep_state['level']
                     overall_level = prep_lvl
-                    level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
-                                    4: '🟠 Продвинутый', 5: '🔴 Высокий'}
-                    level_label = f'{level_labels.get(min(prep_lvl, 5), "🟡 Средний")} (уровень {min(prep_lvl, 5)}/5)'
+                    level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
+                                    4: ' Продвинутый', 5: ' Высокий'}
+                    level_label = f'{level_labels.get(min(prep_lvl, 5), " Средний")} (уровень {min(prep_lvl, 5)}/5)'
             except Exception:
                 pass
 
@@ -1017,7 +1017,7 @@ def coach():
         ('knights_liars',  'Рыцари и лжецы'),
     ]
 
-    # ── Section name → Russian display name mapping ──
+    # ── Section name -> Russian display name mapping ──
     _SECTION_NAMES_RU = {
         'algebra':        'Алгебра',
         'geometry':       'Геометрия',
@@ -1118,7 +1118,7 @@ def coach():
                 'value': mastery_val,
             })
 
-        # Нормализуем mastery_val (0.0-1.0 → 0-5) для radar chart
+        # Нормализуем mastery_val (0.0-1.0 -> 0-5) для radar chart
         for _m in mastery_list:
             _m['value'] = round(_m['value'] * 5, 1)
 
@@ -1400,12 +1400,12 @@ def morning_probe():
     # 2. Ensure monthly cycle exists
     cycle = get_cycle_info(user_id)
     if not cycle.get('active'):
-        # No active cycle → build one
+        # No active cycle -> build one
         cycle_info = build_or_get_cycle(user_id, grade)
         cycle = get_cycle_info(user_id)
 
     if cycle.get('finished'):
-        # Cycle finished → redirect to daily tasks
+        # Cycle finished -> redirect to daily tasks
         if _wants_json():
             return jsonify(redirect='/daily_tasks', message='Цикл завершён. Переходи к задачам дня.')
         return redirect('/daily_tasks')
@@ -1443,7 +1443,7 @@ def morning_probe():
     probe = _get_probe_state(cs)
 
     if not probe:
-        # No probe started yet → start it
+        # No probe started yet -> start it
         result = start_probe(user_id, current_theme, grade)
         if result.get('error'):
             if _wants_json():
@@ -1462,7 +1462,7 @@ def morning_probe():
     total_tasks = 5
 
     if current_index >= total_tasks:
-        # Probe complete → get final result
+        # Probe complete -> get final result
         from services.theme_probe import _finish_probe
         # Actually, probe is already finished. Clean up.
         # Get last answer data
@@ -1820,13 +1820,13 @@ def coach_greeting():
 
     if not grade:
         return jsonify(
-            greeting='👋 Привет! Я твой ИИ-куратор FORMYLA. Для начала выбери свой класс, '
+            greeting=' Привет! Я твой ИИ-куратор FORMYLA. Для начала выбери свой класс, '
                      'чтобы я мог построить радар твоих подтем.',
             scenario='need_grade',
             recommended_olympiad=None,
             subtopics_to_test=[],
             cta_url='/profile',
-            cta_text='🎯 Выбрать класс',
+            cta_text=' Выбрать класс',
         )
 
     # ── NEW (STEP 1): try next_action first ──
@@ -1841,7 +1841,7 @@ def coach_greeting():
             or getattr(current_user, 'nickname', None)
             or 'ученик'
         )
-        name_greeting = f'👋 Привет, {user_name}!'
+        name_greeting = f' Привет, {user_name}!'
 
         greeting = f'{name_greeting}\n\n<strong>{na["title"]}</strong>\n\n{na["reason"]}'
 
@@ -1882,7 +1882,7 @@ def coach_greeting():
             idx = existing_test.get('current_index', 0)
             total = len(task_ids)
             greeting = (
-                f'🧪 <strong>Диагностика уже запущена!</strong> '
+                f' <strong>Диагностика уже запущена!</strong> '
                 f'Ты на задаче {idx + 1} из {total}. '
                 f'Просто напиши ответ в чат, чтобы продолжить.'
             )
@@ -1911,17 +1911,17 @@ def coach_greeting():
         if measured_count == 0:
             if questionnaire_done:
                 # Анкета пройдена — уровень известен, предлагаем тест по темам
-                level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
-                                4: '🟠 Продвинутый', 5: '🔴 Высокий'}
-                label = level_labels.get(questionnaire_level, '🟡 Средний')
+                level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
+                                4: ' Продвинутый', 5: ' Высокий'}
+                label = level_labels.get(questionnaire_level, ' Средний')
                 return jsonify(
-                    greeting=f'📋 Анкета пройдена! Твой уровень: <strong>{label} (уровень {questionnaire_level}/5)</strong>.\n\n'
+                    greeting=f' Анкета пройдена! Твой уровень: <strong>{label} (уровень {questionnaire_level}/5)</strong>.\n\n'
                              f'Теперь пройди адаптивный тест по темам — он настроен под твой уровень.',
                     scenario='open_url',
                     recommended_olympiad=None,
                     subtopics_to_test=[],
                     cta_url='/olympiad-test',
-                    cta_text='🎯 Пройти тест по темам',
+                    cta_text=' Пройти тест по темам',
                 )
             else:
                 # Анкета не пройдена — предлагаем пройти (не 21 задачу!)
@@ -1931,7 +1931,7 @@ def coach_greeting():
                     recommended_olympiad=None,
                     subtopics_to_test=[],
                     cta_url='/olympiad-test',
-                    cta_text='🎯 Пройти тест по темам',
+                    cta_text=' Пройти тест по темам',
                 )
 
         # ── Проверка DailyQuest на сегодня ──────────────────────────────────
@@ -1944,8 +1944,8 @@ def coach_greeting():
         if daily_quest and daily_quest.completed_at is None:
             remaining = daily_quest.total_count - daily_quest.completed_count
             greeting = (
-                f'👋 С возвращением! У тебя осталось **{remaining} из {daily_quest.total_count}** задач '
-                f'на сегодня. Продолжай в том же духе! 💪'
+                f' С возвращением! У тебя осталось **{remaining} из {daily_quest.total_count}** задач '
+                f'на сегодня. Продолжай в том же духе! '
             )
             return jsonify(
                 greeting=greeting,
@@ -1953,7 +1953,7 @@ def coach_greeting():
                 recommended_olympiad=None,
                 subtopics_to_test=[],
                 cta_url=None,
-                cta_text='📝 Продолжить задачи дня',
+                cta_text=' Продолжить задачи дня',
             )
 
         # ── Сценарий 5: день завершён ──────────────────────────────────────
@@ -1963,7 +1963,7 @@ def coach_greeting():
             weak_names = ', '.join(ctx['topic_names'].get(k, k) for k in weak_keys[:3]) if weak_keys else ''
             day_result = f'{daily_quest.completed_count}/{daily_quest.total_count}'
             greeting = (
-                f'🎉 Отлично! Ты завершил день — {day_result}. '
+                f' Отлично! Ты завершил день — {day_result}. '
                 f'Завтра будет новая подтема. Отдохни и набирайся сил!'
             )
             if weak_names:
@@ -1990,7 +1990,7 @@ def coach_greeting():
                 recommended_olympiad=recommended,
                 subtopics_to_test=ctx['subtopics_to_test'],
                 cta_url='/prep/new' if recommended else None,
-                cta_text='📋 Создать план подготовки' if recommended else None,
+                cta_text=' Создать план подготовки' if recommended else None,
                 day_result=day_result,
             )
 
@@ -2029,11 +2029,11 @@ def coach_greeting():
                 except Exception:
                     _next_names = 'следующие подтемы'
                 greeting = (
-                    f'🎉 <strong>Прошёл месяц!</strong> Поздравляю с завершением '
+                    f' <strong>Прошёл месяц!</strong> Поздравляю с завершением '
                     f'очередного этапа подготовки!\n\n'
                     f'Вот твои следующие подтемы, над которыми будем работать:\n'
                     f'<strong>{_next_names}</strong>\n\n'
-                    f'Готов начать новый месяц? 🚀'
+                    f'Готов начать новый месяц? '
                 )
                 return jsonify(
                     greeting=greeting,
@@ -2046,19 +2046,19 @@ def coach_greeting():
                         'subtopic': _prep_info.get('subtopic'),
                     },
                     cta_url='/coach',
-                    cta_text='🚀 Начать новый месяц',
+                    cta_text=' Начать новый месяц',
                 )
 
             if _is_test_day and not _tested:
                 # Сценарий 3a.1: Утренний тест — "7 дней чтобы пройти 7 тестов"
                 greeting = (
-                    f'🌅 Доброе утро! У тебя **7 дней, чтобы пройти 7 тестов** — '
+                    f' Доброе утро! У тебя **7 дней, чтобы пройти 7 тестов** — '
                     f'по одному на каждую подтему.\n\n'
                     f'Сегодня **тестовый день** ({_cycle_progress}).\n\n'
                     f'Тема дня: **«{_subtopic_title}»**.\n'
                     f'Пройди тест из 5 задач — это займёт 5–10 минут. '
                     f'По результатам я подберу задачи дня под твой уровень.\n\n'
-                    f'Осталось пройти тестов: **{_remaining_tests}**. 💪'
+                    f'Осталось пройти тестов: **{_remaining_tests}**. '
                 )
                 return jsonify(
                     greeting=greeting,
@@ -2074,16 +2074,16 @@ def coach_greeting():
                         'level': _level,
                     },
                     cta_url='/coach',
-                    cta_text='🧪 Начать тест',
+                    cta_text=' Начать тест',
                 )
 
             elif _is_test_day and _tested:
                 # Сценарий 3a.2: Тест пройден, ждём задачи
                 greeting = (
-                    f'✅ Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
+                    f'[OK] Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
     f'Задачи дня уже готовятся под твой уровень (сложность {_level}/5). '
                     f'Они придут вечером — проверь уведомления!\n\n'
-                    f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}** из 7. 💪'
+                    f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}** из 7. '
                 )
                 return jsonify(
                     greeting=greeting,
@@ -2099,16 +2099,16 @@ def coach_greeting():
                         'level': _level,
                     },
                     cta_url='/daily_tasks',
-                    cta_text='📚 Перейти к задачам дня' if _has_tasks else None,
+                    cta_text=' Перейти к задачам дня' if _has_tasks else None,
                 )
 
             elif not _is_test_day:
                 if _has_tasks:
                     # Сценарий 3a.3: Task-only день, задачи уже готовы
                     greeting = (
-                        f'📚 Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
+                        f' Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
                         f'Тема: **«{_subtopic_title}»**.\n'
-                        f'Задачи дня уже готовы — продолжай тренироваться! 💪\n\n'
+                        f'Задачи дня уже готовы — продолжай тренироваться! \n\n'
                         f'Уровень сложности: {_level}/5.'
                     )
                     return jsonify(
@@ -2124,15 +2124,15 @@ def coach_greeting():
                             'level': _level,
                         },
                         cta_url='/daily_tasks',
-                        cta_text='📚 Перейти к задачам дня',
+                        cta_text=' Перейти к задачам дня',
                     )
                 else:
                     # Сценарий 3a.4: Task-only день, задачи ещё не готовы
                     greeting = (
-                        f'🌅 Доброе утро! Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
+                        f' Доброе утро! Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
                         f'Тема недели: **«{_subtopic_title}»**.\n'
                         f'Задачи придут вечером — настроим их под твой уровень ({_level}/5).\n\n'
-                        f'А пока можешь повторить теорию или решить несколько задач для разминки! 📖'
+                        f'А пока можешь повторить теорию или решить несколько задач для разминки! '
                     )
                     return jsonify(
                         greeting=greeting,
@@ -2147,7 +2147,7 @@ def coach_greeting():
                             'level': _level,
                         },
                         cta_url=None,
-                        cta_text='📖 Повторить теорию',
+                        cta_text=' Повторить теорию',
                     )
 
         # ── Сценарий 3b: daily_test — предложить тест по приоритетной подтеме ─
@@ -2160,7 +2160,7 @@ def coach_greeting():
 
         subtopic_name = priority_subtopic['name'] if priority_subtopic else 'математике'
         greeting = (
-            f'👋 Привет! Ты в {grade}-м классе. Готов позаниматься? '
+            f' Привет! Ты в {grade}-м классе. Готов позаниматься? '
             f'Предлагаю начать с темы **«{subtopic_name}»** — '
             f'реши несколько задач, и я подберу задачи дня под твой уровень.'
         )
@@ -2172,12 +2172,12 @@ def coach_greeting():
             subtopics_to_test=ctx['subtopics_to_test'],
             priority_subtopic=priority_subtopic,
             cta_url=None,
-            cta_text='🧪 Пройти тест по теме',
+            cta_text=' Пройти тест по теме',
         )
     except Exception as _greeting_err:
         current_app.logger.exception('coach_greeting safety net caught error')
         return jsonify(
-            greeting='👋 Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!',
+            greeting=' Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!',
             scenario='fallback',
             recommended_olympiad=None,
             subtopics_to_test=[],
@@ -2191,9 +2191,9 @@ def coach_greeting():
 @prep_bp.route('/coach/test/start', methods=['POST'])
 @login_required
 def coach_test_start():
-    """Редирект: старая диагностика (21 задача) → /intake."""
+    """Редирект: старая диагностика (21 задача) -> /intake."""
     return jsonify(
-        reply='📋 Диагностика заменена на новую анкету входа!',
+        reply=' Диагностика заменена на новую анкету входа!',
         redirect_url='/intake',
     )
 
@@ -2502,9 +2502,9 @@ def coach_day_complete():
     Ожидает JSON: {'correct': int, 'total': int}
 
     Адаптация уровня (шкала 1..5):
-      - correct ≥ 8 → +1 (вверх)
-      - 4 ≤ correct ≤ 7 → 0 (без изменений)
-      - correct ≤ 3 → -1 (вниз)
+      - correct ≥ 8 -> +1 (вверх)
+      - 4 ≤ correct ≤ 7 -> 0 (без изменений)
+      - correct ≤ 3 -> -1 (вниз)
 
     Обновляет completed_at в DailyQuest.
     Возвращает новый уровень и сообщение.
@@ -2559,11 +2559,11 @@ def coach_day_complete():
 
         # Сообщение
         if delta > 0:
-            msg = f'🎉 Отлично! {correct}/{total} правильных. Уровень повышен: {prev_level} → {new_level}.'
+            msg = f' Отлично! {correct}/{total} правильных. Уровень повышен: {prev_level} -> {new_level}.'
         elif delta < 0:
-            msg = f'💪 Ничего страшного! {correct}/{total} правильных. Попробуй уровень {new_level}.'
+            msg = f' Ничего страшного! {correct}/{total} правильных. Попробуй уровень {new_level}.'
         else:
-            msg = f'✅ Хорошо! {correct}/{total} правильных. Уровень {new_level} подходит.'
+            msg = f'[OK] Хорошо! {correct}/{total} правильных. Уровень {new_level} подходит.'
 
         return jsonify(
             status='ok',
@@ -2678,7 +2678,7 @@ def _submit_onboarding_results(solutions_dict, difficulty_ratings=None):
 
     grade = _get_user_grade()
     if not grade:
-        reply = '⚠️ Сначала выберите класс в профиле.'
+        reply = '[!]️ Сначала выберите класс в профиле.'
         _save_chat_message(current_user.id, 'assistant', reply)
         return jsonify(reply=reply)
 
@@ -2755,23 +2755,23 @@ def _submit_onboarding_results(solutions_dict, difficulty_ratings=None):
             pass
 
         # Format response as chat bot message
-        level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
-                        4: '🟠 Продвинутый', 5: '🔴 Высокий'}
-        level_label = level_labels.get(overall_level, '🟡 Средний')
+        level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
+                        4: ' Продвинутый', 5: ' Высокий'}
+        level_label = level_labels.get(overall_level, ' Средний')
 
         reply = (
-            f"🎉 <strong>Диагностика завершена!</strong>\n\n"
-            f"📊 <strong>Твой общий уровень:</strong> {level_label} (уровень {overall_level}/5)\n"
-            f"📐 Измерено <strong>{profile.get('measured_topics_count', 0)}</strong> тем.\n"
+            f" <strong>Диагностика завершена!</strong>\n\n"
+            f" <strong>Твой общий уровень:</strong> {level_label} (уровень {overall_level}/5)\n"
+            f" Измерено <strong>{profile.get('measured_topics_count', 0)}</strong> тем.\n"
         )
         if weak_names:
-            reply += f"⚠️ <strong>Слабые темы:</strong> {', '.join(weak_names)}.\n"
-        reply += "\n🔥 Рекомендация: задачи дня будут подобраны под твой уровень."
+            reply += f"[!]️ <strong>Слабые темы:</strong> {', '.join(weak_names)}.\n"
+        reply += "\n Рекомендация: задачи дня будут подобраны под твой уровень."
 
         if recommended:
-            reply += f"\n\n📋 <strong>Рекомендуемая олимпиада:</strong> {recommended['name']}"
+            reply += f"\n\n <strong>Рекомендуемая олимпиада:</strong> {recommended['name']}"
 
-        reply += "\n\n📝 <em>Оцени сложность каждой задачи от 1 до 5 в следующем сообщении.</em>"
+        reply += "\n\n <em>Оцени сложность каждой задачи от 1 до 5 в следующем сообщении.</em>"
 
         _save_chat_message(current_user.id, 'assistant', reply)
         return jsonify(reply=reply)
@@ -2779,7 +2779,7 @@ def _submit_onboarding_results(solutions_dict, difficulty_ratings=None):
     except Exception:
         db.session.rollback()
         current_app.logger.exception('_submit_onboarding_results failed')
-        reply = '❌ Произошла ошибка при проверке результатов. Попробуй начать тест заново.'
+        reply = '[ERROR] Произошла ошибка при проверке результатов. Попробуй начать тест заново.'
         _save_chat_message(current_user.id, 'assistant', reply)
         return jsonify(reply=reply)
 
@@ -2826,10 +2826,10 @@ def coach_chat():
                     f"<strong>Вопрос {next_idx + 1} из {total}:</strong><br>"
                     f"{next_q['question']}\n\n"
                     f"<hr>\n"
-                    f"✏️ <em>Напиши свой ответ.</em>"
+                    f"️ <em>Напиши свой ответ.</em>"
                 )
             else:
-                reply = '📋 Анкета завершена!'
+                reply = ' Анкета завершена!'
         else:
             q_state['active'] = False
             save_questionnaire_state(q_state)
@@ -2931,7 +2931,7 @@ def coach_chat():
                     test_state['awaiting_difficulty_for'] = None
                     session['coach_test'] = test_state
 
-                    # All tasks answered + difficulty rated → submit
+                    # All tasks answered + difficulty rated -> submit
                     if current_index >= total:
                         session.pop('coach_test', None)
                         return _submit_onboarding_results(
@@ -2947,22 +2947,22 @@ def coach_chat():
                         task_text = normalize_math_text(task.task_text) if task.task_text else task.task_text
                         num = current_index + 1
                         reply = (
-                            f"✅ Спасибо! Переходим к следующей задаче.\n\n"
+                            f"[OK] Спасибо! Переходим к следующей задаче.\n\n"
                             f"<hr>\n"
                             f"<strong>Задача {num} из {total}:</strong><br>"
                             f"{task_text}\n\n"
                             f"<hr>\n"
-                            f"✏️ <em>Запиши свой ответ.</em>"
+                            f"️ <em>Запиши свой ответ.</em>"
                         )
                     else:
-                        reply = "⚠️ Ошибка загрузки задачи. Попробуй начать тест заново."
+                        reply = "[!]️ Ошибка загрузки задачи. Попробуй начать тест заново."
 
                     _save_chat_message(current_user.id, 'assistant', reply)
                     return jsonify(reply=reply)
             except (ValueError, TypeError):
                 pass
             # Invalid difficulty — ask again
-            reply = "📝 Пожалуйста, оцените сложность задачи по шкале от 1 до 5 — именно для вас, с учётом ваших текущих знаний (просто напишите число)."
+            reply = " Пожалуйста, оцените сложность задачи по шкале от 1 до 5 — именно для вас, с учётом ваших текущих знаний (просто напишите число)."
             _save_chat_message(current_user.id, 'assistant', reply)
             return jsonify(reply=reply)
 
@@ -2980,7 +2980,7 @@ def coach_chat():
             # Get the task for evaluation
             task = AdaptiveTask.query.get(task_id)
             if not task:
-                reply = "⚠️ Ошибка загрузки задачи. Попробуй начать тест заново."
+                reply = "[!]️ Ошибка загрузки задачи. Попробуй начать тест заново."
                 _save_chat_message(current_user.id, 'assistant', reply)
                 return jsonify(reply=reply)
 
@@ -2997,26 +2997,26 @@ def coach_chat():
 
                 # Build evaluation reply
                 if verdict == 'correct':
-                    eval_part = f"✅ <strong>Верно!</strong> {ai_msg}"
+                    eval_part = f"[OK] <strong>Верно!</strong> {ai_msg}"
                 elif verdict == 'partial':
-                    eval_part = f"⚠️ <strong>Частично верно.</strong> {ai_msg}"
+                    eval_part = f"[!]️ <strong>Частично верно.</strong> {ai_msg}"
                 else:
-                    eval_part = f"❌ <strong>Неверно.</strong> {ai_msg}"
+                    eval_part = f"[ERROR] <strong>Неверно.</strong> {ai_msg}"
 
                 reply = f"{eval_part}\n\n"
 
                 # Show correct answer
                 if correct_answer:
-                    reply += f"📌 <strong>Правильный ответ:</strong> ${correct_answer}$\n\n"
+                    reply += f" <strong>Правильный ответ:</strong> ${correct_answer}$\n\n"
 
                 # Show full solution (DB reference or AI-generated)
                 if display_solution:
-                    reply += f"📝 <strong>Полное решение:</strong>\n{display_solution}\n\n"
+                    reply += f" <strong>Полное решение:</strong>\n{display_solution}\n\n"
 
                 # Ask for difficulty rating
                 reply += (
                     f"<hr>\n"
-                    f"📝 <em>Оцени сложность этой задачи от 1 до 5.</em>"
+                    f" <em>Оцени сложность этой задачи от 1 до 5.</em>"
                 )
 
                 # Set awaiting difficulty flag
@@ -3029,14 +3029,14 @@ def coach_chat():
                 reference_solution = task.solution or ''
                 correct_answer = task.correct_answer or ''
 
-                reply = "✅ Ответ принят!\n\n"
+                reply = "[OK] Ответ принят!\n\n"
                 if correct_answer:
-                    reply += f"📌 <strong>Правильный ответ:</strong> ${correct_answer}$\n\n"
+                    reply += f" <strong>Правильный ответ:</strong> ${correct_answer}$\n\n"
                 if reference_solution:
-                    reply += f"📝 <strong>Полное решение:</strong>\n{reference_solution}\n\n"
+                    reply += f" <strong>Полное решение:</strong>\n{reference_solution}\n\n"
                 reply += (
                     f"<hr>\n"
-                    f"📝 <em>Оцени сложность этой задачи от 1 до 5.</em>"
+                    f" <em>Оцени сложность этой задачи от 1 до 5.</em>"
                 )
                 test_state['awaiting_difficulty_for'] = task_id
                 session['coach_test'] = test_state
@@ -3192,7 +3192,7 @@ def coach_chat():
         )
     if reply is None:
         reply = (
-            "🤖 ИИ-куратор сейчас недоступен — сервис не отвечает. "
+            " ИИ-куратор сейчас недоступен — сервис не отвечает. "
             "Это не влияет на задачи дня и твой прогресс. "
             "Попробуй позже или задай вопрос в чате в другое время."
         )
@@ -3338,9 +3338,9 @@ def onboarding_anchor():
 @prep_bp.route('/coach/questionnaire/start', methods=['POST'])
 @login_required
 def coach_questionnaire_start_redirect():
-    """Редирект: старая анкета → новая ветвящаяся анкета."""
+    """Редирект: старая анкета -> новая ветвящаяся анкета."""
     return jsonify(
-        reply='📋 Переходим на новую анкету!',
+        reply=' Переходим на новую анкету!',
         redirect_url='/intake',
     )
 
@@ -3348,7 +3348,7 @@ def coach_questionnaire_start_redirect():
 @prep_bp.route('/coach/questionnaire/answer', methods=['POST'])
 @login_required
 def coach_questionnaire_answer_redirect():
-    """Редирект: старый endpoint ответа → новая анкета."""
+    """Редирект: старый endpoint ответа -> новая анкета."""
     return jsonify(
         reply='Используй новую анкету: /intake',
         redirect_url='/intake',

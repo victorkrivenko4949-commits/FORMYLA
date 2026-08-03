@@ -208,7 +208,7 @@ def gate_content_arbiter(gate_results: Dict[str, dict]) -> dict:
     passed = len(failed_gates) == 0
 
     if passed:
-        detail = "ALL 13 GATES PASSED → ACCEPT"
+        detail = "ALL 13 GATES PASSED -> ACCEPT"
     else:
         failed_names = ", ".join(failed_gates)
         detail = f"REJECTED: gates [{failed_names}] failed"

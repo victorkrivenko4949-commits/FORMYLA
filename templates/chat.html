@@ -931,11 +931,11 @@
   <!-- Sidebar: список диалогов -->
   <aside class="chat-sidebar">
     <header>
-      💬 Чат
+       Чат
       <span class="count" id="convCount">{{ friends|length }}</span>
       <button class="sidebar-menu-btn" type="button" title="Меню" onclick="toggleSidebarMenu(event)">⋯</button>
       <div id="sidebarMenu" class="sidebar-menu" hidden>
-        <button type="button" onclick="actNewGroup()">👥 Создать группу</button>
+        <button type="button" onclick="actNewGroup()"> Создать группу</button>
       </div>
     </header>
     <div class="chat-search">
@@ -961,7 +961,7 @@
       {% else %}
         <div style="padding:30px 18px; color:var(--text-muted); text-align:center; font-size:.9em;">
           У вас пока нет друзей.<br>
-          <a href="/friends" style="color:#8b5cf6;">Найти друзей →</a>
+          <a href="/friends" style="color:#8b5cf6;">Найти друзей -></a>
         </div>
       {% endif %}
     </div>
@@ -971,7 +971,7 @@
   <section class="chat-main" id="chatMain">
     <!-- CHAT_DROP_V1 — visual overlay shown while dragging a file over the chat -->
     <div id="chatDropOverlay" class="chat-drop-overlay" hidden>
-      <div class="drop-icon">📥</div>
+      <div class="drop-icon"></div>
       <div>Бросьте файл сюда, чтобы прикрепить</div>
       <div style="font-size:.8em; opacity:.85; margin-top:6px;">Картинки и PDF, до 5 МБ</div>
     </div>
@@ -994,7 +994,7 @@
           </div>
         </div>
         <!-- CHAT_SEARCH_V1 — открытие поиска по сообщениям -->
-        <button class="chat-hdr-btn" type="button" title="Поиск (Ctrl+F)" onclick="openMsgSearch()">🔍</button>
+        <button class="chat-hdr-btn" type="button" title="Поиск (Ctrl+F)" onclick="openMsgSearch()"></button>
       </div>
 
       <!-- CHAT_USER_INFO_V1 — side-sheet с информацией о пользователе -->
@@ -1013,13 +1013,13 @@
       <div id="msgSearchBar" class="msg-search-bar" hidden>
         <input type="text" id="msgSearchInput" placeholder="Поиск в этом чате…" autocomplete="off">
         <span id="msgSearchCount" class="msg-search-count">0 из 0</span>
-        <button type="button" title="Предыдущее" onclick="navMsgSearch(-1)">↑</button>
-        <button type="button" title="Следующее" onclick="navMsgSearch(1)">↓</button>
+        <button type="button" title="Предыдущее" onclick="navMsgSearch(-1)">^</button>
+        <button type="button" title="Следующее" onclick="navMsgSearch(1)">v</button>
         <button type="button" title="Закрыть (Esc)" onclick="closeMsgSearch()">×</button>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div id="chatActionBar" class="chat-action-bar" hidden>
-        <div class="cab-icon" id="cabIcon">↩</div>
+        <div class="cab-icon" id="cabIcon"></div>
         <div class="cab-body">
           <div class="cab-title" id="cabTitle">Ответ</div>
           <div class="cab-text" id="cabText">—</div>
@@ -1027,10 +1027,10 @@
         <button class="cab-close" type="button" title="Отмена" onclick="cancelAction()">×</button>
       </div>
       <div class="chat-composer">
-        <button class="chat-btn share" title="Поделиться задачей" onclick="openTaskPicker()">📎</button>
-        <button class="chat-btn share" title="Прикрепить файл (картинка / PDF, до 5 МБ)" onclick="document.getElementById('chatFileInput').click()">🖼</button>
+        <button class="chat-btn share" title="Поделиться задачей" onclick="openTaskPicker()"></button>
+        <button class="chat-btn share" title="Прикрепить файл (картинка / PDF, до 5 МБ)" onclick="document.getElementById('chatFileInput').click()"></button>
         <input type="file" id="chatFileInput" accept="image/*,application/pdf" hidden onchange="onAttachPicked(event)">
-        <button class="chat-btn emoji" id="chatEmojiBtn" type="button" title="Эмодзи">😀</button>
+        <button class="chat-btn emoji" id="chatEmojiBtn" type="button" title="Эмодзи"></button>
         <textarea id="chatText" placeholder="Напишите сообщение… (Enter — отправить, Shift+Enter — перенос)"
                   onkeydown="onChatKey(event)"></textarea>
         <button class="chat-btn send" id="chatSendBtn" onclick="sendMessage()" title="Отправить">
@@ -1038,15 +1038,15 @@
         </button>
       </div>
       <div id="attachPreviewBar" class="attach-preview" hidden style="margin-left:14px;margin-right:14px;">
-        <span class="icon">📎</span>
+        <span class="icon"></span>
         <span class="name" id="attachPreviewName">file</span>
         <span class="remove" onclick="cancelAttach()" title="Отменить">×</span>
       </div>
     {% else %}
       <div class="chat-empty">
-        <div style="font-size:3em; margin-bottom:10px;">💬</div>
+        <div style="font-size:3em; margin-bottom:10px;"></div>
         <div style="font-size:1.05em; color:var(--text-main); margin-bottom:6px;">Выберите друга, чтобы начать чат</div>
-        <div>Можно поделиться любой задачей — нажмите 📎 в окне сообщений</div>
+        <div>Можно поделиться любой задачей — нажмите  в окне сообщений</div>
       </div>
     {% endif %}
   </section>
@@ -1055,25 +1055,25 @@
 <!-- Message context menu (WhatsApp-style) -->
 <div id="msgCtxMenu" class="msg-ctx-menu" hidden>
   <div class="msg-react-bar">
-    <button data-react="👍"  type="button" title="Нравится">👍</button>
-    <button data-react="❤️"  type="button" title="Сердце">❤️</button>
-    <button data-react="😂"  type="button" title="Смех">😂</button>
-    <button data-react="😮"  type="button" title="Удивление">😮</button>
-    <button data-react="😢"  type="button" title="Грусть">😢</button>
-    <button data-react="🔥"  type="button" title="Огонь">🔥</button>
+    <button data-react=""  type="button" title="Нравится"></button>
+    <button data-react="️"  type="button" title="Сердце">️</button>
+    <button data-react=""  type="button" title="Смех"></button>
+    <button data-react=""  type="button" title="Удивление"></button>
+    <button data-react=""  type="button" title="Грусть"></button>
+    <button data-react=""  type="button" title="Огонь"></button>
   </div>
-  <button data-act="reply"    type="button"><span>↩</span>Ответить</button>
-  <button data-act="copy"     type="button"><span>📋</span>Копировать</button>
-  <button data-act="forward"  type="button"><span>➤</span>Переслать</button>
-  <button data-act="edit"     type="button" data-mine-only="1"><span>✎</span>Изменить</button>
-  <button data-act="delete"   type="button" data-mine-only="1" class="danger"><span>🗑</span>Удалить</button>
+  <button data-act="reply"    type="button"><span></span>Ответить</button>
+  <button data-act="copy"     type="button"><span></span>Копировать</button>
+  <button data-act="forward"  type="button"><span></span>Переслать</button>
+  <button data-act="edit"     type="button" data-mine-only="1"><span></span>Изменить</button>
+  <button data-act="delete"   type="button" data-mine-only="1" class="danger"><span></span>Удалить</button>
 </div>
 
 <!-- Forward picker modal -->
 <div id="fwdModal" class="fwd-modal-overlay" hidden onclick="if(event.target===this) closeForward()">
   <div class="fwd-modal">
     <div class="fwd-head">
-      <h3>➤ Переслать</h3>
+      <h3> Переслать</h3>
       <button type="button" onclick="closeForward()" class="fwd-close">×</button>
     </div>
     <input id="fwdSearch" type="text" placeholder="Поиск друга..." oninput="renderFwdList()">
@@ -1089,13 +1089,13 @@
 <div class="tp-modal-overlay" id="taskPickerModal" onclick="if(event.target===this) closeTaskPicker()">
   <div class="tp-modal">
     <div class="tp-head">
-      <h3>📎 Поделиться задачей</h3>
+      <h3> Поделиться задачей</h3>
       <button class="tp-close" onclick="closeTaskPicker()">×</button>
     </div>
     <div class="tp-tabs">
-      <button class="tp-tab active" data-source="adaptive" onclick="switchSource('adaptive')">📊 Адаптивные</button>
-      <button class="tp-tab" data-source="recent" onclick="switchSource('recent')">🕒 Недавние</button>
-      <button class="tp-tab" data-source="link" onclick="switchSource('link')">🔗 Ссылка</button>
+      <button class="tp-tab active" data-source="adaptive" onclick="switchSource('adaptive')"> Адаптивные</button>
+      <button class="tp-tab" data-source="recent" onclick="switchSource('recent')"> Недавние</button>
+      <button class="tp-tab" data-source="link" onclick="switchSource('link')"> Ссылка</button>
     </div>
     <div class="tp-body" id="tpBody">
       <div class="tp-empty">Загрузка…</div>
@@ -1113,7 +1113,7 @@ let currentFriendId = ACTIVE_FRIEND_ID;
 let pickedTask = null;
 let pickerSource = 'adaptive';
 
-/* ─── MOBILE: two-pane (list ↔ conversation) ─── */
+/* ─── MOBILE: two-pane (list <-> conversation) ─── */
 (function setupChatMobile(){
     function isMobile(){ return window.matchMedia('(max-width: 760px)').matches; }
     function applyChatOpen(){
@@ -1130,7 +1130,7 @@ let pickerSource = 'adaptive';
         // панель информации, а не возвращать к списку диалогов
         if (e.target.closest && e.target.closest('.chat-hdr-info')) return;
         const rect = h.getBoundingClientRect();
-        // Tap within first 44px of header (where ::before arrow sits) → go back to list
+        // Tap within first 44px of header (where ::before arrow sits) -> go back to list
         if (e.clientX - rect.left < 56){
             e.preventDefault();
             history.length > 1 ? history.back() : (window.location.href = '/chat');
@@ -1171,7 +1171,7 @@ async function loadConversations(){
         const lm = it.last_message;
         if (lm){
           let txt;
-          if (lm.kind === 'task_share') txt = '📎 поделился задачей';
+          if (lm.kind === 'task_share') txt = ' поделился задачей';
           else txt = (lm.mine ? 'Вы: ' : '') + (lm.body || '');
           prev.textContent = txt;
         } else {
@@ -1221,7 +1221,7 @@ function attachmentHtml(m){
   if (a.kind === 'pdf'){
     const sz = a.size ? (Math.round(a.size / 1024) + ' КБ') : '';
     return '<a class="bubble-attach pdf" href="' + escHtml(a.url) + '" target="_blank" rel="noopener" download="' + escHtml(a.name || 'file.pdf') + '">'
-         + '<span class="pdf-icon">📄</span>'
+         + '<span class="pdf-icon"></span>'
          + '<span class="pdf-meta">'
          +   '<span class="pdf-name">' + escHtml(a.name || 'file.pdf') + '</span>'
          +   (sz ? '<span class="pdf-size">' + sz + '</span>' : '')
@@ -1266,10 +1266,10 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
     if (m.reply && !m.deleted){
       const rTxt = m.reply.deleted
         ? '<i>Сообщение удалено</i>'
-        : (m.reply.kind === 'task_share' ? '📎 Задача' : escHtml((m.reply.body || '').slice(0, 140)));
+        : (m.reply.kind === 'task_share' ? ' Задача' : escHtml((m.reply.body || '').slice(0, 140)));
       replyHtml = '<div class="bubble-reply" onclick="scrollToMsg(' + m.reply.id + ')">' + rTxt + '</div>';
     }
-    const forwardedTag = m.forwarded ? '<div class="bubble-forwarded">➤ Переслано</div>' : '';
+    const forwardedTag = m.forwarded ? '<div class="bubble-forwarded"> Переслано</div>' : '';
     const editedTag = m.edited ? ' <span class="edited-tag" title="Изменено">(изм.)</span>' : '';
 
     if (m.deleted){
@@ -1286,10 +1286,10 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
       if (t.difficulty) metaParts.push('L' + t.difficulty);
       const card =
         '<div class="chat-task-card">' +
-          '<div class="title">📎 Задача' + (t.id ? ' #' + t.id : '') + '</div>' +
+          '<div class="title"> Задача' + (t.id ? ' #' + t.id : '') + '</div>' +
           (metaParts.length ? '<div class="meta">' + escHtml(metaParts.join(' · ')) + '</div>' : '') +
           (t.preview ? '<div class="preview">' + escHtml(t.preview) + '</div>' : '') +
-          (t.url ? '<a class="open-btn" href="' + escHtml(t.url) + '" target="_blank" rel="noopener">Открыть →</a>' : '') +
+          (t.url ? '<a class="open-btn" href="' + escHtml(t.url) + '" target="_blank" rel="noopener">Открыть -></a>' : '') +
         '</div>';
       b.innerHTML = forwardedTag + replyHtml +
                     (m.body ? escHtml(m.body) + '<br>' : '') +
@@ -1315,9 +1315,9 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
       const tb = document.createElement('div');
       tb.className = 'bubble-quick';
       tb.innerHTML =
-        '<button type="button" title="Ответить" data-q="reply">↩</button>' +
-        '<button type="button" title="Переслать" data-q="forward">↗</button>' +
-        '<button type="button" title="Реакции" data-q="react">😀</button>';
+        '<button type="button" title="Ответить" data-q="reply"></button>' +
+        '<button type="button" title="Переслать" data-q="forward"></button>' +
+        '<button type="button" title="Реакции" data-q="react"></button>';
       tb.addEventListener('click', function(e){
         e.stopPropagation();
         const btn = e.target.closest('button');
@@ -1346,9 +1346,9 @@ function renderMessages(msgs){  /* CHAT_WA_FE_V1 + CHAT_RECEIPTS_V1 */
         return btn;
       };
 
-      bar.appendChild(mkBtn('↩', 'Ответить', function(){ startReply(m); }));
-      bar.appendChild(mkBtn('➤', 'Переслать', function(){ openForward(m); }));
-      bar.appendChild(mkBtn('😀', 'Реакция', function(e){
+      bar.appendChild(mkBtn('', 'Ответить', function(){ startReply(m); }));
+      bar.appendChild(mkBtn('', 'Переслать', function(){ openForward(m); }));
+      bar.appendChild(mkBtn('', 'Реакция', function(e){
         const rect = bar.getBoundingClientRect();
         showCtxMenu(rect.left, rect.top, m);
       }));
@@ -1492,9 +1492,9 @@ function startReply(m){
   _editingId = null;
   _replyToId = m.id;
   document.getElementById('cabTitle').textContent = 'Ответ';
-  document.getElementById('cabIcon').textContent = '↩';
+  document.getElementById('cabIcon').textContent = '';
   const preview = m.kind === 'task_share'
-    ? '📎 Задача' + (m.task && m.task.id ? ' #' + m.task.id : '')
+    ? ' Задача' + (m.task && m.task.id ? ' #' + m.task.id : '')
     : (m.body || '').slice(0, 140);
   document.getElementById('cabText').textContent = preview;
   var _cab = document.getElementById('chatActionBar');
@@ -1507,7 +1507,7 @@ function startEdit(m){
   _replyToId = null;
   _editingId = m.id;
   document.getElementById('cabTitle').textContent = 'Редактирование';
-  document.getElementById('cabIcon').textContent = '✎';
+  document.getElementById('cabIcon').textContent = '';
   document.getElementById('cabText').textContent = (m.body || '').slice(0, 140);
   var _cabE = document.getElementById('chatActionBar');
   if (_cabE) { _cabE.removeAttribute('hidden'); _cabE.hidden = false; _cabE.style.display = ''; }
@@ -1740,7 +1740,7 @@ async function uploadAttachmentFile(f){
     }
     const data = await r.json();
     _pendingAttachment = data.attachment;
-    if (nameEl) nameEl.textContent = '📎 ' + (_pendingAttachment.name || 'file');
+    if (nameEl) nameEl.textContent = ' ' + (_pendingAttachment.name || 'file');
     return true;
   } catch(e){
     console.error(e);
@@ -2216,7 +2216,7 @@ async function openGroupCreateModal(){
     modal.innerHTML = ''
       + '<div class="gc-create-card">'
       + '  <div class="gc-create-head">'
-      + '    <div class="gc-create-icon">👥</div>'
+      + '    <div class="gc-create-icon"></div>'
       + '    <div>'
       + '      <h3>Новая группа</h3>'
       + '      <div class="gc-create-sub">Дайте название и выберите участников</div>'
@@ -2255,7 +2255,7 @@ async function openGroupCreateModal(){
       return '<div class="gc-friend-row" data-fid="' + f.id + '" onclick="toggleGcFriend(' + f.id + ', this)">'
            + '<div class="gc-friend-av">' + escHtml(initials) + '</div>'
            + '<div class="gc-friend-name">' + escHtml(f.name || f.nickname || ('id=' + f.id)) + '</div>'
-           + '<div class="gc-friend-check">✓</div>'
+           + '<div class="gc-friend-check">[OK]</div>'
            + '</div>';
     }).join('');
   } catch(e){ console.error(e); list.textContent = 'Ошибка соединения'; }
@@ -2315,7 +2315,7 @@ document.addEventListener('click', function(e){
   m.hidden = true;
 });
 
-/* CHAT_EMOJI_V1 — wire composer 😀 button to the emoji picker. */
+/* CHAT_EMOJI_V1 — wire composer  button to the emoji picker. */
 (function initChatEmoji(){
   function wire(){
     if (typeof window.EmojiPicker === 'undefined') return;

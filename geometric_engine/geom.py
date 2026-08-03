@@ -40,7 +40,7 @@ def midpoint(a: Point, b: Point) -> Point:
 def point_on_segment(a: Point, b: Point, t: float) -> Point:
     """
     Точка на отрезке AB в заданном отношении:
-    t=0 → A, t=1 → B, t=0.5 → середина.
+    t=0 -> A, t=1 -> B, t=0.5 -> середина.
     """
     return (a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]))
 

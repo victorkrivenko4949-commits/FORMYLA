@@ -52,7 +52,7 @@ function _buildAnswerFormatHint(correctAnswer){
 
   var html = '';
   html += '<div class="dt-answer-format-hint">';
-  html += '<div class="dt-answer-format-title">📐 Требования к ответу:</div>';
+  html += '<div class="dt-answer-format-title"> Требования к ответу:</div>';
   html += '<ul class="dt-answer-format-list">';
   for(var i = 0; i < rules.length; i++){
     html += '<li>' + rules[i] + '</li>';
@@ -80,7 +80,7 @@ function _buildMath(){
   out += _key('√','\\sqrt{}','math-symbol')+_key('∑','\\sum','math-symbol')+_key('∫','\\int','math-symbol');
   out += _key('±','\\pm','math-symbol')+_key('∞','\\infty','math-symbol')+_key('≈','\\approx','math-symbol');
   out += _key('≠','\\neq','math-symbol')+_key('≤','\\leq','math-symbol')+_key('≥','\\geq','math-symbol');
-  out += _key('→','\\rightarrow','math-symbol');
+  out += _key('->','\\rightarrow','math-symbol');
   out += '</div>';
   out += '<div class="dt-kb-row">';
   out += _key('\\frac','\\frac{}{}','math-command')+_key('\\sqrt','\\sqrt{}','math-command');
@@ -112,7 +112,7 @@ function _buildRegular(){
   out += '<div class="dt-kb-row">';
   out += '<button type="button" class="dt-kb-key action wide" onclick="dtKbBackspace()">⌫</button>';
   out += '<button type="button" class="dt-kb-key space" onclick="dtKbInsert(\' \')">Пробел</button>';
-  out += '<button type="button" class="dt-kb-key enter" onclick="dtSubmitCurrent()">Готово ✓</button>';
+  out += '<button type="button" class="dt-kb-key enter" onclick="dtSubmitCurrent()">Готово [OK]</button>';
   out += '</div>';
   return out;
 }
@@ -358,20 +358,20 @@ function openTaskModal(item, index){
   h += '<div class="dt-task-card">';
   h += '<div class="dt-task-meta">';
   h += '<span class="dt-difficulty-badge">⭐ Уровень: '+(item.difficulty || '?')+'/5</span>';
-  if(item.subtopic) h += '<span class="dt-topic-chip">📚 '+_esc(item.subtopic)+'</span>';
-  if(item.is_flagged) h += '<span class="dt-topic-chip" style="background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.4);color:#fca5a5;">⚠️ Флаг</span>';
+  if(item.subtopic) h += '<span class="dt-topic-chip"> '+_esc(item.subtopic)+'</span>';
+  if(item.is_flagged) h += '<span class="dt-topic-chip" style="background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.4);color:#fca5a5;">[!]️ Флаг</span>';
   h += '</div>';
-  h += '<div class="dt-task-section-title">📋 Условие:</div>';
+  h += '<div class="dt-task-section-title"> Условие:</div>';
   h += '<div class="dt-task-text-html" id="dt-task-text-html">'+(item.task_text || '')+'</div>';
 
   if(done){
     var vc = item.is_correct ? 'success' : 'error';
-    var vi = item.is_correct ? '✅' : '❌';
+    var vi = item.is_correct ? '[OK]' : '[ERROR]';
     var vt = item.is_correct ? 'Верно!' : 'Неверно';
     h += '<div class="dt-result-block show">';
     h += '<div class="dt-verdict '+vc+'">'+vi+' '+vt+'</div>';
     if(item.correct_answer){
-      h += '<div class="dt-feedback-block"><div class="dt-feedback-title">📝 Правильный ответ:</div>';
+      h += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Правильный ответ:</div>';
       h += '<div class="dt-feedback-text"><code>'+escapeHtmlPreserveLatex(item.correct_answer)+'</code></div></div>';
       // Если ответ был не принят — напомним требования к формату.
       if(!item.is_correct){
@@ -379,7 +379,7 @@ function openTaskModal(item, index){
       }
     }
     if(item.solution){
-      h += '<div class="dt-feedback-block"><div class="dt-feedback-title">📖 Эталонное решение:</div>';
+      h += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Эталонное решение:</div>';
       h += '<div class="dt-feedback-text">'+item.solution+'</div></div>';
     }
     h += '</div>';
@@ -394,7 +394,7 @@ function openTaskModal(item, index){
   // ── AI-решение (превью) — показываем сразу при открытии ──
   h += '<div id="dt-ai-loader" class="dt-ai-loader">';
   h += '<div class="dt-ai-spinner"></div>';
-  h += '<div class="dt-ai-text-main">🤖 AI решает задачу...</div>';
+  h += '<div class="dt-ai-text-main"> AI решает задачу...</div>';
   h += '<div class="dt-ai-text-sub">Это может занять 5–10 секунд</div>';
   h += '</div>';
 
@@ -402,7 +402,7 @@ function openTaskModal(item, index){
   h += '<div id="dt-result-block" class="dt-result-block" style="display:none">';
   h += '<div id="dt-verdict"></div>';
   h += '<div class="dt-feedback-block">';
-  h += '<div class="dt-feedback-title">📖 Разбор от AI-тьютора:</div>';
+  h += '<div class="dt-feedback-title"> Разбор от AI-тьютора:</div>';
   h += '<div id="dt-feedback-text" class="dt-feedback-text"></div>';
   h += '</div>';
   h += '</div>';
@@ -410,22 +410,22 @@ function openTaskModal(item, index){
   // ── Форма для ответа ученика (скрыта, пока AI не решит) ──
   h += '<form id="dt-answer-form" style="display:none" enctype="multipart/form-data" autocomplete="off">';
   h += _buildAnswerFormatHint(item.correct_answer);
-  h += '<div class="dt-solve-prompt">🤖 AI решил задачу. <strong>Теперь давай финальное идельное решение</strong></div>';
-  h += '<label class="dt-field-label">✏️ Ваш ответ <span class="dt-field-label-extra">(можно писать доказательство!)</span></label>';
+  h += '<div class="dt-solve-prompt"> AI решил задачу. <strong>Теперь давай финальное идельное решение</strong></div>';
+  h += '<label class="dt-field-label">️ Ваш ответ <span class="dt-field-label-extra">(можно писать доказательство!)</span></label>';
   h += '<math-field id="dt-user-answer" class="dt-math-field" virtual-keyboard-mode="manual" virtual-keyboard-theme="material"></math-field>';
-  h += '<p class="dt-field-hint">💡 Нажмите «🔢» справа внизу поля для матклавиатуры (√, дроби, степени). Если задача — доказать утверждение, пишите доказательство прямо здесь или в поле ниже.</p>';
-  h += '<label class="dt-field-label">📝 Ход решения / доказательство <span class="dt-field-label-extra">(опционально)</span></label>';
+  h += '<p class="dt-field-hint"> Нажмите «» справа внизу поля для матклавиатуры (√, дроби, степени). Если задача — доказать утверждение, пишите доказательство прямо здесь или в поле ниже.</p>';
+  h += '<label class="dt-field-label"> Ход решения / доказательство <span class="dt-field-label-extra">(опционально)</span></label>';
   h += '<textarea id="dt-solution-text" class="dt-solution-textarea" rows="6" placeholder="Пишите решение или доказательство по шагам, каждый шаг — с новой строки. Можно вставлять формулы: \\frac{1}{2}, x^2, \\sqrt{3} и т.д."></textarea>';
-  h += '<p class="dt-field-hint">💡 Пишите <strong>по шагам</strong> — каждое действие или логический переход с новой строки. Формулы можно вставлять через «⌨️ Клавиатуру» ниже.</p>';
+  h += '<p class="dt-field-hint"> Пишите <strong>по шагам</strong> — каждое действие или логический переход с новой строки. Формулы можно вставлять через «⌨️ Клавиатуру» ниже.</p>';
   h += '<div class="dt-kb-wrapper">';
   h += '<button type="button" id="dt-kb-toggle-btn" class="dt-kb-toggle" onclick="dtToggleKeyboard()">⌨️ Клавиатура</button>';
   h += '<div id="dt-keyboard" class="dt-keyboard">';
   h += '<div class="dt-kb-header">';
   h += '<span class="dt-kb-field-label"><span class="dot"></span><span id="dt-kb-field-name">Ответ</span></span>';
-  h += '<button type="button" class="dt-kb-close" onclick="dtToggleKeyboard()">✕</button>';
+  h += '<button type="button" class="dt-kb-close" onclick="dtToggleKeyboard()"></button>';
   h += '</div>';
   h += '<div class="dt-kb-tabs">';
-  h += '<button type="button" class="dt-kb-tab active" data-tab="math" onclick="dtSwitchKbTab(\'math\')">🔢 Математическая</button>';
+  h += '<button type="button" class="dt-kb-tab active" data-tab="math" onclick="dtSwitchKbTab(\'math\')"> Математическая</button>';
   h += '<button type="button" class="dt-kb-tab" data-tab="regular" onclick="dtSwitchKbTab(\'regular\')">⌨️ Обычная</button>';
   h += '</div>';
   h += '<div id="dt-kb-layout-math" class="dt-kb-layout active">'+_buildMath()+'</div>';
@@ -433,17 +433,17 @@ function openTaskModal(item, index){
   h += '</div>';
   h += '</div>';
   h += '<div class="dt-photo-block">';
-  h += '<label class="dt-field-label">📸 Фото решения из тетради (можно несколько, опционально):</label>';
+  h += '<label class="dt-field-label"> Фото решения из тетради (можно несколько, опционально):</label>';
   h += '<input type="file" id="dt-photo-input" accept="image/*" capture="environment" multiple style="display:none;">';
   h += '<button type="button" class="dt-photo-btn" onclick="document.getElementById(\'dt-photo-input\').click()">';
-  h += '<span style="font-size:22px;">📷</span><span id="dt-photo-btn-text">Сфотографировать / Загрузить решение</span>';
+  h += '<span style="font-size:22px;"></span><span id="dt-photo-btn-text">Сфотографировать / Загрузить решение</span>';
   h += '</button>';
   h += '<div id="dt-photo-preview-list" class="dt-photo-preview-list"></div>';
-  h += '<p class="dt-field-hint">💡 Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое распознаётся отдельно и подмешивается в решение для AI-тьютора.</p>';
+  h += '<p class="dt-field-hint"> Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое распознаётся отдельно и подмешивается в решение для AI-тьютора.</p>';
   h += '</div>';
   h += '<div class="dt-actions">';
-  h += '<button type="submit" id="dt-submit-btn" class="dt-btn dt-btn-primary">📤 Отправить ответ</button>';
-  h += '<button type="button" class="dt-btn dt-btn-hint" onclick="getHint(\''+item.id+'\')">💡 Подсказка</button>';
+  h += '<button type="submit" id="dt-submit-btn" class="dt-btn dt-btn-primary"> Отправить ответ</button>';
+  h += '<button type="button" class="dt-btn dt-btn-hint" onclick="getHint(\''+item.id+'\')"> Подсказка</button>';
   h += '</div>';
   h += '<div id="dt-hint-container"></div>';
   h += '</form>';
@@ -490,7 +490,7 @@ function _dtSolveOnOpen(item){
       var sol = data.solution;
       // Показываем решение в блоке результата
       if(verdict){
-        verdict.innerHTML = '<div class="dt-verdict info">🤖 AI-разбор:</div>';
+        verdict.innerHTML = '<div class="dt-verdict info"> AI-разбор:</div>';
       }
       if(fb){
         sol = dtAutoMathify(sol);
@@ -702,13 +702,13 @@ function _dtShowResult(result){
   var html = '';
   var isWrong = false;
   if(score === 2){
-    html = '<div class="dt-verdict success">✅ Верно! Отличная работа</div>';
+    html = '<div class="dt-verdict success">[OK] Верно! Отличная работа</div>';
   } else if(score === 1){
-    html = '<div class="dt-verdict partial">⚠️ Частично верно</div>';
+    html = '<div class="dt-verdict partial">[!]️ Частично верно</div>';
   } else if(score === 0){
     html = '<div class="dt-verdict partial">ℹ️ Ответ принят</div>';
   } else {
-    html = '<div class="dt-verdict error">❌ Неверно</div>';
+    html = '<div class="dt-verdict error">[ERROR] Неверно</div>';
     isWrong = true;
   }
 
@@ -716,7 +716,7 @@ function _dtShowResult(result){
   // и требования к формату записи, чтобы ученик мог сравнить.
   var correct = (result && result.correct_answer) || window.dtCurrentCorrectAnswer || '';
   if(isWrong && correct){
-    html += '<div class="dt-feedback-block"><div class="dt-feedback-title">📝 Правильный ответ:</div>';
+    html += '<div class="dt-feedback-block"><div class="dt-feedback-title"> Правильный ответ:</div>';
     html += '<div class="dt-feedback-text"><code>' + escapeHtmlPreserveLatex(correct) + '</code></div></div>';
     html += _buildAnswerFormatHint(correct);
   }
@@ -762,11 +762,11 @@ function getHint(itemId){
     })
     .then(function(d){
       var t = d.hint || d.text || 'Подсказка недоступна';
-      container.innerHTML = '<div class="dt-hint-box"><strong>💡 Подсказка:</strong><br>'+t+'</div>';
+      container.innerHTML = '<div class="dt-hint-box"><strong> Подсказка:</strong><br>'+t+'</div>';
       if(typeof renderMath === 'function') renderMath(container);
     })
     .catch(function(err){
-      container.innerHTML = '<div class="dt-hint-box">⚠️ '+_esc(err.message)+'</div>';
+      container.innerHTML = '<div class="dt-hint-box">[!]️ '+_esc(err.message)+'</div>';
     });
 }
 window.getHint = getHint;

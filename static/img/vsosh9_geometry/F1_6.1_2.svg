@@ -16,5 +16,5 @@
   <text class="label" x="308.00" y="304.00" text-anchor="middle" dominant-baseline="middle">C</text>
   <circle class="dot" cx="180.00" cy="290.00" r="4.00"/>
   <text class="label" x="180.00" y="310.00" text-anchor="middle" dominant-baseline="middle">H</text>
-  <text class="num-aux" x="240.00" y="30.00" text-anchor="middle" dominant-baseline="middle">AH² = AB² − BH² = 169 − 25 = 144  ⇒  AH = 12</text>
+  <text class="num-aux" x="240.00" y="30.00" text-anchor="middle" dominant-baseline="middle">AH² = AB² − BH² = 169 − 25 = 144    AH = 12</text>
 </svg>

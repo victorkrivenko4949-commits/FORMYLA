@@ -275,7 +275,7 @@
 }
 
 .dt-partial-notice::before {
-    content: '⚠️';
+    content: '[!]️';
     font-size: 18px;
 }
 

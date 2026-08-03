@@ -6,7 +6,7 @@ services/level_engine.py — Единый держатель каноничес�
 
 Источники задач и их шкалы определены по результатам ШАГА 1 аудита
 (см. docs/LEVEL_ENGINE_PLAN.md):
-  - formyla_L1_L5_TOP5  → пятибалльная шкала (difficulty_level 1..5)
+  - formyla_L1_L5_TOP5  -> пятибалльная шкала (difficulty_level 1..5)
 
 Восьмибалльные источники (curator diagnostic, profile-based движок)
 будут добавлены в EIGHT_POINT_SOURCES при их появлении в пуле.
@@ -63,7 +63,7 @@ MIN_MU = 1.0
 MAX_MU = 5.0
 
 # ══════════════════════════════════════════════════════════════════════
-# Маппинг русских названий разделов из JSONL → латинские slug'и
+# Маппинг русских названий разделов из JSONL -> латинские slug'и
 # (канонические ключи level_by_section, на них же завязан радар)
 # ══════════════════════════════════════════════════════════════════════
 
@@ -179,11 +179,11 @@ def record_result(user_id: int, section: Optional[str], level_shown: int,
     """Записать результат решения одной задачи.
 
     Обновляет mu/sigma глобально и по разделу по формулам:
-      верно   → mu += 0.22 * (sigma + 0.3)
-      неверно → mu -= 0.28 * (sigma + 0.3)
-      sigma   → max(0.35, sigma * 0.94)
-      mu      → clamp(1.0, 5.0)
-      level   → int(round(mu)), clamp(1, 5)
+      верно   -> mu += 0.22 * (sigma + 0.3)
+      неверно -> mu -= 0.28 * (sigma + 0.3)
+      sigma   -> max(0.35, sigma * 0.94)
+      mu      -> clamp(1.0, 5.0)
+      level   -> int(round(mu)), clamp(1, 5)
 
     Параметры:
         user_id:     ID пользователя
@@ -294,7 +294,7 @@ def get_level_by_theme(user_id: int) -> Dict[str, Any]:
 def _theme_prior_mu(user_id: int, theme_id: str) -> float:
     """Resolve prior mu for a theme.
 
-    Priority: level_by_theme → level_by_section → global mu → default 3.0
+    Priority: level_by_theme -> level_by_section -> global mu -> default 3.0
     """
     from services.theme_registry import section_of_theme as _sec
 
@@ -322,7 +322,7 @@ def _theme_prior_mu(user_id: int, theme_id: str) -> float:
 def weakest_themes(user_id: int, grade: int, k: int) -> List[str]:
     """Return k theme_ids with the lowest mu for the given grade.
 
-    Unmeasured themes receive their prior mu (section → global → 3.0).
+    Unmeasured themes receive their prior mu (section -> global -> 3.0).
     """
     from services.theme_registry import themes_of_grade as _tog
 

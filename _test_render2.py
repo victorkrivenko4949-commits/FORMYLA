@@ -38,13 +38,13 @@ checks = [
 all_pass = True
 for name, pattern in checks:
     found = pattern.lower() in source.lower()
-    status = "✅" if found else "❌"
+    status = "[OK]" if found else "[ERROR]"
     if not found:
         all_pass = False
     print(f"  {status} {name}: {'found' if found else 'MISSING!'}")
 
 print()
-print(f"Overall: {'✅ ALL PASS' if all_pass else '❌ SOME FAILED'}")
+print(f"Overall: {'[OK] ALL PASS' if all_pass else '[ERROR] SOME FAILED'}")
 
 # Now try importing Flask to test template loading from Jinja
 print()
@@ -66,9 +66,9 @@ try:
     print(f"  Jinja == Disk: {jm == source_md5}")
     
     if jm != source_md5:
-        print("  ❌ MISMATCH! Jinja is loading different content than disk!")
+        print("  [ERROR] MISMATCH! Jinja is loading different content than disk!")
     else:
-        print("  ✅ Jinja loads EXACTLY the same content as disk")
+        print("  [OK] Jinja loads EXACTLY the same content as disk")
     
 except Exception as e:
     print(f"  Error: {type(e).__name__}: {e}")

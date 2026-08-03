@@ -52,7 +52,7 @@ print(f"Создано 100 учеников: mu распределение = {Co
 def success_probability(student_mu_value, task_difficulty):
     """Вероятность правильного ответа: сигмоида от разницы mu - level."""
     delta = student_mu_value - task_difficulty
-    # Крутизна = 2.0, чтобы mu=2 на L2 → ~50%, mu=3 на L2 → ~88%
+    # Крутизна = 2.0, чтобы mu=2 на L2 -> ~50%, mu=3 на L2 -> ~88%
     return 1.0 / (1.0 + math.exp(-delta * 2.0))
 
 # Прогон 30 дней
@@ -140,6 +140,6 @@ print(f"\nДинамика mu (выборка 5 учеников из разны
 sample_uids = [1, 21, 41, 61, 81]  # первые из каждой группы по 20
 for uid in sample_uids:
     history = day_mu_history[uid]
-    print(f"  Ученик {uid} (старт={student_mu[uid]}): {', '.join(f'{m:.2f}' for m in history[:10])}... → {history[-1]:.2f}")
+    print(f"  Ученик {uid} (старт={student_mu[uid]}): {', '.join(f'{m:.2f}' for m in history[:10])}... -> {history[-1]:.2f}")
 
 print("\nГОТОВО.")

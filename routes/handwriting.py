@@ -181,7 +181,7 @@ def _ai_reformat(text: str, max_line: int) -> List[str] | None:
                     wrapped.extend(_wrap_lines(ln, max_line))
             return wrapped
     except OpenRouterError as e:
-        logger.warning("[handwriting] OpenRouter error → fallback to raw: %s", e)
+        logger.warning("[handwriting] OpenRouter error -> fallback to raw: %s", e)
     except Exception as e:           # pragma: no cover — log & fallback
         logger.warning("[handwriting] AI reformat failed: %s", e)
     return None
@@ -231,10 +231,10 @@ def prepare() -> Any:
     })
 
 
-# ─── Vision OCR endpoint (handwriting → beautiful Caveat) ──────────────────
+# ─── Vision OCR endpoint (handwriting -> beautiful Caveat) ──────────────────
 
 
-# Small map of common LaTeX commands → unicode equivalents. Used to
+# Small map of common LaTeX commands -> unicode equivalents. Used to
 # scrub model output if the model slips and emits LaTeX despite the
 # instruction. We deliberately keep this list short — the goal is just
 # to make the result *readable*, not a perfect math typesetter.
@@ -284,26 +284,26 @@ def _delatex(s: str) -> str:
         return s
     # Strip inline / display math delimiters.
     s = re.sub(r"\${1,2}", "", s)
-    # \frac{a}{b}  →  (a)/(b)
+    # \frac{a}{b}  ->  (a)/(b)
     s = re.sub(r"\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}", r"(\1)/(\2)", s)
     # Replace known commands.
     for cmd, repl in _LATEX_TO_UNICODE.items():
         s = s.replace(cmd, repl)
-    # x^{…}  →  superscript unicode (only digits/operators).
+    # x^{…}  ->  superscript unicode (only digits/operators).
     def _sup(m):
         inner = m.group(1)
         if re.fullmatch(r"[0-9+\-=()n]+", inner):
             return inner.translate(_SUPERSCRIPTS)
         return "^(" + inner + ")"
     s = re.sub(r"\^\s*\{([^{}]*)\}", _sup, s)
-    # x_{…} → subscript unicode.
+    # x_{…} -> subscript unicode.
     def _sub(m):
         inner = m.group(1)
         if re.fullmatch(r"[0-9+\-=()]+", inner):
             return inner.translate(_SUBSCRIPTS)
         return "_(" + inner + ")"
     s = re.sub(r"_\s*\{([^{}]*)\}", _sub, s)
-    # x^2 (no braces) → x²
+    # x^2 (no braces) -> x²
     s = re.sub(r"\^([0-9])", lambda m: m.group(1).translate(_SUPERSCRIPTS), s)
     s = re.sub(r"_([0-9])", lambda m: m.group(1).translate(_SUBSCRIPTS), s)
     # Strip any leftover lonely braces and backslashes.
@@ -398,7 +398,7 @@ def _ocr_image(image_b64: str) -> Dict[str, Any]:
         except OpenRouterError as e:
             msg = str(e)
             last_err = f"{model}: {msg}"
-            # "No endpoints found" / "404" → try next; other errors → stop.
+            # "No endpoints found" / "404" -> try next; other errors -> stop.
             if "404" in msg or "No endpoints" in msg or "model" in msg.lower():
                 logger.warning("[handwriting/recognize] %s — trying next", last_err)
                 continue

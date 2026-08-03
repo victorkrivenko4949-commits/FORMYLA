@@ -127,7 +127,7 @@ def test_probnik_schema_topic_valid():
 
 
 def test_probnik_schema_stage_requires_duration_and_max_score():
-    """Stage-пробник без duration_minutes и max_score → отвергается."""
+    """Stage-пробник без duration_minutes и max_score -> отвергается."""
     with pytest.raises(ValidationError):
         ProbnikSchema.model_validate({
             'code': 'vsosh-9-2027-stage-1',

@@ -31,7 +31,7 @@ function toggleKeyboard() {
     if (!kb || !btn) return;
     var active = kb.style.display !== 'none';
     kb.style.display = active ? 'none' : 'block';
-    btn.textContent = active ? '⌨️ Клавиатура' : '✕ Скрыть';
+    btn.textContent = active ? '⌨️ Клавиатура' : ' Скрыть';
 }
 function switchKbTab(tabName) {
     document.querySelectorAll('.kb-tab').forEach(function(t) { t.classList.remove('active'); });

@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showReadyState(data);
             break;
         case 'failed':
-            // Раньше падало в default → showEmptyState() → пустой блок без ошибки.
+            // Раньше падало в default -> showEmptyState() -> пустой блок без ошибки.
             // Теперь показываем понятное сообщение об ошибке + кнопку «Повторить».
             showFailedState(data);
             break;
@@ -125,7 +125,7 @@ function showFailedState(data) {
     var el = document.getElementById('dt-failed-state');
     var empty = document.getElementById('dt-empty-state');
     var msg = (data && (data.error_message || data.summary)) || '';
-    msg = String(msg || '').replace(/^❌\s*/, '');  // убираем дубликат значка
+    msg = String(msg || '').replace(/^[ERROR]\s*/, '');  // убираем дубликат значка
 
     if (el) {
         // Заполняем сообщение, если шаблон содержит #dt-failed-message
@@ -143,7 +143,7 @@ function showFailedState(data) {
         var title = empty.querySelector('.dt-empty-title');
         var sub = empty.querySelector('.dt-empty-sub');
         var btn = empty.querySelector('.dt-btn-primary');
-        if (title) title.textContent = '❌ Не удалось сгенерировать задачи';
+        if (title) title.textContent = '[ERROR] Не удалось сгенерировать задачи';
         if (sub) {
             sub.innerHTML = '';
             if (msg) {
@@ -157,7 +157,7 @@ function showFailedState(data) {
             hint.textContent = 'Это не отняло твою дневную попытку — можешь попробовать снова.';
             sub.appendChild(hint);
         }
-        if (btn) btn.textContent = '🔄 Попробовать снова';
+        if (btn) btn.textContent = ' Попробовать снова';
     }
 }
 
@@ -264,10 +264,10 @@ function renderTaskGrid(items) {
         if (item.user_answer !== null) {
             if (item.is_correct) {
                 statusRow.classList.add('dt-correct');
-                statusRow.textContent = '✅ Верно';
+                statusRow.textContent = '[OK] Верно';
             } else {
                 statusRow.classList.add('dt-incorrect');
-                statusRow.textContent = '❌ Неверно';
+                statusRow.textContent = '[ERROR] Неверно';
             }
         } else {
             statusRow.classList.add('dt-pending');
@@ -277,7 +277,7 @@ function renderTaskGrid(items) {
         if (item.is_flagged) {
             var flagBadge = document.createElement('span');
             flagBadge.className = 'dt-flag-badge';
-            flagBadge.textContent = '⚠️ Флаг';
+            flagBadge.textContent = '[!]️ Флаг';
             statusRow.appendChild(flagBadge);
         }
 
@@ -285,7 +285,7 @@ function renderTaskGrid(items) {
             var calBadge = document.createElement('span');
             calBadge.className = 'dt-calibration-badge';
             calBadge.title = 'Тест по этой теме не пройден — задача калибровочная';
-            calBadge.textContent = '🧪 Калибровка';
+            calBadge.textContent = ' Калибровка';
             statusRow.appendChild(calBadge);
         }
 
@@ -343,7 +343,7 @@ function renderDifficultyStars(level) {
     var num = typeof level === 'number' ? level : parseInt(level);
     if (isNaN(num)) return String(level);
     var stars = '';
-    for (var i = 0; i < Math.min(num, 8); i++) stars += '★';
+    for (var i = 0; i < Math.min(num, 8); i++) stars += '';
     return stars;
 }
 
@@ -415,7 +415,7 @@ function startGeneration() {
         console.error('Generation error:', error);
         if (genBtn) genBtn.disabled = false;
         if (regenBtn) regenBtn.disabled = false;
-        if (stepName) stepName.textContent = '❌ ' + error.message;
+        if (stepName) stepName.textContent = '[ERROR] ' + error.message;
     });
 }
 
@@ -517,7 +517,7 @@ function pollJobStatus() {
             } else if (data.state === 'failed') {
                 stopPolling();
                 var stepName = document.getElementById('dt-step-name');
-                if (stepName) stepName.textContent = '❌ Ошибка генерации';
+                if (stepName) stepName.textContent = '[ERROR] Ошибка генерации';
                 setTimeout(function() {
                     location.reload();
                 }, 3000);
@@ -559,7 +559,7 @@ function pollJobStatus() {
         });
 }
 
-// Маппинг ключевых слов из current_step → data-step для подсветки
+// Маппинг ключевых слов из current_step -> data-step для подсветки
 function detectPipelineStep(currentStep, progressPct) {
     if (!currentStep) {
         // fallback по проценту
@@ -584,7 +584,7 @@ function detectPipelineStep(currentStep, progressPct) {
     return null;
 }
 
-// Перевод технического current_step → человеко-читаемая строка
+// Перевод технического current_step -> человеко-читаемая строка
 var DT_STEP_HUMAN = {
     'queued': 'Запуск…',
     'build_profile': 'Анализ твоего профиля',
@@ -701,22 +701,22 @@ function openTaskModal(item, index) {
 
     // Task info chips
     html += '<div class="dt-task-info">';
-    html += '<span class="dt-info-chip">📚 <strong>' + escapeHtml(item.subtopic || '') + '</strong></span>';
+    html += '<span class="dt-info-chip"> <strong>' + escapeHtml(item.subtopic || '') + '</strong></span>';
     // Шкала difficulty — 8-балльная (см. renderDifficultyStars() и validators.py).
-    html += '<span class="dt-info-chip">📊 Сложность: <strong>' + (item.difficulty || '?') + '/8</strong></span>';
+    html += '<span class="dt-info-chip"> Сложность: <strong>' + (item.difficulty || '?') + '/8</strong></span>';
     html += '</div>';
 
     // Flagged warning
     if (item.is_flagged) {
         html += '<div class="dt-flagged-warning">';
-        html += '<span class="dt-flag-icon">⚠️</span>';
+        html += '<span class="dt-flag-icon">[!]️</span>';
         html += '<span>Решение этой задачи не гарантировано — качество проверяется. Отнесись к ней критически.</span>';
         html += '</div>';
     }
 
     // Reason hint
     if (item.reason) {
-        html += '<div class="dt-reason-text">💡 ' + escapeHtml(item.reason) + '</div>';
+        html += '<div class="dt-reason-text"> ' + escapeHtml(item.reason) + '</div>';
     }
 
     // Main task text (contains LaTeX — render raw, KaTeX handles it)
@@ -728,11 +728,11 @@ function openTaskModal(item, index) {
         // Сначала показываем требования к формату ответа — ученик увидит их
         // ДО ввода и сможет записать ответ правильно с первого раза.
         html += buildAnswerFormatHint(item.correct_answer);
-        html += '<label class="dt-answer-label">✏️ Твой ответ:</label>';
+        html += '<label class="dt-answer-label">️ Твой ответ:</label>';
         html += '<input type="text" class="dt-answer-input" id="dt-answer-input" placeholder="Введи ответ..." autocomplete="off">';
         html += '<div class="dt-answer-actions">';
-        html += '<button class="dt-btn-check" id="dt-btn-check" onclick="submitAnswer(\'' + item.id + '\')">✅ Проверить</button>';
-        html += '<button class="dt-btn-hint" id="dt-btn-hint" onclick="getHint(\'' + item.id + '\')">💡 Подсказка</button>';
+        html += '<button class="dt-btn-check" id="dt-btn-check" onclick="submitAnswer(\'' + item.id + '\')">[OK] Проверить</button>';
+        html += '<button class="dt-btn-hint" id="dt-btn-hint" onclick="getHint(\'' + item.id + '\')"> Подсказка</button>';
         html += '</div>';
         html += '<div id="dt-hint-container"></div>';
         html += '</div>';
@@ -747,7 +747,7 @@ function openTaskModal(item, index) {
     } else {
         // Already answered — show result
         var resultClass = item.is_correct ? 'dt-correct' : 'dt-incorrect';
-        var resultIcon = item.is_correct ? '✅' : '❌';
+        var resultIcon = item.is_correct ? '[OK]' : '[ERROR]';
         var resultText = item.is_correct ? 'Верно!' : 'Неверно';
 
         html += '<div class="dt-result ' + resultClass + '">';
@@ -762,7 +762,7 @@ function openTaskModal(item, index) {
             html += buildAnswerFormatHint(item.correct_answer);
         }
         if (item.solution) {
-            html += '<div class="dt-result-solution"><strong>📖 Решение:</strong><br>' + item.solution + '</div>';
+            html += '<div class="dt-result-solution"><strong> Решение:</strong><br>' + item.solution + '</div>';
         }
         html += '</div>';
     }
@@ -828,7 +828,7 @@ function submitAnswer(itemId) {
         if (!form) return;
 
         var resultClass = result.is_correct ? 'dt-correct' : 'dt-incorrect';
-        var resultIcon = result.is_correct ? '✅' : '❌';
+        var resultIcon = result.is_correct ? '[OK]' : '[ERROR]';
         var resultText = result.is_correct ? 'Верно!' : 'Неверно';
 
         var resultHtml = '<div class="dt-result ' + resultClass + '">';
@@ -841,10 +841,10 @@ function submitAnswer(itemId) {
             resultHtml += buildAnswerFormatHint(result.correct_answer);
         }
         if (result.solution) {
-            resultHtml += '<div class="dt-result-solution"><strong>📖 Решение:</strong><br>' + result.solution + '</div>';
+            resultHtml += '<div class="dt-result-solution"><strong> Решение:</strong><br>' + result.solution + '</div>';
         }
         if (result.explanation) {
-            resultHtml += '<div class="dt-result-solution"><strong>📝 Объяснение:</strong><br>' + result.explanation + '</div>';
+            resultHtml += '<div class="dt-result-solution"><strong> Объяснение:</strong><br>' + result.explanation + '</div>';
         }
         resultHtml += '</div>';
 
@@ -870,7 +870,7 @@ function submitAnswer(itemId) {
         console.error('Submit error:', error);
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '✅ Проверить';
+            btn.textContent = '[OK] Проверить';
         }
         if (hintBtn) hintBtn.disabled = false;
     });
@@ -880,7 +880,7 @@ function submitAnswer(itemId) {
 /**
  * Update the task card in the grid after an answer is submitted,
  * so the user sees the result without a page reload.
- * Tasks remain visible all day with their ✅/❌ status.
+ * Tasks remain visible all day with their [OK]/[ERROR] status.
  */
 function updateTaskCardInPlace(itemId, isCorrect) {
     // Find all cards in the grid
@@ -908,10 +908,10 @@ function updateTaskCardInPlace(itemId, isCorrect) {
                 statusRow.className = 'dt-card-status';
                 if (isCorrect) {
                     statusRow.classList.add('dt-correct');
-                    statusRow.textContent = '✅ Верно';
+                    statusRow.textContent = '[OK] Верно';
                 } else {
                     statusRow.classList.add('dt-incorrect');
-                    statusRow.textContent = '❌ Неверно';
+                    statusRow.textContent = '[ERROR] Неверно';
                 }
             }
         }
@@ -957,18 +957,18 @@ function getHint(itemId) {
         })
         .then(function(data) {
             var hintText = data.hint || data.text || 'Подсказка недоступна';
-            container.innerHTML = '<div class="dt-hint-box"><strong>💡 Подсказка:</strong><br>' + hintText + '</div>';
+            container.innerHTML = '<div class="dt-hint-box"><strong> Подсказка:</strong><br>' + hintText + '</div>';
 
             // Render LaTeX in hint (KaTeX or fallback)
             renderMath(container);
 
-            btn.textContent = '💡 Подсказка получена';
+            btn.textContent = ' Подсказка получена';
         })
         .catch(function(error) {
             console.error('Hint error:', error);
             btn.disabled = false;
-            btn.textContent = '💡 Подсказка';
-            container.innerHTML = '<div class="dt-hint-box">⚠️ ' + error.message + '</div>';
+            btn.textContent = ' Подсказка';
+            container.innerHTML = '<div class="dt-hint-box">[!]️ ' + error.message + '</div>';
         });
 }
 
@@ -977,16 +977,16 @@ function getHint(itemId) {
 /** Log whether KaTeX auto-render is loaded */
 (function checkKaTeX() {
     if (typeof renderMathInElement !== 'undefined') {
-        console.log('[DT] ✓ KaTeX auto-render loaded (renderMathInElement available)');
+        console.log('[DT] [OK] KaTeX auto-render loaded (renderMathInElement available)');
     } else if (typeof katex !== 'undefined') {
-        console.warn('[DT] ⚠ katex loaded but auto-render missing');
+        console.warn('[DT] [!] katex loaded but auto-render missing');
     } else {
-        console.warn('[DT] ✗ KaTeX CDN not loaded — using fallback LaTeX rendering');
+        console.warn('[DT]  KaTeX CDN not loaded — using fallback LaTeX rendering');
     }
 })();
 
 /**
- * Fallback LaTeX → styled spans when KaTeX CDN is unavailable.
+ * Fallback LaTeX -> styled spans when KaTeX CDN is unavailable.
  * Converts \(...\) to <span class="dt-latex-fallback">...</span>
  * and \[...\] to <div class="dt-latex-fallback dt-latex-display">...</div>.
  */
@@ -1104,7 +1104,7 @@ function buildAnswerFormatHint(correctAnswer) {
 
     var html = '';
     html += '<div class="dt-answer-format-hint">';
-    html += '<div class="dt-answer-format-title">📐 Требования к ответу:</div>';
+    html += '<div class="dt-answer-format-title"> Требования к ответу:</div>';
     html += '<ul class="dt-answer-format-list">';
     for (var i = 0; i < rules.length; i++) {
         html += '<li>' + rules[i] + '</li>';

@@ -178,7 +178,7 @@ def _stats_for_period(start_date: date, end_date: date) -> dict:
         'items': {
             'total': items_total,
             'flagged': flagged_count,
-            'flagged_pct': flagged_pct,            # ← главная метрика DoD #10
+            'flagged_pct': flagged_pct,            # <- главная метрика DoD #10
             'iteration_distribution': iteration_dist,
             'user_accuracy_pct': user_accuracy,
             'answered_count': answered_total,
@@ -248,7 +248,7 @@ _DASHBOARD_HTML = """<!doctype html>
 </style>
 </head>
 <body>
-  <h1>📊 «Задачи дня» — статистика</h1>
+  <h1> «Задачи дня» — статистика</h1>
   <div class="sub">
     Период: {{ d.period.start }} … {{ d.period.end }} ({{ d.period.days }} дн.) ·
     Сгенерировано: {{ d.generated_at }}

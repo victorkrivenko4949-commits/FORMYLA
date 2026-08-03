@@ -6,14 +6,14 @@ daily_tasks/profile.py — Step 1: построение профиля поль�
 
 1. У каждой темы класса (7 шт. для 7–11 кл., 10 шт. для 5–6 кл.) есть состояние
    ``measured`` — пройден ли по ней адаптивный диагностический тест.
-   * ``measured=True`` — есть ``AdaptiveTestResult`` → процент знания темы
+   * ``measured=True`` — есть ``AdaptiveTestResult`` -> процент знания темы
      известен как ``100 * tasks_correct / tasks_total``.
-   * ``measured=False`` — теста не было → тема **калибровочная**: задачи дня
+   * ``measured=False`` — теста не было -> тема **калибровочная**: задачи дня
      по ней даются на безопасном стартовом уровне, а ответы ученика по этим
      задачам со временем превращаются в собственный «running_pct» (см.
      ``update_topic_running_pct``).
 
-2. Процент знания темы → уровень сложности задачи (1–5) через
+2. Процент знания темы -> уровень сложности задачи (1–5) через
    :func:`percent_to_level`. Пороги вынесены в
    :data:`PERCENT_LEVEL_THRESHOLDS` для удобного тюнинга.
 
@@ -67,16 +67,16 @@ logger = logging.getLogger(__name__)
 # Константы — все пороги и веса ВЫНЕСЕНЫ сюда, чтобы тюнить без правки логики
 # ══════════════════════════════════════════════════════════════════════
 
-# ── Маппинг процент → уровень сложности 1–5 (см. ТЗ п.1) ──────────────
+# ── Маппинг процент -> уровень сложности 1–5 (см. ТЗ п.1) ──────────────
 # Формат: список (верхняя граница включительно, уровень).
-# Низкий % → низкий уровень (ученик слаб → задаём проще).
-# Высокий % → высокий уровень (ученик силён → задаём челлендж).
+# Низкий % -> низкий уровень (ученик слаб -> задаём проще).
+# Высокий % -> высокий уровень (ученик силён -> задаём челлендж).
 PERCENT_LEVEL_THRESHOLDS: List[Tuple[int, int]] = [
-    (20, 1),   #   0–20% → lvl 1 (база)
-    (40, 2),   #  21–40% → lvl 2
-    (60, 3),   #  41–60% → lvl 3
-    (80, 4),   #  61–80% → lvl 4
-    (100, 5),  # 81–100% → lvl 5 (челлендж)
+    (20, 1),   #   0–20% -> lvl 1 (база)
+    (40, 2),   #  21–40% -> lvl 2
+    (60, 3),   #  41–60% -> lvl 3
+    (80, 4),   #  61–80% -> lvl 4
+    (100, 5),  # 81–100% -> lvl 5 (челлендж)
 ]
 
 # ── Поведение для измеренных слабых тем ───────────────────────────────
@@ -144,7 +144,7 @@ def percent_to_level(pct: Optional[float]) -> Optional[int]:
     ---------
     pct : float | None
         Процент 0..100. Значения вне диапазона clamp'ятся.
-        ``None`` → ``None`` (тест не пройден, уровень неизвестен).
+        ``None`` -> ``None`` (тест не пройден, уровень неизвестен).
 
     Возвращает
     ----------
@@ -231,10 +231,10 @@ def compute_stretch_level_from_pct(
 # Адаптивный тест по теме даёт пару (correct, total) и ``final_level`` (1..8).
 # Эти данные мы используем НАПРЯМУЮ, без потери верхней части шкалы:
 #
-#   8/8, final_level=8  →  target=L8, окно [L7, L8]   ← раньше тут было L5!
-#   7/8, final_level=7  →  target=L7, окно [L6, L8]
-#   4/8, final_level=4  →  target=L3, окно [L2, L4]
-#   1/8, final_level=2  →  target=L1, окно [L1, L3]   ← бери ниже измеренного
+#   8/8, final_level=8  ->  target=L8, окно [L7, L8]   <- раньше тут было L5!
+#   7/8, final_level=7  ->  target=L7, окно [L6, L8]
+#   4/8, final_level=4  ->  target=L3, окно [L2, L4]
+#   1/8, final_level=2  ->  target=L1, окно [L1, L3]   <- бери ниже измеренного
 #
 # В отличие от старой логики `percent_to_level` (сжимала всё в L1..L5),
 # здесь используется ПОЛНАЯ шкала 1..8 — соответствует AdaptiveTask.difficulty_level
@@ -255,10 +255,10 @@ def score_to_target_level(
     * базовый уровень — то, что измерил адаптивный движок (``final_level``);
     * для **слабых** тем (ratio низкий) опускаем НИЖЕ измеренного — нужно
       добрать фундамент:
-        - ratio ≤ 0.25 (1/8)  →  base − 2
-        - ratio ≤ 0.50 (4/8)  →  base − 1
-        - ratio ≤ 0.75 (6/8)  →  base
-        - ratio > 0.75 (≥7/8) →  base   (держим высокий уровень)
+        - ratio ≤ 0.25 (1/8)  ->  base − 2
+        - ratio ≤ 0.50 (4/8)  ->  base − 1
+        - ratio ≤ 0.75 (6/8)  ->  base
+        - ratio > 0.75 (≥7/8) ->  base   (держим высокий уровень)
     * clamp в диапазон [floor, ceil] = [1, 8].
 
     Параметры
@@ -324,7 +324,7 @@ def compute_level_window(
 
     Правила:
     * **Слабая тема** (target ≤ 3): окно [target, target+2] — даём
-      фундамент + лёгкий рост (например, 1/8 → L1..L3).
+      фундамент + лёгкий рост (например, 1/8 -> L1..L3).
     * **Средняя тема** (target == 4 или 5): [target−1, target+1].
     * **Сильная тема** (target ≥ 6): [max(target−1, 6), 8] — приоритет
       верхней части шкалы; при target=8 окно [7, 8], при 8/8 = L7..L8.
@@ -374,10 +374,10 @@ def compute_slot_allocation(
 ) -> Tuple[int, int]:
     """Сколько задач выделить под measured-темы и под calibration-темы.
 
-    Логика (ТЗ п.3, «1/7 пройдено → ~3–4 measured + ~6 калибровочных»):
+    Логика (ТЗ п.3, «1/7 пройдено -> ~3–4 measured + ~6 калибровочных»):
 
-    Если measured_count = 0 → (0, total_slots) — все 10 калибровочных.
-    Если measured_count = total_topics (7/7) → (total_slots, 0).
+    Если measured_count = 0 -> (0, total_slots) — все 10 калибровочных.
+    Если measured_count = total_topics (7/7) -> (total_slots, 0).
     Между ними — линейная интерполяция с округлением.
 
     Формула:
@@ -467,8 +467,8 @@ def _extract_subject(db_topic: str, class_level: int) -> str:
 def _get_topic_catalog(class_level: int) -> List[Dict]:
     """Получить каталог тем для класса.
 
-    Grade 5-6 → SUBTOPICS (topic_taxonomy).
-    Grade 7-11 → ADAPTIVE_TOPICS_BY_GRADE, 7 тем.
+    Grade 5-6 -> SUBTOPICS (topic_taxonomy).
+    Grade 7-11 -> ADAPTIVE_TOPICS_BY_GRADE, 7 тем.
     """
     if class_level >= 7:
         grade_data = ADAPTIVE_TOPICS_BY_GRADE.get(class_level, [])
@@ -554,7 +554,7 @@ def _resolve_class_level(user: User) -> int:
         msg = (
             "Не указан класс ученика (preferred_grade пуст). "
             "Без класса невозможно выбрать тематический каталог. "
-            "Зайди в Профиль → укажи класс."
+            "Зайди в Профиль -> укажи класс."
         )
         logger.error(
             "build_profile: user_id=%s missing preferred_grade — refuse silent fallback",
@@ -582,7 +582,7 @@ def _resolve_class_level(user: User) -> int:
 def _load_topic_test_pct(
     user_id: int, class_level: int
 ) -> Dict[str, float]:
-    """Достать карту ``db_topic → pct (0..100)`` из AdaptiveTestResult.
+    """Достать карту ``db_topic -> pct (0..100)`` из AdaptiveTestResult.
 
     Берём **последний** тест на каждую (topic, class_level). Если у одной
     темы несколько записей — побеждает самая свежая (по completed_at, иначе
@@ -602,7 +602,7 @@ def _load_topic_test_pct(
 def _load_topic_test_results(
     user_id: int, class_level: int
 ) -> Dict[str, Dict[str, Any]]:
-    """db_topic → {correct, total, final_level, pct, completed_at}.
+    """db_topic -> {correct, total, final_level, pct, completed_at}.
 
     Нужна для :func:`score_to_target_level`, чтобы получить target_level
     в полной шкале 1..8 на основе ``final_level`` адаптивного теста и
@@ -643,7 +643,7 @@ def _load_topic_test_results(
 def _load_topic_final_level(
     user_id: int, class_level: int
 ) -> Dict[str, int]:
-    """``db_topic → final_level (IRT 1..8)`` (для совместимости со старым кодом)."""
+    """``db_topic -> final_level (IRT 1..8)`` (для совместимости со старым кодом)."""
     rows = (
         db.session.query(AdaptiveTestResult.topic, AdaptiveTestResult.final_level)
         .filter(
@@ -745,9 +745,9 @@ def build_profile(
 
     total_topics = len(topic_catalog)
 
-    # ── 3. Map db_topic → результат адаптивного теста ────────────────
+    # ── 3. Map db_topic -> результат адаптивного теста ────────────────
     # test_results: {topic: {correct, total, final_level, pct, completed_at}}
-    # Используется напрямую в score_to_target_level → полная шкала 1..8.
+    # Используется напрямую в score_to_target_level -> полная шкала 1..8.
     test_results = _load_topic_test_results(user_id, class_level)
     pct_by_topic = {t: r["pct"] for t, r in test_results.items()}
     final_level_by_topic = {
@@ -835,7 +835,7 @@ def build_profile(
         # — конвертация в уровни (PER-TOPIC DIFFICULTY MATCHING) ──────
         # target_level и окно [low, high] берутся ИЗ результата
         # адаптивного теста по этой теме (не из общего % ученика).
-        # 8/8 алгебры → target=L8, окно [L7, L8]; геометрия независимо.
+        # 8/8 алгебры -> target=L8, окно [L7, L8]; геометрия независимо.
         pct_level = percent_to_level(pct)  # legacy 1..5 — для совместимости
         if measured:
             tr = test_results.get(db_topic, {})
@@ -998,7 +998,7 @@ def build_profile(
     subject_count: Dict[str, int] = {}
 
     # PR per-topic difficulty matching: при 0 тестов поднимаем лимит,
-    # чтобы все 7-10 калибровочных тем попали в weak_topics → slot_planner
+    # чтобы все 7-10 калибровочных тем попали в weak_topics -> slot_planner
     # распределит между ними 10 слотов (вместо урезания до 7).
     weak_limit = (
         _TOP_WEAK_COUNT_WHEN_EMPTY if measured_count == 0 else _TOP_WEAK_COUNT

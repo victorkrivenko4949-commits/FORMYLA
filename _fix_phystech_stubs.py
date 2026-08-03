@@ -3,7 +3,7 @@
 Fix 15 stub problems in olympiads.py for phystech (id=691, 692, 693).
 
 Strategy:
-  1. Import olympiads module → locate 3 stub olympiad sets
+  1. Import olympiads module -> locate 3 stub olympiad sets
   2. For each stub problem, extract the problem statement from the solution field
      using OpenRouter AI (5 parallel workers)
   3. Apply targeted text replacements to olympiads.py
@@ -52,7 +52,7 @@ def is_stub_text(text: str) -> bool:
     """Check if a text field looks like a stub (short placeholder)."""
     text = text.strip()
     if len(text) > 120:
-        return False  # long text → probably real problem
+        return False  # long text -> probably real problem
     for pat in STUB_TEXT_PATTERNS:
         if re.match(pat, text):
             return True

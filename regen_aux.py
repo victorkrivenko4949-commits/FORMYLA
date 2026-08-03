@@ -251,7 +251,8 @@ def main():
     if left:
         print("\nнепостроенные:")
         for t in left:
-            print("   ", t["task_uid"][:12], t["text"][:80].replace("\n", " "))
+            txt = t.get("text") or t.get("statement") or ""
+            print("   ", t["task_uid"][:12], txt[:80].replace("\n", " "))
 
     # собрать всё в одну папку
     allx = pathlib.Path(a.out) / "figures_all"

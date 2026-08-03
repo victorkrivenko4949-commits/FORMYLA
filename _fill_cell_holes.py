@@ -71,9 +71,9 @@ def _fix_invalid_escapes(text: str) -> str:
     
     The DeepSeek API often returns doubled backslashes before LaTeX commands,
     e.g. \\\\leq (two backslashes in the raw string). A single pass of the
-    regex only removes one backslash: \\\\leq → \\leq (still has \\l which is
+    regex only removes one backslash: \\\\leq -> \\leq (still has \\l which is
     an invalid JSON escape). Iterating until stable handles this:
-    \\\\leq → \\leq → leq. Same for \\\\in, \\\\cup, \\\\infty, etc.
+    \\\\leq -> \\leq -> leq. Same for \\\\in, \\\\cup, \\\\infty, etc.
     """
     import re
     replacements = {
@@ -191,7 +191,7 @@ def safe_parse_json(text: str) -> Optional[list]:
     # Find outermost [ ... ] with bracket-depth tracking
     # CRITICAL: Do this BEFORE _fix_invalid_escapes and _strip_control_chars,
     # because the model outputs \[ and \] (LaTeX notation) inside JSON strings.
-    # After _fix_invalid_escapes converts \[ → [ and \] → ], these would
+    # After _fix_invalid_escapes converts \[ -> [ and \] -> ], these would
     # corrupt bracket-depth tracking. Same for \{ and \}.
     bracket_depth = 0
     json_start = -1
@@ -242,7 +242,7 @@ def safe_parse_json(text: str) -> Optional[list]:
     except json.JSONDecodeError:
         pass
     
-    # Handle single quotes → double quotes
+    # Handle single quotes -> double quotes
     import re
     fixed = []
     in_double = False
@@ -458,7 +458,7 @@ def generate_cell_tasks(client: DeepSeekClient, cell: dict) -> list:
                 validated.append(t)
             
             if validated:
-                logger.info(f"[{cell['cell_key']}] ✓ Generated {len(validated)}/{cell['needed']} tasks")
+                logger.info(f"[{cell['cell_key']}] [OK] Generated {len(validated)}/{cell['needed']} tasks")
                 return validated
             else:
                 logger.warning(f"[{cell['cell_key']}] Attempt {attempt+1}: No valid tasks, retrying...")
@@ -596,11 +596,11 @@ def main():
                     if new_tasks:
                         all_generated_tasks.extend(new_tasks)
                         completed_keys.add(cell['cell_key'])
-                        logger.info(f"[{completed}/{total}] ✓ {cell['cell_key']} — +{len(new_tasks)} tasks")
+                        logger.info(f"[{completed}/{total}] [OK] {cell['cell_key']} — +{len(new_tasks)} tasks")
                     else:
-                        logger.error(f"[{completed}/{total}] ✗ {cell['cell_key']} — FAILED")
+                        logger.error(f"[{completed}/{total}]  {cell['cell_key']} — FAILED")
                 except Exception as e:
-                    logger.error(f"[{completed}/{total}] ✗ {cell['cell_key']} — {e}")
+                    logger.error(f"[{completed}/{total}]  {cell['cell_key']} — {e}")
                 
                 # Save checkpoint every 5 cells
                 if completed % 5 == 0 or completed == total:
@@ -643,7 +643,7 @@ def main():
         remaining_needed = sum(c['needed'] for c in remaining)
         logger.info(f"  Remaining tasks needed: {remaining_needed}")
     else:
-        logger.info(f"  All cells filled! ✓")
+        logger.info(f"  All cells filled! [OK]")
 
 
 if __name__ == '__main__':

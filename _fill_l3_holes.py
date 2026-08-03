@@ -14,7 +14,7 @@ Why two-stage?
     the `content` field is often empty.
   - deepseek-chat (the non-reasoning model) is excellent at formatting
     structured output (JSON) when given clear context.
-  - So: reasoner "thinks" → chat "writes".
+  - So: reasoner "thinks" -> chat "writes".
 
 Strategy:
   - Small batches (TASKS_PER_CALL=2) for higher reliability.
@@ -359,7 +359,7 @@ def build_reasoner_idea_prompt(cell: dict, batch_size: int,
 
     if existing:
         prompt_parts.append(
-            f"⚠️ В этой ячейке УЖЕ ЕСТЬ следующие {len(existing)} задач(и). "
+            f"[!]️ В этой ячейке УЖЕ ЕСТЬ следующие {len(existing)} задач(и). "
             "Нужны ПРИНЦИПИАЛЬНО НОВЫЕ задачи, которые НЕ повторяют их:"
         )
         for i, t in enumerate(existing, 1):
@@ -376,7 +376,7 @@ def build_reasoner_idea_prompt(cell: dict, batch_size: int,
 
     if attempt > 0:
         prompt_parts.append(
-            "⚠️ Попробуй СОВСЕМ ДРУГИЕ идеи, не те, что были в предыдущих попытках."
+            "[!]️ Попробуй СОВСЕМ ДРУГИЕ идеи, не те, что были в предыдущих попытках."
         )
         prompt_parts.append("")
 
@@ -415,7 +415,7 @@ def build_chat_formatter_prompt(cell: dict, batch_size: int,
 
     if existing:
         prompt_parts.append(
-            f"⚠️ В этой ячейке УЖЕ ЕСТЬ следующие {len(existing)} задач(и). "
+            f"[!]️ В этой ячейке УЖЕ ЕСТЬ следующие {len(existing)} задач(и). "
             "ТЫ ДОЛЖЕН СГЕНЕРИРОВАТЬ НОВЫЕ, НЕ ПОВТОРЯЮЩИЕ ИХ:"
         )
         for i, t in enumerate(existing, 1):
@@ -460,7 +460,7 @@ def build_chat_formatter_prompt(cell: dict, batch_size: int,
     if attempt > 0:
         prompt_parts.append("")
         prompt_parts.append(
-            "⚠️ Предыдущие попытки не дали результата. Попробуй ДРУГИЕ задачи "
+            "[!]️ Предыдущие попытки не дали результата. Попробуй ДРУГИЕ задачи "
             "с другими числами и контекстами."
         )
 
@@ -857,7 +857,7 @@ def merge_into_db(db: list, new_tasks: list) -> list:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Fill L3 cell holes using two-stage (reasoner → chat)"
+        description="Fill L3 cell holes using two-stage (reasoner -> chat)"
     )
     parser.add_argument(
         '--max-cells', type=int, default=None,

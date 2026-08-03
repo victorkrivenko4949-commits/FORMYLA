@@ -67,7 +67,7 @@ def test_recognize_rejects_oversized_image(client):
 
 
 def test_recognize_happy_path_returns_text(client):
-    """OpenRouter returns clean JSON → endpoint forwards the text."""
+    """OpenRouter returns clean JSON -> endpoint forwards the text."""
     fake = {
         "content": json.dumps({"text": "привет"}),
         "usage": {"prompt_tokens": 1, "completion_tokens": 1},

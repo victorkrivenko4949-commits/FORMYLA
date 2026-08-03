@@ -195,7 +195,7 @@ class Stage5Validate:
     def _check_long_sub_sup(self, math: str) -> List[str]:
         """Степень/индекс длиннее 1 символа без {}."""
         errors = []
-        # x^12 → плохо, x^{12} → ок
+        # x^12 -> плохо, x^{12} -> ок
         for m in re.finditer(r'[\^_](\d{2,})', math):
             errors.append(
                 f"Степень/индекс без скобок: «...{m.group(0)}» "

@@ -38,7 +38,7 @@ if os.path.exists(tmpl_path):
     all_pass = True
     for name, pattern in checks:
         found = pattern.lower() in text.lower()
-        status = "✅" if found else "❌"
+        status = "[OK]" if found else "[ERROR]"
         if not found:
             all_pass = False
         print(f"  {status} {name}: {'found' if found else 'MISSING!'}")
@@ -49,7 +49,7 @@ if os.path.exists(tmpl_path):
     else:
         print("RESULT: SOME CHECKS FAILED - template file is INCOMPLETE!")
 else:
-    print(f"  ❌ File NOT FOUND at {tmpl_path}")
+    print(f"  [ERROR] File NOT FOUND at {tmpl_path}")
 
 # Check for compiled template caches
 print()
@@ -66,16 +66,16 @@ for d in pycache_dirs:
         files = os.listdir(d)
         coach_caches = [f for f in files if 'coach' in f.lower()]
         if coach_caches:
-            print(f"  📁 {d}/")
+            print(f"   {d}/")
             for f in coach_caches:
                 fpath = os.path.join(d, f)
                 fsize = os.path.getsize(fpath)
                 fmtime = datetime.datetime.fromtimestamp(os.path.getmtime(fpath)).strftime('%Y-%m-%d %H:%M:%S')
                 print(f"    {f} ({fsize} bytes, modified {fmtime})")
         else:
-            print(f"  📁 {d}/ (no coach-related cache files)")
+            print(f"   {d}/ (no coach-related cache files)")
     else:
-        print(f"  ❌ {d}/ (not found)")
+        print(f"  [ERROR] {d}/ (not found)")
 
 # Check for .pyc files anywhere related to coach
 print()
@@ -86,7 +86,7 @@ for root, dirs, files in os.walk('.'):
             fpath = os.path.join(root, f)
             fsize = os.path.getsize(fpath)
             fmtime = datetime.datetime.fromtimestamp(os.path.getmtime(fpath)).strftime('%Y-%m-%d %H:%M:%S')
-            print(f"  📄 {fpath} ({fsize} bytes, modified {fmtime})")
+            print(f"   {fpath} ({fsize} bytes, modified {fmtime})")
 
 print()
 print("=" * 60)
@@ -115,11 +115,11 @@ if os.path.exists(base_path):
         print(f"  Content before extra_js (last 500 chars):")
         print(f"  ...{before[-200:]}")
     else:
-        print("  ❌ 'extra_js' block NOT FOUND in base.html!")
+        print("  [ERROR] 'extra_js' block NOT FOUND in base.html!")
     
     # Check for service worker registration
     if 'sw.js' in base_text:
-        print("  ✅ Service Worker (sw.js) registered in base.html")
+        print("  [OK] Service Worker (sw.js) registered in base.html")
     
     # Check for wb_pip.js
     if 'wb_pip.js' in base_text:
@@ -127,4 +127,4 @@ if os.path.exists(base_path):
         context = base_text[max(0,idx-100):idx+200]
         print(f"  wb_pip.js context: ...{context}...")
 else:
-    print(f"  ❌ base.html not found")
+    print(f"  [ERROR] base.html not found")

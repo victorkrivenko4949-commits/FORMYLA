@@ -8,16 +8,16 @@
  * into the page (e.g. "Caveat", "Marck Script", "Pangolin").
  *
  * Design goals:
- *   - Deterministic for a given `seed` → re-rendering an object
+ *   - Deterministic for a given `seed` -> re-rendering an object
  *     after undo / reload produces the *same* picture.
  *   - Pure function: never mutates `ctx` state outside save/restore.
  *   - No external dependencies, works in any modern browser.
  *
  * Public API (registered on window):
  *   FormylaHandwriting.renderHandwriting(ctx, text, opts)
- *   FormylaHandwriting.measureHandwriting(text, opts)        → {w, h}
+ *   FormylaHandwriting.measureHandwriting(text, opts)        -> {w, h}
  *   FormylaHandwriting.makeSeed()
- *   FormylaHandwriting.AVAILABLE_FONTS                       → string[]
+ *   FormylaHandwriting.AVAILABLE_FONTS                       -> string[]
  */
 (function (root) {
   "use strict";
@@ -36,7 +36,7 @@
   }
 
   function hashSeed(input) {
-    /* tiny 32-bit hash so a string seed → uint32 */
+    /* tiny 32-bit hash so a string seed -> uint32 */
     let h = 2166136261 >>> 0;
     const s = String(input == null ? "" : input);
     for (let i = 0; i < s.length; i++) {

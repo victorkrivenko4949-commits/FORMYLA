@@ -61,7 +61,7 @@ def table_a_pool() -> None:
     all_five = ['algebra', 'geometry', 'combinatorics', 'logic', 'number_theory']
     for sec in all_five:
         total = sum(grid.get(sec, {}).values())
-        mark = "✓" if total > 0 else "✗"
+        mark = "[OK]" if total > 0 else ""
         print(f"  {mark} {sec}: {total} задач")
     print(f"  Всего задач класса 9: {len(tasks)}")
 
@@ -85,7 +85,7 @@ def table_b_regenerate() -> List[Dict[str, Any]]:
         DailyTaskItem.query.filter_by(daily_set_id=existing.id).delete()
         db.session.delete(existing)
         db.session.commit()
-        print(f"  ✓ Удалён существующий сет #{existing.id}")
+        print(f"  [OK] Удалён существующий сет #{existing.id}")
 
     cs = CuratorState.query.filter_by(user_id=TEST_USER_ID).first()
     onboard = None
@@ -116,7 +116,7 @@ def table_b_regenerate() -> List[Dict[str, Any]]:
         user_id=TEST_USER_ID, target_date=today,
     ).first()
     if not new_set:
-        print("  ❌ Сет не создан!")
+        print("  [ERROR] Сет не создан!")
         return []
 
     items = (
@@ -143,10 +143,10 @@ def table_b_regenerate() -> List[Dict[str, Any]]:
             'level': it.difficulty_level,
         })
 
-    print(f"\n  Уникальных разделов: {len(sections_seen)} → {sections_seen}")
+    print(f"\n  Уникальных разделов: {len(sections_seen)} -> {sections_seen}")
 
     if len(sections_seen) < 3:
-        print(f"  ⚠️ Разделов < 3. Причины:")
+        print(f"  [!]️ Разделов < 3. Причины:")
         grade = 9
         if onboard:
             try:
@@ -162,7 +162,7 @@ def table_b_regenerate() -> List[Dict[str, Any]]:
         for sec, cnt in sorted(section_counts.items(), key=lambda x: -x[1]):
             print(f"    {sec}: {cnt} задач")
     else:
-        print(f"  ✓ Разделов ≥ 3 — OK")
+        print(f"  [OK] Разделов ≥ 3 — OK")
 
     return table_rows
 
@@ -187,7 +187,7 @@ def table_c_answers(items: List[Dict[str, Any]]) -> None:
     print(f"  Глобально: mu={state_before['mu']:.3f} sigma={state_before['sigma']:.3f}")
 
     if not items:
-        print("\n  ❌ Нет задач для ответа!")
+        print("\n  [ERROR] Нет задач для ответа!")
         return
 
     answers_to_submit = items[:4]
@@ -213,7 +213,7 @@ def table_c_answers(items: List[Dict[str, Any]]) -> None:
 
         from services.daily_task_rotation import record_daily_answer
         result = record_daily_answer(TEST_USER_ID, item_id, should_be_correct)
-        print(f"         record_daily_answer → mu={result.get('mu', '?'):.2f}")
+        print(f"         record_daily_answer -> mu={result.get('mu', '?'):.2f}")
 
     state_after = le_get_state(TEST_USER_ID)
     print("\n  level_by_section ПОСЛЕ:")
@@ -240,7 +240,7 @@ def table_d_no_questionnaire() -> None:
         saved_prep = dict(cs.prep_state) if cs.prep_state else {}
         cs.prep_state = {}
         db.session.commit()
-        print("  ✓ Анкета временно очищена")
+        print("  [OK] Анкета временно очищена")
 
     try:
         today = datetime.now(MSK_TZ).date()
@@ -263,7 +263,7 @@ def table_d_no_questionnaire() -> None:
             user_id=TEST_USER_ID, target_date=today,
         ).first()
         if not new_set:
-            print("  ❌ Сет не создан!")
+            print("  [ERROR] Сет не создан!")
             return
 
         items = (
@@ -283,7 +283,7 @@ def table_d_no_questionnaire() -> None:
             sections_seen.add(sec_slug)
             print(f"  {it.position:<4} {it.id:<8} {sec_slug:<22} {it.difficulty_level or '—':<8}")
 
-        print(f"\n  Уникальных разделов: {len(sections_seen)} → {sections_seen}")
+        print(f"\n  Уникальных разделов: {len(sections_seen)} -> {sections_seen}")
         print(f"  Количество задач: {len(items)} (ожидалось 5)")
 
     finally:
@@ -292,7 +292,7 @@ def table_d_no_questionnaire() -> None:
             if cs:
                 cs.prep_state = saved_prep
                 db.session.commit()
-                print("\n  ✓ Анкета восстановлена")
+                print("\n  [OK] Анкета восстановлена")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -314,17 +314,17 @@ def criterion_7() -> None:
         try:
             py_compile.compile(f, doraise=True)
         except py_compile.PyCompileError as e:
-            print(f"  ❌ {f}: {e}")
+            print(f"  [ERROR] {f}: {e}")
             all_ok = False
     if all_ok:
-        print("  ✓ python -m py_compile: exit 0")
+        print("  [OK] python -m py_compile: exit 0")
 
     user = get_user()
     flask_app.test_client_class = FlaskLoginClient
     with flask_app.test_client(user=user) as client:
         resp = client.get('/daily_tasks/')
         status = resp.status_code
-        print(f"  GET /daily_tasks: {status}" + (" ✓" if status == 200 else " ❌"))
+        print(f"  GET /daily_tasks: {status}" + (" [OK]" if status == 200 else " [ERROR]"))
 
 
 # ══════════════════════════════════════════════════════════════════════

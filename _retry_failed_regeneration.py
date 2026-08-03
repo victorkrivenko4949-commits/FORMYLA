@@ -148,7 +148,7 @@ def safe_parse_json_ultra(text: str) -> dict:
     except json.JSONDecodeError:
         pass
 
-    # Single quotes → double quotes
+    # Single quotes -> double quotes
     fixed = []
     in_double = False
     in_single = False

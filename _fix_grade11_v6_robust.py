@@ -459,7 +459,7 @@ def main():
             f.write(db_content)
         print(f"  Updated {db_py_path} ({len(db_content)} bytes)", flush=True)
     
-    print("\n✅ Grade 11 Day 2 problems added successfully!")
+    print("\n[OK] Grade 11 Day 2 problems added successfully!")
 
 
 if __name__ == '__main__':

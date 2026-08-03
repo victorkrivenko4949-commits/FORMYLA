@@ -3,10 +3,10 @@
 Fix ALL bad/stub/placeholder problem texts in olympiads.py.
 
 Strategy:
-  1. Import olympiads module → find ALL problems with bad/stub text fields
+  1. Import olympiads module -> find ALL problems with bad/stub text fields
   2. Classify by fixability:
-     - FIXABLE (Type C/E/some B): solution field contains recoverable condition → AI extraction
-     - UNFIXABLE (Type A/some B): solution is also missing → report for manual review
+     - FIXABLE (Type C/E/some B): solution field contains recoverable condition -> AI extraction
+     - UNFIXABLE (Type A/some B): solution is also missing -> report for manual review
   3. For fixable problems: extract problem text from solution via OpenRouter AI (5 threads)
   4. Apply targeted text replacements to olympiads.py
   5. Verify syntax and re-import
@@ -297,7 +297,7 @@ def extract_texts_parallel(tasks: list, max_workers: int = 5) -> dict:
     """
     Run AI extraction on fixable tasks in parallel.
 
-    Returns: dict mapping 'set_key_num' (e.g., 'euler_5') → new_text
+    Returns: dict mapping 'set_key_num' (e.g., 'euler_5') -> new_text
     """
     results = {}
     completed = 0
@@ -339,9 +339,9 @@ def _escape_py_string(text: str) -> str:
     for use as a single-quoted string literal.
 
     This handles:
-      - backslash: \\ → \\\\
-      - single quote: ' → \\'
-      - newlines: \\n → \\\\n
+      - backslash: \\ -> \\\\
+      - single quote: ' -> \\'
+      - newlines: \\n -> \\\\n
       - other control chars
     """
     result = []
@@ -585,7 +585,7 @@ def apply_fixes_to_file(fixes: list, filepath: str = "olympiads.py") -> int:
         replacement = f"'{escaped_new}'"
         content = content[:span_start] + replacement + content[span_end:]
         applied += 1
-        print(f"  Fixed #{idx}: {set_key}#{problem_num} ({len(old_text)}→{len(new_text)} chars)")
+        print(f"  Fixed #{idx}: {set_key}#{problem_num} ({len(old_text)}->{len(new_text)} chars)")
 
     # Write back
     with open(filepath, 'w', encoding='utf-8') as f:
@@ -608,10 +608,10 @@ def verify_file(filepath: str = "olympiads.py") -> bool:
         with open(filepath, 'r', encoding='utf-8') as f:
             source = f.read()
         ast.parse(source)
-        print("✓ Syntax OK")
+        print("[OK] Syntax OK")
         return True
     except SyntaxError as e:
-        print(f"✗ SYNTAX ERROR: {e}")
+        print(f" SYNTAX ERROR: {e}")
         # Show context around error
         lines = source.split('\n')
         if e.lineno:
@@ -640,7 +640,7 @@ def reimport_olympiads(filepath: str = "olympiads.py") -> bool:
 
         db = getattr(module, 'OLYMPIADS_DB', None)
         if db is None:
-            print("✗ Re-import FAILED: no OLYMPIADS_DB attribute")
+            print(" Re-import FAILED: no OLYMPIADS_DB attribute")
             return False
 
         entry_count = sum(
@@ -649,10 +649,10 @@ def reimport_olympiads(filepath: str = "olympiads.py") -> bool:
             for _ in entry['problems']
         )
         set_count = len(db)
-        print(f"✓ Re-import OK: {set_count} sets, ~{entry_count} problems total")
+        print(f"[OK] Re-import OK: {set_count} sets, ~{entry_count} problems total")
         return True
     except Exception as e:
-        print(f"✗ Re-import FAILED: {e}")
+        print(f" Re-import FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -686,7 +686,7 @@ def save_cache(cache: dict):
     """Save cache."""
     with open(CACHE_PATH, 'w', encoding='utf-8') as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
-    print(f"Cache saved: {len(cache)} entries → {CACHE_PATH}")
+    print(f"Cache saved: {len(cache)} entries -> {CACHE_PATH}")
 
 
 def save_report(bad_tasks: list):

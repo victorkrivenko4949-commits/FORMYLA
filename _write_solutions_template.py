@@ -17,7 +17,7 @@ template = r'''{% extends "base.html" %}
               border:1px solid rgba(56,189,248,0.35); color:#e2e8f0;
               border-radius:10px; text-decoration:none; font-weight:600;
               font-size:0.95em; transition: all .15s ease;">
-        <span style="font-size:1.1em;">←</span> Назад к каталогу
+        <span style="font-size:1.1em;"><-</span> Назад к каталогу
     </a>
 </div>
 <style>

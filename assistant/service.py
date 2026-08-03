@@ -4,21 +4,21 @@
 Pipeline (TZ section 3):
 
     user message
-        ↓
+        v
     topic filter (assistant.safety.classify_topic)
-        ↓  on off-topic / solve-task → polite refusal (no LLM call)
-        ↓
+        v  on off-topic / solve-task -> polite refusal (no LLM call)
+        v
     KB search   (assistant.knowledge.search)
-        ↓
+        v
     build prompt with FORMYLA_CONTEXT block (only relevant rows)
-        ↓
+        v
     DeepSeek call (assistant.deepseek_client.chat)
-        ↓
+        v
     sanitize (assistant.safety.sanitize_answer) — hedge / external URL filter
-        ↓
+        v
     pick suggested_actions by category
-        ↓
-    log_event → return final dict
+        v
+    log_event -> return final dict
 """
 from __future__ import annotations
 

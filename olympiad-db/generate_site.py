@@ -259,7 +259,7 @@ function renderProblemView() {
   let html = '<div class="app-container">';
 
   // Back button
-  html += '<button class="back-btn" onclick="backToList()">← Назад к списку</button>';
+  html += '<button class="back-btn" onclick="backToList()"><- Назад к списку</button>';
 
   // Header
   html += '<div class="problem-viewer">';
@@ -290,7 +290,7 @@ function renderProblemView() {
     html += '<div class="problem-image">';
     html += '<p class="image-label">'+ (IMG_KIND_LABELS[img.kind]||img.kind) +'</p>';
     html += '<img src="'+imageSrc(img.file)+'" loading="lazy" alt="'+escapeHtml(img.kind)+'">';
-    if (img.confidence==='low') html += '<p class="confidence-note">⚠ Качество изображения: низкое</p>';
+    if (img.confidence==='low') html += '<p class="confidence-note">[!] Качество изображения: низкое</p>';
     html += '</div>';
   }
 
@@ -314,7 +314,7 @@ function renderProblemView() {
     html += '<div class="problem-image">';
     html += '<p class="image-label">'+ (IMG_KIND_LABELS[img.kind]||img.kind) +'</p>';
     html += '<img src="'+imageSrc(img.file)+'" loading="lazy" alt="'+escapeHtml(img.kind)+'">';
-    if (img.confidence==='low') html += '<p class="confidence-note">⚠ Качество изображения: низкое</p>';
+    if (img.confidence==='low') html += '<p class="confidence-note">[!] Качество изображения: низкое</p>';
     html += '</div>';
   }
 

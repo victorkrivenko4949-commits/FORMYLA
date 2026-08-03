@@ -43,7 +43,7 @@ def base_query(
     grade: Optional[int] = None,
     include_flagged: bool = False,
 ):
-    """Базовый запрос: subject → grade → (не помечена)."""
+    """Базовый запрос: subject -> grade -> (не помечена)."""
     q = AdaptiveTask.query
     q = _subject_filter(q, subject)
     if grade is not None:

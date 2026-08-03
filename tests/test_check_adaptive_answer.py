@@ -120,20 +120,20 @@ def client():
 
 # ═════════════════════════════════════════════════════════════════════════
 # FORMYLA v2 scale (since commit "scoring v2"):
-#   answer_correct=True,  method_correct=True/None      → score=+1, level+1
-#   answer_correct=True,  method_correct=False (с реш.) → score= 0, level=ст.
-#   answer_correct=False, method_correct=True  (с реш.) → score= 0, level=ст.
-#   answer_correct=False, method_correct=False/None    → score=-1, level-1
-#   answer_correct=None (AI failure / суждение неясно)  → score= 0, level=ст.
+#   answer_correct=True,  method_correct=True/None      -> score=+1, level+1
+#   answer_correct=True,  method_correct=False (с реш.) -> score= 0, level=ст.
+#   answer_correct=False, method_correct=True  (с реш.) -> score= 0, level=ст.
+#   answer_correct=False, method_correct=False/None    -> score=-1, level-1
+#   answer_correct=None (AI failure / суждение неясно)  -> score= 0, level=ст.
 # Уровень clamped to [1, 8] (FORMYLA v2, fix/adaptive-progress).
 # ═════════════════════════════════════════════════════════════════════════
 
 
 def test_correct_answer_level_up(client):
-    """ТЗ FORMYLA v2: верный ответ + верный метод → +1 балл, уровень +1."""
+    """ТЗ FORMYLA v2: верный ответ + верный метод -> +1 балл, уровень +1."""
     mock_return = {
         "score": 1.0,
-        "feedback": "✅ Всё верно!",
+        "feedback": "[OK] Всё верно!",
         "category": "correct",
         "confidence": 1.0,
         "answer_correct": True,
@@ -144,15 +144,15 @@ def test_correct_answer_level_up(client):
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
     assert data["score"] == 1  # +1 балл
-    assert data["new_level"] == 2  # было 1 → стало 2
+    assert data["new_level"] == 2  # было 1 -> стало 2
 
 
 def test_correct_answer_wrong_method_neutral(client):
-    """Верный ответ + неверный метод → +1 балл (answer_correct=True даёт +1,
+    """Верный ответ + неверный метод -> +1 балл (answer_correct=True даёт +1,
     method_correct влияет на category но не на score по новой логике)."""
     mock_return = {
         "score": 0.5,
-        "feedback": "🟡 Ответ верный, но метод не тот.",
+        "feedback": " Ответ верный, но метод не тот.",
         "category": "correct_no_justification",
         "confidence": 1.0,
         "answer_correct": True,
@@ -162,18 +162,18 @@ def test_correct_answer_wrong_method_neutral(client):
     data = resp.get_json()
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
-    assert data["score"] == 1  # answer_correct=True → +1
-    assert data["new_level"] == 2  # 1 → 2
+    assert data["score"] == 1  # answer_correct=True -> +1
+    assert data["new_level"] == 2  # 1 -> 2
 
 
 def test_wrong_answer_full_negative(client):
-    """ТЗ FORMYLA v2: неверный ответ + неверный метод → -1 балл, уровень -1.
+    """ТЗ FORMYLA v2: неверный ответ + неверный метод -> -1 балл, уровень -1.
 
     На level=1 уровень clamp'ится снизу — остаётся 1.
     """
     mock_return = {
         "score": -1.0,
-        "feedback": "❌ Ответ не принят.",
+        "feedback": "[ERROR] Ответ не принят.",
         "category": "wrong_answer_wrong_method",
         "confidence": 1.0,
         "answer_correct": False,
@@ -184,15 +184,15 @@ def test_wrong_answer_full_negative(client):
     assert resp.status_code == 200, f"status_code={resp.status_code}, body={data}"
     assert data["status"] == "success"
     assert data["score"] == -1
-    # current=1, delta=-1, clamp → max(1, 0) = 1
+    # current=1, delta=-1, clamp -> max(1, 0) = 1
     assert data["new_level"] == 1
 
 
 def test_wrong_answer_level_down_from_5(client):
-    """ТЗ FORMYLA v2: неверный ответ на уровне 5 → score=-1, уровень 5→4."""
+    """ТЗ FORMYLA v2: неверный ответ на уровне 5 -> score=-1, уровень 5->4."""
     mock_return = {
         "score": -1.0,
-        "feedback": "❌ Неверно.",
+        "feedback": "[ERROR] Неверно.",
         "category": "wrong_answer_wrong_method",
         "confidence": 1.0,
         "answer_correct": False,
@@ -206,10 +206,10 @@ def test_wrong_answer_level_down_from_5(client):
 
 
 def test_correct_answer_no_solution_level_up(client):
-    """ТЗ FORMYLA v2: только ответ (без решения), ответ верный → +1 балл, +1 уровень."""
+    """ТЗ FORMYLA v2: только ответ (без решения), ответ верный -> +1 балл, +1 уровень."""
     mock_return = {
         "score": 0.3,
-        "feedback": "🟡 Верный ответ.",
+        "feedback": " Верный ответ.",
         "category": "correct_no_justification",
         "confidence": 0.7,
         "answer_correct": True,
@@ -224,11 +224,11 @@ def test_correct_answer_no_solution_level_up(client):
 
 
 def test_wrong_answer_good_method_neutral(client):
-    """Ответ неверный, но метод понят правильно → -1 балл (answer_correct=False → -1
+    """Ответ неверный, но метод понят правильно -> -1 балл (answer_correct=False -> -1
     по новой логике, level=1 clamp'ит снизу)."""
     mock_return = {
         "score": 0.0,
-        "feedback": "🟡 Метод верный, но ответ не сошёлся.",
+        "feedback": " Метод верный, но ответ не сошёлся.",
         "category": "wrong_answer_good_method",
         "confidence": 0.9,
         "answer_correct": False,
@@ -237,12 +237,12 @@ def test_wrong_answer_good_method_neutral(client):
     resp = _call_check_answer(client, "wrong", mock_return, user_solution="правильное решение")
     data = resp.get_json()
     assert resp.status_code == 200
-    assert data["score"] == -1  # answer_correct=False → -1
-    assert data["new_level"] == 1  # level=1 clamped, 0→1
+    assert data["score"] == -1  # answer_correct=False -> -1
+    assert data["new_level"] == 1  # level=1 clamped, 0->1
 
 
 def test_ai_failure_neutral(client):
-    """ТЗ FORMYLA v2: сбой AI (answer_correct=None) → 0 баллов, уровень не меняется."""
+    """ТЗ FORMYLA v2: сбой AI (answer_correct=None) -> 0 баллов, уровень не меняется."""
     mock_return = {
         "score": 0.0,
         "feedback": "",
@@ -264,7 +264,7 @@ def test_ai_failure_neutral(client):
 
 
 def test_two_consecutive_correct_answers_accumulate_level(client):
-    """Регрессия: два верных ответа подряд → уровень накапливается 3 → 4 → 5.
+    """Регрессия: два верных ответа подряд -> уровень накапливается 3 -> 4 -> 5.
 
     Бывший баг: new_level пересчитывался от difficulty показанной задачи,
     из-за чего после первого +1 уровень "застревал". Теперь new_level
@@ -272,13 +272,13 @@ def test_two_consecutive_correct_answers_accumulate_level(client):
     """
     mock_return = {
         "score": 1.0,
-        "feedback": "✅",
+        "feedback": "[OK]",
         "category": "correct",
         "confidence": 1.0,
         "answer_correct": True,
         "method_correct": True,
     }
-    # 1-й ответ: cur=3 → new=4
+    # 1-й ответ: cur=3 -> new=4
     resp1 = _call_check_answer(client, "5", mock_return, difficulty=3, slot=1)
     data1 = resp1.get_json()
     assert resp1.status_code == 200
@@ -288,7 +288,7 @@ def test_two_consecutive_correct_answers_accumulate_level(client):
     with client.session_transaction() as sess:
         assert sess["adaptive_current_difficulty"] == 4
 
-    # 2-й ответ: cur=4 → new=5 (НЕ "застрял" на 4)
+    # 2-й ответ: cur=4 -> new=5 (НЕ "застрял" на 4)
     # Передаём difficulty=4 явно, так как _call_check_answer переинициализирует
     # session перед каждым вызовом — мы продолжаем накопленный уровень.
     # task_id=2 чтобы попасть в другой слот без already_answered.
@@ -304,10 +304,10 @@ def test_two_consecutive_correct_answers_accumulate_level(client):
 
 
 def test_correct_answer_at_level_7_advances_to_8(client):
-    """Регрессия: clamp теперь 1..8 (а не 1..7). На уровне 7 верный ответ → 8."""
+    """Регрессия: clamp теперь 1..8 (а не 1..7). На уровне 7 верный ответ -> 8."""
     mock_return = {
         "score": 1.0,
-        "feedback": "✅",
+        "feedback": "[OK]",
         "category": "correct",
         "confidence": 1.0,
         "answer_correct": True,
@@ -323,10 +323,10 @@ def test_correct_answer_at_level_7_advances_to_8(client):
 
 
 def test_correct_answer_at_level_8_stays_at_8(client):
-    """Регрессия: на максимуме 8 верный ответ → остаётся 8 (clamp сверху)."""
+    """Регрессия: на максимуме 8 верный ответ -> остаётся 8 (clamp сверху)."""
     mock_return = {
         "score": 1.0,
-        "feedback": "✅",
+        "feedback": "[OK]",
         "category": "correct",
         "confidence": 1.0,
         "answer_correct": True,
@@ -364,7 +364,7 @@ def test_stale_pending_slot_reassigned_after_level_change(client):
                 sess["adaptive_filtered_tasks"] = [t3.id, t5.id]
                 sess["adaptive_grade"] = "9"
                 sess["adaptive_topic"] = "algebra"
-                sess["adaptive_current_difficulty"] = 5  # ← сменили уровень
+                sess["adaptive_current_difficulty"] = 5  # <- сменили уровень
                 # Слот 1 был назначен при cur=3 (level_at_assign=3) — pending.
                 slots = [
                     {

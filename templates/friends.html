@@ -7,20 +7,20 @@
 <div class="friends-page">
 
   <div class="friends-hero">
-    <h1>👥 Мои друзья</h1>
+    <h1> Мои друзья</h1>
     <p>Соревнуйся с друзьями и достигай новых высот вместе!</p>
   </div>
 
   {# ── Запросы ── #}
   <section class="friends-section requests-section">
-    <h2>📨 Запросы
+    <h2> Запросы
       {%- set total_requests = (incoming|length) + (outgoing|length) -%}
       {% if total_requests > 0 %}<span class="count-badge">{{ total_requests }}</span>{% endif %}
     </h2>
 
     {% if incoming %}
     <div class="requests-sub">
-      <h3 class="requests-sub-title">📩 Входящие <span class="count-badge-sm">{{ incoming|length }}</span></h3>
+      <h3 class="requests-sub-title"> Входящие <span class="count-badge-sm">{{ incoming|length }}</span></h3>
       <div class="requests-grid">
         {% for req in incoming %}
         <article class="request-card">
@@ -37,8 +37,8 @@
             <p class="req-stats">Уровень {{ req.requester.current_level }} · {{ req.requester.experience_points }} XP</p>
           </div>
           <div class="req-actions">
-            <button class="btn-accept" data-rid="{{ req.id }}" onclick="acceptRequest(this)">✅ Принять</button>
-            <button class="btn-decline" data-rid="{{ req.id }}" onclick="declineRequest(this)">❌ Отклонить</button>
+            <button class="btn-accept" data-rid="{{ req.id }}" onclick="acceptRequest(this)">[OK] Принять</button>
+            <button class="btn-decline" data-rid="{{ req.id }}" onclick="declineRequest(this)">[ERROR] Отклонить</button>
           </div>
         </article>
         {% endfor %}
@@ -48,7 +48,7 @@
 
     {% if outgoing %}
     <div class="requests-sub">
-      <h3 class="requests-sub-title">📤 Исходящие <span class="count-badge-sm">{{ outgoing|length }}</span></h3>
+      <h3 class="requests-sub-title"> Исходящие <span class="count-badge-sm">{{ outgoing|length }}</span></h3>
       <div class="requests-grid">
         {% for req in outgoing %}
         <article class="request-card">
@@ -78,7 +78,7 @@
   </section>
 
   <section class="friends-section">
-    <h2>🔍 Найти пользователя</h2>
+    <h2> Найти пользователя</h2>
     <div class="friends-search-wrap">
       <input type="text" id="user-search" placeholder="Введи имя или никнейм..." autocomplete="off">
       <div class="search-results" id="search-results"></div>
@@ -86,7 +86,7 @@
   </section>
 
   <section class="friends-section">
-    <h2>✅ Мои друзья {% if friends %}<span class="count-badge">{{ friends|length }}</span>{% endif %}</h2>
+    <h2>[OK] Мои друзья {% if friends %}<span class="count-badge">{{ friends|length }}</span>{% endif %}</h2>
     {% if friends %}
     <div class="friends-grid" id="friends-grid">
       {% for f in friends %}
@@ -107,21 +107,21 @@
           </a>
           {% if f.nickname %}<div class="fc-nick">@{{ f.nickname }}</div>{% endif %}
           <div class="fc-stats">
-            <span>🔥 {{ f.streak.current_streak if f.streak else 0 }}</span>
+            <span> {{ f.streak.current_streak if f.streak else 0 }}</span>
             <span>⭐ Ур. {{ f.current_level }}</span>
-            <span>💎 {{ f.experience_points }} XP</span>
+            <span> {{ f.experience_points }} XP</span>
           </div>
         </div>
         <div class="fc-actions" onclick="event.stopPropagation()">
           <button class="fc-btn fc-btn-remove" data-uid="{{ f.id }}"
-                  onclick="removeFriend(event, this)" title="Удалить из друзей">✕</button>
+                  onclick="removeFriend(event, this)" title="Удалить из друзей"></button>
         </div>
       </article>
       {% endfor %}
     </div>
     {% else %}
     <div class="friends-empty">
-      <div class="fe-icon">👥</div>
+      <div class="fe-icon"></div>
       <p>У тебя пока нет друзей. Найди их через поиск выше!</p>
     </div>
     {% endif %}

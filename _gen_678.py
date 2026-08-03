@@ -310,15 +310,15 @@ LEVEL_AUDIT_SYSTEM_PROMPT = """Ты — НЕЗАВИСИМЫЙ аудитор у
 8 (L8) = заключительный этап ВсОШ. Решение содержит 5+ идей/шагов, продвинутые техники (глубокие инварианты, нестандартные алгебраические конструкции, нетривиальная комбинаторика).
 
 ВАЖНЫЕ ПРИНЦИПЫ КАЛИБРОВКИ:
-- Задача, где нужно сделать 1 нетривиальную замену и получить функциональное уравнение → L6 (если 3-4 шага) или L7 (если 4+ шагов с нетривиальными заменами)
-- Задача, где нужно применить продвинутую технику (производящие функции, heavy combinatorics, глубокие свойства чисел) → L7-L8
-- Задача с 5+ идеями/шагами, включая нетривиальные наблюдения → L7-L8
-- Если решение требует продвинутого функционального анализа (замены, переход к новой функции, индукция по степени) → L6-L7
-- Геометрическая задача с нетривиальным дополнительным построением → L6-L7
-- Комбинаторная задача на раскраску или полуинвариант с 4+ шагами → L7-L8
-- Задача с 3-4 шагами и 2 приёмами → L6
-- Задача с 4-5 шагами и нетривиальными идеями → L7
-- Задача с 5+ шагами и продвинутыми техниками → L8
+- Задача, где нужно сделать 1 нетривиальную замену и получить функциональное уравнение -> L6 (если 3-4 шага) или L7 (если 4+ шагов с нетривиальными заменами)
+- Задача, где нужно применить продвинутую технику (производящие функции, heavy combinatorics, глубокие свойства чисел) -> L7-L8
+- Задача с 5+ идеями/шагами, включая нетривиальные наблюдения -> L7-L8
+- Если решение требует продвинутого функционального анализа (замены, переход к новой функции, индукция по степени) -> L6-L7
+- Геометрическая задача с нетривиальным дополнительным построением -> L6-L7
+- Комбинаторная задача на раскраску или полуинвариант с 4+ шагами -> L7-L8
+- Задача с 3-4 шагами и 2 приёмами -> L6
+- Задача с 4-5 шагами и нетривиальными идеями -> L7
+- Задача с 5+ шагами и продвинутыми техниками -> L8
 
 НЕ занижай уровень! Если задача требует 4+ последовательных идей для решения — это минимум L6.
 Если задача не решается стандартным приёмом, а требует придумать нестандартный подход — это L7+.
@@ -534,15 +534,15 @@ def build_level_audit_prompt(task_text: str, solution: str, difficulty_level: in
 Количество идей в решении: (оцени сам)
 
 ПРИНЦИПЫ КАЛИБРОВКИ (читай внимательно):
-- Если решение содержит 2-3 шага и один ключевой приём → level 4-5
-- Если решение содержит 3-4 шага и 2 различных приёма → level 5-6
-- Если решение содержит 4-5 шагов, нетривиальную замену/построение → level 6-7
-- Если решение содержит 5+ шагов, требует продвинутой техники, глубоких инвариантов, нестандартных конструкций → level 7-8
-- Если задача не решается стандартными методами, а требует ПРИДУМАТЬ новый подход → level 7-8
-- Геометрия с нетривиальным дополнительным построением → level 6-7
-- Комбинаторика с полуинвариантом или производящей функцией → level 7-8
-- Теория чисел с глубокими свойствами (первообразные корни, LTE, нестандартные сравнения) → level 6-7
-- Функциональное уравнение, где нужно придумать замену и провести анализ степени → level 6-7
+- Если решение содержит 2-3 шага и один ключевой приём -> level 4-5
+- Если решение содержит 3-4 шага и 2 различных приёма -> level 5-6
+- Если решение содержит 4-5 шагов, нетривиальную замену/построение -> level 6-7
+- Если решение содержит 5+ шагов, требует продвинутой техники, глубоких инвариантов, нестандартных конструкций -> level 7-8
+- Если задача не решается стандартными методами, а требует ПРИДУМАТЬ новый подход -> level 7-8
+- Геометрия с нетривиальным дополнительным построением -> level 6-7
+- Комбинаторика с полуинвариантом или производящей функцией -> level 7-8
+- Теория чисел с глубокими свойствами (первообразные корни, LTE, нестандартные сравнения) -> level 6-7
+- Функциональное уравнение, где нужно придумать замену и провести анализ степени -> level 6-7
 
 НЕ ЗАНИЖАЙ ОЦЕНКУ! Если задача выглядит на 6 — ставь 6, а не 4-5.
 Если задача требует продвинутой техники — ставь 7-8 без колебаний.
@@ -802,11 +802,11 @@ async def process_one_task(client: DeepSeekClient, task_id: int,
         }
 
         if real_level >= 5:
-            logger.info(f"[{task_id}] Клон, но real_level={real_level} >= 5 → сохраняем в reserve")
+            logger.info(f"[{task_id}] Клон, но real_level={real_level} >= 5 -> сохраняем в reserve")
             save_task_json(clone_task, RESERVE_DIR)
             return {'status': 'reserve', 'task': clone_task}
         else:
-            logger.info(f"[{task_id}] Клон, real_level={real_level} → в blacklist")
+            logger.info(f"[{task_id}] Клон, real_level={real_level} -> в blacklist")
             save_task_json(clone_task, BLACKLIST_DIR)
             return {'status': 'blacklist', 'task': clone_task}
 
@@ -880,7 +880,7 @@ async def process_one_task(client: DeepSeekClient, task_id: int,
                 issues = correct_audit2.get('issues', 'Не удалось исправить') if correct_audit2 else 'Неизвестно'
         else:
             # Не удалось исправить
-            logger.warning(f"[{task_id}] Не удалось исправить задачу после {max_fix_rounds} раундов → blacklist")
+            logger.warning(f"[{task_id}] Не удалось исправить задачу после {max_fix_rounds} раундов -> blacklist")
             failed_task = {
                 'id': task_id,
                 'task_text': task_text,
@@ -923,7 +923,7 @@ async def process_one_task(client: DeepSeekClient, task_id: int,
         improv_plan = None
 
     if not improv_plan or not improv_plan.get('improvement_plan'):
-        logger.warning(f"[{task_id}] Не удалось получить план усложнения → используем исходную задачу")
+        logger.warning(f"[{task_id}] Не удалось получить план усложнения -> используем исходную задачу")
         # Переходим сразу к level audit с исходной задачей
         improved = False
     else:
@@ -945,7 +945,7 @@ async def process_one_task(client: DeepSeekClient, task_id: int,
             improved_task = None
 
         if not improved_task or not improved_task.get('task_text'):
-            logger.warning(f"[{task_id}] Не удалось сгенерировать улучшенную задачу → используем исходную")
+            logger.warning(f"[{task_id}] Не удалось сгенерировать улучшенную задачу -> используем исходную")
             improved = False
         else:
             # Обновляем данные на улучшенную задачу
@@ -1080,7 +1080,7 @@ async def process_one_task(client: DeepSeekClient, task_id: int,
                      f"Используем difficulty_level={difficulty_level}")
         real_level = difficulty_level
 
-    logger.info(f"[{task_id}] difficulty_level={difficulty_level} → real_level={real_level} ({level_reasoning})")
+    logger.info(f"[{task_id}] difficulty_level={difficulty_level} -> real_level={real_level} ({level_reasoning})")
 
     # ── 8. Сохранение ────────────────────────────────────────────────
     result_task = {
@@ -1106,21 +1106,21 @@ async def process_one_task(client: DeepSeekClient, task_id: int,
 
     if real_level >= 8:
         save_task_json(result_task, L8_DIR)
-        logger.info(f"[{task_id}] → L8!")
+        logger.info(f"[{task_id}] -> L8!")
         return {'status': 'accepted', 'level': 8, 'task': result_task}
     elif real_level == 7:
         save_task_json(result_task, L7_DIR)
-        logger.info(f"[{task_id}] → L7")
+        logger.info(f"[{task_id}] -> L7")
         return {'status': 'accepted', 'level': 7, 'task': result_task}
     elif real_level == 6:
         save_task_json(result_task, L6_DIR)
-        logger.info(f"[{task_id}] → L6")
+        logger.info(f"[{task_id}] -> L6")
         return {'status': 'accepted', 'level': 6, 'task': result_task}
     else:
         # real_level <= 5 — сохраняем в reserve (может быть полезна как более лёгкая)
         result_task['_status'] = 'reserve_low_level'
         save_task_json(result_task, RESERVE_DIR)
-        logger.info(f"[{task_id}] → reserve (real_level={real_level} < 6)")
+        logger.info(f"[{task_id}] -> reserve (real_level={real_level} < 6)")
         return {'status': 'reserve', 'task': result_task}
 
 

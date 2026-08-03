@@ -53,7 +53,7 @@ SECTION_RU = {
 # ТОЧНЫЙ порядок разделов для якорей (все 5, по одному на раздел)
 ANCHOR_SECTION_ORDER = ('algebra', 'number_theory', 'geometry', 'combinatorics', 'logic')
 
-# Маппинг КЛЮЧЕВЫХ СЛОВ topic → section slug
+# Маппинг КЛЮЧЕВЫХ СЛОВ topic -> section slug
 SECTION_KEYWORDS: Dict[str, str] = {
     # number_theory
     'делимость':    'number_theory',
@@ -478,7 +478,7 @@ def answer(user_id: int, qid: str, key: str) -> dict:
     state['answers'][qid] = key
     current_step = state['step']
 
-    # ── Q1 (grade) → Q2 (target) ────────────────────────────────────────
+    # ── Q1 (grade) -> Q2 (target) ────────────────────────────────────────
     if current_step == 'q1' and qid == 'grade':
         state['step'] = 'q2'
         _save_session_state(state)
@@ -495,7 +495,7 @@ def answer(user_id: int, qid: str, key: str) -> dict:
             'step': 'q2',
         }
 
-    # ── Q2 (target) → Q3 (olymp_reach) ──────────────────────────────────
+    # ── Q2 (target) -> Q3 (olymp_reach) ──────────────────────────────────
     if current_step == 'q2' and qid == 'target':
         state['step'] = 'q3'
         _save_session_state(state)
@@ -512,7 +512,7 @@ def answer(user_id: int, qid: str, key: str) -> dict:
             'step': 'q3',
         }
 
-    # ── Q3 (olymp_reach) → Q4 (load) ────────────────────────────────────
+    # ── Q3 (olymp_reach) -> Q4 (load) ────────────────────────────────────
     if current_step == 'q3' and qid == 'olymp_reach':
         state['step'] = 'q4'
         _save_session_state(state)
@@ -529,7 +529,7 @@ def answer(user_id: int, qid: str, key: str) -> dict:
             'step': 'q4',
         }
 
-    # ── Q4 (load) → Q5 (deadline) ───────────────────────────────────────
+    # ── Q4 (load) -> Q5 (deadline) ───────────────────────────────────────
     if current_step == 'q4' and qid == 'load':
         state['step'] = 'q5'
         _save_session_state(state)
@@ -547,7 +547,7 @@ def answer(user_id: int, qid: str, key: str) -> dict:
             'step': 'q5',
         }
 
-    # ── Q5 (deadline) → первая якорная задача ───────────────────────────
+    # ── Q5 (deadline) -> первая якорная задача ───────────────────────────
     if current_step == 'q5' and qid == 'deadline':
         # deadline answer может быть "none" или конкретной датой YYYY-MM-DD
         # Всё уже сохранено в state['answers']['deadline'] = key
@@ -1025,13 +1025,13 @@ def finish(user_id: int) -> dict:
         'weakest_ru': weakest_ru,
         'deadline_ru': deadline_ru,
         'message': (
-            f"🎉 Онбординг завершён!\n\n"
-            f"📊 Класс: {result.grade}\n"
-            f"🎯 Целевой уровень: {result.target_level}/5 "
+            f" Онбординг завершён!\n\n"
+            f" Класс: {result.grade}\n"
+            f" Целевой уровень: {result.target_level}/5 "
             f"(потолок маршрута: {result.route_ceiling})\n"
-            f"📈 Твой уровень: {display_mu} "
+            f" Твой уровень: {display_mu} "
             f"(среднее по разделам, стартовый уровень задач: {result.start_level})\n"
             f"⏱ Задач в день: {result.daily_tasks}\n"
-            f"📅 Дедлайн: {deadline_ru}"
+            f" Дедлайн: {deadline_ru}"
         ),
     }

@@ -9,8 +9,8 @@
   <p class="error-id">Код ошибки: <code>{{ error_id }}</code></p>
   {% endif %}
   <div class="error-actions">
-    <a href="{{ url_for('index') }}" class="error-btn">← На главную</a>
-    <a href="javascript:location.reload()" class="error-btn error-btn--ghost">🔄 Попробовать снова</a>
+    <a href="{{ url_for('index') }}" class="error-btn"><- На главную</a>
+    <a href="javascript:location.reload()" class="error-btn error-btn--ghost"> Попробовать снова</a>
   </div>
 </section>
 {% endblock %}

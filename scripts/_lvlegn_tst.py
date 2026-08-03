@@ -42,10 +42,10 @@ def check(condition, msg):
     global passed, failed
     if condition:
         passed += 1
-        print(f"  ✅ {msg}")
+        print(f"  [OK] {msg}")
     else:
         failed += 1
-        print(f"  ❌ FAIL: {msg}")
+        print(f"  [ERROR] FAIL: {msg}")
 
 with app.app_context():
     print("=" * 65)
@@ -68,7 +68,7 @@ with app.app_context():
     check(abs(state['mu'] - 2.5) < 0.001, "mu == 2.5")
     check(abs(state['sigma'] - 1.35) < 0.001, "sigma == 1.35")
     # Python round(2.5) = 2 (banker's rounding)
-    check(state['level'] == 2, "level == 2 (Python round(2.5) → 2)")
+    check(state['level'] == 2, "level == 2 (Python round(2.5) -> 2)")
     check(1.0 <= state['mu'] <= 5.0, "mu in [1.0, 5.0]")
     check(state['sigma'] >= 0.35, "sigma >= 0.35")
     check(state['updated_at'] is not None, "updated_at set")
@@ -148,7 +148,7 @@ with app.app_context():
         cs.level_by_section = None
         cs.level_updated_at = None
         db.session.commit()
-        print("  ✅ Test user level columns reset to NULL")
+        print("  [OK] Test user level columns reset to NULL")
 
     # ── Summary ─────────────────────────────────────────────────────
     print(f"\n{'=' * 65}")
@@ -158,5 +158,5 @@ with app.app_context():
         print("SOME CHECKS FAILED!")
         sys.exit(1)
     else:
-        print("ALL CHECKS PASSED 🎉")
+        print("ALL CHECKS PASSED ")
         sys.exit(0)

@@ -76,13 +76,13 @@ def _ensure_table() -> bool:
                         text(f"ALTER TABLE adaptive_tasks ADD COLUMN {col_name} {col_type}")
                     )
                     db.session.commit()
-                    print(f"  ✅ [figure_fields] Column '{col_name}' added")
+                    print(f"  [OK] [figure_fields] Column '{col_name}' added")
                 except Exception as e:
                     db.session.rollback()
-                    print(f"  ❌ [figure_fields] Column '{col_name}' failed: {e}")
+                    print(f"  [ERROR] [figure_fields] Column '{col_name}' failed: {e}")
                     return False
             else:
-                print(f"  ✅ [figure_fields] Column '{col_name}' already exists")
+                print(f"  [OK] [figure_fields] Column '{col_name}' already exists")
 
         # Ensure index
         if dialect == "sqlite":
@@ -105,9 +105,9 @@ def run_migration() -> bool:
     print("=" * 70)
     success = _ensure_table()
     if success:
-        print("\n🎉 Миграция figure_fields завершена успешно!")
+        print("\n Миграция figure_fields завершена успешно!")
     else:
-        print("\n❌ Миграция figure_fields завершилась с ошибками")
+        print("\n[ERROR] Миграция figure_fields завершилась с ошибками")
     return success
 
 

@@ -87,7 +87,7 @@ def analyze_topics(user_id: int) -> dict:
 
     overall_solve_rate = _safe_pct(total_correct, total_attempts)
 
-    # Сортируем финальный результат: СЛАБЫЕ → СРЕДНИЕ → СИЛЬНЫЕ → НЕТ ДАННЫХ
+    # Сортируем финальный результат: СЛАБЫЕ -> СРЕДНИЕ -> СИЛЬНЫЕ -> НЕТ ДАННЫХ
     _sort_key = {
         "СЛАБАЯ": 0,
         "СРЕДНЯЯ": 1,

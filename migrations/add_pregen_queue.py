@@ -80,7 +80,7 @@ def _ensure_table() -> bool:
                 db.session.execute(text(stmt))
             except Exception as e:
                 db.session.rollback()
-                print(f"  ❌ pregen_queue migration: failed on stmt: {e}")
+                print(f"  [ERROR] pregen_queue migration: failed on stmt: {e}")
                 raise
         db.session.commit()
 
@@ -90,9 +90,9 @@ def _ensure_table() -> bool:
         ok = True
         if "pre_gen_queue" in tables:
             cols = [c["name"] for c in inspector.get_columns("pre_gen_queue")]
-            print(f"  ✅ pre_gen_queue: {len(cols)} колонок")
+            print(f"  [OK] pre_gen_queue: {len(cols)} колонок")
         else:
-            print("  ❌ pre_gen_queue НЕ создана!")
+            print("  [ERROR] pre_gen_queue НЕ создана!")
             ok = False
 
         return ok
@@ -105,9 +105,9 @@ def run_migration() -> bool:
     print("=" * 70)
     success = _ensure_table()
     if success:
-        print("\n🎉 Миграция завершена успешно!")
+        print("\n Миграция завершена успешно!")
     else:
-        print("\n❌ Миграция завершилась с ошибками")
+        print("\n[ERROR] Миграция завершилась с ошибками")
     return success
 
 

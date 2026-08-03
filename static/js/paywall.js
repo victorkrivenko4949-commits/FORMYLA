@@ -171,8 +171,8 @@
         overlay.id = 'paywallOverlay';
         overlay.innerHTML = `
             <div id="paywallModal">
-                <button class="pw-close" onclick="hidePaywall()" aria-label="Закрыть">✕</button>
-                <div class="pw-icon" id="pwIcon">🚀</div>
+                <button class="pw-close" onclick="hidePaywall()" aria-label="Закрыть"></button>
+                <div class="pw-icon" id="pwIcon"></div>
                 <div class="pw-title" id="pwTitle">Лимит достигнут</div>
                 <div class="pw-message" id="pwMessage"></div>
                 <div class="pw-usage-bar" id="pwUsageBarWrap" style="display:none">
@@ -180,13 +180,13 @@
                 </div>
                 <div class="pw-usage-label" id="pwUsageLabel"></div>
                 <ul class="pw-features">
-                    <li><span class="pw-feat-icon">🚀</span> Безлимит задач (до 500/день)</li>
-                    <li><span class="pw-feat-icon">🤖</span> Безлимит AI-разборов (до 200/мес)</li>
-                    <li><span class="pw-feat-icon">⚡</span> Расширенные разборы (8000 токенов)</li>
-                    <li><span class="pw-feat-icon">📊</span> История тестов навсегда</li>
+                    <li><span class="pw-feat-icon"></span> Безлимит задач (до 500/день)</li>
+                    <li><span class="pw-feat-icon"></span> Безлимит AI-разборов (до 200/мес)</li>
+                    <li><span class="pw-feat-icon"></span> Расширенные разборы (8000 токенов)</li>
+                    <li><span class="pw-feat-icon"></span> История тестов навсегда</li>
                 </ul>
                 <a href="/subscribe" class="pw-btn-primary" id="pwUpgradeBtn">
-                    🎁 Попробовать Premium бесплатно
+                     Попробовать Premium бесплатно
                 </a>
                 <button class="pw-btn-secondary" onclick="hidePaywall()">
                     Продолжить с бесплатным тарифом
@@ -236,13 +236,13 @@
 
         // Иконка и заголовок по типу фичи
         if (opts.feature === 'ai_explanation') {
-            icon.textContent = '🤖';
+            icon.textContent = '';
             title.textContent = 'Лимит AI-разборов исчерпан';
         } else if (opts.feature === 'task') {
-            icon.textContent = '📚';
+            icon.textContent = '';
             title.textContent = 'Лимит задач на сегодня';
         } else {
-            icon.textContent = '🚀';
+            icon.textContent = '';
             title.textContent = 'Лимит достигнут';
         }
 

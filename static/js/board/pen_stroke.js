@@ -4,7 +4,7 @@
  * Replaces the «лоtaня прямых отрезков» rendering of the default pen tool
  * with a smooth, ink-like stroke:
  *
- *   1. Catmull-Rom → Bézier smoothing of the polyline (no sharp corners).
+ *   1. Catmull-Rom -> Bézier smoothing of the polyline (no sharp corners).
  *   2. Variable thickness modulated by pointer SPEED: a slow pen leaves a
  *      thicker line, a fast pen leaves a thinner one — mimics ink/pressure.
  *      If the raw pointer reported `pressure`, that signal is mixed in too.
@@ -17,7 +17,7 @@
  *
  * Public API:
  *   FormylaPen.drawSmoothStroke(ctx, points, opts)
- *   FormylaPen.smoothPath(points)              → array of bezier segments
+ *   FormylaPen.smoothPath(points)              -> array of bezier segments
  *   FormylaPen.MIN_THICKNESS / MAX_THICKNESS_MULT
  *
  * `opts`:
@@ -91,13 +91,13 @@
     // very edges which would taper to nothing because of bad data.
     var hasTs = points.some(function (p) { return p && typeof p.t === "number"; });
     if (!hasTs) {
-      // No timestamps → use *distance* between consecutive points as
+      // No timestamps -> use *distance* between consecutive points as
       // a proxy for "slowness": short steps == slow == thick.
       for (var i = 0; i < n; i++) {
         var prev = points[Math.max(0, i - 1)];
         var next = points[Math.min(n - 1, i + 1)];
         var d = Math.hypot(next.x - prev.x, next.y - prev.y);
-        // Map: small step (~1-2 px) ⇒ slow; big step (~10+) ⇒ fast.
+        // Map: small step (~1-2 px)  slow; big step (~10+)  fast.
         // Speed unit is arbitrary, only the *order* matters for the
         // downstream normalisation step below.
         speeds[i] = d;
@@ -114,7 +114,7 @@
     return speeds;
   }
 
-  /** Robust percentile-based normalisation → [0..1]. */
+  /** Robust percentile-based normalisation -> [0..1]. */
   function normalize01(arr) {
     if (!arr.length) return arr.slice();
     var sorted = arr.slice().sort(function (a, b) { return a - b; });
@@ -153,7 +153,7 @@
       // Blend speed with original pressure (if any) so HW pens still work.
       var p = points[i];
       if (p && typeof p.p === "number" && p.p > 0) {
-        // Press 0..1 → 0.6..1.4 multiplicative bias.
+        // Press 0..1 -> 0.6..1.4 multiplicative bias.
         var pressMult = 0.6 + 0.8 * Math.max(0, Math.min(1, p.p));
         speedMult = speedMult * (1 - speedVar) + pressMult * speedVar;
       }

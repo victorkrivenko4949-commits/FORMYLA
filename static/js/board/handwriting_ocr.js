@@ -4,7 +4,7 @@
  * UX:
  *   1. User scribbles whatever they want with the pen tool.
  *   2. When they want a fragment converted to beautiful Caveat
- *      handwriting, they press the ✨ button (or hit Shift+H).
+ *      handwriting, they press the  button (or hit Shift+H).
  *   3. The cursor turns into a crosshair, a hint pill appears in
  *      the bottom-center: «Обведи прямоугольником то, что нужно
  *      распознать. Esc — отмена.»
@@ -29,7 +29,7 @@
 
   // ── Tunables ─────────────────────────────────────────────────────────
   var PAD_PX = 14;               // padding around bbox for OCR canvas
-  var SUPERSAMPLE = 2;           // 2× pixel density → crisper glyphs
+  var SUPERSAMPLE = 2;           // 2× pixel density -> crisper glyphs
   var MIN_RECT = 12;             // ignore micro selections (accidental click)
   var ENDPOINT = "/api/handwriting/recognize";
 
@@ -173,7 +173,7 @@
           font: j.font || "Caveat",
           maxWidth: Math.max(160, (bboxItems.x1 - bboxItems.x0) + 80),
         });
-        _toast("✨ Готово: «" + text.slice(0, 70) + (text.length > 70 ? "…»" : "»"), true);
+        _toast(" Готово: «" + text.slice(0, 70) + (text.length > 70 ? "…»" : "»"), true);
       })
       .catch(function (e) {
         console.warn("[hwocr] fetch failed:", e);
@@ -216,7 +216,7 @@
     // Bottom-center hint pill.
     var hint = document.createElement("div");
     hint.className = "hwocr-hint";
-    hint.innerHTML = "✨ Обведи рамкой то, что нужно распознать. <b>Esc</b> — отмена.";
+    hint.innerHTML = " Обведи рамкой то, что нужно распознать. <b>Esc</b> — отмена.";
     document.body.appendChild(hint);
 
     lasso = {
@@ -321,7 +321,7 @@
         if (!_spin) {
           _spin = document.createElement("div");
           _spin.className = "hwocr-spinner";
-          _spin.innerHTML = "<span>✨ Claude Opus распознаёт…</span>";
+          _spin.innerHTML = "<span> Claude Opus распознаёт…</span>";
           document.body.appendChild(_spin);
         }
         _spin.style.display = "block";
@@ -367,7 +367,7 @@
     btn.className = "icon-btn hwocr-btn";
     btn.type = "button";
     btn.title = "Распознать выделенную рукопись (Shift+H)";
-    btn.innerHTML = "✨";
+    btn.innerHTML = "";
     var anchor = document.getElementById("wbHandwritingBtn");
     if (anchor && anchor.parentNode === tb) {
       tb.insertBefore(btn, anchor.nextSibling);

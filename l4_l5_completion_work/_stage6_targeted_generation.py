@@ -147,8 +147,8 @@ def sanitize_json_string(text):
        — ANY \ followed by a non-valid-JSON-escape character inside a JSON string
     2. Unescaped control characters (literal newlines, tabs) inside string values
     3. Unescaped " characters inside JSON string values (literal quotes in text content)
-       — uses look-ahead heuristic: if " is followed by , } ] : or EOF → structural close
-       — otherwise → literal quote, escape as \"
+       — uses look-ahead heuristic: if " is followed by , } ] : or EOF -> structural close
+       — otherwise -> literal quote, escape as \"
     4. Trailing commas before ] and }
     5. Truncation: ensure the JSON ends with proper closing brackets
     """
@@ -156,14 +156,14 @@ def sanitize_json_string(text):
     
     # Process the text char by char, tracking whether we're inside a JSON string.
     # When we see \ inside a string, look at the next character:
-    #   - if it's a valid JSON escape (", \, /, u) → keep as-is
-    #   - if it's NOT valid (e.g., n, t, r, b, f, (, ), [, ], p, etc.) → double the backslash
+    #   - if it's a valid JSON escape (", \, /, u) -> keep as-is
+    #   - if it's NOT valid (e.g., n, t, r, b, f, (, ), [, ], p, etc.) -> double the backslash
     # NOTE: n, t, r, b, f are intentionally excluded because they represent
     # LaTeX commands (\notin, \times, \rightarrow, \begin, \frac) in practice.
     #
     # When we see " inside a string, look ahead at the next non-whitespace character:
-    #   - if it's , } ] : or EOF → this " closes the JSON string (structural)
-    #   - otherwise → literal quote inside content, escape as \"
+    #   - if it's , } ] : or EOF -> this " closes the JSON string (structural)
+    #   - otherwise -> literal quote inside content, escape as \"
     result = []
     in_string = False
     pending_backslash = False
@@ -784,10 +784,10 @@ def generate_for_cell(client, cell):
             all_valid_tasks.extend(valid_tasks)
 
             if len(all_valid_tasks) >= count:
-                logger.info(f"  ✓ Collected {len(all_valid_tasks)} valid tasks for {cell_key}")
+                logger.info(f"  [OK] Collected {len(all_valid_tasks)} valid tasks for {cell_key}")
                 return all_valid_tasks, None
             elif len(valid_tasks) > 0:
-                logger.info(f"  → Got {len(valid_tasks)} tasks this attempt. Total collected: {len(all_valid_tasks)}/{count}")
+                logger.info(f"  -> Got {len(valid_tasks)} tasks this attempt. Total collected: {len(all_valid_tasks)}/{count}")
                 # Retry to collect more
                 if attempt < MAX_RETRIES_PER_CELL - 1:
                     wait = RETRY_BASE_DELAY * (attempt + 1)
@@ -795,7 +795,7 @@ def generate_for_cell(client, cell):
                     time.sleep(wait)
             else:
                 error_msg = f"No valid tasks this attempt: {validation_errors}"
-                logger.warning(f"  ✗ {error_msg}")
+                logger.warning(f"   {error_msg}")
                 if attempt < MAX_RETRIES_PER_CELL - 1:
                     wait = RETRY_BASE_DELAY * (attempt + 1)
                     logger.info(f"  Retrying in {wait}s...")
@@ -803,7 +803,7 @@ def generate_for_cell(client, cell):
 
         except Exception as e:
             error_msg = f"Exception: {e}"
-            logger.warning(f"  ✗ {error_msg}")
+            logger.warning(f"   {error_msg}")
             traceback.print_exc()
             if attempt < MAX_RETRIES_PER_CELL - 1:
                 wait = RETRY_BASE_DELAY * (attempt + 1)
@@ -811,7 +811,7 @@ def generate_for_cell(client, cell):
                 time.sleep(wait)
 
     if len(all_valid_tasks) > 0:
-        logger.warning(f"  ⚠ Only collected {len(all_valid_tasks)}/{count} tasks for {cell_key} after {MAX_RETRIES_PER_CELL} attempts")
+        logger.warning(f"  [!] Only collected {len(all_valid_tasks)}/{count} tasks for {cell_key} after {MAX_RETRIES_PER_CELL} attempts")
         return all_valid_tasks, None
 
     return [], f"Failed after {MAX_RETRIES_PER_CELL} attempts"
@@ -915,7 +915,7 @@ def main():
 
         if tasks:
             generated_tasks.extend(tasks)
-            logger.info(f"  → Added {len(tasks)} tasks. Total: {len(generated_tasks)}")
+            logger.info(f"  -> Added {len(tasks)} tasks. Total: {len(generated_tasks)}")
 
         if error:
             errors_by_cell.setdefault(cell_key, []).append(error)

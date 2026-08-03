@@ -45,7 +45,7 @@ def _get_api_key() -> str:
     if not key:
         raise RuntimeError(
             "RESEND_API_KEY is not set in environment. "
-            "Add it in Render → Environment (format: re_xxxxxxxxxxxxx)."
+            "Add it in Render -> Environment (format: re_xxxxxxxxxxxxx)."
         )
     return key
 

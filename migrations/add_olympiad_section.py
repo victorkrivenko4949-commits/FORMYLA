@@ -55,11 +55,11 @@ EXPECTED_TABLES = [
 def migrate() -> int:
     """Создать таблицы раздела «Олимпиады». Возвращает 0/1 как exit-код."""
     with app.app_context():
-        print("🔄 Миграция: создание таблиц раздела «Олимпиады»…")
+        print(" Миграция: создание таблиц раздела «Олимпиады»…")
         try:
             db.create_all()
         except Exception as exc:  # pragma: no cover - инфраструктурное
-            print(f"❌ Ошибка create_all(): {exc!r}")
+            print(f"[ERROR] Ошибка create_all(): {exc!r}")
             db.session.rollback()
             return 1
 
@@ -68,10 +68,10 @@ def migrate() -> int:
         existing = set(inspector.get_table_names())
         missing = [t for t in EXPECTED_TABLES if t not in existing]
         if missing:
-            print(f"❌ Таблицы НЕ созданы: {missing}")
+            print(f"[ERROR] Таблицы НЕ созданы: {missing}")
             return 1
 
-        print("✅ Все таблицы раздела «Олимпиады» на месте:")
+        print("[OK] Все таблицы раздела «Олимпиады» на месте:")
         for t in EXPECTED_TABLES:
             print(f"   • {t}")
         return 0

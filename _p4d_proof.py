@@ -176,7 +176,7 @@ with client.session_transaction() as sess:
     sess['_user_id'] = str(uid); sess['_fresh'] = True
 
 r1 = client.get('/daily-set')
-print(f"  GET /daily-set: {r1.status_code} → {r1.headers.get('Location','no redirect')}")
+print(f"  GET /daily-set: {r1.status_code} -> {r1.headers.get('Location','no redirect')}")
 r2 = client.get('/daily_tasks', follow_redirects=True)
 html = r2.data.decode('utf-8')
 status_m = re.search(r'"status"\s*:\s*"(\w+)"', html)

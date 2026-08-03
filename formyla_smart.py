@@ -6,9 +6,9 @@ FORMYLA L4-L5: Умный 3-уровневый аудит
   Цикл 2: Быстрый аудит (v4-pro, thinking=disabled) — все 1320 задач
   
   Результаты:
-  - 2/2 OK → Оставляем (хорошая задача)
-  - 2/2 WRONG → Помечаем "BROKEN" (возможно условие некорректно)
-  - 1 OK + 1 WRONG → Жёсткий аудит (v4-pro, thinking=enabled) — финальный вердикт
+  - 2/2 OK -> Оставляем (хорошая задача)
+  - 2/2 WRONG -> Помечаем "BROKEN" (возможно условие некорректно)
+  - 1 OK + 1 WRONG -> Жёсткий аудит (v4-pro, thinking=enabled) — финальный вердикт
 
   Затем: фиксим все WRONG (кроме BROKEN), переаудит, повторяем.
 
@@ -22,7 +22,7 @@ from collections import Counter
 from queue import Queue
 
 # ============ НАСТРОЙКИ ============
-API_KEY = "������"
+API_KEY = ""
 API_URL = "https://api.deepseek.com/chat/completions"
 MODEL = "deepseek-v4-pro"
 INPUT_FILE = "FORMYLA_L1_L5_TOP5.jsonl"
@@ -269,9 +269,9 @@ def main():
     audit2 = run_audit(tasks_by_uid, l4l5_uids, mode='fast', label='audit2')
 
     # ====== Классификация ======
-    both_ok = []        # 2/2 OK → хорошая задача
-    both_wrong = []      # 2/2 WRONG → возможно условие некорректно
-    disputed = []        # 1 OK + 1 WRONG → нужен жёсткий аудит
+    both_ok = []        # 2/2 OK -> хорошая задача
+    both_wrong = []      # 2/2 WRONG -> возможно условие некорректно
+    disputed = []        # 1 OK + 1 WRONG -> нужен жёсткий аудит
 
     for uid in l4l5_uids:
         r1 = audit1.get(uid, {})

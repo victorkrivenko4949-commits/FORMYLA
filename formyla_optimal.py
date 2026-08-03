@@ -16,7 +16,7 @@ import json, time, re, threading, os
 from collections import Counter
 from queue import Queue
 
-API_KEY = "������"
+API_KEY = ""
 API_URL = "https://api.deepseek.com/chat/completions"
 MODEL = "deepseek-v4-pro"
 INPUT_FILE = "FORMYLA_L1_L5_TOP5.jsonl"
@@ -192,7 +192,7 @@ def run_fix(tasks_by_uid, bad_uids, mode='fast', label='fix'):
 def main():
     print('=' * 60)
     print('FORMYLA L4-L5: ОПТИМАЛЬНЫЙ СКРИПТ')
-    print('Быстро → Фикс → Переаудит → Ризонер на остаток')
+    print('Быстро -> Фикс -> Переаудит -> Ризонер на остаток')
     print('=' * 60)
 
     if API_KEY == "ВСТАВЬ_СВОЙ_DEEPSEEK_API_КЛЮЧ_СЮДА":

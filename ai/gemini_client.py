@@ -81,7 +81,7 @@ class GeminiClient:
                 if 'choices' in data and len(data['choices']) > 0:
                     content = data['choices'][0].get('message', {}).get('content')
                     if content:
-                        logger.info("✓ Gemini request successful")
+                        logger.info("[OK] Gemini request successful")
                         return content
 
             logger.error(f"Gemini API error: HTTP {response.status_code}: {response.text[:200]}")

@@ -61,7 +61,7 @@ print(f'Loaded {len(methods)} methods, {len(tasks)} tasks', flush=True)
 tasks_by_uid = {t['task_uid']: t for t in tasks}
 
 # ═══════════════════════════════════════════════════════════════
-# SECTION → KEYWORD FILTER
+# SECTION -> KEYWORD FILTER
 # ═══════════════════════════════════════════════════════════════
 SECTION_FILTERS = {
     'A': ['числ', 'сумм', 'произвед', 'делит', 'остат', 'цифр', 'дроб', 'процент',
@@ -179,11 +179,11 @@ def call_api(payload, max_tokens, timeout, label=''):
             c = d['choices'][0]['message'].get('content', '') or ''
             finish = d['choices'][0].get('finish_reason', '')
 
-            # Empty response with length limit → increase tokens
+            # Empty response with length limit -> increase tokens
             if not c and finish == 'length':
                 new_max = min(int(max_tokens * 1.5), 32000)
                 if new_max > max_tokens:
-                    print(f'      [{label}] Empty (finish=length), tokens {max_tokens}→{new_max}', flush=True)
+                    print(f'      [{label}] Empty (finish=length), tokens {max_tokens}->{new_max}', flush=True)
                     payload['max_tokens'] = new_max
                     max_tokens = new_max
                     time.sleep(2)
@@ -303,7 +303,7 @@ PROMPT_ANALYSIS = """Метод: {code}: {name}
 # ═══════════════════════════════════════════════════════════════
 
 def process_method(m):
-    """Process a single method: select task → write analysis → insert into worked_example_md.
+    """Process a single method: select task -> write analysis -> insert into worked_example_md.
     Returns True on success, False on failure."""
     code = m['method_code']
     name = m['method_name']
@@ -367,7 +367,7 @@ def process_method(m):
         return False
 
     uid = uid_match.group(1).strip()
-    print(f'  [{code}] Step 1/2 OK → uid={uid[:24]}...', flush=True)
+    print(f'  [{code}] Step 1/2 OK -> uid={uid[:24]}...', flush=True)
 
     # Find the task in database
     selected_task = tasks_by_uid.get(uid)

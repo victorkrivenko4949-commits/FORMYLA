@@ -116,7 +116,7 @@ def main():
             exp_stmt = exp['statement'][:60] if exp else 'NOT FOUND'
             actual_stmt = task_text[:60]
 
-            match = '✓' if exp and task_text == exp['statement'] else '✗ MISMATCH'
+            match = '[OK]' if exp and task_text == exp['statement'] else ' MISMATCH'
 
             print(f"{step_num:<6} {uid:<14} {section_ru_display:<16} {level:<8} {actual_stmt:<62} {match}")
 

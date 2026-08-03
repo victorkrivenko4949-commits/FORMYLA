@@ -3,7 +3,7 @@
 {% block title %}Задача #{{ problem.id }}{% endblock %}
 
 {% block content %}
-<a href="javascript:history.back()" class="back-link">← Назад к списку</a>
+<a href="javascript:history.back()" class="back-link"><- Назад к списку</a>
 
 <div class="problem-card">
 
@@ -18,7 +18,7 @@
                 data-task-url="/problem/{{ problem.id }}"
                 data-task-preview="{{ (problem.title ~ ' — ' ~ (problem.text|striptags))|truncate(280) }}"
                 style="padding: 6px 14px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 999px; font-size: 0.82em; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-            <span>📨</span><span>Поделиться с другом</span>
+            <span></span><span>Поделиться с другом</span>
         </button>
         {% endif %}
     </div>
@@ -56,7 +56,7 @@
                    href="/static/figures/{{ fname }}"
                    download="{{ fname }}">⬇ Скачать оригинал</a>
                 <button class="task-figure__board-btn"
-                        onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                        onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
             </figcaption>
         </figure>
         {% endfor %}
@@ -66,13 +66,13 @@
     {% if is_solved %}
     <!-- Задача уже решена -->
     <div class="reveal-block" style="background: #10b981; border-color: #10b981; padding: 15px; border-radius: 12px; margin-top: 20px;">
-        <div style="color: #fff; font-weight: 600; font-size: 16px;">✅ Задача решена!</div>
+        <div style="color: #fff; font-weight: 600; font-size: 16px;">[OK] Задача решена!</div>
         <div style="color: #d1fae5; margin-top: 8px;">Правильный ответ: <strong>{{ problem.answer | safe }}</strong></div>
     </div>
 
     <div class="reveal-block">
         <button class="reveal-btn" onclick="toggleReveal('solution-box', this)">
-            📖 Посмотреть решение
+             Посмотреть решение
         </button>
         <div id="solution-box" class="reveal-content hidden">
             <span class="reveal-label solution-label">Решение</span>
@@ -97,7 +97,7 @@
                         <a class="task-figure__download" href="/static/figures/{{ fname }}"
                            download="{{ fname }}">⬇ Скачать оригинал</a>
                         <button class="task-figure__board-btn"
-                                onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                                onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
                     </figcaption>
                 </figure>
                 {% endfor %}
@@ -112,7 +112,7 @@
         <!-- ДЛЯ ОЛИМПИАД: Статичное решение -->
         <div class="reveal-block" style="margin-top: 24px;">
             <button class="reveal-btn" onclick="toggleReveal('solution-box-{{ problem.id }}', this)" id="solution-toggle-{{ problem.id }}">
-                💡 Показать ответ и решение
+                 Показать ответ и решение
             </button>
             <div id="solution-box-{{ problem.id }}" class="reveal-content hidden">
                 <span class="reveal-label answer-label">Правильный ответ</span>
@@ -143,7 +143,7 @@
                             <a class="task-figure__download" href="/static/figures/{{ fname }}"
                                download="{{ fname }}">⬇ Скачать оригинал</a>
                             <button class="task-figure__board-btn"
-                                    onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                                    onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
                         </figcaption>
                     </figure>
                     {% endfor %}
@@ -156,28 +156,28 @@
         {% if current_user.is_authenticated %}
         <div class="ai-tutor-section" style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
             <button onclick="getAIHint({{ problem.id }})" id="hint-btn-{{ problem.id }}" class="ai-btn hint-btn">
-                💡 Получить подсказку от AI
+                 Получить подсказку от AI
             </button>
             <button onclick="getAISolution({{ problem.id }})" id="solution-btn-{{ problem.id }}" class="ai-btn solution-btn">
-                🤖 Сгенерировать решение AI
+                 Сгенерировать решение AI
             </button>
         </div>
 
         <div id="ai-hint-{{ problem.id }}" class="reveal-content hidden" style="margin-top: 12px; background: #0c1a2e; border: 1px solid #1e3a5f;">
-            <span class="reveal-label" style="background: #1e3a5f; color: #7dd3fc;">💡 Подсказка от AI</span>
+            <span class="reveal-label" style="background: #1e3a5f; color: #7dd3fc;"> Подсказка от AI</span>
             <div id="ai-hint-content-{{ problem.id }}" style="line-height: 1.8;"></div>
         </div>
 
         <div id="ai-solution-{{ problem.id }}" class="reveal-content hidden" style="margin-top: 12px; background: #0c1a2e; border: 1px solid #1e3a5f;">
             <span class="reveal-label answer-label">Правильный ответ</span>
             <div id="ai-answer-{{ problem.id }}" style="margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #86efac;"></div>
-            <span class="reveal-label solution-label">🤖 Решение от AI</span>
+            <span class="reveal-label solution-label"> Решение от AI</span>
             <div id="ai-solution-content-{{ problem.id }}" style="line-height: 1.8;"></div>
         </div>
         {% else %}
         <div class="reveal-block" style="margin-top: 24px;">
             <button class="reveal-btn" onclick="toggleReveal('answer-box-{{ problem.id }}', this)" id="answer-toggle-{{ problem.id }}">
-                👁 Показать ответ
+                 Показать ответ
             </button>
             <div id="answer-box-{{ problem.id }}" class="reveal-content hidden" style="background: #0d2218; border: 1px solid #166534;">
                 <span class="reveal-label answer-label">Правильный ответ</span>
@@ -185,7 +185,7 @@
                     {{ problem.answer | safe }}
                 </div>
                 <div style="margin-top: 15px; padding: 12px; background: rgba(56, 189, 248, 0.1); border-radius: 8px; color: #7dd3fc; font-size: 14px;">
-                    💡 Авторизуйтесь, чтобы получить помощь AI-тьютора с подсказками и решениями!
+                     Авторизуйтесь, чтобы получить помощь AI-тьютора с подсказками и решениями!
                 </div>
             </div>
         </div>
@@ -196,7 +196,7 @@
     {% if current_user.is_authenticated %}
     <div style="text-align: center; margin-top: 30px;">
         <button onclick="openTutorWithContext()" style="padding: 12px 30px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-            💬 Обсудить с AI-тьютором в чате
+             Обсудить с AI-тьютором в чате
         </button>
     </div>
     <script>
@@ -247,10 +247,10 @@
         <p style="color: var(--text-soft); margin-bottom: 15px;">Отличная работа! Что дальше?</p>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
             <a href="/problems?subject={{ problem.subject }}&difficulty={{ problem.difficulty }}" style="padding: 10px 20px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);">
-                🔄 Похожая задача
+                 Похожая задача
             </a>
             <a href="/" onclick="document.querySelector('#tutorBtn')?.click(); return false;" style="padding: 10px 20px; background: rgba(139, 92, 246, 0.1); color: var(--accent-1); text-decoration: none; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.3);">
-                📝 Написать пробник
+                 Написать пробник
             </a>
         </div>
     </div>
@@ -259,7 +259,7 @@
 
 <!-- ══ BOARD OVERLAY ══════════════════════════════════════════════════════ -->
 <div id="board-overlay" class="board" hidden>
-    <button class="board__close" onclick="closeBoard()" aria-label="Закрыть">✕</button>
+    <button class="board__close" onclick="closeBoard()" aria-label="Закрыть"></button>
     <div class="board__controls">
         <button onclick="boardZoom(1.2)">+</button>
         <button onclick="boardZoom(1/1.2)">−</button>
@@ -417,31 +417,31 @@ function toggleReveal(id, btn){
     var isHidden=box.classList.contains('hidden');
     if(isHidden){
         box.classList.remove('hidden');
-        if(id.indexOf('answer-box')>=0) btn.innerHTML='✕ Скрыть ответ';
-        if(id.indexOf('solution-box')>=0) btn.innerHTML='✕ Скрыть решение';
+        if(id.indexOf('answer-box')>=0) btn.innerHTML=' Скрыть ответ';
+        if(id.indexOf('solution-box')>=0) btn.innerHTML=' Скрыть решение';
     } else {
         box.classList.add('hidden');
-        if(id.indexOf('answer-box')>=0) btn.innerHTML='👁 Показать ответ';
-        if(id.indexOf('solution-box')>=0) btn.innerHTML='💡 Показать ответ и решение';
+        if(id.indexOf('answer-box')>=0) btn.innerHTML=' Показать ответ';
+        if(id.indexOf('solution-box')>=0) btn.innerHTML=' Показать ответ и решение';
     }
 }
 
 function checkAnswer(problemId){
     var userAnswer=document.getElementById('user-answer-'+problemId).value.trim();
     var feedback=document.getElementById('feedback-'+problemId);
-    if(!userAnswer){ feedback.innerHTML='<span style="color:#f59e0b;">⚠️ Введите ответ</span>'; return; }
+    if(!userAnswer){ feedback.innerHTML='<span style="color:#f59e0b;">[!]️ Введите ответ</span>'; return; }
     fetch('/check_answer',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({problem_id:problemId,user_answer:userAnswer})})
     .then(function(r){return r.json();})
     .then(function(data){
         if(data.correct){
-            feedback.innerHTML='<span style="color:#10b981;font-weight:600;">✅ Правильно!</span>';
+            feedback.innerHTML='<span style="color:#10b981;font-weight:600;">[OK] Правильно!</span>';
             setTimeout(function(){ var sc=document.getElementById('solution-container-'+problemId); if(sc) sc.style.display='block'; },500);
         } else {
-            feedback.innerHTML='<span style="color:#ef4444;">❌ Неправильно. Попробуйте ещё раз!</span>';
+            feedback.innerHTML='<span style="color:#ef4444;">[ERROR] Неправильно. Попробуйте ещё раз!</span>';
         }
     })
-    .catch(function(err){ feedback.innerHTML='<span style="color:#f59e0b;">⚠️ Ошибка проверки</span>'; console.error(err); });
+    .catch(function(err){ feedback.innerHTML='<span style="color:#f59e0b;">[!]️ Ошибка проверки</span>'; console.error(err); });
 }
 
 /* ── AI Tutor helpers ────────────────────────────────────────────────── */
@@ -469,13 +469,13 @@ async function getAIHint(problemId){
     try {
         var response=await fetch('/api/tutor/hint/'+problemId,{method:'POST',headers:{'Content-Type':'application/json'}});
         var data=await response.json();
-        if(data.error){ content.innerHTML='<span style="color:#ef4444;">❌ '+data.error+'</span>'; }
+        if(data.error){ content.innerHTML='<span style="color:#ef4444;">[ERROR] '+data.error+'</span>'; }
         else { content.innerHTML=protectAndRenderMarkdown(data.hint); if(typeof reRenderMath==='function') reRenderMath(content); }
         container.classList.remove('hidden');
-        btn.innerHTML='✓ Подсказка получена'; btn.style.background='#10b981';
+        btn.innerHTML='[OK] Подсказка получена'; btn.style.background='#10b981';
     } catch(err){
-        content.innerHTML='<span style="color:#ef4444;">❌ Ошибка связи с сервером</span>';
-        container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML='💡 Получить подсказку от AI';
+        content.innerHTML='<span style="color:#ef4444;">[ERROR] Ошибка связи с сервером</span>';
+        container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML=' Получить подсказку от AI';
         console.error(err);
     }
 }
@@ -489,17 +489,17 @@ async function getAISolution(problemId){
     try {
         var response=await fetch('/api/tutor/solution/'+problemId,{method:'POST',headers:{'Content-Type':'application/json'}});
         var data=await response.json();
-        if(data.error){ content.innerHTML='<span style="color:#ef4444;">❌ '+data.error+'</span>'; }
+        if(data.error){ content.innerHTML='<span style="color:#ef4444;">[ERROR] '+data.error+'</span>'; }
         else {
             answerDiv.innerHTML=data.answer;
             content.innerHTML=protectAndRenderMarkdown(data.solution);
             if(typeof reRenderMath==='function') reRenderMath(container);
         }
         container.classList.remove('hidden');
-        btn.innerHTML='✓ Решение получено'; btn.style.background='#10b981';
+        btn.innerHTML='[OK] Решение получено'; btn.style.background='#10b981';
     } catch(err){
-        content.innerHTML='<span style="color:#ef4444;">❌ Ошибка связи с сервером</span>';
-        container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML='🤖 Сгенерировать решение AI';
+        content.innerHTML='<span style="color:#ef4444;">[ERROR] Ошибка связи с сервером</span>';
+        container.classList.remove('hidden'); btn.disabled=false; btn.innerHTML=' Сгенерировать решение AI';
         console.error(err);
     }
 }

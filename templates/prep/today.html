@@ -45,7 +45,7 @@
         <div id="answer-area-{{ loop.index0 }}">
             {% if p.id in completed_ids %}
             <div style="padding:12px 16px;border-radius:10px;background:rgba(34,211,166,.1);border:1px solid #22d3a6;color:#22d3a6;font-weight:600;">
-                ✅ Уже решено
+                [OK] Уже решено
             </div>
             {% else %}
             <!-- Mode toggle -->
@@ -53,12 +53,12 @@
                 <button class="mode-btn active" id="mode-answer-{{ loop.index0 }}"
                         onclick="setMode({{ loop.index0 }}, 'answer')"
                         style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#8b5cf6;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;">
-                    ✏️ Краткий ответ
+                    ️ Краткий ответ
                 </button>
                 <button class="mode-btn" id="mode-solution-{{ loop.index0 }}"
                         onclick="setMode({{ loop.index0 }}, 'solution')"
                         style="padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#64748b;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;">
-                    📝 Полное решение
+                     Полное решение
                 </button>
             </div>
 
@@ -84,7 +84,7 @@
                         ⏭️ Пропустить
                     </button>
                     <button class="prep-btn prep-btn-primary" onclick="submitSolution({{ loop.index0 }},{{ p.id }})" id="submit-btn-{{ loop.index0 }}">
-                        🔍 Проверить решение
+                         Проверить решение
                     </button>
                 </div>
             </div>
@@ -96,7 +96,7 @@
 
         <!-- Solution (hidden until checked) -->
         <div id="solution-{{ loop.index0 }}" style="display:none;margin-top:16px;padding:16px;background:#0f172a;border-radius:10px;border:1px solid #334155;">
-            <div style="color:#8b5cf6;font-weight:700;margin-bottom:8px;">📖 Эталонное решение:</div>
+            <div style="color:#8b5cf6;font-weight:700;margin-bottom:8px;"> Эталонное решение:</div>
             <div style="color:#cbd5e1;font-size:.9rem;line-height:1.6;" class="task-text">{{ p.solution }}</div>
         </div>
     </div>
@@ -104,10 +104,10 @@
     <!-- Nav between problems -->
     <div style="display:flex;justify-content:space-between;margin-top:16px;">
         {% if not loop.first %}
-        <button class="prep-btn prep-btn-secondary" onclick="showProblem({{ loop.index0 - 1 }})">← Предыдущая</button>
+        <button class="prep-btn prep-btn-secondary" onclick="showProblem({{ loop.index0 - 1 }})"><- Предыдущая</button>
         {% else %}<div></div>{% endif %}
         {% if not loop.last %}
-        <button class="prep-btn prep-btn-secondary" onclick="showProblem({{ loop.index0 + 1 }})">Следующая →</button>
+        <button class="prep-btn prep-btn-secondary" onclick="showProblem({{ loop.index0 + 1 }})">Следующая -></button>
         {% else %}<div></div>{% endif %}
     </div>
 </div>
@@ -115,12 +115,12 @@
 
 <!-- Day complete screen -->
 <div id="dayComplete" style="display:none;text-align:center;padding:40px 20px;">
-    <div style="font-size:4rem;margin-bottom:16px;">🎉</div>
+    <div style="font-size:4rem;margin-bottom:16px;"></div>
     <h2 style="color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 12px;">День завершён!</h2>
     <p style="color:#94a3b8;font-size:1.05rem;margin:0 0 24px;" id="dayResultText"></p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <a href="{{ url_for('prep.plan_detail', plan_id=plan.id) }}" class="prep-btn prep-btn-primary">📅 К календарю</a>
-        <a href="{{ url_for('prep.dashboard') }}" class="prep-btn prep-btn-secondary">🏠 На дашборд</a>
+        <a href="{{ url_for('prep.plan_detail', plan_id=plan.id) }}" class="prep-btn prep-btn-primary"> К календарю</a>
+        <a href="{{ url_for('prep.dashboard') }}" class="prep-btn prep-btn-secondary"> На дашборд</a>
     </div>
 </div>
 
@@ -222,14 +222,14 @@ async function submitSolution(idx, problemId) {
         const ta = document.getElementById('solution-input-' + idx);
         userSolution = ta ? ta.value.trim() : '';
         if (!userSolution) {
-            feedback.innerHTML = '<span style="color:#f59e0b;">⚠️ Напиши решение</span>';
+            feedback.innerHTML = '<span style="color:#f59e0b;">[!]️ Напиши решение</span>';
             return;
         }
     } else {
         const inp = document.getElementById('input-' + idx);
         userAnswer = inp ? inp.value.trim() : '';
         if (!userAnswer) {
-            feedback.innerHTML = '<span style="color:#f59e0b;">⚠️ Введи ответ</span>';
+            feedback.innerHTML = '<span style="color:#f59e0b;">[!]️ Введи ответ</span>';
             return;
         }
     }
@@ -260,13 +260,13 @@ async function submitSolution(idx, problemId) {
         const isCorrect = data.is_correct;
 
         if (isCorrect) {
-            // ✅ Correct
+            // [OK] Correct
             completedIds.add(problemId);
             dayScore = data.day_score;
             document.getElementById('progressText').textContent = `${completedIds.size}/${totalProblems}`;
 
             let html = '<div style="padding:12px 16px;border-radius:10px;background:rgba(34,211,166,.1);border:1px solid #22d3a6;">';
-            html += '<div style="color:#22d3a6;font-weight:700;font-size:1.05rem;margin-bottom:4px;">✅ Верно!</div>';
+            html += '<div style="color:#22d3a6;font-weight:700;font-size:1.05rem;margin-bottom:4px;">[OK] Верно!</div>';
             if (fb.message) html += `<div style="color:#94a3b8;font-size:.9rem;">${escHtml(fb.message)}</div>`;
             if (fb.score !== undefined) html += `<div style="color:#f59e0b;font-size:.85rem;margin-top:4px;">Баллы: ${fb.score}/2</div>`;
             html += '</div>';
@@ -282,14 +282,14 @@ async function submitSolution(idx, problemId) {
                 setTimeout(() => { if (currentIdx < totalProblems - 1) showProblem(currentIdx + 1); }, 2500);
             }
         } else if (fb.verdict === 'partial') {
-            // 🟡 Partial
+            //  Partial
             let html = '<div style="padding:12px 16px;border-radius:10px;background:rgba(245,158,11,.1);border:1px solid #f59e0b;">';
-            html += '<div style="color:#f59e0b;font-weight:700;font-size:1.05rem;margin-bottom:4px;">🟡 Частично верно (1/2)</div>';
+            html += '<div style="color:#f59e0b;font-weight:700;font-size:1.05rem;margin-bottom:4px;"> Частично верно (1/2)</div>';
             if (fb.message) html += `<div style="color:#cbd5e1;font-size:.9rem;margin-bottom:6px;">${escHtml(fb.message)}</div>`;
             if (fb.errors && fb.errors.length) {
                 html += '<div style="color:#ef4444;font-size:.85rem;">Ошибки: ' + fb.errors.map(e => escHtml(e)).join('; ') + '</div>';
             }
-            if (fb.hint) html += `<div style="color:#8b5cf6;font-size:.85rem;margin-top:4px;">💡 ${escHtml(fb.hint)}</div>`;
+            if (fb.hint) html += `<div style="color:#8b5cf6;font-size:.85rem;margin-top:4px;"> ${escHtml(fb.hint)}</div>`;
             html += '</div>';
 
             if (attempts[problemId] >= 2) {
@@ -302,14 +302,14 @@ async function submitSolution(idx, problemId) {
             }
             feedback.innerHTML = html;
         } else {
-            // ❌ Wrong
+            // [ERROR] Wrong
             let html = '<div style="padding:12px 16px;border-radius:10px;background:rgba(239,68,68,.1);border:1px solid #ef4444;">';
-            html += '<div style="color:#ef4444;font-weight:700;font-size:1.05rem;margin-bottom:4px;">❌ Неверно</div>';
+            html += '<div style="color:#ef4444;font-weight:700;font-size:1.05rem;margin-bottom:4px;">[ERROR] Неверно</div>';
             if (fb.message) html += `<div style="color:#cbd5e1;font-size:.9rem;margin-bottom:6px;">${escHtml(fb.message)}</div>`;
             if (fb.errors && fb.errors.length) {
                 html += '<div style="color:#ef4444;font-size:.85rem;">Ошибки: ' + fb.errors.map(e => escHtml(e)).join('; ') + '</div>';
             }
-            if (fb.hint) html += `<div style="color:#8b5cf6;font-size:.85rem;margin-top:4px;">💡 ${escHtml(fb.hint)}</div>`;
+            if (fb.hint) html += `<div style="color:#8b5cf6;font-size:.85rem;margin-top:4px;"> ${escHtml(fb.hint)}</div>`;
             if (fb.correct_answer) html += `<div style="color:#64748b;font-size:.85rem;margin-top:4px;">Правильный ответ: ${escHtml(fb.correct_answer)}</div>`;
             html += '</div>';
 

@@ -11,23 +11,23 @@
            style="display: inline-block; color: var(--accent-2); text-decoration: none; padding: 10px 20px; border: 1px solid var(--accent-2); border-radius: var(--radius-sm); transition: all 0.3s;"
            onmouseover="this.style.background='rgba(56, 189, 248, 0.1)'"
            onmouseout="this.style.background='transparent'">
-            ← Назад к друзьям
+            <- Назад к друзьям
         </a>
     </div>
     
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            👤 {{ student.nickname or student.name or 'Друг' }}
+             {{ student.nickname or student.name or 'Друг' }}
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
-            🏆 {{ student.experience_points or 0 }} XP · Уровень {{ student.current_level or 1 }} · Решено {{ student.total_problems_solved or 0 }} задач
+             {{ student.experience_points or 0 }} XP · Уровень {{ student.current_level or 1 }} · Решено {{ student.total_problems_solved or 0 }} задач
         </p>
     </div>
 
     <!-- Информация о друге -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            📊 Информация
+             Информация
         </h2>
         
         <div style="display: grid; gap: 15px;">
@@ -61,7 +61,7 @@
     {% if student.onboarding_completed %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-1); margin-bottom: 20px; font-size: 1.5em;">
-            🤖 AI Профиль
+             AI Профиль
         </h2>
         
         <!-- Уровень -->
@@ -104,7 +104,7 @@
     <!-- Статистика -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            📈 Статистика
+             Статистика
         </h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
             <div style="text-align: center; padding: 20px; background: rgba(56, 189, 248, 0.08); border-radius: 12px;">

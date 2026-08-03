@@ -2,7 +2,7 @@
 //
 // Загружается внутри call_engine.html (iframe). Устанавливает постоянное
 // SocketIO-соединение с сервером и общается с родительской страницей через
-// window.__wbEngine → postMessage.
+// window.__wbEngine -> postMessage.
 //
 // API (через window.__wbSignalling):
 //   connect()         — установить соединение (авто при загрузке)
@@ -270,7 +270,7 @@
         // Отправить реакцию (эмодзи)
         sendReaction: function (emoji) {
             if (!socket || !socket.connected) return;
-            socket.emit("reaction", { type: "emoji", emoji: emoji || "👍" });
+            socket.emit("reaction", { type: "emoji", emoji: emoji || "" });
         },
 
         // Поднять/опустить руку

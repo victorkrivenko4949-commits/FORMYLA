@@ -11,25 +11,25 @@ Strategy:
     - source_user (B) is the DONOR  (data migrated to A, then deleted)
 
 What gets migrated (FK reassignment):
-    - OAuthAccount        (B's Yandex link → A)
-    - PrepPlan            → A
+    - OAuthAccount        (B's Yandex link -> A)
+    - PrepPlan            -> A
     - PrepDay (cascade via plan)
-    - TaskSolution        → A
-    - AdaptiveTest        → A
+    - TaskSolution        -> A
+    - AdaptiveTest        -> A
     - AdaptiveTestProblem (cascade via test)
-    - AdaptiveTestResult  → A
-    - ChatMessage         → A
-    - DailyQuest          → A
-    - UserStreak          → A
-    - TopicMastery        → A
-    - TestResult          → A
-    - UserProgress        → A
-    - UserTopicProgress   → A
-    - MockExam            → A
-    - Notification        → A (both as recipient and sender)
-    - Friendship          → A (both sides)
-    - Mentorship          → A (as teacher and student)
-    - SupportMessage      → A
+    - AdaptiveTestResult  -> A
+    - ChatMessage         -> A
+    - DailyQuest          -> A
+    - UserStreak          -> A
+    - TopicMastery        -> A
+    - TestResult          -> A
+    - UserProgress        -> A
+    - UserTopicProgress   -> A
+    - MockExam            -> A
+    - Notification        -> A (both as recipient and sender)
+    - Friendship          -> A (both sides)
+    - Mentorship          -> A (as teacher and student)
+    - SupportMessage      -> A
 
 Fields preferred from source if target is empty:
     - User.name, User.avatar_url, User.preferred_grade, User.nickname (only if A has none)
@@ -104,7 +104,7 @@ def merge_users(target_user_id: int, source_user_id: int, dry_run: bool = False)
     total_moved = 0
 
     try:
-        # 1) Reassign FK columns from source → target on every related table.
+        # 1) Reassign FK columns from source -> target on every related table.
         for table, col in _USER_FK_TABLES:
             try:
                 # First check if table & column exist (defensive, schemas drift)
@@ -184,7 +184,7 @@ def merge_users(target_user_id: int, source_user_id: int, dry_run: bool = False)
 
         summary['source_deleted'] = True
         summary['_total_rows_moved'] = total_moved
-        logger.info(f"✓ merge_users: source={source_user_id} → target={target_user_id}, "
+        logger.info(f"[OK] merge_users: source={source_user_id} -> target={target_user_id}, "
                     f"moved {total_moved} rows across {len(summary['tables'])} table.column pairs")
         return summary
 

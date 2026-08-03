@@ -421,12 +421,12 @@ def step6_level_mapping_analysis(tasks):
     # L5: Olympiad/high-difficulty (orig dl 6-8)
 
     mapping_scheme = {
-        1: "L1", 2: "L1",  # very basic → L1
-        3: "L2",            # simple → L2
-        4: "L3",            # medium → L3
-        5: "L4",            # complex → L4
-        6: "L4",            # complex → L4
-        7: "L5", 8: "L5",   # hard → L5
+        1: "L1", 2: "L1",  # very basic -> L1
+        3: "L2",            # simple -> L2
+        4: "L3",            # medium -> L3
+        5: "L4",            # complex -> L4
+        6: "L4",            # complex -> L4
+        7: "L5", 8: "L5",   # hard -> L5
     }
 
     # But we don't use mechanical mapping blindly. We analyze condition features.
@@ -1042,7 +1042,7 @@ def step12_report(tasks, evidence_records, curated_bank, reserve_list, recheck_l
         for lvl in LEVELS:
             cnt = sum(1 for e in curated_bank if e["classlevel"] == cl and e["target_level"] == lvl)
             quota = QUOTAS[cl][lvl]
-            status = "✅" if cnt >= quota else "⚠️"
+            status = "[OK]" if cnt >= quota else "[!]️"
             row.append(f" {cnt}/{quota} {status}")
         row.append("|")
         cell_table_rows.append(" ".join(row))
@@ -1065,7 +1065,7 @@ def step12_report(tasks, evidence_records, curated_bank, reserve_list, recheck_l
                        duplicate_clusters.get("tasks_in_near_duplicates", 0) +
                        duplicate_clusters.get("tasks_in_structural_duplicates", 0))
 
-    report = f"""# SELECTION REPORT: 1080 → L1-L5 Curated Bank
+    report = f"""# SELECTION REPORT: 1080 -> L1-L5 Curated Bank
 
 ## Pipeline Overview
 
@@ -1126,14 +1126,14 @@ No live model evidence was used (V2 = NO-GO).
 
 ## Key Policies Enforced
 
-- ✅ Condition-only evaluation (task_text, image metadata)
-- ✅ No solution/correct_answer quality analysis
-- ✅ No mechanical 1-8 → 1-5 mapping; feature-based re-assessment
-- ✅ No exact/near/structural duplicates within any cell
-- ✅ Quality > diversity > quota-fill priority
-- ✅ Immutable source hash unchanged
-- ✅ No change plan applied to source
-- ❌ LIVE V2 prerequisite: NO-GO (final curated bank is preparatory only)
+- [OK] Condition-only evaluation (task_text, image metadata)
+- [OK] No solution/correct_answer quality analysis
+- [OK] No mechanical 1-8 -> 1-5 mapping; feature-based re-assessment
+- [OK] No exact/near/structural duplicates within any cell
+- [OK] Quality > diversity > quota-fill priority
+- [OK] Immutable source hash unchanged
+- [OK] No change plan applied to source
+- [ERROR] LIVE V2 prerequisite: NO-GO (final curated bank is preparatory only)
 
 ## Artifacts Generated
 
@@ -1237,23 +1237,23 @@ def step13_final_validation(tasks, curated_bank, evidence_records, shortage_repo
         checks["no_change_plan_applied"],
     ])
 
-    validation = f"""# FINAL VALIDATION: 1080 → L1-L5 Selection Pipeline
+    validation = f"""# FINAL VALIDATION: 1080 -> L1-L5 Selection Pipeline
 
-## Status: {'✅ PASS' if all_pass else '❌ FAIL'}
+## Status: {'[OK] PASS' if all_pass else '[ERROR] FAIL'}
 
 ## Validation Checks
 
 | # | Check | Result |
 |---|-------|--------|
-| 1 | Source JSON hash unchanged | {'✅' if checks['source_hash_unchanged'] else '❌'} `{checks['source_hash_current'][:16]}...` |
-| 2 | No duplicate IDs in curated bank | {'✅' if checks['no_duplicate_ids_in_bank'] else '❌'} |
-| 3 | No exact duplicate task_text pairs in bank | {'✅' if checks['no_exact_duplicate_text_in_bank'] else '❌'} |
-| 4 | All tasks have valid classlevel | {'✅' if checks['all_tasks_have_valid_classlevel'] else '❌'} |
-| 5 | All tasks have valid target_level (L1-L5) | {'✅' if checks['all_tasks_have_valid_target_level'] else '❌'} |
-| 6 | No quota overfills | {'✅' if checks['quota_overfill_issues'] == 0 else '❌'} ({checks['quota_overfill_issues']} issues) |
-| 7 | No change plan applied to source | {'✅' if checks['no_change_plan_applied'] else '❌'} |
-| 8 | Solutions not used as quality criterion | ✅ (policy enforced) |
-| 9 | Correct answers not used as quality criterion | ✅ (policy enforced) |
+| 1 | Source JSON hash unchanged | {'[OK]' if checks['source_hash_unchanged'] else '[ERROR]'} `{checks['source_hash_current'][:16]}...` |
+| 2 | No duplicate IDs in curated bank | {'[OK]' if checks['no_duplicate_ids_in_bank'] else '[ERROR]'} |
+| 3 | No exact duplicate task_text pairs in bank | {'[OK]' if checks['no_exact_duplicate_text_in_bank'] else '[ERROR]'} |
+| 4 | All tasks have valid classlevel | {'[OK]' if checks['all_tasks_have_valid_classlevel'] else '[ERROR]'} |
+| 5 | All tasks have valid target_level (L1-L5) | {'[OK]' if checks['all_tasks_have_valid_target_level'] else '[ERROR]'} |
+| 6 | No quota overfills | {'[OK]' if checks['quota_overfill_issues'] == 0 else '[ERROR]'} ({checks['quota_overfill_issues']} issues) |
+| 7 | No change plan applied to source | {'[OK]' if checks['no_change_plan_applied'] else '[ERROR]'} |
+| 8 | Solutions not used as quality criterion | [OK] (policy enforced) |
+| 9 | Correct answers not used as quality criterion | [OK] (policy enforced) |
 
 ## Quota Details
 
@@ -1267,9 +1267,9 @@ def step13_final_validation(tasks, curated_bank, evidence_records, shortage_repo
             actual = cell_counts.get((cl, lvl), 0)
             quota = QUOTAS[cl][lvl]
             if actual >= quota:
-                row += f"| ✅ {actual}/{quota} "
+                row += f"| [OK] {actual}/{quota} "
             else:
-                row += f"| ⚠️ {actual}/{quota} "
+                row += f"| [!]️ {actual}/{quota} "
         row += "|"
         validation += row + "\n"
 
@@ -1281,7 +1281,7 @@ def step13_final_validation(tasks, curated_bank, evidence_records, shortage_repo
 - **Total recheck:** {checks['total_recheck']}
 - **Total quarantine:** {checks['total_quarantine']}
 - **Total source:** {checks['total_source']}
-- **Sum check (sel+res+rec+quar):** {checks['sum_check']} {'✅' if checks['sum_check'] == checks['total_source'] else '❌'}
+- **Sum check (sel+res+rec+quar):** {checks['sum_check']} {'[OK]' if checks['sum_check'] == checks['total_source'] else '[ERROR]'}
 
 ## Immutable Source
 
@@ -1289,7 +1289,7 @@ def step13_final_validation(tasks, curated_bank, evidence_records, shortage_repo
 - **Original SHA-256:** `{src_hash}`
 - **Current SHA-256:** `{current_hash}`
 - **Snapshot hash:** `{snap_hash}`
-- **Unchanged:** {'✅' if checks['source_hash_unchanged'] else '❌'}
+- **Unchanged:** {'[OK]' if checks['source_hash_unchanged'] else '[ERROR]'}
 
 ## LIVE V2 Status
 
@@ -1343,7 +1343,7 @@ def step14_level_mapping_md(level_analysis):
     conf_dist = Counter(a["confidence"] for a in level_analysis)
     mech_vs_adj = sum(1 for a in level_analysis if a["target_level"] != a["mechanical_mapping"])
 
-    md = f"""# Level Mapping Analysis: 1-8 → L1-L5
+    md = f"""# Level Mapping Analysis: 1-8 -> L1-L5
 
 ## Methodology
 

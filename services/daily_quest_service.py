@@ -93,7 +93,7 @@ def is_task_locked(quest, task_index: int) -> bool:
 
 
 def _save_attempts_map(quest, m: dict) -> None:
-    """Сериализовать словарь {int: int} в quest.attempts_map (ключи → str)."""
+    """Сериализовать словарь {int: int} в quest.attempts_map (ключи -> str)."""
     quest.attempts_map = json.dumps({str(int(k)): int(v) for k, v in m.items()})
 
 
@@ -153,9 +153,9 @@ def register_wrong_attempt(quest, task_index: int) -> dict:
 def regenerate_cooldown_remaining(quest, cooldown_seconds: int = 3600) -> int:
     """Сколько секунд осталось до следующей разрешённой регенерации квеста.
 
-    Если квест никогда не регенерировался (last_regenerated_at is None) →
+    Если квест никогда не регенерировался (last_regenerated_at is None) ->
     возвращаем 0 (можно регенерить прямо сейчас).
-    Если последнего раза прошло >= cooldown_seconds → 0.
+    Если последнего раза прошло >= cooldown_seconds -> 0.
     Иначе — остаток времени, округлённый вниз, в секундах.
     """
     last = getattr(quest, 'last_regenerated_at', None)
@@ -168,7 +168,7 @@ def regenerate_cooldown_remaining(quest, cooldown_seconds: int = 3600) -> int:
     remaining = int(cooldown_seconds - elapsed)
     return max(0, remaining)
 
-# LaTeX-валидатор: чинит «7^100» → «$7^{100}$» и отсекает сломанные задачи
+# LaTeX-валидатор: чинит «7^100» -> «$7^{100}$» и отсекает сломанные задачи
 try:
     from services.latex_validator import (
         normalize_math_text as _latex_normalize,
@@ -203,7 +203,7 @@ def get_tasks_from_db(topic: str, grade: int, difficulty: int, exclude_ids: List
     # Нормализуем тему для сравнения
     topic_lower = topic.lower()
     
-    # Маппинг русских названий тем → английские subject/subtopic
+    # Маппинг русских названий тем -> английские subject/subtopic
     TOPIC_MAP = {
         'алгебра': ['algebra'],
         'геометрия': ['geometry'],
@@ -410,10 +410,10 @@ def _generate_random_quest(user_id: int, today) -> Optional[DailyQuest]:
     task_ids = [t['id'] for t in selected]
     grade_label = f" ({user_grade} класс)" if user_grade else ""
     ai_comment = (
-        f"🎯 **Твои задачи на сегодня**{grade_label}\n\n"
-        f"📚 Подборка задач разных тем для твоего класса. "
+        f" **Твои задачи на сегодня**{grade_label}\n\n"
+        f" Подборка задач разных тем для твоего класса. "
         f"Пройди адаптивный тест, чтобы получать задачи по своим слабым темам!\n\n"
-        f"Решай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"
+        f"Решай последовательно, и ты получишь **+100 XP** за все 5 задач! "
     )
     
     quest = DailyQuest(
@@ -648,21 +648,21 @@ def generate_ai_intro(task_distribution: List[Dict], user_grade: int = 7) -> str
     medium_count = sum(1 for t in task_distribution if t['type'] == 'medium')
     challenge_count = sum(1 for t in task_distribution if t['type'] == 'challenge')
     
-    intro = f"🎯 **Твои задачи на сегодня** ({user_grade} класс)\n\n"
+    intro = f" **Твои задачи на сегодня** ({user_grade} класс)\n\n"
     
     if weak_count > 0:
         weak_topics = [t['topic'] for t in task_distribution if t['type'] == 'weak']
-        intro += f"📚 **{weak_count} задачи** для укрепления слабых мест: {', '.join(set(weak_topics))}.\n\n"
+        intro += f" **{weak_count} задачи** для укрепления слабых мест: {', '.join(set(weak_topics))}.\n\n"
     
     if medium_count > 0:
         medium_topics = [t['topic'] for t in task_distribution if t['type'] == 'medium']
-        intro += f"⚡ **{medium_count} задача** среднего уровня для прогресса: {', '.join(set(medium_topics))}.\n\n"
+        intro += f" **{medium_count} задача** среднего уровня для прогресса: {', '.join(set(medium_topics))}.\n\n"
     
     if challenge_count > 0:
         challenge_topics = [t['topic'] for t in task_distribution if t['type'] == 'challenge']
-        intro += f"🔥 **{challenge_count} челлендж** по твоей сильной теме: {', '.join(set(challenge_topics))}.\n\n"
+        intro += f" **{challenge_count} челлендж** по твоей сильной теме: {', '.join(set(challenge_topics))}.\n\n"
     
-    intro += "Решай последовательно, и ты получишь **+100 XP** за все 5 задач! 💪"
+    intro += "Решай последовательно, и ты получишь **+100 XP** за все 5 задач! "
     
     return intro
 
@@ -701,7 +701,7 @@ def get_quest_tasks(quest: DailyQuest) -> List[Dict]:
     
     task_ids = json.loads(quest.task_ids)
     
-    # Строим индекс id→task для PROBLEMS_DB
+    # Строим индекс id->task для PROBLEMS_DB
     task_index = {task['id']: task for task in PROBLEMS_DB if 'id' in task}
     
     # Строим индекс для олимпиадных задач (combo_id * 100 + num)

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 # ─── Заголовки уведомлений ────────────────────────────────────────────────────
 
-_CURATOR_TITLE = '🧑‍🏫 Куратор Formyla'
+_CURATOR_TITLE = '‍ Куратор Formyla'
 
 # ─── Публичные функции ────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ def send_curator_push(user_id: int, title: str, body: str, url: str = '/daily_ta
 
     Args:
         user_id: ID получателя.
-        title: Заголовок (по умолчанию — '🧑‍🏫 Куратор Formyla').
+        title: Заголовок (по умолчанию — '‍ Куратор Formyla').
         body: Текст сообщения.
         url: Ссылка при клике.
 
@@ -57,7 +57,7 @@ def send_curator_push(user_id: int, title: str, body: str, url: str = '/daily_ta
             return False
 
         send_fn(user_id=user_id, title=title, body=body, url=url)
-        logger.info(f"[push_service] ✓ Push sent to user #{user_id}: {title} — {body[:60]}")
+        logger.info(f"[push_service] [OK] Push sent to user #{user_id}: {title} — {body[:60]}")
         return True
     except Exception as e:
         logger.error(f"[push_service] Failed to send push to user #{user_id}: {e}")
@@ -386,7 +386,7 @@ def _save_curator_message_to_log(user_id: int, message: str, stats: dict) -> Non
             db.session.add(log)
 
         db.session.commit()
-        logger.info(f"[push_service] ✓ Curator message saved to ProgressLog for user #{user_id}")
+        logger.info(f"[push_service] [OK] Curator message saved to ProgressLog for user #{user_id}")
     except Exception as e:
         logger.error(f"[push_service] Failed to save message to log: {e}")
         db.session.rollback() if hasattr(db, 'session') else None

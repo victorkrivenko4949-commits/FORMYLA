@@ -56,9 +56,9 @@ duplicates = load_json(os.path.join(RUNS_DIR, "duplicate_clusters.json"))
 level_mapping = load_json(os.path.join(RUNS_DIR, "level_mapping_analysis.json"))
 shortage = load_json(os.path.join(RUNS_DIR, "shortage_report.json"))
 
-print(f"  curated_bank_L1_L5_pre_live.json  → {len(curated):>4d} candidates")
-print(f"  reserve_pre_live.json             → {len(reserve):>4d} reserve")
-print(f"  recheck_queue.json                → {len(recheck):>4d} recheck")
+print(f"  curated_bank_L1_L5_pre_live.json  -> {len(curated):>4d} candidates")
+print(f"  reserve_pre_live.json             -> {len(reserve):>4d} reserve")
+print(f"  recheck_queue.json                -> {len(recheck):>4d} recheck")
 print(f"  Sum: {len(curated) + len(reserve) + len(recheck)} (target: 1080)")
 
 # ── 1. CLASS GRADE INVENTORY ──────────────────────────────────────────────────
@@ -97,7 +97,7 @@ for cl in CLASSES:
           f"reserve={fmt_count(len(cl_reserve))}  "
           f"recheck={fmt_count(len(cl_recheck))}  "
           f"sum={fmt_count(len(cl_curated)+len(cl_reserve)+len(cl_recheck))}  "
-          f"{'✅' if entry['balance_check'] else '❌'}")
+          f"{'[OK]' if entry['balance_check'] else '[ERROR]'}")
 
 # ── 1b. Prove or disprove "no class 8 in reserve" ──────────────────────────
 class8_reserve_tasks = [t for t in reserve if t["class_level"] == 8]
@@ -325,12 +325,12 @@ validations.append({
 # Print validation summary
 all_pass = all(v["pass"] for v in validations)
 for v in validations:
-    status = "✅ PASS" if v["pass"] else "❌ FAIL"
+    status = "[OK] PASS" if v["pass"] else "[ERROR] FAIL"
     print(f"  {status} | {v['check']}")
     print(f"          {v['detail']}")
 
 print()
-print(f"  OVERALL: {'✅ ALL PASS' if all_pass else '❌ SOME FAILURES DETECTED'}")
+print(f"  OVERALL: {'[OK] ALL PASS' if all_pass else '[ERROR] SOME FAILURES DETECTED'}")
 
 # ── BUILD class_grade_inventory.json ──────────────────────────────────────────
 class_grade_inventory = {
@@ -459,7 +459,7 @@ addendum_lines = [
 
 for cl in CLASSES:
     e = class_inventory[cl]
-    bal = "✅" if e["balance_check"] else "❌"
+    bal = "[OK]" if e["balance_check"] else "[ERROR]"
     addendum_lines.append(
         f"| {cl:5d} | {e['source_total_tasks']:6d} | "
         f"{e['selected_candidates']:8d} | {e['reserve']:7d} | "
@@ -467,13 +467,13 @@ for cl in CLASSES:
     )
 
 tot = class_grade_inventory["totals"]
-bal_all = "✅" if tot["all_balanced"] else "❌"
+bal_all = "[OK]" if tot["all_balanced"] else "[ERROR]"
 addendum_lines.extend([
     f"| **Total** | {tot['source_total']:6d} | {tot['selected_candidates']:8d} | "
     f"{tot['reserve']:7d} | {tot['deterministic_recheck']:7d} | "
     f"{tot['grand_sum']:3d} | {bal_all:7s} |",
     "",
-    f"**Reserve tasks of class 8:** {len(class8_reserve_tasks)} (L3: {c8_level_dist.get('L3', 0)}) → "
+    f"**Reserve tasks of class 8:** {len(class8_reserve_tasks)} (L3: {c8_level_dist.get('L3', 0)}) -> "
     f"Literal claim \"в reserve нет задач 8 класса\" is **DISPROVEN** (found {len(class8_reserve_tasks)} class 8 tasks in reserve). "
     f"However, **contextually TRUE for L3**: 0 of {len(class8_reserve_tasks)} are L3-mapped "
     f"(L1={c8_level_dist.get('L1',0)}, L2={c8_level_dist.get('L2',0)}, "
@@ -511,10 +511,10 @@ addendum_lines.extend([
 ])
 
 for i, v in enumerate(validations, 1):
-    status = "✅ PASS" if v["pass"] else "❌ FAIL"
+    status = "[OK] PASS" if v["pass"] else "[ERROR] FAIL"
     addendum_lines.append(f"| {i} | {v['check']} | {v['detail']} | {status} |")
 
-overall_status = "✅ ALL CHECKS PASSED" if all_pass else "❌ SOME CHECKS FAILED"
+overall_status = "[OK] ALL CHECKS PASSED" if all_pass else "[ERROR] SOME CHECKS FAILED"
 addendum_lines.extend([
     "",
     f"**Overall:** {overall_status}",
@@ -536,11 +536,11 @@ addendum_lines.extend([
     "",
     "## 6. What Was NOT Done",
     "",
-    "- ❌ No API calls invoked",
-    "- ❌ No live audit started",
-    "- ❌ No source JSON, snapshot, curated candidates, or reserve contents modified",
-    "- ❌ No solutions/correctAnswers included in any output artifact",
-    "- ❌ No quality downgrade or forced level reclassification",
+    "- [ERROR] No API calls invoked",
+    "- [ERROR] No live audit started",
+    "- [ERROR] No source JSON, snapshot, curated candidates, or reserve contents modified",
+    "- [ERROR] No solutions/correctAnswers included in any output artifact",
+    "- [ERROR] No quality downgrade or forced level reclassification",
     "",
 ])
 
@@ -553,19 +553,19 @@ print("=" * 70)
 out_path = os.path.join(RUNS_DIR, "class_grade_inventory.json")
 with open(out_path, "w", encoding="utf-8") as f:
     json.dump(class_grade_inventory, f, ensure_ascii=False, indent=2)
-print(f"  ✅ {out_path}")
+print(f"  [OK] {out_path}")
 
 # Write priority_queue_unique_index.json
 out_path2 = os.path.join(RUNS_DIR, "priority_queue_unique_index.json")
 with open(out_path2, "w", encoding="utf-8") as f:
     json.dump(priority_queue_unique_index, f, ensure_ascii=False, indent=2)
-print(f"  ✅ {out_path2}")
+print(f"  [OK] {out_path2}")
 
 # Write PRE_LIVE_INTEGRITY_ADDENDUM.md
 out_path3 = os.path.join(RUNS_DIR, "PRE_LIVE_INTEGRITY_ADDENDUM.md")
 with open(out_path3, "w", encoding="utf-8") as f:
     f.write("\n".join(addendum_lines))
-print(f"  ✅ {out_path3}")
+print(f"  [OK] {out_path3}")
 
 # ── FINAL REPORT ───────────────────────────────────────────────────────────────
 print("\n" + "=" * 70)
@@ -580,12 +580,12 @@ for cl in CLASSES:
 
 print(f"\n  Reserve tasks of class 8: {len(class8_reserve_tasks)}")
 print(f"  Unique IDs / Work items: {len(pq_unique_ids)} / {len(pq_all_items)}")
-print(f"  Overall: {'✅ PASS' if all_pass else '❌ FAIL'}")
+print(f"  Overall: {'[OK] PASS' if all_pass else '[ERROR] FAIL'}")
 
 print(f"\n  Files created:")
-print(f"    📄 {os.path.join(RUNS_DIR, 'class_grade_inventory.json')}")
-print(f"    📄 {os.path.join(RUNS_DIR, 'priority_queue_unique_index.json')}")
-print(f"    📄 {os.path.join(RUNS_DIR, 'PRE_LIVE_INTEGRITY_ADDENDUM.md')}")
+print(f"     {os.path.join(RUNS_DIR, 'class_grade_inventory.json')}")
+print(f"     {os.path.join(RUNS_DIR, 'priority_queue_unique_index.json')}")
+print(f"     {os.path.join(RUNS_DIR, 'PRE_LIVE_INTEGRITY_ADDENDUM.md')}")
 
 print("\n" + "=" * 70)
 print("  PRE-LIVE INTEGRITY PATCH COMPLETE")

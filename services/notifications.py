@@ -3,7 +3,7 @@
 Notification service for FORMYLA.
 Sends messages via Telegram bot and email (Resend).
 
-Email delivery went through several providers (Gmail → Yandex → Resend).
+Email delivery went through several providers (Gmail -> Yandex -> Resend).
 The current implementation prefers Resend HTTP API (see utils/mail.py)
 because Gmail App Passwords got revoked (SMTPAuthenticationError 535)
 and SMTP_SSL on port 465 hits a Python 3.13+ Windows bug.

@@ -4,7 +4,7 @@ validators.py — Валидация для pipeline «Задачи дня».
 
 1. LaTeX-валидация (строгая: только \(…\) / \[…\], без $…$)
 2. JSON Schema-валидация вывода каждого LLM-шага
-3. Кросс-валидация spec ↔ task ↔ audit
+3. Кросс-валидация spec <-> task <-> audit
 4. Извлечение JSON из сырого ответа LLM
 """
 
@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 _DEPRECATED_DOLLAR_RE = re.compile(r"(?<!\\)\${1,2}(.+?)(?<!\\)\${1,2}")
 _BROKEN_COMMANDS_RE = re.compile(
     r"\\(?:"  # literal backslash
-    r"frrac|Frrac|"  # \frrac → typo of \frac
-    r"sqr|Sqr|"  # \sqr → typo of \sqrt
-    r"devide|Devide|"  # \devide → typo of \divide
+    r"frrac|Frrac|"  # \frrac -> typo of \frac
+    r"sqr|Sqr|"  # \sqr -> typo of \sqrt
+    r"devide|Devide|"  # \devide -> typo of \divide
     r"div|Div"  # \div in text (should not appear in Russian text)
     r")",
     re.IGNORECASE,
@@ -36,7 +36,7 @@ _BARE_FRAC_RE = re.compile(
     r"\\frac(?![{])"  # \frac not followed by {
 )
 _BARE_POWER_RE = re.compile(
-    r"(?<=[\d)])\^(?![{])"  # 2^3 → should be 2^{3}
+    r"(?<=[\d)])\^(?![{])"  # 2^3 -> should be 2^{3}
 )
 _UNBALANCED_BRACE_RE = re.compile(
     r"[{}]"  # count braces
@@ -197,31 +197,31 @@ def validate_daily_task_latex(text: str) -> LatexValidationReport:
 
 
 def auto_fix_latex(text: str) -> str:
-    """Авто-фикс LaTeX для daily_tasks: $ → \(, $$ → \[ и т.д.
+    """Авто-фикс LaTeX для daily_tasks: $ -> \(, $$ -> \[ и т.д.
 
     Применяет те же исправления, что и services.task_validator.fix_latex,
     но с дополнительным акцентом на strict-режим.
     """
-    # 1. $$ … $$ → \[ … \]
+    # 1. $$ … $$ -> \[ … \]
     text = re.sub(r"\$\$(.+?)\$\$", r"\\[\1\\]", text, flags=re.DOTALL)
-    # 2. $ … $ → \( … \)
+    # 2. $ … $ -> \( … \)
     text = re.sub(r"(?<!\\)\$(.+?)(?<!\\)\$", r"\\(\1\\)", text, flags=re.DOTALL)
 
-    # 3. Двойной обратный слеш → одинарный (но не рушим \\\()
+    # 3. Двойной обратный слеш -> одинарный (но не рушим \\\()
     text = re.sub(r"\\\\\\\\", r"\\\\", text)
     text = re.sub(r"(?<!\\\\)\\\\\\(?!\()", r"\\", text)
 
-    # 4. \frrac → \frac
+    # 4. \frrac -> \frac
     text = re.sub(r"\\frrac", r"\\frac", text, flags=re.IGNORECASE)
     text = re.sub(r"\\sqr(?!t)", r"\\sqrt", text, flags=re.IGNORECASE)
 
-    # 5. Буквенные степени → ^{...}
+    # 5. Буквенные степени -> ^{...}
     text = re.sub(r"\^([a-zA-Zа-яА-Я])", r"^{\1}", text)
 
-    # 6. \frac12 → \frac{1}{2}
+    # 6. \frac12 -> \frac{1}{2}
     text = re.sub(r"\\frac(\d)(\d)", r"\\frac{\1}{\2}", text)
 
-    # 7. Unicode math → LaTeX (основные символы)
+    # 7. Unicode math -> LaTeX (основные символы)
     _UNICODE_MATH_MAP = {
         "√": r"\sqrt",
         "≥": r"\geq",
@@ -244,10 +244,10 @@ def auto_fix_latex(text: str) -> str:
         "∑": r"\sum",
         "∏": r"\prod",
         "∫": r"\int",
-        "→": r"\rightarrow",
-        "←": r"\leftarrow",
-        "⇒": r"\Rightarrow",
-        "⇔": r"\Leftrightarrow",
+        "\u2192": r"\rightarrow",
+        "\u2190": r"\leftarrow",
+        "\u21d2": r"\Rightarrow",
+        "\u21d4": r"\Leftrightarrow",
         "∈": r"\in",
         "∉": r"\notin",
         "⊂": r"\subset",
@@ -1013,7 +1013,7 @@ def validate_opus_fix(raw_response: str) -> OpusFixValidation:
 
 @dataclass
 class CrossValidationResult:
-    """Результат кросс-валидации spec ↔ task ↔ audit."""
+    """Результат кросс-валидации spec <-> task <-> audit."""
 
     valid: bool
     errors: List[str] = field(default_factory=list)
@@ -1117,14 +1117,14 @@ def cross_validate_all(
     """
     result = CrossValidationResult(valid=True)
 
-    # 1. Specs ↔ Tasks
+    # 1. Specs <-> Tasks
     st = cross_validate_specs_and_tasks(specs, tasks)
     result.errors.extend(st.errors)
     result.warnings.extend(st.warnings)
     if not st.valid:
         result.valid = False
 
-    # 2. Audit ↔ Specs (пропускаем, если аудит не проводился)
+    # 2. Audit <-> Specs (пропускаем, если аудит не проводился)
     if audit_entries is not None:
         audit_check = cross_validate_audit_with_specs(audit_entries, specs)
         result.errors.extend(audit_check.errors)

@@ -64,7 +64,7 @@ async function setNickname() {
     const statusDiv = document.getElementById('nickname-status');
     
     if (!nickname) {
-        statusDiv.innerHTML = '<span style="color: #ff4444;">❌ Никнейм не может быть пустым</span>';
+        statusDiv.innerHTML = '<span style="color: #ff4444;">[ERROR] Никнейм не может быть пустым</span>';
         return;
     }
     
@@ -78,12 +78,12 @@ async function setNickname() {
         const data = await response.json();
         
         if (data.success) {
-            statusDiv.innerHTML = '<span style="color: #00ff88;">✓ Никнейм сохранен!</span>';
+            statusDiv.innerHTML = '<span style="color: #00ff88;">[OK] Никнейм сохранен!</span>';
         } else {
-            statusDiv.innerHTML = `<span style="color: #ff4444;">❌ ${data.error}</span>`;
+            statusDiv.innerHTML = `<span style="color: #ff4444;">[ERROR] ${data.error}</span>`;
         }
     } catch (error) {
-        statusDiv.innerHTML = '<span style="color: #ff4444;">❌ Ошибка сети</span>';
+        statusDiv.innerHTML = '<span style="color: #ff4444;">[ERROR] Ошибка сети</span>';
     }
 }
 
@@ -138,12 +138,12 @@ async function sendFriendRequest(userId) {
         const data = await response.json();
         
         if (data.success) {
-            alert('✓ Заявка в друзья отправлена!');
+            alert('[OK] Заявка в друзья отправлена!');
         } else {
-            alert('❌ ' + data.error);
+            alert('[ERROR] ' + data.error);
         }
     } catch (error) {
-        alert('❌ Ошибка сети');
+        alert('[ERROR] Ошибка сети');
     }
 }
 
@@ -159,12 +159,12 @@ async function sendMentorshipRequest(studentId) {
         const data = await response.json();
         
         if (data.success) {
-            alert('✓ Заявка отправлена!');
+            alert('[OK] Заявка отправлена!');
         } else {
-            alert('❌ ' + data.error);
+            alert('[ERROR] ' + data.error);
         }
     } catch (error) {
-        alert('❌ Ошибка сети');
+        alert('[ERROR] Ошибка сети');
     }
 }
 

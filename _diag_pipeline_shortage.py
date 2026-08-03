@@ -14,7 +14,7 @@ with open(os.path.join(RUN_DIR, "shortage_report.json"), "r", encoding="utf-8") 
     shortage = json.load(f)
 print(json.dumps(shortage, indent=2, ensure_ascii=False))
 
-# ── 2. Load curated bank → find class 8 L3 tasks ──
+# ── 2. Load curated bank -> find class 8 L3 tasks ──
 print("\n" + "=" * 70)
 print("STEP 1b: SELECTED TASKS IN SHORTAGE CELL (class=8, target_level=L3)")
 print("=" * 70)
@@ -41,7 +41,7 @@ for i, t in enumerate(cell_tasks, 1):
     print(f"  [{i:2d}] ID={oid} source={src} rank={rank} score={score} decision={decision}")
     print(f"        topic={topic} subtopic={subtopic}")
 
-# ── 3. Load reserve → find class 8 L3 candidates ──
+# ── 3. Load reserve -> find class 8 L3 candidates ──
 print("\n" + "=" * 70)
 print("STEP 2: RESERVE CANDIDATES IN SHORTAGE CELL (class=8, target_level=L3)")
 print("=" * 70)

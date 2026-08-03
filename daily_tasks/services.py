@@ -88,7 +88,7 @@ def _get_item_figure_url(item) -> Optional[str]:
 # ──────────────────────────────────────────────────────────────────────
 # Render работает в UTC. Если использовать today_in_user_tz() напрямую, то в
 # 21:00-23:59 МСК пользователь видит «сет на завтра», но БД содержит сет
-# на «сегодня UTC» = вчера МСК → 404 «no_set» и фейковая ошибка генерации.
+# на «сегодня UTC» = вчера МСК -> 404 «no_set» и фейковая ошибка генерации.
 # Решение: единая утилита, считающая дату по МСК для всех мест, где сет
 # создаётся / ищется по target_date.
 
@@ -99,7 +99,7 @@ DAILY_TASKS_TZ = timezone(timedelta(hours=3))  # МСК = UTC+3
 # ──────────────────────────────────────────────────────────────────────
 # Нормальная генерация занимает ~60-120 секунд (3 AI-шага + аудит + фикс-луп).
 # Если фоновый поток умер (gunicorn worker restart, OOM, deploy, SIGKILL),
-# job/sеt застывает в `running`/`generating` навсегда → UI бесконечно крутит
+# job/sеt застывает в `running`/`generating` навсегда -> UI бесконечно крутит
 # таймер «прошло X:XX», а guard в enqueue_daily_generation() видит
 # существующий generating-сет и НЕ запускает новую генерацию.
 #
@@ -176,7 +176,7 @@ def _reap_stale_jobs(user_id: Optional[int] = None) -> int:
                 if related_set and related_set.status == "generating":
                     related_set.status = "failed"
                     related_set.reason_summary = (
-                        "❌ Генерация прервана — попробуйте ещё раз"
+                        "[ERROR] Генерация прервана — попробуйте ещё раз"
                     )
                     related_set.generated_at = datetime.utcnow()
             reaped += 1
@@ -439,7 +439,7 @@ def enqueue_daily_generation(
             db.session.commit()
 
             logger.info(
-                "Cache HIT для user=%d key=%s pool=%d → сет #%d (%d задач)",
+                "Cache HIT для user=%d key=%s pool=%d -> сет #%d (%d задач)",
                 user_id, cache_key[:12], pool.id, daily_set.id, count,
             )
 
@@ -803,7 +803,7 @@ def compute_cache_key(profile: Dict[str, Any], thematic: bool = False) -> str:
 
     Ученики с одинаковым (class_level, набор тем, class_expected_level,
     набор калибровочных тем дня, profile_completeness) получают
-    одинаковый cache_key → один пул задач без повторного AI.
+    одинаковый cache_key -> один пул задач без повторного AI.
 
     PR percent_to_level + calibration:
     * добавлены ``profile_completeness`` и ``calibration_topics`` —
@@ -1061,7 +1061,7 @@ async def _try_bank_first_impl(
     bank_tasks = tb.get_tasks(grade=grade, level=bank_level, day=day_num)
     if bank_tasks is None:
         logger.info(
-            "[user=%d] Банк: MISS для grade=%d level=%d day=%d → запускаю LLM",
+            "[user=%d] Банк: MISS для grade=%d level=%d day=%d -> запускаю LLM",
             user_id, grade, bank_level, day_num,
         )
         return False
@@ -1198,7 +1198,7 @@ async def _run_pipeline_async(
                 profile["strong_topics"] = []
                 profile["calibration_topics"] = []
                 logger.info(
-                    "[user=%d] forced_topic=%r → %d тем(ы) из каталога",
+                    "[user=%d] forced_topic=%r -> %d тем(ы) из каталога",
                     user_id, forced_topic, len(matched),
                 )
             else:
@@ -1405,7 +1405,7 @@ def _persist_pipeline_result(
         # Сохраняем реальную причину для UI: она видна и в шапке сета,
         # и в DailyGenerationJob.error_message (через _fail_job).
         err = result.error or "Неизвестная ошибка генерации"
-        daily_set.reason_summary = f"❌ {err[:400]}"
+        daily_set.reason_summary = f"[ERROR] {err[:400]}"
     else:
         daily_set.reason_summary = _build_reason_summary(result, profile)
 
@@ -1424,7 +1424,7 @@ def _persist_pipeline_result(
     )
 
     # ── PER-TOPIC DIFFICULTY MATCHING: лог-сводка соответствия ────────
-    # Печатаем «тема → window vs реальные уровни задач», чтобы было
+    # Печатаем «тема -> window vs реальные уровни задач», чтобы было
     # видно, что 1/8 алгебра дала задачи L1-L3, а 8/8 геометрия — L7-L8.
     try:
         _log_topic_difficulty_match(profile, result)
@@ -1614,7 +1614,7 @@ def _mark_set_failed(daily_set_id: int, reason: str) -> None:
         if not s:
             return
         s.status = "failed"
-        s.reason_summary = f"❌ {reason[:400]}"
+        s.reason_summary = f"[ERROR] {reason[:400]}"
         s.generated_at = datetime.utcnow()
         db.session.commit()
         logger.warning("DailyTaskSet #%s marked failed: %s", daily_set_id, reason)
@@ -1703,11 +1703,11 @@ def _log_topic_difficulty_match(
     profile: Dict[str, Any],
     result: "PipelineResult",
 ) -> None:
-    """Печать сводки «тема → запланированное окно vs реальные уровни задач».
+    """Печать сводки «тема -> запланированное окно vs реальные уровни задач».
 
     PR per-topic difficulty matching: критерий готовности по ТЗ — на
     тестовом профиле «алгебра 1/8, геометрия 8/8» в логах виден чистый
-    матчинг topic→difficulty. Эта функция выводит ровно такой блок.
+    матчинг topic->difficulty. Эта функция выводит ровно такой блок.
     """
     # Собираем target_level/level_window per topic из профиля
     topic_meta: Dict[str, Dict[str, Any]] = {}
@@ -1752,7 +1752,7 @@ def _log_topic_difficulty_match(
             score = f"{meta.get('test_correct')}/{meta.get('test_total')}"
         cal = " (CAL)" if meta.get("calibration") else ""
         logger.info(
-            "  %s%s — тест %s, target=L%s, окно %s → задачи: %s",
+            "  %s%s — тест %s, target=L%s, окно %s -> задачи: %s",
             topic, cal, score,
             meta.get("target_level"), meta.get("level_window"),
             levels,
@@ -1770,8 +1770,8 @@ def _parse_json_field(value: Any, fallback: Any = None) -> Any:
     """Безопасно распарсить JSON-поле из БД.
 
     Поддерживает оба диалекта:
-    - SQLite: хранит JSON как TEXT → парсим через json.loads()
-    - PostgreSQL: JSON-колонки возвращают уже разобранный list/dict → возвращаем как есть
+    - SQLite: хранит JSON как TEXT -> парсим через json.loads()
+    - PostgreSQL: JSON-колонки возвращают уже разобранный list/dict -> возвращаем как есть
     """
     if value is None:
         return fallback
@@ -1808,8 +1808,8 @@ def trigger_daily_prewarm(user_id: int) -> Dict[str, Any]:
     Атомарно создаёт запись в ``task_pool`` со статусом ``'generating'``.
     Если такой ключ уже есть — проверяет статус:
 
-    * ``generating`` → ``already_running``
-    * ``ready`` / ``partial`` → ``cache_hit``
+    * ``generating`` -> ``already_running``
+    * ``ready`` / ``partial`` -> ``cache_hit``
 
     Возвращает словарь с ``status``, ``pool_id``, ``message``.
     """
@@ -2251,7 +2251,7 @@ def _cascade_fill_thematic_set(
     # ── загружаем все задачи из пула ────────────────────────────────
     pool_tasks = _parse_json_field(pool.tasks, [])
 
-    # ── собираем все assignment'ы пользователя → set seen tasks ─────
+    # ── собираем все assignment'ы пользователя -> set seen tasks ─────
     assignments = UserTaskAssignment.query.filter(
         UserTaskAssignment.user_id == user_id,
     ).all()

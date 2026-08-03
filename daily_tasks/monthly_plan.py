@@ -75,7 +75,7 @@ def build_monthly_plan(grade: int, anchor: Optional[date] = None, subtopics: Opt
     if anchor is None:
         anchor = date.today()
     if subtopics is not None:
-        # Интеллектуальный подбор: куратор выбрал 7 слабых подтем → один месяц
+        # Интеллектуальный подбор: куратор выбрал 7 слабых подтем -> один месяц
         months: List[Dict[str, Any]] = [{
             "index": 1,
             "subtopics": subtopics,

@@ -8,7 +8,7 @@ JWT access tokens that the browser uses to connect to a LiveKit server
 (self-hosted or LiveKit Cloud).  All audio/video traffic flows between the
 browser and the LiveKit SFU directly — our Flask app is never on that path.
 
-ENV variables (Render → Environment)
+ENV variables (Render -> Environment)
 ------------------------------------
     LIVEKIT_URL         e.g. "wss://your-project.livekit.cloud"
     LIVEKIT_API_KEY     e.g. "APIabc123..."
@@ -68,7 +68,7 @@ TOKEN_TTL_SECONDS = 60 * 60
 # we just refuse to mint more tokens once the limit is reached.
 MAX_PARTICIPANTS_PER_ROOM = 10
 
-# In-memory bookkeeping: room_id → set(identities).  Resets on process
+# In-memory bookkeeping: room_id -> set(identities).  Resets on process
 # restart;  that is fine — the real source of truth is the LiveKit server,
 # and we only use this to enforce the 10-person cap on our side.
 _ROOM_COUNTS: dict[str, set[str]] = {}

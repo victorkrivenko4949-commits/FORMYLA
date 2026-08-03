@@ -103,7 +103,7 @@ def test_full_onboarding(target_key, deadline_val, label):
             for a in anchors:
                 print(f"   │ {anchors.index(a)+1:>3} │ {a.get('section','?'):<16} │ {a.get('level','?'):>5} │ {str(a.get('correct')):>7} │")
             print(f"   └─────┴──────────────────┴───────┴─────────┘")
-            print(f"   Unique sections: {len(sections_seen)} — {'✓ 3 РАЗНЫХ' if len(sections_seen) >= 3 else '✗ < 3!'}")
+            print(f"   Unique sections: {len(sections_seen)} — {'[OK] 3 РАЗНЫХ' if len(sections_seen) >= 3 else ' < 3!'}")
 
             # DB state
             from models_curator import CuratorState

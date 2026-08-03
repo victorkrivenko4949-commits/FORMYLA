@@ -89,7 +89,7 @@ function populateStages() {
             <div class="wiz-stage-radio"></div>
             <div>
                 <div class="wiz-stage-name">${name}</div>
-                ${dateRange ? `<div class="wiz-stage-date">📅 ${dateRange}</div>` : ''}
+                ${dateRange ? `<div class="wiz-stage-date"> ${dateRange}</div>` : ''}
             </div>
         `;
         container.appendChild(div);

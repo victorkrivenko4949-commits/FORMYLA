@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────────────────
 _DATA_DIR: Path = Path(__file__).resolve().parent / "data" / "task_bank"
 
-# Имена файлов по классам (grade → filename)
+# Имена файлов по классам (grade -> filename)
 _GRADE_FILES: Dict[int, str] = {
     5: "formyla_grade5.json",
     6: "formyla_grade6.json",
@@ -41,7 +41,7 @@ _GRADE_FILES: Dict[int, str] = {
     11: "formyla_grade11.json",
 }
 
-# In-memory cache: grade → List[probe_dict]
+# In-memory cache: grade -> List[probe_dict]
 _bank_cache: Dict[int, List[Dict[str, Any]]] = {}
 
 # Валидные уровни в банке (каноническая шкала 1..5)

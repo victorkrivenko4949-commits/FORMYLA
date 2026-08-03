@@ -31,7 +31,7 @@ def sample_rewritten_s4():
             "Для положительных чисел x, y, z с суммой 2 докажите, "
             "что √(x/(y+z)) + √(y/(x+z)) + √(z/(x+y)) ≥ 3/√2."
         ),
-        changes=["a→x", "1→2", "доб знаменатель"],
+        changes=["a->x", "1->2", "доб знаменатель"],
         method_preserved="Коши",
         difficulty_same=True,
     )
@@ -75,7 +75,7 @@ class TestStage4Latex:
         assert result.processed_text
 
     def test_unpaired_dollars_rejected(self, mock_gemini, sample_rewritten_s4):
-        """Непарное количество $ → отклонение."""
+        """Непарное количество $ -> отклонение."""
         mock_gemini.generate.return_value = json.dumps({
             "processed_text": (
                 "Для $x$ и $y$ и $z с суммой два докажите "
@@ -89,7 +89,7 @@ class TestStage4Latex:
             s4.process(sample_rewritten_s4)
 
     def test_triple_dollar_rejected(self, mock_gemini, sample_rewritten_s4):
-        """$$$ в тексте → отклонение (склейка inline + display)."""
+        """$$$ в тексте -> отклонение (склейка inline + display)."""
         mock_gemini.generate.return_value = _good_response(
             processed_text=(
                 "Условие $$$x$$$ формула длиной больше "
@@ -101,7 +101,7 @@ class TestStage4Latex:
             s4.process(sample_rewritten_s4)
 
     def test_short_text_rejected(self, mock_gemini, sample_rewritten_s4):
-        """Слишком короткий текст → отклонение."""
+        """Слишком короткий текст -> отклонение."""
         mock_gemini.generate.return_value = _good_response(
             processed_text="Коротко."
         )
@@ -110,7 +110,7 @@ class TestStage4Latex:
             s4.process(sample_rewritten_s4)
 
     def test_invalid_json_retries(self, mock_gemini, sample_rewritten_s4):
-        """Невалидный JSON → retry → на 3-й попытке успех."""
+        """Невалидный JSON -> retry -> на 3-й попытке успех."""
         mock_gemini.generate.side_effect = [
             "не json",
             "{broken",
@@ -122,7 +122,7 @@ class TestStage4Latex:
         assert mock_gemini.generate.call_count == 3
 
     def test_retries_exhausted(self, mock_gemini, sample_rewritten_s4):
-        """Все 3 попытки провалились → Stage4Error."""
+        """Все 3 попытки провалились -> Stage4Error."""
         mock_gemini.generate.return_value = "не json"
         s4 = Stage4Latex(mock_gemini)
         with pytest.raises(Stage4Error):
@@ -130,7 +130,7 @@ class TestStage4Latex:
         assert mock_gemini.generate.call_count == 3
 
     def test_missing_processed_text_field(self, mock_gemini, sample_rewritten_s4):
-        """Отсутствие поля processed_text → ошибка."""
+        """Отсутствие поля processed_text -> ошибка."""
         mock_gemini.generate.return_value = json.dumps({
             "formulas_count": 3,
             "notes": "",
@@ -155,7 +155,7 @@ class TestStage4Latex:
         assert "старый ответ" in prompt_text
 
     def test_empty_previous_errors_no_block(self, mock_gemini, sample_rewritten_s4):
-        """Без ошибок → блок ПРЕДЫДУЩАЯ ПОПЫТКА не появляется."""
+        """Без ошибок -> блок ПРЕДЫДУЩАЯ ПОПЫТКА не появляется."""
         mock_gemini.generate.return_value = _good_response()
         s4 = Stage4Latex(mock_gemini)
         s4.process(sample_rewritten_s4)
@@ -163,7 +163,7 @@ class TestStage4Latex:
         assert "ПРЕДЫДУЩАЯ ПОПЫТКА ОТКЛОНЕНА" not in prompt_text
 
     def test_temperature_increases(self, mock_gemini, sample_rewritten_s4):
-        """Температура растёт с каждой попыткой: 0.2 → 0.3 → 0.4."""
+        """Температура растёт с каждой попыткой: 0.2 -> 0.3 -> 0.4."""
         mock_gemini.generate.side_effect = [
             "bad json 1",
             "bad json 2",

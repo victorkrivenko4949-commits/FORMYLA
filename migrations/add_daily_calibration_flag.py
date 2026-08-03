@@ -81,7 +81,7 @@ def run() -> None:
     from models import db  # type: ignore
     with app.app_context():
         _ensure_calibration_column(db)
-        print("✅ Migration done: daily_task_items.is_calibration ensured")
+        print("[OK] Migration done: daily_task_items.is_calibration ensured")
 
 
 if __name__ == "__main__":

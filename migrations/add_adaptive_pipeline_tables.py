@@ -103,9 +103,9 @@ def run_migration() -> bool:
         for expected in ("task_generation_log", "manual_review_queue", "cost_log"):
             if expected in tables:
                 cols = [c["name"] for c in inspector.get_columns(expected)]
-                print(f"✅ {expected}: {len(cols)} колонок")
+                print(f"[OK] {expected}: {len(cols)} колонок")
             else:
-                print(f"❌ {expected} НЕ создана!")
+                print(f"[ERROR] {expected} НЕ создана!")
                 ok = False
 
         return ok
@@ -117,8 +117,8 @@ if __name__ == "__main__":
     print("=" * 70)
     success = run_migration()
     if success:
-        print("\n🎉 Миграция завершена успешно!")
+        print("\n Миграция завершена успешно!")
         sys.exit(0)
     else:
-        print("\n❌ Миграция завершилась с ошибками")
+        print("\n[ERROR] Миграция завершилась с ошибками")
         sys.exit(1)

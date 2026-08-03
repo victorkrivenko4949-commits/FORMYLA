@@ -108,7 +108,7 @@ with app.test_client() as client:
     )
     data = json.loads(resp.data.decode('utf-8'))
     next_qid = data.get('question', {}).get('id', '')
-    check("1.3 Q2(target)→Q3(olymp_reach)", not data.get('done'), f"next_qid={next_qid}")
+    check("1.3 Q2(target)->Q3(olymp_reach)", not data.get('done'), f"next_qid={next_qid}")
 
     # 1c. olymp_reach = muni
     resp = client.post(
@@ -118,7 +118,7 @@ with app.test_client() as client:
     )
     data = json.loads(resp.data.decode('utf-8'))
     next_qid = data.get('question', {}).get('id', '')
-    check("1.4 Q3→Q4(load)", not data.get('done'), f"next_qid={next_qid}")
+    check("1.4 Q3->Q4(load)", not data.get('done'), f"next_qid={next_qid}")
 
     # 1d. load = m30
     resp = client.post(
@@ -128,7 +128,7 @@ with app.test_client() as client:
     )
     data = json.loads(resp.data.decode('utf-8'))
     next_qid = data.get('question', {}).get('id', '')
-    check("1.5 Q4→Q5(deadline)", not data.get('done'), f"next_qid={next_qid}")
+    check("1.5 Q4->Q5(deadline)", not data.get('done'), f"next_qid={next_qid}")
 
     # 1e. deadline = none
     resp = client.post(
@@ -140,7 +140,7 @@ with app.test_client() as client:
     anchor = data.get('anchor')
     step = data.get('step')
 
-    check("1.6 Q5 → first anchor", anchor is not None or data.get('anchors_unavailable'),
+    check("1.6 Q5 -> first anchor", anchor is not None or data.get('anchors_unavailable'),
           f"step={step} anchor={'yes' if anchor else 'no'} anchors_unavailable={data.get('anchors_unavailable')}")
 
     # 1f. Answer 3 anchors (or skip if unavailable)
@@ -383,8 +383,8 @@ with app.test_client() as client:
         print("  Тестовый ученик удалён.")
 
     if FAIL > 0:
-        print(f"\n  ⚠️  {FAIL} проверок провалено!")
+        print(f"\n  [!]️  {FAIL} проверок провалено!")
         sys.exit(1)
     else:
-        print(f"\n  ✅ Все {PASS} проверок пройдены!")
+        print(f"\n  [OK] Все {PASS} проверок пройдены!")
         sys.exit(0)

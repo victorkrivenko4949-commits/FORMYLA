@@ -50,9 +50,9 @@ def _fix_invalid_escapes(text: str) -> str:
     
     The API often returns doubled backslashes before LaTeX commands,
     e.g. \\\\leq (two backslashes). Single pass only removes one:
-    \\\\leq → \\leq (still has \\l which is invalid JSON).
+    \\\\leq -> \\leq (still has \\l which is invalid JSON).
     Iterating until stable handles this correctly:
-    \\\\leq → \\leq → leq
+    \\\\leq -> \\leq -> leq
     """
     replacements = {
         '\\(': '(', '\\)': ')', '\\[': '[', '\\]': ']',
@@ -90,7 +90,7 @@ def safe_parse_single_object(text: str) -> Optional[dict]:
     # Find outermost { ... } with brace-depth tracking
     # CRITICAL: Do this BEFORE _fix_invalid_escapes, because the model
     # outputs \{ and \} (LaTeX set notation) inside JSON string values.
-    # After _fix_invalid_escapes converts \{ → {, these would corrupt
+    # After _fix_invalid_escapes converts \{ -> {, these would corrupt
     # brace-depth tracking and JSON parsing.
     brace_depth = 0
     obj_start = -1
@@ -198,7 +198,7 @@ def main():
     logger.info(f"Found {len(cells)} L2 cells with holes, need {total_needed} tasks total")
 
     if not cells:
-        logger.info("All L2 cells are full! ✓")
+        logger.info("All L2 cells are full! [OK]")
         return
 
     for c in cells:
@@ -250,7 +250,7 @@ def main():
                         tasks_for_cell += 1
                         total_generated += 1
                         success = True
-                        logger.info(f"    ✓ Generated task {task_idx+1} (attempt {attempt+1})")
+                        logger.info(f"    [OK] Generated task {task_idx+1} (attempt {attempt+1})")
                         break
                     else:
                         # Log raw output for debugging
@@ -261,7 +261,7 @@ def main():
                     logger.error(f"    Attempt {attempt+1}: {e}")
 
             if not success:
-                logger.error(f"    ✗ Failed to generate task {task_idx+1} after {MAX_ATTEMPTS_PER_TASK} attempts")
+                logger.error(f"     Failed to generate task {task_idx+1} after {MAX_ATTEMPTS_PER_TASK} attempts")
 
     # Summary
     logger.info(f"\n{'='*60}")
@@ -312,11 +312,11 @@ def main():
         
         remaining = {k: v for k, v in cells_after.items() if len(v) < TARGET}
         if remaining:
-            logger.info(f"\n⚠️  {len(remaining)} L2 cells STILL with holes:")
+            logger.info(f"\n[!]️  {len(remaining)} L2 cells STILL with holes:")
             for (g, tp), ts in sorted(remaining.items()):
                 logger.info(f"  L2|g{g}|{tp} — {len(ts)}/{TARGET} (need {TARGET-len(ts)})")
         else:
-            logger.info(f"\n✅ ALL L2 CELLS FILLED! ({len(l2_after)}/{len(l2_after)} cells complete)")
+            logger.info(f"\n[OK] ALL L2 CELLS FILLED! ({len(l2_after)}/{len(l2_after)} cells complete)")
     else:
         logger.info("No tasks generated.")
 

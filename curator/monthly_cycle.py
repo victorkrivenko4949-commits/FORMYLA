@@ -154,7 +154,7 @@ def _select_first_cycle_themes(grade: int) -> List[str]:
 
     def t_number(tid):
         try:
-            # G10_T039_S0 → 39
+            # G10_T039_S0 -> 39
             parts = tid.split('_')
             for p in parts:
                 if p.startswith('T') and p[1:].isdigit():
@@ -173,7 +173,7 @@ def _select_first_cycle_themes(grade: int) -> List[str]:
         sec_themes.sort(key=t_number)
         selected.append(sec_themes[0])
 
-    # Step 2: extras with section diversity (no mu data → alternating)
+    # Step 2: extras with section diversity (no mu data -> alternating)
     _section_aware_extras(all_grade_themes, selected, grade,
                           CANONICAL_SECTIONS, section_mus=None)
 
@@ -474,7 +474,7 @@ def advance_day(user_id: int) -> Dict[str, Any]:
 
     # DO NOT advance day_index — stay on current day.
     # When the student visits /daily_tasks, get_cycle_info will see
-    # current_theme in done_themes → blocked=False → tasks are shown.
+    # current_theme in done_themes -> blocked=False -> tasks are shown.
     # Day index only advances when get_cycle_info is called on a
     # calendar day where the student already finished the previous probe.
 

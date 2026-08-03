@@ -1,4 +1,4 @@
-"""Phase 4.2 → V2.1 LIVE — Pre-flight verification.
+"""Phase 4.2 -> V2.1 LIVE — Pre-flight verification.
 Before any API call: verify source, manifest, tests, prompts, policies, circuit breaker.
 Writes to _v2_1_preflight_report.txt for reliable reading.
 """

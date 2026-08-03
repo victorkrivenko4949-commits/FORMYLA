@@ -21,7 +21,7 @@ import os
 ANALYZER_MODEL = os.getenv("ANALYZER_MODEL", "anthropic/claude-sonnet-4.5")
 ANALYZER_TEMPERATURE = 0.3
 
-# v2.3: switched from deepseek-chat → claude-opus-4.7 (quality > cost).
+# v2.3: switched from deepseek-chat -> claude-opus-4.7 (quality > cost).
 # Fallback chain on 404/"No endpoints found" (probed and verified 2026-05-06):
 #   primary: claude-opus-4.7  (claude-opus-latest is NOT a valid ID on OpenRouter,
 #                              substituted with claude-opus-4.1 as fallback 1)
@@ -32,7 +32,7 @@ GENERATOR_FALLBACKS = [
 ]
 GENERATOR_TEMPERATURE = 0.8
 
-# Switched from openai/o4-mini → anthropic/claude-sonnet-4.5 (RU IP block 403 on OpenAI).
+# Switched from openai/o4-mini -> anthropic/claude-sonnet-4.5 (RU IP block 403 on OpenAI).
 # v2.3: dual solver — independent verification with majority vote (>= 1 of 2 agreeing).
 # v2.4: triple solver — added deepseek-chat as third independent voice.
 #       Majority logic in solver.py uses MAJORITY_THRESHOLD (>= 2 of 3 agreeing).

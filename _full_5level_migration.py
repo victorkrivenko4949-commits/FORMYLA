@@ -58,35 +58,35 @@ def fix_prep_py():
         txt = f.read()
     changes = 0
 
-    # /8 → /5 (only after letter or })
+    # /8 -> /5 (only after letter or })
     txt, n = re.subn(r'([а-яА-Яa-zA-Z}])/8', r'\1/5', txt)
     changes += n
 
-    # max(1, min(8 → max(1, min(5
+    # max(1, min(8 -> max(1, min(5
     txt, n = re.subn(r'max\(1,\s*min\(8,', 'max(1, min(5,', txt)
     changes += n
 
-    # min(8, → min(5, (but not min(8) alone)
+    # min(8, -> min(5, (but not min(8) alone)
     txt, n = re.subn(r'min\(8,', 'min(5,', txt)
     changes += n
 
-    # от 1 до 8 → от 1 до 5
+    # от 1 до 8 -> от 1 до 5
     txt, n = re.subn(r'от 1 до 8', 'от 1 до 5', txt)
     changes += n
 
-    # ['total']) * 8 → ['total']) * 5
+    # ['total']) * 8 -> ['total']) * 5
     txt, n = re.subn(r"""\['total'\]\) \* 8""", r"""['total']) * 5""", txt)
     changes += n
 
-    # difficulty <= 8 → difficulty <= 5
+    # difficulty <= 8 -> difficulty <= 5
     txt, n = re.subn(r'difficulty <= 8', 'difficulty <= 5', txt)
     changes += n
 
-    # clamped 1..8 → clamped 1..5
+    # clamped 1..8 -> clamped 1..5
     txt, n = re.subn(r'clamped 1\.\.8', 'clamped 1..5', txt)
     changes += n
 
-    # шкала 1..8 → шкала 1..5
+    # шкала 1..8 -> шкала 1..5
     txt, n = re.subn(r'шкала 1\.\.8', 'шкала 1..5', txt)
     changes += n
 
@@ -127,11 +127,11 @@ def fix_onboarding_scenario():
         (
             "if measured_count == 0:\n"
             "            greeting = (\n"
-            "                f'Привет! 👋 Рад знакомству! Ты в {grade} классе, но диагностика ещё не пройдена, '\n"
+            "                f'Привет!  Рад знакомству! Ты в {grade} классе, но диагностика ещё не пройдена, '\n"
             "                f'и все подтемы пока с нуля — это нормально, сейчас начнём.\\n\\n'\n"
-            "                f'🔹 <strong>Я задам тебе несколько вопросов</strong> — '\n"
+            "                f' <strong>Я задам тебе несколько вопросов</strong> — '\n"
             "                f'это поможет определить твой уровень и подобрать подходящие задачи.\\n\\n'\n"
-            "                f'Готов? 😊'\n"
+            "                f'Готов? '\n"
             "            )\n"
             "            return jsonify(\n"
             "                greeting=greeting,\n"
@@ -139,7 +139,7 @@ def fix_onboarding_scenario():
             "                recommended_olympiad=None,\n"
             "                subtopics_to_test=[],\n"
             "                cta_url=None,\n"
-            "                cta_text='📋 Начать анкету',\n"
+            "                cta_text=' Начать анкету',\n"
             "            )",
             "if measured_count == 0:\n"
             "            # Сразу начинаем анкету без приветствия\n"
@@ -163,7 +163,7 @@ def fix_onboarding_scenario():
         if new is None:
             # Regex fallback — находим блок от measured_count == 0 до return jsonify с onboarding_test
             import re as _re
-            pattern = r"if measured_count == 0:.*?scenario='onboarding_test'.*?cta_text='📋 Начать анкету',\s*\)"
+            pattern = r"if measured_count == 0:.*?scenario='onboarding_test'.*?cta_text=' Начать анкету',\s*\)"
             replacement = (
                 "if measured_count == 0:\n"
                 "            # Сразу начинаем анкету без приветствия\n"
@@ -220,8 +220,8 @@ def fix_coach_html():
     old_done = "if (data.start_test) {"
     new_done = (
         "if (data.start_test) {\n"
-        "    showBotMessage('🎯 <strong>Анкета пройдена!</strong>\\n\\nНажми кнопку, чтобы начать тест по темам:');\n"
-        "    addQuickAction('🧪 Начать тест по темам', '/adaptive-test?grade=' + (currentGrade || ''));\n"
+        "    showBotMessage(' <strong>Анкета пройдена!</strong>\\n\\nНажми кнопку, чтобы начать тест по темам:');\n"
+        "    addQuickAction(' Начать тест по темам', '/adaptive-test?grade=' + (currentGrade || ''));\n"
         "    return;\n"
         "}\n"
         "if (data.start_test_old) {"
@@ -290,13 +290,13 @@ def main():
     print('ПОЛНЫЙ ПЕРЕХОД НА 5-УРОВНЕВУЮ СИСТЕМУ')
     print('=' * 60)
 
-    print('\n1. Исправление routes/prep.py (8→5)...')
+    print('\n1. Исправление routes/prep.py (8->5)...')
     fix_prep_py()
 
-    print('\n2. Исправление сценария онбординга (greeting→анкета)...')
+    print('\n2. Исправление сценария онбординга (greeting->анкета)...')
     fix_onboarding_scenario()
 
-    print('\n3. Исправление coach.html (автостарт→кнопка)...')
+    print('\n3. Исправление coach.html (автостарт->кнопка)...')
     fix_coach_html()
 
     print('\n4. Сканирование оставшихся 8-уровневых ссылок...')
@@ -307,11 +307,11 @@ def main():
         print(f'{"="*60}')
         for path, i, line in remaining:
             print(f'  {path}:{i}: {line}')
-        print('\n⚠️ Нужна ручная проверка.')
+        print('\n[!]️ Нужна ручная проверка.')
     else:
-        print('\nЧИСТО! ✅')
+        print('\nЧИСТО! [OK]')
 
-    print('\n✅ ГОТОВО!')
+    print('\n[OK] ГОТОВО!')
     print('   - Все 8-уровневые ссылки заменены на 5-уровневые')
     print('   - Куратор молча начинает анкету (без приветствия)')
     print('   - После анкеты — кнопка «Начать тест по темам»')

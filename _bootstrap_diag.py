@@ -653,7 +653,7 @@ def build_reclassification(rejected, and_gate_report):
                 "reclassification_reason": "All core conditions pass (SOLVER_B not required)",
             }
         elif solver_a_ok and arbiter_ok and topic_ok and level_ok:
-            # SOLVER_A + ARBITER + TOPIC + LEVEL pass → likely a dup false positive or SOLVER_B
+            # SOLVER_A + ARBITER + TOPIC + LEVEL pass -> likely a dup false positive or SOLVER_B
             reclass["retry_candidates"][slot_key] = {
                 **entry,
                 "retry_reason": "SOLVER_A/ARBITER/TOPIC/LEVEL all pass; may be duplicate false positive",

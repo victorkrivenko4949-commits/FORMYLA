@@ -364,12 +364,12 @@ def main():
                 f.write(db_content)
             print(f"  Updated {db_py_path} ({len(db_content)} bytes)", flush=True)
         
-        print("\n✅ Done! Day 2 problems added.", flush=True)
+        print("\n[OK] Done! Day 2 problems added.", flush=True)
         print("\nNext steps:", flush=True)
         print("  1. Verify the data: python _verify_vsosh_days.py", flush=True)
         print("  2. Restart the app to see changes", flush=True)
     else:
-        print("\n❌ No entries modified!", flush=True)
+        print("\n[ERROR] No entries modified!", flush=True)
 
 
 if __name__ == '__main__':

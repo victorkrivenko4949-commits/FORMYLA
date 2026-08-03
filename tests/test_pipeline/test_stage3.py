@@ -30,7 +30,7 @@ def sample_rewritten():
             "Найдите наибольшее m такое что выполняется "
             "неравенство корней от дробей xyz в знаменателях не менее m."
         ),
-        changes=["сумма 1→2", "a→x", "доб xy"],
+        changes=["сумма 1->2", "a->x", "доб xy"],
         method_preserved="Коши",
         difficulty_same=True,
     )
@@ -40,19 +40,19 @@ class TestStage3Uniqueness:
     """Тесты для Stage3Uniqueness."""
 
     def test_no_backend_returns_true(self, sample_rewritten):
-        """Без бэкенда поиска → считаем уникальной."""
+        """Без бэкенда поиска -> считаем уникальной."""
         s3 = Stage3Uniqueness(search_backend=None)
         assert s3.is_unique(sample_rewritten) is True
 
     def test_no_results_is_unique(self, sample_rewritten):
-        """Поиск не нашёл ничего → уникальна."""
+        """Поиск не нашёл ничего -> уникальна."""
         backend = MagicMock()
         backend.search.return_value = []
         s3 = Stage3Uniqueness(backend)
         assert s3.is_unique(sample_rewritten) is True
 
     def test_hit_on_problems_ru_not_unique(self, sample_rewritten):
-        """Совпадение на problems.ru → не уникальна."""
+        """Совпадение на problems.ru -> не уникальна."""
         backend = MagicMock()
         backend.search.return_value = [
             SearchResult(
@@ -65,7 +65,7 @@ class TestStage3Uniqueness:
         assert s3.is_unique(sample_rewritten) is False
 
     def test_hit_on_random_blog_is_unique(self, sample_rewritten):
-        """Совпадение на случайном блоге → уникальна (не олимпиадный архив)."""
+        """Совпадение на случайном блоге -> уникальна (не олимпиадный архив)."""
         backend = MagicMock()
         backend.search.return_value = [
             SearchResult(
@@ -78,7 +78,7 @@ class TestStage3Uniqueness:
         assert s3.is_unique(sample_rewritten) is True
 
     def test_subdomain_of_forbidden_not_unique(self, sample_rewritten):
-        """Поддомен запрещённого домена → не уникальна."""
+        """Поддомен запрещённого домена -> не уникальна."""
         backend = MagicMock()
         backend.search.return_value = [
             SearchResult(
@@ -91,7 +91,7 @@ class TestStage3Uniqueness:
         assert s3.is_unique(sample_rewritten) is False
 
     def test_search_exception_continues(self, sample_rewritten):
-        """Ошибка поиска → пропускаем фразу, продолжаем."""
+        """Ошибка поиска -> пропускаем фразу, продолжаем."""
         backend = MagicMock()
         backend.search.side_effect = [
             Exception("rate limit"),
@@ -113,7 +113,7 @@ class TestStage3Uniqueness:
         assert not phrases[0].lower().startswith("докажите")
 
     def test_extract_phrases_from_short_text_returns_empty(self):
-        """Слишком короткий текст → пустой список фраз."""
+        """Слишком короткий текст -> пустой список фраз."""
         s3 = Stage3Uniqueness()
         phrases = s3._extract_signature_phrases("Найдите x.")
         assert phrases == []
@@ -153,7 +153,7 @@ class TestStage3Uniqueness:
             )
 
     def test_forbidden_domain_www_prefix(self, sample_rewritten):
-        """www.mccme.ru → mccme.ru → запрещённый домен."""
+        """www.mccme.ru -> mccme.ru -> запрещённый домен."""
         backend = MagicMock()
         backend.search.return_value = [
             SearchResult(

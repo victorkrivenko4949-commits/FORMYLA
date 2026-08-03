@@ -373,8 +373,8 @@
       }
       html += '</div>';
       html += '<div class="intake-btn-row">';
-      html += `<button class="intake-btn intake-btn-back" onclick="goBack()">← Назад</button>`;
-      html += `<button class="intake-btn intake-btn-primary" id="intake-submit-btn" onclick="submitMulti()">Далее →</button>`;
+      html += `<button class="intake-btn intake-btn-back" onclick="goBack()"><- Назад</button>`;
+      html += `<button class="intake-btn intake-btn-primary" id="intake-submit-btn" onclick="submitMulti()">Далее -></button>`;
       html += '</div>';
     } else {
       html += '<div class="intake-options">';
@@ -384,7 +384,7 @@
       html += '</div>';
       if (qIndex > 1) {
         html += '<div class="intake-btn-row">';
-        html += `<button class="intake-btn intake-btn-back" onclick="goBack()">← Назад</button>`;
+        html += `<button class="intake-btn intake-btn-back" onclick="goBack()"><- Назад</button>`;
         html += '</div>';
       }
     }
@@ -423,7 +423,7 @@
         <p>Якоря: ${correct} из 5 верно. Уровень: ${result.prior_mu}</p>
         <p>Дневная норма: ${result.daily_tasks} задач</p>
         ${result.goal_auto ? '<p style="color:var(--warn);">Цель назначена автоматически</p>' : ''}
-        <a href="/daily_tasks" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;margin-top:8px;">К задачам дня →</a>
+        <a href="/daily_tasks" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;margin-top:8px;">К задачам дня -></a>
       </div>
     `;
     document.getElementById('intake-card').innerHTML = html;

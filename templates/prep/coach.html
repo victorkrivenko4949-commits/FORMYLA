@@ -173,11 +173,11 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 
 {% block content %}
 <div class="coach-wrap">
-<h1>🎓 Куратор подготовки</h1>
+<h1> Куратор подготовки</h1>
 <p style="color:rgba(255,255,255,0.6);">
   Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.
   {% if user and user.preferred_grade %}
-  <br><span style="color:#38ef7d;">📚 Класс: {{ user.preferred_grade }}</span>
+  <br><span style="color:#38ef7d;"> Класс: {{ user.preferred_grade }}</span>
   {% if level_label %}
   &nbsp;&nbsp;<span style="color:#f59e0b;">⭐ {{ level_label }}</span>
   {% endif %}
@@ -186,7 +186,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 
 <!-- ═══ MAIN ACTION BLOCK ═══ -->
 <div id="mainActionBlock" style="display:none; background: linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.20)); border: 1px solid rgba(139,92,246,0.5); border-radius: 16px; padding: 20px 24px; margin-bottom: 20px; text-align: center;">
-  <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">🎯 Куратор говорит</div>
+  <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;"> Куратор говорит</div>
   <div id="mainActionTitle" style="font-size:20px; font-weight:700; color:#fff; margin-bottom:10px;"></div>
   <div id="mainActionReason" style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:16px; line-height:1.5;"></div>
   <a id="mainActionCta" href="#" class="quick-action-btn" style="display:inline-block; padding:12px 28px; font-size:15px; text-decoration:none;">Действие</a>
@@ -195,7 +195,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 <!-- ═══ CYCLE BLOCK ═══ -->
 {% if cycle_info and cycle_info.active and onboarding_done %}
 <div id="cycleBlock" class="coach-card" style="margin-bottom:20px;">
-  <h2>🔄 Цикл месяца</h2>
+  <h2> Цикл месяца</h2>
   <div style="margin-bottom:12px; font-size:14px; color:rgba(255,255,255,0.65);">
     Замерено {{ cycle_measured_count }} из {{ cycle_total }}
     <span style="margin-left:12px; color:#38ef7d;">▰</span>
@@ -220,7 +220,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 {% if not onboarding_done %}
 <div style="text-align:center; margin: 40px 0;">
   <p style="color:rgba(255,255,255,0.7); font-size:16px; margin-bottom:20px;">
-    🎯 Чтобы начать подготовку, заполни анкету — она займёт 2 минуты.
+     Чтобы начать подготовку, заполни анкету — она займёт 2 минуты.
   </p>
   <a href="/prep/onboarding" class="quick-action-btn" style="display:inline-block; padding:14px 36px; font-size:16px; text-decoration:none; background:linear-gradient(135deg,#6366f1,#8b5cf6);">
     Пройти анкету
@@ -231,7 +231,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 <!-- ═══ CURATOR FACTS CARD ═══ -->
 {% if curator_card and onboarding_done %}
 <div class="coach-card" id="curatorFactsCard" style="margin-bottom:20px; border-color: rgba(99,102,241,0.4);">
-  <h2 style="color:#a5b4fc;">📊 Сводка куратора</h2>
+  <h2 style="color:#a5b4fc;"> Сводка куратора</h2>
   {% set f = curator_card.facts %}
   {% if curator_card.message %}
   <div style="background:rgba(99,102,241,0.12); border-left:3px solid #6366f1; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:14px; font-size:15px; line-height:1.5; color:rgba(255,255,255,0.9);">
@@ -241,20 +241,20 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
   <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:10px;">
     {% if f.cycle_day is not none and f.slice_total %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">🔄 День цикла</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> День цикла</div>
       <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.cycle_day }} / {{ f.slice_total }}</div>
     </div>
     {% endif %}
     {% if f.today_total %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">📝 Сегодня</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Сегодня</div>
       <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.today_solved }} / {{ f.today_total }}</div>
       {% if f.today_solved == 0 %}<div style="font-size:11px; color:#f59e0b;">ещё не решал</div>{% endif %}
     </div>
     {% endif %}
     {% if f.debt_size and f.debt_size > 0 %}
     <div style="background:rgba(239,68,68,0.06); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">⚠️ Долг</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);">[!]️ Долг</div>
       <div style="font-size:18px; font-weight:700; color:#ef4444;">{{ f.debt_size }} задач</div>
       {% if f.debt_burns_tomorrow %}<div style="font-size:11px; color:#ef4444;">{{ f.debt_burns_tomorrow }} сгорят завтра</div>{% endif %}
     </div>
@@ -272,20 +272,20 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
     {% endif %}
     {% if f.streak_days is not none and f.streak_days > 0 %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">🔥 Серия</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Серия</div>
       <div style="font-size:18px; font-weight:700; color:#38ef7d;">{{ f.streak_days }} дн.</div>
       <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;" title="Дней подряд, когда решено верно больше 80% задач дня">дней подряд с 80%+ верных</div>
     </div>
     {% endif %}
     {% if f.method_code %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">📐 Метод</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Метод</div>
       <div style="font-size:14px; font-weight:600; color:#a5b4fc;">{{ f.method_code }} «{{ f.method_name }}»</div>
     </div>
     {% endif %}
     {% if f.weakest_sections %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
-      <div style="font-size:11px; color:rgba(255,255,255,0.45);">🎯 Слабый раздел</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Слабый раздел</div>
       <div style="font-size:14px; font-weight:600; color:#f59e0b;">
         {% set ws = f.weakest_sections[0] %}
         {% set snames = {"algebra":"Алгебра","geometry":"Геометрия","combinatorics":"Комбинаторика","logic":"Логика","number_theory":"Теория чисел"} %}
@@ -328,7 +328,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 
 <div class="coach-grid">
 <div class="coach-card">
-<h2>📊 Радар по разделам (общий)</h2>
+<h2> Радар по разделам (общий)</h2>
 <div class="radar-chart">
 <canvas id="masteryRadar"
         data-mastery='{{ mastery_list_json | safe }}'
@@ -337,7 +337,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 <!-- ═══ Screen 4: Measured subtopics ═══ -->
 {% if measured_subtopics_list %}
 <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-  <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);">📋 Замеренные подтемы</h2>
+  <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);"> Замеренные подтемы</h2>
   <div style="display:flex; flex-direction:column; gap:4px; max-height:260px; overflow-y:auto;">
     {% for st in measured_subtopics_list %}
     <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.04);">
@@ -354,7 +354,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 {% endif %}
 </div>
 <div class="coach-card">
-<h2>💬 Чат с ИИ-куратором</h2>
+<h2> Чат с ИИ-куратором</h2>
 <!-- ═══ FAQ QUICK BUTTONS (TASK 2 V4) ═══ -->
 <div class="faq-buttons" id="faqButtons">
   <button class="faq-btn" onclick="askFaq('Как начать?')">Как начать?</button>
@@ -380,11 +380,11 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
                 <span class="dot"></span>
                 <span id="kbFieldLabel">Чат</span>
             </span>
-            <button type="button" class="kb-close-btn" onclick="toggleKeyboard()">✕</button>
+            <button type="button" class="kb-close-btn" onclick="toggleKeyboard()"></button>
         </div>
 
         <div class="kb-tabs">
-            <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')">🔢 Математическая</button>
+            <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')"> Математическая</button>
             <button type="button" class="kb-tab" data-layout="regular" onclick="switchKbTab('regular')">⌨️ Обычная</button>
         </div>
 
@@ -412,8 +412,8 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
                 <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\neq')">≠</button>
                 <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leq')">≤</button>
                 <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\geq')">≥</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">→</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')">↔</button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">-></button>
+                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')"><-></button>
             </div>
             <div class="kb-row">
                 <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\frac{}{}')">\frac</button>
@@ -510,7 +510,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
             <div class="kb-row">
                 <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
                 <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
-                <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово ✓</button>
+                <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово [OK]</button>
             </div>
         </div>
     </div>
@@ -520,20 +520,20 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 <div class="cta-row" id="ctaRow" style="display:none; margin-top:10px;"></div>
 <div id="quick-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
 <div style="margin-top:8px; text-align:right;">
-  <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">🗑️ Очистить историю</button>
+  <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">️ Очистить историю</button>
 </div>
 
 <!-- ═══ OTHER 6 ENTRY POINTS ═══ -->
 <details id="otherTestsDetails" style="margin-top:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 16px;">
   <summary style="cursor:pointer; color:rgba(255,255,255,0.55); font-size:13px; font-weight:600; user-select:none;">
-    📋 Другие тесты и инструменты
+     Другие тесты и инструменты
   </summary>
   <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
-    <a href="/olympiad-test" class="cta-btn secondary" style="text-align:left;">🎯 Адаптивный тест по темам</a>
-    <a href="/probniks" class="cta-btn secondary" style="text-align:left;">📝 Пробники</a>
-    <a href="/profile" class="cta-btn secondary" style="text-align:left;">⚙️ Профиль и класс</a>
-    <a href="/daily-set" class="cta-btn secondary" style="text-align:left;">📚 Задачи дня</a>
-    <a href="/prep/onboarding" class="cta-btn secondary" style="text-align:left;">📋 Анкета онбординга</a>
+    <a href="/olympiad-test" class="cta-btn secondary" style="text-align:left;"> Адаптивный тест по темам</a>
+    <a href="/probniks" class="cta-btn secondary" style="text-align:left;"> Пробники</a>
+    <a href="/profile" class="cta-btn secondary" style="text-align:left;">️ Профиль и класс</a>
+    <a href="/daily-set" class="cta-btn secondary" style="text-align:left;"> Задачи дня</a>
+    <a href="/prep/onboarding" class="cta-btn secondary" style="text-align:left;"> Анкета онбординга</a>
   </div>
 </details>
 
@@ -586,7 +586,7 @@ var greetingTimeout = setTimeout(function () { greetingController.abort(); }, 10
 fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signal })
   .then(function (r) { clearTimeout(greetingTimeout); return r.json(); })
   .then(function (data) {
-    greetingEl.innerHTML = data.greeting || '👋 Привет! Я твой ИИ-куратор FORMYLA.';
+    greetingEl.innerHTML = data.greeting || ' Привет! Я твой ИИ-куратор FORMYLA.';
     ctaRow.innerHTML = '';
     if (data.scenario === 'next_action') {
       var na = data.next_action || {};
@@ -606,7 +606,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     } else if (data.scenario === 'start_questionnaire') {
     window.location.href = '/prep/onboarding';
 } else if (data.scenario === 'need_grade') {
-      greetingEl.innerHTML = '👋 Привет! Я твой ИИ-куратор FORMYLA.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
+      greetingEl.innerHTML = ' Привет! Я твой ИИ-куратор FORMYLA.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
       var grades = [5, 6, 7, 8, 9, 10, 11];
       var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">';
       grades.forEach(function(g) {
@@ -629,16 +629,16 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
         .then(function(r){ return r.json(); })
         .then(function(res){
           if (res.status === 'ok') {
-            greetingEl.innerHTML = '✅ Класс ' + grade + ' выбран! 🎉<br><br>Перенаправляю на анкету…';
+            greetingEl.innerHTML = '[OK] Класс ' + grade + ' выбран! <br><br>Перенаправляю на анкету…';
             ctaRow.innerHTML = '';
             setTimeout(function() { window.location.href = '/prep/onboarding'; }, 800);
           } else {
-            btn.textContent = '❌ Ошибка';
+            btn.textContent = '[ERROR] Ошибка';
             btn.disabled = false;
           }
         })
         .catch(function(){
-          btn.textContent = '❌ Сеть';
+          btn.textContent = '[ERROR] Сеть';
           btn.disabled = false;
         });
       });
@@ -650,7 +650,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     } else if (data.scenario === 'onboarding_test') {
       window.location.href = '/prep/onboarding';
     } else if (data.scenario === 'daily_test') {
-      addCtaAction('🧪 Пройти тест по теме', function () {
+      addCtaAction(' Пройти тест по теме', function () {
         var subtopicKey = data.priority_subtopic ? data.priority_subtopic.key : '';
         var subtopicName = data.priority_subtopic ? data.priority_subtopic.name : 'математике';
         greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + subtopicName + '</strong>…';
@@ -664,11 +664,11 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
               taskData.tasks.forEach(function (t, i) {
                 html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
                 html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + t.task_text + '</p>';
-                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">✅ Правильно</button> ';
-                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">❌ Неверно</button></div>';
+                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">[OK] Правильно</button> ';
+                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">[ERROR] Неверно</button></div>';
                 html += '</div>';
               });
-              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishDailyTest">📊 Завершить тест</button></div>';
+              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishDailyTest"> Завершить тест</button></div>';
               html += '</div>';
               greetingEl.innerHTML = html;
               document.getElementById('finishDailyTest').addEventListener('click', function () {
@@ -689,45 +689,45 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
                   if (res.status === 'ok') {
-                    var msg = '🎯 Уровень: ' + res.level + ' (окно ' + res.min_level + '–' + res.max_level + '). Всего ' + res.total_count + ' задач на сегодня.';
+                    var msg = ' Уровень: ' + res.level + ' (окно ' + res.min_level + '–' + res.max_level + '). Всего ' + res.total_count + ' задач на сегодня.';
                     greetingEl.innerHTML = msg;
                     ctaRow.innerHTML = '';
-                    addCtaAction('📝 Начать задачи дня', function () {
+                    addCtaAction(' Начать задачи дня', function () {
                       window.location.reload();
                     }, '');
                   } else {
-                    greetingEl.innerHTML = '❌ Ошибка: ' + (res.error || 'попробуй ещё раз');
+                    greetingEl.innerHTML = '[ERROR] Ошибка: ' + (res.error || 'попробуй ещё раз');
                   }
                 });
               });
             } else {
-              greetingEl.innerHTML = '😅 Нет задач по этой теме. Попробуй другую.';
+              greetingEl.innerHTML = ' Нет задач по этой теме. Попробуй другую.';
             }
           });
       }, '');
     } else if (data.scenario === 'daily_tasks_ready') {
-      addCtaAction('📝 Продолжить задачи дня', function () {
+      addCtaAction(' Продолжить задачи дня', function () {
         window.location.href = '/daily-tasks';
       }, '');
     } else if (data.scenario === 'day_summary') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('📊 Профиль', '/profile', 'secondary');
+      addCtaButton(' Профиль', '/profile', 'secondary');
     } else if (data.scenario === 'recommend_olympiad' || data.scenario === 'need_test') {
       if (data.recommended_olympiad) {
-        addCtaButton('📋 Создать план подготовки', '/prep/new?olympiad=' + data.recommended_olympiad.slug, '');
-        addCtaButton('🔍 Другие олимпиады', '/prep/new', 'secondary');
+        addCtaButton(' Создать план подготовки', '/prep/new?olympiad=' + data.recommended_olympiad.slug, '');
+        addCtaButton(' Другие олимпиады', '/prep/new', 'secondary');
       } else if (data.cta_url) {
         addCtaButton(data.cta_text || 'Далее', data.cta_url, '');
       } else {
-        addCtaButton('📋 Создать план подготовки', '/prep/new', '');
+        addCtaButton(' Создать план подготовки', '/prep/new', '');
       }
     } else if (data.scenario === 'prep_morning_test') {
       var prepInfo = data.prep_info || {};
       var topicTitle = prepInfo.subtopic_title || '';
       var remaining = prepInfo.remaining_tests || 0;
-      addCtaAction('🧪 Начать тест: «' + topicTitle + '»', function () {
+      addCtaAction(' Начать тест: «' + topicTitle + '»', function () {
         ctaRow.innerHTML = '';
         greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + topicTitle + '</strong>…';
         fetch('{{ url_for("prep.coach_greeting") }}?action=prep_test_tasks')
@@ -735,16 +735,16 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
           .then(function (taskData) {
             if (taskData.tasks && taskData.tasks.length) {
               var html = '<div style="max-height:350px;overflow-y:auto;">';
-              html += '<p><strong>📝 Тест по теме «' + (taskData.subtopic_title || topicTitle) + '»</strong></p>';
+              html += '<p><strong> Тест по теме «' + (taskData.subtopic_title || topicTitle) + '»</strong></p>';
               html += '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Отметь правильность каждой задачи (5 задач):</p>';
               taskData.tasks.forEach(function (t, i) {
                 html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
                 html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + (t.task_text || t.text || '') + '</p>';
-                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">✅ Правильно</button> ';
-                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">❌ Неверно</button></div>';
+                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">[OK] Правильно</button> ';
+                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">[ERROR] Неверно</button></div>';
                 html += '</div>';
               });
-              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishPrepTest">📊 Завершить тест</button></div>';
+              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishPrepTest"> Завершить тест</button></div>';
               html += '</div>';
               greetingEl.innerHTML = html;
               document.getElementById('finishPrepTest').addEventListener('click', function () {
@@ -767,52 +767,52 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
                   if (res.status === 'ok') {
-                    var msg = '✅ <strong>Тест завершён!</strong><br>';
+                    var msg = '[OK] <strong>Тест завершён!</strong><br>';
                     msg += 'Правильно: ' + res.correct + ' из ' + res.total + '<br>';
-                    msg += '🎯 Уровень: ' + res.level + '/5.';
+                    msg += ' Уровень: ' + res.level + '/5.';
                     if (res.generation_queued) {
-                      msg += '<br><br>📚 Задачи дня уже готовятся под твой уровень. Они придут вечером!';
+                      msg += '<br><br> Задачи дня уже готовятся под твой уровень. Они придут вечером!';
                     }
                     greetingEl.innerHTML = msg;
                     ctaRow.innerHTML = '';
                     if (res.generation_queued) {
-                      addCtaButton('📚 Перейти к задачам дня', '/daily-tasks', '');
+                      addCtaButton(' Перейти к задачам дня', '/daily-tasks', '');
                     }
-                    addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+                    addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
                   } else {
-                    greetingEl.innerHTML = '❌ Ошибка: ' + (res.error || 'попробуй ещё раз');
+                    greetingEl.innerHTML = '[ERROR] Ошибка: ' + (res.error || 'попробуй ещё раз');
                   }
                 })
-                .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
+                .catch(function () { greetingEl.innerHTML = '[ERROR] Ошибка соединения. Попробуй ещё раз.'; });
               });
             } else {
-              greetingEl.innerHTML = '😅 Нет задач для теста. Попробуй позже.';
+              greetingEl.innerHTML = ' Нет задач для теста. Попробуй позже.';
               ctaRow.innerHTML = '';
               ctaRow.style.display = 'none';
             }
           })
-          .catch(function () { greetingEl.innerHTML = '❌ Ошибка загрузки теста.'; });
+          .catch(function () { greetingEl.innerHTML = '[ERROR] Ошибка загрузки теста.'; });
       }, '');
     } else if (data.scenario === 'prep_test_taken') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     } else if (data.scenario === 'prep_tasks_ready') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     } else if (data.scenario === 'prep_task_day') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     } else if (data.scenario === 'prep_month_complete') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     }
     if (ctaRow.children.length) {
       ctaRow.style.display = 'flex';
@@ -821,7 +821,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     }
   })
   .catch(function () {
-    greetingEl.textContent = '👋 Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
+    greetingEl.textContent = ' Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
   });
 
 // ─── Load chat history ─────────────────────────────────────────────────────
@@ -862,7 +862,7 @@ var text = input.value.trim();
 if (!text) return;
 addMsg(text, 'user');
 input.value = '';
-var pending = addMsg('💭 Думаю…', 'bot');
+var pending = addMsg(' Думаю…', 'bot');
 fetch('{{ url_for("prep.coach_chat") }}', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -881,13 +881,13 @@ body: JSON.stringify({ message: text })
             return;
           }
         })
-.catch(function () { pending.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
+.catch(function () { pending.innerHTML = '[ERROR] Ошибка соединения. Попробуй ещё раз.'; });
 });
 
 // ─── FAQ handler (TASK 2 V4): uses local FAQ data ───
 function askFaq(question) {
   addMsg(question, 'user');
-  var pending = addMsg('💭 Ищу ответ…', 'bot');
+  var pending = addMsg(' Ищу ответ…', 'bot');
   fetch('{{ url_for("prep.coach_faq") }}', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -900,14 +900,14 @@ function askFaq(question) {
       reRenderMath(pending);
     }
   })
-  .catch(function() { pending.innerHTML = '❌ Ошибка соединения.'; });
+  .catch(function() { pending.innerHTML = '[ERROR] Ошибка соединения.'; });
 }
 
 // ─── Delete history button ──────────────────────────────────────────────
 var delBtn = document.getElementById('deleteHistoryBtn');
 if (delBtn) {
   delBtn.addEventListener('click', function () {
-    if (!confirm('🗑️ Удалить всю историю диалога с куратором? Это действие нельзя отменить.')) return;
+    if (!confirm('️ Удалить всю историю диалога с куратором? Это действие нельзя отменить.')) return;
     delBtn.disabled = true;
     delBtn.textContent = '⏳ Удаляю…';
     fetch('{{ url_for("prep.coach_history_delete") }}', { method: 'POST' })
@@ -916,15 +916,15 @@ if (delBtn) {
         if (data.status === 'ok') {
           window.location.reload();
         } else {
-          alert('❌ Ошибка: ' + (data.error || 'не удалось удалить историю'));
+          alert('[ERROR] Ошибка: ' + (data.error || 'не удалось удалить историю'));
           delBtn.disabled = false;
-          delBtn.textContent = '🗑️ Очистить историю';
+          delBtn.textContent = '️ Очистить историю';
         }
       })
       .catch(function () {
-        alert('❌ Ошибка соединения. Попробуй ещё раз.');
+        alert('[ERROR] Ошибка соединения. Попробуй ещё раз.');
         delBtn.disabled = false;
-        delBtn.textContent = '🗑️ Очистить историю';
+        delBtn.textContent = '️ Очистить историю';
       });
   });
 }

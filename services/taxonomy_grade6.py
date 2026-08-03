@@ -5,7 +5,7 @@
 42 подтемы по 10 темам.
 """
 
-# Словарь: тема → список (subtopic_key, subtopic_ru)
+# Словарь: тема -> список (subtopic_key, subtopic_ru)
 SUBTOPICS_GRADE_6 = {
     'Геометрия (периметры и площади)': [
         ('angles_basic', 'Углы и их виды'),
@@ -70,13 +70,13 @@ SUBTOPICS_GRADE_6 = {
     ],
 }
 
-# Плоский словарь: subtopic_key → subtopic_ru
+# Плоский словарь: subtopic_key -> subtopic_ru
 SUBTOPIC_LABELS = {}
 for topic_subtopics in SUBTOPICS_GRADE_6.values():
     for key, label in topic_subtopics:
         SUBTOPIC_LABELS[key] = label
 
-# Плоский словарь: topic → subtopic_keys
+# Плоский словарь: topic -> subtopic_keys
 TOPIC_TO_SUBTOPICS = {
     topic: [key for key, _ in subtopics]
     for topic, subtopics in SUBTOPICS_GRADE_6.items()

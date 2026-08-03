@@ -104,7 +104,7 @@
 
 {% block content %}
 <div class="adm-wrap">
-    <h1>⚙️ Управление олимпиадами</h1>
+    <h1>️ Управление олимпиадами</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}
@@ -137,12 +137,12 @@
                 <td>{{ o.short_name }}</td>
                 <td>{{ o.grades_display }}</td>
                 <td><span class="adm-color-dot" style="background:{{ o.color_hex }};"></span>{{ o.color_hex }}</td>
-                <td>{{ '✅' if o.is_active else '❌' }}</td>
+                <td>{{ '[OK]' if o.is_active else '[ERROR]' }}</td>
                 <td class="adm-actions">
-                    <a href="{{ url_for('admin_olympiads.edit_olympiad', oid=o.id) }}" class="adm-btn adm-btn-sm">✏️ Ред.</a>
+                    <a href="{{ url_for('admin_olympiads.edit_olympiad', oid=o.id) }}" class="adm-btn adm-btn-sm">️ Ред.</a>
                     <form method="post" action="{{ url_for('admin_olympiads.delete_olympiad', oid=o.id) }}"
                           onsubmit="return confirm('Удалить «{{ o.short_name }}»?');" style="margin:0;">
-                        <button type="submit" class="adm-btn adm-btn-sm adm-btn-danger">🗑️</button>
+                        <button type="submit" class="adm-btn adm-btn-sm adm-btn-danger">️</button>
                     </form>
                 </td>
             </tr>

@@ -38,10 +38,10 @@ def _good_rewrite(**overrides):
             "неравенство √(x/(y+z+xy)) + √(y/(x+z+yz)) + √(z/(x+y+xz)) ≥ m."
         ),
         "changes": [
-            "сумма 1 → сумма 2",
-            "a,b,c → x,y,z",
+            "сумма 1 -> сумма 2",
+            "a,b,c -> x,y,z",
             "добавлены xy/yz/xz в знаменатели",
-            "докажите → найдите максимум",
+            "докажите -> найдите максимум",
         ],
         "method_preserved": "Коши-Буняковский + симметризация",
         "difficulty_same": True,
@@ -76,7 +76,7 @@ class TestStage2Rewrite:
         assert result.rewritten_text
 
     def test_latex_backslash_rejected(self, mock_deepseek, sample_found):
-        """Обратный слэш в rewritten_text → отклонение."""
+        """Обратный слэш в rewritten_text -> отклонение."""
         mock_deepseek.generate.return_value = _good_rewrite(
             rewritten_text=(
                 "Докажите, что \\sqrt{x^2+1} \\geq x для всех x > 0. "
@@ -88,7 +88,7 @@ class TestStage2Rewrite:
             s2.rewrite(sample_found)
 
     def test_dollar_rejected(self, mock_deepseek, sample_found):
-        """Символ $ в rewritten_text → отклонение."""
+        """Символ $ в rewritten_text -> отклонение."""
         mock_deepseek.generate.return_value = _good_rewrite(
             rewritten_text=(
                 "Решите $x^2 + y^2 = 25$ для всех x, y из Z. "
@@ -100,16 +100,16 @@ class TestStage2Rewrite:
             s2.rewrite(sample_found)
 
     def test_too_few_changes_rejected(self, mock_deepseek, sample_found):
-        """Менее 3 изменений → отклонение."""
+        """Менее 3 изменений -> отклонение."""
         mock_deepseek.generate.return_value = _good_rewrite(
-            changes=["a→x", "1→2"]
+            changes=["a->x", "1->2"]
         )
         s2 = Stage2Rewrite(mock_deepseek)
         with pytest.raises(Stage2Error, match="Изменений"):
             s2.rewrite(sample_found)
 
     def test_no_method_rejected(self, mock_deepseek, sample_found):
-        """Пустой method_preserved → отклонение."""
+        """Пустой method_preserved -> отклонение."""
         mock_deepseek.generate.return_value = _good_rewrite(
             method_preserved=""
         )
@@ -118,7 +118,7 @@ class TestStage2Rewrite:
             s2.rewrite(sample_found)
 
     def test_difficulty_changed_rejected(self, mock_deepseek, sample_found):
-        """difficulty_same=False → отклонение."""
+        """difficulty_same=False -> отклонение."""
         mock_deepseek.generate.return_value = _good_rewrite(
             difficulty_same=False
         )
@@ -127,7 +127,7 @@ class TestStage2Rewrite:
             s2.rewrite(sample_found)
 
     def test_too_similar_rejected(self, mock_deepseek, sample_found):
-        """Текст слишком похож на прототип → отклонение."""
+        """Текст слишком похож на прототип -> отклонение."""
         mock_deepseek.generate.return_value = _good_rewrite(
             rewritten_text=sample_found.original_text + " Добавлено одно слово."
         )
@@ -136,7 +136,7 @@ class TestStage2Rewrite:
             s2.rewrite(sample_found)
 
     def test_solution_hint_rejected(self, mock_deepseek, sample_found):
-        """Намёк на решение в тексте → отклонение."""
+        """Намёк на решение в тексте -> отклонение."""
         mock_deepseek.generate.return_value = _good_rewrite(
             rewritten_text=(
                 "Пусть x, y, z положительные с суммой 2. "
@@ -148,7 +148,7 @@ class TestStage2Rewrite:
             s2.rewrite(sample_found)
 
     def test_invalid_json_retries(self, mock_deepseek, sample_found):
-        """Невалидный JSON → retry → на 3-й попытке успех."""
+        """Невалидный JSON -> retry -> на 3-й попытке успех."""
         mock_deepseek.generate.side_effect = [
             "не json",
             "{broken",
@@ -160,7 +160,7 @@ class TestStage2Rewrite:
         assert mock_deepseek.generate.call_count == 3
 
     def test_retries_exhausted_raises(self, mock_deepseek, sample_found):
-        """Все 3 попытки провалились → Stage2Error."""
+        """Все 3 попытки провалились -> Stage2Error."""
         mock_deepseek.generate.return_value = "не json"
         s2 = Stage2Rewrite(mock_deepseek)
         with pytest.raises(Stage2Error):
@@ -168,7 +168,7 @@ class TestStage2Rewrite:
         assert mock_deepseek.generate.call_count == 3
 
     def test_missing_rewritten_text_field(self, mock_deepseek, sample_found):
-        """Отсутствие поля rewritten_text → ошибка."""
+        """Отсутствие поля rewritten_text -> ошибка."""
         mock_deepseek.generate.return_value = json.dumps({
             "changes": ["a", "b", "c"],
             "method_preserved": "x",
@@ -179,7 +179,7 @@ class TestStage2Rewrite:
             s2.rewrite(sample_found)
 
     def test_temperature_increases(self, mock_deepseek, sample_found):
-        """Температура растёт с каждой попыткой: 0.7 → 0.8 → 0.9."""
+        """Температура растёт с каждой попыткой: 0.7 -> 0.8 -> 0.9."""
         mock_deepseek.generate.side_effect = [
             "bad json 1",
             "bad json 2",

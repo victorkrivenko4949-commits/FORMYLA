@@ -168,7 +168,7 @@
     
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            👤 Мой профиль
+             Мой профиль
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
             {{ user.email }}
@@ -178,7 +178,7 @@
     <!-- Информация об аккаунте -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            📊 Информация об аккаунте
+             Информация об аккаунте
         </h2>
         
         <div style="display: grid; gap: 15px;">
@@ -193,7 +193,7 @@
                         <button type="button" onclick="showNicknameForm()" aria-label="Изменить никнейм"
                                 style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); color: var(--accent-2); cursor: pointer; font-size: 15px; padding: 8px 12px; min-width: 40px; min-height: 40px; border-radius: 8px; transition: transform 0.2s, background 0.2s;"
                                 onmouseover="this.style.background='rgba(56, 189, 248, 0.18)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.08)'">
-                            ✏️
+                            ️
                         </button>
                     </div>
                 </div>
@@ -238,7 +238,7 @@
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div>
-          <h3 style="margin: 0 0 4px; font-size: 1.1em; color: var(--text-main);">📚 Мой класс</h3>
+          <h3 style="margin: 0 0 4px; font-size: 1.1em; color: var(--text-main);"> Мой класс</h3>
           <p style="margin: 0; color: var(--text-muted); font-size: 0.85em;">Задачи дня и адаптивный тест подбираются под твой класс</p>
         </div>
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -276,7 +276,7 @@
     {% if subscription %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            💎 Текущий план
+             Текущий план
         </h2>
 
         <!-- Название плана и дата -->
@@ -313,13 +313,13 @@
         </div>
 
         <!-- Использование сегодня -->
-        <h3 style="color: var(--text-soft); font-size: 1em; font-weight: 600; margin-bottom: 14px;">📊 Использование сегодня</h3>
+        <h3 style="color: var(--text-soft); font-size: 1em; font-weight: 600; margin-bottom: 14px;"> Использование сегодня</h3>
 
         <!-- Задачи -->
         {% if subscription.tasks.limit %}
         <div style="margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span style="color: var(--text-soft); font-size: 0.9em;">📚 Задачи</span>
+                <span style="color: var(--text-soft); font-size: 0.9em;"> Задачи</span>
                 <span style="color: var(--text-main); font-size: 0.9em; font-weight: 600;">
                     {{ subscription.tasks.used }} / {{ subscription.tasks.limit }}
                 </span>
@@ -330,7 +330,7 @@
         </div>
         {% else %}
         <div style="margin-bottom: 16px; display: flex; justify-content: space-between; padding: 10px 14px; background: rgba(56,239,125,0.06); border-radius: 8px; border: 1px solid rgba(56,239,125,0.15);">
-            <span style="color: var(--text-soft); font-size: 0.9em;">📚 Задачи сегодня</span>
+            <span style="color: var(--text-soft); font-size: 0.9em;"> Задачи сегодня</span>
             <span style="color: #38ef7d; font-size: 0.9em; font-weight: 600;">{{ subscription.tasks.used }} (безлимит)</span>
         </div>
         {% endif %}
@@ -339,7 +339,7 @@
         {% if subscription.ai_today.limit %}
         <div style="margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span style="color: var(--text-soft); font-size: 0.9em;">🤖 AI-разборы сегодня</span>
+                <span style="color: var(--text-soft); font-size: 0.9em;"> AI-разборы сегодня</span>
                 <span style="color: var(--text-main); font-size: 0.9em; font-weight: 600;">
                     {{ subscription.ai_today.used }} / {{ subscription.ai_today.limit }}
                 </span>
@@ -354,7 +354,7 @@
         {% if subscription.ai_month.limit %}
         <div style="margin-bottom: 4px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span style="color: var(--text-soft); font-size: 0.9em;">🤖 AI-разборы в этом месяце</span>
+                <span style="color: var(--text-soft); font-size: 0.9em;"> AI-разборы в этом месяце</span>
                 <span style="color: var(--text-main); font-size: 0.9em; font-weight: 600;">
                     {{ subscription.ai_month.used }} / {{ subscription.ai_month.limit }}
                 </span>
@@ -372,7 +372,7 @@
     <!-- Привязанные аккаунты -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            🔗 Привязанные аккаунты
+             Привязанные аккаунты
         </h2>
         
         <div style="display: grid; gap: 15px;">
@@ -380,13 +380,13 @@
             <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 24px;">🟡</span>
+                        <span style="font-size: 24px;"></span>
                         <div>
                             <div style="color: var(--text-main); font-weight: 600;">Яндекс ID</div>
                             {% set yandex_account = user.oauth_accounts.filter_by(provider='yandex').first() %}
                             {% if yandex_account %}
                             <div style="color: #86efac; font-size: 14px; margin-top: 4px;">
-                                ✓ Привязан
+                                [OK] Привязан
                             </div>
                             {% else %}
                             <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
@@ -403,28 +403,28 @@
                               text-decoration:none;transition:opacity 0.2s;"
                        onmouseover="this.style.opacity='0.85'"
                        onmouseout="this.style.opacity='1'">
-                      🔗 Привязать Яндекс ID
+                       Привязать Яндекс ID
                     </a>
                     {% else %}
-                    <span style="color: #86efac; font-weight: 600;">✓ Подключено</span>
+                    <span style="color: #86efac; font-weight: 600;">[OK] Подключено</span>
                     {% endif %}
                 </div>
             </div>
         </div>
         
         <p style="color: var(--text-muted); font-size: 14px; margin-top: 15px; margin-bottom: 0;">
-            💡 Привязка аккаунтов позволяет входить на сайт разными способами с одним профилем
+             Привязка аккаунтов позволяет входить на сайт разными способами с одним профилем
         </p>
     </div>
 
     <!-- Daily Quest Streak Widget -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            🔥 Daily Quest Streak
+             Daily Quest Streak
         </h2>
         
         <div id="streakWidget" style="text-align: center; padding: 20px;">
-            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8));">🔥</div>
+            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 20px rgba(255, 100, 0, 0.8));"></div>
             <div style="font-size: 3rem; font-weight: 900; color: #38ef7d; margin-bottom: 0.5rem;">
                 <span id="currentStreak">0</span> дней
             </div>
@@ -436,7 +436,7 @@
             </div>
             <div style="margin-top: 1.5rem;">
                 <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; transition: all 0.3s ease;">
-                    📝 Перейти к задачам дня
+                     Перейти к задачам дня
                 </a>
             </div>
         </div>
@@ -463,12 +463,12 @@
     <!-- Mastery Dashboard -->
     <section class="mastery-dashboard">
       <header class="mastery-header">
-        <h2>📊 Результаты адаптивного теста
+        <h2> Результаты адаптивного теста
           {% if user.current_plan and user.current_plan != 'free' %}
             <span style="font-size: 0.6em; color: #fbbf24; font-weight: 400;">⭐ платная версия</span>
           {% else %}
             <span style="font-size: 0.6em; color: #94a3b8; font-weight: 400;">(бесплатная версия)</span>
-            <a href="/subscribe" style="font-size: 0.5em; margin-left: 8px; padding: 4px 14px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; border-radius: 20px; text-decoration: none; font-weight: 600; white-space: nowrap;">🚀 Перейти на Premium</a>
+            <a href="/subscribe" style="font-size: 0.5em; margin-left: 8px; padding: 4px 14px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; border-radius: 20px; text-decoration: none; font-weight: 600; white-space: nowrap;"> Перейти на Premium</a>
           {% endif %}
         </h2>
         <div class="mastery-summary">
@@ -506,11 +506,11 @@
             <div class="mastery-level-badge">{{ topic.level_label }}</div>
             <div class="mastery-trend">
               {% if topic.trend > 0 %}
-                <span class="trend-up">↗️ +{{ topic.trend }}% за неделю</span>
+                <span class="trend-up">️ +{{ topic.trend }}% за неделю</span>
               {% elif topic.trend < 0 %}
-                <span class="trend-down">↘️ {{ topic.trend }}% за неделю</span>
+                <span class="trend-down">️ {{ topic.trend }}% за неделю</span>
               {% else %}
-                <span class="trend-flat">➡️ без изменений</span>
+                <span class="trend-flat">️ без изменений</span>
               {% endif %}
             </div>
             <div class="mastery-stats">
@@ -524,7 +524,7 @@
 
       <!-- AI-рекомендация -->
       <aside class="mastery-ai-tip">
-        <div class="tip-icon">🎯</div>
+        <div class="tip-icon"></div>
         <div class="tip-content">
           <h4>Рекомендация AI</h4>
           <p>{{ ai_recommendation | safe }}</p>
@@ -533,10 +533,10 @@
 
       {% else %}
       <div style="text-align:center; padding: 40px; color: rgba(255,255,255,0.5);">
-        <div style="font-size:3rem; margin-bottom:1rem;">📊</div>
+        <div style="font-size:3rem; margin-bottom:1rem;"></div>
         <p>Пройди адаптивный тест, чтобы увидеть свой уровень по темам!</p>
         <a href="{{ url_for('adaptive_test_select_class') }}" style="display:inline-block; margin-top:1rem; padding:10px 24px; background:linear-gradient(135deg,#11998e,#38ef7d); color:#000; border-radius:8px; font-weight:700; text-decoration:none;">
-          🚀 Пройти тест
+           Пройти тест
         </a>
       </div>
       {% endif %}
@@ -546,7 +546,7 @@
     {% if progress_dict %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            📈 Мой прогресс по темам
+             Мой прогресс по темам
         </h2>
         
         <div style="display: grid; gap: 15px;">
@@ -579,7 +579,7 @@
     {% if recent_tests %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            📝 Последние тесты
+             Последние тесты
         </h2>
         
         <div style="display: grid; gap: 12px;">
@@ -607,7 +607,7 @@
     {% if user.onboarding_completed %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-1); margin-bottom: 20px; font-size: 1.5em;">
-            🤖 AI Профиль
+             AI Профиль
         </h2>
         
         <!-- Уровень -->
@@ -618,8 +618,8 @@
                 {% elif user.math_level == 'advanced' %}background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
                 {% else %}background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);{% endif %}
                 color: white;">
-                {% if user.math_level == 'beginner' %}🌱 Начинающий
-                {% elif user.math_level == 'advanced' %}🏆 Продвинутый
+                {% if user.math_level == 'beginner' %} Начинающий
+                {% elif user.math_level == 'advanced' %} Продвинутый
                 {% else %}⭐ Средний уровень{% endif %}
             </div>
         </div>
@@ -627,7 +627,7 @@
         <!-- Отчет AI -->
         <div style="background: rgba(30, 41, 59, 0.6); padding: 20px; border-radius: var(--radius-md); margin-bottom: 20px; border-left: 4px solid var(--accent-2);">
             <h3 style="color: var(--accent-2); margin-top: 0; font-size: 1.2em;">
-                💬 Отчет AI-тренера
+                 Отчет AI-тренера
             </h3>
             <p style="color: var(--text-soft); line-height: 1.8; white-space: pre-wrap; margin: 0;">{{ user.ai_report }}</p>
         </div>
@@ -651,7 +651,7 @@
     <!-- Входящие заявки -->
     {% if incoming_requests %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px; border-left: 4px solid #f59e0b;">
-        <h3 style="color: #f59e0b; margin-bottom: 20px;">📬 Входящие заявки ({{ incoming_requests|length }})</h3>
+        <h3 style="color: #f59e0b; margin-bottom: 20px;"> Входящие заявки ({{ incoming_requests|length }})</h3>
         
         <div style="display: grid; gap: 15px;">
             {% for req in incoming_requests %}
@@ -671,12 +671,12 @@
                     <div style="display: flex; gap: 10px;">
                         <form action="{{ url_for('accept_request', mentorship_id=req.mentorship.id) }}" method="POST" style="display: inline;">
                             <button type="submit" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                                ✓ Принять
+                                [OK] Принять
                             </button>
                         </form>
                         <form action="{{ url_for('reject_request', mentorship_id=req.mentorship.id) }}" method="POST" style="display: inline;">
                             <button type="submit" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                                ✗ Отклонить
+                                 Отклонить
                             </button>
                         </form>
                     </div>
@@ -690,15 +690,15 @@
     <!-- Мои друзья -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-top: 30px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
         <div>
-            <h3 style="color: var(--text-main); margin: 0 0 4px;">🤝 Мои друзья</h3>
+            <h3 style="color: var(--text-main); margin: 0 0 4px;"> Мои друзья</h3>
             <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Добавляйте друзей и соревнуйтесь вместе!</p>
         </div>
         <a href="/friends" class="btn-primary" style="padding: 10px 22px; text-decoration: none; white-space: nowrap;">Перейти в раздел друзей</a>
     </div>
-    <!-- 📊 ИСТОРИЯ АДАПТИВНЫХ ТЕСТОВ -->
+    <!--  ИСТОРИЯ АДАПТИВНЫХ ТЕСТОВ -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-            📊 История адаптивных тестов
+             История адаптивных тестов
         </h2>
         
         {% if test_stats.total_tests > 0 %}
@@ -774,7 +774,7 @@
         {% else %}
         <!-- Заглушка если тестов нет -->
         <div style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 4em; margin-bottom: 15px; opacity: 0.5;">📝</div>
+            <div style="font-size: 4em; margin-bottom: 15px; opacity: 0.5;"></div>
             <h3 style="color: var(--text-main); margin-bottom: 10px;">Вы еще не проходили адаптивных тестов</h3>
             <p style="color: var(--text-muted); margin-bottom: 25px;">
                 Пройдите адаптивный тест, чтобы определить свой уровень и получить персонализированные рекомендации!
@@ -783,7 +783,7 @@
                style="display: inline-block; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: transform 0.2s;"
                onmouseover="this.style.transform='translateY(-2px)'"
                onmouseout="this.style.transform='translateY(0)'">
-                🚀 Пройти первый тест
+                 Пройти первый тест
             </a>
         </div>
         {% endif %}
@@ -791,13 +791,13 @@
 
     <!-- Отмена подписки -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(239,68,68,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px; text-align: center;">
-        <h3 style="color: var(--text-main); margin-bottom: 12px;">💳 Управление подпиской</h3>
+        <h3 style="color: var(--text-main); margin-bottom: 12px;"> Управление подпиской</h3>
         <p style="color: var(--text-soft); margin-bottom: 16px;">
             Текущий тариф: <strong style="color: #38ef7d;">{{ current_user.current_plan or 'free' }}</strong>
         </p>
         <button id="cancelSubBtn" onclick="cancelSubscription()"
                 style="padding: 12px 28px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: all 0.2s;">
-            ✕ Отменить подписку
+             Отменить подписку
         </button>
     </div>
 
@@ -805,7 +805,7 @@
     <div style="text-align: center; margin: 20px 0 10px;">
         <button id="btnProgressModal" onclick="openProgressModal()"
                 class="progress-btn">
-            📈 Посмотреть прогресс
+             Посмотреть прогресс
         </button>
     </div>
 
@@ -813,7 +813,7 @@
     <div id="progressModal" class="progress-modal-overlay" onclick="closeProgressModal(event)">
         <div class="progress-modal" onclick="event.stopPropagation()">
             <div class="progress-modal-header">
-                <h3>📊 Прогресс адаптивных тестов</h3>
+                <h3> Прогресс адаптивных тестов</h3>
                 <button class="progress-modal-close" onclick="closeProgressModal()">&times;</button>
             </div>
             <div class="progress-modal-body">
@@ -821,7 +821,7 @@
                     <canvas id="progressChart"></canvas>
                 </div>
                 <div id="progressEmpty" class="progress-empty" style="display:none;">
-                    <p>🤷‍♂️ Пока нет результатов тестов.</p>
+                    <p>‍️ Пока нет результатов тестов.</p>
                     <p style="font-size:14px;color:var(--text-muted);">Пройдите хотя бы один адаптивный тест, чтобы увидеть график.</p>
                 </div>
                 <div id="progressLoading" class="progress-loading">
@@ -839,7 +839,7 @@
            onmouseover="this.style.borderColor='var(--accent-2)'; this.style.color='var(--accent-2)'"
            onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
         >
-            🏠 На главную
+             На главную
         </a>
         
         <a href="{{ url_for('logout') }}"
@@ -847,7 +847,7 @@
            onmouseover="this.style.borderColor='#ef4444'; this.style.color='#fca5a5'"
            onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
         >
-            🚪 Выйти
+             Выйти
         </a>
     </div>
 
@@ -931,7 +931,7 @@ async function submitNicknameAjax(ev) {
         const newNick = (data && data.nickname) ? data.nickname : value;
         const display = document.getElementById('nickname-current-value');
         if (display) display.textContent = '@' + newNick;
-        _showNicknameFeedback('Никнейм сохранён ✓', 'ok');
+        _showNicknameFeedback('Никнейм сохранён [OK]', 'ok');
         setTimeout(() => { hideNicknameForm(); }, 700);
     } catch (err) {
         _showNicknameFeedback('Сеть недоступна. Повторите попытку.', 'error');
@@ -1057,10 +1057,10 @@ function cancelSubscription() {
                 location.reload();
             } else {
                 alert('Ошибка: ' + (data.error || 'Попробуйте ещё раз'));
-                if (btn) { btn.disabled = false; btn.textContent = '✕ Отменить подписку'; }
+                if (btn) { btn.disabled = false; btn.textContent = ' Отменить подписку'; }
             }
         })
-        .catch(() => { alert('Ошибка сети'); if (btn) { btn.disabled = false; btn.textContent = '✕ Отменить подписку'; } });
+        .catch(() => { alert('Ошибка сети'); if (btn) { btn.disabled = false; btn.textContent = ' Отменить подписку'; } });
 }
 </script>
 {% endblock %}

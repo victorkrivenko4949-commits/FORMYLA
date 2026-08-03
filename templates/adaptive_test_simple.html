@@ -11,7 +11,7 @@
     <!-- Заголовок -->
     <div style="text-align: center; margin-bottom: 20px;">
         <h1 style="font-size: 2em; color: var(--text-main); margin-bottom: 10px;">
-            📚 {{ topic_name }} - Класс {{ grade }}
+             {{ topic_name }} - Класс {{ grade }}
         </h1>
         <p style="font-size: 1em; color: var(--text-soft); margin-bottom: 6px;">
             Задача {{ current_slot or current_index }} из 25
@@ -19,7 +19,7 @@
     </div>
 
     {# UI-FIX (Task 1): убрали 25 нумерованных кружков + легенду — навигация
-       по слотам теперь только через кнопки «← Предыдущая» / «Следующая →».
+       по слотам теперь только через кнопки «<- Предыдущая» / «Следующая ->».
        Старый код см. git history до 2026-05-25. #}
 
     <!-- Карточка задачи -->
@@ -33,7 +33,7 @@
         <!-- Условие задачи -->
         <div style="margin-bottom: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
-                <h3 style="color: var(--accent-2); margin: 0;">📋 Условие:</h3>
+                <h3 style="color: var(--accent-2); margin: 0;"> Условие:</h3>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <button type="button" class="share-friend-btn"
                             data-task-id="{{ task.id }}"
@@ -46,14 +46,14 @@
                             style="padding: 8px 16px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
                             onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.borderColor='#8b5cf6'"
                             onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.borderColor='rgba(139, 92, 246, 0.35)'">
-                        <span>📨</span>
+                        <span></span>
                         <span>Поделиться с другом</span>
                     </button>
                     <button type="button" id="reportBtn" onclick="reportTask({{ task.id }})"
                             style="padding: 8px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
                             onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='#ef4444'"
                             onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
-                        <span>🚩</span>
+                        <span></span>
                         <span>Сообщить об ошибке</span>
                     </button>
                 </div>
@@ -86,7 +86,7 @@
                 {% else %}
                 <!-- MathLive Input (для математических задач).
                      UI-FIX (Task 3): mode='manual' — клавиатура НЕ открывается
-                     автоматически (нажать кнопку 🔢 справа внизу).
+                     автоматически (нажать кнопку  справа внизу).
                      UI-FIX (Task 4): theme='material' — светлая тема без тёмных
                      палок-разделителей между клавишами. -->
                 <math-field id="user_answer" name="answer"
@@ -94,7 +94,7 @@
                            virtual-keyboard-theme="material"
                            class="math-input-field"></math-field>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 Нажмите кнопку «🔢» справа внизу поля, чтобы открыть математическую клавиатуру (√, дроби, степени).
+                     Нажмите кнопку «» справа внизу поля, чтобы открыть математическую клавиатуру (√, дроби, степени).
                 </p>
                 {% endif %}
             </div>
@@ -104,7 +104,7 @@
                     Ход решения:
                 </label>
                 <div style="background: rgba(59, 130, 246, 0.06); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.88em; color: #94a3b8;">
-                    💡 Напишите ход решения по шагам — это обязательно. Система оценит ответ точнее и даст более полезную обратную связь.
+                     Напишите ход решения по шагам — это обязательно. Система оценит ответ точнее и даст более полезную обратную связь.
                 </div>
                 {# UI-FIX (2026-05): заменили <math-field> на <textarea> — math-field
                    рендерит весь текст в одну растягивающуюся строку и не переносит
@@ -115,7 +115,7 @@
                           class="solution-textarea"
                           style="width: 100%; min-height: 160px; padding: 14px 16px; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; font-size: 16px; line-height: 1.7; resize: vertical; display: block; box-sizing: border-box; white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;"></textarea>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 Пишите <strong>по шагам</strong> — каждое действие с новой строки (Enter). Формулы вставляются как LaTeX-код (можно через кнопку «⌨️ Клавиатура» ниже).
+                     Пишите <strong>по шагам</strong> — каждое действие с новой строки (Enter). Формулы вставляются как LaTeX-код (можно через кнопку «⌨️ Клавиатура» ниже).
                 </p>
             </div>
 
@@ -131,11 +131,11 @@
                             <span class="dot"></span>
                             <span id="kbFieldLabel">Ответ</span>
                         </span>
-                        <button type="button" class="kb-close-btn" onclick="toggleKeyboard()">✕</button>
+                        <button type="button" class="kb-close-btn" onclick="toggleKeyboard()"></button>
                     </div>
 
                     <div class="kb-tabs">
-                        <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')">🔢 Математическая</button>
+                        <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')"> Математическая</button>
                         <button type="button" class="kb-tab" data-layout="regular" onclick="switchKbTab('regular')">⌨️ Обычная</button>
                     </div>
 
@@ -166,8 +166,8 @@
                             <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\neq')">≠</button>
                             <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leq')">≤</button>
                             <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\geq')">≥</button>
-                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">→</button>
-                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')">↔</button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">-></button>
+                            <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')"><-></button>
                         </div>
                         <!-- LaTeX-команды -->
                         <div class="kb-row">
@@ -273,7 +273,7 @@
                         <div class="kb-row">
                             <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
                             <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
-                            <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово ✓</button>
+                            <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово [OK]</button>
                         </div>
                     </div>
                 </div>
@@ -284,7 +284,7 @@
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
-                    📸 Фото решения из тетради (можно несколько, опционально):
+                     Фото решения из тетради (можно несколько, опционально):
                 </label>
                 <div style="position: relative;">
                     <input type="file" id="photoInput" name="solution_photo" accept="image/*" capture="environment" multiple
@@ -293,16 +293,16 @@
                             style="width: 100%; padding: 20px; background: rgba(59, 130, 246, 0.1); border: 2px dashed var(--accent-1); border-radius: var(--radius-sm); color: var(--accent-1); font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;"
                             onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'; this.style.borderColor='var(--accent-2)'"
                             onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'; this.style.borderColor='var(--accent-1)'">
-                        <span style="font-size: 24px;">📷</span>
+                        <span style="font-size: 24px;"></span>
                         <span id="photoButtonText">Сфотографировать / Загрузить решение</span>
                     </button>
                     <div id="photoPreviewList" style="display: none; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;"></div>
                     <p id="photoFileName" style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px; display: none;">
-                        ✅ Прикреплено фото: <span id="fileName"></span>
+                        [OK] Прикреплено фото: <span id="fileName"></span>
                     </p>
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое снимается/распознаётся отдельно (OpenRouter Vision) и подмешивается в решение для AI-тьютора. Лишнее фото можно удалить крестиком.
+                     Нажимайте кнопку повторно, чтобы <strong>добавить</strong> ещё фото. Каждое снимается/распознаётся отдельно (OpenRouter Vision) и подмешивается в решение для AI-тьютора. Лишнее фото можно удалить крестиком.
                 </p>
             </div>
 
@@ -312,7 +312,7 @@
             <!-- Read-only баннер для уже отвеченных слотов -->
             {% if is_readonly %}
             <div id="readonlyBanner" style="margin: 10px 0 20px; padding: 14px 18px; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.4); border-radius: var(--radius-sm); color: #86efac; font-size: 0.95em;">
-                ✅ На эту задачу уже отвечен ответ. Поля заблокированы для редактирования.
+                [OK] На эту задачу уже отвечен ответ. Поля заблокированы для редактирования.
                 {% if existing_user_answer %}<div style="margin-top:6px; color: var(--text-muted); font-size: 0.9em;">Ваш ответ: <code style="color:#86efac;">{{ existing_user_answer }}</code></div>{% endif %}
             </div>
             {% endif %}
@@ -322,7 +322,7 @@
                 <button type="button" id="prevSlotBtn" onclick="goToSlot({{ (current_slot or current_index) - 1 }})"
                         {% if (current_slot or current_index) <= 1 %}disabled{% endif %}
                         style="padding: 14px 22px; background: rgba(100, 116, 139, 0.18); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
-                    ← Предыдущая
+                    <- Предыдущая
                 </button>
 
                 {% if is_readonly %}
@@ -330,16 +330,16 @@
                     <button type="button" id="nextSlotBtnRO" onclick="goToSlot({{ (current_slot or current_index) + 1 }})"
                             {% if (current_slot or current_index) >= 25 %}disabled{% endif %}
                             style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                        Следующая →
+                        Следующая ->
                     </button>
                 {% else %}
                     <button type="button" id="skipBtn" onclick="skipCurrentSlot()"
                             style="padding: 14px 22px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;">
-                        Пропустить →
+                        Пропустить ->
                     </button>
                     <button type="submit" id="submitBtn"
                             style="padding: 14px 28px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                        Ответить →
+                        Ответить ->
                     </button>
                 {% endif %}
 
@@ -348,7 +348,7 @@
                         {% if not can_finish %}disabled{% endif %}
                         title="{% if can_finish %}Завершить тест и посмотреть результаты{% else %}Осталось ответить на {{ remaining_to_finish }} задач(и){% endif %}"
                         style="padding: 14px 22px; background: {% if can_finish %}linear-gradient(135deg, #22c55e, #16a34a){% else %}rgba(100, 116, 139, 0.2){% endif %}; color: {% if can_finish %}white{% else %}var(--text-muted){% endif %}; border: 1px solid {% if can_finish %}#16a34a{% else %}var(--border-mid){% endif %}; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: {% if can_finish %}pointer{% else %}not-allowed{% endif %}; opacity: {% if can_finish %}1{% else %}0.65{% endif %};">
-                    Завершить тест ✓
+                    Завершить тест [OK]
                 </button>
             </div>
             {% if not can_finish %}
@@ -361,7 +361,7 @@
         <div id="aiLoader" style="display: none; text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 2px dashed var(--accent-1); margin-top: 30px;">
             <div class="spinner" style="width: 50px; height: 50px; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: var(--accent-1); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
             <p style="color: var(--text-main); font-size: 1.2em; font-weight: 600; margin-bottom: 10px;">
-                🤖 AI проверяет ваше решение...
+                 AI проверяет ваше решение...
             </p>
             <p style="font-size: 0.9em; color: var(--text-muted);">
                 Это может занять 5-10 секунд
@@ -375,7 +375,7 @@
             
             <!-- Фидбек от AI -->
             <div id="feedbackBlock" style="margin-top: 30px; padding: 25px; background: rgba(15, 23, 42, 0.6); border-radius: 12px; border: 1px solid var(--border-soft);">
-                <h4 style="color: var(--accent-2); margin-bottom: 15px; font-size: 1.1em;">📝 Разбор от AI-тьютора:</h4>
+                <h4 style="color: var(--accent-2); margin-bottom: 15px; font-size: 1.1em;"> Разбор от AI-тьютора:</h4>
                 <div id="feedbackText" class="ai-feedback-text" style="color: var(--text-main); line-height: 1.8; font-size: 1em;"></div>
             </div>
             
@@ -385,12 +385,12 @@
                         style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
-                    Следующая задача →
+                    Следующая задача ->
                 </button>
                 <button id="finishBtn" onclick="finishTest()" disabled
                         title="Кнопка активируется после того, как вы ответите на все 25 задач"
                         style="display: none; padding: 15px 40px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; cursor: not-allowed; opacity: 0.65; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);">
-                    Завершить тест ✓
+                    Завершить тест [OK]
                 </button>
             </div>
             <p id="finishBtnHint" style="display:none; text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px;"></p>
@@ -401,7 +401,7 @@
     <!-- Информация -->
     <div style="background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
         <p style="color: var(--text-muted); line-height: 1.6; margin: 0; font-size: 0.9em;">
-            💡 <strong style="color: var(--text-main);">Адаптивный алгоритм:</strong>
+             <strong style="color: var(--text-main);">Адаптивный алгоритм:</strong>
             AI-тьютор проверит ваше решение и даст оценку (+1, 0 или -1 уровень).
             Следующая задача будет соответствовать вашему новому уровню!
         </p>
@@ -876,7 +876,7 @@ function autoMathify(raw) {
     );
 
     // 2. Базовые трансформации одиночных токенов:
-    //    x^2 → \(x^{2}\),  a_1 → \(a_{1}\),  x^{n+1} → \(x^{n+1}\)
+    //    x^2 -> \(x^{2}\),  a_1 -> \(a_{1}\),  x^{n+1} -> \(x^{n+1}\)
     //    Поддерживаем как одиночную цифру/букву после ^, так и {...}.
     s = s.replace(/([A-Za-zА-Яа-я0-9])\^(\{[^{}]+\}|-?\d+|[A-Za-z])/g,
         (m, base, exp) => {
@@ -914,7 +914,7 @@ function autoMathify(raw) {
         }
     );
 
-    // 4. Дроби «вида (числитель)/(знаменатель)»: (x^2 - 4x + 3)/(x - 1) → \frac{...}{...}
+    // 4. Дроби «вида (числитель)/(знаменатель)»: (x^2 - 4x + 3)/(x - 1) -> \frac{...}{...}
     s = s.replace(/\(([^()]{1,80})\)\s*\/\s*\(([^()]{1,80})\)/g,
         (m, num, den) => {
             PROTECTED.push(`\\(\\frac{${num.trim()}}{${den.trim()}}\\)`);
@@ -922,7 +922,7 @@ function autoMathify(raw) {
         }
     );
 
-    // 5. Простые умножения «2 * x», «a · b» → \(2 \cdot x\)
+    // 5. Простые умножения «2 * x», «a · b» -> \(2 \cdot x\)
     s = s.replace(/(\b[A-Za-z0-9]+)\s*[·∙]\s*([A-Za-z0-9]+\b)/g,
         (m, a, b) => {
             PROTECTED.push(`\\(${a} \\cdot ${b}\\)`);
@@ -965,7 +965,7 @@ async function reportTask(taskId) {
         const result = await response.json();
         
         if (result.status === 'success') {
-            reportBtn.innerHTML = '<span>✅</span><span>Спасибо!</span>';
+            reportBtn.innerHTML = '<span>[OK]</span><span>Спасибо!</span>';
             reportBtn.style.background = 'rgba(34, 197, 94, 0.1)';
             reportBtn.style.color = '#22c55e';
             reportBtn.style.borderColor = 'rgba(34, 197, 94, 0.3)';
@@ -1261,7 +1261,7 @@ function showResult(result) {
     if (result.score === 1) {
         verdictHTML = `
             <div class="verdict-success">
-                ✅ Верно! +1 уровень, уровень: ${result.new_level}/8
+                [OK] Верно! +1 уровень, уровень: ${result.new_level}/8
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
@@ -1276,7 +1276,7 @@ function showResult(result) {
     } else {
         verdictHTML = `
             <div class="verdict-error">
-                ❌ Неверно — -1 уровень
+                [ERROR] Неверно — -1 уровень
                 <div class="level-badge">Уровень: ${result.new_level}/8</div>
             </div>
         `;
@@ -1287,7 +1287,7 @@ function showResult(result) {
     // Обрабатываем feedback:
     // 1) автообёртка голых формул (x^2, a=3, дроби, юникод-степени)
     // 2) markdown **жирный**
-    // 3) переносы строк → <br>
+    // 3) переносы строк -> <br>
     // 4) KaTeX render
     let formattedFeedback = autoMathify(result.feedback || '');
     formattedFeedback = formattedFeedback.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
@@ -1394,12 +1394,12 @@ async function skipCurrentSlot() {
             window.location.href = '/adaptive_test_simple?slot=' + Math.min(25, Math.max(1, next));
         } else {
             alert((j && j.message) || 'Не удалось пропустить задачу');
-            if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить →'; }
+            if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить ->'; }
         }
     } catch (err) {
         console.error('skip failed', err);
         alert('Ошибка сети при пропуске задачи');
-        if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить →'; }
+        if (skipBtn) { skipBtn.disabled = false; skipBtn.textContent = 'Пропустить ->'; }
     }
 }
 

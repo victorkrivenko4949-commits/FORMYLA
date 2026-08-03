@@ -68,7 +68,7 @@ L4 — Региональный олимпиадный уровень
   - Продвинутые разделы, олимпиадные техники
   - Оригинальная конструкция, глубокие инварианты, продвинутая теория чисел
   - Время решения: 20-45 минут
-  - Примеры: "Найдите все функции f: ℕ → ℕ, такие что f(f(n)) = n + 1 для всех n"
+  - Примеры: "Найдите все функции f: ℕ -> ℕ, такие что f(f(n)) = n + 1 для всех n"
 
 L5 — Заключительный олимпиадный уровень
   - Сложная многоходовая комбинация
@@ -203,7 +203,7 @@ def safe_parse_json(text: str) -> dict:
 
     json_str = text[json_start:json_end]
 
-    # 3. Normalize double-brace {{...}} → {...} (deepseek-reasoner artifact)
+    # 3. Normalize double-brace {{...}} -> {...} (deepseek-reasoner artifact)
     #    The model sometimes echoes {{...}} back literally from the prompt
     if json_str.startswith("{{") and json_str.endswith("}}"):
         json_str = json_str[1:-1]  # strip one layer of braces
@@ -216,7 +216,7 @@ def safe_parse_json(text: str) -> dict:
     except json.JSONDecodeError:
         pass
 
-    # 5. Fix common issues: single quotes → double quotes
+    # 5. Fix common issues: single quotes -> double quotes
     #    Replace single quotes that are NOT inside double-quoted strings
     fixed = []
     in_double = False
@@ -327,7 +327,7 @@ def audit_single_task(client: DeepSeekClient, task: dict, task_index: int,
         # Parse JSON from response (robust)
         audit_result = safe_parse_json(content)
 
-        logger.info(f"[{task_index}] ✓ Audit complete: overall={audit_result.get('overall', '?')}")
+        logger.info(f"[{task_index}] [OK] Audit complete: overall={audit_result.get('overall', '?')}")
         return {
             "task_index": task_index,
             "task_text": task_text,
@@ -341,7 +341,7 @@ def audit_single_task(client: DeepSeekClient, task: dict, task_index: int,
         }
 
     except (DeepSeekAPIError, json.JSONDecodeError, ValueError, Exception) as e:
-        logger.error(f"[{task_index}] ✗ Audit failed: {e}")
+        logger.error(f"[{task_index}]  Audit failed: {e}")
         return {
             "task_index": task_index,
             "task_text": task_text,
@@ -396,7 +396,7 @@ def main():
                 results.append(result)
                 overall = result.get("audit_result", {}).get("overall", "?") if result.get("success") else "FAIL"
                 with print_lock:
-                    logger.info(f"[{idx}] → overall={overall}, success={result['success']}")
+                    logger.info(f"[{idx}] -> overall={overall}, success={result['success']}")
             except Exception as e:
                 with print_lock:
                     logger.error(f"[{idx}] Exception in thread: {e}")

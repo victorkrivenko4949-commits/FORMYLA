@@ -31,7 +31,7 @@ from ai.deepseek_client import DeepSeekClient
 logger = logging.getLogger(__name__)
 
 
-# ─── Маппинг тем Куратора → subtopic_keys базы знаний олимпиад ─────────────
+# ─── Маппинг тем Куратора -> subtopic_keys базы знаний олимпиад ─────────────
 # DIAG_TOPICS из config.py: algebra, geometry, combinatorics, number_theory, logic
 # OLYMPIAD_KNOWLEDGE использует более дробные subtopic_keys.
 
@@ -74,7 +74,7 @@ TOPIC_TO_SUBTOPIC_KEYS = {
     ],
 }
 
-# Обратный маппинг: subtopic_key → curator topic
+# Обратный маппинг: subtopic_key -> curator topic
 _SUBTOPIC_TO_TOPIC: Dict[str, str] = {}
 for _topic, _keys in TOPIC_TO_SUBTOPIC_KEYS.items():
     for _k in _keys:
@@ -138,7 +138,7 @@ def recommend_olympiads(user_id: int, grade: Optional[int] = None) -> dict:
     medium_topics = topic_analysis.get("summary", {}).get("medium_topics", [])
     strong_topics = topic_analysis.get("summary", {}).get("strong_topics", [])
 
-    # ── 3. Маппинг слабых/средних тем → subtopic_keys ────────────────────────
+    # ── 3. Маппинг слабых/средних тем -> subtopic_keys ────────────────────────
     weak_subtopic_keys: List[str] = []
     for topic_name in weak_topics + medium_topics:
         keys = TOPIC_TO_SUBTOPIC_KEYS.get(topic_name, [])

@@ -7,7 +7,7 @@
   * Probnik         — пробник (тематический или этапный).
   * Task            — задача пробника.
   * TheoryBlock     — теоретический блок (метод/раздел).
-  * ProbnikTheory   — связка пробник ↔ теоретический блок.
+  * ProbnikTheory   — связка пробник <-> теоретический блок.
   * TaskAttempt     — попытка пользователя решить отдельную задачу.
   * StageAttempt    — попытка прохождения этапного пробника целиком.
 
@@ -120,7 +120,7 @@ class Probnik(db.Model):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# OlympiadTask (внутренний rename из ТЗ-шного `Task` → `OlympiadTask`)
+# OlympiadTask (внутренний rename из ТЗ-шного `Task` -> `OlympiadTask`)
 # ──────────────────────────────────────────────────────────────────────────────
 
 class OlympiadTask(db.Model):
@@ -162,7 +162,7 @@ class OlympiadTask(db.Model):
     estimated_minutes = db.Column(db.Integer, nullable=True)
     max_score = db.Column(db.Integer, nullable=False, default=7, server_default='7')
 
-    # ── ВсОШ-9 импортные поля (xlsx → idempotent) ────────────────────────────
+    # ── ВсОШ-9 импортные поля (xlsx -> idempotent) ────────────────────────────
     # Все коды методов, использованных в задаче (primary + secondary, и шире).
     # Хранится как JSON-массив строк: ["E14", "F3"].
     # Включён в дополнение к method_primary/method_secondary, чтобы новый /methods
@@ -219,7 +219,7 @@ class TheoryBlock(db.Model):
     why_it_works_md = db.Column(db.Text, nullable=True)
 
     # JSON-массив строк-кодов: ["F4a","F3"]. Используем `db.JSON` —
-    # это совместимый кросс-БД тип (PostgreSQL → JSONB, SQLite → TEXT).
+    # это совместимый кросс-БД тип (PostgreSQL -> JSONB, SQLite -> TEXT).
     related_methods = db.Column(db.JSON, nullable=True)
 
     # Дополнительные поля из methods_final.json (ТЗ 102 методов)
@@ -255,7 +255,7 @@ class TheoryBlock(db.Model):
 # ──────────────────────────────────────────────────────────────────────────────
 
 class ProbnikTheory(db.Model):
-    """Связь Probnik ↔ TheoryBlock с порядком отображения.
+    """Связь Probnik <-> TheoryBlock с порядком отображения.
 
     Используется для тематических пробников: к каждому привязан список
     рекомендуемых для повторения теоретических блоков.
@@ -318,7 +318,7 @@ class TaskAttempt(db.Model):
     # ВАЖНО: используем обычную db.String, а не db.Enum.
     # В проде встречаются legacy-значения статусов (например 'submitted'),
     # оставшиеся от предыдущей схемы. Жёсткий Enum приводил к LookupError
-    # при загрузке таких строк → 500 на странице пробника (см. /olympiads/probnik/*).
+    # при загрузке таких строк -> 500 на странице пробника (см. /olympiads/probnik/*).
     # Валидация значений выполняется на уровне приложения (см. ATTEMPT_STATUSES).
     status = db.Column(
         db.String(20),
@@ -428,8 +428,8 @@ class VserossCourseEntry(db.Model):
     importance = db.Column(db.String(100), nullable=True)           # Приоритет
 
     # Уверенность
-    confidence_label = db.Column(db.String(100), nullable=True)     # "🟢 100% — будет точно" и т.п.
-    confidence_level = db.Column(db.Integer, nullable=False, default=1)  # 3=🟢 2=🟡 1=⚪
+    confidence_label = db.Column(db.String(100), nullable=True)     # " 100% — будет точно" и т.п.
+    confidence_level = db.Column(db.Integer, nullable=False, default=1)  # 3= 2= 1=
 
     # Статистика
     appearances = db.Column(db.Integer, nullable=True)              # Появлений

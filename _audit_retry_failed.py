@@ -136,7 +136,7 @@ def main():
             try:
                 result = future.result()
                 retry_results.append(result)
-                status = "✓" if result.get("success") else "✗"
+                status = "[OK]" if result.get("success") else ""
                 overall = result.get("audit_result", {}).get("overall", "?") if result.get("success") else "FAIL"
                 logger.info(f"[{idx}] {status} overall={overall}, success={result['success']}")
             except Exception as e:

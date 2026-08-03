@@ -191,7 +191,7 @@ def task1_table_a() -> None:
     print(f"  Причина: allowed_levels=[{allowed_levels[0]}] (только уровень 5)")
     print(f"  Большинство задач уровня 5 классифицируются через topic/subject,")
     print(f"  и _normalize_section НЕ МОЖЕТ правильно определить раздел для многих из них.")
-    print(f"  В результате: geometry и number_theory имеют корректные topic→section,")
+    print(f"  В результате: geometry и number_theory имеют корректные topic->section,")
     print(f"  а algebra/combinatorics/logic — нет (попадают в fallback 'algebra').")
 
 
@@ -261,11 +261,11 @@ def task2_soft_degradation_log() -> None:
         print(f"      из них seen: {len(section_seen)}")
 
         if fresh_count < 2 and len(section_seen) > 0:
-            print(f"      → деградация ДОЛЖНА сработать: свежих={fresh_count}, seen={len(section_seen)}")
+            print(f"      -> деградация ДОЛЖНА сработать: свежих={fresh_count}, seen={len(section_seen)}")
         elif fresh_count >= 2:
-            print(f"      → деградация НЕ нужна: хватает свежих задач")
+            print(f"      -> деградация НЕ нужна: хватает свежих задач")
         else:
-            print(f"      → задач раздела на этих уровнях вообще нет")
+            print(f"      -> задач раздела на этих уровнях вообще нет")
 
     # Теперь выполним pick_daily_set с включённым логгированием
     print(f"\n  ══ ВЫВОД ЗАДАЧИ 2 ══")
@@ -273,13 +273,13 @@ def task2_soft_degradation_log() -> None:
     print(f"  Условие: len(tasks) < count and user_id is not None")
     print(f"  Текущая ситуация: allowed_levels=[5], все 5 разделов имеют задачи уровня 5.")
     print(f"  НО _normalize_section НЕВЕРНО классифицирует algebra/combinatorics/logic.")
-    print(f"  Для number_theory и geometry — topic содержит 'Теория чисел'/'Геометрия' → классификация верна.")
-    print(f"  Для algebra/combinatorics/logic — topic, вероятно, пуст или не содержит ключевых слов → fallback 'algebra'.")
+    print(f"  Для number_theory и geometry — topic содержит 'Теория чисел'/'Геометрия' -> классификация верна.")
+    print(f"  Для algebra/combinatorics/logic — topic, вероятно, пуст или не содержит ключевых слов -> fallback 'algebra'.")
     print(f"  Поэтому:")
-    print(f"    - algebra: все задачи классифицируются как 'algebra' → unseen_count > 0 → деградация НЕ срабатывает")
-    print(f"    - но при этом _pick_tasks_for_section('algebra') находит ВСЕ задачи → хватает свежих")
-    print(f"    - _pick_tasks_for_section('combinatorics') находит 0 → falls to fallback → раздел теряется")
-    print(f"    - _pick_tasks_for_section('logic') находит 0 → falls to fallback → раздел теряется")
+    print(f"    - algebra: все задачи классифицируются как 'algebra' -> unseen_count > 0 -> деградация НЕ срабатывает")
+    print(f"    - но при этом _pick_tasks_for_section('algebra') находит ВСЕ задачи -> хватает свежих")
+    print(f"    - _pick_tasks_for_section('combinatorics') находит 0 -> falls to fallback -> раздел теряется")
+    print(f"    - _pick_tasks_for_section('logic') находит 0 -> falls to fallback -> раздел теряется")
     print(f"  Ветка деградации (стр. 232) НЕ ДОСТИГАЕТСЯ для этих разделов,")
     print(f"  потому что они не проходят фильтр `task_section == section` даже на начальном этапе.")
 
@@ -333,7 +333,7 @@ def task3_diversity_fix_and_table_c() -> None:
         DailyTaskItem.query.filter_by(daily_set_id=existing.id).delete()
         db.session.delete(existing)
         db.session.commit()
-        print(f"  ✓ Старый сет удалён")
+        print(f"  [OK] Старый сет удалён")
 
     # ══ МОДИФИЦИРОВАННЫЙ АЛГОРИТМ (повторяет логику pick_daily_set, но с diversity) ══
     import random
@@ -389,10 +389,10 @@ def task3_diversity_fix_and_table_c() -> None:
         _normalize_section(t.get('topic', '')) for t in selected_tasks
     )
     print(f"\n  После первого прохода: {len(selected_tasks)} задач, "
-          f"разделов: {len(unique_sections)} → {unique_sections}")
+          f"разделов: {len(unique_sections)} -> {unique_sections}")
 
     if len(unique_sections) < 3:
-        print(f"  ⚠️ Разделов < 3 — применяем diversity fix (±1 уровень, не выше ceiling)")
+        print(f"  [!]️ Разделов < 3 — применяем diversity fix (±1 уровень, не выше ceiling)")
 
         # Расширяем allowed_levels на ±1
         expanded_levels = set(allowed_levels)
@@ -439,7 +439,7 @@ def task3_diversity_fix_and_table_c() -> None:
                     seen_ids.add(t['task_id'])
                     selected_tasks.append(t)
                     section_task_counts[missing_sec] = section_task_counts.get(missing_sec, 0) + 1
-                    print(f"    ✓ заменён 1 слот: {over_sec} → {missing_sec} (уровень {t.get('difficulty_level')})")
+                    print(f"    [OK] заменён 1 слот: {over_sec} -> {missing_sec} (уровень {t.get('difficulty_level')})")
                     break
 
         # Пересчитываем
@@ -447,7 +447,7 @@ def task3_diversity_fix_and_table_c() -> None:
             _normalize_section(t.get('topic', '')) for t in selected_tasks
         )
         print(f"  После diversity fix: {len(selected_tasks)} задач, "
-              f"разделов: {len(unique_sections)} → {unique_sections}")
+              f"разделов: {len(unique_sections)} -> {unique_sections}")
 
     # Сохраняем в БД
     daily_set = DailyTaskSet(
@@ -503,11 +503,11 @@ def task3_diversity_fix_and_table_c() -> None:
         final_sections.add(sec_slug)
         print(f"  {it.position:<4} {it.id:<8} {sec_slug:<22} {it.difficulty_level or '—':<8} {(it.topic or '')[:28]:<30}")
 
-    print(f"\n  Число уникальных разделов: {len(final_sections)} → {final_sections}")
+    print(f"\n  Число уникальных разделов: {len(final_sections)} -> {final_sections}")
     if len(final_sections) >= 3:
-        print(f"  ✓ КРИТЕРИЙ ВЫПОЛНЕН: разделов ≥ 3")
+        print(f"  [OK] КРИТЕРИЙ ВЫПОЛНЕН: разделов ≥ 3")
     else:
-        print(f"  ❌ КРИТЕРИЙ НЕ ВЫПОЛНЕН: разделов < 3")
+        print(f"  [ERROR] КРИТЕРИЙ НЕ ВЫПОЛНЕН: разделов < 3")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -564,7 +564,7 @@ def task4_fallback() -> None:
         cs.level_by_section = "{}"
         cs.level_updated_at = None
         db.session.commit()
-        print("    ✓ Анкета и level_engine очищены")
+        print("    [OK] Анкета и level_engine очищены")
 
     try:
         # Удаляем существующий сет
@@ -604,18 +604,18 @@ def task4_fallback() -> None:
                 sections_seen.add(sec_slug)
                 print(f"    {it.position:<4} {it.id:<8} {sec_slug:<22} {it.difficulty_level or '—':<8}")
 
-            print(f"\n    Уникальных разделов: {len(sections_seen)} → {sections_seen}")
+            print(f"\n    Уникальных разделов: {len(sections_seen)} -> {sections_seen}")
             print(f"    Количество задач: {len(items)} (ожидалось {count})")
 
             # Признак фолбэка
             is_daily_rotation = new_set.triggered_by == 'daily_rotation'
             print(f"\n    Признак фолбэка (daily_rotation): {'ДА' if is_daily_rotation else 'НЕТ — ' + str(new_set.triggered_by)}")
             if is_daily_rotation and len(items) == 5:
-                print(f"    ✓ Тематический фолбэк применён: 5 задач, triggered_by=daily_rotation")
+                print(f"    [OK] Тематический фолбэк применён: 5 задач, triggered_by=daily_rotation")
             else:
-                print(f"    ⚠️ Не соответствует ожидаемому фолбэку")
+                print(f"    [!]️ Не соответствует ожидаемому фолбэку")
         else:
-            print(f"    ❌ Сет не создан!")
+            print(f"    [ERROR] Сет не создан!")
             print(f"    Результат pick_daily_set: {result}")
 
     finally:
@@ -626,7 +626,7 @@ def task4_fallback() -> None:
             cs.level_sigma = saved_sigma
             cs.level_by_section = saved_by_section
             db.session.commit()
-            print("\n    ✓ Анкета и level_engine восстановлены")
+            print("\n    [OK] Анкета и level_engine восстановлены")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -648,17 +648,17 @@ def criterion_7() -> None:
         try:
             py_compile.compile(f, doraise=True)
         except py_compile.PyCompileError as e:
-            print(f"  ❌ {f}: {e}")
+            print(f"  [ERROR] {f}: {e}")
             all_ok = False
     if all_ok:
-        print("  ✓ python -m py_compile: exit 0")
+        print("  [OK] python -m py_compile: exit 0")
 
     user = get_user()
     flask_app.test_client_class = FlaskLoginClient
     with flask_app.test_client(user=user) as client:
         resp = client.get('/daily_tasks/')
         status = resp.status_code
-        print(f"  GET /daily_tasks: {status}" + (" ✓" if status == 200 else " ❌"))
+        print(f"  GET /daily_tasks: {status}" + (" [OK]" if status == 200 else " [ERROR]"))
 
 
 # ══════════════════════════════════════════════════════════════════════

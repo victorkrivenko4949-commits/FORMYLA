@@ -56,7 +56,7 @@ def main():
             r = client.get('/')
             body = r.data.decode('utf-8') if isinstance(r.data, bytes) else r.data
             logged_in = "Выйти" in body or "Профиль" in body
-            print(f"[✓] Logged in: {logged_in}, status: {r.status_code}")
+            print(f"[[OK]] Logged in: {logged_in}, status: {r.status_code}")
             
             # ═══════════════════════════════════════════════════
             # QUESTION 1 verification
@@ -67,12 +67,12 @@ def main():
             
             # Test /daily-set
             r = client.get('/daily-set', follow_redirects=True)
-            print(f"GET /daily-set → {r.status_code}")
+            print(f"GET /daily-set -> {r.status_code}")
             print(f"  Body snippet: {r.data.decode('utf-8')[:200]}")
             
             # Test /daily_tasks
             r = client.get('/daily_tasks', follow_redirects=True)
-            print(f"GET /daily_tasks → {r.status_code}")
+            print(f"GET /daily_tasks -> {r.status_code}")
             body = r.data.decode('utf-8') if isinstance(r.data, bytes) else r.data
             print(f"  Body length: {len(body)}")
             print(f"  Contains 'Задачи дня': {'Задачи дня' in body}")
@@ -80,11 +80,11 @@ def main():
             
             # Test /daily
             r = client.get('/daily', follow_redirects=True)
-            print(f"GET /daily → {r.status_code}")
+            print(f"GET /daily -> {r.status_code}")
             
             # Test /api/daily-task 
             r = client.get('/api/daily-task')
-            print(f"GET /api/daily-task → {r.status_code}")
+            print(f"GET /api/daily-task -> {r.status_code}")
             try:
                 data = json.loads(r.data) if isinstance(r.data, bytes) else r.data
                 if isinstance(data, dict) and 'tasks' in data:
@@ -95,7 +95,7 @@ def main():
                 print(f"  Not JSON: {str(r.data[:200])}")
             
             # ═══════════════════════════════════════════════════
-            # EVIDENCE A: Questionnaire → daily tasks
+            # EVIDENCE A: Questionnaire -> daily tasks
             # ═══════════════════════════════════════════════════
             print("\n" + "="*70)
             print("EVIDENCE A: Set load=m60 via onboarding, check daily tasks")
@@ -123,7 +123,7 @@ def main():
                     }
                 }
                 db.session.commit()
-                print("[✓] Set onboarding with daily_tasks=8, load=m60")
+                print("[[OK]] Set onboarding with daily_tasks=8, load=m60")
             else:
                 # Create curator state
                 new_cs = CuratorState(user_id=user.id, prep_state={
@@ -140,7 +140,7 @@ def main():
                 })
                 db.session.add(new_cs)
                 db.session.commit()
-                print("[✓] Created CuratorState with daily_tasks=8")
+                print("[[OK]] Created CuratorState with daily_tasks=8")
             
             # Also set preferred_grade
             user.preferred_grade = 9
@@ -149,7 +149,7 @@ def main():
             # Now open daily tasks via /api/daily-task (the pick_daily_set route)
             print("\n--- Opening /api/daily-task ---")
             r = client.get('/api/daily-task?regenerate=1')
-            print(f"GET /api/daily-task?regenerate=1 → {r.status_code}")
+            print(f"GET /api/daily-task?regenerate=1 -> {r.status_code}")
             try:
                 data = json.loads(r.data) if isinstance(r.data, bytes) else r.data
                 if isinstance(data, dict):
@@ -167,12 +167,12 @@ def main():
             # Also try /daily-set
             print("\n--- Opening /daily-set ---")
             r = client.get('/daily-set')
-            print(f"GET /daily-set → {r.status_code}")
+            print(f"GET /daily-set -> {r.status_code}")
             body = r.data.decode('utf-8') if isinstance(r.data, bytes) else r.data
             
             # Check if it tried to render daily_set.html
             if r.status_code == 500 and 'daily_set.html' in body:
-                print("  ERROR: daily_set.html template not found → ROUTE IS BROKEN")
+                print("  ERROR: daily_set.html template not found -> ROUTE IS BROKEN")
             elif r.status_code == 200:
                 print(f"  Body: {body[:300]}")
             
@@ -238,11 +238,11 @@ def main():
                     last_sec = section
                 
                 max_run = max(max_run, run)
-                mark = " ❌ VIOLATION" if run > 2 else ""
+                mark = " [ERROR] VIOLATION" if run > 2 else ""
                 print(f"  pos={it['position']} section={section} run={run}{mark}")
             
             print(f"\n  Max consecutive same section: {max_run}")
-            print(f"  Rule ≤2: {'✅ COMPLIANT' if max_run <= 2 else '❌ VIOLATED'}")
+            print(f"  Rule ≤2: {'[OK] COMPLIANT' if max_run <= 2 else '[ERROR] VIOLATED'}")
             
             # ═══════════════════════════════════════════════════
             # EVIDENCE C: route_ceiling
@@ -263,7 +263,7 @@ def main():
             max_level = max(levels) if levels else 0
             print(f"  Tasks count: {len(items)}")
             print(f"  Max level in tasks: {max_level}")
-            print(f"  Ceiling check: {'✅ OK' if max_level <= ceiling else '❌ VIOLATION'}")
+            print(f"  Ceiling check: {'[OK] OK' if max_level <= ceiling else '[ERROR] VIOLATION'}")
             
             # ═══════════════════════════════════════════════════
             # EVIDENCE D: Answer 3 tasks
@@ -317,7 +317,7 @@ def main():
             
             # Force regenerate
             r = client.get('/api/daily-task?regenerate=1')
-            print(f"GET /api/daily-task?regenerate=1 → {r.status_code}")
+            print(f"GET /api/daily-task?regenerate=1 -> {r.status_code}")
             
             new_items = db_query("""
                 SELECT dti.id, dti.position, dti.topic, dti.difficulty_level
@@ -333,7 +333,7 @@ def main():
             print(f"  Old task IDs: {sorted(old_ids)[:10]}...")
             print(f"  New task IDs: {sorted(new_ids)[:10]}...")
             print(f"  Overlap: {overlap}")
-            print(f"  Non-overlap: {'✅ EMPTY (new set)' if not overlap else '❌ OVERLAP detected'}")
+            print(f"  Non-overlap: {'[OK] EMPTY (new set)' if not overlap else '[ERROR] OVERLAP detected'}")
             
             # ═══════════════════════════════════════════════════
             # EVIDENCE F: Curator questions
@@ -403,9 +403,9 @@ def main():
             # Show the actual prompt that would be sent
             print("\n  --- Final prompt that goes to model (coach_chat) ---")
             print("  System prompt + card_text + radar_block")
-            print("  card_text (from build_student_card): uses mu 1-5 ✓")
+            print("  card_text (from build_student_card): uses mu 1-5 [OK]")
             print("  radar_block (from coach_chat line 2470-2475): uses old radar 0-100")
-            print("  → ISSUE: prompt has BOTH scales simultaneously")
+            print("  -> ISSUE: prompt has BOTH scales simultaneously")
 
 if __name__ == "__main__":
     main()

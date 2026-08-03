@@ -206,7 +206,7 @@ class TestGeneratePrepPlan:
     """Test generate_prep_plan()."""
 
     def test_creates_correct_number_of_days(self, user, olympiad, baseline_radar):
-        """30 days to olympiad → 30 PrepDay records."""
+        """30 days to olympiad -> 30 PrepDay records."""
         target = date.today() + timedelta(days=30)
         plan = generate_prep_plan(user, olympiad, 'Школьный', target, baseline_radar)
 
@@ -221,7 +221,7 @@ class TestGeneratePrepPlan:
         _db.session.commit()
 
     def test_minimum_7_days(self, user, olympiad, baseline_radar):
-        """If target is tomorrow → still 7 days (minimum)."""
+        """If target is tomorrow -> still 7 days (minimum)."""
         target = date.today() + timedelta(days=2)
         plan = generate_prep_plan(user, olympiad, 'Школьный', target, baseline_radar)
 
@@ -234,7 +234,7 @@ class TestGeneratePrepPlan:
         _db.session.commit()
 
     def test_maximum_180_days(self, user, olympiad, baseline_radar):
-        """If target is 2 years away → 180 days (maximum)."""
+        """If target is 2 years away -> 180 days (maximum)."""
         target = date.today() + timedelta(days=700)
         plan = generate_prep_plan(user, olympiad, 'Школьный', target, baseline_radar)
 

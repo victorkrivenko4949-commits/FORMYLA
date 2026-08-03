@@ -32,7 +32,7 @@ with open(TASKS_FILE, 'r', encoding='utf-8') as f:
 
 print(f'Loaded {len(methods)} methods, {len(tasks)} tasks', flush=True)
 
-# ─── Section → keyword filter ───
+# ─── Section -> keyword filter ───
 SECTION_FILTERS = {
     'A': ['числ', 'сумм', 'произвед', 'делит', 'остат', 'цифр', 'дроб', 'процент', 
           'скорост', 'работ', 'движен', 'цена', 'стоим', 'покуп', 'зарпл', 'возраст',
@@ -149,7 +149,7 @@ def call_with_retry(url, payload, max_tokens, timeout, max_retries=100):
             if not c and finish == 'length':
                 new_max = min(int(max_tokens * 1.5), 32000)
                 if new_max > max_tokens:
-                    print(f'      Пустой ответ (finish=length), увеличиваю токены {max_tokens}→{new_max}', flush=True)
+                    print(f'      Пустой ответ (finish=length), увеличиваю токены {max_tokens}->{new_max}', flush=True)
                     payload['max_tokens'] = new_max
                     max_tokens = new_max
                     time.sleep(2)

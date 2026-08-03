@@ -210,13 +210,13 @@ with app.test_client() as _c:
             _code = _r.status_code
             if _code >= 500:
                 _error_500.append((_url, _code, _r.data.decode('utf-8','replace')[:300]))
-                L(f'S5(c) 5xx: {_url} → {_code}')
+                L(f'S5(c) 5xx: {_url} -> {_code}')
             elif _code >= 400:
                 _error_other.append((_url, _code))
-                L(f'S5(c) 4xx: {_url} → {_code}')
+                L(f'S5(c) 4xx: {_url} -> {_code}')
             else:
                 _ok_count += 1
-                L(f'S5(c) OK: {_url} → {_code}')
+                L(f'S5(c) OK: {_url} -> {_code}')
         except Exception as _ce:
             _error_500.append((_url, 'EXC', str(_ce)[:300]))
             L(f'S5(c) EXC: {_url} — {_ce}')

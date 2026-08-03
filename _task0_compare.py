@@ -79,7 +79,7 @@ rows = bak.execute("""
     GROUP BY difficulty_level_src, difficulty_level
     ORDER BY difficulty_level_src
 """).fetchall()
-print("adaptive_tasks src → current mapping BEFORE:")
+print("adaptive_tasks src -> current mapping BEFORE:")
 for r in rows:
     print(f"  src={r['difficulty_level_src']} cur={r['difficulty_level']} cnt={r['cnt']}")
 
@@ -136,7 +136,7 @@ rows = now.execute("""
     GROUP BY difficulty_level, difficulty_level_src
     ORDER BY difficulty_level
 """).fetchall()
-print("adaptive_tasks cur → src AFTER:")
+print("adaptive_tasks cur -> src AFTER:")
 for r in rows:
     print(f"  cur={r['difficulty_level']} src={r['difficulty_level_src']} cnt={r['cnt']}")
 

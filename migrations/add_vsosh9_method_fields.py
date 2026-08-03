@@ -79,7 +79,7 @@ def _sqlite_backup(db_path: str) -> str:
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     dst = os.path.join(backups_dir, f'formyla_before_vsosh9_method_fields_{ts}.db')
     shutil.copy2(db_path, dst)
-    print(f'✅ Бэкап создан: {dst}')
+    print(f'[OK] Бэкап создан: {dst}')
     return dst
 
 
@@ -87,11 +87,11 @@ def migrate_sqlite(db_path: str) -> None:
     import sqlite3
 
     if not os.path.exists(db_path):
-        print(f'❌ БД не найдена: {db_path}', file=sys.stderr)
+        print(f'[ERROR] БД не найдена: {db_path}', file=sys.stderr)
         sys.exit(1)
 
     print('=' * 60)
-    print('🔄 Migration: add_vsosh9_method_fields (SQLite)')
+    print(' Migration: add_vsosh9_method_fields (SQLite)')
     print(f'   БД: {db_path}')
     print('=' * 60)
 
@@ -104,18 +104,18 @@ def migrate_sqlite(db_path: str) -> None:
     try:
         for table, column, sqlite_sql, _pg_sql in ADDITIONS:
             if not _sqlite_table_exists(conn, table):
-                print(f'⚠️  Таблица {table!r} ещё не создана — пропускаем колонку {column!r}.')
+                print(f'[!]️  Таблица {table!r} ещё не создана — пропускаем колонку {column!r}.')
                 continue
             if _sqlite_column_exists(conn, table, column):
-                print(f'✅ {table}.{column} уже существует — пропускаем.')
+                print(f'[OK] {table}.{column} уже существует — пропускаем.')
                 continue
-            print(f'🔧 ALTER TABLE {table} ADD COLUMN {column}')
+            print(f' ALTER TABLE {table} ADD COLUMN {column}')
             conn.execute(sqlite_sql)
         conn.commit()
-        print('✅ Миграция SQLite применена.')
+        print('[OK] Миграция SQLite применена.')
     except Exception as e:
         conn.rollback()
-        print(f'❌ Миграция SQLite упала: {e}', file=sys.stderr)
+        print(f'[ERROR] Миграция SQLite упала: {e}', file=sys.stderr)
         sys.exit(2)
     finally:
         conn.close()
@@ -127,11 +127,11 @@ def migrate_postgres(dsn: str) -> None:
     try:
         import psycopg  # psycopg 3.x уже в requirements
     except ImportError:
-        print('❌ psycopg не установлен. pip install "psycopg[binary]"', file=sys.stderr)
+        print('[ERROR] psycopg не установлен. pip install "psycopg[binary]"', file=sys.stderr)
         sys.exit(3)
 
     print('=' * 60)
-    print('🔄 Migration: add_vsosh9_method_fields (PostgreSQL)')
+    print(' Migration: add_vsosh9_method_fields (PostgreSQL)')
     print(f'   DSN: {dsn[:32]}…')
     print('=' * 60)
 
@@ -139,13 +139,13 @@ def migrate_postgres(dsn: str) -> None:
         try:
             with conn.cursor() as cur:
                 for table, column, _sqlite_sql, pg_sql in ADDITIONS:
-                    print(f'🔧 {pg_sql}')
+                    print(f' {pg_sql}')
                     cur.execute(pg_sql)
             conn.commit()
-            print('✅ Миграция PostgreSQL применена.')
+            print('[OK] Миграция PostgreSQL применена.')
         except Exception as e:
             conn.rollback()
-            print(f'❌ Миграция PostgreSQL упала: {e}', file=sys.stderr)
+            print(f'[ERROR] Миграция PostgreSQL упала: {e}', file=sys.stderr)
             sys.exit(4)
 
 
@@ -166,7 +166,7 @@ def main() -> None:
     if args.pg is not None:
         dsn = args.pg or os.environ.get('DATABASE_URL', '')
         if not dsn:
-            print('❌ Нужен DSN: --pg postgres://... или env DATABASE_URL.',
+            print('[ERROR] Нужен DSN: --pg postgres://... или env DATABASE_URL.',
                   file=sys.stderr)
             sys.exit(1)
         migrate_postgres(dsn)

@@ -983,8 +983,8 @@ def process_candidate(
     result.conditions["c03_solver_a_leads"] = c03
     result.conditions["c04_solver_a_confidence"] = c04
 
-    print(f"    - C01 (answer): {'✓' if c01.passed else '✗'} | C02 (solution): {'✓' if c02.passed else '✗'} | "
-          f"C03 (leads): {'✓' if c03.passed else '✗'} | C04 (conf): {'✓' if c04.passed else '✗'}")
+    print(f"    - C01 (answer): {'[OK]' if c01.passed else ''} | C02 (solution): {'[OK]' if c02.passed else ''} | "
+          f"C03 (leads): {'[OK]' if c03.passed else ''} | C04 (conf): {'[OK]' if c04.passed else ''}")
 
     # ═══════════════════════════════════════════════════════════════════════
     # Phase 2: SOLVER B (conditions 5-6) — only if SOLVER A failed conditions 1-4
@@ -999,8 +999,8 @@ def process_candidate(
         result.conditions["c06_solver_b_solution"] = c06
 
     if solver_b_needed:
-        print(f"    - C05 (B answer): {'✓' if c05 and c05.passed else '✗'} | "
-              f"C06 (B solution): {'✓' if c06 and c06.passed else '✗'}")
+        print(f"    - C05 (B answer): {'[OK]' if c05 and c05.passed else ''} | "
+              f"C06 (B solution): {'[OK]' if c06 and c06.passed else ''}")
 
     # ═══════════════════════════════════════════════════════════════════════
     # Get solver data for ARBITER
@@ -1016,8 +1016,8 @@ def process_candidate(
     result.conditions["c08_arbiter_solution"] = c08
     result.conditions["c09_arbiter_proof"] = c09
 
-    print(f"    - C07 (answer): {'✓' if c07.passed else '✗'} | C08 (solution): {'✓' if c08.passed else '✗'} | "
-          f"C09 (proof): {'✓' if c09.passed else '✗'}")
+    print(f"    - C07 (answer): {'[OK]' if c07.passed else ''} | C08 (solution): {'[OK]' if c08.passed else ''} | "
+          f"C09 (proof): {'[OK]' if c09.passed else ''}")
 
     # ═══════════════════════════════════════════════════════════════════════
     # Phase 4: Python/SymPy verification (computable problems only)
@@ -1042,8 +1042,8 @@ def process_candidate(
     c12 = verify_duplicates(candidate, cell_tasks)
     result.conditions["c12_duplicate_check"] = c12
 
-    print(f"    - C10 (topic): {'✓' if c10.passed else '✗'} | C11 (level): {'✓' if c11.passed else '✗'} | "
-          f"C12 (dup): {'✓' if c12.passed else '✗'}")
+    print(f"    - C10 (topic): {'[OK]' if c10.passed else ''} | C11 (level): {'[OK]' if c11.passed else ''} | "
+          f"C12 (dup): {'[OK]' if c12.passed else ''}")
 
     # ═══════════════════════════════════════════════════════════════════════
     # Phase 6: AND-gate final decision
@@ -1063,10 +1063,10 @@ def process_candidate(
 
     # Log detailed result
     if result.overall_accepted:
-        print(f"    → ✓ ACCEPTED (all conditions passed)")
+        print(f"    -> [OK] ACCEPTED (all conditions passed)")
     else:
         failed = [c.condition_id for c in all_conditions if not c.passed]
-        print(f"    → ✗ REJECTED: {failed}")
+        print(f"    ->  REJECTED: {failed}")
 
         # Log conflict
         log_conflict({
@@ -1201,7 +1201,7 @@ def main():
         if not isinstance(candidate, dict):
             print(f"    WARNING: Skipping non-dict candidate {slot_key}")
             continue
-        # Derive cell_key from slot_key (strip slot suffix: "G10|L4|T013|S0" → "G10|L4|T013")
+        # Derive cell_key from slot_key (strip slot suffix: "G10|L4|T013|S0" -> "G10|L4|T013")
         cell_key = candidate.get("cell_key", candidate.get("target_cell", ""))
         if not cell_key:
             cell_key = slot_key.rsplit("|", 1)[0] if "|" in slot_key else slot_key
@@ -1270,11 +1270,11 @@ def main():
 
                         if ver_result.overall_accepted:
                             checkpoint["verified"][slot_key] = ver_dict
-                            print(f"      ✓ [{slot_key}] ACCEPTED (12/12)")
+                            print(f"      [OK] [{slot_key}] ACCEPTED (12/12)")
                         else:
                             checkpoint["rejected"][slot_key] = ver_dict
                             failed = [c.condition_id for c in ver_result.conditions.values() if not c.passed]
-                            print(f"      ✗ [{slot_key}] REJECTED: {len(failed)} conditions failed: {failed}")
+                            print(f"       [{slot_key}] REJECTED: {len(failed)} conditions failed: {failed}")
                     except Exception as e:
                         print(f"      ! [{slot_key}] ERROR: {e}")
                         checkpoint["rejected"][slot_key] = {"error": str(e), "slot_key": slot_key}

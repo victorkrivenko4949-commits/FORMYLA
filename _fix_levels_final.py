@@ -8,11 +8,11 @@ with open(path, 'r', encoding='utf-8') as f:
 changes = 0
 
 # 1. Second level_labels in _submit_onboarding_results (7/8)
-old_labels = '''        level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
-                        4: '🟠 Продвинутый', 5: '🔴 Высокий', 6: '💎 Эксперт',
-        7: '👑 Мастер', 8: '🏆 Легенда'}'''
-new_labels = '''        level_labels = {1: '🔵 Начальный', 2: '🟢 Базовый', 3: '🟡 Средний',
-                        4: '🟠 Продвинутый', 5: '🔴 Высокий'}'''
+old_labels = '''        level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
+                        4: ' Продвинутый', 5: ' Высокий', 6: ' Эксперт',
+        7: ' Мастер', 8: ' Легенда'}'''
+new_labels = '''        level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
+                        4: ' Продвинутый', 5: ' Высокий'}'''
 if old_labels in txt:
     txt = txt.replace(old_labels, new_labels)
     changes += 1
@@ -20,7 +20,7 @@ if old_labels in txt:
 else:
     print(f'[--] Second level_labels not found')
 
-# 2. * 8 in final_level calculations → * 5
+# 2. * 8 in final_level calculations -> * 5
 # In coach_onboarding_submit and _submit_onboarding_results
 old_star8 = "topic_results[topic]['total']) * 8"
 new_star5 = "topic_results[topic]['total']) * 5"
@@ -31,7 +31,7 @@ if old_star8 in txt:
 else:
     print(f'[--] * 8 pattern not found')
 
-# 3. difficulty <= 8 → <= 5
+# 3. difficulty <= 8 -> <= 5
 old_diff = 'if 1 <= difficulty <= 8:'
 new_diff = 'if 1 <= difficulty <= 5:'
 if old_diff in txt:
@@ -41,7 +41,7 @@ if old_diff in txt:
 else:
     print(f'[--] difficulty <= 8 not found')
 
-# 4. Comment "адаптация уровня (шкала 1..8)" → "1..5"
+# 4. Comment "адаптация уровня (шкала 1..8)" -> "1..5"
 old_comment = 'Адаптация уровня (шкала 1..8):'
 new_comment = 'Адаптация уровня (шкала 1..5):'
 if old_comment in txt:

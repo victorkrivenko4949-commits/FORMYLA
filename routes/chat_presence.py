@@ -27,7 +27,7 @@ chat_presence_bp = Blueprint("chat_presence_bp", __name__)
 
 # ---------- auto-migration ----------------------------------------------------
 
-ALLOWED_EMOJIS = ("👍", "❤️", "😂", "😮", "😢", "🔥")
+ALLOWED_EMOJIS = ("", "️", "", "", "", "")
 
 
 def _ensure_table() -> None:
@@ -139,7 +139,7 @@ def set_typing(friend_id: int):
 def react_to_message(message_id: int):
     """Toggle one emoji reaction on a message.
 
-    Body: {"emoji": "👍"}.  If the reaction already exists for the current
+    Body: {"emoji": ""}.  If the reaction already exists for the current
     user it is removed; otherwise it is added.  Only participants of the
     conversation may react.
     """

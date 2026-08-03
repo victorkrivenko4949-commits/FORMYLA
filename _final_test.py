@@ -148,25 +148,25 @@ with app.app_context():
 
     # Wrong answers
     wrong_tests = [
-        ('A_G5_ALG', '31'),     # 30 → wrong
-        ('A_G5_GEO', '7'),      # 8 → wrong
-        ('A_G9_ALG', '13'),     # 12 → wrong
-        ('A_G11_NT', '26'),     # 27 → wrong
+        ('A_G5_ALG', '31'),     # 30 -> wrong
+        ('A_G5_GEO', '7'),      # 8 -> wrong
+        ('A_G9_ALG', '13'),     # 12 -> wrong
+        ('A_G11_NT', '26'),     # 27 -> wrong
     ]
     p()
     p("Wrong answer tests:")
     for uid, wrong_ans in wrong_tests:
         a = next(x for x in anchors_raw if x['anchor_uid'] == uid)
         ok = check_answer(wrong_ans, a['answer'])
-        p(f"  {uid}: answer='{wrong_ans}' vs correct='{a['answer']}' → correct={ok} {'PASS(not matched)' if not ok else 'FAIL(should not match)'}")
+        p(f"  {uid}: answer='{wrong_ans}' vs correct='{a['answer']}' -> correct={ok} {'PASS(not matched)' if not ok else 'FAIL(should not match)'}")
 
     # Edge cases: spaces, commas, dots
     p()
     p("Edge cases:")
-    p(f"  '30' vs '30' → {check_answer('30', '30')}")
-    p(f"  ' 30 ' vs '30' → {check_answer(' 30 ', '30')}")
-    p(f"  '0.99' vs '0,99' → {check_answer('0.99', '0,99')}")
-    p(f"  '0,99' vs '0.99' → {check_answer('0,99', '0.99')}")
+    p(f"  '30' vs '30' -> {check_answer('30', '30')}")
+    p(f"  ' 30 ' vs '30' -> {check_answer(' 30 ', '30')}")
+    p(f"  '0.99' vs '0,99' -> {check_answer('0.99', '0,99')}")
+    p(f"  '0,99' vs '0.99' -> {check_answer('0,99', '0.99')}")
 
     # ================================================================
     p()

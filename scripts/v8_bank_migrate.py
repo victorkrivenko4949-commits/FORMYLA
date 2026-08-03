@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Миграция JSON-банка: уровни 4..8 → 1..5 (level - 3).
+"""Миграция JSON-банка: уровни 4..8 -> 1..5 (level - 3).
 
 Правило: тот же маппинг, что уже применялся при переходе на пятибалльную шкалу.
 Было: bank_level = canonical_level + 3, clamped [4, 8].
-Стало: bank_level = bank_level - 3 → [1..5].
+Стало: bank_level = bank_level - 3 -> [1..5].
 
 Делает копию базы formyla.db перед SQL-миграцией grade_tasks.
 """
@@ -31,15 +31,15 @@ GRADE_FILES = {
 def backup_db():
     """Создать копию базы перед миграцией."""
     backup_path = DB_PATH.with_suffix(".db.bak_v8bank")
-    print(f"[DB] Копия базы: {DB_PATH} → {backup_path}")
+    print(f"[DB] Копия базы: {DB_PATH} -> {backup_path}")
     shutil.copy2(DB_PATH, backup_path)
     return backup_path
 
 
 def migrate_json_bank():
-    """Перенести уровни в JSON-файлах банка: 4→1, 5→2, 6→3, 7→4, 8→5."""
+    """Перенести уровни в JSON-файлах банка: 4->1, 5->2, 6->3, 7->4, 8->5."""
     print("=" * 60)
-    print("JSON-БАНК: уровни 4..8 → 1..5")
+    print("JSON-БАНК: уровни 4..8 -> 1..5")
     print("=" * 60)
     for grade, fname in sorted(GRADE_FILES.items()):
         path = BANK_DIR / fname
@@ -75,10 +75,10 @@ def migrate_json_bank():
 
 
 def migrate_grade_tasks():
-    """SQL-миграция grade_tasks: уровни 6→3, 7→4 (level - 3)."""
+    """SQL-миграция grade_tasks: уровни 6->3, 7->4 (level - 3)."""
     print()
     print("=" * 60)
-    print("GRADE_TASKS SQL: уровни 6→3, 7→4")
+    print("GRADE_TASKS SQL: уровни 6->3, 7->4")
     print("=" * 60)
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()

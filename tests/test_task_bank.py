@@ -9,7 +9,7 @@
 4. get_tasks — MISS для несуществующих (grade, level, day)
 5. validate_tasks — валидация количества и полей
 6. compute_day_number — детерминизм и граничные случаи
-7. pick_bank_level — 5/8 → level=5, калибровочные темы игнорируются
+7. pick_bank_level — 5/8 -> level=5, калибровочные темы игнорируются
 8. get_probe_meta — возвращает метаданные пробника
 9. available_cells — возвращает ячейки
 10. Детерминизм: повторный вызов get_tasks даёт те же задачи
@@ -193,17 +193,17 @@ class TestGetTasksMiss:
             tb.get_tasks(grade=4, level=4, day=1)
 
     def test_miss_wrong_level(self):
-        """get_tasks для уровня вне [1,5] → None (если нет в банке)."""
+        """get_tasks для уровня вне [1,5] -> None (если нет в банке)."""
         tasks = tb.get_tasks(grade=6, level=6, day=1)
         assert tasks is None, "Уровень 6 не должен быть в банке"
 
     def test_miss_wrong_day(self):
-        """get_tasks для дня вне [1,100] → None."""
+        """get_tasks для дня вне [1,100] -> None."""
         tasks = tb.get_tasks(grade=6, level=4, day=101)
         assert tasks is None, "День 101 не должен быть в банке"
 
     def test_miss_nonexistent_combination(self):
-        """get_tasks для несуществующей комбинации → None."""
+        """get_tasks для несуществующей комбинации -> None."""
         # Уровень 4, день 0 — нет в банке
         tasks = tb.get_tasks(grade=6, level=4, day=0)
         assert tasks is None
@@ -275,36 +275,36 @@ class TestComputeDayNumber:
     """Детерминированный номер дня."""
 
     def test_day_1_for_same_date(self):
-        """start_date == today → day=1."""
+        """start_date == today -> day=1."""
         d = date(2026, 6, 1)
         assert tb.compute_day_number(d, today=d) == 1
 
     def test_day_2_after_one_day(self):
-        """start_date + 1 день → day=2."""
+        """start_date + 1 день -> day=2."""
         start = date(2026, 6, 1)
         today = date(2026, 6, 2)
         assert tb.compute_day_number(start, today=today) == 2
 
     def test_day_100_after_99_days(self):
-        """start_date + 99 дней → day=100."""
+        """start_date + 99 дней -> day=100."""
         start = date(2026, 6, 1)
         today = date(2026, 9, 8)  # 99 дней
         assert tb.compute_day_number(start, today=today) == 100
 
     def test_wraparound_day_1(self):
-        """start_date + 100 дней → day=1 (wraparound)."""
+        """start_date + 100 дней -> day=1 (wraparound)."""
         start = date(2026, 6, 1)
         today = date(2026, 9, 9)  # 100 дней
         assert tb.compute_day_number(start, today=today) == 1
 
     def test_wraparound_day_50(self):
-        """start_date + 150 дней → day=51."""
+        """start_date + 150 дней -> day=51."""
         start = date(2026, 6, 1)
         today = date(2026, 10, 29)  # 150 дней
         assert tb.compute_day_number(start, today=today) == 51
 
     def test_future_start_date(self):
-        """start_date в будущем → day=1."""
+        """start_date в будущем -> day=1."""
         start = date(2026, 12, 31)
         today = date(2026, 6, 1)
         assert tb.compute_day_number(start, today=today) == 1
@@ -326,19 +326,19 @@ class TestComputeDayNumber:
 
 
 # ═══════════════════════════════════════════════════════════════════
-#  7. pick_bank_level — 5/8 → level=5
+#  7. pick_bank_level — 5/8 -> level=5
 # ═══════════════════════════════════════════════════════════════════
 
 class TestPickBankLevel:
     """Выбор уровня из профиля."""
 
     def test_average_of_measured_topics(self):
-        """Среднее target_level измеренных тем (5 и 8) → 5 (round(6.5)→6 ... wait).
+        """Среднее target_level измеренных тем (5 и 8) -> 5 (round(6.5)->6 ... wait).
 
-        Спецификация: 5/8 → level=5. Но round((5+8)/2) = round(6.5) = 6 (banker's rounding → 6).
+        Спецификация: 5/8 -> level=5. Но round((5+8)/2) = round(6.5) = 6 (banker's rounding -> 6).
         Нам нужно проверить, что measured_levels работают.
 
-        Случай: target_level=[5,5] → round(5)=5
+        Случай: target_level=[5,5] -> round(5)=5
         """
         profile = {
             "topics_full": [
@@ -363,12 +363,12 @@ class TestPickBankLevel:
         """Калибровочные темы не учитываются в среднем."""
         profile = {
             "topics_full": [
-                {"target_level": 5, "calibration": False},   # measured → учтём
-                {"target_level": 0, "calibration": True},    # calibration → игнор
-                {"target_level": 5, "calibration": False},   # measured → учтём
+                {"target_level": 5, "calibration": False},   # measured -> учтём
+                {"target_level": 0, "calibration": True},    # calibration -> игнор
+                {"target_level": 5, "calibration": False},   # measured -> учтём
             ],
         }
-        # Среднее: (8+8)/2 = 8 → level=8
+        # Среднее: (8+8)/2 = 8 -> level=8
         assert tb.pick_bank_level(profile) == 5
 
     def test_no_measured_topics_uses_class_expected(self):
@@ -427,7 +427,7 @@ class TestGetProbeMeta:
         assert meta["num_tasks"] == tb.TASKS_PER_PROBE
 
     def test_miss_returns_none(self):
-        """get_probe_meta для несуществующей комбинации → None."""
+        """get_probe_meta для несуществующей комбинации -> None."""
         meta = tb.get_probe_meta(grade=6, level=4, day=101)
         assert meta is None
 
@@ -490,7 +490,7 @@ class TestConstants:
 # ═══════════════════════════════════════════════════════════════════
 
 class TestIntegration:
-    """Интеграционный тест: profile → pick_bank_level → get_tasks."""
+    """Интеграционный тест: profile -> pick_bank_level -> get_tasks."""
 
     def test_typical_profile(self):
         """Типичный профиль 6-классника с измеренными темами даёт задачи."""
@@ -504,7 +504,7 @@ class TestIntegration:
         }
         level = tb.pick_bank_level(profile)
         assert tb.MIN_BANK_LEVEL <= level <= tb.MAX_BANK_LEVEL
-        # Среднее (5+4+6)/3 = 5 → level=5
+        # Среднее (5+4+6)/3 = 5 -> level=5
         assert level == 5
 
         start_date = date(2026, 6, 1)
@@ -549,10 +549,10 @@ class TestBankErrorHandling:
     """Проверка, что исключения в ``_try_bank_first`` НЕ вызывают 500.
 
     Фикс: банк-путь обёрнут в try/except на двух уровнях:
-    1. ``_try_bank_first`` → ``_try_bank_first_impl`` (внутренняя защита)
-    2. ``_run_pipeline_async`` → ``_try_bank_first`` (внешняя защита)
+    1. ``_try_bank_first`` -> ``_try_bank_first_impl`` (внутренняя защита)
+    2. ``_run_pipeline_async`` -> ``_try_bank_first`` (внешняя защита)
 
-    Любая ошибка = MISS → graceful fallback на LLM-пайплайн.
+    Любая ошибка = MISS -> graceful fallback на LLM-пайплайн.
     """
 
     def test_try_bank_first_wraps_exception(self, monkeypatch):
@@ -576,7 +576,7 @@ class TestBankErrorHandling:
             job_id=1,
             profile={"class_level": 6},
         ))
-        # Исключение перехвачено → MISS (False), а не крах
+        # Исключение перехвачено -> MISS (False), а не крах
         assert result is False, (
             "Исключение в _try_bank_first_impl должно давать MISS (False)"
         )
@@ -601,7 +601,7 @@ class TestBankErrorHandling:
             user_id=1, target_date=None,
             daily_set_id=1, job_id=1,
             profile={"class_level": 6},
-        )) is False, "ValueError → MISS"
+        )) is False, "ValueError -> MISS"
 
         monkeypatch.setattr(
             "daily_tasks.services._try_bank_first_impl",
@@ -611,7 +611,7 @@ class TestBankErrorHandling:
             user_id=1, target_date=None,
             daily_set_id=1, job_id=1,
             profile={"class_level": 6},
-        )) is False, "KeyError → MISS"
+        )) is False, "KeyError -> MISS"
 
     def test_try_bank_first_empty_profile_returns_false(self):
         """Если профиль без class_level — сразу MISS (без ошибки)."""
@@ -623,7 +623,7 @@ class TestBankErrorHandling:
             daily_set_id=1, job_id=1,
             profile={},
         ))
-        assert result is False, "Пустой профиль → MISS"
+        assert result is False, "Пустой профиль -> MISS"
 
     def test_run_pipeline_catches_bank_exception(self, monkeypatch):
         """``_run_pipeline_async`` перехватывает исключение из

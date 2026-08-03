@@ -6,7 +6,7 @@
 {% block content %}
 <div class="oly-wrap">
     <p style="margin-bottom: 12px;">
-        <a href="{{ url_for('olympiad.catalog') }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к курсам (9 / 10 / 11)</a>
+        <a href="{{ url_for('olympiad.catalog') }}" class="oly-btn-ghost oly-btn oly-btn-sm"><- к курсам (9 / 10 / 11)</a>
     </p>
 
     <header style="margin-bottom: 24px;">
@@ -57,7 +57,7 @@
     {% endif %}
 
     {% if theory_links %}
-    <h2 class="oly-section-title">📚 Рекомендуемая теория</h2>
+    <h2 class="oly-section-title"> Рекомендуемая теория</h2>
     <div class="oly-grid">
         {% for link in theory_links %}
         {# link может прийти как TheoryBlock напрямую (новый код) либо как
@@ -79,7 +79,7 @@
     {# ── Per-task figures ── #}
     {% if task_figures %}
     <section style="margin-top: 32px;">
-        <h2 class="oly-section-title">🖼 Иллюстрации к задачам</h2>
+        <h2 class="oly-section-title"> Иллюстрации к задачам</h2>
         {% for t in tasks %}
         {% set figs = task_figures.get(t.id) %}
         {% if figs and (figs.condition or figs.solution) %}
@@ -96,7 +96,7 @@
                          onerror="this.closest('figure').remove()" />
                     <figcaption class="task-figure__cap">
                         <a class="task-figure__download" href="/static/figures/{{ fname }}" download="{{ fname }}">⬇ Скачать</a>
-                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
                     </figcaption>
                 </figure>
                 {% endfor %}
@@ -113,7 +113,7 @@
                          onerror="this.closest('figure').remove()" />
                     <figcaption class="task-figure__cap">
                         <a class="task-figure__download" href="/static/figures/{{ fname }}" download="{{ fname }}">⬇ Скачать</a>
-                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                        <button class="task-figure__board-btn" onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
                     </figcaption>
                 </figure>
                 {% endfor %}
@@ -128,7 +128,7 @@
 
 {# ── Board overlay ── #}
 <div id="board-overlay" class="board" hidden>
-    <button class="board__close" onclick="closeBoard()" aria-label="Close">✕</button>
+    <button class="board__close" onclick="closeBoard()" aria-label="Close"></button>
     <div class="board__controls">
         <button onclick="boardZoom(1.2)">+</button>
         <button onclick="boardZoom(1/1.2)">−</button>

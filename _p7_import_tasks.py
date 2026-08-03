@@ -30,7 +30,7 @@ with open(jsonl_path, 'r', encoding='utf-8') as f:
         except json.JSONDecodeError:
             continue
 
-        # Маппинг полей JSONL → AdaptiveTask
+        # Маппинг полей JSONL -> AdaptiveTask
         methods_val = d.get('methods', [])
         if isinstance(methods_val, list):
             methods_json = json.dumps(methods_val, ensure_ascii=False)

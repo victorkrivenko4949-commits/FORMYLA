@@ -4,7 +4,7 @@
    .wb-call-panel / #wbCallPanel so we don't leak into the rest of the UI.
    ===================================================================== */
 
-/* ── Accent call button (📞) — should pop out of the toolbar ───────── */
+/* ── Accent call button () — should pop out of the toolbar ───────── */
 .icon-btn.icon-btn-call,
 button.icon-btn-call,
 [data-wb-call-open].icon-btn-call,

@@ -309,33 +309,33 @@ def main():
     # Steps
     print("\n  [Step 1] Auditing taxonomy scope...")
     tax_scope = audit_taxonomy_scope(tax)
-    print(f"    → {tax_scope['total_topics']} topics, {tax_scope['total_subtopics']} subtopics, "
+    print(f"    -> {tax_scope['total_topics']} topics, {tax_scope['total_subtopics']} subtopics, "
           f"{tax_scope['theoretical_max_cells']} possible cells")
 
     print("  [Step 2] Auditing target grid scope...")
     grid_scope = audit_grid_scope(grid)
-    print(f"    → {grid_scope['total_allowed_cells']} allowed cells, "
+    print(f"    -> {grid_scope['total_allowed_cells']} allowed cells, "
           f"{grid_scope['total_excluded_cells']} excluded cells")
 
     print("  [Step 3] Cross-referencing...")
     xref = cross_reference(tax_scope, grid_scope)
-    print(f"    → {xref['delta_count']} cell(s) from taxonomy never allowed in any grade")
+    print(f"    -> {xref['delta_count']} cell(s) from taxonomy never allowed in any grade")
     if xref["is_authoritative_exclusion"]:
         ec = xref["exclusion_details"][0]
-        print(f"    → Identified exclusion: {ec['cell_key']} — {ec['subtopic_name']}")
+        print(f"    -> Identified exclusion: {ec['cell_key']} — {ec['subtopic_name']}")
         print(f"      Reason: {ec['exclusion_reason']}")
-        print(f"    → VERDICT: Authoritative exclusion (NOT an error)")
+        print(f"    -> VERDICT: Authoritative exclusion (NOT an error)")
     else:
-        print(f"    → WARNING: Unexpected delta — needs investigation!")
+        print(f"    -> WARNING: Unexpected delta — needs investigation!")
         if xref["delta_count"] == 0:
-            print(f"    → 0 delta means all 129 cells are allowed somewhere. "
+            print(f"    -> 0 delta means all 129 cells are allowed somewhere. "
                   f"Check grade-level exclusions.")
 
     print("  [Step 4] Computing counts...")
     counts = compute_counts(grid_scope)
-    print(f"    → {counts['total_base_cells']} base cells × 3 levels = "
+    print(f"    -> {counts['total_base_cells']} base cells × 3 levels = "
           f"{counts['total_level_cells']} level-cells")
-    print(f"    → {counts['total_level_cells']} level-cells × 5 tasks = "
+    print(f"    -> {counts['total_level_cells']} level-cells × 5 tasks = "
           f"{counts['total_expected_tasks']} expected tasks")
 
     print("  [Step 5] Grade breakdown...")
@@ -421,15 +421,15 @@ def main():
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
 
-    print(f"\n  Saved → {OUT_PATH}")
+    print(f"\n  Saved -> {OUT_PATH}")
     print(f"  Status: {report['status']}")
     print(f"  All invariants pass: {report['all_invariants_pass']}")
 
     if not report["all_invariants_pass"]:
-        print("\n  ⚠ INVARIANT FAILURE — review pre_run_scope_audit.json for details.")
+        print("\n  [!] INVARIANT FAILURE — review pre_run_scope_audit.json for details.")
         sys.exit(1)
     else:
-        print("\n  ✓ SCOPE_AUDIT_OK — proceeding is safe.")
+        print("\n  [OK] SCOPE_AUDIT_OK — proceeding is safe.")
 
     print("=" * 72)
     return report

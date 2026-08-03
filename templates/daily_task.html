@@ -10,7 +10,7 @@
 <div class="daily-task-container">
     <!-- Header -->
     <div class="task-header-section">
-        <a href="{{ url_for('daily_quest_main') }}" class="back-button">← Назад к квесту</a>
+        <a href="{{ url_for('daily_quest_main') }}" class="back-button"><- Назад к квесту</a>
         <div class="task-progress-mini">
             <span>Задача {{ task_index + 1 }} из {{ total_tasks }}</span>
         </div>
@@ -81,9 +81,9 @@
 
     <!-- AI Tutor Widget (reuse from exam) -->
     <div class="ai-tutor-hint">
-        <p>💡 Нужна подсказка? Используй AI-тьютора!</p>
+        <p> Нужна подсказка? Используй AI-тьютора!</p>
         <button onclick="openAITutor()" class="ai-tutor-button">
-            🤖 Открыть AI-тьютора
+             Открыть AI-тьютора
         </button>
     </div>
 </div>
@@ -295,14 +295,14 @@ async function submitAnswer() {
             } else {
                 alert('Ошибка: ' + (data.message || data.error || 'Неизвестная ошибка'));
                 submitBtn.disabled = false;
-                submitBtn.textContent = '✓ Проверить';
+                submitBtn.textContent = '[OK] Проверить';
             }
         }
     } catch (error) {
         console.error('Error submitting answer:', error);
         alert('Ошибка отправки ответа');
         submitBtn.disabled = false;
-        submitBtn.textContent = '✓ Проверить';
+        submitBtn.textContent = '[OK] Проверить';
     }
 }
 
@@ -311,13 +311,13 @@ async function submitAnswer() {
 function normalizeMathPiece(s) {
     if (!s) return s;
     let out = s;
-    // sqrt(...) → \sqrt{...} (с поддержкой одного уровня вложенных скобок)
+    // sqrt(...) -> \sqrt{...} (с поддержкой одного уровня вложенных скобок)
     for (let i = 0; i < 4; i++) {
         const before = out;
         out = out.replace(/\bsqrt\s*\(([^()]*)\)/g, '\\sqrt{$1}');
         if (out === before) break;
     }
-    // cbrt(x) → \sqrt[3]{x}
+    // cbrt(x) -> \sqrt[3]{x}
     out = out.replace(/\bcbrt\s*\(([^()]*)\)/g, '\\sqrt[3]{$1}');
     // Стрелки и неравенства
     out = out.replace(/=>/g, '\\Rightarrow ')
@@ -360,7 +360,7 @@ function renderAIMarkdown(text) {
 
     // 1) Вырезаем все math-блоки и нормализуем их содержимое.
     //    ВАЖНО: normalizeMathPiece применяется ТОЛЬКО к содержимому формул,
-    //    иначе она ломает Markdown bold (** → \cdot \cdot) и обычный текст.
+    //    иначе она ломает Markdown bold (** -> \cdot \cdot) и обычный текст.
     const placeholders = [];
     const protect = (re, openLen, closeLen) => {
         raw = raw.replace(re, (m) => {
@@ -379,9 +379,9 @@ function renderAIMarkdown(text) {
     //      (sqrt(13), =>, +- и т. п.), но ОСТОРОЖНО — без затрагивания * (которые в bold).
     raw = raw.replace(/\bsqrt\(/g, '\\sqrt(')
              .replace(/\+-/g, '±')
-             .replace(/=>/g, '⇒')
-             .replace(/<=>/g, '⇔')
-             .replace(/->/g, '→');
+             .replace(/=>/g, '')
+             .replace(/<=>/g, '')
+             .replace(/->/g, '->');
 
     // 2) Косметика «вне формул»: разрываем стену текста перед "Случай N", "Ответ:", "Проверка:".
     raw = raw.replace(/\s*(Случай\s*\d+\s*:)/g, '\n\n$1')
@@ -414,12 +414,12 @@ function showFeedback(data) {
     if (data.is_correct) {
         html = `
             <div class="feedback-correct">
-                <div class="feedback-icon">✓</div>
+                <div class="feedback-icon">[OK]</div>
                 <h3>Правильно!</h3>
                 <p class="xp-earned">+${data.xp_earned} XP</p>
                 <div class="ai-feedback">${aiHtml}</div>
                 ${data.quest_completed ?
-                    '<p class="quest-complete-notice">🎉 Квест завершён! Бонус: +100 XP</p>' :
+                    '<p class="quest-complete-notice"> Квест завершён! Бонус: +100 XP</p>' :
                     ''}
             </div>
         `;
@@ -435,7 +435,7 @@ function showFeedback(data) {
     } else {
         html = `
             <div class="feedback-incorrect">
-                <div class="feedback-icon">✗</div>
+                <div class="feedback-icon"></div>
                 <h3>Неправильно</h3>
                 <div class="correct-answer-block"><span class="correct-answer-label">Правильный ответ:</span> <div class="correct-answer-math">${correctAnswer}</div></div>
                 <div class="ai-feedback">${aiHtml}</div>
@@ -476,7 +476,7 @@ function tryAgain() {
     
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = false;
-    submitBtn.textContent = '✓ Проверить';
+    submitBtn.textContent = '[OK] Проверить';
 }
 
 function openAITutor() {

@@ -766,7 +766,7 @@ def generate_report(report: Dict[str, Any]):
             # Problems with issues
             for prob in s["problems"]:
                 if prob.get("issue"):
-                    lines.append(f"    ⚠ Задача #{prob['num']}: {prob['issue']}")
+                    lines.append(f"    [!] Задача #{prob['num']}: {prob['issue']}")
                     lines.append(f"       PDF match: {prob['best_match_pdf'][:50] if prob['best_match_pdf'] else 'NONE'} "
                                 f"(score={prob['match_score']:.3f})")
     

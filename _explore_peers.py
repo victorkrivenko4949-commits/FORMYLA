@@ -32,7 +32,7 @@ for oid, topic, grade, level in mismatch_info:
     print(f"{'='*60}")
     
     if len(peers) == 0:
-        print("  ⚠️  No peer tasks in this cell! Need to generate replacement from scratch.")
+        print("  [!]️  No peer tasks in this cell! Need to generate replacement from scratch.")
         continue
     
     for i, p in enumerate(peers[:6], 1):

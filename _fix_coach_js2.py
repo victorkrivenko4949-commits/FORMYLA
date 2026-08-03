@@ -69,11 +69,11 @@ fetch(greetingUrl, { signal: greetingController.signal })
   .then(function (r) { clearTimeout(greetingTimeout); return r.json(); })
   .then(function (data) {
     console.log('[coach] greeting data, scenario:', data.scenario);
-    greetingEl.innerHTML = data.greeting || '👋 Привет! Я твой ИИ-куратор FORMYLA.';
+    greetingEl.innerHTML = data.greeting || ' Привет! Я твой ИИ-куратор FORMYLA.';
     ctaRow.innerHTML = '';
     // Render CTA buttons based on scenario
     if (data.scenario === 'need_grade') {
-      addCtaButton('🎯 Выбрать класс', '/profile', '');
+      addCtaButton(' Выбрать класс', '/profile', '');
     } else if (data.scenario === 'test_in_progress') {
       // Diagnostic test already running — hide greeting, focus input
       greetingEl.style.display = 'none';
@@ -82,7 +82,7 @@ fetch(greetingUrl, { signal: greetingController.signal })
       if (input) input.focus();
     } else if (data.scenario === 'onboarding_test') {
       // Кнопка "Начать диагностику (21 задача)" — inline в чате
-      addCtaAction('🧪 Начать диагностику (21 задача)', function () {
+      addCtaAction(' Начать диагностику (21 задача)', function () {
         ctaRow.innerHTML = '';
         greetingEl.innerHTML = '⏳ Загружаю диагностические задачи…';
         // Start test via API — returns first task as a chat message
@@ -97,13 +97,13 @@ fetch(greetingUrl, { signal: greetingController.signal })
               var input = document.getElementById('chatInput');
               if (input) input.focus();
             } else {
-              greetingEl.innerHTML = '❌ ' + (data.reply || 'Не удалось начать диагностику.');
+              greetingEl.innerHTML = '[ERROR] ' + (data.reply || 'Не удалось начать диагностику.');
             }
           })
-          .catch(function () { greetingEl.innerHTML = '❌ Ошибка соединения. Попробуй ещё раз.'; });
+          .catch(function () { greetingEl.innerHTML = '[ERROR] Ошибка соединения. Попробуй ещё раз.'; });
       }, '');
     } else if (data.scenario === 'daily_test') {
-      addCtaAction('🧪 Пройти тест по теме', function () {
+      addCtaAction(' Пройти тест по теме', function () {
         var subtopicKey = data.priority_subtopic ? data.priority_subtopic.key : '';
         var subtopicName = data.priority_subtopic ? data.priority_subtopic.name : 'математике';
         greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + subtopicName + '</strong>…';
@@ -118,11 +118,11 @@ fetch(greetingUrl, { signal: greetingController.signal })
               taskData.tasks.forEach(function (t, i) {
                 html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
                 html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + t.task_text + '</p>';
-                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">✅ Правильно</button> ';
-                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">❌ Неверно</button></div>';
+                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">[OK] Правильно</button> ';
+                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">[ERROR] Неверно</button></div>';
                 html += '</div>';
               });
-              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishDailyTest">📊 Завершить тест</button></div>';
+              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishDailyTest"> Завершить тест</button></div>';
               html += '</div>';
               greetingEl.innerHTML = html;
               document.getElementById('finishDailyTest').addEventListener('click', function () {
@@ -143,24 +143,24 @@ fetch(greetingUrl, { signal: greetingController.signal })
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
                   if (res.status === 'ok') {
-                    var msg = '🎯 Уровень: ' + res.level + ' (окно ' + res.min_level + '–' + res.max_level + '). Всего ' + res.total_count + ' задач на сегодня.';
+                    var msg = ' Уровень: ' + res.level + ' (окно ' + res.min_level + '–' + res.max_level + '). Всего ' + res.total_count + ' задач на сегодня.';
                     greetingEl.innerHTML = msg;
                     ctaRow.innerHTML = '';
-                    addCtaAction('📝 Начать задачи дня', function () {
+                    addCtaAction(' Начать задачи дня', function () {
                       window.location.reload();
                     }, '');
                   } else {
-                    greetingEl.innerHTML = '❌ Ошибка: ' + (res.error || 'попробуй ещё раз');
+                    greetingEl.innerHTML = '[ERROR] Ошибка: ' + (res.error || 'попробуй ещё раз');
                   }
                 });
               });
             } else {
-              greetingEl.innerHTML = '😅 Нет задач по этой теме. Попробуй другую.';
+              greetingEl.innerHTML = ' Нет задач по этой теме. Попробуй другую.';
             }
           });
       }, '');
     } else if (data.scenario === 'daily_tasks_ready') {
-      addCtaAction('📝 Продолжить задачи дня', function () {
+      addCtaAction(' Продолжить задачи дня', function () {
         // Navigate to daily tasks page
         window.location.href = '/daily-tasks';
       }, '');
@@ -168,25 +168,25 @@ fetch(greetingUrl, { signal: greetingController.signal })
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('📊 Профиль', '/profile', 'secondary');
+      addCtaButton(' Профиль', '/profile', 'secondary');
     } else if (data.scenario === 'recommend_olympiad' || data.scenario === 'need_test') {
       // Legacy/backward-compatible
       if (data.recommended_olympiad) {
-        addCtaButton('📋 Создать план подготовки', '/prep/new?olympiad=' + data.recommended_olympiad.slug, '');
-        addCtaButton('🔍 Другие олимпиады', '/prep/new', 'secondary');
+        addCtaButton(' Создать план подготовки', '/prep/new?olympiad=' + data.recommended_olympiad.slug, '');
+        addCtaButton(' Другие олимпиады', '/prep/new', 'secondary');
       } else if (data.cta_url) {
         addCtaButton(data.cta_text || 'Далее', data.cta_url, '');
       } else {
-        addCtaButton('📋 Создать план подготовки', '/prep/new', '');
+        addCtaButton(' Создать план подготовки', '/prep/new', '');
       }
 
     // ── Monthly prep cycle scenarios ──────────────────────────────────
     } else if (data.scenario === 'prep_morning_test') {
-      // Test day (days 1–7), test NOT taken yet → offer inline test
+      // Test day (days 1–7), test NOT taken yet -> offer inline test
       var prepInfo = data.prep_info || {};
       var topicTitle = prepInfo.subtopic_title || '';
       var remaining = prepInfo.remaining_tests || 0;
-      addCtaAction('🧪 Начать тест: «' + topicTitle + '»', function () {
+      addCtaAction(' Начать тест: «' + topicTitle + '»', function () {
         ctaRow.innerHTML = '';
         greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + topicTitle + '</strong>…';
         fetch('{{ url_for("prep.coach_greeting") }}?action=prep_test_tasks')
@@ -194,16 +194,16 @@ fetch(greetingUrl, { signal: greetingController.signal })
           .then(function (taskData) {
             if (taskData.tasks && taskData.tasks.length) {
               var html = '<div style="max-height:350px;overflow-y:auto;">';
-              html += '<p><strong>📝 Тест по теме «' + (taskData.subtopic_title || topicTitle) + '»</strong></p>';
+              html += '<p><strong> Тест по теме «' + (taskData.subtopic_title || topicTitle) + '»</strong></p>';
               html += '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Отметь правильность каждой задачи (5 задач):</p>';
               taskData.tasks.forEach(function (t, i) {
                 html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
                 html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + (t.task_text || t.text || '') + '</p>';
-                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">✅ Правильно</button> ';
-                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">❌ Неверно</button></div>';
+                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">[OK] Правильно</button> ';
+                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">[ERROR] Неверно</button></div>';
                 html += '</div>';
               });
-              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishPrepTest">📊 Завершить тест</button></div>';
+              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishPrepTest"> Завершить тест</button></div>';
               html += '</div>';
               greetingEl.innerHTML = html;
               document.getElementById('finishPrepTest').addEventListener('click', function () {
@@ -226,25 +226,25 @@ fetch(greetingUrl, { signal: greetingController.signal })
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
                   if (res.status === 'ok') {
-                    var msg = '✅ <strong>Тест завершён!</strong><br>';
+                    var msg = '[OK] <strong>Тест завершён!</strong><br>';
                     msg += 'Правильно: ' + res.correct + ' из ' + res.total + '<br>';
-                    msg += '🎯 Уровень: ' + res.level + '/8.';
+                    msg += ' Уровень: ' + res.level + '/8.';
                     if (res.generation_queued) {
-                      msg += '<br><br>📚 Задачи дня уже готовятся под твой уровень. Они придут вечером!';
+                      msg += '<br><br> Задачи дня уже готовятся под твой уровень. Они придут вечером!';
                     }
                     greetingEl.innerHTML = msg;
                     ctaRow.innerHTML = '';
                     if (res.generation_queued) {
-                      addCtaButton('📚 Перейти к задачам дня', '/daily-tasks', '');
+                      addCtaButton(' Перейти к задачам дня', '/daily-tasks', '');
                     }
-                    addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+                    addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
                   } else {
-                    greetingEl.innerHTML = '❌ Ошибка: ' + (res.error || 'попробуй ещё раз');
+                    greetingEl.innerHTML = '[ERROR] Ошибка: ' + (res.error || 'попробуй ещё раз');
                   }
                 });
               });
             } else {
-              greetingEl.innerHTML = '😅 Нет задач для теста. Попробуй позже.';
+              greetingEl.innerHTML = ' Нет задач для теста. Попробуй позже.';
               ctaRow.innerHTML = '';
               ctaRow.style.display = 'none';
             }
@@ -255,21 +255,21 @@ fetch(greetingUrl, { signal: greetingController.signal })
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
 
     } else if (data.scenario === 'prep_task_day') {
       // Training day, tasks not ready yet — waiting for evening cron
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
 
     } else if (data.scenario === 'prep_month_complete') {
       // Месяц завершён — показать следующие подтемы и CTA для старта нового месяца
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton('🧪 Пройти адапт тест', '/adaptive-test', 'secondary');
+      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     }
     if (ctaRow.children.length) {
       ctaRow.style.display = 'flex';
@@ -279,7 +279,7 @@ fetch(greetingUrl, { signal: greetingController.signal })
   })
   .catch(function () {
     console.log('[coach] greeting fetch failed, using fallback');
-    greetingEl.textContent = '👋 Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
+    greetingEl.textContent = ' Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
   });
 
 }); // end DOMContentLoaded

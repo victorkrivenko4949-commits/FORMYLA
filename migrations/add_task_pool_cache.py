@@ -92,7 +92,7 @@ def _ensure_task_pool_tables() -> bool:
                 db.session.execute(text(stmt))
             except Exception as e:
                 db.session.rollback()
-                print(f"  ❌ task_pool migration: failed on stmt: {e}")
+                print(f"  [ERROR] task_pool migration: failed on stmt: {e}")
                 raise
         db.session.commit()
 
@@ -103,9 +103,9 @@ def _ensure_task_pool_tables() -> bool:
         for expected in ("task_pool", "user_task_assignments"):
             if expected in tables:
                 cols = [c["name"] for c in inspector.get_columns(expected)]
-                print(f"  ✅ {expected}: {len(cols)} колонок")
+                print(f"  [OK] {expected}: {len(cols)} колонок")
             else:
-                print(f"  ❌ {expected} НЕ создана!")
+                print(f"  [ERROR] {expected} НЕ создана!")
                 ok = False
 
         return ok
@@ -118,9 +118,9 @@ def run_migration() -> bool:
     print("=" * 70)
     success = _ensure_task_pool_tables()
     if success:
-        print("\n🎉 Миграция кэша пула задач завершена успешно!")
+        print("\n Миграция кэша пула задач завершена успешно!")
     else:
-        print("\n❌ Миграция завершилась с ошибками")
+        print("\n[ERROR] Миграция завершилась с ошибками")
     return success
 
 

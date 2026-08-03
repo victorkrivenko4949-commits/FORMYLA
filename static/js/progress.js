@@ -1,6 +1,6 @@
 /**
  * progress.js — График прогресса адаптивных тестов (Chart.js)
- * Открывается из профиля по кнопке "📈 Посмотреть прогресс"
+ * Открывается из профиля по кнопке " Посмотреть прогресс"
  */
 
 /** @type {Chart | null} */
@@ -56,7 +56,7 @@ function openProgressModal() {
             console.error('[Progress]', err);
             if (loading) loading.style.display = 'none';
             if (empty) {
-                empty.querySelector('p').textContent = '⚠️ ' + (err.message || 'Ошибка загрузки');
+                empty.querySelector('p').textContent = '[!]️ ' + (err.message || 'Ошибка загрузки');
                 empty.style.display = 'block';
             }
         });

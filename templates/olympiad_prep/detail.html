@@ -310,16 +310,16 @@
 
 {% block content %}
 <div class="opd-back">
-    <a href="{{ url_for('olympiad_prep.index') }}">← Все олимпиады</a>
+    <a href="{{ url_for('olympiad_prep.index') }}"><- Все олимпиады</a>
 </div>
 
 <div class="opd-header" style="--accent: {{ olympiad.color_hex }};">
     <div class="opd-logo" style="--accent: {{ olympiad.color_hex }};">
         {% if olympiad.logo_path %}
             <img src="{{ olympiad.logo_path }}" alt="{{ olympiad.short_name }}"
-                 onerror="this.style.display='none'; this.parentElement.textContent='🏅';">
+                 onerror="this.style.display='none'; this.parentElement.textContent='';">
         {% else %}
-            🏅
+            
         {% endif %}
     </div>
     <div class="opd-title-block">
@@ -331,14 +331,14 @@
 <div class="opd-content" style="--accent: {{ olympiad.color_hex }};">
     <!-- Описание -->
     <div class="opd-section">
-        <h2>📖 Описание</h2>
+        <h2> Описание</h2>
         <p>{{ olympiad.description }}</p>
     </div>
 
     <!-- Этапы -->
     {% if olympiad.stages_list %}
     <div class="opd-section">
-        <h2>📋 Этапы олимпиады</h2>
+        <h2> Этапы олимпиады</h2>
         <ul class="opd-stages">
             {% for stage in olympiad.stages_list %}
             <li>
@@ -347,7 +347,7 @@
                     {% if stage is mapping %}
                         <span class="opd-stage-name">{{ stage.name }}</span>
                         {% if stage.date_range %}
-                        <span class="opd-stage-date">📅 {{ stage.date_range }}</span>
+                        <span class="opd-stage-date"> {{ stage.date_range }}</span>
                         {% endif %}
                     {% else %}
                         <span class="opd-stage-name">{{ stage }}</span>
@@ -361,7 +361,7 @@
 
     <!-- Классы -->
     <div class="opd-section">
-        <h2>🎓 Классы участников</h2>
+        <h2> Классы участников</h2>
         <div class="opd-grades">
             {% for g in olympiad.grades_list %}
             <span class="opd-grade-badge">{{ g }} класс</span>
@@ -372,16 +372,16 @@
     <!-- Официальный сайт -->
     {% if olympiad.official_url %}
     <div class="opd-section">
-        <h2>🔗 Официальный сайт</h2>
+        <h2> Официальный сайт</h2>
         <a href="{{ olympiad.official_url }}" target="_blank" rel="noopener" class="opd-official">
-            {{ olympiad.official_url }} ↗
+            {{ olympiad.official_url }} 
         </a>
     </div>
     {% endif %}
 
     <!-- Персональный план подготовки -->
     <div class="opd-plan-section">
-        <h2>🎯 Персональный план подготовки</h2>
+        <h2> Персональный план подготовки</h2>
 
         {% if user_plan %}
         {# ── User has an active/paused plan ── #}
@@ -390,7 +390,7 @@
                 <div class="opd-plan-stage">
                     {{ user_plan.target_stage }}
                     {% if user_plan.current_streak >= 3 %}
-                    <span class="opd-streak-badge">🔥 {{ user_plan.current_streak }} дн.</span>
+                    <span class="opd-streak-badge"> {{ user_plan.current_streak }} дн.</span>
                     {% endif %}
                 </div>
                 <div class="opd-plan-meta">
@@ -410,7 +410,7 @@
                     ▶ Задачи на сегодня
                 </a>
                 <a href="{{ url_for('prep.plan_detail', plan_id=user_plan.id) }}" class="opd-btn opd-btn-secondary">
-                    📊 Детали плана
+                     Детали плана
                 </a>
             </div>
         </div>
@@ -420,7 +420,7 @@
         <div class="opd-plan-cta">
             <p>AI составит индивидуальный план подготовки к {{ olympiad.short_name }} с учётом твоего уровня и сроков.</p>
             <a href="{{ url_for('prep.new_plan_form') }}?olympiad={{ olympiad.slug }}" class="opd-btn opd-btn-primary">
-                🚀 Создать план подготовки
+                 Создать план подготовки
             </a>
         </div>
 
@@ -428,7 +428,7 @@
         {# ── Not logged in ── #}
         <div class="opd-login-prompt">
             <p>Войди, чтобы создать персональный план подготовки к {{ olympiad.short_name }}.</p>
-            <a href="{{ url_for('login') }}" class="opd-login-link">Войти →</a>
+            <a href="{{ url_for('login') }}" class="opd-login-link">Войти -></a>
         </div>
         {% endif %}
     </div>

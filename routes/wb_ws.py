@@ -370,7 +370,7 @@ def _register_handlers():
         _broadcast(room_id, "reaction", {
             "from": actor.peer_id,
             "type": data.get("type", "emoji"),
-            "emoji": data.get("emoji", "👍"),
+            "emoji": data.get("emoji", ""),
         })
 
     @socketio.on("hand-raise", namespace=WS_NAMESPACE)

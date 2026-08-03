@@ -81,7 +81,7 @@ class TestOlympiadPipeline:
         p.s6.save_task.assert_called_once()
 
     def test_retries_on_not_unique(self, mock_stages):
-        """Stage 3 не уникальна → retry Stage 2+3."""
+        """Stage 3 не уникальна -> retry Stage 2+3."""
         found, rewritten, processed = mock_stages
         p = _make_pipeline(
             found, rewritten, processed,
@@ -94,7 +94,7 @@ class TestOlympiadPipeline:
         assert p.s3.is_unique.call_count == 3
 
     def test_fails_after_uniqueness_exhausted(self, mock_stages):
-        """Stage 3 всегда False → PipelineError stage3."""
+        """Stage 3 всегда False -> PipelineError stage3."""
         found, rewritten, processed = mock_stages
         p = _make_pipeline(
             found, rewritten, processed,
@@ -106,7 +106,7 @@ class TestOlympiadPipeline:
         assert exc.value.stage == "stage3"
 
     def test_retries_on_invalid_latex(self, mock_stages):
-        """Stage 5 невалидна → retry Stage 4+5 с previous_errors."""
+        """Stage 5 невалидна -> retry Stage 4+5 с previous_errors."""
         found, rewritten, processed = mock_stages
         p = _make_pipeline(
             found, rewritten, processed,
@@ -132,7 +132,7 @@ class TestOlympiadPipeline:
         assert "Непарные $" in third_call.kwargs["previous_errors"]
 
     def test_fails_after_latex_exhausted(self, mock_stages):
-        """Stage 5 всегда невалидна → PipelineError stage5."""
+        """Stage 5 всегда невалидна -> PipelineError stage5."""
         found, rewritten, processed = mock_stages
         p = _make_pipeline(
             found, rewritten, processed,
@@ -165,7 +165,7 @@ class TestOlympiadPipeline:
         assert 5 in stage_numbers
 
     def test_stage1_failure_raises_pipeline_error(self, mock_stages):
-        """Stage 1 ошибка → PipelineError stage1."""
+        """Stage 1 ошибка -> PipelineError stage1."""
         found, rewritten, processed = mock_stages
         p = _make_pipeline(found, rewritten, processed)
         from services.pipeline.stage1_find import Stage1Error

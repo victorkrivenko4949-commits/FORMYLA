@@ -4,8 +4,8 @@
 Apply deepseek-reasoner audit results to curated_bank_L1_L5_fixed.json.
 
 Logic:
-1. For L1-L3 tasks with MAJOR/MINOR level verdict → adjust level based on suggested_level
-2. For level=None tasks with L1-L3 target → assign level based on audit or target_level
+1. For L1-L3 tasks with MAJOR/MINOR level verdict -> adjust level based on suggested_level
+2. For level=None tasks with L1-L3 target -> assign level based on audit or target_level
 3. Save as curated_bank_L1_L5_fixed_AUDITED.json (backup original first)
 """
 import json, sys, shutil, os

@@ -400,7 +400,7 @@ def main():
                 outcome = "fixed"
                 final_solution = fixed_solution
                 final_result = solver_result
-                log.info(f"  ✓ Cycle {cycle}: FIXED!")
+                log.info(f"  [OK] Cycle {cycle}: FIXED!")
                 break
             else:
                 log.info(f"  Cycle {cycle}: answer still doesn't match. Trying again...")
@@ -409,7 +409,7 @@ def main():
         
         if outcome != "fixed":
             outcome = "replace"
-            log.warning(f"  ✗ After 3 cycles, still not matching. Marking as REPLACE.")
+            log.warning(f"   After 3 cycles, still not matching. Marking as REPLACE.")
         
         result_entry = {
             "task_id": task_id,

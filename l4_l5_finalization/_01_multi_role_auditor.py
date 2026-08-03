@@ -10,8 +10,8 @@ Each weak task is evaluated independently by 5 AI roles:
   5. DUPLICATE JUDGE  — checks for duplicates by mathematical structure within the cell
 
 Pipeline:
-  Phase 1: tasks with quality < 60   (25 tasks → 125 API calls)
-  Phase 2: tasks with quality 60–70  (38 tasks → 190 API calls)
+  Phase 1: tasks with quality < 60   (25 tasks -> 125 API calls)
+  Phase 2: tasks with quality 60–70  (38 tasks -> 190 API calls)
 
 The script saves a checkpoint after each fully-evaluated task so it can be resumed
 if interrupted.
@@ -435,31 +435,31 @@ def run_audit():
             }
 
             # 1) SOLVER (uses reasoning model)
-            logger.info("  → SOLVER...")
+            logger.info("  -> SOLVER...")
             solver_result = audit_solver(client, task)
             task_result["audits"].append(solver_result)
             time.sleep(1.5)  # rate limiting
 
             # 2) ARBITER
-            logger.info("  → ARBITER...")
+            logger.info("  -> ARBITER...")
             arbiter_result = audit_arbiter(client, task)
             task_result["audits"].append(arbiter_result)
             time.sleep(1.0)
 
             # 3) TOPIC CLASSIFIER
-            logger.info("  → TOPIC CLASSIFIER...")
+            logger.info("  -> TOPIC CLASSIFIER...")
             topic_result = audit_topic_classifier(client, task)
             task_result["audits"].append(topic_result)
             time.sleep(1.0)
 
             # 4) LEVEL CALIBRATOR
-            logger.info("  → LEVEL CALIBRATOR...")
+            logger.info("  -> LEVEL CALIBRATOR...")
             level_result = audit_level_calibrator(client, task)
             task_result["audits"].append(level_result)
             time.sleep(1.0)
 
             # 5) DUPLICATE JUDGE
-            logger.info("  → DUPLICATE JUDGE...")
+            logger.info("  -> DUPLICATE JUDGE...")
             cell_tasks = cell_lookup.get(cell_key, [])
             dup_result = audit_duplicate_judge(client, task, cell_tasks)
             task_result["audits"].append(dup_result)
@@ -475,7 +475,7 @@ def run_audit():
 
             # Log summary
             ok_count = sum(1 for a in task_result["audits"] if a["status"] == "ok")
-            logger.info("  ✓ %d/%d roles OK for task %s", ok_count, 5, task_id)
+            logger.info("  [OK] %d/%d roles OK for task %s", ok_count, 5, task_id)
 
         # Save checkpoint after each phase
         save_checkpoint(list(completed_ids), results)
@@ -487,7 +487,7 @@ def run_audit():
 
     # Generate summary report
     generate_report(results, phase1, phase2)
-    logger.info("✓ Stage 3 audit complete. %d tasks audited.", len(results))
+    logger.info("[OK] Stage 3 audit complete. %d tasks audited.", len(results))
 
 
 # ---------------------------------------------------------------------------

@@ -64,7 +64,7 @@ try:
     DEEPSEEK_AVAILABLE = True
 except ImportError:
     DEEPSEEK_AVAILABLE = False
-    print("⚠️  DeepSeek client not available. AI recommendations disabled.")
+    print("[!]️  DeepSeek client not available. AI recommendations disabled.")
 
 # ─── Sentry SDK (отлов ошибок + perf-трейсинг) ─────────────────────
 # Инициализируется до создания Flask app, чтобы FlaskIntegration перехватил всё.
@@ -85,9 +85,9 @@ if _SENTRY_DSN:
             release=os.environ.get("RENDER_GIT_COMMIT", "dev"),
         )
         SENTRY_ENABLED = True
-        print("✅ Sentry SDK initialized")
+        print("[OK] Sentry SDK initialized")
     except Exception as _sentry_err:
-        print(f"⚠️  Sentry init failed: {_sentry_err}")
+        print(f"[!]️  Sentry init failed: {_sentry_err}")
 else:
     print("ℹ️  SENTRY_DSN не задан — Sentry отключен.")
 
@@ -158,7 +158,7 @@ _file_handler.setLevel(logging.DEBUG)
 _file_handler.setFormatter(logging.Formatter(
     '%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
 ))
-# Удаляем дефолтный StreamHandler (пишет в stderr → ломается под debugger)
+# Удаляем дефолтный StreamHandler (пишет в stderr -> ломается под debugger)
 app.logger.handlers.clear()
 app.logger.addHandler(_file_handler)
 app.logger.setLevel(logging.DEBUG)
@@ -168,15 +168,15 @@ app.logger.info("=== App started, logging to %s", _log_file)
 try:
     from werkzeug.middleware.proxy_fix import ProxyFix
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=1, x_host=1, x_prefix=1)
-    print("✅ ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)")
+    print("[OK] ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)")
 except Exception as _pf_err:
-    print(f"⚠️  ProxyFix not applied: {_pf_err}")
+    print(f"[!]️  ProxyFix not applied: {_pf_err}")
 app.config['JSON_AS_ASCII'] = False
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 # ── SECURITY: SECRET_KEY ──────────────────────────────────────────
 # В production (Render) SECRET_KEY ОБЯЗАН быть задан в Environment.
-# Без него все сессии подписываются одним ключом → утечка аккаунтов.
+# Без него все сессии подписываются одним ключом -> утечка аккаунтов.
 _secret = os.environ.get('SECRET_KEY')
 _is_production = bool(os.environ.get('RENDER') or os.environ.get('DATABASE_URL'))
 
@@ -185,14 +185,14 @@ if _secret:
 elif _is_production:
     # НА ПРОДЕ БЕЗ SECRET_KEY — КРИТИЧЕСКАЯ ОШИБКА
     raise RuntimeError(
-        "🔴 CRITICAL: SECRET_KEY не задан в production!\n"
-        "   Установи в Render → Environment → SECRET_KEY = <случайная строка 64 символа>\n"
+        " CRITICAL: SECRET_KEY не задан в production!\n"
+        "   Установи в Render -> Environment -> SECRET_KEY = <случайная строка 64 символа>\n"
         "   Генерация: python -c \"import secrets; print(secrets.token_hex(32))\""
     )
 else:
     # Только для локальной разработки — стабильный ключ
     app.secret_key = 'dev-secret-key-LOCAL-ONLY-NOT-FOR-PRODUCTION'
-    print("⚠️  WARNING: Используется дефолтный SECRET_KEY (только для локальной разработки!)")
+    print("[!]️  WARNING: Используется дефолтный SECRET_KEY (только для локальной разработки!)")
 
 # V9: Asset versioning for cache busting — driven by commit hash,
 # same as /__version and footer. One source, all consumers agree.
@@ -397,9 +397,9 @@ try:
                 db.session.execute(text("ALTER TABLE chat_messages ADD COLUMN agent_type VARCHAR(50) DEFAULT 'general' NOT NULL"))
                 db.session.execute(text("CREATE INDEX IF NOT EXISTS ix_chat_messages_agent_type ON chat_messages (agent_type)"))
                 db.session.commit()
-                print("[AUTO-MIGRATION] ✓ Column 'agent_type' added successfully!")
+                print("[AUTO-MIGRATION] [OK] Column 'agent_type' added successfully!")
             else:
-                print("[AUTO-MIGRATION] ✓ Column 'agent_type' already exists")
+                print("[AUTO-MIGRATION] [OK] Column 'agent_type' already exists")
 except Exception as e:
     print(f"[AUTO-MIGRATION] Warning: {e}")
     # Continue anyway - app should still work
@@ -433,9 +433,9 @@ try:
                 if col_name not in columns:
                     db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {col_name} {col_type}"))
                     db.session.commit()
-                    print(f"[AUTO-MIGRATION] ✓ Column '{col_name}' added to adaptive_tasks")
+                    print(f"[AUTO-MIGRATION] [OK] Column '{col_name}' added to adaptive_tasks")
                 else:
-                    print(f"[AUTO-MIGRATION] ✓ Column '{col_name}' already exists")
+                    print(f"[AUTO-MIGRATION] [OK] Column '{col_name}' already exists")
 except Exception as e:
     print(f"[AUTO-MIGRATION] adaptive_tasks Warning: {e}")
 
@@ -455,9 +455,9 @@ try:
                     "ALTER TABLE daily_task_items ADD COLUMN is_calibration BOOLEAN DEFAULT FALSE NOT NULL"
                 ))
                 db.session.commit()
-                print("[AUTO-MIGRATION] ✓ Column 'is_calibration' added to daily_task_items")
+                print("[AUTO-MIGRATION] [OK] Column 'is_calibration' added to daily_task_items")
             else:
-                print("[AUTO-MIGRATION] ✓ Column 'is_calibration' already exists on daily_task_items")
+                print("[AUTO-MIGRATION] [OK] Column 'is_calibration' already exists on daily_task_items")
 except Exception as e:
     print(f"[AUTO-MIGRATION] daily_task_items.is_calibration Warning: {e}")
 
@@ -476,9 +476,9 @@ try:
                     "ALTER TABLE curator_state ADD COLUMN prep_state TEXT DEFAULT '{}'"
                 ))
                 db.session.commit()
-                print("[AUTO-MIGRATION] ✓ Column 'prep_state' added to curator_state!")
+                print("[AUTO-MIGRATION] [OK] Column 'prep_state' added to curator_state!")
             else:
-                print("[AUTO-MIGRATION] ✓ Column 'prep_state' already exists on curator_state")
+                print("[AUTO-MIGRATION] [OK] Column 'prep_state' already exists on curator_state")
 except Exception as e:
     print(f"[AUTO-MIGRATION] curator_state.prep_state Warning: {e}")
 
@@ -546,7 +546,7 @@ try:
                 )
             """))
         db.session.commit()
-        print("[AUTO-MIGRATION] ✓ Table 'tutor_calls' ready")
+        print("[AUTO-MIGRATION] [OK] Table 'tutor_calls' ready")
 except Exception as e:
     print(f"[AUTO-MIGRATION] tutor_calls Warning: {e}")
 
@@ -572,7 +572,7 @@ try:
                     try:
                         db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {_col_name} {_col_type}"))
                         db.session.commit()
-                        print(f"[AUTO-MIGRATION] ✓ Column '{_col_name}' added to adaptive_tasks")
+                        print(f"[AUTO-MIGRATION] [OK] Column '{_col_name}' added to adaptive_tasks")
                     except Exception as _e_col_nr:
                         db.session.rollback()
                         print(f"[AUTO-MIGRATION] adaptive_tasks.{_col_name} skipped: {_e_col_nr}")
@@ -668,9 +668,9 @@ try:
         if _need:
             print(f"[AUTO-MIGRATION] Creating missing group chat tables: {_need}")
             db.create_all()
-            print(f"[AUTO-MIGRATION] ✓ Group chat tables created")
+            print(f"[AUTO-MIGRATION] [OK] Group chat tables created")
         else:
-            print("[AUTO-MIGRATION] ✓ Group chat tables already exist")
+            print("[AUTO-MIGRATION] [OK] Group chat tables already exist")
         # Add missing columns to group_chats (avatar_emoji added later)
         if 'group_chats' in _ins.get_table_names():
             _cols_gc = {c['name'] for c in _ins.get_columns('group_chats')}
@@ -691,7 +691,7 @@ except Exception as e:
 # Модели в models_olympiad.py содержат новые колонки (total_count, share_percent,
 # method_codes, year, stage). На локалке SQLite db.create_all() их подхватывает,
 # но на проде Postgres колонки нужно добавить ALTER-ом, иначе любой SELECT
-# по таблицам сыпет UndefinedColumn → 500 на каждой странице.
+# по таблицам сыпет UndefinedColumn -> 500 на каждой странице.
 try:
     with app.app_context():
         _is_pg_olymp = _database_url.startswith('postgresql')
@@ -773,7 +773,7 @@ except Exception as _e_olymp:
 # может остаться CHECK-ограничение (native_enum=False делает CHECK), которое
 # блокирует UPDATE. Делаем 3 шага:
 #   1) Снимаем CHECK-ограничение task_attempt_status (PostgreSQL).
-#   2) Нормализуем legacy-статусы → 'attempted'.
+#   2) Нормализуем legacy-статусы -> 'attempted'.
 #   3) Тип колонки уже VARCHAR — менять не нужно.
 try:
     with app.app_context():
@@ -805,7 +805,7 @@ try:
                 except Exception as _e_chks:
                     db.session.rollback()
                     print(f"[AUTO-MIGRATION] check constraints skipped: {_e_chks}")
-            # 2) Нормализуем legacy-статусы. 'submitted' → 'attempted'
+            # 2) Нормализуем legacy-статусы. 'submitted' -> 'attempted'
             #    (см. ATTEMPT_STATUSES в models_olympiad).
             try:
                 _res = db.session.execute(text(
@@ -817,7 +817,7 @@ try:
                 if getattr(_res, 'rowcount', 0):
                     print(f"[AUTO-MIGRATION] OK normalized {_res.rowcount} legacy task-attempt statuses")
                 else:
-                    print("[AUTO-MIGRATION] ✓ olympiad_task_attempts.status already normalized")
+                    print("[AUTO-MIGRATION] [OK] olympiad_task_attempts.status already normalized")
             except Exception as _e_upd:
                 db.session.rollback()
                 print(f"[AUTO-MIGRATION] task-attempts normalize skipped: {_e_upd}")
@@ -1010,9 +1010,9 @@ try:
                     "CREATE INDEX IF NOT EXISTS ix_figure_jobs_user_id ON figure_jobs(user_id)"
                 ))
             db.session.commit()
-            print("[AUTO-MIGRATION] ✓ Created figure_jobs table")
+            print("[AUTO-MIGRATION] [OK] Created figure_jobs table")
         else:
-            print("[AUTO-MIGRATION] ✓ figure_jobs table already exists")
+            print("[AUTO-MIGRATION] [OK] figure_jobs table already exists")
 except Exception as e:
     print(f"[AUTO-MIGRATION] figure_jobs Warning: {e}")
 
@@ -1059,12 +1059,12 @@ try:
                 db.session.execute(text("DROP TABLE friendships"))
                 db.session.commit()
                 db.create_all()
-                print("[AUTO-MIGRATION] ✓ Recreated friendships table with new schema")
+                print("[AUTO-MIGRATION] [OK] Recreated friendships table with new schema")
             else:
-                print("[AUTO-MIGRATION] ✓ friendships table schema OK")
+                print("[AUTO-MIGRATION] [OK] friendships table schema OK")
         else:
             db.create_all()
-            print("[AUTO-MIGRATION] ✓ Created friendships table")
+            print("[AUTO-MIGRATION] [OK] Created friendships table")
 except Exception as e:
     print(f"[AUTO-MIGRATION] friendships Warning: {e}")
 
@@ -1118,9 +1118,9 @@ try:
                     )
                 """))
             db.session.commit()
-            print("[AUTO-MIGRATION] ✓ Created support_messages table")
+            print("[AUTO-MIGRATION] [OK] Created support_messages table")
         else:
-            print("[AUTO-MIGRATION] ✓ support_messages table already exists")
+            print("[AUTO-MIGRATION] [OK] support_messages table already exists")
 except Exception as e:
     print(f"[AUTO-MIGRATION] support_messages Warning: {e}")
 
@@ -1168,9 +1168,9 @@ try:
                     )
                 """))
             db.session.commit()
-            print("[AUTO-MIGRATION] ✓ Created site_reviews table")
+            print("[AUTO-MIGRATION] [OK] Created site_reviews table")
         else:
-            print("[AUTO-MIGRATION] ✓ site_reviews table already exists")
+            print("[AUTO-MIGRATION] [OK] site_reviews table already exists")
 except Exception as e:
     print(f"[AUTO-MIGRATION] site_reviews Warning: {e}")
 
@@ -1188,9 +1188,9 @@ try:
                     "ALTER TABLE daily_quests ADD COLUMN solved_indices TEXT DEFAULT '[]'"
                 ))
                 db.session.commit()
-                print("[AUTO-MIGRATION] ✓ Column 'solved_indices' added")
+                print("[AUTO-MIGRATION] [OK] Column 'solved_indices' added")
             else:
-                print("[AUTO-MIGRATION] ✓ Column 'solved_indices' already exists")
+                print("[AUTO-MIGRATION] [OK] Column 'solved_indices' already exists")
 except Exception as e:
     print(f"[AUTO-MIGRATION] solved_indices Warning: {e}")
 
@@ -1622,7 +1622,7 @@ try:
                     is_active=True,
                 ))
             db.session.commit()
-            print(f"[OLYMP-PREP-SEED] ✓ Added {len(_olymp_prep_defaults)} olympiads to olympiad_prep")
+            print(f"[OLYMP-PREP-SEED] [OK] Added {len(_olymp_prep_defaults)} olympiads to olympiad_prep")
         else:
             # Idempotent: nothing to do; uncomment for verbose logs:
             # print(f"[OLYMP-PREP-SEED] already populated ({_OlympiadPrepSeed.query.count()} rows), skipping")
@@ -1646,7 +1646,7 @@ except Exception as _e_theory_fix:
 # ── Secrets auto-seed (idempotent, без env-гейта) ───────────────────────────
 # Засеивает таблицу olympiad_secrets из ./secrets_dump.json при пустой
 # таблице. Раньше этим занимался admin-endpoint /admin/seed-secrets, но
-# его никто не дёргал на проде → раздел /secrets оставался пустым.
+# его никто не дёргал на проде -> раздел /secrets оставался пустым.
 # seed_secrets_from_json с force=False ничего не делает, если таблица
 # уже наполнена — поэтому безопасен на каждом старте.
 try:
@@ -1902,7 +1902,7 @@ VAPID_PRIVATE_KEY = (os.environ.get('VAPID_PRIVATE_KEY') or '').strip()
 VAPID_CLAIM_EMAIL = (os.environ.get('VAPID_CLAIM_EMAIL') or 'noreply@formyla.com').strip()
 
 if VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY:
-    print("✅ VAPID keys loaded — Web Push notifications enabled")
+    print("[OK] VAPID keys loaded — Web Push notifications enabled")
 else:
     print("ℹ️  VAPID keys not set — Web Push notifications disabled")
 
@@ -1914,9 +1914,9 @@ def daily_streak_reset_job():
         from services.streak_service import check_and_reset_streaks
         try:
             check_and_reset_streaks()
-            app.logger.info("✓ Daily streak reset completed")
+            app.logger.info("[OK] Daily streak reset completed")
         except Exception as e:
-            app.logger.error(f"✗ Daily streak reset failed: {e}")
+            app.logger.error(f" Daily streak reset failed: {e}")
 
 # Daily Quest Deadline Reminder (runs at 18:00 and 21:00 MSK)
 @scheduler.task('cron', id='daily_quest_deadline_reminder', hour='18,21', minute=0)
@@ -1959,9 +1959,9 @@ def daily_quest_deadline_reminder_job():
                 )
                 sent += 1
             if sent:
-                app.logger.info(f"✓ Daily quest reminder sent to {sent} users")
+                app.logger.info(f"[OK] Daily quest reminder sent to {sent} users")
         except Exception as e:
-            app.logger.error(f"✗ Daily quest reminder failed: {e}")
+            app.logger.error(f" Daily quest reminder failed: {e}")
 
 
 # ─── Куратор: вечерняя проверка и push-уведомления ──────────────────────────
@@ -2004,11 +2004,11 @@ def curator_evening_notification_job():
 
             if checked:
                 app.logger.info(
-                    f"✓ Curator evening check: {checked} users checked, "
+                    f"[OK] Curator evening check: {checked} users checked, "
                     f"{notified} notifications sent"
                 )
         except Exception as e:
-            app.logger.error(f"✗ Curator evening check failed: {e}")
+            app.logger.error(f" Curator evening check failed: {e}")
 
 
 # ─── Месячный цикл подготовки: утреннее напоминание + вечерняя генерация ──────
@@ -2050,7 +2050,7 @@ def curator_morning_prep_reminder_job():
                         # Тестовый день — напомнить пройти тест
                         _send_push_notification(
                             user_id=user.id,
-                            title='📝 Утренний тест',
+                            title=' Утренний тест',
                             body=f'Сегодня тест по теме «{subtopic_title}». Пройди 5 задач!',
                             url='/prep',
                         )
@@ -2059,7 +2059,7 @@ def curator_morning_prep_reminder_job():
                         # Task-only день — сообщить, что вечером будут задачи
                         _send_push_notification(
                             user_id=user.id,
-                            title='📚 Задачи дня',
+                            title=' Задачи дня',
                             body=f'Сегодня тренируем тему «{subtopic_title}». Задачи придут вечером!',
                             url='/prep',
                         )
@@ -2070,9 +2070,9 @@ def curator_morning_prep_reminder_job():
                     )
 
             if reminded:
-                app.logger.info(f"✓ Morning prep reminder sent to {reminded} users")
+                app.logger.info(f"[OK] Morning prep reminder sent to {reminded} users")
         except Exception as e:
-            app.logger.error(f"✗ Morning prep reminder failed: {e}")
+            app.logger.error(f" Morning prep reminder failed: {e}")
 
 
 @scheduler.task('cron', id='curator_evening_prep_generate', hour='18', minute=0)
@@ -2121,7 +2121,7 @@ def curator_evening_prep_generate_job():
                         subtopic_title = info.get("subtopic_title", info["subtopic"])
                         _send_push_notification(
                             user_id=user.id,
-                            title='⚠️ Пропущен тест',
+                            title='[!]️ Пропущен тест',
                             body=f'Ты ещё не прошёл тест по теме «{subtopic_title}». '
                                  f'Пройди скорее, чтобы получить задачи дня!',
                             url='/prep',
@@ -2139,11 +2139,11 @@ def curator_evening_prep_generate_job():
 
             if generated or reminded_test:
                 app.logger.info(
-                    f"✓ Evening prep: generated for {generated} users, "
+                    f"[OK] Evening prep: generated for {generated} users, "
                     f"test reminders sent to {reminded_test}"
                 )
         except Exception as e:
-            app.logger.error(f"✗ Evening prep generation failed: {e}")
+            app.logger.error(f" Evening prep generation failed: {e}")
 
 
 # Pre-generation queue processor (runs every 30 minutes)
@@ -2157,9 +2157,9 @@ def process_pregen_queue_job():
             launched = _process_pregen_queue()
             reaped = _reap_stale_pregen()
             if launched or reaped:
-                app.logger.info(f"✓ Pre-gen queue: launched {launched}, reaped {reaped}")
+                app.logger.info(f"[OK] Pre-gen queue: launched {launched}, reaped {reaped}")
         except Exception as e:
-            app.logger.error(f"✗ Pre-gen queue processing failed: {e}")
+            app.logger.error(f" Pre-gen queue processing failed: {e}")
 
 # Daily midnight auto-assignment (runs at 00:05 MSK)
 # CRITICAL: this is the job that actually creates DailyTaskSet for users
@@ -2170,8 +2170,8 @@ def daily_midnight_assign_job():
     """At 00:05 MSK, auto-assign daily tasks to active users.
 
     Two-tier strategy:
-    1. Users with PreGenQueue for today → instant cache hit from TaskPool
-    2. Users active yesterday (had DailyTaskSet) → try cache, else AI pipeline
+    1. Users with PreGenQueue for today -> instant cache hit from TaskPool
+    2. Users active yesterday (had DailyTaskSet) -> try cache, else AI pipeline
 
     All assignments use ``enqueue_daily_generation()`` which internally
     checks TaskPool cache — ready pools deliver tasks instantly (no AI wait).
@@ -2275,7 +2275,7 @@ def daily_midnight_assign_job():
         total = instant_count + generating_count
         if total or skipped_count:
             app.logger.info(
-                "✓ Midnight assign: %d total (%d instant cache, %d generating, %d skipped)",
+                "[OK] Midnight assign: %d total (%d instant cache, %d generating, %d skipped)",
                 total, instant_count, generating_count, skipped_count,
             )
 
@@ -2332,11 +2332,11 @@ def daily_buffer_fill_job():
 try:
     if os.environ.get("ENABLE_SCHEDULER", "1") != "0":
         scheduler.start()
-        print("✓ APScheduler started - Daily Quest cron jobs active")
+        print("[OK] APScheduler started - Daily Quest cron jobs active")
     else:
         print("[SCHEDULER] disabled via ENABLE_SCHEDULER=0")
 except Exception as e:
-    print(f"⚠️  APScheduler failed to start: {e}")
+    print(f"[!]️  APScheduler failed to start: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -2402,9 +2402,9 @@ def ensure_guest_user(device_id):
 
 
 # Пути, на которых НЕ нужно лезть в БД из before_request. Любой SQL здесь
-# создаёт риск hang'а на тормозах Postgres → SIGKILL воркера. См. инцидент
+# создаёт риск hang'а на тормозах Postgres -> SIGKILL воркера. См. инцидент
 # 2026-05-25: robots.txt/favicon health-check'ом Render'а вешал воркер на
-# psycopg.wait(), worker умирал по SystemExit/SIGKILL → crash loop.
+# psycopg.wait(), worker умирал по SystemExit/SIGKILL -> crash loop.
 _SKIP_GUEST_PATHS = (
     '/static/',
     '/favicon.ico',
@@ -2578,7 +2578,7 @@ def add_security_headers(response):
     # Без этого CDN может закешировать ответ одного пользователя и отдать другому
     response.headers.setdefault('Vary', 'Cookie')
 
-    # UTF-8 charset для всех HTML-ответов (фикс символов ∠°≠ → ?)
+    # UTF-8 charset для всех HTML-ответов (фикс символов ∠°≠ -> ?)
     if response.content_type and 'text/html' in response.content_type:
         response.headers['Content-Type'] = 'text/html; charset=utf-8'
 
@@ -2998,8 +2998,8 @@ def generate_variant(olympiad_slug, grade, round_key):
 - Дроби: $\\frac{{a}}{{b}}$ (НЕ \\frac a b, НЕ a/b)
 - Корни: $\\sqrt{{n}}$, $\\sqrt{{a+b}}$ (НЕ \\sqrtn, НЕ \\sqrt n!)
   ВАЖНО: после \\sqrt ВСЕГДА фигурные скобки: \\sqrt{{...}}
-  ❌ НЕПРАВИЛЬНО: \\sqrta, \\sqrt a, \\sqrtab
-  ✅ ПРАВИЛЬНО: \\sqrt{{a}}, \\sqrt{{a+b}}, \\sqrt{{ab}}
+  [ERROR] НЕПРАВИЛЬНО: \\sqrta, \\sqrt a, \\sqrtab
+  [OK] ПРАВИЛЬНО: \\sqrt{{a}}, \\sqrt{{a+b}}, \\sqrt{{ab}}
 - Display: $$y^2 - 1 = a^2(x^2 - 1)$$
 - Знаки: $\\geq$, $\\leq$, $\\neq$ (НЕ юникод ≥ ≤ ≠)
 - НИ ОДНОГО голого числа/переменной без $!
@@ -3356,8 +3356,8 @@ def __diag_method(method_code):
 def call_page():
     """Видеозвонок по коду (Task 6).
 
-    Самодостаточная страница: создать комнату → получить 6-значный код →
-    поделиться кодом → собеседник вводит код у себя → WebRTC mesh.
+    Самодостаточная страница: создать комнату -> получить 6-значный код ->
+    поделиться кодом -> собеседник вводит код у себя -> WebRTC mesh.
     Сигналинг — через существующий blueprint /api/wb_call/*.
     Авторизация не требуется (можно звонить гостям).
     """
@@ -3369,8 +3369,8 @@ def call_page():
 def conference_page():
     """Групповая видеоконференция (SocketIO-backed, до 8 участников).
 
-    Создать комнату → получить 6-значный код → поделиться →
-    собеседник вводит код → WebRTC mesh с сигналингом через WebSocket.
+    Создать комнату -> получить 6-значный код -> поделиться ->
+    собеседник вводит код -> WebRTC mesh с сигналингом через WebSocket.
     Авторизация не требуется (можно звонить гостям).
     """
     return render_template("conference.html")
@@ -3380,7 +3380,7 @@ def conference_page():
 def welcome():
     """Маркетинговая посадка для холодного трафика.
 
-    Сценарий: реклама / Метрика → /welcome → CTA → /adaptive_test/select_class.
+    Сценарий: реклама / Метрика -> /welcome -> CTA -> /adaptive_test/select_class.
     Это не главная (/) — её не трогаем, чтобы не сломать UX для залогиненных.
     """
     return render_template("welcome.html")
@@ -4203,19 +4203,19 @@ _LATEX_COMMANDS = (
 
 def _fix_latex_parens(text):
     """
-    Исправляет \\sqrt(...) → \\sqrt{...} и аналогичные.
+    Исправляет \\sqrt(...) -> \\sqrt{...} и аналогичные.
     Многие задачи из OCR имеют скобки вместо фигурных скобок.
     """
-    # \sqrt(...) → \sqrt{...}
+    # \sqrt(...) -> \sqrt{...}
     text = re.sub(r'\\(sqrt|frac|text|mathrm|mathbf|mathbb|overline|underline|hat|tilde|vec)\(([^)]*)\)', r'\\\1{\2}', text)
     return text
 
 
 def _sanitize_ai_latex(text):
     """Приводит AI-генерированный текст к KaTeX-валидному LaTeX:
-    - bare `sqrt(x)` → `\\sqrt{x}` (даже если без обратного слеша)
-    - юникод-символы ², ³, √, ∛, − → LaTeX-аналоги
-    - `a*b` (между переменными/числами) → `a \\cdot b`
+    - bare `sqrt(x)` -> `\\sqrt{x}` (даже если без обратного слеша)
+    - юникод-символы ², ³, √, ∛, − -> LaTeX-аналоги
+    - `a*b` (между переменными/числами) -> `a \\cdot b`
     - оборачивает голые LaTeX-конструкции в $...$, если они вне $-блока
 
     Применяется к text / answer / solution из AI-ответа перед сохранением.
@@ -4238,15 +4238,15 @@ def _sanitize_ai_latex(text):
     except Exception:
         pass
 
-    # 1) Unicode → LaTeX (корни уже обработаны выше, '³√' здесь не встретится)
+    # 1) Unicode -> LaTeX (корни уже обработаны выше, '³√' здесь не встретится)
     s = s.replace('²', '^{2}').replace('³', '^{3}')
     s = s.replace('⁴', '^{4}').replace('⁵', '^{5}')
     s = s.replace('₀', '_{0}').replace('₁', '_{1}').replace('₂', '_{2}')
     s = s.replace('₃', '_{3}').replace('₄', '_{4}').replace('₅', '_{5}')
-    s = s.replace('−', '-')  # minus sign → ASCII hyphen
+    s = s.replace('−', '-')  # minus sign -> ASCII hyphen
     s = s.replace('·', r' \cdot ').replace('×', r' \cdot ')
 
-    # 2) bare sqrt(...) / sqrt{...} → \sqrt{...}  (без backslash)
+    # 2) bare sqrt(...) / sqrt{...} -> \sqrt{...}  (без backslash)
     #    учитываем вложенные скобки одного уровня
     s = re.sub(r'(?<!\\)\bsqrt\s*\(([^()]*)\)', r'\\sqrt{\1}', s, flags=re.IGNORECASE)
     s = re.sub(r'(?<!\\)\bsqrt\s*\{([^{}]*)\}', r'\\sqrt{\1}', s, flags=re.IGNORECASE)
@@ -4283,7 +4283,7 @@ def _wrap_bare_latex(text):
     if '\\' not in text and '^{' not in text and '_{' not in text:
         return text
 
-    # Исправляем \sqrt(...) → \sqrt{...} ВЕЗДЕ
+    # Исправляем \sqrt(...) -> \sqrt{...} ВЕЗДЕ
     text = _fix_latex_parens(text)
 
     # Если нет $ и нет \( — весь текст "голый", оборачиваем всё
@@ -4328,25 +4328,25 @@ def _wrap_bare_latex(text):
     return text
 
 
-# ── Markdown → HTML парсер для текста задач ──────────────────────────────────
+# ── Markdown -> HTML парсер для текста задач ──────────────────────────────────
 def render_task_text(text):
     """
-    Парсит Markdown → HTML.
+    Парсит Markdown -> HTML.
     1. Оборачивает голые LaTeX-команды в $...$
     2. Защищает math от Markdown-эскейпинга
-    3. Парсит Markdown → HTML
+    3. Парсит Markdown -> HTML
     4. Восстанавливает math
     Placeholder формат: XMATHX0XENDX — не содержит __, *, _ чтобы Markdown не тронул.
     """
     if not text:
         return ''
 
-    # 0a. Исправление plain-text математики (OCR-артефакты: x2 → x^2)
+    # 0a. Исправление plain-text математики (OCR-артефакты: x2 -> x^2)
     from utils.math_text_fixer import fix_plain_math
     text = fix_plain_math(text)
 
-    # 0a2. LaTeX-валидатор: чинит «7^100» → «$7^{100}$», \frac12 → \frac{1}{2},
-    #      cdot→\cdot и т.п. Не зависит от Flask/БД, поэтому импорт ленивый.
+    # 0a2. LaTeX-валидатор: чинит «7^100» -> «$7^{100}$», \frac12 -> \frac{1}{2},
+    #      cdot->\cdot и т.п. Не зависит от Flask/БД, поэтому импорт ленивый.
     try:
         from services.latex_validator import normalize_math_text
         text = normalize_math_text(text)
@@ -4727,7 +4727,7 @@ def send_auth_email(recipient_email, code):
             # contains ``id`` (it raises otherwise). Still gate explicitly so
             # this function never returns truthy on a hidden failure.
             if isinstance(result, dict) and result.get("id"):
-                app.logger.warning(f"[EMAIL] ✅ Resend accepted (id={result['id']}) for {recipient_email}")
+                app.logger.warning(f"[EMAIL] [OK] Resend accepted (id={result['id']}) for {recipient_email}")
                 return True
             # Defensive: treat anything else as a failure and fall back.
             app.logger.warning(f"[EMAIL] Resend returned unexpected payload {result!r}; falling back to SMTP")
@@ -4787,7 +4787,7 @@ def send_auth_email(recipient_email, code):
         server.sendmail(sender, [recipient_email], msg.as_bytes())
         server.quit()
 
-        app.logger.warning(f"[EMAIL] ✅ Successfully sent to {recipient_email}")
+        app.logger.warning(f"[EMAIL] [OK] Successfully sent to {recipient_email}")
         return True
     except Exception as e:
         app.logger.error(f"[EMAIL ERROR] Failed to send: {e}")
@@ -5055,7 +5055,7 @@ def yandex_login():
             existing_oauth = OAuthAccount.query.filter_by(provider='yandex', provider_user_id=provider_user_id).first()
 
             if existing_oauth and existing_oauth.user_id != current_user.id:
-                # КОЛЛИЗИЯ: Я-ID привязан к ДРУГОМУ аккаунту →
+                # КОЛЛИЗИЯ: Я-ID привязан к ДРУГОМУ аккаунту ->
                 # ПЕРЕПРИВЯЗАТЬ его на текущего пользователя (по требованию).
                 old_user_id = existing_oauth.user_id
                 existing_oauth.user_id = current_user.id
@@ -5219,7 +5219,7 @@ def tutor_send():
             user_id=current_user.id,
             agent_type=agent_type,
             role='user',
-            content=message + (" [📎 Прикреплено изображение]" if image_data else "")
+            content=message + (" [ Прикреплено изображение]" if image_data else "")
         )
         db.session.add(user_msg)
         # Retry commit to handle 'database is locked' from APScheduler contention
@@ -5420,12 +5420,12 @@ def profile():
         _user_grade_int = None
 
     _legacy_topic_meta = [
-        ('algebra',        'Алгебра',            '➗'),
-        ('geometry',       'Геометрия',          '📐'),
-        ('combinatorics',  'Комбинаторика',      '🧩'),
-        ('number_theory',  'Теория чисел',       '🔢'),
-        ('kl_movement',    'Задачи на движение', '🚂'),
-        ('knights_liars',  'Рыцари и лжецы',     '🧠'),
+        ('algebra',        'Алгебра',            ''),
+        ('geometry',       'Геометрия',          ''),
+        ('combinatorics',  'Комбинаторика',      ''),
+        ('number_theory',  'Теория чисел',       ''),
+        ('kl_movement',    'Задачи на движение', ''),
+        ('knights_liars',  'Рыцари и лжецы',     ''),
     ]
 
     # topics_def — список словарей вида {key, name_ru, icon, match_keys}
@@ -5440,7 +5440,7 @@ def profile():
             topics_def.append({
                 'key': t['key'],
                 'name_ru': t['name'],
-                'icon': t.get('emoji', '📚'),
+                'icon': t.get('emoji', ''),
                 'match_keys': match_keys,
             })
     else:
@@ -5503,7 +5503,7 @@ def profile():
     # Sort: tested topics first (by mastery desc), then untested
     mastery_list.sort(key=lambda x: (-1 if x['mastery'] > 0 else 0, -x['mastery']))
 
-    # Overall level (average mastery of tested topics → 1-10 scale)
+    # Overall level (average mastery of tested topics -> 1-10 scale)
     tested = [m for m in mastery_list if m['mastery'] > 0]
     if tested:
         avg_mastery = sum(m['mastery'] for m in tested) / len(tested)
@@ -5692,7 +5692,7 @@ def submit_exam(exam_id):
             # Отправляем анализ в чат с тьютором
             try:
                 from models import ChatMessage
-                chat_msg = f"""🎯 Пробник #{exam_id} проверен!
+                chat_msg = f""" Пробник #{exam_id} проверен!
 
 Ваш результат: {exam.score}%
 
@@ -5823,8 +5823,8 @@ def free_mock_generate():
 Важно: ответ должен содержать ТОЛЬКО JSON массив, без markdown разметки и дополнительного текста."""
 
         # Генерация через DeepSeek
-        print(f"🤖 Генерация 25 задач для {grade} класса, уровень {level}...")
-        print(f"📝 ПРОМПТ (первые 200 символов): {user_prompt[:200]}...")
+        print(f" Генерация 25 задач для {grade} класса, уровень {level}...")
+        print(f" ПРОМПТ (первые 200 символов): {user_prompt[:200]}...")
         
         response = deepseek.generate(
             prompt=user_prompt,
@@ -5873,20 +5873,20 @@ def free_mock_generate():
         session['free_mock_level'] = level
         session.permanent = True
         
-        print(f"✅ Успешно сгенерировано {len(tasks)} задач, test_id={test_id}")
+        print(f"[OK] Успешно сгенерировано {len(tasks)} задач, test_id={test_id}")
         
         return redirect(url_for('free_mock_test'))
         
     except DeepSeekAPIError as e:
-        print(f"❌ Ошибка DeepSeek API: {e}")
+        print(f"[ERROR] Ошибка DeepSeek API: {e}")
         flash(f'Ошибка генерации задач: {str(e)}', 'error')
         return redirect(url_for('free_mock_start'))
     except json.JSONDecodeError as e:
-        print(f"❌ Ошибка парсинга JSON: {e}")
+        print(f"[ERROR] Ошибка парсинга JSON: {e}")
         flash('Ошибка обработки ответа AI. Попробуйте еще раз.', 'error')
         return redirect(url_for('free_mock_start'))
     except Exception as e:
-        print(f"❌ Неожиданная ошибка: {e}")
+        print(f"[ERROR] Неожиданная ошибка: {e}")
         flash(f'Произошла ошибка: {str(e)}', 'error')
         return redirect(url_for('free_mock_start'))
 
@@ -5942,7 +5942,7 @@ def free_mock_submit():
         })
     
     # Проверяем все ответы одним батч-запросом к LLM
-    print(f"🤖 Проверка {len(answers_data)} ответов через DeepSeek AI...")
+    print(f" Проверка {len(answers_data)} ответов через DeepSeek AI...")
     llm_results = check_answers_batch(answers_data)
     
     # Формируем результаты
@@ -6122,7 +6122,7 @@ def api_free_mock_generate_block():
 
 ВЕРНИ ТОЛЬКО ЧИСТЫЙ JSON-МАССИВ [{{}}, {{}}, ...]. БЕЗ СЛОВ "Вот ваши задачи", БЕЗ МАРКДАУНА ```json ```."""
 
-        print(f"🤖 Генерация блока {block_number}/5 для {class_level} класса, уровень {difficulty}...")
+        print(f" Генерация блока {block_number}/5 для {class_level} класса, уровень {difficulty}...")
         
         response = deepseek.generate(
             prompt=user_prompt,
@@ -6153,14 +6153,14 @@ def api_free_mock_generate_block():
         
         response_text = response_text.strip()
         
-        print(f"📝 Очищенный ответ (первые 200 символов): {response_text[:200]}...")
+        print(f" Очищенный ответ (первые 200 символов): {response_text[:200]}...")
         
         # Пытаемся распарсить JSON с обработкой ошибок
         try:
             tasks = json.loads(response_text)
         except json.JSONDecodeError as json_err:
             print("="*80)
-            print(f"❌ ОШИБКА ПАРСИНГА JSON: {json_err}")
+            print(f"[ERROR] ОШИБКА ПАРСИНГА JSON: {json_err}")
             print("="*80)
             print("СЛОМАННЫЙ JSON (полностью):")
             print(response_text)
@@ -6171,18 +6171,18 @@ def api_free_mock_generate_block():
         if len(tasks) != 5:
             tasks = tasks[:5]  # Берем первые 5
         
-        print(f"✅ Блок {block_number} сгенерирован: {len(tasks)} задач")
+        print(f"[OK] Блок {block_number} сгенерирован: {len(tasks)} задач")
         
         return jsonify(tasks), 200
         
     except DeepSeekAPIError as e:
-        print(f"❌ Ошибка DeepSeek API: {e}")
+        print(f"[ERROR] Ошибка DeepSeek API: {e}")
         return jsonify({'error': f'Ошибка генерации: {str(e)}'}), 500
     except json.JSONDecodeError as e:
-        print(f"❌ Ошибка парсинга JSON: {e}")
+        print(f"[ERROR] Ошибка парсинга JSON: {e}")
         return jsonify({'error': 'Ошибка обработки ответа AI'}), 500
     except Exception as e:
-        print(f"❌ Неожиданная ошибка: {e}")
+        print(f"[ERROR] Неожиданная ошибка: {e}")
         return jsonify({'error': f'Произошла ошибка: {str(e)}'}), 500
 
 
@@ -6222,9 +6222,9 @@ def api_free_mock_generate_single_task():
         
         # Логируем исключенные идеи
         if task_ideas_history:
-            print(f"[Free Mock] 📋 Генерирую задачу №{task_number}. Исключенные идеи: {', '.join(task_ideas_history)}")
+            print(f"[Free Mock]  Генерирую задачу №{task_number}. Исключенные идеи: {', '.join(task_ideas_history)}")
         else:
-            print(f"[Free Mock] 📋 Генерирую задачу №{task_number}. Это первая задача в пробнике.")
+            print(f"[Free Mock]  Генерирую задачу №{task_number}. Это первая задача в пробнике.")
         
         # Формируем промпт для ОДНОЙ задачи
         topics_exclusion = ""
@@ -6274,13 +6274,13 @@ def api_free_mock_generate_single_task():
 
 ТВОЯ НОВАЯ ЗАДАЧА ДОЛЖНА БЫТЬ АБСОЛЮТНО УНИКАЛЬНОЙ!
 
-🚫 СТРОГО ЗАПРЕЩЕНО:
+ СТРОГО ЗАПРЕЩЕНО:
    • Повторять методы решения из списка выше
    • Менять только числа в старых задачах
    • Использовать похожие конструкции или сюжеты
    • Генерировать задачи на те же математические концепции
 
-✅ ОБЯЗАТЕЛЬНО:
+[OK] ОБЯЗАТЕЛЬНО:
    • Придумай СОВЕРШЕННО НОВУЮ математическую идею
    • Используй ДРУГОЙ метод решения
    • Выбери ДРУГУЮ подтему из раздела математики
@@ -6302,18 +6302,18 @@ def api_free_mock_generate_single_task():
 1. ВЕСЬ математический текст, числа и формулы ОБЯЗАТЕЛЬНО оборачивай в \( ... \) (для инлайн) и \[ ... \] (для блоков).
 
 2. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать юникод-символы для степеней и корней (никаких ², ³, √ или ^ вне LaTeX).
-   ❌ ПЛОХО: x², √4, 2^2
-   ✅ ОТЛИЧНО: \( x^2 \), \( \sqrt{4} \), \( 2^2 \)
+   [ERROR] ПЛОХО: x², √4, 2^2
+   [OK] ОТЛИЧНО: \( x^2 \), \( \sqrt{4} \), \( 2^2 \)
 
 3. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать слэш / для дробей!
-   ❌ ПЛОХО: 1/2, x/y
-   ✅ ОТЛИЧНО: \( \frac{1}{2} \), \( \frac{x}{y} \)
+   [ERROR] ПЛОХО: 1/2, x/y
+   [OK] ОТЛИЧНО: \( \frac{1}{2} \), \( \frac{x}{y} \)
 
 4. КРИТИЧЕСКИ ВАЖНО ПРО КОРНИ:
    КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать √50, sqrt(50) или \sqrt 50 (без фигурных скобок)!
    Ты ОБЯЗАН использовать команду \sqrt СТРОГО с фигурными скобками {}!
-   ❌ ПЛОХО: √50, sqrt(50), \sqrt 50, \sqrt 4
-   ✅ ОТЛИЧНО: \( \sqrt{50} \), \( \sqrt{4} \), \( \sqrt{x^2 + y^2} \)
+   [ERROR] ПЛОХО: √50, sqrt(50), \sqrt 50, \sqrt 4
+   [OK] ОТЛИЧНО: \( \sqrt{50} \), \( \sqrt{4} \), \( \sqrt{x^2 + y^2} \)
    Если под корнем длинное выражение, оно ВСЁ должно быть внутри фигурных скобок!
 
 5. Знаки умножения пиши ТОЛЬКО как \( \cdot \) (не * и не x).
@@ -6321,13 +6321,13 @@ def api_free_mock_generate_single_task():
 6. ПРАВИЛО ДЛЯ НИЖНИХ ИНДЕКСОВ:
    КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать индексы слитно как обычный текст (p1, pn, xi)!
    Ты ОБЯЗАН использовать символ подчеркивания _ строго внутри математического блока \( ... \).
-   ❌ ПЛОХО: p1, pn, x_i (как текст), xi
-   ✅ ОТЛИЧНО: \( p_1 \), \( p_n \), \( x_i \)
+   [ERROR] ПЛОХО: p1, pn, x_i (как текст), xi
+   [OK] ОТЛИЧНО: \( p_1 \), \( p_n \), \( x_i \)
    ВАЖНО: Если индекс из нескольких символов, он ОБЯЗАТЕЛЬНО в фигурных скобках!
-   ✅ ОТЛИЧНО: \( a_{n+1} \), \( y_{i,j} \), \( x_{max} \)
+   [OK] ОТЛИЧНО: \( a_{n+1} \), \( y_{i,j} \), \( x_{max} \)
 
 7. СИСТЕМЫ УРАВНЕНИЙ: КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО писать их просто в столбик! ОБЯЗАН использовать окружение cases.
-   ✅ ОТЛИЧНО:
+   [OK] ОТЛИЧНО:
    \[
    \begin{cases}
    x^2 = 2 \cdot \sqrt{y^2 + 1} \\
@@ -6341,9 +6341,9 @@ def api_free_mock_generate_single_task():
    - Греческие буквы: \( \alpha \), \( \beta \), \( \pi \)
 
 ПРИМЕРЫ ПРАВИЛЬНОГО ОФОРМЛЕНИЯ:
-✅ "Решите уравнение \( x^2 + 3x - 4 = 0 \)"
-✅ "Найдите \( \frac{2^5 + 2^3}{2^2} \)"
-✅ "Докажите, что \( \sqrt{2} + \sqrt{3} < \sqrt{10} \)"
+[OK] "Решите уравнение \( x^2 + 3x - 4 = 0 \)"
+[OK] "Найдите \( \frac{2^5 + 2^3}{2^2} \)"
+[OK] "Докажите, что \( \sqrt{2} + \sqrt{3} < \sqrt{10} \)"
 
 КРИТИЧЕСКИ ВАЖНО:
 - СТРОГО ЗАПРЕЩЕНО ИСПОЛЬЗОВАТЬ КАВЫЧКИ " ВНУТРИ ТЕКСТА ЗАДАЧИ. Вместо кавычек используй тире или скобки.
@@ -6418,7 +6418,7 @@ def api_free_mock_generate_single_task():
 
 ВАЖНО: ВЕРНИ ТОЛЬКО ЧИСТЫЙ JSON-ОБЪЕКТ. БЕЗ СЛОВ "Вот задача", БЕЗ МАРКДАУНА ```json ```. БЕЗ КАВЫЧЕК В ТЕКСТЕ ЗАДАЧИ."""
 
-        print(f"🤖 Генерация задачи {task_number}/25 для {class_level} класса, уровень {difficulty}...")
+        print(f" Генерация задачи {task_number}/25 для {class_level} класса, уровень {difficulty}...")
         
         response = deepseek.generate(
             prompt=user_prompt,
@@ -6453,14 +6453,14 @@ def api_free_mock_generate_single_task():
         # Это защищает от LaTeX символов типа \frac, \sqrt, которые ломают json.loads()
         response_text = response_text.replace('\\', '\\\\')
         
-        print(f"📝 Очищенный ответ (первые 150 символов): {response_text[:150]}...")
+        print(f" Очищенный ответ (первые 150 символов): {response_text[:150]}...")
         
         # Пытаемся распарсить JSON с обработкой ошибок
         try:
             task = json.loads(response_text)
         except json.JSONDecodeError as json_err:
             print("="*80)
-            print(f"❌ ОШИБКА ПАРСИНГА JSON: {json_err}")
+            print(f"[ERROR] ОШИБКА ПАРСИНГА JSON: {json_err}")
             print("="*80)
             print("СЛОМАННЫЙ JSON (полностью):")
             print(response_text)
@@ -6469,7 +6469,7 @@ def api_free_mock_generate_single_task():
             raise ValueError("Invalid JSON format from AI")
 
         # LATEX-санитизация: приводим текст/ответ/решение к KaTeX-валидному виду
-        # (sqrt(x) → \sqrt{x}, юникод-символы → LaTeX, обёртка в $...$ при необходимости)
+        # (sqrt(x) -> \sqrt{x}, юникод-символы -> LaTeX, обёртка в $...$ при необходимости)
         try:
             for _k in ('text', 'answer', 'solution'):
                 if _k in task and task[_k]:
@@ -6507,8 +6507,8 @@ def api_free_mock_generate_single_task():
         
         session.modified = True  # Важно для Flask session
         
-        print(f"✅ Задача {task_number} сгенерирована")
-        print(f"[Free Mock] 💾 Сохранена идея: '{task_idea}'. Всего идей в истории: {len(session['mock_task_ideas'])}")
+        print(f"[OK] Задача {task_number} сгенерирована")
+        print(f"[Free Mock]  Сохранена идея: '{task_idea}'. Всего идей в истории: {len(session['mock_task_ideas'])}")
         
         # Запускаем фоновую предгенерацию следующей задачи
         if task_number < 25:  # Если это не последняя задача
@@ -6530,7 +6530,7 @@ def api_free_mock_generate_single_task():
                 def background_generate():
                     """Фоновая генерация следующей задачи"""
                     try:
-                        print(f"[Prefetch] 🔄 Фоновая генерация задачи #{next_task_number}...")
+                        print(f"[Prefetch]  Фоновая генерация задачи #{next_task_number}...")
                         # Создаем новый DeepSeek клиент для фонового потока
                         bg_deepseek = DeepSeekClient()
                         
@@ -6539,25 +6539,25 @@ def api_free_mock_generate_single_task():
                         # Здесь должна быть та же логика, что и выше
                         # Для простоты пока пропускаем, так как это требует большого рефакторинга
                         
-                        print(f"[Prefetch] ✅ Задача #{next_task_number} предсгенерирована в фоне")
+                        print(f"[Prefetch] [OK] Задача #{next_task_number} предсгенерирована в фоне")
                     except Exception as e:
-                        print(f"[Prefetch] ❌ Ошибка фоновой генерации: {e}")
+                        print(f"[Prefetch] [ERROR] Ошибка фоновой генерации: {e}")
                 
                 # Запускаем в отдельном потоке
                 thread = threading.Thread(target=background_generate, daemon=True)
                 thread.start()
-                print(f"[Prefetch] 🚀 Запущена фоновая генерация задачи #{next_task_number}")
+                print(f"[Prefetch]  Запущена фоновая генерация задачи #{next_task_number}")
         
         return jsonify(task), 200
         
     except DeepSeekAPIError as e:
-        print(f"❌ Ошибка DeepSeek API: {e}")
+        print(f"[ERROR] Ошибка DeepSeek API: {e}")
         return jsonify({'error': f'Ошибка генерации: {str(e)}'}), 500
     except json.JSONDecodeError as e:
-        print(f"❌ Ошибка парсинга JSON: {e}")
+        print(f"[ERROR] Ошибка парсинга JSON: {e}")
         return jsonify({'error': 'Ошибка обработки ответа AI'}), 500
     except Exception as e:
-        print(f"❌ Неожиданная ошибка: {e}")
+        print(f"[ERROR] Неожиданная ошибка: {e}")
         return jsonify({'error': f'Произошла ошибка: {str(e)}'}), 500
 
 
@@ -6640,7 +6640,7 @@ def api_free_mock_evaluate():
         
         weak_topics_str = ", ".join(weak_topics) if weak_topics else "Нет явных слабых мест"
         
-        print(f"✅ Оценка завершена: {correct_count}/{len(tasks)}")
+        print(f"[OK] Оценка завершена: {correct_count}/{len(tasks)}")
         
         return jsonify({
             'score': f"{correct_count}/{len(tasks)}",
@@ -6653,13 +6653,13 @@ def api_free_mock_evaluate():
         }), 200
         
     except DeepSeekAPIError as e:
-        print(f"❌ Ошибка DeepSeek API: {e}")
+        print(f"[ERROR] Ошибка DeepSeek API: {e}")
         return jsonify({'error': f'Ошибка генерации фидбека: {str(e)}'}), 500
     except json.JSONDecodeError as e:
-        print(f"❌ Ошибка парсинга JSON: {e}")
+        print(f"[ERROR] Ошибка парсинга JSON: {e}")
         return jsonify({'error': 'Ошибка обработки ответа AI'}), 500
     except Exception as e:
-        print(f"❌ Неожиданная ошибка: {e}")
+        print(f"[ERROR] Неожиданная ошибка: {e}")
         return jsonify({'error': f'Произошла ошибка: {str(e)}'}), 500
 
 
@@ -6800,22 +6800,22 @@ def adaptive_test_select_topic():
         # Темы из 1600-задач (GradeTask) — для 5 и 6 классов
         from models_grade import GradeTask, GRADE_DOMAINS, DOMAIN_LABELS
         domain_emojis = {
-            'natural_numbers':              '🔢',
+            'natural_numbers':              '',
             'fractions_decimals_percent':   '½',
-            'geometry_measurement':         '📐',
-            'combinatorics_school':         '🎲',
-            'logic_olympiad_intro':         '🧠',
-            'divisibility':                 '➗',
+            'geometry_measurement':         '',
+            'combinatorics_school':         '',
+            'logic_olympiad_intro':         '',
+            'divisibility':                 '',
             'fractions_ratio_percent':      '½',
-            'integers_coordinates':         '➕',
-            'geometry_6':                   '📏',
-            'olympiad_logic_combinatorics': '🧩',
+            'integers_coordinates':         '',
+            'geometry_6':                   '',
+            'olympiad_logic_combinatorics': '',
         }
         for domain in GRADE_DOMAINS.get(grade_int, ()):
             count = GradeTask.query.filter_by(grade=grade_int, domain=domain).count()
             topics.append({
                 'name':      DOMAIN_LABELS.get(domain, domain),
-                'emoji':     domain_emojis.get(domain, '📘'),
+                'emoji':     domain_emojis.get(domain, ''),
                 'count':     count,
                 'available': count >= MIN_TASKS,
                 'url':       url_for('adaptive_test_start_grade',
@@ -6910,7 +6910,7 @@ def adaptive_test_select_grade():
         flash('Выберите тему для тестирования', 'error')
         return redirect(url_for('probniks_page'))
 
-    # Алиас kl_movement → movement
+    # Алиас kl_movement -> movement
     if topic == 'kl_movement':
         topic = 'movement'
 
@@ -6989,7 +6989,7 @@ def adaptive_test_start_simple():
     topic = request.args.get('topic')
     grade = request.args.get('grade')
     
-    # kl_movement → movement (алиас) — до любых проверок
+    # kl_movement -> movement (алиас) — до любых проверок
     if topic == 'kl_movement':
         topic = 'movement'
     
@@ -7126,7 +7126,7 @@ def adaptive_test_start_simple():
     # В 5 классе задачи записаны как "математика", "олимпиадные" и т.д.
     # Для "Алгебры" в 5 классе ищем задачи по более широким критериям
     if grade_int == 5 and topic == 'algebra':
-        print(f"[ADAPTIVE FIX] 5 класс + Алгебра → расширенный поиск по математике")
+        print(f"[ADAPTIVE FIX] 5 класс + Алгебра -> расширенный поиск по математике")
         topic_keywords['algebra'] = ['математик', 'числ', 'выражен', 'уравнен', 'задач',
                                       'вычислен', 'арифметик', 'олимпиад']
 
@@ -7135,7 +7135,7 @@ def adaptive_test_start_simple():
     grade_kw = get_keywords_for_grade_topic(grade_int, topic)
     if grade_kw:
         topic_keywords[topic] = grade_kw
-        print(f"[ADAPTIVE FIX] {grade_int} класс + {topic} → ключевые слова: {grade_kw}")
+        print(f"[ADAPTIVE FIX] {grade_int} класс + {topic} -> ключевые слова: {grade_kw}")
 
     # Получаем ключевые слова для выбранной темы
     keywords = topic_keywords.get(topic, [])
@@ -7172,7 +7172,7 @@ def adaptive_test_start_simple():
             AdaptiveTask.topic.in_(candidates),
         ).all()
         print(f"[ADAPTIVE registry] grade={grade_int} key={topic} "
-              f"db_topic='{db_topic_exact}' → {len(filtered_tasks)} задач")
+              f"db_topic='{db_topic_exact}' -> {len(filtered_tasks)} задач")
     elif keywords:
         # Если есть ключевые слова - фильтруем по ним
         all_tasks = AdaptiveTask.query.filter(
@@ -8160,14 +8160,14 @@ def check_adaptive_answer():
         )
 
         # — Шкала FORMYLA: уровень определяется ТОЛЬКО по вердикту ИИ-тьютора —
-        #   answer_correct is True  → +1 (верно)
-        #   answer_correct is False → -1 (неверно)
-        #   answer_correct is None / AI failure → 0 (нейтрально, без изм.)
+        #   answer_correct is True  -> +1 (верно)
+        #   answer_correct is False -> -1 (неверно)
+        #   answer_correct is None / AI failure -> 0 (нейтрально, без изм.)
         # method_correct БОЛЬШЕ НЕ влияет на уровень (по требованию: +1 значит +1).
         if is_ai_failure or answer_correct is None:
             score = 0
         elif answer_correct is True:
-            # ИИ-тьютор сказал: ответ верный → +1, независимо от метода.
+            # ИИ-тьютор сказал: ответ верный -> +1, независимо от метода.
             score = 1
         else:
             score = -1
@@ -8187,7 +8187,7 @@ def check_adaptive_answer():
 
         print(
             f"[ADAPTIVE] Score={score} (delta={delta}), "
-            f"Level: {current_difficulty} → {new_level}, "
+            f"Level: {current_difficulty} -> {new_level}, "
             f"is_ai_failure={is_ai_failure}"
         )
         
@@ -8368,7 +8368,7 @@ def adaptive_test_simple_results():
                 ca = a.get('correct_answer') or (t.correct_answer if t else '')
                 if score >= 2:
                     a['feedback'] = (
-                        f"Ответ верный! ✅\n\nПравильный ответ: **{ca}**"
+                        f"Ответ верный! [OK]\n\nПравильный ответ: **{ca}**"
                         + (f"\n\n**Решение:**\n{t.solution}" if t and t.solution else "")
                     )
                 elif score == 1:
@@ -9240,7 +9240,7 @@ def update_nickname():
 
     # Проверка уникальности (case-insensitive). Сравниваем по lowercase, чтобы
     # ilike корректно работал с польскими/кириллическими символами в Postgres
-    # (ilike → ICU collation) и SQLite.
+    # (ilike -> ICU collation) и SQLite.
     existing = User.query.filter(User.nickname.ilike(cleaned)).first()
     if existing and existing.id != current_user.id:
         msg = f'Никнейм @{cleaned} уже занят'
@@ -9711,9 +9711,9 @@ def admin_needs_review_action(task_id):
 @app.route("/admin/fix_latex_rac", methods=["GET", "POST"])
 def admin_fix_latex_rac():
     """
-    Admin endpoint: диагностика и починка битого LaTeX '$ rac{' → '$\\frac{'.
-    GET  → показывает сколько задач с битым LaTeX
-    POST → применяет починку
+    Admin endpoint: диагностика и починка битого LaTeX '$ rac{' -> '$\\frac{'.
+    GET  -> показывает сколько задач с битым LaTeX
+    POST -> применяет починку
     """
     # Простая защита: только если залогинен
     if not current_user.is_authenticated:
@@ -9744,7 +9744,7 @@ def admin_fix_latex_rac():
                 'message': f'Найдено {result_count} задач с битым LaTeX. POST на этот URL для починки.'
             })
 
-        # POST → применяем починку
+        # POST -> применяем починку
         if result_count == 0 and result_sol == 0:
             return jsonify({'status': 'ok', 'fixed': 0, 'message': 'Битых задач не найдено'})
 
@@ -9773,7 +9773,7 @@ def admin_fix_latex_rac():
 # Раньше здесь стартап-хук помечал задачу с внутренним integer id=1650 как
 # битую (причина: «ответ в БД=18, мат-правильный=0»). После переимпорта JSON
 # auto-increment id мог сдвинуться, и id=1650 теперь может указывать на
-# совершенно другую (валидную) задачу → есть риск ложного флага.
+# совершенно другую (валидную) задачу -> есть риск ложного флага.
 #
 # Логика отключена. Если конкретную задачу действительно надо пометить —
 # делать это нужно по стабильному source_id (AdaptiveTask.source_id):
@@ -10216,7 +10216,7 @@ def api_daily_task():
 @app.route('/daily-set')
 @login_required
 def daily_set_page():
-    """GET /daily-set → 302 redirect на /daily_tasks (живой маршрут задач дня).
+    """GET /daily-set -> 302 redirect на /daily_tasks (живой маршрут задач дня).
 
     Ранее шаблон daily_set.html отсутствовал — маршрут отдавал 500.
     Теперь это простой редирект. Кнопка куратора ведёт сюда же,
@@ -10511,7 +10511,7 @@ def api_chat_messages(friend_id):
     ).order_by(DirectMessage.created_at.asc())
     msgs = q.limit(limit).all()
     # Маркируем входящие как прочитанные.  Помимо булева `is_read` (legacy)
-    # ставим `read_at = now` чтобы фронт мог показать «✓✓ синие» — момент,
+    # ставим `read_at = now` чтобы фронт мог показать «[OK][OK] синие» — момент,
     # когда друг реально открыл диалог (CHAT_RECEIPTS_V1).
     try:
         now = datetime.utcnow()
@@ -10648,7 +10648,7 @@ def api_chat_send(friend_id):
         if kind == 'task_share':
             _send_push_notification(
                 user_id=friend.id,
-                title=f'📚 {sender_name}',
+                title=f' {sender_name}',
                 body='Поделился(ась) задачей!',
                 url=f'/chat?friend={current_user.id}',
             )
@@ -10656,7 +10656,7 @@ def api_chat_send(friend_id):
             body_text = (msg.body or '')[:120]
             _send_push_notification(
                 user_id=friend.id,
-                title=f'💬 {sender_name}',
+                title=f' {sender_name}',
                 body=body_text if body_text else 'Новое сообщение',
                 url=f'/chat?friend={current_user.id}',
             )
@@ -11223,12 +11223,12 @@ def public_profile(user_id):
     # Mastery по темам
     from models import TopicMastery
     TOPIC_META = {
-        'algebra':        {'name_ru': 'Алгебра',            'icon': '➗'},
-        'geometry':       {'name_ru': 'Геометрия',          'icon': '📐'},
-        'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': '🧩'},
-        'number_theory':  {'name_ru': 'Теория чисел',       'icon': '🔢'},
-        'kl_movement':    {'name_ru': 'Задачи на движение', 'icon': '🚂'},
-        'knights_liars':  {'name_ru': 'Рыцари и лжецы',     'icon': '🧠'},
+        'algebra':        {'name_ru': 'Алгебра',            'icon': ''},
+        'geometry':       {'name_ru': 'Геометрия',          'icon': ''},
+        'combinatorics':  {'name_ru': 'Комбинаторика',      'icon': ''},
+        'number_theory':  {'name_ru': 'Теория чисел',       'icon': ''},
+        'kl_movement':    {'name_ru': 'Задачи на движение', 'icon': ''},
+        'knights_liars':  {'name_ru': 'Рыцари и лжецы',     'icon': ''},
     }
 
     mastery_records = TopicMastery.query.filter_by(user_id=user_id).all()
@@ -12031,7 +12031,7 @@ def submit_feedback():
     """Принять отзыв пользователя и отправить его на почту владельцу.
 
     Тело JSON: {rating: 1..5|null, message: str, email: str|null, page_url: str}
-    Email-получатель: env REVIEW_NOTIFY_EMAIL → SUPPORT_NOTIFY_EMAIL → MAIL_USERNAME.
+    Email-получатель: env REVIEW_NOTIFY_EMAIL -> SUPPORT_NOTIFY_EMAIL -> MAIL_USERNAME.
     Никаких записей в БД (чтобы не требовать миграцию). Тикет-id = unix-timestamp.
     """
     try:
@@ -12342,7 +12342,7 @@ def api_groups_list():
         items.append({
             'id': g.id,
             'name': g.name,
-            'avatar_emoji': g.avatar_emoji or '👥',
+            'avatar_emoji': g.avatar_emoji or '',
             'last_message': last.body if last else None,
             'last_at': last.created_at.isoformat() if last and last.created_at else None,
         })
@@ -12415,7 +12415,7 @@ def api_groups_info(group_id):
         'group': {
             'id': g.id,
             'name': g.name,
-            'avatar_emoji': g_av or '👥',
+            'avatar_emoji': g_av or '',
             'created_at': g.created_at.isoformat() if g.created_at else None,
             'owner_id': g.owner_id,
             'owner_name': (owner.name or owner.nickname or owner.email) if owner else None,

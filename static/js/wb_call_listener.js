@@ -2,7 +2,7 @@
 //
 // Подключается на КАЖДОЙ странице сайта (через base.html). Раз в ~7 секунд
 // дёргает GET /api/wb_call/invites/poll и, если есть новое приглашение от
-// друга — рисует всплывающее окно «🤙 N звонит — Принять / Отклонить».
+// друга — рисует всплывающее окно « N звонит — Принять / Отклонить».
 //
 // При «Принять»:
 //   * если мы уже на странице доски (`/drawing`) — открываем виджет звонка
@@ -276,16 +276,16 @@
         pip.setAttribute("aria-label", "Вернуться к звонку. Комната " + roomCode);
         pip.innerHTML =
             '<span class="wb-pip-dot"></span>' +
-            '<span class="wb-pip-icon">📹</span>' +
+            '<span class="wb-pip-icon"></span>' +
             '<span class="wb-pip-label">В разговоре</span>' +
             '<span class="wb-pip-code">' + escapeHtml(roomCode) + '</span>' +
             '<span class="wb-pip-spacer"></span>' +
-            '<button type="button" class="wb-pip-btn wb-pip-btn-expand" title="Развернуть" data-act="expand">⛶</button>' +
-            '<button type="button" class="wb-pip-btn wb-pip-btn-close" title="Завершить звонок" data-act="close">✖</button>';
+            '<button type="button" class="wb-pip-btn wb-pip-btn-expand" title="Развернуть" data-act="expand"></button>' +
+            '<button type="button" class="wb-pip-btn wb-pip-btn-close" title="Завершить звонок" data-act="close"></button>';
 
         document.body.appendChild(pip);
 
-        // Клик по фону оверлея (мимо кнопок) → развернуть
+        // Клик по фону оверлея (мимо кнопок) -> развернуть
         pip.addEventListener("click", function (e) {
             var target = e.target;
             if (target && target.getAttribute && target.getAttribute("data-act")) return;

@@ -655,7 +655,7 @@ def main():
             f.write(db_content)
         print(f"  Updated {db_py_path} ({len(db_content)} bytes)", flush=True)
     
-    print("\n✅ Grade 11 Day 2 problems added successfully using split approach with enhanced JSON fixing!")
+    print("\n[OK] Grade 11 Day 2 problems added successfully using split approach with enhanced JSON fixing!")
 
 
 if __name__ == '__main__':

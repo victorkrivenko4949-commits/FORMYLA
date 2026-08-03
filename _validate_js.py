@@ -20,22 +20,22 @@ for i, js in enumerate(scripts):
     print(f"    Non-empty lines: {len(non_empty)}")
     # Check if key patterns exist
     if 'addMsg' in js:
-        print(f"    ✅ Has addMsg()")
+        print(f"    [OK] Has addMsg()")
     if 'DOMContentLoaded' in js:
-        print(f"    ✅ Has DOMContentLoaded")
+        print(f"    [OK] Has DOMContentLoaded")
     if 'toggleKeyboard' in js:
-        print(f"    ✅ Has toggleKeyboard()")
+        print(f"    [OK] Has toggleKeyboard()")
     if 'kbInsert' in js:
-        print(f"    ✅ Has kbInsert()")
+        print(f"    [OK] Has kbInsert()")
     if 'switchKbTab' in js:
-        print(f"    ✅ Has switchKbTab()")
+        print(f"    [OK] Has switchKbTab()")
 
 print("\n--- Checking for inline onclick handlers ---")
 if 'toggleKeyboard()' in content:
-    print("❌ toggleKeyboard() used in onclick but not defined in any script block in coach.html")
+    print("[ERROR] toggleKeyboard() used in onclick but not defined in any script block in coach.html")
 if 'kbInsert(' in content:
-    print("❌ kbInsert() used in onclick but not defined in any script block in coach.html")
+    print("[ERROR] kbInsert() used in onclick but not defined in any script block in coach.html")
 if 'switchKbTab(' in content:
-    print("❌ switchKbTab() used in onclick but not defined in any script block in coach.html")
+    print("[ERROR] switchKbTab() used in onclick but not defined in any script block in coach.html")
 
 print("\nDone.")

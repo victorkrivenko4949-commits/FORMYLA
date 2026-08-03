@@ -23,9 +23,9 @@ This file pins down the correct behaviour:
     matches in `PROBLEMS_DB` AND `text` is non-empty.
   * `/api/tutor/hint/<id>` and `/api/tutor/solution/<id>` pass the real
     `text`/`answer` to the DeepSeek client (no empty strings).
-  * Unknown id → 404.
-  * Probnik (combo) id → 404 (regression test for the bug).
-  * Empty-text problem → 404 (defensive).
+  * Unknown id -> 404.
+  * Probnik (combo) id -> 404 (regression test for the bug).
+  * Empty-text problem -> 404 (defensive).
 """
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def app_with_problems(monkeypatch):
     # Combos table — top-level objects whose `id` may collide with the
     # problem ids the client uses. They MUST be ignored by the tutor.
     fake_combos = [
-        {"id": 1001,                              # ← clashes on purpose!
+        {"id": 1001,                              # <- clashes on purpose!
          "olympiad": "vsosh-9-2027",
          "olympiad_title": "ВсОШ 9",
          "year": 2024, "grade": 9, "round": 1,
@@ -175,7 +175,7 @@ class TestSolutionEndpoint:
                             json={}, content_type="application/json")
             assert r.status_code == 200
             text_sent = instance.generate_solution.call_args.kwargs["problem_text"]
-            # ❌ The pre-fix behaviour gave AI text="" — now it has content.
+            # [ERROR] The pre-fix behaviour gave AI text="" — now it has content.
             assert text_sent.strip() != ""
             assert "Combo problem" not in text_sent  # came from PROBLEMS_DB
 

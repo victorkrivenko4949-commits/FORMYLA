@@ -11,7 +11,7 @@
 <div id="tutorWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
     <!-- Кнопка открытия -->
     <button id="tutorBtn" onclick="toggleTutorPopup()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-        🤖
+        
     </button>
     
     <!-- Всплывающее окно -->
@@ -21,7 +21,7 @@
         <div id="agentSelectionScreen" style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
             <!-- Заголовок -->
             <div style="margin-bottom: 18px;">
-                <div style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 8px;">🤖 AI-Тьютор</div>
+                <div style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 8px;"> AI-Тьютор</div>
                 <div style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
                     Один универсальный агент: сам определяет тему задачи и отвечает как профильный эксперт.
                 </div>
@@ -29,16 +29,16 @@
 
             <!-- Единственная кнопка: универсальный агент -->
             <button class="agent-card agent-card-primary" onclick="selectAgent('general', 'Универсальный агент')" style="padding: 22px 22px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); border: 1px solid var(--border-mid); border-radius: 14px; cursor: pointer; transition: all 0.3s; text-align: left; display: flex; align-items: center; gap: 16px; margin-bottom: 14px; color: #fff;">
-                <div style="font-size: 40px;">✨</div>
+                <div style="font-size: 40px;"></div>
                 <div style="flex: 1;">
                     <div style="font-weight: 700; font-size: 17px; margin-bottom: 4px;">Универсальный агент</div>
                     <div style="font-size: 12.5px; opacity: 0.92; line-height: 1.45;">Сам определяет тему задачи и отвечает как профильный эксперт</div>
                 </div>
-                <div style="font-size: 20px; opacity: 0.85;">→</div>
+                <div style="font-size: 20px; opacity: 0.85;">-></div>
             </button>
 
             <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 12px; color: var(--text-muted); font-size: 12.5px; line-height: 1.5; text-align: center; border: 1px dashed var(--border-soft); border-radius: 12px;">
-                💡 Просто опишите задачу или загрузите фото — агент разберётся с темой сам:
+                 Просто опишите задачу или загрузите фото — агент разберётся с темой сам:
                 алгебра, геометрия, теория чисел, комбинаторика, логика, задачи на движение
                 и стратегия олимпиад.
             </div>
@@ -70,7 +70,7 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/>
                         </svg>
-                        💡 Только подсказки
+                         Только подсказки
                     </span>
                     <input type="checkbox" id="hintModeToggle" checked>
                     <span class="hint-toggle__switch"></span>
@@ -123,7 +123,7 @@
     
     <!-- Popup кнопка "Объяснить выделенное" -->
     <div id="explainPopup" style="display: none; position: fixed; z-index: 10000; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.5); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="explainSelected()">
-        ❓ Объяснить подробнее
+         Объяснить подробнее
     </div>
 </div>
 
@@ -514,11 +514,11 @@ function toggleTutorPopup() {
     
     if (popupOpen) {
         popup.style.display = 'flex';
-        btn.textContent = '✕';
+        btn.textContent = '';
         showAgentSelection();
     } else {
         popup.style.display = 'none';
-        btn.textContent = '🤖';
+        btn.textContent = '';
     }
 }
 
@@ -575,7 +575,7 @@ function addFileChip(file) {
                 '<div class="att-name">' + escapeHtml(file.name) + '</div>' +
                 '<div class="att-size">' + formatFileSize(file.size) + '</div>' +
             '</div>' +
-            '<button class="att-remove" type="button" aria-label="Удалить">✕</button>';
+            '<button class="att-remove" type="button" aria-label="Удалить"></button>';
         
         chip.querySelector('.att-remove').addEventListener('click', function() {
             attachedFiles = attachedFiles.filter(function(f) { return f.id !== fileId; });
@@ -699,7 +699,7 @@ async function loadChatHistory(agentType) {
         if (messages.length === 0) {
             const greeting = document.createElement('div');
             greeting.style.cssText = 'text-align: center; color: var(--text-muted); font-size: 14px; padding: 20px; line-height: 1.6; background: rgba(56, 189, 248, 0.1); border-radius: 8px;';
-            greeting.innerHTML = 'Привет! Я ' + currentAgentName + '. 👋<br><br>Чем могу помочь?';
+            greeting.innerHTML = 'Привет! Я ' + currentAgentName + '. <br><br>Чем могу помочь?';
             container.appendChild(greeting);
         } else {
             messages.forEach(function(msg) {
@@ -778,9 +778,9 @@ async function sendToTutor() {
             if (response.status === 429) {
                 addMessageToChat('assistant', '⏳ Слишком много запросов. Подождите минуту и попробуйте снова.');
             } else if (response.status === 401) {
-                addMessageToChat('assistant', '🔐 Необходима авторизация. Пожалуйста, войдите в аккаунт.');
+                addMessageToChat('assistant', ' Необходима авторизация. Пожалуйста, войдите в аккаунт.');
             } else {
-                addMessageToChat('assistant', '❌ Ошибка сервера (' + response.status + '). Попробуйте ещё раз.');
+                addMessageToChat('assistant', '[ERROR] Ошибка сервера (' + response.status + '). Попробуйте ещё раз.');
             }
             console.error('Non-JSON response:', response.status, jsonErr);
             return;
@@ -790,14 +790,14 @@ async function sendToTutor() {
             if (typeof window.showPaywall === 'function') {
                 window.showPaywall(data);
             } else {
-                addMessageToChat('assistant', '🔒 ' + data.message + ' <a href="/subscribe" style="color:#38ef7d">Оформить Premium →</a>');
+                addMessageToChat('assistant', ' ' + data.message + ' <a href="/subscribe" style="color:#38ef7d">Оформить Premium -></a>');
             }
         } else if (data.error === 'rate_limit_exceeded') {
             addMessageToChat('assistant', '⏳ Слишком много запросов. Подождите минуту и попробуйте снова.');
         } else if (data.ai_response) {
             addMessageToChat('assistant', data.ai_response.content);
         } else if (data.error) {
-            addMessageToChat('assistant', '❌ ' + data.error);
+            addMessageToChat('assistant', '[ERROR] ' + data.error);
         }
 
     } catch (error) {
@@ -807,9 +807,9 @@ async function sendToTutor() {
         if (error && (error.name === 'AbortError' || /aborted/i.test(String(error)))) {
             msg = '⏱️ Запрос длился слишком долго (>3 мин) и был отменён. Попробуй задать вопрос покороче или без фото.';
         } else if (error && /Failed to fetch|NetworkError|net::|TypeError/i.test(String(error))) {
-            msg = '❌ Не получилось связаться с сервером. Возможно, сервер перезагружается — подожди 5 секунд и попробуй ещё раз.';
+            msg = '[ERROR] Не получилось связаться с сервером. Возможно, сервер перезагружается — подожди 5 секунд и попробуй ещё раз.';
         } else {
-            msg = '❌ Ошибка связи: ' + (error && error.message ? error.message : 'неизвестная') + '. Попробуй ещё раз.';
+            msg = '[ERROR] Ошибка связи: ' + (error && error.message ? error.message : 'неизвестная') + '. Попробуй ещё раз.';
         }
         addMessageToChat('assistant', msg);
         console.error('Tutor fetch error:', error);
@@ -854,7 +854,7 @@ function addMessageToChat(role, content, scroll, imageUrls) {
         formatted = formatted.replace(/\n\n/g, '</p><p>');
         formatted = '<p>' + formatted + '</p>';
         
-        msgDiv.innerHTML = '<span style="font-weight: 600; color: var(--accent-2);">🤖 Агент:</span><br>' + formatted;
+        msgDiv.innerHTML = '<span style="font-weight: 600; color: var(--accent-2);"> Агент:</span><br>' + formatted;
         
         // Добавляем обработчик выделения текста
         msgDiv.addEventListener('mouseup', handleTextSelection);

@@ -4,7 +4,7 @@
 Builds target_grid.json and target_grid_audit.json from canonical_taxonomy.json
 using the VICTOR2.0 approved grade distribution.
 
-Pipeline step: taxonomy → grade mapping → target grid → generation
+Pipeline step: taxonomy -> grade mapping -> target grid -> generation
 
 Output:
   - l1_l3_generation/target_grid.json

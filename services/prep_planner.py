@@ -187,7 +187,7 @@ def select_problems_for_day(grade, target_topics, weak_topic_skill,
     if exclude_ids is None:
         exclude_ids = set()
 
-    # Every 7th day (index 6, 13, 20, ...) → full variant: diverse topics
+    # Every 7th day (index 6, 13, 20, ...) -> full variant: diverse topics
     is_variant_day = (day_index_in_plan % 7 == 6) and day_index_in_plan > 0
 
     # Calculate difficulty
@@ -278,7 +278,7 @@ def _map_skill_to_difficulty(skill):
 
 def _get_topic_priorities(radar):
     """
-    Sort topics by skill ascending → weakest first.
+    Sort topics by skill ascending -> weakest first.
     Returns top-3 weakest topics.
     """
     if not radar:
@@ -307,10 +307,10 @@ def _normalize_radar(radar):
 def _topics_for_day(day_idx, priorities):
     """
     Determine target topics for a given day.
-    - Every 7th day → all 6 topics (variant day)
-    - day % 3 == 0 → [weakest]
-    - day % 3 == 1 → [weakest, 2nd weakest]
-    - day % 3 == 2 → [weakest, 2nd, 3rd]
+    - Every 7th day -> all 6 topics (variant day)
+    - day % 3 == 0 -> [weakest]
+    - day % 3 == 1 -> [weakest, 2nd weakest]
+    - day % 3 == 2 -> [weakest, 2nd, 3rd]
     """
     if day_idx > 0 and day_idx % 7 == 6:
         return RADAR_TOPICS[:]  # all 6 topics

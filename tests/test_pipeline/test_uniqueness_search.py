@@ -73,7 +73,7 @@ class TestPerplexitySearchBackend:
 
     @patch('services.pipeline.uniqueness_search.requests.post')
     def test_raises_on_http_error(self, mock_post):
-        """Ошибка сети → RequestException."""
+        """Ошибка сети -> RequestException."""
         import requests as _r
         mock_post.side_effect = _r.ConnectionError("timeout")
         b = PerplexitySearchBackend(api_key="test")

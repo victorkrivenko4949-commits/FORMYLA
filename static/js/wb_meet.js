@@ -86,7 +86,7 @@
     tile.innerHTML =
       '<div class="wbm-video-wrap"></div>' +
       '<div class="wbm-name">' + (participant.name || "Гость") + (isLocal ? " (вы)" : "") + '</div>' +
-      '<div class="wbm-mute" hidden>🔇</div>';
+      '<div class="wbm-mute" hidden></div>';
     participantsEl.appendChild(tile);
     refreshGrid();
     return tile;
@@ -161,7 +161,7 @@
     div.hidden = true;
     div.innerHTML =
       '<div class="wbm-head">' +
-        '<span class="wbm-title">👥 Групповой звонок</span>' +
+        '<span class="wbm-title"> Групповой звонок</span>' +
         '<span id="wbMeetStatus" class="wbm-status">не подключено</span>' +
         '<button type="button" class="wbm-x" id="wbMeetClose" title="Свернуть">×</button>' +
       '</div>' +
@@ -176,11 +176,11 @@
       '<div class="wbm-room" id="wbMeetRoomView" hidden>' +
         '<div class="wbm-grid" id="wbMeetGrid"></div>' +
         '<div class="wbm-toolbar">' +
-          '<button type="button" class="wbm-icon" id="wbMeetMic"   title="Микрофон">🎤</button>' +
-          '<button type="button" class="wbm-icon" id="wbMeetCam"   title="Камера">📷</button>' +
-          '<button type="button" class="wbm-icon" id="wbMeetShare" title="Демонстрация экрана">🖥️</button>' +
-          '<button type="button" class="wbm-icon" id="wbMeetCopy"  title="Скопировать ссылку">🔗</button>' +
-          '<button type="button" class="wbm-icon wbm-icon-danger" id="wbMeetLeave" title="Выйти">⛔</button>' +
+          '<button type="button" class="wbm-icon" id="wbMeetMic"   title="Микрофон"></button>' +
+          '<button type="button" class="wbm-icon" id="wbMeetCam"   title="Камера"></button>' +
+          '<button type="button" class="wbm-icon" id="wbMeetShare" title="Демонстрация экрана">️</button>' +
+          '<button type="button" class="wbm-icon" id="wbMeetCopy"  title="Скопировать ссылку"></button>' +
+          '<button type="button" class="wbm-icon wbm-icon-danger" id="wbMeetLeave" title="Выйти"></button>' +
         '</div>' +
       '</div>';
     host.appendChild(div);
@@ -232,7 +232,7 @@
       btn.className = "icon-btn icon-btn-meet";
       btn.title = "Групповой звонок (до " + (cfg.max || 10) + " человек)";
       btn.type = "button";
-      btn.textContent = "👥";
+      btn.textContent = "";
       btn.addEventListener("click", function () {
         ensurePanel();
         showPanel(true);
@@ -370,7 +370,7 @@
     room.localParticipant.setMicrophoneEnabled(!enabled).then(function () {
       var btn = $("wbMeetMic");
       btn.classList.toggle("off", enabled);
-      btn.textContent = enabled ? "🔇" : "🎤";
+      btn.textContent = enabled ? "" : "";
     });
   }
   function toggleCam() {
@@ -379,7 +379,7 @@
     room.localParticipant.setCameraEnabled(!enabled).then(function () {
       var btn = $("wbMeetCam");
       btn.classList.toggle("off", enabled);
-      btn.textContent = enabled ? "🚫" : "📷";
+      btn.textContent = enabled ? "" : "";
     });
   }
   function toggleShare() {

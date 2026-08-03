@@ -32,7 +32,7 @@ class OlympiadPipeline:
         6. Save      — сохранение в БД
 
     Retry логика:
-        - Stage 2+3: до 3 попыток (если Stage 3 не прошёл → новый rewrite)
+        - Stage 2+3: до 3 попыток (если Stage 3 не прошёл -> новый rewrite)
         - Stage 4+5: до 3 попыток (ошибки Stage 5 передаются в Stage 4)
     """
 

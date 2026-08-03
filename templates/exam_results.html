@@ -6,7 +6,7 @@
 <div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
     
     <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="font-size: 2.5em; color: var(--text-main);">✅ Результаты пробника</h1>
+        <h1 style="font-size: 2.5em; color: var(--text-main);">[OK] Результаты пробника</h1>
         <div style="font-size: 3em; font-weight: bold; color: {% if exam.score >= 80 %}#22c55e{% elif exam.score >= 60 %}#f59e0b{% else %}#ef4444{% endif %}; margin: 20px 0;">
             {{ exam.score }}%
         </div>
@@ -15,7 +15,7 @@
     <!-- Общий анализ AI -->
     {% if exam.ai_feedback %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border-left: 4px solid var(--accent-2); margin-bottom: 30px;">
-        <h3 style="color: var(--accent-2); margin-top: 0;">🤖 Анализ AI-тьютора</h3>
+        <h3 style="color: var(--accent-2); margin-top: 0;"> Анализ AI-тьютора</h3>
         <p style="color: var(--text-soft); line-height: 1.8; white-space: pre-wrap;">{{ exam.ai_feedback }}</p>
     </div>
     {% endif %}
@@ -24,7 +24,7 @@
     {% for result in results %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-            <div style="font-size: 2em;">{% if result.is_correct %}✅{% else %}❌{% endif %}</div>
+            <div style="font-size: 2em;">{% if result.is_correct %}[OK]{% else %}[ERROR]{% endif %}</div>
             <h3 style="color: var(--text-main); margin: 0;">Задача {{ loop.index }}</h3>
         </div>
         
@@ -45,7 +45,7 @@
         
         {% if result.ai_comment %}
         <div style="background: rgba(56, 189, 248, 0.1); padding: 15px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-2);">
-            <div style="color: var(--accent-2); font-weight: 600; margin-bottom: 5px;">💬 Комментарий AI:</div>
+            <div style="color: var(--accent-2); font-weight: 600; margin-bottom: 5px;"> Комментарий AI:</div>
             <div style="color: var(--text-soft); line-height: 1.6;">{{ result.ai_comment }}</div>
         </div>
         {% endif %}
@@ -54,7 +54,7 @@
 
     <div style="text-align: center; margin-top: 40px;">
         <a href="/" style="display: inline-block; padding: 12px 30px; background: rgba(255, 255, 255, 0.05); color: var(--text-soft); text-decoration: none; border-radius: var(--radius-sm); border: 1px solid var(--border-mid); transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'">
-            🏠 На главную
+             На главную
         </a>
     </div>
 

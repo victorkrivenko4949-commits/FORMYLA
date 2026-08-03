@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Unit + integration tests for the «Текст → Рукопись» feature.
+Unit + integration tests for the «Текст -> Рукопись» feature.
 
 Covers:
     1. routes/handwriting.py    — _extract_latex, _wrap_lines helpers.
     2. POST /api/handwriting/prepare in mode="raw"     — no network.
     3. POST /api/handwriting/prepare in mode="ai_format"
-        - without OPENROUTER_API_KEY   → silent fallback to raw.
-        - with monkey-patched openrouter.chat → returns AI lines.
-        - with openrouter raising         → graceful fallback to raw.
-    4. Empty text → HTTP 400.
+        - without OPENROUTER_API_KEY   -> silent fallback to raw.
+        - with monkey-patched openrouter.chat -> returns AI lines.
+        - with openrouter raising         -> graceful fallback to raw.
+    4. Empty text -> HTTP 400.
     5. Frontend asset sanity:
         - static/js/board/handwriting.js exists, exports the expected names.
         - static/js/board/handwriting_ui.js is syntactically NOT truncated
@@ -162,7 +162,7 @@ class TestPrepareEndpointRaw:
 
 class TestPrepareEndpointAiFormat:
     def test_ai_mode_without_key_falls_back(self, client):
-        # No OPENROUTER_API_KEY set → graceful fallback to raw.
+        # No OPENROUTER_API_KEY set -> graceful fallback to raw.
         r = client.post(
             "/api/handwriting/prepare",
             json={"text": "Hello there", "mode": "ai_format"},
@@ -177,7 +177,7 @@ class TestPrepareEndpointAiFormat:
         a valid JSON payload, the endpoint marks ai_used=True."""
         monkeypatch.setenv("OPENROUTER_API_KEY", "dummy")
 
-        # Patch services.openrouter_client.openrouter.chat → fake response.
+        # Patch services.openrouter_client.openrouter.chat -> fake response.
         fake_lines = ["Привет,", "это рукопись."]
         from services import openrouter_client as orc
 

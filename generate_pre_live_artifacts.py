@@ -541,15 +541,15 @@ for cl in CLASSES:
         actual = cell_counts.get((cl, lvl), 0)
         quota = QUOTAS[cl][lvl]
         if actual < quota:
-            cells.append(f"⚠️ {actual}/{quota}")
+            cells.append(f"[!]️ {actual}/{quota}")
         else:
-            cells.append(f"✅ {actual}/{quota}")
+            cells.append(f"[OK] {actual}/{quota}")
     quota_table_rows.append(f"| {cl} | {' | '.join(cells)} |")
 
 # Count cluster-selected pairs
 dup_pair_count = len(cluster_selected_pairs)
 
-md = f"""# PRE-LIVE STATUS: 1080 → L1-L5 Deterministic Selection
+md = f"""# PRE-LIVE STATUS: 1080 -> L1-L5 Deterministic Selection
 
 ## Status: DETERMINISTIC PRE-LIVE CANDIDATE SELECTION
 
@@ -571,11 +571,11 @@ md = f"""# PRE-LIVE STATUS: 1080 → L1-L5 Deterministic Selection
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Pre-live candidates (selected) | **{len(pre_live_bank)} / {TOTAL_IDEAL}** | ⚠️ Short by 1 |
+| Pre-live candidates (selected) | **{len(pre_live_bank)} / {TOTAL_IDEAL}** | [!]️ Short by 1 |
 | Reserve (not selected) | **{len(pre_live_reserve)}** | Available for live audit |
 | Deterministic rechecks | **{len(recheck_queue)}** | Need live resolution |
 | Quarantine | **0** | None |
-| **Sum check** | **{len(pre_live_bank) + len(pre_live_reserve) + len(recheck_queue)} / 1080** | ✅ Balanced |
+| **Sum check** | **{len(pre_live_bank) + len(pre_live_reserve) + len(recheck_queue)} / 1080** | [OK] Balanced |
 | **Total ideal quota** | **{TOTAL_IDEAL}** | 2×5×15 + 5×5×21 = 150 + 525 |
 
 ## Quota Fill (35 cells)
@@ -604,15 +604,15 @@ md = f"""# PRE-LIVE STATUS: 1080 → L1-L5 Deterministic Selection
 
 ## Key Constraints Verified
 
-1. ✅ **Source hash unchanged** — `{manifest.get("source", {}).get("sha256", "")[:20]}...`
-2. ✅ **No duplicate IDs in pre-live bank**
-3. ✅ **No exact duplicate task_text pairs in pre-live bank**
-4. ✅ **No quota overfills** — all cells within limits
-5. ✅ **No change plan applied** — source and snapshot unmodified
-6. ✅ **Solutions NOT used as quality criterion**
-7. ✅ **Correct answers NOT used as quality criterion**
-8. ✅ **No deterministic outcome labeled `live_api`**
-9. ✅ **No deterministic candidate labeled final `APPROVE`**
+1. [OK] **Source hash unchanged** — `{manifest.get("source", {}).get("sha256", "")[:20]}...`
+2. [OK] **No duplicate IDs in pre-live bank**
+3. [OK] **No exact duplicate task_text pairs in pre-live bank**
+4. [OK] **No quota overfills** — all cells within limits
+5. [OK] **No change plan applied** — source and snapshot unmodified
+6. [OK] **Solutions NOT used as quality criterion**
+7. [OK] **Correct answers NOT used as quality criterion**
+8. [OK] **No deterministic outcome labeled `live_api`**
+9. [OK] **No deterministic candidate labeled final `APPROVE`**
 
 ## Duplicate Clusters in Selected Candidates
 
@@ -664,7 +664,7 @@ python scripts/run_selection_1080_live_audit.py \\
 | Shortage | 1 (class 8 L3) |
 | Solutions used? | No |
 | Correct answers used? | No |
-| Final bank created? | ❌ — pending LIVE V2 GO |
+| Final bank created? | [ERROR] — pending LIVE V2 GO |
 """
 
 with open(os.path.join(RUNS_DIR, "PRE_LIVE_STATUS.md"), 'w', encoding='utf-8') as f:
@@ -676,15 +676,15 @@ print(f"  Saved: PRE_LIVE_STATUS.md")
 print("\n" + "=" * 70)
 print("VALIDATION SUMMARY")
 print("=" * 70)
-print(f"  674 selected + 403 reserve + 3 recheck = {674+403+3} (must be 1080): {'✅' if 674+403+3 == 1080 else '❌'}")
-print(f"  Total quota = {TOTAL_IDEAL} (must be 675): {'✅' if TOTAL_IDEAL == 675 else '❌'}")
-print(f"  Only shortage = class 8/L3, 1: {'✅' if shortage.get('total_shortage') == 1 and len(shortage.get('shortages',[])) == 1 else '⚠️'}")
+print(f"  674 selected + 403 reserve + 3 recheck = {674+403+3} (must be 1080): {'[OK]' if 674+403+3 == 1080 else '[ERROR]'}")
+print(f"  Total quota = {TOTAL_IDEAL} (must be 675): {'[OK]' if TOTAL_IDEAL == 675 else '[ERROR]'}")
+print(f"  Only shortage = class 8/L3, 1: {'[OK]' if shortage.get('total_shortage') == 1 and len(shortage.get('shortages',[])) == 1 else '[!]️'}")
 src_hash = manifest.get("source", {}).get("sha256", "")
-print(f"  Source hash unchanged: {'✅' if src_hash else '❌'}")
-print(f"  No deterministic outcome labeled live_api: ✅")
-print(f"  No deterministic candidate labeled final APPROVE: ✅ (re-labeled to 'candidate')")
-print(f"  No change plan applied: ✅")
-print(f"  Solutions/answers not used: ✅")
+print(f"  Source hash unchanged: {'[OK]' if src_hash else '[ERROR]'}")
+print(f"  No deterministic outcome labeled live_api: [OK]")
+print(f"  No deterministic candidate labeled final APPROVE: [OK] (re-labeled to 'candidate')")
+print(f"  No change plan applied: [OK]")
+print(f"  Solutions/answers not used: [OK]")
 
 print(f"\n{'='*70}")
 print(f"ALL 6 PRE-LIVE ARTIFACTS GENERATED SUCCESSFULLY")
@@ -696,7 +696,7 @@ for fname in ["curated_bank_L1_L5_pre_live.json", "reserve_pre_live.json",
               "live_audit_manifest.json", "PRE_LIVE_STATUS.md"]:
     fp = os.path.join(RUNS_DIR, fname)
     size = os.path.getsize(fp)
-    print(f"    ✅ {fname} ({size:,} bytes)")
+    print(f"    [OK] {fname} ({size:,} bytes)")
 print(f"\n  Future live run command (NOT executed):")
 print(f"    python scripts/run_selection_1080_live_audit.py \\")
 print(f"      --manifest \"{os.path.join(RUNS_DIR, 'live_audit_manifest.json')}\" \\")

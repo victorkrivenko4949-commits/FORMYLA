@@ -253,7 +253,7 @@
 <script>
 (function() {
     // Total steps: Q1(grade) + Q2(target) + Q3(olymp_reach) + Q4(load) + Q5(deadline) + 3 anchors = 8
-    // If grade is auto-filled from profile, Q1 is skipped → 7 steps
+    // If grade is auto-filled from profile, Q1 is skipped -> 7 steps
     var TOTAL_QUESTIONS = 5; // grade, target, olymp_reach, load, deadline
     var TOTAL_ANCHORS = 5;
     var currentStep = 0;
@@ -289,7 +289,7 @@
         html += '</div>';
 
         html += '<div class="onboarding-card">';
-        html += '<h2>📋 ' + (q.anchor_label || 'Вопрос') + '</h2>';
+        html += '<h2> ' + (q.anchor_label || 'Вопрос') + '</h2>';
 
         if (q.task_text) {
             // Anchor task
@@ -330,7 +330,7 @@
             html += '<div class="q-text">' + (q.text || '') + '</div>';
             html += '<div class="msg-box msg-error">' + (q.error || 'Что-то пошло не так.') + '</div>';
             if (q.done) {
-                html += '<a href="/prep/coach" class="cta-btn">🚀 Перейти к куратору</a>';
+                html += '<a href="/prep/coach" class="cta-btn"> Перейти к куратору</a>';
             }
         }
 
@@ -468,7 +468,7 @@
             var r = data.result;
             var app = document.getElementById('onboarding-app');
             var html = '<div class="onboarding-card result-card">';
-            html += '<div class="result-icon">🎉</div>';
+            html += '<div class="result-icon"></div>';
             html += '<h2>Онбординг завершён!</h2>';
             html += '<div class="result-row">';
             html += '<div class="result-stat"><div class="val">' + (data.display_mu || r.prior_mu) + '</div><div class="lbl">Твой уровень</div></div>';
@@ -477,17 +477,17 @@
             html += '<div class="result-stat"><div class="val">' + r.daily_tasks + '</div><div class="lbl">Задач в день</div></div>';
             html += '</div>';
             html += '<div class="msg-box msg-info">';
-            html += '🎯 Потолок маршрута: <strong>' + r.route_ceiling + '</strong> &nbsp;|&nbsp; ';
+            html += ' Потолок маршрута: <strong>' + r.route_ceiling + '</strong> &nbsp;|&nbsp; ';
             html += 'Класс: <strong>' + r.grade + '</strong> &nbsp;|&nbsp; ';
             html += 'Дедлайн: <strong>' + (data.deadline_ru || r.deadline_bucket) + '</strong>';
             if (r.conflict) {
-                html += '<br>⚠️ Обнаружено расхождение между самооценкой и якорями.';
+                html += '<br>[!]️ Обнаружено расхождение между самооценкой и якорями.';
             }
             html += '</div>';
 
             // Anchor breakdown table
             if (data.anchor_breakdown && data.anchor_breakdown.length > 0) {
-                html += '<h3 style="margin:24px 0 12px;font-size:15px;color:#e5e7eb;">📋 Разбор якорных задач</h3>';
+                html += '<h3 style="margin:24px 0 12px;font-size:15px;color:#e5e7eb;"> Разбор якорных задач</h3>';
                 html += '<table class="anchor-table" style="width:100%;border-collapse:collapse;font-size:13px;">';
                 html += '<thead><tr style="color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);">';
                 html += '<th style="padding:8px 6px;text-align:left;">Раздел</th>';
@@ -501,7 +501,7 @@
                     var a = data.anchor_breakdown[i];
                     var ok = a.correct;
                     var rowColor = ok ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
-                    var verdictHtml = ok ? '<span style="color:#22c55e;">✓ верно</span>' : '<span style="color:#ef4444;">✗ неверно</span>';
+                    var verdictHtml = ok ? '<span style="color:#22c55e;">[OK] верно</span>' : '<span style="color:#ef4444;"> неверно</span>';
                     var muStr = (a.section_mu !== null && a.section_mu !== undefined) ? a.section_mu.toFixed(2) : '—';
                     html += '<tr style="background:' + rowColor + ';border-bottom:1px solid rgba(255,255,255,0.05);">';
                     html += '<td style="padding:8px 6px;">' + a.section_ru + '</td>';
@@ -527,7 +527,7 @@
                 }
             }
 
-            html += '<a href="/prep/coach" class="cta-btn" style="margin-top:20px;">🚀 Перейти к куратору</a>';
+            html += '<a href="/prep/coach" class="cta-btn" style="margin-top:20px;"> Перейти к куратору</a>';
             html += '</div>';
             if (app) app.innerHTML = html;
             return;
@@ -537,7 +537,7 @@
             if (data.message && app2) {
                 app2.innerHTML = '<div class="onboarding-card" style="text-align:center;padding:40px 28px;">' +
                     '<div class="msg-box msg-info">' + data.message + '</div>' +
-                    '<a href="/prep/coach" class="cta-btn">🚀 Перейти к куратору</a>' +
+                    '<a href="/prep/coach" class="cta-btn"> Перейти к куратору</a>' +
                     '</div>';
             }
             return;
@@ -553,7 +553,7 @@
         if (data.question) {
             render(data.question, data.step || '', data.grade_auto);
         } else if (data.anchor) {
-            data.anchor.anchor_label = '⚓ Якорная задача';
+            data.anchor.anchor_label = ' Якорная задача';
             render(data.anchor, data.step || '');
         } else if (data.finish_ready || data.anchors_unavailable) {
             // Call finish

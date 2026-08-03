@@ -19,7 +19,7 @@
 
     <p style="margin-bottom: 12px;">
         <a href="{{ url_for('olympiad.probnik', code=probnik.code) }}"
-           class="oly-btn-ghost oly-btn oly-btn-sm">← к пробнику «{{ probnik.title }}»</a>
+           class="oly-btn-ghost oly-btn oly-btn-sm"><- к пробнику «{{ probnik.title }}»</a>
     </p>
 
     <header style="margin-bottom: 18px;">
@@ -45,13 +45,13 @@
 
     <!-- Условие -->
     <section class="oly-card">
-        <h2 style="margin-top:0;">📜 Условие</h2>
+        <h2 style="margin-top:0;"> Условие</h2>
         <div class="oly-md">{{ task.condition_md | md_render }}</div>
     </section>
 
     {% if condition_figures %}
     <section style="margin-top: 24px;">
-        <h2 style="margin-top:0;">📐 Рисунки к условию</h2>
+        <h2 style="margin-top:0;"> Рисунки к условию</h2>
         <div class="task-figures-block">
             {% for fig in condition_figures %}
             {% set fname = fig.file | replace('figures/', '') %}
@@ -69,7 +69,7 @@
                        href="/static/figures/{{ fname }}"
                        download="{{ fname }}">⬇ Скачать</a>
                     <button class="task-figure__board-btn"
-                            onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                            onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
                 </figcaption>
             </figure>
             {% endfor %}
@@ -85,7 +85,7 @@
              data-attempt-url="{{ url_for('olympiad.task_attempt', task_id=task.id) }}"
              data-initial-status="{{ attempt.status if attempt else 'viewed' }}"
              data-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}" data-correct-answer="{{ task.answer | e }}">
-        <h2 style="margin-top:0;">✏️ Ваш ответ</h2>
+        <h2 style="margin-top:0;">️ Ваш ответ</h2>
         <p class="oly-answer-hint">Введи ответ, чтобы открыть идею и полное решение.</p>
         <input type="text"
                id="olyAnswerInput"
@@ -118,14 +118,14 @@
 
         {% if task.answer %}
         <div class="oly-solutions-locked-msg" id="olySolutionsLockedMsg">
-            🔒 Введи свой ответ выше, и откроется идея + полное решение.
+             Введи свой ответ выше, и откроется идея + полное решение.
         </div>
         {% endif %}
 
     <!-- Идея решения (свёрнута по умолчанию, раскрывается по клику) -->
     <section class="oly-reveal" data-open="false">
         <header class="oly-reveal-head">
-            <span>💡 Идея решения</span>
+            <span> Идея решения</span>
             <span class="oly-reveal-arrow">▾</span>
         </header>
         <div class="oly-reveal-body">
@@ -136,7 +136,7 @@
     <!-- Полное решение (свёрнуто по умолчанию, раскрывается по клику) -->
     <section class="oly-reveal" data-open="false">
         <header class="oly-reveal-head">
-            <span>✅ Полное решение</span>
+            <span>[OK] Полное решение</span>
             <span class="oly-reveal-arrow">▾</span>
         </header>
         <div class="oly-reveal-body">
@@ -159,7 +159,7 @@
                            href="/static/figures/{{ fname }}"
                            download="{{ fname }}">⬇ Скачать</a>
                         <button class="task-figure__board-btn"
-                                onclick="openOnBoard('/static/figures/{{ fname }}')">🔍 На доску</button>
+                                onclick="openOnBoard('/static/figures/{{ fname }}')"> На доску</button>
                     </figcaption>
                 </figure>
                 {% endfor %}
@@ -175,7 +175,7 @@
 
 {# ── Board overlay ── #}
 <div id="board-overlay" class="board" hidden>
-    <button class="board__close" onclick="closeBoard()" aria-label="Close">✕</button>
+    <button class="board__close" onclick="closeBoard()" aria-label="Close"></button>
     <div class="board__controls">
         <button onclick="boardZoom(1.2)">+</button>
         <button onclick="boardZoom(1/1.2)">−</button>
@@ -531,12 +531,12 @@ function olympiadTask(cfg) {
                     this.status = data.attempt.status;
                     if (data.attempt.self_score !== undefined) this.selfScore = data.attempt.self_score;
                 }
-                this.saveHint = '✓ сохранено';
+                this.saveHint = '[OK] сохранено';
                 setTimeout(()=>{ this.saveHint=''; }, 1500);
                 return data;
             } catch (e) {
                 console.error('attempt save failed', e);
-                this.saveHint = '⚠ не удалось сохранить';
+                this.saveHint = '[!] не удалось сохранить';
                 return null;
             }
         },
@@ -689,7 +689,7 @@ function olympiadTask(cfg) {
             if (text == null) return '';
             let raw = String(text);
 
-            // 0) Чиним частую ошибку моделей: \cdot \cdot ... \cdot \cdot → **...**
+            // 0) Чиним частую ошибку моделей: \cdot \cdot ... \cdot \cdot -> **...**
             raw = raw.replace(/\\cdot\s*\\cdot\s*([^\n]+?)\s*\\cdot\s*\\cdot/g, '**$1**');
             raw = raw.replace(/(^|\n)\\cdot\s+([^\n]+?)\s+\\cdot(\s|$|:)/g, '$1**$2**$3');
 
@@ -712,9 +712,9 @@ function olympiadTask(cfg) {
             // 1.5) Голая математика в оставшемся тексте.
             raw = raw.replace(/\bsqrt\(/g, '\\sqrt(')
                      .replace(/\+-/g, '±')
-                     .replace(/=>/g, '⇒')
-                     .replace(/<=>/g, '⇔')
-                     .replace(/->/g, '→');
+                     .replace(/=>/g, '')
+                     .replace(/<=>/g, '')
+                     .replace(/->/g, '->');
 
             // 2) Косметика «вне формул».
             raw = raw.replace(/\s*(Случай\s*\d+\s*:)/g, '\n\n$1')
@@ -747,7 +747,7 @@ function olympiadTask(cfg) {
             if (data.is_correct) {
                 html = `
                     <div class="feedback-correct">
-                        <div class="feedback-icon">✓</div>
+                        <div class="feedback-icon">[OK]</div>
                         <h3>Правильно!</h3>
                         <p class="xp-earned">+${data.xp_earned} XP</p>
                         <div class="ai-feedback">${aiHtml}</div>
@@ -756,7 +756,7 @@ function olympiadTask(cfg) {
             } else {
                 html = `
                     <div class="feedback-incorrect">
-                        <div class="feedback-icon">✗</div>
+                        <div class="feedback-icon"></div>
                         <h3>Неправильно</h3>
                         <div class="correct-answer-block">
                             <span class="correct-answer-label">Правильный ответ:</span>
@@ -888,7 +888,7 @@ function olympiadTask(cfg) {
                 xp_earned: ok ? 10 : 0,
                 ai_feedback: ok
                     ? 'Молодец! Ответ совпал с эталоном.'
-                    : 'Ответ не совпал с эталоном. Загляни в «💡 Идея решения» — она теперь открыта.',
+                    : 'Ответ не совпал с эталоном. Загляни в « Идея решения» — она теперь открыта.',
                 _client: true
             };
         }
@@ -965,14 +965,14 @@ function olympiadTask(cfg) {
             var aiHtml = escapeHtml(data.ai_feedback || '').replace(/\n/g,'<br>');
             if (data.is_correct) {
                 html = '<div class="feedback-correct">' +
-                       '  <div class="feedback-icon">✓</div>' +
+                       '  <div class="feedback-icon">[OK]</div>' +
                        '  <h3>Правильно!</h3>' +
                        '  <p class="xp-earned">+' + (data.xp_earned||0) + ' XP</p>' +
                        '  <div class="ai-feedback">' + aiHtml + '</div>' +
                        '</div>';
             } else {
                 html = '<div class="feedback-incorrect">' +
-                       '  <div class="feedback-icon">✗</div>' +
+                       '  <div class="feedback-icon"></div>' +
                        '  <h3>Неправильно</h3>' +
                        '  <div class="correct-answer-block">' +
                        '    <span class="correct-answer-label">Правильный ответ:</span>' +

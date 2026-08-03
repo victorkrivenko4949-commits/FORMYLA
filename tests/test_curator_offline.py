@@ -3,10 +3,10 @@
 test_curator_offline.py — ZADACHA 4: Acceptance tests for curator offline mode.
 
 Requirements:
-  1) coach page with known-bad key → 200, facts card in HTML, log entry about external failure
-  2) coach page with completely absent key → 200, same
-  3) counter of external API calls during page render → expect 0
-  4) all pages from menu + "Other" → no 500 and no 402
+  1) coach page with known-bad key -> 200, facts card in HTML, log entry about external failure
+  2) coach page with completely absent key -> 200, same
+  3) counter of external API calls during page render -> expect 0
+  4) all pages from menu + "Other" -> no 500 and no 402
   5) python -m pytest -q runs clean, summary line
 """
 
@@ -29,8 +29,8 @@ from app import app as _app_module
 def _patch_external_services(monkeypatch, bad_key=None):
     """Patch all external API clients to count calls and simulate failure.
 
-    If bad_key is None → remove keys entirely.
-    If bad_key is a string → set keys to that string.
+    If bad_key is None -> remove keys entirely.
+    If bad_key is a string -> set keys to that string.
     """
     calls = {'count': 0}
 
@@ -110,7 +110,7 @@ def client_with_no_key(monkeypatch, client):
 
 
 def test_coach_with_bad_key_returns_200(client_with_bad_key):
-    """Z4.1: Known-bad key → coach page returns 200, has facts card, logs failure."""
+    """Z4.1: Known-bad key -> coach page returns 200, has facts card, logs failure."""
     client, calls = client_with_bad_key
 
     # Non-authenticated redirect expected; but inline templates should NOT
@@ -131,7 +131,7 @@ def test_coach_with_bad_key_returns_200(client_with_bad_key):
 
 
 def test_coach_with_no_key_returns_200(client_with_no_key):
-    """Z4.2: No key at all → coach page returns 200, no external calls."""
+    """Z4.2: No key at all -> coach page returns 200, no external calls."""
     client, calls = client_with_no_key
 
     resp = client.get('/prep/coach', follow_redirects=False)
@@ -144,7 +144,7 @@ def test_coach_with_no_key_returns_200(client_with_no_key):
 
 
 def test_zero_external_calls_on_page_render(client_with_bad_key):
-    """Z4.3: Counter of external API calls during page render → zero."""
+    """Z4.3: Counter of external API calls during page render -> zero."""
     client, calls = client_with_bad_key
 
     # Test multiple page loads
@@ -166,7 +166,7 @@ def test_zero_external_calls_on_page_render(client_with_bad_key):
 
 
 def test_all_menu_pages_no_500_no_402(client_with_bad_key):
-    """Z4.4: All pages from menu + 'Other' → no 500, no 402."""
+    """Z4.4: All pages from menu + 'Other' -> no 500, no 402."""
     client, calls = client_with_bad_key
 
     # URLs that should render without crashing (even if redirected)
@@ -180,10 +180,10 @@ def test_all_menu_pages_no_500_no_402(client_with_bad_key):
         '/profile',             # profile
         '/leaderboard',         # leaderboard
         '/olympiads',           # olympiads
-        '/prep/onboarding',     # onboarding → intake
+        '/prep/onboarding',     # onboarding -> intake
         '/intake',              # intake
         '/curator/health',      # curator health
-        '/curator/',            # curator root → redirect
+        '/curator/',            # curator root -> redirect
         '/probniks',            # probniks
         '/subscribe',           # subscribe
     ]

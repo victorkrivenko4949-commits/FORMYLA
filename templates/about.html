@@ -282,15 +282,15 @@
 
   {# ── 0. Mobile notice ── #}
   <div class="mobile-notice">
-    <span class="mn-icon">📱</span>
+    <span class="mn-icon"></span>
     <span class="mn-text"><strong>Удобнее на компьютере</strong> — на телефоне доступны не все функции</span>
   </div>
 
   {# ── 1. Onboarding banner (only after signup) ── #}
   {% if request.args.get('onboarding') %}
   <div class="onboarding-banner">
-    <span>🎉 <strong>Добро пожаловать в FORMYLA!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
-    <a href="/" class="btn-secondary">Сразу к тренажёру →</a>
+    <span> <strong>Добро пожаловать в FORMYLA!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
+    <a href="/" class="btn-secondary">Сразу к тренажёру -></a>
   </div>
   {% endif %}
 
@@ -307,11 +307,11 @@
 
   {# ── 3. Как это работает: анкета, якорные задачи, задачи дня ── #}
   <section class="about-section">
-    <h2>🎯 Как это работает</h2>
+    <h2> Как это работает</h2>
 
     <div class="concept-grid">
       <div class="concept-card">
-        <div class="concept-icon">📋</div>
+        <div class="concept-icon"></div>
         <div class="concept-body">
           <h3>Анкета</h3>
           <p>Сначала короткая анкета: класс, цель, опыт, сколько времени готов уделять, какие разделы даются тяжелее. По ответам система подбирает стартовый уровень.</p>
@@ -319,7 +319,7 @@
       </div>
 
       <div class="concept-card">
-        <div class="concept-icon">⚓</div>
+        <div class="concept-icon"></div>
         <div class="concept-body">
           <h3>Якорные задачи</h3>
           <p>Затем <strong>пять якорных задач</strong>. Они нужны, чтобы понять, где ты сейчас, а не чтобы поставить оценку. Ошибиться на них нормально.</p>
@@ -327,7 +327,7 @@
       </div>
 
       <div class="concept-card">
-        <div class="concept-icon">📅</div>
+        <div class="concept-icon"></div>
         <div class="concept-body">
           <h3>Задачи дня</h3>
           <p>Дальше начинаются <strong>задачи дня</strong>. Первую неделю их пять в день — это срез, система присматривается к тебе. После среза объём становится тем, который ты выбрал в анкете.</p>
@@ -338,9 +338,9 @@
 
   {# ── 4. Уровень ── #}
   <section class="about-section">
-    <h2>📈 Уровень</h2>
+    <h2> Уровень</h2>
     <div class="concept-highlight">
-      <div class="concept-highlight-badge">1 → 5</div>
+      <div class="concept-highlight-badge">1 -> 5</div>
       <div class="concept-highlight-body">
         <p>Уровень от <strong>1 до 5</strong> показывает сложность задач, которые тебе выдаются. Он меняется постепенно: решил верно — уровень подрастает, ошибся — опускается. Резких скачков не бывает, одна неудачная задача ничего не ломает.</p>
       </div>
@@ -349,7 +349,7 @@
 
   {# ── 5. Серия ── #}
   <section class="about-section">
-    <h2>🔥 Серия</h2>
+    <h2> Серия</h2>
     <div class="concept-highlight">
       <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">Streak</div>
       <div class="concept-highlight-body">
@@ -360,7 +360,7 @@
 
   {# ── 6. Долг ── #}
   <section class="about-section">
-    <h2>📦 Долг</h2>
+    <h2> Долг</h2>
     <div class="concept-highlight">
       <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">Debt</div>
       <div class="concept-highlight-body">
@@ -371,10 +371,10 @@
 
   {# ── 7. Методы ── #}
   <section class="about-section">
-    <h2>🧩 Методы</h2>
+    <h2> Методы</h2>
     <div class="concept-grid">
       <div class="concept-card">
-        <div class="concept-icon">📚</div>
+        <div class="concept-icon"></div>
         <div class="concept-body">
           <h3>Раздел «Олимпиады»</h3>
           <p>В разделе «Олимпиады» собраны <strong>методы решения</strong> — приёмы, которые повторяются в олимпиадных задачах из года в год. Куратор называет подходящий метод к завтрашней теме, чтобы ты знал, что почитать заранее.</p>
@@ -385,7 +385,7 @@
 
   {# ── 8. Куратор ── #}
   <section class="about-section">
-    <h2>🤖 Куратор</h2>
+    <h2> Куратор</h2>
     <div class="concept-highlight">
       <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#38ef7d,#11998e);">AI</div>
       <div class="concept-highlight-body">
@@ -396,7 +396,7 @@
 
   {# ── 9. Разделы ── #}
   <section class="about-section">
-    <h2>📐 Разделы</h2>
+    <h2> Разделы</h2>
     <div class="subjects-grid">
       <div class="subject-tile">
         <span class="subject-icon">x²</span>
@@ -411,15 +411,15 @@
         <span class="subject-name">Геометрия</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon">🎲</span>
+        <span class="subject-icon"></span>
         <span class="subject-name">Комбинаторика</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon">🧠</span>
+        <span class="subject-icon"></span>
         <span class="subject-name">Логика</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon">🔧</span>
+        <span class="subject-icon"></span>
         <span class="subject-name">Методы</span>
       </div>
     </div>
@@ -431,10 +431,10 @@
 
   {# ── 10. ИИ-наставник ── #}
   <section class="about-section">
-    <h2>✨ Универсальный ИИ-наставник</h2>
+    <h2> Универсальный ИИ-наставник</h2>
     <div class="features-grid" style="grid-template-columns: 1fr;">
       <div class="feature-card" style="text-align:center;">
-        <span class="feature-icon">🤖</span>
+        <span class="feature-icon"></span>
         <h3>Один агент — все темы</h3>
         <p>Сам определяет тему задачи (алгебра, геометрия, теория чисел, комбинаторика, логика) и отвечает как профильный эксперт. Никогда не говорит «это не моя специализация» — работает со всем, что есть в олимпиадной математике 5–11 классов. Режим «только подсказки» помогает дойти до ответа самому.</p>
       </div>
@@ -443,7 +443,7 @@
 
   {# ── 11. Олимпиады ── #}
   <section class="about-section">
-    <h2>🏆 Реальные олимпиады</h2>
+    <h2> Реальные олимпиады</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-num">8 000+</div>
@@ -462,15 +462,15 @@
 
   {# ── 12. Отличия ── #}
   <section class="about-section">
-    <h2>⚡ Что делает FORMYLA особенной</h2>
+    <h2> Что делает FORMYLA особенной</h2>
     <div class="features-grid">
       <div class="feature-card">
-        <span class="feature-icon">🎯</span>
+        <span class="feature-icon"></span>
         <h3>Только олимпиады</h3>
         <p>Не школьная программа, не ЕГЭ — только олимпиадная математика: ВсОШ, Эйлер, Физтех, Курчатов, Матпраздник.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">📊</span>
+        <span class="feature-icon"></span>
         <h3>Адаптивная сложность</h3>
         <p>Уровень от 1 до 5 подстраивается под тебя. Решаешь — растёт, ошибаешься — плавно опускается. Без резких скачков.</p>
       </div>
@@ -480,17 +480,17 @@
         <p>Серверы в РФ, оплата российскими картами. Никаких VPN, иностранных карт и сложностей с доступом.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🛡️</span>
+        <span class="feature-icon">️</span>
         <h3>Режим «только подсказки»</h3>
         <p>ИИ помогает наводящими вопросами и не даёт готовый ответ. Ты учишься решать, а не списывать.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">📈</span>
+        <span class="feature-icon"></span>
         <h3>Радары по подтемам</h3>
         <p>Видно, где у тебя пробелы, а где уже уверенность. Куратор опирается на реальные данные, а не на догадки.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">📦</span>
+        <span class="feature-icon"></span>
         <h3>Система долга</h3>
         <p>Не решил сегодня — задачи ждут тебя завтра. Неделя на каждую, потом исчезают без штрафов. Никакого давления.</p>
       </div>
@@ -499,25 +499,25 @@
 
   {# ── 13. Для кого ── #}
   <section class="about-section">
-    <h2>👨‍🎓 Для кого FORMYLA</h2>
+    <h2>‍ Для кого FORMYLA</h2>
     <div class="features-grid">
       <div class="feature-card">
-        <span class="feature-icon">📚</span>
+        <span class="feature-icon"></span>
         <h3>Ученикам 5–7 класса</h3>
         <p>Школьный этап ВсОШ, Матпраздник, логические игры. Первые олимпиады — без стресса и с поддержкой.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🏆</span>
+        <span class="feature-icon"></span>
         <h3>Ученикам 8–11 класса</h3>
         <p>Муниципальный, региональный и заключительный этапы. Турнир городов, Эйлер, Физтех, Курчатов. Полный охват.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">👨‍👩‍👦</span>
+        <span class="feature-icon">‍‍</span>
         <h3>Родителям</h3>
         <p>Видишь, какие темы ребёнок осилил, где буксует, сколько занимается каждый день. Без слежки — ребёнок сам выбирает, делиться или нет.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">👩‍🏫</span>
+        <span class="feature-icon">‍</span>
         <h3>Учителям</h3>
         <p>8 000+ задач с разборами по темам, классам и уровню. Готовая методичка для кружка. Бесплатно для учителей — напишите нам.</p>
       </div>
@@ -526,7 +526,7 @@
 
   {# ── 14. FAQ ── #}
   <section class="about-section">
-    <h2>❓ Частые вопросы</h2>
+    <h2> Частые вопросы</h2>
     <div class="faq-list">
 
       <div class="faq-item">
@@ -580,34 +580,34 @@
   {# ── 15. Final CTA ── #}
   <section class="about-section">
     <div class="final-cta">
-      <h2>🚀 Готов начать?</h2>
+      <h2> Готов начать?</h2>
       <p>Пройди анкету, реши якорные задачи — и получи персональный план подготовки.</p>
       <div class="final-cta-row">
-        <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA →</a>
+        <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA -></a>
       </div>
     </div>
   </section>
 
   {# ── Telegram ── #}
   <section class="about-section">
-    <h2>📬 Присоединяйся</h2>
+    <h2> Присоединяйся</h2>
     <p>Подписывайся на наш Telegram-канал — там задачи дня, разборы олимпиад и анонсы новых фич.</p>
-    <a href="https://t.me/FormylaMaths" target="_blank" class="tg-btn">📨 @FormylaMaths</a>
+    <a href="https://t.me/FormylaMaths" target="_blank" class="tg-btn"> @FormylaMaths</a>
   </section>
 
   {# ── Review form: пользовательский отзыв о сайте (приходит на email владельцу) ── #}
   <section class="about-section review-section" id="review-form">
-    <h2>✍️ Написать отзыв</h2>
+    <h2>️ Написать отзыв</h2>
     <p>Понравилось пользоваться FORMYLA? Поставь оценку и оставь пару слов — это очень помогает нам становиться лучше.</p>
     <form id="review-form-inner" class="support-form">
       <div class="form-row">
         <label>Оценка</label>
         <div id="review-stars" class="review-stars" role="radiogroup" aria-label="Оценка от 1 до 5">
-          <button type="button" class="rstar" data-val="1" aria-label="1 звезда">★</button>
-          <button type="button" class="rstar" data-val="2" aria-label="2 звезды">★</button>
-          <button type="button" class="rstar" data-val="3" aria-label="3 звезды">★</button>
-          <button type="button" class="rstar" data-val="4" aria-label="4 звезды">★</button>
-          <button type="button" class="rstar" data-val="5" aria-label="5 звёзд">★</button>
+          <button type="button" class="rstar" data-val="1" aria-label="1 звезда"></button>
+          <button type="button" class="rstar" data-val="2" aria-label="2 звезды"></button>
+          <button type="button" class="rstar" data-val="3" aria-label="3 звезды"></button>
+          <button type="button" class="rstar" data-val="4" aria-label="4 звезды"></button>
+          <button type="button" class="rstar" data-val="5" aria-label="5 звёзд"></button>
         </div>
         <span id="review-rating-label" class="review-rating-label"></span>
         <input type="hidden" name="rating" id="review-rating" value="0">
@@ -636,7 +636,7 @@
         </div>
         <div class="reviews-list-toolbar">
           <button type="button" class="reviews-sort-btn active" data-sort="new" id="reviews-sort-new">🆕 Сначала новые</button>
-          <button type="button" class="reviews-sort-btn" data-sort="top" id="reviews-sort-top">👍 По оценке</button>
+          <button type="button" class="reviews-sort-btn" data-sort="top" id="reviews-sort-top"> По оценке</button>
         </div>
       </div>
       <div id="reviews-list" class="reviews-list" aria-live="polite">
@@ -830,7 +830,7 @@
 
   {# ── Красивый чат "Связаться с нами" с загрузкой файлов ── #}
   <section class="about-section support-section">
-    <h2>💬 Связаться с нами</h2>
+    <h2> Связаться с нами</h2>
     <p>Нашли баг? Есть идея? Не получается решить? Напиши нам — ответим в Telegram-канале или на почту.</p>
 
     <style>
@@ -1079,7 +1079,7 @@
 
     <div class="contact-chat">
       <div class="contact-chat__header">
-        <div class="contact-chat__avatar">💬</div>
+        <div class="contact-chat__avatar"></div>
         <div>
           <div class="contact-chat__title">Поддержка FORMYLA</div>
           <div class="contact-chat__status">Обычно отвечаем за 1-2 часа</div>
@@ -1088,35 +1088,35 @@
 
       <div class="contact-chat__messages" id="contact-chat-messages">
         <div class="contact-chat__msg contact-chat__msg--bot">
-          👋 Привет! Опишите проблему, вопрос или идею. Можно прикрепить скриншоты или PDF.
+           Привет! Опишите проблему, вопрос или идею. Можно прикрепить скриншоты или PDF.
         </div>
       </div>
 
       <div class="contact-chat__inputbar">
         <div class="contact-chat__quick" id="contact-chat-quick">
-          <button type="button" class="contact-chat__quick-btn active" data-category="other">✉️ Другое</button>
-          <button type="button" class="contact-chat__quick-btn" data-category="bug">🐛 Баг</button>
-          <button type="button" class="contact-chat__quick-btn" data-category="suggestion">💡 Идея</button>
-          <button type="button" class="contact-chat__quick-btn" data-category="question">❓ Вопрос</button>
+          <button type="button" class="contact-chat__quick-btn active" data-category="other">️ Другое</button>
+          <button type="button" class="contact-chat__quick-btn" data-category="bug"> Баг</button>
+          <button type="button" class="contact-chat__quick-btn" data-category="suggestion"> Идея</button>
+          <button type="button" class="contact-chat__quick-btn" data-category="question"> Вопрос</button>
         </div>
 
         <div class="contact-chat__email-row">
           <input type="email" class="contact-chat__email-input" id="contact-chat-email"
-                 placeholder="📧 Email (необязательно — чтобы мы могли ответить)" maxlength="120">
+                 placeholder=" Email (необязательно — чтобы мы могли ответить)" maxlength="120">
         </div>
 
         <div class="contact-chat__pending-files" id="contact-chat-files"></div>
 
         <div class="contact-chat__input-row">
           <button type="button" class="contact-chat__btn contact-chat__btn--attach" id="contact-chat-attach"
-                  title="Прикрепить файлы (картинки или PDF, до 10 МБ каждый)">📎</button>
+                  title="Прикрепить файлы (картинки или PDF, до 10 МБ каждый)"></button>
           <input type="file" id="contact-chat-fileinput" multiple
                  accept="image/*,application/pdf,.pdf,.png,.jpg,.jpeg,.webp,.gif"
                  style="display:none">
           <textarea class="contact-chat__textarea" id="contact-chat-text"
                     placeholder="Опишите проблему или идею…" rows="1" maxlength="4000"></textarea>
           <button type="button" class="contact-chat__btn contact-chat__btn--send" id="contact-chat-send"
-                  title="Отправить (Ctrl+Enter)">➤</button>
+                  title="Отправить (Ctrl+Enter)"></button>
         </div>
 
         <div class="contact-chat__hint">
@@ -1189,7 +1189,7 @@
 
   function addFile(file) {
     if (file.size > MAX_FILE_SIZE) {
-      addMessage('system', '❌ Файл "' + file.name + '" слишком большой (макс 10 МБ)');
+      addMessage('system', '[ERROR] Файл "' + file.name + '" слишком большой (макс 10 МБ)');
       return;
     }
     pendingFiles.push(file);
@@ -1201,7 +1201,7 @@
     pendingFiles.forEach((f, idx) => {
       const chip = document.createElement('span');
       chip.className = 'contact-chat__file-chip';
-      const icon = f.type.startsWith('image/') ? '🖼️' : '📄';
+      const icon = f.type.startsWith('image/') ? '️' : '';
       chip.innerHTML = icon + ' ' + escapeHtml(f.name) + ' <span style="opacity:.6">(' + formatSize(f.size) + ')</span>';
       const x = document.createElement('button');
       x.type = 'button';
@@ -1232,7 +1232,7 @@
       attachments.forEach(a => {
         const chip = document.createElement('span');
         chip.className = 'contact-chat__att-chip';
-        const icon = (a.type || '').startsWith('image/') ? '🖼️' : '📄';
+        const icon = (a.type || '').startsWith('image/') ? '️' : '';
         chip.innerHTML = icon + ' ' + escapeHtml(a.name);
         wrap.appendChild(chip);
       });
@@ -1281,7 +1281,7 @@
     const div = document.createElement('div');
     div.className = 'contact-chat__msg contact-chat__msg--' + kind;
     div.dataset.msgId = m.id;
-    // Подпись отправителя: admin → "Lavrik", user → имя/ник/email пользователя
+    // Подпись отправителя: admin -> "Lavrik", user -> имя/ник/email пользователя
     if (m.from === 'admin' || m.from === 'user') {
       const senderEl = document.createElement('div');
       senderEl.style.cssText = 'font-size:11px;font-weight:600;opacity:.85;margin-bottom:4px;';
@@ -1382,17 +1382,17 @@
 
       if (r.ok && j.ok) {
         const emailNote = emailEl.value.trim() ? ' на ' + emailEl.value.trim() : '';
-        addMessage('bot', '✅ Спасибо! Мы получили ваше сообщение и скоро ответим' + emailNote + '.');
+        addMessage('bot', '[OK] Спасибо! Мы получили ваше сообщение и скоро ответим' + emailNote + '.');
         textEl.value = '';
         autoResize();
         pendingFiles = [];
         renderPendingFiles();
       } else {
-        addMessage('system', '❌ ' + (j.error || 'Ошибка отправки. Попробуйте позже.'));
+        addMessage('system', '[ERROR] ' + (j.error || 'Ошибка отправки. Попробуйте позже.'));
       }
     } catch (err) {
       sendingMsg.remove();
-      addMessage('system', '❌ Нет соединения. Проверьте интернет и попробуйте снова.');
+      addMessage('system', '[ERROR] Нет соединения. Проверьте интернет и попробуйте снова.');
     } finally {
       sendBtn.disabled = false;
     }
@@ -1471,7 +1471,7 @@
     // Валидация: без оценки отправка запрещена
     const ratingVal = parseInt(rRatingInput.value, 10) || 0;
     if (ratingVal < 1 || ratingVal > 5) {
-      rResult.textContent = "⚠️ Поставьте оценку от 1 до 5 звёзд";
+      rResult.textContent = "[!]️ Поставьте оценку от 1 до 5 звёзд";
       rResult.className = "form-result err";
       // Подсвечиваем звёзды лёгкой тряской, чтобы было заметно
       const starsBox = document.getElementById("review-stars");
@@ -1504,7 +1504,7 @@
       });
       let j; try { j = await r.json(); } catch (_) { j = {}; }
       if (r.ok && j.ok) {
-        rResult.textContent = "✅ Спасибо за отзыв! Он уже виден другим ученикам ниже.";
+        rResult.textContent = "[OK] Спасибо за отзыв! Он уже виден другим ученикам ниже.";
         rResult.className = "form-result ok";
         rForm.reset();
         rRatingInput.value = "0";
@@ -1518,11 +1518,11 @@
           if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (_) {}
       } else {
-        rResult.textContent = "❌ " + (j.error || "Ошибка отправки");
+        rResult.textContent = "[ERROR] " + (j.error || "Ошибка отправки");
         rResult.className = "form-result err";
       }
     } catch (err) {
-      rResult.textContent = "❌ Нет соединения. Попробуйте позже.";
+      rResult.textContent = "[ERROR] Нет соединения. Попробуйте позже.";
       rResult.className = "form-result err";
     }
   });
@@ -1558,8 +1558,8 @@
     let html = "";
     for (let i = 1; i <= 5; i++) {
       html += i <= n
-        ? '<span>★</span>'
-        : '<span class="star-off">★</span>';
+        ? '<span></span>'
+        : '<span class="star-off"></span>';
     }
     return html;
   }
@@ -1625,7 +1625,7 @@
       if (reset) listEl.innerHTML = "";
 
       if (reset && reviews.length === 0) {
-        listEl.innerHTML = '<div class="reviews-empty">Пока нет отзывов. Будьте первым 👆</div>';
+        listEl.innerHTML = '<div class="reviews-empty">Пока нет отзывов. Будьте первым </div>';
         if (loadMoreBtn) loadMoreBtn.hidden = true;
         if (avgEl) avgEl.textContent = "—";
         if (avgStarsEl) avgStarsEl.innerHTML = "";

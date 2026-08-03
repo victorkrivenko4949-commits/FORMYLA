@@ -121,7 +121,7 @@
     <!-- Заголовок -->
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            🏆 Таблица лидеров
+             Таблица лидеров
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
             Лучшие математики FORMYLA
@@ -136,7 +136,7 @@
     <!-- Статистика текущего пользователя -->
     {% if current_user_rank %}
     <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1)); backdrop-filter: blur(12px); padding: 25px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); margin-bottom: 30px; text-align: center;">
-        <h3 style="color: var(--accent-2); margin-bottom: 15px;">📊 Ваша статистика</h3>
+        <h3 style="color: var(--accent-2); margin-bottom: 15px;"> Ваша статистика</h3>
         <div class="lb-stats-current" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
             <div>
                 <div style="font-size: 2em; color: var(--accent-1); font-weight: bold;">{{ current_user_rank.rank }}</div>
@@ -168,9 +168,9 @@
 
             <!-- Ранг -->
             <div class="lb-rank" style="{% if entry.rank == 1 %}color: #FFD700;{% elif entry.rank == 2 %}color: #C0C0C0;{% elif entry.rank == 3 %}color: #CD7F32;{% else %}color: var(--text-muted);{% endif %}">
-                {% if entry.rank == 1 %}🥇
-                {% elif entry.rank == 2 %}🥈
-                {% elif entry.rank == 3 %}🥉
+                {% if entry.rank == 1 %}
+                {% elif entry.rank == 2 %}
+                {% elif entry.rank == 3 %}
                 {% else %}{{ entry.rank }}{% endif %}
             </div>
 
@@ -216,7 +216,7 @@
     {% else %}
     <!-- Пустое состояние -->
     <div style="text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-soft);">
-        <div style="font-size: 4em; margin-bottom: 20px;">🏆</div>
+        <div style="font-size: 4em; margin-bottom: 20px;"></div>
         <h3 style="color: var(--text-main); margin-bottom: 10px;">Таблица лидеров пуста</h3>
         <p style="color: var(--text-muted);">Станьте первым! Решайте задачи и проходите тесты, чтобы попасть в рейтинг.</p>
     </div>
@@ -245,7 +245,7 @@
 
             <!-- Задачи дня -->
             <div style="margin-bottom: 20px;">
-                <h3 style="color: #f59e0b; font-size: 1.05em; margin-bottom: 8px;">🔥 Задачи дня</h3>
+                <h3 style="color: #f59e0b; font-size: 1.05em; margin-bottom: 8px;"> Задачи дня</h3>
                 <ul style="color: var(--text-soft, #cbd5e1); line-height: 1.9; padding-left: 20px; margin: 0;">
                     <li><strong style="color: var(--text-main, #f1f5f9);">+30 XP</strong> за каждую правильно решённую задачу дня</li>
                     <li><strong style="color: var(--text-main, #f1f5f9);">+10 XP × дни подряд</strong> за серию (макс +100 в день)</li>
@@ -255,7 +255,7 @@
 
             <!-- Месячный пробник -->
             <div style="margin-bottom: 20px;">
-                <h3 style="color: #3b82f6; font-size: 1.05em; margin-bottom: 8px;">📝 Месячный пробник</h3>
+                <h3 style="color: #3b82f6; font-size: 1.05em; margin-bottom: 8px;"> Месячный пробник</h3>
                 <ul style="color: var(--text-soft, #cbd5e1); line-height: 1.9; padding-left: 20px; margin: 0;">
                     <li><strong style="color: var(--text-main, #f1f5f9);">+1 XP</strong> за каждый % результата (до +100 XP)</li>
                     <li><strong style="color: var(--text-main, #f1f5f9);">+5 XP</strong> за каждый % улучшения vs прошлый месяц</li>
@@ -265,7 +265,7 @@
 
             <!-- Уровни -->
             <div style="margin-bottom: 20px; padding: 16px; background: rgba(59, 130, 246, 0.08); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.15);">
-                <h3 style="color: var(--accent-2, #38bdf8); font-size: 1.05em; margin-bottom: 10px;">📊 Уровни</h3>
+                <h3 style="color: var(--accent-2, #38bdf8); font-size: 1.05em; margin-bottom: 10px;"> Уровни</h3>
                 <div style="color: var(--text-soft, #cbd5e1); font-size: 0.95em; line-height: 1.8;">
                     L2: <strong>300</strong> XP &bull;
                     L3: <strong>600</strong> &bull;
@@ -282,7 +282,7 @@
             <!-- Примечание -->
             <div style="padding: 14px 16px; background: rgba(245, 158, 11, 0.08); border-radius: 10px; border-left: 3px solid #f59e0b;">
                 <p style="color: var(--text-soft, #cbd5e1); margin: 0; font-size: 0.9em; line-height: 1.6;">
-                    💡 <strong style="color: var(--text-main, #f1f5f9);">Важно:</strong> задачи из адаптивного теста <strong>НЕ</strong> дают XP — они только для тренировки. Рейтинг растёт за реальные достижения: привычку, прогресс и олимпиадные победы.
+                     <strong style="color: var(--text-main, #f1f5f9);">Важно:</strong> задачи из адаптивного теста <strong>НЕ</strong> дают XP — они только для тренировки. Рейтинг растёт за реальные достижения: привычку, прогресс и олимпиадные победы.
                 </p>
             </div>
         </div>
@@ -293,7 +293,7 @@
         <a href="/" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
-            ← На главную
+            <- На главную
         </a>
     </div>
 

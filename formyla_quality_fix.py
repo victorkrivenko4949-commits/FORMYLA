@@ -249,7 +249,7 @@ def run_hard_audit(tasks_by_uid, uids, label='hard-audit'):
 def main():
     print('=' * 60)
     print('FORMYLA L4-L5: КАЧЕСТВЕННЫЙ ФИКС ЧЕРЕЗ РИЗОНЕР')
-    print('Аудит (быстрый) → Фикс (ризонер) → Аудит (ризонер)')
+    print('Аудит (быстрый) -> Фикс (ризонер) -> Аудит (ризонер)')
     print('=' * 60)
 
     if API_KEY == "ВСТАВЬ_СВОЙ_DEEPSEEK_API_КЛЮЧ_СЮДА":

@@ -87,7 +87,7 @@ class TestStage5Validate:
     # ─── \\sqrt ошибки ───
 
     def test_sqrt_without_braces(self):
-        """\\sqrta → ошибка (нет скобок)."""
+        """\\sqrta -> ошибка (нет скобок)."""
         p = _make_processed(
             "Формула $\\sqrta + b = c$ доказывается."
         )
@@ -96,7 +96,7 @@ class TestStage5Validate:
         assert any('sqrt' in e.lower() for e in r.errors)
 
     def test_sqrt_with_space(self):
-        """\\sqrt a → ошибка (пробел вместо скобок)."""
+        """\\sqrt a -> ошибка (пробел вместо скобок)."""
         p = _make_processed(
             "Формула $\\sqrt a + b = c$ доказывается."
         )
@@ -107,7 +107,7 @@ class TestStage5Validate:
     # ─── \\frac ошибки ───
 
     def test_frac_without_braces(self):
-        """\\frac 1 2 → ошибка (без скобок)."""
+        """\\frac 1 2 -> ошибка (без скобок)."""
         p = _make_processed(
             "Дробь $\\frac 1 2$ встречается часто в задачах."
         )
@@ -116,7 +116,7 @@ class TestStage5Validate:
         assert any('frac' in e.lower() for e in r.errors)
 
     def test_frac_missing_second_arg(self):
-        """\\frac{a}b → ошибка (второй аргумент без скобок)."""
+        """\\frac{a}b -> ошибка (второй аргумент без скобок)."""
         p = _make_processed(
             "Выражение $\\frac{a}b$ записано неверно для пробы."
         )
@@ -126,7 +126,7 @@ class TestStage5Validate:
     # ─── Степени / индексы ───
 
     def test_long_exponent_without_braces(self):
-        """x^10 → ошибка (степень >1 символа без скобок)."""
+        """x^10 -> ошибка (степень >1 символа без скобок)."""
         p = _make_processed(
             "Число $x^10 + y^20$ — большое значение."
         )
@@ -138,7 +138,7 @@ class TestStage5Validate:
         )
 
     def test_long_index_without_braces(self):
-        """a_12 → ошибка (индекс >1 символа без скобок)."""
+        """a_12 -> ошибка (индекс >1 символа без скобок)."""
         p = _make_processed(
             "Последовательность $a_12, a_13$ задана рекурсивно."
         )
@@ -148,7 +148,7 @@ class TestStage5Validate:
     # ─── Двойные индексы ───
 
     def test_double_index_plus(self):
-        """S_m+_{1} → ошибка (подчерк после +)."""
+        """S_m+_{1} -> ошибка (подчерк после +)."""
         p = _make_processed(
             "Выражение $S_m+_{1} = 4 S_m$ здесь."
         )
@@ -160,7 +160,7 @@ class TestStage5Validate:
         )
 
     def test_double_index_minus(self):
-        """a_n -_{1} → ошибка (подчерк после -)."""
+        """a_n -_{1} -> ошибка (подчерк после -)."""
         p = _make_processed(
             "Выражение $a_n -_{1} = 0$ для всех n."
         )
@@ -170,7 +170,7 @@ class TestStage5Validate:
     # ─── Юникод ───
 
     def test_unicode_geq_in_math(self):
-        """≥ внутри $...$ → ошибка (должен быть \\geq)."""
+        """≥ внутри $...$ -> ошибка (должен быть \\geq)."""
         p = _make_processed(
             "Докажите $a + b ≥ 2\\sqrt{ab}$ для положительных."
         )
@@ -187,7 +187,7 @@ class TestStage5Validate:
         assert r.is_valid, r.errors
 
     def test_unicode_cdot_in_math(self):
-        """· внутри $...$ → ошибка (должен быть \\cdot)."""
+        """· внутри $...$ -> ошибка (должен быть \\cdot)."""
         p = _make_processed(
             "Вычислите $2 · 3 = 6$ аккуратно."
         )
@@ -197,7 +197,7 @@ class TestStage5Validate:
     # ─── Непарные $ ───
 
     def test_unpaired_dollar(self):
-        """Непарный $ → ошибка."""
+        """Непарный $ -> ошибка."""
         p = _make_processed(
             "Формула $x + y = 5$ и $z = 3 неверна здесь."
         )
@@ -206,7 +206,7 @@ class TestStage5Validate:
         assert any('непарн' in e.lower() for e in r.errors)
 
     def test_empty_dollars(self):
-        """Пустая формула $$ $$ → ошибка."""
+        """Пустая формула $$ $$ -> ошибка."""
         p = _make_processed(
             "Текст $$ $$ пустой и ещё один текст длинный."
         )
@@ -217,7 +217,7 @@ class TestStage5Validate:
     # ─── LaTeX-утечка в обычный текст ───
 
     def test_latex_command_outside_dollars(self):
-        """\\sqrt{x} вне $...$ → ошибка."""
+        """\\sqrt{x} вне $...$ -> ошибка."""
         p = _make_processed(
             "Выражение \\sqrt{x} записано неправильно "
             "вне формулы здесь."
@@ -229,7 +229,7 @@ class TestStage5Validate:
     # ─── Неподдерживаемые команды ───
 
     def test_align_not_supported(self):
-        """\\begin{align} → ошибка (KaTeX не поддерживает)."""
+        """\\begin{align} -> ошибка (KaTeX не поддерживает)."""
         p = _make_processed(
             "Система: $$\\begin{align} x &= 1 \\\\ "
             "y &= 2 \\end{align}$$ решение."
@@ -241,7 +241,7 @@ class TestStage5Validate:
     # ─── Несколько ошибок одновременно ───
 
     def test_multiple_errors_reported(self):
-        """Несколько ошибок в одной формуле → все репортятся."""
+        """Несколько ошибок в одной формуле -> все репортятся."""
         p = _make_processed(
             "Плохо: $\\sqrta + x^10 ≥ 0$ длинная формула здесь."
         )

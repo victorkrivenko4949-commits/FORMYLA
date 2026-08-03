@@ -62,7 +62,7 @@ with app.app_context():
     cs = CuratorState.query.filter_by(user_id=3).first()
     print(f"\nlevel_mu ДО finish: {before_finish:.3f}")
     print(f"level_mu ПОСЛЕ finish: {cs.level_mu:.3f}")
-    print(f"ЗАТИРАНИЕ: {'ЕСТЬ ⚠' if abs(before_finish - cs.level_mu) > 0.01 else 'НЕТ ✓'}")
+    print(f"ЗАТИРАНИЕ: {'ЕСТЬ [!]' if abs(before_finish - cs.level_mu) > 0.01 else 'НЕТ [OK]'}")
     
     result = finish_data.get('result', {})
     print(f"\nprior_mu (ANCHOR_PLAN, НЕ пишется в level_mu): {result.get('prior_mu')}")

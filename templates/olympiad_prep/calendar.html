@@ -152,11 +152,11 @@
 {% block content %}
 <div class="opc-wrapper">
     <div class="opc-back">
-        <a href="{{ url_for('olympiad_prep.index') }}">← Все олимпиады</a>
+        <a href="{{ url_for('olympiad_prep.index') }}"><- Все олимпиады</a>
     </div>
 
     <div class="opc-header">
-        <div class="opc-icon">📅</div>
+        <div class="opc-icon"></div>
         <h1>Календарь <span>олимпиад</span> России</h1>
         <p class="opc-desc">
             Расписание ключевых математических олимпиад на учебный год 2026/2027:
@@ -182,7 +182,7 @@
                         {% if stage is mapping %}{{ stage.name }}{% else %}{{ stage }}{% endif %}
                     </span>
                     {% if stage is mapping and stage.date_range %}
-                    <span class="opc-stage-date">📅 {{ stage.date_range }}</span>
+                    <span class="opc-stage-date"> {{ stage.date_range }}</span>
                     {% endif %}
                 </div>
                 {% endfor %}

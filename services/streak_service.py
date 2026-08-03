@@ -94,10 +94,10 @@ def check_and_reset_streaks():
     Проверить и сбросить streak для всех пользователей (вызывается в 00:00 MSK).
     
     Логика:
-    - Если last_active_date == вчера → всё ок, streak продолжается
+    - Если last_active_date == вчера -> всё ок, streak продолжается
     - Если last_active_date == позавчера или раньше:
-      - Если freeze_available > 0 → используем freeze
-      - Иначе → сбрасываем streak
+      - Если freeze_available > 0 -> используем freeze
+      - Иначе -> сбрасываем streak
     """
     today = date.today()
     yesterday = today - timedelta(days=1)
@@ -189,10 +189,10 @@ def get_streak_achievements(current_streak: int) -> list:
     """
     achievements = []
     milestones = [
-        (7, '🔥 Неделя подряд!', 'bronze'),
-        (30, '🏆 Месяц подряд!', 'silver'),
-        (100, '💎 100 дней подряд!', 'gold'),
-        (365, '👑 Год подряд!', 'platinum')
+        (7, ' Неделя подряд!', 'bronze'),
+        (30, ' Месяц подряд!', 'silver'),
+        (100, ' 100 дней подряд!', 'gold'),
+        (365, ' Год подряд!', 'platinum')
     ]
     
     for days, title, badge in milestones:

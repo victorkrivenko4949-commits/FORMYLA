@@ -212,7 +212,7 @@ def _build_prompt(title, grade, round_key, count, tasks_block):
     ]
 }}
 
-⛔ ЖЁСТКИЕ ПРАВИЛА для predicted_variant:
+ ЖЁСТКИЕ ПРАВИЛА для predicted_variant:
 1. answer_type ОБЯЗАН быть один из: "number", "formula", "set" (множество значений / пары / список).
    ЗАПРЕЩЕНО: "proof", "proof_or_*", "*_or_proof", "construction", "find_all" (только если ответ — конкретное множество).
    Даже если в архиве задачи требуют доказательства — в predicted_variant давай только числовые/формульные ответы.

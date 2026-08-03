@@ -151,7 +151,7 @@ from services.level_engine import get_state
 mu_before = get_state(u3.id)['mu']
 print(f"  День 7: в долге {d7}")
 
-# День 8 (debt_until < today → burned)
+# День 8 (debt_until < today -> burned)
 # Меняем debt_until так, чтобы оно было сегодня-1
 for it in items:
     it.debt_until = date.today() - timedelta(days=1)
@@ -178,7 +178,7 @@ with client.session_transaction() as sess:
     sess['_user_id'] = str(u2.id)
     sess['_fresh'] = True
 
-# /daily-set → 302 → /daily_tasks
+# /daily-set -> 302 -> /daily_tasks
 r = client.get('/daily-set')
 print(f"  GET /daily-set: {r.status_code}")
 r = client.get('/daily_tasks', follow_redirects=True)

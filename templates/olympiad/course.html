@@ -6,11 +6,11 @@
 {% block content %}
 <div class="oly-wrap">
     <header class="oly-hero">
-        <h1>🎯 {{ competition }} · {{ grade }} класс · сезон {{ season_year - 1 }}/{{ season_year }}</h1>
+        <h1> {{ competition }} · {{ grade }} класс · сезон {{ season_year - 1 }}/{{ season_year }}</h1>
         <p>{{ topic_probniks|length }} тематических пробников. Пройди по порядку, изучая теорию и решая задачи.</p>
     </header>
 
-    <h2 class="oly-section-title">📚 Тематические пробники</h2>
+    <h2 class="oly-section-title"> Тематические пробники</h2>
     {% if topic_probniks %}
     <div class="oly-grid">
         {% for p in topic_probniks %}

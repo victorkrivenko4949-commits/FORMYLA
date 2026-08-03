@@ -109,7 +109,7 @@ def test_other_tasks_unaffected_when_one_locked(quest_app_ctx):
 
 
 def test_cooldown_zero_for_fresh_quest(quest_app_ctx):
-    """Свежий квест без last_regenerated_at → cooldown = 0 (можно перегенерить)."""
+    """Свежий квест без last_regenerated_at -> cooldown = 0 (можно перегенерить)."""
     from services.daily_quest_service import regenerate_cooldown_remaining
     q = quest_app_ctx["quest"]
     assert q.last_regenerated_at is None
@@ -117,7 +117,7 @@ def test_cooldown_zero_for_fresh_quest(quest_app_ctx):
 
 
 def test_cooldown_active_just_regenerated(quest_app_ctx):
-    """Только что перегенерили → cooldown ≈ 3600 секунд."""
+    """Только что перегенерили -> cooldown ≈ 3600 секунд."""
     from services.daily_quest_service import regenerate_cooldown_remaining
     q = quest_app_ctx["quest"]
     q.last_regenerated_at = datetime.utcnow()
@@ -135,7 +135,7 @@ def test_cooldown_expired_after_1h(quest_app_ctx):
 
 
 def test_cooldown_mid_window(quest_app_ctx):
-    """Перегенерили 30 мин назад → осталось ≈ 30 мин."""
+    """Перегенерили 30 мин назад -> осталось ≈ 30 мин."""
     from services.daily_quest_service import regenerate_cooldown_remaining
     q = quest_app_ctx["quest"]
     q.last_regenerated_at = datetime.utcnow() - timedelta(minutes=30)

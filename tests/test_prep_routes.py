@@ -123,7 +123,7 @@ def _seed_test_data():
 class TestCreatePlan:
 
     def test_create_plan_success(self, auth_client):
-        """POST /prep/new → 201, plan created."""
+        """POST /prep/new -> 201, plan created."""
         resp = auth_client.post('/prep/new', json={
             'olympiad_slug': 'vsosh',
             'target_stage': 'Муниципальный',
@@ -137,7 +137,7 @@ class TestCreatePlan:
         assert data['redirect_url'] == f"/prep/{data['plan_id']}"
 
     def test_create_plan_duplicate_conflict(self, auth_client):
-        """Duplicate plan for same olympiad+stage → 409."""
+        """Duplicate plan for same olympiad+stage -> 409."""
         # First plan already created in previous test
         resp = auth_client.post('/prep/new', json={
             'olympiad_slug': 'vsosh',
@@ -148,7 +148,7 @@ class TestCreatePlan:
         assert resp.status_code == 409
 
     def test_create_plan_no_adaptive_test(self, auth_client):
-        """use_baseline=adaptive_test without test → 400."""
+        """use_baseline=adaptive_test without test -> 400."""
         resp = auth_client.post('/prep/new', json={
             'olympiad_slug': 'vsosh',
             'target_stage': 'Школьный',
@@ -162,7 +162,7 @@ class TestCreatePlan:
 class TestPlanAccess:
 
     def test_get_plan_detail_success(self, auth_client):
-        """GET /prep/<id>?format=json → plan details."""
+        """GET /prep/<id>?format=json -> plan details."""
         plan = PrepPlan.query.filter_by(user_id=1).first()
         assert plan is not None
         resp = auth_client.get(f'/prep/{plan.id}?format=json')
@@ -172,7 +172,7 @@ class TestPlanAccess:
         assert len(data['days']) > 0
 
     def test_get_plan_detail_forbidden(self, other_client):
-        """GET /prep/<id> for another user's plan → 403."""
+        """GET /prep/<id> for another user's plan -> 403."""
         plan = PrepPlan.query.filter_by(user_id=1).first()
         resp = other_client.get(f'/prep/{plan.id}?format=json')
         assert resp.status_code == 403
@@ -181,7 +181,7 @@ class TestPlanAccess:
 class TestTodayProblems:
 
     def test_today_returns_problems(self, auth_client):
-        """GET /prep/<id>/today?format=json → problems for today."""
+        """GET /prep/<id>/today?format=json -> problems for today."""
         plan = PrepPlan.query.filter_by(user_id=1).first()
         resp = auth_client.get(f'/prep/{plan.id}/today?format=json')
         assert resp.status_code == 200
@@ -194,7 +194,7 @@ class TestTodayProblems:
 class TestCompleteProblem:
 
     def test_complete_problem_updates_radar(self, auth_client):
-        """POST complete → radar updated."""
+        """POST complete -> radar updated."""
         plan = PrepPlan.query.filter_by(user_id=1).first()
         old_radar = json.loads(plan.current_radar)
 
@@ -214,7 +214,7 @@ class TestCompleteProblem:
         assert result['day_score'] >= 1
 
     def test_complete_all_problems_marks_day_completed(self, auth_client):
-        """After completing all problems → day status=completed."""
+        """After completing all problems -> day status=completed."""
         plan = PrepPlan.query.filter_by(user_id=1).first()
 
         # Get today's problems
@@ -236,7 +236,7 @@ class TestCompleteProblem:
 class TestDeletePlan:
 
     def test_delete_plan_cascades_days(self, auth_client):
-        """DELETE /prep/<id> → plan and all days deleted."""
+        """DELETE /prep/<id> -> plan and all days deleted."""
         # Create a new plan to delete
         resp = auth_client.post('/prep/new', json={
             'olympiad_slug': 'vsosh',

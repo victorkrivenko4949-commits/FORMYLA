@@ -90,15 +90,15 @@
 
   <div class="pagination">
     {% if has_prev %}
-    <a href="?page={{ page - 1 }}&class={{ filters['class'] or '' }}&subject={{ filters['subject'] or '' }}&status={{ filters['status'] or '' }}">← Назад</a>
+    <a href="?page={{ page - 1 }}&class={{ filters['class'] or '' }}&subject={{ filters['subject'] or '' }}&status={{ filters['status'] or '' }}"><- Назад</a>
     {% else %}
-    <span class="disabled">← Назад</span>
+    <span class="disabled"><- Назад</span>
     {% endif %}
     <span class="current">{{ page }} / {{ total_pages }}</span>
     {% if has_next %}
-    <a href="?page={{ page + 1 }}&class={{ filters['class'] or '' }}&subject={{ filters['subject'] or '' }}&status={{ filters['status'] or '' }}">Вперёд →</a>
+    <a href="?page={{ page + 1 }}&class={{ filters['class'] or '' }}&subject={{ filters['subject'] or '' }}&status={{ filters['status'] or '' }}">Вперёд -></a>
     {% else %}
-    <span class="disabled">Вперёд →</span>
+    <span class="disabled">Вперёд -></span>
     {% endif %}
   </div>
   {% else %}

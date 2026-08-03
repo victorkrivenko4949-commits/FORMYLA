@@ -10,7 +10,7 @@
     <!-- Заголовок -->
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            🎯 Результаты адаптивного теста
+             Результаты адаптивного теста
         </h1>
         <p style="font-size: 1.2em; color: var(--text-soft);">
             {{ topic_name }} - Класс {{ grade }}
@@ -54,10 +54,10 @@
 
     </div>
 
-    <!-- 🎉 БОНУС XP ЗА ЗАВЕРШЕНИЕ ТЕСТА -->
+    <!--  БОНУС XP ЗА ЗАВЕРШЕНИЕ ТЕСТА -->
     {% if current_user.is_authenticated and adaptive_xp_bonus > 0 %}
     <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(234, 179, 8, 0.15)); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 2px solid rgba(251, 191, 36, 0.5); box-shadow: 0 8px 32px rgba(251, 191, 36, 0.2); margin-bottom: 30px; text-align: center; animation: pulse 2s ease-in-out;">
-        <div style="font-size: 3em; margin-bottom: 15px;">🎉</div>
+        <div style="font-size: 3em; margin-bottom: 15px;"></div>
         <h2 style="color: #fbbf24; margin-bottom: 15px; font-size: 1.8em; font-weight: 700;">
             Поздравляем! Вы получили бонус!
         </h2>
@@ -70,7 +70,7 @@
         
         {% if level_up %}
         <div style="background: rgba(34, 197, 94, 0.2); padding: 15px; border-radius: var(--radius-sm); border: 2px solid #22c55e; margin-top: 20px;">
-            <div style="font-size: 1.5em; margin-bottom: 5px;">🎊</div>
+            <div style="font-size: 1.5em; margin-bottom: 5px;"></div>
             <div style="color: #22c55e; font-weight: 600; font-size: 1.2em;">
                 Повышение уровня! Теперь вы {{ new_level }} уровня!
             </div>
@@ -79,7 +79,7 @@
         
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(251, 191, 36, 0.3);">
             <a href="{{ url_for('leaderboard') }}" style="display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: transform 0.2s;">
-                📊 Посмотреть рейтинг
+                 Посмотреть рейтинг
             </a>
         </div>
     </div>
@@ -87,7 +87,7 @@
 
     <!-- Детальный разбор -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
-        <h2 style="color: var(--accent-2); margin-bottom: 25px; font-size: 1.5em;">📊 Детальный разбор</h2>
+        <h2 style="color: var(--accent-2); margin-bottom: 25px; font-size: 1.5em;"> Детальный разбор</h2>
         
         {% for answer in answers %}
         <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: var(--radius-sm); border-left: 4px solid {% if answer.score == 1 %}#22c55e{% elif answer.score == 0 %}#fbbf24{% else %}#ef4444{% endif %}; margin-bottom: 20px;">
@@ -106,11 +106,11 @@
                         background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;
                     {% endif %}">
                     {% if answer.score == 1 %}
-                        ✅ Верно! +1 уровень
+                        [OK] Верно! +1 уровень
                     {% elif answer.score == 0 %}
                         ℹ️ 0 баллов — уровень без изменений
                     {% else %}
-                        ❌ Неверно — -1 уровень
+                        [ERROR] Неверно — -1 уровень
                     {% endif %}
                 </div>
             </div>
@@ -132,7 +132,7 @@
             {% if answer.feedback %}
             <div style="background: rgba(59, 130, 246, 0.05); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid rgba(59, 130, 246, 0.2);">
                 <div style="color: var(--accent-2); font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">
-                    🤖 Комментарий AI-тьютора:
+                     Комментарий AI-тьютора:
                 </div>
                 <div class="ai-feedback" style="color: var(--text-main); line-height: 1.6; font-size: 0.95em;">
                     {{ answer.feedback|replace('\n', '<br>')|safe }}
@@ -144,7 +144,7 @@
             {% if answer.user_solution %}
             <details style="margin-top: 15px;">
                 <summary style="color: var(--text-muted); cursor: pointer; font-size: 0.9em; user-select: none;">
-                    📝 Показать ваше решение
+                     Показать ваше решение
                 </summary>
                 <div style="margin-top: 10px; padding: 15px; background: rgba(15, 23, 42, 0.8); border-radius: 8px; color: var(--text-main); line-height: 1.6; font-size: 0.95em;">
                     {{ answer.user_solution }}
@@ -159,21 +159,21 @@
 
     <!-- Рекомендации -->
     <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.05)); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 2px solid rgba(59, 130, 246, 0.3); margin-bottom: 30px;">
-        <h3 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.3em;">💡 Рекомендации</h3>
+        <h3 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.3em;"> Рекомендации</h3>
         
         {% if final_level >= 6 %}
         <p style="color: var(--text-main); line-height: 1.8;">
-            🌟 <strong>Отличный результат!</strong> Вы показали высокий уровень знаний по теме "{{ topic_name }}".
+             <strong>Отличный результат!</strong> Вы показали высокий уровень знаний по теме "{{ topic_name }}".
             Рекомендуем попробовать более сложные темы или перейти к олимпиадным задачам.
         </p>
         {% elif final_level >= 4 %}
         <p style="color: var(--text-main); line-height: 1.8;">
-            👍 <strong>Хороший результат!</strong> У вас есть базовое понимание темы "{{ topic_name }}".
+             <strong>Хороший результат!</strong> У вас есть базовое понимание темы "{{ topic_name }}".
             Продолжайте практиковаться, чтобы улучшить свои навыки.
         </p>
         {% else %}
         <p style="color: var(--text-main); line-height: 1.8;">
-            📚 <strong>Есть куда расти!</strong> Рекомендуем повторить основы темы "{{ topic_name }}"
+             <strong>Есть куда расти!</strong> Рекомендуем повторить основы темы "{{ topic_name }}"
             и попробовать пройти тест еще раз через некоторое время.
         </p>
         {% endif %}
@@ -185,14 +185,14 @@
            style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); display: inline-block;"
            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4)'"
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'">
-            🔄 Пройти тест заново
+             Пройти тест заново
         </a>
         
         <a href="/probniks"
            style="padding: 15px 40px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; border: 1px solid var(--border-mid); transition: all 0.2s; display: inline-block;"
            onmouseover="this.style.background='rgba(100, 116, 139, 0.3)'"
            onmouseout="this.style.background='rgba(100, 116, 139, 0.2)'">
-            📚 Выбрать другую тему
+             Выбрать другую тему
         </a>
         
         {% if current_user.is_authenticated %}
@@ -200,7 +200,7 @@
            style="padding: 15px 40px; background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3); display: inline-block;"
            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(147, 51, 234, 0.4)'"
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(147, 51, 234, 0.3)'">
-            👤 Мой профиль
+             Мой профиль
         </a>
         {% endif %}
     </div>

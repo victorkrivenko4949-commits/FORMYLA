@@ -2,7 +2,7 @@
 """
 _proof.py — Приёмочный скрипт: слот-планнер + разделы + level_engine + coach.
 
-ЗАДАЧА 1:  анализ поля section → record_daily_answer (файл:строка)
+ЗАДАЧА 1:  анализ поля section -> record_daily_answer (файл:строка)
 ЗАДАЧА 2:  удаление + регенерация набора новым slot_planner (таблица)
 ЗАДАЧА 3:  ответы на 4 задачи через Flask test client, level_by_section до/после
 ЗАДАЧА 4:  coach-интерфейс при пустом балансе (GET /prep/coach = 200)
@@ -61,22 +61,22 @@ def task1_analysis():
     print()
     print("      Новый slot_planner (daily_tasks/pipeline/slot_planner.py:389):")
     print("        topic=chosen_sec   # slug: 'algebra'|'geometry'|'combinatorics'|'logic'|'number_theory'")
-    print("      → topic УЖЕ является каноническим slug'ом раздела.")
+    print("      -> topic УЖЕ является каноническим slug'ом раздела.")
 
     # (b) record_daily_answer должен передавать раздел
     print("\n  1b) record_daily_answer — ПРАВКА применена:")
     print("      services/daily_task_rotation.py:468-502")
     print("      БЫЛО:  section = spec.get('section', 'algebra')  # gemini_spec_json primary")
     print("      СТАЛО: section = _normalize_section(item.topic or '')  # topic primary")
-    print("             gemini_spec_json → spec.get('section')  # fallback")
-    print("             last resort → 'algebra'")
+    print("             gemini_spec_json -> spec.get('section')  # fallback")
+    print("             last resort -> 'algebra'")
     print("      Свой маппинг НЕ писался — используется _normalize_section из onboarding.")
 
     # (c) Если раздела нет
     print("\n  1c) Если topic пуст и gemini_spec_json без 'section':")
     print("      DailyTaskItem НЕ имеет FK на AdaptiveTask — нет поля task_id.")
     print("      Определить раздел по task_id из пула НЕВОЗМОЖНО без FK.")
-    print("      → fallback: 'algebra' (как сейчас). Не подставляется заглушка без причины.")
+    print("      -> fallback: 'algebra' (как сейчас). Не подставляется заглушка без причины.")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -99,9 +99,9 @@ def task2_regenerate() -> List[Dict[str, Any]]:
         DailyTaskItem.query.filter_by(daily_set_id=existing.id).delete()
         db.session.delete(existing)
         db.session.commit()
-        print(f"  ✓ Удалён существующий сет #{existing.id}")
+        print(f"  [OK] Удалён существующий сет #{existing.id}")
     else:
-        print("  → Сета на сегодня нет")
+        print("  -> Сета на сегодня нет")
 
     # Проверяем анкету
     cs = CuratorState.query.filter_by(user_id=TEST_USER_ID).first()
@@ -135,7 +135,7 @@ def task2_regenerate() -> List[Dict[str, Any]]:
         user_id=TEST_USER_ID, target_date=today,
     ).first()
     if not new_set:
-        print("  ❌ Сет не создан!")
+        print("  [ERROR] Сет не создан!")
         return []
 
     items = (
@@ -162,13 +162,13 @@ def task2_regenerate() -> List[Dict[str, Any]]:
             'level': it.difficulty_level,
         })
 
-    print(f"\n  Уникальных разделов: {len(sections_seen)} → {sections_seen}")
+    print(f"\n  Уникальных разделов: {len(sections_seen)} -> {sections_seen}")
 
     if len(sections_seen) < 3:
-        print(f"  ⚠️ Разделов < 3. Причины:")
+        print(f"  [!]️ Разделов < 3. Причины:")
         print(f"    - pick_daily_set использует _pick_tasks_for_section")
         print(f"    - фильтрует AdaptiveTask по class_level={onboard.get('grade', '?') if onboard else '?'}")
-        print(f"    - если у некоторых разделов нет задач в БД → они пропускаются")
+        print(f"    - если у некоторых разделов нет задач в БД -> они пропускаются")
 
         grade = 9
         if onboard:
@@ -185,7 +185,7 @@ def task2_regenerate() -> List[Dict[str, Any]]:
         for sec, cnt in sorted(section_counts.items(), key=lambda x: -x[1]):
             print(f"    {sec}: {cnt} задач")
     else:
-        print(f"  ✓ Разделов ≥ 3 — OK")
+        print(f"  [OK] Разделов ≥ 3 — OK")
 
     return table_rows
 
@@ -211,7 +211,7 @@ def task3_answer_tasks(items: List[Dict[str, Any]]):
     print(f"  Глобально: mu={state_before['mu']:.3f} sigma={state_before['sigma']:.3f}")
 
     if not items:
-        print("\n  ❌ Нет задач для ответа!")
+        print("\n  [ERROR] Нет задач для ответа!")
         return
 
     answers_to_submit = items[:4]
@@ -248,10 +248,10 @@ def task3_answer_tasks(items: List[Dict[str, Any]]):
             sd = by_sec_step[section_slug]
             print(f"         level_by_section['{section_slug}']: mu={sd.get('mu','?'):.2f} n={sd.get('n',0)}")
         else:
-            print(f"         ⚠️ '{section_slug}' НЕ появился в level_by_section!")
+            print(f"         [!]️ '{section_slug}' НЕ появился в level_by_section!")
             # Диагностика: что вернула _normalize_section?
             actual_sec = _normalize_section(item.topic or '')
-            print(f"         (item.topic={item.topic!r} → _normalize_section → {actual_sec!r})")
+            print(f"         (item.topic={item.topic!r} -> _normalize_section -> {actual_sec!r})")
             print(f"         (item.gemini_spec_json section: {json.loads(item.gemini_spec_json or '{}').get('section', 'N/A')})")
 
     # ── ПОСЛЕ ──
@@ -272,14 +272,14 @@ def task3_answer_tasks(items: List[Dict[str, Any]]):
     for sec in sections_answered:
         sd = by_sec_after.get(sec, {})
         if sd.get('n', 0) >= 1:
-            print(f"    ✓ {sec}: n={sd.get('n')}")
+            print(f"    [OK] {sec}: n={sd.get('n')}")
         else:
-            print(f"    ✗ {sec}: n={sd.get('n', 0)} — НЕ обновился!")
+            print(f"     {sec}: n={sd.get('n', 0)} — НЕ обновился!")
             all_present = False
     if all_present:
-        print(f"\n  ✅ Все разделы отвеченных задач появились с n>=1")
+        print(f"\n  [OK] Все разделы отвеченных задач появились с n>=1")
     else:
-        print(f"\n  ❌ Некоторые разделы не обновились!")
+        print(f"\n  [ERROR] Некоторые разделы не обновились!")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -305,7 +305,7 @@ def task4_coach():
             has_next_action = 'next_action' in html_text
             print(f"      Блок next_action в HTML: {'ДА' if has_next_action else 'НЕТ'}")
         else:
-            print(f"      ❌ Ожидался 200, получен {resp.status_code}")
+            print(f"      [ERROR] Ожидался 200, получен {resp.status_code}")
 
     # ── POST /prep/coach/chat ──
     print("\n  4b) POST /prep/coach/chat (проверка ошибки при недоступном AI)")
@@ -320,10 +320,10 @@ def task4_coach():
             data = json.loads(resp.data)
             reply = data.get('reply', '')
             if 'не могу' in reply.lower() or 'недоступ' in reply.lower() or 'связаться' in reply.lower():
-                print(f"      ✓ Понятный fallback (без traceback):")
+                print(f"      [OK] Понятный fallback (без traceback):")
                 print(f"      {reply[:300]}")
             else:
-                print(f"      → AI ответил (баланс не пустой):")
+                print(f"      -> AI ответил (баланс не пустой):")
                 print(f"      {reply[:200]}")
         except Exception:
             print(f"      (ответ не JSON) status={resp.status_code}")
@@ -340,16 +340,16 @@ def task4_coach():
     print('          reply = "Сейчас не могу связаться с ИИ-куратором. "')
     print('                  "Стоит подтянуть: {fallback}."')
     print()
-    print("      → Ученик видит человеко-читаемое сообщение:")
+    print("      -> Ученик видит человеко-читаемое сообщение:")
     print('        "Сейчас не могу связаться с ИИ-куратором. Стоит подтянуть: ..."')
-    print("      → HTTP статус ответа: 200 (НЕ 402)")
-    print("      → Текст не содержит технических деталей (traceback, HTTP 402, Payment Required)")
-    print("      → Интерфейс НЕ ломается — страница coach рендерится нормально (200)")
+    print("      -> HTTP статус ответа: 200 (НЕ 402)")
+    print("      -> Текст не содержит технических деталей (traceback, HTTP 402, Payment Required)")
+    print("      -> Интерфейс НЕ ломается — страница coach рендерится нормально (200)")
 
     print("\n  4d) В daily_tasks (step1_gemini.py:86-91):")
-    print("      HTTP 402 → category='http_402' → GeminiPlanError → error_message джоба")
-    print("      → UI показывает текст ошибки через DailyGenerationJob.error_message")
-    print("      → Интерфейс не падает, блок next_action виден")
+    print("      HTTP 402 -> category='http_402' -> GeminiPlanError -> error_message джоба")
+    print("      -> UI показывает текст ошибки через DailyGenerationJob.error_message")
+    print("      -> Интерфейс не падает, блок next_action виден")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -393,20 +393,20 @@ def main():
             try:
                 py_compile.compile(f, doraise=True)
             except py_compile.PyCompileError as e:
-                print(f"  ❌ py_compile {f}: {e}")
+                print(f"  [ERROR] py_compile {f}: {e}")
                 all_ok = False
         if all_ok:
-            print("  ✓ python -m py_compile: exit 0")
+            print("  [OK] python -m py_compile: exit 0")
 
         user = get_user()
         with flask_app.test_client(user=user) as client:
             resp = client.get('/daily_tasks/')
-            print(f"  ✓ GET /daily_tasks: {resp.status_code}" if resp.status_code == 200
-                  else f"  ❌ GET /daily_tasks: {resp.status_code}")
+            print(f"  [OK] GET /daily_tasks: {resp.status_code}" if resp.status_code == 200
+                  else f"  [ERROR] GET /daily_tasks: {resp.status_code}")
 
             resp2 = client.get('/prep/coach')
-            print(f"  ✓ GET /prep/coach: {resp2.status_code}" if resp2.status_code == 200
-                  else f"  ❌ GET /prep/coach: {resp2.status_code}")
+            print(f"  [OK] GET /prep/coach: {resp2.status_code}" if resp2.status_code == 200
+                  else f"  [ERROR] GET /prep/coach: {resp2.status_code}")
 
         print(f"\n{'=' * 70}")
         print(f"  ГОТОВО")

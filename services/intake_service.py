@@ -170,7 +170,7 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
     state['answers'][qid] = key
     current_step = state['step']
 
-    # ── Flow: q1 → q2 → q3 → q4 → q5 → anchors ──────────────────
+    # ── Flow: q1 -> q2 -> q3 -> q4 -> q5 -> anchors ──────────────────
 
     transitions = {
         'q1': ('q2', Q2_GOAL, 2),
@@ -193,7 +193,7 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
             'anchor': None,
         }
 
-    # ── q5 → выбираем якоря и показываем первый ──────────────────
+    # ── q5 -> выбираем якоря и показываем первый ──────────────────
     if current_step == 'q5' and qid == 'weak_sections':
         # Выбираем 5 якорей
         grade = int(state['answers'].get('class', 9))
@@ -263,7 +263,7 @@ def submit_anchor(user_id: int, task_id: int, user_answer: str) -> Dict[str, Any
     state['q_index'] = 6 + idx  # 6, 7, 8, 9, 10
 
     if idx >= len(anchor_tasks):
-        # Все якоря пройдены → финал
+        # Все якоря пройдены -> финал
         _save_session_state(state)
         return finish(user_id, state)
 

@@ -14,7 +14,7 @@
             // Прячем только в режиме "доска" (?mode=board).
             var mode = new URLSearchParams(window.location.search).get('mode');
             if (mode === 'board' || mode === null || mode === '') {
-                // По умолчанию /drawing открывается как доска → прячем.
+                // По умолчанию /drawing открывается как доска -> прячем.
                 return true;
             }
         }
@@ -94,7 +94,7 @@
 
             var icon = document.createElement('span');
             icon.className = 'qr-icon';
-            icon.textContent = it.icon || '💬';
+            icon.textContent = it.icon || '';
 
             var label = document.createElement('span');
             label.className = 'qr-label';
@@ -111,7 +111,7 @@
             var moreBtn = document.createElement('button');
             moreBtn.type = 'button';
             moreBtn.className = 'scf-more';
-            moreBtn.textContent = '↓ Ещё варианты (' + (intents.length - 6) + ')';
+            moreBtn.textContent = 'v Ещё варианты (' + (intents.length - 6) + ')';
             moreBtn.addEventListener('click', function () {
                 showAllIntents = true;
                 renderQuickReplies();
@@ -179,7 +179,7 @@
         }).then(function (r) {
             if (r.status === 429) {
                 return {answer: 'Слишком много запросов за час. Попробуй чуть позже или загляни в /about.',
-                        suggested_actions: [{label: '📖 О сервисе', url: '/about'}],
+                        suggested_actions: [{label: ' О сервисе', url: '/about'}],
                         source: 'rate_limit'};
             }
             return r.json();

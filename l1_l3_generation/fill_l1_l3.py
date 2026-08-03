@@ -305,7 +305,7 @@ def main():
             if cell['count'] >= 5:
                 cell['status'] = 'READY'
             approved += 1
-            log(f"  ✓ ПРИНЯТО ({approved}/{needed})")
+            log(f"  [OK] ПРИНЯТО ({approved}/{needed})")
             time.sleep(1.5)
         
         # checkpoint после каждой ячейки

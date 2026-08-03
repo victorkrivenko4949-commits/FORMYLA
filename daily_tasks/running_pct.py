@@ -62,7 +62,7 @@ def _decay_weight(answered_at: Optional[datetime], now: datetime) -> float:
 def _difficulty_weight(difficulty: Optional[int]) -> float:
     """Вес сложности: lvl 5 весит в 5× больше lvl 1."""
     if difficulty is None:
-        # неизвестная сложность → нейтральный вес = середина шкалы
+        # неизвестная сложность -> нейтральный вес = середина шкалы
         return (MAX_DIFFICULTY / 2.0) / MAX_DIFFICULTY
     try:
         d = int(difficulty)

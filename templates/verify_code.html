@@ -7,7 +7,7 @@
     
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            🔐 Введите код
+             Введите код
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
             Код отправлен на <strong style="color: var(--accent-2);">{{ email }}</strong>
@@ -60,14 +60,14 @@
                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(56, 189, 248, 0.4)'"
                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(56, 189, 248, 0.3)'"
             >
-                ✅ Подтвердить
+                [OK] Подтвердить
             </button>
 
         </form>
 
         <div style="text-align: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border-soft);">
             <a href="{{ url_for('login') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.95em; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-2)'" onmouseout="this.style.color='var(--text-muted)'">
-                ← Ввести другой email
+                <- Ввести другой email
             </a>
         </div>
 

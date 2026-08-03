@@ -108,9 +108,9 @@ with app.app_context():
     
     print(f"   Actual sec_mu = {actual_mu}")
     if actual_mu and abs(actual_mu - expected_mu) < 0.01:
-        print(f"   ✓ SINGLE application — match within 0.01")
+        print(f"   [OK] SINGLE application — match within 0.01")
     elif actual_mu and actual_mu > expected_mu + 0.2:
-        print(f"   ✗ DOUBLE application suspected: actual > expected by {actual_mu - expected_mu:.2f}")
+        print(f"    DOUBLE application suspected: actual > expected by {actual_mu - expected_mu:.2f}")
     print()
     
     # Now check if ANCHOR_PLAN also gets applied

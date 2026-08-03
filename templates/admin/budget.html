@@ -123,17 +123,17 @@
         <tr>
           <td>Целевой бюджет</td>
           <td>${{ budget_target }}</td>
-          <td>{% if total_spent < budget_target %}✅ OK{% else %}⚠️ Превышен{% endif %}</td>
+          <td>{% if total_spent < budget_target %}[OK] OK{% else %}[!]️ Превышен{% endif %}</td>
         </tr>
         <tr>
           <td>Порог оповещения</td>
           <td>${{ budget_alert }}</td>
-          <td>{% if total_spent < budget_alert %}✅ OK{% else %}🔶 Внимание{% endif %}</td>
+          <td>{% if total_spent < budget_alert %}[OK] OK{% else %} Внимание{% endif %}</td>
         </tr>
         <tr>
           <td>Жёсткий стоп</td>
           <td>${{ budget_hard_stop }}</td>
-          <td>{% if total_spent < budget_hard_stop %}✅ OK{% else %}🛑 СТОП{% endif %}</td>
+          <td>{% if total_spent < budget_hard_stop %}[OK] OK{% else %} СТОП{% endif %}</td>
         </tr>
       </tbody>
     </table>

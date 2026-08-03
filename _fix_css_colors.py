@@ -7,7 +7,7 @@ import re
 CSS_DIR = os.path.join(os.path.dirname(__file__), 'static', 'css')
 
 REPLACEMENTS = {
-    # Green → Blue
+    # Green -> Blue
     '#38ef7d': '#60a5fa',
     '#11998e': '#3b82f6',
     '#10b981': '#3b82f6',
@@ -17,7 +17,7 @@ REPLACEMENTS = {
     '#22c55e': '#3b82f6',
     '#14b8a6': '#60a5fa',
     '#059669': '#3b82f6',
-    # Purple/Violet → Blue
+    # Purple/Violet -> Blue
     '#a78bfa': '#60a5fa',
     '#7c3aed': '#3b82f6',
     '#8b5cf6': '#3b82f6',

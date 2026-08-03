@@ -84,7 +84,7 @@ class TestStage6Save:
     @patch('models.db')
     @patch('models.OlympiadTask')
     def test_save_rollback_on_error(self, MockTask, mock_db):
-        """Ошибка БД → rollback + Stage6Error."""
+        """Ошибка БД -> rollback + Stage6Error."""
         MockTask.return_value = MagicMock()
         mock_db.session.add.side_effect = Exception("DB error")
 

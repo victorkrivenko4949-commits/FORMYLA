@@ -86,10 +86,10 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
     <div class="comparison">
       {% set diff = final_mu - previous_mu %}
       {% if diff > 0.1 %}
-        Повышение с {{ "%.1f"|format(previous_mu) }} → {{ "%.1f"|format(final_mu) }}
+        Повышение с {{ "%.1f"|format(previous_mu) }} -> {{ "%.1f"|format(final_mu) }}
         <span style="color:#3ecf8e;">▲ +{{ "%.1f"|format(diff) }}</span>
       {% elif diff < -0.1 %}
-        Снижение с {{ "%.1f"|format(previous_mu) }} → {{ "%.1f"|format(final_mu) }}
+        Снижение с {{ "%.1f"|format(previous_mu) }} -> {{ "%.1f"|format(final_mu) }}
         <span style="color:#e86a62;">▼ {{ "%.1f"|format(diff) }}</span>
       {% else %}
         Без изменений: было {{ "%.1f"|format(previous_mu) }}
@@ -136,7 +136,7 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
         <div id="kimiReviewText" style="font-size:14px; color:rgba(255,255,255,0.7); line-height:1.5;"></div>
       </div>
       <div style="text-align:center; margin-top:16px;">
-        <button class="next-btn" id="nextBtn" onclick="goNext()">Дальше →</button>
+        <button class="next-btn" id="nextBtn" onclick="goNext()">Дальше -></button>
       </div>
     </div>
 
@@ -360,7 +360,7 @@ async function submitAnswer() {
     }
 
     if (data.done) {
-      document.getElementById('nextBtn').textContent = 'Смотреть итог →';
+      document.getElementById('nextBtn').textContent = 'Смотреть итог ->';
     }
 
   } catch(e) {

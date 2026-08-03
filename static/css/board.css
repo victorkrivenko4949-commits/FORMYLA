@@ -1,11 +1,11 @@
 /* ──────────────────────────────────────────────────────────────────────
-   FORMYLA — Whiteboard «Текст → Рукопись» modal styles.
+   FORMYLA — Whiteboard «Текст -> Рукопись» modal styles.
    Loaded only on /whiteboard via templates/whiteboard.html.
    Plays nicely with the existing .drw-pane-full / .glass conventions.
    ────────────────────────────────────────────────────────────────────── */
 
 /* ── On-demand «Распознать рукопись» button + UI ─────────────────────
-   The ✨ button sits in the toolbar next to the ✍️ handwriting modal
+   The  button sits in the toolbar next to the ️ handwriting modal
    trigger. It always glows so the user notices it; while a request is
    in flight it adds .is-busy and spins. */
 .hwocr-btn {
@@ -133,7 +133,7 @@
   margin: 0 2px;
 }
 
-/* ── Toolbar accent for the ✍️ trigger ───────────────────────────────
+/* ── Toolbar accent for the ️ trigger ───────────────────────────────
    The button uses the existing .icon-btn shell from the page; we add
    a subtle gradient halo so it stands out next to the pen/eraser tools.
    The class .hw-toolbar-btn is attached at runtime by handwriting_ui.js

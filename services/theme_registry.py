@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-services/theme_registry.py — Canonical theme→section lookup + human-readable titles.
+services/theme_registry.py — Canonical theme->section lookup + human-readable titles.
 
 Loads data/theme_to_section.json and FORMYLA_L1_L5_TOP5.jsonl once at import time.
 Provides:
-  section_of_theme(theme_id) → canonical slug (algebra|geometry|combinatorics|logic|number_theory)
-  theme_title(theme_id) → human-readable title from JSONL (e.g. "Многочлены и алгебраические тождества")
-  themes_of_grade(grade) → list of theme_id
-  themes_of_section(grade, section) → list of theme_id
-  all_themes() → list of (theme_id, section) tuples
+  section_of_theme(theme_id) -> canonical slug (algebra|geometry|combinatorics|logic|number_theory)
+  theme_title(theme_id) -> human-readable title from JSONL (e.g. "Многочлены и алгебраические тождества")
+  themes_of_grade(grade) -> list of theme_id
+  themes_of_section(grade, section) -> list of theme_id
+  all_themes() -> list of (theme_id, section) tuples
 """
 import json
 import logging
@@ -18,7 +18,7 @@ from typing import Dict, List, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 # ══════════════════════════════════════════════════════════════════════
-# Load theme→section dictionary and theme→title once
+# Load theme->section dictionary and theme->title once
 # ══════════════════════════════════════════════════════════════════════
 
 _THEME_TO_SECTION: Dict[str, str] = {}
@@ -40,7 +40,7 @@ def _load():
     try:
         with open(path, 'r', encoding='utf-8') as f:
             _THEME_TO_SECTION = json.load(f)
-        logger.info("theme_registry: loaded %d theme→section mappings", len(_THEME_TO_SECTION))
+        logger.info("theme_registry: loaded %d theme->section mappings", len(_THEME_TO_SECTION))
     except (FileNotFoundError, json.JSONDecodeError) as e:
         logger.error("theme_registry: cannot load %s: %s", path, e)
         _THEME_TO_SECTION = {}
@@ -59,11 +59,11 @@ def _load():
                         _THEME_TO_TITLE[tid] = title
                 except json.JSONDecodeError:
                     continue
-        logger.info("theme_registry: loaded %d theme→title mappings from JSONL", len(_THEME_TO_TITLE))
+        logger.info("theme_registry: loaded %d theme->title mappings from JSONL", len(_THEME_TO_TITLE))
     except FileNotFoundError:
         logger.warning("theme_registry: JSONL file not found at %s, theme titles will fall back to theme_id", jsonl_path)
 
-    # Derive grade→theme mapping from theme_id prefixes (e.g. G5_T002_S0 → grade 5)
+    # Derive grade->theme mapping from theme_id prefixes (e.g. G5_T002_S0 -> grade 5)
     for tid in _THEME_TO_SECTION:
         parts = tid.split('_')
         if len(parts) >= 2 and parts[0].startswith('G'):
@@ -141,6 +141,6 @@ def all_themes() -> List[Tuple[str, str]]:
 
 
 def theme_count() -> int:
-    """Return number of loaded theme→section mappings."""
+    """Return number of loaded theme->section mappings."""
     _load()
     return len(_THEME_TO_SECTION)

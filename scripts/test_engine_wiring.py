@@ -186,17 +186,17 @@ def run():
             # Check: at least 3 different sections
             unique_sec = len(sections_seen)
             if unique_sec >= 3:
-                print(f"  ✅ {unique_sec} different sections involved: {sorted(sections_seen)}")
+                print(f"  [OK] {unique_sec} different sections involved: {sorted(sections_seen)}")
             else:
-                msg = f"  ❌ Only {unique_sec} sections involved (need >= 3): {sorted(sections_seen)}"
+                msg = f"  [ERROR] Only {unique_sec} sections involved (need >= 3): {sorted(sections_seen)}"
                 print(msg)
                 errors.append(msg)
 
             # Check: mu changed
             if s_after['mu'] != s_before['mu']:
-                print(f"  ✅ mu changed: {s_before['mu']:.3f} → {s_after['mu']:.3f}")
+                print(f"  [OK] mu changed: {s_before['mu']:.3f} -> {s_after['mu']:.3f}")
             else:
-                msg = "  ❌ mu unchanged"
+                msg = "  [ERROR] mu unchanged"
                 print(msg)
                 errors.append(msg)
 
@@ -204,9 +204,9 @@ def run():
             cs = CuratorState.query.filter_by(user_id=TEST_USER_ID).first()
             tq_f = (cs.prep_state or {}).get('test_queue', []) if cs else []
             if len(tq_f) == 0:
-                print(f"  ✅ test_queue empty")
+                print(f"  [OK] test_queue empty")
             else:
-                msg = f"  ❌ test_queue not empty: {len(tq_f)} items"
+                msg = f"  [ERROR] test_queue not empty: {len(tq_f)} items"
                 print(msg)
                 errors.append(msg)
 
@@ -214,49 +214,49 @@ def run():
             for sec_name in sections_seen:
                 if sec_name in by_sec_after:
                     sec = by_sec_after[sec_name]
-                    print(f"  ✅ by_section['{sec_name}']: n={sec.get('n')} "
+                    print(f"  [OK] by_section['{sec_name}']: n={sec.get('n')} "
                           f"mu={sec.get('mu',0):.3f} sigma={sec.get('sigma',0):.3f}")
                 else:
-                    msg = f"  ❌ by_section missing '{sec_name}'"
+                    msg = f"  [ERROR] by_section missing '{sec_name}'"
                     print(msg)
                     errors.append(msg)
 
             # Check: skipped reported
             if skipped:
-                print(f"  ⚠️  SKIPPED: {len(skipped)} allocation(s)")
+                print(f"  [!]️  SKIPPED: {len(skipped)} allocation(s)")
                 for sk in skipped:
                     print(f"       {sk['section']}: level={sk['level']} — {sk['reason']}")
 
             # Check: tasks count
             if len(tasks) == TEST_LENGTH:
-                print(f"  ✅ tasks={len(tasks)} == TEST_LENGTH={TEST_LENGTH}")
+                print(f"  [OK] tasks={len(tasks)} == TEST_LENGTH={TEST_LENGTH}")
             else:
-                msg = f"  ⚠️ tasks={len(tasks)} != TEST_LENGTH={TEST_LENGTH} (skipped={len(skipped)})"
+                msg = f"  [!]️ tasks={len(tasks)} != TEST_LENGTH={TEST_LENGTH} (skipped={len(skipped)})"
                 print(msg)
 
             # Check: last_test populated
             cs = CuratorState.query.filter_by(user_id=TEST_USER_ID).first()
             lt = (cs.prep_state or {}).get('last_test', {}) if cs else {}
             if lt.get('tasks') == len(tasks):
-                print(f"  ✅ last_test.tasks={lt.get('tasks')}")
+                print(f"  [OK] last_test.tasks={lt.get('tasks')}")
             else:
-                msg = f"  ❌ last_test.tasks={lt.get('tasks')} expected={len(tasks)}"
+                msg = f"  [ERROR] last_test.tasks={lt.get('tasks')} expected={len(tasks)}"
                 print(msg)
                 errors.append(msg)
 
             if errors:
                 print(f"\n{'='*72}")
-                print(f"  ❌ {len(errors)} CHECK(S) FAILED")
+                print(f"  [ERROR] {len(errors)} CHECK(S) FAILED")
                 print(f"{'='*72}")
             else:
                 print(f"\n{'='*72}")
-                print(f"  ✅ ALL CHECKS PASSED")
+                print(f"  [OK] ALL CHECKS PASSED")
                 print(f"{'='*72}")
 
         finally:
             print("\n--- ROLLBACK ---")
             restore()
-            print("  ✓ Done.")
+            print("  [OK] Done.")
 
 
 if __name__ == '__main__':

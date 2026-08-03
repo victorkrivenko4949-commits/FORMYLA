@@ -255,7 +255,7 @@
 
     <!-- Hero Section -->
     <div class="completion-hero">
-        <div class="completion-icon">🎉</div>
+        <div class="completion-icon"></div>
         <h1 class="completion-title">Поздравляем!</h1>
         <p class="completion-subtitle">Ты завершил Daily Quest!</p>
     </div>
@@ -263,19 +263,19 @@
     <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">✓</div>
+            <div class="stat-icon">[OK]</div>
             <div class="stat-value">{{ quest.completed_count }}</div>
             <div class="stat-label">Задач решено</div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">💎</div>
+            <div class="stat-icon"></div>
             <div class="stat-value">{{ quest.xp_earned }}</div>
             <div class="stat-label">XP заработано</div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon">🔥</div>
+            <div class="stat-icon"></div>
             <div class="stat-value">{{ streak_stats.current_streak }}</div>
             <div class="stat-label">Дней подряд</div>
         </div>
@@ -284,15 +284,15 @@
     <!-- Streak Celebration -->
     {% if streak_stats.current_streak > 1 %}
     <div class="streak-celebration">
-        <div class="streak-flame-big">🔥</div>
+        <div class="streak-flame-big"></div>
         <p class="streak-number-big">{{ streak_stats.current_streak }} дней подряд!</p>
         <p style="color: rgba(255, 255, 255, 0.8); margin-top: 1rem;">
             {% if streak_stats.current_streak >= 7 %}
-            🏆 Неделя подряд! Невероятно!
+             Неделя подряд! Невероятно!
             {% elif streak_stats.current_streak >= 3 %}
-            💪 Отличная серия! Продолжай!
+             Отличная серия! Продолжай!
             {% else %}
-            🚀 Так держать!
+             Так держать!
             {% endif %}
         </p>
     </div>
@@ -300,20 +300,20 @@
 
     <!-- AI Summary -->
     <div class="ai-summary-card">
-        <div class="ai-summary-title">🤖 Комментарий AI</div>
+        <div class="ai-summary-title"> Комментарий AI</div>
         <div class="ai-summary-text">{{ ai_summary|safe }}</div>
     </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
         <a href="{{ url_for('index') }}" class="btn-action btn-primary-action">
-            🏠 На главную
+             На главную
         </a>
         <a href="{{ url_for('profile') }}" class="btn-action btn-secondary-action">
-            👤 Мой профиль
+             Мой профиль
         </a>
         <button onclick="shareResults()" class="btn-action btn-secondary-action">
-            📤 Поделиться
+             Поделиться
         </button>
     </div>
 </div>
@@ -342,7 +342,7 @@ function createConfetti() {
 
 // Share Results
 function shareResults() {
-    const text = `🎉 Я завершил Daily Quest на FORMYLA!\n💎 Заработано: {{ quest.xp_earned }} XP\n🔥 Streak: {{ streak_stats.current_streak }} дней`;
+    const text = ` Я завершил Daily Quest на FORMYLA!\n Заработано: {{ quest.xp_earned }} XP\n Streak: {{ streak_stats.current_streak }} дней`;
     
     if (navigator.share) {
         navigator.share({

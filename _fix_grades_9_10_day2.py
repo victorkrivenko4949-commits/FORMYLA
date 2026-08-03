@@ -479,9 +479,9 @@ def main():
     
     if modified_count > 0:
         save_olympiads_db(all_entries)
-        print("\n✅ Done! Day 2 problems added for grades 9 and 10.", flush=True)
+        print("\n[OK] Done! Day 2 problems added for grades 9 and 10.", flush=True)
     else:
-        print("\n❌ No entries modified!", flush=True)
+        print("\n[ERROR] No entries modified!", flush=True)
 
 
 if __name__ == '__main__':

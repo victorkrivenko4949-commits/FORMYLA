@@ -153,8 +153,8 @@ for tid in [82, 85, 540, 556, 607]:
                 kw_found = False
                 for kw in ['Ответ:', 'Решение:', 'Критерии']:
                     if kw in p['text']:
-                        print(f'  ⚠ prob#{p["num"]}: STILL contains "{kw}" ({len(p["text"])}ch)')
+                        print(f'  [!] prob#{p["num"]}: STILL contains "{kw}" ({len(p["text"])}ch)')
                         kw_found = True
                 if not kw_found:
-                    print(f'  ✓ prob#{p["num"]}: clean ({len(p["text"])} chars)')
+                    print(f'  [OK] prob#{p["num"]}: clean ({len(p["text"])} chars)')
             break

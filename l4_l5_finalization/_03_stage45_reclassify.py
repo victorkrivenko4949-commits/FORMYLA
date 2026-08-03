@@ -11,9 +11,9 @@ For each FIX task:
    parsing_error): retry SOLVER up to 3× with deepseek-reasoner, extended timeout
 3. Save raw model responses to forensic log
 4. Reclassify:
-   - If retry confirms answer AND original solution is complete  → KEEP
-   - If answer correct but solution missing steps               → FIX (supplement solution only)
-   - If math error found                                        → REPLACE
+   - If retry confirms answer AND original solution is complete  -> KEEP
+   - If answer correct but solution missing steps               -> FIX (supplement solution only)
+   - If math error found                                        -> REPLACE
 5. Output updated counts: KEEP / FIX / REPLACE / REVIEW
 
 Usage:
@@ -539,7 +539,7 @@ def main():
 
         summary_stats["by_new_category"][new_category] += 1
 
-        logger.info(f"  → New category: {new_category} ({reclass_reason})")
+        logger.info(f"  -> New category: {new_category} ({reclass_reason})")
 
         reclassifications.append({
             "task_id": task_id,

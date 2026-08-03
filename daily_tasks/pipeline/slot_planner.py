@@ -288,7 +288,7 @@ def plan_slots(
     """
     user_id = profile.get("user_id")
     if not user_id:
-        # No user_id → try thematic fallback with whatever we have
+        # No user_id -> try thematic fallback with whatever we have
         logger.warning("plan_slots: no user_id in profile — using thematic fallback")
         return _plan_thematic_fallback(profile, max(total_slots, 5), today)
 
@@ -309,7 +309,7 @@ def plan_slots(
     #    onboarding not done (no анкета). ───────────────────────────────
     if not by_section and not onboarding_done:
         logger.info(
-            "plan_slots: level_by_section empty + no onboarding → "
+            "plan_slots: level_by_section empty + no onboarding -> "
             "thematic day fallback for user=%d", user_id,
         )
         return _plan_thematic_fallback(profile, max(total_slots, 5), today)
@@ -357,7 +357,7 @@ def plan_slots(
             chosen_sec = sec
             break
         if not chosen_sec:
-            # All blocked → pick any
+            # All blocked -> pick any
             for sec, _ in sections_ordered:
                 chosen_sec = sec
                 break

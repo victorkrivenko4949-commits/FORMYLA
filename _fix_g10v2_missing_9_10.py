@@ -380,7 +380,7 @@ def main():
             f.write(db_content)
         print(f"  Updated {db_path} ({len(db_content)} bytes)", flush=True)
     
-    print(f"\n✅ Done! Added {len(valid)} problems to idx {idx}", flush=True)
+    print(f"\n[OK] Done! Added {len(valid)} problems to idx {idx}", flush=True)
     for p in valid:
         print(f"  - Problem {p['num']}: {str(p.get('text',''))[:80]}", flush=True)
 

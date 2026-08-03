@@ -291,7 +291,7 @@ class PreGenQueue(db.Model):
     cache_key = db.Column(db.String(64), nullable=False, index=True)
     pool_id = db.Column(db.Integer, db.ForeignKey('task_pool.id', ondelete='SET NULL'), nullable=True, index=True)
 
-    # queue state machine: queued → generating → ready / failed → consumed
+    # queue state machine: queued -> generating -> ready / failed -> consumed
     status = db.Column(db.String(16), nullable=False, default='queued')
     profile_json = db.Column(db.Text, nullable=True)  # JSON-слепок профиля
 

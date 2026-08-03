@@ -50,7 +50,7 @@ with app.test_client() as client:
     ]
     print("\nПроверки HTML:")
     for name, ok in checks:
-        status = "✅" if ok else "❌"
+        status = "[OK]" if ok else "[ERROR]"
         print(f"  {status} {name}")
 
     # Шаг 2: Проверяем greeting endpoint
@@ -87,9 +87,9 @@ with app.test_client() as client:
         print(f"Размер coach_test данных (полный тест): {len(test_data_str)} байт")
         print(f"Максимальный размер cookie (типичный): ~4096 байт")
         if len(test_data_str) > 4000:
-            print("❌ Данные сессии ПРЕВЫШАЮТ лимит cookie!")
+            print("[ERROR] Данные сессии ПРЕВЫШАЮТ лимит cookie!")
         else:
-            print("✅ Данные сессии в пределах лимита")
+            print("[OK] Данные сессии в пределах лимита")
         
         # Проверка размера с пустыми ответами (только что начатый тест)
         empty_data = {
@@ -115,13 +115,13 @@ with app.test_client() as client:
         print(f"Сырые данные (первые 200 символов): {raw[:200]}")
         try:
             parsed = json.loads(raw)
-            print(f"Парсинг JSON: ✅ ({len(parsed)} элементов)")
+            print(f"Парсинг JSON: [OK] ({len(parsed)} элементов)")
             for item in parsed[:3]:
                 print(f"  {item}")
         except Exception as e:
-            print(f"❌ Ошибка парсинга JSON: {e}")
+            print(f"[ERROR] Ошибка парсинга JSON: {e}")
     else:
-        print("❌ data-mastery не найден в HTML")
+        print("[ERROR] data-mastery не найден в HTML")
 
 print("\n" + "=" * 60)
 print("ДИАГНОСТИКА ЗАВЕРШЕНА")

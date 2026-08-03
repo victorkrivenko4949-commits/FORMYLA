@@ -111,7 +111,7 @@ with app.app_context():
         ru = SECTION_NAMES_RU.get(a['section'], a['section'])
         p(f"{i:<3} {a['anchor_uid']:<15} {ru:<20} {a['level']:<6} {a['statement'][:60]}")
 
-    # ====== P5: Correct answers → mu per section ======
+    # ====== P5: Correct answers -> mu per section ======
     p()
     p("=" * 70)
     p("P5: Correct answers — mu after each step")
@@ -126,13 +126,13 @@ with app.app_context():
         result = record_result(1, section, int(a['level']), correct)
         state = get_state(1)
         by_sec = state.get('by_section', {})
-        print_line = f"Step {step_idx+1}: {a['anchor_uid']} → "
+        print_line = f"Step {step_idx+1}: {a['anchor_uid']} -> "
         for sec in ['algebra','number_theory','geometry','combinatorics','logic']:
             mu = by_sec.get(sec, {}).get('mu', float('nan'))
             print_line += f"{sec}={mu:.3f} "
         p(print_line)
 
-    # ====== P6: Wrong answers → mu drops ======
+    # ====== P6: Wrong answers -> mu drops ======
     p()
     p("=" * 70)
     p("P6: Wrong answer test (1 anchor)")

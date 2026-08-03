@@ -6,7 +6,7 @@
 {% block content %}
 <div class="oly-wrap">
     <p style="margin-bottom: 12px;">
-        <a href="{{ url_for('olympiad.vsosh_course', grade=grade) }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к курсу</a>
+        <a href="{{ url_for('olympiad.vsosh_course', grade=grade) }}" class="oly-btn-ghost oly-btn oly-btn-sm"><- к курсу</a>
     </p>
 
     <header style="margin-bottom: 24px;">
@@ -23,7 +23,7 @@
 
     {% if grouped %}
     {% for g in grouped %}
-    <h2 class="oly-section-title" style="margin-top: 28px;">🏆 {{ g.stage }}</h2>
+    <h2 class="oly-section-title" style="margin-top: 28px;"> {{ g.stage }}</h2>
     <div class="oly-grid">
         {% for t in g.tasks %}
         <a class="oly-card" href="{{ url_for('olympiad.method_task', method_task_id=t.id) }}">

@@ -31,11 +31,11 @@ THEME_MAP_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'theme_to
 CANONICAL_SECTIONS_ORDER = ('algebra', 'number_theory', 'geometry', 'combinatorics', 'logic')
 
 # ──────────────────────────────────────────────────────────────────────
-# Загрузка справочника theme → section
+# Загрузка справочника theme -> section
 # ──────────────────────────────────────────────────────────────────────
 
 def _load_theme_map() -> Dict[str, str]:
-    """Загрузить data/theme_to_section.json → {theme_id: section_slug}."""
+    """Загрузить data/theme_to_section.json -> {theme_id: section_slug}."""
     try:
         with open(THEME_MAP_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -49,7 +49,7 @@ _THEME_MAP: Optional[Dict[str, str]] = None
 
 
 def get_theme_map() -> Dict[str, str]:
-    """Получить справочник theme_id → section (с кэшированием)."""
+    """Получить справочник theme_id -> section (с кэшированием)."""
     global _THEME_MAP
     if _THEME_MAP is None:
         _THEME_MAP = _load_theme_map()
@@ -324,9 +324,9 @@ def pick_anchors(grade: int) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
 
 
 def _task_to_anchor_dict(task: AdaptiveTask) -> Dict[str, Any]:
-    """Конвертировать AdaptiveTask → словарь якоря.
+    """Конвертировать AdaptiveTask -> словарь якоря.
 
-    Связь задачи с чертежом — по anchor_uid: A_G5_GEO → A_G5_GEO.svg
+    Связь задачи с чертежом — по anchor_uid: A_G5_GEO -> A_G5_GEO.svg
     в static/figures/anchors/. Не требует поля в БД, не требует файла
     соответствия. Для будущих обычных задач зарезервировано поле
     figure_json (описание построения) в таблице задач.
@@ -386,7 +386,7 @@ def normalize_answer(raw: str) -> str:
 
     Правила:
       - Убрать пробелы
-      - Запятую → точку
+      - Запятую -> точку
       - Регистр не учитывать (lowercase)
       - Убрать точки в конце (чтобы «нет.» == «нет»)
     """
@@ -401,7 +401,7 @@ def normalize_answer(raw: str) -> str:
 def check_answer(user_answer: str, correct_answer: str) -> bool:
     """Проверить ответ ученика против эталонного.
 
-    Использует нормализацию: пробелы убраны, запятая→точка,
+    Использует нормализацию: пробелы убраны, запятая->точка,
     регистр не учитывается. «нет» допустимо.
     """
     user_norm = normalize_answer(user_answer)

@@ -25,8 +25,8 @@ _LOCK = threading.RLock()
 _ROOMS: Dict[str, "RoomState"] = {}
 
 # Константы
-ROOM_TTL_SECONDS = 60 * 60           # 1 час бездействия → дроп комнаты
-PEER_TTL_SECONDS = 90                # 90с без poll/ping → пир считается ушедшим
+ROOM_TTL_SECONDS = 60 * 60           # 1 час бездействия -> дроп комнаты
+PEER_TTL_SECONDS = 90                # 90с без poll/ping -> пир считается ушедшим
 MAX_PARTICIPANTS = 8
 MAX_QUEUE = 200
 
@@ -199,7 +199,7 @@ def join_or_create_room(
     При "locked"/"full"/"waiting" комната существует, но участник НЕ добавлен.
 
     Позволяет избежать race condition, когда два одновременных вызова
-    get_room → create_room создают две комнаты с одним кодом.
+    get_room -> create_room создают две комнаты с одним кодом.
     """
     with _LOCK:
         room = _ROOMS.get(room_id)

@@ -5,9 +5,9 @@ services/theme_probe.py — 5-task morning probe for a single subtopic.
 Implements the "лесенка" (ladder) adaptive test:
   - 5 tasks from one subtopic, delivered one-by-one
   - Start level = max(start_level from questionnaire, 1), capped at route_ceiling
-  - After each answer: correct → +1, partial → 0, wrong → -2
+  - After each answer: correct -> +1, partial -> 0, wrong -> -2
   - Level clamped [1, 5] and ≤ route_ceiling
-  - Final mu = level after 5th answer → saved to level_by_theme
+  - Final mu = level after 5th answer -> saved to level_by_theme
   - State is persisted AFTER EVERY OPERATION so user can close tab and resume
   - "Продолжить утренний срез" returns to the exact same question
 
@@ -147,7 +147,7 @@ def resolve_start_level(user_id: int, theme_id: str, grade: int) -> int:
     """Resolve the starting level for a theme probe.
 
     Priority:
-      1. If theme already measured → its past mu (rounded)
+      1. If theme already measured -> its past mu (rounded)
       2. Questionnaire start_level, capped at route_ceiling
       3. Section mu from level_by_section
       4. Global mu from level_engine

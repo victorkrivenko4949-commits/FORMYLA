@@ -56,7 +56,7 @@ LEVELS = ["L4", "L5"]
 def build_curated_topic_mapping():
     """Build mapping from curated_bank topic names to theme IDs.
     
-    Three-level matching (exact → normalized → substring) will be applied
+    Three-level matching (exact -> normalized -> substring) will be applied
     by map_curated_topic_to_theme(), so more specific keys should appear
     before less specific ones to ensure correct substring matching priority.
     """

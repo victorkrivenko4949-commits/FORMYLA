@@ -68,10 +68,10 @@ def create_backup():
         backup_name = f'database_before_reset_{timestamp}.db'
         backup_path = os.path.join(backup_dir, backup_name)
         shutil.copy2(db_path, backup_path)
-        print(f'✅ Бэкап создан: {backup_path}')
+        print(f'[OK] Бэкап создан: {backup_path}')
         return backup_path
     else:
-        print('⚠️  Бэкап для не-SQLite баз не поддерживается. Пропускаем.')
+        print('[!]️  Бэкап для не-SQLite баз не поддерживается. Пропускаем.')
         return None
 
 
@@ -80,27 +80,27 @@ def reset_user(email_or_id, auto_yes=False):
     deleted = {}
 
     with flask_app.app_context():
-        print(f'🔍 Ищем пользователя: {email_or_id}')
+        print(f' Ищем пользователя: {email_or_id}')
         user = find_user(email_or_id)
         if not user:
-            print(f'❌ Пользователь не найден: {email_or_id}')
+            print(f'[ERROR] Пользователь не найден: {email_or_id}')
             sys.exit(1)
 
-        print(f'👤 Найден: User id={user.id}, email={user.email or "нет email"}')
+        print(f' Найден: User id={user.id}, email={user.email or "нет email"}')
 
         if not auto_yes:
-            confirm = input(f'\n⚠️  ВНИМАНИЕ! Будет ПОЛНОСТЬЮ удалён прогресс пользователя {user.email or user.id}.\n'
+            confirm = input(f'\n[!]️  ВНИМАНИЕ! Будет ПОЛНОСТЬЮ удалён прогресс пользователя {user.email or user.id}.\n'
                             f'   Это необратимо (кроме бэкапа). Продолжить? [y/N]: ')
             if confirm.lower() != 'y':
-                print('❌ Отмена.')
+                print('[ERROR] Отмена.')
                 sys.exit(0)
         else:
-            print('   → Авто-подтверждение (--yes)')
+            print('   -> Авто-подтверждение (--yes)')
 
         # ── 1. CuratorState ──────────────────────────────────────────
         cs = CuratorState.query.filter_by(user_id=user.id).first()
         if cs:
-            print(f'\n📊 CuratorState до сброса:')
+            print(f'\n CuratorState до сброса:')
             print(f'   onboarding_done={cs.onboarding_done}')
             print(f'   prep_state keys={list(cs.prep_state.keys()) if isinstance(cs.prep_state, dict) else "—"}')
             print(f'   level_by_section={cs.level_by_section}')
@@ -121,9 +121,9 @@ def reset_user(email_or_id, auto_yes=False):
             cs.summary = None
             db.session.commit()
             deleted['CuratorState'] = 1
-            print('   → CuratorState сброшен (onboarding_done=False, prep_state={}, level_mu=3.0, level_sigma=1.5)')
+            print('   -> CuratorState сброшен (onboarding_done=False, prep_state={}, level_mu=3.0, level_sigma=1.5)')
         else:
-            print('\n📊 CuratorState: не найден — создаём пустой')
+            print('\n CuratorState: не найден — создаём пустой')
             cs = CuratorState(user_id=user.id, onboarding_done=False, prep_state={})
             db.session.add(cs)
             db.session.commit()
@@ -142,33 +142,33 @@ def reset_user(email_or_id, auto_yes=False):
         db.session.commit()
         deleted['DailyTaskSet'] = set_count
         deleted['DailyTaskItem'] = item_count
-        print(f'\n📋 DailyTaskSet: удалено {set_count} наборов ({item_count} задач)')
+        print(f'\n DailyTaskSet: удалено {set_count} наборов ({item_count} задач)')
 
         # ── 3. TestResult ────────────────────────────────────────────
         tr_count = TestResult.query.filter_by(user_id=user.id).delete()
         db.session.commit()
         deleted['TestResult'] = tr_count
-        print(f'🧪 TestResult: удалено {tr_count} записей')
+        print(f' TestResult: удалено {tr_count} записей')
 
         # ── 4. AdaptiveTestResult ────────────────────────────────────
         atr_count = AdaptiveTestResult.query.filter_by(user_id=user.id).delete()
         db.session.commit()
         deleted['AdaptiveTestResult'] = atr_count
-        print(f'🎯 AdaptiveTestResult: удалено {atr_count} записей')
+        print(f' AdaptiveTestResult: удалено {atr_count} записей')
 
         # ── 5. ChatMessage ───────────────────────────────────────────
         from models import ChatMessage
         cm_count = ChatMessage.query.filter_by(user_id=user.id).delete()
         db.session.commit()
         deleted['ChatMessage'] = cm_count
-        print(f'💬 ChatMessage: удалено {cm_count} сообщений')
+        print(f' ChatMessage: удалено {cm_count} сообщений')
 
         # ── 6. UserTopicProgress ─────────────────────────────────────
         from models import UserTopicProgress
         utp_count = UserTopicProgress.query.filter_by(user_id=user.id).delete()
         db.session.commit()
         deleted['UserTopicProgress'] = utp_count
-        print(f'📈 UserTopicProgress: удалено {utp_count} записей')
+        print(f' UserTopicProgress: удалено {utp_count} записей')
 
         # ── 7. TaskSolution ──────────────────────────────────────────
         try:
@@ -176,7 +176,7 @@ def reset_user(email_or_id, auto_yes=False):
             ts_count = TaskSolution.query.filter_by(user_id=user.id).delete()
             db.session.commit()
             deleted['TaskSolution'] = ts_count
-            print(f'📝 TaskSolution: удалено {ts_count} записей')
+            print(f' TaskSolution: удалено {ts_count} записей')
         except Exception:
             pass
 
@@ -186,20 +186,20 @@ def reset_user(email_or_id, auto_yes=False):
             dq_count = DailyQuest.query.filter_by(user_id=user.id).delete()
             db.session.commit()
             deleted['DailyQuest'] = dq_count
-            print(f'🎯 DailyQuest: удалено {dq_count} записей')
+            print(f' DailyQuest: удалено {dq_count} записей')
         except Exception:
             pass
 
         # ── Итог ────────────────────────────────────────────────────
         print(f'\n{"="*60}')
-        print(f'📊 ИТОГО удалено:')
+        print(f' ИТОГО удалено:')
         total_rows = 0
         for table, count in deleted.items():
             print(f'   {table}: {count} строк')
             total_rows += count
         print(f'   ─────────────────')
         print(f'   ВСЕГО: {total_rows} строк')
-        print(f'\n✅ Пользователь {user.email or user.id} полностью сброшен до состояния новичка.')
+        print(f'\n[OK] Пользователь {user.email or user.id} полностью сброшен до состояния новичка.')
         print(f'   Можно заходить заново и проходить онбординг.')
 
 
@@ -213,13 +213,13 @@ def main():
 
     if not check_local_db():
         uri = flask_app.config.get('SQLALCHEMY_DATABASE_URI', '?')
-        print(f'❌ ОШИБКА: скрипт работает ТОЛЬКО с локальной базой (localhost/127.0.0.1/sqlite).')
+        print(f'[ERROR] ОШИБКА: скрипт работает ТОЛЬКО с локальной базой (localhost/127.0.0.1/sqlite).')
         print(f'   Текущая строка подключения: {uri}')
         print(f'   Отказываюсь работать на production!')
         sys.exit(1)
 
-    print(f'💾 База данных: {flask_app.config.get("SQLALCHEMY_DATABASE_URI", "?")}')
-    print(f'✅ База локальная — можно работать.\n')
+    print(f' База данных: {flask_app.config.get("SQLALCHEMY_DATABASE_URI", "?")}')
+    print(f'[OK] База локальная — можно работать.\n')
 
     create_backup()
     reset_user(args.email_or_id, auto_yes=args.yes)

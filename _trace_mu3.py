@@ -26,14 +26,14 @@ with app.app_context():
     
     print("=== ПОРЯДОК ВЫЗОВОВ (текущий код) ===")
     print()
-    print("1. submit_anchor → record_result × 5")
+    print("1. submit_anchor -> record_result × 5")
     print("   services/onboarding.py:727-732")
     print("   services/level_engine.py:183-260")
     print()
-    print("2. finish() → set_prior(result.prior_mu=1.95)")
+    print("2. finish() -> set_prior(result.prior_mu=1.95)")
     print("   services/onboarding.py:928")
-    print("   services/level_engine.py:147-180 — ЗАТИРАЕТ level_mu=3.20 → 1.95,")
-    print("   level_by_section → {}")
+    print("   services/level_engine.py:147-180 — ЗАТИРАЕТ level_mu=3.20 -> 1.95,")
+    print("   level_by_section -> {}")
     print()
     print("3. Восстановление level_by_section и prep_state")
     print("   services/onboarding.py:931-937")
@@ -75,7 +75,7 @@ with app.app_context():
     
     cs = CuratorState.query.filter_by(user_id=3).first()
     print(f"  level_mu ПОСЛЕ finish (set_prior): {cs.level_mu:.3f}")
-    print(f"  ЗАТИРАНИЕ: {before_set_prior:.3f} → {cs.level_mu:.3f} (потеряно {before_set_prior - cs.level_mu:.3f})")
+    print(f"  ЗАТИРАНИЕ: {before_set_prior:.3f} -> {cs.level_mu:.3f} (потеряно {before_set_prior - cs.level_mu:.3f})")
     
     lbs = json.loads(cs.level_by_section) if (cs and cs.level_by_section and cs.level_by_section != '{}') else {}
     radar = [round(lbs.get(s, {}).get('mu', 0), 2) if isinstance(lbs.get(s, {}), dict) else 0
@@ -86,7 +86,7 @@ with app.app_context():
     print(f"  display_mu: {finish_data.get('display_mu')}")
     
     print(f"\n  ВЫВОД: level_mu затёрт set_prior. Радар использует level_by_section — он ОК.")
-    print(f"  Но start_level считается из prior_mu=1.95 → start_level=2 (должно быть около 3)")
+    print(f"  Но start_level считается из prior_mu=1.95 -> start_level=2 (должно быть около 3)")
     
     cs = CuratorState.query.filter_by(user_id=3).first()
     if cs:

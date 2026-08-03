@@ -104,9 +104,9 @@ def send_morning_reminder(plan_id):
     """Send a morning push to the plan owner.
 
     Message depends on streak:
-      - streak == 0 → «Доброе утро! ...»
-      - streak >= 7 → «🔥 N дней подряд! ...»
-      - else        → «День N/total. ...»
+      - streak == 0 -> «Доброе утро! ...»
+      - streak >= 7 -> « N дней подряд! ...»
+      - else        -> «День N/total. ...»
 
     Channels: Telegram (if tg_chat_id), email (if email).
     """
@@ -125,19 +125,19 @@ def send_morning_reminder(plan_id):
 
     if streak == 0:
         msg = (
-            "Доброе утро! ☀️\n"
+            "Доброе утро! ️\n"
             "%d задач ждут тебя сегодня. До %s осталось %d дн."
             % (plan.daily_task_count, short, days_left)
         )
     elif streak >= 7:
         msg = (
-            "🔥 %d дней подряд! Не останавливайся — "
+            " %d дней подряд! Не останавливайся — "
             "сегодня %d задач."
             % (streak, plan.daily_task_count)
         )
     else:
         msg = (
-            "День %d/%d. Задачи готовы! 💪"
+            "День %d/%d. Задачи готовы! "
             % (plan.days_elapsed, plan.days_total)
         )
 
@@ -229,7 +229,7 @@ def send_weekly_report(plan_id):
 
     short = plan.olympiad.short_name if plan.olympiad else "олимпиаде"
     msg_lines = [
-        "📊 Еженедельный отчёт — %s" % short,
+        " Еженедельный отчёт — %s" % short,
         "",
         "Решено: %d / %d" % (solved, total),
         "Серия: %d дн. подряд" % (plan.current_streak or 0),
@@ -302,7 +302,7 @@ def streak_rescue_cron():
 
         short = plan.olympiad.short_name if plan.olympiad else "олимпиаде"
         msg = (
-            "⚠️ Твоя серия %d дн. для %s под угрозой!\n"
+            "[!]️ Твоя серия %d дн. для %s под угрозой!\n"
             "Реши хотя бы 1 задачу до полуночи.\n\n"
             "%s/prep/%d/today"
             % (plan.current_streak, short, BASE_URL, plan.id)
@@ -321,7 +321,7 @@ def streak_rescue_cron():
         email_addr = getattr(plan.user, 'email', None)
         if email_addr and not email_addr.startswith('guest_'):
             try:
-                subject = "FORMYLA — Серия под угрозой! 🔥"
+                subject = "FORMYLA — Серия под угрозой! "
                 send_email(email_addr, subject, msg)
                 if not tg_id:
                     warned += 1  # count only if TG wasn't sent

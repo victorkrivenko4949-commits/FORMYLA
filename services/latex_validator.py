@@ -56,7 +56,7 @@ _BARE_POWER_SINGLE_IN_TEXT = re.compile(
 # Голый \frac без $...$
 _BARE_FRAC = re.compile(r'(?<!\$)(?<!\\)\\frac\b')
 
-# \frac12 (без фигурных скобок) → \frac{1}{2}
+# \frac12 (без фигурных скобок) -> \frac{1}{2}
 _FRAC_NOBRACES = re.compile(r'\\frac\s*([0-9A-Za-z])\s*([0-9A-Za-z])(?![A-Za-z0-9{])')
 
 # OCR-артефакт «cdot» без обратного слэша
@@ -144,10 +144,10 @@ def normalize_math_text(text: str) -> str:
     out: List[str] = []
     for seg, is_math in segments:
         if is_math:
-            # Внутри math: нормализуем \frac12 → \frac{1}{2}
+            # Внутри math: нормализуем \frac12 -> \frac{1}{2}
             seg = _FRAC_NOBRACES.sub(r'\\frac{\1}{\2}', seg)
-            # и канонизируем корни (\sqrt[3] X → \sqrt[3]{X}, ∛ → \sqrt[3]{...},
-            # ^{3}\sqrt{...} → \sqrt[3]{...}). Безопасно для корректных формул
+            # и канонизируем корни (\sqrt[3] X -> \sqrt[3]{X}, ∛ -> \sqrt[3]{...},
+            # ^{3}\sqrt{...} -> \sqrt[3]{...}). Безопасно для корректных формул
             # и идемпотентно — инцидент 2026-06-11 (задача G6.17).
             try:
                 from services.latex_root_normalizer import normalize_roots
@@ -157,10 +157,10 @@ def normalize_math_text(text: str) -> str:
             out.append(seg)
             continue
 
-        # 1. «7^100» (≥2 цифр без {}) → «$7^{100}$»
+        # 1. «7^100» (≥2 цифр без {}) -> «$7^{100}$»
         seg = _BARE_POWER_MULTI.sub(lambda m: f'${m.group(1)}^{{{m.group(2)}}}$', seg)
 
-        # 2. «x^2» одиночный в тексте → «$x^2$» (только если рядом нет $)
+        # 2. «x^2» одиночный в тексте -> «$x^2$» (только если рядом нет $)
         seg = _BARE_POWER_SINGLE_IN_TEXT.sub(
             lambda m: f'${m.group(1)}^{m.group(2)}$', seg
         )
@@ -170,7 +170,7 @@ def normalize_math_text(text: str) -> str:
         seg = _BARE_TIMES.sub(r'\\times', seg)
         seg = _BARE_LDOTS.sub(r'\\ldots', seg)
 
-        # 4. голый \frac → обернём в $...$ (берём до следующей пробельной/конца строки)
+        # 4. голый \frac -> обернём в $...$ (берём до следующей пробельной/конца строки)
         if _BARE_FRAC.search(seg):
             seg = re.sub(
                 r'(\\frac\{[^{}]*\}\{[^{}]*\})',
@@ -178,7 +178,7 @@ def normalize_math_text(text: str) -> str:
                 seg,
             )
 
-        # 5. \frac12 (две одиночные цифры/буквы) → \frac{1}{2}
+        # 5. \frac12 (две одиночные цифры/буквы) -> \frac{1}{2}
         seg = _FRAC_NOBRACES.sub(r'\\frac{\1}{\2}', seg)
 
         out.append(seg)

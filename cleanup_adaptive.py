@@ -92,14 +92,14 @@ with flask_app.app_context():
             result = _db.session.execute(text(f"DELETE FROM {table}"))
             _db.session.commit()
             count = result.rowcount
-            print(f"  ✓ {table}: удалено {count} строк")
+            print(f"  [OK] {table}: удалено {count} строк")
         except Exception as e:
             _db.session.rollback()
             err_msg = str(e)
             if "does not exist" in err_msg.lower() or "no such table" in err_msg.lower():
                 print(f"  - {table}: таблица не существует, пропускаем")
             else:
-                print(f"  ✗ {table}: ОШИБКА — {e}")
+                print(f"   {table}: ОШИБКА — {e}")
     
     # PostgreSQL sequences
     if not db_path.endswith('.db'):
@@ -114,7 +114,7 @@ with flask_app.app_context():
             try:
                 _db.session.execute(text(f"ALTER SEQUENCE {seq} RESTART WITH 1"))
                 _db.session.commit()
-                print(f"  ✓ sequence {seq} сброшен")
+                print(f"  [OK] sequence {seq} сброшен")
             except Exception:
                 _db.session.rollback()
 
@@ -178,7 +178,7 @@ for f in all_files:
     path = os.path.join(BASE_DIR, f)
     if os.path.isfile(path):
         os.remove(path)
-        print(f"  ✓ удалён файл: {f}")
+        print(f"  [OK] удалён файл: {f}")
     else:
         print(f"  - не найден: {f}")
 
@@ -186,7 +186,7 @@ for d in dirs_to_delete:
     path = os.path.join(BASE_DIR, d)
     if os.path.isdir(path):
         shutil.rmtree(path)
-        print(f"  ✓ удалена папка: {d}")
+        print(f"  [OK] удалена папка: {d}")
     else:
         print(f"  - не найдена: {d}")
 
@@ -200,14 +200,14 @@ for d in pycache_dirs:
                 fp = os.path.join(path, f)
                 if os.path.isfile(fp):
                     os.remove(fp)
-                    print(f"  ✓ удалён __pycache__: {os.path.relpath(fp, BASE_DIR)}")
+                    print(f"  [OK] удалён __pycache__: {os.path.relpath(fp, BASE_DIR)}")
 
 print()
 print("=" * 60)
 print("ОЧИСТКА ЗАВЕРШЕНА")
 print("=" * 60)
 print()
-print("⚠️  НЕ ЗАБУДЬ:")
+print("[!]️  НЕ ЗАБУДЬ:")
 print("1. Удалить импорты adaptive_data/adaptive_test из app.py")
 print("2. Удалить @app.route эндпоинты адаптивного теста")
 print("3. Удалить import adaptive_data из __init__.py если есть")

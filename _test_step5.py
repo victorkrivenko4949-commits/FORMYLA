@@ -146,13 +146,13 @@ with app.app_context():
         print(f"\nAll 200: {all_200}, All JSON: {all_json}")
         
         if all_200 and all_json:
-            print("✅ STEP 5 table: ALL PASS")
+            print("[OK] STEP 5 table: ALL PASS")
         else:
-            print("❌ STEP 5 table: FAIL")
+            print("[ERROR] STEP 5 table: FAIL")
     
     # ── TEST 2: Full onboarding flow ──
     print("\n" + "="*70)
-    print("=== Full onboarding flow: start → finish() ===")
+    print("=== Full onboarding flow: start -> finish() ===")
     print("="*70)
     
     client, task_id = go_to_anchor(fresh_session(3))
@@ -206,7 +206,7 @@ with app.app_context():
                 for i, t in enumerate(tq[:3]):
                     print(f"    [{i}] kind={t.get('kind')} scope={t.get('scope')} length={t.get('length')}")
         
-        print("\n✅ Full onboarding flow: COMPLETE")
+        print("\n[OK] Full onboarding flow: COMPLETE")
     
     # ── TEST 3: GET /prep/onboarding = 200 ──
     print("\n" + "="*70)
@@ -214,9 +214,9 @@ with app.app_context():
     r = client.get('/prep/onboarding')
     print(f"Status: {r.status_code}")
     if r.status_code == 200:
-        print("✅ GET /prep/onboarding = 200")
+        print("[OK] GET /prep/onboarding = 200")
     else:
-        print("❌ FAIL")
+        print("[ERROR] FAIL")
 
 print("\n" + "="*70)
 print("DONE")

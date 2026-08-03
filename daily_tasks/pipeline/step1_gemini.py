@@ -181,7 +181,7 @@ def build_forbidden_block(
 
 
 def _build_topics_reference(class_level: int) -> Dict[str, Any]:
-    """Построить `TOPICS_REFERENCE` — словарь «тема → подтемы» для класса.
+    """Построить `TOPICS_REFERENCE` — словарь «тема -> подтемы» для класса.
 
     Используемые источники в зависимости от класса:
 
@@ -235,7 +235,7 @@ def _format_prompt(
     }
     completeness = float(profile.get("profile_completeness", 1.0) or 1.0)
 
-    # Текстовая сводка «тема → окно сложности» для подсказки LLM
+    # Текстовая сводка «тема -> окно сложности» для подсказки LLM
     summary = topic_to_window_summary(planned_slots)
     window_lines: List[str] = []
     for topic, rec in summary.items():
@@ -244,7 +244,7 @@ def _format_prompt(
         if rec.get("test_total"):
             score = f", тест {rec['test_correct']}/{rec['test_total']}"
         window_lines.append(
-            f"  • {topic}{cal}{score} → "
+            f"  • {topic}{cal}{score} -> "
             f"target=L{rec['target_level']}, окно [L{rec['window'][0]}, L{rec['window'][1]}], "
             f"запланированные уровни: {rec['levels']}"
         )
@@ -498,7 +498,7 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
             mismatches_after,
         )
 
-    # ── лог-сводка: тема → уровни (для аудита) ───────────────────────
+    # ── лог-сводка: тема -> уровни (для аудита) ───────────────────────
     enforced_summary: Dict[str, List[int]] = {}
     for spec in enforced_specs:
         enforced_summary.setdefault(spec.get("topic") or "?", []).append(

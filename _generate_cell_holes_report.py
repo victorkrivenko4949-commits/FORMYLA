@@ -37,10 +37,10 @@ def analyze_cells(tasks, level_name):
     return dict(by_topic), dict(by_section)
 
 def severity(count):
-    if count == 0: return "🔴 EMPTY"
-    if count <= 2: return "🟠 CRITICAL"
-    if count <= 4: return "🟡 PARTIAL"
-    return "🟢 FULL"
+    if count == 0: return " EMPTY"
+    if count <= 2: return " CRITICAL"
+    if count <= 4: return " PARTIAL"
+    return " FULL"
 
 def categorize_holes(cells_dict):
     holes = {k: v for k, v in cells_dict.items() if len(v) < 5}
@@ -60,7 +60,7 @@ lines.append("---")
 lines.append("")
 
 # === SECTION LEVEL (recommended view) ===
-lines.append("## 📊 Анализ по ячейкам (уровень, класс, раздел/section)")
+lines.append("##  Анализ по ячейкам (уровень, класс, раздел/section)")
 lines.append("")
 lines.append("Раздел (section) — более крупная таксономическая единица (40 уникальных разделов).")
 lines.append("Ячейка = (level, grade, section), цель = 5 задач в ячейке.")
@@ -90,7 +90,7 @@ for level_name, tasks in [("L1", l1), ("L2", l2)]:
             count = len(task_list)
             by_severity[severity(count)].append((grade, section, count))
         
-        for sev_label in ["🔴 EMPTY (0/5)", "🟠 CRITICAL (1-2/5)", "🟡 PARTIAL (3-4/5)"]:
+        for sev_label in [" EMPTY (0/5)", " CRITICAL (1-2/5)", " PARTIAL (3-4/5)"]:
             sev_key = sev_label.split(" ")[0]
             items = by_severity.get(sev_key, [])
             if items:
@@ -104,7 +104,7 @@ for level_name, tasks in [("L1", l1), ("L2", l2)]:
                 lines.append("")
     
     if over:
-        lines.append(f"#### 📈 Переполненные ячейки (>5) — {len(over)}")
+        lines.append(f"####  Переполненные ячейки (>5) — {len(over)}")
         lines.append("")
         lines.append("| Класс | Раздел | Задач | Лишних |")
         lines.append("|-------|--------|------:|-------:|")
@@ -119,7 +119,7 @@ for level_name, tasks in [("L1", l1), ("L2", l2)]:
     lines.append("")
 
 # === TOPIC LEVEL (detailed view) ===
-lines.append("## 🔬 Детальный анализ по темам (topic)")
+lines.append("##  Детальный анализ по темам (topic)")
 lines.append("")
 lines.append("Тема (topic) — более мелкая таксономическая единица. (263 уникальных тем в L1, 379 в L2)")
 lines.append("Здесь дыр МНОГО, т.к. темы очень дробные. Приведены только самые критичные (0-1 задач).")
@@ -140,7 +140,7 @@ for level_name, tasks in [("L1", l1), ("L2", l2)]:
     # Show only most critical: 0 or 1 tasks
     critical = {k: v for k, v in holes.items() if len(v) <= 1}
     if critical:
-        lines.append(f"#### 🔴 Критические дыры (0-1 задач) — {len(critical)} ячеек")
+        lines.append(f"####  Критические дыры (0-1 задач) — {len(critical)} ячеек")
         lines.append("")
         lines.append("| Класс | Тема | Задач | Нужно ещё |")
         lines.append("|-------|------|------:|----------:|")
@@ -154,7 +154,7 @@ for level_name, tasks in [("L1", l1), ("L2", l2)]:
     lines.append("")
 
 # === SUMMARY TABLE ===
-lines.append("## 📋 Сводная таблица")
+lines.append("##  Сводная таблица")
 lines.append("")
 lines.append("| Уровень | Тип ячейки | Всего ячеек | Полных (5) | Переполнено (>5) | Дыр (<5) |")
 lines.append("|---------|-----------|-----------:|----------:|----------------:|--------:|")
@@ -166,7 +166,7 @@ for level_name, tasks in [("L1", l1), ("L2", l2)]:
     lines.append(f"| {level_name} | (grade, section) | {len(by_section)} | {len(f_s)} | {len(o_s)} | {len(h_s)} |")
 
 lines.append("")
-lines.append("### 🎯 Приоритетные действия")
+lines.append("###  Приоритетные действия")
 lines.append("")
 lines.append("1. **Закрыть критические дыры по разделам (section)** — в приоритете ячейки с 1-2 задачами")
 lines.append("2. **Закрыть критические дыры по темам (topic)** — 286 дыр в L1, 396 в L2")
@@ -177,5 +177,5 @@ lines.append("")
 with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
     f.write('\n'.join(lines))
 
-print(f"\n✅ Report written to {OUTPUT_PATH}")
+print(f"\n[OK] Report written to {OUTPUT_PATH}")
 print(f"   Total lines: {len(lines)}")

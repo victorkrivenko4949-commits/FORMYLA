@@ -39,7 +39,7 @@ def backup_database(db_path: str) -> str:
     backup_path = os.path.join(backups_dir, backup_name)
 
     shutil.copy2(db_path, backup_path)
-    print(f'✅ Бэкап создан: {backup_path}')
+    print(f'[OK] Бэкап создан: {backup_path}')
     return backup_path
 
 
@@ -69,11 +69,11 @@ def migrate(db_path: str = None):
         db_path = os.path.join(project_root, 'formyla.db')
 
     if not os.path.exists(db_path):
-        print(f'❌ БД не найдена: {db_path}')
+        print(f'[ERROR] БД не найдена: {db_path}')
         sys.exit(1)
 
     print('=' * 60)
-    print('🔄 Миграция 002: Система подписок Free/Premium')
+    print(' Миграция 002: Система подписок Free/Premium')
     print(f'   БД: {db_path}')
     print('=' * 60)
 
@@ -87,7 +87,7 @@ def migrate(db_path: str = None):
     try:
         # ── 2. Таблица subscriptions ──────────────────────────────────────
         if not table_exists(conn, 'subscriptions'):
-            print('🔄 Создаём таблицу subscriptions...')
+            print(' Создаём таблицу subscriptions...')
             conn.execute("""
                 CREATE TABLE subscriptions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,9 +105,9 @@ def migrate(db_path: str = None):
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             """)
-            print('✅ Таблица subscriptions создана')
+            print('[OK] Таблица subscriptions создана')
         else:
-            print('✅ Таблица subscriptions уже существует — пропускаем')
+            print('[OK] Таблица subscriptions уже существует — пропускаем')
 
         # ── 3. Индексы на subscriptions ───────────────────────────────────
         conn.execute("""
@@ -122,11 +122,11 @@ def migrate(db_path: str = None):
             CREATE INDEX IF NOT EXISTS idx_sub_expires
                 ON subscriptions(expires_at)
         """)
-        print('✅ Индексы subscriptions готовы')
+        print('[OK] Индексы subscriptions готовы')
 
         # ── 4. Таблица usage_daily ────────────────────────────────────────
         if not table_exists(conn, 'usage_daily'):
-            print('🔄 Создаём таблицу usage_daily...')
+            print(' Создаём таблицу usage_daily...')
             conn.execute("""
                 CREATE TABLE usage_daily (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,63 +140,63 @@ def migrate(db_path: str = None):
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             """)
-            print('✅ Таблица usage_daily создана')
+            print('[OK] Таблица usage_daily создана')
         else:
-            print('✅ Таблица usage_daily уже существует — пропускаем')
+            print('[OK] Таблица usage_daily уже существует — пропускаем')
 
         # ── 5. Индекс на usage_daily ──────────────────────────────────────
         conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_usage_user_date
                 ON usage_daily(user_id, date)
         """)
-        print('✅ Индекс usage_daily готов')
+        print('[OK] Индекс usage_daily готов')
 
         # ── 6. ALTER TABLE users: current_plan ────────────────────────────
         if not column_exists(conn, 'users', 'current_plan'):
-            print('🔄 Добавляем колонку users.current_plan...')
+            print(' Добавляем колонку users.current_plan...')
             conn.execute(
                 "ALTER TABLE users ADD COLUMN current_plan TEXT DEFAULT 'free'"
             )
-            print('✅ Колонка current_plan добавлена')
+            print('[OK] Колонка current_plan добавлена')
         else:
-            print('✅ Колонка current_plan уже существует — пропускаем')
+            print('[OK] Колонка current_plan уже существует — пропускаем')
 
         # ── 7. ALTER TABLE users: plan_expires_at ─────────────────────────
         if not column_exists(conn, 'users', 'plan_expires_at'):
-            print('🔄 Добавляем колонку users.plan_expires_at...')
+            print(' Добавляем колонку users.plan_expires_at...')
             conn.execute(
                 'ALTER TABLE users ADD COLUMN plan_expires_at TIMESTAMP'
             )
-            print('✅ Колонка plan_expires_at добавлена')
+            print('[OK] Колонка plan_expires_at добавлена')
         else:
-            print('✅ Колонка plan_expires_at уже существует — пропускаем')
+            print('[OK] Колонка plan_expires_at уже существует — пропускаем')
 
         # ── 8. Инициализация Free-плана для существующих пользователей ────
-        print('🔄 Инициализируем Free-план для существующих пользователей...')
+        print(' Инициализируем Free-план для существующих пользователей...')
         cursor = conn.execute("""
             INSERT OR IGNORE INTO subscriptions (user_id, plan, status, is_beta_access)
             SELECT id, 'free', 'active', 1 FROM users
             WHERE id NOT IN (SELECT user_id FROM subscriptions)
         """)
         inserted = cursor.rowcount
-        print(f'✅ Добавлено Free-подписок: {inserted}')
+        print(f'[OK] Добавлено Free-подписок: {inserted}')
 
         # ── 9. Обновить current_plan для существующих пользователей ───────
         conn.execute("""
             UPDATE users SET current_plan = 'free'
             WHERE current_plan IS NULL
         """)
-        print('✅ current_plan обновлён для всех пользователей')
+        print('[OK] current_plan обновлён для всех пользователей')
 
         conn.commit()
         print('=' * 60)
-        print('✅ Миграция 002 завершена успешно!')
+        print('[OK] Миграция 002 завершена успешно!')
         print(f'   Бэкап сохранён: {backup_path}')
         print('=' * 60)
 
     except Exception as e:
         conn.rollback()
-        print(f'❌ Ошибка миграции: {e}')
+        print(f'[ERROR] Ошибка миграции: {e}')
         print(f'   Бэкап доступен: {backup_path}')
         import traceback
         traceback.print_exc()
@@ -214,7 +214,7 @@ def rollback(db_path: str = None):
         db_path = os.path.join(project_root, 'formyla.db')
 
     print('=' * 60)
-    print('⚠️  ОТКАТ миграции 002: Система подписок')
+    print('[!]️  ОТКАТ миграции 002: Система подписок')
     print('=' * 60)
 
     # Бэкап перед откатом тоже
@@ -223,21 +223,21 @@ def rollback(db_path: str = None):
     conn = sqlite3.connect(db_path)
     try:
         conn.execute('DROP TABLE IF EXISTS usage_daily')
-        print('✅ Таблица usage_daily удалена')
+        print('[OK] Таблица usage_daily удалена')
 
         conn.execute('DROP TABLE IF EXISTS subscriptions')
-        print('✅ Таблица subscriptions удалена')
+        print('[OK] Таблица subscriptions удалена')
 
         # Колонки current_plan и plan_expires_at из users удалить нельзя
         # в SQLite < 3.35. Они безвредны — просто обнуляем значения.
         conn.execute("UPDATE users SET current_plan = NULL, plan_expires_at = NULL")
-        print('✅ Колонки current_plan/plan_expires_at обнулены (удалить нельзя в SQLite < 3.35)')
+        print('[OK] Колонки current_plan/plan_expires_at обнулены (удалить нельзя в SQLite < 3.35)')
 
         conn.commit()
-        print('✅ Откат завершён')
+        print('[OK] Откат завершён')
     except Exception as e:
         conn.rollback()
-        print(f'❌ Ошибка отката: {e}')
+        print(f'[ERROR] Ошибка отката: {e}')
         raise
     finally:
         conn.close()

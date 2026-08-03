@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for FORMYLA subject separation (no algebra↔geometry mixing).
+"""Tests for FORMYLA subject separation (no algebra<->geometry mixing).
 
 Покрывают:
     * чистую логику классификатора ``services.subject_classifier``;
@@ -98,7 +98,7 @@ class TestClassifierPureLogic:
     def test_url_topic_to_subject(self):
         assert url_topic_to_subject("algebra") == ALGEBRA
         assert url_topic_to_subject("geometry") == GEOMETRY
-        # Не-канонические UI-темы → None (значит, нет subject-фильтра).
+        # Не-канонические UI-темы -> None (значит, нет subject-фильтра).
         assert url_topic_to_subject("movement") is None
         assert url_topic_to_subject("knights_liars") is None
         assert url_topic_to_subject(None) is None
@@ -193,7 +193,7 @@ def _seed_subject_data():
 
 
 # ────────────────────────────────────────────────────────────────────────
-# Test 1: пользователь выбрал algebra → нет ни одной геометрии
+# Test 1: пользователь выбрал algebra -> нет ни одной геометрии
 # ────────────────────────────────────────────────────────────────────────
 class TestAlgebraOnly:
     def test_select_algebra_returns_only_algebra(self):
@@ -211,7 +211,7 @@ class TestAlgebraOnly:
 
 
 # ────────────────────────────────────────────────────────────────────────
-# Test 2: пользователь выбрал geometry → нет ни одной алгебры
+# Test 2: пользователь выбрал geometry -> нет ни одной алгебры
 # ────────────────────────────────────────────────────────────────────────
 class TestGeometryOnly:
     def test_select_geometry_returns_only_geometry(self):
@@ -347,7 +347,7 @@ class TestProductionImportIntegrity:
             "WHERE subject = 'algebra' AND source_id LIKE 'geometry_%'"
         ).fetchone()[0]
         # The bound is generous: legacy reclassifications are tolerated,
-        # mass-scale id↔subject divergence (>5% of rows) would indicate
+        # mass-scale id<->subject divergence (>5% of rows) would indicate
         # a real data-quality problem.
         total = conn.execute(
             "SELECT COUNT(*) FROM adaptive_tasks"
@@ -355,7 +355,7 @@ class TestProductionImportIntegrity:
         assert (algebra_id_in_geo + geo_id_in_algebra) <= max(
             10, total // 20
         ), (
-            "Too many id↔subject mismatches: "
+            "Too many id<->subject mismatches: "
             + str(algebra_id_in_geo)
             + " 'algebra_*' in geometry, "
             + str(geo_id_in_algebra)

@@ -54,22 +54,22 @@ def migrate_sqlite() -> None:
     db_path = instance_db if os.path.exists(instance_db) else root_db
 
     if not os.path.exists(db_path):
-        print(f'⚠️  SQLite DB not found at {db_path} — skipping.')
+        print(f'[!]️  SQLite DB not found at {db_path} — skipping.')
         return
 
-    print(f'🔄 SQLite migration: adding {TABLE}.{COLUMN} …')
+    print(f' SQLite migration: adding {TABLE}.{COLUMN} …')
     conn = sqlite3.connect(db_path)
     try:
         if _sqlite_column_exists(conn, TABLE, COLUMN):
-            print(f'✅ {TABLE}.{COLUMN} already exists — skipped.')
+            print(f'[OK] {TABLE}.{COLUMN} already exists — skipped.')
             return
 
         conn.execute(f'ALTER TABLE {TABLE} ADD COLUMN {COLUMN} VARCHAR(10) NOT NULL DEFAULT \'\'')
         conn.commit()
-        print(f'✅ Column {TABLE}.{COLUMN} added successfully.')
+        print(f'[OK] Column {TABLE}.{COLUMN} added successfully.')
     except Exception as e:
         conn.rollback()
-        print(f'❌ Error: {e}', file=sys.stderr)
+        print(f'[ERROR] Error: {e}', file=sys.stderr)
         sys.exit(1)
     finally:
         conn.close()
@@ -81,10 +81,10 @@ def migrate_postgres(dsn: str) -> None:
     try:
         import psycopg  # psycopg 3.x
     except ImportError:
-        print('❌ psycopg not installed. pip install "psycopg[binary]"', file=sys.stderr)
+        print('[ERROR] psycopg not installed. pip install "psycopg[binary]"', file=sys.stderr)
         sys.exit(1)
 
-    print(f'🔄 PostgreSQL migration: adding {TABLE}.{COLUMN} …')
+    print(f' PostgreSQL migration: adding {TABLE}.{COLUMN} …')
 
     with psycopg.connect(dsn, autocommit=False) as conn:
         try:
@@ -96,7 +96,7 @@ def migrate_postgres(dsn: str) -> None:
                     (TABLE, COLUMN),
                 )
                 if cur.fetchone():
-                    print(f'✅ {TABLE}.{COLUMN} already exists — skipped.')
+                    print(f'[OK] {TABLE}.{COLUMN} already exists — skipped.')
                     return
 
                 # Add the column.  Existing rows get '' as default.
@@ -104,10 +104,10 @@ def migrate_postgres(dsn: str) -> None:
                     f'ALTER TABLE {TABLE} ADD COLUMN {COLUMN} VARCHAR(10) NOT NULL DEFAULT \'\''
                 )
             conn.commit()
-            print(f'✅ Column {TABLE}.{COLUMN} added successfully.')
+            print(f'[OK] Column {TABLE}.{COLUMN} added successfully.')
         except Exception as e:
             conn.rollback()
-            print(f'❌ Error: {e}', file=sys.stderr)
+            print(f'[ERROR] Error: {e}', file=sys.stderr)
             sys.exit(1)
 
 
@@ -124,14 +124,14 @@ def main() -> None:
     if args.pg is not None:
         dsn = args.pg or os.environ.get('DATABASE_URL', '')
         if not dsn:
-            print('❌ Need DSN: --pg postgres://... or DATABASE_URL env var.',
+            print('[ERROR] Need DSN: --pg postgres://... or DATABASE_URL env var.',
                   file=sys.stderr)
             sys.exit(1)
         migrate_postgres(dsn)
     else:
         migrate_sqlite()
 
-    print('\n✅ Migration complete.')
+    print('\n[OK] Migration complete.')
 
 
 if __name__ == '__main__':

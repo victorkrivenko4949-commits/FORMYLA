@@ -55,7 +55,7 @@ class TestPlanLimits:
 # ── Test 1: New user is free ──────────────────────────────────────────────────
 
 def test_new_user_is_free(service, sub_test_user):
-    """Test 1: регистрация → план 'free'."""
+    """Test 1: регистрация -> план 'free'."""
     plan = service.get_user_plan(sub_test_user)
     assert plan['plan'] == 'free'
     assert plan['is_premium'] is False
@@ -63,7 +63,7 @@ def test_new_user_is_free(service, sub_test_user):
 
 
 def test_user_without_subscription_defaults_to_free(service, db):
-    """User with no subscription row → treated as free."""
+    """User with no subscription row -> treated as free."""
     cursor = db.execute(
         "INSERT INTO users (email) VALUES (?)", ('noplan@example.com',)
     )
@@ -77,7 +77,7 @@ def test_user_without_subscription_defaults_to_free(service, db):
 # ── Test 2: Free user daily limits ───────────────────────────────────────────
 
 def test_free_user_blocked_after_3_ai_explanations(service, sub_test_user, db):
-    """Test 2: 3 AI-разбора → 4-й блокирован."""
+    """Test 2: 3 AI-разбора -> 4-й блокирован."""
     today = datetime.utcnow().date().isoformat()
     db.execute("""
         INSERT OR REPLACE INTO usage_daily (user_id, date, ai_explanations_used)
@@ -130,7 +130,7 @@ def test_free_user_can_use_ai_initially(service, sub_test_user):
 # ── Test 3: Activate premium ──────────────────────────────────────────────────
 
 def test_activate_premium(service, sub_test_user):
-    """Test 3: активация → план 'premium_monthly'."""
+    """Test 3: активация -> план 'premium_monthly'."""
     result = service.activate_premium(sub_test_user, plan='premium_monthly', is_beta=True)
 
     assert result['plan'] == 'premium_monthly'
@@ -159,7 +159,7 @@ def test_activate_yearly_premium(service, sub_test_user):
 # ── Test 4: Premium unlimited ─────────────────────────────────────────────────
 
 def test_premium_unlimited_ai(service, sub_premium_user, db):
-    """Test 4: 10 разборов подряд → все проходят."""
+    """Test 4: 10 разборов подряд -> все проходят."""
     today = datetime.utcnow().date().isoformat()
     db.execute("""
         INSERT OR REPLACE INTO usage_daily (user_id, date, ai_explanations_used)
@@ -186,7 +186,7 @@ def test_premium_unlimited_tasks(service, sub_premium_user, db):
 # ── Test 5: Premium monthly soft limit ───────────────────────────────────────
 
 def test_premium_monthly_soft_limit(service, sub_premium_user, db):
-    """Test 5: 201-й разбор в месяц → блокирован с fair use сообщением."""
+    """Test 5: 201-й разбор в месяц -> блокирован с fair use сообщением."""
     today = datetime.utcnow().date().isoformat()
     db.execute("""
         INSERT OR REPLACE INTO usage_daily (user_id, date, ai_explanations_used)
@@ -215,7 +215,7 @@ def test_premium_at_199_not_blocked(service, sub_premium_user, db):
 # ── Test 6: Expired premium falls back to free ────────────────────────────────
 
 def test_expired_premium_fallback_to_free(service, sub_test_user, db):
-    """Test 6: истёк expires_at → автоматически free."""
+    """Test 6: истёк expires_at -> автоматически free."""
     expired_at = (datetime.utcnow() - timedelta(days=1)).isoformat()
     db.execute("""
         INSERT INTO subscriptions

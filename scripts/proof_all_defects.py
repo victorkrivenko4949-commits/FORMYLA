@@ -20,10 +20,10 @@ def check(name, condition, detail=''):
     global PASS, FAIL
     if condition:
         PASS += 1
-        print(f'  ✅ {name}')
+        print(f'  [OK] {name}')
     else:
         FAIL += 1
-        print(f'  ❌ {name}  {detail}')
+        print(f'  [ERROR] {name}  {detail}')
 
 
 def main():
@@ -31,12 +31,12 @@ def main():
 
     with flask_app.test_client() as c:
         print('=' * 70)
-        print('ДЕФЕКТ 1: GET /daily-set → 302 → /daily_tasks')
+        print('ДЕФЕКТ 1: GET /daily-set -> 302 -> /daily_tasks')
         print('=' * 70)
 
-        # 1a: Unauthenticated → 302 (redirect to login)
+        # 1a: Unauthenticated -> 302 (redirect to login)
         r = c.get('/daily-set', follow_redirects=False)
-        print(f'  1.1 GET /daily-set (no login) → status={r.status_code}')
+        print(f'  1.1 GET /daily-set (no login) -> status={r.status_code}')
         check('1.1 302 (login required)', r.status_code == 302,
               f'got {r.status_code}')
         if r.status_code == 302:
@@ -74,7 +74,7 @@ def main():
                     pass
 
             r2 = c.get('/daily-set', follow_redirects=False)
-            print(f'  1.3 GET /daily-set (logged in) → status={r2.status_code}')
+            print(f'  1.3 GET /daily-set (logged in) -> status={r2.status_code}')
             loc = r2.headers.get('Location', 'NONE')
             print(f'  1.3 Location={loc}')
 
@@ -153,7 +153,7 @@ def main():
         if diag_refs:
             print(f'  Найдены ссылки:')
             for r in diag_refs:
-                print(f'    ⚠️ {r}')
+                print(f'    [!]️ {r}')
             check('3a 0 ссылок в шаблонах', False, f'{len(diag_refs)} refs found')
         else:
             print(f'  Ссылок на старую диагностику в шаблонах: 0')
@@ -162,7 +162,7 @@ def main():
         # 3b: Check routes redirect
         print('\n  3b. Маршруты:')
         r = c.post('/prep/coach/test/start', follow_redirects=False)
-        print(f'     POST /prep/coach/test/start → {r.status_code}')
+        print(f'     POST /prep/coach/test/start -> {r.status_code}')
         if r.status_code == 200:
             try:
                 data = r.get_json()
@@ -175,7 +175,7 @@ def main():
             check('3b /coach/test/start responds', False, f'status={r.status_code}')
 
         rq = c.post('/prep/coach/questionnaire/start', follow_redirects=False)
-        print(f'\n     POST /prep/coach/questionnaire/start → {rq.status_code}')
+        print(f'\n     POST /prep/coach/questionnaire/start -> {rq.status_code}')
         if rq.status_code == 200:
             try:
                 data = rq.get_json()
@@ -195,7 +195,7 @@ def main():
         # Check file exists
         script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'scripts', 'reset_me.py')
         if os.path.exists(script_path):
-            print(f'  ✅ Файл существует: {script_path}')
+            print(f'  [OK] Файл существует: {script_path}')
             check('4a File exists', True)
 
             # Check content

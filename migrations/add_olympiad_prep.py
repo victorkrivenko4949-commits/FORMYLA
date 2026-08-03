@@ -10,12 +10,12 @@ from app import app
 def migrate():
     """Выполнить миграцию — создать таблицу olympiad_prep."""
     with app.app_context():
-        print("🔄 Миграция: создание таблицы olympiad_prep...")
+        print(" Миграция: создание таблицы olympiad_prep...")
         try:
             db.create_all()
-            print("✅ Таблица olympiad_prep создана (или уже существует).")
+            print("[OK] Таблица olympiad_prep создана (или уже существует).")
         except Exception as e:
-            print(f"❌ Ошибка миграции: {e}")
+            print(f"[ERROR] Ошибка миграции: {e}")
             db.session.rollback()
             raise
 

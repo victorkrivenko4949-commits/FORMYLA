@@ -341,7 +341,7 @@ for key in sorted(after_cell_counts):
         print(f"     IDs: {after_cell_ids[key]}")
 
 if all_complete:
-    print("  All 134 L3 cells have exactly 5 tasks! ✓")
+    print("  All 134 L3 cells have exactly 5 tasks! [OK]")
 else:
     print("  Some cells still incomplete.")
 

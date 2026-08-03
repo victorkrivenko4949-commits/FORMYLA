@@ -1982,14 +1982,14 @@ def generate_report(stats, cells, errors, warnings, audit_data):
 
 """
     if not errors and not warnings:
-        report += "✅ **Все проверки пройдены успешно!**\n"
+        report += "[OK] **Все проверки пройдены успешно!**\n"
     else:
         if errors:
-            report += f"### ❌ Ошибки ({len(errors)}):\n"
+            report += f"### [ERROR] Ошибки ({len(errors)}):\n"
             for e in errors:
                 report += f"- {e}\n"
         if warnings:
-            report += f"\n### ⚠️ Предупреждения ({len(warnings)}):\n"
+            report += f"\n### [!]️ Предупреждения ({len(warnings)}):\n"
             for w in warnings:
                 report += f"- {w}\n"
     
@@ -2012,8 +2012,8 @@ def generate_report(stats, cells, errors, warnings, audit_data):
 ## 7. ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ
 
 - **Алгоритм классификации:** keyword-based matching по тексту задачи и решения
-- **Дедупликация:** 3-этапная (точное совпадение → высокая схожесть → замена чисел)
-- **Оптимизация:** лексикографическая (полные ячейки → заполненные слоты → качество → разнообразие)
+- **Дедупликация:** 3-этапная (точное совпадение -> высокая схожесть -> замена чисел)
+- **Оптимизация:** лексикографическая (полные ячейки -> заполненные слоты -> качество -> разнообразие)
 - **Источник задач:** {audit_data['summary']['classified_count'] + audit_data['summary']['duplicates_removed']} задач обработано из 3302
 """
     

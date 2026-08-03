@@ -10,7 +10,7 @@
               border:1px solid rgba(56,189,248,0.35); color:#e2e8f0;
               border-radius:10px; text-decoration:none; font-weight:600;
               font-size:0.95em; transition: all .15s ease;">
-        <span style="font-size:1.1em;">←</span> Назад к каталогу
+        <span style="font-size:1.1em;"><-</span> Назад к каталогу
     </a>
 </div>
 <style>
@@ -80,7 +80,7 @@
             <button onclick="toggleSolution('solution-{{ p.num }}')" style="background: #2a2a3a; color: #aaa; border: 1px solid #444; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all .2s ease;"
                     onmouseover="this.style.background='#333'; this.style.color='#fff';"
                     onmouseout="this.style.background='#2a2a3a'; this.style.color='#aaa';">
-                🔍 Показать решение
+                 Показать решение
             </button>
             <div id="solution-{{ p.num }}" style="display: none; margin-top: 15px;">
                 <div style="background: #1a1a2e; border-left: 4px solid #8b5cf6; padding: 20px; border-radius: 0 8px 8px 0;">
@@ -97,7 +97,7 @@
             <button onclick="toggleSolution('solution-{{ p.num }}')" style="background: #2a2a3a; color: #aaa; border: 1px solid #444; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all .2s ease;"
                     onmouseover="this.style.background='#333'; this.style.color='#fff';"
                     onmouseout="this.style.background='#2a2a3a'; this.style.color='#aaa';">
-                🔍 Показать решение
+                 Показать решение
             </button>
             <div id="solution-{{ p.num }}" style="display: none; margin-top: 15px;">
                 <div style="background: #1a1a2e; border-left: 4px solid #005bb5; padding: 20px; border-radius: 0 8px 8px 0;">
@@ -128,7 +128,7 @@ function toggleSolution(id) {
 
 <div style="text-align: center; margin-top: 40px;">
     <a href="/olympiads" class="btn-secondary" style="padding: 14px 40px; font-size: 16px;">
-        ← Назад к каталогу
+        <- Назад к каталогу
     </a>
 </div>
 {% endblock %}

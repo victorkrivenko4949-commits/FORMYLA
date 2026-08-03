@@ -70,10 +70,10 @@ def fix_unescaped_quotes_v2(text):
                 while j >= 0 and result[j] in ' \t\n\r':
                     j -= 1
                 if j >= 0 and result[j] == ':':
-                    # Preceded by : → this starts a VALUE
+                    # Preceded by : -> this starts a VALUE
                     state = 'IN_VALUE'
                 else:
-                    # Preceded by {, [, ,, or start of text → this starts a KEY
+                    # Preceded by {, [, ,, or start of text -> this starts a KEY
                     state = 'IN_KEY'
                 result.append(c)
             elif state == 'IN_KEY':
@@ -87,15 +87,15 @@ def fix_unescaped_quotes_v2(text):
                 while j < len(text) and text[j] in ' \t\n\r':
                     j += 1
                 if j < len(text) and text[j] in ',]}':
-                    # Structural char follows → this " closes the string
+                    # Structural char follows -> this " closes the string
                     state = 'OUTSIDE'
                     result.append(c)
                 else:
-                    # Not at structural boundary → unescaped quote inside value
+                    # Not at structural boundary -> unescaped quote inside value
                     result.append('\\"')
             i += 1
         elif c == ':' and state == 'OUTSIDE':
-            # Colon in OUTSIDE state → after this, if we see a " it starts a value
+            # Colon in OUTSIDE state -> after this, if we see a " it starts a value
             result.append(c)
             # Check if next non-ws is "
             j = i + 1

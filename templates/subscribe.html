@@ -350,12 +350,12 @@
     <div class="subscribe-hero">
         <h1>Выберите тариф</h1>
         <p class="subtitle">Разблокируй полный потенциал математики с FORMYLA</p>
-        <span class="beta-badge">🎁 Бета-доступ: Premium бесплатно до запуска оплаты</span>
+        <span class="beta-badge"> Бета-доступ: Premium бесплатно до запуска оплаты</span>
     </div>
 
     <!-- Success message (shown after activation) -->
     <div class="success-msg" id="successMsg">
-        ✅ Premium активирован! Перезагружаем страницу...
+        [OK] Premium активирован! Перезагружаем страницу...
     </div>
 
     <!-- Cancel subscription block -->
@@ -366,13 +366,13 @@
         </p>
         <button id="cancelBtn" onclick="cancelSubscription()"
                 style="padding: 12px 28px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: all 0.2s;">
-            ✕ Отменить подписку
+             Отменить подписку
         </button>
     </div>
 
     <!-- Free-period banner -->
     <div style="background: linear-gradient(135deg, rgba(56,239,125,0.18), rgba(17,153,142,0.12)); border: 1px solid rgba(56,239,125,0.4); border-radius: 14px; padding: 18px 22px; margin: 0 0 28px; text-align: center; font-size: 1.05em; color:#d1fae5;">
-        🎁 <strong style="color:#38ef7d;">Сейчас всё доступно бесплатно.</strong> Цены вернутся после выхода из бета-периода.
+         <strong style="color:#38ef7d;">Сейчас всё доступно бесплатно.</strong> Цены вернутся после выхода из бета-периода.
     </div>
 
     <!-- Plan cards -->
@@ -387,34 +387,34 @@
         </div>
         <ul class="plan-features">
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>AI-разборы — до 300 в день</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Все темы, 5–11 класс</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Курсы на основе глубокого анализа методов решения ВсОШ — под задачи 2027 года</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>102 понятно расписанных метода</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Каталог топ-11 олимпиад России</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Интерактивная доска</span>
             </li>
         </ul>
 
         {% if current_plan == 'free' %}
         <button class="btn-plan btn-plan-current" disabled>
-            ✓ Текущий план
+            [OK] Текущий план
         </button>
         {% else %}
         <button class="btn-plan btn-plan-free" disabled>
@@ -436,60 +436,60 @@
 
             <!-- Всё из бесплатного -->
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Все темы, 5–11 класс</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Курсы на основе глубокого анализа методов решения ВсОШ — под задачи 2027 года</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>102 понятно расписанных метода</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Каталог топ-11 олимпиад России</span>
             </li>
             <li>
-                <span class="feat-icon">✅</span>
+                <span class="feat-icon">[OK]</span>
                 <span>Интерактивная доска</span>
             </li>
 
             <!-- Дополнительно в Premium -->
             <li class="highlight">
-                <span class="feat-icon">🤖</span>
+                <span class="feat-icon"></span>
                 <span>Безлимитные AI-разборы (без дневного лимита)</span>
             </li>
             <li class="highlight">
-                <span class="feat-icon">⚡</span>
+                <span class="feat-icon"></span>
                 <span>Расширенные AI-разборы (до 8000 токенов)</span>
             </li>
             <li class="highlight">
-                <span class="feat-icon">🧭</span>
+                <span class="feat-icon"></span>
                 <span>Адаптивный тест для определения проблемных тем</span>
             </li>
             <li class="highlight">
-                <span class="feat-icon">📊</span>
+                <span class="feat-icon"></span>
                 <span>История тестов — навсегда</span>
             </li>
             <li class="highlight">
-                <span class="feat-icon">📈</span>
+                <span class="feat-icon"></span>
                 <span>Полная статистика прогресса</span>
             </li>
             <li class="highlight">
-                <span class="feat-icon">🎯</span>
+                <span class="feat-icon"></span>
                 <span>Приоритетный AI (быстрее ответы)</span>
             </li>
         </ul>
 
         {% if current_plan == 'premium' %}
         <button class="btn-plan btn-plan-current" disabled>
-            ✓ Текущий план
+            [OK] Текущий план
         </button>
         {% else %}
         <button class="btn-plan btn-plan-premium">
-            🎁 Попробовать Premium бесплатно
+             Попробовать Premium бесплатно
         </button>
         {% endif %}
     </div>
@@ -498,7 +498,7 @@
 
             {% if current_plan and current_plan != 'free' %}
             <button class="btn-plan btn-plan-current" disabled>
-                ✓ Текущий план
+                [OK] Текущий план
                 {% if plan_expires_at %}
                 · до {{ plan_expires_at }}
                 {% endif %}
@@ -506,16 +506,16 @@
             <button class="btn-plan btn-cancel" id="cancelBtn"
                     onclick="cancelSubscription()"
                     style="margin-top:12px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.3); cursor:pointer;">
-                ✕ Отменить подписку
+                 Отменить подписку
             </button>
             {% elif current_user.is_authenticated %}
             <button class="btn-plan btn-plan-premium" id="activateBtn"
                     onclick="activatePremium('premium_monthly')">
-                🎁 Попробовать Premium бесплатно
+                 Попробовать Premium бесплатно
             </button>
             {% else %}
             <a href="{{ url_for('login') }}" class="btn-plan btn-plan-premium">
-                🚀 Войти и получить Premium
+                 Войти и получить Premium
             </a>
             {% endif %}
         </div>
@@ -525,7 +525,7 @@
     <!-- Yearly block -->
     <div class="yearly-block">
         <div class="yearly-info">
-            <h3>💎 Годовой тариф — сейчас бесплатно</h3>
+            <h3> Годовой тариф — сейчас бесплатно</h3>
             <p>Сейчас всё доступно бесплатно. После беты — 12 месяцев по цене 10.</p>
         </div>
         <div class="yearly-price">
@@ -595,7 +595,7 @@
     <!-- Payment block (hidden until payment enabled) -->
     {% if payment_enabled %}
     <div style="background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; padding: 24px; margin-bottom: 40px;">
-        <h3 style="color: var(--text-main); margin-bottom: 16px;">💳 Способ оплаты</h3>
+        <h3 style="color: var(--text-main); margin-bottom: 16px;"> Способ оплаты</h3>
         <!-- ЮKassa payment form will go here -->
         <p style="color: var(--text-soft);">Оплата через ЮKassa — карты Visa, Mastercard, МИР, СБП</p>
     </div>
@@ -627,7 +627,7 @@ function activatePremium(plan) {
             alert('Ошибка: ' + (data.error || data.message || 'Попробуйте ещё раз'));
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = '🎁 Попробовать Premium бесплатно';
+                btn.textContent = ' Попробовать Premium бесплатно';
             }
         }
     })
@@ -636,7 +636,7 @@ function activatePremium(plan) {
         alert('Ошибка сети. Попробуйте ещё раз.');
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '🎁 Попробовать Premium бесплатно';
+            btn.textContent = ' Попробовать Premium бесплатно';
         }
     });
 }
@@ -663,7 +663,7 @@ function cancelSubscription() {
             alert('Ошибка: ' + (data.error || 'Попробуйте ещё раз'));
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = '✕ Отменить подписку';
+                btn.textContent = ' Отменить подписку';
             }
         }
     })
@@ -672,7 +672,7 @@ function cancelSubscription() {
         alert('Ошибка сети. Попробуйте ещё раз.');
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '✕ Отменить подписку';
+            btn.textContent = ' Отменить подписку';
         }
     });
 }

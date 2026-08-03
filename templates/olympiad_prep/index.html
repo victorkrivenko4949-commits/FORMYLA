@@ -154,7 +154,7 @@
 
 {% block content %}
 <section class="op-hero">
-    <h1>🏆 Подготовка к <span>олимпиадам</span></h1>
+    <h1> Подготовка к <span>олимпиадам</span></h1>
     <p>Выбери олимпиаду — мы поможем подготовиться. Разборы задач, этапы, советы и персональный план.</p>
 </section>
 
@@ -164,9 +164,9 @@
         <div class="op-card-header">
             <div class="op-card-logo">
                 {% if o.logo_path %}
-                    <img src="{{ o.logo_path }}" alt="{{ o.short_name }}" onerror="this.style.display='none'; this.parentElement.textContent='🏅';">
+                    <img src="{{ o.logo_path }}" alt="{{ o.short_name }}" onerror="this.style.display='none'; this.parentElement.textContent='';">
                 {% else %}
-                    🏅
+                    
                 {% endif %}
             </div>
             <div>
@@ -180,7 +180,7 @@
         </div>
 
         <div class="op-card-meta">
-            <span class="op-tag">📚 {{ o.grades_display }}</span>
+            <span class="op-tag"> {{ o.grades_display }}</span>
             {% for stage in o.stages_list[:2] %}
                 <span class="op-tag">{{ stage.name if stage is mapping else stage }}</span>
             {% endfor %}
@@ -190,13 +190,13 @@
         </div>
 
         <a href="{{ url_for('olympiad_prep.detail', slug=o.slug) }}" class="op-card-btn">
-            Подробнее →
+            Подробнее ->
         </a>
     </div>
     {% endfor %}
 </div>
 
 <div class="op-calendar-link">
-    <a href="{{ url_for('olympiad_prep.calendar') }}">📅 Календарь олимпиад России</a>
+    <a href="{{ url_for('olympiad_prep.calendar') }}"> Календарь олимпиад России</a>
 </div>
 {% endblock %}

@@ -235,7 +235,7 @@ def print_report(plan, total_removed, removed_ids):
 
     for entry in plan:
         print(f"\n[CELL] {entry['cell_label']}")
-        print(f"   Count: {entry['count']} → {entry['target']} "
+        print(f"   Count: {entry['count']} -> {entry['target']} "
               f"(remove {entry['excess']})")
         print(f"   Min keep score: {entry['min_keep_score']:.4f} | "
               f"Max remove score: {entry['max_remove_score']:.4f}")

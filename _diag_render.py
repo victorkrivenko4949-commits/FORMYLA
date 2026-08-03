@@ -53,7 +53,7 @@ checks = [
 all_pass = True
 for name, pattern in checks:
     found = pattern.lower() in source[0].lower()
-    status = "✅" if found else "❌"
+    status = "[OK]" if found else "[ERROR]"
     if not found:
         all_pass = False
     print(f"  {status} {name}: {'found' if found else 'MISSING!'}")

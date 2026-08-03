@@ -97,4 +97,4 @@ with app.app_context():
     print("=" * 80)
     print("Old questionnaire (diagnostic_questionnaire.py): 3 text questions, NO anchor tasks")
     print("coach_test_start: REDIRECTS to /prep/onboarding")
-    print("Only anchor-task path: /prep/onboarding → services/onboarding.py")
+    print("Only anchor-task path: /prep/onboarding -> services/onboarding.py")

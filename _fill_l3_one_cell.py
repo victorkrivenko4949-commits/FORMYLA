@@ -42,6 +42,6 @@ if new_tasks:
         json.dump(db, f, ensure_ascii=False, indent=2)
     with open(NEW_TASKS_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_tasks, f, ensure_ascii=False, indent=2)
-    print(f"\n✓ Generated {len(new_tasks)} tasks. Merged into {OUTPUT_FILE}. Total: {len(db)} tasks.")
+    print(f"\n[OK] Generated {len(new_tasks)} tasks. Merged into {OUTPUT_FILE}. Total: {len(db)} tasks.")
 else:
     print("No tasks generated.")

@@ -101,10 +101,10 @@ logger = logging.getLogger(__name__)
 def get_daily_tasks():
     """Получить сегодняшний набор задач или статус генерации.
 
-    * Нет сета → 404 ``{"status": "no_set", "message": "..."}`` (JSON)
+    * Нет сета -> 404 ``{"status": "no_set", "message": "..."}`` (JSON)
                  или рендер шаблона с теми же данными (HTML)
-    * Генерация → 202 ``{"status": "generating", "progress_pct": ..., ...}``
-    * Готов / частично → 200 с полным набором задач
+    * Генерация -> 202 ``{"status": "generating", "progress_pct": ..., ...}``
+    * Готов / частично -> 200 с полным набором задач
     """
     user_id = current_user.id
     today = today_in_user_tz()
@@ -365,7 +365,7 @@ def get_daily_tasks():
     except Exception as _debt_err:
         logger.warning("get_debt_items failed: %s", _debt_err)
 
-    # ── 🗓  Monthly plan (prep_plan from CuratorState) ────────────
+    # ──   Monthly plan (prep_plan from CuratorState) ────────────
     plan_data = _build_monthly_plan_data(user_id, today)
     if plan_data:
         data["plan_data"] = plan_data
@@ -1002,11 +1002,11 @@ def submit_answer_ai(item_id: int):
 # вертикального календаря справа от блока «Задачи дня».
 #
 # Цвета подсветки на фронте:
-#   0          → серая
-#   1–3        → бледно-зелёная
-#   4–6        → зелёная
-#   7–9        → яркая зелёная
-#   10 (или больше) → золотая (с короной)
+#   0          -> серая
+#   1–3        -> бледно-зелёная
+#   4–6        -> зелёная
+#   7–9        -> яркая зелёная
+#   10 (или больше) -> золотая (с короной)
 # ──────────────────────────────────────────────────────────────────────
 
 

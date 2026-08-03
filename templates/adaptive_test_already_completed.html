@@ -57,7 +57,7 @@
         <div style="margin-top: 20px;">
             <details style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
                 <summary style="cursor: pointer; color: var(--text-soft); font-weight: 600; font-size: 0.95em;">
-                    📋 История ответов ({{ answers|length }} задач)
+                     История ответов ({{ answers|length }} задач)
                 </summary>
                 <div style="margin-top: 16px;">
                     {% for answer in answers %}
@@ -74,7 +74,7 @@
                                 {% else %}
                                     background: rgba(239, 68, 68, 0.2); color: #ef4444;
                                 {% endif %}">
-                                {% if answer.score is defined and answer.score >= 1 %}✅ Верно{% elif answer.score is defined and answer.score == 0 %}⚠️ Частично{% else %}❌ Неверно{% endif %}
+                                {% if answer.score is defined and answer.score >= 1 %}[OK] Верно{% elif answer.score is defined and answer.score == 0 %}[!]️ Частично{% else %}[ERROR] Неверно{% endif %}
                             </span>
                         </div>
                         {% if answer.task_text %}
@@ -98,19 +98,19 @@
     <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
         <a href="/daily"
             style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 51, 234, 0.2)); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4); transition: all 0.2s;">
-            📅 Задачи дня
+             Задачи дня
         </a>
         <a href="/section/{{ topic }}"
             style="display: inline-block; padding: 14px 28px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;">
-            📚 Изучать методы
+             Изучать методы
         </a>
         <a href="/adaptive_test/select_grade?topic={{ topic }}"
             style="display: inline-block; padding: 14px 28px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;">
-            🔄 Выбрать другую тему
+             Выбрать другую тему
         </a>
         <a href="/probniks"
             style="display: inline-block; padding: 14px 28px; background: rgba(100, 116, 139, 0.2); color: var(--text-main); text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; border: 1px solid var(--border-mid); transition: all 0.2s;">
-            🏠 К тестам
+             К тестам
         </a>
     </div>
 

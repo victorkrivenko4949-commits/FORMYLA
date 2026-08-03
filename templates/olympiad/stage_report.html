@@ -66,11 +66,11 @@
 
         <p style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
             <button class="oly-btn" @click="save()" :disabled="saving">
-                <span x-show="!saving">💾 Сохранить и пересчитать</span>
+                <span x-show="!saving"> Сохранить и пересчитать</span>
                 <span x-show="saving" x-cloak>Сохранение…</span>
             </button>
             <a class="oly-btn-ghost oly-btn" href="{{ url_for('olympiad.probnik', code=probnik.code) }}">
-                ← к пробнику
+                <- к пробнику
             </a>
             <span style="color: var(--text-muted); font-size: .9em;" x-text="hint"></span>
         </p>
@@ -104,9 +104,9 @@ function olympiadStageReport(cfg) {
         },
         get resultLabel() {
             return ({
-                winner:      '🥇 Победитель',
-                prize:       '🥈 Призёр',
-                participant: '👤 Участник',
+                winner:      ' Победитель',
+                prize:       ' Призёр',
+                participant: ' Участник',
             })[this.result];
         },
         get resultClass() {
@@ -130,10 +130,10 @@ function olympiadStageReport(cfg) {
                 });
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 const data = await r.json();
-                this.hint = '✓ сохранено (' + (data.total_score ?? this.totalScore) + ' баллов)';
+                this.hint = '[OK] сохранено (' + (data.total_score ?? this.totalScore) + ' баллов)';
             } catch (e) {
                 console.error('save failed', e);
-                this.hint = '⚠ не удалось сохранить';
+                this.hint = '[!] не удалось сохранить';
             } finally {
                 this.saving = false;
                 setTimeout(() => { this.hint = ''; }, 3000);

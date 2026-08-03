@@ -95,7 +95,7 @@ def clean_today_set(app_ctx):
 
 
 def test_classify_openrouter_402():
-    """Sanity: 402 → 'http_402', 503 → 'http_503', 0 → 'network'."""
+    """Sanity: 402 -> 'http_402', 503 -> 'http_503', 0 -> 'network'."""
     from daily_tasks.pipeline.step1_gemini import _classify_openrouter_error
     from services.openrouter_client import OpenRouterError
     assert _classify_openrouter_error(OpenRouterError("", status_code=402)) == "http_402"
@@ -239,7 +239,7 @@ def test_regenerate_allows_retry_after_failed_set(app_ctx, clean_today_set):
     """Failed-сет НЕ должен срабатывать как «уже сгенерировано сегодня».
 
     Воспроизводит сценарий: пользователь нажал «Сгенерировать», получил
-    ошибку 402 → status='failed'. Раньше следующий клик на «Повторить»
+    ошибку 402 -> status='failed'. Раньше следующий клик на «Повторить»
     давал 429 «Перегенерация доступна 1 раз в день». Теперь — пускает.
 
     Использует ``date.today()`` — это нормально потому что и фикстура,

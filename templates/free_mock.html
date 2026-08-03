@@ -8,7 +8,7 @@
     <!-- Заголовок -->
     <div style="text-align: center; margin-bottom: 40px;">
         <h1 style="font-size: 2.5em; color: var(--text-main); margin-bottom: 10px;">
-            📝 Бесплатный пробник
+             Бесплатный пробник
         </h1>
         <p style="font-size: 1.1em; color: var(--text-soft);">
             25 задач • Пошаговая генерация • Без ожидания
@@ -23,7 +23,7 @@
         <!-- Форма настроек (показывается в начале) -->
         <div id="setup-form" style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
             
-            <h2 style="color: var(--accent-2); margin-bottom: 30px; text-align: center;">⚙️ Настройки теста</h2>
+            <h2 style="color: var(--accent-2); margin-bottom: 30px; text-align: center;">️ Настройки теста</h2>
             
             <div style="margin-bottom: 25px;">
                 <label style="display: block; color: var(--text-muted); margin-bottom: 10px; font-weight: 500;">
@@ -60,7 +60,7 @@
                         style="padding: 18px 50px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;"
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform='translateY(0)'">
-                    🚀 Начать тест
+                     Начать тест
                 </button>
             </div>
             
@@ -88,7 +88,7 @@
                         style="padding: 18px 50px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); transition: transform 0.3s;"
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform='translateY(0)'">
-                    Далее →
+                    Далее ->
                 </button>
             </div>
         </div>
@@ -140,7 +140,7 @@ function saveProgress() {
         previousTopics: previousTopics
     };
     localStorage.setItem('freeMockProgress', JSON.stringify(progressData));
-    console.log('💾 Прогресс сохранен:', progressData);
+    console.log(' Прогресс сохранен:', progressData);
 }
 
 // Функция восстановления прогресса из localStorage
@@ -161,10 +161,10 @@ function restoreProgress() {
         tasksQueue = data.tasksQueue || {};
         previousTopics = data.previousTopics || [];
         
-        console.log('✅ Прогресс восстановлен:', data);
+        console.log('[OK] Прогресс восстановлен:', data);
         return true;
     } catch (e) {
-        console.error('❌ Ошибка восстановления прогресса:', e);
+        console.error('[ERROR] Ошибка восстановления прогресса:', e);
         localStorage.removeItem('freeMockProgress');
         return false;
     }
@@ -198,7 +198,7 @@ function startTest() {
 async function loadTask(taskNum) {
     // Проверяем, есть ли задача уже в очереди
     if (tasksQueue[taskNum]) {
-        console.log(`✅ Задача ${taskNum} уже в очереди, используем её`);
+        console.log(`[OK] Задача ${taskNum} уже в очереди, используем её`);
         renderTask(tasksQueue[taskNum], taskNum);
         return;
     }
@@ -214,7 +214,7 @@ async function loadTask(taskNum) {
         renderTask(task, taskNum);
     } catch (error) {
         // Только если ВСЕ попытки исчерпаны (после 10 попыток)
-        console.error('❌ Критическая ошибка после всех попыток:', error);
+        console.error('[ERROR] Критическая ошибка после всех попыток:', error);
         document.getElementById('loading-spinner').style.display = 'none';
         document.getElementById('loading-text').textContent = 'Не удалось сгенерировать задачу. Попробуйте обновить страницу.';
         // НЕ показываем alert - просто оставляем сообщение в спиннере
@@ -231,23 +231,23 @@ async function preloadTask(taskNum, retryCount = 0) {
     }
     
     isFetchingNext = true;
-    console.log(`🔄 Предзагрузка задачи ${taskNum} в фоне... (попытка ${retryCount + 1}/${MAX_RETRIES})`);
+    console.log(` Предзагрузка задачи ${taskNum} в фоне... (попытка ${retryCount + 1}/${MAX_RETRIES})`);
     
     try {
         const task = await fetchTask(taskNum);
         
         // Проверяем, что задача действительно получена (не null)
         if (task === null) {
-            console.log(`⛔ Задача ${taskNum} > 25, предзагрузка остановлена`);
+            console.log(` Задача ${taskNum} > 25, предзагрузка остановлена`);
             isFetchingNext = false;
             return;
         }
         
         tasksQueue[taskNum] = task;
-        console.log(`✅ Задача ${taskNum} предзагружена успешно`);
+        console.log(`[OK] Задача ${taskNum} предзагружена успешно`);
         isFetchingNext = false;
     } catch (error) {
-        console.error(`❌ Ошибка предзагрузки задачи ${taskNum} (попытка ${retryCount + 1}):`, error);
+        console.error(`[ERROR] Ошибка предзагрузки задачи ${taskNum} (попытка ${retryCount + 1}):`, error);
         
         // Если не достигли максимума попыток, пробуем еще раз через 2 секунды
         if (retryCount < MAX_RETRIES - 1) {
@@ -258,7 +258,7 @@ async function preloadTask(taskNum, retryCount = 0) {
                 preloadTask(taskNum, retryCount + 1);
             }, RETRY_DELAY);
         } else {
-            console.error(`💥 Все ${MAX_RETRIES} попытки исчерпаны для задачи ${taskNum}`);
+            console.error(` Все ${MAX_RETRIES} попытки исчерпаны для задачи ${taskNum}`);
             isFetchingNext = false;
         }
     }
@@ -268,7 +268,7 @@ async function preloadTask(taskNum, retryCount = 0) {
 async function fetchTask(taskNum, retryCount = 0) {
     // ЖЕСТКАЯ ПРОВЕРКА: не генерируем задачи после 25-й
     if (taskNum > 25) {
-        console.log(`⛔ Попытка сгенерировать задачу ${taskNum} > 25, игнорируем`);
+        console.log(` Попытка сгенерировать задачу ${taskNum} > 25, игнорируем`);
         return null;
     }
     
@@ -303,7 +303,7 @@ async function fetchTask(taskNum, retryCount = 0) {
             
             // ТИХИЙ АВТО-ПОВТОР: не показываем ошибку пользователю
             if (retryCount < MAX_RETRIES) {
-                console.log(`⚠️ Ошибка генерации задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.error}`);
+                console.log(`[!]️ Ошибка генерации задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.error}`);
                 console.log(`⏳ Повторная попытка через ${RETRY_DELAY/1000} секунд...`);
                 
                 // Ждем и пробуем снова
@@ -326,13 +326,13 @@ async function fetchTask(taskNum, retryCount = 0) {
         preloadedTasks[taskNum] = task;
         saveProgress();
         
-        console.log(`✅ Задача ${taskNum} успешно сгенерирована${retryCount > 0 ? ` (после ${retryCount + 1} попыток)` : ''}`);
+        console.log(`[OK] Задача ${taskNum} успешно сгенерирована${retryCount > 0 ? ` (после ${retryCount + 1} попыток)` : ''}`);
         return task;
         
     } catch (error) {
         // Ошибка сети или парсинга JSON
         if (retryCount < MAX_RETRIES) {
-            console.log(`⚠️ Ошибка сети для задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.message}`);
+            console.log(`[!]️ Ошибка сети для задачи ${taskNum} (попытка ${retryCount + 1}/${MAX_RETRIES}): ${error.message}`);
             console.log(`⏳ Повторная попытка через ${RETRY_DELAY/1000} секунд...`);
             
             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
@@ -374,7 +374,7 @@ function renderTask(task, taskNum) {
                        onkeypress="if(event.key==='Enter') nextTask()">
                 </math-field>
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 8px;">
-                    💡 Кликните на поле для вызова виртуальной клавиатуры с √, дробями и степенями
+                     Кликните на поле для вызова виртуальной клавиатуры с √, дробями и степенями
                 </p>
             </div>
             
@@ -398,7 +398,7 @@ function renderTask(task, taskNum) {
                 throwOnError: false,
                 strict: false
             });
-            console.log('✓ KaTeX rendered task', taskNum);
+            console.log('[OK] KaTeX rendered task', taskNum);
         } else {
             // KaTeX еще не загружен, ждем
             console.log('⏳ Waiting for KaTeX...');
@@ -432,10 +432,10 @@ function updateProgress(taskNum) {
     
     // Меняем текст кнопки на последней задаче
     if (taskNum === 25) {
-        nextButton.textContent = '✅ Завершить тест';
+        nextButton.textContent = '[OK] Завершить тест';
         nextButton.onclick = finishMock;
     } else {
-        nextButton.textContent = 'Далее →';
+        nextButton.textContent = 'Далее ->';
         nextButton.onclick = nextTask;
     }
 }
@@ -498,7 +498,7 @@ async function finishMock() {
         allTasks.push(tasksQueue[currentTaskNum]);
     }
     
-    console.log(`📊 Отправка на проверку: ${allTasks.length} задач, ${userAnswers.length} ответов`);
+    console.log(` Отправка на проверку: ${allTasks.length} задач, ${userAnswers.length} ответов`);
     
     // Показываем спиннер
     document.getElementById('task-block').style.display = 'none';
@@ -526,7 +526,7 @@ async function finishMock() {
         
         // ОЧИЩАЕМ localStorage после завершения теста
         localStorage.removeItem('freeMockProgress');
-        console.log('🗑️ Прогресс очищен после завершения теста');
+        console.log('️ Прогресс очищен после завершения теста');
         
         // Рендерим результаты
         renderResults(results);
@@ -552,7 +552,7 @@ function renderResults(data) {
     container.innerHTML = `
         <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 40px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); text-align: center;">
             
-            <h2 style="color: var(--accent-2); margin-bottom: 30px;">🎉 Тест завершен!</h2>
+            <h2 style="color: var(--accent-2); margin-bottom: 30px;"> Тест завершен!</h2>
             
             <div style="font-size: 3em; color: var(--accent-1); margin-bottom: 20px; font-weight: 700;">
                 ${data.score}
@@ -564,17 +564,17 @@ function renderResults(data) {
             
             <div style="text-align: left; margin-bottom: 30px;">
                 <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(34, 197, 94, 0.3); margin-bottom: 15px;">
-                    <h3 style="color: #22c55e; margin-bottom: 10px;">💪 Сильные темы:</h3>
+                    <h3 style="color: #22c55e; margin-bottom: 10px;"> Сильные темы:</h3>
                     <p style="color: var(--text-soft); margin: 0;">${data.strong_topics}</p>
                 </div>
                 
                 <div style="background: rgba(239, 68, 68, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(239, 68, 68, 0.3); margin-bottom: 15px;">
-                    <h3 style="color: #ef4444; margin-bottom: 10px;">📚 Слабые темы:</h3>
+                    <h3 style="color: #ef4444; margin-bottom: 10px;"> Слабые темы:</h3>
                     <p style="color: var(--text-soft); margin: 0;">${data.weak_topics}</p>
                 </div>
                 
                 <div style="background: rgba(56, 189, 248, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(56, 189, 248, 0.3);">
-                    <h3 style="color: var(--accent-2); margin-bottom: 10px;">💡 Рекомендации:</h3>
+                    <h3 style="color: var(--accent-2); margin-bottom: 10px;"> Рекомендации:</h3>
                     <p style="color: var(--text-soft); margin: 0;">${data.feedback}</p>
                 </div>
             </div>
@@ -582,11 +582,11 @@ function renderResults(data) {
             <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 40px;">
                 <button onclick="location.reload()"
                         style="padding: 15px 30px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);">
-                    🔄 Пройти еще раз
+                     Пройти еще раз
                 </button>
                 <button onclick="window.location.href='/'"
                         style="padding: 15px 30px; background: rgba(15, 23, 42, 0.6); color: var(--text-main); border: 1px solid var(--border-mid); border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                    🏠 На главную
+                     На главную
                 </button>
             </div>
             
@@ -594,7 +594,7 @@ function renderResults(data) {
         
         <!-- ДЕТАЛЬНЫЙ РАЗБОР ВСЕХ ЗАДАЧ -->
         <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-top: 30px;">
-            <h2 style="color: var(--accent-2); margin-bottom: 25px; text-align: center;">📋 Детальный разбор</h2>
+            <h2 style="color: var(--accent-2); margin-bottom: 25px; text-align: center;"> Детальный разбор</h2>
             
             <div id="detailed-results">
                 ${data.results.map(r => `
@@ -602,7 +602,7 @@ function renderResults(data) {
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h4 style="color: var(--text-main); margin: 0;">Задача ${r.task_num}</h4>
                             <span style="padding: 4px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; ${r.is_correct ? 'background: rgba(34, 197, 94, 0.2); color: #22c55e;' : 'background: rgba(239, 68, 68, 0.2); color: #ef4444;'}">
-                                ${r.is_correct ? '✓ Верно' : '✗ Неверно'}
+                                ${r.is_correct ? '[OK] Верно' : ' Неверно'}
                             </span>
                         </div>
                         
@@ -633,12 +633,12 @@ function renderResults(data) {
 
 // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ - проверка сохраненного прогресса
 window.addEventListener('DOMContentLoaded', function() {
-    console.log('🔍 Проверка сохраненного прогресса...');
+    console.log(' Проверка сохраненного прогресса...');
     
     if (restoreProgress()) {
         // Есть сохраненный прогресс - спрашиваем пользователя
         if (confirm('У вас есть незаконченный пробник. Хотите продолжить?')) {
-            console.log('✅ Пользователь выбрал продолжить');
+            console.log('[OK] Пользователь выбрал продолжить');
             
             // Скрываем форму настроек
             document.getElementById('setup-form').style.display = 'none';
@@ -657,7 +657,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 loadTask(currentTaskNum);
             }
         } else {
-            console.log('❌ Пользователь выбрал начать заново');
+            console.log('[ERROR] Пользователь выбрал начать заново');
             // Очищаем сохраненный прогресс
             localStorage.removeItem('freeMockProgress');
             // Показываем форму настроек (она уже видна по умолчанию)
@@ -671,7 +671,7 @@ window.addEventListener('DOMContentLoaded', function() {
 function _showMockPayment(plan) {
     var isUnl = plan === 'unlimited';
     var price = isUnl ? '1 500₽' : '500₽';
-    var title = isUnl ? '♾️ Безлимит генераций' : '📦 +10 генераций';
+    var title = isUnl ? '️ Безлимит генераций' : ' +10 генераций';
     var desc  = isUnl ? 'Безлимитные AI-чертежи на 30 дней'
                       : 'Дополнительные 10 генераций к лимиту';
     var existing = document.getElementById('mockPayOverlay');
@@ -687,7 +687,7 @@ function _showMockPayment(plan) {
       'border-radius:16px;padding:32px;max-width:480px;width:100%;' +
       'box-shadow:0 8px 32px rgba(0,0,0,0.5);color:#fff;font-family:-apple-system,sans-serif;">' +
         '<div style="text-align:center;margin-bottom:24px;">' +
-          '<div style="font-size:48px;">💳</div>' +
+          '<div style="font-size:48px;"></div>' +
           '<h2 style="margin:8px 0 4px;font-size:22px;">Тестовая оплата</h2>' +
           '<p style="margin:0;color:#94a3b8;font-size:13px;">' +
             'Демонстрационная форма — реальная оплата не происходит' +
@@ -737,7 +737,7 @@ function _showMockPayment(plan) {
         '<div style="margin-top:18px;padding:10px;' +
         'background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);' +
         'border-radius:8px;color:#fbbf24;font-size:11px;text-align:center;">' +
-          '⚠️ Тестовая страница. Реальный платёжный шлюз пока не подключён.' +
+          '[!]️ Тестовая страница. Реальный платёжный шлюз пока не подключён.' +
         '</div>' +
       '</div>';
     document.body.appendChild(overlay);
@@ -750,7 +750,7 @@ function _showMockPayment(plan) {
         btn.style.opacity = '0.6';
         btn.textContent = 'Обработка...';
         setTimeout(function() {
-            status.innerHTML = '<span style="color:#4ade80;">✅ Платёж принят (тестовый режим)</span>';
+            status.innerHTML = '<span style="color:#4ade80;">[OK] Платёж принят (тестовый режим)</span>';
             btn.textContent = 'Готово';
             setTimeout(function() { overlay.remove(); }, 1500);
         }, 1100);

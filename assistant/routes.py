@@ -126,9 +126,9 @@ def post_assistant():
 
 # ---------------------------------------------------------------------------
 # Legacy aliases — keep the old widget on /about working without changes.
-# Old contract (services/site_concierge → routes/concierge.py):
-#     POST /api/concierge/ask  → { answer, suggested_actions, source }
-#     GET  /api/concierge/intents → { intents: [...] }
+# Old contract (services/site_concierge -> routes/concierge.py):
+#     POST /api/concierge/ask  -> { answer, suggested_actions, source }
+#     GET  /api/concierge/intents -> { intents: [...] }
 # ---------------------------------------------------------------------------
 @assistant_bp.route("/api/concierge/ask", methods=["POST"])
 def legacy_concierge_ask():
@@ -180,7 +180,7 @@ def legacy_concierge_intents():
             {
                 "id": r.get("category"),
                 "intent": r.get("title"),
-                "icon": "💬",
+                "icon": "",
             }
             for r in all_active()
             if r.get("category") and r.get("title")

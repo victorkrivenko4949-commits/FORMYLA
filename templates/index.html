@@ -10,7 +10,7 @@
   <h1 style="font-size:48px; font-weight:900; letter-spacing:1px; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; margin:0;">ПАВЕЛЕНТИУС МОРСКОЙ</h1>
   <div style="flex:1 1 360px; max-width:520px; min-width:300px; text-align:left; background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:16px; padding:18px 22px; box-shadow:0 4px 20px rgba(59,130,246,0.08);">
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-      <span style="font-size:22px;">📐</span>
+      <span style="font-size:22px;"></span>
       <h2 style="font-size:20px; font-weight:800; margin:0; background:linear-gradient(135deg, var(--accent-2), var(--accent-1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">Мат статистика</h2>
     </div>
     <p style="font-size:13px; color:var(--text-secondary,#6b7280); margin:0 0 12px;">Раздел для магистратуры (1–2 курс): ключевые темы и примеры задач.</p>
@@ -21,13 +21,13 @@
       <li style="font-size:14px;"><b>Топология.</b> Компактность, связность, фундаментальная группа. <i>Пример:</i> π₁(S¹) ≅ ℤ.</li>
       <li style="font-size:14px;"><b>Дифф. уравнения.</b> Краевые задачи, устойчивость по Ляпунову. <i>Пример:</i> y'' + ω²y = 0, y(0)=y(π)=0.</li>
     </ul>
-    <p style="font-size:12px; color:var(--accent-1); margin:12px 0 0; font-weight:600;">Средний уровень сложности: ★★★★☆ · рекомендовано для магистратуры</p>
+    <p style="font-size:12px; color:var(--accent-1); margin:12px 0 0; font-weight:600;">Средний уровень сложности:  · рекомендовано для магистратуры</p>
   </div>
 </div>
 {% endif %}
 {# ════════════════════════════════════════════════════════════════════════
    DESKTOP / TABLET (>768px) — старая верстка без изменений.
-   Скрывается на мобильных через .m-hide → display:none в mobile.css.
+   Скрывается на мобильных через .m-hide -> display:none в mobile.css.
    ════════════════════════════════════════════════════════════════════════ #}
 <div class="m-hide">
   <div style="text-align:center;margin-bottom:8px;">
@@ -64,14 +64,14 @@
     <div class="card" style="opacity:0.55; cursor:not-allowed; pointer-events:none;">
         <h2 class="card-title">Раскраски</h2>
         <p class="card-text">Математические раскраски — площадь, дроби, симметрия.</p>
-        <p style="color:#888; font-style:italic; font-size:13px; margin-top:8px;">Скоро появится 🚧</p>
+        <p style="color:#888; font-style:italic; font-size:13px; margin-top:8px;">Скоро появится </p>
     </div>
 
     <!-- Stub: Игры - coming soon -->
     <div class="card" style="opacity:0.55; cursor:not-allowed; pointer-events:none;">
         <h2 class="card-title">Игры</h2>
         <p class="card-text">Математические игры и головоломки — Судоку, Танграм и другие.</p>
-        <p style="color:#888; font-style:italic; font-size:13px; margin-top:8px;">Скоро появится 🚧</p>
+        <p style="color:#888; font-style:italic; font-size:13px; margin-top:8px;">Скоро появится </p>
     </div>
   </div>
 </div>
@@ -79,7 +79,7 @@
 
 {# ════════════════════════════════════════════════════════════════════════
    MOBILE HOME SLIDER (≤768px) — свайп-пейджер главных разделов.
-   Показывается только на узких экранах через .m-only → media-query в mobile.css.
+   Показывается только на узких экранах через .m-only -> media-query в mobile.css.
    Прототип: 3 слайда (Задачи дня / Темы / Олимпиады).
    ════════════════════════════════════════════════════════════════════════ #}
 <section class="m-only mhome" id="mHome"
@@ -87,12 +87,12 @@
 
   <div class="mhome-track" id="mHomeTrack" tabindex="0">
 
-    {# ── Слайд 1: 🔥 Задачи дня ─────────────────────────────────────── #}
+    {# ── Слайд 1:  Задачи дня ─────────────────────────────────────── #}
     <article class="mhome-slide" id="mHomeSlide0"
              role="group" aria-roledescription="slide" aria-label="Задачи дня (1 из 3)">
       <div class="mhome-card mhome-card--daily">
         <div class="mhome-hero">
-          <div class="mhome-emoji" aria-hidden="true">🔥</div>
+          <div class="mhome-emoji" aria-hidden="true"></div>
           <h2 class="mhome-title">Задачи дня</h2>
           <p class="mhome-sub">Ежедневный квест — задачи, подобранные под твои слабые места.</p>
 
@@ -106,7 +106,7 @@
                 </div>
                 <div class="mhome-progress-text">
                   {% if dq.completed_count >= dq.total_count %}
-                    ✓ Готово на сегодня!
+                    [OK] Готово на сегодня!
                   {% else %}
                     {{ dq.completed_count }} / {{ dq.total_count }} задач
                   {% endif %}
@@ -119,17 +119,17 @@
         </div>
 
         <a href="/daily_tasks" class="mhome-btn mhome-btn--primary">
-          Решать сегодня →
+          Решать сегодня ->
         </a>
       </div>
     </article>
 
-    {# ── Слайд 2: 📚 Темы ───────────────────────────────────────────── #}
+    {# ── Слайд 2:  Темы ───────────────────────────────────────────── #}
     <article class="mhome-slide" id="mHomeSlide1"
              role="group" aria-roledescription="slide" aria-label="Темы (2 из 3)">
       <div class="mhome-card mhome-card--themes">
         <div class="mhome-hero">
-          <div class="mhome-emoji" aria-hidden="true">📚</div>
+          <div class="mhome-emoji" aria-hidden="true"></div>
           <h2 class="mhome-title">Темы</h2>
           <p class="mhome-sub">Тренировка по разделам математики 5–11 класса.</p>
         </div>
@@ -139,13 +139,13 @@
             {% if loop.index <= 6 %}
             <a href="{{ url_for('section', subject_key=key) }}" class="mhome-tile">
               <span class="mhome-tile-emoji" aria-hidden="true">
-                {% if key == 'algebra' %}🔢
-                {% elif key == 'geometry' %}📐
-                {% elif key == 'combinatorics' %}🎲
-                {% elif key == 'number_theory' %}🔠
-                {% elif key == 'movement' %}🏃
-                {% elif key == 'knights_liars' %}🛡️
-                {% else %}✨{% endif %}
+                {% if key == 'algebra' %}
+                {% elif key == 'geometry' %}
+                {% elif key == 'combinatorics' %}
+                {% elif key == 'number_theory' %}
+                {% elif key == 'movement' %}
+                {% elif key == 'knights_liars' %}️
+                {% else %}{% endif %}
               </span>
               <span class="mhome-tile-title">{{ title }}</span>
             </a>
@@ -155,19 +155,19 @@
       </div>
     </article>
 
-    {# ── Слайд 3: 🏆 Олимпиады ──────────────────────────────────────── #}
+    {# ── Слайд 3:  Олимпиады ──────────────────────────────────────── #}
     <article class="mhome-slide" id="mHomeSlide2"
              role="group" aria-roledescription="slide" aria-label="Олимпиады (3 из 3)">
       <div class="mhome-card mhome-card--olymp">
         <div class="mhome-hero">
-          <div class="mhome-emoji" aria-hidden="true">🏆</div>
+          <div class="mhome-emoji" aria-hidden="true"></div>
           <h2 class="mhome-title">Олимпиады</h2>
           <p class="mhome-sub">8 000+ задач из ВсОШ, Эйлера, Ломоносова, Турнира городов.</p>
         </div>
 
         <div class="mhome-list">
           <a href="{{ url_for('olympiads') }}" class="mhome-row">
-            <span class="mhome-row-icon">📖</span>
+            <span class="mhome-row-icon"></span>
             <span class="mhome-row-text">
               <b>Каталог олимпиад</b>
               <small>Все турниры и годы</small>
@@ -183,7 +183,7 @@
             <span class="mhome-row-chev">›</span>
           </a>
           <a href="{{ url_for('olympiad.methods') }}" class="mhome-row">
-            <span class="mhome-row-icon">📚</span>
+            <span class="mhome-row-icon"></span>
             <span class="mhome-row-text">
               <b>Каталог методов</b>
               <small>89 формализованных приёмов</small>
@@ -191,7 +191,7 @@
             <span class="mhome-row-chev">›</span>
           </a>
           <a href="{{ url_for('olympiad_prep.calendar') }}" class="mhome-row">
-            <span class="mhome-row-icon">📅</span>
+            <span class="mhome-row-icon"></span>
             <span class="mhome-row-text">
               <b>Календарь</b>
               <small>Ближайшие туры</small>
@@ -217,7 +217,7 @@
             aria-label="К разделу: Олимпиады" data-target="2"></button>
   </div>
 
-  <p class="mhome-hint">← свайп влево / вправо →</p>
+  <p class="mhome-hint"><- свайп влево / вправо -></p>
 </section>
 
 {% endblock %}

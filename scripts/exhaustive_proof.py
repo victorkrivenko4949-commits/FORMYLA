@@ -18,17 +18,17 @@ PASS = FAIL = 0
 def ok(name, cond=True):
     global PASS, FAIL
     if cond:
-        PASS += 1; print(f'  ✅ {name}')
+        PASS += 1; print(f'  [OK] {name}')
     else:
-        FAIL += 1; print(f'  ❌ {name}')
+        FAIL += 1; print(f'  [ERROR] {name}')
 
 def hdr(s):
     print(f'\n{"="*70}\n{s}\n{"="*70}')
 
 
 def proof_1_daily_set():
-    """D1: GET /daily-set → 302 → /daily_tasks."""
-    hdr('ДЕФЕКТ 1: GET /daily-set → 302 → /daily_tasks')
+    """D1: GET /daily-set -> 302 -> /daily_tasks."""
+    hdr('ДЕФЕКТ 1: GET /daily-set -> 302 -> /daily_tasks')
 
     with flask_app.test_client() as c:
         # 1a без логина
@@ -37,7 +37,7 @@ def proof_1_daily_set():
         loc = r.headers.get('Location', 'NONE')
         print(f'  1a (no login): status={code} Location={loc}')
         ok('1a 302', code == 302)
-        ok('1a Location→login', 'login' in loc.lower())
+        ok('1a Location->login', 'login' in loc.lower())
 
         # 1b с логином
         with flask_app.app_context():
@@ -78,7 +78,7 @@ def proof_2_answer_fields():
         ('Задачи дня /daily_tasks (модалка)', 'static/js/daily_tasks_modal.js'),
     ]
     for name, fpath in places:
-        print(f'\n  📍 {name} — {fpath}')
+        print(f'\n   {name} — {fpath}')
         d = open(fpath, encoding='utf-8', errors='ignore').read()
         has_input = 'input' in d.lower() and ('answer' in d.lower() or 'user-answer' in d.lower() or 'math-field' in d.lower() or 'dt-user-answer' in d.lower())
         has_button = 'submit' in d.lower() or 'отправить' in d.lower() or 'проверить' in d.lower() or 'Ответить' in d.lower()
@@ -96,7 +96,7 @@ def proof_3_diagnostics_gone():
     refs = []
     pats = ['startInlineDiagnostic', 'Диагностика в чате.*21 задача',
             'prep/coach/test/start.*fetch', 'prep/coach/questionnaire/start.*fetch',
-            '🧪 Диагностика']
+            ' Диагностика']
     for f in glob.glob('templates/**/*.html', recursive=True):
         c = open(f, encoding='utf-8', errors='ignore').read()
         for p in pats:
@@ -104,7 +104,7 @@ def proof_3_diagnostics_gone():
                 refs.append(f'{f}: {p}')
     if refs:
         for r in refs:
-            print(f'  ⚠️ {r}')
+            print(f'  [!]️ {r}')
         ok('3a 0 refs in templates', False)
     else:
         print('  0 references found')
@@ -114,9 +114,9 @@ def proof_3_diagnostics_gone():
     print('\n  Маршруты backend:')
     with flask_app.test_client() as c:
         r = c.post('/prep/coach/test/start', follow_redirects=False)
-        print(f'  POST /prep/coach/test/start → {r.status_code}')
+        print(f'  POST /prep/coach/test/start -> {r.status_code}')
         rq = c.post('/prep/coach/questionnaire/start', follow_redirects=False)
-        print(f'  POST /prep/coach/questionnaire/start → {rq.status_code}')
+        print(f'  POST /prep/coach/questionnaire/start -> {rq.status_code}')
         ok('3b routes respond', r.status_code in (200, 302) and rq.status_code in (200, 302))
 
 
@@ -126,7 +126,7 @@ def proof_4_reset_me():
 
     spath = 'scripts/reset_me.py'
     if os.path.exists(spath):
-        print(f'  ✅ Файл существует: {spath}')
+        print(f'  [OK] Файл существует: {spath}')
         ok('4a exists', True)
         c = open(spath, encoding='utf-8').read()
         checks = [

@@ -97,7 +97,7 @@ class DuckDuckGoSearchBackend:
 
 
 class FallbackSearchBackend:
-    """Primary → fallback если primary упал."""
+    """Primary -> fallback если primary упал."""
 
     def __init__(self, primary, fallback):
         self.primary = primary

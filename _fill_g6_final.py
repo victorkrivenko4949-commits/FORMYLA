@@ -147,7 +147,7 @@ def main():
             with open(DB_PATH, 'w', encoding='utf-8') as f:
                 json.dump(db, f, ensure_ascii=False, indent=2)
             
-            logger.info(f"✅ SUCCESS! Generated unique task (attempt {attempt})")
+            logger.info(f"[OK] SUCCESS! Generated unique task (attempt {attempt})")
             logger.info(f"  Statement: {stmt[:150]}...")
             logger.info(f"  Answer: {ans[:100]}...")
             logger.info(f"  New DB total: {len(db)} tasks")
@@ -160,10 +160,10 @@ def main():
             remaining = {k: v for k, v in cells.items() if len(v) < 5}
             if not remaining:
                 logger.info("\n" + "="*60)
-                logger.info("🎉🎉🎉 ALL L2 CELLS ARE FULL! 🎉🎉🎉")
+                logger.info(" ALL L2 CELLS ARE FULL! ")
                 logger.info(f"  Total L2 tasks: {len(l2_after)}")
             else:
-                logger.info(f"\n⚠️  {len(remaining)} cells still with holes:")
+                logger.info(f"\n[!]️  {len(remaining)} cells still with holes:")
                 for (g, tp), ts in sorted(remaining.items()):
                     logger.info(f"  L2|g{g}|{tp} — {len(ts)}/5")
             
@@ -174,7 +174,7 @@ def main():
         
         time.sleep(1)
     
-    logger.error("✗ Failed to generate a unique task after 20 attempts")
+    logger.error(" Failed to generate a unique task after 20 attempts")
 
 
 if __name__ == '__main__':

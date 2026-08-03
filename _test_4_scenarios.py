@@ -343,9 +343,9 @@ with app.app_context():
     print("=" * 80)
     client = fresh_session()
     r = client.get('/prep/onboarding')
-    print(f"GET /prep/onboarding → {r.status_code}")
+    print(f"GET /prep/onboarding -> {r.status_code}")
     assert r.status_code == 200, f"Expected 200, got {r.status_code}"
-    print("✅ GET /prep/onboarding = 200 OK")
+    print("[OK] GET /prep/onboarding = 200 OK")
 
     print("\n" + "=" * 80)
     print("ВСЕ 4 СЦЕНАРИЯ ПРОЙДЕНЫ")

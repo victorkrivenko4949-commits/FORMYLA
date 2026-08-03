@@ -62,7 +62,7 @@ SUBJECT_ALIASES = {
     "теория множеств": SET_THEORY,
 }
 
-# Per-grade school domain → subject (for grades 5–8 where the JSON file
+# Per-grade school domain -> subject (for grades 5–8 where the JSON file
 # uses subject="math" for everything).
 DOMAIN_TO_SUBJECT = {
     # 5 класс
@@ -135,7 +135,7 @@ ALGEBRA_KW = (
     "многочлен", "парабол", "логарифм", "показательн", "квадратич",
     "корн", "виет", "трехчлен", "степен", "прогресс", "тригонометр",
     "выражени", "одночлен", "формул", "процент", "пропорц", "график",
-    "оптимизац", "параметр", "движен",  # текстовые/движение → алгебра
+    "оптимизац", "параметр", "движен",  # текстовые/движение -> алгебра
 )
 
 NUMBER_THEORY_KW = (
@@ -262,7 +262,7 @@ def subject_label_ru(subject: Optional[str]) -> str:
     return SUBJECT_LABEL_RU.get(subject, subject)
 
 
-# ─── URL/UI key → canonical subject ──────────────────────────────────────
+# ─── URL/UI key -> canonical subject ──────────────────────────────────────
 # Часть страниц использует ключи 'kl_movement', 'knights_liars', 'movement'
 # и т.п.  Для адаптивного теста по предметной области они НЕ подходят
 # (это под-темы, а не предмет), и фильтрация по `subject` для них

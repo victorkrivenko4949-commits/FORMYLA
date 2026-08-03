@@ -13,6 +13,6 @@
   <text class="label" x="406.00" y="314.00" text-anchor="middle" dominant-baseline="middle">C</text>
   <circle class="dot" cx="210.00" cy="300.00" r="4.00"/>
   <text class="label" x="210.00" y="320.00" text-anchor="middle" dominant-baseline="middle">D</text>
-  <text class="num-aux" x="240.00" y="30.00" text-anchor="middle" dominant-baseline="middle">AB / AC = BD / DC  ⇒  10/AC = 6/9</text>
+  <text class="num-aux" x="240.00" y="30.00" text-anchor="middle" dominant-baseline="middle">AB / AC = BD / DC    10/AC = 6/9</text>
   <text class="num-aux" x="240.00" y="50.00" text-anchor="middle" dominant-baseline="middle">AC = 15</text>
 </svg>

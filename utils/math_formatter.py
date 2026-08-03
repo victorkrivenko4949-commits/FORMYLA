@@ -101,7 +101,7 @@ def format_math_to_latex(text: str) -> str:
     text = re.sub(r'\$\s*\$', '', text)  # Убираем пустые $ $
     
     # 8. Объединяем соседние математические выражения
-    # $a$ + $b$ → $a + b$
+    # $a$ + $b$ -> $a + b$
     text = re.sub(r'\$\s*([+\-*/=])\s*\$', r' \1 ', text)
     text = re.sub(r'\$([^$]+)\$\s*\$([^$]+)\$', r'$\1 \2$', text)
     

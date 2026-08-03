@@ -289,8 +289,8 @@ def sanitize_feedback_no_latex(s: str) -> str:
         ("\\cdot", "·"), ("\\times", "×"), ("\\div", "÷"), ("\\pm", "±"),
         ("\\le", "≤"), ("\\leq", "≤"), ("\\ge", "≥"), ("\\geq", "≥"),
         ("\\ne", "≠"), ("\\neq", "≠"), ("\\approx", "≈"), ("\\equiv", "≡"),
-        ("\\infty", "∞"), ("\\to", "→"), ("\\Rightarrow", "⇒"),
-        ("\\Leftrightarrow", "⇔"), ("\\in", "∈"), ("\\notin", "∉"),
+        ("\\infty", "∞"), ("\\to", "->"), ("\\Rightarrow", ""),
+        ("\\Leftrightarrow", ""), ("\\in", "∈"), ("\\notin", "∉"),
         ("\\subset", "⊂"), ("\\cup", "∪"), ("\\cap", "∩"),
         ("\\forall", "∀"), ("\\exists", "∃"), ("\\sum", "Σ"), ("\\prod", "∏"),
         ("\\int", "∫"), ("\\lim", "lim"), ("\\log", "log"), ("\\ln", "ln"),
@@ -328,7 +328,7 @@ def _clean_latex_for_sympy(text: str) -> str:
     Улучшенная версия:
     - обрабатывает вложенные дроби, \\binom, \\overline
     - конвертирует \\pmod, \\equiv, \\cup, \\to, \\infty и др.
-    - ^{...} преобразуется в **(...) ДО глобальной ^ → **
+    - ^{...} преобразуется в **(...) ДО глобальной ^ -> **
     - удаляет \\begin{...}...\\end{...} окружения
     - оставшиеся { } преобразуются в ( )
     """
@@ -362,7 +362,7 @@ def _clean_latex_for_sympy(text: str) -> str:
             break
         t = new_t
 
-    # F) \\binom{n}{k} → binomial(n,k)
+    # F) \\binom{n}{k} -> binomial(n,k)
     for _ in range(MAX_ITER):
         new_t = re.sub(
             r'\\binom\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}'
@@ -374,7 +374,7 @@ def _clean_latex_for_sympy(text: str) -> str:
             break
         t = new_t
 
-    # G) \\sqrt[n]{x} → (x)**(1/(n))  and  \\sqrt{x} → sqrt(x)
+    # G) \\sqrt[n]{x} -> (x)**(1/(n))  and  \\sqrt{x} -> sqrt(x)
     t = re.sub(r'\\sqrt\s*\[([^\]]*)\]\s*\{([^{}]*)\}', r'(\2)**(1/(\1))', t)
     t = re.sub(r'\\sqrt\s*\{([^{}]*)\}', r'sqrt(\1)', t)
 
@@ -382,7 +382,7 @@ def _clean_latex_for_sympy(text: str) -> str:
     for cmd in ('overline', 'underline', 'vec', 'hat', 'bar', 'tilde'):
         t = re.sub(r'\\' + cmd + r'\s*\{([^{}]*)\}', r'(\1)', t)
 
-    # I) \\pm → +-, \\mp → -+
+    # I) \\pm -> +-, \\mp -> -+
     t = re.sub(r'\\pm\b', '+-', t)
     t = re.sub(r'\\mp\b', '-+', t)
 
@@ -442,8 +442,8 @@ def _clean_latex_for_sympy(text: str) -> str:
     # R) Percent
     t = re.sub(r'\\%', '%', t)
 
-    # S) Handle ^{...} superscripts BEFORE global ^→**
-    #    Convert x^{...} → x**(...)
+    # S) Handle ^{...} superscripts BEFORE global ^->**
+    #    Convert x^{...} -> x**(...)
     for _ in range(MAX_ITER):
         new_t = re.sub(
             r'\^\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}',
@@ -465,10 +465,10 @@ def _clean_latex_for_sympy(text: str) -> str:
             break
         t = new_t
 
-    # U) Global ^ → ** (now only bare ^ remains)
+    # U) Global ^ -> ** (now only bare ^ remains)
     t = t.replace('^', '**')
 
-    # V) Comma decimal → dot (only between digits)
+    # V) Comma decimal -> dot (only between digits)
     t = re.sub(r'(?<=\d),(?=\d)', '.', t)
 
     # W) Remove leftover LaTeX commands
@@ -484,7 +484,7 @@ def _clean_latex_for_sympy(text: str) -> str:
         t,
     )
 
-    # X) Remove remaining backslash-commands (e.g. \\alpha → alpha for sympy)
+    # X) Remove remaining backslash-commands (e.g. \\alpha -> alpha for sympy)
     t = re.sub(r'\\([a-zA-Z]+)', r'\1', t)
 
     # Y) Replace remaining braces with parentheses
@@ -508,10 +508,10 @@ def _compare_with_sympy(
 
     Returns:
         Кортеж (is_correct, needs_ai):
-            (None, False)   — пустой ответ → blank (ни sympy, ни ИИ не нужны).
-            (True, False)   — sympy подтвердил равенство → ВЕРНО.
-            (False, False)  — sympy опроверг равенство → НЕВЕРНО.
-            (None, True)    — sympy не смог распарсить → нужен ИИ.
+            (None, False)   — пустой ответ -> blank (ни sympy, ни ИИ не нужны).
+            (True, False)   — sympy подтвердил равенство -> ВЕРНО.
+            (False, False)  — sympy опроверг равенство -> НЕВЕРНО.
+            (None, True)    — sympy не смог распарсить -> нужен ИИ.
     """
     # --- Empty ---
     user = (user_answer or '').strip()
@@ -520,7 +520,7 @@ def _compare_with_sympy(
         return None, False
 
     if not _HAS_SYMPY:
-        return None, True  # sympy not installed → AI fallback
+        return None, True  # sympy not installed -> AI fallback
 
     # --- Clean LaTeX ---
     cleaned_user = _clean_latex_for_sympy(user)
@@ -528,7 +528,7 @@ def _compare_with_sympy(
     if not cleaned_user or not cleaned_canon:
         return None, False
 
-    # Non-math answers (Russian words) → skip sympy
+    # Non-math answers (Russian words) -> skip sympy
     if re.search(r'[а-яА-ЯёЁ]', cleaned_user):
         return None, True
 
@@ -537,7 +537,7 @@ def _compare_with_sympy(
         expr_user = sympy.sympify(cleaned_user, strict=False)
         expr_canon = sympy.sympify(cleaned_canon, strict=False)
     except Exception:
-        # sympy can't parse → AI fallback
+        # sympy can't parse -> AI fallback
         return None, True
 
     # --- Compare ---
@@ -555,7 +555,7 @@ def _compare_with_sympy(
             except Exception:
                 pass
 
-        # Set / multiset: if both are free of symbols and not equal → not correct
+        # Set / multiset: if both are free of symbols and not equal -> not correct
         return False, False
 
     except Exception:
@@ -579,18 +579,18 @@ def _compute_score(
       • Неверный ответ даёт 0 баллов (без отрицательных значений).
 
     Таблица:
-      пусто/"не знаю"                              → 0.0
-      answer_correct=False, method_correct=*       → 0.0  (минимум 0, не −1)
-      answer_correct=True,  has_solution=True      → 1.0  (→ +2 балла во фронте)
-      answer_correct=True,  has_solution=False     → 0.5  (→ +1 балл во фронте)
+      пусто/"не знаю"                              -> 0.0
+      answer_correct=False, method_correct=*       -> 0.0  (минимум 0, не −1)
+      answer_correct=True,  has_solution=True      -> 1.0  (-> +2 балла во фронте)
+      answer_correct=True,  has_solution=False     -> 0.5  (-> +1 балл во фронте)
     """
-    # Неверный ответ → 0. Никаких отрицательных оценок.
+    # Неверный ответ -> 0. Никаких отрицательных оценок.
     if not answer_correct:
         return 0.0
-    # answer_correct=True → минимум +1 балл (0.5 во float-шкале).
+    # answer_correct=True -> минимум +1 балл (0.5 во float-шкале).
     if has_solution and method_correct:
         return 1.0
-    # верный ответ без полного решения / без обоснования метода → +1 балл
+    # верный ответ без полного решения / без обоснования метода -> +1 балл
     return 0.5
 
 
@@ -628,40 +628,40 @@ def score_badge(
 
     Логика:
         Только ответ (has_solution=False):
-            answer_correct=True  → +1 балл, уровень +1
-            answer_correct=False → −1 балл, уровень −1
+            answer_correct=True  -> +1 балл, уровень +1
+            answer_correct=False -> −1 балл, уровень −1
         С решением:
-            answer_correct=True  + method_correct≠False → +1 балл, +1
-            answer_correct=True  + method_correct=False →  0 баллов (метод не тот)
-            answer_correct=False + method_correct=True  →  0 баллов (метод понят)
-            answer_correct=False + method_correct≠True  → −1 балл, −1
-        AI failure / неопределённость → 0 баллов, без изменений.
+            answer_correct=True  + method_correct≠False -> +1 балл, +1
+            answer_correct=True  + method_correct=False ->  0 баллов (метод не тот)
+            answer_correct=False + method_correct=True  ->  0 баллов (метод понят)
+            answer_correct=False + method_correct≠True  -> −1 балл, −1
+        AI failure / неопределённость -> 0 баллов, без изменений.
     """
-    # Сбой AI или неопределённость → нейтрально
+    # Сбой AI или неопределённость -> нейтрально
     if answer_correct is None:
-        return ("⚪ **Оценка тьютора: 0 баллов** "
+        return (" **Оценка тьютора: 0 баллов** "
                 "(ответ не принят — попробуй ещё раз, уровень без изменений)")
 
     if answer_correct is True:
         if has_solution and method_correct is False:
             # Ответ верный, но метод/идея неверная — нейтрально
-            return ("🟡 **Оценка тьютора: 0 баллов, уровень без изменений** "
+            return (" **Оценка тьютора: 0 баллов, уровень без изменений** "
                     "(ответ верный, но метод/решение не соответствует — "
                     "разберись с правильной идеей)")
         # Ответ верный (с верным методом или без решения)
         if has_solution:
-            return ("🟢 **Оценка тьютора: +1 балл, уровень +1** "
+            return (" **Оценка тьютора: +1 балл, уровень +1** "
                     "(верный ответ + корректный метод решения)")
-        return ("🟢 **Оценка тьютора: +1 балл, уровень +1** "
+        return (" **Оценка тьютора: +1 балл, уровень +1** "
                 "(верный ответ — отлично!)")
 
     # answer_correct is False — ответ неверный
     if has_solution and method_correct is True:
         # Ответ не туда, но метод понят — нейтрально
-        return ("🟡 **Оценка тьютора: 0 баллов, уровень без изменений** "
+        return (" **Оценка тьютора: 0 баллов, уровень без изменений** "
                 "(ответ неверный, но метод понят правильно — "
                 "проверь арифметику и финальные шаги)")
-    return ("🔴 **Оценка тьютора: −1 балл, уровень −1** "
+    return (" **Оценка тьютора: −1 балл, уровень −1** "
             "(неверный ответ — разбери эталонное решение и попробуй похожую задачу)")
 
 
@@ -742,11 +742,11 @@ def review_attempt(
             logger.warning("OCR photos failed: %s", e)
 
     # ── Stage 2: sympy computational verification ──────────────────
-    sympy_determined = False  # True  → sympy parsed both → вердикт окончательный
+    sympy_determined = False  # True  -> sympy parsed both -> вердикт окончательный
     sympy_correct = False     # sympy's verdict
 
     if not proof_mode:
-        # 2a) Empty answer → blank immediately (skip sympy + AI)
+        # 2a) Empty answer -> blank immediately (skip sympy + AI)
         if not user_answer:
             return {
                 "score": 0.0,
@@ -779,8 +779,8 @@ def review_attempt(
     #
     # ВАЖНО (по требованию продукта): вердикт +1/0/−1 принимает ТОЛЬКО ИИ-тьютор.
     # Ранее здесь были два «fast return»:
-    #   3a) sympy_determined + sympy_correct → возвращали ВЕРНО без ИИ.
-    #   3b) math_equivalent(user, canon)    → возвращали ВЕРНО без ИИ.
+    #   3a) sympy_determined + sympy_correct -> возвращали ВЕРНО без ИИ.
+    #   3b) math_equivalent(user, canon)    -> возвращали ВЕРНО без ИИ.
     # Из-за этого возникал «локальный кейс +1», параллельный с ИИ-тьютором,
     # и при разнице форматов ответа результаты расходились.
     # Теперь sympy/math-equivalent используются ИСКЛЮЧИТЕЛЬНО как hint
@@ -789,7 +789,7 @@ def review_attempt(
     feedback = "Ваш ответ принят."
 
     # Подсказка для модели: если sympy не сработал, но строки совпадают
-    # численно → пометим это и отдадим как hint.
+    # численно -> пометим это и отдадим как hint.
     math_equiv_hint: Optional[bool] = None
     if not proof_mode and not sympy_determined and correct_answer:
         try:
@@ -902,7 +902,7 @@ def review_attempt(
                 )
             except (json.JSONDecodeError, ValueError) as parse_err:
                 logger.error("Failed to parse AI response as JSON: %s", parse_err)
-                # Сбой парсинга → НЕЙТРАЛЬНО (не −1!): уровень не падает.
+                # Сбой парсинга -> НЕЙТРАЛЬНО (не −1!): уровень не падает.
                 score = 0.0
                 category = "suspicious"
                 confidence = 0.0
@@ -914,7 +914,7 @@ def review_attempt(
                 )
         except Exception as e:
             logger.exception("DeepSeek call failed: %s", e)
-            # API/сетевой сбой → НЕЙТРАЛЬНО (не −1!).
+            # API/сетевой сбой -> НЕЙТРАЛЬНО (не −1!).
             score = 0.0
             category = "suspicious"
             confidence = 0.0
@@ -925,7 +925,7 @@ def review_attempt(
                 + (f"**Решение:**\n{solution_ref[:800]}" if solution_ref else "")
             )
     else:
-        # ИИ не подключён в окружении → НЕЙТРАЛЬНО (не −1!).
+        # ИИ не подключён в окружении -> НЕЙТРАЛЬНО (не −1!).
         score = 0.0
         category = "suspicious"
         confidence = 0.0

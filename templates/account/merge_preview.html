@@ -4,7 +4,7 @@
 {% block content %}
 <div class="merge-wrap">
   <div class="merge-card">
-    <div class="merge-icon">⚠️</div>
+    <div class="merge-icon">[!]️</div>
     <h1 class="merge-title">Этот Яндекс ID уже привязан к другому аккаунту</h1>
     <p class="merge-lead">
       Чтобы продолжить, нужно <strong>объединить два аккаунта в один</strong>.
@@ -188,7 +188,7 @@
       const data = await r.json().catch(function () { return {}; });
       if (r.ok && data.status === 'ok') {
         const moved = (data.summary && data.summary._total_rows_moved) || 0;
-        setStatus('✓ Готово! Перенесено записей: ' + moved + '. Перенаправляем…', 'ok');
+        setStatus('[OK] Готово! Перенесено записей: ' + moved + '. Перенаправляем…', 'ok');
         setTimeout(function () {
           window.location.href = data.redirect_url || '{{ url_for("profile") }}';
         }, 1200);

@@ -57,7 +57,7 @@ class DeepSeekClient:
         # (см. _call_api ниже), который использует свой OPENROUTER_API_KEY.
         self.base_url = "https://api.deepseek.com/v1/chat/completions"
         self.model = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash")
-        logger.info("🔄 Using official DeepSeek API (direct)")
+        logger.info(" Using official DeepSeek API (direct)")
         
         self.max_retries = 2  # 2 попытки для устойчивости к ошибкам парсинга JSON
         self.base_delay = 2  # seconds
@@ -122,7 +122,7 @@ class DeepSeekClient:
                     if 'choices' in data and len(data['choices']) > 0:
                         content = data['choices'][0].get('message', {}).get('content')
                         if content:
-                            logger.info("✓ Request successful")
+                            logger.info("[OK] Request successful")
                             return content
                         else:
                             logger.warning("Response missing content field")
@@ -188,8 +188,8 @@ class DeepSeekClient:
 
         deepseek-reasoner accepts NO temperature/top_p/penalties (they are silently
         ignored by the API). It returns two fields per choice:
-          - message.reasoning_content  → the model's thought process (CoT)
-          - message.content            → the final answer
+          - message.reasoning_content  -> the model's thought process (CoT)
+          - message.content            -> the final answer
 
         Args:
             prompt:           User message.
@@ -247,7 +247,7 @@ class DeepSeekClient:
                         if not content:
                             raise ValueError("reasoner: empty content field")
                         logger.info(
-                            f"[reasoner] ✓ ok (reasoning={len(reasoning)} chars, "
+                            f"[reasoner] [OK] ok (reasoning={len(reasoning)} chars, "
                             f"content={len(content)} chars)"
                         )
                         if return_reasoning:
@@ -274,7 +274,7 @@ class DeepSeekClient:
                         f"reasoner: auth failed: {response.text[:200]}"
                     )
 
-                # Other 4xx → no retry
+                # Other 4xx -> no retry
                 raise DeepSeekAPIError(
                     f"reasoner HTTP {response.status_code}: "
                     f"{response.text[:300]}"
@@ -506,7 +506,7 @@ class DeepSeekClient:
 МАТЕМАТИКА:
 - КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать LaTeX: $, $$, \\frac, \\boxed, \\sqrt, \\cdot, \\[, \\], \\(, \\)
 - Пиши формулы ТОЛЬКО обычным текстом: a / b, x^2, √25, корень из 25
-- Используй Unicode символы: ×, ÷, ≤, ≥, ≠, →, √
+- Используй Unicode символы: ×, ÷, ≤, ≥, ≠, ->, √
 
 ФОРМАТИРОВАНИЕ (СТРОГО):
 - Используй четкое форматирование Markdown
@@ -669,7 +669,7 @@ class DeepSeekClient:
         # Когда мы шлём фото, нужно ОЧИСТИТЬ историю от прежних ассистент-реплик типа
         # «я не могу видеть изображения», иначе vision-модель «вживается в роль»
         # из-за in-context bias и продолжает отвечать «не вижу», даже если новое фото
-        # реально приложено. Также вычищаем плейсхолдеры «[📎 Прикреплено изображение]»,
+        # реально приложено. Также вычищаем плейсхолдеры «[ Прикреплено изображение]»,
         # чтобы у модели не было ложного контекста, что фото уже было.
         _NEG_PHRASES = (
             'не могу видеть',
@@ -731,11 +731,11 @@ class DeepSeekClient:
                     continue
                 # Также пропускаем user-сообщения с упоминанием прикреплённых фото
                 # (чтобы не было контекста "раньше я слал фото и ты не видел")
-                if role == 'user' and ('[📎' in content or 'прикрепл' in content_lower or 'фото' in content_lower):
+                if role == 'user' and ('[' in content or 'прикрепл' in content_lower or 'фото' in content_lower):
                     continue
                 # Убираем плейсхолдеры из user-сообщений
                 if isinstance(content, str):
-                    content = content.replace('[📎 Прикреплено изображение]', '').strip()
+                    content = content.replace('[ Прикреплено изображение]', '').strip()
                 if not content:
                     continue
                 clean_history.append({'role': role, 'content': content})
@@ -871,7 +871,7 @@ class DeepSeekClient:
                         # возвращаем специальное сообщение с просьбой описать текстом
                         logger.error(f"All vision models returned 'cannot see' for user {user.id}")
                         return (
-                            "🖼️ К сожалению, AI-модели не смогли распознать содержимое изображения. "
+                            "️ К сожалению, AI-модели не смогли распознать содержимое изображения. "
                             "Это может быть из-за качества фото или формата файла.\n\n"
                             "**Попробуйте:**\n"
                             "• Сделать фото при хорошем освещении\n"
@@ -880,7 +880,7 @@ class DeepSeekClient:
                         )
                     logger.error(f"All vision models failed for user {user.id}: {last_err}")
                     return (
-                        "🖼️ Не получилось распознать изображение через vision-AI "
+                        "️ Не получилось распознать изображение через vision-AI "
                         f"({type(last_err).__name__ if last_err else 'unknown error'}). "
                         "Пожалуйста, перепиши условие задачи текстом — я с радостью помогу. "
                         "Если ошибка повторяется, сообщи администратору, он проверит лимиты OpenRouter."
@@ -888,7 +888,7 @@ class DeepSeekClient:
                 else:
                     logger.error("OPENROUTER_API_KEY not configured — vision unavailable")
                     return (
-                        "🖼️ Распознавание фото временно недоступно: на сервере не настроен ключ OpenRouter. "
+                        "️ Распознавание фото временно недоступно: на сервере не настроен ключ OpenRouter. "
                         "Опиши задачу текстом, и я помогу!"
                     )
 
@@ -1114,7 +1114,7 @@ class DeepSeekClient:
 ПРАВИЛА ОФОРМЛЕНИЯ МАТЕМАТИКИ (СТРОГО!):
 - ЗАПРЕЩЕНО использовать LaTeX: $, $$, \\frac, \\boxed, \\sqrt, \\cdot и т.д.
 - Пиши формулы обычным текстом: a / b, x^2, √25, корень из 25
-- Используй Unicode символы: ×, ÷, ≤, ≥, ≠, →, √
+- Используй Unicode символы: ×, ÷, ≤, ≥, ≠, ->, √
 - Выделяй важное жирным шрифтом: **текст**
 
 Формат ответа: 2-3 абзаца с наводящими вопросами и подсказками."""

@@ -121,21 +121,21 @@ def auth_client(app):
 class TestPrepSmoke:
 
     def test_dashboard_loads(self, auth_client):
-        """GET /prep/ with login → 200 + 'Моя подготовка'."""
+        """GET /prep/ with login -> 200 + 'Моя подготовка'."""
         resp = auth_client.get('/prep/')
         assert resp.status_code == 200
         html = resp.data.decode('utf-8')
         assert 'Моя подготовка' in html
 
     def test_wizard_loads(self, auth_client):
-        """GET /prep/new with login → 200 + 'Выбери олимпиаду'."""
+        """GET /prep/new with login -> 200 + 'Выбери олимпиаду'."""
         resp = auth_client.get('/prep/new')
         assert resp.status_code == 200
         html = resp.data.decode('utf-8')
         assert 'Выбери олимпиаду' in html
 
     def test_dashboard_unauthorized(self, client):
-        """GET /prep/ without login → 302 redirect to /login."""
+        """GET /prep/ without login -> 302 redirect to /login."""
         resp = client.get('/prep/')
         assert resp.status_code in (302, 401)
         if resp.status_code == 302:

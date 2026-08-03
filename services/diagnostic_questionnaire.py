@@ -104,21 +104,21 @@ def get_test_start_level(level):
 def build_summary(answers, level):
     """Построить текстовое резюме после завершения анкеты."""
     labels = {
-        1: '🔵 Начальный',
-        2: '🟢 Базовый',
-        3: '🟡 Средний',
-        4: '🟠 Продвинутый',
-        5: '🔴 Высокий',
+        1: ' Начальный',
+        2: ' Базовый',
+        3: ' Средний',
+        4: ' Продвинутый',
+        5: ' Высокий',
     }
-    label = labels.get(level, '🟡 Средний')
+    label = labels.get(level, ' Средний')
 
     goal = answers.get('goal_text', 'не указана')
     minutes = answers.get('daily_minutes', '?')
 
     return (
-        f"🎉 <strong>Анкета пройдена!</strong>\n\n"
-        f"📊 <strong>Твой уровень:</strong> {label} (уровень {level}/5)\n"
-        f"📝 Цель: {goal}\n"
+        f" <strong>Анкета пройдена!</strong>\n\n"
+        f" <strong>Твой уровень:</strong> {label} (уровень {level}/5)\n"
+        f" Цель: {goal}\n"
         f"⏱ Готов заниматься: {minutes} мин/день\n\n"
         f"Теперь ты можешь пройти тест по темам — "
         f"адаптивный тест будет настроен под твой уровень!"

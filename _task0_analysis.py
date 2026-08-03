@@ -13,7 +13,7 @@ def header(s):
 # =========================================================
 # 1. grade_tasks vs adaptive_tasks linkage via source_id
 # =========================================================
-header("1. Linkage: grade_tasks.source_id ↔ adaptive_tasks.source_id")
+header("1. Linkage: grade_tasks.source_id <-> adaptive_tasks.source_id")
 
 # Count matches
 rows = conn.execute("""
@@ -148,9 +148,9 @@ rows = conn.execute("""
     GROUP BY g.level, a.difficulty_level, a.difficulty_level_src
     ORDER BY g.level, a.difficulty_level
 """).fetchall()
-print("Bank level → Adaptive level mapping (via source_id):")
+print("Bank level -> Adaptive level mapping (via source_id):")
 for r in rows:
-    print(f"  bank_lvl={r['bank_level']} → adapt_lvl={r['adapt_level']} (src={r['adapt_src']}) cnt={r['cnt']} avg_bank_sol={r['avg_bank_sol']:.0f} avg_adapt_sol={r['avg_adapt_sol']:.0f}")
+    print(f"  bank_lvl={r['bank_level']} -> adapt_lvl={r['adapt_level']} (src={r['adapt_src']}) cnt={r['cnt']} avg_bank_sol={r['avg_bank_sol']:.0f} avg_adapt_sol={r['avg_adapt_sol']:.0f}")
 
 # =========================================================
 # 7. Distribution of adaptive_tasks by (difficulty_level, class_level)  

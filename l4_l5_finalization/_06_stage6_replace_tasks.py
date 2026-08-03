@@ -177,15 +177,15 @@ def _extract_json(text: str) -> Optional[Dict[str, Any]]:
     """Extract JSON object from model response with robust brace balancing.
 
     Handles 9 edge cases:
-    1. Empty / None input → None
-    2. No braces found → None
-    3. Multiple objects → first valid one
-    4. Nested LaTeX braces within strings → handled
-    5. Truncated (unclosed) object → None
-    6. Valid JSON with markdown fences → stripped
-    7. Extra text before/after JSON → stripped
-    8. JSON within code blocks → handled
-    9. Malformed JSON (parse error) → None
+    1. Empty / None input -> None
+    2. No braces found -> None
+    3. Multiple objects -> first valid one
+    4. Nested LaTeX braces within strings -> handled
+    5. Truncated (unclosed) object -> None
+    6. Valid JSON with markdown fences -> stripped
+    7. Extra text before/after JSON -> stripped
+    8. JSON within code blocks -> handled
+    9. Malformed JSON (parse error) -> None
     """
     if not text or not text.strip():
         return None
@@ -680,7 +680,7 @@ def process_batch(
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
-    """Pipeline entry point: load data → process batch → save candidates."""
+    """Pipeline entry point: load data -> process batch -> save candidates."""
     print("=" * 60)
     print(f"Stage 6: 3-Candidate Replacement Generation  (run_id={RUN_ID})")
     print(f"  Slot report : {SLOT_REPORT_PATH}")

@@ -10,7 +10,7 @@
  *           data-task-difficulty="4"
  *           data-task-url="/adaptive_task/123"
  *           data-task-preview="Найдите все натуральные ...">
- *     📨 Поделиться с другом
+ *      Поделиться с другом
  *   </button>
  *
  * The script auto-binds .share-friend-btn elements after DOMContentLoaded.
@@ -35,7 +35,7 @@
     el.innerHTML = `
       <div style="background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:16px;max-width:480px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5);">
         <div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
-          <h3 style="margin:0;color:#f1f5f9;font-size:1.05em;">📨 Поделиться с другом</h3>
+          <h3 style="margin:0;color:#f1f5f9;font-size:1.05em;"> Поделиться с другом</h3>
           <button id="sfClose" style="background:none;border:none;color:#94a3b8;font-size:1.4em;cursor:pointer;">×</button>
         </div>
         <div style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);">
@@ -87,7 +87,7 @@
     const box = modalEl.querySelector('#sfList');
     if (!friends.length){
       box.innerHTML = `<div style="padding:30px 12px;color:#94a3b8;text-align:center;font-size:.9em;">
-        У вас пока нет друзей.<br><a href="/friends" style="color:#8b5cf6;">Добавить друзей →</a>
+        У вас пока нет друзей.<br><a href="/friends" style="color:#8b5cf6;">Добавить друзей -></a>
       </div>`;
       return;
     }
@@ -160,11 +160,11 @@
     }
     if (typeof window.showToast === 'function'){
       window.showToast(
-        fail ? `Отправлено ${ok}/${ids.length}` : `Отправлено ${ok} друзьям ✅`,
+        fail ? `Отправлено ${ok}/${ids.length}` : `Отправлено ${ok} друзьям [OK]`,
         fail ? 'warn' : 'success'
       );
     } else {
-      alert(fail ? `Отправлено ${ok}/${ids.length} (часть не доставлена)` : `Задача отправлена ${ok} друзьям ✅`);
+      alert(fail ? `Отправлено ${ok}/${ids.length} (часть не доставлена)` : `Задача отправлена ${ok} друзьям [OK]`);
     }
     close();
   }
@@ -303,7 +303,7 @@
     fab.type = 'button';
     fab.title = 'Поделиться задачей с другом';
     fab.innerHTML = `
-      <span style="font-size:18px;line-height:1;">📨</span>
+      <span style="font-size:18px;line-height:1;"></span>
       <span class="sf-fab-label">Поделиться с другом</span>`;
     fab.style.cssText = [
       'position:fixed',

@@ -585,7 +585,7 @@ def process_combos(combos: List[dict], grade_filter: Optional[int] = None,
             save_checkpoint(cp_data)
 
         if combo_generated > 0:
-            logger.info(f"  ✓ Combo {mc} G{gr}: generated {combo_generated}, failed {combo_failed}")
+            logger.info(f"  [OK] Combo {mc} G{gr}: generated {combo_generated}, failed {combo_failed}")
 
         # Brief pause between combos to avoid rate limiting
         time.sleep(2)

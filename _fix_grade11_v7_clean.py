@@ -447,7 +447,7 @@ def main():
         print(f"  Updated {db_py_path} ({len(db_content)} bytes)", flush=True)
     
     print("\n" + "=" * 60)
-    print("✅ Grade 11 Day 2 problems applied successfully!", flush=True)
+    print("[OK] Grade 11 Day 2 problems applied successfully!", flush=True)
     print("=" * 60)
 
 

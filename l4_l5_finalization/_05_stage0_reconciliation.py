@@ -12,9 +12,9 @@ Output:
   l4_l5_finalization/reconciliation_report.json
 
 Algorithm:
-  1. Load stage4_classification.json → 63 task_ids with category
-  2. Load stage45_reclassification.json → 40 reclassified task_ids with new_category
-  3. Load stage5_fix_results.json → 14 fix task_ids with outcome (fixed|replace)
+  1. Load stage4_classification.json -> 63 task_ids with category
+  2. Load stage45_reclassification.json -> 40 reclassified task_ids with new_category
+  3. Load stage5_fix_results.json -> 14 fix task_ids with outcome (fixed|replace)
   4. Compute 3 final disjoint sets:
      - KEEP_ids   = {Stage4.KEEP=3} ∪ {Stage45.new_category=KEEP=10} = 13
      - FIXED_ids  = {Stage5.outcome=fixed=4} = 4
@@ -24,7 +24,7 @@ Algorithm:
      - |KEEP ∪ FIXED ∪ REPLACE| == 63
      - Pairwise intersections empty
      - No duplicates across files
-  6. Load curated bank → count valid existing tasks per cell
+  6. Load curated bank -> count valid existing tasks per cell
   7. Compute per-cell replacement slots:
      - needed_slots = max(0, 5 - valid_existing_count)
   8. Save reconciliation_report.json
@@ -312,13 +312,13 @@ def main():
     }
 
     print(f"  |KEEP ∪ FIXED ∪ REPLACE| = {total_unique} (expected {expected_total}) "
-          f"{'✓' if total_unique == expected_total else '✗ FAIL'}")
+          f"{'[OK]' if total_unique == expected_total else ' FAIL'}")
     print(f"  KEEP ∩ FIXED = {keep_fixed_intersection} "
-          f"{'✓ empty' if len(keep_fixed_intersection) == 0 else '✗ NON-EMPTY'}")
+          f"{'[OK] empty' if len(keep_fixed_intersection) == 0 else ' NON-EMPTY'}")
     print(f"  KEEP ∩ REPLACE = {keep_replace_intersection} "
-          f"{'✓ empty' if len(keep_replace_intersection) == 0 else '✗ NON-EMPTY'}")
+          f"{'[OK] empty' if len(keep_replace_intersection) == 0 else ' NON-EMPTY'}")
     print(f"  FIXED ∩ REPLACE = {fixed_replace_intersection} "
-          f"{'✓ empty' if len(fixed_replace_intersection) == 0 else '✗ NON-EMPTY'}")
+          f"{'[OK] empty' if len(fixed_replace_intersection) == 0 else ' NON-EMPTY'}")
 
     # 5. Check for duplicates across files
     print("\n[5/7] Checking for cross-file duplicates...")
@@ -388,7 +388,7 @@ def main():
     print(f"  TOTAL  = {total_unique}")
     print(f"  13 + 4 + 46 = {13 + 4 + 46}")
     print(f"  Expected: {expected_total}")
-    print(f"  Match: {'✓' if total_unique == expected_total else '✗ MISMATCH!'}")
+    print(f"  Match: {'[OK]' if total_unique == expected_total else ' MISMATCH!'}")
     print(f"  Total replacement slots to generate: {total_replacement_slots}")
     print(f"  Verdict: {report['verdict']}")
 
@@ -397,7 +397,7 @@ def main():
         print("  Fix classification data before continuing.")
         sys.exit(1)
     else:
-        print("\n  ✓ Reconciliation PASSED. Proceed to Stage 6.")
+        print("\n  [OK] Reconciliation PASSED. Proceed to Stage 6.")
 
 
 if __name__ == "__main__":

@@ -20,12 +20,12 @@
         <h1 id="title">Авторизация через Яндекс...</h1>
         <p id="msg">Подождите, обрабатываем данные...</p>
         <p id="errMsg" class="err" style="display:none;"></p>
-        <p id="backLink" style="display:none;"><a href="/profile">← Вернуться в профиль</a></p>
+        <p id="backLink" style="display:none;"><a href="/profile"><- Вернуться в профиль</a></p>
     </div>
     <script>
     (function() {
         function setError(text) {
-            document.getElementById('title').textContent = '❌ Ошибка авторизации';
+            document.getElementById('title').textContent = '[ERROR] Ошибка авторизации';
             document.getElementById('msg').style.display = 'none';
             var e = document.getElementById('errMsg');
             e.style.display = 'block';
@@ -66,12 +66,12 @@
         .then(function(r) { return r.json().then(function(d) { return {status: r.status, data: d}; }); })
         .then(function(res) {
             if (res.status === 200 && res.data.success) {
-                document.getElementById('title').textContent = '✓ ' + (res.data.message || 'Готово');
+                document.getElementById('title').textContent = '[OK] ' + (res.data.message || 'Готово');
                 document.getElementById('msg').textContent = 'Перенаправляем...';
                 window.location.href = res.data.redirect_url || '/profile';
             } else if (res.status === 409 && res.data && res.data.merge_required) {
-                // Этот Яндекс ID привязан к другому аккаунту → ведём на страницу подтверждения слияния
-                document.getElementById('title').textContent = '⚠️ Нужно объединить аккаунты';
+                // Этот Яндекс ID привязан к другому аккаунту -> ведём на страницу подтверждения слияния
+                document.getElementById('title').textContent = '[!]️ Нужно объединить аккаунты';
                 document.getElementById('msg').textContent = 'Этот Яндекс ID уже привязан к другому аккаунту FORMYLA. Перенаправляем на подтверждение…';
                 document.querySelector('.spinner').style.display = 'none';
                 setTimeout(function () {

@@ -162,7 +162,7 @@ class TestValidateDailyTaskLatex:
         assert report.has_errors
 
     def test_bare_power_detected_as_warning(self) -> None:
-        """Bare power (2^3) is 'medium' severity → warning, not error."""
+        """Bare power (2^3) is 'medium' severity -> warning, not error."""
         text = "Compute \\(2^3\\)"
         report = validate_daily_task_latex(text)
         codes = {i.code for i in report.issues}
@@ -757,7 +757,7 @@ class TestValidateOpusFix:
         task = _make_opus_task(99)
         raw = json.dumps(task)
         result = validate_opus_fix(raw)
-        # position out of range adds an error → valid becomes False
+        # position out of range adds an error -> valid becomes False
         assert result.valid is False
         assert any("вне диапазона" in e for e in result.errors)
 

@@ -158,7 +158,7 @@ def _ensure_table() -> bool:
                 # делаем rollback и пробрасываем дальше, чтобы наружу
                 # ушла понятная ошибка вместо бесшумно пропавшего blueprint.
                 db.session.rollback()
-                print(f"  ❌ daily_tasks migration: failed on stmt: {e}")
+                print(f"  [ERROR] daily_tasks migration: failed on stmt: {e}")
                 raise
         db.session.commit()
 
@@ -169,9 +169,9 @@ def _ensure_table() -> bool:
         for expected in ("daily_task_sets", "daily_task_items", "daily_generation_jobs"):
             if expected in tables:
                 cols = [c["name"] for c in inspector.get_columns(expected)]
-                print(f"  ✅ {expected}: {len(cols)} колонок")
+                print(f"  [OK] {expected}: {len(cols)} колонок")
             else:
-                print(f"  ❌ {expected} НЕ создана!")
+                print(f"  [ERROR] {expected} НЕ создана!")
                 ok = False
 
         return ok
@@ -184,9 +184,9 @@ def run_migration() -> bool:
     print("=" * 70)
     success = _ensure_table()
     if success:
-        print("\n🎉 Миграция завершена успешно!")
+        print("\n Миграция завершена успешно!")
     else:
-        print("\n❌ Миграция завершилась с ошибками")
+        print("\n[ERROR] Миграция завершилась с ошибками")
     return success
 
 

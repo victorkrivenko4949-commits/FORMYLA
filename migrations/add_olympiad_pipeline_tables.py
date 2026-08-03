@@ -76,25 +76,25 @@ def run_migration():
 
         if 'olympiad_variants' in tables:
             cols = [c['name'] for c in inspector.get_columns('olympiad_variants')]
-            print(f"✅ Таблица olympiad_variants создана. Колонки: {cols}")
+            print(f"[OK] Таблица olympiad_variants создана. Колонки: {cols}")
         else:
-            print("❌ Таблица olympiad_variants НЕ создана!")
+            print("[ERROR] Таблица olympiad_variants НЕ создана!")
             return False
 
         if 'olympiad_tasks' in tables:
             cols = [c['name'] for c in inspector.get_columns('olympiad_tasks')]
-            print(f"✅ Таблица olympiad_tasks создана. Колонки: {cols}")
+            print(f"[OK] Таблица olympiad_tasks создана. Колонки: {cols}")
         else:
-            print("❌ Таблица olympiad_tasks НЕ создана!")
+            print("[ERROR] Таблица olympiad_tasks НЕ создана!")
             return False
 
         # Проверяем что OlympiadGenerationLog не пострадала
         if 'olympiad_generation_log' in tables:
-            print("✅ Таблица olympiad_generation_log на месте (не тронута)")
+            print("[OK] Таблица olympiad_generation_log на месте (не тронута)")
         else:
-            print("⚠️  Таблица olympiad_generation_log отсутствует (не наша проблема)")
+            print("[!]️  Таблица olympiad_generation_log отсутствует (не наша проблема)")
 
-        print("\n🎉 Миграция завершена успешно!")
+        print("\n Миграция завершена успешно!")
         return True
 
 

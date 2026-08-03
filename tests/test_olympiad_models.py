@@ -110,7 +110,7 @@ def test_create_task_and_unique_number_within_probnik():
     assert t1.id is not None
     assert t1.max_score == 7  # server_default
 
-    # Тот же номер внутри пробника → конфликт.
+    # Тот же номер внутри пробника -> конфликт.
     t2 = OlympiadTask(
         probnik_id=p.id, number='1.1', sort_order=2,
         method_primary='F4a',

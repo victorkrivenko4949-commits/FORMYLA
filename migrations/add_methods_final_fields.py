@@ -40,7 +40,7 @@ def run_migration():
         added = 0
         for col_name, col_type in NEW_COLUMNS:
             if col_name in existing_columns:
-                print(f"  ✓ {col_name} already exists")
+                print(f"  [OK] {col_name} already exists")
                 continue
             
             # Для PostgreSQL используем JSONB для JSON-полей

@@ -6,7 +6,7 @@
 <div class="container" style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
     
     <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="font-size: 2.5em; color: var(--text-main);">📝 Пробник #{{ exam.id }}</h1>
+        <h1 style="font-size: 2.5em; color: var(--text-main);"> Пробник #{{ exam.id }}</h1>
         <p style="color: var(--text-soft);">5 задач · Проверка AI</p>
         
         <!-- Прогресс-бар -->
@@ -34,7 +34,7 @@
                 <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">
                     Ваш ответ:
                     <button type="button" class="caps-toggle-btn" onclick="toggleCapsLock()" style="margin-left: 10px; font-size: 12px; padding: 4px 10px;">
-                        <span class="icon">⇧</span> CAPS
+                        <span class="icon"></span> CAPS
                     </button>
                 </label>
                 <input type="text" name="answer_{{ item.task_id }}" class="answer-input" placeholder="Введите ответ" style="width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-main); caret-color: var(--accent-2);">
@@ -43,7 +43,7 @@
             <div style="margin-bottom: 15px;">
                 <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">Ход решения (текст):</label>
                 <div style="background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; font-size: 0.85em; color: #fbbf24;">
-                    ⚠️ Можно отправить ответ <strong>без решения</strong> —
+                    [!]️ Можно отправить ответ <strong>без решения</strong> —
                     тогда проверка будет только по ответу (+1 или -1).
                     Если хотите получить <strong>частичный балл</strong> (0 за верный метод,
                     даже если ответ неверный) — обязательно опишите ход решения.
@@ -52,7 +52,7 @@
             </div>
             
             <div>
-                <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;">📷 Или загрузите фото решения:</label>
+                <label style="display: block; color: var(--text-soft); margin-bottom: 8px; font-weight: 500;"> Или загрузите фото решения:</label>
                 <input type="file" name="photo_{{ item.task_id }}" accept="image/*" capture="environment" style="width: 100%; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); color: var(--text-soft); cursor: pointer;">
                 <div id="preview_{{ item.task_id }}" style="margin-top: 10px;"></div>
             </div>
@@ -61,7 +61,7 @@
         
         <div style="text-align: center; margin-top: 40px;">
             <button type="button" onclick="submitExam()" id="submitBtn" style="padding: 15px 40px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border: none; border-radius: var(--radius-sm); font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: all 0.3s;">
-                🤖 Сдать на проверку AI
+                 Сдать на проверку AI
             </button>
         </div>
     </form>

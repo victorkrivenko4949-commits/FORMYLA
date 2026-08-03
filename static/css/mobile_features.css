@@ -1,6 +1,6 @@
 /* =====================================================================
    FORMYLA — Mobile fixes for new features
-   - Chat (sidebar→drawer, fullscreen conversation)
+   - Chat (sidebar->drawer, fullscreen conversation)
    - Share-with-friend modal (bottom-sheet)
    - Adaptive test photo buffer UI
    - AI tutor feedback rendering
@@ -10,12 +10,12 @@
    Loaded globally from base.html.
    ===================================================================== */
 
-/* ---------- 1. Chat: mobile two-state layout (list ↔ conversation) -----
-   Бывшие 760px → 900px, чтобы корректно работало и на планшетах в портретной
+/* ---------- 1. Chat: mobile two-state layout (list <-> conversation) -----
+   Бывшие 760px -> 900px, чтобы корректно работало и на планшетах в портретной
    ориентации, и в любом узком окне (резиновый layout WhatsApp/Telegram).
 */
 @media (max-width: 900px) {
-    /* Контейнер обнуляется: grid → одиночная full-screen область */
+    /* Контейнер обнуляется: grid -> одиночная full-screen область */
     .chat-wrapper{
         display:block !important;
         width:100vw !important;
@@ -63,7 +63,7 @@
         display:flex !important;
         flex-direction:column !important;
     }
-    /* Когда выбран диалог → body.chat-open переключает state */
+    /* Когда выбран диалог -> body.chat-open переключает state */
     body.chat-open .chat-sidebar{ transform:translateX(-100%); }
     body.chat-open .chat-main   { transform:translateX(0); }
 
@@ -140,7 +140,7 @@
         font-size:14.5px !important;
         padding:9px 12px 8px !important;
     }
-    /* The floating "quick action" pill (↩ ➤ 😀) duplicates the inline actions
+    /* The floating "quick action" pill (  ) duplicates the inline actions
        and was overlapping the message text on mobile — hide it on touch. */
     .chat-bubble .bubble-quick{ display:none !important; }
 

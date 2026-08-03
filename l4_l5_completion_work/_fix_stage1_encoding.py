@@ -29,7 +29,7 @@ lines = content.split('\n')
 
 # Find and fix lines 365 and 367 (0-indexed: 364 and 366)
 for i, line in enumerate(lines):
-    # Line 365 (idx 364): has ✓ or \u2713 or вњ“ (all variants)
+    # Line 365 (idx 364): has [OK] or \u2713 or вњ“ (all variants)
     if 'VERIFIED:' in line and 'sum(needed)' in line:
         old = line
         lines[i] = "    print(f'[OK] VERIFIED: sum(needed) = {total_needed} == 189')"
@@ -37,7 +37,7 @@ for i, line in enumerate(lines):
         print(f'  OLD: {repr(old)}')
         print(f'  NEW: {repr(lines[i])}')
     
-    # Line 367 (idx 366): has ⚠ or \u26A0 or вљ (all variants)
+    # Line 367 (idx 366): has [!] or \u26A0 or вљ (all variants)
     if 'sum(needed)' in line and '!= 189' in line:
         old = line
         lines[i] = "    print(f'[WARN] sum(needed) = {total_needed} != 189. Explain discrepancy.')"

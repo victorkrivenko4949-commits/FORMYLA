@@ -10,12 +10,12 @@ from app import app
 def migrate():
     """Выполнить миграцию"""
     with app.app_context():
-        print("🔄 Начинаем миграцию Daily Quest системы...")
+        print(" Начинаем миграцию Daily Quest системы...")
         
         # Создаём новые таблицы
         try:
             db.create_all()
-            print("✅ Таблицы созданы:")
+            print("[OK] Таблицы созданы:")
             print("   - daily_quests")
             print("   - user_streaks")
             print("   - topic_mastery")
@@ -32,12 +32,12 @@ def migrate():
                     db.session.add(streak)
             
             db.session.commit()
-            print(f"✅ Инициализированы streak для {len(users)} пользователей")
+            print(f"[OK] Инициализированы streak для {len(users)} пользователей")
             
-            print("✅ Миграция завершена успешно!")
+            print("[OK] Миграция завершена успешно!")
             
         except Exception as e:
-            print(f"❌ Ошибка миграции: {e}")
+            print(f"[ERROR] Ошибка миграции: {e}")
             db.session.rollback()
             raise
 

@@ -177,7 +177,7 @@ if len(sorted_by_g_l_t) >= 103:
     out_lines.append(f"Cell #103 (by grade+level+topic): {cell103_key}")
     out_lines.append(f"  Tasks: {count103}")
     if count103 == 5:
-        out_lines.append(f"  STATUS: PERFECT ✓ (exactly 5 tasks)")
+        out_lines.append(f"  STATUS: PERFECT [OK] (exactly 5 tasks)")
     elif count103 > 5:
         out_lines.append(f"  STATUS: OVERFILLED (need to remove {count103-5})")
     else:
@@ -201,7 +201,7 @@ if len(sorted_by_g_l) >= 103:
     out_lines.append(f"\nCell #103 (by grade+level): {cell103b_key}")
     out_lines.append(f"  Tasks: {count103b}")
     if count103b == 5:
-        out_lines.append(f"  STATUS: PERFECT ✓")
+        out_lines.append(f"  STATUS: PERFECT [OK]")
     elif count103b > 5:
         out_lines.append(f"  STATUS: OVERFILLED")
     else:

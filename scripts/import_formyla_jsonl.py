@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Импортёр FORMYLA_L1_L5_TOP5.jsonl → AdaptiveTask.
+Импортёр FORMYLA_L1_L5_TOP5.jsonl -> AdaptiveTask.
 
 Режим по умолчанию — dry-run: только валидация и отчёт, без записи в БД.
 Запись только по флагу --apply.
@@ -19,7 +19,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
-# ── level_name → каноническое значение ──────────────────────────────────────
+# ── level_name -> каноническое значение ──────────────────────────────────────
 LEVEL_NAME_CANON = {
     1: "school_math",
     2: "school_vsosh",
@@ -137,34 +137,34 @@ class FormylaImporter:
         ]
 
         mapping = [
-            ("task_uid", "source_id", "✅ маппится"),
-            ("grade", "class_level", "✅ маппится"),
-            ("level", "difficulty_level", "✅ маппится (1..5)"),
-            ("level_name", "—", "❌ нет приёмника, значение отбрасывается"),
-            ("section", "subject", "✅ маппится"),
-            ("theme_id", "subtopic", "✅ маппится"),
-            ("theme", "topic", "✅ маппится"),
-            ("statement", "task_text", "✅ маппится (байт-в-байт)"),
-            ("answer", "correct_answer", "✅ маппится"),
-            ("solution", "solution", "✅ маппится (байт-в-байт)"),
-            ("methods[]", "methods_json", "✅ маппится (нормализован, JSON-массив строк)"),
-            ("tags[]", "—", "❌ нет приёмника, значение отбрасывается"),
-            ("origin", "origin", "✅ маппится (as-is: 'generated' / 'olympiad')"),
+            ("task_uid", "source_id", "[OK] маппится"),
+            ("grade", "class_level", "[OK] маппится"),
+            ("level", "difficulty_level", "[OK] маппится (1..5)"),
+            ("level_name", "—", "[ERROR] нет приёмника, значение отбрасывается"),
+            ("section", "subject", "[OK] маппится"),
+            ("theme_id", "subtopic", "[OK] маппится"),
+            ("theme", "topic", "[OK] маппится"),
+            ("statement", "task_text", "[OK] маппится (байт-в-байт)"),
+            ("answer", "correct_answer", "[OK] маппится"),
+            ("solution", "solution", "[OK] маппится (байт-в-байт)"),
+            ("methods[]", "methods_json", "[OK] маппится (нормализован, JSON-массив строк)"),
+            ("tags[]", "—", "[ERROR] нет приёмника, значение отбрасывается"),
+            ("origin", "origin", "[OK] маппится (as-is: 'generated' / 'olympiad')"),
             (
                 "—",
                 "criteria_1_point",
-                '⚠️ нет источника в JSONL, пишется ""',
+                '[!]️ нет источника в JSONL, пишется ""',
             ),
             (
                 "—",
                 "criteria_2_points",
-                '⚠️ нет источника в JSONL, пишется ""',
+                '[!]️ нет источника в JSONL, пишется ""',
             ),
-            ("—", "source", "⚠️ нет источника в JSONL (хардкод '" + SOURCE_VALUE + "')"),
+            ("—", "source", "[!]️ нет источника в JSONL (хардкод '" + SOURCE_VALUE + "')"),
             (
                 "—",
                 "task_type",
-                "⚠️ нет источника в JSONL (хардкод '" + TASK_TYPE_VALUE + "')",
+                "[!]️ нет источника в JSONL (хардкод '" + TASK_TYPE_VALUE + "')",
             ),
         ]
 
@@ -349,9 +349,9 @@ class FormylaImporter:
         """Вернуть True, если существующую запись можно безопасно флаговать.
 
         Флагуем только если:
-        1. is_flagged УЖЕ True (ручное unflag → is_flagged=False → НЕ трогаем)
+        1. is_flagged УЖЕ True (ручное unflag -> is_flagged=False -> НЕ трогаем)
         2. flagged_reason пустой или равен нашей константе
-           (чужой flagged_reason → НЕ перетираем)
+           (чужой flagged_reason -> НЕ перетираем)
         """
         if not self.flagged:
             return False
@@ -518,7 +518,7 @@ class FormylaImporter:
     def _print_summary(self):
         """Краткая сводка в stdout."""
         print("=" * 60)
-        print("FORMYLA JSONL → AdaptiveTask  IMPORT REPORT")
+        print("FORMYLA JSONL -> AdaptiveTask  IMPORT REPORT")
         print("=" * 60)
         print(f"Файл: {self.filepath}")
         print(f"Режим: {'--apply (ЗАПИСЬ В БД)' if self.apply else 'DRY-RUN (без записи)'}")
@@ -565,7 +565,7 @@ class FormylaImporter:
             for g, tid, l, cnt in uneven:
                 print(f"  grade={g} theme_id={tid} level={l}: {cnt} задач")
         else:
-            print("  ВСЕ ячейки содержат ровно 5 задач ✓")
+            print("  ВСЕ ячейки содержат ровно 5 задач [OK]")
 
         print("\nПолный отчёт: scripts/out/import_report.md")
 
@@ -586,7 +586,7 @@ class FormylaImporter:
             for b in self.schema_blockers:
                 lines.append(f"- **{b}**")
         else:
-            lines.append("✅ `source_id` field exists — idempotent import possible.")
+            lines.append("[OK] `source_id` field exists — idempotent import possible.")
         lines.append("")
 
         lines.append("### Field Mapping")
@@ -727,7 +727,7 @@ class FormylaImporter:
             for g, tid, l, cnt in uneven:
                 lines.append(f"| {g} | {tid} | {l} | {cnt} |")
         else:
-            lines.append("✅ All cells contain exactly 5 tasks.")
+            lines.append("[OK] All cells contain exactly 5 tasks.")
         lines.append("")
 
         # D. Write results
@@ -760,7 +760,7 @@ class FormylaImporter:
         out_dir.mkdir(parents=True, exist_ok=True)
         report_path = out_dir / "import_report.md"
         report_path.write_text("\n".join(lines), encoding="utf-8")
-        print(f"\n📄 Markdown отчёт сохранён в: {report_path}")
+        print(f"\n Markdown отчёт сохранён в: {report_path}")
 
 
 def main():

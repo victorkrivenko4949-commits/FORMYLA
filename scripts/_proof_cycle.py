@@ -251,7 +251,7 @@ with app.test_client() as c:
     if cycle_theme_names:
         for t in cycle_theme_names:
             mu_str = f": {t['mu']:.1f}" if t.get('mu') is not None else ''
-            is_today = ' ← СЕГОДНЯ' if t['id'] == card.get('cycle_current_theme') else ''
+            is_today = ' <- СЕГОДНЯ' if t['id'] == card.get('cycle_current_theme') else ''
             print(f"    {t['name']}{mu_str}{is_today}")
     
     print(f"  Card has measured count: {card.get('cycle_measured_count', '?')}/{card.get('cycle_total', '?')}")

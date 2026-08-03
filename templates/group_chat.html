@@ -201,40 +201,40 @@
 
 <div class="gc-wrap">
   <div class="gc-head">
-    <a href="/chat" class="gc-back" title="Назад">←</a>
+    <a href="/chat" class="gc-back" title="Назад"><-</a>
     <!-- CHAT_GROUP_INFO_V1 — header is clickable to open group info panel -->
     <div class="gc-head-info" role="button" tabindex="0"
          style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:4px 8px;margin:-4px -4px;border-radius:8px"
          onclick="openGroupInfo()"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openGroupInfo();}"
          title="Информация о группе">
-      <div class="gc-av">{{ group.avatar_emoji or '👥' }}</div>
+      <div class="gc-av">{{ group.avatar_emoji or '' }}</div>
       <div style="flex:1;min-width:0">
         <h2>{{ group.name }}</h2>
         <div class="sub" id="memCount">Загрузка…</div>
       </div>
     </div>
     <div class="gc-actions">
-      <button class="gc-btn" type="button" title="Пригласить" onclick="openInv()">➕</button>
+      <button class="gc-btn" type="button" title="Пригласить" onclick="openInv()"></button>
       {% if not is_owner %}
-      <button class="gc-btn" type="button" title="Покинуть" onclick="leaveG()">🚪</button>
+      <button class="gc-btn" type="button" title="Покинуть" onclick="leaveG()"></button>
       {% endif %}
       {% if is_owner %}
-      <button class="gc-btn" type="button" title="Удалить группу" onclick="deleteG()" style="color:#ef4444">🗑️</button>
+      <button class="gc-btn" type="button" title="Удалить группу" onclick="deleteG()" style="color:#ef4444">️</button>
       {% endif %}
     </div>
   </div>
   <div class="gc-msgs" id="msgs"></div>
   <div class="gc-comp">
-    <button class="gc-emoji-btn" id="gcEmojiBtn" type="button" title="Эмодзи">😀</button>
+    <button class="gc-emoji-btn" id="gcEmojiBtn" type="button" title="Эмодзи"></button>
     <textarea id="ta" placeholder="Сообщение в группу… (Enter — отправить)"
               onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendG();}"></textarea>
     <input type="file" id="gcFileInput" accept="image/*" hidden onchange="onGcAttachPicked(event)">
-    <button onclick="sendG()">➤</button>
+    <button onclick="sendG()"></button>
   </div>
   <div id="gcAttachPreview" class="gc-attach-preview" hidden>
     <span class="name" id="gcAttachName"></span>
-    <span class="cancel" onclick="cancelGcAttach()" title="Отменить">✕</span>
+    <span class="cancel" onclick="cancelGcAttach()" title="Отменить"></span>
   </div>
 </div>
 
@@ -294,7 +294,7 @@ async function loadM(){
         if (m.attachment_kind === 'image'){
           attachHtml = '<img class="att-img" src="' + esc(m.attachment_url) + '" onclick="window.open(this.src)" alt="">';
         } else if (m.attachment_kind === 'pdf'){
-          attachHtml = '<a class="att-pdf" href="' + esc(m.attachment_url) + '" target="_blank">📄 ' + esc(m.attachment_name || 'PDF') + '</a>';
+          attachHtml = '<a class="att-pdf" href="' + esc(m.attachment_url) + '" target="_blank"> ' + esc(m.attachment_name || 'PDF') + '</a>';
         }
       }
       const bodyHtml = m.body ? esc(m.body) : '';
@@ -375,7 +375,7 @@ async function openInv(){
       + '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6c5ce7,#4aa8ff);display:flex;align-items:center;justify-content:center">'
       + esc((f.name||f.nickname||'?')[0].toUpperCase()) + '</div>'
       + '<div>' + esc(f.name||f.nickname||'?') + '</div>'
-      + '<span class="ok" style="display:none">✓</span>'
+      + '<span class="ok" style="display:none">[OK]</span>'
       + '</div>'
     ).join('');
   }catch(e){ console.error(e); }
@@ -459,15 +459,15 @@ async function openGroupInfo(){
     }).join('');
     body.innerHTML = ''
       + '<div class="gi-hero">'
-      +   '<div class="gi-hero-av">' + esc(g.avatar_emoji || '👥') + '</div>'
+      +   '<div class="gi-hero-av">' + esc(g.avatar_emoji || '') + '</div>'
       +   '<div class="gi-hero-name">' + esc(g.name || 'Группа') + '</div>'
       +   '<div class="gi-hero-sub">Группа · ' + (g.member_count || 0) + ' участников</div>'
       + '</div>'
       + '<div class="gi-section">'
       +   '<div class="gi-section-title">О группе</div>'
-      +   '<div class="gi-row"><span class="ico">👑</span><span class="lbl">Владелец</span><span class="val">' + esc(g.owner_name || '—') + '</span></div>'
-      +   '<div class="gi-row"><span class="ico">📅</span><span class="lbl">Создана</span><span class="val">' + fmtDate(g.created_at) + '</span></div>'
-      +   '<div class="gi-row"><span class="ico">💬</span><span class="lbl">Сообщений</span><span class="val">' + (g.message_count || 0) + '</span></div>'
+      +   '<div class="gi-row"><span class="ico"></span><span class="lbl">Владелец</span><span class="val">' + esc(g.owner_name || '—') + '</span></div>'
+      +   '<div class="gi-row"><span class="ico"></span><span class="lbl">Создана</span><span class="val">' + fmtDate(g.created_at) + '</span></div>'
+      +   '<div class="gi-row"><span class="ico"></span><span class="lbl">Сообщений</span><span class="val">' + (g.message_count || 0) + '</span></div>'
       +   '<div class="gi-row"><span class="ico">#</span><span class="lbl">ID группы</span><span class="val">' + g.id + '</span></div>'
       + '</div>'
       + '<div class="gi-section">'
@@ -475,9 +475,9 @@ async function openGroupInfo(){
       +   memberHtml
       + '</div>'
       + '<div class="gi-section">'
-      +   '<div class="gi-row action" onclick="closeGroupInfo(); openInv();"><span class="ico">➕</span><span class="lbl">Пригласить друга</span></div>'
-      +   (IS_OWNER ? '' : '<div class="gi-row action danger" onclick="closeGroupInfo(); leaveG();"><span class="ico">🚪</span><span class="lbl">Покинуть группу</span></div>')
-      +   (IS_OWNER ? '<div class="gi-row action danger" onclick="deleteGFromInfo()"><span class="ico">🗑</span><span class="lbl">Удалить группу</span></div>' : '')
+      +   '<div class="gi-row action" onclick="closeGroupInfo(); openInv();"><span class="ico"></span><span class="lbl">Пригласить друга</span></div>'
+      +   (IS_OWNER ? '' : '<div class="gi-row action danger" onclick="closeGroupInfo(); leaveG();"><span class="ico"></span><span class="lbl">Покинуть группу</span></div>')
+      +   (IS_OWNER ? '<div class="gi-row action danger" onclick="deleteGFromInfo()"><span class="ico"></span><span class="lbl">Удалить группу</span></div>' : '')
       + '</div>';
   }catch(e){
     console.error(e);
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadM();
   loadMem();
   setInterval(loadM, 8000);
-  // CHAT_EMOJI_V1 — wire composer 😀 button
+  // CHAT_EMOJI_V1 — wire composer  button
   if (window.EmojiPicker){
     const btn = document.getElementById('gcEmojiBtn');
     const ta  = document.getElementById('ta');

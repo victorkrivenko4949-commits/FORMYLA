@@ -10,9 +10,9 @@
 * `compute_slot_allocation()` — кейсы 0/7, 1/7, 4/7, 7/7.
 * `select_calibration_topics()` — ротация по weekday-seed.
 * `build_profile()` через моки SQLAlchemy-запросов для кейсов:
-  - 0/7 тестов → 10 калибровочных слотов, fail-safe;
-  - 1/7 тестов 30% по алгебре → ~3 measured + ~7 калибровочных, уровни OK;
-  - 7/7 тестов → старая логика (regression — не сломано).
+  - 0/7 тестов -> 10 калибровочных слотов, fail-safe;
+  - 1/7 тестов 30% по алгебре -> ~3 measured + ~7 калибровочных, уровни OK;
+  - 7/7 тестов -> старая логика (regression — не сломано).
 * `running_pct.compute_running_pct()` — взвешенный декрей и difficulty-вес.
 * `_resolve_class_level()` — НЕ возвращает 9 по умолчанию.
 
@@ -55,7 +55,7 @@ from daily_tasks.running_pct import (
 
 
 class TestPercentToLevel:
-    """Маппинг 0–100% → 1..5."""
+    """Маппинг 0–100% -> 1..5."""
 
     @pytest.mark.parametrize(
         "pct,expected",
@@ -73,7 +73,7 @@ class TestPercentToLevel:
             (100, 5),
             # точно на стыке
             (20.0, 1),
-            (40.0001, 3),  # > 40 → lvl 3
+            (40.0001, 3),  # > 40 -> lvl 3
         ],
     )
     def test_boundaries(self, pct, expected):
@@ -104,11 +104,11 @@ class TestPercentToLevel:
 
 class TestTargetStretchLevel:
     def test_target_below_measured_by_pull_down(self):
-        # pct=30% → pct_level=2 → target = 2 - 1 = 1
+        # pct=30% -> pct_level=2 -> target = 2 - 1 = 1
         assert compute_target_level_from_pct(30) == 1
 
     def test_stretch_above_measured(self):
-        # pct=30% → pct_level=2 → stretch = 2 + 1 = 3
+        # pct=30% -> pct_level=2 -> stretch = 2 + 1 = 3
         assert compute_stretch_level_from_pct(30) == 3
 
     def test_target_clamped_to_min_level(self):
@@ -295,7 +295,7 @@ class TestRunningPct:
                for _ in range(5)]
         )
         pct, _, _ = compute_running_pct(answers, now=now)
-        # Свежие ответы (правильные) весят сильно больше старых (неверных) →
+        # Свежие ответы (правильные) весят сильно больше старых (неверных) ->
         # pct заметно выше 50.
         assert pct > 70.0
 
@@ -351,7 +351,7 @@ def grade9_topics():
 
 
 def _patch_user_query(monkeypatch, user):
-    """Подменить User так, чтобы User.query.get(user_id) → user.
+    """Подменить User так, чтобы User.query.get(user_id) -> user.
 
     Замена через class-stub, чтобы избежать ленивого lookup
     ``FSA __fsa__.session()`` (требует Flask app context).
@@ -456,7 +456,7 @@ class TestBuildProfile07:
 
 
 class TestBuildProfile17:
-    """Кейс 1/7: 30% по алгебре → ~3 measured + ~7 калибровочных."""
+    """Кейс 1/7: 30% по алгебре -> ~3 measured + ~7 калибровочных."""
 
     def test_one_test_algebra_30pct(
         self, monkeypatch, mock_grade9_user, grade9_topics
@@ -465,7 +465,7 @@ class TestBuildProfile17:
         _patch_db_session_empty(monkeypatch)
 
         # один тест по «Алгебра. Квадратные уравнения, Виет, параметры»
-        # tasks_correct=8 из 25 → pct ≈ 32%
+        # tasks_correct=8 из 25 -> pct ≈ 32%
         algebra_topic = next(
             t for t in grade9_topics if t.startswith("Алгебра")
         )
@@ -491,8 +491,8 @@ class TestBuildProfile17:
         algebra = next(t for t in p["topics_full"] if t["topic"] == algebra_topic)
         assert algebra["measured"] is True
         assert algebra["pct"] == 32.0  # 8/25
-        assert algebra["level_from_pct"] == 2   # 21–40% → lvl 2
-        # score_to_target_level: final_level=2, ratio=0.32 → base-1=1
+        assert algebra["level_from_pct"] == 2   # 21–40% -> lvl 2
+        # score_to_target_level: final_level=2, ratio=0.32 -> base-1=1
         assert algebra["target_level"] == 1
         # compute_level_window для target=1: [1, 3]
         assert algebra["stretch_level"] == 3

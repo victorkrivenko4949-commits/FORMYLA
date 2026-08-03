@@ -4,9 +4,9 @@ Robust answer extraction & comparison for olympiad solver verification.
 
 Three public functions:
 
-  extract_answer(text)  → str   Pull the final answer from a free-form solution.
-  normalize_answer(s)   → str   Canonicalize a single answer string.
-  answers_equal(a, b)   → bool  Robust semantic equality (sympy when possible).
+  extract_answer(text)  -> str   Pull the final answer from a free-form solution.
+  normalize_answer(s)   -> str   Canonicalize a single answer string.
+  answers_equal(a, b)   -> bool  Robust semantic equality (sympy when possible).
 
 Designed to be tolerant of:
   - \\boxed{...} (last occurrence wins)
@@ -14,7 +14,7 @@ Designed to be tolerant of:
   - markdown bold/italic markers (**, __, *, _)
   - LaTeX delimiters \\(, \\), \\[, \\], $, $$
   - \\dfrac vs \\frac vs \\tfrac
-  - rationalize-the-denominator forms: 96/sqrt(217)  ↔  96*sqrt(217)/217
+  - rationalize-the-denominator forms: 96/sqrt(217)  <->  96*sqrt(217)/217
   - inline numeric multiplication (\\cdot, ·, ×, *)
 
 Falls back gracefully if sympy parsing fails.
@@ -263,13 +263,13 @@ def _expand_latex_macros(s: str) -> str:
         s = _expand_command(s, "frac", 2, lambda a, b: f"(({_expand_latex_macros(a)})/({_expand_latex_macros(b)}))")
         if s == before:
             break
-    # \sqrt without braces: \sqrt 5 → sqrt(5)
+    # \sqrt without braces: \sqrt 5 -> sqrt(5)
     s = re.sub(r"\\sqrt\s+([0-9]+(?:\.[0-9]+)?)", lambda m: f"sqrt({m.group(1)})", s)
     return s
 
 
 def _latex_to_text(s: str) -> str:
-    """Crude LaTeX → plain ASCII conversion for sympy parsing."""
+    """Crude LaTeX -> plain ASCII conversion for sympy parsing."""
     if not s:
         return s
     s = s.strip()
@@ -282,15 +282,15 @@ def _latex_to_text(s: str) -> str:
     s = re.sub(r"\*\*", "", s)
     # \\sqrt and \\frac — properly nested via brace counter
     s = _expand_latex_macros(s)
-    # \cdot, \times, ·, ×  → *
+    # \cdot, \times, ·, ×  -> *
     s = s.replace(r"\cdot", "*").replace(r"\times", "*")
     s = s.replace("·", "*").replace("×", "*").replace("⋅", "*")
-    # \pi → pi, infinity
+    # \pi -> pi, infinity
     s = s.replace(r"\pi", "pi").replace(r"\infty", "oo").replace("∞", "oo")
     # Remove leftover backslash commands like \,  \!  \;  \:  \quad  \qquad  \!
     s = re.sub(r"\\[,!;:](?![A-Za-z])", "", s)
     s = re.sub(r"\\(?:quad|qquad|displaystyle|left|right|big|Big|bigg|Bigg)\b", "", s)
-    # Russian comma decimal separator → dot, but only between digits
+    # Russian comma decimal separator -> dot, but only between digits
     s = re.sub(r"(?<=\d),(?=\d)", ".", s)
     # Squeeze spaces (do this BEFORE implicit-mult so spaces don't fool us)
     s = re.sub(r"\s+", "", s)

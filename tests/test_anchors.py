@@ -174,7 +174,7 @@ class TestAnchorLoading:
                         f"theme_id={theme_id} отсутствует в theme_to_section.json"
                     )
                     assert theme_map[theme_id] == section, (
-                        f"theme_id={theme_id} → {theme_map[theme_id]}, ожидался section={section}"
+                        f"theme_id={theme_id} -> {theme_map[theme_id]}, ожидался section={section}"
                     )
                     mapped += 1
                 else:
@@ -189,7 +189,7 @@ class TestAnchorLoading:
                 for info in unmapped_info:
                     print(f"  {info}")
                 # В синтетических данных все разделы канонические,
-                # theme_map возвращает совпадение по G{grade}_T*→section
+                # theme_map возвращает совпадение по G{grade}_T*->section
                 # Если несколько тем одного раздела — theme_id = None (неоднозначно)
                 # Это ожидаемое поведение по п.2 ТЗ
 
@@ -270,7 +270,7 @@ class TestAnchorSelection:
                     f"Прогон {run_num} отличается от прогона 1!\n"
                     f"Первый: {first_run}\nТекущий: {current}"
                 )
-            print(f"  ✓ Прогон {run_num}: {len(anchors)} якорей, "
+            print(f"  [OK] Прогон {run_num}: {len(anchors)} якорей, "
                   f"разделы: {[a['section'] for a in anchors]}")
 
     def test_grade6_three_runs(self, client_and_app):
@@ -286,7 +286,7 @@ class TestAnchorSelection:
                     f"Прогон {run_num} отличается от прогона 1!\n"
                     f"Первый: {first_run}\nТекущий: {current}"
                 )
-            print(f"  ✓ Прогон {run_num}: {len(anchors)} якорей, "
+            print(f"  [OK] Прогон {run_num}: {len(anchors)} якорей, "
                   f"разделы: {[a['section'] for a in anchors]}")
 
     def test_no_cross_grade_leak(self, client_and_app):
@@ -302,7 +302,7 @@ class TestAnchorSelection:
                         f"Cross-grade leak: anchor {a['anchor_uid']} "
                         f"is grade {a['grade']}, expected {grade}"
                     )
-        print("\n✓ No cross-grade leaks detected")
+        print("\n[OK] No cross-grade leaks detected")
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -356,7 +356,7 @@ class TestAnswerCheck:
         assert normalize_answer('нет') != ''
         assert len(normalize_answer('нет')) > 0
 
-        print("\n✓ Knight problem 'нет' answer handling verified")
+        print("\n[OK] Knight problem 'нет' answer handling verified")
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -461,7 +461,7 @@ class TestAnchorExclusion:
                     f"Anchor task {t['task_id']} leaked into fallback!"
                 )
 
-        print("\n✓ Daily tasks: no formyla_anchors leaked")
+        print("\n[OK] Daily tasks: no formyla_anchors leaked")
 
     def test_theme_probe_excludes_anchors(self, app_for_exclusion):
         """Утренний срез (theme_probe) не содержит formyla_anchors."""
@@ -512,7 +512,7 @@ class TestAnchorExclusion:
             _db.session.delete(cs)
             _db.session.commit()
 
-        print("\n✓ Morning probe: no formyla_anchors leaked")
+        print("\n[OK] Morning probe: no formyla_anchors leaked")
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -628,7 +628,7 @@ class TestIdempotency:
             AdaptiveTask.query.filter(AdaptiveTask.source == 'formyla_anchors').delete()
             _db.session.commit()
 
-        print("\n✓ Idempotency: double load skips all existing")
+        print("\n[OK] Idempotency: double load skips all existing")
 
 
 if __name__ == '__main__':

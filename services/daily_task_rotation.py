@@ -11,7 +11,7 @@ services/daily_task_rotation.py — Связь задач дня с анкето
   - исключать task_id, уже выданные этому ученику ранее (диагностика + прошлые задачи дня)
   - каждый ответ пишется в level_engine.record_result с разделом
 
-Также предоставляет build_student_card(user_id) → dict для промпта куратора DeepSeek.
+Также предоставляет build_student_card(user_id) -> dict для промпта куратора DeepSeek.
 """
 
 from __future__ import annotations
@@ -35,11 +35,11 @@ MSK_TZ = timezone(timedelta(hours=3))
 
 # ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ: сколько задач в день получает ученик.
 # ПРАВИЛО:
-#   - дни 1..7 месячного цикла → 5 задач (режим зондирования)
-#   - после 7-го дня цикла → норма ученика из анкеты, по умолчанию 10
-#   - если цикл ещё не начат → день 1 (5 задач)
+#   - дни 1..7 месячного цикла -> 5 задач (режим зондирования)
+#   - после 7-го дня цикла -> норма ученика из анкеты, по умолчанию 10
+#   - если цикл ещё не начат -> день 1 (5 задач)
 # Все потребители обязаны спрашивать get_daily_task_count().
-# Номер дня цикла — из curator/monthly_cycle._get_monthly_cycle() → day_index.
+# Номер дня цикла — из curator/monthly_cycle._get_monthly_cycle() -> day_index.
 CUTOFF_DAILY_TASKS = 5       # дни 1..7 цикла — всегда 5
 DEFAULT_DAILY_TASKS = 10     # после дня 7, если в анкете не указано иное
 
@@ -47,12 +47,12 @@ def get_daily_task_count(user_id: int) -> int:
     """ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ: сколько задач получает ученик сегодня.
 
     Правило:
-      - дни 1..7 месячного цикла → 5 задач (режим зондирования)
-      - после 7-го дня цикла → норма из анкеты, по умолчанию 10
-      - если цикл ещё не начат → считаем день 1 (5 задач)
+      - дни 1..7 месячного цикла -> 5 задач (режим зондирования)
+      - после 7-го дня цикла -> норма из анкеты, по умолчанию 10
+      - если цикл ещё не начат -> считаем день 1 (5 задач)
 
     P11 FIX: номер дня цикла вычисляется из даты начала цикла
-    (curator.monthly_cycle.get_cycle_info → day_index), а не из
+    (curator.monthly_cycle.get_cycle_info -> day_index), а не из
     хранимого статичного счётчика.
 
     Все потребители (банковская ротация, LLM-конвейер, slot_planner)
@@ -255,7 +255,7 @@ def _classify_section(task: AdaptiveTask) -> str:
 
     subject в БД — канонический slug (algebra/geometry/combinatorics/logic/number_theory).
     topic — русское название, которое не всегда содержит ключевые слова (особенно logic).
-    Поэтому: subject → прямой slug (если канонический), иначе topic → keyword matching.
+    Поэтому: subject -> прямой slug (если канонический), иначе topic -> keyword matching.
     """
     # PRIMARY: subject уже канонический slug в БД
     subj = (task.subject or '').strip()
@@ -405,7 +405,7 @@ def _map_canonical_to_bank_level(canonical_level: int) -> int:
 def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, Any]:
     """Подобрать набор задач дня в соответствии с анкетой и level_engine.
 
-    ПРИОРИТЕТ: банк задач (JSON) → AdaptiveTask (SQL) → AI-генерация.
+    ПРИОРИТЕТ: банк задач (JSON) -> AdaptiveTask (SQL) -> AI-генерация.
     Банк вызывается синхронно, прямо в запросе, без фоновых потоков
     и без единого обращения к нейросети.
 
@@ -649,7 +649,7 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
     # ── DIVERSITY CHECK: гарантия ≥3 разделов ─────────────────────
     # Если в пуле есть задачи хотя бы в 3 разделах класса ученика,
     # набор ДОЛЖЕН содержать ≥3 разных разделов.
-    # Если разрешённые уровни слишком узкие → расширяем окно на ±1
+    # Если разрешённые уровни слишком узкие -> расширяем окно на ±1
     # внутри раздела, но не выше route_ceiling.
     unique_sections = set(
         _normalize_section(t.get('topic', '')) for t in selected_tasks
@@ -1048,7 +1048,7 @@ def format_student_card_for_prompt(card: Dict[str, Any]) -> str:
         current_tname = card.get('cycle_current_theme_name', '')
         for t in card['cycle_themes']:
             mu_str = f" — уровень {t['mu']:.1f}" if t.get('mu') is not None else ""
-            is_today = " ← СЕГОДНЯ" if t['id'] == card.get('cycle_current_theme') else ""
+            is_today = " <- СЕГОДНЯ" if t['id'] == card.get('cycle_current_theme') else ""
             lines.append(f"  {t['name']}{mu_str}{is_today}")
 
     lines.append("")
@@ -1207,7 +1207,7 @@ def cell_deficit_report() -> List[Dict[str, Any]]:
         for sec in CANONICAL_SECTIONS:
             for lvl in range(1, 6):
                 pool_n = pool_map.get((sec, lvl), 0)
-                deficit = pool_n  # если пул 0 → дефицит 0 (но видно пустые ячейки)
+                deficit = pool_n  # если пул 0 -> дефицит 0 (но видно пустые ячейки)
                 result.append({
                     'grade': grade,
                     'section': sec,

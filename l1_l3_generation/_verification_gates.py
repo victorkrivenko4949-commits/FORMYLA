@@ -8,8 +8,8 @@ Each gate is a standalone function returning (passed: bool, detail: str, gate_da
 Gates (all must pass for acceptance):
    1. schema_gate        — JSON structure check (statement, answer, solution)
    2. uniqueness_gate    — task_id not already used in this cell
-   3. solver_a_gate      — DeepSeek Reasoner solves independently → answer_a
-   4. solver_b_gate      — DeepSeek Reasoner (different prompt) → answer_b
+   3. solver_a_gate      — DeepSeek Reasoner solves independently -> answer_a
+   4. solver_b_gate      — DeepSeek Reasoner (different prompt) -> answer_b
    5. answer_compare_gate— A ≈ B ≈ candidate.answer
    6. solution_verify_gate—A/B solutions have no contradictions
    7. topic_class_gate   — classifier assigns expected topic
@@ -18,7 +18,7 @@ Gates (all must pass for acceptance):
   10. level_arbiter_gate — resolve L1/L2/L3 mismatches
   11. exact_dup_gate     — no exact text match in existing tasks
   12. template_dup_gate  — no template-level structural similarity
-  13. content_arbiter_gate— final verdict (all gates → ACCEPT)
+  13. content_arbiter_gate— final verdict (all gates -> ACCEPT)
 """
 
 import os
@@ -792,7 +792,7 @@ def gate_content_arbiter(gate_results: Dict[str, dict]) -> dict:
     passed = len(failed_gates) == 0
 
     if passed:
-        detail = "ALL 13 GATES PASSED → ACCEPT"
+        detail = "ALL 13 GATES PASSED -> ACCEPT"
     else:
         failed_names = ", ".join(failed_gates)
         detail = f"REJECTED: gates [{failed_names}] failed"

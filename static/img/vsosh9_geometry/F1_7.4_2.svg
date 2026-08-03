@@ -21,5 +21,5 @@
   <text class="label" x="534.00" y="314.00" text-anchor="middle" dominant-baseline="middle">E</text>
   <circle class="dot" cx="140.19" cy="183.51" r="4.00"/>
   <text class="label" x="140.19" y="199.51" text-anchor="middle" dominant-baseline="middle">T</text>
-  <text class="num-aux" x="260.00" y="30.00" text-anchor="middle" dominant-baseline="middle">F1 → F2: углы при параллельных + касательная-хорда</text>
+  <text class="num-aux" x="260.00" y="30.00" text-anchor="middle" dominant-baseline="middle">F1  F2: углы при параллельных + касательная-хорда</text>
 </svg>

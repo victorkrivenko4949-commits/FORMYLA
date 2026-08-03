@@ -1,18 +1,18 @@
 /**
  * FORMYLA — Handwriting Modal Controller.
  *
- * Wires the «✍️ Текст → Рукопись» button in the whiteboard toolbar to
+ * Wires the «️ Текст -> Рукопись» button in the whiteboard toolbar to
  * the modal defined in templates/whiteboard.html and the renderer from
  * static/js/board/handwriting.js. Behaviour:
  *
- *   1. Click toolbar btn #wbHandwritingBtn → modal opens with sane defaults.
+ *   1. Click toolbar btn #wbHandwritingBtn -> modal opens with sane defaults.
  *   2. As the user types / changes font / size / color / jitter, a live
  *      preview is rasterised into <canvas id="hwPreview">.
- *   3. «обработать через ИИ» check-box → POST /api/handwriting/prepare
+ *   3. «обработать через ИИ» check-box -> POST /api/handwriting/prepare
  *      with mode="ai_format" before rendering. If the backend can't reach
  *      OpenRouter, it silently returns the raw line-broken text, so the
  *      preview always works (graceful fallback).
- *   4. «Вставить на доску» → calls window.WB.addHandwritingObject(...)
+ *   4. «Вставить на доску» -> calls window.WB.addHandwritingObject(...)
  *      so the new ink lands in the same stroke-stack as everything else
  *      and inherits undo/redo, eraser, export, collaboration.
  *
@@ -24,7 +24,7 @@
 
   // Visible build-marker so we can confirm in the browser console that the
   // fresh JS reached the user (not a stale cached version).
-  console.log("[handwriting_ui] loaded build 2026-05-23.3 — click ✍️ in left toolbar (or press H)");
+  console.log("[handwriting_ui] loaded build 2026-05-23.3 — click ️ in left toolbar (or press H)");
 
   // ── ROBUST GLOBAL CLICK DELEGATION ────────────────────────────────────
   // We attach a *capturing* document-level click handler IMMEDIATELY (before
@@ -42,7 +42,7 @@
     if (!btn) return;
     e.preventDefault();
     e.stopPropagation();
-    console.log("[handwriting_ui] ✍️ button click captured → opening modal");
+    console.log("[handwriting_ui] ️ button click captured -> opening modal");
     // openModal is defined below; call via lookup so this works even if
     // declarations haven't been hoisted in some exotic build pipeline.
     try { openModal(); }
@@ -155,7 +155,7 @@
       })
       .finally(function () {
         st.aiInFlight = false;
-        if (btn) { btn.disabled = false; btn.textContent = "Вставить на доску →"; }
+        if (btn) { btn.disabled = false; btn.textContent = "Вставить на доску ->"; }
       });
   }
 
@@ -169,7 +169,7 @@
       var opt = document.createElement("option");
       opt.value = f.id;
       opt.textContent = f.label || f.id;
-      // Inline style → option preview in the dropdown (best-effort, browser-dep)
+      // Inline style -> option preview in the dropdown (best-effort, browser-dep)
       opt.style.fontFamily = '"' + f.id + '", cursive';
       sel.appendChild(opt);
     });
@@ -213,18 +213,18 @@
     if (btn) {
       // Highlight the button so users notice it next to the other tools.
       btn.classList.add("hw-toolbar-btn");
-      btn.setAttribute("aria-label", "Текст → Рукопись (горячая клавиша H)");
+      btn.setAttribute("aria-label", "Текст -> Рукопись (горячая клавиша H)");
       btn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
         openModal();
       });
-      console.log("[handwriting_ui] toolbar button ✍️ wired up");
+      console.log("[handwriting_ui] toolbar button ️ wired up");
     } else {
       console.warn("[handwriting_ui] #wbHandwritingBtn not found in DOM");
     }
 
-    // Keyboard shortcut "H" → open modal (when not typing in an input/textarea).
+    // Keyboard shortcut "H" -> open modal (when not typing in an input/textarea).
     document.addEventListener("keydown", function (e) {
       if (e.defaultPrevented) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -242,7 +242,7 @@
       }
     });
 
-    // Close handlers (backdrop / ✕ / Cancel).
+    // Close handlers (backdrop /  / Cancel).
     document.querySelectorAll("#hwModal [data-hw-close]").forEach(function (el) {
       el.addEventListener("click", function (e) {
         e.preventDefault();
@@ -337,7 +337,7 @@
       closeModal();
     });
 
-    // Window resize → redraw preview if visible.
+    // Window resize -> redraw preview if visible.
     window.addEventListener("resize", function () {
       var modal = $("hwModal");
       if (modal && !modal.hidden) drawPreview();

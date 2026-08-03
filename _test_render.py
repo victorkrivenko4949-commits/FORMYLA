@@ -48,7 +48,7 @@ with app.test_client() as client:
         # We need to simulate auth - create a test user
         # First, let's just get the /prep/coach route directly (will redirect to login)
         resp = client.get('/prep/coach')
-        print(f"  GET /prep/coach → {resp.status_code}")
+        print(f"  GET /prep/coach -> {resp.status_code}")
         if resp.status_code == 302:
             print(f"  Redirect: {resp.location}")
         
@@ -73,13 +73,13 @@ with app.test_client() as client:
         all_pass = True
         for name, pattern in checks:
             found = pattern.lower() in source.lower()
-            status = "✅" if found else "❌"
+            status = "[OK]" if found else "[ERROR]"
             if not found:
                 all_pass = False
             print(f"  {status} {name}: {'found' if found else 'MISSING!'}")
         
         print()
         if all_pass:
-            print("✅ ALL CHECKS PASS - template source is correct!")
+            print("[OK] ALL CHECKS PASS - template source is correct!")
         else:
-            print("❌ SOME CHECKS FAILED!")
+            print("[ERROR] SOME CHECKS FAILED!")
