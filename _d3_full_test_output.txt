@@ -1,0 +1,1125 @@
+[conftest] Test DB copy created: C:\Users\Redmi\AppData\Local\Temp\formyla_test_9628.db
+.FFF........................................s........................... [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 20%]
+........................................................................ [ 27%]
+........................................................................ [ 34%]
+..F..................................................................... [ 41%]
+........................................................................ [ 48%]
+..............FFFFFFFFFFFFF.FF.F........................................ [ 55%]
+........................FFF.F....FFFFFFFF.FFFsssss...................... [ 62%]
+....................................................................ssss [ 69%]
+sssssss............................FF................................... [ 76%]
+....................................................F................... [ 83%]
+........................................................................ [ 90%]
+........................................................................ [ 97%]
+...............................                                          [100%]
+================================== FAILURES ===================================
+______________________ test_sympy_correct_with_solution _______________________
+tests\test_ai_tutor_review.py:104: in test_sympy_correct_with_solution
+    assert result["score"] == 1.0
+E   assert 0.0 == 1.0
+__________________ test_sympy_correct_no_solution_high_level __________________
+tests\test_ai_tutor_review.py:125: in test_sympy_correct_no_solution_high_level
+    assert result["score"] == 0.5
+E   assert 0.0 == 0.5
+_______________________ test_sympy_wrong_ai_unavailable _______________________
+tests\test_ai_tutor_review.py:158: in test_sympy_wrong_ai_unavailable
+    assert "временно недоступна" in result["feedback"]
+E   AssertionError: assert '\u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430' in '\U0001f534 **\u041e\u0446\u0435\u043d\u043a\u0430 \u0442\u044c\u044e\u0442\u043e\u0440\u0430: \u22121 \u0431\u0430\u043b\u043b, \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u22121** (\u043d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442 \u2014 \u0440\u0430\u0437\u0431\u0435\u0440\u0438 \u044d\u0442\u0430\u043b\u043e\u043d\u043d\u043e\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439 \u043f\u043e\u0445\u043e\u0436\u0443\u044e \u0437\u0430\u0434\u0430\u0447\u0443)\\n\\nAI-\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0441\u0435\u0439\u0447\u0430\u0441 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430 \u2014 \u043e\u0446\u0435\u043d\u043a\u0430 \u043d\u0435\u0439\u0442\u0440\u0430\u043b\u044c\u043d\u0430\u044f, \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u043d\u0435 \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u0441\u044f.\\n\\n**\u041f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442:** 5'
+_____________ test_critic_actually_finds_things_on_broken_drawing _____________
+tests\test_drawing_critic_regression.py:170: in test_critic_actually_finds_things_on_broken_drawing
+    problem = (root / "scripts" / "_critic_ab_problem.txt").read_text(
+..\..\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1013: in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Redmi\\Desktop\\Новая папка (2)\\scripts\\_critic_ab_problem.txt'
+___________ TestFrontendAssets.test_whiteboard_html_links_board_css ___________
+tests\test_handwriting.py:312: in test_whiteboard_html_links_board_css
+    assert "css/board.css" in html
+E   assert 'css/board.css' in '<!DOCTYPE html>\n<html lang="ru">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=devic...div style="text-align:center;padding:12px 0;font-size:11px;color:var(--muted);">build bc9850a0</div>\n</body>\n</html>'
+________ TestFrontendAssets.test_whiteboard_html_loads_cyrillic_fonts _________
+tests\test_handwriting.py:322: in test_whiteboard_html_loads_cyrillic_fonts
+    assert "fonts.googleapis.com" in html
+E   assert 'fonts.googleapis.com' in '{% extends "base.html" %}\n{% block title %}Доска — FORMYLA{% endblock %}\n\n{% block extra_css %}\n<link rel="styles...script src="{{ url_for(\'static\', filename=\'js/wb_collab.js\') }}?v={{ asset_version }}"></script>\n{% endblock %}\n'
+____________ TestFrontendAssets.test_handwriting_button_in_toolbar ____________
+tests\test_handwriting.py:332: in test_handwriting_button_in_toolbar
+    assert 'id="wbHandwritingBtn"' in html
+E   assert 'id="wbHandwritingBtn"' in '{% extends "base.html" %}\n{% block title %}Доска — FORMYLA{% endblock %}\n\n{% block extra_css %}\n<link rel="styles...script src="{{ url_for(\'static\', filename=\'js/wb_collab.js\') }}?v={{ asset_version }}"></script>\n{% endblock %}\n'
+___________ TestFrontendAssets.test_modal_has_all_required_controls ___________
+tests\test_handwriting.py:354: in test_modal_has_all_required_controls
+    assert ctrl in html, f"whiteboard.html: missing {ctrl}"
+E   AssertionError: whiteboard.html: missing id="hwModal"
+E   assert 'id="hwModal"' in '<!DOCTYPE html>\n<html lang="ru">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=devic...div style="text-align:center;padding:12px 0;font-size:11px;color:var(--muted);">build bc9850a0</div>\n</body>\n</html>'
+_______ TestFrontendAssets.test_whiteboard_js_handles_handwriting_kind ________
+tests\test_handwriting.py:359: in test_whiteboard_js_handles_handwriting_kind
+    assert 'kind: "handwriting"' in src
+E   assert 'kind: "handwriting"' in "// FORMYLA Whiteboard - Thalamus-style infinite canvas.\n// Tools: select/pen/eraser/rect/ellipse/line/arrow/text/sti....importImage === 'function') {\n        window.WB.importImage(pendingSrc);\n      }\n    }\n  } catch (_e) {}\n})();\n"
+____________________ test_recognize_rejects_missing_image _____________________
+tests\test_handwriting_recognize.py:56: in test_recognize_rejects_missing_image
+    assert rv.status_code == 400
+E   assert 404 == 400
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_rejects_missing0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+___________________ test_recognize_rejects_oversized_image ____________________
+tests\test_handwriting_recognize.py:65: in test_recognize_rejects_oversized_image
+    assert rv.status_code == 413
+E   assert 404 == 413
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_rejects_oversiz0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+___________________ test_recognize_happy_path_returns_text ____________________
+tests\test_handwriting_recognize.py:80: in test_recognize_happy_path_returns_text
+    assert rv.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_happy_path_retu0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+____________________ test_recognize_strips_markdown_fences ____________________
+tests\test_handwriting_recognize.py:99: in test_recognize_strips_markdown_fences
+    assert body["ok"] is True
+           ^^^^^^^^^^
+E   TypeError: 'NoneType' object is not subscriptable
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_strips_markdown0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+_________________ test_recognize_handles_plain_text_response __________________
+tests\test_handwriting_recognize.py:110: in test_recognize_handles_plain_text_response
+    assert body["ok"] is True
+           ^^^^^^^^^^
+E   TypeError: 'NoneType' object is not subscriptable
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_handles_plain_t0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+_________________ test_recognize_soft_fails_on_network_error __________________
+tests\test_handwriting_recognize.py:121: in test_recognize_soft_fails_on_network_error
+    assert rv.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_soft_fails_on_n0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+__________ test_recognize_returns_empty_text_when_model_sees_nothing __________
+tests\test_handwriting_recognize.py:134: in test_recognize_returns_empty_text_when_model_sees_nothing
+    assert rv.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_returns_empty_t0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+_______________ test_recognize_works_with_raw_base64_no_dataurl _______________
+tests\test_handwriting_recognize.py:145: in test_recognize_works_with_raw_base64_no_dataurl
+    assert rv.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+---------------------------- Captured stdout setup ----------------------------
+\u0412\u041d\u0418\u041c\u0410\u041d\u0418\u0415: \u0424\u0430\u0439\u043b adaptive_data.py \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d \u0438\u043b\u0438 \u043f\u0443\u0441\u0442.\nDEBUG: \u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 81 \u043f\u0440\u0438\u0432\u044f\u0437\u043e\u043a \u043a\u0430\u0440\u0442\u0438\u043d\u043e\u043a \u0438\u0437 problem_images.py\n\u2139\ufe0f  SENTRY_DSN \u043d\u0435 \u0437\u0430\u0434\u0430\u043d \u2014 Sentry \u043e\u0442\u043a\u043b\u044e\u0447\u0435\u043d.\n\u2705 ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)\n============================================================\nP12 TASK3: \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f\n  \u0412\u0441\u0435\u0433\u043e \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0432 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u0438: 84\n  \u0412\u0441\u0435 9 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0445 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u043d\u044b.\n============================================================\n[DB] Using: sqlite:///C:\\Users\\Redmi\\AppData\\Local\\Temp\\pytest-of-Redmi\\pytest-149\\test_recognize_works_with_raw_0\\test.db@***\n============================================================\nDEBUG: Flask-Mail Configuration:\nMAIL_SERVER = smtp.yandex.ru\nMAIL_PORT = 587\nMAIL_USE_TLS = True\nMAIL_USE_SSL = False\nMAIL_USERNAME = kr1venkovictor@yandex.ru\nMAIL_PASSWORD = **************** (16 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)\n============================================================\n\u2705 \u0411\u0430\u0437\u0430 \u0434\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u0430\n[AUTO-MIGRATE/V10] Schema up-to-date \u2014 nothing to do\n[AUTO-MIGRATION] \u2713 Column 'agent_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'subtopic' already exists\n[AUTO-MIGRATION] \u2713 Column 'attempts_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'solves_count' already exists\n[AUTO-MIGRATION] \u2713 Column 'actual_solve_rate' already exists\n[AUTO-MIGRATION] \u2713 Column 'suggested_level' already exists\n[AUTO-MIGRATION] \u2713 Column 'needs_reclassification' already exists\n[AUTO-MIGRATION] \u2713 Column 'last_calibrated_at' already exists\n[AUTO-MIGRATION] \u2713 Column 'task_type' already exists\n[AUTO-MIGRATION] \u2713 Column 'source' already exists\n[AUTO-MIGRATION] \u2713 Column 'origin' already exists\n[AUTO-MIGRATION] \u2713 Column 'methods_json' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_id' already exists\n[AUTO-MIGRATION] \u2713 Column 'theme_title' added to adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'is_calibration' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'prep_state' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_mu' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_sigma' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_by_section' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Column 'level_updated_at' already exists on curator_state\n[AUTO-MIGRATION] \u2713 Table 'tutor_calls' ready\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on adaptive_tasks\n[AUTO-MIGRATION] \u2713 Column 'figure_json' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Column 'figure_status' already exists on daily_task_items\n[AUTO-MIGRATION] \u2713 Group chat tables already exist\n[AUTO-MIGRATION] \u2713 olympiad_task_attempts.status already normalized\n  [pregen_queue migration] dialect = sqlite\n  \u2705 pre_gen_queue: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[migration] pre_gen_queue table ensured\n[AUTO-MIGRATION] \u2713 figure_jobs table already exists\n[AUTO-MIGRATION] \u2713 friendships table schema OK\n[AUTO-MIGRATION] \u2713 Created support_messages table\n[AUTO-MIGRATION] \u2713 Created site_reviews table\n[AUTO-MIGRATION] \u2713 Column 'solved_indices' already exists\n[BP] prep_bp registered (/prep)\n[BP] olympiad_prep_bp registered (/olympiad-prep)\n[BP] account_bp registered (/account)\n[BP] drawing_bp registered (/drawing)\n[BP] drawing_diag_bp registered (/api/drawing/diag)\n[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)\n[BP] figures_bp registered (/figures)\n[BP] figures_gen_bp registered (/figures/generate)\n[BP] wb_call_bp registered (/api/wb_call/*)\n[BP] wb_meet_bp registered (/api/wb_meet/*)\n[BP] conference_api_bp registered (/api/conference/*)\n[BP] chat_presence_bp registered (/api/chat/*/presence, typing)\n[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)\n[BP] admin_support_bp registered (/admin/support, /my/support)\n[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)\n[SocketIO] Conference WebSocket signalling initialized (/ws-call)\n[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)\n[VSOSH10_11-ADD] result={'status': 'ok', 'probniks_created': 43, 'probniks_existed': 0, 'oly_tasks_created': 860, 'oly_tasks_existed': 0, 'method_tasks_created': 860}\n[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)\n[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows\n[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows\n[LATEX-ROOT-DB-FIX] total rows updated: 0\n[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}\n[OLYMPIAD-SEED] Theory source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\methods_catalog_105.json (102 rows; in DB: 0 \u2014 ensuring all present)\n[OLYMPIAD-SEED] TheoryBlock: created 102 rows, updated 0 rows\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_65_methods.json (65 rows)\n[THEORY-SEED] body source: c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\theory_24_methods.json (24 rows)\n[THEORY-SEED] Theory bodies filled: 0 methods updated\n[THEORY-MD] No MD content parsed from c:\\Users\\Redmi\\Desktop\\\u041d\u043e\u0432\u0430\u044f \u043f\u0430\u043f\u043a\u0430 (2)\\data\\olympiads\\formyla_vsosh9_10_methods_combined.md\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB \u2014 skipping\n[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)\n[OLYMP-PREP-SEED] olympiad_prep empty, seeding 10 defaults...\n[OLYMP-PREP-SEED] \u2713 Added 10 olympiads to olympiad_prep\n[THEORY-FIX] No placeholder method names \u2014 nothing to do\n[SECRETS-SEED] Inserted 102 secrets\n[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)\n[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded\n[BP] telegram_auth_bp registered (/auth/telegram/callback)\n  [daily_tasks migration] dialect = sqlite\n  \u2705 daily_task_sets: 10 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_task_items: 32 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 daily_generation_jobs: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  [task_pool migration] dialect = sqlite\n  \u2705 task_pool: 12 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 user_task_assignments: 5 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] daily_tasks_bp registered (/daily_tasks)\n  [curator migration] dialect = sqlite\n  \u2705 student_diagnostics: 14 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 learning_plans: 18 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_attempts: 19 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 progress_log: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n  \u2705 task_bank: 11 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] curator_bp registered (/curator) \u2014 diagnostics, plans, tutor, progress\n[BP] intake_bp registered (/intake)\n  [test_sessions migration] dialect = sqlite\n  \u2705 test_sessions: 16 \u043a\u043e\u043b\u043e\u043d\u043e\u043a\n[BP] test_sessions migration ensured\n[JINJA] filter md_render registered\n[JINJA] filter inject_geometry registered\n\u2705 VAPID keys loaded \u2014 Web Push notifications enabled\n\u2713 APScheduler started - Daily Quest cron jobs active\nolympiads.py: \u0441\u0442\u0430\u0440\u044b\u0439 \u0444\u043e\u0440\u043c\u0430\u0442, 5218 \u0437\u0430\u0434\u0430\u0447 -> 1209 \u043f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432\n\u041f\u0440\u043e\u0431\u043d\u0438\u043a\u043e\u0432 \u0432\u0441\u0435\u0433\u043e: 1209, \u0441 \u0437\u0430\u0434\u0430\u0447\u0430\u043c\u0438: 1209\n\u0410\u0434\u0430\u043f\u0442\u0438\u0432\u043d\u044b\u0439 \u0442\u0435\u0441\u0442: \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e 0 \u0437\u0430\u0434\u0430\u0447 \u0438\u0437 adaptive_data\nOLYMPIADS_INFO: 13 \u043e\u043b\u0438\u043c\u043f\u0438\u0430\u0434 \u0441 grades/rounds
+----------------------------- Captured log setup ------------------------------
+INFO     app:security.py:98 [security] init_security applied (headers + csrf helpers)
+INFO     app:app.py:165 === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+______________ test_whiteboard_template_loads_handwriting_ocr_js ______________
+tests\test_handwriting_recognize.py:185: in test_whiteboard_template_loads_handwriting_ocr_js
+    assert "handwriting_ocr.js" in txt
+E   assert 'handwriting_ocr.js' in '{% extends "base.html" %}\n{% block title %}Доска — FORMYLA{% endblock %}\n\n{% block extra_css %}\n<link rel="styles...script src="{{ url_for(\'static\', filename=\'js/wb_collab.js\') }}?v={{ asset_version }}"></script>\n{% endblock %}\n'
+____________ test_whiteboard_js_exposes_replace_and_listener_apis _____________
+tests\test_handwriting_recognize.py:199: in test_whiteboard_js_exposes_replace_and_listener_apis
+    assert token in txt, f"whiteboard.js missing API: {token}"
+E   AssertionError: whiteboard.js missing API: replacePenStrokesWithHandwriting
+E   assert 'replacePenStrokesWithHandwriting' in "// FORMYLA Whiteboard - Thalamus-style infinite canvas.\n// Tools: select/pen/eraser/rect/ellipse/line/arrow/text/sti....importImage === 'function') {\n        window.WB.importImage(pendingSrc);\n      }\n    }\n  } catch (_e) {}\n})();\n"
+_____________ test_whiteboard_js_exposes_screen_to_world_helpers ______________
+tests\test_handwriting_recognize.py:214: in test_whiteboard_js_exposes_screen_to_world_helpers
+    assert "screenToWorld:" in txt, "WB.screenToWorld not exposed"
+E   AssertionError: WB.screenToWorld not exposed
+E   assert 'screenToWorld:' in "// FORMYLA Whiteboard - Thalamus-style infinite canvas.\n// Tools: select/pen/eraser/rect/ellipse/line/arrow/text/sti....importImage === 'function') {\n        window.WB.importImage(pendingSrc);\n      }\n    }\n  } catch (_e) {}\n})();\n"
+________________________________ test_catalog _________________________________
+tests\test_olympiad_routes.py:190: in test_catalog
+    r = client.get('/olympiads/courses')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1162: in get
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\testing.py:235: in open
+    response = super().open(
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1116: in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:988: in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1264: in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1536: in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1514: in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1511: in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:919: in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:917: in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:902: in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+routes\olympiad.py:87: in catalog
+    return render_template('olympiad/catalog.html',
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:151: in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:132: in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:1295: in render
+    self.environment.handle_exception()
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:942: in handle_exception
+    raise rewrite_traceback_stack(source=source)
+templates\olympiad\catalog.html:1: in top-level template code
+    {% extends "base.html" %}
+templates\base.html:153: in top-level template code
+    <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="logo">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1121: in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1110: in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\routing\map.py:901: in build
+    raise BuildError(endpoint, values, method, self)
+E   werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'daily_tasks.get_daily_tasks'. Did you mean 'daily_quest_main' instead?
+_________________________________ test_course _________________________________
+tests\test_olympiad_routes.py:197: in test_course
+    assert r.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+______________________________ test_probnik_page ______________________________
+tests\test_olympiad_routes.py:203: in test_probnik_page
+    r = client.get('/olympiads/probnik/vsosh-9-2027-topic-1')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1162: in get
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\testing.py:235: in open
+    response = super().open(
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1116: in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:988: in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1264: in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1536: in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1514: in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1511: in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:919: in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:917: in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:902: in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+routes\olympiad.py:230: in probnik
+    return render_template('olympiad/probnik.html',
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:151: in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:132: in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:1295: in render
+    self.environment.handle_exception()
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:942: in handle_exception
+    raise rewrite_traceback_stack(source=source)
+templates\olympiad\probnik.html:1: in top-level template code
+    {% extends "base.html" %}
+templates\base.html:153: in top-level template code
+    <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="logo">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1121: in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1110: in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\routing\map.py:901: in build
+    raise BuildError(endpoint, values, method, self)
+E   werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'daily_tasks.get_daily_tasks'. Did you mean 'daily_quest_main' instead?
+_______________________________ test_task_page ________________________________
+tests\test_olympiad_routes.py:215: in test_task_page
+    r = client.get('/olympiads/task/101')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1162: in get
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\testing.py:235: in open
+    response = super().open(
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1116: in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:988: in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1264: in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1536: in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1514: in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1511: in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:919: in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:917: in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:902: in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+routes\olympiad.py:251: in task
+    return render_template('olympiad/task.html',
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:151: in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:132: in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:1295: in render
+    self.environment.handle_exception()
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:942: in handle_exception
+    raise rewrite_traceback_stack(source=source)
+templates\olympiad\task.html:1: in top-level template code
+    {% extends "base.html" %}
+templates\base.html:153: in top-level template code
+    <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="logo">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1121: in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1110: in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\routing\map.py:901: in build
+    raise BuildError(endpoint, values, method, self)
+E   werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'daily_tasks.get_daily_tasks'. Did you mean 'daily_quest_main' instead?
+_____________________ test_task_attempt_create_and_update _____________________
+tests\test_olympiad_routes.py:256: in test_task_attempt_create_and_update
+    assert j['attempt']['status'] == 'attempted'
+           ^^^^^^^^^^^^
+E   KeyError: 'attempt'
+______________________ test_task_attempt_invalid_status _______________________
+tests\test_olympiad_routes.py:277: in test_task_attempt_invalid_status
+    assert r.status_code == 400
+E   assert 200 == 400
+E    +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+____________________ test_task_attempt_invalid_self_score _____________________
+tests\test_olympiad_routes.py:285: in test_task_attempt_invalid_self_score
+    assert r.status_code == 400
+E   assert 200 == 400
+E    +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
+_______________________ test_stage_start_requires_login _______________________
+tests\test_olympiad_routes.py:292: in test_stage_start_requires_login
+    assert r.status_code in (302, 401)
+E   assert 404 in (302, 401)
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+___________________ test_stage_start_rejects_topic_probnik ____________________
+tests\test_olympiad_routes.py:300: in test_stage_start_rejects_topic_probnik
+    assert r.status_code == 400
+E   assert 404 == 400
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+______________________ test_stage_start_creates_attempt _______________________
+tests\test_olympiad_routes.py:309: in test_stage_start_creates_attempt
+    assert r.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+_________________ test_stage_submit_computes_total_and_result _________________
+tests\test_olympiad_routes.py:323: in test_stage_submit_computes_total_and_result
+    attempt_id = r.get_json()['attempt_id']
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: 'NoneType' object is not subscriptable
+__________________ test_stage_submit_double_finalize_blocked __________________
+tests\test_olympiad_routes.py:350: in test_stage_submit_double_finalize_blocked
+    attempt_id = r.get_json()['attempt_id']
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: 'NoneType' object is not subscriptable
+___________ test_template_includes_pen_stroke_before_whiteboard_js ____________
+tests\test_pen_stroke.py:51: in test_template_includes_pen_stroke_before_whiteboard_js
+    assert "pen_stroke.js" in txt, "templates/whiteboard.html must load pen_stroke.js"
+E   AssertionError: templates/whiteboard.html must load pen_stroke.js
+E   assert 'pen_stroke.js' in '{% extends "base.html" %}\n{% block title %}Доска — FORMYLA{% endblock %}\n\n{% block extra_css %}\n<link rel="styles...script src="{{ url_for(\'static\', filename=\'js/wb_collab.js\') }}?v={{ asset_version }}"></script>\n{% endblock %}\n'
+__________ test_whiteboard_js_delegates_pen_rendering_to_FormylaPen ___________
+tests\test_pen_stroke.py:60: in test_whiteboard_js_delegates_pen_rendering_to_FormylaPen
+    assert "FormylaPen" in txt, "whiteboard.js must reference window.FormylaPen"
+E   AssertionError: whiteboard.js must reference window.FormylaPen
+E   assert 'FormylaPen' in "// FORMYLA Whiteboard - Thalamus-style infinite canvas.\n// Tools: select/pen/eraser/rect/ellipse/line/arrow/text/sti....importImage === 'function') {\n        window.WB.importImage(pendingSrc);\n      }\n    }\n  } catch (_e) {}\n})();\n"
+_____________ test_whiteboard_js_captures_timestamp_on_pen_points _____________
+tests\test_pen_stroke.py:67: in test_whiteboard_js_captures_timestamp_on_pen_points
+    assert "drag.preview.points.push({ x: w.x, y: w.y, t:" in txt, (
+E   AssertionError: onMove pen branch must push points with timestamp `t`
+E   assert 'drag.preview.points.push({ x: w.x, y: w.y, t:' in "// FORMYLA Whiteboard - Thalamus-style infinite canvas.\n// Tools: select/pen/eraser/rect/ellipse/line/arrow/text/sti....importImage === 'function') {\n        window.WB.importImage(pendingSrc);\n      }\n    }\n  } catch (_e) {}\n})();\n"
+_____________________ TestPrepSmoke.test_dashboard_loads ______________________
+tests\test_prep_smoke.py:125: in test_dashboard_loads
+    resp = auth_client.get('/prep/')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1162: in get
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\testing.py:235: in open
+    response = super().open(
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1116: in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:988: in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1264: in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1536: in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1514: in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1511: in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:919: in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:917: in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:902: in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask_login\utils.py:290: in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+routes\prep.py:205: in dashboard
+    return render_template('prep/dashboard.html',
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:151: in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:132: in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:1295: in render
+    self.environment.handle_exception()
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:942: in handle_exception
+    raise rewrite_traceback_stack(source=source)
+templates\prep\dashboard.html:1: in top-level template code
+    {% extends "base.html" %}
+templates\base.html:153: in top-level template code
+    <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="logo">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1121: in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1110: in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\routing\map.py:901: in build
+    raise BuildError(endpoint, values, method, self)
+E   werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'daily_tasks.get_daily_tasks'. Did you mean 'daily_quest_main' instead?
+_______________________ TestPrepSmoke.test_wizard_loads _______________________
+tests\test_prep_smoke.py:132: in test_wizard_loads
+    resp = auth_client.get('/prep/new')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1162: in get
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\testing.py:235: in open
+    response = super().open(
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1116: in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:988: in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\test.py:1264: in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1536: in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1514: in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1511: in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:919: in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:917: in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:902: in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask_login\utils.py:290: in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+routes\prep.py:233: in new_plan_form
+    return render_template('prep/new_wizard.html',
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:151: in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py:132: in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:1295: in render
+    self.environment.handle_exception()
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py:942: in handle_exception
+    raise rewrite_traceback_stack(source=source)
+templates\prep\new_wizard.html:1: in top-level template code
+    {% extends "base.html" %}
+templates\base.html:153: in top-level template code
+    <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="logo">
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1121: in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py:1110: in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\routing\map.py:901: in build
+    raise BuildError(endpoint, values, method, self)
+E   werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'daily_tasks.get_daily_tasks'. Did you mean 'daily_quest_main' instead?
+___________________________ test_olympiads_db_data ____________________________
+tests\test_smoke_imports.py:20: in test_olympiads_db_data
+    from data.olympiads_db import OLYMPIADS_DB
+E   ModuleNotFoundError: No module named 'data.olympiads_db'
+============================== warnings summary ===============================
+app.py:1024
+tests/test_handwriting_recognize.py::test_recognize_rejects_missing_image
+tests/test_handwriting_recognize.py::test_recognize_rejects_oversized_image
+tests/test_handwriting_recognize.py::test_recognize_happy_path_returns_text
+tests/test_handwriting_recognize.py::test_recognize_strips_markdown_fences
+tests/test_handwriting_recognize.py::test_recognize_handles_plain_text_response
+tests/test_handwriting_recognize.py::test_recognize_soft_fails_on_network_error
+tests/test_handwriting_recognize.py::test_recognize_returns_empty_text_when_model_sees_nothing
+tests/test_handwriting_recognize.py::test_recognize_works_with_raw_base64_no_dataurl
+  c:\Users\Redmi\Desktop\Новая папка (2)\app.py:1024: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff = _dt.utcnow() - _td(minutes=10)
+
+app.py:9818
+tests/test_handwriting_recognize.py::test_recognize_rejects_missing_image
+tests/test_handwriting_recognize.py::test_recognize_rejects_oversized_image
+tests/test_handwriting_recognize.py::test_recognize_happy_path_returns_text
+tests/test_handwriting_recognize.py::test_recognize_strips_markdown_fences
+tests/test_handwriting_recognize.py::test_recognize_handles_plain_text_response
+tests/test_handwriting_recognize.py::test_recognize_soft_fails_on_network_error
+tests/test_handwriting_recognize.py::test_recognize_returns_empty_text_when_model_sees_nothing
+tests/test_handwriting_recognize.py::test_recognize_works_with_raw_base64_no_dataurl
+  c:\Users\Redmi\Desktop\Новая папка (2)\app.py:9818: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff_7d = _dt_now.utcnow() - _td_7d(days=7)
+
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:952: 1 warning
+tests/test_check_adaptive_answer.py: 22 warnings
+tests/test_handwriting_recognize.py: 8 warnings
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:952: DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12; see the sqlite3 documentation for suggested replacement recipes
+    cursor.execute(statement, parameters)
+
+tests/test_anchors.py: 532 warnings
+tests/test_c11_aux_allowed_after_answer.py: 13 warnings
+tests/test_c11_aux_blocked_before_answer.py: 12 warnings
+tests/test_c11_base_svg_still_open.py: 12 warnings
+tests/test_c11_method_aux_immediate.py: 1 warning
+tests/test_c11_no_aux_no_broken_image.py: 13 warnings
+tests/test_d1_daily_file_path.py: 10 warnings
+tests/test_d1_daily_optional.py: 18 warnings
+tests/test_d1_daily_solution_saved.py: 10 warnings
+tests/test_d1_probe_still_required.py: 6 warnings
+tests/test_d2_no_solution_blocked.py: 6 warnings
+tests/test_d2_photo_only_ok.py: 9 warnings
+tests/test_d2_with_solution_ok.py: 9 warnings
+tests/test_d3_daily_buffer.py: 37 warnings
+tests/test_daily_quest_attempts.py: 20 warnings
+tests/test_daily_tasks_failure_handling.py: 1 warning
+tests/test_figures_ch5.py: 23 warnings
+tests/test_fixtures_smoke.py: 19 warnings
+tests/test_handwriting_recognize.py: 8936 warnings
+tests/test_kimi_review.py: 9 warnings
+tests/test_olympiad_import.py: 4 warnings
+tests/test_olympiad_models.py: 18 warnings
+tests/test_olympiad_routes.py: 5 warnings
+tests/test_prep_planner.py: 709 warnings
+tests/test_prep_routes.py: 319 warnings
+tests/test_prep_smoke.py: 2 warnings
+tests/test_prep_tasks.py: 40 warnings
+tests/test_subject_filter.py: 16 warnings
+tests/test_x8_four_surfaces.py: 19 warnings
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/test_c11_aux_allowed_after_answer.py::test_daily_aux_allowed_after_answer
+tests/test_c11_aux_blocked_before_answer.py::test_daily_aux_blocked_before_answer
+tests/test_c11_no_aux_no_broken_image.py::test_no_aux_no_broken_image_daily
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures.py:190: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item = DailyTaskItem.query.get(item_id)
+
+tests/test_c11_aux_allowed_after_answer.py::test_daily_aux_allowed_after_answer
+tests/test_c11_no_aux_no_broken_image.py::test_no_aux_no_broken_image_daily
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures.py:231: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item = DailyTaskItem.query.get(item_id)
+
+tests/test_call_page.py: 3 warnings
+tests/test_check_adaptive_answer.py: 13 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\app.py:2365: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    return User.query.get(int(user_id))
+
+tests/test_check_adaptive_answer.py: 11 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\app.py:7530: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    'now': _dt.utcnow(), 'sid': session_id,
+
+tests/test_curator_offline.py::test_zero_external_calls_on_page_render
+tests/test_curator_offline.py::test_all_menu_pages_no_500_no_402
+  C:\Users\Redmi\Desktop\Новая папка (2)\curator\routes.py:1136: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    'timestamp': datetime.utcnow().isoformat(),
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\routes.py:449: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item: DailyTaskItem | None = DailyTaskItem.query.get(item_id)
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\routes.py:454: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:629: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item = DailyTaskItem.query.get(item_id)
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:651: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    item.answered_at = datetime.utcnow()
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:661: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+tests/test_d2_photo_only_ok.py::test_submit_ai_photo_only_ok
+tests/test_d2_with_solution_ok.py::test_submit_ai_with_solution_ok
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\daily_task_rotation.py:855: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item = DailyTaskItem.query.get(item_id)
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+tests/test_d2_photo_only_ok.py::test_submit_ai_photo_only_ok
+tests/test_d2_with_solution_ok.py::test_submit_ai_with_solution_ok
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\level_engine.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    cs.level_updated_at = datetime.utcnow().isoformat()
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+tests/test_d1_daily_optional.py::test_daily_submit_without_solution
+tests/test_d1_daily_optional.py::test_no_solution_attempt_created_without_solution
+tests/test_d1_daily_solution_saved.py::test_daily_text_solution_creates_solution_attempt
+tests/test_d2_photo_only_ok.py::test_submit_ai_photo_only_ok
+tests/test_d2_with_solution_ok.py::test_submit_ai_with_solution_ok
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\level_engine.py:220: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    cs.level_updated_at = datetime.utcnow().isoformat()
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\routes.py:530: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    year_month = _dt.utcnow().strftime('%Y-%m')
+
+tests/test_d1_daily_file_path.py::test_daily_photo_file_saved_to_correct_path
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_d1_daily_file_path.py:72: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    year_month = datetime.utcnow().strftime('%Y-%m')
+
+tests/test_d2_no_solution_blocked.py::test_submit_ai_no_solution_blocked
+tests/test_d2_photo_only_ok.py::test_submit_ai_photo_only_ok
+tests/test_d2_with_solution_ok.py::test_submit_ai_with_solution_ok
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\routes.py:853: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item = DailyTaskItem.query.get(item_id)
+
+tests/test_d2_no_solution_blocked.py::test_submit_ai_no_solution_blocked
+tests/test_d2_photo_only_ok.py::test_submit_ai_photo_only_ok
+tests/test_d2_with_solution_ok.py::test_submit_ai_with_solution_ok
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\routes.py:857: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    daily_set = DailyTaskSet.query.get(item.daily_set_id)
+
+tests/test_d2_photo_only_ok.py::test_submit_ai_photo_only_ok
+tests/test_d2_with_solution_ok.py::test_submit_ai_with_solution_ok
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\routes.py:956: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    item.answered_at = _dt.utcnow()
+
+tests/test_d3_daily_buffer.py: 15 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:150: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    threshold = datetime.utcnow() - STALE_JOB_TIMEOUT
+
+tests/test_d3_daily_buffer.py: 12 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:2761: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/test_d3_daily_buffer.py: 12 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:211: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/test_d3_daily_buffer.py: 12 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:2839: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    started_at=datetime.utcnow(),
+
+tests/test_d3_daily_buffer.py: 12 warnings
+tests/test_task_bank.py: 1 warning
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1158: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = DailyGenerationJob.query.get(job_id)
+
+tests/test_d3_daily_buffer.py: 15 warnings
+tests/test_prep_routes.py: 2 warnings
+tests/test_prep_smoke.py: 1 warning
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\profile.py:731: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(user_id)
+
+tests/test_d3_daily_buffer.py: 84 warnings
+tests/test_prep_routes.py: 14 warnings
+tests/test_prep_smoke.py: 7 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\running_pct.py:100: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/test_d3_daily_buffer.py: 12 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1045: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(user_id)
+
+tests/test_d3_daily_buffer.py: 12 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1071: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    DailyGenerationJob.query.get(job_id),
+
+tests/test_d3_daily_buffer.py: 11 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1090: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    daily_set = DailyTaskSet.query.get(daily_set_id)
+
+tests/test_d3_daily_buffer.py: 10 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1131: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    daily_set.generated_at = datetime.utcnow()
+
+tests/test_d3_daily_buffer.py: 10 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1581: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = DailyGenerationJob.query.get(job_id)
+
+tests/test_d3_daily_buffer.py: 10 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1585: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.finished_at = datetime.utcnow()
+
+tests/test_d3_daily_buffer.py::test_d3_buffer_idempotent
+tests/test_d3_daily_buffer.py::test_d3_no_regeneration_when_full
+tests/test_d3_daily_buffer.py::test_d3_empty_pool_no_crash
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1594: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = DailyGenerationJob.query.get(job_id)
+
+tests/test_daily_quest_attempts.py: 10 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_daily_quest_attempts.py:41: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    date=datetime.utcnow().date(),
+
+tests/test_daily_quest_attempts.py::test_cooldown_active_just_regenerated
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_daily_quest_attempts.py:123: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    q.last_regenerated_at = datetime.utcnow()
+
+tests/test_daily_quest_attempts.py::test_cooldown_active_just_regenerated
+tests/test_daily_quest_attempts.py::test_cooldown_expired_after_1h
+tests/test_daily_quest_attempts.py::test_cooldown_mid_window
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\daily_quest_service.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    elapsed = (datetime.utcnow() - last).total_seconds()
+
+tests/test_daily_quest_attempts.py::test_cooldown_expired_after_1h
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_daily_quest_attempts.py:133: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    q.last_regenerated_at = datetime.utcnow() - timedelta(hours=1, seconds=10)
+
+tests/test_daily_quest_attempts.py::test_cooldown_mid_window
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_daily_quest_attempts.py:141: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    q.last_regenerated_at = datetime.utcnow() - timedelta(minutes=30)
+
+tests/test_daily_tasks_failure_handling.py::test_persist_does_not_create_zombie_items_on_failure
+tests/test_daily_tasks_failure_handling.py::test_regenerate_allows_retry_after_failed_set
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_daily_tasks_failure_handling.py:59: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_daily_tasks_failure_handling.py::test_persist_does_not_create_zombie_items_on_failure
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1293: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    daily_set = DailyTaskSet.query.get(daily_set_id)
+
+tests/test_daily_tasks_failure_handling.py::test_persist_does_not_create_zombie_items_on_failure
+  c:\Users\Redmi\Desktop\Новая папка (2)\daily_tasks\services.py:1401: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    daily_set.generated_at = datetime.utcnow()
+
+tests/test_daily_tasks_failure_handling.py::test_persist_does_not_create_zombie_items_on_failure
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_daily_tasks_failure_handling.py:233: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    s = DailyTaskSet.query.get(set_id)
+
+tests/test_daily_tasks_failure_handling.py::test_regenerate_allows_retry_after_failed_set
+  c:\Users\Redmi\Desktop\Новая папка (2)\app.py:4831: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(target_id)
+
+tests/test_daily_tasks_failure_handling.py::test_regenerate_allows_retry_after_failed_set
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask_login\login_manager.py:488: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expires = datetime.utcnow() + duration
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_before_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_persisted_in_db
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+tests/test_figures_ch5.py::TestFigureModel::test_model_used_in_job
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:55: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    u = User.query.get(1)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:272: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:278: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:364: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:416: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:147: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:152: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(job.user_id)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:121: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:147: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:173: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:189: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:190: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:202: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:216: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job.id)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:218: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_persisted_in_db
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:239: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job2 = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:254: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at=datetime.utcnow() - timedelta(minutes=15),
+
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:185: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:270: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_fixtures_smoke.py::test_test_user_exists
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_fixtures_smoke.py:32: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    fetched = User.query.get(test_user.id)
+
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+tests/test_x8_four_surfaces.py::test_figures_build_job_has_aux_fields
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\conftest.py:266: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+tests/test_x8_four_surfaces.py::test_figures_build_job_has_aux_fields
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\conftest.py:267: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at=datetime.utcnow(),
+
+tests/test_handwriting_recognize.py: 6880 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\vsosh_10_11_additive_seed.py:114: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    if MethodTask.query.get(mt_id) is None:
+
+tests/test_olympiad_models.py::test_task_attempt_status_transitions
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_olympiad_models.py:221: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    a.finished_at = datetime.utcnow()
+
+tests/test_olympiad_models.py::test_task_attempt_status_transitions
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_olympiad_models.py:223: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    refetched = TaskAttempt.query.get(a.id)
+
+tests/test_olympiad_models.py::test_stage_attempt_with_task_scores_json
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_olympiad_models.py:249: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    fetched = StageAttempt.query.get(s.id)
+
+tests/test_olympiad_routes.py::test_task_page
+tests/test_olympiad_routes.py::test_task_attempt_create_and_update
+tests/test_olympiad_routes.py::test_task_attempt_invalid_status
+tests/test_olympiad_routes.py::test_task_attempt_invalid_self_score
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask_sqlalchemy\query.py:30: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    rv = self.get(ident)
+
+tests/test_olympiad_routes.py::test_task_page
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\olympiad.py:244: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    p = Probnik.query.get(t.probnik_id)
+
+tests/test_olympiad_routes.py::test_task_attempt_create_and_update
+tests/test_olympiad_routes.py::test_task_attempt_invalid_status
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\olympiad.py:281: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    started_at=datetime.utcnow(),
+
+tests/test_prep_planner.py::TestSelectProblems::test_grade_filter_respected
+tests/test_prep_planner.py::TestSelectProblems::test_grade_filter_respected
+tests/test_prep_planner.py::TestSelectProblems::test_grade_filter_respected
+tests/test_prep_planner.py::TestSelectProblems::test_grade_filter_respected
+tests/test_prep_planner.py::TestSelectProblems::test_grade_filter_respected
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_prep_planner.py:389: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    task = AdaptiveTask.query.get(task_id)
+
+tests/test_prep_planner.py::TestRecomputePlan::test_recompute_only_affects_upcoming
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\prep_planner.py:128: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    plan = PrepPlan.query.get(plan_id)
+
+tests/test_prep_planner.py::TestRecomputePlan::test_recompute_only_affects_upcoming
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_prep_planner.py:436: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    first_day_after = PrepDay.query.get(first_day.id)
+
+tests/test_prep_routes.py::TestCreatePlan::test_create_plan_no_adaptive_test
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\prep.py:119: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    cutoff = datetime.utcnow() - timedelta(days=30)
+
+tests/test_prep_routes.py::TestDeletePlan::test_delete_plan_cascades_days
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_prep_routes.py:258: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    assert PrepPlan.query.get(plan_id) is None
+
+tests/test_profile_percent_levels.py::TestRunningPct::test_no_answers_returns_none
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_profile_percent_levels.py:242: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    pct, n, measured = compute_running_pct([], now=datetime.utcnow())
+
+tests/test_subject_filter.py::TestProductionImportIntegrity::test_total_count
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\_pytest\fixtures.py:1313: PytestRemovedIn10Warning: Class-scoped fixture defined as instance method is deprecated.
+  Instance attributes set in this fixture will NOT be visible to test methods,
+  as each test gets a new instance while the fixture runs only once per class.
+  Use @classmethod decorator and set attributes on cls instead.
+  See https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
+    fixturefunc = resolve_fixture_function(fixturedef, request)
+
+tests/test_subscriptions.py: 21 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\subscription.py:138: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_iso = datetime.utcnow().isoformat()
+
+tests/test_subscriptions.py::test_free_user_blocked_after_3_ai_explanations
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:81: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py: 15 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\subscription.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_free_user_not_blocked_at_2_ai
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:95: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_free_user_blocked_after_20_tasks
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:107: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py: 11 warnings
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\subscription.py:241: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/test_subscriptions.py::test_premium_unlimited_ai
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:163: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_premium_unlimited_ai
+tests/test_subscriptions.py::test_premium_monthly_soft_limit
+tests/test_subscriptions.py::test_premium_at_199_not_blocked
+tests/test_subscriptions.py::test_free_user_display
+tests/test_subscriptions.py::test_premium_user_display_no_daily_limit
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\subscription.py:330: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/test_subscriptions.py::test_premium_unlimited_tasks
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:175: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_premium_monthly_soft_limit
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:190: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_premium_monthly_soft_limit
+tests/test_subscriptions.py::test_premium_at_199_not_blocked
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\subscription.py:63: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    ts = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+tests/test_subscriptions.py::test_premium_at_199_not_blocked
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:204: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_expired_premium_fallback_to_free
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:219: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expired_at = (datetime.utcnow() - timedelta(days=1)).isoformat()
+
+tests/test_subscriptions.py::test_active_premium_not_expired
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:235: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    future_at = (datetime.utcnow() + timedelta(days=30)).isoformat()
+
+tests/test_subscriptions.py::test_increment_task_usage
+tests/test_subscriptions.py::test_increment_ai_usage
+tests/test_subscriptions.py::test_increment_multiple_times
+tests/test_subscriptions.py::test_increment_multiple_times
+tests/test_subscriptions.py::test_increment_multiple_times
+tests/test_subscriptions.py::test_increment_multiple_times
+tests/test_subscriptions.py::test_increment_multiple_times
+  c:\Users\Redmi\Desktop\Новая папка (2)\services\subscription.py:357: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_free_user_display
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:320: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_subscriptions.py::test_premium_user_display_no_daily_limit
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_subscriptions.py:340: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    today = datetime.utcnow().date().isoformat()
+
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_x8_single_call.py:49: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/test_x8_single_call.py::test_single_api_call_for_pair
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_x8_single_call.py:50: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at=datetime.utcnow(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ai_tutor_review.py::test_sympy_correct_with_solution - asse...
+FAILED tests/test_ai_tutor_review.py::test_sympy_correct_no_solution_high_level
+FAILED tests/test_ai_tutor_review.py::test_sympy_wrong_ai_unavailable - Asser...
+FAILED tests/test_drawing_critic_regression.py::test_critic_actually_finds_things_on_broken_drawing
+FAILED tests/test_handwriting.py::TestFrontendAssets::test_whiteboard_html_links_board_css
+FAILED tests/test_handwriting.py::TestFrontendAssets::test_whiteboard_html_loads_cyrillic_fonts
+FAILED tests/test_handwriting.py::TestFrontendAssets::test_handwriting_button_in_toolbar
+FAILED tests/test_handwriting.py::TestFrontendAssets::test_modal_has_all_required_controls
+FAILED tests/test_handwriting.py::TestFrontendAssets::test_whiteboard_js_handles_handwriting_kind
+FAILED tests/test_handwriting_recognize.py::test_recognize_rejects_missing_image
+FAILED tests/test_handwriting_recognize.py::test_recognize_rejects_oversized_image
+FAILED tests/test_handwriting_recognize.py::test_recognize_happy_path_returns_text
+FAILED tests/test_handwriting_recognize.py::test_recognize_strips_markdown_fences
+FAILED tests/test_handwriting_recognize.py::test_recognize_handles_plain_text_response
+FAILED tests/test_handwriting_recognize.py::test_recognize_soft_fails_on_network_error
+FAILED tests/test_handwriting_recognize.py::test_recognize_returns_empty_text_when_model_sees_nothing
+FAILED tests/test_handwriting_recognize.py::test_recognize_works_with_raw_base64_no_dataurl
+FAILED tests/test_handwriting_recognize.py::test_whiteboard_template_loads_handwriting_ocr_js
+FAILED tests/test_handwriting_recognize.py::test_whiteboard_js_exposes_replace_and_listener_apis
+FAILED tests/test_handwriting_recognize.py::test_whiteboard_js_exposes_screen_to_world_helpers
+FAILED tests/test_olympiad_routes.py::test_catalog - werkzeug.routing.excepti...
+FAILED tests/test_olympiad_routes.py::test_course - assert 404 == 200
+FAILED tests/test_olympiad_routes.py::test_probnik_page - werkzeug.routing.ex...
+FAILED tests/test_olympiad_routes.py::test_task_page - werkzeug.routing.excep...
+FAILED tests/test_olympiad_routes.py::test_task_attempt_create_and_update - K...
+FAILED tests/test_olympiad_routes.py::test_task_attempt_invalid_status - asse...
+FAILED tests/test_olympiad_routes.py::test_task_attempt_invalid_self_score - ...
+FAILED tests/test_olympiad_routes.py::test_stage_start_requires_login - asser...
+FAILED tests/test_olympiad_routes.py::test_stage_start_rejects_topic_probnik
+FAILED tests/test_olympiad_routes.py::test_stage_start_creates_attempt - asse...
+FAILED tests/test_olympiad_routes.py::test_stage_submit_computes_total_and_result
+FAILED tests/test_olympiad_routes.py::test_stage_submit_double_finalize_blocked
+FAILED tests/test_pen_stroke.py::test_template_includes_pen_stroke_before_whiteboard_js
+FAILED tests/test_pen_stroke.py::test_whiteboard_js_delegates_pen_rendering_to_FormylaPen
+FAILED tests/test_pen_stroke.py::test_whiteboard_js_captures_timestamp_on_pen_points
+FAILED tests/test_prep_smoke.py::TestPrepSmoke::test_dashboard_loads - werkze...
+FAILED tests/test_prep_smoke.py::TestPrepSmoke::test_wizard_loads - werkzeug....
+FAILED tests/test_smoke_imports.py::test_olympiads_db_data - ModuleNotFoundEr...
+38 failed, 984 passed, 17 skipped, 18261 warnings in 414.66s (0:06:54)

@@ -2674,6 +2674,195 @@ def _complete_thematic_set(thematic_set_id: int) -> None:
         db.session.rollback()
 
 
+# ──────────────────────────────────────────────────────────────────────
+# D3 — Запас задач дня на 3 дня вперёд
+# ──────────────────────────────────────────────────────────────────────
+
+
+def generate_daily_set(
+    user_id: int,
+    target_date: date,
+    triggered_by: str = "buffer",
+    profile: Optional[Dict[str, Any]] = None,
+    forced_topic: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Create a DailyTaskSet for an arbitrary date and launch AI pipeline.
+
+    Unlike ``enqueue_daily_generation`` which is hard-wired to ``today``,
+    this function accepts any ``target_date``, enabling the 3-day-ahead
+    buffer to pre-generate sets for future dates.
+
+    If the profile cannot be built (e.g. no adaptive_tasks, no grade),
+    the function returns ``{"status": "empty_pool", "reason": "..."}``
+    instead of raising an exception -- the buffer catches this and logs
+    the reason without crashing.
+
+    Parameters
+    ----------
+    user_id : int
+        User ID.
+    target_date : date
+        The date to generate tasks for.
+    triggered_by : str
+        Trigger label (default ``"buffer"``).
+    profile : dict or None
+        Optional pre-built profile.  If None, ``build_profile`` is called.
+    forced_topic : str or None
+        Optional topic override.
+
+    Returns
+    -------
+    dict
+        * ``daily_set_id`` -- ID of the created DailyTaskSet
+        * ``job_id`` -- ID of the background job
+        * ``status`` -- ``"generating"``, ``"empty_pool"``, or ``"error"``
+        * ``message`` -- human-readable explanation
+    """
+    # -- Lazy zombie cleanup --
+    _reap_stale_jobs(user_id=user_id)
+
+    # -- Check for existing set on this date --
+    existing_set = DailyTaskSet.query.filter_by(
+        user_id=user_id,
+        target_date=target_date,
+    ).first()
+
+    if existing_set and existing_set.status in ("ready", "generating"):
+        return {
+            "daily_set_id": existing_set.id,
+            "job_id": None,
+            "status": "already_exists",
+            "message": f"Set #{existing_set.id} already {existing_set.status}",
+        }
+
+    if existing_set and existing_set.status == "failed":
+        db.session.delete(existing_set)
+        db.session.flush()
+
+    # -- Build profile if not provided --
+    if profile is None:
+        try:
+            profile = build_profile(user_id)
+        except ProfileBuildError as exc:
+            logger.warning(
+                "generate_daily_set user=%d date=%s: ProfileBuildError -- %s",
+                user_id, target_date, exc,
+            )
+            return {
+                "daily_set_id": None,
+                "job_id": None,
+                "status": "empty_pool",
+                "reason": f"Cannot build profile: {exc}",
+            }
+
+    # -- Check pool cache --
+    if profile is not None:
+        cache_key = compute_cache_key(profile)
+        now = datetime.utcnow()
+        _reap_stale_pools()
+        pool: Optional[TaskPool] = TaskPool.query.filter(
+            TaskPool.cache_key == cache_key,
+            TaskPool.status.in_(["ready", "partial"]),
+            (TaskPool.expires_at.is_(None)) | (TaskPool.expires_at > now),
+        ).order_by(TaskPool.created_at.desc()).first()
+
+        if pool:
+            daily_set = DailyTaskSet(
+                user_id=user_id,
+                target_date=target_date,
+                status="generating",
+                triggered_by=triggered_by,
+            )
+            db.session.add(daily_set)
+            db.session.flush()
+
+            tasks_data = _parse_json_field(pool.tasks, [])
+            specs_data = _parse_json_field(pool.specs, [])
+            count = min(_get_daily_count_for_user(user_id), len(tasks_data))
+            selected_indices = list(range(count))
+            selected_indices = _select_best_task_indices(
+                [{"position": i+1} for i in range(len(tasks_data))],
+                n=count,
+            )
+
+            for new_pos, idx in enumerate(selected_indices):
+                task = tasks_data[idx] if idx < len(tasks_data) else {}
+                spec = specs_data[idx] if idx < len(specs_data) else {}
+                item = DailyTaskItem(
+                    daily_set_id=daily_set.id,
+                    position=new_pos + 1,
+                    slot_kind=spec.get("slot_kind"),
+                    subject=spec.get("subject"),
+                    topic=spec.get("topic"),
+                    subtopic=spec.get("subtopic"),
+                    difficulty_level=spec.get("difficulty_level"),
+                    weakness_score=spec.get("weakness_score"),
+                    reason=spec.get("reason"),
+                    is_calibration=False,
+                    task_text=task.get("task_text", ""),
+                    correct_answer=task.get("correct_answer"),
+                    solution=task.get("solution"),
+                    hints=json.dumps(task.get("hints", []), ensure_ascii=False),
+                    is_flagged=False,
+                    status="approved",
+                )
+                db.session.add(item)
+
+            pool.used_count = (pool.used_count or 0) + 1
+            daily_set.status = "ready"
+            daily_set.generated_at = datetime.utcnow()
+            daily_set.reason_summary = "From task_pool cache (buffer)"
+            db.session.commit()
+
+            return {
+                "daily_set_id": daily_set.id,
+                "job_id": None,
+                "status": "ready",
+                "message": "Tasks from pool cache",
+            }
+
+    # -- No cache hit: create set + job, launch background pipeline --
+    daily_set = DailyTaskSet(
+        user_id=user_id,
+        target_date=target_date,
+        status="generating",
+        triggered_by=triggered_by,
+    )
+    db.session.add(daily_set)
+    db.session.flush()
+
+    job = DailyGenerationJob(
+        user_id=user_id,
+        target_date=target_date,
+        daily_set_id=daily_set.id,
+        state="running",
+        started_at=datetime.utcnow(),
+    )
+    db.session.add(job)
+    db.session.commit()
+
+    logger.info(
+        "generate_daily_set: created set #%d / job #%d for user=%d date=%s",
+        daily_set.id, job.id, user_id, target_date,
+    )
+
+    # -- Launch background pipeline --
+    app_ref = current_app._get_current_object()
+    thread = threading.Thread(
+        target=_background_run,
+        args=(app_ref, user_id, target_date, daily_set.id, job.id, forced_topic),
+        daemon=True,
+    )
+    thread.start()
+
+    return {
+        "daily_set_id": daily_set.id,
+        "job_id": job.id,
+        "status": "generating",
+        "message": "Generation launched in background",
+    }
+
+
 def _fail_thematic_set(thematic_set_id: int, error_message: str) -> None:
     """Отметить тематический сет как failed."""
     try:

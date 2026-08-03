@@ -2301,6 +2301,55 @@ def daily_midnight_assign_job():
                 total, instant_count, generating_count, skipped_count,
             )
 
+# Daily buffer fill: ensure 3-day-ahead task stock (D3 block)
+# Runs daily at 06:00 MSK — after midnight assign had time to complete
+@scheduler.task('cron', id='daily_buffer_fill', hour=6, minute=0)
+def daily_buffer_fill_job():
+    """Fill 3-day buffer for all active users.
+
+    For each user with a DailyTaskSet in the last 3 days, calls
+    ``ensure_daily_buffer`` to create sets for today through +2 days.
+    Users with empty profiles (no adaptive_tasks, no grade) are
+    skipped gracefully — the buffer returns ``empty_pool`` status.
+    """
+    with app.app_context():
+        from daily_tasks.buffer import ensure_daily_buffer
+        from daily_tasks.models import DailyTaskSet as DTS
+        from daily_tasks.services import today_in_user_tz as _tz
+        from datetime import timedelta
+
+        today = _tz()
+        cutoff = today - timedelta(days=3)
+
+        # Find users active in the last 3 days (have a DailyTaskSet)
+        active_user_ids = [
+            row[0] for row in
+            DTS.query.with_entities(DTS.user_id).filter(
+                DTS.target_date >= cutoff,
+            ).distinct().all()
+        ]
+
+        filled = 0
+        skipped = 0
+
+        for uid in active_user_ids:
+            try:
+                result = ensure_daily_buffer(uid, days_ahead=3)
+                if result.get("status") == "ok":
+                    skipped += 1
+                elif result.get("pipeline_calls", 0) > 0:
+                    filled += 1
+            except Exception as exc:
+                app.logger.warning(
+                    "daily_buffer_fill: user=%d error: %s", uid, exc,
+                )
+
+        app.logger.info(
+            "Daily buffer fill: %d users filled, %d already complete",
+            filled, skipped,
+        )
+
+
 # Start scheduler
 try:
     if os.environ.get("ENABLE_SCHEDULER", "1") != "0":
