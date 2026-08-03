@@ -1,0 +1,60 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 3,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 3,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 2,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 2,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 1,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": 1,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "H",
+   "x": 0,
+   "y": 2
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCDEFGH"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

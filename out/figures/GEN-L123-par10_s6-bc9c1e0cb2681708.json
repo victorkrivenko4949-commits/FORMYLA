@@ -1,0 +1,48 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "A",
+   "over": "M"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "line": "BD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "50°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "D"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

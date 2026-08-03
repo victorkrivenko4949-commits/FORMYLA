@@ -1,0 +1,39 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AO",
+   "style": "soft"
+  },
+  {
+   "segment": "BO",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

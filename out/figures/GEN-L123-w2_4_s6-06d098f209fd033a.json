@@ -1,0 +1,117 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P1",
+   "of": "AB",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P2",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P3",
+   "of": "AB",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P4",
+   "of": "AB",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q1",
+   "of": "DC",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q2",
+   "of": "DC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q3",
+   "of": "DC",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q4",
+   "of": "DC",
+   "ratio": 0.8
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R1",
+   "of": "AD",
+   "ratio": 0.3333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R2",
+   "of": "AD",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S1",
+   "of": "BC",
+   "ratio": 0.3333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S2",
+   "of": "BC",
+   "ratio": 0.6666666667
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "P1Q1",
+   "style": "soft"
+  },
+  {
+   "segment": "P2Q2",
+   "style": "soft"
+  },
+  {
+   "segment": "P3Q3",
+   "style": "soft"
+  },
+  {
+   "segment": "P4Q4",
+   "style": "soft"
+  },
+  {
+   "segment": "R1S1",
+   "style": "soft"
+  },
+  {
+   "segment": "R2S2",
+   "style": "soft"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

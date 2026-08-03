@@ -1,0 +1,108 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AB",
+   "ratio": 0.0555555556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y",
+   "of": "AB",
+   "ratio": 0.9444444444
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S",
+   "of": "AD",
+   "ratio": 0.1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
+   "of": "AD",
+   "ratio": 0.9
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U",
+   "of": "BC",
+   "ratio": 0.1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "V",
+   "of": "BC",
+   "ratio": 0.9
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "CD",
+   "ratio": 0.0555555556
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "CD",
+   "ratio": 0.9444444444
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "XN",
+   "line2": "SU"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "YM",
+   "line2": "SU"
+  },
+  {
+   "type": "intersection",
+   "id": "G",
+   "line1": "YM",
+   "line2": "TV"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "XN",
+   "line2": "TV"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "EFGH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "H",
+    "E",
+    "F"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

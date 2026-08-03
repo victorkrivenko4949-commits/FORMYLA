@@ -882,6 +882,7 @@ class AdaptiveTask(db.Model):
     #          engine_rejected, human_verified, human_rejected
     figure_status = db.Column(db.String(32), nullable=False, default='no_description', index=True)
     # CH8: aux figure (чертёж с дополнительными построениями)
+    svg_path = db.Column(db.Text, nullable=True)
     aux_svg_path = db.Column(db.Text, nullable=True)
     has_aux = db.Column(db.Boolean, nullable=False, default=False)
     aux_reason = db.Column(db.Text, nullable=True)

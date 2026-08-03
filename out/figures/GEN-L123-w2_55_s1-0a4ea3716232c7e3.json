@@ -1,0 +1,60 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "MN",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "D"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AD",
+    "AM"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

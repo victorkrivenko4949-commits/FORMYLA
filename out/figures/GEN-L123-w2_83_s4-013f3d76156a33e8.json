@@ -1,0 +1,77 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 12,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 12,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 1,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 11,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": 11,
+   "y": 4
+  },
+  {
+   "type": "point",
+   "id": "H",
+   "x": 1,
+   "y": 4
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "EFGH",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "E",
+   "line": "AB",
+   "reason": "Показать отступ как расстояние от внутреннего прямоугольника до нижнего края клумбы"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "EP",
+   "style": "soft"
+  }
+ ]
+}

@@ -408,7 +408,8 @@ style: пусто основное, "soft" вспомогательное, "acce
 5. Если задача не про планиметрию или чертёж не нужен — верни {"skip":"причина"}."""
 
 def ask_model(task, retry_notes=None):
-    msg = f"Условие:\n{task['text'][:2000]}"
+    text = task.get("text") or task.get("statement") or ""
+    msg = f"Условие:\n{text[:2000]}"
     if task.get("solution"):
         msg += f"\n\nРешение (для понимания, что важно на чертеже):\n{task['solution'][:4000]}"
     if retry_notes:

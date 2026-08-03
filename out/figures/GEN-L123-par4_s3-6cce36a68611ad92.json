@@ -1,0 +1,68 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "D",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CD",
+    "DA"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

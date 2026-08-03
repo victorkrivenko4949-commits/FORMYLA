@@ -361,6 +361,46 @@ def test_svg_files(tmp_path):
 
 
 @pytest.fixture
+def three_import_tasks(app):
+    """Create three AdaptiveTask records for I1 import tests.
+
+    UIDs: i1_ok, i1_ok2, i1_broken — match synthetic SVG files
+    created in the test (ok.svg, ok2.svg + ok2_aux.svg, broken.svg).
+    All have difficulty_level=3. Text is synthetic and marked [TEST].
+    """
+    from models import db, AdaptiveTask
+
+    spec = [
+        ('i1_ok', 'algebra'),
+        ('i1_ok2', 'geometry'),
+        ('i1_broken', 'combinatorics'),
+    ]
+
+    tasks = []
+    for uid, section in spec:
+        task = AdaptiveTask(
+            class_level=5,
+            difficulty_level=3,
+            topic=section,
+            subtopic='I1 test subtopic',
+            task_text=(
+                f'[TEST] Synthetic figure import test task {uid}, '
+                f'not a real olympiad problem.'
+            ),
+            solution='Test solution I1.',
+            criteria_1_point='Criterion 1 point (I1).',
+            criteria_2_points='Criterion 2 points (I1).',
+            subject=section,
+            source_id=uid,
+            source=f'[TEST] import I1 {uid}',
+        )
+        db.session.add(task)
+        tasks.append(task)
+    db.session.commit()
+    return tasks
+
+
+@pytest.fixture
 def auth_client(client, test_user):
     """Authorised test client — _user_id is set to test_user.id.
 

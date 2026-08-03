@@ -1,0 +1,79 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0.173648,
+   "y": 0.984808
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 0.766044,
+   "y": 0.642788
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 0.939693,
+   "y": 0.34202
+  },
+  {
+   "type": "point",
+   "id": "N",
+   "x": 0.5,
+   "y": 0.866025
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "OC"
+  },
+  {
+   "segment": "OM",
+   "style": "accent"
+  },
+  {
+   "segment": "ON",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "80°"
+  },
+  {
+   "angle": [
+    "M",
+    "O",
+    "N"
+   ],
+   "text": "40°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}
