@@ -67,9 +67,10 @@
               <input type="file" id="dailyPhotoInput" accept="image/jpeg,image/png,image/heic,image/heif" style="display:none;" onchange="handleDailyPhotoSelect(this)">
             </div>
             
-            <button onclick="submitAnswer()" id="submitBtn" class="submit-button">
-                ✓ Проверить
+            <button onclick="submitAnswer()" id="submitBtn" class="submit-button" disabled style="position:sticky; bottom:0; z-index:10; background:var(--surface); padding:12px 0;">
+                Отправить решение
             </button>
+            <div id="submitHint" style="text-align:center; font-size:13px; color:rgba(255,255,255,0.4); margin-top:4px; padding-bottom:8px;">Опиши решение или прикрепи фото</div>
         </div>
 
         <!-- Feedback Section -->
@@ -127,6 +128,7 @@ function handleDailyPhotoSelect(input) {
     return;
   }
   dailySelectedPhotoFile = file;
+  updateSubmitButtonState();
   var reader = new FileReader();
   reader.onload = function(e){
     var img = document.getElementById('dailyPhotoPreviewImg');
@@ -151,6 +153,25 @@ function removeDailyPhoto() {
   area.style.borderColor = 'rgba(255,255,255,0.15)';
   area.style.background = 'rgba(0,0,0,0.15)';
   document.getElementById('dailyPhotoRemoveBtn').style.display = 'none';
+  updateSubmitButtonState();
+}
+
+// D2: update submit button state based on solution presence
+function updateSubmitButtonState() {
+  var btn = document.getElementById('submitBtn');
+  var hint = document.getElementById('submitHint');
+  if(!btn) return;
+  var hasText = false;
+  var ta = document.getElementById('userSolution');
+  if(ta && ta.value.trim().length > 0) hasText = true;
+  var hasPhoto = (dailySelectedPhotoFile !== null);
+  if(hasText || hasPhoto) {
+    btn.disabled = false;
+    if(hint) hint.style.display = 'none';
+  } else {
+    btn.disabled = true;
+    if(hint) hint.style.display = 'block';
+  }
 }
 
 // D1: drag-and-drop for photo area (daily)
@@ -183,6 +204,7 @@ function removeDailyPhoto() {
   ta.addEventListener('input', function(){
     var cnt = document.getElementById('dailySolutionCounter');
     if(cnt) cnt.textContent = ta.value.length + ' символов';
+    updateSubmitButtonState();
   });
 })();
 
@@ -227,6 +249,14 @@ async function submitAnswer() {
       solutionText = st ? st.value.trim() : '';
     } else if(dailyCurrentMethod === 'photo' && dailySelectedPhotoFile){
       solutionPhoto = dailySelectedPhotoFile;
+    }
+    
+    // D2: reject if no solution
+    var hasSolution = (dailyCurrentMethod === 'text' && solutionText.length > 0) ||
+                      (dailyCurrentMethod === 'photo' && solutionPhoto !== null);
+    if(!hasSolution){
+      updateSubmitButtonState();
+      return;
     }
     
     const submitBtn = document.getElementById('submitBtn');

@@ -896,6 +896,15 @@ def submit_answer_ai(item_id: int):
 
     images_b64 = [_strip_dataurl(b) for b in raw_images if b]
 
+    # D2: серверная проверка наличия решения перед AI-вызовом
+    has_solution_text = len(user_solution.strip()) > 0
+    has_solution_photo = len(images_b64) > 0
+    if not has_solution_text and not has_solution_photo:
+        return jsonify({
+            "status": "error",
+            "error": "Опиши решение или прикрепи фото.",
+        }), 400
+
     # Если AI-проверка недоступна (нет файла services/ai_tutor_review.py на проде)
     if review_attempt is None:
         return jsonify({

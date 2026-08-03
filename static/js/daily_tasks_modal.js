@@ -608,6 +608,26 @@ function submitAnswer(itemId, KA, KS){
     return;
   }
 
+  // D2: проверка наличия решения перед отправкой
+  var hasPhoto = (window.DT_PHOTO_BUFFER && window.DT_PHOTO_BUFFER.length > 0);
+  var hasTextSolution = userSolution.length > 0;
+  if(!hasTextSolution && !hasPhoto){
+    var hintEl = document.getElementById('dt-solution-hint');
+    if(!hintEl){
+      hintEl = document.createElement('div');
+      hintEl.id = 'dt-solution-hint';
+      hintEl.style.cssText = 'text-align:center;font-size:13px;color:rgba(255,255,255,0.4);margin-top:8px;';
+      var taParent = ta ? ta.parentNode : null;
+      if(taParent) taParent.appendChild(hintEl);
+    }
+    hintEl.textContent = 'Опиши решение или прикрепи фото';
+    hintEl.style.display = 'block';
+    return;
+  } else {
+    var hintEl2 = document.getElementById('dt-solution-hint');
+    if(hintEl2) hintEl2.style.display = 'none';
+  }
+
   var encodePhotos = Promise.resolve([]);
   if(window.DT_PHOTO_BUFFER && window.DT_PHOTO_BUFFER.length){
     encodePhotos = (function(){
