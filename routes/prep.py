@@ -1528,8 +1528,6 @@ def morning_probe():
                 'difficulty_level': current_task_obj.difficulty_level,
                 'topic': current_task_obj.topic,
                 'has_aux': bool(current_task_obj.has_aux),
-                'aux_svg_path': current_task_obj.aux_svg_path if current_task_obj.has_aux else None,
-                'aux_reason': current_task_obj.aux_reason if current_task_obj.has_aux else None,
             }
 
     if current_task is None:

@@ -163,6 +163,8 @@ def app(tmp_path):
     test_app.register_blueprint(daily_tasks_bp)
     from routes.prep import prep_bp
     test_app.register_blueprint(prep_bp)
+    from routes.figures import figures_bp
+    test_app.register_blueprint(figures_bp)
 
     # Push context once and keep it for all dependent fixtures and the test.
     ctx = test_app.app_context()
