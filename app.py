@@ -10093,7 +10093,7 @@ def figures_vitrine():
             'rejected': sum(1 for f in figures if f['status'] == 'rejected'),
             'pending': sum(1 for f in figures if f['status'] == 'pending'),
         }
-    return render_template('figures.html', figures=figures, counts=counts)
+    return render_template('admin/figures_vitrine.html', figures=figures, counts=counts)
 
 
 @app.route("/admin/figures/tasks")
