@@ -7,12 +7,12 @@
   },
   {
    "type": "midpoint",
-   "id": "E",
+   "id": "M",
    "of": "AB"
   },
   {
    "type": "midpoint",
-   "id": "F",
+   "id": "N",
    "of": "CD"
   }
  ],
@@ -21,35 +21,28 @@
    "polygon": "ABCD"
   },
   {
-   "segment": "EF"
+   "segment": "MN",
+   "style": "dashed"
   }
  ],
  "marks": [
   {
-   "right_angle": [
-    "D",
-    "A",
-    "B"
-   ]
-  },
-  {
-   "right_angle": [
-    "A",
-    "E",
-    "F"
-   ]
-  },
-  {
    "equal": [
-    "AE",
-    "EB",
-    "BC",
-    "CF",
-    "FD",
-    "DA",
-    "EF"
+    "AM",
+    "MB",
+    "DN",
+    "NC",
+    "AD",
+    "BC"
    ],
    "ticks": 1
+  },
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "D"
+   ]
   }
  ],
  "aux": [],

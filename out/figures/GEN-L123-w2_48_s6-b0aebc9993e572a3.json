@@ -7,69 +7,68 @@
   },
   {
    "type": "point_on_segment",
-   "id": "E",
+   "id": "M",
    "of": "AB",
-   "ratio": 0.33
+   "ratio": 0.333
   },
   {
    "type": "point_on_segment",
-   "id": "F",
+   "id": "N",
    "of": "AB",
-   "ratio": 0.67
-  },
-  {
-   "type": "point_on_segment",
-   "id": "G",
-   "of": "CD",
-   "ratio": 0.67
-  },
-  {
-   "type": "point_on_segment",
-   "id": "H",
-   "of": "CD",
-   "ratio": 0.33
+   "ratio": 0.667
   },
   {
    "type": "point_on_segment",
    "id": "P",
-   "of": "AD",
-   "ratio": 0.33
+   "of": "DC",
+   "ratio": 0.333
   },
   {
    "type": "point_on_segment",
    "id": "Q",
-   "of": "AD",
-   "ratio": 0.67
+   "of": "DC",
+   "ratio": 0.667
   },
   {
    "type": "point_on_segment",
    "id": "R",
-   "of": "BC",
-   "ratio": 0.33
+   "of": "AD",
+   "ratio": 0.333
   },
   {
    "type": "point_on_segment",
    "id": "S",
+   "of": "AD",
+   "ratio": 0.667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
    "of": "BC",
-   "ratio": 0.67
+   "ratio": 0.333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "U",
+   "of": "BC",
+   "ratio": 0.667
   }
  ],
  "draw": [
   {
-   "polygon": "ABCD",
-   "style": "accent"
+   "polygon": "ABCD"
   },
   {
-   "segment": "EG"
+   "segment": "MP"
   },
   {
-   "segment": "FH"
+   "segment": "NQ"
   },
   {
-   "segment": "PR"
+   "segment": "RT"
   },
   {
-   "segment": "QS"
+   "segment": "SU"
   }
  ],
  "marks": [],

@@ -2,56 +2,114 @@
  "given": [
   {
    "type": "point",
-   "id": "A",
-   "x": 0,
-   "y": 0
-  },
-  {
-   "type": "point",
    "id": "B",
-   "x": 3,
+   "x": 1,
    "y": 0
   },
   {
    "type": "point",
    "id": "C",
-   "x": 3,
-   "y": 2
+   "x": 2,
+   "y": 0
   },
   {
    "type": "point",
    "id": "D",
-   "x": 2,
-   "y": 2
+   "x": 3,
+   "y": 0
   },
   {
    "type": "point",
    "id": "E",
-   "x": 2,
-   "y": 3
+   "x": 0,
+   "y": 1
   },
   {
    "type": "point",
    "id": "F",
    "x": 1,
-   "y": 3
+   "y": 1
   },
   {
    "type": "point",
    "id": "G",
+   "x": 2,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "H",
+   "x": 3,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "I",
+   "x": 0,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "J",
    "x": 1,
    "y": 2
   },
   {
    "type": "point",
-   "id": "H",
-   "x": 0,
+   "id": "K",
+   "x": 2,
    "y": 2
+  },
+  {
+   "type": "point",
+   "id": "L",
+   "x": 3,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 0,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "N",
+   "x": 1,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "O",
+   "x": 2,
+   "y": 3
   }
  ],
  "draw": [
   {
-   "polygon": "ABCDEFGH"
+   "polygon": "EFJI"
+  },
+  {
+   "polygon": "IJNM"
+  },
+  {
+   "polygon": "BCGF"
+  },
+  {
+   "polygon": "FGKJ"
+  },
+  {
+   "polygon": "JKON"
+  },
+  {
+   "polygon": "CDHG"
+  },
+  {
+   "polygon": "GHLK"
+  },
+  {
+   "polygon": "EFBCDHLKONMI",
+   "style": "accent"
   }
  ],
  "marks": [],

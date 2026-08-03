@@ -9,13 +9,13 @@
    "type": "point_on_segment",
    "id": "E",
    "of": "AB",
-   "ratio": 0.6153846
+   "ratio": 0.615
   },
   {
-   "type": "foot",
+   "type": "point_on_segment",
    "id": "F",
-   "from": "E",
-   "line": "DC"
+   "of": "DC",
+   "ratio": 0.615
   }
  ],
  "draw": [
@@ -34,15 +34,15 @@
  "marks": [
   {
    "right_angle": [
-    "D",
     "A",
-    "E"
+    "B",
+    "C"
    ]
   },
   {
    "right_angle": [
     "E",
-    "B",
+    "F",
     "C"
    ]
   },

@@ -7,75 +7,75 @@
   },
   {
    "type": "point_on_segment",
-   "id": "X",
+   "id": "P",
    "of": "AB",
    "ratio": 0.0555555556
   },
   {
    "type": "point_on_segment",
-   "id": "Y",
+   "id": "Q",
    "of": "AB",
    "ratio": 0.9444444444
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R",
+   "of": "BC",
+   "ratio": 0.1
   },
   {
    "type": "point_on_segment",
    "id": "S",
-   "of": "AD",
-   "ratio": 0.1
+   "of": "BC",
+   "ratio": 0.9
   },
   {
    "type": "point_on_segment",
    "id": "T",
-   "of": "AD",
-   "ratio": 0.9
+   "of": "CD",
+   "ratio": 0.9444444444
   },
   {
    "type": "point_on_segment",
    "id": "U",
-   "of": "BC",
-   "ratio": 0.1
-  },
-  {
-   "type": "point_on_segment",
-   "id": "V",
-   "of": "BC",
-   "ratio": 0.9
-  },
-  {
-   "type": "point_on_segment",
-   "id": "M",
    "of": "CD",
    "ratio": 0.0555555556
   },
   {
    "type": "point_on_segment",
+   "id": "V",
+   "of": "DA",
+   "ratio": 0.1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "W",
+   "of": "DA",
+   "ratio": 0.9
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "PT",
+   "line2": "WR"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "PT",
+   "line2": "VS"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "QU",
+   "line2": "WR"
+  },
+  {
+   "type": "intersection",
    "id": "N",
-   "of": "CD",
-   "ratio": 0.9444444444
-  },
-  {
-   "type": "intersection",
-   "id": "E",
-   "line1": "XN",
-   "line2": "SU"
-  },
-  {
-   "type": "intersection",
-   "id": "F",
-   "line1": "YM",
-   "line2": "SU"
-  },
-  {
-   "type": "intersection",
-   "id": "G",
-   "line1": "YM",
-   "line2": "TV"
-  },
-  {
-   "type": "intersection",
-   "id": "H",
-   "line1": "XN",
-   "line2": "TV"
+   "line1": "QU",
+   "line2": "VS"
   }
  ],
  "draw": [
@@ -83,7 +83,7 @@
    "polygon": "ABCD"
   },
   {
-   "polygon": "EFGH",
+   "polygon": "KLMN",
    "style": "accent"
   }
  ],
@@ -93,13 +93,6 @@
     "D",
     "A",
     "B"
-   ]
-  },
-  {
-   "right_angle": [
-    "H",
-    "E",
-    "F"
    ]
   }
  ],

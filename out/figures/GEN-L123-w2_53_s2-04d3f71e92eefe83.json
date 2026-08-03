@@ -1,0 +1,301 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P1",
+   "of": "AB",
+   "ratio": 0.0833333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P2",
+   "of": "AB",
+   "ratio": 0.1666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P3",
+   "of": "AB",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P4",
+   "of": "AB",
+   "ratio": 0.3333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P5",
+   "of": "AB",
+   "ratio": 0.4166666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P6",
+   "of": "AB",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P7",
+   "of": "AB",
+   "ratio": 0.5833333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P8",
+   "of": "AB",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P9",
+   "of": "AB",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P10",
+   "of": "AB",
+   "ratio": 0.8333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P11",
+   "of": "AB",
+   "ratio": 0.9166666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q1",
+   "of": "DC",
+   "ratio": 0.0833333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q2",
+   "of": "DC",
+   "ratio": 0.1666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q3",
+   "of": "DC",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q4",
+   "of": "DC",
+   "ratio": 0.3333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q5",
+   "of": "DC",
+   "ratio": 0.4166666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q6",
+   "of": "DC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q7",
+   "of": "DC",
+   "ratio": 0.5833333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q8",
+   "of": "DC",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q9",
+   "of": "DC",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q10",
+   "of": "DC",
+   "ratio": 0.8333333333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q11",
+   "of": "DC",
+   "ratio": 0.9166666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R1",
+   "of": "AD",
+   "ratio": 0.1428571429
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R2",
+   "of": "AD",
+   "ratio": 0.2857142857
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R3",
+   "of": "AD",
+   "ratio": 0.4285714286
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R4",
+   "of": "AD",
+   "ratio": 0.5714285714
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R5",
+   "of": "AD",
+   "ratio": 0.7142857143
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R6",
+   "of": "AD",
+   "ratio": 0.8571428571
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S1",
+   "of": "BC",
+   "ratio": 0.1428571429
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S2",
+   "of": "BC",
+   "ratio": 0.2857142857
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S3",
+   "of": "BC",
+   "ratio": 0.4285714286
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S4",
+   "of": "BC",
+   "ratio": 0.5714285714
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S5",
+   "of": "BC",
+   "ratio": 0.7142857143
+  },
+  {
+   "type": "point_on_segment",
+   "id": "S6",
+   "of": "BC",
+   "ratio": 0.8571428571
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "P1Q1",
+   "style": "soft"
+  },
+  {
+   "segment": "P2Q2",
+   "style": "soft"
+  },
+  {
+   "segment": "P3Q3",
+   "style": "soft"
+  },
+  {
+   "segment": "P4Q4",
+   "style": "soft"
+  },
+  {
+   "segment": "P5Q5",
+   "style": "soft"
+  },
+  {
+   "segment": "P6Q6",
+   "style": "soft"
+  },
+  {
+   "segment": "P7Q7",
+   "style": "soft"
+  },
+  {
+   "segment": "P8Q8",
+   "style": "soft"
+  },
+  {
+   "segment": "P9Q9",
+   "style": "soft"
+  },
+  {
+   "segment": "P10Q10",
+   "style": "soft"
+  },
+  {
+   "segment": "P11Q11",
+   "style": "soft"
+  },
+  {
+   "segment": "R1S1",
+   "style": "soft"
+  },
+  {
+   "segment": "R2S2",
+   "style": "soft"
+  },
+  {
+   "segment": "R3S3",
+   "style": "soft"
+  },
+  {
+   "segment": "R4S4",
+   "style": "soft"
+  },
+  {
+   "segment": "R5S5",
+   "style": "soft"
+  },
+  {
+   "segment": "R6S6",
+   "style": "soft"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "B"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

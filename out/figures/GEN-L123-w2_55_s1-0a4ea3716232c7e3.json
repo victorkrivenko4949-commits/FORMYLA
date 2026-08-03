@@ -27,20 +27,6 @@
  ],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "B",
-    "C"
-   ]
-  },
-  {
-   "right_angle": [
-    "B",
-    "A",
-    "D"
-   ]
-  },
-  {
    "equal": [
     "AM",
     "MB"
@@ -49,8 +35,8 @@
   },
   {
    "equal": [
-    "AD",
-    "AM"
+    "AM",
+    "BC"
    ],
    "ticks": 1
   }

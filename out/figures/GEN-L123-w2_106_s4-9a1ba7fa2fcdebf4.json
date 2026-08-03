@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "BC",
+   "ratio": 0.45
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AM",
+   "ratio": 0.9
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABL"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w1",
+   "line": "AC",
+   "pick": 1
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "ACL"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w2",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "BL",
+   "line2": "DE"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "CL",
+   "line2": "DE"
+  },
+  {
+   "type": "circumcircle",
+   "id": "s",
+   "of": "APL"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AL",
+   "style": "soft"
+  },
+  {
+   "line": "BL",
+   "style": "soft"
+  },
+  {
+   "line": "CL",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "line": "DE",
+   "style": "accent"
+  },
+  {
+   "circle": "s",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

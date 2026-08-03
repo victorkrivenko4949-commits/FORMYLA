@@ -8,40 +8,31 @@
   {
    "type": "point_on_segment",
    "id": "E",
-   "of": "AD",
+   "of": "AB",
    "ratio": 0.4
   },
   {
-   "type": "point_on_segment",
+   "type": "foot",
    "id": "F",
-   "of": "BC",
-   "ratio": 0.4
+   "from": "E",
+   "line": "CD"
   }
  ],
  "draw": [
   {
-   "segment": "AB"
-  },
-  {
-   "segment": "BC"
-  },
-  {
-   "segment": "CD"
-  },
-  {
-   "segment": "DA"
+   "polygon": "ABCD"
   },
   {
    "segment": "EF",
-   "style": "dashed"
+   "style": "soft"
   },
   {
    "segment": "AF",
-   "style": "dashed"
+   "style": "soft"
   },
   {
    "segment": "EC",
-   "style": "dashed"
+   "style": "soft"
   }
  ],
  "marks": [

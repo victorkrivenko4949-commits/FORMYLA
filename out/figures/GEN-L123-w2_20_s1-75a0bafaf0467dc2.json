@@ -1,0 +1,101 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "OAB",
+   "kind": "isosceles"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C",
+   "of": "AB",
+   "ratio": 0.38
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.74
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.26
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "OC"
+  },
+  {
+   "segment": "OD",
+   "style": "accent"
+  },
+  {
+   "segment": "OE"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "C"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "D",
+    "O",
+    "E"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "D"
+   ],
+   "text": "x"
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "E"
+   ],
+   "text": "x"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB",
+   "reason": "Биссектриса угла AOB в равнобедренном треугольнике OAB проходит через середину AB."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "OM",
+   "style": "dashed"
+  }
+ ]
+}

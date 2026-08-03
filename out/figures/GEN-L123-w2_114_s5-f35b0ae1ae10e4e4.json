@@ -1,0 +1,97 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AO"
+  },
+  {
+   "type": "reflect_point",
+   "id": "S",
+   "of": "M",
+   "over": "N"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "OS",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "OS",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "line": "PQ",
+   "style": "soft"
+  },
+  {
+   "segment": "OP",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "dashed"
+  },
+  {
+   "segment": "BQ",
+   "style": "accent"
+  },
+  {
+   "segment": "CP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BQ",
+    "CP"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

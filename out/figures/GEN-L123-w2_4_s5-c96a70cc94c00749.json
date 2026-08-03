@@ -3,7 +3,7 @@
   {
    "type": "quad",
    "id": "ABCD",
-   "kind": "rectangle"
+   "kind": "square"
   },
   {
    "type": "midpoint",
@@ -21,18 +21,10 @@
    "polygon": "ABCD"
   },
   {
-   "segment": "MN",
-   "style": "dashed"
+   "segment": "MN"
   }
  ],
  "marks": [
-  {
-   "right_angle": [
-    "A",
-    "B",
-    "C"
-   ]
-  },
   {
    "equal": [
     "AM",
@@ -42,8 +34,8 @@
   },
   {
    "equal": [
-    "DN",
-    "NC"
+    "CN",
+    "ND"
    ],
    "ticks": 1
   }

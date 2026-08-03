@@ -1,0 +1,88 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABO",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A1",
+   "of": "AB",
+   "ratio": 0.35
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A1"
+  },
+  {
+   "type": "line_circle",
+   "id": "A2",
+   "circle": "w",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "B1",
+   "of": "A1",
+   "over": "O"
+  },
+  {
+   "type": "reflect_point",
+   "id": "B2",
+   "of": "A2",
+   "over": "O"
+  }
+ ],
+ "draw": [
+  {
+   "line": "A1A2"
+  },
+  {
+   "line": "B1B2"
+  },
+  {
+   "line": "A1B1"
+  },
+  {
+   "line": "A2B2"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "OA1",
+    "OA2"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "OB1",
+    "OB2"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "A2",
+    "O",
+    "B1"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "A1",
+    "O",
+    "B2"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}
