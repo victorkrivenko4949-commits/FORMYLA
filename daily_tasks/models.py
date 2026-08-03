@@ -121,6 +121,10 @@ class DailyTaskItem(db.Model):
     # Статусы: no_description, has_description, figure_built,
     #          engine_rejected, human_verified, human_rejected
     figure_status = db.Column(db.String(32), nullable=False, default='no_description', index=True)
+    # CH8: aux figure (чертёж с дополнительными построениями)
+    aux_svg_path = db.Column(db.Text, nullable=True)
+    has_aux = db.Column(db.Boolean, nullable=False, default=False)
+    aux_reason = db.Column(db.Text, nullable=True)
 
     # --- relationships ---
     daily_set = db.relationship('DailyTaskSet', back_populates='items')

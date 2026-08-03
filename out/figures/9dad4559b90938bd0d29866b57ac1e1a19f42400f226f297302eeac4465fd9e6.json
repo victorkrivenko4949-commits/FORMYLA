@@ -1,0 +1,70 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "reflect_line",
+   "id": "P",
+   "of": "A",
+   "over": "BC"
+  },
+  {
+   "type": "reflect_line",
+   "id": "Q",
+   "of": "A",
+   "over": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BP",
+   "style": "accent"
+  },
+  {
+   "segment": "PD",
+   "style": "accent"
+  },
+  {
+   "segment": "DQ",
+   "style": "accent"
+  },
+  {
+   "segment": "QB",
+   "style": "accent"
+  },
+  {
+   "segment": "AP",
+   "style": "dashed"
+  },
+  {
+   "segment": "AQ",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "D"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

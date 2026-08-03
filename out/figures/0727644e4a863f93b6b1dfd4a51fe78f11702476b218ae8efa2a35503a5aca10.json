@@ -1,0 +1,125 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "CI",
+   "line2": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BD",
+   "style": "accent"
+  },
+  {
+   "segment": "DC",
+   "style": "accent"
+  },
+  {
+   "segment": "CE",
+   "style": "accent"
+  },
+  {
+   "segment": "EA",
+   "style": "accent"
+  },
+  {
+   "segment": "AF",
+   "style": "accent"
+  },
+  {
+   "segment": "FB",
+   "style": "accent"
+  },
+  {
+   "segment": "AD",
+   "style": "dashed"
+  },
+  {
+   "segment": "BE",
+   "style": "dashed"
+  },
+  {
+   "segment": "CF",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "D",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "E"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "E",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "F"
+   ],
+   "text": "γ"
+  },
+  {
+   "angle": [
+    "F",
+    "C",
+    "B"
+   ],
+   "text": "γ"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

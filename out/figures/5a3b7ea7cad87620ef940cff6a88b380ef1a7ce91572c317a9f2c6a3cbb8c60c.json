@@ -1,0 +1,105 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "K",
+   "x": 0,
+   "y": 1
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "K"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "A",
+   "circle": "w",
+   "angle": 20
+  },
+  {
+   "type": "reflect_line",
+   "id": "B",
+   "of": "A",
+   "over": "OK"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "AB",
+   "line2": "OK"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w",
+   "angle": 210
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "w",
+   "line": "PM",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "PK",
+   "line2": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "OK",
+   "style": "soft"
+  },
+  {
+   "segment": "PQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "PK",
+   "style": "dashed"
+  },
+  {
+   "segment": "KD",
+   "style": "accent"
+  },
+  {
+   "segment": "MO",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "M",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

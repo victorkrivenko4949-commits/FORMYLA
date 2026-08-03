@@ -1,0 +1,70 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AC",
+   "ratio": 0.25
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "AI",
+   "line2": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AL"
+  },
+  {
+   "segment": "BE"
+  },
+  {
+   "segment": "AX"
+  },
+  {
+   "segment": "XE"
+  },
+  {
+   "segment": "BX"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AX",
+    "XE"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AL",
+    "BX"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="60.0,100.6 74.6,519.4 560.0,323.3" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="74.6" y1="519.4" x2="282.3" y2="199.6" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="560.0" y1="323.3" x2="67.5" y2="314.7" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="282.3" y1="199.6" x2="67.5" y2="314.7" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="100.6" x2="241.5" y2="439.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="6 5"/>
+<path d="M 83.8 111.2 A 26 26 0 0 1 60.9 126.6" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="82.9" y="139.6" fill="#8C9ABC" font-size="15" text-anchor="middle">60°</text>
+<circle cx="60.0" cy="100.6" r="3.4" fill="#E6EBF7"/>
+<text x="50.0" y="89.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="74.6" cy="519.4" r="3.4" fill="#E6EBF7"/>
+<text x="64.6" y="542.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="560.0" cy="323.3" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="329.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="206.0" cy="317.1" r="3.4" fill="#E6EBF7"/>
+<text x="196.0" y="305.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">I</text>
+<circle cx="282.3" cy="199.6" r="3.4" fill="#E6EBF7"/>
+<text x="292.3" y="188.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B1</text>
+<circle cx="67.5" cy="314.7" r="3.4" fill="#E6EBF7"/>
+<text x="47.5" y="320.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C1</text>
+<circle cx="241.5" cy="439.5" r="3.4" fill="#E6EBF7"/>
+<text x="255.6" y="431.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A'</text>
+</svg>

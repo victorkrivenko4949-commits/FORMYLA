@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<circle cx="226.7" cy="310.0" r="166.7" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<circle cx="476.7" cy="310.0" r="83.3" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="-302.3" y1="-53.8" x2="1089.0" y2="438.1" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="393.3" y1="310.0" x2="393.3" y2="192.1" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="282.2" y1="152.9" x2="171.1" y2="467.1" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="171.1" y1="467.1" x2="393.3" y2="192.1" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="282.2" y1="152.9" x2="476.7" y2="310.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<polyline points="360.5,232.8 350.4,224.6 358.5,214.5" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<circle cx="226.7" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="207.3" y="310.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O1</text>
+<circle cx="476.7" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="496.0" y="321.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O2</text>
+<circle cx="393.3" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="407.5" y="330.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">T</text>
+<circle cx="282.2" cy="152.9" r="3.4" fill="#E6EBF7"/>
+<text x="272.2" y="141.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="504.4" cy="231.4" r="3.4" fill="#E6EBF7"/>
+<text x="523.8" y="232.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="393.3" cy="192.1" r="3.4" fill="#E6EBF7"/>
+<text x="398.5" y="178.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+<circle cx="171.1" cy="467.1" r="3.4" fill="#E6EBF7"/>
+<text x="157.0" y="487.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="368.6" cy="222.7" r="3.4" fill="#E6EBF7"/>
+<text x="368.6" y="208.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P</text>
+</svg>

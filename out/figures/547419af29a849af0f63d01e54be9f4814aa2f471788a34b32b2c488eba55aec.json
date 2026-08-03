@@ -1,0 +1,58 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "C",
+   "over": "M"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AD",
+   "line2": "BI"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "AD",
+   "line2": "CI"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "line": "AD"
+  },
+  {
+   "segment": "BP"
+  },
+  {
+   "segment": "CQ"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

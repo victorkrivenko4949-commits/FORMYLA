@@ -1,0 +1,162 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0.9397,
+   "y": 0.342
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": -0.9397,
+   "y": -0.342
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 0.5,
+   "y": -0.866
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w",
+   "angle": 70
+  },
+  {
+   "type": "point_on_circle",
+   "id": "N",
+   "circle": "w",
+   "angle": 160
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w",
+   "angle": 250
+  },
+  {
+   "type": "point_on_circle",
+   "id": "Q",
+   "circle": "w",
+   "angle": 340
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A1",
+   "of": "BC",
+   "ratio": 0.267
+  },
+  {
+   "type": "point",
+   "id": "O1",
+   "x": -0.9397,
+   "y": -1.537
+  },
+  {
+   "type": "circle",
+   "id": "omega1",
+   "center": "O1",
+   "through": "A1"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B1",
+   "of": "AC",
+   "ratio": 0.318
+  },
+  {
+   "type": "point",
+   "id": "O2",
+   "x": 1.624,
+   "y": -0.342
+  },
+  {
+   "type": "circle",
+   "id": "omega2",
+   "center": "O2",
+   "through": "B1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "NP",
+   "style": "accent"
+  },
+  {
+   "segment": "MQ",
+   "style": "accent"
+  },
+  {
+   "circle": "omega1",
+   "style": "dashed"
+  },
+  {
+   "circle": "omega2",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC",
+   "reason": "центр вписанной окружности (из решения)"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "I",
+   "line": "AB",
+   "reason": "точка касания вписанной окружности со стороной AB"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "CI",
+   "line2": "PQ",
+   "reason": "точка E=CI∩PQ из решения"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CI",
+   "style": "soft"
+  },
+  {
+   "segment": "PQ",
+   "style": "soft"
+  },
+  {
+   "segment": "ID",
+   "style": "dashed"
+  }
+ ]
+}

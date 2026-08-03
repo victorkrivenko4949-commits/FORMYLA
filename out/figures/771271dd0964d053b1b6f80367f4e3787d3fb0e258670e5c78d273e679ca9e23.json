@@ -1,0 +1,101 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "T1",
+   "from": "O",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "T2",
+   "from": "O",
+   "line": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "U",
+   "of": "T2O"
+  },
+  {
+   "type": "reflect_point",
+   "id": "P",
+   "of": "T1",
+   "over": "U"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "OP",
+   "line2": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "O",
+   "line": "AM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "BC",
+   "style": "soft"
+  },
+  {
+   "segment": "AO",
+   "style": "soft"
+  },
+  {
+   "line": "OM",
+   "style": "dashed"
+  },
+  {
+   "line": "AM",
+   "style": "dashed"
+  },
+  {
+   "segment": "OD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "O",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "O"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

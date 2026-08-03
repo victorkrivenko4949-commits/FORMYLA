@@ -1,0 +1,110 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "O",
+   "line": "AH"
+  },
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "H",
+   "line": "AO"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "OP",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "Y",
+   "line1": "OP",
+   "line2": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "Z",
+   "line1": "HQ",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "HQ",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AO",
+   "style": "soft"
+  },
+  {
+   "line": "OP"
+  },
+  {
+   "line": "HQ"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "P",
+    "O"
+   ]
+  },
+  {
+   "right_angle": [
+    "H",
+    "Q",
+    "O"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w",
+   "line": "AH",
+   "pick": 1,
+   "reason": "D — вторая точка пересечения AH с описанной окружностью; используется в доказательстве."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AD",
+   "style": "dashed"
+  }
+ ]
+}

@@ -1,0 +1,61 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.35
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "CB",
+   "ratio": 0.4
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "AL",
+   "line2": "KC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AL",
+   "style": "soft"
+  },
+  {
+   "segment": "KC",
+   "style": "soft"
+  },
+  {
+   "segment": "MI",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "KA",
+    "AC",
+    "CL"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

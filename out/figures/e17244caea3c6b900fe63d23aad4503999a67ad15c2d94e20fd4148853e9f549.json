@@ -1,0 +1,105 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "C",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 0
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "X",
+   "of": "AIB"
+  },
+  {
+   "type": "incenter",
+   "id": "Y",
+   "of": "BIC"
+  },
+  {
+   "type": "incenter",
+   "id": "Z",
+   "of": "AIC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "XYZ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "XYZ",
+   "style": "accent"
+  },
+  {
+   "circle": "w",
+   "style": "accent"
+  },
+  {
+   "segment": "AI",
+   "style": "soft"
+  },
+  {
+   "segment": "BI",
+   "style": "soft"
+  },
+  {
+   "segment": "CI",
+   "style": "soft"
+  },
+  {
+   "segment": "IX",
+   "style": "soft"
+  },
+  {
+   "segment": "IY",
+   "style": "soft"
+  },
+  {
+   "segment": "IZ",
+   "style": "soft"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

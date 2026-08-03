@@ -2333,9 +2333,9 @@ document.addEventListener('click', function(e){
   }
 })();
 </script>
-<script src="{{ url_for('static', filename='js/emoji_picker.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/emoji_picker.js') }}?v={{ asset_version }}" defer></script>
 <!-- CHAT_USER_INFO_V1 — клик по аватару/имени в шапке чата открывает панель «Информация о собеседнике» -->
-<script src="{{ url_for('static', filename='js/chat_user_info.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/chat_user_info.js') }}?v={{ asset_version }}" defer></script>
 <!-- CHAT_GROUPS_SIDEBAR_V2 — отображение групп в списке диалогов слева -->
 <script src="{{ url_for('static', filename='js/chat_groups_sidebar.js') }}?v=2" defer></script>
 

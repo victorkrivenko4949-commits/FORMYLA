@@ -1,0 +1,123 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "O1",
+   "x": 0,
+   "y": 1
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O1",
+   "through": "A"
+  },
+  {
+   "type": "point",
+   "id": "O2",
+   "x": 2,
+   "y": 2
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "O2",
+   "through": "A"
+  },
+  {
+   "type": "reflect_line",
+   "id": "B",
+   "of": "A",
+   "over": "O1O2"
+  },
+  {
+   "type": "point",
+   "id": "T1",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w2",
+   "line": "AT1",
+   "pick": 1
+  },
+  {
+   "type": "point",
+   "id": "T2",
+   "x": 1,
+   "y": -1
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "w1",
+   "line": "T2A",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "w1",
+   "line": "BM",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "w2",
+   "line": "NB",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w1"
+  },
+  {
+   "circle": "w2"
+  },
+  {
+   "line": "AM",
+   "style": "soft"
+  },
+  {
+   "line": "AN",
+   "style": "soft"
+  },
+  {
+   "line": "BM",
+   "style": "soft"
+  },
+  {
+   "line": "BN",
+   "style": "soft"
+  },
+  {
+   "segment": "MP",
+   "style": "accent"
+  },
+  {
+   "segment": "NQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "MP",
+    "NQ"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

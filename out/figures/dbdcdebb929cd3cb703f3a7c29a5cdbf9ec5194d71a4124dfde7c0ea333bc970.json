@@ -1,0 +1,101 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "cC",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "B1",
+   "circle1": "cA",
+   "circle2": "cC",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "A'",
+   "circle": "cA",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "C'",
+   "circle": "cC",
+   "line": "CB",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CB1",
+   "style": "soft"
+  },
+  {
+   "line": "A'C'",
+   "style": "accent"
+  },
+  {
+   "circle": "cA",
+   "style": "dashed"
+  },
+  {
+   "circle": "cC",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AA'",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AC",
+    "CC'"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

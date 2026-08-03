@@ -348,3 +348,19 @@ def segment_contains_point(seg: Segment, p: Point) -> bool:
     d_ap = dist(a, p)
     d_pb = dist(p, b)
     return abs(d_ap + d_pb - d_ab) < EPS
+
+
+def point_to_segment_distance(p: Point, seg: Segment) -> float:
+    """
+    Минимальное расстояние от точки p до отрезка seg.
+    Возвращает расстояние в пикселях.
+    """
+    a, b = seg
+    dx = b[0] - a[0]
+    dy = b[1] - a[1]
+    if abs(dx) < EPS and abs(dy) < EPS:
+        return dist(p, a)
+    t = max(0.0, min(1.0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy)))
+    proj_x = a[0] + t * dx
+    proj_y = a[1] + t * dy
+    return dist(p, (proj_x, proj_y))

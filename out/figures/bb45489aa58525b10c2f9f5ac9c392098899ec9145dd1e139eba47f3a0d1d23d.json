@@ -1,0 +1,141 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BI",
+   "line2": "AC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "omega",
+   "line": "BM",
+   "pick": 1
+  },
+  {
+   "type": "circumcircle",
+   "id": "gamma",
+   "of": "BDL"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O1",
+   "of": "BDL"
+  },
+  {
+   "type": "midpoint",
+   "id": "R",
+   "of": "CO1"
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "A",
+   "over": "R"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BL"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "segment": "DL"
+  },
+  {
+   "circle": "omega"
+  },
+  {
+   "circle": "gamma",
+   "style": "dashed"
+  },
+  {
+   "line": "O1Q",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "B",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC",
+   "reason": "центр ω для построения диаметра SN"
+  },
+  {
+   "type": "line_circle",
+   "id": "S",
+   "circle": "omega",
+   "line": "BL",
+   "pick": 1,
+   "reason": "вторая точка пересечения биссектрисы с ω — середина дуги AC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "S",
+   "over": "O",
+   "reason": "середина дуги ABC, диаметрально противоположная S"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "SN",
+   "style": "dashed"
+  },
+  {
+   "segment": "DN",
+   "style": "dashed"
+  }
+ ]
+}

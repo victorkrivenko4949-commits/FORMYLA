@@ -1,0 +1,131 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "reflect_line",
+   "id": "A",
+   "of": "C",
+   "over": "BP"
+  },
+  {
+   "type": "reflect_line",
+   "id": "D",
+   "of": "B",
+   "over": "CP"
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "PB",
+   "style": "soft"
+  },
+  {
+   "segment": "PC",
+   "style": "soft"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  },
+  {
+   "segment": "BD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "D"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "A",
+    "P",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "B",
+    "P",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "C",
+    "P",
+    "D"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

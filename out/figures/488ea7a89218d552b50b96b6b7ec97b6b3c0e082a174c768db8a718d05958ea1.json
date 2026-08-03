@@ -1,0 +1,101 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "Q",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "cC",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "reflect_line",
+   "id": "F",
+   "of": "B",
+   "over": "AC"
+  },
+  {
+   "type": "reflect_line",
+   "id": "D",
+   "of": "B",
+   "over": "AQ"
+  },
+  {
+   "type": "reflect_line",
+   "id": "E",
+   "of": "B",
+   "over": "CQ"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "Q",
+   "line": "BF"
+  },
+  {
+   "type": "reflect_point",
+   "id": "O",
+   "of": "B",
+   "over": "P"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "omega",
+   "style": "soft"
+  },
+  {
+   "circle": "cA",
+   "style": "soft"
+  },
+  {
+   "circle": "cC",
+   "style": "soft"
+  },
+  {
+   "segment": "BF",
+   "style": "soft"
+  },
+  {
+   "polygon": "DEF",
+   "style": "accent"
+  },
+  {
+   "segment": "OD",
+   "style": "accent"
+  },
+  {
+   "segment": "OE",
+   "style": "accent"
+  },
+  {
+   "segment": "OF",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

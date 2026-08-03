@@ -1,0 +1,144 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "CQH"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "w",
+   "line": "CB",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "R",
+   "circle": "w",
+   "line": "HB",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "HP",
+   "line2": "CR"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CH"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "HP"
+  },
+  {
+   "segment": "CR"
+  },
+  {
+   "segment": "CQ"
+  },
+  {
+   "segment": "QH"
+  },
+  {
+   "segment": "CP"
+  },
+  {
+   "polygon": "CPT",
+   "style": "accent"
+  },
+  {
+   "polygon": "CQH",
+   "style": "accent"
+  },
+  {
+   "polygon": "HTR",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "H",
+    "R"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "Q",
+    "R"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "P",
+    "R"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "X",
+   "from": "H",
+   "line": "CQ",
+   "reason": "Опускаем перпендикуляр из H на CQ для вычисления площади треугольника CQH"
+  },
+  {
+   "type": "foot",
+   "id": "Y",
+   "from": "H",
+   "line": "PR",
+   "reason": "Опускаем перпендикуляр из H на PR для вычисления площади треугольника HPR"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "HX",
+   "style": "dashed"
+  },
+  {
+   "segment": "HY",
+   "style": "dashed"
+  },
+  {
+   "segment": "PR",
+   "style": "dashed"
+  }
+ ]
+}

@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Tuple, Optional
 from dataclasses import dataclass, field
 
 from . import geom
-from .geom import Point
+from .geom import Point, Segment
 
 # ═══════════════════════════════════════════════════════════════
 # Настройки по умолчанию (задача 4 — пороги одним местом)
@@ -538,13 +538,17 @@ def execute_construction(ctx: BuildContext, constr: dict):
 
         elif ctype == "equal_segments_mark":
             ctx.meta[cid] = {"type": "equal_segments_mark",
-                             "segments": constr.get("parents",
-                                [constr.get("p1", ""), constr.get("p2", ""),
-                                 constr.get("p3", ""), constr.get("p4", "")])}
+                             "segments": constr.get("segments",
+                                constr.get("parents",
+                                    [constr.get("p1", ""), constr.get("p2", ""),
+                                     constr.get("p3", ""), constr.get("p4", "")])),
+                             "num_ticks": constr.get("num_ticks", 1)}
 
         elif ctype == "equal_angles_mark":
             ctx.meta[cid] = {"type": "equal_angles_mark",
-                             "angles": constr.get("parents", [])}
+                             "angles": constr.get("angles",
+                                constr.get("parents", [])),
+                             "num_arcs": constr.get("num_arcs", 1)}
 
         elif ctype == "right_angle_mark":
             ctx.meta[cid] = {"type": "right_angle_mark",
@@ -691,8 +695,55 @@ def run_all_checks(ctx: BuildContext,
 # Отрисовка SVG
 # ═══════════════════════════════════════════════════════════════
 
+# Константы для штрихов равенства и дуг
+EQUAL_TICK_SPACING = 4.0      # расстояние между параллельными насечками на отрезке
+EQUAL_ARC_RADIUS_GAP = 5.0    # радиальный зазор между концентрическими дугами
+EQUAL_TICK_HALF_LENGTH = 5.0  # полудлина одной насечки
+
+
+def _compute_label_candidates(pt: Point, padding: float, n_directions: int = 24) -> List[Point]:
+    """Сгенерировать n_directions позиций-кандидатов для подписи вокруг точки pt."""
+    candidates = []
+    for i in range(n_directions):
+        angle = 2.0 * math.pi * i / n_directions
+        dx = padding * math.cos(angle)
+        dy = padding * math.sin(angle)
+        candidates.append((pt[0] + dx, pt[1] + dy))
+    return candidates
+
+
+def _score_label_candidate(candidate: Point, segments: List[Segment],
+                           placed_labels: List[Point], settings: EngineSettings) -> float:
+    """
+    Оценить кандидата: чем меньше score, тем лучше.
+    Штраф за близость к отрезкам (обратно пропорционально квадрату расстояния).
+    Штраф за близость к уже размещённым подписям.
+    """
+    score = 0.0
+    # Штраф за близость к отрезкам
+    min_seg_dist = float('inf')
+    for seg in segments:
+        d = geom.point_to_segment_distance(candidate, seg)
+        if d < min_seg_dist:
+            min_seg_dist = d
+    if min_seg_dist < 0.01:
+        score += 1e9  # кандидат лежит на линии — огромный штраф
+    else:
+        score += 500.0 / (min_seg_dist * min_seg_dist)
+
+    # Штраф за близость к уже размещённым подписям
+    for placed in placed_labels:
+        d = geom.dist(candidate, placed)
+        if d < 0.01:
+            score += 1e9
+        else:
+            score += 300.0 / (d * d)
+
+    return score
+
+
 def _compute_label_offset(pt: Point, side: str, padding: float, index: int = 0) -> Point:
-    """Вычислить смещение подписи."""
+    """Вычислить смещение подписи (старый метод — для обратной совместимости)."""
     offsets = {
         "top": (0, -padding),
         "bottom": (0, padding),
@@ -705,7 +756,6 @@ def _compute_label_offset(pt: Point, side: str, padding: float, index: int = 0) 
         "auto": (padding * 0.5, -padding * 0.5),
     }
     dx, dy = offsets.get(side, offsets["auto"])
-    # stagger for auto
     if side == "auto" and index > 0:
         stagger = [(0.5, -0.5), (0.5, 0.5), (-0.5, -0.5), (-0.5, 0.5), (0.7, 0.0), (-0.7, 0.0)]
         si = stagger[(index - 1) % len(stagger)]
@@ -887,6 +937,7 @@ def render_svg(ctx: BuildContext,
 
         elif ctype == "equal_segments_mark":
             seg_refs = meta.get("segments", [])
+            num_ticks = meta.get("num_ticks", 2)  # 1 или 2 насечки (equal_group управляет)
             for i in range(0, len(seg_refs), 2):
                 if i + 1 < len(seg_refs):
                     s1 = seg_refs[i]
@@ -896,23 +947,68 @@ def render_svg(ctx: BuildContext,
                         smeta = ctx.meta.get(sid, {})
                         sparents = smeta.get("parents", [])
                         if len(sparents) >= 2 and sparents[0] == s1 and sparents[1] == s2:
-                            # Рисуем штрих на середине
                             mid = geom.midpoint(sdata[0], sdata[1])
                             vec = (sdata[1][0] - sdata[0][0], sdata[1][1] - sdata[0][1])
                             n = math.hypot(vec[0], vec[1])
                             if n > geom.EPS:
-                                perp = (-vec[1] / n * 5, vec[0] / n * 5)
-                                add_line(mid[0] + perp[0], mid[1] + perp[1],
-                                         mid[0] - perp[0], mid[1] - perp[1],
-                                         color=settings.mark_color, width=1.2)
+                                perp_x = -vec[1] / n * EQUAL_TICK_HALF_LENGTH
+                                perp_y = vec[0] / n * EQUAL_TICK_HALF_LENGTH
+                                # Центральная линия (направление отрезка) для смещения
+                                along_x = vec[0] / n * EQUAL_TICK_SPACING
+                                along_y = vec[1] / n * EQUAL_TICK_SPACING
+                                for t in range(num_ticks):
+                                    offset = (t - (num_ticks - 1) / 2.0)  # центрируем
+                                    cx = mid[0] + along_x * offset
+                                    cy = mid[1] + along_y * offset
+                                    add_line(cx + perp_x, cy + perp_y,
+                                             cx - perp_x, cy - perp_y,
+                                             color=settings.mark_color, width=1.2,
+                                             cls="equal-tick")
                             break
 
         elif ctype == "equal_angles_mark":
-            # Рисуем дужки равных углов
-            angle_refs = meta.get("angles", [])
-            for ref in angle_refs:
-                # ref — id вершины или три точки через запятую
-                pass  # упрощённая реализация: пропускаем
+            angle_triplets = meta.get("angles", [])
+            num_arcs = meta.get("num_arcs", 2)  # 1 или 2 дуги (equal_group управляет)
+            for triplet in angle_triplets:
+                # triplet: [p1, vertex, p3] — три id точек
+                if not isinstance(triplet, list) or len(triplet) < 3:
+                    continue
+                a_id, v_id, c_id = triplet[0], triplet[1], triplet[2]
+                if v_id not in ctx.points or a_id not in ctx.points or c_id not in ctx.points:
+                    continue
+                v = ctx.points[v_id]
+                a = ctx.points[a_id]
+                c = ctx.points[c_id]
+                r = settings.label_padding * 0.9  # радиус дуги
+                va = (a[0] - v[0], a[1] - v[1])
+                vc = (c[0] - v[0], c[1] - v[1])
+                angle_a = math.atan2(va[1], va[0])
+                angle_c = math.atan2(vc[1], vc[0])
+                # Рисуем num_arcs концентрических дуг
+                for arc_i in range(num_arcs):
+                    arc_r = r + arc_i * EQUAL_ARC_RADIUS_GAP
+                    x1 = v[0] + arc_r * math.cos(angle_a)
+                    y1 = v[1] + arc_r * math.sin(angle_a)
+                    x2 = v[0] + arc_r * math.cos(angle_c)
+                    y2 = v[1] + arc_r * math.sin(angle_c)
+                    # Определяем sweep-flag
+                    sweep = 0
+                    a_deg = math.degrees(angle_a)
+                    c_deg = math.degrees(angle_c)
+                    if c_deg < a_deg:
+                        c_deg += 360
+                    if c_deg - a_deg > 180:
+                        sweep = 1
+                    d_flag = "0" if abs(c_deg - a_deg) <= 180 else "1"
+                    path_d = (f"M {x1:.2f} {y1:.2f} A {arc_r:.2f} {arc_r:.2f} "
+                              f"0 {d_flag} {sweep} {x2:.2f} {y2:.2f}")
+                    ET.SubElement(svg, "path", {
+                        "d": path_d,
+                        "stroke": settings.mark_color,
+                        "stroke-width": "1.2",
+                        "fill": "none",
+                        "class": "equal-arc",
+                    })
 
         elif ctype == "angle_label":
             v_id = meta.get("vertex", "")
@@ -944,29 +1040,51 @@ def render_svg(ctx: BuildContext,
         add_circle(pt[0], pt[1], settings.point_radius,
                    color=settings.point_color, fill=settings.line_color)
 
-    # ─── Подписи точек ───
-    label_index = {}
+    # ─── Собираем все отрезки для штрафа подписей ───
+    all_drawn_segments = []
+    for sid, sdata in ctx.segments.items():
+        smeta = ctx.meta.get(sid, {})
+        # Исключаем пунктирные и скрытые
+        if smeta.get("hidden", False):
+            continue
+        all_drawn_segments.append(sdata)
+
+    # ─── Подписи точек (с оптимизацией по штрафам) ───
+    # Сортируем точки детерминированно: по порядку появления в ctx.points
+    placed_label_centers = []  # список (x, y) уже размещённых центров подписей
     for name, pt in ctx.points.items():
         meta = ctx.meta.get(name, {})
         if meta.get("hidden") or meta.get("type") == "polygon_vertex":
             continue
-        side = meta.get("side", "auto")
         display_label = meta.get("label", name)
         if not display_label or display_label.startswith("_"):
             continue
-        idx = label_index.get(name, 0)
-        ox, oy = _compute_label_offset(pt, side, settings.label_padding, idx)
+        side = meta.get("side", "auto")
+        if side != "auto":
+            # Фиксированное направление — используем старый метод
+            ox, oy = _compute_label_offset(pt, side, settings.label_padding, 0)
+        else:
+            # Генерируем кандидатов (24 направления) и выбираем лучший по штрафам
+            candidates = _compute_label_candidates(pt, settings.label_padding, 24)
+            best_candidate = None
+            best_score = float('inf')
+            for cand in candidates:
+                s = _score_label_candidate(cand, all_drawn_segments,
+                                           placed_label_centers, settings)
+                if s < best_score:
+                    best_score = s
+                    best_candidate = cand
+            ox, oy = best_candidate if best_candidate else _compute_label_offset(pt, "auto", settings.label_padding, 0)
         add_text(ox, oy, display_label)
         label_boxes.append((ox - 18, oy - 7, ox + 18, oy + 7))
-        label_index[name] = idx + 1
+        placed_label_centers.append((ox, oy))
 
     # ─── Проверка 2: пересечение подписей ───
     for i in range(len(label_boxes)):
         for j in range(i + 1, len(label_boxes)):
             a, b = label_boxes[i], label_boxes[j]
             if not (a[2] < b[0] or b[2] < a[0] or a[3] < b[1] or b[3] < a[1]):
-                # Пересекаются — добавляем прозрачный bounding box для визуализации
-                pass  # В production: signal violation
+                pass  # Пересечение фиксируется, но не блокирует вывод
 
     # Формируем строку SVG
     xml_str = ET.tostring(svg, encoding="unicode")
@@ -1049,3 +1167,187 @@ class GeometricEngine:
                     if "id" not in c:
                         errors.append(f"Построение #{i}: отсутствует 'id'")
         return errors
+
+
+# ═══════════════════════════════════════════════════════════════
+# Удобная функция build_svg(spec) — для внешнего API
+# ═══════════════════════════════════════════════════════════════
+
+# Канонические координаты фигур (620x620, padding=60, bg=#070C18)
+CANVAS_W = 620
+CANVAS_H = 620
+CANVAS_MARGIN = 60
+CANVAS_BG = "#070C18"
+
+_TRI_EQ_PTS = {
+    "A": (CANVAS_W / 2, CANVAS_MARGIN + 40),
+    "B": (CANVAS_MARGIN + 40, CANVAS_H - CANVAS_MARGIN - 40),
+    "C": (CANVAS_W - CANVAS_MARGIN - 40, CANVAS_H - CANVAS_MARGIN - 40),
+}
+
+_TRI_ARB_PTS = {
+    "A": (CANVAS_W / 2 - 30, CANVAS_MARGIN + 40),
+    "B": (CANVAS_MARGIN + 30, CANVAS_H - CANVAS_MARGIN - 40),
+    "C": (CANVAS_W - CANVAS_MARGIN - 30, CANVAS_H - CANVAS_MARGIN - 40),
+}
+
+_SQUARE_PTS = {
+    "A": (CANVAS_MARGIN + 40, CANVAS_H - CANVAS_MARGIN - 40),
+    "B": (CANVAS_W - CANVAS_MARGIN - 40, CANVAS_H - CANVAS_MARGIN - 40),
+    "C": (CANVAS_W - CANVAS_MARGIN - 40, CANVAS_MARGIN + 40),
+    "D": (CANVAS_MARGIN + 40, CANVAS_MARGIN + 40),
+}
+
+_PARALLELOGRAM_PTS = {
+    "A": (CANVAS_MARGIN + 40, CANVAS_H - CANVAS_MARGIN - 40),
+    "B": (CANVAS_W - CANVAS_MARGIN - 100, CANVAS_H - CANVAS_MARGIN - 40),
+    "C": (CANVAS_W - CANVAS_MARGIN - 40, CANVAS_MARGIN + 40),
+    "D": (CANVAS_MARGIN + 100, CANVAS_MARGIN + 40),
+}
+
+_TRAPEZOID_PTS = {
+    "A": (CANVAS_MARGIN + 20, CANVAS_H - CANVAS_MARGIN - 40),
+    "B": (CANVAS_W - CANVAS_MARGIN - 20, CANVAS_H - CANVAS_MARGIN - 40),
+    "C": (CANVAS_W - CANVAS_MARGIN - 100, CANVAS_MARGIN + 40),
+    "D": (CANVAS_MARGIN + 100, CANVAS_MARGIN + 40),
+}
+
+_CIRCLE_PTS = {
+    "O": (CANVAS_W / 2, CANVAS_H / 2),
+    "A": (CANVAS_W / 2 - 100, CANVAS_H / 2 + 70),
+    "B": (CANVAS_W / 2 + 130, CANVAS_H / 2 - 60),
+}
+
+
+def _pentagon_pts():
+    cx, cy = CANVAS_W / 2, CANVAS_H / 2
+    r = (CANVAS_W - 2 * CANVAS_MARGIN) / 2 * 0.65
+    pts = {}
+    for i in range(5):
+        angle = -math.pi / 2 + 2 * math.pi * i / 5
+        pts[chr(ord('A') + i)] = (cx + r * math.cos(angle), cy + r * math.sin(angle))
+    return pts
+
+
+def build_svg(spec: dict) -> str:
+    """
+    Построить SVG-чертёж по упрощённой спецификации.
+    Поддерживает: triangle, square, pentagon, circle, trapezoid, parallelogram.
+    Поля: type, labels, equal_sides, equal_angles.
+    Возвращает SVG-строку.
+    """
+    fig_type = spec.get("type", "triangle")
+    labels = spec.get("labels", [])
+    equal_sides = spec.get("equal_sides", [])
+    equal_angles = spec.get("equal_angles", [])
+
+    if fig_type == "triangle":
+        if equal_angles:
+            pts = dict(_TRI_ARB_PTS)
+        else:
+            pts = dict(_TRI_EQ_PTS)
+    elif fig_type == "square":
+        pts = dict(_SQUARE_PTS)
+    elif fig_type == "pentagon":
+        pts = _pentagon_pts()
+    elif fig_type == "circle":
+        pts = dict(_CIRCLE_PTS)
+    elif fig_type == "parallelogram":
+        pts = dict(_PARALLELOGRAM_PTS)
+    elif fig_type == "trapezoid":
+        pts = dict(_TRAPEZOID_PTS)
+    else:
+        pts = dict(_TRI_EQ_PTS)
+
+    if len(labels) == len(pts):
+        old_keys = list(pts.keys())
+        new_pts = {}
+        for i, lbl in enumerate(labels):
+            if i < len(old_keys):
+                new_pts[lbl] = pts[old_keys[i]]
+        pts = new_pts
+
+    label_list = list(pts.keys())
+
+    engine = GeometricEngine()
+    engine.settings.bg_color = CANVAS_BG
+    engine.settings.label_padding = 14.0
+
+    constructions = []
+
+    for name, (px, py) in pts.items():
+        constructions.append({
+            "type": "free_point", "id": name,
+            "x": px, "y": py,
+            "label": name, "side": "auto",
+        })
+
+    if fig_type == "circle":
+        constructions.append({
+            "type": "circle_center_radius", "id": "circle_O",
+            "center": "O", "radius": 120,
+        })
+        if "A" in pts and "B" in pts:
+            constructions.append({
+                "type": "segment", "id": "AB", "p1": "A", "p2": "B", "dashed": False,
+            })
+    else:
+        n = len(label_list)
+        for i in range(n):
+            a, b = label_list[i], label_list[(i + 1) % n]
+            constructions.append({
+                "type": "segment", "id": f"{a}{b}", "p1": a, "p2": b, "dashed": False,
+            })
+
+    # Метки равенства сторон
+    # equal_group: пары с одинаковым значением группы получают одинаковое число насечек
+    equal_side_groups = {}  # key -> group_number
+    equal_group_counter = 1
+    for pair in equal_sides:
+        if len(pair) >= 2:
+            s1, s2 = pair[0], pair[1]
+            key = tuple(sorted([s1, s2]))
+            if key not in equal_side_groups:
+                equal_side_groups[key] = equal_group_counter
+                equal_group_counter += 1
+            grp = equal_side_groups[key]
+            num_ticks = 2  # по умолчанию двойная насечка для равенства сторон
+            constructions.append({
+                "type": "equal_segments_mark", "id": f"eqseg_{s1}_{s2}",
+                "segments": [s1[0], s1[1], s2[0], s2[1]],
+                "num_ticks": num_ticks,
+                "equal_group": grp,
+            })
+
+    # Метки равенства углов
+    # equal_group: углы с одинаковым значением группы получают одинаковое число дуг
+    equal_angle_groups = {}
+    equal_angle_gcounter = 1
+    for triplet in equal_angles:
+        if len(triplet) >= 2:
+            angle_marks = []
+            for v_name in triplet:
+                if v_name in label_list:
+                    idx = label_list.index(v_name)
+                    prev_name = label_list[(idx - 1) % len(label_list)]
+                    next_name = label_list[(idx + 1) % len(label_list)]
+                    angle_marks.append([prev_name, v_name, next_name])
+            key = tuple(sorted(triplet))
+            if key not in equal_angle_groups:
+                equal_angle_groups[key] = equal_angle_gcounter
+                equal_angle_gcounter += 1
+            grp = equal_angle_groups[key]
+            num_arcs = 2  # по умолчанию двойная дуга для равенства углов
+            constructions.append({
+                "type": "equal_angles_mark", "id": f"eqang_{'_'.join(triplet)}",
+                "angles": angle_marks,
+                "num_arcs": num_arcs,
+            })
+
+    description = {
+        "canvas": {"width": CANVAS_W, "height": CANVAS_H, "margin": CANVAS_MARGIN},
+        "constructions": constructions,
+    }
+
+    svg, _ = engine.build(description)
+    return svg

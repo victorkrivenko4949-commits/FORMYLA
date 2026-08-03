@@ -1,0 +1,184 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "triangle",
+   "id": "BCH",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "BCH"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "BI",
+   "line2": "CH"
+  },
+  {
+   "type": "intersection",
+   "id": "Y",
+   "line1": "CI",
+   "line2": "BH"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  },
+  {
+   "segment": "BX",
+   "style": "dashed"
+  },
+  {
+   "segment": "CY",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "A1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "B1",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "C1",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "X",
+    "A1",
+    "Y"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "ABH",
+   "kind": "any",
+   "reason": "Нужен для построения точки P — пересечения биссектрисы угла ABH с AH."
+  },
+  {
+   "type": "incenter",
+   "id": "I2",
+   "of": "ABH",
+   "reason": "Центр вписанной окружности треугольника ABH лежит на биссектрисе угла ABH."
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "BI2",
+   "line2": "AH",
+   "reason": "P — точка пересечения биссектрисы угла ABH с отрезком AH."
+  },
+  {
+   "type": "triangle",
+   "id": "ACH",
+   "kind": "any",
+   "reason": "Нужен для построения точки Q — пересечения биссектрисы угла ACH с AH."
+  },
+  {
+   "type": "incenter",
+   "id": "I3",
+   "of": "ACH",
+   "reason": "Центр вписанной окружности треугольника ACH лежит на биссектрисе угла ACH."
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "CI3",
+   "line2": "AH",
+   "reason": "Q — точка пересечения биссектрисы угла ACH с отрезком AH."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BP",
+   "style": "dashed"
+  },
+  {
+   "segment": "CQ",
+   "style": "dashed"
+  },
+  {
+   "segment": "C1P",
+   "style": "dashed"
+  },
+  {
+   "segment": "B1Q",
+   "style": "dashed"
+  },
+  {
+   "segment": "A1P",
+   "style": "dashed"
+  },
+  {
+   "segment": "A1Q",
+   "style": "dashed"
+  },
+  {
+   "segment": "A1C1",
+   "style": "dashed"
+  },
+  {
+   "segment": "A1B1",
+   "style": "dashed"
+  }
+ ]
+}

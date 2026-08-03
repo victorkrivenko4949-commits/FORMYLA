@@ -1,0 +1,128 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "C",
+   "through": "D"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "D",
+   "through": "C"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "BH",
+   "line2": "PQ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BH"
+  },
+  {
+   "segment": "MC",
+   "style": "soft"
+  },
+  {
+   "segment": "MD",
+   "style": "soft"
+  },
+  {
+   "segment": "MK",
+   "style": "accent"
+  },
+  {
+   "segment": "KD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "H",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "MC",
+    "MD"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "M",
+    "K",
+    "D"
+   ]
+  },
+  {
+   "equal": [
+    "AK",
+    "KB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "L",
+   "of": "CD",
+   "reason": "Середина CD — вспомогательная точка для доказательства, используется в свойствах равнобедренного треугольника CMD и средних линий параллелограмма."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "KL",
+   "style": "dashed"
+  },
+  {
+   "segment": "BL",
+   "style": "dashed"
+  },
+  {
+   "segment": "ML",
+   "style": "dashed"
+  }
+ ]
+}

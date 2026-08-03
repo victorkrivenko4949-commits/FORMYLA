@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="116.3,472.5 560.0,310.0 503.8,147.5 347.5,147.5" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="116.3" y1="472.5" x2="503.8" y2="147.5" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="560.0" y1="310.0" x2="310.0" y2="310.0" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="60.0" y2="310.0" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="116.3" y1="472.5" x2="60.0" y2="310.0" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="60.0" y1="310.0" x2="347.5" y2="147.5" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="503.8" y1="147.5" x2="60.0" y2="310.0" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="209.3" y1="386.7" x2="217.0" y2="395.8" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="403.0" y1="224.2" x2="410.7" y2="233.3" stroke="#4C7DFF" stroke-width="2"/>
+<circle cx="310.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="315.2" y="335.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">X</text>
+<circle cx="560.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="316.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="503.8" cy="147.5" r="3.4" fill="#E6EBF7"/>
+<text x="521.1" y="143.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="347.5" cy="147.5" r="3.4" fill="#E6EBF7"/>
+<text x="347.5" y="133.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="116.3" cy="472.5" r="3.4" fill="#E6EBF7"/>
+<text x="102.1" y="492.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="60.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="316.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+</svg>

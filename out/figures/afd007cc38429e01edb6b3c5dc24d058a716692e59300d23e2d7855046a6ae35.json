@@ -1,0 +1,174 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AI",
+   "ratio": 0.5
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "omega",
+   "line": "CK",
+   "pick": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "C1",
+   "of": "C",
+   "over": "K"
+  },
+  {
+   "type": "circle",
+   "id": "cir1",
+   "center": "C",
+   "through": "C1"
+  },
+  {
+   "type": "circle",
+   "id": "cir2",
+   "center": "C1",
+   "through": "C"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Z",
+   "circle1": "cir1",
+   "circle2": "cir2",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AK"
+  },
+  {
+   "type": "circle",
+   "id": "cir3",
+   "center": "A",
+   "through": "K"
+  },
+  {
+   "type": "circle",
+   "id": "cir4",
+   "center": "K",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Y",
+   "circle1": "cir3",
+   "circle2": "cir4",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "O2",
+   "line1": "KZ",
+   "line2": "NY"
+  },
+  {
+   "type": "circle",
+   "id": "Omega",
+   "center": "O2",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "Omega",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "omega",
+   "circle2": "Omega",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "omega"
+  },
+  {
+   "circle": "Omega"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "segment": "AK",
+   "style": "dashed"
+  },
+  {
+   "line": "PM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "K"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "K",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "right_angle": [
+    "O2",
+    "K",
+    "M"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "line_circle",
+   "id": "R",
+   "circle": "Omega",
+   "line": "AC",
+   "pick": 1,
+   "reason": "R — вторая точка пересечения Ω и AC; через неё в решении доказывается параллельность PR∥CM и коллинеарность P,Q,M."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "PR",
+   "style": "dashed"
+  },
+  {
+   "segment": "O2K",
+   "style": "dashed"
+  }
+ ]
+}

@@ -1,0 +1,130 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 8,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 5,
+   "y": 4
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 3,
+   "y": 4
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 4,
+   "y": 2
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "M",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "M",
+   "line": "CD"
+  },
+  {
+   "type": "foot",
+   "id": "G",
+   "from": "M",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "M",
+   "line": "AD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "ME",
+   "style": "soft"
+  },
+  {
+   "segment": "MF",
+   "style": "soft"
+  },
+  {
+   "segment": "MG",
+   "style": "soft"
+  },
+  {
+   "segment": "MH",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "M",
+    "E",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "F",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "G",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "H",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "ME",
+    "MF"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "MG",
+    "MH"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

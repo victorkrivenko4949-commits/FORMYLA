@@ -1,0 +1,112 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0.8660254038,
+   "y": 0.5
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2.598076211,
+   "y": -1.5
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "scalene"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "O1",
+   "of": "AL",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "reflect_point",
+   "id": "O2",
+   "of": "A",
+   "over": "L"
+  },
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "O1",
+   "through": "L"
+  },
+  {
+   "type": "circle",
+   "id": "Omega",
+   "center": "O2",
+   "through": "L"
+  },
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "L",
+   "over": "O1"
+  },
+  {
+   "type": "reflect_point",
+   "id": "M",
+   "of": "L",
+   "over": "O2"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "circle": "omega"
+  },
+  {
+   "circle": "Omega"
+  },
+  {
+   "polygon": "LCM",
+   "style": "accent"
+  },
+  {
+   "segment": "KB",
+   "style": "dashed"
+  },
+  {
+   "segment": "CM",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "LC",
+    "CM"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

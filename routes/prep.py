@@ -1527,6 +1527,9 @@ def morning_probe():
                 'task_text': current_task_obj.task_text,
                 'difficulty_level': current_task_obj.difficulty_level,
                 'topic': current_task_obj.topic,
+                'has_aux': bool(current_task_obj.has_aux),
+                'aux_svg_path': current_task_obj.aux_svg_path if current_task_obj.has_aux else None,
+                'aux_reason': current_task_obj.aux_reason if current_task_obj.has_aux else None,
             }
 
     if current_task is None:
@@ -1595,6 +1598,14 @@ def probe_submit():
         user_solution or user_answer
     )
 
+    # CH8: include aux figure path if available after answer
+    if task and task.has_aux:
+        result['has_aux'] = True
+        result['aux_svg_path'] = task.aux_svg_path
+        result['aux_reason'] = task.aux_reason
+    else:
+        result['has_aux'] = False
+
     # Include AI feedback in the response
     result['ai_feedback'] = {
         'verdict': verdict,
@@ -1627,6 +1638,9 @@ def prep_answer():
     Returns 400 with clear text if solution is missing.
     """
     data = request.get_json(silent=True) or {}
+    # For multipart (photo upload), also read from request.form
+    if request.form:
+        data = {**data, **request.form.to_dict()}
     task_id = data.get('task_id')
     user_answer = (data.get('answer') or '').strip()
     solution_method = (data.get('solution_method') or '').strip().lower()
@@ -1730,6 +1744,14 @@ def prep_answer():
     db.session.add(attempt)
     db.session.commit()
 
+    # CH10: Kimi review
+    kimi_result = None
+    try:
+        from services.kimi_review import review_solution as _kimi_review
+        kimi_result = _kimi_review(attempt_id=attempt.id, surface='probe')
+    except Exception:
+        pass  # Kimi failure must never block the main flow
+
     result['ai_feedback'] = {
         'verdict': verdict,
         'message': feedback.get('message', ''),
@@ -1739,6 +1761,13 @@ def prep_answer():
     }
     if feedback.get('ai_checked'):
         result['ai_checked'] = True
+
+    # CH10: attach Kimi review to response
+    if kimi_result:
+        result['kimi_review'] = {
+            'label': kimi_result.get('label'),
+            'raw_response': kimi_result.get('raw_response', ''),
+        }
 
     return jsonify(result)
 

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="60.0,428.3 560.0,516.5 560.0,139.6 147.0,103.5" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="60.0" y1="428.3" x2="560.0" y2="139.6" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="560.0" y1="516.5" x2="147.0" y2="103.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="560.0" y1="516.5" x2="71.5" y2="385.6" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="6 5"/>
+<line x1="60.0" y1="428.3" x2="114.2" y2="397.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<polyline points="548.7,146.1 535.8,145.0 547.0,138.5" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<polyline points="547.2,514.2 538.0,505.0 550.8,507.3" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<polyline points="68.1,398.1 80.6,401.5 84.0,388.9" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<circle cx="60.0" cy="428.3" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="444.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="560.0" cy="516.5" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="532.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="560.0" cy="139.6" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="135.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="147.0" cy="103.5" r="3.4" fill="#E6EBF7"/>
+<text x="137.0" y="92.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="71.5" cy="385.6" r="3.4" fill="#E6EBF7"/>
+<text x="52.1" y="386.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">H</text>
+<circle cx="114.2" cy="397.0" r="3.4" fill="#E6EBF7"/>
+<text x="114.2" y="423.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+</svg>

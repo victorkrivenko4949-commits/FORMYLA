@@ -1,0 +1,85 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "B",
+   "line": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "line": "AB"
+  },
+  {
+   "polygon": "ABC",
+   "style": "accent"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "segment": "BN",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "M",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "N",
+    "A"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AB",
+   "reason": "Центр окружности с диаметром AB — середина AB"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A",
+   "reason": "Точки M и N лежат на окружности с диаметром AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "MN",
+   "reason": "O лежит на серединном перпендикуляре к MN"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "OP",
+   "style": "dashed"
+  }
+ ]
+}

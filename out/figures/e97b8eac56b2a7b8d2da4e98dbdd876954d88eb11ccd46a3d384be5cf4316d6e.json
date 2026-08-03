@@ -1,0 +1,132 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 3,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "intersection",
+   "id": "G",
+   "line1": "AB",
+   "line2": "DC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "ACD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w3",
+   "of": "ABD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w4",
+   "of": "BCD"
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 0.113,
+   "y": 3.081
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 4.387,
+   "y": 3.775
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "line": "AB",
+   "style": "soft"
+  },
+  {
+   "line": "DC",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "circle": "w3",
+   "style": "soft"
+  },
+  {
+   "circle": "w4",
+   "style": "soft"
+  },
+  {
+   "line": "EF",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "circumcenter",
+   "id": "O1",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O2",
+   "of": "ACD"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O3",
+   "of": "ABD"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O4",
+   "of": "BCD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "O1O2",
+   "style": "dashed"
+  },
+  {
+   "line": "O3O4",
+   "style": "dashed"
+  }
+ ]
+}

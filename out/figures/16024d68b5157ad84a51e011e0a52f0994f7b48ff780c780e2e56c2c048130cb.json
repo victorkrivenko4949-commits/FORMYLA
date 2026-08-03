@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "R",
+   "of": "CD"
+  },
+  {
+   "type": "midpoint",
+   "id": "S",
+   "of": "AD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "polygon": "PQRS",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CD",
+    "DA"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "right_angle": [
+    "Q",
+    "P",
+    "S"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,53 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 0.3
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R",
+   "of": "CD",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
+   "of": "DA",
+   "ratio": 0.6
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "PQ"
+  },
+  {
+   "segment": "QR"
+  },
+  {
+   "segment": "RT"
+  },
+  {
+   "segment": "TP"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

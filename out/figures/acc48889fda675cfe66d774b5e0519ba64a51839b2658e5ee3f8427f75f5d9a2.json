@@ -1,0 +1,135 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 21,
+   "y": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C",
+   "of": "BE",
+   "ratio": 0.333333
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 3.5,
+   "y": 3.5
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 14,
+   "y": 7
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "triangle",
+   "id": "CDE",
+   "kind": "isosceles"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AE",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "CDE"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "polygon": "ODE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "D",
+    "E"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CD",
+    "DE"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "ED",
+   "line2": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "DC",
+   "line2": "EA"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "AB",
+   "style": "dashed"
+  },
+  {
+   "line": "ED",
+   "style": "dashed"
+  },
+  {
+   "line": "DC",
+   "style": "dashed"
+  },
+  {
+   "line": "EA",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Продолжаем ED и AB до пересечения P; DC и EA пересекаются в R — они используются в решении через подобие и площади."
+}

@@ -1,0 +1,75 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incircle",
+   "id": "omega",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A'",
+   "of": "BC",
+   "ratio": 0.6
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "A'A",
+   "ratio": 0.15
+  },
+  {
+   "type": "tangent_point",
+   "id": "T1",
+   "circle": "omega",
+   "from": "X",
+   "pick": 0
+  },
+  {
+   "type": "tangent_point",
+   "id": "T2",
+   "circle": "omega",
+   "from": "X",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "Y",
+   "line1": "XT1",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "Z",
+   "line1": "XT2",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "omega"
+  },
+  {
+   "segment": "A'X",
+   "style": "dashed"
+  },
+  {
+   "line": "XT1",
+   "style": "soft"
+  },
+  {
+   "line": "XT2",
+   "style": "soft"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

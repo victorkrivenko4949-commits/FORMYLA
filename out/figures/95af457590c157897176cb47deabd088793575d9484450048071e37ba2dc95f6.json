@@ -1,0 +1,109 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "quad",
+   "id": "ABGH",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "AC",
+   "line2": "GH"
+  },
+  {
+   "type": "reflect_point",
+   "id": "I",
+   "of": "H",
+   "over": "M"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "GCI"
+  },
+  {
+   "type": "line_circle",
+   "id": "J",
+   "circle": "w",
+   "line": "AC",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABGH",
+   "style": "soft"
+  },
+  {
+   "line": "AC",
+   "style": "soft"
+  },
+  {
+   "line": "GH",
+   "style": "soft"
+  },
+  {
+   "segment": "AH",
+   "style": "accent"
+  },
+  {
+   "segment": "BH",
+   "style": "soft"
+  },
+  {
+   "segment": "CH",
+   "style": "soft"
+  },
+  {
+   "segment": "HI",
+   "style": "soft"
+  },
+  {
+   "circle": "w",
+   "style": "accent"
+  },
+  {
+   "segment": "IJ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "C",
+    "H",
+    "G"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "B",
+    "G"
+   ]
+  },
+  {
+   "equal": [
+    "HM",
+    "MI"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

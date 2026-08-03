@@ -857,7 +857,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <!-- Chart.js Progress Graph -->
-<script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+<script src="{{ url_for('static', filename='js/progress.js') }}?v={{ asset_version }}"></script>
 
 <script>
 function showNicknameForm() {

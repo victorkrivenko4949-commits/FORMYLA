@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1.527864045,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 10.472135955,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2.666666667,
+   "y": 1.842621348
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "BN"
+  },
+  {
+   "segment": "CK"
+  },
+  {
+   "line": "AB",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "M",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "N",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "K",
+    "A"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AB",
+   "reason": "центр окружности, построенной на AB как на диаметре"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "M",
+   "reason": "окружность с диаметром AB, на которой лежат M и N"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "OM",
+   "style": "soft"
+  },
+  {
+   "segment": "ON",
+   "style": "soft"
+  }
+ ]
+}

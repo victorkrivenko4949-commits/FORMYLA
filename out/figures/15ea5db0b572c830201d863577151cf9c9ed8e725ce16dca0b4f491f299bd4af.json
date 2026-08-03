@@ -1,0 +1,66 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "M"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "C",
+    "B",
+    "M"
+   ],
+   "text": "70°"
+  },
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "B",
+   "over": "M",
+   "reason": "D — отражение B относительно M; тогда ABCD — параллелограмм, BD=2BM, ∠BDA=∠CBD=70°, ∠ABD=40°, значит ∠BAD=70° и AB=BD=2BM."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "polygon": "ABCD",
+   "style": "dashed"
+  }
+ ]
+}

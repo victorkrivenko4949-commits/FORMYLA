@@ -1,0 +1,99 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BC",
+   "ratio": 0.45
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.5
+  },
+  {
+   "type": "intersection",
+   "id": "I",
+   "line1": "AK",
+   "line2": "BL"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AK"
+  },
+  {
+   "segment": "BL"
+  },
+  {
+   "segment": "CM"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "K"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "K",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "L"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "L",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "M"
+   ],
+   "text": "γ"
+  },
+  {
+   "angle": [
+    "M",
+    "C",
+    "B"
+   ],
+   "text": "γ"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

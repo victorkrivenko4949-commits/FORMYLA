@@ -1,0 +1,60 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.35
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "line": "AE",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AE"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AE"
+  },
+  {
+   "type": "foot",
+   "id": "D1",
+   "from": "D",
+   "line": "AE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BB1",
+   "style": "dashed"
+  },
+  {
+   "segment": "CC1",
+   "style": "dashed"
+  },
+  {
+   "segment": "DD1",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Опустить перпендикуляры из вершин B, C и D на прямую AE, чтобы выразить расстояния до неё через площади треугольников с основанием AE."
+}

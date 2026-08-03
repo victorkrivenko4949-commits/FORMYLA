@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="560.0,192.3 266.8,127.3 60.0,492.7" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="401.6" y1="157.2" x2="459.2" y2="252.9" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="266.8" y1="127.3" x2="373.2" y2="304.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<polyline points="452.5,241.7 463.6,235.0 470.3,246.2" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<polyline points="366.5,293.4 377.7,286.7 384.4,297.8" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<path d="M 537.7 205.7 A 26 26 0 0 1 534.6 186.7" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="519.5" y="203.9" fill="#8C9ABC" font-size="15" text-anchor="middle">22°</text>
+<line x1="479.5" y1="180.6" x2="482.1" y2="168.9" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="168.6" y1="313.0" x2="158.2" y2="307.0" stroke="#4C7DFF" stroke-width="2"/>
+<circle cx="560.0" cy="192.3" r="3.4" fill="#E6EBF7"/>
+<text x="579.3" y="193.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="266.8" cy="127.3" r="3.4" fill="#E6EBF7"/>
+<text x="256.8" y="116.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="60.0" cy="492.7" r="3.4" fill="#E6EBF7"/>
+<text x="45.9" y="512.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="401.6" cy="157.2" r="3.4" fill="#E6EBF7"/>
+<text x="406.8" y="143.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+<circle cx="459.2" cy="252.9" r="3.4" fill="#E6EBF7"/>
+<text x="473.3" y="273.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">K</text>
+<circle cx="373.2" cy="304.5" r="3.4" fill="#E6EBF7"/>
+<text x="383.2" y="327.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">H</text>
+</svg>

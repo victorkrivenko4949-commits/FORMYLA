@@ -56,6 +56,14 @@ logger = logging.getLogger(__name__)
 
 drawing_bp = Blueprint("drawing", __name__)
 
+# ── CH5 Legacy Mode ─────────────────────────────────────────────────────
+# When DRAWING_LEGACY_MODE=readonly, the old /drawing routes continue to
+# serve existing history but refuse new generation requests with a redirect
+# to the new /figures/generate pipeline.
+# Set in .env or environment. Default: "readonly" (old generator frozen).
+_DRAWING_LEGACY_MODE = os.environ.get("DRAWING_LEGACY_MODE", "readonly").strip().lower()
+_DRAWING_READONLY = _DRAWING_LEGACY_MODE == "readonly"
+
 # ── Async task store (in-memory, TTL 30 min) ─────────────────────────────────
 _TASK_STORE: dict = {}
 _task_store_lock = Lock()
@@ -255,6 +263,16 @@ def api_drawing_status(task_id: str):
 
 @drawing_bp.route("/api/drawing/generate", methods=["POST"])
 def api_drawing_generate():
+    # CH5: Legacy mode — block new generations via old pipeline.
+    if _DRAWING_READONLY:
+        return jsonify({
+            "error": (
+                "Генерация чертежей через старый интерфейс отключена. "
+                "Перейдите на новую страницу: "
+            ),
+            "redirect_url": "/figures/generate",
+        }), 410
+
     # Force UTF-8 decoding of the body (defence vs proxy mojibake).
     raw = request.get_data(cache=False, as_text=False) or b""
     try:

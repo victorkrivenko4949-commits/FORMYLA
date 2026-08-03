@@ -1,0 +1,94 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "A1",
+   "of": "AC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C1",
+   "of": "BC",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B1",
+   "of": "AB",
+   "ratio": 0.75
+  },
+  {
+   "type": "triangle",
+   "id": "A1B1C1",
+   "kind": "right"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "A1B1C1",
+   "style": "accent"
+  },
+  {
+   "segment": "AA1",
+   "style": "accent"
+  },
+  {
+   "segment": "CC1",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A1",
+    "C1",
+    "B1"
+   ]
+  },
+  {
+   "equal": [
+    "AC",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "A1C1",
+    "B1C1"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "B1",
+   "line": "BC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "B1N",
+   "style": "soft"
+  }
+ ],
+ "reason": "Опускаем перпендикуляр B1N на BC для использования равенства прямоугольных треугольников B1NC1 и C1CA1."
+}

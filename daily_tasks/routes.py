@@ -512,7 +512,27 @@ def submit_answer(item_id: int):
             "total": total,
         },
         "weakness_update": weakness_update,
+        "has_aux": bool(item.has_aux),
+        "aux_svg_path": item.aux_svg_path if item.has_aux else None,
+        "aux_reason": item.aux_reason if item.has_aux else None,
     }
+
+    # CH10: Kimi review
+    try:
+        from services.kimi_review import review_text as _kimi_text
+        kimi = _kimi_text(
+            task_text=(item.question or ""),
+            correct_answer=(item.correct_answer or ""),
+            solution_text=answer,
+            surface="daily_task",
+        )
+        if kimi and not kimi.get("error"):
+            response["kimi_review"] = {
+                "label": kimi.get("label"),
+                "raw_response": kimi.get("raw_response", ""),
+            }
+    except Exception:
+        pass
 
     return jsonify(response), 200
 

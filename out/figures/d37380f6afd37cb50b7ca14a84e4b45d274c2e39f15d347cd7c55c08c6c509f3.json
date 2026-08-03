@@ -1,0 +1,125 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BH",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "CH",
+   "ratio": 0.75
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BH",
+   "style": "soft"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "segment": "EF"
+  },
+  {
+   "segment": "FD"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "H",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "φ"
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "E"
+   ],
+   "text": "φ"
+  },
+  {
+   "angle": [
+    "A",
+    "F",
+    "E"
+   ],
+   "text": "ψ"
+  },
+  {
+   "angle": [
+    "C",
+    "F",
+    "D"
+   ],
+   "text": "ψ"
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "E'",
+   "of": "E",
+   "over": "AC",
+   "reason": "Симметрия E относительно AC; E' лежит на продолжении BH, и D,F,E' коллинеарны."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "HE'",
+   "style": "dashed"
+  },
+  {
+   "segment": "DE'",
+   "style": "dashed"
+  },
+  {
+   "segment": "AE'",
+   "style": "dashed"
+  }
+ ]
+}

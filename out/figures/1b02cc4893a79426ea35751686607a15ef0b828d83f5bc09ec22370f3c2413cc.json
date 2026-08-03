@@ -1,0 +1,79 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Gamma",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "Gamma",
+   "line": "BO",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "Gamma",
+   "style": "soft"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "?"
+  },
+  {
+   "equal": [
+    "AD",
+    "DC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AD",
+    "DO"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": [
+  {
+   "polygon": "ADC",
+   "style": "dashed"
+  }
+ ]
+}

@@ -61,7 +61,7 @@
     display: inline-block;
     padding: 12px 32px;
     background: var(--accent);
-    color: #fff;
+    color: #E6EBF7;
     font-weight: 700;
     font-size: 16px;
     border: none;
@@ -320,12 +320,12 @@
   .dt-cal-banner-text { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
   .dt-cal-banner-btn {
     display: inline-flex; align-items: center; align-self: center;
-    padding: 8px 14px; background: var(--warn); color: #1a1206;
+    padding: 8px 14px; background: var(--warn); color: #070c18;
     border-radius: 8px; font-size: 13px; font-weight: 600;
     text-decoration: none; white-space: nowrap;
     transition: transform .15s ease, background .15s ease;
   }
-  .dt-cal-banner-btn:hover { background: #f0b84d; transform: translateY(-1px); }
+  .dt-cal-banner-btn:hover { background: #e5ac3a; transform: translateY(-1px); }
   @media (max-width: 600px) {
     .dt-calibration-banner { flex-direction: column; align-items: stretch; }
     .dt-cal-banner-btn { align-self: flex-start; }
@@ -442,19 +442,19 @@
   .dt-cal-day.dt-tier-green { background: rgba(76,125,255,0.14); color: var(--text); }
   .dt-cal-day.dt-tier-bright{ background: rgba(76,125,255,0.25); color: var(--text); }
   .dt-cal-day.dt-tier-gold  {
-    background: var(--accent); color: #fff;
+    background: var(--accent); color: #E6EBF7;
     box-shadow: 0 0 14px rgba(76,125,255,0.45);
   }
 
   /* Today — accent background, white text */
   .dt-cal-day.dt-cal-today {
     background: var(--accent);
-    color: #fff;
+    color: #E6EBF7;
     outline: none;
     border-color: var(--accent-hi);
   }
-  .dt-cal-day.dt-cal-today .dt-cal-daynum { opacity: 1; color: #fff; }
-  .dt-cal-day.dt-cal-today .dt-cal-solved { background: rgba(0,0,0,0.25); color: #fff; }
+  .dt-cal-day.dt-cal-today .dt-cal-daynum { opacity: 1; color: #E6EBF7; }
+  .dt-cal-day.dt-cal-today .dt-cal-solved { background: rgba(0,0,0,0.25); color: #E6EBF7; }
 
   .dt-cal-crown {
     position: absolute; top: -8px; right: -2px; font-size: 12px;
@@ -731,11 +731,11 @@
   <!-- Blocked state -->
   <div id="dt-blocked-state" class="dt-hidden">
     <div class="dt-empty-card" style="border-color: rgba(99,102,241,0.35);">
-      <div class="dt-empty-title" style="color: #a5b4fc;">Сначала утренний срез</div>
+      <div class="dt-empty-title" style="color: #8c9abc;">Сначала утренний срез</div>
       <div class="dt-empty-sub" id="dt-blocked-message">
         Сначала утренний срез: «тема дня». 5 задач, примерно 15 минут.
       </div>
-      <a id="dt-probe-link" href="/prep/probe" class="dt-btn-primary" style="text-decoration:none; background: #6366f1;">
+      <a id="dt-probe-link" href="/prep/probe" class="dt-btn-primary" style="text-decoration:none; background: #4c7dff;">
         Пройти утренний срез
       </a>
     </div>
@@ -749,7 +749,7 @@
         Нажми «Сгенерировать», чтобы получить 10 персонализированных задач<br>
         на основе твоего уровня и прогресса.
       </div>
-<input type="text" id="dt-topic-input" class="dt-topic-input" value="{{ data.theme_today or 'Теория чисел' }}" placeholder="Тема (необязательно)" autocomplete="off" style="display:block;margin:0 auto 12px;max-width:320px;width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0B1428;color:var(--text);font-size:15px;text-align:center;">
+<input type="text" id="dt-topic-input" class="dt-topic-input" value="{{ data.theme_today or 'Теория чисел' }}" placeholder="Тема (необязательно)" autocomplete="off" style="display:block;margin:0 auto 12px;max-width:320px;width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:15px;text-align:center;">
       <button class="dt-btn-primary" id="dt-btn-generate" onclick="startGeneration()">
         Сгенерировать
       </button>
@@ -1274,7 +1274,7 @@
       '<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>' +
       '<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent-hi);margin-bottom:10px;"></div>' +
       '<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>' +
-      '<input type="text" id="dt-answer-input" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0B1428;color:var(--text);font-size:16px;margin-bottom:14px;">' +
+      '<input type="text" id="dt-answer-input" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:16px;margin-bottom:14px;">' +
       '<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button><button id="dt-hint-btn" class="dt-btn-secondary">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430</button></div>' +
       '<div id="dt-modal-result" style="margin-top:16px;"></div>' +
       '</div>';
@@ -1351,6 +1351,18 @@
         }
         if (p.solution) {
           html += '<div style="color:var(--muted);line-height:1.5;margin-top:8px;white-space:pre-wrap;">' + escapeHtmlPreserveLatex(p.solution) + '</div>';
+        }
+        // CH10: Kimi review
+        if (p.kimi_review) {
+          html += '<div style="margin-top:10px;padding:10px;background:rgba(76,125,255,0.05);border:1px solid rgba(76,125,255,0.15);border-radius:8px;">';
+          html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Разбор Kimi:</div>';
+          if (p.kimi_review.label) {
+            html += '<div style="font-size:14px;font-weight:600;color:#8c9abc;margin-bottom:4px;">' + escapeHtmlPreserveLatex(p.kimi_review.label) + '</div>';
+          }
+          if (p.kimi_review.raw_response) {
+            html += '<div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.4;">' + escapeHtmlPreserveLatex(p.kimi_review.raw_response) + '</div>';
+          }
+          html += '</div>';
         }
         res.innerHTML = html;
         if (typeof renderMath === 'function') renderMath(res);

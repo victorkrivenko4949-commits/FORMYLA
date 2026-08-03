@@ -1,0 +1,125 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABD",
+   "kind": "right"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AD"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "C",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "w1",
+   "line": "AD",
+   "pick": 0
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ACD"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "DI",
+   "line2": "BK"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BK",
+   "style": "soft"
+  },
+  {
+   "segment": "DM",
+   "style": "soft"
+  },
+  {
+   "segment": "CM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "D"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AC",
+    "AK"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "M"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "N",
+   "line1": "AI",
+   "line2": "BK",
+   "reason": "Биссектриса угла CAD пересекает BK; доказываем, что N=M."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AN",
+   "style": "dashed"
+  }
+ ]
+}

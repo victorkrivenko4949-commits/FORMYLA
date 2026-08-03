@@ -1,0 +1,69 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "BC",
+   "ratio": 1.4
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AH"
+  },
+  {
+   "segment": "BX"
+  },
+  {
+   "segment": "AX"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "H",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "A",
+    "X",
+    "C"
+   ],
+   "text": "2β"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

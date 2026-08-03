@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCX",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "circle",
+   "id": "wE",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "wE",
+   "line": "CX",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "wD",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "wD",
+   "line": "AX",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCDE"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "CE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BD",
+    "CX"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BE",
+    "AX"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "AE",
+    "CD"
+   ],
+   "ticks": 3
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "BX",
+   "from": "B",
+   "to": "X",
+   "reason": "Вспомогательный отрезок BX; в трапециях ABXE и BCDX равные диагонали дают AE=BX=CD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BX",
+   "style": "dashed"
+  }
+ ]
+}

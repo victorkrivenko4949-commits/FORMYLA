@@ -1,0 +1,82 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AC",
+   "ratio": 0.5
+  },
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "M",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "M",
+   "line": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "MN"
+  },
+  {
+   "segment": "MP"
+  },
+  {
+   "segment": "NP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "M",
+    "N",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "P",
+    "C"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "BM"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "B"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BM",
+   "style": "dashed"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ],
+ "reason": "NP — хорда окружности с диаметром BM, поэтому NP = BM·sin∠ABC; минимум NP достигается при BM⊥AC."
+}

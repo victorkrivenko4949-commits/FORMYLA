@@ -1,0 +1,136 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "BI",
+   "line2": "CA"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "CI",
+   "line2": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "AD"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "D"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "D",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "R",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "QR",
+   "line2": "BE"
+  },
+  {
+   "type": "intersection",
+   "id": "N",
+   "line1": "QR",
+   "line2": "CF"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "AIM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "BE"
+  },
+  {
+   "segment": "CF"
+  },
+  {
+   "line": "QR",
+   "style": "dashed"
+  },
+  {
+   "circle": "omega",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "P",
+    "Q"
+   ]
+  },
+  {
+   "equal": [
+    "AP",
+    "PD"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "D",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,114 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 3,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 60
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 120
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 210
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD",
+   "style": "accent"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "OA",
+   "style": "soft"
+  },
+  {
+   "segment": "OB",
+   "style": "soft"
+  },
+  {
+   "segment": "OC",
+   "style": "soft"
+  },
+  {
+   "segment": "OD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "C",
+    "O",
+    "D"
+   ],
+   "text": "90°"
+  },
+  {
+   "angle": [
+    "D",
+    "O",
+    "A"
+   ],
+   "text": "150°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

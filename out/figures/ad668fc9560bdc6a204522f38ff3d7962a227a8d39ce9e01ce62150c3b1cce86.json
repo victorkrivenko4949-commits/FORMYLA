@@ -1,0 +1,79 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "AXD",
+   "kind": "any"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "AXD"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "AXD"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w",
+   "line": "XI",
+   "pick": 1
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AD",
+   "ratio": 0.1666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AD",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "line_circle",
+   "id": "B",
+   "circle": "w",
+   "line": "MP",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "C",
+   "circle": "w",
+   "line": "MQ",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BM",
+   "style": "dashed"
+  },
+  {
+   "segment": "CM",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

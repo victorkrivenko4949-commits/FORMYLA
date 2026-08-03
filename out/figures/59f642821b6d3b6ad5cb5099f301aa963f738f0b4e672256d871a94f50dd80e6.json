@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "C_A",
+   "from": "C1",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "C_B",
+   "from": "C1",
+   "line": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  },
+  {
+   "segment": "C1C_A",
+   "style": "soft"
+  },
+  {
+   "segment": "C1C_B",
+   "style": "soft"
+  },
+  {
+   "segment": "C_AC_B",
+   "style": "accent"
+  },
+  {
+   "segment": "C1A1",
+   "style": "dashed"
+  },
+  {
+   "segment": "C1B1",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "A1",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "B1",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "C1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C1",
+    "C_A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C1",
+    "C_B",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

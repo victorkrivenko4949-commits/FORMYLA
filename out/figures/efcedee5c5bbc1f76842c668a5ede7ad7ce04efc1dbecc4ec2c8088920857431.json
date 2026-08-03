@@ -1,0 +1,120 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "C",
+   "of": "A",
+   "over": "O"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 53.13010235415598
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 233.13010235415598
+  },
+  {
+   "type": "foot",
+   "id": "K",
+   "from": "A",
+   "line": "BD"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "C",
+   "line": "BD"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AC",
+   "ratio": 0.8
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AK",
+   "style": "soft"
+  },
+  {
+   "segment": "CM",
+   "style": "soft"
+  },
+  {
+   "segment": "KP",
+   "style": "accent"
+  },
+  {
+   "segment": "PM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "K",
+    "P",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "K",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "M",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

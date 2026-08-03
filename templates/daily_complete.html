@@ -3,7 +3,7 @@
 {% block title %}Quest завершён! - FORMYLA{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}?v={{ asset_version }}">
 <style>
 /* Confetti Animation */
 .confetti {

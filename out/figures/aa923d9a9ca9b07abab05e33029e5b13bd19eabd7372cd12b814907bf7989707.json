@@ -1,0 +1,97 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "B",
+   "line": "CA"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  },
+  {
+   "segment": "CF",
+   "style": "soft"
+  },
+  {
+   "line": "OH",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "E",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "F",
+    "A"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

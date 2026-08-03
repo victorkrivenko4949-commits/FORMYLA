@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<circle cx="131.4" cy="381.4" r="71.4" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<circle cx="488.6" cy="381.4" r="71.4" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="60.0" y1="-452.9" x2="60.0" y2="1001.4" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="-529.7" y1="-24.4" x2="1100.3" y2="505.0" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<polyline points="73.0,381.4 73.0,368.4 60.0,368.4" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<polyline points="506.6,325.9 494.3,321.8 498.3,309.5" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<line x1="95.7" y1="387.4" x2="95.7" y2="375.4" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="493.9" y1="345.6" x2="505.3" y2="349.3" stroke="#4C7DFF" stroke-width="2"/>
+<circle cx="131.4" cy="381.4" r="3.4" fill="#E6EBF7"/>
+<text x="151.4" y="387.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O1</text>
+<circle cx="488.6" cy="381.4" r="3.4" fill="#E6EBF7"/>
+<text x="488.6" y="407.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O2</text>
+<circle cx="202.9" cy="381.4" r="3.4" fill="#E6EBF7"/>
+<text x="220.2" y="397.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R1</text>
+<circle cx="560.0" cy="381.4" r="3.4" fill="#E6EBF7"/>
+<text x="574.1" y="401.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R2</text>
+<circle cx="60.0" cy="167.1" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="163.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P</text>
+<circle cx="60.0" cy="381.4" r="3.4" fill="#E6EBF7"/>
+<text x="40.7" y="392.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">T1</text>
+<circle cx="510.6" cy="313.5" r="3.4" fill="#E6EBF7"/>
+<text x="530.6" y="319.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">T2</text>
+</svg>

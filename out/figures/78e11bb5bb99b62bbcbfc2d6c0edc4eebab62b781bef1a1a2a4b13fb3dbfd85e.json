@@ -1,0 +1,94 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "D",
+   "through": "B"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w1",
+   "angle": -90
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "BCM",
+   "style": "soft"
+  },
+  {
+   "segment": "AM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "M",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "MB",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "C",
+    "B",
+    "A"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "A"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "M",
+   "through": "B"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Окружность с центром M радиусом MB=MC: так как ∠BMC=90° и ∠BAC=45°, точка A лежит на этой окружности, значит MA=MC и ∠MAC=30°."
+}

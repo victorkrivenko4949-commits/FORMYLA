@@ -1,0 +1,72 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 0.2727272727
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T",
+   "of": "BC",
+   "ratio": 0.7272727273
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "AM",
+   "line2": "PT"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "segment": "PT",
+   "style": "soft"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "X",
+   "of": "AB"
+  }
+ ],
+ "reason": "Проводим среднюю линию XM; из подобия треугольников APQ и AXM, QMT и AMC получаем AC = 11.",
+ "draw_aux": [
+  {
+   "segment": "XM",
+   "style": "dashed"
+  }
+ ]
+}

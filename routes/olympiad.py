@@ -633,7 +633,12 @@ def method_section(grade, section_name):
 def method_task(method_task_id):
     """РЎС‚СЂР°РЅРёС†Р° РѕРґРЅРѕР№ MethodTask."""
     t = MethodTask.query.get_or_404(method_task_id)
-    return render_template('olympiad/method_task.html', task=t)
+    has_aux = getattr(t, 'has_aux', False)
+    aux_svg_path = getattr(t, 'aux_svg_path', None) if has_aux else None
+    aux_reason = getattr(t, 'aux_reason', None) if has_aux else None
+    return render_template('olympiad/method_task.html', task=t,
+                           has_aux=has_aux, aux_svg_path=aux_svg_path,
+                           aux_reason=aux_reason)
 
 
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ

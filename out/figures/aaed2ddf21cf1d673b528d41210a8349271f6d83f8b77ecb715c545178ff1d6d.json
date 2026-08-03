@@ -1,0 +1,168 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ADC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O1",
+   "of": "ADC"
+  },
+  {
+   "type": "foot",
+   "id": "F1",
+   "from": "O1",
+   "line": "AB"
+  },
+  {
+   "type": "line_circle",
+   "id": "T1",
+   "circle": "w1",
+   "line": "F1O1",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "cT",
+   "center": "T1",
+   "through": "F1"
+  },
+  {
+   "type": "line_circle",
+   "id": "G",
+   "circle": "cT",
+   "line": "F1O1",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "cF",
+   "center": "F1",
+   "through": "G"
+  },
+  {
+   "type": "circle",
+   "id": "cG",
+   "center": "G",
+   "through": "F1"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "cF",
+   "circle2": "cG",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "BC",
+   "line2": "T1P"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "BCD"
+  },
+  {
+   "type": "tangent_point",
+   "id": "T2",
+   "circle": "w2",
+   "from": "E",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "AB",
+   "line2": "ET2"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CD",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "line": "T1P",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "line": "ET2",
+   "style": "accent"
+  },
+  {
+   "polygon": "BFE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "E",
+    "F"
+   ],
+   "text": "∠A"
+  },
+  {
+   "angle": [
+    "F",
+    "B",
+    "E"
+   ],
+   "text": "∠B"
+  },
+  {
+   "angle": [
+    "B",
+    "F",
+    "E"
+   ],
+   "text": "∠C"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "AC",
+   "line2": "T1P",
+   "reason": "X — пересечение касательной EX с AC; треугольники CEX и CBA подобны"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "EX",
+   "style": "soft"
+  },
+  {
+   "segment": "CX",
+   "style": "soft"
+  }
+ ]
+}

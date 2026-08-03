@@ -23,10 +23,10 @@
             {% if task.difficulty_label or task.method_probability_tier %}
             <p style="margin: 4px 0 0;">
                 {% if task.difficulty_label %}
-                <span class="oly-badge" style="background:{{ task.difficulty_color or '#888' }}; color:#fff;">{{ task.difficulty_label }}</span>
+                <span class="oly-badge" style="background:{{ task.difficulty_color or '#888' }}; color:#E6EBF7;">{{ task.difficulty_label }}</span>
                 {% endif %}
                 {% if task.method_probability_tier %}
-                <span class="oly-badge" style="background:{{ task.method_probability_color or '#888' }}; color:#fff;">{{ task.method_probability_tier }}</span>
+                <span class="oly-badge" style="background:{{ task.method_probability_color or '#888' }}; color:#E6EBF7;">{{ task.method_probability_tier }}</span>
                 {% endif %}
             </p>
             {% endif %}
@@ -39,22 +39,22 @@
 
         {% if task.solution_idea %}
         <details style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; cursor: pointer;">
-            <summary style="font-weight: 600; font-size: 1.05rem; color: var(--accent-1);">💡 Идея решения</summary>
+            <summary style="font-weight: 600; font-size: 1.05rem; color: var(--accent-1);"> Идея решения</summary>
             <div style="margin-top: 12px; line-height: 1.7;">{{ task.solution_idea | md_render }}</div>
         </details>
         {% endif %}
 
         {% if task.answer %}
         <details style="background: var(--bg-card, rgba(30,41,59,0.6)); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; cursor: pointer;">
-            <summary style="font-weight: 600; font-size: 1.05rem; color: #34d399;">✅ Ответ</summary>
+            <summary style="font-weight: 600; font-size: 1.05rem; color: #3ecf8e;"> Ответ</summary>
             <div style="margin-top: 12px; line-height: 1.7;">{{ task.answer | md_render }}</div>
         </details>
         {% endif %}
 
         {% if current_user.is_authenticated %}
         <div style="text-align: center; margin-top: 30px;">
-            <button onclick="discussWithTutor()" style="padding: 12px 30px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                💬 Обсудить с ИИ-тьютором
+            <button onclick="discussWithTutor()" style="padding: 12px 30px; background: linear-gradient(135deg, #6b95ff 0%, #4c7dff 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                 Обсудить с ИИ-тьютором
             </button>
         </div>
         <script>

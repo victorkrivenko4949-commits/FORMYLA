@@ -1,0 +1,91 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "X",
+   "of": "M",
+   "over": "H"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AH",
+   "style": "soft"
+  },
+  {
+   "segment": "HX",
+   "style": "soft"
+  },
+  {
+   "segment": "AX",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "HM",
+    "HX"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AM",
+    "AX"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "AM",
+    "BM"
+   ],
+   "ticks": 3
+  }
+ ],
+ "aux": [],
+ "draw_aux": [
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "segment": "MX",
+   "style": "soft"
+  }
+ ]
+}

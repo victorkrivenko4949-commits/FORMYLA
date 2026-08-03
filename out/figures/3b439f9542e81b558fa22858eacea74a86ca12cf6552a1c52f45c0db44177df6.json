@@ -1,0 +1,46 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  },
+  {
+   "segment": "BD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "O",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

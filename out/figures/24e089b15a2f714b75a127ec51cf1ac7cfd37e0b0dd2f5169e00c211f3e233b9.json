@@ -1,0 +1,105 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2,
+   "y": 3
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "A",
+   "line": "CI"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AF",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "line": "CI",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "F",
+    "I"
+   ]
+  },
+  {
+   "equal": [
+    "AF",
+    "FD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "I",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "I",
+   "line": "AC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "IN",
+   "style": "soft"
+  },
+  {
+   "segment": "IM",
+   "style": "soft"
+  }
+ ]
+}

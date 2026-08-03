@@ -1,0 +1,90 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.0357
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "AB",
+   "ratio": 0.8929
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.2825
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.4148
+  },
+  {
+   "type": "triangle",
+   "id": "MND",
+   "kind": "any"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "MND"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "M"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "OD",
+   "style": "soft"
+  },
+  {
+   "segment": "OE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "D",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "E",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

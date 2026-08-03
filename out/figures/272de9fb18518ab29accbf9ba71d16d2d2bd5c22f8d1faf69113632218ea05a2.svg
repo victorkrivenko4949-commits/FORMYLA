@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="60.0,428.1 538.2,428.1 538.2,126.1" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="538.2" y1="428.1" x2="299.1" y2="277.1" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="6 5"/>
+<circle cx="418.6" cy="352.6" r="141.4" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="299.1" y1="428.1" x2="538.2" y2="277.1" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<polyline points="525.2,428.1 525.2,415.1 538.2,415.1" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<circle cx="60.0" cy="428.1" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="444.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="538.2" cy="428.1" r="3.4" fill="#E6EBF7"/>
+<text x="555.5" y="444.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="538.2" cy="126.1" r="3.4" fill="#E6EBF7"/>
+<text x="552.3" y="117.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="60.0" cy="126.1" r="3.4" fill="#E6EBF7"/>
+<text x="50.0" y="114.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="299.1" cy="277.1" r="3.4" fill="#E6EBF7"/>
+<text x="289.1" y="265.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">K</text>
+<circle cx="418.6" cy="352.6" r="3.4" fill="#E6EBF7"/>
+<text x="418.6" y="378.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="299.1" cy="428.1" r="3.4" fill="#E6EBF7"/>
+<text x="299.1" y="454.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+<circle cx="538.2" cy="277.1" r="3.4" fill="#E6EBF7"/>
+<text x="558.2" y="283.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">N</text>
+</svg>

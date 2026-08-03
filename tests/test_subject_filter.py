@@ -271,6 +271,21 @@ class TestLevelFallbackStaysInSubject:
 PRODUCTION_DB = os.path.join(ROOT, "instance", "formyla.db")
 
 
+def _resolve_db_path():
+    """Return the SQLite path for production integrity tests.
+
+    If the root conftest.py (V10 isolation layer) has redirected
+    DATABASE_URL to a temp copy, use that path so tests never
+    touch the real instance/formyla.db during pytest runs.
+    """
+    db_url = os.environ.get("DATABASE_URL", "")
+    if db_url.startswith("sqlite:///"):
+        resolved = db_url[len("sqlite:///"):]
+        if os.path.exists(resolved):
+            return resolved
+    return PRODUCTION_DB
+
+
 @pytest.mark.skipif(
     not os.path.exists(PRODUCTION_DB),
     reason="instance/formyla.db not present — skipping production integrity tests",
@@ -278,7 +293,8 @@ PRODUCTION_DB = os.path.join(ROOT, "instance", "formyla.db")
 class TestProductionImportIntegrity:
     @pytest.fixture(scope="class")
     def conn(self):
-        c = sqlite3.connect(PRODUCTION_DB)
+        db_path = _resolve_db_path()
+        c = sqlite3.connect(db_path)
         c.row_factory = sqlite3.Row
         yield c
         c.close()

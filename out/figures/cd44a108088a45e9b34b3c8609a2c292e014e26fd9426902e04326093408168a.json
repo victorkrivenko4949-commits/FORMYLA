@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "triangle",
+   "id": "ABE",
+   "kind": "right"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "C"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "incircle",
+   "id": "w1",
+   "of": "ABE",
+   "reason": "Вписанная окружность треугольника ABE — максимальный круг в треугольной части"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w1",
+   "style": "soft"
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<circle cx="310.0" cy="310.0" r="250.0" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="560.0" y1="310.0" x2="60.0" y2="310.0" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="560.0" y1="310.0" x2="200.4" y2="85.3" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="177.5" y2="522.0" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="177.5" y1="522.0" x2="200.4" y2="85.3" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<polyline points="391.2,204.5 384.3,215.6 373.3,208.7" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<path d="M 534.0 310.0 A 26 26 0 0 1 538.0 296.2" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="520.6" y="303.7" fill="#8C9ABC" font-size="15" text-anchor="middle">32°</text>
+<circle cx="310.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="320.0" y="333.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="560.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="316.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="60.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="316.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="200.4" cy="85.3" r="3.4" fill="#E6EBF7"/>
+<text x="195.2" y="72.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="380.2" cy="197.7" r="3.4" fill="#E6EBF7"/>
+<text x="390.2" y="186.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">H</text>
+<circle cx="177.5" cy="522.0" r="3.4" fill="#E6EBF7"/>
+<text x="167.5" y="545.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+</svg>

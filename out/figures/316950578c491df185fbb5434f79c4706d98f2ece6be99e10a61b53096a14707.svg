@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="282.8,153.5 60.0,274.5 417.1,411.6" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="282.8" y1="153.5" x2="213.7" y2="333.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="60.0" y1="274.5" x2="560.0" y2="466.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="282.8" y1="153.5" x2="560.0" y2="466.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<polyline points="71.4,268.3 83.6,273.0 72.1,279.2" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<polyline points="278.1,165.7 266.7,171.9 271.4,159.8" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<path d="M 82.8 262.1 A 26 26 0 0 1 84.3 283.8" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="100.9" y="276.8" fill="#8C9ABC" font-size="15" text-anchor="middle">β</text>
+<path d="M 535.7 457.1 A 26 26 0 0 1 542.8 447.0" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="526.3" y="448.1" fill="#8C9ABC" font-size="15" text-anchor="middle">2β</text>
+<circle cx="282.8" cy="153.5" r="3.4" fill="#E6EBF7"/>
+<text x="277.6" y="140.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="60.0" cy="274.5" r="3.4" fill="#E6EBF7"/>
+<text x="40.7" y="275.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="417.1" cy="411.6" r="3.4" fill="#E6EBF7"/>
+<text x="412.0" y="436.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="213.7" cy="333.5" r="3.4" fill="#E6EBF7"/>
+<text x="203.7" y="356.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">H</text>
+<circle cx="560.0" cy="466.5" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="482.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">X</text>
+</svg>

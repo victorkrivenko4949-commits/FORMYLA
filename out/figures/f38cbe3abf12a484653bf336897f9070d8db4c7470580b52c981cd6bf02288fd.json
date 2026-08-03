@@ -1,0 +1,106 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "IA",
+   "of": "DAB"
+  },
+  {
+   "type": "incenter",
+   "id": "IB",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "IC",
+   "of": "BCD"
+  },
+  {
+   "type": "incenter",
+   "id": "ID",
+   "of": "CDA"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "IA-A",
+   "style": "soft"
+  },
+  {
+   "segment": "IA-B",
+   "style": "soft"
+  },
+  {
+   "segment": "IA-IC",
+   "style": "soft"
+  },
+  {
+   "segment": "IA-ID",
+   "style": "soft"
+  },
+  {
+   "segment": "IB-A",
+   "style": "soft"
+  },
+  {
+   "segment": "IB-B",
+   "style": "soft"
+  },
+  {
+   "segment": "IB-IC",
+   "style": "soft"
+  },
+  {
+   "segment": "IB-ID",
+   "style": "soft"
+  },
+  {
+   "segment": "IA-IB",
+   "style": "soft"
+  },
+  {
+   "segment": "IC-ID",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "IA",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "IC",
+    "IA",
+    "ID"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "IB",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "IC",
+    "IB",
+    "ID"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

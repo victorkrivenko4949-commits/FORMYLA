@@ -1,0 +1,84 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "Oc",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "ca",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "cc",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "reflect_line",
+   "id": "D",
+   "of": "B",
+   "over": "AOc"
+  },
+  {
+   "type": "reflect_line",
+   "id": "E",
+   "of": "B",
+   "over": "COc"
+  },
+  {
+   "type": "reflect_line",
+   "id": "F",
+   "of": "B",
+   "over": "AC"
+  },
+  {
+   "type": "line_circle",
+   "id": "O",
+   "circle": "w",
+   "line": "BF",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "circle": "ca",
+   "style": "soft"
+  },
+  {
+   "circle": "cc",
+   "style": "soft"
+  },
+  {
+   "segment": "BF",
+   "style": "soft"
+  },
+  {
+   "polygon": "DEF",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,105 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "reflect_line",
+   "id": "Ab",
+   "of": "A",
+   "over": "BB1"
+  },
+  {
+   "type": "reflect_line",
+   "id": "Ac",
+   "of": "A",
+   "over": "CC1"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "BAb",
+   "line2": "CAc"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  },
+  {
+   "line": "BAb",
+   "style": "accent"
+  },
+  {
+   "line": "CAc",
+   "style": "accent"
+  },
+  {
+   "segment": "AX",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "C1",
+    "C"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "45°"
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,202 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0.2236067977
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": -0.2,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 0.2,
+   "y": 0
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 1.6666666666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AC",
+   "ratio": 1.6666666666666667
+  },
+  {
+   "type": "reflect_point",
+   "id": "B1",
+   "of": "B",
+   "over": "P"
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "B",
+   "through": "B1"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "B1",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "S",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "C1",
+   "of": "C",
+   "over": "Q"
+  },
+  {
+   "type": "circle",
+   "id": "c3",
+   "center": "C",
+   "through": "C1"
+  },
+  {
+   "type": "circle",
+   "id": "c4",
+   "center": "C1",
+   "through": "C"
+  },
+  {
+   "type": "circle_circle",
+   "id": "T",
+   "circle1": "c3",
+   "circle2": "c4",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "J",
+   "line1": "PS",
+   "line2": "QT"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "J",
+   "through": "P"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "APQ"
+  },
+  {
+   "type": "line_circle",
+   "id": "X",
+   "circle": "Omega",
+   "line": "MN",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "Y",
+   "circle": "Omega",
+   "line": "MN",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "AQ",
+   "style": "soft"
+  },
+  {
+   "line": "MN"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "circle": "Omega",
+   "style": "soft"
+  },
+  {
+   "segment": "XY",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "J",
+    "P",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "J",
+    "Q",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AP",
+    "AQ"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "XY",
+    "AP"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AJ",
+   "reason": "Центр описанной окружности APQ — середина AJ, так как углы APJ и AQJ прямые (радиусы ω перпендикулярны касательным)."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AJ",
+   "style": "soft"
+  }
+ ]
+}

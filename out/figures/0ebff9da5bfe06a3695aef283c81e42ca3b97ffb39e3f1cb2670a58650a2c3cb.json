@@ -1,0 +1,82 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AB",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BC",
+   "ratio": 0.5
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  },
+  {
+   "segment": "OM",
+   "style": "soft"
+  },
+  {
+   "segment": "ON",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "M",
+    "O",
+    "N"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "N0",
+   "of": "N",
+   "over": "O",
+   "reason": "Точка, симметричная N относительно O, для доказательства равенства треугольников"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "ON0",
+   "style": "dashed"
+  },
+  {
+   "segment": "AN0",
+   "style": "dashed"
+  },
+  {
+   "segment": "MN0",
+   "style": "dashed"
+  }
+ ]
+}

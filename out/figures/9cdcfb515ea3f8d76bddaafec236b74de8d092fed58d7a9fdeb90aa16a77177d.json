@@ -1,0 +1,83 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "A",
+   "line": "CD"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "C",
+   "line": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "AE",
+   "style": "soft"
+  },
+  {
+   "segment": "CF",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "D",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "E",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "F",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AD",
+    "CF"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CE"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

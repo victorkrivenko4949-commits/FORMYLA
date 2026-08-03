@@ -1,0 +1,116 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O1",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "O",
+   "of": "O1A",
+   "ratio": 0.4
+  },
+  {
+   "type": "circle",
+   "id": "Omega",
+   "center": "O1",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "aux1",
+   "center": "A",
+   "through": "O1"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "aux1",
+   "angle": 90
+  },
+  {
+   "type": "reflect_line",
+   "id": "B",
+   "of": "A",
+   "over": "PO"
+  },
+  {
+   "type": "line_circle",
+   "id": "C",
+   "circle": "Omega",
+   "line": "PB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "Omega",
+   "line": "PB",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "gamma",
+   "of": "CMD"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "Omega"
+  },
+  {
+   "circle": "omega"
+  },
+  {
+   "polygon": "CMD"
+  },
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "OB",
+   "style": "soft"
+  },
+  {
+   "circle": "gamma",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "O",
+    "B",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

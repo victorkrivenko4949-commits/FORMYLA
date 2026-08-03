@@ -1,0 +1,58 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "BO",
+   "line2": "AD"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O1",
+   "of": "ABE"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O2",
+   "of": "DBE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,223 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 1.5,
+   "y": 2.598
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 3.5,
+   "y": 2.598
+  },
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "triangle",
+   "id": "DAB",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "BCD",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "CDA",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "IA",
+   "of": "DAB"
+  },
+  {
+   "type": "incenter",
+   "id": "IB",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "IC",
+   "of": "BCD"
+  },
+  {
+   "type": "incenter",
+   "id": "ID",
+   "of": "CDA"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AIA",
+   "line2": "BIB"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BIB",
+   "line2": "CIC"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "CIC",
+   "line2": "DID"
+  },
+  {
+   "type": "intersection",
+   "id": "S",
+   "line1": "DID",
+   "line2": "AIA"
+  },
+  {
+   "type": "quad",
+   "id": "PQRS",
+   "kind": "any"
+  },
+  {
+   "type": "foot",
+   "id": "TP",
+   "from": "P",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "TQ",
+   "from": "Q",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "TR",
+   "from": "R",
+   "line": "CD"
+  },
+  {
+   "type": "foot",
+   "id": "TS",
+   "from": "S",
+   "line": "DA"
+  },
+  {
+   "type": "circle",
+   "id": "cP",
+   "center": "P",
+   "through": "TP"
+  },
+  {
+   "type": "circle",
+   "id": "cQ",
+   "center": "Q",
+   "through": "TQ"
+  },
+  {
+   "type": "circle",
+   "id": "cR",
+   "center": "R",
+   "through": "TR"
+  },
+  {
+   "type": "circle",
+   "id": "cS",
+   "center": "S",
+   "through": "TS"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "PQRS",
+   "style": "accent"
+  },
+  {
+   "line": "AIA",
+   "style": "dashed"
+  },
+  {
+   "line": "BIB",
+   "style": "dashed"
+  },
+  {
+   "line": "CIC",
+   "style": "dashed"
+  },
+  {
+   "line": "DID",
+   "style": "dashed"
+  },
+  {
+   "circle": "cP",
+   "style": "soft"
+  },
+  {
+   "circle": "cQ",
+   "style": "soft"
+  },
+  {
+   "circle": "cR",
+   "style": "soft"
+  },
+  {
+   "circle": "cS",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "Q",
+    "P",
+    "S"
+   ]
+  },
+  {
+   "right_angle": [
+    "P",
+    "Q",
+    "R"
+   ]
+  },
+  {
+   "right_angle": [
+    "Q",
+    "R",
+    "S"
+   ]
+  },
+  {
+   "right_angle": [
+    "R",
+    "S",
+    "P"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

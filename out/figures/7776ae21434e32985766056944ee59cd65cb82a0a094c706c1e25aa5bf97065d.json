@@ -1,0 +1,88 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": -1,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 2,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 4,
+   "y": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "quad",
+   "id": "ABED",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "BE",
+   "line2": "CD"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AD"
+  },
+  {
+   "type": "quad",
+   "id": "CDPK",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "intersection",
+   "id": "M",
+   "line1": "KP",
+   "line2": "BL"
+  },
+  {
+   "type": "quad",
+   "id": "BCQM",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "intersection",
+   "id": "N",
+   "line1": "QM",
+   "line2": "CL"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BL",
+   "style": "accent"
+  },
+  {
+   "segment": "KM",
+   "style": "accent"
+  },
+  {
+   "segment": "MN",
+   "style": "accent"
+  }
+ ]
+}

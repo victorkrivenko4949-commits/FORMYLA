@@ -1,0 +1,88 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.372
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 2.0
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ADC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "BCD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "DC",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AC",
+   "ratio": 2.0
+  },
+  {
+   "type": "line_circle",
+   "id": "T",
+   "circle": "w1",
+   "line": "EX",
+   "pick": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y",
+   "of": "AB",
+   "ratio": 0.2
+  },
+  {
+   "type": "line_circle",
+   "id": "U",
+   "circle": "w2",
+   "line": "EY",
+   "pick": 0
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "EX",
+   "style": "soft"
+  },
+  {
+   "segment": "EY",
+   "style": "accent"
+  }
+ ],
+ "reason": "X — пересечение прямой через E, параллельной AB, с AC; T — точка касания этой прямой с окружностью (ADC); Y — точка на AB, в которой искомая касательная из E пересекает AB; U — точка касания этой касательной с окружностью (BCD)."
+}

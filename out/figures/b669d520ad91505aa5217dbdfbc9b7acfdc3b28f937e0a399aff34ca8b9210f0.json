@@ -1,0 +1,64 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "M",
+   "from": "I",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "N",
+   "from": "I",
+   "line": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "inc",
+   "center": "I",
+   "through": "M"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "circle": "inc",
+   "style": "soft"
+  },
+  {
+   "line": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

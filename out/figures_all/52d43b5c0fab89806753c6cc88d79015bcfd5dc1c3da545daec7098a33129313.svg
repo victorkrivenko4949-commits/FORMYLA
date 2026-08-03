@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="317.4,285.9 198.1,438.6 295.7,510.8" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<circle cx="317.4" cy="285.9" r="225.9" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<circle cx="198.1" cy="438.6" r="121.4" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="272.9" y1="342.9" x2="178.3" y2="463.9" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<polyline points="297.0,497.9 286.5,490.1 285.3,503.1" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<line x1="312.5" y1="398.9" x2="300.6" y2="397.8" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="252.6" y1="378.6" x2="243.1" y2="371.2" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="248.5" y1="468.4" x2="241.3" y2="478.0" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="252.5" y1="471.3" x2="245.4" y2="481.0" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="229.2" y1="389.0" x2="238.7" y2="396.4" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="232.3" y1="385.1" x2="241.8" y2="392.5" stroke="#4C7DFF" stroke-width="2"/>
+<circle cx="317.4" cy="285.9" r="3.4" fill="#E6EBF7"/>
+<text x="327.4" y="274.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="198.1" cy="438.6" r="3.4" fill="#E6EBF7"/>
+<text x="180.8" y="434.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="295.7" cy="510.8" r="3.4" fill="#E6EBF7"/>
+<text x="305.7" y="534.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="178.3" cy="463.9" r="3.4" fill="#E6EBF7"/>
+<text x="161.0" y="479.9" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">E</text>
+<circle cx="272.9" cy="342.9" r="3.4" fill="#E6EBF7"/>
+<text x="258.7" y="334.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+</svg>

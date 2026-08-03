@@ -1,0 +1,104 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "right"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.6667
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BD",
+   "ratio": 0.75
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "segment": "CH",
+   "style": "accent"
+  },
+  {
+   "segment": "CK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "K",
+    "D"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "D",
+    "B",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "H",
+    "C",
+    "K"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BD",
+   "reason": "M — середина BD; в прямоугольном треугольнике CBD медиана CM равна половине гипотенузы."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CM",
+   "style": "dashed"
+  }
+ ]
+}

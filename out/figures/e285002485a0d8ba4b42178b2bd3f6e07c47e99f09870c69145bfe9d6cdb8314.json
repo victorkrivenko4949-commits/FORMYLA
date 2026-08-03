@@ -1,0 +1,164 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 1,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "O",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "X",
+   "x": 1,
+   "y": 0.4142
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": 1.1716,
+   "y": 0.4142
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AX",
+   "style": "soft"
+  },
+  {
+   "segment": "BX",
+   "style": "soft"
+  },
+  {
+   "segment": "OX",
+   "style": "soft"
+  },
+  {
+   "segment": "OP",
+   "style": "soft"
+  },
+  {
+   "segment": "PX",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "X",
+    "A",
+    "B"
+   ],
+   "text": "φ"
+  },
+  {
+   "angle": [
+    "X",
+    "B",
+    "C"
+   ],
+   "text": "φ"
+  },
+  {
+   "angle": [
+    "X",
+    "O",
+    "P"
+   ],
+   "text": "φ"
+  },
+  {
+   "right_angle": [
+    "P",
+    "X",
+    "O"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "point",
+   "id": "O1",
+   "x": 1,
+   "y": -1
+  },
+  {
+   "type": "circle",
+   "id": "omega",
+   "center": "O1",
+   "through": "A"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "OB"
+  },
+  {
+   "type": "circle",
+   "id": "d",
+   "center": "N",
+   "through": "O"
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "omega",
+   "line": "BP",
+   "pick": 1
+  },
+  {
+   "type": "foot",
+   "id": "Y",
+   "from": "O",
+   "line": "BQ"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
+   "style": "dashed"
+  },
+  {
+   "circle": "d",
+   "style": "dashed"
+  },
+  {
+   "line": "BP",
+   "style": "soft"
+  },
+  {
+   "segment": "OY",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Окружность ω содержит все точки X; проекция Y точки O на BP принадлежит ω, что и даёт прямую BQ."
+}

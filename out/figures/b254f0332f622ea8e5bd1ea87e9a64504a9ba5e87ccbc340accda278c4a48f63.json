@@ -1,0 +1,117 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "triangle",
+   "id": "ABD",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "centroid",
+   "id": "P",
+   "of": "ABD"
+  },
+  {
+   "type": "centroid",
+   "id": "Q",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "ABD",
+   "style": "soft"
+  },
+  {
+   "polygon": "ABC",
+   "style": "soft"
+  },
+  {
+   "segment": "CP",
+   "style": "dashed"
+  },
+  {
+   "segment": "DQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "C",
+    "P"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "P",
+    "C",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "D",
+    "Q"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "Q",
+    "D",
+    "C"
+   ],
+   "text": "β"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB",
+   "reason": "K — середина AB, общая середина диагоналей параллелограмма ALBD"
+  },
+  {
+   "type": "reflect_point",
+   "id": "L",
+   "of": "D",
+   "over": "K",
+   "reason": "Достраиваем треугольник ABD до параллелограмма ALBD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AL",
+   "style": "soft"
+  },
+  {
+   "segment": "LB",
+   "style": "soft"
+  },
+  {
+   "segment": "DL",
+   "style": "soft"
+  },
+  {
+   "segment": "CL",
+   "style": "soft"
+  }
+ ]
+}

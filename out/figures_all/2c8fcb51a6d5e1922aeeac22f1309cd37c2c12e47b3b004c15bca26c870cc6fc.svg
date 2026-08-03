@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="220.3,320.4 310.0,187.5 399.7,320.4" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<circle cx="229.8" cy="230.1" r="90.8" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<circle cx="390.2" cy="230.1" r="90.8" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="310.0" y1="187.5" x2="239.3" y2="320.4" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="310.0" y1="187.5" x2="380.7" y2="320.4" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="310.0" y1="272.7" x2="220.3" y2="320.4" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="310.0" y1="272.7" x2="399.7" y2="320.4" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="260.2" y1="250.6" x2="270.1" y2="257.3" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="300.5" y1="314.4" x2="300.5" y2="326.4" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="358.4" y1="248.5" x2="348.5" y2="255.2" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="361.2" y1="252.6" x2="351.3" y2="259.3" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="317.0" y1="314.4" x2="317.0" y2="326.4" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="322.0" y1="314.4" x2="322.0" y2="326.4" stroke="#4C7DFF" stroke-width="2"/>
+<path d="M 324.5 209.0 A 26 26 0 0 1 295.5 209.0" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="310.0" y="233.5" fill="#8C9ABC" font-size="15" text-anchor="middle">68°</text>
+<path d="M 333.0 284.9 A 26 26 0 0 1 287.0 284.9" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="310.0" y="318.7" fill="#8C9ABC" font-size="15" text-anchor="middle">?</text>
+<circle cx="220.3" cy="320.4" r="3.4" fill="#E6EBF7"/>
+<text x="201.0" y="331.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="310.0" cy="187.5" r="3.4" fill="#E6EBF7"/>
+<text x="310.0" y="173.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="399.7" cy="320.4" r="3.4" fill="#E6EBF7"/>
+<text x="419.0" y="331.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="380.7" cy="320.4" r="3.4" fill="#E6EBF7"/>
+<text x="385.9" y="345.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">N</text>
+<circle cx="239.3" cy="320.4" r="3.4" fill="#E6EBF7"/>
+<text x="234.1" y="345.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+<circle cx="310.0" cy="272.7" r="3.4" fill="#E6EBF7"/>
+<text x="310.0" y="258.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">K</text>
+</svg>

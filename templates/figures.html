@@ -41,7 +41,12 @@
 
         <div id="figureResultWrap" hidden class="figure-result-wrap glass">
             <h3 class="fig-h3">Готовый чертёж</h3>
+            <div id="figureAuxToggle" hidden class="fig-aux-toggle">
+                <button id="auxBaseBtn" type="button" class="fig-aux-tab active">базовый</button>
+                <button id="auxFullBtn" type="button" class="fig-aux-tab">с построением</button>
+            </div>
             <div class="figure-svg-frame" id="figureSvgContainer"></div>
+            <p id="figureAuxReason" hidden class="fig-aux-reason"></p>
             <div class="fig-download-actions">
                 <button id="downloadSvgBtn" type="button" class="fig-btn-soft">Скачать SVG</button>
             </div>
@@ -69,17 +74,17 @@
 
 <style>
     :root {
-        --fig-bg-0: #0b0d12;
-        --fig-bg-1: #10131a;
-        --fig-bg-2: #161a23;
-        --fig-accent: #3b82f6;
-        --fig-accent-hover: #2563eb;
-        --fig-text: #e2e8f0;
-        --fig-muted: #94a3b8;
+        --fig-bg-0: #070c18;
+        --fig-bg-1: #0e1830;
+        --fig-bg-2: #121f3c;
+        --fig-accent: #4c7dff;
+        --fig-accent-hover: #6b95ff;
+        --fig-text: #e6ebf7;
+        --fig-muted: #8c9abc;
         --fig-border: rgba(255, 255, 255, 0.08);
         --fig-glass: rgba(15, 23, 42, 0.7);
-        --fig-error: #ef4444;
-        --fig-success: #22c55e;
+        --fig-error: #e86a62;
+        --fig-success: #3ecf8e;
     }
     .glass {
         background: var(--fig-glass);
@@ -107,7 +112,7 @@
         font-size: 28px;
         font-weight: 700;
         margin: 0 0 8px;
-        color: #c8d6e5;
+        color: #e6ebf7;
     }
     .figures-hint {
         color: var(--fig-muted);
@@ -139,7 +144,7 @@
         display: block;
         font-size: 14px;
         font-weight: 600;
-        color: #cbd5e1;
+        color: #e6ebf7;
         margin-bottom: 8px;
     }
     .fig-textarea {
@@ -175,7 +180,7 @@
     .fig-btn-primary {
         padding: 10px 28px;
         background: var(--fig-accent);
-        color: #fff;
+        color: #E6EBF7;
         border: none;
         border-radius: 8px;
         font-size: 15px;
@@ -229,7 +234,7 @@
         background: rgba(239, 68, 68, 0.1);
         border: 1px solid rgba(239, 68, 68, 0.25);
         border-radius: 10px;
-        color: #fca5a5;
+        color: #e86a62;
         font-size: 14px;
         line-height: 1.5;
     }
@@ -239,11 +244,11 @@
     .fig-h3 {
         font-size: 16px;
         font-weight: 600;
-        color: #cbd5e1;
+        color: #e6ebf7;
         margin: 0 0 16px;
     }
     .figure-svg-frame {
-        background: #ffffff;
+        background: #E6EBF7;
         border-radius: 8px;
         overflow: hidden;
         display: flex;
@@ -259,6 +264,42 @@
         display: flex;
         gap: 12px;
         margin-top: 16px;
+    }
+    .fig-aux-toggle {
+        display: flex;
+        gap: 0;
+        margin-bottom: 12px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--fig-border);
+    }
+    .fig-aux-tab {
+        flex: 1;
+        padding: 8px 16px;
+        text-align: center;
+        cursor: pointer;
+        background: rgba(255,255,255,0.04);
+        color: var(--fig-muted);
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s;
+    }
+    .fig-aux-tab.active {
+        background: rgba(59,130,246,0.15);
+        color: var(--fig-accent);
+    }
+    .fig-aux-tab:hover {
+        background: rgba(255,255,255,0.08);
+    }
+    .fig-aux-reason {
+        font-size: 13px;
+        color: var(--fig-muted);
+        margin: 4px 0 12px;
+        padding: 6px 12px;
+        background: rgba(59,130,246,0.05);
+        border-radius: 6px;
+        border: 1px solid rgba(59,130,246,0.1);
     }
     .figure-zero-balance {
         padding: 28px;
@@ -277,7 +318,7 @@
     .zero-ways h4 {
         font-size: 15px;
         font-weight: 600;
-        color: #cbd5e1;
+        color: #e6ebf7;
         margin: 0 0 10px;
     }
     .zero-ways ul {
@@ -315,6 +356,35 @@
     const zeroBalance = document.getElementById('figureZeroBalance');
 
     let pollTimer = null;
+    let currentBaseSvg = null;
+    let currentAuxSvg = null;
+    let currentShowAux = false;
+    const auxToggle = document.getElementById('figureAuxToggle');
+    const auxBaseBtn = document.getElementById('auxBaseBtn');
+    const auxFullBtn = document.getElementById('auxFullBtn');
+    const auxReasonEl = document.getElementById('figureAuxReason');
+
+    function showSvg() {
+        if (currentShowAux && currentAuxSvg) {
+            svgContainer.innerHTML = currentAuxSvg;
+        } else if (currentBaseSvg) {
+            svgContainer.innerHTML = currentBaseSvg;
+        }
+    }
+
+    auxBaseBtn.addEventListener('click', function() {
+        currentShowAux = false;
+        auxBaseBtn.classList.add('active');
+        auxFullBtn.classList.remove('active');
+        showSvg();
+    });
+
+    auxFullBtn.addEventListener('click', function() {
+        currentShowAux = true;
+        auxFullBtn.classList.add('active');
+        auxBaseBtn.classList.remove('active');
+        showSvg();
+    });
 
     // Character counters
     problemEl.addEventListener('input', function() {
@@ -390,13 +460,33 @@
                 clearPoll();
                 loader.hidden = true;
                 if (data.svg) {
-                    svgContainer.innerHTML = data.svg;
+                    currentBaseSvg = data.svg;
+                    currentAuxSvg = data.aux_svg || null;
+                    currentShowAux = false;
+                    showSvg();
                     resultWrap.hidden = false;
+                    if (currentAuxSvg) {
+                        auxToggle.hidden = false;
+                        auxBaseBtn.classList.add('active');
+                        auxFullBtn.classList.remove('active');
+                        if (data.aux_reason) {
+                            auxReasonEl.textContent = data.aux_reason;
+                            auxReasonEl.hidden = false;
+                        } else {
+                            auxReasonEl.hidden = true;
+                        }
+                    } else {
+                        auxToggle.hidden = true;
+                        auxReasonEl.hidden = true;
+                    }
                     const svgBlob = new Blob([data.svg], { type: 'image/svg+xml' });
                     const url = URL.createObjectURL(svgBlob);
                     downloadBtn.onclick = function() {
+                        const svgToDownload = currentShowAux && currentAuxSvg ? currentAuxSvg : currentBaseSvg;
+                        const blob = new Blob([svgToDownload], { type: 'image/svg+xml' });
+                        const dlUrl = URL.createObjectURL(blob);
                         const a = document.createElement('a');
-                        a.href = url;
+                        a.href = dlUrl;
                         a.download = 'drawing.svg';
                         a.click();
                     };

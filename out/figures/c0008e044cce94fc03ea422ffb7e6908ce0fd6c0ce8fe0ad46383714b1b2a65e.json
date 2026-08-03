@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": -1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 0,
+   "y": 2
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "point",
+   "id": "K",
+   "x": 0,
+   "y": -1.3333333333333333
+  },
+  {
+   "type": "point",
+   "id": "L",
+   "x": -2.5,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "P",
+   "x": -4.166666666666667,
+   "y": -1.3333333333333333
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "line": "KL"
+  },
+  {
+   "line": "BK"
+  },
+  {
+   "line": "CL"
+  },
+  {
+   "line": "KP",
+   "style": "soft"
+  },
+  {
+   "line": "LP",
+   "style": "soft"
+  },
+  {
+   "segment": "BP",
+   "style": "accent"
+  },
+  {
+   "segment": "CP",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

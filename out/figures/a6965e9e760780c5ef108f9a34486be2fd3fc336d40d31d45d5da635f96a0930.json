@@ -1,0 +1,67 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "incircle",
+   "id": "w1",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w1",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "wB",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "K",
+   "circle": "wB",
+   "line": "BC",
+   "pick": 1
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "ADK"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "segment": "CK",
+   "style": "dashed"
+  },
+  {
+   "circle": "w2",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BK",
+    "BA"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

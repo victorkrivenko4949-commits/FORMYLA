@@ -1,0 +1,191 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "foot",
+   "id": "A'",
+   "from": "I",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B'",
+   "from": "I",
+   "line": "CA"
+  },
+  {
+   "type": "foot",
+   "id": "C'",
+   "from": "I",
+   "line": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "G",
+   "line1": "AA'",
+   "line2": "BB'"
+  },
+  {
+   "type": "circumcircle",
+   "id": "wA",
+   "of": [
+    "G",
+    "A'",
+    "B'"
+   ]
+  },
+  {
+   "type": "circumcircle",
+   "id": "wB",
+   "of": [
+    "G",
+    "B'",
+    "C'"
+   ]
+  },
+  {
+   "type": "circumcircle",
+   "id": "wC",
+   "of": [
+    "G",
+    "C'",
+    "A'"
+   ]
+  },
+  {
+   "type": "line_circle",
+   "id": "C_A",
+   "circle": "wA",
+   "line": "AC",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "C_B",
+   "circle": "wA",
+   "line": "BC",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "A_B",
+   "circle": "wB",
+   "line": "AB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "A_C",
+   "circle": "wB",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "B_A",
+   "circle": "wC",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "B_C",
+   "circle": "wC",
+   "line": "BC",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "AA'",
+   "style": "soft"
+  },
+  {
+   "segment": "BB'",
+   "style": "soft"
+  },
+  {
+   "segment": "CC'",
+   "style": "soft"
+  },
+  {
+   "circle": "wA",
+   "style": "soft"
+  },
+  {
+   "circle": "wB",
+   "style": "soft"
+  },
+  {
+   "circle": "wC",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "I",
+    "A'",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "I",
+    "B'",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "I",
+    "C'",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AB'",
+    "AC'"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BA'",
+    "BC'"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CA'",
+    "CB'"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

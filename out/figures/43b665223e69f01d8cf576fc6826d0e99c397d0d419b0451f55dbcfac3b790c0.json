@@ -1,0 +1,124 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "c2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "C",
+   "circle1": "c1",
+   "circle2": "c2",
+   "pick": 1
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "AOB"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 210
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "CD",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BD"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "CD",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CA"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "proof_circle",
+   "of": "AOM",
+   "reason": "Окружность, проходящая через A, O, M (и, по утверждению, через N), для наглядности доказываемого факта."
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "proof_circle",
+   "style": "accent"
+  }
+ ]
+}

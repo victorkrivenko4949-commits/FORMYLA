@@ -1,0 +1,114 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point",
+   "id": "T",
+   "x": 1,
+   "y": 2
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 210
+  },
+  {
+   "type": "line_circle",
+   "id": "C",
+   "circle": "w",
+   "line": "TB",
+   "pick": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 0.391
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "TP",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "TA"
+  },
+  {
+   "line": "TB",
+   "style": "soft"
+  },
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "line": "TP",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "accent"
+  },
+  {
+   "segment": "PB",
+   "style": "accent"
+  },
+  {
+   "segment": "QC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "A",
+    "T"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "T",
+    "P"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "P",
+    "T",
+    "C"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

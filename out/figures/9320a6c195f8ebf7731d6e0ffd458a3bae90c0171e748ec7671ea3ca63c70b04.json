@@ -1,0 +1,72 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ADE",
+   "kind": "isosceles"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "C",
+   "of": "AE",
+   "ratio": 0.7
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AD"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ADE"
+  },
+  {
+   "type": "reflect_line",
+   "id": "B",
+   "of": "C",
+   "over": "MO"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "ADE"
+  },
+  {
+   "line": "CD",
+   "style": "accent"
+  },
+  {
+   "line": "BE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "E"
+   ]
+  },
+  {
+   "equal": [
+    "AD",
+    "DE"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AB",
+    "CD"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

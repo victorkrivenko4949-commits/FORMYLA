@@ -1,0 +1,79 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Gamma",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AO",
+   "line2": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "AC",
+   "ratio": 0.35
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "AOF"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "omega",
+   "line": "AB",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "Gamma",
+   "style": "soft"
+  },
+  {
+   "line": "AO",
+   "style": "soft"
+  },
+  {
+   "circle": "omega",
+   "style": "dashed"
+  },
+  {
+   "segment": "PE",
+   "style": "accent"
+  },
+  {
+   "segment": "PF",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "PE",
+    "PF"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

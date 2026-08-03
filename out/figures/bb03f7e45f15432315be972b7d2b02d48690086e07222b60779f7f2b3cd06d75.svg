@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="224.9,424.3 128.2,402.8 60.0,523.4" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="224.9" y1="424.3" x2="358.8" y2="297.8" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="128.2" y1="402.8" x2="560.0" y2="96.6" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="60.0" y1="523.4" x2="425.9" y2="499.0" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="830.2" y1="558.5" x2="-477.1" y2="268.6" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="6 5"/>
+<polyline points="349.4,306.8 337.5,312.1 347.0,303.2" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<polyline points="550.7,105.7 540.1,113.2 549.4,104.2" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<polyline points="412.9,499.9 400.7,495.4 413.7,494.5" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
+<circle cx="224.9" cy="424.3" r="3.4" fill="#E6EBF7"/>
+<text x="230.1" y="449.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="128.2" cy="402.8" r="3.4" fill="#E6EBF7"/>
+<text x="110.9" y="398.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="60.0" cy="523.4" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="539.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="358.8" cy="297.8" r="3.4" fill="#E6EBF7"/>
+<text x="372.9" y="289.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+<circle cx="560.0" cy="96.6" r="3.4" fill="#E6EBF7"/>
+<text x="574.1" y="88.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">N</text>
+<circle cx="425.9" cy="499.0" r="3.4" fill="#E6EBF7"/>
+<text x="440.0" y="519.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">K</text>
+</svg>

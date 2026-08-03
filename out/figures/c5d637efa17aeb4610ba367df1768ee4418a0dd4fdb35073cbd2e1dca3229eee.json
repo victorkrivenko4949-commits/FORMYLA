@@ -1,0 +1,60 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BC",
+   "ratio": 0.6666666667
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AD",
+   "ratio": 0.3333333333
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "KM",
+   "style": "dashed"
+  },
+  {
+   "polygon": "COD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "C",
+    "A",
+    "D"
+   ],
+   "text": "cos∠CAD=1/3"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

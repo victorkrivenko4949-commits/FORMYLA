@@ -1,0 +1,71 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w",
+   "line": "BO",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "BD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "AD",
+   "from": "A",
+   "to": "D"
+  },
+  {
+   "type": "segment",
+   "id": "CD",
+   "from": "C",
+   "to": "D"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AD",
+   "style": "accent"
+  },
+  {
+   "segment": "CD",
+   "style": "accent"
+  }
+ ]
+}

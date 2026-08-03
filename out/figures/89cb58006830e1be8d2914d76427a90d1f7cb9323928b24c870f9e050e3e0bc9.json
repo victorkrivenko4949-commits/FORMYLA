@@ -1,0 +1,136 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
+  },
+  {
+   "type": "incenter",
+   "id": "I1",
+   "of": "DAC"
+  },
+  {
+   "type": "incenter",
+   "id": "I2",
+   "of": "DBC"
+  },
+  {
+   "type": "incenter",
+   "id": "I3",
+   "of": "ACB"
+  },
+  {
+   "type": "incenter",
+   "id": "I4",
+   "of": "ADB"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AI1",
+   "line2": "BI2"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BI2",
+   "line2": "CI3"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "CI3",
+   "line2": "DI4"
+  },
+  {
+   "type": "intersection",
+   "id": "S",
+   "line1": "DI4",
+   "line2": "AI1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "line": "AI1",
+   "style": "accent"
+  },
+  {
+   "line": "BI2",
+   "style": "accent"
+  },
+  {
+   "line": "CI3",
+   "style": "accent"
+  },
+  {
+   "line": "DI4",
+   "style": "accent"
+  },
+  {
+   "polygon": "PQRS",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "D",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "D",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "A",
+    "D",
+    "B"
+   ],
+   "text": "β"
+  },
+  {
+   "equal": [
+    "SP",
+    "PQ"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "PQ",
+    "QR"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,196 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 156
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 246
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 280
+  },
+  {
+   "type": "midpoint",
+   "id": "Mab",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "Mcd",
+   "of": "CD"
+  },
+  {
+   "type": "midpoint",
+   "id": "Mbc",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "Mad",
+   "of": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "Mac",
+   "of": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "Mbd",
+   "of": "BD"
+  },
+  {
+   "type": "circle",
+   "id": "wAB",
+   "center": "Mab",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "wCD",
+   "center": "Mcd",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "wBC",
+   "center": "Mbc",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "wAD",
+   "center": "Mad",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "wAC",
+   "center": "Mac",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "wBD",
+   "center": "Mbd",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "X1",
+   "circle1": "wAB",
+   "circle2": "wCD",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "Y1",
+   "circle1": "wAB",
+   "circle2": "wCD",
+   "pick": 1
+  },
+  {
+   "type": "circle_circle",
+   "id": "X2",
+   "circle1": "wBC",
+   "circle2": "wAD",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "Y2",
+   "circle1": "wBC",
+   "circle2": "wAD",
+   "pick": 1
+  },
+  {
+   "type": "circle_circle",
+   "id": "X3",
+   "circle1": "wAC",
+   "circle2": "wBD",
+   "pick": 0
+  },
+  {
+   "type": "circle_circle",
+   "id": "Y3",
+   "circle1": "wAC",
+   "circle2": "wBD",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "circle": "wAB",
+   "style": "dashed"
+  },
+  {
+   "circle": "wCD",
+   "style": "dashed"
+  },
+  {
+   "circle": "wBC",
+   "style": "dashed"
+  },
+  {
+   "circle": "wAD",
+   "style": "dashed"
+  },
+  {
+   "circle": "wAC",
+   "style": "dashed"
+  },
+  {
+   "circle": "wBD",
+   "style": "dashed"
+  },
+  {
+   "line": "X1Y1",
+   "style": "accent"
+  },
+  {
+   "line": "X2Y2",
+   "style": "accent"
+  },
+  {
+   "line": "X3Y3",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

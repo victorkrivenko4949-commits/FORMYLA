@@ -98,6 +98,53 @@ app = Flask(__name__)
 from services.security import init_security, sanitize_text, sanitize_json_payload, get_csrf_token
 init_security(app)
 
+# ─── V9: Centralised build info (one source for /__version, footer, cache-bust) ──
+import subprocess as _sp
+from datetime import datetime, timezone as _tz
+
+_BUILD_TIME = datetime.now(_tz.utc).isoformat()
+
+def _get_commit_info():
+    """Returns (commit, source, branch) — computed once at module load."""
+    # 1. RENDER_GIT_COMMIT env (Render deployment)
+    commit = os.environ.get("RENDER_GIT_COMMIT")
+    if commit:
+        branch = os.environ.get("RENDER_GIT_BRANCH", "")
+        if not branch:
+            try:
+                branch = _sp.run(
+                    ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                    capture_output=True, text=True, timeout=5
+                ).stdout.strip()
+            except Exception:
+                branch = "unknown"
+        return commit, "render_env", branch or "unknown"
+
+    # 2. Local git
+    try:
+        commit = _sp.run(
+            ['git', 'rev-parse', 'HEAD'],
+            capture_output=True, text=True, timeout=5
+        ).stdout.strip()
+        if commit:
+            branch = ""
+            try:
+                branch = _sp.run(
+                    ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                    capture_output=True, text=True, timeout=5
+                ).stdout.strip()
+            except Exception:
+                branch = "unknown"
+            return commit, "git_local", branch or "unknown"
+    except Exception:
+        pass
+
+    return "unknown", "unknown", "unknown"
+
+_BUILD_COMMIT, _BUILD_COMMIT_SOURCE, _BUILD_BRANCH = _get_commit_info()
+_BUILD_COMMIT_SHORT = _BUILD_COMMIT[:8] if _BUILD_COMMIT != "unknown" else "unknown"
+
+
 # ─── Логгер: пишем в файл вместо stderr ────────────────────────────
 # На Windows debug=True + werkzeug debugger перехватывает stderr,
 # что вызывает OSError: [Errno 22] Invalid argument при любом выводе
@@ -147,21 +194,16 @@ else:
     app.secret_key = 'dev-secret-key-LOCAL-ONLY-NOT-FOR-PRODUCTION'
     print("⚠️  WARNING: Используется дефолтный SECRET_KEY (только для локальной разработки!)")
 
-# Asset versioning for cache busting — based on file mtime so it auto-updates
-# when static files change, without requiring a server restart.
-_asset_version = None
+# V9: Asset versioning for cache busting — driven by commit hash,
+# same as /__version and footer. One source, all consumers agree.
 @app.context_processor
 def _inject_asset_version():
-    global _asset_version
-    import os, time as _time
-    try:
-        mtime = os.path.getmtime(os.path.join(os.path.dirname(__file__), 'static', 'js', 'drawing.js'))
-        new_ver = str(int(mtime))
-    except Exception:
-        new_ver = str(int(_time.time()))
-    if new_ver != _asset_version:
-        _asset_version = new_ver
-    return dict(asset_version=_asset_version, csrf_token=get_csrf_token)
+    return dict(asset_version=_BUILD_COMMIT_SHORT,
+                build_commit=_BUILD_COMMIT,
+                build_commit_short=_BUILD_COMMIT_SHORT,
+                build_branch=_BUILD_BRANCH,
+                build_time=_BUILD_TIME,
+                csrf_token=get_csrf_token)
 
 # ─── P12 TASK3: Валидация критических переменных окружения ──────────
 # Каждый ключ читается ТОЛЬКО из os.environ. При отсутствии пишем
@@ -303,6 +345,39 @@ from models import (
 )
 from models_curator import CuratorState, Subtopic, SubtopicProgress  # noqa: F401
 init_db(app)
+
+
+# V10: Unified auto-migration (runs before all individual AUTO-MIGRATION blocks).
+# Creates missing tables and adds missing columns for ALL registered models.
+# Idempotent — safe to run on every startup.
+# Individual AUTO-MIGRATION blocks below are kept as no-ops for backward compatibility.
+#
+# Import ALL model modules before auto_migrate so their tables/columns are in
+# SQLAlchemy metadata. Otherwise auto_migrate cannot see tables defined in
+# blueprints (daily_tasks, curator, grade, olympiad, etc.).
+try:
+    import daily_tasks.models          # noqa: F401  — DailyTaskSet, DailyTaskItem, DailyGenerationJob
+    import models_olympiad             # noqa: F401  — Probnik, OlympiadTask, etc. (re-imported by models.py too)
+    try:
+        import models_grade            # noqa: F401  — grade 5-6 models
+    except ImportError:
+        pass
+except Exception:
+    pass
+
+try:
+    from services.auto_migrate import auto_migrate
+    _v10_created, _v10_added = auto_migrate(app, db)
+    if _v10_created:
+        print(f"[AUTO-MIGRATE/V10] Created tables: {_v10_created}")
+    if _v10_added:
+        print(f"[AUTO-MIGRATE/V10] Added columns: {_v10_added}")
+    if not _v10_created and not _v10_added:
+        print("[AUTO-MIGRATE/V10] Schema up-to-date — nothing to do")
+except Exception as _e_v10:
+    import traceback as _tb_v10
+    print(f"[AUTO-MIGRATE/V10] ERROR: {_e_v10}")
+    print(_tb_v10.format_exc())
 
 
 # AUTO-MIGRATION: Add agent_type column if it doesn't exist
@@ -1242,6 +1317,14 @@ try:
     print("[BP] figures_bp registered (/figures)")
 except Exception as _e:
     print(f"[BP] figures_bp NOT registered: {_e}")
+
+# CH5: New figure generation pipeline with its own /figures/generate prefix.
+try:
+    from routes.figures_generator import figures_gen_bp
+    app.register_blueprint(figures_gen_bp)
+    print("[BP] figures_gen_bp registered (/figures/generate)")
+except Exception as _e:
+    print(f"[BP] figures_gen_bp NOT registered: {_e}")
 
 # Whiteboard 1-to-1 video call signalling (WebRTC, no SocketIO).
 try:
@@ -3036,47 +3119,36 @@ def healthz():
 
 @app.route("/__version")
 def __version():
-    """Returns the deployed git commit SHA so we can verify Render builds.
-
-    Reads from (in order):
-      1. env RENDER_GIT_COMMIT (set automatically by Render),
-      2. env GIT_COMMIT (manual override),
-      3. file `.git/HEAD` resolved (local dev).
+    """V9: Full build info — commit, source, branch, build_time, schema_version,
+    applied_migrations. All data from one central source (module-level globals).
 
     Cache-busting: no-store. Public endpoint (no auth required).
     """
-    import os as _os
-    sha = (
-        _os.environ.get("RENDER_GIT_COMMIT")
-        or _os.environ.get("GIT_COMMIT")
-        or ""
-    )
-    if not sha:
-        try:
-            _root = _os.path.dirname(_os.path.abspath(__file__))
-            _head = _os.path.join(_root, ".git", "HEAD")
-            if _os.path.isfile(_head):
-                with open(_head, "r", encoding="utf-8") as _f:
-                    head_data = _f.read().strip()
-                if head_data.startswith("ref:"):
-                    ref_path = _os.path.join(_root, ".git", head_data.split(" ", 1)[1])
-                    if _os.path.isfile(ref_path):
-                        with open(ref_path, "r", encoding="utf-8") as _f2:
-                            sha = _f2.read().strip()
-                else:
-                    sha = head_data
-        except Exception:
-            sha = ""
-    sha_short = (sha or "unknown")[:12]
+    schema_version = "unknown"
+    try:
+        import sqlite3 as _sq
+        _db_path = os.path.join(os.path.dirname(__file__), 'instance', 'formyla.db')
+        _conn = _sq.connect(_db_path)
+        _row = _conn.execute("SELECT version_num FROM alembic_version").fetchone()
+        if _row and _row[0]:
+            schema_version = _row[0]
+        _conn.close()
+    except Exception:
+        schema_version = "unknown"
+
+    # applied_migrations: list of migration filenames that the in-app auto-migration
+    # system has tracked as applied. The system does NOT maintain a separate registry
+    # of applied migration files — only alembic_version tracks the current HEAD.
+    # Therefore we report from alembic_version only, plus a note.
+    applied = [schema_version] if schema_version != "unknown" else []
+
     payload = {
-        "sha": sha or "unknown",
-        "sha_short": sha_short,
-        "source": (
-            "render_env" if _os.environ.get("RENDER_GIT_COMMIT")
-            else "git_env" if _os.environ.get("GIT_COMMIT")
-            else "git_head_file" if sha
-            else "unknown"
-        ),
+        "commit": _BUILD_COMMIT,
+        "commit_source": _BUILD_COMMIT_SOURCE,
+        "build_time": _BUILD_TIME,
+        "branch": _BUILD_BRANCH,
+        "schema_version": schema_version,
+        "applied_migrations": applied,
     }
     return (
         payload,

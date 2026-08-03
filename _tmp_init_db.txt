@@ -1,0 +1,6 @@
+def init_db(app):
+    """Инициализация базы данных"""
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+        print("✅ База данных инициализирована")

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="205.2,253.3 210.3,398.4 378.5,330.5" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<circle cx="277.8" cy="323.4" r="100.9" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<circle cx="205.2" cy="253.3" r="145.2" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<circle cx="378.5" cy="330.5" r="181.5" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="210.3" y1="398.4" x2="316.5" y2="160.0" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<polygon points="350.5,253.3 221.4,239.7 316.5,160.0" fill="none" stroke="#4C7DFF" stroke-width="2.0" stroke-linejoin="round"/>
+<circle cx="205.2" cy="253.3" r="3.4" fill="#E6EBF7"/>
+<text x="185.9" y="254.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="210.3" cy="398.4" r="3.4" fill="#E6EBF7"/>
+<text x="200.3" y="421.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="378.5" cy="330.5" r="3.4" fill="#E6EBF7"/>
+<text x="395.9" y="346.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="277.8" cy="323.4" r="3.4" fill="#E6EBF7"/>
+<text x="267.8" y="346.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Oc</text>
+<circle cx="350.5" cy="253.3" r="3.4" fill="#E6EBF7"/>
+<text x="369.8" y="254.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="221.4" cy="239.7" r="3.4" fill="#E6EBF7"/>
+<text x="204.1" y="235.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">E</text>
+<circle cx="316.5" cy="160.0" r="3.4" fill="#E6EBF7"/>
+<text x="321.7" y="146.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">F</text>
+<circle cx="288.4" cy="223.0" r="3.4" fill="#E6EBF7"/>
+<text x="307.7" y="234.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+</svg>

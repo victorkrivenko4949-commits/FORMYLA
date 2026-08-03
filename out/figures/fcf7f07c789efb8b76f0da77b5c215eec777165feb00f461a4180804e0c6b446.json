@@ -1,0 +1,111 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AI",
+   "ratio": 0.6
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "ABP"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "ACP"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w1",
+   "line": "MP",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w2",
+   "line": "MP",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AP"
+  },
+  {
+   "line": "MP",
+   "style": "soft"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "segment": "DP",
+   "style": "accent"
+  },
+  {
+   "segment": "PE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "P"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "P"
+   ],
+   "text": "α"
+  },
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "DP",
+    "PE"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

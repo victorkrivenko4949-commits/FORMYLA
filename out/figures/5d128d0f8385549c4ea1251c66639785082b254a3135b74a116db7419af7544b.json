@@ -1,0 +1,98 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "CI",
+   "line2": "AB"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "FBC"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "AC",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "BE",
+   "line2": "CF"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CF",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  },
+  {
+   "segment": "FE",
+   "style": "accent"
+  },
+  {
+   "segment": "FB",
+   "style": "accent"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "FB",
+    "FE"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "F"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "F",
+    "C",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "F",
+    "B",
+    "E"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

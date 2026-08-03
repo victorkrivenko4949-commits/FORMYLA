@@ -1,0 +1,61 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "AOC",
+   "kind": "right"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AO",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B",
+   "of": "AO",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "OC",
+   "ratio": 0.3
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "AOC"
+  },
+  {
+   "polygon": "BOD"
+  },
+  {
+   "line": "AB",
+   "style": "soft"
+  },
+  {
+   "line": "CD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "O",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "O",
+    "D"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

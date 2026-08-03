@@ -81,7 +81,12 @@ class User(UserMixin, db.Model):
 
     # Состояние диагностической анкеты (JSON), чтобы не хранить в cookie-сессии
     questionnaire_state = db.Column(db.Text, nullable=True)
-    
+
+    # CH10: Kimi review toggles per surface
+    kimi_review_probe = db.Column(db.Boolean, default=False, server_default='0')
+    kimi_review_daily = db.Column(db.Boolean, default=False, server_default='0')
+    kimi_review_method = db.Column(db.Boolean, default=False, server_default='0')
+
     @property
     def is_admin(self):
         """Админ — user_id == 1 (Victor), email в whitelist или nickname в whitelist.
@@ -876,6 +881,10 @@ class AdaptiveTask(db.Model):
     # Статусы: no_description, has_description, figure_built,
     #          engine_rejected, human_verified, human_rejected
     figure_status = db.Column(db.String(32), nullable=False, default='no_description', index=True)
+    # CH8: aux figure (чертёж с дополнительными построениями)
+    aux_svg_path = db.Column(db.Text, nullable=True)
+    has_aux = db.Column(db.Boolean, nullable=False, default=False)
+    aux_reason = db.Column(db.Text, nullable=True)
 
     def to_dict(self):
         """Конвертация в словарь для JSON"""
@@ -1696,6 +1705,49 @@ class FigureJob(db.Model):
         )
 
 
+class FigureBuildJob(db.Model):
+    """CH5: Background figure build queue (new /figures/generate pipeline).
+
+    Статусы: queued -> thinking -> drawing -> done | failed.
+    Кредит списывается только в момент перехода в done (флаг credit_charged).
+    Хранится в БД, а не в памяти процесса — переживает перезапуск.
+    """
+    __tablename__ = 'figure_build_jobs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                        nullable=False, index=True)
+    problem_text = db.Column(db.Text, nullable=False)
+    status = db.Column(
+        db.String(20), nullable=False, default='queued', index=True,
+    )  # queued | thinking | drawing | done | failed
+    model_name = db.Column(db.String(120), nullable=True)
+    svg_path = db.Column(db.Text, nullable=True)
+    aux_svg_path = db.Column(db.Text, nullable=True)
+    has_aux = db.Column(db.Boolean, nullable=False, default=False)
+    aux_reason = db.Column(db.Text, nullable=True)
+    error = db.Column(db.Text, nullable=True)
+    credit_charged = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False, index=True,
+    )
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('figure_build_jobs', lazy='dynamic'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<FigureBuildJob id={self.id} user={self.user_id} '
+            f'status={self.status}>'
+        )
+
+
 class SolutionAttempt(db.Model):
     """D9: solution method for morning probe tasks (text or photo)."""
     __tablename__ = 'solution_attempts'
@@ -1714,3 +1766,19 @@ class SolutionAttempt(db.Model):
 
     def __repr__(self):
         return f'<SolutionAttempt id={self.id} user={self.user_id} type={self.attempt_type}>'
+
+
+class KimiReview(db.Model):
+    """CH10: Kimi K2.5 review of a solution attempt."""
+    __tablename__ = 'kimi_reviews'
+
+    id = db.Column(db.Integer, primary_key=True)
+    solution_attempt_id = db.Column(db.Integer, db.ForeignKey('solution_attempts.id'), nullable=False, index=True)
+    raw_response = db.Column(db.Text, nullable=True)
+    label = db.Column(db.String(128), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    solution_attempt = db.relationship('SolutionAttempt', backref=db.backref('kimi_reviews', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<KimiReview id={self.id} attempt={self.solution_attempt_id} label={self.label}>'

@@ -1,0 +1,117 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "w",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "PC"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w",
+   "line": "AD",
+   "pick": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "P",
+   "over": "A"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "AN"
+  },
+  {
+   "segment": "NM"
+  },
+  {
+   "segment": "NC"
+  },
+  {
+   "segment": "CM",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AC",
+    "AM"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "M"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "M",
+    "A",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "A",
+    "N",
+    "M"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "C",
+    "N",
+    "M"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "N",
+   "over": "C",
+   "reason": "Точка K на продолжении NC за C: из равенства расстояний от M до AC и NC следует, что M лежит на биссектрисе угла ACK."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CK",
+   "style": "dashed"
+  }
+ ]
+}

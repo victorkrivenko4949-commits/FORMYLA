@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 3,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 3,
+   "y": 2
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 0,
+   "y": 2
+  },
+  {
+   "type": "midpoint",
+   "id": "C",
+   "of": "BD"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "DF",
+   "ratio": 0.6666666666666666
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABDF"
+  },
+  {
+   "polygon": "ABC",
+   "style": "dashed"
+  },
+  {
+   "polygon": "CDE",
+   "style": "dashed"
+  },
+  {
+   "polygon": "AFE",
+   "style": "dashed"
+  },
+  {
+   "polygon": "AEC",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "F",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "D",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "E",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AF",
+    "DE"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "FE",
+    "DC"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "E",
+    "A",
+    "C"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "E"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -2,7 +2,7 @@
 {% block title %}Твоя поддержка — FORMYLA{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/support_chat.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/support_chat.css') }}?v={{ asset_version }}">
 {% endblock %}
 
 {% block content %}
@@ -92,5 +92,5 @@
     {% endif %}
 </div>
 
-<script src="{{ url_for('static', filename='js/support_chat.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/support_chat.js') }}?v={{ asset_version }}" defer></script>
 {% endblock %}

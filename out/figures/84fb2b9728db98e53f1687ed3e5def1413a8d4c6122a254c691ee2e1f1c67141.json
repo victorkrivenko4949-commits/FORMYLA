@@ -1,0 +1,118 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "K",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "L",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "M",
+   "x": 1.5,
+   "y": 0.8660254038
+  },
+  {
+   "type": "point",
+   "id": "N",
+   "x": 0.5,
+   "y": 0.8660254038
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "KM",
+   "line2": "LN"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "O",
+   "line": "KL"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "P"
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "LM"
+  },
+  {
+   "type": "midpoint",
+   "id": "R",
+   "of": "MN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "KLMN"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "PQ"
+  },
+  {
+   "segment": "KR"
+  },
+  {
+   "segment": "QR",
+   "style": "accent"
+  },
+  {
+   "segment": "OP",
+   "style": "soft"
+  },
+  {
+   "segment": "KM",
+   "style": "dashed"
+  },
+  {
+   "segment": "LN",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "KL",
+    "LM"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "LM",
+    "MN"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "MN",
+    "NK"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "O",
+    "P",
+    "K"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

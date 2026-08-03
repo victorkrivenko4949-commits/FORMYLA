@@ -1,0 +1,75 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ADCE",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AD",
+   "ratio": 0.85
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ACX"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "B",
+   "of": "MO",
+   "ratio": 0.6
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BH",
+   "style": "soft"
+  },
+  {
+   "segment": "HD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "H",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

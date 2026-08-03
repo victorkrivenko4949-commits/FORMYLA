@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+{% block title %}
+{%- if theory -%}
+    Метод {{ theory.method_code }} — {{ theory.method_name }}
+{%- else -%}
+    {{ blocks|length if blocks is defined and blocks else 'Все' }} методов олимпиадной математики — FORMYLA
+{%- endif -%}
+{% endblock %}
+
+{% block extra_css %}{% include 'olympiad/_base_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="oly-wrap">
+
+    {# ── 1) CATALOG MODE (sections != None) ──────────────────────────────── #}
+    {% if sections is not none %}
+    {% set section_labels = {
+        'A': 'Алгебра (A)',
+        'B': 'Логика (B)',
+        'C': 'Алгебра (C)',
+        'D': 'Теория чисел (D)',
+        'E': 'Комбинаторика (E)',
+        'F': 'Геометрия (F)',
+        'G': 'Алгебра (G)',
+        'H': 'Прочее (H)',
+    } %}
+    <header class="oly-hero">
+        <h1>📚 {{ blocks|length if blocks is defined and blocks else '' }} методов олимпиадной математики</h1>
+        <p>Полный справочник базовых приёмов решения задач ВсОШ и других олимпиад по математике.</p>
+        {% if blocks is defined %}
+        <p class="oly-card-sub" style="margin-top:8px;">
+            Всего методов: <strong>{{ blocks|length }}</strong>
+            {% if total_methods is defined %} ·
+            <a href="{{ url_for('olympiad_prep.index') }}" style="color: var(--accent);">Курсы олимпиадной подготовки →</a>
+            {% endif %}
+        </p>
+        {% endif %}
+    </header>
+
+    {# ── Inline стили для каталога с группировкой по разделам ── #}
+    <style>
+      html { scroll-behavior: smooth; }
+
+      .methods-section {
+        max-width: 900px;
+        margin: 0 auto 28px;
+        scroll-margin-top: 90px; /* отступ при якорной прокрутке (учёт sticky-нав) */
+      }
+      .methods-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--border-soft, rgba(255,255,255,0.08));
+      }
+      .methods-section-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-main);
+      }
+      .methods-section-header .count-badge {
+        background: var(--accent, #38bdf8);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 12px;
+      }
+      .methods-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .methods-list .oly-card {
+        display: block;
+        padding: 12px 18px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .methods-list .oly-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(56,189,248,0.15);
+      }
+      .methods-list .oly-card h3 {
+        margin: 0 0 3px;
+        font-size: 15px;
+      }
+      .methods-list .oly-card .oly-card-sub {
+        font-size: 13px;
+      }
+
+      /* ── Quick-jump nav: кнопки A/B/C/... с названиями разделов ── */
+      .methods-quicknav {
+        position: sticky;
+        top: 64px; /* под основным header'ом сайта; при необходимости подкрутить */
+        z-index: 20;
+        max-width: 900px;
+        margin: 0 auto 24px;
+        padding: 10px 12px;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--border-soft, rgba(255,255,255,0.08));
+        border-radius: 14px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      }
+      .methods-quicknav-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted, #94a3b8);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 0 0 8px 4px;
+      }
+      .methods-quicknav-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .methods-quicknav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px 7px 8px;
+        background: rgba(56,189,248,0.08);
+        border: 1px solid rgba(56,189,248,0.25);
+        border-radius: 10px;
+        color: var(--text-main, #e2e8f0);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      }
+      .methods-quicknav-btn:hover {
+        background: rgba(56,189,248,0.18);
+        border-color: rgba(56,189,248,0.5);
+        transform: translateY(-1px);
+      }
+      .methods-quicknav-btn .qn-letter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        height: 22px;
+        padding: 0 6px;
+        background: var(--accent, #38bdf8);
+        color: #0b1220;
+        font-weight: 800;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+      .methods-quicknav-btn .qn-count {
+        font-size: 11px;
+        color: var(--text-muted, #94a3b8);
+        font-weight: 600;
+      }
+      @media (max-width: 600px) {
+        .methods-quicknav { top: 56px; padding: 8px 10px; }
+        .methods-quicknav-btn { font-size: 12px; padding: 6px 10px 6px 6px; }
+        .methods-quicknav-btn .qn-letter { min-width: 22px; height: 20px; font-size: 11px; }
+      }
+    </style>
+
+    {% if blocks %}
+        {% set sorted_sections = sections.items() | list %}
+
+        {# ── Быстрая навигация: клик по букве — переход к разделу ── #}
+        <nav class="methods-quicknav" aria-label="Быстрый переход к разделу">
+            <p class="methods-quicknav-title">Перейти к разделу</p>
+            <div class="methods-quicknav-list">
+                {% for section_slug, section_blocks in sorted_sections %}
+                {% set _full_label = section_labels.get(section_slug, 'Раздел ' + section_slug) %}
+                {# Берём название до скобки, чтобы не дублировать букву #}
+                {% set _short_label = _full_label.split('(')[0]|trim %}
+                <a class="methods-quicknav-btn"
+                   href="#section-{{ section_slug }}"
+                   title="{{ _full_label }} — {{ section_blocks|length }} методов">
+                    <span class="qn-letter">{{ section_slug }}</span>
+                    <span class="qn-name">{{ _short_label }}</span>
+                    <span class="qn-count">{{ section_blocks|length }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </nav>
+
+        {% for section_slug, section_blocks in sorted_sections %}
+        <div class="methods-section" id="section-{{ section_slug }}">
+            <div class="methods-section-header">
+                <h2>{{ section_labels.get(section_slug, 'Раздел ' + section_slug) }}</h2>
+                <span class="count-badge">{{ section_blocks|length }}</span>
+            </div>
+            <div class="methods-list">
+                {% for tb in section_blocks %}
+                <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
+                    <h3>
+                        <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
+                        {{ tb.method_name }}
+                    </h3>
+                    {% if tb.frequency_vsosh_9 %}
+                    <p class="oly-card-sub" style="margin:0;">
+                        Частота на ВсОШ-9: <strong>{{ tb.frequency_vsosh_9 }}×</strong>
+                        {% if tb.difficulty_level %} · Сложность: {{ tb.difficulty_level }}/5{% endif %}
+                    </p>
+                    {% elif tb.difficulty_level %}
+                    <p class="oly-card-sub" style="margin:0;">Сложность: {{ tb.difficulty_level }}/5</p>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="oly-card" style="text-align:center; padding: 40px 20px;">
+            <p style="margin:0; color: var(--text-muted);">Методы скоро появятся.</p>
+        </div>
+    {% endif %}
+
+    {# ── 2) DETAIL MODE ─────────────────────────────────────────────────── #}
+    {% else %}
+    <p style="margin-bottom: 12px;">
+        <a href="{{ url_for('olympiad.methods') }}" class="oly-btn-ghost oly-btn oly-btn-sm">← к каталогу методов</a>
+    </p>
+
+    <header style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 6px;">
+            <span class="oly-badge oly-badge-topic">{{ theory.method_code }}</span>
+            {{ theory.method_name }}
+        </h1>
+        <p class="oly-card-sub" style="margin:0;">
+            {% if theory.section %}Раздел: {{ theory.section }}{% endif %}
+            {% if theory.grades %} · Классы: {% if theory.grades is iterable and theory.grades is not string %}{{ theory.grades|join(', ') }}{% else %}{{ theory.grades }}{% endif %}{% endif %}
+            {% if theory.difficulty_level %} · Сложность: {{ theory.difficulty_level }}/5{% endif %}
+            {% if theory.frequency_vsosh_9 %} · На ВсОШ-9: {{ theory.frequency_vsosh_9 }}×{% endif %}
+        </p>
+        {% if theory.recommended_competitions %}
+        <p class="oly-card-sub" style="margin:4px 0 0;">Рекомендуется для: {% if theory.recommended_competitions is iterable and theory.recommended_competitions is not string %}{{ theory.recommended_competitions|join(', ') }}{% else %}{{ theory.recommended_competitions }}{% endif %}</p>
+        {% endif %}
+    </header>
+
+    {# ── Полный конспект метода: все разделы из БД ─────────────────── #}
+    {# Каждый раздел рендерится только если поле непустое.            #}
+    {% set _has_any = (
+        theory.definition_md or theory.main_theorems_md or
+        theory.typical_techniques_md or theory.triggers_md or
+        theory.worked_example_md or theory.pitfalls_md or
+        theory.why_it_works_md
+    ) %}
+
+    {% if not _has_any %}
+    <section class="oly-card">
+        <p style="margin:0; color: var(--text-muted);">📚 Полный конспект будет добавлен.</p>
+    </section>
+    {% endif %}
+
+    {% if theory.definition_md %}
+    <section class="oly-card">
+        <h2 style="margin-top:0;">📖 Определение</h2>
+        <div class="oly-md">{{ theory.definition_md | md_render | inject_geometry(theory.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if theory.main_theorems_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">📐 Главные теоремы и формулы</h2>
+        <div class="oly-md">{{ theory.main_theorems_md | md_render | inject_geometry(theory.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if theory.typical_techniques_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">💡 Типичные техники</h2>
+        <div class="oly-md">{{ theory.typical_techniques_md | md_render | inject_geometry(theory.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if theory.triggers_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🎯 Когда применять (триггеры)</h2>
+        <div class="oly-md">{{ theory.triggers_md | md_render | inject_geometry(theory.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if theory.worked_example_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">✅ Разобранный пример</h2>
+        <div class="oly-md">{{ theory.worked_example_md | md_render | inject_geometry(theory.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if theory.pitfalls_md %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">⚠️ Подводные камни</h2>
+        <div class="oly-md">{{ theory.pitfalls_md | md_render | inject_geometry(theory.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {# ── 5 новых разделов из methods_final.json ────────────────────── #}
+
+    {% if theory.why_it_works_md %}
+    <section class="oly-card oly-card-why" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">💡 Почему это работает</h2>
+        <div class="oly-md">{{ theory.why_it_works_md | md_render | inject_geometry(theory.method_code) }}</div>
+    </section>
+    {% endif %}
+
+    {% if theory.signal_phrases %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🏷️ Фразы-сигналы</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            Если в условии задачи встречаются эти слова или фразы — попробуйте применить метод.
+        </p>
+        <div class="oly-signal-badges">
+            {% for phrase in theory.signal_phrases %}
+            <span class="oly-badge oly-badge-signal">{{ phrase }}</span>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if theory.first_moves %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🚀 Первые шаги</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            С чего начать, если вы решили применить этот метод.
+        </p>
+        <ol class="oly-moves-list">
+            {% for step in theory.first_moves %}
+            <li>{{ step | md_render }}</li>
+            {% endfor %}
+        </ol>
+    </section>
+    {% endif %}
+
+    {% if theory.prerequisites %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">📋 Предварительные требования</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            Перед изучением этого метода рекомендуется освоить:
+        </p>
+        <div class="oly-prereq-chain">
+            {% for code in theory.prerequisites %}
+            <a class="oly-badge oly-badge-prereq" href="{{ url_for('olympiad.method_detail', method_code=code) }}">
+                {{ code }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if theory.leads_to %}
+    <section class="oly-card" style="margin-top: 16px;">
+        <h2 style="margin-top:0;">🎯 К чему приводит</h2>
+        <p class="oly-card-sub" style="margin-top:-8px; margin-bottom:12px;">
+            Освоив этот метод, вы сможете перейти к:
+        </p>
+        <div class="oly-prereq-chain">
+            {% for code in theory.leads_to %}
+            <a class="oly-badge oly-badge-leads" href="{{ url_for('olympiad.method_detail', method_code=code) }}">
+                {{ code }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if related %}
+    <h2 class="oly-section-title"> Связанные методы</h2>
+    <div class="oly-grid">
+        {% for tb in related %}
+        <a class="oly-card" href="{{ url_for('olympiad.method_detail', method_code=tb.method_code) }}">
+            <h3>
+                <span class="oly-badge oly-badge-topic">{{ tb.method_code }}</span>
+                {{ tb.method_name }}
+            </h3>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if linked_tasks %}
+    <h2 class="oly-section-title">📘 Реальные задачи ВсОШ-9, использующие метод «{{ theory.method_code }}»</h2>
+    <p class="oly-card-sub" style="margin-bottom: 12px;">
+        Найдено <strong>{{ linked_tasks|length }}</strong> задач в архиве ВсОШ-9 (2010).
+    </p>
+    <div class="oly-grid">
+        {% for t in linked_tasks %}
+        <a class="oly-card" href="{{ url_for('olympiad.task', task_id=t.id) }}">
+            <h3 style="margin: 0 0 4px;">
+                <span class="oly-badge oly-badge-topic">{{ t.number }}</span>
+                {% if t.probnik %}ВсОШ-9 / {{ t.probnik.season_year }}{% endif %}
+            </h3>
+            <p class="oly-card-sub" style="margin:0;">
+                {% if t.source_prototype %}{{ t.source_prototype }}{% endif %}
+            </p>
+            {% if t.method_secondary %}
+            <p class="oly-card-sub" style="margin:4px 0 0;">
+                Также: <span class="oly-badge oly-badge-topic">{{ t.method_secondary }}</span>
+            </p>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

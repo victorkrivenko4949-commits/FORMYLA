@@ -1,0 +1,173 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.35
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "CA",
+   "ratio": 0.4
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AD",
+   "line2": "BE"
+  },
+  {
+   "type": "foot",
+   "id": "A'",
+   "from": "P",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B'",
+   "from": "P",
+   "line": "CA"
+  },
+  {
+   "type": "foot",
+   "id": "C'",
+   "from": "P",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "A''",
+   "from": "P",
+   "line": "B'C'"
+  },
+  {
+   "type": "foot",
+   "id": "B''",
+   "from": "P",
+   "line": "C'A'"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "PA",
+   "style": "dashed"
+  },
+  {
+   "segment": "PB",
+   "style": "dashed"
+  },
+  {
+   "segment": "PA'",
+   "style": "soft"
+  },
+  {
+   "segment": "PB'",
+   "style": "soft"
+  },
+  {
+   "segment": "PC'",
+   "style": "soft"
+  },
+  {
+   "line": "B'C'",
+   "style": "dashed"
+  },
+  {
+   "line": "C'A'",
+   "style": "dashed"
+  },
+  {
+   "segment": "PA''",
+   "style": "accent"
+  },
+  {
+   "segment": "PB''",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "P",
+    "A'",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "P",
+    "B'",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "P",
+    "C'",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "P",
+    "A''",
+    "B'"
+   ]
+  },
+  {
+   "right_angle": [
+    "P",
+    "B''",
+    "C'"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O1",
+   "of": "PA",
+   "reason": "центр окружности с диаметром PA"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O1",
+   "through": "P",
+   "reason": "окружность с диаметром PA — описанная окружность четырёхугольника PB'AC'"
+  },
+  {
+   "type": "midpoint",
+   "id": "O2",
+   "of": "PB",
+   "reason": "центр окружности с диаметром PB"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "O2",
+   "through": "P",
+   "reason": "окружность с диаметром PB — описанная окружность четырёхугольника PC'BA'"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  }
+ ]
+}

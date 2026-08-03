@@ -1,0 +1,182 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AO"
+  },
+  {
+   "type": "circle",
+   "id": "gamma",
+   "center": "M",
+   "through": "A"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega1",
+   "of": "OBC"
+  },
+  {
+   "type": "circle_circle",
+   "id": "S",
+   "circle1": "gamma",
+   "circle2": "omega1",
+   "pick": 1
+  },
+  {
+   "type": "reflect_point",
+   "id": "O1",
+   "of": "O",
+   "over": "B"
+  },
+  {
+   "type": "circle",
+   "id": "cb1",
+   "center": "O",
+   "through": "O1"
+  },
+  {
+   "type": "circle",
+   "id": "cb2",
+   "center": "O1",
+   "through": "O"
+  },
+  {
+   "type": "circle_circle",
+   "id": "T1",
+   "circle1": "cb1",
+   "circle2": "cb2",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "O2",
+   "of": "O",
+   "over": "C"
+  },
+  {
+   "type": "circle",
+   "id": "cc1",
+   "center": "O",
+   "through": "O2"
+  },
+  {
+   "type": "circle",
+   "id": "cc2",
+   "center": "O2",
+   "through": "O"
+  },
+  {
+   "type": "circle_circle",
+   "id": "T2",
+   "circle1": "cc1",
+   "circle2": "cc2",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "BT1",
+   "line2": "CT2"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "circle": "gamma",
+   "style": "dashed"
+  },
+  {
+   "circle": "omega1",
+   "style": "dashed"
+  },
+  {
+   "segment": "AO",
+   "style": "soft"
+  },
+  {
+   "segment": "OB",
+   "style": "soft"
+  },
+  {
+   "segment": "OC",
+   "style": "soft"
+  },
+  {
+   "segment": "OS",
+   "style": "soft"
+  },
+  {
+   "line": "BP",
+   "style": "soft"
+  },
+  {
+   "line": "CP",
+   "style": "soft"
+  },
+  {
+   "line": "AP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "B",
+    "P"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "C",
+    "P"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "S",
+    "O"
+   ]
+  },
+  {
+   "right_angle": [
+    "O",
+    "S",
+    "P"
+   ]
+  },
+  {
+   "equal": [
+    "PB",
+    "PC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="60.0,472.4 560.0,472.4 122.5,147.6" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="122.5" y1="147.6" x2="310.0" y2="472.4" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
+<line x1="560.0" y1="472.4" x2="91.2" y2="310.0" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="247.5" y1="364.1" x2="91.2" y2="310.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="122.5" y1="147.6" x2="91.2" y2="310.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="167.4" y1="342.7" x2="171.3" y2="331.4" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="112.8" y1="229.9" x2="101.0" y2="227.7" stroke="#4C7DFF" stroke-width="2"/>
+<path d="M 297.0 449.9 A 26 26 0 0 1 336.0 472.4" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="330.5" y="441.9" fill="#8C9ABC" font-size="15" text-anchor="middle">?</text>
+<circle cx="60.0" cy="472.4" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="488.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="560.0" cy="472.4" r="3.4" fill="#E6EBF7"/>
+<text x="579.3" y="483.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="122.5" cy="147.6" r="3.4" fill="#E6EBF7"/>
+<text x="112.5" y="136.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="310.0" cy="472.4" r="3.4" fill="#E6EBF7"/>
+<text x="310.0" y="498.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+<circle cx="247.5" cy="364.1" r="3.4" fill="#E6EBF7"/>
+<text x="261.6" y="356.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="91.2" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="71.9" y="310.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">E</text>
+</svg>

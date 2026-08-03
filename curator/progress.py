@@ -272,7 +272,9 @@ def get_progress_summary(
             'total_tasks_attempted': 0,
             'overall_accuracy': 0.0,
             'total_minutes_spent': 0.0,
+            'current_profile': {},
             'streak': get_streak(user_id),
+            'stuck_status': {'is_stuck': False, 'days_since_progress': 0},
             'daily_breakdown': [],
         }
 

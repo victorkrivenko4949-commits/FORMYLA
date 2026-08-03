@@ -1,0 +1,68 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AC",
+   "ratio": 0.625
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "AB",
+   "ratio": 0.7
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BK",
+   "ratio": 0.3
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BK"
+  },
+  {
+   "segment": "CL"
+  },
+  {
+   "segment": "LN"
+  },
+  {
+   "segment": "NK",
+   "style": "accent"
+  },
+  {
+   "segment": "LK",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "120°"
+  },
+  {
+   "equal": [
+    "NK",
+    "LN"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

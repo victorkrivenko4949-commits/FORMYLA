@@ -1,0 +1,105 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "BC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "AEF"
+  },
+  {
+   "type": "incenter",
+   "id": "J",
+   "of": "BDE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "polygon": "AEF",
+   "style": "soft"
+  },
+  {
+   "polygon": "BDE",
+   "style": "soft"
+  },
+  {
+   "segment": "EI",
+   "style": "accent"
+  },
+  {
+   "segment": "ID",
+   "style": "accent"
+  },
+  {
+   "segment": "EJ",
+   "style": "accent"
+  },
+  {
+   "segment": "JD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "E",
+    "F"
+   ],
+   "text": "φ"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "φ"
+  },
+  {
+   "angle": [
+    "E",
+    "I",
+    "D"
+   ],
+   "text": "?"
+  },
+  {
+   "angle": [
+    "E",
+    "J",
+    "D"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

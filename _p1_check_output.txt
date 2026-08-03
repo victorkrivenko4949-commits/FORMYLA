@@ -1,0 +1,5 @@
+templates/figures.html OK 
+templates/prep/probe.html FIX_NEEDED EMOJI: 11 chars
+templates/daily_tasks/daily_tasks_dashboard.html FIX_NEEDED FOREIGN_HEX: {'#A5B4FC', '#1A1206', '#F0B84D', '#6366F1', '#0B1428'}
+templates/olympiad/method.html FIX_NEEDED FOREIGN_HEX: {'#9CA3AF', '#93C5FD', '#6EE7B7', '#E4E6EB', '#4F46E5', '#6366F1', '#1E3A2E', '#7C3AED', '#FCD34D', '#3B1E1E', '#3B2F1E', '#F59E0B', '#10B981', '#222636', '#818CF8', '#0F1117', '#FCA5A5', '#EF4444', '#2D3142', '#C7D2FE', '#1E293B', '#1A1D29'} | EMOJI: 13 chars
+templates/olympiad/method_task.html FIX_NEEDED FOREIGN_HEX: {'#6366F1', '#8B5CF6', '#34D399'} | EMOJI: 3 chars

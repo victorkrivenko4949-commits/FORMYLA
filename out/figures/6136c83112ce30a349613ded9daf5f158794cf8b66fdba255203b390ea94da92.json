@@ -1,0 +1,104 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "MKN",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "c",
+   "center": "K",
+   "through": "N"
+  },
+  {
+   "type": "line_circle",
+   "id": "X",
+   "circle": "c",
+   "line": "MK",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "XN"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "KQ",
+   "line2": "MN"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "MKN"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "M"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "KO",
+   "line2": "XL"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "MKN"
+  },
+  {
+   "segment": "KL"
+  },
+  {
+   "segment": "XL",
+   "style": "accent"
+  },
+  {
+   "segment": "KO",
+   "style": "accent"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "KX",
+    "KN"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "M",
+    "K",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "K",
+    "N"
+   ],
+   "text": "α"
+  },
+  {
+   "right_angle": [
+    "K",
+    "R",
+    "L"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,112 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "BHC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "CI",
+   "line2": "BH"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "LC"
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AL",
+   "line2": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BH"
+  },
+  {
+   "segment": "CL"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "segment": "AK"
+  },
+  {
+   "segment": "HK",
+   "style": "soft"
+  },
+  {
+   "polygon": "KLHM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "B",
+    "H",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "LM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "H",
+    "K"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "M",
+    "H",
+    "C"
+   ],
+   "text": "15°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "C",
+    "H"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,105 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "K",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "L",
+   "x": 2,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "c1",
+   "center": "L",
+   "through": "K"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "c1",
+   "angle": 60
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "KM"
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "L",
+   "over": "O"
+  },
+  {
+   "type": "foot",
+   "id": "P",
+   "from": "O",
+   "line": "LK"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "P"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "LM",
+   "ratio": 0.4
+  },
+  {
+   "type": "midpoint",
+   "id": "U",
+   "of": "QK"
+  },
+  {
+   "type": "reflect_point",
+   "id": "S",
+   "of": "P",
+   "over": "U"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "KS",
+   "line2": "MN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "KLMN"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "line": "PQ",
+   "style": "soft"
+  },
+  {
+   "line": "KR",
+   "style": "soft"
+  },
+  {
+   "segment": "QR",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "P",
+    "L"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

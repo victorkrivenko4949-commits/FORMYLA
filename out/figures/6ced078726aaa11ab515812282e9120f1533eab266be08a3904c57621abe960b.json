@@ -1,0 +1,281 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "T",
+   "circle": "w",
+   "angle": 30
+  },
+  {
+   "type": "reflect_point",
+   "id": "Z",
+   "of": "I",
+   "over": "T"
+  },
+  {
+   "type": "circle",
+   "id": "cT1",
+   "center": "I",
+   "through": "Z"
+  },
+  {
+   "type": "circle",
+   "id": "cT2",
+   "center": "Z",
+   "through": "I"
+  },
+  {
+   "type": "circle_circle",
+   "id": "P",
+   "circle1": "cT1",
+   "circle2": "cT2",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "R",
+   "of": "I",
+   "over": "A"
+  },
+  {
+   "type": "circle",
+   "id": "cA1",
+   "center": "I",
+   "through": "R"
+  },
+  {
+   "type": "circle",
+   "id": "cA2",
+   "center": "R",
+   "through": "I"
+  },
+  {
+   "type": "circle_circle",
+   "id": "D",
+   "circle1": "cA1",
+   "circle2": "cA2",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "S",
+   "of": "I",
+   "over": "B"
+  },
+  {
+   "type": "circle",
+   "id": "cB1",
+   "center": "I",
+   "through": "S"
+  },
+  {
+   "type": "circle",
+   "id": "cB2",
+   "center": "S",
+   "through": "I"
+  },
+  {
+   "type": "circle_circle",
+   "id": "E",
+   "circle1": "cB1",
+   "circle2": "cB2",
+   "pick": 0
+  },
+  {
+   "type": "reflect_point",
+   "id": "Q",
+   "of": "I",
+   "over": "C"
+  },
+  {
+   "type": "circle",
+   "id": "cC1",
+   "center": "I",
+   "through": "Q"
+  },
+  {
+   "type": "circle",
+   "id": "cC2",
+   "center": "Q",
+   "through": "I"
+  },
+  {
+   "type": "circle_circle",
+   "id": "F",
+   "circle1": "cC1",
+   "circle2": "cC2",
+   "pick": 0
+  },
+  {
+   "type": "foot",
+   "id": "H1",
+   "from": "T",
+   "line": "AD"
+  },
+  {
+   "type": "reflect_point",
+   "id": "G",
+   "of": "T",
+   "over": "H1"
+  },
+  {
+   "type": "foot",
+   "id": "H2",
+   "from": "P",
+   "line": "AD"
+  },
+  {
+   "type": "reflect_point",
+   "id": "L",
+   "of": "P",
+   "over": "H2"
+  },
+  {
+   "type": "foot",
+   "id": "H3",
+   "from": "T",
+   "line": "BE"
+  },
+  {
+   "type": "reflect_point",
+   "id": "H",
+   "of": "T",
+   "over": "H3"
+  },
+  {
+   "type": "foot",
+   "id": "H4",
+   "from": "P",
+   "line": "BE"
+  },
+  {
+   "type": "reflect_point",
+   "id": "N",
+   "of": "P",
+   "over": "H4"
+  },
+  {
+   "type": "foot",
+   "id": "H5",
+   "from": "T",
+   "line": "CF"
+  },
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "T",
+   "over": "H5"
+  },
+  {
+   "type": "foot",
+   "id": "H6",
+   "from": "P",
+   "line": "CF"
+  },
+  {
+   "type": "reflect_point",
+   "id": "O",
+   "of": "P",
+   "over": "H6"
+  },
+  {
+   "type": "intersection",
+   "id": "U",
+   "line1": "HN",
+   "line2": "KO"
+  },
+  {
+   "type": "intersection",
+   "id": "V",
+   "line1": "KO",
+   "line2": "GL"
+  },
+  {
+   "type": "intersection",
+   "id": "W",
+   "line1": "GL",
+   "line2": "HN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "AI",
+   "style": "soft"
+  },
+  {
+   "segment": "BI",
+   "style": "soft"
+  },
+  {
+   "segment": "CI",
+   "style": "soft"
+  },
+  {
+   "line": "AD",
+   "style": "dashed"
+  },
+  {
+   "line": "BE",
+   "style": "dashed"
+  },
+  {
+   "line": "CF",
+   "style": "dashed"
+  },
+  {
+   "line": "TP",
+   "style": "soft"
+  },
+  {
+   "polygon": "UVW",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "I",
+    "A",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "I",
+    "B",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "I",
+    "C",
+    "F"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

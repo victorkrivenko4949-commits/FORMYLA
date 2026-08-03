@@ -1,0 +1,85 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BD"
+  },
+  {
+   "type": "circle",
+   "id": "wB",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle",
+   "id": "wD",
+   "center": "D",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "A1",
+   "circle1": "wB",
+   "circle2": "wD",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AA1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "line": "MN",
+   "style": "dashed"
+  },
+  {
+   "circle": "wB",
+   "style": "soft"
+  },
+  {
+   "circle": "wD",
+   "style": "soft"
+  },
+  {
+   "segment": "A1B",
+   "style": "soft"
+  },
+  {
+   "segment": "A1D",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "A1B"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AD",
+    "A1D"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

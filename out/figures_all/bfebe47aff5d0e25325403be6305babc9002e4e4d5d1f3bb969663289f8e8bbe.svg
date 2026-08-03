@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<polygon points="60.0,487.6 560.0,527.1 533.7,132.4 99.5,92.9" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="210.0" y1="499.5" x2="549.5" y2="369.2" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="549.5" y1="369.2" x2="316.6" y2="112.6" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="316.6" y1="112.6" x2="75.8" y2="329.7" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="75.8" y1="329.7" x2="210.0" y2="499.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<circle cx="60.0" cy="487.6" r="3.4" fill="#E6EBF7"/>
+<text x="42.7" y="503.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="560.0" cy="527.1" r="3.4" fill="#E6EBF7"/>
+<text x="574.1" y="547.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="533.7" cy="132.4" r="3.4" fill="#E6EBF7"/>
+<text x="547.8" y="124.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="99.5" cy="92.9" r="3.4" fill="#E6EBF7"/>
+<text x="85.3" y="84.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="210.0" cy="499.5" r="3.4" fill="#E6EBF7"/>
+<text x="204.8" y="524.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">P</text>
+<circle cx="549.5" cy="369.2" r="3.4" fill="#E6EBF7"/>
+<text x="569.5" y="375.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">Q</text>
+<circle cx="316.6" cy="112.6" r="3.4" fill="#E6EBF7"/>
+<text x="316.6" y="98.6" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">R</text>
+<circle cx="75.8" cy="329.7" r="3.4" fill="#E6EBF7"/>
+<text x="55.8" y="335.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">T</text>
+</svg>

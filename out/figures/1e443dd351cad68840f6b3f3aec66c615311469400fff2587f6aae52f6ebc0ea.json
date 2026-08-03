@@ -1,0 +1,72 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "midpoint",
+   "id": "A1",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "B1",
+   "of": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AA1",
+   "line2": "BB1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "polygon": "AOB",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "O",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AO",
+    "BO"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "C1",
+   "of": "AB",
+   "reason": "Третья медиана CC1 проведена, чтобы показать разбиение треугольника на три равновеликих треугольника."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CC1",
+   "style": "soft"
+  }
+ ]
+}

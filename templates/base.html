@@ -12,9 +12,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}?v={{ asset_version }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}?v={{ asset_version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile_features.css') }}?v={{ asset_version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}?v={{ asset_version }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/formyla_dark.css') }}?v={{ asset_version }}">
@@ -632,11 +632,11 @@
     {% endif %}
     
     <!-- Глобальный Caps Lock для полей ввода -->
-    <script src="{{ url_for('static', filename='js/caps_lock.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/caps_lock.js') }}?v={{ asset_version }}"></script>
     <!-- Mastery Radar Chart -->
     <script src="{{ url_for('static', filename='js/mastery_radar.js') }}?v={{ asset_version }}"></script>
     <!-- Мобильная навигация (drawer + bottom nav) -->
-    <script src="{{ url_for('static', filename='js/mobile_nav.js') }}?v=2"></script>
+    <script src="{{ url_for('static', filename='js/mobile_nav.js') }}?v={{ asset_version }}"></script>
     <!-- Dropdown навигация -->
     <script src="{{ url_for('static', filename='js/nav.js') }}?v={{ asset_version }}"></script>
     <!-- Paywall модалка (должна быть до api.js) -->
@@ -828,5 +828,6 @@
 
     <script defer src="/static/js/wb_pip.js?v={{ asset_version }}"></script>
     {% block extra_js %}{% endblock %}
+    <div style="text-align:center;padding:12px 0;font-size:11px;color:var(--muted);">build {{ build_commit_short }}</div>
 </body>
 </html>

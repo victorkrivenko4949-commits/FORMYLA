@@ -1,0 +1,97 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 8,
+   "y": 0
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AC",
+   "ratio": 0.625
+  },
+  {
+   "type": "point_on_segment",
+   "id": "X",
+   "of": "AC",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Y",
+   "of": "CA",
+   "ratio": 0.5
+  },
+  {
+   "type": "circle",
+   "id": "cA",
+   "center": "A",
+   "through": "X"
+  },
+  {
+   "type": "circle",
+   "id": "cC",
+   "center": "C",
+   "through": "Y"
+  },
+  {
+   "type": "circle_circle",
+   "id": "B",
+   "circle1": "cA",
+   "circle2": "cC",
+   "pick": 0
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "triangle",
+   "id": "ABM",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "BCM",
+   "kind": "any"
+  },
+  {
+   "type": "incircle",
+   "id": "w1",
+   "of": "ABM"
+  },
+  {
+   "type": "incircle",
+   "id": "w2",
+   "of": "BCM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

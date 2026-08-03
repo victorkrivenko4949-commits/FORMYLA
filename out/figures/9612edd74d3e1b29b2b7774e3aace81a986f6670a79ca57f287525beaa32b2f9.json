@@ -1,0 +1,129 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "equilateral"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "Omega",
+   "of": "ABC"
+  },
+  {
+   "type": "incircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "AB",
+   "ratio": 0.4
+  },
+  {
+   "type": "tangent_point",
+   "id": "L",
+   "circle": "w",
+   "from": "Q",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "QL",
+   "line2": "AC"
+  },
+  {
+   "type": "circle",
+   "id": "Omega_b",
+   "center": "P",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "Omega_c",
+   "center": "Q",
+   "through": "C"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "Omega"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  },
+  {
+   "circle": "Omega_b",
+   "style": "soft"
+  },
+  {
+   "circle": "Omega_c",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "O",
+    "L",
+    "P"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_line",
+   "id": "X",
+   "of": "B",
+   "over": "PO",
+   "reason": "X — отражение B относительно PO; это вторая точка пересечения Ω и Ωb, общая для всех трёх окружностей."
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "PO",
+   "style": "soft"
+  },
+  {
+   "segment": "BX",
+   "style": "dashed"
+  }
+ ]
+}

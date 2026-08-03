@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<polygon points="392.1,121.0 60.0,538.5 560.0,436.8" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="60.0" y1="538.5" x2="477.9" y2="282.4" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="560.0" y1="436.8" x2="255.2" y2="293.1" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="477.9" y1="282.4" x2="255.2" y2="293.1" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="448.8" y1="-496.4" x2="314.5" y2="965.2" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<circle cx="363.1" cy="214.8" r="133.3" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="396.7" y1="217.8" x2="371.3" y2="347.8" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="396.7" y1="217.8" x2="395.4" y2="85.4" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<path d="M 389.7 146.9 A 26 26 0 0 1 375.9 141.4" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="376.8" y="164.1" fill="#8C9ABC" font-size="15" text-anchor="middle">α/2</text>
+<path d="M 404.3 144.0 A 26 26 0 0 1 389.7 146.9" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="400.2" y="166.2" fill="#8C9ABC" font-size="15" text-anchor="middle">α/2</text>
+<path d="M 76.2 518.2 A 26 26 0 0 1 82.2 524.9" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="90.7" y="516.4" fill="#8C9ABC" font-size="15" text-anchor="middle">β/2</text>
+<path d="M 82.2 524.9 A 26 26 0 0 1 85.5 533.3" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="98.1" y="528.5" fill="#8C9ABC" font-size="15" text-anchor="middle">β/2</text>
+<path d="M 536.5 425.7 A 26 26 0 0 1 547.8 413.8" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="530.3" y="413.5" fill="#8C9ABC" font-size="15" text-anchor="middle">γ/2</text>
+<path d="M 534.5 442.0 A 26 26 0 0 1 536.5 425.7" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="519.3" y="436.9" fill="#8C9ABC" font-size="15" text-anchor="middle">γ/2</text>
+<circle cx="392.1" cy="121.0" r="3.4" fill="#E6EBF7"/>
+<text x="374.8" y="117.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="60.0" cy="538.5" r="3.4" fill="#E6EBF7"/>
+<text x="45.9" y="558.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="560.0" cy="436.8" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="452.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="371.3" cy="347.8" r="3.4" fill="#E6EBF7"/>
+<text x="371.3" y="373.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">I</text>
+<circle cx="477.9" cy="282.4" r="3.4" fill="#E6EBF7"/>
+<text x="495.2" y="278.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">E</text>
+<circle cx="255.2" cy="293.1" r="3.4" fill="#E6EBF7"/>
+<text x="237.9" y="289.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">F</text>
+<circle cx="395.4" cy="85.4" r="3.4" fill="#E6EBF7"/>
+<text x="400.5" y="72.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">T</text>
+<circle cx="396.7" cy="217.8" r="3.4" fill="#E6EBF7"/>
+<text x="416.0" y="218.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">H</text>
+</svg>

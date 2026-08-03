@@ -1,0 +1,23 @@
+2026-08-03 05:31:41,715 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-08-03 05:31:41,871 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\Новая папка (2)\logs\app.log
+2026-08-03 05:31:44,610 - routes.figures_generator - INFO - [figures_gen] reasoner prompt loaded (6847 chars)
+2026-08-03 05:31:45,292 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-08-03 05:31:45,372 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-08-03 05:31:47,040 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-03 05:31:47,077 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-03 05:31:47,077 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-03 05:31:47,077 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-03 05:31:47,077 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-03 05:31:47,077 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-03 05:31:47,077 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-08-03 05:31:47,081 - apscheduler.scheduler - INFO - Scheduler started
+STATUS 200
+BODY {"applied_migrations":["7bcac3b72db9"],"branch":"main","build_time":"2026-08-03T02:31:41.724162+00:00","commit":"b9474b9c6cc46d03f624e674e13b93ee93145fd5","commit_source":"git_local","schema_version":"7bcac3b72db9"}
+

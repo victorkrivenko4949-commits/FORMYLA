@@ -1,0 +1,115 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 6,
+   "y": 4
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0,
+   "y": 3
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "AM"
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "DM"
+  },
+  {
+   "type": "midpoint",
+   "id": "R",
+   "of": "BN"
+  },
+  {
+   "type": "midpoint",
+   "id": "S",
+   "of": "CN"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "segment": "DM",
+   "style": "soft"
+  },
+  {
+   "segment": "BN",
+   "style": "soft"
+  },
+  {
+   "segment": "CN",
+   "style": "soft"
+  },
+  {
+   "polygon": "PSQR",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AP",
+    "PM"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "DQ",
+    "QM"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "BR",
+    "RN"
+   ],
+   "ticks": 3
+  },
+  {
+   "equal": [
+    "CS",
+    "SN"
+   ],
+   "ticks": 4
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

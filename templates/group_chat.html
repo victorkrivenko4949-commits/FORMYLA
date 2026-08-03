@@ -575,6 +575,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initGcPasteHandler();
 });
 </script>
-<script src="{{ url_for('static', filename='js/emoji_picker.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/emoji_picker.js') }}?v={{ asset_version }}" defer></script>
 
 {% endblock %}

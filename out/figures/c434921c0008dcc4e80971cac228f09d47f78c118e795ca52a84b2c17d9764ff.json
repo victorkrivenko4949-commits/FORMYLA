@@ -1,0 +1,107 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "AB",
+   "ratio": -0.7
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w",
+   "line": "AB",
+   "pick": 1
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "DC"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w",
+   "line": "AF",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AN",
+   "style": "accent"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "CM",
+   "style": "soft"
+  },
+  {
+   "segment": "CN",
+   "style": "soft"
+  },
+  {
+   "segment": "NM"
+  },
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "N",
+    "M"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "C",
+    "N",
+    "M"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "NC",
+   "ratio": 1.6,
+   "reason": "Точка K на продолжении NC за C нужна, чтобы показать внешний угол MCK треугольника ANC и параллельность AM и NK."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CK",
+   "style": "dashed"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "w",
+   "line": "OM",
+   "pick": 1
+  },
+  {
+   "type": "incenter",
+   "id": "I1",
+   "of": "ABM"
+  },
+  {
+   "type": "incenter",
+   "id": "I2",
+   "of": "ACM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

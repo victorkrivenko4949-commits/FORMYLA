@@ -223,7 +223,9 @@ def start_probe(user_id: int, theme_id: str, grade: int) -> Dict[str, Any]:
 
     start_level = resolve_start_level(user_id, theme_id, grade)
 
+    probe_id = int(datetime.now(timezone.utc).timestamp() * 1_000_000)
     probe = {
+        'probe_id': probe_id,
         'theme_id': theme_id,
         'grade': grade,
         'current_index': 0,
@@ -259,6 +261,7 @@ def _current_task_state(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
         return _select_and_advance(cs, probe, grade)
 
     return {
+        'probe_id': probe.get('probe_id'),
         'theme_id': theme_id,
         'current_index': idx,
         'total': PROBE_SIZE,
@@ -367,6 +370,7 @@ def _select_and_advance(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
     db.session.commit()
 
     return {
+        'probe_id': probe.get('probe_id'),
         'theme_id': theme_id,
         'current_index': idx,
         'total': PROBE_SIZE,
@@ -467,6 +471,7 @@ def _finish_probe(cs: CuratorState, probe: Dict[str, Any], user_id: int) -> Dict
 
     return {
         'done': True,
+        'probe_id': probe.get('probe_id'),
         'theme_id': theme_id,
         'section': section,
         'final_mu': final_mu,

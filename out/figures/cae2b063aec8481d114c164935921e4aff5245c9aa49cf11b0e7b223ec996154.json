@@ -1,0 +1,139 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "L",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "reflect_point",
+   "id": "K",
+   "of": "L",
+   "over": "A"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w1",
+   "of": "BLK"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "CLK"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "w1",
+   "line": "AC",
+   "pick": 1
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "w2",
+   "line": "AB",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AL",
+   "style": "soft"
+  },
+  {
+   "segment": "KL",
+   "style": "dashed"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "L"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "L",
+    "A",
+    "C"
+   ],
+   "text": "α"
+  },
+  {
+   "equal": [
+    "AK",
+    "AL"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcenter",
+   "id": "O1",
+   "of": "BLK"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O2",
+   "of": "CLK"
+  },
+  {
+   "type": "reflect_line",
+   "id": "B1",
+   "of": "B",
+   "over": "O1O2"
+  },
+  {
+   "type": "reflect_line",
+   "id": "C1",
+   "of": "C",
+   "over": "O1O2"
+  }
+ ],
+ "draw_aux": [
+  {
+   "line": "O1O2",
+   "style": "dashed"
+  },
+  {
+   "segment": "AB1",
+   "style": "dashed"
+  },
+  {
+   "segment": "AC1",
+   "style": "dashed"
+  }
+ ],
+ "reason": "O1O2 — линия центров окружностей и внешняя биссектриса; отражаем B,C в B1,C1, затем по свойству секущих AB1·AP=KA·AL=AC1·AQ, откуда AB·AP=AC·AQ."
+}

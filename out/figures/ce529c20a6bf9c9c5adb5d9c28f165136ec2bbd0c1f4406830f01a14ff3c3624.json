@@ -1,0 +1,92 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "C",
+   "through": "D"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "E",
+   "circle": "w",
+   "angle": 235
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "AE"
+  },
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "DE",
+   "line2": "FG"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AE",
+   "style": "soft"
+  },
+  {
+   "segment": "CE",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "accent"
+  },
+  {
+   "segment": "FG",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "CD",
+    "CE"
+   ],
+   "ticks": 1
+  },
+  {
+   "right_angle": [
+    "D",
+    "X",
+    "G"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "DE",
+   "reason": "CH — медиана к основанию DE в равнобедренном треугольнике DCE, а из параллелограмма CHFG следует FG∥CH"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CH",
+   "style": "soft"
+  },
+  {
+   "segment": "FH",
+   "style": "soft"
+  }
+ ]
+}

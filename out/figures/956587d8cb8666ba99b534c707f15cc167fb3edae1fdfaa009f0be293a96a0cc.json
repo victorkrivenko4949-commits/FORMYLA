@@ -1,0 +1,37 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "AC",
+   "reason": "Диагональ разбивает четырёхугольник на треугольники ABC и ACD, что используется в доказательстве."
+  },
+  {
+   "type": "segment",
+   "id": "BD",
+   "reason": "Диагональ разбивает четырёхугольник на треугольники ABD и BCD, что используется в доказательстве."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "dashed"
+  }
+ ]
+}

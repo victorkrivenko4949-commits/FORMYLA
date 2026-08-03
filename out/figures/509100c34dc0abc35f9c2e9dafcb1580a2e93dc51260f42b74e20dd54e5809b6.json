@@ -1,0 +1,132 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 10,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 8,
+   "y": -2
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 3.170731707317073,
+   "y": 2.536585365853658
+  },
+  {
+   "type": "reflect_line",
+   "id": "P",
+   "of": "A",
+   "over": "BC"
+  },
+  {
+   "type": "reflect_line",
+   "id": "Q",
+   "of": "A",
+   "over": "CD"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "AP",
+   "line2": "BD"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "AQ",
+   "line2": "BD"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega1",
+   "of": "BEP"
+  },
+  {
+   "type": "circumcircle",
+   "id": "omega2",
+   "of": "DFQ"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "segment": "AP",
+   "style": "soft"
+  },
+  {
+   "segment": "AQ",
+   "style": "soft"
+  },
+  {
+   "circle": "omega1",
+   "style": "accent"
+  },
+  {
+   "circle": "omega2",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "D"
+   ],
+   "text": "α"
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_line",
+   "id": "T",
+   "of": "A",
+   "over": "BD",
+   "reason": "T — точка, симметричная A относительно BD; по решению она лежит на обеих описанных окружностях и является их точкой касания"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AT",
+   "style": "dashed"
+  },
+  {
+   "segment": "BT",
+   "style": "dashed"
+  },
+  {
+   "segment": "CT",
+   "style": "dashed"
+  },
+  {
+   "segment": "DT",
+   "style": "dashed"
+  }
+ ]
+}

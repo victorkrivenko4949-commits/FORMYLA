@@ -1,0 +1,71 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "D",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "CA"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "AB"
+  },
+  {
+   "type": "centroid",
+   "id": "G",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "BE"
+  },
+  {
+   "segment": "CF"
+  },
+  {
+   "point": "G"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BD",
+    "DC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CE",
+    "EA"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "AF",
+    "FB"
+   ],
+   "ticks": 3
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}
