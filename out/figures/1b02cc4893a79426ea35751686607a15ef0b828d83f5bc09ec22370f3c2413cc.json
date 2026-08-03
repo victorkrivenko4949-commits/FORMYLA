@@ -6,26 +6,28 @@
    "kind": "obtuse"
   },
   {
-   "type": "circumcircle",
-   "id": "Gamma",
-   "of": "ABC"
-  },
-  {
    "type": "incenter",
    "id": "O",
    "of": "ABC"
   },
   {
-   "type": "incircle",
+   "type": "circumcircle",
    "id": "w",
    "of": "ABC"
   },
   {
    "type": "line_circle",
    "id": "D",
-   "circle": "Gamma",
    "line": "BO",
+   "circle": "w",
    "pick": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "w2",
+   "of": "AOC"
   }
  ],
  "draw": [
@@ -33,47 +35,37 @@
    "polygon": "ABC"
   },
   {
-   "circle": "Gamma",
-   "style": "soft"
+   "segment": "BD"
   },
   {
-   "circle": "w",
-   "style": "soft"
-  },
+   "circle": "w"
+  }
+ ],
+ "draw_aux": [
   {
-   "segment": "BD",
+   "segment": "DA",
    "style": "accent"
+  },
+  {
+   "segment": "DC",
+   "style": "accent"
+  },
+  {
+   "segment": "DO",
+   "style": "accent"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
   }
  ],
  "marks": [
   {
-   "angle": [
-    "A",
-    "B",
-    "C"
-   ],
-   "text": "?"
-  },
-  {
    "equal": [
-    "AD",
-    "DC"
-   ],
-   "ticks": 1
-  },
-  {
-   "equal": [
-    "AD",
+    "DA",
+    "DC",
     "DO"
-   ],
-   "ticks": 1
-  }
- ],
- "aux": [],
- "draw_aux": [
-  {
-   "polygon": "ADC",
-   "style": "dashed"
+   ]
   }
  ]
 }

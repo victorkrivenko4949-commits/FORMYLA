@@ -3,6 +3,10 @@
 <rect width="620" height="620" fill="#070C18"/>
 <polygon points="75.1,395.5 501.5,470.7 501.5,149.3 149.3,118.5" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
 <circle cx="310.0" cy="310.0" r="250.0" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="310.0" y1="310.0" x2="75.1" y2="395.5" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="501.5" y2="470.7" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="501.5" y2="149.3" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="149.3" y2="118.5" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
 <line x1="289.3" y1="427.2" x2="287.3" y2="439.0" stroke="#4C7DFF" stroke-width="2"/>
 <line x1="495.5" y1="310.0" x2="507.5" y2="310.0" stroke="#4C7DFF" stroke-width="2"/>
 <circle cx="75.1" cy="395.5" r="3.4" fill="#E6EBF7"/>
@@ -13,4 +17,6 @@
 <text x="518.8" y="145.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
 <circle cx="149.3" cy="118.5" r="3.4" fill="#E6EBF7"/>
 <text x="135.2" y="110.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="310.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="304.8" y="335.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
 </svg>

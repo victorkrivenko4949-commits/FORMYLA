@@ -3,12 +3,26 @@
   {
    "type": "quad",
    "id": "ABCD",
-   "kind": "any"
+   "kind": "general"
   },
   {
    "type": "midpoint",
    "id": "M",
    "of": "AB"
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "B",
+   "line": "AD"
+  },
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "C",
+   "line": "AD"
   }
  ],
  "draw": [
@@ -20,15 +34,28 @@
    "style": "accent"
   }
  ],
+ "draw_aux": [
+  {
+   "segment": "BE",
+   "style": "accent"
+  },
+  {
+   "segment": "CF",
+   "style": "accent"
+  }
+ ],
  "marks": [
   {
    "equal": [
     "AM",
     "MB"
-   ],
-   "ticks": 1
+   ]
+  },
+  {
+   "right": "BEA"
+  },
+  {
+   "right": "CFA"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

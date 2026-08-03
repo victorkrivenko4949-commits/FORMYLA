@@ -20,18 +20,16 @@ if ROOT not in sys.path:
 
 
 @pytest.fixture
-def quest_app_ctx(tmp_path, monkeypatch):
-    """Spin up the Flask app + in-memory SQLite, return an open app context."""
-    # Force a fresh SQLite for the test (don't touch the real DB)
-    db_file = tmp_path / "test_daily.db"
-    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_file}")
+def quest_app_ctx():
+    """Тестовый контекст приложения на временной БД из conftest.py.
 
+    Важно: НЕ переключает глобальный app/db на :memory: и НЕ вызывает drop_all().
+    Очистка: удаление созданных записей.
+    """
     from app import app, db  # noqa: WPS433
     from models import DailyQuest, User  # noqa: WPS433
 
     with app.app_context():
-        db.create_all()
-
         # Минимальный пользователь
         user = User(email="dq_test@formyla.test", name="DQ Test", preferred_grade=7)
         db.session.add(user)
@@ -49,8 +47,10 @@ def quest_app_ctx(tmp_path, monkeypatch):
 
         yield {"app": app, "db": db, "quest": quest, "user": user}
 
-        db.session.remove()
-        db.drop_all()
+        # Очистка: удаляем созданные записи, не дропаем таблицы
+        DailyQuest.query.filter_by(id=quest.id).delete()
+        User.query.filter_by(id=user.id).delete()
+        db.session.commit()
 
 
 def test_initial_state_empty(quest_app_ctx):

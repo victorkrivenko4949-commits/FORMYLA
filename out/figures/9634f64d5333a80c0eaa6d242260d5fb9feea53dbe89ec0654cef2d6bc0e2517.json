@@ -1,71 +1,47 @@
 {
  "given": [
   {
-   "type": "point",
-   "id": "O",
-   "x": 0,
-   "y": 0
-  },
-  {
-   "type": "point",
-   "id": "A",
-   "x": 3,
-   "y": 0
-  },
-  {
-   "type": "circle",
-   "id": "w",
-   "center": "O",
-   "through": "A"
-  },
-  {
-   "type": "point_on_circle",
-   "id": "B",
-   "circle": "w",
-   "angle": 60
-  },
-  {
-   "type": "point_on_circle",
-   "id": "C",
-   "circle": "w",
-   "angle": 120
-  },
-  {
-   "type": "point_on_circle",
-   "id": "D",
-   "circle": "w",
-   "angle": 210
-  },
-  {
    "type": "quad",
    "id": "ABCD",
    "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
   }
  ],
  "draw": [
   {
-   "polygon": "ABCD",
+   "polygon": "ABCD"
+  },
+  {
+   "circle": "w"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "OA",
    "style": "accent"
   },
   {
-   "circle": "w",
-   "style": "soft"
-  },
-  {
-   "segment": "OA",
-   "style": "soft"
-  },
-  {
    "segment": "OB",
-   "style": "soft"
+   "style": "accent"
   },
   {
    "segment": "OC",
-   "style": "soft"
+   "style": "accent"
   },
   {
    "segment": "OD",
-   "style": "soft"
+   "style": "accent"
   }
  ],
  "marks": [
@@ -73,42 +49,13 @@
    "equal": [
     "AB",
     "BC"
-   ],
-   "ticks": 1
+   ]
   },
   {
    "angle": [
-    "A",
-    "O",
-    "B"
-   ],
-   "text": "60°"
-  },
-  {
-   "angle": [
-    "B",
-    "O",
-    "C"
-   ],
-   "text": "60°"
-  },
-  {
-   "angle": [
-    "C",
-    "O",
-    "D"
-   ],
-   "text": "90°"
-  },
-  {
-   "angle": [
-    "D",
-    "O",
-    "A"
-   ],
-   "text": "150°"
+    "AOB",
+    "BOC"
+   ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

@@ -1,28 +1,9 @@
 {
  "given": [
   {
-   "type": "point",
-   "id": "A",
-   "x": 1,
-   "y": 1
-  },
-  {
-   "type": "point",
-   "id": "B",
-   "x": 5,
-   "y": 0
-  },
-  {
-   "type": "point",
-   "id": "C",
-   "x": 6,
-   "y": 4
-  },
-  {
-   "type": "point",
-   "id": "D",
-   "x": 0,
-   "y": 3
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "general"
   },
   {
    "type": "midpoint",
@@ -33,7 +14,9 @@
    "type": "midpoint",
    "id": "N",
    "of": "AD"
-  },
+  }
+ ],
+ "aux": [
   {
    "type": "midpoint",
    "id": "P",
@@ -74,42 +57,13 @@
   {
    "segment": "CN",
    "style": "soft"
-  },
+  }
+ ],
+ "draw_aux": [
   {
-   "polygon": "PSQR",
+   "polygon": "PQRS",
    "style": "accent"
   }
  ],
- "marks": [
-  {
-   "equal": [
-    "AP",
-    "PM"
-   ],
-   "ticks": 1
-  },
-  {
-   "equal": [
-    "DQ",
-    "QM"
-   ],
-   "ticks": 2
-  },
-  {
-   "equal": [
-    "BR",
-    "RN"
-   ],
-   "ticks": 3
-  },
-  {
-   "equal": [
-    "CS",
-    "SN"
-   ],
-   "ticks": 4
-  }
- ],
- "aux": [],
- "draw_aux": []
+ "marks": []
 }

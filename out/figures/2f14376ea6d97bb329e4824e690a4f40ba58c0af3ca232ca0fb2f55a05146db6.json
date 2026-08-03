@@ -24,6 +24,13 @@
    "line": "AC"
   }
  ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "APH"
+  }
+ ],
  "draw": [
   {
    "polygon": "ABC"
@@ -36,37 +43,23 @@
   },
   {
    "segment": "HQ"
-  },
+  }
+ ],
+ "draw_aux": [
   {
-   "segment": "BQ"
-  },
-  {
-   "segment": "CP"
+   "circle": "w",
+   "style": "accent"
   }
  ],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "P",
-    "H"
-   ]
+   "right": "APH"
   },
   {
-   "right_angle": [
-    "A",
-    "Q",
-    "H"
-   ]
+   "right": "AQH"
   },
   {
-   "right_angle": [
-    "A",
-    "H",
-    "B"
-   ]
+   "right": "AHB"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

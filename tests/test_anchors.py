@@ -8,6 +8,10 @@ tests/test_anchors.py — Комплексное тестирование яко
   - Подбор якорей (три прогона для 9 и 6 класса)
   - Нормализованную проверку ответов
   - Исключение formyla_anchors из задач дня и утреннего среза
+
+ВАЖНО: тесты НЕ переключают глобальный app/db на :memory:,
+а работают на временной БД, которую уже создал корневой conftest.py.
+Очистка — удаление записей, а не drop_all().
 """
 import json
 import os
@@ -85,27 +89,25 @@ def anchors_jsonl_path():
 
 @pytest.fixture
 def app_with_anchors():
-    """Flask app с загруженными якорями во временной БД.
+    """Flask app с загруженными якорями в тестовой БД (conftest.py).
 
-    Использует реальный data/anchors.jsonl (35 записей),
-    а не синтетические данные — тест проверяет актуальный файл.
+    Работает на временной копии базы, созданной корневым conftest.py.
+    Не переключает глобальный app/db на :memory:.
+    Очистка: удаление записей с source='formyla_anchors'.
     """
     import services.anchors  # ensure ANCHORS_FILE computed before app context
     from app import app, db as _db
+    from models import AdaptiveTask
 
-    # Конфигурируем тестовую БД (in-memory SQLite)
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['SECRET_KEY'] = 'test-anchors'
-    app.config['WTF_CSRF_ENABLED'] = False
-    app.config['SERVER_NAME'] = 'localhost'
 
     with app.app_context():
-        _db.create_all()
         # Загружаем якоря из РЕАЛЬНОГО data/anchors.jsonl (35 записей)
         result = services.anchors.load_anchors()
         yield app, result
-        _db.drop_all()
+        # Очистка: удаляем только якорные записи, не трогаем схему
+        AdaptiveTask.query.filter(AdaptiveTask.source == 'formyla_anchors').delete()
+        _db.session.commit()
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -368,25 +370,21 @@ class TestAnchorExclusion:
     def app_for_exclusion(self):
         """App с якорями + дополнительными обычными задачами для теста exclusion.
 
-        Использует реальный data/anchors.jsonl (35 записей).
+        Работает на тестовой БД из conftest.py, не переключает на :memory:.
+        Очистка: удаление созданных записей.
         """
         import services.anchors  # ensure path computed
         from app import app, db as _db
         from models import AdaptiveTask
 
         app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SECRET_KEY'] = 'test-exclusion'
-        app.config['WTF_CSRF_ENABLED'] = False
-        app.config['SERVER_NAME'] = 'localhost'
 
         with app.app_context():
-            _db.create_all()
-
             # Загружаем якоря из реального файла
             services.anchors.load_anchors()
 
             # Добавляем обычные задачи (без source='formyla_anchors')
+            created_ids = []
             for grade in [9, 6]:
                 for level in range(1, 6):
                     for sec in ['algebra', 'geometry', 'combinatorics', 'logic', 'number_theory']:
@@ -405,11 +403,17 @@ class TestAnchorExclusion:
                             criteria_2_points='',
                         )
                         _db.session.add(t)
+                        _db.session.flush()
+                        created_ids.append(t.id)
             _db.session.commit()
 
             yield app
 
-            _db.drop_all()
+            # Очистка: удаляем якоря и тестовые задачи
+            AdaptiveTask.query.filter(AdaptiveTask.source == 'formyla_anchors').delete()
+            for tid in created_ids:
+                AdaptiveTask.query.filter(AdaptiveTask.id == tid).delete()
+            _db.session.commit()
 
     def test_daily_tasks_exclude_anchors(self, app_for_exclusion):
         """Задачи дня для 9 класса не содержат formyla_anchors."""
@@ -600,19 +604,15 @@ class TestIdempotency:
         """Повторная загрузка пропускает существующие задачи.
 
         Использует реальный data/anchors.jsonl (35 записей).
+        Работает на тестовой БД из conftest.py.
         """
         import services.anchors
         from app import app, db as _db
+        from models import AdaptiveTask
 
         app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SECRET_KEY'] = 'test-idempotent'
-        app.config['WTF_CSRF_ENABLED'] = False
-        app.config['SERVER_NAME'] = 'localhost'
 
         with app.app_context():
-            _db.create_all()
-
             # Первая загрузка
             r1 = services.anchors.load_anchors()
             assert r1['loaded'] == 35
@@ -624,7 +624,9 @@ class TestIdempotency:
             assert r2['skipped'] == 35
             assert r2['total_in_file'] == 35
 
-            _db.drop_all()
+            # Очистка: удаляем якорные записи
+            AdaptiveTask.query.filter(AdaptiveTask.source == 'formyla_anchors').delete()
+            _db.session.commit()
 
         print("\n✓ Idempotency: double load skips all existing")
 

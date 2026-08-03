@@ -6,21 +6,28 @@
    "kind": "obtuse"
   },
   {
-   "type": "circumcircle",
-   "id": "w",
-   "of": "ABC"
-  },
-  {
    "type": "incenter",
    "id": "O",
    "of": "ABC"
   },
   {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
    "type": "line_circle",
    "id": "D",
-   "circle": "w",
    "line": "BO",
+   "circle": "w",
    "pick": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "ADC",
+   "kind": "isosceles"
   }
  ],
  "draw": [
@@ -31,41 +38,32 @@
    "circle": "w"
   },
   {
-   "segment": "BD"
-  }
- ],
- "marks": [
-  {
-   "angle": [
-    "A",
-    "B",
-    "C"
-   ],
-   "text": "β"
-  }
- ],
- "aux": [
-  {
-   "type": "segment",
-   "id": "AD",
-   "from": "A",
-   "to": "D"
+   "segment": "BO",
+   "style": "soft"
   },
   {
-   "type": "segment",
-   "id": "CD",
-   "from": "C",
-   "to": "D"
+   "segment": "OD",
+   "style": "soft"
   }
  ],
  "draw_aux": [
   {
-   "segment": "AD",
+   "polygon": "ADC",
    "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AD",
+    "DC"
+   ]
   },
   {
-   "segment": "CD",
-   "style": "accent"
+   "equal": [
+    "DC",
+    "DO"
+   ]
   }
  ]
 }
