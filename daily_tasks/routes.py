@@ -20,7 +20,7 @@ from datetime import datetime, date, timedelta
 from calendar import monthrange
 from typing import Any, Dict, Optional
 
-from flask import jsonify, render_template, request
+from flask import jsonify, render_template, request, current_app
 from flask_login import current_user, login_required
 
 from models import db
@@ -438,11 +438,12 @@ def submit_answer(item_id: int):
     """Отправить ответ на задачу.
 
     Request JSON:
-        ``{"answer": "...", "time_spent_seconds": 320}``
+        ``{"answer": "...", "solution_method": "text"|"photo",
+          "solution_text": "...", "time_spent_seconds": 320}``
+    Or multipart form with ``solution_photo`` file.
 
-    Response:
-        ``is_correct``, ``correct_answer``, ``solution``,
-        ``explanation``, ``set_progress``, ``weakness_update``
+    D1: решение необязательно. Если решение прислано (текст или файл) -
+    сохраняется в solution_attempts с attempt_type='daily'.
     """
     # ── загружаем задачу ─────────────────────────────────────────────
     item: DailyTaskItem | None = DailyTaskItem.query.get(item_id)
@@ -464,10 +465,14 @@ def submit_answer(item_id: int):
             "solution": item.solution,
         }), 409
 
-    # ── парсим тело запроса ─────────────────────────────────────────
+    # ── парсим тело запроса (JSON или multipart) ────────────────────
     data: Dict[str, Any] = request.get_json(silent=True) or {}
+    if request.form:
+        data = {**data, **request.form.to_dict()}
     answer: str = data.get("answer", "")
     time_spent: int | None = data.get("time_spent_seconds")
+    solution_method: str = (data.get("solution_method") or "").strip().lower()
+    solution_text: str = (data.get("solution_text") or "").strip()
 
     if not answer:
         return jsonify({"success": False, "message": "Поле 'answer' обязательно"}), 400
@@ -482,6 +487,79 @@ def submit_answer(item_id: int):
     if not result.get("success"):
         return jsonify(result), 400
 
+    # ── D1: сохраняем SolutionAttempt если решение прислано ─────────
+    file_path_rel = None
+    file_size = None
+    if solution_method == 'photo' and 'solution_photo' in request.files:
+        photo_file = request.files['solution_photo']
+        if photo_file and photo_file.filename:
+            photo_bytes = photo_file.read()
+            if len(photo_bytes) > 12 * 1024 * 1024:
+                pass  # Too large, skip - not blocking
+            elif len(photo_bytes) > 0:
+                content_type = photo_file.content_type or 'application/octet-stream'
+                # Convert HEIC to JPEG
+                if content_type in ('image/heic', 'image/heif') or photo_file.filename.lower().endswith(('.heic', '.heif')):
+                    try:
+                        from routes.prep import _convert_heic_to_jpeg
+                        photo_bytes, content_type = _convert_heic_to_jpeg(photo_bytes)
+                    except Exception:
+                        pass  # Keep original
+                # Compress: max 1500px, quality 0.8
+                try:
+                    from PIL import Image
+                    import io as _io
+                    img = Image.open(_io.BytesIO(photo_bytes))
+                    img = img.convert('RGB')
+                    w, h = img.size
+                    max_side = 1500
+                    if max(w, h) > max_side:
+                        ratio = max_side / max(w, h)
+                        w = int(w * ratio)
+                        h = int(h * ratio)
+                        img = img.resize((w, h), Image.LANCZOS)
+                    out_buf = _io.BytesIO()
+                    img.save(out_buf, format='JPEG', quality=80)
+                    photo_bytes = out_buf.getvalue()
+                    content_type = 'image/jpeg'
+                except Exception:
+                    pass  # Keep original
+                # Save file
+                import os as _os
+                from datetime import datetime as _dt
+                year_month = _dt.utcnow().strftime('%Y-%m')
+                upload_dir = _os.path.join(current_app.static_folder, 'uploads', 'solutions', year_month)
+                _os.makedirs(upload_dir, exist_ok=True)
+                import uuid as _uuid
+                filename = f'{_uuid.uuid4().hex[:16]}.jpg'
+                file_path_rel = f'uploads/solutions/{year_month}/{filename}'
+                file_path_abs = _os.path.join(current_app.static_folder, file_path_rel)
+                with open(file_path_abs, 'wb') as f:
+                    f.write(photo_bytes)
+                file_size = len(photo_bytes)
+
+    # D1: запись в solution_attempts только если решение присутствует
+    if solution_method in ('text', 'photo'):
+        has_solution = (solution_method == 'text' and len(solution_text) > 0) or \
+                       (solution_method == 'photo' and file_path_rel is not None)
+        if has_solution:
+            try:
+                from models import SolutionAttempt
+                # DailyTaskItem has no FK to adaptive_tasks, use item.id as task_id
+                attempt = SolutionAttempt(
+                    user_id=current_user.id,
+                    task_id=item_id,
+                    probe_id=None,
+                    attempt_type='daily',
+                    solution_text=solution_text if solution_method == 'text' else None,
+                    file_path=file_path_rel if solution_method == 'photo' else None,
+                    file_size=file_size if solution_method == 'photo' else None,
+                )
+                db.session.add(attempt)
+                db.session.commit()
+            except Exception:
+                pass  # SolutionAttempt save failure must not block answer
+
     # ── считаем прогресс сета ────────────────────────────────────────
     all_items = DailyTaskItem.query.filter_by(daily_set_id=item.daily_set_id).all()
     completed = sum(1 for it in all_items if it.user_answer is not None)
@@ -490,7 +568,7 @@ def submit_answer(item_id: int):
     # ── формируем пояснение ─────────────────────────────────────────
     is_correct = result.get("is_correct", False)
     explanation = (
-        "Молодец, верно! 🎉"
+        "Молодец, верно!"
         if is_correct
         else "Неверно. Попробуй ещё раз или посмотри решение."
     )

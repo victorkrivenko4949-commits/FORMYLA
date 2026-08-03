@@ -133,7 +133,8 @@ def app(tmp_path):
     the test, db.drop_all() is called and the context is popped.
     """
     from flask import Flask
-    from models import db as _db
+    from flask_login import LoginManager
+    from models import db as _db, User
     import models              # noqa: F401 ensure all models loaded
     import daily_tasks.models  # noqa: F401 ensure DailyTaskSet/Item
     import models_curator      # noqa: F401 curator models
@@ -148,6 +149,20 @@ def app(tmp_path):
     test_app.config['WTF_CSRF_ENABLED'] = False
 
     _db.init_app(test_app)
+
+    # Set up Flask-Login for @login_required decorators
+    login_manager = LoginManager()
+    login_manager.init_app(test_app)
+
+    @login_manager.user_loader
+    def _load_user(user_id):
+        return _db.session.get(User, int(user_id))
+
+    # Register blueprints needed for route tests
+    from daily_tasks import daily_tasks_bp
+    test_app.register_blueprint(daily_tasks_bp)
+    from routes.prep import prep_bp
+    test_app.register_blueprint(prep_bp)
 
     # Push context once and keep it for all dependent fixtures and the test.
     ctx = test_app.app_context()

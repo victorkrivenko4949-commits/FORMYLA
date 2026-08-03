@@ -36,12 +36,36 @@
                    placeholder="Введите краткий ответ (число, выражение)"
                    autocomplete="off">
             
-            <label for="userSolution" class="answer-label" style="margin-top: 16px;">Решение:</label>
-            <textarea id="userSolution"
-                      class="answer-input"
-                      placeholder="Опишите ход решения... ИИ-тьютор даст подробный разбор"
-                      rows="5"
-                      style="resize: vertical; min-height: 100px; font-family: inherit;"></textarea>
+            <!-- D1: Как решал - мягкий блок -->
+            <div class="solution-method-tabs" style="display:flex; gap:0; margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.12); margin-top:16px;">
+              <button class="solution-method-tab active" type="button" onclick="switchDailySolutionMethod('text')" id="dailyTabText"
+                      style="flex:1; padding:10px 16px; text-align:center; cursor:pointer; background:rgba(0,0,0,0.2); color:rgba(255,255,255,0.5); font-size:14px; font-weight:600; border:none; transition:all 0.2s;">
+                 Текстом
+              </button>
+              <button class="solution-method-tab" type="button" onclick="switchDailySolutionMethod('photo')" id="dailyTabPhoto"
+                      style="flex:1; padding:10px 16px; text-align:center; cursor:pointer; background:rgba(0,0,0,0.2); color:rgba(255,255,255,0.5); font-size:14px; font-weight:600; border:none; transition:all 0.2s;">
+                 Фотографией
+              </button>
+            </div>
+            <label for="userSolution" class="answer-label">Покажи решение, если хочешь разбор</label>
+            <div class="solution-method-body" id="dailyMethodBodyText">
+              <textarea id="userSolution"
+                        class="answer-input"
+                        placeholder="Опишите ход решения по шагам..."
+                        rows="5"
+                        style="resize: vertical; min-height: 100px; font-family: inherit;"></textarea>
+              <div id="dailySolutionCounter" style="text-align:right;font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;">0 символов</div>
+            </div>
+            <div class="solution-method-body" id="dailyMethodBodyPhoto" style="display:none;">
+              <div class="photo-upload-area" id="dailyPhotoDropArea" onclick="document.getElementById('dailyPhotoInput').click()"
+                   style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; border:2px dashed rgba(255,255,255,0.15); border-radius:10px; cursor:pointer; background:rgba(0,0,0,0.15);">
+                <div style="font-size:32px; margin-bottom:8px;"> </div>
+                <div style="font-size:14px; color:rgba(255,255,255,0.5);">Нажмите или перетащите фото решения<br><small>jpg, png, heic - до 12 МБ</small></div>
+                <img id="dailyPhotoPreviewImg" style="display:none; max-width:100%; max-height:200px; border-radius:8px; margin-top:8px;" alt="preview">
+                <button type="button" id="dailyPhotoRemoveBtn" style="display:none; margin-top:8px; padding:4px 12px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; color:#e86a62; font-size:12px; cursor:pointer;" onclick="event.stopPropagation();removeDailyPhoto()"> Удалить фото</button>
+              </div>
+              <input type="file" id="dailyPhotoInput" accept="image/jpeg,image/png,image/heic,image/heif" style="display:none;" onchange="handleDailyPhotoSelect(this)">
+            </div>
             
             <button onclick="submitAnswer()" id="submitBtn" class="submit-button">
                 ✓ Проверить
@@ -69,30 +93,167 @@
 <script>
 const taskIndex = {{ task_index }};
 const taskId = {{ task.get('id', 0) }};
+let dailyCurrentMethod = 'text';
+let dailySelectedPhotoFile = null;
+
+// D1: switch solution method tabs
+function switchDailySolutionMethod(method) {
+  dailyCurrentMethod = method;
+  var tabT = document.getElementById('dailyTabText');
+  var tabP = document.getElementById('dailyTabPhoto');
+  if(tabT) tabT.style.background = method === 'text' ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.2)';
+  if(tabT) tabT.style.color = method === 'text' ? '#8c9abc' : 'rgba(255,255,255,0.5)';
+  if(tabT) tabT.style.borderBottom = method === 'text' ? '2px solid #4c7dff' : 'none';
+  if(tabP) tabP.style.background = method === 'photo' ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.2)';
+  if(tabP) tabP.style.color = method === 'photo' ? '#8c9abc' : 'rgba(255,255,255,0.5)';
+  if(tabP) tabP.style.borderBottom = method === 'photo' ? '2px solid #4c7dff' : 'none';
+  document.getElementById('dailyMethodBodyText').style.display = method === 'text' ? 'block' : 'none';
+  document.getElementById('dailyMethodBodyPhoto').style.display = method === 'photo' ? 'block' : 'none';
+}
+
+// D1: photo select handler
+function handleDailyPhotoSelect(input) {
+  var file = input.files[0];
+  if(!file) return;
+  if(file.size > 12 * 1024 * 1024){
+    alert('Размер фотографии превышает 12 МБ.');
+    input.value = '';
+    return;
+  }
+  var ext = file.name.split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','heic','heif'].indexOf(ext) === -1){
+    alert('Неподдерживаемый формат. Принимаются jpg, png, heic.');
+    input.value = '';
+    return;
+  }
+  dailySelectedPhotoFile = file;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = document.getElementById('dailyPhotoPreviewImg');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    var area = document.getElementById('dailyPhotoDropArea');
+    area.style.borderStyle = 'solid';
+    area.style.borderColor = 'rgba(56,239,125,0.3)';
+    area.style.background = 'rgba(56,239,125,0.05)';
+    document.getElementById('dailyPhotoRemoveBtn').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// D1: remove photo
+function removeDailyPhoto() {
+  dailySelectedPhotoFile = null;
+  document.getElementById('dailyPhotoInput').value = '';
+  document.getElementById('dailyPhotoPreviewImg').style.display = 'none';
+  var area = document.getElementById('dailyPhotoDropArea');
+  area.style.borderStyle = 'dashed';
+  area.style.borderColor = 'rgba(255,255,255,0.15)';
+  area.style.background = 'rgba(0,0,0,0.15)';
+  document.getElementById('dailyPhotoRemoveBtn').style.display = 'none';
+}
+
+// D1: drag-and-drop for photo area (daily)
+(function(){
+  var dropArea = document.getElementById('dailyPhotoDropArea');
+  if(!dropArea) return;
+  ['dragenter','dragover','dragleave','drop'].forEach(function(evt){
+    dropArea.addEventListener(evt, function(e){ e.preventDefault(); e.stopPropagation(); });
+  });
+  dropArea.addEventListener('dragenter', function(){ dropArea.style.borderColor = 'rgba(76,125,255,0.5)'; });
+  dropArea.addEventListener('dragleave', function(){ dropArea.style.borderColor = 'rgba(255,255,255,0.15)'; });
+  dropArea.addEventListener('drop', function(e){
+    dropArea.style.borderColor = 'rgba(255,255,255,0.15)';
+    var files = e.dataTransfer.files;
+    if(files.length > 0){
+      var input = document.getElementById('dailyPhotoInput');
+      // Set the file on the input
+      var dt = new DataTransfer();
+      dt.items.add(files[0]);
+      input.files = dt.files;
+      handleDailyPhotoSelect(input);
+    }
+  });
+})();
+
+// D1: solution text counter
+(function(){
+  var ta = document.getElementById('userSolution');
+  if(!ta) return;
+  ta.addEventListener('input', function(){
+    var cnt = document.getElementById('dailySolutionCounter');
+    if(cnt) cnt.textContent = ta.value.length + ' символов';
+  });
+})();
+
+// D1: image compression - reusing _compressImage from daily_tasks_modal.js if available, fallback inline
+function dailyCompressImage(file){
+  if(typeof _compressImage === 'function') return _compressImage(file, 1500, 0.8);
+  // Fallback: simple canvas compress
+  var maxDim = 1500, quality = 0.8;
+  if(!file.type || file.type.indexOf('image/') !== 0) return Promise.resolve(file);
+  return createImageBitmap(file).then(function(bitmap){
+    var w = bitmap.width, h = bitmap.height;
+    if(Math.max(w,h) > maxDim){
+      var k = maxDim / Math.max(w,h);
+      w = Math.round(w*k); h = Math.round(h*k);
+    }
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+    return new Promise(function(res){
+      cv.toBlob(function(blob){
+        if(!blob) return res(file);
+        res(new File([blob], (file.name||'photo')+'.jpg', { type:'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    });
+  }).catch(function(){ return file; });
+}
 
 async function submitAnswer() {
     const answerInput = document.getElementById('userAnswer');
-    const solutionInput = document.getElementById('userSolution');
     const answer = answerInput.value.trim();
-    const solution = solutionInput ? solutionInput.value.trim() : '';
     
     if (!answer) {
         alert('Пожалуйста, введите ответ');
         return;
     }
     
+    // Collect solution if present
+    var solutionText = '';
+    var solutionPhoto = null;
+    if(dailyCurrentMethod === 'text'){
+      var st = document.getElementById('userSolution');
+      solutionText = st ? st.value.trim() : '';
+    } else if(dailyCurrentMethod === 'photo' && dailySelectedPhotoFile){
+      solutionPhoto = dailySelectedPhotoFile;
+    }
+    
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ ИИ-тьютор проверяет...';
+    submitBtn.textContent = '...';
     
     try {
-        const response = await fetch(`/daily/task/${taskIndex}/submit`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ answer: answer, solution: solution })
-        });
+        var bodyPayload;
+        if(solutionPhoto){
+            var compressedFile = await dailyCompressImage(solutionPhoto);
+            bodyPayload = new FormData();
+            bodyPayload.append('answer', answer);
+            bodyPayload.append('solution_method', 'photo');
+            bodyPayload.append('solution_photo', compressedFile, compressedFile.name || 'solution.jpg');
+            if(solutionText) bodyPayload.append('solution_text', solutionText);
+            var response = await fetch(`/daily_tasks/{{ task.get('daily_item_id', 0) }}/submit`, {
+                method: 'POST',
+                body: bodyPayload
+            });
+        } else {
+            bodyPayload = JSON.stringify({ answer: answer, solution_method: 'text', solution_text: solutionText });
+            var response = await fetch(`/daily_tasks/{{ task.get('daily_item_id', 0) }}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: bodyPayload
+            });
+        }
         
         const data = await response.json();
         
@@ -102,7 +263,7 @@ async function submitAnswer() {
             if (data.redirect) {
                 window.location.href = data.redirect;
             } else {
-                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                alert('Ошибка: ' + (data.message || data.error || 'Неизвестная ошибка'));
                 submitBtn.disabled = false;
                 submitBtn.textContent = '✓ Проверить';
             }
