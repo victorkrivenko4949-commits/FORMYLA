@@ -1773,7 +1773,7 @@ class KimiReview(db.Model):
     __tablename__ = 'kimi_reviews'
 
     id = db.Column(db.Integer, primary_key=True)
-    solution_attempt_id = db.Column(db.Integer, db.ForeignKey('solution_attempts.id'), nullable=False, index=True)
+    solution_attempt_id = db.Column(db.Integer, db.ForeignKey('solution_attempts.id'), nullable=True, index=True)
     raw_response = db.Column(db.Text, nullable=True)
     label = db.Column(db.String(128), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
