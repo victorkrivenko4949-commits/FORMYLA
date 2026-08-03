@@ -1,0 +1,26 @@
+<!-- topics.html — страница всех тем (8 предметов) -->
+{% extends "base.html" %}
+{% block title %}Все темы — FORMYLA{% endblock %}
+{% block content %}
+<div class="topics-page" style="max-width:1120px;margin:0 auto;padding:40px 20px;">
+  <h1 style="color:var(--text);font-family:Satoshi,system-ui;font-size:28px;font-weight:700;margin:0 0 8px 0;">Все темы</h1>
+  <p style="color:var(--muted);font-family:Satoshi,system-ui;font-size:16px;margin:0 0 32px 0;">8 разделов олимпиадной математики</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+    {% for key, name in subjects.items() %}
+    <a href="/section/{{ key }}" style="display:block;text-decoration:none;color:inherit;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;transition:border-color 0.2s;min-height:140px;">
+        <h2 style="color:var(--text);font-family:Satoshi,system-ui;font-size:20px;font-weight:600;margin:0 0 8px 0;">{{ name }}</h2>
+        <p style="color:var(--muted);font-family:Satoshi,system-ui;font-size:14px;margin:0;">Подготовка к олимпиадам по разделу «{{ name }}»</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:40px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">
+    <p style="color:var(--muted);font-family:Satoshi,system-ui;font-size:14px;margin:0;text-align:center;">
+      Выберите раздел, чтобы увидеть подтемы и доступные задачи.
+    </p>
+  </div>
+</div>
+{% endblock %}

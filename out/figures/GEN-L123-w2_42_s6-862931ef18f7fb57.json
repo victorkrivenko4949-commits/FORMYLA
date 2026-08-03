@@ -1,0 +1,97 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 3,
+   "y": 4
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 0,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 5,
+   "y": 5
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": 4,
+   "y": -3
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 7,
+   "y": 1
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AM",
+   "line2": "EG"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABDE"
+  },
+  {
+   "polygon": "ACFG"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "EG",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "E",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "G",
+    "A",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "EP",
+    "PG"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}
