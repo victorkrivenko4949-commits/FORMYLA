@@ -1,0 +1,83 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "CD"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AN",
+   "line2": "DM"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BN",
+   "line2": "CM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AN"
+  },
+  {
+   "segment": "DM"
+  },
+  {
+   "segment": "BN"
+  },
+  {
+   "segment": "CM"
+  },
+  {
+   "polygon": "MPNQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CN",
+    "ND"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "MN",
+   "from": "M",
+   "to": "N",
+   "reason": "Соединим середины M и N, чтобы использовать равенство площадей получившихся частей."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "MN",
+   "style": "dashed"
+  }
+ ]
+}

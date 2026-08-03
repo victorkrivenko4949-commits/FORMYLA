@@ -1,0 +1,51 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "BM",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "BC",
+   "ratio": 0.75
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  },
+  {
+   "polygon": "APQC",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

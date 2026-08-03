@@ -1,0 +1,99 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "AA1",
+   "line2": "BB1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AH",
+   "style": "soft"
+  },
+  {
+   "segment": "A1H",
+   "style": "soft"
+  },
+  {
+   "segment": "BH",
+   "style": "soft"
+  },
+  {
+   "segment": "B1H",
+   "style": "soft"
+  },
+  {
+   "segment": "A1B1",
+   "style": "accent"
+  },
+  {
+   "segment": "B1A",
+   "style": "accent"
+  },
+  {
+   "segment": "AB",
+   "style": "accent"
+  },
+  {
+   "segment": "BA1",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "A1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B1",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "AB"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ]
+}

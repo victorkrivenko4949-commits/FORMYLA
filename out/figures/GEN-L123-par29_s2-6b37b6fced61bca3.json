@@ -1,0 +1,70 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AM"
+  },
+  {
+   "segment": "BM"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AD",
+    "DM",
+    "MC",
+    "CB"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "D",
+    "A",
+    "M"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "M",
+    "A",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "M"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "M",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

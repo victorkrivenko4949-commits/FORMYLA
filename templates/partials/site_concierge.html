@@ -2,8 +2,7 @@
 {# Site Concierge — AI-помощник по сайту FORMYLA.                          #}
 {# Включается из base.html. НЕ путать с #tutorBtn — это отдельный виджет.   #}
 {# ─────────────────────────────────────────────────────────────────────── #}
-{% set _is_drawing_board = request.path.startswith('/drawing') and (request.args.get('mode', 'board') == 'board') %}
-{% if not _is_drawing_board %}
+{% if True %}
 <link rel="stylesheet"
       href="{{ url_for('static', filename='css/site_concierge.css') }}?v={{ asset_version|default('1') }}">
 

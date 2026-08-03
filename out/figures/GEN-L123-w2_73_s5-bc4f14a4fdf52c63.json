@@ -1,0 +1,37 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AI"
+  },
+  {
+   "segment": "CI"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "I",
+    "C"
+   ],
+   "text": "110°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

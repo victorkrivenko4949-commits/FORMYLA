@@ -1,0 +1,104 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "circle",
+   "id": "cP",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "P",
+   "circle": "cP",
+   "line": "BC",
+   "pick": 1
+  },
+  {
+   "type": "circle",
+   "id": "cQ",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "Q",
+   "circle": "cQ",
+   "line": "AC",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ACP",
+   "style": "soft"
+  },
+  {
+   "polygon": "BCQ",
+   "style": "soft"
+  },
+  {
+   "segment": "AQ",
+   "style": "accent"
+  },
+  {
+   "segment": "BP",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "P"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AC",
+    "CP"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AP",
+    "AC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CQ"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "BQ",
+    "BC"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

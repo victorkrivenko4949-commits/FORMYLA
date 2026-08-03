@@ -1,0 +1,66 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "circle",
+   "id": "cB",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "cB",
+   "line": "BC",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "cD",
+   "center": "D",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "F",
+   "circle": "cD",
+   "line": "CD",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "ABE"
+  },
+  {
+   "polygon": "ADF"
+  },
+  {
+   "segment": "CE",
+   "style": "accent"
+  },
+  {
+   "segment": "CF",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,39 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "dashed"
+  },
+  {
+   "segment": "BD",
+   "style": "dashed"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "O",
+    "B"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

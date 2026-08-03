@@ -1,0 +1,106 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "C",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "M",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w3",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "w4",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "N",
+   "circle1": "w3",
+   "circle2": "w4",
+   "pick": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "AN"
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "BM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ACM",
+   "style": "soft"
+  },
+  {
+   "polygon": "BCN",
+   "style": "soft"
+  },
+  {
+   "segment": "AN",
+   "style": "dashed"
+  },
+  {
+   "segment": "BM",
+   "style": "dashed"
+  },
+  {
+   "segment": "CP",
+   "style": "accent"
+  },
+  {
+   "segment": "CQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "P",
+    "C",
+    "Q"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

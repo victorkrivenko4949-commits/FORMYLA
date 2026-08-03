@@ -1,0 +1,70 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AM"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BM",
+    "MC"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "M"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "M",
+    "A",
+    "C"
+   ],
+   "text": "15°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "A",
+   "over": "M",
+   "reason": "Продлим AM за точку M на MD=AM, чтобы получить параллелограмм ABDC"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BD",
+   "style": "dashed"
+  },
+  {
+   "segment": "DC",
+   "style": "dashed"
+  },
+  {
+   "segment": "MD",
+   "style": "dashed"
+  }
+ ]
+}

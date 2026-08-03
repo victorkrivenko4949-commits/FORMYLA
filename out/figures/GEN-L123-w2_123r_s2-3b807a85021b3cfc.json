@@ -1,0 +1,64 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": -3,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 3,
+   "y": 0
+  },
+  {
+   "type": "midpoint",
+   "id": "C",
+   "of": "AB"
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": -2,
+   "y": 4.898979485566356
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABD"
+  },
+  {
+   "segment": "CD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AC",
+    "CB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "D1",
+   "of": "D",
+   "over": "C",
+   "reason": "D1 — образ D при центральной симметрии относительно C; тогда AD1=BD=7 и DD1=2CD, откуда по неравенству треугольника 5+7 ≥ 2CD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AD1",
+   "style": "dashed"
+  },
+  {
+   "segment": "DD1",
+   "style": "dashed"
+  }
+ ]
+}

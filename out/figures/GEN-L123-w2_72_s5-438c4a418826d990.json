@@ -1,0 +1,50 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "quad",
+   "id": "BCDE",
+   "kind": "square"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "BCDE"
+  },
+  {
+   "segment": "AD",
+   "style": "accent"
+  },
+  {
+   "segment": "AE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "D",
+    "A",
+    "E"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

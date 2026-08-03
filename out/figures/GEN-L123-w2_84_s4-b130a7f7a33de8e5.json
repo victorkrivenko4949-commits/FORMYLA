@@ -1,0 +1,96 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0.2588,
+   "y": 0.9659
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 1.2588,
+   "y": 0.9659
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 0,
+   "y": -1
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 1,
+   "y": -1
+  },
+  {
+   "type": "point",
+   "id": "H",
+   "x": -0.9659,
+   "y": 0.2588
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": -0.7071,
+   "y": 1.2247
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AC",
+   "line2": "FH"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "ABEF"
+  },
+  {
+   "polygon": "ADGH"
+  },
+  {
+   "segment": "AC",
+   "style": "accent"
+  },
+  {
+   "segment": "FH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "D",
+    "A",
+    "B"
+   ],
+   "text": "75°"
+  },
+  {
+   "right_angle": [
+    "F",
+    "P",
+    "A"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

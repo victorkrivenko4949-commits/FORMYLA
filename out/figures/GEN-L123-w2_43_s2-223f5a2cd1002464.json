@@ -1,0 +1,86 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "AD",
+   "line2": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "E",
+    "C"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "F",
+   "from": "H",
+   "line": "DE",
+   "reason": "Точка касания вписанной окружности с DE"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "H",
+   "through": "F",
+   "reason": "Вписанная окружность треугольника CDE с центром H"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "HF",
+   "style": "soft"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  }
+ ]
+}

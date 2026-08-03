@@ -1291,27 +1291,6 @@ except Exception as _e:
     print(f"[BP] account_bp NOT registered: {_e}")
 
 try:
-    from routes.drawing import drawing_bp
-    app.register_blueprint(drawing_bp)
-    print("[BP] drawing_bp registered (/drawing)")
-except Exception as _e:
-    print(f"[BP] drawing_bp NOT registered: {_e}")
-
-try:
-    from routes.drawing_diag import drawing_diag_bp
-    app.register_blueprint(drawing_diag_bp)
-    print("[BP] drawing_diag_bp registered (/api/drawing/diag)")
-except Exception as _e:
-    print(f"[BP] drawing_diag_bp NOT registered: {_e}")
-
-try:
-    from routes.drawing_history import drawing_history_bp
-    app.register_blueprint(drawing_history_bp)
-    print("[BP] drawing_history_bp registered (/api/drawing/history, /drawing/history)")
-except Exception as _e:
-    print(f"[BP] drawing_history_bp NOT registered: {_e}")
-
-try:
     from routes.figures import figures_bp
     app.register_blueprint(figures_bp)
     print("[BP] figures_bp registered (/figures)")
@@ -1794,8 +1773,7 @@ try:
 except Exception as _e:
     print(f"[JINJA] inject_geometry filter NOT registered: {_e}")
 
-# Limit upload size: 12 MB (for solution photos AND drawing-task screenshots
-# that get base64-encoded; raw image cap remains 8 MB on the drawing route).
+# Limit upload size: 12 MB (for solution photos).
 app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
 
 # ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
@@ -12684,11 +12662,9 @@ def matstat():
 
 if __name__ == '__main__':
     # Auto-reloader is disabled by default because long-running endpoints
-    # (e.g. /api/drawing/generate, which runs a 1-3 minute LLM pipeline)
     # get killed mid-request whenever Werkzeug detects ANY *.py change
     # in the workspace (including scripts that pytest/scripts touch).
-    # Set FLASK_RELOAD=1 explicitly if you want the dev-time auto-reload
-    # behaviour back; do NOT set it while testing /drawing endpoints.
+    # Set FLASK_RELOAD=1 explicitly if you want the dev-time auto-reload.
     import os
     _use_reloader = (
         os.environ.get("FLASK_RELOAD", "0").strip().lower()

@@ -1,0 +1,96 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "line_circle",
+   "id": "W",
+   "circle": "w",
+   "line": "BI",
+   "pick": 1
+  },
+  {
+   "type": "intersection",
+   "id": "T",
+   "line1": "WH",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "BW"
+  },
+  {
+   "line": "WH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "W"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "W",
+    "B",
+    "C"
+   ],
+   "text": "30°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,80 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "triangle",
+   "id": "ABD",
+   "kind": "equilateral"
+  },
+  {
+   "type": "triangle",
+   "id": "ACE",
+   "kind": "equilateral"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "DC",
+   "line2": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABD"
+  },
+  {
+   "polygon": "ACE"
+  },
+  {
+   "segment": "DC",
+   "style": "accent"
+  },
+  {
+   "segment": "BE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "D",
+    "A",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "E"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "B",
+    "P",
+    "C"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<polygon points="189.3,366.3 366.3,382.3 409.1,232.2 232.2,216.1" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<polygon points="189.3,366.3 366.3,382.3 317.4,553.2" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<polygon points="189.3,366.3 232.2,216.1 76.7,202.0" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
+<line x1="409.1" y1="232.2" x2="317.4" y2="553.2" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="409.1" y1="232.2" x2="76.7" y2="202.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<path d="M 196.5 341.3 A 26 26 0 0 1 215.2 368.6" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="223.1" y="348.1" fill="#8C9ABC" font-size="15" text-anchor="middle">60°</text>
+<circle cx="189.3" cy="366.3" r="3.4" fill="#E6EBF7"/>
+<text x="172.0" y="382.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="366.3" cy="382.3" r="3.4" fill="#E6EBF7"/>
+<text x="385.6" y="393.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="409.1" cy="232.2" r="3.4" fill="#E6EBF7"/>
+<text x="426.5" y="228.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="232.2" cy="216.1" r="3.4" fill="#E6EBF7"/>
+<text x="232.2" y="202.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="317.4" cy="553.2" r="3.4" fill="#E6EBF7"/>
+<text x="322.6" y="578.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">E</text>
+<circle cx="76.7" cy="202.0" r="3.4" fill="#E6EBF7"/>
+<text x="59.4" y="198.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">F</text>
+</svg>

@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AD",
+    "DC"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "50°"
+  },
+  {
+   "angle": [
+    "C",
+    "D",
+    "A"
+   ],
+   "text": "130°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "AC",
+   "reason": "Проведём диагональ AC; она разбивает четырёхугольник на два равнобедренных треугольника."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "soft"
+  }
+ ]
+}

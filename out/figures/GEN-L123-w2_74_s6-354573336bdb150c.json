@@ -1,0 +1,106 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "K",
+   "of": "AB",
+   "ratio": 0.326
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L",
+   "of": "BC",
+   "ratio": 0.174
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AL",
+   "line2": "CK"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AL",
+   "style": "accent"
+  },
+  {
+   "segment": "CK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "80°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "A"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "70°"
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "L"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "K"
+   ],
+   "text": "10°"
+  },
+  {
+   "right_angle": [
+    "A",
+    "L",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "K",
+    "C"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

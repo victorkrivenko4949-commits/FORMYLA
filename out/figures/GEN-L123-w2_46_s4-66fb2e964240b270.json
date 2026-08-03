@@ -1,0 +1,80 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "CI"
+  },
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "A",
+   "over": "M"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AB",
+   "line2": "ID"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BC",
+   "line2": "ID"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AI"
+  },
+  {
+   "segment": "CI"
+  },
+  {
+   "segment": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "50°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "70°"
+  },
+  {
+   "angle": [
+    "A",
+    "I",
+    "C"
+   ],
+   "text": "120°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

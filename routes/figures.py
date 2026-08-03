@@ -8,7 +8,7 @@
 #   - API: balance, transactions, email subscription
 #
 # The generation pipeline has been moved to routes/figures_generator.py
-# at /figures/generate/* to avoid route conflicts with /figures and /drawing.
+# at /figures/generate/* to avoid route conflicts with /figures.
 
 from __future__ import annotations
 

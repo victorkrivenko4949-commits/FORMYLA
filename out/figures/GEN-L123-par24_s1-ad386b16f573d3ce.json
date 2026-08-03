@@ -1,0 +1,58 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "P",
+   "circle": "w",
+   "angle": 0
+  },
+  {
+   "type": "point_on_circle",
+   "id": "Q",
+   "circle": "w",
+   "angle": 45
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "line": "OP",
+   "style": "soft"
+  },
+  {
+   "line": "OQ",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "P",
+    "O",
+    "Q"
+   ],
+   "text": "45°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

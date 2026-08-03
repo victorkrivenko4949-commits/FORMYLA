@@ -1,0 +1,69 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "N",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AN",
+   "line2": "BM"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AN"
+  },
+  {
+   "segment": "BM"
+  },
+  {
+   "segment": "MN"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AM",
+    "MN",
+    "NB"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "K",
+    "B"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

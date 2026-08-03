@@ -1,0 +1,55 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AD",
+   "ratio": 0.3333333333
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "BE",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "BF",
+   "style": "soft"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "AC",
+   "reason": "Проведём через D прямую, параллельную BE, до пересечения с AC в точке G. Из теоремы Фалеса FG:GC = BD:DC = 2:3 и AF:FG = AE:ED = 1:2, откуда AG:GC = 1:1, поэтому G — середина AC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DG",
+   "style": "dashed"
+  }
+ ]
+}

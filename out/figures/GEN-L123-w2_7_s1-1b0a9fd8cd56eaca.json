@@ -1,0 +1,83 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "AB",
+   "ratio": 0.35
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "CD",
+   "ratio": 0.65
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "EF",
+   "ratio": 0.5
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "ABP"
+  },
+  {
+   "polygon": "BCP"
+  },
+  {
+   "polygon": "CDP"
+  },
+  {
+   "polygon": "ADP",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "Q",
+   "from": "P",
+   "line": "AD"
+  },
+  {
+   "type": "foot",
+   "id": "S",
+   "from": "P",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "R",
+   "from": "P",
+   "line": "AB"
+  },
+  {
+   "type": "foot",
+   "id": "T",
+   "from": "P",
+   "line": "CD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "QS",
+   "style": "dashed"
+  },
+  {
+   "segment": "RT",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Проводим через P прямые, параллельные сторонам прямоугольника; сумма площадей противоположных треугольников равна половине площади прямоугольника."
+}

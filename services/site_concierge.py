@@ -172,7 +172,7 @@ _ROUTER_SYSTEM_PROMPT_TEMPLATE = """Ты — диспетчер AI-помощн�
      – Поддержка — Telegram-бот по ссылке внизу /about.
    • Допустимые URL: /, /about, /about#pricing, /about#unique, /about#support,
      /daily, /probniks, /problems, /olympiads, /olympiads/courses, /olympiads/methods,
-     /olympiad-prep, /subscribe, /profile, /drawing, /section/algebra, /section/geometry,
+     /olympiad-prep, /subscribe, /profile, /section/algebra, /section/geometry,
      /leaderboard, /chat, /friends.
 
 ВСЕГДА возвращай ровно один JSON-объект, без обёрток ```json, без комментариев.

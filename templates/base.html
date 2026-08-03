@@ -148,7 +148,7 @@
     <!-- Mobile home swipe-pager (≤768px). На десктопе скрипт ничего не делает (init ищет #mHome, которого там нет). -->
     <script defer src="{{ url_for('static', filename='js/mobile_home_slider.js') }}?v={{ asset_version }}"></script>
 </head>
-<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/drawing') %} page-drawing{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}"{% if current_user.is_authenticated %} data-user-id="{{ current_user.id }}"{% endif %}>
+<body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}"{% if current_user.is_authenticated %} data-user-id="{{ current_user.id }}"{% endif %}>
     <header class="header">
         <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="logo">
             <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
@@ -394,7 +394,7 @@
             <span class="bottom-nav-icon">🧭</span>
             <span class="bottom-nav-label">Куратор</span>
         </a>
-        <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/drawing*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*">
+        <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*">
             <span class="bottom-nav-icon">📋</span>
             <span class="bottom-nav-label">Прочее</span>
         </a>

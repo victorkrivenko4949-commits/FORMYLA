@@ -1,0 +1,60 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.4
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AB"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AD",
+   "line2": "CE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "CE"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AE",
+    "EB"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "BD",
+   "reason": "K — середина BD, так как EK — средняя линия треугольника ABD; это позволяет найти отношение OE:CE по теореме Фалеса."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "EK",
+   "style": "soft"
+  }
+ ]
+}

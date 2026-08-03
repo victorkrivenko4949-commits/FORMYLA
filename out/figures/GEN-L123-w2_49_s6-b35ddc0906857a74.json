@@ -1,0 +1,52 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.3333333333333333
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AD",
+   "line2": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "BE"
+  },
+  {
+   "polygon": "CDOE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AE",
+    "EC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

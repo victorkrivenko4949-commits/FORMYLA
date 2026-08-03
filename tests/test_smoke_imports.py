@@ -58,22 +58,6 @@ def test_olympiad_bp_import_all_models():
     assert MethodTask.__name__ == 'MethodTask'
 
 
-# ─── 3. drawing_bp (PROBLEM 3) ────────────────────────────────────────────────
-
-def test_drawing_async_import():
-    """services.drawing_async must be importable (used by routes/drawing.py)."""
-    from services.drawing_async import run_drawing_async, get_task_status
-    assert callable(run_drawing_async)
-    assert callable(get_task_status)
-
-
-def test_drawing_bp_import():
-    """routes.drawing must export drawing_bp (registered in app.py)."""
-    from routes.drawing import drawing_bp
-    assert drawing_bp.name == 'drawing'
-    # url_prefix is only set when registered with app.register_blueprint()
-
-
 # ─── 4. User model generation columns ─────────────────────────────────────────
 
 def test_user_model_has_generation_columns():

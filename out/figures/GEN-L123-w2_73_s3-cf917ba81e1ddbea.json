@@ -1,0 +1,79 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.333
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.667
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AE",
+   "line2": "CD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "CD",
+   "style": "soft"
+  },
+  {
+   "polygon": "ADOE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "DB"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "BE"
+   ],
+   "ticks": 2
+  },
+  {
+   "equal": [
+    "EC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "DE",
+   "reason": "Отрезок DE используется для выражения площадей треугольников ADE и CDE через площадь ABC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "DE",
+   "style": "dashed"
+  }
+ ]
+}

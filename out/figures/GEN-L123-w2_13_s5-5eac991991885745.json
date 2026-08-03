@@ -1,0 +1,54 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AI",
+   "style": "accent"
+  },
+  {
+   "segment": "CI",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AI",
+    "CI"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "44°"
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

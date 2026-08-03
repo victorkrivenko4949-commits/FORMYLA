@@ -1,0 +1,98 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": -1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 108
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": -1,
+   "y": 2
+  },
+  {
+   "type": "intersection",
+   "id": "K",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AB"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "BD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "C"
+   ],
+   "text": "108°"
+  },
+  {
+   "right_angle": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "K",
+    "C"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "AOC",
+   "kind": "isosceles",
+   "reason": "Радиусы OA и OC равны, треугольник AOC равнобедренный, используется для нахождения угла OAC."
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "AOC",
+   "style": "soft"
+  }
+ ]
+}

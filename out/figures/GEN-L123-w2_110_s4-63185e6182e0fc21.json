@@ -1,0 +1,76 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.583
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "120°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "D"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "D",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "C",
+    "E",
+    "B"
+   ]
+  }
+ ],
+ "aux": [
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "C",
+   "line": "AB",
+   "reason": "Опускаем перпендикуляр CE на продолжение AB за точку B, чтобы свести решение к прямоугольному треугольнику CBE."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BE",
+   "style": "dashed"
+  },
+  {
+   "segment": "CE",
+   "style": "dashed"
+  }
+ ]
+}

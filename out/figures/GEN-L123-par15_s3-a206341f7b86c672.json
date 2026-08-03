@@ -1,0 +1,73 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.6666666666666666
+  },
+  {
+   "type": "midpoint",
+   "id": "M1",
+   "of": "AD"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "M1",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "AB",
+   "pick": 1
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "DE",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "right_angle": [
+    "D",
+    "E",
+    "B"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

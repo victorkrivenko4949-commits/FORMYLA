@@ -1,0 +1,63 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "D",
+   "of": "B",
+   "over": "M",
+   "reason": "Продлим медиану BM за точку M на отрезок MD=BM; тогда ABCD — параллелограмм и BM — половина его диагонали BD."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AD",
+   "style": "dashed"
+  },
+  {
+   "segment": "CD",
+   "style": "dashed"
+  },
+  {
+   "segment": "MD",
+   "style": "dashed"
+  }
+ ]
+}

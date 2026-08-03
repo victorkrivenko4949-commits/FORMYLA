@@ -1,0 +1,59 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "BC",
+   "ratio": 0.35
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "A"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "A",
+    "D",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,123 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "midpoint",
+   "id": "P",
+   "of": "AC1"
+  },
+  {
+   "type": "midpoint",
+   "id": "Q",
+   "of": "CA1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  },
+  {
+   "line": "PQ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "A1",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "C1",
+    "A"
+   ]
+  },
+  {
+   "equal": [
+    "AP",
+    "PC1"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CQ",
+    "QA1"
+   ],
+   "ticks": 2
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O1",
+   "of": "AC",
+   "reason": "центр окружности с диаметром AC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O1",
+   "through": "A",
+   "reason": "окружность с диаметром AC, на ней лежат A1 и C1"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC",
+   "reason": "третья высота, на которой лежит H"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "BB1",
+   "style": "dashed"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  }
+ ]
+}

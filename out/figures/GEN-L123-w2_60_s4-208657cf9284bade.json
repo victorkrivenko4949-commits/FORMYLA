@@ -1,0 +1,119 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "circle",
+   "id": "cB",
+   "center": "B",
+   "through": "M"
+  },
+  {
+   "type": "circle",
+   "id": "cM",
+   "center": "M",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "N",
+   "circle1": "cB",
+   "circle2": "cM",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  },
+  {
+   "polygon": "BMN"
+  },
+  {
+   "segment": "AN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BM",
+    "MN"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "MN",
+    "NB"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "C",
+    "A",
+    "N"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [
+  {
+   "type": "reflect_point",
+   "id": "Bp",
+   "of": "B",
+   "over": "AC",
+   "reason": "Отражение B относительно AC даёт симметричный треугольник AB'C, удобный для поворота на 60°."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "ABp",
+   "style": "soft"
+  },
+  {
+   "segment": "BpC",
+   "style": "soft"
+  },
+  {
+   "segment": "BBp",
+   "style": "dashed"
+  }
+ ]
+}

@@ -1,0 +1,87 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w",
+   "line": "AB",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "CD",
+   "line2": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "line": "CD",
+   "style": "soft"
+  },
+  {
+   "line": "BE",
+   "style": "soft"
+  },
+  {
+   "line": "AH",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "70°"
+  },
+  {
+   "right_angle": [
+    "B",
+    "D",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "E",
+    "C"
+   ]
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -99,16 +99,6 @@
             <span class="misc-link-label">ИИ-чертёж по задаче</span>
             <span class="misc-link-desc">Генерация чертежа</span>
         </a>
-        <a href="/drawing?tab=whiteboard" class="misc-link">
-            <span class="misc-link-label">Доска и встреча</span>
-            <span class="misc-link-desc">Интерактивная доска, камера и звук</span>
-        </a>
-        {% if current_user.is_authenticated %}
-        <a href="/drawing/history" class="misc-link">
-            <span class="misc-link-label">История чертежей</span>
-            <span class="misc-link-desc">Сохранённые чертежи</span>
-        </a>
-        {% endif %}
     </div>
 
     <div class="misc-group">

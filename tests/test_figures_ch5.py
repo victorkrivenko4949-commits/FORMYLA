@@ -71,17 +71,17 @@ def ensure_user(app_ctx):
 
 
 class TestRouteSeparation:
-    """Verify /figures, /drawing, /figures/generate all return 200."""
+    """Verify /figures and /figures/generate return 200; /drawing returns 404."""
 
     def test_figures_vitrine(self, test_client):
         r = test_client.get('/figures', follow_redirects=True)
         assert r.status_code == 200
         assert len(r.data) > 100
 
-    def test_drawing_page(self, test_client):
+    def test_drawing_page_gone(self, test_client):
+        """Old /drawing blueprint removed in L1 — must return 404."""
         r = test_client.get('/drawing', follow_redirects=True)
-        assert r.status_code == 200
-        assert len(r.data) > 100
+        assert r.status_code == 404
 
     def test_generate_page(self, test_client):
         r = test_client.get('/figures/generate', follow_redirects=True)
