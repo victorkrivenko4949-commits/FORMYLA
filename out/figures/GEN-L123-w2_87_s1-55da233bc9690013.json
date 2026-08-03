@@ -1,0 +1,113 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 40
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 110
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "OC"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "C"
+   ],
+   "text": "70°"
+  },
+  {
+   "angle": [
+    "A",
+    "O",
+    "L"
+   ],
+   "text": "20°"
+  },
+  {
+   "angle": [
+    "M",
+    "O",
+    "C"
+   ],
+   "text": "55°"
+  },
+  {
+   "angle": [
+    "L",
+    "O",
+    "M"
+   ],
+   "text": "35°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_circle",
+   "id": "L",
+   "circle": "w",
+   "angle": 20,
+   "reason": "строим биссектрису угла AOB: OL делит угол 40° пополам"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "M",
+   "circle": "w",
+   "angle": 55,
+   "reason": "строим биссектрису угла AOC: угол AOC=110°, OM делит его пополам"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "OL",
+   "style": "accent"
+  },
+  {
+   "segment": "OM",
+   "style": "accent"
+  }
+ ]
+}

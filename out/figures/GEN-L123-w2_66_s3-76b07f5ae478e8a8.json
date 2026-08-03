@@ -1,0 +1,49 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "D",
+   "line1": "AI",
+   "line2": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "BI",
+   "line2": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD"
+  },
+  {
+   "segment": "BE"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "I",
+    "E"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

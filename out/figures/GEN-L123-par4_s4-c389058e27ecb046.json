@@ -1,0 +1,122 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 12,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 12,
+   "y": 12
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0,
+   "y": 12
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": 0,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 4,
+   "y": 3
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": 4,
+   "y": 6
+  },
+  {
+   "type": "point",
+   "id": "H",
+   "x": 8,
+   "y": 6
+  },
+  {
+   "type": "point",
+   "id": "I",
+   "x": 8,
+   "y": 9
+  },
+  {
+   "type": "point",
+   "id": "J",
+   "x": 12,
+   "y": 9
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABJIHGFE",
+   "style": "soft"
+  },
+  {
+   "polygon": "EFGHIJCD",
+   "style": "soft"
+  },
+  {
+   "segment": "EF",
+   "style": "accent"
+  },
+  {
+   "segment": "FG",
+   "style": "accent"
+  },
+  {
+   "segment": "GH",
+   "style": "accent"
+  },
+  {
+   "segment": "HI",
+   "style": "accent"
+  },
+  {
+   "segment": "IJ",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC",
+    "CD",
+    "DA"
+   ],
+   "ticks": 3
+  },
+  {
+   "equal": [
+    "EF",
+    "GH",
+    "IJ"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "FG",
+    "HI"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

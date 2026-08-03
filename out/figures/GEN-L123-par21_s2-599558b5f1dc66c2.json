@@ -1,0 +1,69 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "of": "AB",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q",
+   "of": "BC",
+   "ratio": 0.34
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "CA",
+   "line2": "PQ"
+  }
+ ],
+ "draw": [
+  {
+   "line": "AB"
+  },
+  {
+   "line": "BC"
+  },
+  {
+   "line": "CA"
+  },
+  {
+   "line": "PQ"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "P",
+    "Q"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "A",
+    "P",
+    "R"
+   ],
+   "text": "40°"
+  },
+  {
+   "angle": [
+    "A",
+    "P",
+    "Q"
+   ],
+   "text": "140°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

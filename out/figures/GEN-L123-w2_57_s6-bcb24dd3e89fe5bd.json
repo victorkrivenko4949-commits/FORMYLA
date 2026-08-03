@@ -1,0 +1,62 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "L",
+   "of": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "AKML",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AK",
+    "KB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AL",
+    "LC"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [
+  {
+   "type": "segment",
+   "id": "AM",
+   "reason": "Диагональ AM делит четырёхугольник AKML на два треугольника, площади которых находятся через средние линии."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AM",
+   "style": "dashed"
+  }
+ ]
+}

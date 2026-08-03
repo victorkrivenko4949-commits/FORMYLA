@@ -1,0 +1,106 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "F",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "CD"
+  },
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "DA"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AF",
+   "line2": "BG"
+  },
+  {
+   "type": "intersection",
+   "id": "Q",
+   "line1": "BG",
+   "line2": "CH"
+  },
+  {
+   "type": "intersection",
+   "id": "R",
+   "line1": "CH",
+   "line2": "DE"
+  },
+  {
+   "type": "intersection",
+   "id": "S",
+   "line1": "DE",
+   "line2": "AF"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AF"
+  },
+  {
+   "segment": "BG"
+  },
+  {
+   "segment": "CH"
+  },
+  {
+   "segment": "DE"
+  },
+  {
+   "polygon": "PQRS",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AE",
+    "EB"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BF",
+    "FC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "CG",
+    "GD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "DH",
+    "HA"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

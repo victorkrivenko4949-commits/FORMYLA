@@ -1,0 +1,83 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w1",
+   "angle": 60
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w1",
+   "angle": 140
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w1",
+   "angle": 70
+  }
+ ],
+ "draw": [
+  {
+   "segment": "OA"
+  },
+  {
+   "segment": "OB"
+  },
+  {
+   "segment": "OC"
+  },
+  {
+   "segment": "OD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "O",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "C"
+   ],
+   "text": "80°"
+  },
+  {
+   "angle": [
+    "B",
+    "O",
+    "D"
+   ],
+   "text": "10°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

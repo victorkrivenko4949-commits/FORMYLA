@@ -1,0 +1,207 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "rectangle"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P1",
+   "of": "AB",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P2",
+   "of": "AB",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P3",
+   "of": "AB",
+   "ratio": 0.375
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P4",
+   "of": "AB",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P5",
+   "of": "AB",
+   "ratio": 0.625
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P6",
+   "of": "AB",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "P7",
+   "of": "AB",
+   "ratio": 0.875
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q1",
+   "of": "CD",
+   "ratio": 0.875
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q2",
+   "of": "CD",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q3",
+   "of": "CD",
+   "ratio": 0.625
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q4",
+   "of": "CD",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q5",
+   "of": "CD",
+   "ratio": 0.375
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q6",
+   "of": "CD",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "Q7",
+   "of": "CD",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T0",
+   "of": "AD",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T8",
+   "of": "BC",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T2",
+   "of": "P2Q2",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T4",
+   "of": "P4Q4",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "T6",
+   "of": "P6Q6",
+   "ratio": 0.125
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD",
+   "style": "soft"
+  },
+  {
+   "segment": "P1Q1",
+   "style": "dashed"
+  },
+  {
+   "segment": "P2Q2",
+   "style": "dashed"
+  },
+  {
+   "segment": "P3Q3",
+   "style": "dashed"
+  },
+  {
+   "segment": "P4Q4",
+   "style": "dashed"
+  },
+  {
+   "segment": "P5Q5",
+   "style": "dashed"
+  },
+  {
+   "segment": "P6Q6",
+   "style": "dashed"
+  },
+  {
+   "segment": "P7Q7",
+   "style": "dashed"
+  },
+  {
+   "segment": "T0P1",
+   "style": "accent"
+  },
+  {
+   "segment": "P1T2",
+   "style": "accent"
+  },
+  {
+   "segment": "T2P3",
+   "style": "accent"
+  },
+  {
+   "segment": "P3T4",
+   "style": "accent"
+  },
+  {
+   "segment": "T4P5",
+   "style": "accent"
+  },
+  {
+   "segment": "P5T6",
+   "style": "accent"
+  },
+  {
+   "segment": "T6P7",
+   "style": "accent"
+  },
+  {
+   "segment": "P7T8",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "T0",
+    "A",
+    "P1"
+   ]
+  },
+  {
+   "equal": [
+    "AP1",
+    "AT0"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}
