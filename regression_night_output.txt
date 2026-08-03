@@ -47,10 +47,8 @@ S5(a) IMPORT OK: routes.chat_presence
 S5(a) IMPORT OK: routes.concierge
 S5(a) IMPORT OK: routes.conference_api
 S5(a) IMPORT OK: routes.decorators
-S5(a) IMPORT OK: routes.drawing
-S5(a) IMPORT OK: routes.drawing_diag
-S5(a) IMPORT OK: routes.drawing_history
 S5(a) IMPORT OK: routes.figures
+S5(a) IMPORT OK: routes.figures_generator
 S5(a) IMPORT OK: routes.friends
 S5(a) IMPORT FAIL: routes.friends_backup — '(' was never closed (friends_backup.py, line 94)
 S5(a) IMPORT OK: routes.grade

@@ -1,0 +1,108 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "foot",
+   "id": "C1",
+   "from": "C",
+   "line": "AB"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1",
+   "style": "soft"
+  },
+  {
+   "segment": "BB1",
+   "style": "soft"
+  },
+  {
+   "segment": "CC1",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "B1",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "C1",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "A1",
+    "A"
+   ]
+  },
+  {
+   "angle": [
+    "B1",
+    "H",
+    "C1"
+   ],
+   "text": "100°"
+  },
+  {
+   "angle": [
+    "C1",
+    "A",
+    "B1"
+   ],
+   "text": "80°"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AH"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "M",
+   "through": "A"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  }
+ ],
+ "reason": "B1 и C1 лежат на окружности с диаметром AH, так как ∠AB1H=∠AC1H=90°, поэтому четырёхугольник AB1HC1 вписанный; из ∠B1HC1=100° получаем ∠B1AC1=80°."
+}

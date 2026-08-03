@@ -1,0 +1,91 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid",
+   "bases": [
+    "AD",
+    "BC"
+   ]
+  },
+  {
+   "type": "point_on_segment",
+   "id": "M",
+   "of": "CD",
+   "ratio": 0.5
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AB",
+   "style": "accent"
+  },
+  {
+   "segment": "AM",
+   "style": "soft"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "D",
+    "A",
+    "M"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "M",
+    "A",
+    "B"
+   ],
+   "text": "α"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "M"
+   ],
+   "text": "β"
+  },
+  {
+   "angle": [
+    "M",
+    "B",
+    "C"
+   ],
+   "text": "β"
+  },
+  {
+   "equal": [
+    "CM",
+    "MD"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "AB",
+   "reason": "Из условия следует, что M — середина CD; N — середина AB, поэтому MN — средняя линия трапеции."
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "MN",
+   "style": "dashed"
+  }
+ ]
+}

@@ -39,7 +39,7 @@ def create_payment(amount_rub: float, description: str, return_url: str = "") ->
     """
     if not YOOKASSA_ENABLED:
         logger.info(
-            "[yookassa_stub] create_payment called (stub): "
+            "[yookassa_stub] ЗАГЛУШКА create_payment called (stub): "
             "amount=%.2f rub, desc=%s", amount_rub, description
         )
         return {
@@ -61,7 +61,7 @@ def check_payment(payment_id: str) -> dict:
         {"status": "pending"|"succeeded"|"canceled", "payment_id": str}
     """
     if not YOOKASSA_ENABLED:
-        logger.info("[yookassa_stub] check_payment called (stub): id=%s", payment_id)
+        logger.info("[yookassa_stub] ЗАГЛУШКА check_payment called (stub): id=%s", payment_id)
         return {
             "payment_id": payment_id,
             "status": "pending",
@@ -72,6 +72,6 @@ def check_payment(payment_id: str) -> dict:
 def handle_webhook(payload: dict) -> dict:
     """Handle YooKassa webhook notification. Currently stub."""
     if not YOOKASSA_ENABLED:
-        logger.info("[yookassa_stub] webhook received (stub, ignored)")
+        logger.info("[yookassa_stub] ЗАГЛУШКА webhook received (stub, ignored)")
         return {"ok": True}
     raise NotImplementedError("YooKassa real integration not implemented yet")

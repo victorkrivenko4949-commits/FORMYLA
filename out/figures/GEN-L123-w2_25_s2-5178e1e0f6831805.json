@@ -1,0 +1,75 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "H",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BH",
+   "style": "soft"
+  },
+  {
+   "segment": "BM",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "H",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "B",
+    "C",
+    "A"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "H",
+    "B",
+    "M"
+   ],
+   "text": "15°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

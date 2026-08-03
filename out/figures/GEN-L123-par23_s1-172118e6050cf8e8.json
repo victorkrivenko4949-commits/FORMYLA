@@ -1,0 +1,84 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.62
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BD"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "D"
+   ],
+   "text": "30°"
+  },
+  {
+   "equal": [
+    "BD",
+    "AC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "aux_c1",
+   "center": "B",
+   "through": "D"
+  },
+  {
+   "type": "circle",
+   "id": "aux_c2",
+   "center": "D",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "F",
+   "circle1": "aux_c1",
+   "circle2": "aux_c2",
+   "pick": 0
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "BDF",
+   "style": "soft"
+  },
+  {
+   "segment": "BF",
+   "style": "soft"
+  },
+  {
+   "segment": "DF",
+   "style": "soft"
+  }
+ ],
+ "reason": "Строим равносторонний треугольник BDF на BD вне треугольника ABC; тогда BF=BD=AC и ∠FBA=90°."
+}

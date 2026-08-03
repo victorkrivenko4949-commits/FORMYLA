@@ -18,7 +18,6 @@ import os
 import re
 import threading
 import time
-from collections import defaultdict
 from datetime import datetime
 from threading import Lock
 
@@ -61,34 +60,47 @@ QUEUE_POLL_INTERVAL = 2   # seconds between queue scans
 QUEUE_WORKER_STARTED = False
 _queue_worker_lock = Lock()
 
-# ── Rate limit ──────────────────────────────────────────────────────────
-_rate_log: dict[str, list[float]] = defaultdict(list)
-_rate_lock = Lock()
-
-
-def _rate_key() -> str:
-    try:
-        if current_user is not None and getattr(current_user, "is_authenticated", False):
-            uid = getattr(current_user, "id", None)
-            if uid is not None:
-                return f"user:{uid}"
-    except Exception:
-        pass
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr or "anon")
-    return f"ip:{ip.split(',')[0].strip()}"
+# ── Rate limit (DB-based, not in-memory) ────────────────────────────────
 
 
 def _rate_check() -> tuple[bool, int]:
-    key = _rate_key()
-    now = time.time()
-    with _rate_lock:
-        bucket = [t for t in _rate_log[key] if now - t < RATE_LIMIT_WINDOW]
-        _rate_log[key] = bucket
-        if len(bucket) >= RATE_LIMIT_MAX:
-            retry_after = int(RATE_LIMIT_WINDOW - (now - bucket[0])) + 1
-            return False, max(retry_after, 1)
-        bucket.append(now)
+    """Check rate limit based on figure_build_jobs created in the last hour.
+
+    Uses DB query (not in-memory defaultdict) so that the limit survives
+    process restart, works across multiple workers and is not lost when
+    the process recycles.
+    """
+    try:
+        from models import db, FigureBuildJob
+        from datetime import datetime, timedelta
+        uid = None
+        try:
+            if current_user is not None and getattr(current_user, "is_authenticated", False):
+                uid = getattr(current_user, "id", None)
+        except Exception:
+            pass
+        if uid is None:
+            return True, 0
+        cutoff = datetime.utcnow() - timedelta(seconds=RATE_LIMIT_WINDOW)
+        count = FigureBuildJob.query.filter(
+            FigureBuildJob.user_id == uid,
+            FigureBuildJob.created_at >= cutoff,
+        ).count()
+        if count >= RATE_LIMIT_MAX:
+            earliest = FigureBuildJob.query.filter(
+                FigureBuildJob.user_id == uid,
+                FigureBuildJob.created_at >= cutoff,
+            ).order_by(FigureBuildJob.created_at).first()
+            if earliest and earliest.created_at:
+                retry_after = int(RATE_LIMIT_WINDOW - (
+                    datetime.utcnow() - earliest.created_at
+                ).total_seconds()) + 1
+                return False, max(retry_after, 1)
+            return False, int(RATE_LIMIT_WINDOW)
         return True, 0
+    except Exception as e:
+        logger.error("[figures_gen] rate check DB error: %s", e)
+        return True, 0  # fail open — allow build, don't block on DB error
 
 
 # ── Reasoner prompt ─────────────────────────────────────────────────────
@@ -141,19 +153,45 @@ def _get_figure_credits(user) -> int:
 
 
 def _charge_credit(job_id: int) -> tuple[bool, str]:
-    """Charge 1 credit. Called only on transition to done."""
+    """Charge 1 credit atomically. Called only on transition to done.
+
+    Uses UPDATE ... WHERE credit_charged = 0 as an atomic compare-and-swap
+    at the database level.  Two concurrent callers for the same job_id will
+    see exactly one row updated — the second UPDATE affects zero rows and
+    we short-circuit with a no-op.
+    """
     try:
         from models import db, FigureBuildJob, FigureCreditTransaction, User
+        from sqlalchemy import update as _sa_update
+
+        # Atomic CAS: set credit_charged = 1 only if it is currently 0.
+        result = db.session.execute(
+            _sa_update(FigureBuildJob)
+            .where(
+                FigureBuildJob.id == job_id,
+                FigureBuildJob.credit_charged == False,  # noqa: E712
+            )
+            .values(credit_charged=True)
+        )
+        rowcount = result.rowcount
+        if rowcount == 0:
+            # Either the job doesn't exist or it was already charged.
+            job = FigureBuildJob.query.get(job_id)
+            if job and job.credit_charged:
+                return True, "already charged"
+            return False, "Job not found"
+
         job = FigureBuildJob.query.get(job_id)
         if not job:
             return False, "Job not found"
-        if job.credit_charged:
-            return True, "already charged"
         user = User.query.get(job.user_id)
         if not user:
             return False, "User not found"
         credits = _get_figure_credits(user)
         if credits <= 0:
+            # Roll back the flag — we can't charge
+            job.credit_charged = False
+            db.session.commit()
             return False, "No credits"
         user.figure_credits = credits - 1
         user.figures_built = (getattr(user, "figures_built", 0) or 0) + 1
@@ -164,7 +202,6 @@ def _charge_credit(job_id: int) -> tuple[bool, str]:
             reference=f"build_job:{job_id}",
         )
         db.session.add(txn)
-        job.credit_charged = True
         db.session.commit()
         logger.info("[figures_gen] credit charged for job %d", job_id)
         return True, ""

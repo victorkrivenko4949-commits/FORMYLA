@@ -1,0 +1,66 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "D",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "E",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "AD",
+   "line2": "BE"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "A",
+    "D",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "E",
+    "C"
+   ]
+  },
+  {
+   "angle": [
+    "B",
+    "H",
+    "D"
+   ],
+   "text": "50°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

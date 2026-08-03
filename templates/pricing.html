@@ -15,61 +15,53 @@
             {% endif %}
         </header>
 
+        <!-- Price packages: 10|99, 30|249, 100|599 (source of truth in routes/figures.py FIGURE_PACKAGES) -->
         <div class="pricing-cards">
             {% for pkg in packages %}
             <div class="pricing-card glass {% if pkg.featured %}pricing-card--featured{% endif %}">
                 {% if pkg.featured %}
                 <div class="pricing-badge">Выгоднее всего</div>
                 {% endif %}
-                <div class="pricing-amount">{{ pkg.amount }}</div>
+                <div class="pricing-amount" data-amount="{{ pkg.amount }}">{{ pkg.amount }}</div>
                 <div class="pricing-label">{{ pkg.label }}</div>
-                <div class="pricing-price">{{ pkg.price_rub }} ₽</div>
-                <div class="pricing-per-unit">{{ "%.2f"|format(pkg.price_rub / pkg.amount) }} ₽ / чертёж</div>
+                <div class="pricing-price" data-price="{{ pkg.price_rub }}">{{ pkg.price_rub }} руб.</div>
+                <div class="pricing-per-unit">{{ "%.2f"|format(pkg.price_rub / pkg.amount) }} руб. / чертёж</div>
                 <a href="/payment-stub?package={{ pkg.id }}" class="pricing-btn">Купить</a>
             </div>
             {% endfor %}
         </div>
 
         <div class="pricing-note glass">
-            <p>Оплата временно недоступна. Нажмите «Купить», чтобы оставить заявку — мы сообщим, когда оплата заработает.</p>
+            <p>Тестовый режим оплаты, реальное списание денег не происходит. Оплата временно недоступна. Нажмите «Купить», чтобы оставить заявку — мы сообщим, когда оплата заработает.</p>
         </div>
     </section>
 </div>
 
 <style>
-    :root {
-        --pr-bg: #0b0d12;
-        --pr-text: #e2e8f0;
-        --pr-muted: #94a3b8;
-        --pr-accent: #3b82f6;
-        --pr-accent2: #8b5cf6;
-        --pr-border: rgba(255,255,255,0.08);
-        --pr-glass: rgba(15,23,42,0.7);
-    }
     .glass {
-        background: var(--pr-glass);
-        border: 1px solid var(--pr-border);
+        background: var(--surface);
+        border: 1px solid var(--border);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         border-radius: 14px;
     }
     .pricing-page {
-        max-width: 960px;
+        max-width: 1120px;
         margin: 0 auto;
         padding: 40px 16px 80px;
-        color: var(--pr-text);
+        color: var(--text);
     }
     .pricing-inner { display: flex; flex-direction: column; gap: 28px; }
     .pricing-header { text-align: center; }
-    .pricing-title { font-size: 30px; font-weight: 700; margin: 0 0 8px; color: #c8d6e5; }
-    .pricing-hint { color: var(--pr-muted); margin: 0 0 16px; }
+    .pricing-title { font-size: 30px; font-weight: 700; margin: 0 0 8px; color: var(--text); }
+    .pricing-hint { color: var(--muted); margin: 0 0 16px; }
     .pricing-balance {
         display: inline-flex; gap: 8px; align-items: center;
-        padding: 8px 20px; background: rgba(59,130,246,0.1);
-        border: 1px solid rgba(59,130,246,0.2); border-radius: 10px;
+        padding: 8px 20px; background: rgba(76,125,255,0.1);
+        border: 1px solid rgba(76,125,255,0.2); border-radius: 10px;
     }
-    .pricing-balance-label { color: var(--pr-muted); font-size: 14px; }
-    .pricing-balance-value { font-weight: 700; color: var(--pr-accent); font-size: 16px; }
+    .pricing-balance-label { color: var(--muted); font-size: 14px; }
+    .pricing-balance-value { font-weight: 700; color: var(--accent); font-size: 16px; }
     .pricing-cards {
         display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;
     }
@@ -79,28 +71,28 @@
     }
     .pricing-card:hover { transform: translateY(-4px); }
     .pricing-card--featured {
-        border-color: rgba(139,92,246,0.35);
-        background: rgba(139,92,246,0.06);
+        border-color: rgba(107,149,255,0.35);
+        background: rgba(107,149,255,0.06);
     }
     .pricing-badge {
         position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-        background: var(--pr-accent2); color: #fff; font-size: 12px; font-weight: 600;
+        background: var(--accent-hi); color: #fff; font-size: 12px; font-weight: 600;
         padding: 4px 16px; border-radius: 20px; white-space: nowrap;
     }
     .pricing-amount {
-        font-size: 48px; font-weight: 800; color: #f1f5f9; margin-bottom: 4px;
+        font-size: 48px; font-weight: 800; color: var(--text); margin-bottom: 4px;
     }
-    .pricing-label { font-size: 15px; color: var(--pr-muted); margin-bottom: 16px; }
-    .pricing-price { font-size: 28px; font-weight: 700; color: var(--pr-text); margin-bottom: 4px; }
-    .pricing-per-unit { font-size: 13px; color: var(--pr-muted); margin-bottom: 20px; }
+    .pricing-label { font-size: 15px; color: var(--muted); margin-bottom: 16px; }
+    .pricing-price { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .pricing-per-unit { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
     .pricing-btn {
-        display: block; padding: 12px 0; background: var(--pr-accent); color: #fff;
-        text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+        display: block; padding: 12px 0; background: var(--accent); color: #fff;
+        text-decoration: none; border-radius: 10px; font-size: 15px; font-weight: 600;
         transition: background 0.2s;
     }
-    .pricing-btn:hover { background: #2563eb; }
+    .pricing-btn:hover { background: var(--accent-hi); }
     .pricing-note { padding: 16px 24px; text-align: center; }
-    .pricing-note p { color: var(--pr-muted); font-size: 14px; margin: 0; }
+    .pricing-note p { color: var(--muted); font-size: 14px; margin: 0; }
     @media (max-width: 600px) {
         .pricing-page { padding: 24px 12px 100px; }
         .pricing-title { font-size: 24px; }

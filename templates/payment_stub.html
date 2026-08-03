@@ -8,9 +8,10 @@
             <h1 class="paystub-title">Оплата скоро появится</h1>
             <div class="paystub-package-info">
                 <div class="paystub-amount">{{ package.amount }} чертежей</div>
-                <div class="paystub-price">{{ package.price_rub }} ₽</div>
+                <div class="paystub-price">{{ package.price_rub }} руб.</div>
             </div>
             <p class="paystub-text">
+                Тестовый режим оплаты, реальное списание денег не происходит.
                 Оплата временно недоступна. Мы работаем над подключением платёжной системы
                 и сообщим вам, как только она заработает.
             </p>
@@ -28,56 +29,47 @@
 </div>
 
 <style>
-    :root {
-        --ps-bg: #0b0d12;
-        --ps-text: #e2e8f0;
-        --ps-muted: #94a3b8;
-        --ps-accent: #3b82f6;
-        --ps-border: rgba(255,255,255,0.08);
-        --ps-glass: rgba(15,23,42,0.7);
-        --ps-success: #22c55e;
-    }
     .glass {
-        background: var(--ps-glass);
-        border: 1px solid var(--ps-border);
+        background: var(--surface);
+        border: 1px solid var(--border);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         border-radius: 14px;
     }
     .paystub-page {
-        max-width: 600px; margin: 0 auto; padding: 60px 16px 80px; color: var(--ps-text);
+        max-width: 600px; margin: 0 auto; padding: 60px 16px 80px; color: var(--text);
     }
     .paystub-card { padding: 40px 32px; text-align: center; }
-    .paystub-title { font-size: 26px; font-weight: 700; margin: 0 0 24px; color: #c8d6e5; }
+    .paystub-title { font-size: 26px; font-weight: 700; margin: 0 0 24px; color: var(--text); }
     .paystub-package-info {
         display: inline-flex; gap: 16px; align-items: baseline;
-        padding: 16px 28px; background: rgba(59,130,246,0.08);
-        border: 1px solid rgba(59,130,246,0.18); border-radius: 12px; margin-bottom: 24px;
+        padding: 16px 28px; background: rgba(76,125,255,0.08);
+        border: 1px solid rgba(76,125,255,0.18); border-radius: 12px; margin-bottom: 24px;
     }
-    .paystub-amount { font-size: 22px; font-weight: 700; color: #f1f5f9; }
-    .paystub-price { font-size: 22px; font-weight: 700; color: var(--ps-accent); }
-    .paystub-text { color: var(--ps-muted); font-size: 15px; line-height: 1.6; margin: 0 0 28px; }
+    .paystub-amount { font-size: 22px; font-weight: 700; color: var(--text); }
+    .paystub-price { font-size: 22px; font-weight: 700; color: var(--accent); }
+    .paystub-text { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0 0 28px; }
     .paystub-form { text-align: left; }
-    .paystub-label { display: block; font-size: 14px; font-weight: 600; color: #cbd5e1; margin-bottom: 10px; }
+    .paystub-label { display: block; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
     .paystub-row { display: flex; gap: 10px; }
     .paystub-input {
-        flex: 1; padding: 10px 14px; background: #0f172a; border: 1px solid var(--ps-border);
-        border-radius: 8px; color: var(--ps-text); font-size: 15px;
+        flex: 1; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border);
+        border-radius: 10px; color: var(--text); font-size: 15px;
     }
-    .paystub-input:focus { outline: none; border-color: var(--ps-accent); }
+    .paystub-input:focus { outline: none; border-color: var(--accent); }
     .paystub-btn {
-        padding: 10px 24px; background: var(--ps-accent); color: #fff; border: none;
-        border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+        padding: 10px 24px; background: var(--accent); color: #fff; border: none;
+        border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
     }
-    .paystub-btn:hover { background: #2563eb; }
+    .paystub-btn:hover { background: var(--accent-hi); }
     .paystub-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .paystub-result { margin-top: 12px; font-size: 14px; }
-    .paystub-result--ok { color: var(--ps-success); }
-    .paystub-result--err { color: #ef4444; }
+    .paystub-result--ok { color: var(--ok); }
+    .paystub-result--err { color: var(--bad); }
     .paystub-back {
-        display: inline-block; margin-top: 24px; color: var(--ps-muted); text-decoration: none; font-size: 14px;
+        display: inline-block; margin-top: 24px; color: var(--muted); text-decoration: none; font-size: 14px;
     }
-    .paystub-back:hover { color: var(--ps-text); }
+    .paystub-back:hover { color: var(--text); }
     @media (max-width: 600px) {
         .paystub-page { padding: 30px 12px 100px; }
         .paystub-card { padding: 28px 20px; }

@@ -1,0 +1,61 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.4
+  },
+  {
+   "type": "midpoint",
+   "id": "E",
+   "of": "BC"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AE",
+   "line2": "BD"
+  },
+  {
+   "type": "intersection",
+   "id": "F",
+   "line1": "CO",
+   "line2": "AB"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AE"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "segment": "CF"
+  },
+  {
+   "polygon": "ADOF",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "BE",
+    "EC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

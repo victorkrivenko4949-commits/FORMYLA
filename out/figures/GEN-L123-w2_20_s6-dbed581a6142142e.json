@@ -1,0 +1,93 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "foot",
+   "id": "A1",
+   "from": "A",
+   "line": "BC"
+  },
+  {
+   "type": "foot",
+   "id": "B1",
+   "from": "B",
+   "line": "AC"
+  },
+  {
+   "type": "intersection",
+   "id": "H",
+   "line1": "AA1",
+   "line2": "BB1"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AA1"
+  },
+  {
+   "segment": "BB1"
+  },
+  {
+   "segment": "HA1",
+   "style": "accent"
+  },
+  {
+   "segment": "HB1",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "H",
+    "A1",
+    "C"
+   ]
+  },
+  {
+   "right_angle": [
+    "H",
+    "B1",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "HA1",
+    "HB1"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "O",
+   "of": "CH"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "C"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
+   "style": "dashed"
+  },
+  {
+   "segment": "CH",
+   "style": "dashed"
+  }
+ ],
+ "reason": "Окружность с диаметром CH, на которой лежат A1 и B1, позволяет связать равные хорды HA1 и HB1 с равными вписанными углами."
+}
