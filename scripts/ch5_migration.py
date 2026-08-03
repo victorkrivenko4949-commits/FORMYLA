@@ -5,6 +5,7 @@ CH5 Migration: figure_build_jobs table for the new /figures/generate queue.
 Adds:
   - figure_build_jobs table (separate from figure_jobs — new generator queue)
 
+V11: Uses schema_migration_log for idempotent re-runs.
 Run: python scripts/ch5_migration.py
 """
 
@@ -15,8 +16,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import app, db
-from sqlalchemy import inspect, text
+MIGRATION_NAME = 'ch5_migration.py'
 
 
 def backup_db():
@@ -36,12 +36,22 @@ def backup_db():
 
 
 def migrate():
+    # Lazy imports — allow test fixtures to set app context first.
+    from app import app, db
+    from sqlalchemy import inspect, text
+
     with app.app_context():
+        from services.migration_log import is_migration_applied, register_migration
+        if is_migration_applied(MIGRATION_NAME):
+            print(f"[CH5_MIGRATION] {MIGRATION_NAME} already recorded, skipping")
+            return
+
         inspector = inspect(db.engine)
         existing = inspector.get_table_names()
 
         if 'figure_build_jobs' in existing:
-            print("[CH5_MIGRATION] figure_build_jobs table already exists, skipping")
+            print("[CH5_MIGRATION] figure_build_jobs table already exists, recording and skipping")
+            register_migration(MIGRATION_NAME)
             return
 
         is_pg = os.environ.get('DATABASE_URL', '').startswith('postgresql')
@@ -102,6 +112,7 @@ def migrate():
             ))
 
         db.session.commit()
+        register_migration(MIGRATION_NAME)
         print("[CH5_MIGRATION] created figure_build_jobs table")
 
 

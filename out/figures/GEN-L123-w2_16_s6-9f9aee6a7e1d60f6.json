@@ -1,0 +1,102 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 48,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 30,
+   "y": 51.96152422706632
+  },
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "acute"
+  },
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AC",
+   "ratio": 0.4444444444444444
+  },
+  {
+   "type": "intersection",
+   "id": "X",
+   "line1": "OH",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "segment": "OH",
+   "style": "soft"
+  },
+  {
+   "segment": "OX",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "B",
+    "C"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "B",
+    "D"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "D",
+    "B",
+    "C"
+   ],
+   "text": "30°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

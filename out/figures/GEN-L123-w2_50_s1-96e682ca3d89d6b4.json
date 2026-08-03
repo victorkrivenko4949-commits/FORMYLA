@@ -1,0 +1,96 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "O",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "A",
+   "x": 1,
+   "y": 0
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "A"
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B",
+   "circle": "w",
+   "angle": 75
+  },
+  {
+   "type": "point_on_circle",
+   "id": "C",
+   "circle": "w",
+   "angle": 150
+  },
+  {
+   "type": "point_on_circle",
+   "id": "D",
+   "circle": "w",
+   "angle": 225
+  },
+  {
+   "type": "intersection",
+   "id": "E",
+   "line1": "AC",
+   "line2": "BD"
+  }
+ ],
+ "draw": [
+  {
+   "circle": "w"
+  },
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AB",
+    "BC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CD"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "E",
+    "D"
+   ],
+   "text": "105°"
+  },
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "?"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

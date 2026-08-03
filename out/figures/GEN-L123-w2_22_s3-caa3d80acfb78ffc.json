@@ -1,0 +1,82 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "obtuse"
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "A",
+   "through": "B"
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "B",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "D",
+   "circle1": "w1",
+   "circle2": "w2",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "polygon": "ABD"
+  },
+  {
+   "segment": "CD",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "C"
+   ],
+   "text": "45°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "30°"
+  },
+  {
+   "equal": [
+    "AB",
+    "AD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AB",
+    "BD"
+   ],
+   "ticks": 1
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "D"
+   ],
+   "text": "15°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

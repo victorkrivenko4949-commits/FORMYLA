@@ -1783,3 +1783,22 @@ class KimiReview(db.Model):
 
     def __repr__(self):
         return f'<KimiReview id={self.id} attempt={self.solution_attempt_id} label={self.label}>'
+
+
+class SchemaMigrationLog(db.Model):
+    """V11: Log of applied migration scripts for idempotent re-runs.
+
+    Tracks ad-hoc migration scripts that are NOT managed by Alembic.
+    Each row records one successfully applied migration file.
+    Before executing, a migration script checks this table;
+    after success, it inserts a row.  This ensures repeated runs
+    are safe on both SQLite and PostgreSQL.
+    """
+    __tablename__ = 'schema_migration_log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    migration_name = db.Column(db.String(256), unique=True, nullable=False, index=True)
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def __repr__(self):
+        return f'<SchemaMigrationLog {self.migration_name} @ {self.applied_at}>'

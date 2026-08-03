@@ -9,6 +9,7 @@ Adds:
   - figure_credit_transactions table
   - figure_email_subscriptions table
 
+V11: Uses schema_migration_log for idempotent re-runs.
 Run: python scripts/d4_migration.py
 """
 
@@ -21,6 +22,8 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app, db
+
+MIGRATION_NAME = 'd4_migration.py'
 
 
 def backup_db():
@@ -39,6 +42,12 @@ def backup_db():
 
 def migrate():
     with app.app_context():
+        # V11: Check migration log first
+        from services.migration_log import is_migration_applied, register_migration
+        if is_migration_applied(MIGRATION_NAME):
+            print(f"[D4_MIGRATION] {MIGRATION_NAME} already recorded, skipping")
+            return
+
         # 1. Add figure_credits and figures_built to users
         cols = []
         try:
@@ -141,6 +150,7 @@ def migrate():
             db.session.rollback()
 
         db.session.commit()
+        register_migration(MIGRATION_NAME)
         print("[D4_MIGRATION] migration complete")
 
 

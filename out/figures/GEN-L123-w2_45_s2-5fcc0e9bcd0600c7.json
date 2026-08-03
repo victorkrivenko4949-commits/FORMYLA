@@ -1,0 +1,72 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  },
+  {
+   "type": "point_on_segment",
+   "id": "E",
+   "of": "BC",
+   "ratio": 0.2
+  },
+  {
+   "type": "point_on_segment",
+   "id": "F",
+   "of": "CD",
+   "ratio": 0.92
+  },
+  {
+   "type": "triangle",
+   "id": "AEF",
+   "kind": "any"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "polygon": "AEF"
+  },
+  {
+   "polygon": "CEF",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "B",
+    "A",
+    "D"
+   ],
+   "text": "75°"
+  },
+  {
+   "angle": [
+    "E",
+    "A",
+    "F"
+   ],
+   "text": "60°"
+  },
+  {
+   "equal": [
+    "AE",
+    "AF"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "AF",
+    "EF"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

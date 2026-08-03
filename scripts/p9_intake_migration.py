@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-scripts/p9_intake_migration.py — Идемпотентная миграция P9 Intake.
+scripts/p9_intake_migration.py — Idempotent migration P9 Intake.
 
-Существующим ученикам проставляет значения по умолчанию в CuratorState.prep_state.intake
-так, чтобы ничего не сломалось.
+Sets default values in CuratorState.prep_state.intake for existing students
+so nothing breaks.
 
-Значения по умолчанию:
-  - class_level: из User.preferred_grade или CuratorState.grade
-  - goal: "just_grow" (регулярно решать и расти)
-  - goal_auto: True (назначено миграцией)
-  - experience: "none" (не участвовал)
-  - daily_tasks: 10 (норма по умолчанию)
-  - weak_sections: [] (приоритет не применяется)
+Default values:
+  - class_level: from User.preferred_grade or CuratorState.grade
+  - goal: "just_grow"
+  - goal_auto: True
+  - experience: "none"
+  - daily_tasks: 10
+  - weak_sections: []
   - weak_priority: False
-  - prior_mu: берётся из существующего onboarding или ставится 2.0
-  - prior_sigma: берётся из существующего или ставится 1.5
+  - prior_mu: from existing onboarding or 2.0
+  - prior_sigma: from existing or 1.5
 
-Запуск:
-    python scripts/p9_intake_migration.py
+V11: Uses schema_migration_log for idempotent re-runs.
+Run: python scripts/p9_intake_migration.py
 """
 
 import os
@@ -31,15 +31,23 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
+MIGRATION_NAME = 'p9_intake_migration.py'
+
 
 def run():
-    """Выполнить миграцию."""
+    """Execute migration."""
     from app import app
     from models import db, User
     from models_curator import CuratorState
 
     with app.app_context():
-        # Получаем всех учеников с CuratorState
+        # V11: Check migration log first
+        from services.migration_log import is_migration_applied, register_migration
+        if is_migration_applied(MIGRATION_NAME):
+            logger.info("%s already recorded, skipping", MIGRATION_NAME)
+            return
+
+        # Get all students with CuratorState
         all_cs = CuratorState.query.all()
         updated = 0
         skipped = 0
@@ -47,12 +55,12 @@ def run():
         for cs in all_cs:
             prep_state = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
 
-            # Уже есть intake → пропускаем
+            # Already has intake -> skip
             if prep_state.get('intake', {}).get('completed'):
                 skipped += 1
                 continue
 
-            # Берём grade
+            # Get grade
             grade = cs.grade
             if not grade:
                 user = db.session.get(User, cs.user_id)
@@ -63,10 +71,9 @@ def run():
                         grade = None
 
             if not grade or grade < 5 or grade > 11:
-                # Нет класса — ставим 9 как безопасный default
                 grade = 9
 
-            # Берём prior из существующего onboarding если есть
+            # Get prior from existing onboarding if present
             prior_mu = 2.0
             prior_sigma = 1.5
             ol = prep_state.get('onboarding', {}) or {}
@@ -75,7 +82,7 @@ def run():
             if ol.get('prior_sigma'):
                 prior_sigma = float(ol['prior_sigma'])
 
-            # Собираем intake по умолчанию
+            # Build default intake
             prep_state['intake'] = {
                 'completed': True,
                 'completed_at': datetime.utcnow().isoformat(),
@@ -103,15 +110,16 @@ def run():
             updated += 1
 
         db.session.commit()
-        logger.info(f"Migration done: {updated} updated, {skipped} skipped (already have intake)")
+        register_migration(MIGRATION_NAME)
+        logger.info("Migration done: %d updated, %d skipped (already have intake)", updated, skipped)
 
-        # Статистика
+        # Statistics
         total = CuratorState.query.count()
         with_intake = sum(
             1 for cs in all_cs
             if isinstance(cs.prep_state, dict) and cs.prep_state.get('intake', {}).get('completed')
         )
-        logger.info(f"Total CuratorState rows: {total}, with intake: {with_intake}")
+        logger.info("Total CuratorState rows: %d, with intake: %d", total, with_intake)
         print(f"\nRows affected: {updated}")
         print(f"Rows skipped (already migrated): {skipped}")
         print(f"Total with intake: {with_intake} / {total}")

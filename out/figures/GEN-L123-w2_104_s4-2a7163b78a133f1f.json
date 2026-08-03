@@ -1,0 +1,167 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": -5,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 3,
+   "y": 4
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "AC"
+  },
+  {
+   "type": "point",
+   "id": "D",
+   "x": 0,
+   "y": -5
+  },
+  {
+   "type": "point",
+   "id": "E",
+   "x": -5,
+   "y": -5
+  },
+  {
+   "type": "point",
+   "id": "F",
+   "x": 7,
+   "y": 1
+  },
+  {
+   "type": "point",
+   "id": "G",
+   "x": 4,
+   "y": -3
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "DG"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "BM",
+   "style": "soft"
+  },
+  {
+   "polygon": "ABDE"
+  },
+  {
+   "polygon": "BCFG"
+  },
+  {
+   "segment": "DG",
+   "style": "soft"
+  },
+  {
+   "segment": "MK",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "equal": [
+    "AM",
+    "MC"
+   ],
+   "ticks": 3
+  },
+  {
+   "right_angle": [
+    "A",
+    "M",
+    "K"
+   ]
+  },
+  {
+   "right_angle": [
+    "A",
+    "B",
+    "D"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "D",
+    "E"
+   ]
+  },
+  {
+   "right_angle": [
+    "D",
+    "E",
+    "A"
+   ]
+  },
+  {
+   "right_angle": [
+    "E",
+    "A",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "C",
+    "F"
+   ]
+  },
+  {
+   "right_angle": [
+    "C",
+    "F",
+    "G"
+   ]
+  },
+  {
+   "right_angle": [
+    "F",
+    "G",
+    "B"
+   ]
+  },
+  {
+   "right_angle": [
+    "G",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "equal": [
+    "AB",
+    "BD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BC",
+    "CF"
+   ],
+   "ticks": 2
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

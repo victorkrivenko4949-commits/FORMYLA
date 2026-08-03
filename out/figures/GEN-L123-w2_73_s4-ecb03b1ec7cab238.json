@@ -1,0 +1,90 @@
+{
+ "given": [
+  {
+   "type": "point",
+   "id": "A",
+   "x": 0,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "B",
+   "x": 3,
+   "y": 0
+  },
+  {
+   "type": "point",
+   "id": "C",
+   "x": 0.005,
+   "y": 1.729
+  },
+  {
+   "type": "point_on_segment",
+   "id": "D",
+   "of": "AB",
+   "ratio": 0.333
+  },
+  {
+   "type": "point",
+   "id": "O",
+   "x": 1,
+   "y": 1.151
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "O",
+   "through": "D"
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "F",
+   "circle": "w",
+   "line": "BC",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "EF",
+   "style": "accent"
+  },
+  {
+   "circle": "w",
+   "style": "soft"
+  },
+  {
+   "segment": "OD",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "right_angle": [
+    "O",
+    "D",
+    "B"
+   ]
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "60°"
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,109 @@
+{
+ "given": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "any"
+  },
+  {
+   "type": "incenter",
+   "id": "I",
+   "of": "ABC"
+  },
+  {
+   "type": "circle",
+   "id": "w",
+   "center": "I",
+   "through": "C"
+  },
+  {
+   "type": "line_circle",
+   "id": "D",
+   "circle": "w",
+   "line": "AC",
+   "pick": 0
+  },
+  {
+   "type": "line_circle",
+   "id": "E",
+   "circle": "w",
+   "line": "BC",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABC"
+  },
+  {
+   "segment": "AI"
+  },
+  {
+   "segment": "BI"
+  },
+  {
+   "segment": "CI",
+   "style": "soft"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "segment": "AD",
+   "style": "soft"
+  },
+  {
+   "segment": "BE",
+   "style": "soft"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "C",
+    "B"
+   ],
+   "text": "60°"
+  },
+  {
+   "angle": [
+    "A",
+    "C",
+    "I"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "I",
+    "C",
+    "B"
+   ],
+   "text": "30°"
+  },
+  {
+   "angle": [
+    "A",
+    "I",
+    "B"
+   ]
+  },
+  {
+   "equal": [
+    "ID",
+    "IC"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "IE",
+    "IC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}

@@ -1,0 +1,55 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "any"
+  },
+  {
+   "type": "intersection",
+   "id": "O",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "midpoint",
+   "id": "K",
+   "of": "AB"
+  },
+  {
+   "type": "midpoint",
+   "id": "L",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "M",
+   "of": "CD"
+  },
+  {
+   "type": "midpoint",
+   "id": "N",
+   "of": "DA"
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  },
+  {
+   "polygon": "KLMN",
+   "style": "accent"
+  }
+ ],
+ "marks": [],
+ "aux": [],
+ "draw_aux": []
+}

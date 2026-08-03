@@ -1,0 +1,168 @@
+{
+ "given": [
+  {
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  },
+  {
+   "type": "intersection",
+   "id": "P",
+   "line1": "AC",
+   "line2": "BD"
+  },
+  {
+   "type": "midpoint",
+   "id": "O1",
+   "of": "AD"
+  },
+  {
+   "type": "midpoint",
+   "id": "O2",
+   "of": "BC"
+  },
+  {
+   "type": "circle",
+   "id": "wA",
+   "center": "A",
+   "through": "D"
+  },
+  {
+   "type": "circle",
+   "id": "wD",
+   "center": "D",
+   "through": "A"
+  },
+  {
+   "type": "circle_circle",
+   "id": "Q",
+   "circle1": "wA",
+   "circle2": "wD",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w1",
+   "center": "O1",
+   "through": "A"
+  },
+  {
+   "type": "line_circle",
+   "id": "M",
+   "circle": "w1",
+   "line": "O1Q",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "wB",
+   "center": "B",
+   "through": "C"
+  },
+  {
+   "type": "circle",
+   "id": "wC",
+   "center": "C",
+   "through": "B"
+  },
+  {
+   "type": "circle_circle",
+   "id": "R",
+   "circle1": "wB",
+   "circle2": "wC",
+   "pick": 0
+  },
+  {
+   "type": "circle",
+   "id": "w2",
+   "center": "O2",
+   "through": "B"
+  },
+  {
+   "type": "line_circle",
+   "id": "N",
+   "circle": "w2",
+   "line": "O2R",
+   "pick": 0
+  }
+ ],
+ "draw": [
+  {
+   "polygon": "ABCD"
+  },
+  {
+   "segment": "AC"
+  },
+  {
+   "segment": "BD"
+  },
+  {
+   "circle": "w"
+  },
+  {
+   "circle": "w1",
+   "style": "soft"
+  },
+  {
+   "circle": "w2",
+   "style": "soft"
+  },
+  {
+   "segment": "O1M",
+   "style": "soft"
+  },
+  {
+   "segment": "O2N",
+   "style": "soft"
+  },
+  {
+   "line": "MN",
+   "style": "accent"
+  }
+ ],
+ "marks": [
+  {
+   "angle": [
+    "A",
+    "P",
+    "B"
+   ],
+   "text": "?"
+  },
+  {
+   "right_angle": [
+    "A",
+    "O1",
+    "M"
+   ]
+  },
+  {
+   "right_angle": [
+    "B",
+    "O2",
+    "N"
+   ]
+  },
+  {
+   "equal": [
+    "AM",
+    "MD"
+   ],
+   "ticks": 1
+  },
+  {
+   "equal": [
+    "BN",
+    "NC"
+   ],
+   "ticks": 1
+  }
+ ],
+ "aux": [],
+ "draw_aux": []
+}
