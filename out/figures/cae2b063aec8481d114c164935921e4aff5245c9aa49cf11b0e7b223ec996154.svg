@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
-<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style><rect width="620" height="620" fill="#070C18"/>
 <polygon points="256.3,351.0 263.0,542.6 485.1,452.8" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
 <line x1="256.3" y1="351.0" x2="359.3" y2="503.7" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
 <line x1="153.3" y1="198.3" x2="359.3" y2="503.7" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="6 5"/>
