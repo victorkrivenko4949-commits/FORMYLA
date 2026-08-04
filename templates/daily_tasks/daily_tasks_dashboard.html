@@ -830,6 +830,23 @@
     </div>
     {% endif %}
 
+    {% if data and data.streak %}
+    <div class="dt-streak-block" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;margin-bottom:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);">
+      <div>
+        <span style="color:var(--muted);font-size:14px;">Серия:</span>
+        <strong style="font-size:18px;margin-left:6px;">{{ data.streak.current_streak }} дней</strong>
+        {% if data.streak.max_streak %}
+        <span style="color:var(--muted);font-size:13px;margin-left:8px;">(макс: {{ data.streak.max_streak }})</span>
+        {% endif %}
+      </div>
+      {% if data.streak.days_off_available > 0 %}
+      <button class="dt-btn-secondary" onclick="takeDayOff()" style="font-size:13px;">
+        Взять выходной ({{ data.streak.days_off_available }})
+      </button>
+      {% endif %}
+    </div>
+    {% endif %}
+
     <!-- Task grid -->
     <div id="dt-task-grid"></div>
   </div>
@@ -1438,6 +1455,22 @@
     .then(function() { setTimeout(function() { window.location.reload(); }, 1500); })
     .catch(function(err) { console.warn('[dt-gen]', err); });
   }
+
+  window.takeDayOff = function() {
+    fetch('/daily_tasks/take-day-off', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+    })
+    .then(function(r) { return r.json().catch(function() { return {}; }); })
+    .then(function(data) {
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert(data.message || 'Не удалось взять выходной');
+      }
+    })
+    .catch(function(err) { console.warn('[t8-dayoff]', err); });
+  };
 })();
 
 // Yearly calendar toggle

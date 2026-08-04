@@ -30,6 +30,10 @@ from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
 from .services import today_in_user_tz
 from .monthly_plan import get_or_build_plan, current_month_index, pick_day_subtopic, subtopic_title
+from services.streak_service import (
+    get_or_create_streak, check_streak_on_open, complete_day,
+    take_day_off, set_is_fully_answered, compute_all_correct,
+)
 
 # 24h TTL для сета «Задач дня»: после истечения сет автоматически
 # помечается как expired при следующем GET /daily_tasks, и пользователю
@@ -110,6 +114,9 @@ def get_daily_tasks():
         return render_template('trial_expired.html'), 402
     user_id = current_user.id
     today = today_in_user_tz()
+
+    # ── T8 streak: check on open ────────────────────────────────────
+    streak = check_streak_on_open(user_id, today)
 
     # ── всегда отдаём HTML (страница, а не API) ──────────────────────
     # Браузеры шлют Accept: */*, что совпадает с application/json,
@@ -372,6 +379,14 @@ def get_daily_tasks():
     if plan_data:
         data["plan_data"] = plan_data
 
+    # ── T8 streak data for template ──────────────────────────────────
+    streak_rec = get_or_create_streak(user_id)
+    data["streak"] = {
+        "current_streak": streak_rec.current_streak or 0,
+        "max_streak": streak_rec.max_streak or 0,
+        "days_off_available": streak_rec.days_off_available or 0,
+    }
+
     if wants_html:
         return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
     return jsonify(data), 200
@@ -614,6 +629,11 @@ def submit_answer(item_id: int):
     except Exception:
         pass
 
+    # ── T8 streak: if set is fully answered, update streak ────────────
+    if completed == total and total > 0:
+        all_correct = compute_all_correct(item.daily_set_id)
+        complete_day(current_user.id, today_in_user_tz(), all_correct)
+
     return jsonify(response), 200
 
 
@@ -650,6 +670,23 @@ def get_hint(item_id: int):
         return jsonify(result), 404
 
     return jsonify(result), 200
+
+
+# ──────────────────────────────────────────────────────────────────────
+# POST /daily_tasks/take-day-off — T8 streak
+# ──────────────────────────────────────────────────────────────────────
+
+
+@daily_tasks_bp.route("/take-day-off", methods=["POST"])
+@login_required
+def take_day_off_route():
+    """Взять выходной: сохранить серию, не менять mu/sigma."""
+    user_id = current_user.id
+    today = today_in_user_tz()
+    ok = take_day_off(user_id, today)
+    if not ok:
+        return jsonify({"success": False, "message": "Нет доступных выходных"}), 400
+    return jsonify({"success": True}), 200
 
 
 # ──────────────────────────────────────────────────────────────────────

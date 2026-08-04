@@ -5530,6 +5530,19 @@ def profile():
     # JSON for radar chart — always all topics for full hexagonal shape
     mastery_list_json = [{'name': m['name_ru'], 'value': m['mastery']} for m in mastery_list]
     
+    # ── T8 streak for profile display ──────────────────────────────────
+    streak_data = None
+    try:
+        from services.streak_service import get_or_create_streak
+        s = get_or_create_streak(current_user.id)
+        streak_data = {
+            'current_streak': s.current_streak or 0,
+            'max_streak': s.max_streak or 0,
+            'days_off_available': s.days_off_available or 0,
+        }
+    except Exception:
+        pass
+
     return render_template('profile.html',
                          user=current_user,
                          progress_dict=progress_dict,
@@ -5540,7 +5553,8 @@ def profile():
                          mastery_list=mastery_list,
                          mastery_list_json=mastery_list_json,
                          overall_level=overall_level,
-                         ai_recommendation=ai_recommendation)
+                         ai_recommendation=ai_recommendation,
+                         streak_data=streak_data)
 
 
 # ============================================================

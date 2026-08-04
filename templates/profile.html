@@ -475,6 +475,19 @@
           <span class="overall-level">{{ overall_level }}</span>
           <span class="overall-label">общий уровень</span>
         </div>
+
+        {% if streak_data %}
+        <div style="margin-top:16px;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <span style="color:var(--muted);font-size:14px;">Серия:</span>
+            <strong style="font-size:18px;margin-left:6px;">{{ streak_data.current_streak }} дней</strong>
+            <span style="color:var(--muted);font-size:13px;margin-left:8px;">(макс: {{ streak_data.max_streak }})</span>
+          </div>
+          {% if streak_data.days_off_available > 0 %}
+          <span style="color:var(--ok);font-size:14px;">Выходных: {{ streak_data.days_off_available }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
       </header>
 
       {% if mastery_list %}
