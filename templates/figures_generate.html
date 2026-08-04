@@ -143,6 +143,11 @@
         <button class="btn-build" id="backBtn" style="display:none;background:#1C2B4F;color:#E6EBF7;" onclick="resetForm()">Новый чертёж</button>
     </div>
 
+    <div class="queue-box" id="queueBox" style="display:none;
+        background:#0E1830;border:1px solid #1C2B4F;border-radius:14px;
+        padding:14px 20px;margin-bottom:24px;font-size:14px;color:#E6EBF7;">
+    </div>
+
     <div class="status-box" id="statusBox">
         <div class="status-row">
             <span style="color:#8C9ABC;">Статус:</span>
@@ -229,6 +234,29 @@
             pollTimer = setTimeout(pollStatus, POLL_INTERVAL * 2);
         });
     }
+
+    function updateQueueStatus() {
+        fetch('/figures/generate/queue-status')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var box = document.getElementById('queueBox');
+            if (data.total > 0) {
+                box.style.display = 'block';
+                if (data.priority === 1) {
+                    box.textContent = 'Вы в приоритетной очереди: позиция ' + data.position;
+                } else {
+                    box.textContent = 'Вы в очереди: позиция ' + data.position + ' из ' + data.total;
+                }
+            } else {
+                box.style.display = 'none';
+            }
+        })
+        .catch(function() {});
+    }
+
+    // Poll queue status every 10 seconds
+    setInterval(updateQueueStatus, 10000);
+    updateQueueStatus();
 
     function setStatus(status) {
         var badge = document.getElementById('statusBadge');

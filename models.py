@@ -1751,6 +1751,8 @@ class FigureBuildJob(db.Model):
     aux_reason = db.Column(db.Text, nullable=True)
     error = db.Column(db.Text, nullable=True)
     credit_charged = db.Column(db.Boolean, nullable=False, default=False)
+    priority = db.Column(db.Integer, nullable=False, default=0, index=True)
+    # 0 — обычный (бесплатный), 1 — высокий (подписчик)
     created_at = db.Column(
         db.DateTime, default=datetime.utcnow, nullable=False, index=True,
     )

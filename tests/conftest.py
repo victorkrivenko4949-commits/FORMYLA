@@ -165,6 +165,8 @@ def app(tmp_path):
     test_app.register_blueprint(prep_bp)
     from routes.figures import figures_bp
     test_app.register_blueprint(figures_bp)
+    from routes.figures_generator import figures_gen_bp
+    test_app.register_blueprint(figures_gen_bp)
 
     # Push context once and keep it for all dependent fixtures and the test.
     ctx = test_app.app_context()
@@ -466,6 +468,77 @@ def user_subscribed(app):
     db.session.add(user)
     db.session.commit()
     return user
+
+
+# ══════════════════════════════════════════════════════════════════════
+# T9 — Priority queue fixtures
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.fixture
+def user_free(app):
+    """User without any subscription or trial."""
+    from models import db, User
+
+    user = User(
+        email='free@test.invalid',
+        nickname='free_user',
+        is_guest=False,
+        trial_started_at=None,
+        plan_expires_at=None,
+        current_plan='free',
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+@pytest.fixture
+def five_priority_jobs(app, user_subscribed, user_free):
+    """Five FigureBuildJob records in 'queued' status.
+
+    Three from user_subscribed (priority=1) and two from user_free
+    (priority=0), with staggered created_at timestamps.
+    """
+    from models import db, FigureBuildJob
+    from datetime import datetime, timedelta
+
+    base = datetime.utcnow() - timedelta(minutes=30)
+    jobs = []
+
+    # 3 subscriber jobs (priority=1) — created first
+    for i in range(3):
+        job = FigureBuildJob(
+            user_id=user_subscribed.id,
+            problem_text=f'[TEST] T9 subscriber job {i + 1}',
+            status='queued',
+            model_name='test-model',
+            credit_charged=False,
+            has_aux=False,
+            priority=1,
+            created_at=base + timedelta(seconds=i * 10),
+            updated_at=base + timedelta(seconds=i * 10),
+        )
+        db.session.add(job)
+        jobs.append(job)
+
+    # 2 free user jobs (priority=0) — created after
+    for i in range(2):
+        job = FigureBuildJob(
+            user_id=user_free.id,
+            problem_text=f'[TEST] T9 free job {i + 1}',
+            status='queued',
+            model_name='test-model',
+            credit_charged=False,
+            has_aux=False,
+            priority=0,
+            created_at=base + timedelta(seconds=30 + i * 10),
+            updated_at=base + timedelta(seconds=30 + i * 10),
+        )
+        db.session.add(job)
+        jobs.append(job)
+
+    db.session.commit()
+    return jobs
 
 
 # user_trial_expired_no_sub is identical to user_trial_expired;

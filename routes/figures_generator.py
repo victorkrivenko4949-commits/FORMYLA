@@ -508,9 +508,10 @@ def _queue_worker_loop():
                 if stale:
                     db.session.commit()
 
-                # Pick one queued job
+                # Pick one queued job — subscribers first (priority DESC), then FIFO
                 job = FigureBuildJob.query.filter_by(status="queued").order_by(
-                    FigureBuildJob.created_at
+                    FigureBuildJob.priority.desc(),
+                    FigureBuildJob.created_at,
                 ).first()
                 if job:
                     logger.info("[figures_gen] picked job %d from queue", job.id)
@@ -594,11 +595,20 @@ def start_build():
     # Create job
     try:
         from models import db, FigureBuildJob
+        # Set priority: 1 for subscribers, 0 for free users
+        job_priority = 0
+        if hasattr(current_user, 'has_active_subscription'):
+            try:
+                if current_user.has_active_subscription():
+                    job_priority = 1
+            except Exception:
+                job_priority = 0
         job = FigureBuildJob(
             user_id=current_user.id,
             problem_text=problem,
             status="queued",
             model_name=REASONER_MODEL,
+            priority=job_priority,
         )
         db.session.add(job)
         db.session.commit()
@@ -653,3 +663,60 @@ def job_status(job_id):
     except Exception as e:
         logger.error("[figures_gen] status error for job %d: %s", job_id, e)
         return jsonify({"error": "Ошибка при проверке статуса."}), 500
+
+
+# ── T9: queue helpers ──────────────────────────────────────────────────
+
+def queue_position(job) -> int:
+    """Return 1-based position of this job among its user's queued jobs.
+
+    Counts FigureBuildJob records with same user_id, status='queued',
+    and created_at <= this job's created_at.  Other users' jobs are
+    NOT counted — the queue shown to each user is their own.
+    """
+    from models import FigureBuildJob
+    return FigureBuildJob.query.filter(
+        FigureBuildJob.user_id == job.user_id,
+        FigureBuildJob.status == 'queued',
+        FigureBuildJob.created_at <= job.created_at,
+    ).count()
+
+
+def queue_total(user_id: int) -> int:
+    """Return total queued FigureBuildJob count for one user."""
+    from models import FigureBuildJob
+    return FigureBuildJob.query.filter_by(
+        user_id=user_id, status='queued',
+    ).count()
+
+
+# ── T9: queue status route ─────────────────────────────────────────────
+
+@figures_gen_bp.route("/queue-status", methods=["GET"])
+@login_required
+def queue_status():
+    """Return JSON {position, total, priority} for the user's latest
+    queued job.  If no queued jobs: {position:0, total:0, priority:0}.
+    """
+    from models import FigureBuildJob
+    uid = current_user.id
+
+    # Determine priority level for this user
+    user_priority = 0
+    if hasattr(current_user, 'has_active_subscription'):
+        try:
+            if current_user.has_active_subscription():
+                user_priority = 1
+        except Exception:
+            user_priority = 0
+
+    last_queued = FigureBuildJob.query.filter_by(
+        user_id=uid, status='queued',
+    ).order_by(FigureBuildJob.created_at.desc()).first()
+
+    if last_queued is None:
+        return jsonify({"position": 0, "total": 0, "priority": user_priority})
+
+    pos = queue_position(last_queued)
+    total = queue_total(uid)
+    return jsonify({"position": pos, "total": total, "priority": user_priority})
