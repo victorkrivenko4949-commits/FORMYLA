@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Учительская — FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+    .teacher-page {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .teacher-page h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 36px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+    }
+    .create-form {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 32px;
+    }
+    .create-form h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 16px 0;
+    }
+    .form-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+    }
+    .form-row input {
+        flex: 1;
+        padding: 10px 14px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-size: 15px;
+        font-family: Satoshi, system-ui, sans-serif;
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: Satoshi, system-ui, sans-serif;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        transition: opacity 0.18s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-accent { background: var(--accent); color: var(--text); }
+    .group-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .group-card a {
+        color: var(--accent-hi);
+        text-decoration: none;
+        font-size: 17px;
+        font-weight: 600;
+    }
+    .group-card a:hover { text-decoration: underline; }
+    .group-meta {
+        color: var(--muted);
+        font-size: 14px;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+        font-size: 16px;
+    }
+    @media (max-width: 600px) {
+        .teacher-page { padding: 24px 16px 100px; }
+        .form-row { flex-direction: column; }
+        .group-card { flex-direction: column; gap: 8px; align-items: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="teacher-page">
+    <h1>Мои группы</h1>
+
+    <div class="create-form">
+        <h3>Создать новую группу</h3>
+        <form method="POST" action="{{ url_for('parent_teacher.teacher_group_create') }}">
+            <div class="form-row">
+                <input type="text" name="name" placeholder="Название группы" required maxlength="120">
+                <button type="submit" class="btn btn-accent">Создать</button>
+            </div>
+        </form>
+    </div>
+
+    {% if group_stats %}
+        {% for gs in group_stats %}
+        <div class="group-card">
+            <div>
+                <a href="{{ url_for('parent_teacher.teacher_group_view', gid=gs.group.id) }}">
+                    {{ gs.group.name }}
+                </a>
+                <div class="group-meta">
+                    Код: {{ gs.group.invite_code }} |
+                    Учеников: {{ gs.student_count }} |
+                    Среднее задач/день: {{ gs.group_avg }}
+                </div>
+            </div>
+            <a href="{{ url_for('parent_teacher.teacher_group_view', gid=gs.group.id) }}"
+               class="btn btn-accent">Открыть</a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">У вас пока нет групп. Создайте первую группу выше.</div>
+    {% endif %}
+</div>
+{% endblock %}

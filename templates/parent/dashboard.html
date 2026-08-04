@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Родитель — FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+    .parent-page {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .parent-page h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 36px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+    }
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+    .card h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0 0 16px 0;
+    }
+    .stat-row {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+    .stat-item {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 18px;
+        min-width: 120px;
+    }
+    .stat-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        margin-bottom: 4px;
+    }
+    .stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+    }
+    .stat-value.green { color: var(--ok); }
+    .stat-value.red { color: var(--bad); }
+    .not-found {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+        font-size: 18px;
+    }
+    .blocked {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--warn);
+        font-size: 18px;
+    }
+    .anchor-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+    .anchor-badge {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 12px;
+        font-size: 13px;
+        color: var(--muted);
+    }
+    .anchor-badge span {
+        color: var(--accent-hi);
+        font-weight: 600;
+    }
+    @media (max-width: 600px) {
+        .parent-page { padding: 24px 16px 100px; }
+        .stat-row { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="parent-page">
+    <h1>Прогресс ребёнка</h1>
+
+    {% if not_found %}
+        <div class="not-found">NOT FOUND: Ребёнок с указанным email не найден в системе.</div>
+    {% elif share_blocked %}
+        <div class="blocked">Ученик закрыл доступ к своему прогрессу.</div>
+    {% elif child %}
+        <div class="card">
+            <h2>{{ child_display }}</h2>
+            <div class="stat-row">
+                <div class="stat-item">
+                    <div class="stat-label">Задач/день (7 дн.)</div>
+                    <div class="stat-value {{ 'green' if avg_tasks >= 4 else 'red' }}">
+                        {{ avg_tasks }}
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Серия дней</div>
+                    <div class="stat-value">{{ streak }}</div>
+                </div>
+            </div>
+            <div class="stat-label" style="margin-bottom:8px;">Уровни по якорям (mu/sigma):</div>
+            <div class="anchor-badges">
+                {% for anchor, vals in anchors.items() %}
+                <div class="anchor-badge">
+                    {{ anchor[0].upper() }} <span>{{ vals.mu }}/{{ vals.sigma }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

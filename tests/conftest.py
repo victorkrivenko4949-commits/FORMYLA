@@ -147,8 +147,10 @@ def app(tmp_path):
     test_app.config['SQLALCHEMY_DATABASE_URI'] = uri
     test_app.config['SECRET_KEY'] = 'test-f0-secret-key'
     test_app.config['WTF_CSRF_ENABLED'] = False
+    test_app.config['SERVER_NAME'] = 'localhost'
 
     _db.init_app(test_app)
+    for ep in ['profile','logout','misc','about','pricing','welcome','leaderboard','secrets','probniks','figures','topics','friends','chat','daily','problems','matstat','subscription','social','onboarding','privacy','register','login','verify_code']: test_app.add_url_rule('/'+ep, ep, lambda e=ep: e)
 
     # Set up Flask-Login for @login_required decorators
     login_manager = LoginManager()
@@ -167,6 +169,23 @@ def app(tmp_path):
     test_app.register_blueprint(figures_bp)
     from routes.figures_generator import figures_gen_bp
     test_app.register_blueprint(figures_gen_bp)
+    from routes.parent_teacher import parent_teacher_bp
+    test_app.register_blueprint(parent_teacher_bp)
+    try:
+        from routes.olympiad import olympiad_bp
+        test_app.register_blueprint(olympiad_bp)
+    except Exception:
+        pass
+    try:
+        from routes.olympiad_prep import olympiad_prep_bp
+        test_app.register_blueprint(olympiad_prep_bp)
+    except Exception:
+        pass
+    try:
+        from routes.account import account_bp
+        test_app.register_blueprint(account_bp)
+    except Exception:
+        pass
 
     # Push context once and keep it for all dependent fixtures and the test.
     ctx = test_app.app_context()
@@ -543,3 +562,79 @@ def five_priority_jobs(app, user_subscribed, user_free):
 
 # user_trial_expired_no_sub is identical to user_trial_expired;
 # use user_trial_expired directly.
+
+
+# ══════════════════════════════════════════════════════════════════════
+# T10 — Parent / Teacher fixtures
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.fixture
+def teacher_user(app):
+    """User with role='teacher'."""
+    from models import db, User
+
+    user = User(
+        email='teacher_t10@example.invalid',
+        nickname='teacher_t10',
+        role='teacher',
+        is_guest=False,
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+@pytest.fixture
+def student_users(app):
+    """Three users with role='student'."""
+    from models import db, User
+
+    users = []
+    for i in range(1, 4):
+        user = User(
+            email=f'student_t10_{i}@example.invalid',
+            nickname=f'student_t10_{i}',
+            role='student',
+            is_guest=False,
+        )
+        db.session.add(user)
+        users.append(user)
+    db.session.commit()
+    return users
+
+
+@pytest.fixture
+def parent_user(app, student_users):
+    """User with role='parent', child_email pointing to first student."""
+    from models import db, User
+
+    user = User(
+        email='parent_t10@example.invalid',
+        nickname='parent_t10',
+        role='parent',
+        child_email=student_users[0].email,
+        is_guest=False,
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+@pytest.fixture
+def group_with_students(app, teacher_user, student_users):
+    """One T10Group with three T10GroupMember rows."""
+    from models import db, T10Group, T10GroupMember
+
+    g = T10Group(
+        name='T10 Test Group',
+        teacher_id=teacher_user.id,
+        invite_code='ABCDEF',
+    )
+    db.session.add(g)
+    db.session.flush()
+
+    for s in student_users:
+        gm = T10GroupMember(group_id=g.id, user_id=s.id, role='student')
+        db.session.add(gm)
+    db.session.commit()
+    return g

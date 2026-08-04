@@ -1744,6 +1744,16 @@ except Exception as _e:
     print(f"[BP] intake_bp NOT registered: {_e}")
     print(_tb.format_exc())
 
+# ── T10: parent/teacher blueprint ──
+try:
+    from routes.parent_teacher import parent_teacher_bp
+    app.register_blueprint(parent_teacher_bp)
+    print("[BP] parent_teacher_bp registered (/teacher, /parent, /student/*)")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] parent_teacher_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
 # ── AUTO-MIGRATION: test_sessions (для восстановления адаптивного теста) ──
 try:
     from migrations.add_test_sessions import _ensure_test_sessions_table
@@ -11594,6 +11604,29 @@ def api_set_nickname():
         db.session.rollback()
         app.logger.error(f"Error setting nickname: {e}")
         return jsonify({'error': 'Internal server error'}), 500
+
+
+@app.route('/api/set_grade', methods=['POST'])
+@login_required
+def api_set_grade():
+    """Сохранить выбранный класс (preferred_grade) для текущего пользователя."""
+    data = request.get_json(silent=True) or {}
+    grade = data.get('grade')
+    if not grade:
+        return jsonify({'error': 'Укажите grade (5-11)'}), 400
+    try:
+        grade_int = int(grade)
+        if grade_int < 5 or grade_int > 11:
+            return jsonify({'error': 'Класс должен быть от 5 до 11'}), 400
+        current_user.preferred_grade = grade_int
+        db.session.commit()
+        return jsonify({'success': True, 'grade': grade_int})
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Некорректный класс'}), 400
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Failed to set grade: {e}")
+        return jsonify({'error': 'Ошибка сохранения'}), 500
 
 
 # ============================================================

@@ -201,16 +201,16 @@ PART 5: ANSWER CHECK — all 35 correct answers
 Correct self-checks: 35/35
 
 Wrong answer tests:
-  A_G5_ALG: answer='31' vs correct='40' → correct=False PASS(not matched)
-  A_G5_GEO: answer='7' vs correct='8' → correct=False PASS(not matched)
-  A_G9_ALG: answer='13' vs correct='28' → correct=False PASS(not matched)
-  A_G11_NT: answer='26' vs correct='49' → correct=False PASS(not matched)
+  A_G5_ALG: answer='31' vs correct='40' -> correct=False PASS(not matched)
+  A_G5_GEO: answer='7' vs correct='8' -> correct=False PASS(not matched)
+  A_G9_ALG: answer='13' vs correct='28' -> correct=False PASS(not matched)
+  A_G11_NT: answer='26' vs correct='49' -> correct=False PASS(not matched)
 
 Edge cases:
-  '30' vs '30' → True
-  ' 30 ' vs '30' → True
-  '0.99' vs '0,99' → True
-  '0,99' vs '0.99' → True
+  '30' vs '30' -> True
+  ' 30 ' vs '30' -> True
+  '0.99' vs '0,99' -> True
+  '0,99' vs '0.99' -> True
 
 ======================================================================
 PART 6: EXCLUSION — formyla_anchors not in daily tasks / morning probe

@@ -45,6 +45,11 @@ class User(UserMixin, db.Model):
     # Trial (T4)
     trial_started_at = db.Column(db.DateTime, nullable=True, default=None)
 
+    # T10 — Parent/Teacher roles
+    role = db.Column(db.String(16), nullable=False, default='student', server_default='student')
+    child_email = db.Column(db.String(120), nullable=True)  # parent binds to child via email
+    share_progress = db.Column(db.Boolean, nullable=False, default=True, server_default='1')
+
     # Generation limits (free mock / exam generation)
     generation_count_today = db.Column(db.Integer, default=0, server_default='0')
     generation_reset_date = db.Column(db.Date, nullable=True)  # which day the counter belongs to
@@ -1545,6 +1550,51 @@ class GroupMember(db.Model):
     __table_args__ = (
         db.UniqueConstraint('group_id', 'user_id', name='_group_member_unique'),
     )
+
+
+class T10Group(db.Model):
+    """T10 — teacher-created student groups."""
+    __tablename__ = 'teacher_groups'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    teacher_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    invite_code = db.Column(db.String(6), unique=True, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    teacher = db.relationship('User', backref=db.backref('teacher_groups', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<T10Group id={self.id} name={self.name!r}>'
+
+
+class T10GroupMember(db.Model):
+    """T10 — membership in a teacher group."""
+    __tablename__ = 'teacher_group_members'
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(
+        db.Integer, db.ForeignKey('teacher_groups.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False, index=True
+    )
+    role = db.Column(db.String(16), nullable=False, default='student')
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('group_id', 'user_id', name='_t10_group_member_unique'),
+    )
+
+    group = db.relationship('T10Group', backref=db.backref('members', lazy='dynamic',
+                                                           cascade='all, delete-orphan'))
+    user = db.relationship('User', backref=db.backref('teacher_group_memberships', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<T10GroupMember gid={self.group_id} uid={self.user_id}>'
 
 
 class GroupMessage(db.Model):
