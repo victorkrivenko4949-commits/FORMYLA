@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Настройка виджетов — FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+    .settings-page {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .settings-page h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+    .settings-page p.subtitle {
+        color: var(--muted);
+        font-size: 15px;
+        margin-bottom: 32px;
+    }
+    .widget-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .widget-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px 18px;
+        cursor: grab;
+        transition: border-color 0.18s;
+    }
+    .widget-row.dragging {
+        opacity: 0.5;
+        border-color: var(--accent);
+    }
+    .widget-row.drag-over {
+        border-color: var(--accent-hi);
+        background: var(--surface-2);
+    }
+    .drag-handle {
+        color: var(--muted);
+        font-size: 18px;
+        cursor: grab;
+        user-select: none;
+    }
+    .widget-info {
+        flex: 1;
+    }
+    .widget-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .widget-desc {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+    .toggle {
+        position: relative;
+        width: 46px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+    .toggle input {
+        display: none;
+    }
+    .toggle-slider {
+        position: absolute;
+        inset: 0;
+        background: var(--border);
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .toggle-slider::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        background: var(--text);
+        border-radius: 50%;
+        transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider {
+        background: var(--accent);
+    }
+    .toggle input:checked + .toggle-slider::after {
+        transform: translateX(20px);
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: Satoshi, system-ui, sans-serif;
+        cursor: pointer;
+        border: none;
+        transition: opacity 0.18s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-accent { background: var(--accent); color: var(--text); }
+    .save-bar {
+        margin-top: 24px;
+        display: flex;
+        gap: 12px;
+    }
+    @media (max-width: 600px) {
+        .settings-page { padding: 24px 16px 100px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <h1>Настройка виджетов</h1>
+    <p class="subtitle">Перетащите виджеты чтобы изменить порядок. Включите те, которые хотите видеть на главной.</p>
+
+    <form method="POST" action="/dashboard/settings" id="widgetForm">
+        <div class="widget-list" id="widgetList">
+            {% for w in widgets %}
+            <div class="widget-row" draggable="true"
+                 data-key="{{ w.key }}">
+                <span class="drag-handle">::</span>
+                <div class="widget-info">
+                    <div class="widget-title">{{ w.title }}</div>
+                    <div class="widget-desc">{{ w.desc }}</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox"
+                           name="widget_{{ w.key }}_visible"
+                           value="1"
+                           {% if w.visible %}checked{% endif %}>
+                    <span class="toggle-slider"></span>
+                </label>
+                <input type="hidden" name="widget_{{ w.key }}_position" value="{{ w.position }}">
+            </div>
+            {% endfor %}
+        </div>
+        <div class="save-bar">
+            <button type="submit" class="btn btn-accent">Сохранить</button>
+        </div>
+    </form>
+</div>
+
+<script>
+(function() {
+    var list = document.getElementById('widgetList');
+    var dragged = null;
+
+    list.addEventListener('dragstart', function(e) {
+        dragged = e.target.closest('.widget-row');
+        if (dragged) dragged.classList.add('dragging');
+    });
+
+    list.addEventListener('dragend', function(e) {
+        if (dragged) dragged.classList.remove('dragging');
+        dragged = null;
+    });
+
+    list.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        var row = e.target.closest('.widget-row');
+        if (row && row !== dragged) {
+            row.classList.add('drag-over');
+        }
+    });
+
+    list.addEventListener('dragleave', function(e) {
+        var row = e.target.closest('.widget-row');
+        if (row) row.classList.remove('drag-over');
+    });
+
+    list.addEventListener('drop', function(e) {
+        e.preventDefault();
+        var row = e.target.closest('.widget-row');
+        if (row) row.classList.remove('drag-over');
+        if (dragged && row && dragged !== row) {
+            var children = Array.from(list.children);
+            var from = children.indexOf(dragged);
+            var to = children.indexOf(row);
+            if (from < to) {
+                row.parentNode.insertBefore(dragged, row.nextSibling);
+            } else {
+                row.parentNode.insertBefore(dragged, row);
+            }
+        }
+        // Update position fields
+        Array.from(list.children).forEach(function(el, idx) {
+            var posInput = el.querySelector('input[name$="_position"]');
+            if (posInput) posInput.value = idx;
+        });
+    });
+})();
+</script>
+{% endblock %}
