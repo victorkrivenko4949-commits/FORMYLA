@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<line x1="310.0" y1="310.0" x2="560.0" y2="310.0" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="435.0" y2="93.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="544.9" y1="224.5" x2="408.8" y2="310.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="544.9" y1="224.5" x2="402.8" y2="149.4" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="408.8" y1="310.0" x2="402.8" y2="149.4" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<path d="M 323.0 287.5 A 26 26 0 0 1 336.0 310.0" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="345.5" y="294.5" fill="#8C9ABC" font-size="15" text-anchor="middle">60°</text>
+<path d="M 334.4 301.1 A 26 26 0 0 1 336.0 310.0" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="350.4" y="307.9" fill="#8C9ABC" font-size="15" text-anchor="middle">20°</text>
+<path d="M 323.0 287.5 A 26 26 0 0 1 334.4 301.1" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="341.4" y="288.6" fill="#8C9ABC" font-size="15" text-anchor="middle">40°</text>
+<path d="M 430.8 296.2 A 26 26 0 0 1 434.8 310.0" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="448.1" y="303.7" fill="#8C9ABC" font-size="15" text-anchor="middle">?</text>
+<line x1="480.0" y1="272.3" x2="473.6" y2="262.2" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="471.0" y1="192.2" x2="476.6" y2="181.6" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="471.0" y1="192.2" x2="476.6" y2="181.6" stroke="#4C7DFF" stroke-width="2"/>
+<line x1="399.8" y1="229.9" x2="411.7" y2="229.5" stroke="#4C7DFF" stroke-width="2"/>
+<circle cx="310.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="292.7" y="326.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="560.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="326.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="435.0" cy="93.5" r="3.4" fill="#E6EBF7"/>
+<text x="435.0" y="79.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="544.9" cy="224.5" r="3.4" fill="#E6EBF7"/>
+<text x="564.9" y="230.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+<circle cx="408.8" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="408.8" y="336.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">K</text>
+<circle cx="402.8" cy="149.4" r="3.4" fill="#E6EBF7"/>
+<text x="385.4" y="145.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">L</text>
+</svg>

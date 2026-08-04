@@ -586,7 +586,7 @@ var greetingTimeout = setTimeout(function () { greetingController.abort(); }, 10
 fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signal })
   .then(function (r) { clearTimeout(greetingTimeout); return r.json(); })
   .then(function (data) {
-    greetingEl.innerHTML = data.greeting || ' Привет! Я твой ИИ-куратор FORMYLA.';
+    greetingEl.innerHTML = data.greeting || '{% if user_name %}Привет, {{ user_name }}!{% else %}Привет!{% endif %} Я твой ИИ-куратор FORMYLA.';
     ctaRow.innerHTML = '';
     if (data.scenario === 'next_action') {
       var na = data.next_action || {};
@@ -606,7 +606,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     } else if (data.scenario === 'start_questionnaire') {
     window.location.href = '/prep/onboarding';
 } else if (data.scenario === 'need_grade') {
-      greetingEl.innerHTML = ' Привет! Я твой ИИ-куратор FORMYLA.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
+      greetingEl.innerHTML = '{% if user_name %}Привет, {{ user_name }}!{% else %}Привет!{% endif %} Я твой ИИ-куратор FORMYLA.<br><br>Для начала выбери свой класс, чтобы я мог построить радар твоих подтем.';
       var grades = [5, 6, 7, 8, 9, 10, 11];
       var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">';
       grades.forEach(function(g) {
@@ -821,7 +821,7 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     }
   })
   .catch(function () {
-    greetingEl.textContent = ' Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
+    greetingEl.textContent = '{% if user_name %}Привет, {{ user_name }}!{% else %}Привет!{% endif %} Я твой ИИ-куратор FORMYLA. Задай мне вопрос!';
   });
 
 // ─── Load chat history ─────────────────────────────────────────────────────

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<line x1="310.0" y1="310.0" x2="560.0" y2="310.0" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="435.0" y2="93.5" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="118.5" y2="149.3" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="310.0" y1="310.0" x2="395.5" y2="75.1" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<path d="M 323.0 287.5 A 26 26 0 0 1 336.0 310.0" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="345.5" y="294.5" fill="#8C9ABC" font-size="15" text-anchor="middle">60°</text>
+<path d="M 290.1 293.3 A 26 26 0 0 1 323.0 287.5" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="302.9" y="274.6" fill="#8C9ABC" font-size="15" text-anchor="middle">80°</text>
+<path d="M 318.9 285.6 A 26 26 0 0 1 323.0 287.5" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="327.3" y="277.8" fill="#8C9ABC" font-size="15" text-anchor="middle">10°</text>
+<circle cx="310.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="300.0" y="333.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="560.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="577.3" y="326.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="435.0" cy="93.5" r="3.4" fill="#E6EBF7"/>
+<text x="445.0" y="82.2" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="118.5" cy="149.3" r="3.4" fill="#E6EBF7"/>
+<text x="99.2" y="150.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="395.5" cy="75.1" r="3.4" fill="#E6EBF7"/>
+<text x="400.7" y="61.8" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+</svg>

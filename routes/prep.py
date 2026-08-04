@@ -29,6 +29,7 @@ from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE, get_db_t
 from daily_tasks.profile import build_profile, ProfileBuildError, score_to_target_level
 from daily_tasks.monthly_plan import subtopic_title
 from services.olympiads_knowledge import build_olympiads_context, recommend_olympiads_for, get_olympiad_knowledge
+from services.user_helpers import display_name_from_email
 
 # Allowed MIME types for photo upload
 ALLOWED_PHOTO_MIMES = {'image/jpeg', 'image/png', 'image/webp', 'image/heic'}
@@ -938,6 +939,11 @@ def get_subtopic_test(grade, subtopic_key, count=5):
 @login_required
 def coach():
     """Страница Куратора: радар по 7 выбранным куратором подтемам + чат с ИИ-агентом."""
+    # ── T3: compute user name for personalized greeting ─────────────────
+    _t3_user_name = display_name_from_email(
+        getattr(current_user, 'email', '') or ''
+    )
+    _t3_user_name = _t3_user_name if _t3_user_name and _t3_user_name != 'Игрок' else ''
     profile = _curator_profile()
     ctx = _build_subtopic_ctx(profile)
 
@@ -1363,7 +1369,8 @@ def coach():
                                measured_subtopics_list=measured_subtopics_list,
                                onboarding_done=_onboarding_done,
                                curator_card=curator_card,
-                               curator_debt_breakdown=curator_debt_breakdown)
+                               curator_debt_breakdown=curator_debt_breakdown,
+                               user_name=_t3_user_name)
 
 
 # ─── Morning probe (monthly cycle) ─────────────────────────────────────
@@ -1791,6 +1798,15 @@ def coach_greeting():
       9. prep_tasks_ready      — тренировочный день (8-30), задачи готовы
      10. prep_task_day         — тренировочный день, задачи ещё не готовы
     """
+    # ── T3: curator greets by name ─────────────────────────────────────
+    user_name = display_name_from_email(
+        getattr(current_user, 'email', '') or ''
+    )
+    name_greeting_fmt = (
+        f'Привет, {user_name}!'
+        if user_name and user_name != 'Игрок'
+        else 'Привет!'
+    )
     grade = _get_user_grade()
 
     # ── Query-param actions ───────────────────────────────────────────
@@ -1820,7 +1836,7 @@ def coach_greeting():
 
     if not grade:
         return jsonify(
-            greeting=' Привет! Я твой ИИ-куратор FORMYLA. Для начала выбери свой класс, '
+            greeting=f'{name_greeting_fmt} Я твой ИИ-куратор FORMYLA. Для начала выбери свой класс, '
                      'чтобы я мог построить радар твоих подтем.',
             scenario='need_grade',
             recommended_olympiad=None,
@@ -1836,14 +1852,7 @@ def coach_greeting():
         from services.next_action import get_next_action
         na = get_next_action(current_user.id)
 
-        user_name = (
-            getattr(current_user, 'name', None)
-            or getattr(current_user, 'nickname', None)
-            or 'ученик'
-        )
-        name_greeting = f' Привет, {user_name}!'
-
-        greeting = f'{name_greeting}\n\n<strong>{na["title"]}</strong>\n\n{na["reason"]}'
+        greeting = f'{name_greeting_fmt}\n\n<strong>{na["title"]}</strong>\n\n{na["reason"]}'
 
         # Log next_action success for debugging defect 1
         current_app.logger.info(
@@ -2160,7 +2169,7 @@ def coach_greeting():
 
         subtopic_name = priority_subtopic['name'] if priority_subtopic else 'математике'
         greeting = (
-            f' Привет! Ты в {grade}-м классе. Готов позаниматься? '
+            f'{name_greeting_fmt} Ты в {grade}-м классе. Готов позаниматься? '
             f'Предлагаю начать с темы **«{subtopic_name}»** — '
             f'реши несколько задач, и я подберу задачи дня под твой уровень.'
         )
@@ -2177,7 +2186,7 @@ def coach_greeting():
     except Exception as _greeting_err:
         current_app.logger.exception('coach_greeting safety net caught error')
         return jsonify(
-            greeting=' Привет! Я твой ИИ-куратор FORMYLA. Задай мне вопрос!',
+            greeting=f'{name_greeting_fmt} Я твой ИИ-куратор FORMYLA. Задай мне вопрос!',
             scenario='fallback',
             recommended_olympiad=None,
             subtopics_to_test=[],
@@ -3101,9 +3110,16 @@ def coach_chat():
     _daily_count = _onboarding.get('daily_tasks', student_card.get('daily_tasks', 3) if student_card else 3)
     _daily_count = max(1, int(_daily_count))
 
+    # ── T3: get user name for curator greeting ──────────────────────────
+    _coach_user_name = display_name_from_email(
+        getattr(current_user, 'email', '') or ''
+    )
+    _coach_user_name = _coach_user_name if _coach_user_name and _coach_user_name != 'Игрок' else 'ученик'
+
     # Build rich system prompt
     system_prompt = (
         "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам. "
+        f"Обращайся к ученику по имени: {_coach_user_name}. "
         "Ты работаешь ТОЛЬКО внутри платформы FORMYLA. "
         "Ты не советуешь внешние учебники, сайты, задачники (Атанасян, problems.ru и т.п.) — "
         "все материалы для подготовки уже есть в FORMYLA. "
@@ -3192,7 +3208,7 @@ def coach_chat():
         )
     if reply is None:
         reply = (
-            " ИИ-куратор сейчас недоступен — сервис не отвечает. "
+            f"Привет, {_coach_user_name}! ИИ-куратор сейчас недоступен — сервис не отвечает. "
             "Это не влияет на задачи дня и твой прогресс. "
             "Попробуй позже или задай вопрос в чате в другое время."
         )

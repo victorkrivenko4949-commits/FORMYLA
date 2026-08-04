@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620">
+<style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
+<rect width="620" height="620" fill="#070C18"/>
+<circle cx="310.0" cy="310.0" r="250.0" fill="none" stroke="#A9BBD6" stroke-width="1.9"/>
+<line x1="560.0" y1="310.0" x2="60.0" y2="310.0" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<line x1="336.1" y1="61.4" x2="124.2" y2="477.3" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
+<path d="M 221.3 286.8 A 26 26 0 0 1 235.4 310.0" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
+<text x="244.4" y="293.6" fill="#8C9ABC" font-size="15" text-anchor="middle">63°</text>
+<circle cx="310.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="315.2" y="335.3" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">O</text>
+<circle cx="560.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="580.0" y="316.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
+<circle cx="336.1" cy="61.4" r="3.4" fill="#E6EBF7"/>
+<text x="341.3" y="48.1" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">C</text>
+<circle cx="60.0" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="40.0" y="316.0" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">B</text>
+<circle cx="124.2" cy="477.3" r="3.4" fill="#E6EBF7"/>
+<text x="110.1" y="497.4" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">D</text>
+<circle cx="209.4" cy="310.0" r="3.4" fill="#E6EBF7"/>
+<text x="199.4" y="298.7" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">M</text>
+</svg>
