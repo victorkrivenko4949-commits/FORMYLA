@@ -1,215 +1,134 @@
 # -*- coding: utf-8 -*-
 """
-Streak Service for FORMYLA
-Manages user streaks (like Duolingo) with freeze functionality
-"""
+services/streak_service.py — T8 daily quest streak and days-off logic.
 
-from datetime import datetime, date, timedelta
-from models import db, UserStreak, DailyQuest, User
-from typing import Optional, Dict
+One StreakRecord per user.  Updated on daily task set completion,
+on-open checks, and explicit day-off requests.
+"""
+from __future__ import annotations
+
 import logging
+from datetime import date, timedelta
+from typing import Optional
+
+from models import db, StreakRecord
 
 logger = logging.getLogger(__name__)
 
-
-def get_or_create_streak(user_id: int) -> UserStreak:
-    """
-    Получить или создать streak для пользователя.
-    
-    Args:
-        user_id: ID пользователя
-        
-    Returns:
-        UserStreak объект
-    """
-    streak = UserStreak.query.filter_by(user_id=user_id).first()
-    
-    if not streak:
-        streak = UserStreak(user_id=user_id)
-        db.session.add(streak)
-        try:
-            db.session.commit()
-            logger.info(f"Created new streak for user {user_id}")
-        except Exception as e:
-            logger.error(f"Error creating streak: {e}")
-            db.session.rollback()
-    
-    return streak
+STREAK_DAYS_FOR_DAY_OFF = 3  # every 3 days of streak grant 1 day-off
 
 
-def update_streak_after_quest(user_id: int):
+# ---------------------------------------------------------------------------
+# Core helpers
+# ---------------------------------------------------------------------------
+
+def get_or_create_streak(user_id: int) -> StreakRecord:
+    """Return the StreakRecord for *user_id*, creating one if missing."""
+    rec = StreakRecord.query.filter_by(user_id=user_id).first()
+    if rec is None:
+        rec = StreakRecord(user_id=user_id)
+        db.session.add(rec)
+        db.session.flush()
+    return rec
+
+
+def check_streak_on_open(user_id: int, today: date) -> StreakRecord:
+    """Called when the user opens the daily tasks page.
+
+    If the user has a last_solved_date and it is older than
+    ``today - 1 day`` AND they had no day-off taken, the streak
+    is reset to 0.  Otherwise the streak is left untouched.
     """
-    Обновить streak после завершения Daily Quest.
-    
-    Args:
-        user_id: ID пользователя
+    rec = get_or_create_streak(user_id)
+
+    if rec.last_solved_date is not None:
+        gap = (today - rec.last_solved_date).days
+        # Gap of 1 day (= yesterday) is fine — streak is preserved.
+        # Gap of >1 day without a day-off means the streak is broken.
+        if gap > 1:
+            rec.current_streak = 0
+            rec.days_off_available = 0
+            db.session.flush()
+
+    return rec
+
+
+def complete_day(user_id: int, today: date, all_correct: bool) -> StreakRecord:
+    """Called after the daily task set is fully answered.
+
+    *all_correct* must be ``True`` only when every item in the set
+    was answered correctly (+1).  Partial (0) or wrong (-2) answers
+    mean ``all_correct=False``.
+
+    On 100%:
+        current_streak += 1
+        max_streak = max(max_streak, current_streak)
+        Every STREAK_DAYS_FOR_DAY_OFF days -> days_off_available += 1
+
+    On not 100%:
+        current_streak = 0
+        days_off_available = 0
+
+    Always:
+        last_solved_date = today
     """
-    streak = get_or_create_streak(user_id)
-    today = date.today()
-    
-    # Проверяем, завершён ли квест на сегодня
-    quest = DailyQuest.query.filter_by(
-        user_id=user_id,
-        date=today
-    ).first()
-    
-    if not quest or quest.completed_count < quest.total_count:
-        logger.info(f"Quest not completed for user {user_id}, streak not updated")
-        return
-    
-    # Обновляем streak
-    if streak.last_active_date is None:
-        # Первый день
-        streak.current_streak = 1
-        streak.longest_streak = 1
-        streak.last_active_date = today
-    elif streak.last_active_date == today:
-        # Уже обновлено сегодня
-        logger.info(f"Streak already updated today for user {user_id}")
-        return
-    elif streak.last_active_date == today - timedelta(days=1):
-        # Продолжение streak
-        streak.current_streak += 1
-        streak.last_active_date = today
-        
-        # Обновляем рекорд
-        if streak.current_streak > streak.longest_streak:
-            streak.longest_streak = streak.current_streak
+    rec = get_or_create_streak(user_id)
+
+    if all_correct:
+        rec.current_streak = (rec.current_streak or 0) + 1
+        rec.max_streak = max(rec.max_streak or 0, rec.current_streak)
+        if rec.current_streak % STREAK_DAYS_FOR_DAY_OFF == 0:
+            rec.days_off_available = (rec.days_off_available or 0) + 1
     else:
-        # Streak прервался (но это не должно происходить здесь, обрабатывается в daily_reset)
-        logger.warning(f"Streak gap detected for user {user_id}")
-        streak.current_streak = 1
-        streak.last_active_date = today
-    
-    try:
-        db.session.commit()
-        logger.info(f"Updated streak for user {user_id}: {streak.current_streak} days")
-    except Exception as e:
-        logger.error(f"Error updating streak: {e}")
-        db.session.rollback()
+        rec.current_streak = 0
+        rec.days_off_available = 0
+
+    rec.last_solved_date = today
+    db.session.flush()
+    return rec
 
 
-def check_and_reset_streaks():
+def take_day_off(user_id: int, today: date) -> bool:
+    """Consume one day-off token.  mu/sigma are NOT touched.
+
+    Returns True on success, False if no days-off available.
     """
-    Проверить и сбросить streak для всех пользователей (вызывается в 00:00 MSK).
-    
-    Логика:
-    - Если last_active_date == вчера -> всё ок, streak продолжается
-    - Если last_active_date == позавчера или раньше:
-      - Если freeze_available > 0 -> используем freeze
-      - Иначе -> сбрасываем streak
-    """
-    today = date.today()
-    yesterday = today - timedelta(days=1)
-    day_before_yesterday = today - timedelta(days=2)
-    
-    all_streaks = UserStreak.query.all()
-    
-    for streak in all_streaks:
-        if not streak.last_active_date:
-            continue
-        
-        # Если активность была вчера - всё ок
-        if streak.last_active_date == yesterday:
-            logger.info(f"User {streak.user_id} was active yesterday, streak continues")
-            continue
-        
-        # Если активность была позавчера или раньше
-        if streak.last_active_date <= day_before_yesterday:
-            # Проверяем freeze
-            if streak.freeze_available > 0:
-                # Используем freeze
-                streak.freeze_available -= 1
-                streak.freeze_used_at = today
-                logger.info(f"Used freeze for user {streak.user_id}, streak preserved: {streak.current_streak}")
-            else:
-                # Сбрасываем streak
-                logger.info(f"Resetting streak for user {streak.user_id} from {streak.current_streak} to 0")
-                streak.current_streak = 0
-    
-    # Восстанавливаем freeze раз в месяц
-    for streak in all_streaks:
-        if streak.freeze_used_at:
-            days_since_freeze = (today - streak.freeze_used_at).days
-            if days_since_freeze >= 30:
-                streak.freeze_available = 1
-                streak.freeze_used_at = None
-                logger.info(f"Restored freeze for user {streak.user_id}")
-    
-    try:
-        db.session.commit()
-        logger.info(f"Streak reset completed for {len(all_streaks)} users")
-    except Exception as e:
-        logger.error(f"Error in streak reset: {e}")
-        db.session.rollback()
+    rec = get_or_create_streak(user_id)
+
+    if not rec.days_off_available or rec.days_off_available <= 0:
+        return False
+
+    rec.days_off_available -= 1
+    rec.last_solved_date = today  # mark today as "covered"
+    # current_streak stays unchanged
+    db.session.flush()
+    return True
 
 
-def get_streak_stats(user_id: int) -> Dict:
-    """
-    Получить статистику streak для пользователя.
-    
-    Args:
-        user_id: ID пользователя
-        
-    Returns:
-        Dict со статистикой
-    """
-    streak = get_or_create_streak(user_id)
-    today = date.today()
-    
-    # Проверяем, завершён ли квест на сегодня
-    quest = DailyQuest.query.filter_by(
-        user_id=user_id,
-        date=today
-    ).first()
-    
-    quest_completed_today = False
-    if quest and quest.completed_count >= quest.total_count:
-        quest_completed_today = True
-    
-    return {
-        'current_streak': streak.current_streak,
-        'longest_streak': streak.longest_streak,
-        'last_active_date': streak.last_active_date.isoformat() if streak.last_active_date else None,
-        'freeze_available': streak.freeze_available,
-        'freeze_used_at': streak.freeze_used_at.isoformat() if streak.freeze_used_at else None,
-        'quest_completed_today': quest_completed_today
-    }
+# ---------------------------------------------------------------------------
+# Helper for the route layer
+# ---------------------------------------------------------------------------
+
+def compute_all_correct(daily_set_id: int) -> bool:
+    """Return True when every item of the set is answered correctly."""
+    from daily_tasks.models import DailyTaskItem
+
+    items = DailyTaskItem.query.filter_by(daily_set_id=daily_set_id).all()
+    if not items:
+        return False
+    for it in items:
+        if it.user_answer is None:
+            return False
+        if not it.is_correct:
+            return False
+    return True
 
 
-def get_streak_achievements(current_streak: int) -> list:
-    """
-    Получить достижения streak.
-    
-    Args:
-        current_streak: Текущий streak
-        
-    Returns:
-        List достижений
-    """
-    achievements = []
-    milestones = [
-        (7, ' Неделя подряд!', 'bronze'),
-        (30, ' Месяц подряд!', 'silver'),
-        (100, ' 100 дней подряд!', 'gold'),
-        (365, ' Год подряд!', 'platinum')
-    ]
-    
-    for days, title, badge in milestones:
-        if current_streak >= days:
-            achievements.append({
-                'days': days,
-                'title': title,
-                'badge': badge,
-                'unlocked': True
-            })
-        else:
-            achievements.append({
-                'days': days,
-                'title': title,
-                'badge': badge,
-                'unlocked': False,
-                'progress': current_streak / days
-            })
-    
-    return achievements
+def set_is_fully_answered(daily_set_id: int) -> bool:
+    """Return True when every item has a non-null user_answer."""
+    from daily_tasks.models import DailyTaskItem
+
+    items = DailyTaskItem.query.filter_by(daily_set_id=daily_set_id).all()
+    if not items:
+        return False
+    return all(it.user_answer is not None for it in items)

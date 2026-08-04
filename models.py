@@ -1826,3 +1826,25 @@ class SchemaMigrationLog(db.Model):
 
     def __repr__(self):
         return f'<SchemaMigrationLog {self.migration_name} @ {self.applied_at}>'
+
+
+class StreakRecord(db.Model):
+    """T8: Track daily quest streak and days-off for one user.
+
+    One record per user (unique user_id).  Updated by streak_service
+    on daily task set completion, on-open checks, and day-off requests.
+    """
+    __tablename__ = 'streak_records'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False, index=True)
+    current_streak = db.Column(db.Integer, default=0, nullable=False, server_default='0')
+    max_streak = db.Column(db.Integer, default=0, nullable=False, server_default='0')
+    days_off_available = db.Column(db.Integer, default=0, nullable=False, server_default='0')
+    last_solved_date = db.Column(db.Date, nullable=True)
+
+    user = db.relationship('User', backref=db.backref('streak_record', uselist=False, lazy=True))
+
+    def __repr__(self):
+        return (f'<StreakRecord user={self.user_id} current={self.current_streak} '
+                f'max={self.max_streak} off={self.days_off_available}>')
