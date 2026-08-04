@@ -16,12 +16,13 @@
    "id": "B1",
    "from": "B",
    "line": "AC"
-  },
+  }
+ ],
+ "aux": [
   {
-   "type": "intersection",
-   "id": "H",
-   "line1": "AA1",
-   "line2": "BB1"
+   "type": "circumcircle",
+   "id": "omega",
+   "of": "ABA1"
   }
  ],
  "draw": [
@@ -29,34 +30,39 @@
    "polygon": "ABC"
   },
   {
-   "segment": "AA1",
-   "style": "soft"
+   "segment": "AA1"
   },
   {
-   "segment": "BB1",
-   "style": "soft"
+   "segment": "BB1"
   },
   {
-   "segment": "A1B1",
+   "segment": "A1B1"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "omega",
    "style": "accent"
   }
  ],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "A1",
-    "B"
+   "right": "AA1C"
+  },
+  {
+   "right": "BB1C"
+  },
+  {
+   "angle": [
+    "CA1B1",
+    "CAB"
    ]
   },
   {
-   "right_angle": [
-    "B",
-    "B1",
-    "A"
+   "angle": [
+    "CB1A1",
+    "CBA"
    ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

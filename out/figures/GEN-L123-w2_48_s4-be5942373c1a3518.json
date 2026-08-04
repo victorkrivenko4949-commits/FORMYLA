@@ -6,52 +6,24 @@
    "kind": "parallelogram"
   },
   {
-   "type": "circle",
-   "id": "wAB1",
-   "center": "A",
-   "through": "B"
-  },
-  {
-   "type": "circle",
-   "id": "wAB2",
-   "center": "B",
-   "through": "A"
-  },
-  {
-   "type": "circle_circle",
-   "id": "E",
-   "circle1": "wAB1",
-   "circle2": "wAB2",
-   "pick": 0
-  },
-  {
    "type": "triangle",
    "id": "ABE",
-   "kind": "isosceles"
-  },
-  {
-   "type": "circle",
-   "id": "wCD1",
-   "center": "C",
-   "through": "D"
-  },
-  {
-   "type": "circle",
-   "id": "wCD2",
-   "center": "D",
-   "through": "C"
-  },
-  {
-   "type": "circle_circle",
-   "id": "F",
-   "circle1": "wCD1",
-   "circle2": "wCD2",
-   "pick": 0
+   "kind": "equilateral"
   },
   {
    "type": "triangle",
    "id": "CDF",
-   "kind": "isosceles"
+   "kind": "equilateral"
+  }
+ ],
+ "aux": [
+  {
+   "type": "intersection",
+   "id": "O",
+   "of": [
+    "AC",
+    "BD"
+   ]
   }
  ],
  "draw": [
@@ -65,12 +37,20 @@
    "polygon": "CDF"
   },
   {
-   "segment": "AF",
-   "style": "accent"
+   "segment": "AF"
   },
   {
-   "segment": "CE",
-   "style": "accent"
+   "segment": "CE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
   }
  ],
  "marks": [
@@ -78,47 +58,19 @@
    "equal": [
     "AB",
     "CD"
-   ],
-   "ticks": 1
+   ]
   },
   {
    "equal": [
     "AD",
     "BC"
-   ],
-   "ticks": 2
+   ]
   },
   {
    "equal": [
     "AE",
-    "BE"
-   ],
-   "ticks": 1
-  },
-  {
-   "equal": [
-    "CF",
-    "DF"
-   ],
-   "ticks": 1
-  },
-  {
-   "angle": [
-    "B",
-    "A",
-    "E"
-   ],
-   "text": "60°"
-  },
-  {
-   "angle": [
-    "D",
-    "C",
-    "F"
-   ],
-   "text": "60°"
+    "CF"
+   ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

@@ -6,23 +6,23 @@
    "kind": "obtuse"
   },
   {
+   "type": "triangle",
+   "id": "ABD",
+   "kind": "equilateral"
+  }
+ ],
+ "aux": [
+  {
    "type": "circle",
-   "id": "w1",
+   "id": "w",
    "center": "A",
-   "through": "B"
+   "radius": 50
   },
   {
-   "type": "circle",
-   "id": "w2",
-   "center": "B",
-   "through": "A"
-  },
-  {
-   "type": "circle_circle",
-   "id": "D",
-   "circle1": "w1",
-   "circle2": "w2",
-   "pick": 0
+   "type": "point_on_circle",
+   "id": "C1",
+   "on": "w",
+   "angle": 105
   }
  ],
  "draw": [
@@ -33,50 +33,18 @@
    "polygon": "ABD"
   },
   {
-   "segment": "CD",
+   "segment": "CD"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC1",
+   "style": "accent"
+  },
+  {
+   "segment": "C1D",
    "style": "accent"
   }
  ],
- "marks": [
-  {
-   "angle": [
-    "B",
-    "A",
-    "C"
-   ],
-   "text": "45°"
-  },
-  {
-   "angle": [
-    "A",
-    "C",
-    "B"
-   ],
-   "text": "30°"
-  },
-  {
-   "equal": [
-    "AB",
-    "AD"
-   ],
-   "ticks": 1
-  },
-  {
-   "equal": [
-    "AB",
-    "BD"
-   ],
-   "ticks": 1
-  },
-  {
-   "angle": [
-    "A",
-    "C",
-    "D"
-   ],
-   "text": "15°"
-  }
- ],
- "aux": [],
- "draw_aux": []
+ "marks": []
 }

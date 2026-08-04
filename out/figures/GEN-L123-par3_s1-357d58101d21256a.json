@@ -18,10 +18,16 @@
    "line": "AC"
   },
   {
-   "type": "intersection",
+   "type": "orthocenter",
    "id": "H",
-   "line1": "AA1",
-   "line2": "BB1"
+   "of": "ABC"
+  }
+ ],
+ "aux": [
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "CA1H"
   }
  ],
  "draw": [
@@ -35,30 +41,18 @@
    "segment": "BB1"
   }
  ],
- "marks": [
+ "draw_aux": [
   {
-   "right_angle": [
-    "A",
-    "A1",
-    "B"
-   ]
-  },
-  {
-   "right_angle": [
-    "A",
-    "B1",
-    "B"
-   ]
-  },
-  {
-   "angle": [
-    "A",
-    "H",
-    "B"
-   ],
-   "text": "120°"
+   "circle": "w",
+   "style": "accent"
   }
  ],
- "aux": [],
- "draw_aux": []
+ "marks": [
+  {
+   "right": "AA1C"
+  },
+  {
+   "right": "BB1C"
+  }
+ ]
 }

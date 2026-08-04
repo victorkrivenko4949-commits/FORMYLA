@@ -11704,6 +11704,13 @@ def _inject_subscription_flags():
     return {'is_premium': False}
 
 
+@app.context_processor
+def _inject_user_helpers():
+    """Делает display_name_from_email доступной во всех шаблонах."""
+    from services.user_helpers import display_name_from_email
+    return dict(display_name_from_email=display_name_from_email)
+
+
 @app.route('/api/subscribe', methods=['POST'])
 @login_required
 def api_subscribe():
