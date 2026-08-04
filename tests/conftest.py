@@ -150,7 +150,8 @@ def app(tmp_path):
     test_app.config['SERVER_NAME'] = 'localhost'
 
     _db.init_app(test_app)
-    for ep in ['profile','logout','misc','about','pricing','welcome','leaderboard','secrets','probniks','figures','topics','friends','chat','daily','problems','matstat','subscription','social','onboarding','privacy','register','login','verify_code']: test_app.add_url_rule('/'+ep, ep, lambda e=ep: e)
+    for ep in ['profile','logout','misc','about','pricing','welcome','leaderboard','secrets','probniks','figures','topics','friends','chat','daily','problems','matstat','subscription','social','onboarding','privacy','register','login','verify_code','olympiads']: test_app.add_url_rule('/'+ep, ep, lambda e=ep: e)
+    test_app.add_url_rule('/', 'index', lambda: 'index')
 
     # Set up Flask-Login for @login_required decorators
     login_manager = LoginManager()
@@ -171,6 +172,8 @@ def app(tmp_path):
     test_app.register_blueprint(figures_gen_bp)
     from routes.parent_teacher import parent_teacher_bp
     test_app.register_blueprint(parent_teacher_bp)
+    from routes.dashboard_settings import dashboard_settings_bp
+    test_app.register_blueprint(dashboard_settings_bp)
     try:
         from routes.olympiad import olympiad_bp
         test_app.register_blueprint(olympiad_bp)

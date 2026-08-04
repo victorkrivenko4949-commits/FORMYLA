@@ -2,13 +2,19 @@
 """routes/dashboard_settings.py — T6 dashboard widget settings."""
 from datetime import datetime
 
-from flask import abort, redirect, render_template, request, url_for
+from flask import Blueprint, abort, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from models import db, UserDashboardItem
 from services.dashboard_widgets import AVAILABLE_WIDGETS
 
+dashboard_settings_bp = Blueprint(
+    'dashboard_settings', __name__,
+    template_folder='../templates',
+)
 
+
+@dashboard_settings_bp.route('/dashboard/settings', methods=['GET', 'POST'])
 @login_required
 def dashboard_settings():
     valid_keys = {w['key'] for w in AVAILABLE_WIDGETS}

@@ -1754,6 +1754,16 @@ except Exception as _e:
     print(f"[BP] parent_teacher_bp NOT registered: {_e}")
     print(_tb.format_exc())
 
+# ── T6: dashboard settings blueprint ──
+try:
+    from routes.dashboard_settings import dashboard_settings_bp
+    app.register_blueprint(dashboard_settings_bp)
+    print("[BP] dashboard_settings_bp registered (/dashboard/settings)")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] dashboard_settings_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
 # ── AUTO-MIGRATION: test_sessions (для восстановления адаптивного теста) ──
 try:
     from migrations.add_test_sessions import _ensure_test_sessions_table
