@@ -1137,3 +1137,47 @@ def api_curator_health():
         })
     except Exception as e:
         return _error_response(f'Health check failed: {e}', 500)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# T7: Curator plan — monthly subtopic rotation
+# ──────────────────────────────────────────────────────────────────────
+
+@curator_bp.route("/plan", methods=["GET", "POST"])
+@login_required
+def curator_plan():
+    """GET: show plan form. POST: save plan."""
+    if request.method == "POST":
+        from services.curator_plan_service import set_plan
+        data = request.get_json() or {}
+        items = data.get("items", [])
+        parsed = [(it["subtopic"], int(it["month_number"]), int(it["position"]))
+                  for it in items]
+        set_plan(parsed)
+        return jsonify({"success": True, "count": len(parsed)})
+
+    # GET: show existing plan
+    from services.curator_plan_service import check_plan_status
+    status = check_plan_status()
+    from models import CuratorPlanItem
+    items = (CuratorPlanItem.query
+             .order_by(CuratorPlanItem.month_number, CuratorPlanItem.position)
+             .all())
+    return render_template(
+        "admin/curator_plan.html",
+        plan_items=[{
+            "subtopic": i.subtopic,
+            "month_number": i.month_number,
+            "position": i.position,
+        } for i in items],
+        status=status,
+    )
+
+
+@curator_bp.route("/plan-status")
+@login_required
+def curator_plan_status():
+    """Show plan completeness for curator."""
+    from services.curator_plan_service import check_plan_status
+    status = check_plan_status()
+    return render_template("admin/curator_plan_status.html", status=status)

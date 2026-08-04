@@ -1848,3 +1848,40 @@ class StreakRecord(db.Model):
     def __repr__(self):
         return (f'<StreakRecord user={self.user_id} current={self.current_streak} '
                 f'max={self.max_streak} off={self.days_off_available}>')
+
+
+class CuratorPlanItem(db.Model):
+    """T7: Global plan template — subtopics per month set by curator."""
+    __tablename__ = 'curator_plan_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    subtopic = db.Column(db.Text, nullable=False)
+    month_number = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('month_number', 'position', name='uq_plan_month_pos'),
+    )
+
+    def __repr__(self):
+        return f'<CuratorPlanItem m{self.month_number}p{self.position}: {self.subtopic}>'
+
+
+class UserSubtopicAssignment(db.Model):
+    """T7: Active subtopic assignments for a specific user+month."""
+    __tablename__ = 'user_subtopic_assignments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    subtopic = db.Column(db.Text, nullable=False)
+    month_number = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'month_number', 'position', name='uq_usa_user_month_pos'),
+    )
+
+    def __repr__(self):
+        return f'<UserSubtopicAssignment u{self.user_id} m{self.month_number}p{self.position}>'

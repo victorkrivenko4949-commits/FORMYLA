@@ -1,0 +1,63 @@
+<!-- curator_plan.html -- T7 curator plan editor -->
+{% extends "base.html" %}
+{% block title %}План куратора — FORMYLA{% endblock %}
+{% block content %}
+<div style="max-width:1120px;margin:0 auto;padding:24px;">
+  <h1 style="color:var(--text);font-size:24px;margin-bottom:8px;">План на месяц</h1>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">Задай 7 подтем для каждого месяца. Подтемы будут автоматически назначаться ученикам.</p>
+
+  <form id="plan-form" style="margin-bottom:32px;">
+    {% for m in range(1, 5) %}
+    <div style="margin-bottom:24px;padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--surface);">
+      <h2 style="color:var(--text);font-size:18px;margin-bottom:12px;">Месяц {{ m }}</h2>
+      {% for p in range(1, 8) %}
+      {% set existing = plan_items | selectattr("month_number", "equalto", m) | selectattr("position", "equalto", p) | list %}
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="color:var(--muted);font-size:13px;min-width:20px;">{{ p }}.</span>
+        <input type="text" name="subtopic_{{ m }}_{{ p }}" value="{{ existing[0].subtopic if existing else '' }}"
+               placeholder="Подтема {{ p }}" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;">
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="dt-btn-primary" style="padding:12px 32px;">Сохранить план</button>
+  </form>
+
+  <div id="save-result" style="display:none;padding:12px;border-radius:10px;margin-top:12px;"></div>
+</div>
+
+<script>
+document.getElementById('plan-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var items = [];
+  for (var m = 1; m <= 4; m++) {
+    for (var p = 1; p <= 7; p++) {
+      var el = document.querySelector('[name="subtopic_' + m + '_' + p + '"]');
+      if (el && el.value.trim()) {
+        items.push({subtopic: el.value.trim(), month_number: m, position: p});
+      }
+    }
+  }
+  fetch('/curator/plan', {
+    method: 'POST', credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({items: items})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var r = document.getElementById('save-result');
+    r.style.display = 'block';
+    r.style.background = 'var(--surface)';
+    r.style.color = 'var(--ok)';
+    r.textContent = 'Сохранено: ' + d.count + ' подтем';
+  })
+  .catch(function(err) {
+    var r = document.getElementById('save-result');
+    r.style.display = 'block';
+    r.style.background = 'rgba(232,106,98,0.15)';
+    r.style.color = 'var(--bad)';
+    r.textContent = 'Ошибка сохранения';
+  });
+});
+</script>
+{% endblock %}

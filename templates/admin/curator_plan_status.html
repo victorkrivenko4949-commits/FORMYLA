@@ -1,0 +1,43 @@
+<!-- curator_plan_status.html -- T7 plan completeness dashboard -->
+{% extends "base.html" %}
+{% block title %}Статус плана — FORMYLA{% endblock %}
+{% block content %}
+<div style="max-width:1120px;margin:0 auto;padding:24px;">
+  <h1 style="color:var(--text);font-size:24px;margin-bottom:16px;">Статус плана</h1>
+
+  <div style="margin-bottom:24px;padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--surface);">
+    <h2 style="color:var(--text);font-size:18px;margin-bottom:8px;">Заданные месяцы</h2>
+    {% if status.months_in_plan %}
+    <p style="color:var(--ok);">Заданы: {{ status.months_in_plan | join(', ') }}</p>
+    {% else %}
+    <p style="color:var(--bad);">План не задан ни для одного месяца.</p>
+    {% endif %}
+
+    {% if status.missing_months %}
+    <p style="color:var(--warn);margin-top:8px;">
+      план на следующий месяц не задан: {{ status.missing_months | join(', ') }}
+    </p>
+    {% endif %}
+  </div>
+
+  {% if status.students_plan_missing %}
+  <div style="padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--surface);">
+    <h2 style="color:var(--text);font-size:18px;margin-bottom:8px;">Ученики без полного плана</h2>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr style="color:var(--muted);font-size:13px;border-bottom:1px solid var(--border);">
+        <th style="text-align:left;padding:8px;">User ID</th>
+        <th style="text-align:left;padding:8px;">Месяц</th>
+        <th style="text-align:left;padding:8px;">Подтем</th>
+      </tr>
+      {% for s in status.students_plan_missing %}
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px;color:var(--text);">{{ s.user_id }}</td>
+        <td style="padding:8px;color:var(--text);">{{ s.month }}</td>
+        <td style="padding:8px;color:var(--warn);">{{ s.count }}/7</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
