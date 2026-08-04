@@ -4810,14 +4810,14 @@ def dev_login():
     if not user:
         return f'User id={target_id} not found', 404
     login_user(user, remember=True)
-    return redirect(url_for('index'))
+    return redirect('/daily_tasks')
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Passwordless вход - шаг 1: ввод email."""
     if current_user.is_authenticated and not current_user.is_guest:
-        return redirect(url_for('index'))
+        return redirect('/daily_tasks')
     
     if request.method == "POST":
         app.logger.warning("LOGIN POST ВЫЗВАН")
@@ -4894,7 +4894,7 @@ def login():
 def verify_code():
     """Passwordless вход - шаг 2: проверка кода."""
     if current_user.is_authenticated and not current_user.is_guest:
-        return redirect(url_for('index'))
+        return redirect('/daily_tasks')
     
     email = session.get('verify_email')
     if not email:
@@ -4951,7 +4951,7 @@ def verify_code():
                 return redirect(next_page)
             if getattr(user, 'onboarded_at', None) is None:
                 return redirect(url_for('intake.intake_page'))
-            return redirect(url_for('index'))
+            return redirect('/daily_tasks')
         
         flash('Неверный или просроченный код', 'error')
         return render_template('verify_code.html', email=email)
@@ -5146,7 +5146,7 @@ def yandex_login():
         if getattr(user, 'onboarded_at', None) is None:
             redirect_url = url_for('intake.intake_page')
         else:
-            redirect_url = url_for('index')
+            redirect_url = '/daily_tasks'
 
         return jsonify({'success': True, 'redirect_url': redirect_url})
         

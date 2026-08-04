@@ -17,59 +17,51 @@
    "of": "AC"
   }
  ],
+ "aux": [
+  {
+   "type": "circumcenter",
+   "id": "O",
+   "of": "ABC"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "ABC"
+  }
+ ],
  "draw": [
   {
    "polygon": "ABC"
   },
   {
-   "segment": "BH",
+   "segment": "BH"
+  },
+  {
+   "segment": "BM"
+  }
+ ],
+ "draw_aux": [
+  {
+   "circle": "w",
    "style": "soft"
   },
   {
-   "segment": "BM",
+   "segment": "OM",
    "style": "accent"
   }
  ],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "H",
-    "B"
+   "right": "BHC"
+  },
+  {
+   "right": "OMC"
+  },
+  {
+   "angle": [
+    "HBM",
+    "OMB"
    ]
-  },
-  {
-   "equal": [
-    "AM",
-    "MC"
-   ],
-   "ticks": 1
-  },
-  {
-   "angle": [
-    "B",
-    "A",
-    "C"
-   ],
-   "text": "75°"
-  },
-  {
-   "angle": [
-    "B",
-    "C",
-    "A"
-   ],
-   "text": "45°"
-  },
-  {
-   "angle": [
-    "H",
-    "B",
-    "M"
-   ],
-   "text": "15°"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

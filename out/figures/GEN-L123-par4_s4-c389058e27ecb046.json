@@ -1,122 +1,53 @@
 {
  "given": [
   {
-   "type": "point",
-   "id": "A",
-   "x": 0,
-   "y": 0
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "parallelogram"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "P",
+   "on": "AD",
+   "ratio": 0.5833
   },
   {
-   "type": "point",
-   "id": "B",
-   "x": 12,
-   "y": 0
+   "type": "point_on_segment",
+   "id": "Q",
+   "on": "AC",
+   "ratio": 0.5833
   },
   {
-   "type": "point",
-   "id": "C",
-   "x": 12,
-   "y": 12
-  },
-  {
-   "type": "point",
-   "id": "D",
-   "x": 0,
-   "y": 12
-  },
-  {
-   "type": "point",
-   "id": "E",
-   "x": 0,
-   "y": 3
-  },
-  {
-   "type": "point",
-   "id": "F",
-   "x": 4,
-   "y": 3
-  },
-  {
-   "type": "point",
-   "id": "G",
-   "x": 4,
-   "y": 6
-  },
-  {
-   "type": "point",
-   "id": "H",
-   "x": 8,
-   "y": 6
-  },
-  {
-   "type": "point",
-   "id": "I",
-   "x": 8,
-   "y": 9
-  },
-  {
-   "type": "point",
-   "id": "J",
-   "x": 12,
-   "y": 9
+   "type": "point_on_segment",
+   "id": "R",
+   "on": "DC",
+   "ratio": 0.5833
   }
  ],
  "draw": [
   {
-   "polygon": "ABJIHGFE",
-   "style": "soft"
-  },
+   "polygon": "ABCD"
+  }
+ ],
+ "draw_aux": [
   {
-   "polygon": "EFGHIJCD",
-   "style": "soft"
-  },
-  {
-   "segment": "EF",
+   "segment": "PQ",
    "style": "accent"
   },
   {
-   "segment": "FG",
+   "segment": "QR",
    "style": "accent"
   },
   {
-   "segment": "GH",
-   "style": "accent"
-  },
-  {
-   "segment": "HI",
-   "style": "accent"
-  },
-  {
-   "segment": "IJ",
+   "segment": "RC",
    "style": "accent"
   }
  ],
  "marks": [
   {
-   "equal": [
-    "AB",
-    "BC",
-    "CD",
-    "DA"
-   ],
-   "ticks": 3
-  },
-  {
-   "equal": [
-    "EF",
-    "GH",
-    "IJ"
-   ],
-   "ticks": 1
-  },
-  {
-   "equal": [
-    "FG",
-    "HI"
-   ],
-   "ticks": 2
+   "right": "PQR"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

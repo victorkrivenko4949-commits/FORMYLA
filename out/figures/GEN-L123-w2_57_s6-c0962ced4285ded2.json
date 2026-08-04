@@ -1,46 +1,24 @@
 {
  "given": [
   {
-   "type": "point",
-   "id": "O",
-   "x": 0,
-   "y": 0
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "trapezoid"
   },
   {
-   "type": "point",
-   "id": "A",
-   "x": 1,
-   "y": 0
-  },
-  {
-   "type": "circle",
+   "type": "circumcircle",
    "id": "w",
-   "center": "O",
-   "through": "A"
-  },
-  {
-   "type": "point_on_circle",
-   "id": "B",
-   "circle": "w",
-   "angle": 44
-  },
-  {
-   "type": "point_on_circle",
-   "id": "C",
-   "circle": "w",
-   "angle": 120
-  },
-  {
-   "type": "point_on_circle",
-   "id": "D",
-   "circle": "w",
-   "angle": 164
-  },
+   "of": "ABC"
+  }
+ ],
+ "aux": [
   {
    "type": "intersection",
-   "id": "P",
-   "line1": "AC",
-   "line2": "BD"
+   "id": "E",
+   "of": [
+    "AC",
+    "BD"
+   ]
   }
  ],
  "draw": [
@@ -51,32 +29,30 @@
    "polygon": "ABCD"
   },
   {
-   "line": "AC",
+   "segment": "AC",
+   "style": "soft"
+  },
+  {
+   "segment": "BD",
+   "style": "soft"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AE",
    "style": "accent"
   },
   {
-   "line": "BD",
+   "segment": "BE",
    "style": "accent"
   }
  ],
  "marks": [
   {
-   "angle": [
-    "A",
-    "O",
-    "B"
-   ],
-   "text": "44°"
-  },
-  {
-   "angle": [
-    "A",
-    "P",
-    "B"
-   ],
-   "text": "44°"
+   "equal": [
+    "AB",
+    "CD"
+   ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

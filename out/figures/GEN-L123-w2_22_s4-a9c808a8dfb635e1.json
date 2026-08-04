@@ -3,7 +3,19 @@
   {
    "type": "quad",
    "id": "ABCD",
-   "kind": "any"
+   "kind": "general"
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "isosceles"
+  },
+  {
+   "type": "triangle",
+   "id": "ADC",
+   "kind": "isosceles"
   }
  ],
  "draw": [
@@ -11,49 +23,27 @@
    "polygon": "ABCD"
   }
  ],
+ "draw_aux": [
+  {
+   "segment": "AC",
+   "style": "accent"
+  }
+ ],
  "marks": [
   {
    "equal": [
     "AB",
     "BC"
-   ],
-   "ticks": 1
+   ]
   },
   {
    "equal": [
     "AD",
     "DC"
-   ],
-   "ticks": 2
+   ]
   },
   {
-   "angle": [
-    "A",
-    "B",
-    "C"
-   ],
-   "text": "50°"
-  },
-  {
-   "angle": [
-    "C",
-    "D",
-    "A"
-   ],
-   "text": "130°"
-  }
- ],
- "aux": [
-  {
-   "type": "segment",
-   "id": "AC",
-   "reason": "Проведём диагональ AC; она разбивает четырёхугольник на два равнобедренных треугольника."
-  }
- ],
- "draw_aux": [
-  {
-   "segment": "AC",
-   "style": "soft"
+   "right": "DAB"
   }
  ]
 }

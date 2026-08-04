@@ -3,7 +3,7 @@
   {
    "type": "triangle",
    "id": "ABC",
-   "kind": "acute"
+   "kind": "equilateral"
   },
   {
    "type": "foot",
@@ -26,7 +26,29 @@
   {
    "type": "triangle",
    "id": "A1B1C1",
-   "kind": "any"
+   "kind": "equilateral"
+  }
+ ],
+ "aux": [
+  {
+   "type": "orthocenter",
+   "id": "H",
+   "of": "ABC"
+  },
+  {
+   "type": "quad",
+   "id": "AB1HC1",
+   "kind": "cyclic"
+  },
+  {
+   "type": "triangle",
+   "id": "AB1H",
+   "kind": "right"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w",
+   "of": "AB1H"
   }
  ],
  "draw": [
@@ -34,53 +56,53 @@
    "polygon": "ABC"
   },
   {
-   "segment": "AA1",
+   "polygon": "A1B1C1"
+  },
+  {
+   "segment": "AA1"
+  },
+  {
+   "segment": "BB1"
+  },
+  {
+   "segment": "CC1"
+  }
+ ],
+ "draw_aux": [
+  {
+   "polygon": "AB1HC1",
+   "style": "accent"
+  },
+  {
+   "segment": "AH",
    "style": "soft"
   },
   {
-   "segment": "BB1",
-   "style": "soft"
-  },
-  {
-   "segment": "CC1",
-   "style": "soft"
-  },
-  {
-   "polygon": "A1B1C1",
+   "circle": "w",
    "style": "accent"
   }
  ],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "A1",
-    "B"
+   "equal": [
+    "A1B1",
+    "B1C1"
    ]
   },
   {
-   "right_angle": [
-    "B",
-    "B1",
-    "C"
+   "equal": [
+    "B1C1",
+    "C1A1"
    ]
   },
   {
-   "right_angle": [
-    "C",
-    "C1",
-    "A"
-   ]
+   "right": "AA1B"
   },
   {
-   "angle": [
-    "B",
-    "A",
-    "C"
-   ],
-   "text": "60°"
+   "right": "AB1H"
+  },
+  {
+   "right": "AC1H"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

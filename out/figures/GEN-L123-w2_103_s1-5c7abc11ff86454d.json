@@ -6,42 +6,14 @@
    "kind": "acute"
   },
   {
-   "type": "circle",
-   "id": "w1",
-   "center": "A",
-   "through": "C"
+   "type": "triangle",
+   "id": "ACM",
+   "kind": "equilateral"
   },
   {
-   "type": "circle",
-   "id": "w2",
-   "center": "C",
-   "through": "A"
-  },
-  {
-   "type": "circle_circle",
-   "id": "M",
-   "circle1": "w1",
-   "circle2": "w2",
-   "pick": 0
-  },
-  {
-   "type": "circle",
-   "id": "w3",
-   "center": "B",
-   "through": "C"
-  },
-  {
-   "type": "circle",
-   "id": "w4",
-   "center": "C",
-   "through": "B"
-  },
-  {
-   "type": "circle_circle",
-   "id": "N",
-   "circle1": "w3",
-   "circle2": "w4",
-   "pick": 0
+   "type": "triangle",
+   "id": "BCN",
+   "kind": "equilateral"
   },
   {
    "type": "midpoint",
@@ -54,25 +26,43 @@
    "of": "BM"
   }
  ],
+ "aux": [
+  {
+   "type": "circle",
+   "id": "rot",
+   "center": "C",
+   "radius": 50
+  },
+  {
+   "type": "point_on_circle",
+   "id": "B1",
+   "on": "rot",
+   "angle": 60
+  }
+ ],
  "draw": [
   {
    "polygon": "ABC"
   },
   {
-   "polygon": "ACM",
-   "style": "soft"
+   "polygon": "ACM"
   },
   {
-   "polygon": "BCN",
-   "style": "soft"
+   "polygon": "BCN"
   },
   {
    "segment": "AN",
-   "style": "dashed"
+   "style": "soft"
   },
   {
    "segment": "BM",
-   "style": "dashed"
+   "style": "soft"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "CB1",
+   "style": "soft"
   },
   {
    "segment": "CP",
@@ -85,22 +75,10 @@
  ],
  "marks": [
   {
-   "angle": [
-    "A",
-    "C",
-    "B"
-   ],
-   "text": "30°"
-  },
-  {
-   "angle": [
-    "P",
-    "C",
-    "Q"
-   ],
-   "text": "60°"
+   "equal": [
+    "CP",
+    "CQ"
+   ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

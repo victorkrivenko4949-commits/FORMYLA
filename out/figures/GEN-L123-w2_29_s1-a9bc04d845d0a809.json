@@ -15,7 +15,7 @@
    "type": "foot",
    "id": "B1",
    "from": "B",
-   "line": "AC"
+   "line": "CA"
   },
   {
    "type": "foot",
@@ -24,15 +24,65 @@
    "line": "AB"
   },
   {
-   "type": "intersection",
+   "type": "orthocenter",
    "id": "H",
-   "line1": "AA1",
-   "line2": "BB1"
+   "of": "ABC"
+  },
+  {
+   "type": "quad",
+   "id": "A1B1C1H",
+   "kind": "cyclic"
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "AB1H",
+   "kind": "right"
+  },
+  {
+   "type": "triangle",
+   "id": "BA1H",
+   "kind": "right"
+  },
+  {
+   "type": "triangle",
+   "id": "CA1H",
+   "kind": "right"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_AH",
+   "of": "AB1H"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_BH",
+   "of": "BA1H"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_CH",
+   "of": "CA1H"
+  },
+  {
+   "type": "triangle",
+   "id": "A1B1C1",
+   "kind": "general"
+  },
+  {
+   "type": "circumcircle",
+   "id": "w_orthic",
+   "of": "A1B1C1"
   }
  ],
  "draw": [
   {
    "polygon": "ABC"
+  },
+  {
+   "polygon": "A1B1C1H",
+   "style": "soft"
   },
   {
    "segment": "AA1",
@@ -45,55 +95,35 @@
   {
    "segment": "CC1",
    "style": "soft"
-  },
+  }
+ ],
+ "draw_aux": [
   {
-   "segment": "A1B1",
+   "circle": "w_AH",
    "style": "soft"
   },
   {
-   "segment": "B1C1",
+   "circle": "w_BH",
    "style": "soft"
   },
   {
-   "segment": "C1H",
+   "circle": "w_CH",
    "style": "soft"
   },
   {
-   "segment": "HA1",
-   "style": "soft"
+   "circle": "w_orthic",
+   "style": "accent"
   }
  ],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "A1",
-    "B"
-   ]
+   "right": "AA1B"
   },
   {
-   "right_angle": [
-    "B",
-    "B1",
-    "A"
-   ]
+   "right": "BB1C"
   },
   {
-   "right_angle": [
-    "C",
-    "C1",
-    "A"
-   ]
-  },
-  {
-   "angle": [
-    "B",
-    "A",
-    "C"
-   ],
-   "text": "60°"
+   "right": "CC1A"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

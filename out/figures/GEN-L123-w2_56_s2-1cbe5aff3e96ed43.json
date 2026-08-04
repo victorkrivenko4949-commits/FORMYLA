@@ -27,17 +27,13 @@
    "type": "orthocenter",
    "id": "H",
    "of": "ABC"
-  },
+  }
+ ],
+ "aux": [
   {
-   "type": "midpoint",
-   "id": "O",
-   "of": "BH"
-  },
-  {
-   "type": "circle",
+   "type": "circumcircle",
    "id": "w",
-   "center": "O",
-   "through": "B"
+   "of": "BHC1"
   }
  ],
  "draw": [
@@ -45,19 +41,19 @@
    "polygon": "ABC"
   },
   {
-   "segment": "AA1",
-   "style": "soft"
+   "segment": "AA1"
   },
   {
-   "segment": "BB1",
-   "style": "soft"
+   "segment": "BB1"
   },
   {
-   "segment": "CC1",
-   "style": "soft"
-  },
+   "segment": "CC1"
+  }
+ ],
+ "draw_aux": [
   {
-   "circle": "w"
+   "circle": "w",
+   "style": "accent"
   },
   {
    "segment": "AH",
@@ -66,27 +62,7 @@
  ],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "A1",
-    "B"
-   ]
-  },
-  {
-   "right_angle": [
-    "B",
-    "B1",
-    "C"
-   ]
-  },
-  {
-   "right_angle": [
-    "C",
-    "C1",
-    "B"
-   ]
+   "right": "AA1C"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

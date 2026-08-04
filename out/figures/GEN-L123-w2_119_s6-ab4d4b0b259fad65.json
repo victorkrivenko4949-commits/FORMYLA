@@ -11,41 +11,45 @@
    "kind": "equilateral"
   }
  ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "ABD",
+   "kind": "isosceles"
+  }
+ ],
  "draw": [
   {
    "polygon": "ABC"
   },
   {
    "polygon": "BDC"
-  },
+  }
+ ],
+ "draw_aux": [
   {
-   "segment": "AD"
+   "segment": "AD",
+   "style": "accent"
   }
  ],
  "marks": [
   {
-   "angle": [
-    "A",
-    "B",
-    "C"
-   ],
-   "text": "20°"
+   "equal": [
+    "AB",
+    "BD"
+   ]
   },
   {
    "equal": [
-    "AB",
-    "BC"
-   ],
-   "ticks": 1
+    "BD",
+    "DC"
+   ]
   },
   {
    "angle": [
-    "D",
-    "A",
-    "C"
+    "BAD",
+    "BDA"
    ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

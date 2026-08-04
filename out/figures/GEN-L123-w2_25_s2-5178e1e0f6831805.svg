@@ -2,17 +2,8 @@
 <style>text{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}</style>
 <rect width="620" height="620" fill="#070C18"/>
 <polygon points="60.0,100.6 74.6,519.4 560.0,323.3" fill="none" stroke="#C8D6E5" stroke-width="2.3" stroke-linejoin="round"/>
-<line x1="74.6" y1="519.4" x2="227.8" y2="175.3" stroke="#8C9ABC" stroke-width="1.7" stroke-linecap="round"/>
-<line x1="74.6" y1="519.4" x2="310.0" y2="211.9" stroke="#4C7DFF" stroke-width="2.0" stroke-linecap="round"/>
-<polyline points="215.9,170.1 210.6,181.9 222.5,187.2" fill="none" stroke="#8C9ABC" stroke-width="1.6"/>
-<line x1="187.4" y1="150.8" x2="182.6" y2="161.8" stroke="#4C7DFF" stroke-width="2"/>
-<line x1="437.4" y1="262.1" x2="432.6" y2="273.1" stroke="#4C7DFF" stroke-width="2"/>
-<path d="M 83.8 111.2 A 26 26 0 0 1 60.9 126.6" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
-<text x="82.9" y="139.6" fill="#8C9ABC" font-size="15" text-anchor="middle">75°</text>
-<path d="M 535.9 333.0 A 26 26 0 0 1 536.2 312.7" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
-<text x="519.0" y="327.5" fill="#8C9ABC" font-size="15" text-anchor="middle">45°</text>
-<path d="M 85.2 495.6 A 26 26 0 0 1 90.4 498.7" fill="none" stroke="#8C9ABC" stroke-width="1.5"/>
-<text x="95.6" y="489.1" fill="#8C9ABC" font-size="15" text-anchor="middle">15°</text>
+<line x1="74.6" y1="519.4" x2="227.8" y2="175.3" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
+<line x1="74.6" y1="519.4" x2="310.0" y2="211.9" stroke="#C8D6E5" stroke-width="2.3" stroke-linecap="round"/>
 <circle cx="60.0" cy="100.6" r="3.4" fill="#E6EBF7"/>
 <text x="45.9" y="92.5" fill="#E6EBF7" font-size="19" font-style="italic" text-anchor="middle">A</text>
 <circle cx="74.6" cy="519.4" r="3.4" fill="#E6EBF7"/>

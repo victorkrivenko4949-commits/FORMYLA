@@ -3,7 +3,7 @@
   {
    "type": "quad",
    "id": "ABCD",
-   "kind": "any"
+   "kind": "general"
   },
   {
    "type": "midpoint",
@@ -14,18 +14,34 @@
    "type": "midpoint",
    "id": "F",
    "of": "CD"
+  }
+ ],
+ "aux": [
+  {
+   "type": "midpoint",
+   "id": "G",
+   "of": "BC"
+  },
+  {
+   "type": "midpoint",
+   "id": "H",
+   "of": "AD"
   },
   {
    "type": "intersection",
-   "id": "X",
-   "line1": "AF",
-   "line2": "DE"
+   "id": "P",
+   "of": [
+    "AF",
+    "DE"
+   ]
   },
   {
    "type": "intersection",
-   "id": "Y",
-   "line1": "BF",
-   "line2": "CE"
+   "id": "Q",
+   "of": [
+    "BF",
+    "CE"
+   ]
   }
  ],
  "draw": [
@@ -33,23 +49,37 @@
    "polygon": "ABCD"
   },
   {
-   "segment": "AF",
+   "segment": "AF"
+  },
+  {
+   "segment": "BF"
+  },
+  {
+   "segment": "CE"
+  },
+  {
+   "segment": "DE"
+  }
+ ],
+ "draw_aux": [
+  {
+   "segment": "AC",
    "style": "soft"
   },
   {
-   "segment": "BF",
+   "segment": "BD",
    "style": "soft"
   },
   {
-   "segment": "CE",
+   "segment": "EG",
    "style": "soft"
   },
   {
-   "segment": "DE",
+   "segment": "FH",
    "style": "soft"
   },
   {
-   "polygon": "EXFY",
+   "polygon": "EQFP",
    "style": "accent"
   }
  ],
@@ -58,17 +88,13 @@
    "equal": [
     "AE",
     "EB"
-   ],
-   "ticks": 1
+   ]
   },
   {
    "equal": [
     "CF",
     "FD"
-   ],
-   "ticks": 1
+   ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

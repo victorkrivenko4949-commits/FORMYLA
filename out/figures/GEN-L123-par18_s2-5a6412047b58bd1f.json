@@ -3,7 +3,7 @@
   {
    "type": "quad",
    "id": "ABCD",
-   "kind": "rectangle"
+   "kind": "parallelogram"
   },
   {
    "type": "midpoint",
@@ -24,30 +24,40 @@
    "type": "midpoint",
    "id": "H",
    "of": "DA"
-  },
+  }
+ ],
+ "aux": [
   {
    "type": "intersection",
    "id": "P",
-   "line1": "AF",
-   "line2": "BG"
+   "of": [
+    "AF",
+    "DE"
+   ]
   },
   {
    "type": "intersection",
    "id": "Q",
-   "line1": "BG",
-   "line2": "CH"
+   "of": [
+    "AF",
+    "BG"
+   ]
   },
   {
    "type": "intersection",
    "id": "R",
-   "line1": "CH",
-   "line2": "DE"
+   "of": [
+    "BG",
+    "CH"
+   ]
   },
   {
    "type": "intersection",
    "id": "S",
-   "line1": "DE",
-   "line2": "AF"
+   "of": [
+    "CH",
+    "DE"
+   ]
   }
  ],
  "draw": [
@@ -65,7 +75,9 @@
   },
   {
    "segment": "DE"
-  },
+  }
+ ],
+ "draw_aux": [
   {
    "polygon": "PQRS",
    "style": "accent"
@@ -73,34 +85,31 @@
  ],
  "marks": [
   {
+   "right": "DAB"
+  },
+  {
    "equal": [
     "AE",
     "EB"
-   ],
-   "ticks": 1
+   ]
   },
   {
    "equal": [
     "BF",
     "FC"
-   ],
-   "ticks": 1
+   ]
   },
   {
    "equal": [
     "CG",
     "GD"
-   ],
-   "ticks": 1
+   ]
   },
   {
    "equal": [
     "DH",
     "HA"
-   ],
-   "ticks": 1
+   ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

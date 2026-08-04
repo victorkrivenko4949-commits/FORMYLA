@@ -6,30 +6,21 @@
    "kind": "parallelogram"
   },
   {
-   "type": "circle",
-   "id": "cB",
-   "center": "B",
-   "through": "A"
+   "type": "triangle",
+   "id": "ABE",
+   "kind": "equilateral"
   },
   {
-   "type": "line_circle",
-   "id": "E",
-   "circle": "cB",
-   "line": "BC",
-   "pick": 0
-  },
+   "type": "triangle",
+   "id": "ADF",
+   "kind": "equilateral"
+  }
+ ],
+ "aux": [
   {
-   "type": "circle",
-   "id": "cD",
-   "center": "D",
-   "through": "A"
-  },
-  {
-   "type": "line_circle",
-   "id": "F",
-   "circle": "cD",
-   "line": "CD",
-   "pick": 1
+   "type": "triangle",
+   "id": "CEF",
+   "kind": "equilateral"
   }
  ],
  "draw": [
@@ -41,7 +32,9 @@
   },
   {
    "polygon": "ADF"
-  },
+  }
+ ],
+ "draw_aux": [
   {
    "segment": "CE",
    "style": "accent"
@@ -49,18 +42,24 @@
   {
    "segment": "CF",
    "style": "accent"
+  },
+  {
+   "segment": "EF",
+   "style": "soft"
   }
  ],
  "marks": [
   {
-   "angle": [
-    "B",
-    "A",
-    "D"
-   ],
-   "text": "60°"
+   "equal": [
+    "CE",
+    "CF"
+   ]
+  },
+  {
+   "equal": [
+    "CF",
+    "EF"
+   ]
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }

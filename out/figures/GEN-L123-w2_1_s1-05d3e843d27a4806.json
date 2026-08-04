@@ -1,165 +1,787 @@
 {
  "given": [
   {
-   "type": "point",
-   "id": "A",
-   "x": 0,
-   "y": 0
-  },
-  {
-   "type": "point",
-   "id": "B",
-   "x": 9,
-   "y": 0
-  },
-  {
-   "type": "point",
-   "id": "C",
-   "x": 9,
-   "y": 8
-  },
-  {
-   "type": "point",
-   "id": "D",
-   "x": 0,
-   "y": 8
-  },
-  {
    "type": "quad",
    "id": "ABCD",
-   "kind": "rectangle"
+   "kind": "parallelogram"
+  }
+ ],
+ "aux": [
+  {
+   "type": "point_on_segment",
+   "id": "B1",
+   "on": "AB",
+   "ratio": 0.111111
   },
   {
-   "type": "point",
-   "id": "E",
-   "x": 3,
-   "y": 0
+   "type": "point_on_segment",
+   "id": "B2",
+   "on": "AB",
+   "ratio": 0.222222
   },
   {
-   "type": "point",
-   "id": "F",
-   "x": 6,
-   "y": 0
+   "type": "point_on_segment",
+   "id": "B3",
+   "on": "AB",
+   "ratio": 0.333333
   },
   {
-   "type": "point",
-   "id": "G",
-   "x": 3,
-   "y": 8
+   "type": "point_on_segment",
+   "id": "B4",
+   "on": "AB",
+   "ratio": 0.444444
   },
   {
-   "type": "point",
-   "id": "H",
-   "x": 6,
-   "y": 8
+   "type": "point_on_segment",
+   "id": "B5",
+   "on": "AB",
+   "ratio": 0.555556
   },
   {
-   "type": "point",
-   "id": "I",
-   "x": 0,
-   "y": 2
+   "type": "point_on_segment",
+   "id": "B6",
+   "on": "AB",
+   "ratio": 0.666667
   },
   {
-   "type": "point",
-   "id": "J",
-   "x": 0,
-   "y": 4
+   "type": "point_on_segment",
+   "id": "B7",
+   "on": "AB",
+   "ratio": 0.777778
   },
   {
-   "type": "point",
-   "id": "K",
-   "x": 0,
-   "y": 6
+   "type": "point_on_segment",
+   "id": "B8",
+   "on": "AB",
+   "ratio": 0.888889
   },
   {
-   "type": "point",
-   "id": "L",
-   "x": 9,
-   "y": 2
+   "type": "point_on_segment",
+   "id": "T1",
+   "on": "DC",
+   "ratio": 0.111111
   },
   {
-   "type": "point",
-   "id": "M",
-   "x": 9,
-   "y": 4
+   "type": "point_on_segment",
+   "id": "T2",
+   "on": "DC",
+   "ratio": 0.222222
   },
   {
-   "type": "point",
-   "id": "N",
-   "x": 9,
-   "y": 6
+   "type": "point_on_segment",
+   "id": "T3",
+   "on": "DC",
+   "ratio": 0.333333
   },
   {
-   "type": "point",
-   "id": "O",
-   "x": 3,
-   "y": 2
+   "type": "point_on_segment",
+   "id": "T4",
+   "on": "DC",
+   "ratio": 0.444444
   },
   {
-   "type": "point",
-   "id": "U",
-   "x": 1,
-   "y": 0
+   "type": "point_on_segment",
+   "id": "T5",
+   "on": "DC",
+   "ratio": 0.555556
   },
   {
-   "type": "point",
-   "id": "V",
-   "x": 2,
-   "y": 0
+   "type": "point_on_segment",
+   "id": "T6",
+   "on": "DC",
+   "ratio": 0.666667
   },
   {
-   "type": "point",
-   "id": "X",
-   "x": 1,
-   "y": 1
+   "type": "point_on_segment",
+   "id": "T7",
+   "on": "DC",
+   "ratio": 0.777778
   },
   {
-   "type": "point",
-   "id": "Y",
-   "x": 2,
-   "y": 1
+   "type": "point_on_segment",
+   "id": "T8",
+   "on": "DC",
+   "ratio": 0.888889
   },
   {
-   "type": "point",
-   "id": "Z",
-   "x": 1,
-   "y": 2
+   "type": "point_on_segment",
+   "id": "L1",
+   "on": "AD",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L2",
+   "on": "AD",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L3",
+   "on": "AD",
+   "ratio": 0.375
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L4",
+   "on": "AD",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L5",
+   "on": "AD",
+   "ratio": 0.625
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L6",
+   "on": "AD",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "L7",
+   "on": "AD",
+   "ratio": 0.875
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R1",
+   "on": "BC",
+   "ratio": 0.125
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R2",
+   "on": "BC",
+   "ratio": 0.25
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R3",
+   "on": "BC",
+   "ratio": 0.375
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R4",
+   "on": "BC",
+   "ratio": 0.5
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R5",
+   "on": "BC",
+   "ratio": 0.625
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R6",
+   "on": "BC",
+   "ratio": 0.75
+  },
+  {
+   "type": "point_on_segment",
+   "id": "R7",
+   "on": "BC",
+   "ratio": 0.875
+  },
+  {
+   "type": "intersection",
+   "id": "Q00A",
+   "of": [
+    "B2T2",
+    "L2R2"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q00B",
+   "of": [
+    "B2T2",
+    "L1R1"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q00C",
+   "of": [
+    "B1T1",
+    "L1R1"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q00D",
+   "of": [
+    "B1T1",
+    "AB"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q01A",
+   "of": [
+    "B2T2",
+    "L4R4"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q01B",
+   "of": [
+    "B2T2",
+    "L3R3"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q01C",
+   "of": [
+    "B1T1",
+    "L3R3"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q01D",
+   "of": [
+    "B1T1",
+    "L2R2"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q02A",
+   "of": [
+    "B2T2",
+    "L6R6"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q02B",
+   "of": [
+    "B2T2",
+    "L5R5"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q02C",
+   "of": [
+    "B1T1",
+    "L5R5"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q02D",
+   "of": [
+    "B1T1",
+    "L4R4"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q03A",
+   "of": [
+    "B2T2",
+    "DC"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q03B",
+   "of": [
+    "B2T2",
+    "L7R7"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q03C",
+   "of": [
+    "B1T1",
+    "L7R7"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q03D",
+   "of": [
+    "B1T1",
+    "L6R6"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q10A",
+   "of": [
+    "B5T5",
+    "L2R2"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q10B",
+   "of": [
+    "B5T5",
+    "L1R1"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q10C",
+   "of": [
+    "B4T4",
+    "L1R1"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q10D",
+   "of": [
+    "B4T4",
+    "AB"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q11A",
+   "of": [
+    "B5T5",
+    "L4R4"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q11B",
+   "of": [
+    "B5T5",
+    "L3R3"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q11C",
+   "of": [
+    "B4T4",
+    "L3R3"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q11D",
+   "of": [
+    "B4T4",
+    "L2R2"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q12A",
+   "of": [
+    "B5T5",
+    "L6R6"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q12B",
+   "of": [
+    "B5T5",
+    "L5R5"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q12C",
+   "of": [
+    "B4T4",
+    "L5R5"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q12D",
+   "of": [
+    "B4T4",
+    "L4R4"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q13A",
+   "of": [
+    "B5T5",
+    "DC"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q13B",
+   "of": [
+    "B5T5",
+    "L7R7"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q13C",
+   "of": [
+    "B4T4",
+    "L7R7"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q13D",
+   "of": [
+    "B4T4",
+    "L6R6"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q20A",
+   "of": [
+    "B8T8",
+    "L2R2"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q20B",
+   "of": [
+    "B8T8",
+    "L1R1"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q20C",
+   "of": [
+    "B7T7",
+    "L1R1"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q20D",
+   "of": [
+    "B7T7",
+    "AB"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q21A",
+   "of": [
+    "B8T8",
+    "L4R4"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q21B",
+   "of": [
+    "B8T8",
+    "L3R3"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q21C",
+   "of": [
+    "B7T7",
+    "L3R3"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q21D",
+   "of": [
+    "B7T7",
+    "L2R2"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q22A",
+   "of": [
+    "B8T8",
+    "L6R6"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q22B",
+   "of": [
+    "B8T8",
+    "L5R5"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q22C",
+   "of": [
+    "B7T7",
+    "L5R5"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q22D",
+   "of": [
+    "B7T7",
+    "L4R4"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q23A",
+   "of": [
+    "B8T8",
+    "DC"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q23B",
+   "of": [
+    "B8T8",
+    "L7R7"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q23C",
+   "of": [
+    "B7T7",
+    "L7R7"
+   ]
+  },
+  {
+   "type": "intersection",
+   "id": "Q23D",
+   "of": [
+    "B7T7",
+    "L6R6"
+   ]
   }
  ],
  "draw": [
   {
    "polygon": "ABCD"
-  },
+  }
+ ],
+ "draw_aux": [
   {
-   "segment": "EG",
+   "segment": "B1T1",
    "style": "soft"
   },
   {
-   "segment": "FH",
+   "segment": "B2T2",
    "style": "soft"
   },
   {
-   "segment": "IL",
+   "segment": "B3T3",
    "style": "soft"
   },
   {
-   "segment": "JM",
+   "segment": "B4T4",
    "style": "soft"
   },
   {
-   "segment": "KN",
+   "segment": "B5T5",
    "style": "soft"
   },
   {
-   "polygon": "AVYXZI",
+   "segment": "B6T6",
+   "style": "soft"
+  },
+  {
+   "segment": "B7T7",
+   "style": "soft"
+  },
+  {
+   "segment": "B8T8",
+   "style": "soft"
+  },
+  {
+   "segment": "L1R1",
+   "style": "soft"
+  },
+  {
+   "segment": "L2R2",
+   "style": "soft"
+  },
+  {
+   "segment": "L3R3",
+   "style": "soft"
+  },
+  {
+   "segment": "L4R4",
+   "style": "soft"
+  },
+  {
+   "segment": "L5R5",
+   "style": "soft"
+  },
+  {
+   "segment": "L6R6",
+   "style": "soft"
+  },
+  {
+   "segment": "L7R7",
+   "style": "soft"
+  },
+  {
+   "segment": "Q00AQ00B",
    "style": "accent"
   },
   {
-   "polygon": "VEOZXY",
+   "segment": "Q00BQ00C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q00CQ00D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q01AQ01B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q01BQ01C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q01CQ01D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q02AQ02B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q02BQ02C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q02CQ02D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q03AQ03B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q03BQ03C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q03CQ03D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q10AQ10B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q10BQ10C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q10CQ10D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q11AQ11B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q11BQ11C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q11CQ11D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q12AQ12B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q12BQ12C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q12CQ12D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q13AQ13B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q13BQ13C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q13CQ13D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q20AQ20B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q20BQ20C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q20CQ20D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q21AQ21B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q21BQ21C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q21CQ21D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q22AQ22B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q22BQ22C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q22CQ22D",
+   "style": "accent"
+  },
+  {
+   "segment": "Q23AQ23B",
+   "style": "accent"
+  },
+  {
+   "segment": "Q23BQ23C",
+   "style": "accent"
+  },
+  {
+   "segment": "Q23CQ23D",
    "style": "accent"
   }
  ],
- "marks": [],
- "aux": [],
- "draw_aux": []
+ "marks": []
 }

@@ -1,90 +1,45 @@
 {
  "given": [
   {
-   "type": "point",
-   "id": "O",
-   "x": 0,
-   "y": 0
+   "type": "quad",
+   "id": "ABCD",
+   "kind": "cyclic"
   },
   {
-   "type": "point",
-   "id": "A",
-   "x": 1,
-   "y": 0
-  },
-  {
-   "type": "circle",
+   "type": "circumcircle",
    "id": "w",
-   "center": "O",
-   "through": "A"
+   "of": "ABC"
+  }
+ ],
+ "aux": [
+  {
+   "type": "triangle",
+   "id": "ABC",
+   "kind": "general"
   },
   {
-   "type": "point_on_circle",
-   "id": "B",
-   "circle": "w",
-   "angle": 90
-  },
-  {
-   "type": "point_on_circle",
-   "id": "C",
-   "circle": "w",
-   "angle": 230
-  },
-  {
-   "type": "point_on_circle",
-   "id": "D",
-   "circle": "w",
-   "angle": 280
+   "type": "triangle",
+   "id": "BCD",
+   "kind": "general"
   }
  ],
  "draw": [
   {
-   "circle": "w"
-  },
-  {
    "polygon": "ABCD"
   },
   {
-   "segment": "BD"
-  },
-  {
-   "segment": "AC"
+   "circle": "w"
   }
  ],
- "marks": [
+ "draw_aux": [
   {
-   "angle": [
-    "A",
-    "B",
-    "D"
-   ],
-   "text": "40°"
+   "segment": "AC",
+   "style": "accent"
   },
   {
-   "angle": [
-    "C",
-    "B",
-    "D"
-   ],
-   "text": "25°"
-  },
-  {
-   "angle": [
-    "B",
-    "D",
-    "C"
-   ],
-   "text": "70°"
-  },
-  {
-   "angle": [
-    "A",
-    "C",
-    "B"
-   ],
-   "text": "?"
+   "segment": "BD",
+   "style": "accent"
   }
  ],
- "aux": [],
- "draw_aux": []
+ "marks": []
 }

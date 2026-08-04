@@ -3,13 +3,17 @@
   {
    "type": "quad",
    "id": "ABCD",
-   "kind": "any"
-  },
+   "kind": "general"
+  }
+ ],
+ "aux": [
   {
    "type": "intersection",
    "id": "O",
-   "line1": "AC",
-   "line2": "BD"
+   "of": [
+    "AC",
+    "BD"
+   ]
   }
  ],
  "draw": [
@@ -17,23 +21,16 @@
    "polygon": "ABCD"
   },
   {
-   "segment": "AC",
-   "style": "dashed"
+   "segment": "AC"
   },
   {
-   "segment": "BD",
-   "style": "dashed"
+   "segment": "BD"
   }
  ],
+ "draw_aux": [],
  "marks": [
   {
-   "right_angle": [
-    "A",
-    "O",
-    "B"
-   ]
+   "right": "AOB"
   }
- ],
- "aux": [],
- "draw_aux": []
+ ]
 }
