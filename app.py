@@ -1344,7 +1344,7 @@ except Exception as _e:
 try:
     from routes.olympiad import olympiad_bp
     app.register_blueprint(olympiad_bp)
-    print("[BP] olympiad_bp registered (/olympiads/*: courses, vsosh-9-2027, probnik, task, stage, methods, my-progress)")
+    print("[BP] olympiad_bp registered (/olympiads/*: probnik, task, stage, methods)")
 
     # Admin Support inbox + user-side «Твоя поддержка»
     try:

@@ -186,22 +186,6 @@ def auth_client(app, client):
 
 # ─── GET endpoints ────────────────────────────────────────────────────────────
 
-def test_catalog(client):
-    r = client.get('/olympiads/courses')
-    assert r.status_code == 200
-    assert b'9' in r.data  # grade somewhere
-
-
-def test_course(client):
-    r = client.get('/olympiads/vsosh-9-2027')
-    assert r.status_code == 200
-    assert 'Topic 1'.encode('utf-8') in r.data
-    assert 'Stage 1'.encode('utf-8') in r.data
-
-
-def test_probnik_page(client):
-    r = client.get('/olympiads/probnik/vsosh-9-2027-topic-1')
-    assert r.status_code == 200
     assert b'1.1' in r.data
     assert b'1.2' in r.data
 

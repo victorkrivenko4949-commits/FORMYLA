@@ -69,8 +69,8 @@ def app():
         return 'secrets', 200
 
     # Стабы для url_for() в base.html
-    for _stub in ('olympiad.catalog', 'olympiad.methods',
-                  'olympiad.my_progress', 'subscribe_page'):
+    for _stub in ('olympiad.methods',
+                  'subscribe_page'):
         try:
             app.add_url_rule(
                 '/_stub_' + _stub.replace('.', '_'),
