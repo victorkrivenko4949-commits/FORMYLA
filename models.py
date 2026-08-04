@@ -41,7 +41,10 @@ class User(UserMixin, db.Model):
     # Subscription / Plan
     current_plan = db.Column(db.Text, default='free', server_default='free')
     plan_expires_at = db.Column(db.DateTime, nullable=True)
-    
+
+    # Trial (T4)
+    trial_started_at = db.Column(db.DateTime, nullable=True, default=None)
+
     # Generation limits (free mock / exam generation)
     generation_count_today = db.Column(db.Integer, default=0, server_default='0')
     generation_reset_date = db.Column(db.Date, nullable=True)  # which day the counter belongs to
@@ -266,6 +269,25 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
+
+    # ── T4: trial & subscription helpers ──
+
+    def is_trial_active(self):
+        """Return True if trial started and is younger than 24 hours."""
+        if self.trial_started_at is None:
+            return False
+        elapsed = (datetime.utcnow() - self.trial_started_at).total_seconds()
+        return elapsed < 86400
+
+    def has_active_subscription(self):
+        """Return True if plan_expires_at is set and still in the future."""
+        if self.plan_expires_at is None:
+            return False
+        return self.plan_expires_at > datetime.utcnow()
+
+    def has_access(self):
+        """Return True if trial is active OR subscription is active."""
+        return self.is_trial_active() or self.has_active_subscription()
 
 
 class OAuthAccount(db.Model):

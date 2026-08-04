@@ -106,6 +106,8 @@ def get_daily_tasks():
     * Генерация -> 202 ``{"status": "generating", "progress_pct": ..., ...}``
     * Готов / частично -> 200 с полным набором задач
     """
+    if not current_user.has_access():
+        return render_template('trial_expired.html'), 402
     user_id = current_user.id
     today = today_in_user_tz()
 

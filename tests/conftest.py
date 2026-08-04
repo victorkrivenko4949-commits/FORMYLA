@@ -409,3 +409,64 @@ def auth_client(client, test_user):
     with client.session_transaction() as sess:
         sess['_user_id'] = str(test_user.id)
     return client
+
+
+# ══════════════════════════════════════════════════════════════════════
+# T4 — Trial access fixtures
+# ══════════════════════════════════════════════════════════════════════
+
+@pytest.fixture
+def user_trial_active(app):
+    """User with trial_started_at = 1 hour ago, no subscription."""
+    from models import db, User
+    from datetime import datetime, timedelta, timezone
+
+    user = User(
+        email='trial_active@test.invalid',
+        nickname='trial_active',
+        is_guest=False,
+        trial_started_at=datetime.now(timezone.utc) - timedelta(hours=1),
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+@pytest.fixture
+def user_trial_expired(app):
+    """User with trial_started_at = 2 days ago, no subscription."""
+    from models import db, User
+    from datetime import datetime, timedelta, timezone
+
+    user = User(
+        email='trial_expired@test.invalid',
+        nickname='trial_expired',
+        is_guest=False,
+        trial_started_at=datetime.now(timezone.utc) - timedelta(days=2),
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+@pytest.fixture
+def user_subscribed(app):
+    """User with plan_expires_at = 30 days in future, trial may be expired."""
+    from models import db, User
+    from datetime import datetime, timedelta, timezone
+
+    user = User(
+        email='subscribed@test.invalid',
+        nickname='subscribed_user',
+        is_guest=False,
+        trial_started_at=datetime.now(timezone.utc) - timedelta(days=2),
+        plan_expires_at=datetime.now(timezone.utc) + timedelta(days=30),
+        current_plan='premium_monthly',
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+# user_trial_expired_no_sub is identical to user_trial_expired;
+# use user_trial_expired directly.

@@ -1378,6 +1378,8 @@ def coach():
 @login_required
 def morning_probe():
     """Страница утреннего среза подтемы (5 задач, лесенка)."""
+    if not current_user.has_access():
+        return render_template('trial_expired.html'), 402
     from curator.monthly_cycle import get_cycle_info, build_or_get_cycle, advance_day
     from services.theme_probe import (
         has_active_probe, get_active_probe_theme, start_probe,

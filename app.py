@@ -4833,7 +4833,7 @@ def login():
         
         if not user:
             # Создаем нового пользователя
-            user = User(email=email)
+            user = User(email=email, trial_started_at=datetime.utcnow())
             db.session.add(user)
         
         # Генерируем код

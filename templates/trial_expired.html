@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Триальный период окончен | FORMYLA</title>
+  <style>
+    :root {
+      --bg: #070C18;
+      --surface: #0E1830;
+      --surface-2: #121F3C;
+      --border: #1C2B4F;
+      --text: #E6EBF7;
+      --muted: #8C9ABC;
+      --accent: #4C7DFF;
+      --accent-hi: #6B95FF;
+      --ok: #3ECF8E;
+      --warn: #E5AC3A;
+      --bad: #E86A62;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Satoshi', system-ui, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    .trial-expired-container {
+      max-width: 560px;
+      margin: 40px;
+      padding: 48px 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 16px;
+      color: var(--text);
+    }
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 0 0 32px;
+    }
+    a.cta {
+      display: inline-block;
+      padding: 12px 32px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    a.cta:hover {
+      background: var(--accent-hi);
+    }
+  </style>
+</head>
+<body>
+  <div class="trial-expired-container">
+    <h1>Триальный период окончен</h1>
+    <p>Ваш бесплатный доступ завершился. Для продолжения занятий оформите подписку.</p>
+    <a class="cta" href="/pricing">Перейти к подписке</a>
+  </div>
+</body>
+</html>

@@ -545,8 +545,11 @@ def _ensure_queue_worker():
 # ── Routes ──────────────────────────────────────────────────────────────
 
 @figures_gen_bp.route("", methods=["GET"])
+@login_required
 def generate_page():
     """Render the figure generation page."""
+    if not current_user.has_access():
+        return render_template('trial_expired.html'), 402
     return render_template("figures_generate.html")
 
 
