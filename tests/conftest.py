@@ -19,6 +19,8 @@ returned by dependent fixtures remain attached to their session.
 import sqlite3
 import pytest
 
+import app as _real_app_module
+
 
 # ══════════════════════════════════════════════════════════════════════
 # Preserved raw-sqlite3 fixtures (subscription tests)
@@ -198,7 +200,12 @@ def app(tmp_path):
     yield test_app
 
     _db.session.remove()
+    # drop_all() would also DROP the real app's temp-copy tables.
+    # Pop the real app first, drop, then re-add it.
+    _real_engine_backup = _db._app_engines.pop(_real_app_module.app, None)
     _db.drop_all()
+    if _real_engine_backup is not None:
+        _db._app_engines[_real_app_module.app] = _real_engine_backup
     ctx.pop()
 
 

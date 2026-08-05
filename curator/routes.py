@@ -42,6 +42,7 @@ import logging
 from datetime import date, datetime
 
 from flask import jsonify, request, g, current_app
+from flask_login import login_required
 
 from curator import curator_bp
 from curator.diagnostics import (

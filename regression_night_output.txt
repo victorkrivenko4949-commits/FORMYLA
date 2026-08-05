@@ -46,6 +46,7 @@ S5(a) IMPORT OK: routes.admin_support
 S5(a) IMPORT OK: routes.chat_presence
 S5(a) IMPORT OK: routes.concierge
 S5(a) IMPORT OK: routes.conference_api
+S5(a) IMPORT OK: routes.dashboard_settings
 S5(a) IMPORT OK: routes.decorators
 S5(a) IMPORT OK: routes.figures
 S5(a) IMPORT OK: routes.figures_generator
@@ -56,6 +57,7 @@ S5(a) IMPORT OK: routes.handwriting
 S5(a) IMPORT OK: routes.intake
 S5(a) IMPORT OK: routes.olympiad
 S5(a) IMPORT OK: routes.olympiad_prep
+S5(a) IMPORT OK: routes.parent_teacher
 S5(a) IMPORT OK: routes.prep
 S5(a) IMPORT OK: routes.room_state
 S5(a) IMPORT OK: routes.telegram_auth
@@ -64,13 +66,13 @@ S5(a) IMPORT OK: routes.wb_meet
 S5(a) IMPORT OK: routes.wb_ws
 S5(a) TOTAL IMPORT FAILURES: 1
 S5(b) Testing 7 /prep GET routes with uid=6
-S5(c) OK: /prep/ → 302
-S5(c) OK: /prep/new → 302
-S5(c) OK: /prep/coach → 302
-S5(c) OK: /prep/probe → 302
-S5(c) OK: /prep/onboarding → 302
-S5(c) OK: /prep/coach/greeting → 302
-S5(c) OK: /prep/coach/history → 302
+S5(c) OK: /prep/ -> 302
+S5(c) OK: /prep/new -> 302
+S5(c) OK: /prep/coach -> 302
+S5(c) OK: /prep/probe -> 302
+S5(c) OK: /prep/onboarding -> 302
+S5(c) OK: /prep/coach/greeting -> 302
+S5(c) OK: /prep/coach/history -> 302
 S5(d) ok=7 4xx=0 5xx/EXC=0
 S5 SUMMARY: ALL CLEAN — no 5xx on /prep routes
 
