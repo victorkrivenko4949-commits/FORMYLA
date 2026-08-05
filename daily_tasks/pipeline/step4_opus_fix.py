@@ -21,7 +21,7 @@ if str(_project_root) not in sys.path:
 
 from typing import Any, Dict, List, Optional
 
-from services.openrouter_client import OpenRouterClient, TokenUsage, make_token_usage
+from daily_tasks.pipeline.deepseek_client import DeepSeekClient as OpenRouterClient, TokenUsage, make_token_usage
 from .validators import (
     OpusFixValidation,
     extract_json_safe,
@@ -34,9 +34,9 @@ logger = logging.getLogger(__name__)
 # All models now use DeepSeek API directly (no OpenRouter).
 # DeepSeek Chat v3.1 is fast (3-4s), supports json_object response_format,
 # and costs significantly less than Claude Sonnet via OpenRouter.
-_FIX_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
-_FIX_MODEL_HARD = "deepseek/deepseek-chat-v3.1"
-_FIX_MODEL_ESCALATION = "deepseek/deepseek-chat-v3.1"
+_FIX_MODEL_EASY = "deepseek/deepseek-v4-pro"
+_FIX_MODEL_HARD = "deepseek/deepseek-v4-pro"
+_FIX_MODEL_ESCALATION = "deepseek/deepseek-v4-pro"
 _FIX_HARD_THRESHOLD = 4
 _OPUS_FIX_MODEL = _FIX_MODEL_HARD  # алиас для совместимости
 

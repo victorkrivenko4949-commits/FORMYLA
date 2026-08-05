@@ -1,15 +1,245 @@
 {
-  "canvas": {"width": 360, "height": 400, "margin": 30},
+  "canvas": {
+    "width": 400,
+    "height": 420,
+    "margin": 30
+  },
   "constructions": [
-    {"type": "free_point", "id": "A", "x": 80, "y": 340},
-    {"type": "free_point", "id": "B", "x": 280, "y": 340},
-    {"type": "free_point", "id": "C", "x": 180, "y": 60},
-    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
-    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
-    {"type": "segment", "id": "CA", "p1": "C", "p2": "A"},
-    {"type": "triangle_arbitrary", "id": "tri", "p1": "A", "p2": "B", "p3": "C"},
-    {"type": "point_label", "id": "lbl_A", "p1": "A", "label": "A", "side": "bottom_left"},
-    {"type": "point_label", "id": "lbl_B", "p1": "B", "label": "B", "side": "bottom_right"},
-    {"type": "point_label", "id": "lbl_C", "p1": "C", "label": "C", "side": "top"}
+    {
+      "type": "free_point",
+      "id": "A",
+      "x": 100,
+      "y": 340,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "B",
+      "x": 300,
+      "y": 340,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "D",
+      "x": 100,
+      "y": 170,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "C",
+      "x": 300,
+      "y": 170,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "A2",
+      "x": 160,
+      "y": 290,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "B2",
+      "x": 360,
+      "y": 290,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "D2",
+      "x": 160,
+      "y": 120,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "C2",
+      "x": 360,
+      "y": 120,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "segment",
+      "id": "AB",
+      "p1": "A",
+      "p2": "B"
+    },
+    {
+      "type": "segment",
+      "id": "BC",
+      "p1": "B",
+      "p2": "C"
+    },
+    {
+      "type": "segment",
+      "id": "CD",
+      "p1": "C",
+      "p2": "D"
+    },
+    {
+      "type": "segment",
+      "id": "DA",
+      "p1": "D",
+      "p2": "A"
+    },
+    {
+      "type": "segment",
+      "id": "A2B2",
+      "p1": "A2",
+      "p2": "B2"
+    },
+    {
+      "type": "segment",
+      "id": "B2C2",
+      "p1": "B2",
+      "p2": "C2"
+    },
+    {
+      "type": "segment",
+      "id": "C2D2",
+      "p1": "C2",
+      "p2": "D2"
+    },
+    {
+      "type": "segment",
+      "id": "D2A2",
+      "p1": "D2",
+      "p2": "A2"
+    },
+    {
+      "type": "segment",
+      "id": "AA2",
+      "p1": "A",
+      "p2": "A2"
+    },
+    {
+      "type": "segment",
+      "id": "BB2",
+      "p1": "B",
+      "p2": "B2"
+    },
+    {
+      "type": "segment",
+      "id": "CC2",
+      "p1": "C",
+      "p2": "C2"
+    },
+    {
+      "type": "segment",
+      "id": "DD2",
+      "p1": "D",
+      "p2": "D2"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pAB1",
+      "p1": "A",
+      "p2": "B",
+      "ratio": 0.333,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pAB2",
+      "p1": "A",
+      "p2": "B",
+      "ratio": 0.667,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pCD1",
+      "p1": "C",
+      "p2": "D",
+      "ratio": 0.333,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pCD2",
+      "p1": "C",
+      "p2": "D",
+      "ratio": 0.667,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pAD1",
+      "p1": "A",
+      "p2": "D",
+      "ratio": 0.333,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pAD2",
+      "p1": "A",
+      "p2": "D",
+      "ratio": 0.667,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pBC1",
+      "p1": "B",
+      "p2": "C",
+      "ratio": 0.333,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "pBC2",
+      "p1": "B",
+      "p2": "C",
+      "ratio": 0.667,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "segment",
+      "id": "grid_v1",
+      "p1": "pAB1",
+      "p2": "pCD1",
+      "dashed": true
+    },
+    {
+      "type": "segment",
+      "id": "grid_v2",
+      "p1": "pAB2",
+      "p2": "pCD2",
+      "dashed": true
+    },
+    {
+      "type": "segment",
+      "id": "grid_h1",
+      "p1": "pAD1",
+      "p2": "pBC1",
+      "dashed": true
+    },
+    {
+      "type": "segment",
+      "id": "grid_h2",
+      "p1": "pAD2",
+      "p2": "pBC2",
+      "dashed": true
+    }
   ]
 }

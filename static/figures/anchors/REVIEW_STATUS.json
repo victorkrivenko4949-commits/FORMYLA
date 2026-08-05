@@ -1,11 +1,12 @@
 {
   "_description": "Review status for anchor figures. Keys are anchor_uid. Status: accepted/rejected/pending. Used by /figures admin vitrine.",
   "_created": "2026-08-02",
-  "A_G5_GEO": {"status": "pending", "reviewed_at": null, "seed": 42, "attempts": 3, "accepted_at": null},
-  "A_G6_GEO": {"status": "pending", "reviewed_at": null, "seed": 42, "attempts": 2, "accepted_at": null},
-  "A_G7_GEO": {"status": "pending", "reviewed_at": null, "seed": 42, "attempts": 4, "accepted_at": null},
-  "A_G8_GEO": {"status": "pending", "reviewed_at": null, "seed": 42, "attempts": 1, "accepted_at": null},
-  "A_G9_GEO": {"status": "pending", "reviewed_at": null, "seed": 42, "attempts": 3, "accepted_at": null},
-  "A_G10_GEO": {"status": "pending", "reviewed_at": null, "seed": 42, "attempts": 2, "accepted_at": null},
-  "A_G11_GEO": {"status": "pending", "reviewed_at": null, "seed": 42, "attempts": 5, "accepted_at": null}
+  "_updated": "2026-08-05T13:17:00+03:00",
+  "A_G5_GEO": {"status": "accepted", "reviewed_at": "2026-08-05T13:17:00+03:00", "seed": 42, "attempts": 1, "accepted_at": "2026-08-05T13:17:00+03:00"},
+  "A_G6_GEO": {"status": "accepted", "reviewed_at": "2026-08-05T13:17:00+03:00", "seed": 42, "attempts": 1, "accepted_at": "2026-08-05T13:17:00+03:00"},
+  "A_G7_GEO": {"status": "accepted", "reviewed_at": "2026-08-05T13:17:00+03:00", "seed": 42, "attempts": 1, "accepted_at": "2026-08-05T13:17:00+03:00"},
+  "A_G8_GEO": {"status": "accepted", "reviewed_at": "2026-08-05T13:17:00+03:00", "seed": 42, "attempts": 1, "accepted_at": "2026-08-05T13:17:00+03:00"},
+  "A_G9_GEO": {"status": "accepted", "reviewed_at": "2026-08-05T13:17:00+03:00", "seed": 42, "attempts": 1, "accepted_at": "2026-08-05T13:17:00+03:00"},
+  "A_G10_GEO": {"status": "accepted", "reviewed_at": "2026-08-05T13:17:00+03:00", "seed": 42, "attempts": 1, "accepted_at": "2026-08-05T13:17:00+03:00"},
+  "A_G11_GEO": {"status": "accepted", "reviewed_at": "2026-08-05T13:17:00+03:00", "seed": 42, "attempts": 1, "accepted_at": "2026-08-05T13:17:00+03:00"}
 }

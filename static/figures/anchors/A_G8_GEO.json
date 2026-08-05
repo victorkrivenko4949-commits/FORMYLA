@@ -1,21 +1,81 @@
 {
-  "canvas": {"width": 460, "height": 380, "margin": 30},
+  "canvas": {
+    "width": 460,
+    "height": 380,
+    "margin": 30
+  },
   "constructions": [
-    {"type": "free_point", "id": "A", "x": 80, "y": 320},
-    {"type": "free_point", "id": "B", "x": 380, "y": 320},
-    {"type": "free_point", "id": "D", "x": 140, "y": 60},
-    {"type": "free_point", "id": "C", "x": 340, "y": 60},
-    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
-    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
-    {"type": "segment", "id": "CD", "p1": "C", "p2": "D"},
-    {"type": "segment", "id": "DA", "p1": "D", "p2": "A"},
-    {"type": "quadrilateral_trapezoid", "id": "trap", "p1": "A", "p2": "B", "p3": "C", "p4": "D"},
-    {"type": "midpoint", "id": "M_AB", "p1": "A", "p2": "B"},
-    {"type": "midpoint", "id": "M_CD", "p1": "C", "p2": "D"},
-    {"type": "segment", "id": "h", "p1": "M_AB", "p2": "M_CD", "dashed": true},
-    {"type": "point_label", "id": "lbl_A", "p1": "A", "label": "A", "side": "bottom_left"},
-    {"type": "point_label", "id": "lbl_B", "p1": "B", "label": "B", "side": "bottom_right"},
-    {"type": "point_label", "id": "lbl_C", "p1": "C", "label": "C", "side": "top_right"},
-    {"type": "point_label", "id": "lbl_D", "p1": "D", "label": "D", "side": "top_left"}
+    {
+      "type": "free_point",
+      "id": "A",
+      "x": 80,
+      "y": 320,
+      "label": "A",
+      "side": "bottom_left"
+    },
+    {
+      "type": "free_point",
+      "id": "B",
+      "x": 380,
+      "y": 320,
+      "label": "B",
+      "side": "bottom_right"
+    },
+    {
+      "type": "free_point",
+      "id": "D",
+      "x": 140,
+      "y": 60,
+      "label": "D",
+      "side": "top_left"
+    },
+    {
+      "type": "free_point",
+      "id": "C",
+      "x": 340,
+      "y": 60,
+      "label": "C",
+      "side": "top_right"
+    },
+    {
+      "type": "segment",
+      "id": "AB",
+      "p1": "A",
+      "p2": "B"
+    },
+    {
+      "type": "segment",
+      "id": "BC",
+      "p1": "B",
+      "p2": "C"
+    },
+    {
+      "type": "segment",
+      "id": "CD",
+      "p1": "C",
+      "p2": "D"
+    },
+    {
+      "type": "segment",
+      "id": "DA",
+      "p1": "D",
+      "p2": "A"
+    },
+    {
+      "type": "quadrilateral_isosceles_trapezoid",
+      "id": "trap",
+      "p1": "A",
+      "p2": "B",
+      "p3": "C",
+      "p4": "D"
+    },
+    {
+      "type": "altitude",
+      "id": "h",
+      "p1": "D",
+      "p2": "A",
+      "p3": "B",
+      "dashed": true
+    }
   ]
 }

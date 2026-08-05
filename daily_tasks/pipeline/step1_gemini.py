@@ -26,7 +26,7 @@ if str(_project_root) not in sys.path:
 
 from typing import Any, Dict, List, Optional
 
-from services.openrouter_client import OpenRouterClient, OpenRouterError, TokenUsage, make_token_usage
+from daily_tasks.pipeline.deepseek_client import DeepSeekClient as OpenRouterClient, TokenUsage, make_token_usage
 from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
 from services.taxonomy_grade6 import get_all_subtopics as get_grade6_subtopics
 from services.topic_taxonomy import get_all_subtopics_for_grade
@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 # Step 1 PLAN: Claude Sonnet 4.5 — base-модель без reasoning. Reasoning-
 # флагманы (gpt-5.5-pro, gemini-3.1-pro) на стриминге 4-5 минут регулярно
 # роняют соединение через нестабильный интернет. Sonnet 4.5 уже в проде
-_GEMINI_MODEL = "deepseek/deepseek-chat-v3.1"  # vse etapy na DeepSeek (deshevo)
+_GEMINI_MODEL = "deepseek/deepseek-v4-pro"  # vse etapy na DeepSeek (deshevo)
 
 # ──────────────────────────────────────────────────────────────────────
 # Классифицированная ошибка планировщика
@@ -83,8 +83,8 @@ class GeminiPlanError(Exception):
         self.body_snippet = body_snippet
 
 
-def _classify_openrouter_error(exc: OpenRouterError) -> str:
-    """Map HTTP status from OpenRouterError to short human category."""
+def _classify_error(exc: RuntimeError) -> str:
+    """Map HTTP status from RuntimeError to short human category."""
     code = getattr(exc, "status_code", 0) or 0
     if code == 402:
         return "http_402"          # payment required (balance / credit limit)
@@ -355,12 +355,12 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
                 temperature=0.3,
                 max_tokens=16384,
             )
-    except OpenRouterError as exc:
+    except RuntimeError as exc:
         # Classified HTTP / API error — propagate with status_code & snippet
-        category = _classify_openrouter_error(exc)
+        category = _classify_error(exc)
         body_snippet = (getattr(exc, "body", "") or "")[:300]
         logger.exception(
-            "Step 1 PLAN — OpenRouter call to %s failed: status=%s category=%s body=%s",
+            "Step 1 PLAN — DeepSeek API call to %s failed: status=%s category=%s body=%s",
             _GEMINI_MODEL, exc.status_code, category, body_snippet,
         )
         if category == "http_402":
@@ -370,7 +370,7 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
             )
         elif category == "http_429":
             human = (
-                "Слишком много запросов к OpenRouter (HTTP 429). "
+                "Слишком много запросов к DeepSeek (HTTP 429). "
                 "Подожди минуту и повтори."
             )
         elif category.startswith("http_5"):
@@ -380,7 +380,7 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
             )
         elif category.startswith("http_4"):
             human = (
-                f"Ошибка запроса к OpenRouter ({exc.status_code}). "
+                f"Ошибка запроса к DeepSeek ({exc.status_code}). "
                 "Проверь конфигурацию."
             )
         else:
@@ -636,11 +636,11 @@ async def generate_gemini_thematic_plan(
                 temperature=0.3,
                 max_tokens=16384,
             )
-    except OpenRouterError as exc:
-        category = _classify_openrouter_error(exc)
+    except RuntimeError as exc:
+        category = _classify_error(exc)
         body_snippet = (getattr(exc, "body", "") or "")[:300]
         logger.exception(
-            "Thematic PLAN — OpenRouter call to %s failed: status=%s category=%s body=%s",
+            "Thematic PLAN — DeepSeek API call to %s failed: status=%s category=%s body=%s",
             _GEMINI_MODEL, exc.status_code, category, body_snippet,
         )
         if category == "http_402":
@@ -650,7 +650,7 @@ async def generate_gemini_thematic_plan(
             )
         elif category == "http_429":
             human = (
-                "Слишком много запросов к OpenRouter (HTTP 429). "
+                "Слишком много запросов к DeepSeek (HTTP 429). "
                 "Подожди минуту и повтори."
             )
         elif category.startswith("http_5"):
@@ -660,7 +660,7 @@ async def generate_gemini_thematic_plan(
             )
         elif category.startswith("http_4"):
             human = (
-                f"Ошибка запроса к OpenRouter ({exc.status_code}). "
+                f"Ошибка запроса к DeepSeek ({exc.status_code}). "
                 "Проверь конфигурацию."
             )
         else:

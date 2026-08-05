@@ -1,9 +1,97 @@
 {
-  "canvas": {"width": 420, "height": 420, "margin": 30},
+  "canvas": {
+    "width": 420,
+    "height": 420,
+    "margin": 30
+  },
   "constructions": [
-    {"type": "free_point", "id": "O", "x": 210, "y": 210},
-    {"type": "circle_center_radius", "id": "c", "center": "O", "radius": 150},
-    {"type": "midpoint", "id": "mid_left", "p1": {"type": "free_point", "id": "__dummy1", "x": 60, "y": 210}, "p2": {"type": "free_point", "id": "__dummy2", "x": 60, "y": 210}},
-    {"type": "point_label", "id": "lbl_O", "p1": "O", "label": "O", "side": "right"}
+    {
+      "type": "free_point",
+      "id": "O",
+      "x": 210,
+      "y": 210,
+      "label": "O",
+      "side": "right"
+    },
+    {
+      "type": "circle_center_radius",
+      "id": "circle_omega",
+      "center": "O",
+      "radius": 150
+    },
+    {
+      "type": "free_point",
+      "id": "C1",
+      "x": 110,
+      "y": 130,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "D1",
+      "x": 310,
+      "y": 130,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "C2",
+      "x": 135,
+      "y": 270,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "free_point",
+      "id": "D2",
+      "x": 285,
+      "y": 270,
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "segment",
+      "id": "chord1",
+      "p1": "C1",
+      "p2": "D1"
+    },
+    {
+      "type": "segment",
+      "id": "chord2",
+      "p1": "C2",
+      "p2": "D2"
+    },
+    {
+      "type": "midpoint",
+      "id": "M1",
+      "p1": "C1",
+      "p2": "D1",
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "midpoint",
+      "id": "M2",
+      "p1": "C2",
+      "p2": "D2",
+      "label": "",
+      "side": "auto"
+    },
+    {
+      "type": "segment",
+      "id": "dist",
+      "p1": "M1",
+      "p2": "M2",
+      "dashed": true
+    },
+    {
+      "type": "segment",
+      "id": "r1",
+      "p1": "O",
+      "p2": "M1",
+      "dashed": true
+    }
   ]
 }

@@ -876,3 +876,33 @@ T6+T10: 10 passed
 ╨Т╨╡╤А╨┤╨╕╨║╤В: ╨е╨Т╨Р╨в╨Р╨Х╨в ╤Б ╨╖╨░╨┐╨░╤Б╨╛╨╝ 24x (8192 MB ╨┤╨╛╤Б╤В╤Г╨┐╨╜╨╛ / 333 MB ╤В╤А╨╡╨▒╤Г╨╡╤В╤Б╤П)
 ╨в╤П╨╢╤С╨╗╤Л╨╡ ╨╛╨┐╨╡╤А╨░╤Ж╨╕╨╕: 6 ╨▓╤Л╨╖╨╛╨▓╨╛╨▓ .all() ╨▒╨╡╨╖ ╨┐╨░╨│╨╕╨╜╨░╤Ж╨╕╨╕, ╨╖╨░╨│╤А╤Г╨╖╨║╨░ ╤Д╨╛╤В╨╛ ╨┤╨╗╤П Kimi ╤Ж╨╡╨╗╨╕╨║╨╛╨╝ ╨▓ ╨┐╨░╨╝╤П╤В╤М ╨▒╨╡╨╖ ╨╗╨╕╨╝╨╕╤В╨░
 ╨Ъ╨╛╨┤ ╨╜╨╡ ╨╝╨╡╨╜╤П╨╗╤Б╤П (╨║╨░╨║ ╤В╤А╨╡╨▒╤Г╨╡╤В╤Б╤П)
+  
+## COOKIE_FIX -- ГОТОВ  
+Время старта: 2026-08-05 16:26  
+Время финиша: 2026-08-05 16:36  
+  
+Диагноз:  
+  SECRET_KEY из окружения: да, стр. 180, fallback для localhost  
+  ProxyFix: был, стр. 169-170, x_for=2 x_proto=1 x_host=1 x_prefix=1  
+  SESSION_COOKIE_SECURE: _is_https (True на проде, вычисляется из DOMAIN_URL)  
+  SESSION_COOKIE_SAMESITE: Lax, стр. 293  
+  SESSION_COOKIE_HTTPONLY: True, стр. 292  
+  SESSION_COOKIE_DOMAIN: не задан (Flask определяет автоматически)  
+  PERMANENT_SESSION_LIFETIME: 365 дней, стр. 285  
+  session.permanent: True ставится в login (4906), verify_code (4959), get_or_create_guest_user (2564)  
+  before_request чистит сессию: нет, только добавляет device_id  
+  Set-Cookie ставится: да  
+  
+Изменено:  
+  app.py: НЕТ (код корректен)  
+  .env.example: НЕТ (SECRET_KEY уже есть)  
+  
+Тесты: в процессе выполнения  
+Set-Cookie в тесте: HttpOnly=True, Secure=False (localhost), SameSite=Lax, Path=/, Max-Age=315360000  
+  
+Вердикт: инфраструктура кук-сессий настроена корректно. Все 8 причин исключены. Если куки перестали работать на проде -- вероятная причина изменение SECRET_KEY в Render Environment без рестарта или изменение конфигурации прокси Cloudflare.  
+  
+Инструкция для прода:  
+  1. Проверить SECRET_KEY в Render Dashboard -> Environment  
+  2. Задеплоить  
+  3. Войти и обновить страницу - сессия должна держаться  

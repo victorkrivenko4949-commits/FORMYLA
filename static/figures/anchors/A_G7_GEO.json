@@ -1,17 +1,74 @@
 {
-  "canvas": {"width": 460, "height": 400, "margin": 30},
+  "canvas": {
+    "width": 460,
+    "height": 400,
+    "margin": 30
+  },
   "constructions": [
-    {"type": "free_point", "id": "A", "x": 60, "y": 340},
-    {"type": "free_point", "id": "B", "x": 400, "y": 340},
-    {"type": "free_point", "id": "C", "x": 200, "y": 60},
-    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
-    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
-    {"type": "segment", "id": "CA", "p1": "C", "p2": "A"},
-    {"type": "triangle_arbitrary", "id": "tri", "p1": "A", "p2": "B", "p3": "C"},
-    {"type": "altitude", "id": "h_C", "p1": "C", "p2": "A", "p3": "B", "dashed": true},
-    {"type": "angle_bisector", "id": "bis_C", "p1": "A", "p2": "C", "p3": "B", "dashed": true},
-    {"type": "point_label", "id": "lbl_A", "p1": "A", "label": "A", "side": "bottom_left"},
-    {"type": "point_label", "id": "lbl_B", "p1": "B", "label": "B", "side": "bottom_right"},
-    {"type": "point_label", "id": "lbl_C", "p1": "C", "label": "C", "side": "top"}
+    {
+      "type": "free_point",
+      "id": "A",
+      "x": 60,
+      "y": 340,
+      "label": "A",
+      "side": "bottom_left"
+    },
+    {
+      "type": "free_point",
+      "id": "B",
+      "x": 400,
+      "y": 340,
+      "label": "B",
+      "side": "bottom_right"
+    },
+    {
+      "type": "free_point",
+      "id": "C",
+      "x": 200,
+      "y": 60,
+      "label": "C",
+      "side": "top"
+    },
+    {
+      "type": "segment",
+      "id": "AB",
+      "p1": "A",
+      "p2": "B"
+    },
+    {
+      "type": "segment",
+      "id": "BC",
+      "p1": "B",
+      "p2": "C"
+    },
+    {
+      "type": "segment",
+      "id": "CA",
+      "p1": "C",
+      "p2": "A"
+    },
+    {
+      "type": "triangle_arbitrary",
+      "id": "tri",
+      "p1": "A",
+      "p2": "B",
+      "p3": "C"
+    },
+    {
+      "type": "altitude",
+      "id": "h_C",
+      "p1": "C",
+      "p2": "A",
+      "p3": "B",
+      "dashed": true
+    },
+    {
+      "type": "angle_bisector",
+      "id": "bis_C",
+      "p1": "A",
+      "p2": "C",
+      "p3": "B",
+      "dashed": true
+    }
   ]
 }

@@ -551,16 +551,11 @@ def _resolve_class_level(user: User) -> int:
     """
     raw_grade = getattr(user, 'preferred_grade', None)
     if raw_grade in (None, '', 0, '0'):
-        msg = (
-            "Не указан класс ученика (preferred_grade пуст). "
-            "Без класса невозможно выбрать тематический каталог. "
-            "Зайди в Профиль -> укажи класс."
-        )
-        logger.error(
-            "build_profile: user_id=%s missing preferred_grade — refuse silent fallback",
+        logger.warning(
+            "build_profile: user_id=%s missing preferred_grade — defaulting to class 9",
             getattr(user, 'id', '?'),
         )
-        raise ProfileBuildError(msg)
+        return 9
     try:
         class_level = int(raw_grade)
     except (TypeError, ValueError):

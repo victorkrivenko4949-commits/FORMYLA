@@ -8,7 +8,7 @@ Step 2: генерация задач через DeepSeek API (parallelopus).
 
 Доступные модели (настраиваются в pipeline/config.py):
   - deepseek/deepseek-chat-v3.1 — для уровней 1..2 (быстро, ~3-4 сек)
-  - deepseek/deepseek-r1 — для уровней 3..5 (медленно, ~40-110 сек)
+  - deepseek/deepseek-v4-pro — для уровней 3..5 (медленно, ~40-110 сек)
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import random
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
-from services.openrouter_client import OpenRouterClient, TokenUsage, make_token_usage
+from daily_tasks.pipeline.deepseek_client import DeepSeekClient as OpenRouterClient, TokenUsage, make_token_usage
 
 from .validators import (
     OpusGenerationValidation,
@@ -33,12 +33,12 @@ logger = logging.getLogger(__name__)
 
 # == kontseptualnye konstanty ==
 
-_OPUS_MODEL = "deepseek/deepseek-chat-v3.1"
+_OPUS_MODEL = "deepseek/deepseek-v4-pro"
 _PARALLEL_WORKERS = 5
 _MAX_REGEN_ROUNDS = 3
 _GEN_HARD_THRESHOLD = 3
-_GEN_MODEL_EASY = "deepseek/deepseek-chat-v3.1"
-_GEN_MODEL_HARD = "deepseek/deepseek-r1"
+_GEN_MODEL_EASY = "deepseek/deepseek-v4-pro"
+_GEN_MODEL_HARD = "deepseek/deepseek-v4-pro"
 _JSON_RESPONSE_FORMAT = {"type": "json_object"}
 
 

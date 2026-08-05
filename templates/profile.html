@@ -814,35 +814,6 @@
         </button>
     </div>
 
-    <!-- ========== Кнопка "Посмотреть прогресс" ========== -->
-    <div style="text-align: center; margin: 20px 0 10px;">
-        <button id="btnProgressModal" onclick="openProgressModal()"
-                class="progress-btn">
-             Посмотреть прогресс
-        </button>
-    </div>
-
-    <!-- ========== Модальное окно прогресса ========== -->
-    <div id="progressModal" class="progress-modal-overlay" onclick="closeProgressModal(event)">
-        <div class="progress-modal" onclick="event.stopPropagation()">
-            <div class="progress-modal-header">
-                <h3> Прогресс адаптивных тестов</h3>
-                <button class="progress-modal-close" onclick="closeProgressModal()">&times;</button>
-            </div>
-            <div class="progress-modal-body">
-                <div class="progress-chart-wrapper">
-                    <canvas id="progressChart"></canvas>
-                </div>
-                <div id="progressEmpty" class="progress-empty" style="display:none;">
-                    <p>‍️ Пока нет результатов тестов.</p>
-                    <p style="font-size:14px;color:var(--text-muted);">Пройдите хотя бы один адаптивный тест, чтобы увидеть график.</p>
-                </div>
-                <div id="progressLoading" class="progress-loading">
-                    <div class="progress-spinner"></div>
-                    <p>Загрузка данных...</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Действия -->
