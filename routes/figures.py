@@ -35,12 +35,17 @@ logger = logging.getLogger(__name__)
 
 figures_bp = Blueprint("figures", __name__)
 
-# ── Payment packages (single source of truth — change here, not in code) ──
+# ── Payment packages (prices from services/cost_calculation.py) ──
+
+from services.cost_calculation import (
+    figure_pack_price_rub,
+    FIGURES_FREE,
+)
 
 FIGURE_PACKAGES = [
-    {"id": "p10", "amount": 10, "price_rub": 99, "label": "10 чертежей", "featured": False},
-    {"id": "p30", "amount": 30, "price_rub": 249, "label": "30 чертежей", "featured": True},
-    {"id": "p100", "amount": 100, "price_rub": 599, "label": "100 чертежей", "featured": False},
+    {"id": "p10", "amount": 10, "price_rub": int(figure_pack_price_rub(10)), "label": "10 чертежей", "featured": False},
+    {"id": "p30", "amount": 30, "price_rub": int(figure_pack_price_rub(30)), "label": "30 чертежей", "featured": True},
+    {"id": "p100", "amount": 100, "price_rub": int(figure_pack_price_rub(100)), "label": "100 чертежей", "featured": False},
 ]
 
 # ── Credit helpers ──────────────────────────────────────────────────────
