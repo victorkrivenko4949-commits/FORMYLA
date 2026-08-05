@@ -78,7 +78,7 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
 {% elif done %}
   <!-- ── Итог среза ── -->
   <div class="probe-card final-card">
-    <h1> Срез завершён</h1>
+    <h1>✅ Срез завершён</h1>
     <p style="color:rgba(255,255,255,0.65);">{{ theme_title }} &middot; {{ section }}</p>
     <div class="big-number">{{ "%.1f"|format(final_mu) }}</div>
     <p style="color:rgba(255,255,255,0.55);">уровень подтемы</p>
@@ -105,7 +105,7 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
   <!-- ── Активная задача ── -->
   <div class="probe-card">
     <div class="probe-header">
-      <h1> Утренний срез</h1>
+      <h1>🌅 Утренний срез</h1>
       <div class="sub">{{ theme_title }} &middot; {{ section }}</div>
     </div>
     <div class="probe-progress">

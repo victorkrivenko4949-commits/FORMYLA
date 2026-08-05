@@ -5,7 +5,7 @@
 <div id="figures-page" class="figures-page">
     <section class="figures-inner">
         <header class="figures-header">
-            <h1 class="figures-title">Построение чертежа</h1>
+            <h1 class="figures-title">📐 Построение чертежа</h1>
             <p class="figures-hint">Введите условие геометрической задачи и при желании решение — нейросеть создаст декларативное описание, а геометрический движок отрисует SVG-чертёж.</p>
             <div class="figures-balance" id="figuresBalance">
                 <span class="figures-balance-label">Осталось чертежей:</span>
@@ -27,7 +27,7 @@
             <span class="fig-counter" id="solutionCounter">0 / {{ max_solution_length }} символов</span>
 
             <div class="fig-actions">
-                <button id="generateFigureBtn" type="button" class="fig-btn-primary">Построить чертёж</button>
+                <button id="generateFigureBtn" type="button" class="fig-btn-primary">✏️ Построить чертёж</button>
             </div>
             <p class="fig-note">Генерация занимает 10–30 секунд. Длина условия ограничена {{ max_problem_length }} символами.</p>
         </div>
@@ -48,14 +48,14 @@
             <div class="figure-svg-frame" id="figureSvgContainer"></div>
             <p id="figureAuxReason" hidden class="fig-aux-reason"></p>
             <div class="fig-download-actions">
-                <button id="downloadSvgBtn" type="button" class="fig-btn-soft">Скачать SVG</button>
+                <button id="downloadSvgBtn" type="button" class="fig-btn-soft">📥 Скачать SVG</button>
             </div>
             <p id="figureMeta" class="fig-note"></p>
         </div>
 
         {# Zero balance block #}
         <div id="figureZeroBalance" hidden class="figure-zero-balance glass">
-            <h3 class="fig-h3">Чертежи закончились</h3>
+            <h3 class="fig-h3">📭 Чертежи закончились</h3>
             <div class="zero-info">
                 <p>Вы использовали все бесплатные чертежи.</p>
                 <div class="zero-ways">

@@ -12,7 +12,7 @@
 {% if need_grade_selection %}
   <!-- ============ ВЫБОР КЛАССА ============ -->
   <div id="grade-selection" style="text-align: center; padding: 60px 20px;">
-    <div style="font-size: 72px; margin-bottom: 16px;"></div>
+    <div style="font-size: 72px; margin-bottom: 16px;">📚</div>
     <h2 style="font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px;">Выбери свой класс</h2>
     <p style="color: rgba(255,255,255,0.6); font-size: 15px; margin-bottom: 36px;">Задачи дня будут подобраны под твой уровень</p>
 
@@ -105,25 +105,25 @@
 
   <!-- Streak Hero -->
   <div style="text-align: center; margin-bottom: 32px;">
-    <div style="font-size: 64px; filter: drop-shadow(0 0 20px rgba(249,115,22,0.8)); animation: flame-flicker 2s ease-in-out infinite alternate; display: inline-block;"></div>
+    <div style="font-size: 64px; filter: drop-shadow(0 0 20px rgba(249,115,22,0.8)); animation: flame-flicker 2s ease-in-out infinite alternate; display: inline-block;">🔥</div>
     <div style="font-size: 72px; font-weight: 900; background: linear-gradient(135deg, #11998e, #38ef7d); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1; margin: 8px 0;">{{ streak_stats.current_streak }}</div>
     <div style="font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6);">дней подряд</div>
     <div style="margin-top: 12px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
       {% if streak_stats.freeze_available %}
-      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);">️ Заморозка доступна</span>
+      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);">❄️ Заморозка доступна</span>
       {% endif %}
-      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);"> Рекорд: {{ streak_stats.longest_streak }}</span>
+      <span style="padding: 6px 14px; border-radius: 20px; background: rgba(20,30,45,0.6); border: 1px solid rgba(56,239,125,0.2); font-size: 13px; color: rgba(255,255,255,0.85);">🏆 Рекорд: {{ streak_stats.longest_streak }}</span>
     </div>
   </div>
 
   <!-- AI Intro -->
   <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); border-left: 4px solid #38ef7d; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start;">
-    <div style="font-size: 36px; flex-shrink: 0; line-height: 1;"></div>
+    <div style="font-size: 36px; flex-shrink: 0; line-height: 1;">🤖</div>
     <div>
       <div style="color: #38ef7d; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 8px;">Твои задачи на сегодня</div>
       <div style="color: var(--text-soft); line-height: 1.6;">{{ ai_comment_html if ai_comment_html else (quest.ai_comment | safe) }}</div>
       <form action="/daily/regenerate" method="POST" style="margin-top: 12px;">
-        <button type="submit" style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; font-size: 13px; cursor: pointer; transition: all 0.2s;"> Перегенерировать задачи</button>
+        <button type="submit" style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); color: #f87171; font-size: 13px; cursor: pointer; transition: all 0.2s;">🔄 Перегенерировать задачи</button>
       </form>
     </div>
   </div>
@@ -212,17 +212,17 @@
   <!-- Rewards -->
   <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 20px 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
     <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.85); font-size: 15px;">
-      <span style="font-size: 22px;"></span>
+      <span style="font-size: 22px;">⭐</span>
       <span>Заработано: <strong style="color: #38ef7d;">{{ quest.xp_earned }} XP</strong></span>
     </div>
     <div style="display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.85); font-size: 15px;">
-      <span style="font-size: 22px;"></span>
+      <span style="font-size: 22px;">🎁</span>
       <span>Бонус за все 5: <strong style="color: #38ef7d;">+100 XP</strong></span>
     </div>
     {% if quest.completed_count >= quest.total_count %}
     <a href="{{ url_for('daily_quest_complete') }}"
        style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #11998e, #38ef7d); color: #000; font-weight: 700; border-radius: 10px; text-decoration: none;">
-       Результаты
+      🎯 Результаты
     </a>
     {% endif %}
   </div>
