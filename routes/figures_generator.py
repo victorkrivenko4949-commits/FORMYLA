@@ -48,7 +48,7 @@ figures_gen_bp = Blueprint("figures_generator", __name__, url_prefix="/figures/g
 # ── Config ──────────────────────────────────────────────────────────────
 _REASONER_FALLBACK = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro").strip()
 REASONER_MODEL = os.environ.get("FIGURE_MODEL", _REASONER_FALLBACK).strip()
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "") or "sk-87c7e276289a48269afe7d91d08d3f38"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 if DEEPSEEK_API_KEY:
     DEEPSEEK_API_KEY = DEEPSEEK_API_KEY.strip()
 DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1/chat/completions"

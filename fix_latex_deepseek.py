@@ -21,7 +21,7 @@ from pathlib import Path
 # ============================================================
 
 # Вставь настоящий ключ DeepSeek между кавычками.
-DEEPSEEK_API_KEY = "sk-53d765bfeccd4474bdcb4a7bb2a96013"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 
 # Точный рабочий адрес из твоего другого скрипта.
 API_URL = "https://api.deepseek.com/chat/completions"

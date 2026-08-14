@@ -17,7 +17,7 @@ import sys
 import requests
 
 # ключ зашит здесь; переменная окружения DEEPSEEK_API_KEY, если задана, имеет приоритет
-DEEPSEEK_API_KEY = "sk-ad477f779a1045cba3cc09100e908370"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 MODEL_NAME = "deepseek-chat"  # замени на алиас v4-pro, если он доступен на аккаунте

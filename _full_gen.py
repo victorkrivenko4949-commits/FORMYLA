@@ -33,7 +33,7 @@ HEARTBEAT_FILE = WORKSPACE / '_gen_heartbeat.txt'
 PID_FILE = WORKSPACE / '_gen_pid.txt'
 
 # -- Config --
-DEEPSEEK_API_KEY = "sk-87c7e276289a48269afe7d91d08d3f38"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 DEEPSEEK_BASE = "https://api.deepseek.com/v1"
 DEEPSEEK_MODEL = "deepseek-v4-pro"
 HTTP_TIMEOUT = httpx.Timeout(60.0, read=120.0, write=30.0, connect=15.0)

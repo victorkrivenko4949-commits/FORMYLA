@@ -45,7 +45,7 @@ import threading
 
 # Ключ встроен по твоей просьбе. ОТЗОВИ ЕГО после запуска на
 # https://platform.deepseek.com/api_keys — он утёк в чат и в этом файле.
-API_KEY = os.environ.get('DEEPSEEK_API_KEY', 'sk-ad477f779a1045cba3cc09100e908370').strip()
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "").strip()
 
 DEEPSEEK_BASE = "https://api.deepseek.com/chat/completions"
 MODEL = "deepseek-v4-pro"

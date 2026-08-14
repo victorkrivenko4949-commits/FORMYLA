@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 FORMYLA L4-L5: PULSE SYSTEM (фикс от заеданий)
@@ -12,7 +13,7 @@ FORMYLA L4-L5: PULSE SYSTEM (фикс от заеданий)
 import json, time, re, os, sys, requests, threading
 from queue import Queue, Empty
 
-API_KEY = "sk-89cea94d7cf94a3e9d2cba5d4a74d747"
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 API_URL = "https://api.deepseek.com/chat/completions"
 MODEL = "deepseek-v4-pro"
 INPUT_FILE = "FORMYLA_L4_L5_FINAL.jsonl"

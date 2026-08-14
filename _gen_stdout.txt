@@ -18,7 +18,7 @@ Checkpoint: 1115/1980 done
   TOTAL: 1980 batches, 16500 tasks
   LEFT: 1090 batches, 9125 tasks
   L1: no audit | L2+L3: audit
-  KEY: sk-87c7e276289a48269...
+  KEY: KEY: REDACTED
   MODEL: deepseek-v4-pro
 ======================================================================
 
@@ -1052,3 +1052,139 @@ Checkpoint: 1115/1980 done
 
 [333/1980] G10 L3 | Отрезки, отношения и площади (10 tasks)
     generated 10/10 valid, tokens: 14960in/41384out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 487s | 1044/1980 (52%) | ETA: 562min | saved: 1290
+
+[334/1980] G10 L1 | Дополнительные построения и преобразования (5 tasks)
+    generated 5/5 valid, tokens: 7500in/6935out
+    audit skipped (L1)
+  OK 5/5 valid, 28s | 1045/1980 (52%) | ETA: 561min | saved: 1295
+
+[335/1980] G10 L2 | Дополнительные построения и преобразования (10 tasks)
+    generated 10/10 valid, tokens: 15000in/33071out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 503s | 1046/1980 (52%) | ETA: 567min | saved: 1305
+
+[336/1980] G10 L3 | Дополнительные построения и преобразования (10 tasks)
+    generated 10/10 valid, tokens: 15000in/39293out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 532s | 1047/1980 (52%) | ETA: 574min | saved: 1315
+
+[337/1980] G11 L1 | Функциональные уравнения (5 tasks)
+    generated 5/5 valid, tokens: 7460in/2031out
+    audit skipped (L1)
+  OK 5/5 valid, 14s | 1048/1980 (52%) | ETA: 573min | saved: 1320
+
+[338/1980] G11 L2 | Функциональные уравнения (10 tasks)
+    generated 10/10 valid, tokens: 14920in/9050out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    all approved (iter 1)
+  OK 10/10 valid, 258s | 1049/1980 (52%) | ETA: 576min | saved: 1330
+
+[339/1980] G11 L3 | Функциональные уравнения (10 tasks)
+    generated 10/10 valid, tokens: 14920in/32983out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 479s | 1050/1980 (53%) | ETA: 582min | saved: 1340
+
+[340/1980] G11 L1 | Делимость и сравнения по модулю (5 tasks)
+    generated 5/5 valid, tokens: 7500in/3110out
+    audit skipped (L1)
+  OK 5/5 valid, 14s | 1051/1980 (53%) | ETA: 581min | saved: 1345
+
+[341/1980] G11 L2 | Делимость и сравнения по модулю (10 tasks)
+    generated 10/10 valid, tokens: 15000in/7513out
+    all approved (iter 1)
+  OK 10/10 valid, 52s | 1052/1980 (53%) | ETA: 580min | saved: 1355
+
+[342/1980] G11 L3 | Делимость и сравнения по модулю (10 tasks)
+    generated 10/10 valid, tokens: 16500in/44512out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 488s | 1053/1980 (53%) | ETA: 586min | saved: 1365
+
+[343/1980] G11 L1 | Простые числа и арифметические функции (5 tasks)
+    generated 5/5 valid, tokens: 7510in/1949out
+    audit skipped (L1)
+  OK 5/5 valid, 12s | 1054/1980 (53%) | ETA: 585min | saved: 1370
+
+[344/1980] G11 L2 | Простые числа и арифметические функции (10 tasks)
+    generated 10/10 valid, tokens: 15020in/7330out
+    all approved (iter 1)
+  OK 10/10 valid, 91s | 1055/1980 (53%) | ETA: 585min | saved: 1380
+
+[345/1980] G11 L3 | Простые числа и арифметические функции (10 tasks)
+    generated 10/10 valid, tokens: 15020in/30189out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 492s | 1056/1980 (53%) | ETA: 591min | saved: 1390
+
+[346/1980] G11 L1 | Диофантовы уравнения (5 tasks)
+    generated 5/5 valid, tokens: 7480in/5978out
+    audit skipped (L1)
+  OK 5/5 valid, 32s | 1057/1980 (53%) | ETA: 591min | saved: 1395
+
+[347/1980] G11 L2 | Диофантовы уравнения (10 tasks)
+    generated 10/10 valid, tokens: 14960in/10242out
+    all approved (iter 1)
+  OK 10/10 valid, 66s | 1058/1980 (53%) | ETA: 590min | saved: 1405
+
+[348/1980] G11 L3 | Диофантовы уравнения (10 tasks)
+    generated 10/10 valid, tokens: 14960in/33248out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 468s | 1059/1980 (53%) | ETA: 596min | saved: 1415
+
+[349/1980] G11 L1 | Арифметические конструкции (5 tasks)
+    generated 5/5 valid, tokens: 7460in/4330out
+    audit skipped (L1)
+  OK 5/5 valid, 25s | 1060/1980 (53%) | ETA: 595min | saved: 1420
+
+[350/1980] G11 L2 | Арифметические конструкции (10 tasks)
+    generated 10/10 valid, tokens: 14920in/13218out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)
+    WARN audit: 0 entries (attempt 5)
+    all approved (iter 1)
+  OK 10/10 valid, 443s | 1061/1980 (53%) | ETA: 600min | saved: 1430
+
+[351/1980] G11 L3 | Арифметические конструкции (10 tasks)
+    generated 10/10 valid, tokens: 14920in/36981out
+    WARN audit: 0 entries (attempt 1)
+    WARN audit: 0 entries (attempt 2)
+    WARN audit: 0 entries (attempt 3)
+    WARN audit: 0 entries (attempt 4)

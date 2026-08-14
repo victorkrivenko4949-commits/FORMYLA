@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 fix_only.py — ТОЛЬКО ПОЧИНКА. Аудита нет.
@@ -37,7 +37,7 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "FORMYLA_L1_L3_FINAL_v3.jsonl")
 
-API_KEY = "sk-a695537b0da54da798bfa7a3b2b60639"
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 API_BASE = "https://api.deepseek.com/v1"
 MODEL = "deepseek-v4-pro"
 EXTRA_BODY = {"thinking": True}

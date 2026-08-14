@@ -31,7 +31,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ==================== НАСТРОЙКИ ====================
 
-DEEPSEEK_API_KEY = "sk-a695537b0da54da798bfa7a3b2b60639"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 API_URL = "https://api.deepseek.com/chat/completions"
 MODEL_NAME = "deepseek-v4-pro"
 FALLBACK_MODEL = "deepseek-v4-flash"

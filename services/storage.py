@@ -18,12 +18,17 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
+class StorageError(Exception):
+    """Raised when photo storage is not available for upload."""
+
 # R2 / S3 config
 R2_ACCOUNT_ID = os.environ.get('R2_ACCOUNT_ID', '')
 R2_ACCESS_KEY_ID = os.environ.get('R2_ACCESS_KEY_ID', '')
 R2_SECRET_ACCESS_KEY = os.environ.get('R2_SECRET_ACCESS_KEY', '')
 R2_BUCKET_NAME = os.environ.get('R2_BUCKET_NAME', 'formyla-photos')
 R2_PUBLIC_URL = os.environ.get('R2_PUBLIC_URL', '')
+PHOTO_LOCAL_FALLBACK = os.environ.get('PHOTO_LOCAL_FALLBACK', '').strip()
 
 # Local fallback directory (key already contains 'photos/' prefix)
 LOCAL_PHOTO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -67,8 +72,16 @@ def upload_photo(photo_bytes, user_id, content_type='image/jpeg'):
 
     if _r2_configured():
         url = _upload_to_r2(photo_bytes, key, content_type)
-    else:
+    elif PHOTO_LOCAL_FALLBACK == '1':
         url = _upload_to_local(photo_bytes, key)
+    else:
+        logger.error(
+            "Хранилище фото не настроено: переменные S3/R2 не заданы. "
+            "Локальная запись требует PHOTO_LOCAL_FALLBACK=1."
+        )
+        raise StorageError(
+            "Хранилище фото не настроено. Обратитесь к администратору."
+        )
 
     return url, photo_hash
 
@@ -111,8 +124,10 @@ def _upload_to_r2(photo_bytes, key, content_type):
         return url
 
     except Exception as e:
-        logger.error(f"R2 upload failed: {e}, falling back to local")
-        return _upload_to_local(photo_bytes, key)
+        logger.error("Не удалось загрузить фото в S3/R2: %s", e)
+        if PHOTO_LOCAL_FALLBACK == '1':
+            return _upload_to_local(photo_bytes, key)
+        raise StorageError("Не удалось сохранить фото. Обратитесь к администратору.")
 
 
 def _upload_to_local(photo_bytes, key):

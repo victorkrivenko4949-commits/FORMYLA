@@ -1845,6 +1845,32 @@ class SolutionAttempt(db.Model):
         return f'<SolutionAttempt id={self.id} user={self.user_id} type={self.attempt_type}>'
 
 
+class PhotoRecognizeRequest(db.Model):
+    """Rate-limit counter for the paid /api/figures/recognize-photo endpoint.
+
+    One row per (user, hour-bucket).  The counter is stored in the DB so the
+    limit survives process restarts and is shared across workers.
+    """
+    __tablename__ = 'photo_recognize_requests'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                        nullable=False, index=True)
+    hour_bucket = db.Column(db.String(20), nullable=False, index=True)
+    count = db.Column(db.Integer, nullable=False, default=0)
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('photo_recognize_requests', lazy='dynamic'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<PhotoRecognizeRequest user={self.user_id} '
+            f'hour={self.hour_bucket} count={self.count}>'
+        )
+
+
 class KimiReview(db.Model):
     """CH10: Kimi K2.5 review of a solution attempt."""
     __tablename__ = 'kimi_reviews'

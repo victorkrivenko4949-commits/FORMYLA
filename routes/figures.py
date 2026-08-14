@@ -299,10 +299,52 @@ def figures_history():
 
 
 @figures_bp.route("/api/figures/recognize-photo", methods=["POST"])
+@login_required
 def fig_recognize_photo():
-    """Recognize math text from photo using KIMI."""
+    """Recognize math text from photo using KIMI (paid external service).
+
+    Rate limit: at most 10 requests per user per hour.  The counter is
+    stored in the DB (photo_recognize_requests table).
+    """
     import base64
     from services.kimi_vision import process_photo_with_kimi
+
+    # ── Rate limit (DB counter, per user + hour bucket) ─────────────────
+    try:
+        from datetime import datetime, timedelta
+        from models import db, PhotoRecognizeRequest
+        uid = None
+        try:
+            if current_user is not None and getattr(current_user, "is_authenticated", False):
+                uid = getattr(current_user, "id", None)
+        except Exception:
+            uid = None
+        if uid is None:
+            return jsonify({"error": "Требуется авторизация."}), 401
+        hour_bucket = datetime.utcnow().strftime("%Y-%m-%dT%H")
+        row = PhotoRecognizeRequest.query.filter_by(
+            user_id=uid, hour_bucket=hour_bucket,
+        ).first()
+        if row is None:
+            row = PhotoRecognizeRequest(
+                user_id=uid, hour_bucket=hour_bucket, count=0,
+            )
+            db.session.add(row)
+        if row.count >= 10:
+            db.session.rollback()
+            return jsonify({
+                "error": "Превышен лимит распознавания фото: не более 10 запросов в час.",
+            }), 429
+        row.count += 1
+        db.session.commit()
+    except Exception as e:
+        logger.error("[figures] rate limit check failed: %s", e)
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({"error": "Ошибка сервера при проверке лимита."}), 500
+
     data = request.get_json(silent=True) or {}
     img_b64 = data.get('image', '')
     mime = data.get('mime', 'image/jpeg')

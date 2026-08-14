@@ -1,9 +1,10 @@
+import os
 #!/usr/bin/env python3
 """Fix G2 — heuristic task selection + DeepSeek analysis only."""
 import json, re, time, requests, urllib3
 
 urllib3.disable_warnings()
-API_KEY = 'sk-ad477f779a1045cba3cc09100e908370'
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 API_URL = 'https://api.deepseek.com/chat/completions'
 MODEL = 'deepseek-v4-pro'
 

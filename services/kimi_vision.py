@@ -6,14 +6,19 @@ import base64
 import logging
 import requests
 
+from services.kimi_review import _get_kimi_key
+
 logger = logging.getLogger(__name__)
 
-KIMI_KEY = "sk-CGqFLtMidguq9qByAskdTcqYeNlIDisiwJfi8YtREt8Veqoq"
 KIMI_MODEL = "moonshot-v1-8k"
 KIMI_URL = "https://api.moonshot.cn/v1"
 
 
 def process_photo_with_kimi(image_bytes: bytes, mime_type: str = "image/jpeg"):
+    try:
+        kimi_key = _get_kimi_key()
+    except Exception as e:
+        return None, str(e)
     try:
         b64 = base64.b64encode(image_bytes).decode()
     except Exception as e:
@@ -21,7 +26,7 @@ def process_photo_with_kimi(image_bytes: bytes, mime_type: str = "image/jpeg"):
     data_url = f"data:{mime_type};base64,{b64}"
     try:
         r = requests.post(f"{KIMI_URL}/chat/completions",
-            headers={"Authorization": f"Bearer {KIMI_KEY}", "Content-Type": "application/json"},
+            headers={"Authorization": f"Bearer {kimi_key}", "Content-Type": "application/json"},
             json={"model": KIMI_MODEL, "messages": [{"role": "user", "content": [
                 {"type": "image_url", "image_url": {"url": data_url}},
                 {"type": "text", "text": "Recognize math problem from photo. Rewrite ALL text, formulas. Answer in Russian."}

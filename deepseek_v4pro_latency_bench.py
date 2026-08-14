@@ -13,7 +13,7 @@
 
 Запуск:
   set DEEPSEEK_API_KEY=sk-...        (Windows cmd)
-  $env:DEEPSEEK_API_KEY="sk-87c7e276289a48269afe7d91d08d3f38"     (PowerShell)
+  $env:DEEPSEEK_API_KEY=os.environ.get("DEEPSEEK_API_KEY", "")     (PowerShell)
   pip install openai
   python deepseek_v4pro_latency_bench.py --n 100
 """

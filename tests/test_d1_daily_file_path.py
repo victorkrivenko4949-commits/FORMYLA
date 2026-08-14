@@ -25,9 +25,13 @@ def _make_jpeg_bytes():
     return jpeg
 
 
-def test_daily_photo_file_saved_to_correct_path(auth_client, daily_set_with_items, app):
-    """Photo uploaded as solution must save to uploads/solutions/<YYYY-MM>/<random>.jpg
-    and file_path in SolutionAttempt must contain correct substrings."""
+def test_daily_photo_file_saved_to_correct_path(auth_client, daily_set_with_items, app, monkeypatch):
+    """Photo uploaded as solution must store the storage URL in file_path.
+
+    Since photos are now stored via services.storage (S3/R2), the test patches
+    ``upload_photo`` and asserts the returned URL is written to
+    ``SolutionAttempt.file_path``.
+    """
     items = DailyTaskItem.query.filter_by(
         daily_set_id=daily_set_with_items.id
     ).order_by(DailyTaskItem.position).all()
@@ -36,12 +40,13 @@ def test_daily_photo_file_saved_to_correct_path(auth_client, daily_set_with_item
 
     item = items[3]  # use fourth item
 
+    fake_url = "https://photos.example.test/photos/1/abc.jpg"
+    monkeypatch.setattr(
+        "services.storage.upload_photo",
+        lambda photo_bytes, user_id, content_type='image/jpeg': (fake_url, "hash"),
+    )
+
     jpeg_bytes = _make_jpeg_bytes()
-    data = {
-        "answer": "99",
-        "solution_method": "photo",
-    }
-    # Flask test client: send file via data dict with file wrapper
     resp = auth_client.post(
         f"/daily_tasks/{item.id}/submit",
         data={
@@ -52,13 +57,10 @@ def test_daily_photo_file_saved_to_correct_path(auth_client, daily_set_with_item
         content_type="multipart/form-data",
     )
 
-    # Check response
-    response_data = resp.get_json(silent=True) or {}
     assert resp.status_code == 200, (
         f"Expected 200, got {resp.status_code}: {resp.get_data(as_text=True)}"
     )
 
-    # Check SolutionAttempt record
     attempt = SolutionAttempt.query.order_by(SolutionAttempt.id.desc()).first()
     assert attempt is not None, "SolutionAttempt must be created for photo upload"
     assert attempt.attempt_type == 'daily', (
@@ -67,19 +69,9 @@ def test_daily_photo_file_saved_to_correct_path(auth_client, daily_set_with_item
 
     file_path = attempt.file_path
     assert file_path is not None, "file_path must be non-null for photo solution"
-
-    # Check path contains expected substrings
-    year_month = datetime.utcnow().strftime('%Y-%m')
-    assert 'uploads/solutions/' in file_path, (
-        f"file_path must contain 'uploads/solutions/', got: {file_path}"
-    )
-    assert year_month in file_path, (
-        f"file_path must contain '{year_month}', got: {file_path}"
-    )
-    assert file_path.endswith('.jpg'), (
-        f"file_path must end with '.jpg', got: {file_path}"
+    assert file_path == fake_url, (
+        f"file_path must be the storage URL, got: {file_path}"
     )
 
-    # Check file_size > 0
     assert attempt.file_size is not None, "file_size must be non-null"
     assert attempt.file_size > 0, f"file_size must be >0, got {attempt.file_size}"

@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 FORMYLA — матчинг v3: точное извлечение из базы.
@@ -17,7 +18,7 @@ urllib3.disable_warnings()
 
 session = requests.Session()
 session.verify = False
-API_KEY = 'sk-ad477f779a1045cba3cc09100e908370'
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 headers = {'Authorization': f'Bearer {API_KEY}', 'Content-Type': 'application/json'}
 
 METHODS_FILE = sys.argv[2] if len(sys.argv) > 2 else 'all_methods_fixed.json'

@@ -17,7 +17,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-DEEPSEEK_API_KEY=sk-53d765bfeccd4474bdcb4a7bb2a96013
+DEEPSEEK_API_KEY=os.environ.get("DEEPSEEK_API_KEY", "")
 DEFAULT_MODEL = "deepseek-v4-pro"
 DEFAULT_BASE_URL = "https://api.deepseek.com"
 DEFAULT_WORKERS = 10

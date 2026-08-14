@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 FORMYLA L4-L5: ДВУХШАГОВЫЙ ФИКС + АУДИТ
@@ -15,7 +16,7 @@ import json, time, re, threading, os
 from collections import Counter
 from queue import Queue
 
-API_KEY = "sk-ad477f779a1045cba3cc09100e908370"
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 API_URL = "https://api.deepseek.com/chat/completions"
 MODEL = "deepseek-v4-pro"
 INPUT_FILE = "FORMYLA_L1_L5_TOP5.jsonl"

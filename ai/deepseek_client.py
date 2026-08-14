@@ -46,7 +46,7 @@ class DeepSeekClient:
             api_key: DeepSeek API key. If None, reads from DEEPSEEK_API_KEY env var.
         """
         # Force correct key — env may have stale old key
-        self.api_key = api_key or "sk-87c7e276289a48269afe7d91d08d3f38"
+        self.api_key = api_key or os.environ.get("DEEPSEEK_API_KEY", "")
         if not self.api_key:
             logger.warning(
                 "DEEPSEEK_API_KEY не задан — AI-функции (проверка ответов, "

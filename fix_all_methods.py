@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """Diagnostic + Fix script for:
 Problem 1: E8, E12, E14, E15, F3 — truncated last task (missing Ответ/Что было главным)
@@ -14,7 +15,7 @@ import traceback
 
 urllib3.disable_warnings()
 
-API_KEY = 'sk-ad477f779a1045cba3cc09100e908370'
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 API_URL = 'https://api.deepseek.com/chat/completions'
 MODEL = 'deepseek-v4-pro'
 

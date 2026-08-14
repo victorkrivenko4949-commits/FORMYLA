@@ -602,49 +602,22 @@ def submit_answer(item_id: int):
         photo_file = request.files['solution_photo']
         if photo_file and photo_file.filename:
             photo_bytes = photo_file.read()
-            if len(photo_bytes) > 12 * 1024 * 1024:
-                pass  # Too large, skip - not blocking
-            elif len(photo_bytes) > 0:
-                content_type = photo_file.content_type or 'application/octet-stream'
-                # Convert HEIC to JPEG
-                if content_type in ('image/heic', 'image/heif') or photo_file.filename.lower().endswith(('.heic', '.heif')):
-                    try:
-                        from routes.prep import _convert_heic_to_jpeg
-                        photo_bytes, content_type = _convert_heic_to_jpeg(photo_bytes)
-                    except Exception:
-                        pass  # Keep original
-                # Compress: max 1500px, quality 0.8
-                try:
-                    from PIL import Image
-                    import io as _io
-                    img = Image.open(_io.BytesIO(photo_bytes))
-                    img = img.convert('RGB')
-                    w, h = img.size
-                    max_side = 1500
-                    if max(w, h) > max_side:
-                        ratio = max_side / max(w, h)
-                        w = int(w * ratio)
-                        h = int(h * ratio)
-                        img = img.resize((w, h), Image.LANCZOS)
-                    out_buf = _io.BytesIO()
-                    img.save(out_buf, format='JPEG', quality=80)
-                    photo_bytes = out_buf.getvalue()
-                    content_type = 'image/jpeg'
-                except Exception:
-                    pass  # Keep original
-                # Save file
-                import os as _os
-                from datetime import datetime as _dt
-                year_month = _dt.utcnow().strftime('%Y-%m')
-                upload_dir = _os.path.join(current_app.static_folder, 'uploads', 'solutions', year_month)
-                _os.makedirs(upload_dir, exist_ok=True)
-                import uuid as _uuid
-                filename = f'{_uuid.uuid4().hex[:16]}.jpg'
-                file_path_rel = f'uploads/solutions/{year_month}/{filename}'
-                file_path_abs = _os.path.join(current_app.static_folder, file_path_rel)
-                with open(file_path_abs, 'wb') as f:
-                    f.write(photo_bytes)
-                file_size = len(photo_bytes)
+            content_type = photo_file.content_type or 'application/octet-stream'
+
+            from services.photo_upload import prepare_photo, PhotoError
+            try:
+                photo_bytes, content_type = prepare_photo(
+                    photo_bytes, content_type, photo_file.filename or '',
+                )
+            except PhotoError as pe:
+                return jsonify(error=pe.message), pe.status
+
+            from services.storage import upload_photo, StorageError
+            try:
+                file_path_rel, _ = upload_photo(photo_bytes, current_user.id, content_type)
+            except StorageError as se:
+                return jsonify(error=str(se)), 500
+            file_size = len(photo_bytes)
 
     # D1: запись в solution_attempts только если решение присутствует
     if solution_method in ('text', 'photo'):

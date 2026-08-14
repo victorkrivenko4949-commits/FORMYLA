@@ -19,7 +19,7 @@ Already-done week-4 combos: 36
   Skipped: 36 topics x 5 cycles = 180 batches
   TOTAL: 565 batches, 5650 tasks
   LEFT: 565 batches, 5650 tasks
-  KEY: sk-a695537b0da54da79... | MODEL: deepseek-v4-pro
+  KEY: ... | MODEL: deepseek-v4-pro
 ======================================================================
 
 

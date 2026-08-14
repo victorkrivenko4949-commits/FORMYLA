@@ -31,9 +31,9 @@ from daily_tasks.monthly_plan import subtopic_title
 from services.olympiads_knowledge import build_olympiads_context, recommend_olympiads_for, get_olympiad_knowledge
 from services.user_helpers import display_name_from_email
 
-# Allowed MIME types for photo upload
-ALLOWED_PHOTO_MIMES = {'image/jpeg', 'image/png', 'image/webp', 'image/heic'}
-MAX_PHOTO_SIZE = 5 * 1024 * 1024  # 5 MB
+# Allowed MIME types and size limit now live in services/photo_upload.py.
+# Kept for backward-compatible imports; values are read from the shared module.
+from services.photo_upload import ALLOWED_PHOTO_MIMES, MAX_PHOTO_SIZE  # noqa: E402
 
 prep_bp = Blueprint('prep', __name__, url_prefix='/prep')
 
@@ -706,24 +706,25 @@ def upload_solution_photo(plan_id, problem_id):
         return jsonify(error='Empty filename'), 400
 
     photo_bytes = photo_file.read()
-    if len(photo_bytes) > MAX_PHOTO_SIZE:
-        return jsonify(error='File too large. Max 5MB'), 413
-    if len(photo_bytes) == 0:
-        return jsonify(error='Empty file'), 400
-
     content_type = photo_file.content_type or 'application/octet-stream'
-    if content_type not in ALLOWED_PHOTO_MIMES:
-        return jsonify(error='Unsupported format. Use JPEG/PNG/WebP/HEIC'), 415
 
-    if content_type == 'image/heic':
-        photo_bytes, content_type = _convert_heic_to_jpeg(photo_bytes)
+    from services.photo_upload import prepare_photo, PhotoError
+    try:
+        photo_bytes, content_type = prepare_photo(
+            photo_bytes, content_type, photo_file.filename or '',
+        )
+    except PhotoError as pe:
+        return jsonify(error=pe.message), pe.status
 
-    from services.storage import compute_photo_hash, dedupe_check, upload_photo
+    from services.storage import compute_photo_hash, dedupe_check, StorageError
     photo_hash = compute_photo_hash(photo_bytes)
     if dedupe_check(photo_hash):
         return jsonify(error='Duplicate photo', photo_hash=photo_hash), 409
 
-    url, _ = upload_photo(photo_bytes, current_user.id, content_type)
+    try:
+        url, _ = upload_photo(photo_bytes, current_user.id, content_type)
+    except StorageError as se:
+        return jsonify(error=str(se)), 500
 
     consent = getattr(current_user, 'ml_training_consent', False)
     sol = TaskSolution(
@@ -751,23 +752,24 @@ def upload_solution_photo(plan_id, problem_id):
 
 
 def _convert_heic_to_jpeg(photo_bytes):
-    """Convert HEIC image bytes to JPEG."""
-    try:
-        import pillow_heif
-        from PIL import Image
-        import io
-        heif = pillow_heif.read_heif(photo_bytes)
-        img = Image.frombytes(heif.mode, heif.size, heif.data, 'raw')
-        buf = io.BytesIO()
-        img.save(buf, format='JPEG', quality=90)
-        return buf.getvalue(), 'image/jpeg'
-    except ImportError:
-        from PIL import Image
-        import io
-        img = Image.open(io.BytesIO(photo_bytes))
-        buf = io.BytesIO()
-        img.save(buf, format='JPEG', quality=90)
-        return buf.getvalue(), 'image/jpeg'
+    """Convert HEIC image bytes to JPEG.
+
+    Raises PhotoError if HEIC conversion is unavailable so a HEIC file is
+    never silently stored under a .jpg name.
+    """
+    from services.photo_upload import HEIF_AVAILABLE, PhotoError
+    if not HEIF_AVAILABLE:
+        raise PhotoError(
+            'Загрузка HEIC недоступна: конвертер изображений не установлен.', 415,
+        )
+    import pillow_heif
+    from PIL import Image
+    import io
+    heif = pillow_heif.read_heif(photo_bytes)
+    img = Image.frombytes(heif.mode, heif.size, heif.data, 'raw')
+    buf = io.BytesIO()
+    img.save(buf, format='JPEG', quality=90)
+    return buf.getvalue(), 'image/jpeg'
 
 
 # ─── Куратор подготовки: подтемы, приветствие, чат с ИИ ────────────────────
@@ -1685,53 +1687,22 @@ def prep_answer():
         if not photo_file or not photo_file.filename:
             return jsonify(error='Файл фотографии пуст.'), 400
         photo_bytes = photo_file.read()
-        if len(photo_bytes) > 12 * 1024 * 1024:
-            return jsonify(error='Размер фотографии превышает 12 МБ.'), 400
-        if len(photo_bytes) == 0:
-            return jsonify(error='Файл фотографии пуст.'), 400
-        # Validate MIME
         content_type = photo_file.content_type or 'application/octet-stream'
-        allowed = {'image/jpeg', 'image/png', 'image/heic', 'image/heif'}
-        if content_type not in allowed and not any(photo_file.filename.lower().endswith(ext) for ext in ('.jpg','.jpeg','.png','.heic','.heif')):
-            return jsonify(error='Неподдерживаемый формат. Принимаются jpg, png, heic.'), 400
 
-        # Convert HEIC to JPEG if needed
-        if content_type in ('image/heic', 'image/heif') or photo_file.filename.lower().endswith(('.heic', '.heif')):
-            photo_bytes, content_type = _convert_heic_to_jpeg(photo_bytes)
-
-        # Compress in browser style: resize to max 1500px long side, quality 0.8
+        from services.photo_upload import prepare_photo, PhotoError
         try:
-            from PIL import Image
-            img = Image.open(io.BytesIO(photo_bytes))
-            img = img.convert('RGB')
-            w, h = img.size
-            max_side = 1500
-            if max(w, h) > max_side:
-                ratio = max_side / max(w, h)
-                new_w = int(w * ratio)
-                new_h = int(h * ratio)
-                img = img.resize((new_w, new_h), Image.LANCZOS)
-            out_buf = io.BytesIO()
-            img.save(out_buf, format='JPEG', quality=80)
-            photo_bytes = out_buf.getvalue()
-            content_type = 'image/jpeg'
-        except Exception:
-            pass  # Keep original if compression fails
+            photo_bytes, content_type = prepare_photo(
+                photo_bytes, content_type, photo_file.filename or '',
+            )
+        except PhotoError as pe:
+            return jsonify(error=pe.message), pe.status
 
-        # Save photo
-        import os as _os
-        from datetime import datetime as _dt
-        year_month = _dt.utcnow().strftime('%Y-%m')
-        uid = str(current_user.id)
-        upload_dir = _os.path.join(current_app.static_folder, 'uploads', 'solutions', year_month)
-        _os.makedirs(upload_dir, exist_ok=True)
-        # Generate unique filename
-        import uuid as _uuid
-        filename = f'{_uuid.uuid4().hex[:16]}.jpg'
-        file_path_rel = f'uploads/solutions/{year_month}/{filename}'
-        file_path_abs = _os.path.join(current_app.static_folder, file_path_rel)
-        with open(file_path_abs, 'wb') as f:
-            f.write(photo_bytes)
+        # Store photo in the same unified storage used by TaskSolution.
+        from services.storage import upload_photo, StorageError
+        try:
+            file_path_rel, _ = upload_photo(photo_bytes, current_user.id, content_type)
+        except StorageError as se:
+            return jsonify(error=str(se)), 500
         file_size = len(photo_bytes)
     else:
         file_path_rel = None

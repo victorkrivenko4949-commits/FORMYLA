@@ -17,7 +17,7 @@ PID: 25764
   CYCLES: 4..5
   TOTAL: 1000 batches, 8750 tasks
   LEFT: 1000 batches, 8750 tasks
-  KEY: sk-a695537b0da54da79...
+  KEY: ...
   MODEL: deepseek-v4-pro
 ======================================================================
 

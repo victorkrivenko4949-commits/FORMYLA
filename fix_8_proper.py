@@ -1,10 +1,11 @@
+import os
 #!/usr/bin/env python3
 """Fix 8 methods: properly add BOTH Ответ and Что было главным to T2,T3,T4.
 The original Ответ was accidentally cut by fix_remaining_10.py's cleaning logic."""
 import json, re, time, requests, urllib3
 
 urllib3.disable_warnings()
-API_KEY = 'sk-ad477f779a1045cba3cc09100e908370'
+API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 API_URL = 'https://api.deepseek.com/chat/completions'
 MODEL = 'deepseek-v4-pro'
 

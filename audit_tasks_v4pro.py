@@ -17,7 +17,7 @@ import requests
 
 # ---------- НАСТРОЙКИ ----------
 
-DEEPSEEK_API_KEY = "sk-ad477f779a1045cba3cc09100e908370"
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 
 DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
 MODEL_NAME = "deepseek-v4-pro"     # ВНИМАНИЕ: deepseek-chat отключён 24.07.2026
