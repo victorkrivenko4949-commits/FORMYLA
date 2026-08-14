@@ -117,6 +117,98 @@ def get_daily_tasks():
     # ── T8 streak: check on open ────────────────────────────────────
     streak = check_streak_on_open(user_id, today)
 
+    # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
+    # build_daily_set сам пишет выданное в bank_issues и идемпотентен
+    # по (user_id, issued_date). Флаги plan_missing/bank_exhausted/
+    # bank_empty дают код 200 с русским текстом.
+    try:
+        from services.bank_daily import build_daily_set as _build_bank_set
+        _bank = _build_bank_set(user_id, today)
+        if _bank.get("bank_empty"):
+            _bank_data = {
+                "status": "bank_empty",
+                "daily_set_id": None,
+                "target_date": today.isoformat(),
+                "message": "Задачи дня ещё не загружены в базу",
+                "curator_note": "Банк daily_task_bank пуст: данные ещё не залиты.",
+                "class_level": None,
+                "summary": None,
+                "generated_at": None,
+                "total_cost_usd": None,
+                "progress": {"completed": 0, "total": 0},
+                "items": [],
+            }
+            if True:  # HTML — страница
+                return render_template(
+                    "daily_tasks/daily_tasks_dashboard.html",
+                    data={**_bank_data, "theme_today": _theme_for_day(today, None)},
+                )
+            return jsonify(_bank_data), 200
+        if _bank.get("plan_missing"):
+            _bank_data = {
+                "status": "plan_missing",
+                "daily_set_id": None,
+                "target_date": today.isoformat(),
+                "message": "План на месяц не задан",
+                "curator_note": "План на месяц не задан: у ученика нет 7 активных подтем.",
+                "class_level": None,
+                "summary": None,
+                "generated_at": None,
+                "total_cost_usd": None,
+                "progress": {"completed": 0, "total": 0},
+                "items": [],
+            }
+            if True:
+                return render_template(
+                    "daily_tasks/daily_tasks_dashboard.html",
+                    data={**_bank_data, "theme_today": _theme_for_day(today, None)},
+                )
+            return jsonify(_bank_data), 200
+        if _bank.get("bank_exhausted"):
+            logger.warning(
+                "daily_tasks: bank_exhausted для user=%d date=%s, выдано %d задач",
+                user_id, today, len(_bank.get("items", [])),
+            )
+        _bank_items = _bank.get("items", [])
+        _bank_data = {
+            "status": "ready" if _bank_items else "partial",
+            "daily_set_id": None,
+            "target_date": today.isoformat(),
+            "class_level": None,
+            "summary": None,
+            "generated_at": None,
+            "total_cost_usd": None,
+            "bank_exhausted": bool(_bank.get("bank_exhausted")),
+            "progress": {"completed": 0, "total": len(_bank_items)},
+            "items": [
+                {
+                    "id": t.id,
+                    "position": getattr(t, "position", None) or (i + 1),
+                    "task_text": t.statement or "",
+                    "correct_answer": t.answer or "",
+                    "solution": t.solution or "",
+                    "subtopic": t.subtopic or "",
+                    "topic": t.section or "",
+                    "difficulty": t.level or 1,
+                    "difficulty_level": t.level or 1,
+                    "user_answer": None,
+                    "is_correct": None,
+                    "is_flagged": False,
+                    "is_calibration": False,
+                    "figure_url": None,
+                }
+                for i, t in enumerate(_bank_items)
+            ],
+        }
+        if True:
+            return render_template(
+                "daily_tasks/daily_tasks_dashboard.html",
+                data={**_bank_data, "theme_today": _theme_for_day(today, None)},
+            )
+        return jsonify(_bank_data), 200
+    except Exception as _bank_err:
+        logger.exception("daily_tasks: build_daily_set failed for user=%d: %s", user_id, _bank_err)
+
     # ── всегда отдаём HTML (страница, а не API) ──────────────────────
     # Браузеры шлют Accept: */*, что совпадает с application/json,
     # поэтому accept_json ложно срабатывает. Фикс: всегда HTML.

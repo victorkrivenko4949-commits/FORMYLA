@@ -1962,3 +1962,58 @@ class UserDashboardItem(db.Model):
 
     def __repr__(self):
         return f'<UserDashboardItem uid={self.user_id} key={self.widget_key!r}>'
+
+
+class DailyTaskBank(db.Model):
+    """Банк задач дня, наполняемый человеком заранее.
+
+    132 подтемы x 5 уровней x 35 задач = 23100 строк.
+    Схема — контракт для заливки, имена колонок не менять.
+    """
+
+    __tablename__ = 'daily_task_bank'
+
+    id = db.Column(db.Integer, primary_key=True)
+    subtopic = db.Column(db.String(200), nullable=False)
+    section = db.Column(db.String(50), nullable=False)  # algebra, number_theory, geometry, combinatorics, logic
+    level = db.Column(db.Integer, nullable=False)  # 1..5
+    statement = db.Column(db.Text, nullable=False)
+    answer = db.Column(db.Text, nullable=True)
+    solution = db.Column(db.Text, nullable=True)
+    svg_path = db.Column(db.String(300), nullable=True)
+    svg_aux_path = db.Column(db.String(300), nullable=True)
+    needs_figure = db.Column(db.Boolean, nullable=False, default=False)
+    source_model = db.Column(db.String(50), nullable=True)  # deepseek или sonnet
+    position = db.Column(db.Integer, nullable=True)  # 1..35
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index('ix_daily_task_bank_subtopic_level', 'subtopic', 'level'),
+        db.Index('ix_daily_task_bank_level', 'level'),
+        db.Index('ix_daily_task_bank_needs_figure', 'needs_figure'),
+    )
+
+    def __repr__(self):
+        return f'<DailyTaskBank #{self.id} {self.subtopic} L{self.level} pos={self.position}>'
+
+
+class BankIssue(db.Model):
+    """Запись о выдаче задачи из daily_task_bank конкретному ученику."""
+
+    __tablename__ = 'bank_issues'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('daily_task_bank.id'), nullable=False)
+    subtopic = db.Column(db.String(200), nullable=False)
+    level = db.Column(db.Integer, nullable=False)
+    issued_date = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'task_id', name='uq_bank_issue_user_task'),
+        db.Index('ix_bank_issues_user_issued_date', 'user_id', 'issued_date'),
+    )
+
+    def __repr__(self):
+        return f'<BankIssue user={self.user_id} task={self.task_id} date={self.issued_date}>'
