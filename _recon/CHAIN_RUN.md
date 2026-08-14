@@ -906,3 +906,17 @@ Set-Cookie � ���: HttpOnly=True, Secure=False (localhost), SameSite=Lax, Path=
   1. �஢���� SECRET_KEY � Render Dashboard -> Environment  
   2. ����������  
   3. ���� � �������� ��࠭��� - ���� ������ ��ঠ����  
+
+
+## PHOTO — КЛЮЧИ, АВТОРИЗАЦИЯ, ЕДИНОЕ ХРАНИЛИЩЕ, ПРОВЕРКИ ЗАГРУЗКИ
+Время старта: 2026-08-14 23:56 (MSK)
+Время финиша: 2026-08-15 01:06 (MSK)
+Литералы ключей, вынесенные в окружение: KIMI_API_KEY, DEEPSEEK_API_KEY, OPENROUTER_API_KEY (3 переменные)
+Маршруты без авторизации до: 1 (/api/figures/recognize-photo)
+Маршруты без авторизации после: 0
+Отдельно: curator /tutor/review вызывает review_solution (платный Kimi) без @login_required, но требует user_id и отдаёт 401 без него
+Маршруты, переведённые на единое хранилище: 2 (daily_tasks submit, prep answer)
+Единый предел размера: 12 МБ (services/photo_upload.py MAX_PHOTO_SIZE)
+Файлы в static/uploads/solutions: 1 файл, 263195 байт
+Тесты: 973 passed, 55 failed, 19 skipped, 0 errors
+Хеш коммита: 12091f282f65865748b64e395c4e6f45e00a83ba
