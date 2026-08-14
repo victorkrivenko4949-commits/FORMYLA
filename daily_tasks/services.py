@@ -108,7 +108,7 @@ DAILY_TASKS_TZ = timezone(timedelta(hours=3))  # МСК = UTC+3
 # POST /regenerate проверяем, нет ли «зомби» (state='running' старше
 # STALE_JOB_TIMEOUT), и помечаем их как failed. Это идемпотентно,
 # не требует доп. процессов и работает на любом плане Render.
-STALE_JOB_TIMEOUT = timedelta(minutes=10)
+STALE_JOB_TIMEOUT = timedelta(minutes=30)
 """Если job 'running' старше этого порога — считаем поток мёртвым."""
 
 
@@ -247,6 +247,7 @@ def enqueue_daily_generation(
     triggered_by: str = "manual",
     profile: Optional[Dict[str, Any]] = None,
     forced_topic: Optional[str] = None,
+    skip_bank: bool = False,
 ) -> Dict[str, Any]:
     """Создать/обновить сет на today и запустить фоновую генерацию.
 
@@ -284,7 +285,7 @@ def enqueue_daily_generation(
         target_date=today,
     ).first()
 
-    if existing_set and existing_set.status in ("ready", "generating"):
+    if existing_set and existing_set.status in ("ready", "generating") and not skip_bank:
         logger.info(
             "Сет #%d на %s для user=%d уже %s, пропускаем",
             existing_set.id,
@@ -299,13 +300,15 @@ def enqueue_daily_generation(
             "message": f"Сет на сегодня уже {existing_set.status}",
         }
 
-    if existing_set and existing_set.status == "failed":
-        # перезапускаем: удаляем старый failed-сет
+    if existing_set:
+        # Удаляем items и jobs через flush, чтобы избежать identity map конфликтов
+        DailyTaskItem.query.filter_by(daily_set_id=existing_set.id).delete(synchronize_session='fetch')
+        DailyGenerationJob.query.filter_by(user_id=user_id, target_date=today).delete(synchronize_session='fetch')
         db.session.delete(existing_set)
         db.session.flush()
 
-    # ── проверяем task_pool (кэш) ─────────────────────────────────────
-    if profile is not None:
+    # ── проверяем task_pool (кэш) — пропускаем при ручной перегенерации ──
+    if not skip_bank and profile is not None:
         cache_key = compute_cache_key(profile)
 
         now = datetime.utcnow()
@@ -482,7 +485,7 @@ def enqueue_daily_generation(
     app = current_app._get_current_object()
     thread = threading.Thread(
         target=_background_run,
-        args=(app, user_id, today, daily_set.id, job.id, forced_topic),
+        args=(app, user_id, today, daily_set.id, job.id, forced_topic, skip_bank),
         daemon=True,
     )
     thread.start()
@@ -833,6 +836,8 @@ def compute_cache_key(profile: Dict[str, Any], thematic: bool = False) -> str:
         ),
         "week_index": ((date.today() - date(2026, 1, 1)).days // 7),
         "completeness_q": completeness_q,
+        # CONVEYOR: curator_subtopic различает дни цикла (7 подтем)
+        "curator_subtopic": (profile.get("curator_subtopic") or "").strip(),
     }
     if thematic:
         key_data["week_number"] = date.today().isocalendar()[1]
@@ -964,6 +969,7 @@ def _background_run(
     daily_set_id: int,
     job_id: int,
     forced_topic: Optional[str] = None,
+    skip_bank: bool = False,
 ) -> None:
     """Запустить пайплайн в фоновом потоке (синхронная обёртка)."""
     with app.app_context():
@@ -974,6 +980,7 @@ def _background_run(
                 daily_set_id=daily_set_id,
                 job_id=job_id,
                 forced_topic=forced_topic,
+                skip_bank=skip_bank,
             ))
         except Exception as exc:
             logger.exception(
@@ -1153,6 +1160,7 @@ async def _run_pipeline_async(
     daily_set_id: int,
     job_id: int,
     forced_topic: Optional[str] = None,
+    skip_bank: bool = False,
 ) -> None:
     """Асинхронный запуск пайплайна с обновлением прогресса джоба."""
     job = DailyGenerationJob.query.get(job_id)
@@ -1197,6 +1205,7 @@ async def _run_pipeline_async(
                 profile["weak_topics"] = matched
                 profile["strong_topics"] = []
                 profile["calibration_topics"] = []
+                profile["curator_subtopic"] = None  # ручная тема — отключаем куратора
                 logger.info(
                     "[user=%d] forced_topic=%r -> %d тем(ы) из каталога",
                     user_id, forced_topic, len(matched),
@@ -1208,16 +1217,20 @@ async def _run_pipeline_async(
                 )
 
         # ── Bank check: пробуем банк готовых задач перед LLM ─────────
-        try:
-            bank_hit = await _try_bank_first(
-                user_id, target_date, daily_set_id, job_id, profile,
-            )
-        except Exception as bank_exc:
-            logger.warning(
-                "[user=%d] Банк: ошибка при проверке банка (%s) — запускаю LLM",
-                user_id, bank_exc,
-            )
+        if skip_bank:
+            logger.info("[user=%d] skip_bank=True — пропускаем банк, запускаем полный LLM-пайплайн", user_id)
             bank_hit = False
+        else:
+            try:
+                bank_hit = await _try_bank_first(
+                    user_id, target_date, daily_set_id, job_id, profile,
+                )
+            except Exception as bank_exc:
+                logger.warning(
+                    "[user=%d] Банк: ошибка при проверке банка (%s) — запускаю LLM",
+                    user_id, bank_exc,
+                )
+                bank_hit = False
         if bank_hit:
             logger.info(
                 "[user=%d] Банк: задачи взяты из банка, LLM пайплайн пропущен",
@@ -2879,3 +2892,334 @@ def _fail_thematic_set(thematic_set_id: int, error_message: str) -> None:
             thematic_set_id, exc,
         )
         db.session.rollback()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# КОНВЕЙЕР КРУГЛОСУТОЧНОЙ ПРЕДГЕНЕРАЦИИ
+# ═══════════════════════════════════════════════════════════════════
+
+MAX_CONVEYOR_WORKERS = 3   # одновременных генераций
+CONVEYOR_POLL_SECONDS = 120
+
+
+def schedule_conveyor_for_user(user_id: int, priority: int = 0) -> int:
+    """Запланировать все 7 дней кураторского цикла для одного пользователя.
+
+    Вызывается при создании нового ``monthly_cycle`` или при регистрации.
+    Не дублирует уже существующие записи (``ON CONFLICT DO NOTHING``).
+
+    Returns
+    -------
+    int
+        Количество созданных записей.
+    """
+    from curator.monthly_cycle import get_cycle_info
+    from .profile import build_profile
+    from .models import GenConveyor
+
+    cycle = get_cycle_info(user_id)
+    if not cycle.get('active'):
+        logger.info("schedule_conveyor_for_user: user=%s cycle not active, skip", user_id)
+        return 0
+
+    themes = cycle.get('themes', [])
+    if not themes:
+        logger.info("schedule_conveyor_for_user: user=%s no themes", user_id)
+        return 0
+
+    # Строим профиль для каждой подтемы
+    created = 0
+    for day_idx, subtopic_slug in enumerate(themes[:7], start=1):
+        # Строим профиль с curator_subtopic этого дня
+        profile = build_profile(user_id)
+        profile['curator_subtopic'] = subtopic_slug
+
+        # Проверяем/создаём cache_key
+        cache_key = compute_cache_key(profile)
+
+        # Вставляем запись в конвейер (атомарно)
+        try:
+            existing = GenConveyor.query.filter_by(
+                user_id=user_id, curator_subtopic=subtopic_slug,
+            ).first()
+            if existing:
+                # Уже есть — пропускаем
+                continue
+
+            grade = profile.get('class_level', 0)
+            subject = profile.get('subject', 'algebra')
+
+            entry = GenConveyor(
+                user_id=user_id,
+                curator_subtopic=subtopic_slug,
+                day_index=day_idx,
+                grade=grade,
+                subject=subject,
+                profile_json=json.dumps(profile, ensure_ascii=False, default=str),
+                cache_key=cache_key,
+                status='pending',
+                priority=priority,
+            )
+            db.session.add(entry)
+            db.session.commit()
+            created += 1
+        except Exception:
+            db.session.rollback()
+            logger.exception(
+                "schedule_conveyor_for_user: user=%s day=%s sub=%s failed",
+                user_id, day_idx, subtopic_slug,
+            )
+
+    if created:
+        logger.info(
+            "schedule_conveyor_for_user: user=%s created %d conveyor entries",
+            user_id, created,
+        )
+    return created
+
+
+def schedule_all_users() -> Dict[str, int]:
+    """Спланировать ВСЕХ пользователей с ``monthly_cycle``.
+
+    Вызывается при старте сервера и cron'ом раз в час.
+    Для каждого пользователя вставляет 7 записей в ``gen_conveyor``.
+
+    Returns
+    -------
+    dict
+        {'users_scanned': N, 'entries_created': N, 'entries_skipped': N}
+    """
+    from curator.monthly_cycle import _get_monthly_cycle
+    from models_curator import CuratorState
+    from .models import GenConveyor
+
+    # Берём всех пользователей с curator_state
+    states = CuratorState.query.filter(
+        CuratorState.user_id.isnot(None),
+    ).all()
+
+    if not states:
+        logger.info("schedule_all_users: no users with curator_state")
+        return {'users_scanned': 0, 'entries_created': 0, 'entries_skipped': 0}
+
+    scanned = 0
+    created = 0
+    skipped = 0
+
+    for cs in states:
+        scanned += 1
+        try:
+            mc = _get_monthly_cycle(cs)
+            themes = mc.get('themes', [])
+            if not themes:
+                continue
+
+            user_id = cs.user_id
+
+            for day_idx, subtopic_slug in enumerate(themes[:7], start=1):
+                existing = GenConveyor.query.filter_by(
+                    user_id=user_id, curator_subtopic=subtopic_slug,
+                ).first()
+                if existing:
+                    skipped += 1
+                    continue
+
+                # Строим профиль с curator_subtopic
+                try:
+                    profile = build_profile(user_id)
+                except Exception:
+                    continue
+
+                profile['curator_subtopic'] = subtopic_slug
+                cache_key = compute_cache_key(profile)
+
+                entry = GenConveyor(
+                    user_id=user_id,
+                    curator_subtopic=subtopic_slug,
+                    day_index=day_idx,
+                    grade=profile.get('class_level', 0),
+                    subject=profile.get('subject', 'algebra'),
+                    profile_json=json.dumps(profile, ensure_ascii=False, default=str),
+                    cache_key=cache_key,
+                    status='pending',
+                    priority=0,
+                )
+                db.session.add(entry)
+                db.session.flush()
+                created += 1
+
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            logger.exception("schedule_all_users: user=%s failed", cs.user_id)
+
+    logger.info(
+        "schedule_all_users: scanned=%d created=%d skipped=%d",
+        scanned, created, skipped,
+    )
+    return {'users_scanned': scanned, 'entries_created': created, 'entries_skipped': skipped}
+
+
+def conveyor_worker() -> int:
+    """Обработать очередь конвейера: запустить до ``MAX_CONVEYOR_WORKERS`` генераций.
+
+    Вызывается cron'ом каждые ``CONVEYOR_POLL_SECONDS`` секунд.
+    Берёт pending записи в порядке (priority DESC, day_index, id),
+    проверяет свободные слоты и запускает генерацию.
+
+    Returns
+    -------
+    int
+        Количество запущенных генераций.
+    """
+    from .models import GenConveyor
+    from .pipeline.orchestrator import run_daily_generation_pipeline
+
+    # Считаем активные генерации
+    active_count = GenConveyor.query.filter_by(status='generating').count()
+    free_slots = max(0, MAX_CONVEYOR_WORKERS - active_count)
+
+    if free_slots <= 0:
+        logger.debug("conveyor_worker: все %d слотов заняты", MAX_CONVEYOR_WORKERS)
+        return 0
+
+    # Берём pending записи
+    entries = GenConveyor.query.filter_by(status='pending').order_by(
+        GenConveyor.priority.desc(),
+        GenConveyor.day_index.asc(),
+        GenConveyor.id.asc(),
+    ).limit(free_slots).all()
+
+    if not entries:
+        return 0
+
+    launched = 0
+    for entry in entries:
+        # Атомарно переводим в generating
+        entry.status = 'generating'
+        entry.started_at = datetime.utcnow()
+        db.session.commit()
+
+        # Запускаем фоновую генерацию
+        profile = _parse_json_field(entry.profile_json, {})
+        if not profile:
+            entry.status = 'failed'
+            entry.error_message = 'Нет profile_json'
+            db.session.commit()
+            continue
+
+        app = current_app._get_current_object()
+        thread = threading.Thread(
+            target=_conveyor_run_and_fill,
+            args=(app, entry.id, entry.cache_key, profile),
+            daemon=True,
+        )
+        thread.start()
+        launched += 1
+        logger.info(
+            "conveyor_worker: запущена генерация entry=#%d user=%d day=%d sub=%s",
+            entry.id, entry.user_id, entry.day_index, entry.curator_subtopic[:30],
+        )
+
+    return launched
+
+
+def _conveyor_run_and_fill(app, entry_id: int, cache_key: str, profile: Dict[str, Any]) -> None:
+    """Фоновый воркер: запускает пайплайн и заполняет TaskPool."""
+    from .models import GenConveyor
+    from .pipeline.orchestrator import run_daily_generation_pipeline
+    from datetime import timezone
+
+    with app.app_context():
+        entry = GenConveyor.query.get(entry_id)
+        if not entry:
+            return
+
+        try:
+            # Запускаем пайплайн
+            import asyncio
+            result = asyncio.run(run_daily_generation_pipeline(profile))
+
+            # Сохраняем в TaskPool
+            pool = _save_to_task_pool(
+                cache_key=cache_key,
+                subject=entry.subject,
+                grade=entry.grade,
+                profile_json=entry.profile_json,
+                result=result,
+            )
+
+            entry.pool_id = pool.id if pool else None
+            entry.status = 'ready'
+            entry.finished_at = datetime.utcnow()
+            db.session.commit()
+
+            logger.info(
+                "conveyor_worker: entry=#%d ready, pool=#%s, tasks=%d valid=%d",
+                entry_id, pool.id if pool else '?',
+                len(result.tasks),
+                sum(1 for f in result.is_flagged if not f) if result.is_flagged else len(result.tasks),
+            )
+        except Exception as exc:
+            entry.status = 'failed'
+            entry.error_message = str(exc)[:500]
+            entry.finished_at = datetime.utcnow()
+            db.session.commit()
+            logger.exception("conveyor_worker: entry=#%d failed", entry_id)
+
+
+def _save_to_task_pool(cache_key: str, subject: str, grade: int,
+                        profile_json: str, result) -> 'TaskPool':
+    """Сохранить результат пайплайна в TaskPool для кэширования (upsert)."""
+    from .models import TaskPool
+    from datetime import timezone
+
+    now = datetime.utcnow()
+
+    # Сериализуем задачи
+    enriched_tasks = []
+    for i, task in enumerate(result.tasks):
+        enriched = dict(task)
+        if i < len(result.audit_entries):
+            enriched['_audit_entry'] = result.audit_entries[i]
+        if result.is_flagged and i < len(result.is_flagged):
+            enriched['is_flagged'] = result.is_flagged[i]
+        if result.iteration_counts and i < len(result.iteration_counts):
+            enriched['_opus_iterations'] = result.iteration_counts[i]
+        enriched_tasks.append(enriched)
+
+    valid_count = (
+        sum(1 for f in result.is_flagged if not f)
+        if result.is_flagged else len(result.tasks)
+    )
+
+    # Upsert: update existing pool if cache_key already exists
+    pool = TaskPool.query.filter_by(cache_key=cache_key).first()
+    if pool:
+        pool.subject = subject
+        pool.grade = grade
+        pool.profile_snapshot = profile_json
+        pool.tasks = json.dumps(enriched_tasks, ensure_ascii=False, default=str)
+        pool.specs = json.dumps(result.specs, ensure_ascii=False, default=str)
+        pool.status = result.status
+        pool.valid_count = valid_count
+        pool.expires_at = now + timedelta(days=30)
+        db.session.commit()
+        logger.info("Updated existing task_pool #%s for key=%s", pool.id, cache_key[:12])
+        return pool
+
+    pool = TaskPool(
+        cache_key=cache_key,
+        subject=subject,
+        grade=grade,
+        profile_snapshot=profile_json,
+        tasks=json.dumps(enriched_tasks, ensure_ascii=False, default=str),
+        specs=json.dumps(result.specs, ensure_ascii=False, default=str),
+        status=result.status,
+        valid_count=valid_count,
+        expires_at=now + timedelta(days=30),
+    )
+    db.session.add(pool)
+    db.session.commit()
+    logger.info("Created new task_pool #%s for key=%s", pool.id, cache_key[:12])
+    return pool

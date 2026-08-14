@@ -40,8 +40,8 @@ _FIX_MODEL_ESCALATION = "deepseek/deepseek-v4-pro"
 _FIX_HARD_THRESHOLD = 4
 _OPUS_FIX_MODEL = _FIX_MODEL_HARD  # алиас для совместимости
 
-# JSON-mode: заставляем модель вернуть чистый JSON без markdown.
-_JSON_RESPONSE_FORMAT = {"type": "json_object"}
+# JSON-mode: отключён — вызывает проблемы с обрезкой JSON по max_tokens.
+_JSON_RESPONSE_FORMAT = None
 _MAX_JSON_RETRIES = 3
 
 
@@ -50,11 +50,7 @@ def _max_tokens_for_level(difficulty_level: Any) -> int:
         lvl = int(difficulty_level or 1)
     except (TypeError, ValueError):
         lvl = 1
-    if lvl >= 6:
-        return 8192
-    if lvl >= 4:
-        return 6144
-    return 4096
+    return 4096  # фиксировано — большие токены обрезают JSON
 
 
 def _pick_model(difficulty_level: Any) -> str:
@@ -124,17 +120,30 @@ async def _call_fix_model(
             max_tokens=max_tokens,
             response_format=_JSON_RESPONSE_FORMAT,
         )
+    # СНАЧАЛА пробуем извлечь JSON (с repair для обрезанных ответов)
+    parsed = extract_json_safe(raw_response)
+    if parsed is None:
+        logger.warning(
+            "fix(%s) — не удалось извлечь JSON (raw=%r)",
+            model, (raw_response or "")[:200],
+        )
+        return None, usage
+    
+    fixed = _coerce_fixed_task(parsed)
+    if fixed is None:
+        logger.warning("fix(%s) — не найден 'task' в ответе", model)
+        return None, usage
+    
+    # ВАЛИДАЦИЯ после извлечения
     validation: OpusFixValidation = validate_opus_fix(raw_response)
     if not validation.valid:
         logger.warning(
             "fix(%s) — валидация не прошла: %s",
             model, "; ".join(validation.errors)[:300],
         )
-        return None, usage
-    parsed = extract_json_safe(raw_response)
-    fixed = _coerce_fixed_task(parsed)
-    if fixed is None:
-        logger.warning("fix(%s) — не найден 'task' в ответе", model)
+        # Но всё равно возвращаем — оркестратор решит что делать
+        return fixed, usage
+    
     return fixed, usage
 
 
@@ -179,9 +188,12 @@ async def fix_single_task(
         messages.append({
             "role": "user",
             "content": (
-                "Предыдущий ответ был невалидным. Верни СТРОГО один чистый JSON-объект "
-                "вида {\"task\": {\"task_text\": ..., \"correct_answer\": ..., "
-                "\"solution\": ..., \"hints\": [...]}} без markdown, комментариев и обрезки."
+                "Твой предыдущий ответ не удалось распарсить как JSON. "
+                "Верни СТРОГО один чистый JSON-объект вида "
+                '{"task": {"position": N, "task_text": "...", "correct_answer": "..."}} '
+                "без markdown, комментариев, лишнего текста. "
+                "ТОЛЬКО условие и ответ (без solution и hints). "
+                "Проверь что JSON валидный — не обрезан, скобки закрыты."
             ),
         })
         logger.warning(

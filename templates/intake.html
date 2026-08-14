@@ -424,6 +424,19 @@
         <p>Дневная норма: ${result.daily_tasks} задач</p>
         ${result.goal_auto ? '<p style="color:var(--warn);">Цель назначена автоматически</p>' : ''}
         <a href="/daily_tasks" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;margin-top:8px;">К задачам дня -></a>
+
+        <!-- Баннер генерации чертежей -->
+        <div style="margin-top:28px;padding:24px 20px;background:linear-gradient(135deg,rgba(76,125,255,0.12),rgba(62,207,142,0.08));border:1px solid rgba(76,125,255,0.2);border-radius:14px;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:8px;">📐</div>
+          <h3 style="color:#e2e8f0;font-size:16px;font-weight:700;margin:0 0 6px;">Генерация чертежей</h3>
+          <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0 0 16px;">
+            На сайте доступна функция генерации чертежей — нейросеть построит геометрический чертёж по текстовому описанию задачи.
+          </p>
+          <a href="/figures" style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#4C7DFF,#3ECF8E);color:#fff;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;transition:transform 0.2s;"
+             onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            🖊️ Попробовать
+          </a>
+        </div>
       </div>
     `;
     document.getElementById('intake-card').innerHTML = html;
@@ -490,6 +503,10 @@
     }
 
     if (data.done) {
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
+      }
       if (data.result) {
         renderFinish(data.result);
       } else {

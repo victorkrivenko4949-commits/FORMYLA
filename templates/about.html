@@ -273,7 +273,25 @@
   // из-за чего заголовок-герой оказывался ниже видимой области).
   try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (_) {}
   // Если нет hash-якоря — гарантируем скролл к верху страницы.
-  if (!window.location.hash) {
+  // Если есть hash (например #review-form) — скроллим к якорю после загрузки DOM
+  if (window.location.hash) {
+    // Scroll to hash anchor after DOM is ready (wait for review form to render)
+    window.addEventListener('DOMContentLoaded', function() {
+      var target = document.querySelector(window.location.hash);
+      if (target) {
+        setTimeout(function() {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 500);
+      }
+    });
+    // Fallback: retry after full load
+    window.addEventListener('load', function() {
+      var target = document.querySelector(window.location.hash);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, { once: true });
+  } else {
     window.scrollTo(0, 0);
     window.addEventListener('load', function () { window.scrollTo(0, 0); }, { once: true });
   }
@@ -307,29 +325,29 @@
 
   {# ── 3. Как это работает: анкета, якорные задачи, задачи дня ── #}
   <section class="about-section">
-    <h2> Как это работает</h2>
+    <h2>⚙️ Как это работает</h2>
 
     <div class="concept-grid">
       <div class="concept-card">
-        <div class="concept-icon"></div>
+        <div class="concept-icon">📋</div>
         <div class="concept-body">
-          <h3>Анкета</h3>
+          <h3>📋 Анкета</h3>
           <p>Сначала короткая анкета: класс, цель, опыт, сколько времени готов уделять, какие разделы даются тяжелее. По ответам система подбирает стартовый уровень.</p>
         </div>
       </div>
 
       <div class="concept-card">
-        <div class="concept-icon"></div>
+        <div class="concept-icon">⚓</div>
         <div class="concept-body">
-          <h3>Якорные задачи</h3>
+          <h3>⚓ Якорные задачи</h3>
           <p>Затем <strong>пять якорных задач</strong>. Они нужны, чтобы понять, где ты сейчас, а не чтобы поставить оценку. Ошибиться на них нормально.</p>
         </div>
       </div>
 
       <div class="concept-card">
-        <div class="concept-icon"></div>
+        <div class="concept-icon">🔥</div>
         <div class="concept-body">
-          <h3>Задачи дня</h3>
+          <h3>🔥 Задачи дня</h3>
           <p>Дальше начинаются <strong>задачи дня</strong>. Первую неделю их пять в день — это срез, система присматривается к тебе. После среза объём становится тем, который ты выбрал в анкете.</p>
         </div>
       </div>
@@ -338,7 +356,7 @@
 
   {# ── 4. Уровень ── #}
   <section class="about-section">
-    <h2> Уровень</h2>
+    <h2>📈 Уровень</h2>
     <div class="concept-highlight">
       <div class="concept-highlight-badge">1 -> 5</div>
       <div class="concept-highlight-body">
@@ -349,7 +367,7 @@
 
   {# ── 5. Серия ── #}
   <section class="about-section">
-    <h2> Серия</h2>
+    <h2>🔥 Серия</h2>
     <div class="concept-highlight">
       <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">Streak</div>
       <div class="concept-highlight-body">
@@ -360,7 +378,7 @@
 
   {# ── 6. Долг ── #}
   <section class="about-section">
-    <h2> Долг</h2>
+    <h2>📅 Долг</h2>
     <div class="concept-highlight">
       <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">Debt</div>
       <div class="concept-highlight-body">
@@ -370,22 +388,11 @@
   </section>
 
   {# ── 7. Методы ── #}
-  <section class="about-section">
-    <h2> Методы</h2>
-    <div class="concept-grid">
-      <div class="concept-card">
-        <div class="concept-icon"></div>
-        <div class="concept-body">
-          <h3>Раздел «Олимпиады»</h3>
-          <p>В разделе «Олимпиады» собраны <strong>методы решения</strong> — приёмы, которые повторяются в олимпиадных задачах из года в год. Куратор называет подходящий метод к завтрашней теме, чтобы ты знал, что почитать заранее.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+</section>
 
   {# ── 8. Куратор ── #}
   <section class="about-section">
-    <h2> Куратор</h2>
+    <h2>🎓 Куратор</h2>
     <div class="concept-highlight">
       <div class="concept-highlight-badge" style="background:linear-gradient(135deg,#38ef7d,#11998e);">AI</div>
       <div class="concept-highlight-body">
@@ -394,44 +401,51 @@
     </div>
   </section>
 
-  {# ── 9. Разделы ── #}
+  {# ── 9. Разделы сайта ── #}
   <section class="about-section">
-    <h2> Разделы</h2>
+    <h2>📦 Разделы сайта</h2>
     <div class="subjects-grid">
       <div class="subject-tile">
-        <span class="subject-icon">x²</span>
-        <span class="subject-name">Алгебра</span>
+        <span class="subject-icon">🏆</span>
+        <span class="subject-name">Олимпиады</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon">№</span>
-        <span class="subject-name">Теория чисел</span>
+        <span class="subject-icon">📅</span>
+        <span class="subject-name">Задачи дня</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon">△</span>
-        <span class="subject-name">Геометрия</span>
+        <span class="subject-icon">🎓</span>
+        <span class="subject-name">Куратор подготовки</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon"></span>
-        <span class="subject-name">Комбинаторика</span>
+        <span class="subject-icon">📐</span>
+        <span class="subject-name">Доска и чертежи</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon"></span>
-        <span class="subject-name">Логика</span>
+        <span class="subject-icon">👥</span>
+        <span class="subject-name">Сообщество</span>
       </div>
       <div class="subject-tile">
-        <span class="subject-icon"></span>
-        <span class="subject-name">Методы</span>
+        <span class="subject-icon">🛠️</span>
+        <span class="subject-name">Инструменты</span>
+      </div>
+      <div class="subject-tile">
+        <span class="subject-icon">👤</span>
+        <span class="subject-name">Профиль</span>
+      </div>
+      <div class="subject-tile">
+        <span class="subject-icon">✍️</span>
+        <span class="subject-name">Написать отзыв</span>
       </div>
     </div>
     <p class="subjects-note">
-      В наборе дня всегда есть несколько разделов, даже если какой-то даётся тяжело:
-      слабое подтягивается, но остальное не забывается.
+      Основная навигация сверху и дополнительные разделы из меню «Прочее».
     </p>
   </section>
 
   {# ── 10. ИИ-наставник ── #}
   <section class="about-section">
-    <h2> Универсальный ИИ-наставник</h2>
+    <h2>🧠 Универсальный ИИ-наставник</h2>
     <div class="features-grid" style="grid-template-columns: 1fr;">
       <div class="feature-card" style="text-align:center;">
         <span class="feature-icon"></span>
@@ -443,7 +457,7 @@
 
   {# ── 11. Олимпиады ── #}
   <section class="about-section">
-    <h2> Реальные олимпиады</h2>
+    <h2>🏆 Реальные олимпиады</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-num">8 000+</div>
@@ -462,15 +476,15 @@
 
   {# ── 12. Отличия ── #}
   <section class="about-section">
-    <h2> Что делает FORMYLA особенной</h2>
+    <h2>✨ Что делает FORMYLA особенной</h2>
     <div class="features-grid">
       <div class="feature-card">
-        <span class="feature-icon"></span>
+        <span class="feature-icon">🏆</span>
         <h3>Только олимпиады</h3>
         <p>Не школьная программа, не ЕГЭ — только олимпиадная математика: ВсОШ, Эйлер, Физтех, Курчатов, Матпраздник.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon"></span>
+        <span class="feature-icon">📈</span>
         <h3>Адаптивная сложность</h3>
         <p>Уровень от 1 до 5 подстраивается под тебя. Решаешь — растёт, ошибаешься — плавно опускается. Без резких скачков.</p>
       </div>
@@ -480,17 +494,17 @@
         <p>Серверы в РФ, оплата российскими картами. Никаких VPN, иностранных карт и сложностей с доступом.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">️</span>
+        <span class="feature-icon">💡</span>
         <h3>Режим «только подсказки»</h3>
         <p>ИИ помогает наводящими вопросами и не даёт готовый ответ. Ты учишься решать, а не списывать.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon"></span>
+        <span class="feature-icon">🎯</span>
         <h3>Радары по подтемам</h3>
         <p>Видно, где у тебя пробелы, а где уже уверенность. Куратор опирается на реальные данные, а не на догадки.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon"></span>
+        <span class="feature-icon">📅</span>
         <h3>Система долга</h3>
         <p>Не решил сегодня — задачи ждут тебя завтра. Неделя на каждую, потом исчезают без штрафов. Никакого давления.</p>
       </div>
@@ -499,7 +513,7 @@
 
   {# ── 13. Для кого ── #}
   <section class="about-section">
-    <h2>‍ Для кого FORMYLA</h2>
+    <h2>💪 Для кого FORMYLA</h2>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon"></span>
@@ -526,7 +540,7 @@
 
   {# ── 14. FAQ ── #}
   <section class="about-section">
-    <h2> Частые вопросы</h2>
+    <h2>❓ Частые вопросы</h2>
     <div class="faq-list">
 
       <div class="faq-item">
@@ -580,7 +594,7 @@
   {# ── 15. Final CTA ── #}
   <section class="about-section">
     <div class="final-cta">
-      <h2> Готов начать?</h2>
+      <h2>🚀 Готов начать?</h2>
       <p>Пройди анкету, реши якорные задачи — и получи персональный план подготовки.</p>
       <div class="final-cta-row">
         <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA -></a>
@@ -590,14 +604,14 @@
 
   {# ── Telegram ── #}
   <section class="about-section">
-    <h2> Присоединяйся</h2>
+    <h2>🔗 Присоединяйся</h2>
     <p>Подписывайся на наш Telegram-канал — там задачи дня, разборы олимпиад и анонсы новых фич.</p>
     <a href="https://t.me/FormylaMaths" target="_blank" class="tg-btn"> @FormylaMaths</a>
   </section>
 
   {# ── Review form: пользовательский отзыв о сайте (приходит на email владельцу) ── #}
   <section class="about-section review-section" id="review-form">
-    <h2>️ Написать отзыв</h2>
+    <h2>✍️ Написать отзыв</h2>
     <p>Понравилось пользоваться FORMYLA? Поставь оценку и оставь пару слов — это очень помогает нам становиться лучше.</p>
     <form id="review-form-inner" class="support-form">
       <div class="form-row">
@@ -830,7 +844,7 @@
 
   {# ── Красивый чат "Связаться с нами" с загрузкой файлов ── #}
   <section class="about-section support-section">
-    <h2> Связаться с нами</h2>
+    <h2>💬 Связаться с нами</h2>
     <p>Нашли баг? Есть идея? Не получается решить? Напиши нам — ответим в Telegram-канале или на почту.</p>
 
     <style>

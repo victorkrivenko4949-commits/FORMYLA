@@ -56,6 +56,13 @@ def _cost(model: str, in_tok: int, out_tok: int) -> float:
     return in_tok / 1_000_000 * ip + out_tok / 1_000_000 * op
 
 
+import threading
+# Глобальный семафор — ограничение одновременных API-вызовов
+# Используем threading.Semaphore (не asyncio!) — он не привязан к event loop
+# и работает в фоновых потоках (conveyor worker, enqueue_daily_generation)
+_GLOBAL_SEMAPHORE = threading.BoundedSemaphore(5)
+
+
 class DeepSeekClient:
     """Async client for official DeepSeek API.
 
@@ -64,7 +71,14 @@ class DeepSeekClient:
     """
 
     def __init__(self) -> None:
+        # Load .env explicitly — this module may be imported before app.py runs load_dotenv()
+        try:
+            from dotenv import load_dotenv as _ld
+            _ld(override=True)
+        except Exception:
+            pass
         self._api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+        self._model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro").strip()
         if not self._api_key:
             logger.warning("DeepSeekClient: DEEPSEEK_API_KEY not set")
         self._session: Optional[aiohttp.ClientSession] = None
@@ -94,29 +108,48 @@ class DeepSeekClient:
     async def chat(self, model: str, messages: List[Dict[str, str]],
                    temperature: float = 0.3, max_tokens: int = 4096,
                    response_format: Optional[Dict[str, str]] = None,
+                   thinking: bool = False,
                    **kwargs: Any) -> Tuple[str, TokenUsage]:
         """Sync-compatible async chat.  Same signature as OpenRouterClient.chat."""
         return await self.async_chat(model, messages, temperature, max_tokens,
-                                      response_format, **kwargs)
+                                      response_format, thinking=thinking, **kwargs)
 
     async def async_chat(self, model: str, messages: List[Dict[str, str]],
                          temperature: float = 0.3, max_tokens: int = 4096,
                          response_format: Optional[Dict[str, str]] = None,
+                         thinking: bool = False,
                          **kwargs: Any) -> Tuple[str, TokenUsage]:
         """Call DeepSeek API and return (text, TokenUsage)."""
+        # Глобальный семафор — только 5 одновременных API-вызовов
+        # Используем threading.Semaphore (не asyncio) — работает из любого потока
+        _GLOBAL_SEMAPHORE.acquire()
+        try:
+            return await self._async_chat_impl(model, messages, temperature,
+                                                max_tokens, response_format,
+                                                thinking=thinking, **kwargs)
+        finally:
+            _GLOBAL_SEMAPHORE.release()
+
+    async def _async_chat_impl(self, model: str, messages: List[Dict[str, str]],
+                                temperature: float, max_tokens: int,
+                                response_format: Optional[Dict[str, str]],
+                                thinking: bool = False,
+                                **kwargs: Any) -> Tuple[str, TokenUsage]:
+        """Реализация вызова API (вызывается после захвата семафора)."""
         self._ensure_session()
         assert self._session is not None
 
-        ds_model = self._strip_deepseek_prefix(model)
+        # Use configured model, strip OpenRouter prefix if present
+        ds_model = self._model
+
         payload: Dict[str, Any] = {
             "model": ds_model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
-            # Enable reasoning mode with maximum effort for v4-pro
-            "thinking": {"type": "enabled"},
-            "thinking_budget": 32000,
         }
+        if thinking:
+            payload["thinking"] = {"type": "enabled"}
         if response_format is not None:
             payload["response_format"] = response_format
 

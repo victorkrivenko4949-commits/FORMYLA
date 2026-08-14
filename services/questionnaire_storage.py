@@ -43,8 +43,9 @@ def save_questionnaire_result_to_db(user_id, level, answers):
         }
     }
     И обновляет grade, goal_text, onboarding_done.
+    Также сохраняет preferred_grade в User для студента.
     """
-    from models import db
+    from models import db, User
     from models_curator import CuratorState
 
     cs = CuratorState.query.filter_by(user_id=user_id).first()
@@ -69,6 +70,16 @@ def save_questionnaire_result_to_db(user_id, level, answers):
     goal = str(answers.get('goal_text', '')) if answers else ''
     if goal and not cs.goal_text:
         cs.goal_text = goal
+
+    # Сохраняем preferred_grade в User (для студента)
+    class_level = answers.get('class') if answers else None
+    if class_level:
+        try:
+            user = db.session.get(User, user_id)
+            if user and not user.preferred_grade:
+                user.preferred_grade = int(class_level)
+        except (TypeError, ValueError):
+            pass
 
     db.session.commit()
 

@@ -23,15 +23,17 @@ from typing import Any
 
 Q1_GRADE = {
     "id": "grade",
-    "text": "В каком классе учишься?",
+    "text": "Кто ты?",
     "options": [
-        {"key": "5",  "label": "5 класс",  "value": 5},
-        {"key": "6",  "label": "6 класс",  "value": 6},
-        {"key": "7",  "label": "7 класс",  "value": 7},
-        {"key": "8",  "label": "8 класс",  "value": 8},
-        {"key": "9",  "label": "9 класс",  "value": 9},
-        {"key": "10", "label": "10 класс", "value": 10},
-        {"key": "11", "label": "11 класс", "value": 11},
+        {"key": "teacher", "label": "Я учитель",     "value": "teacher", "role": "teacher"},
+        {"key": "parent",  "label": "Я родитель",     "value": "parent",  "role": "parent"},
+        {"key": "5",       "label": "5 класс",        "value": 5},
+        {"key": "6",       "label": "6 класс",        "value": 6},
+        {"key": "7",       "label": "7 класс",        "value": 7},
+        {"key": "8",       "label": "8 класс",        "value": 8},
+        {"key": "9",       "label": "9 класс",        "value": 9},
+        {"key": "10",      "label": "10 класс",       "value": 10},
+        {"key": "11",      "label": "11 класс",       "value": 11},
     ],
 }
 

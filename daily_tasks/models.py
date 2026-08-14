@@ -315,3 +315,48 @@ class PreGenQueue(db.Model):
             f'<PreGenQueue #{self.id} user={self.user_id} '
             f'date={self.target_date} status={self.status!r}>'
         )
+
+
+class GenConveyor(db.Model):
+    """Конвейер круглосуточной предгенерации для всех пользователей.
+
+    В отличие от PreGenQueue (1 запись на пользователя на завтра),
+    GenConveyor планирует ВСЕ 7 подтем кураторского цикла для ВСЕХ
+    пользователей. Воркер conveyor_worker() разбирает очередь
+    последовательно: день 1 → день 2 → ... → день 7.
+
+    Каждая запись = одна генерация пайплайна для конкретной подтемы.
+    """
+
+    __tablename__ = 'gen_conveyor'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    curator_subtopic = db.Column(db.String(128), nullable=False, index=True)
+    day_index = db.Column(db.Integer, nullable=False)           # 1..7
+    grade = db.Column(db.Integer, nullable=False)
+    subject = db.Column(db.String(32), nullable=False, default='algebra')
+    profile_json = db.Column(db.Text, nullable=True)
+    cache_key = db.Column(db.String(64), nullable=True, index=True)
+    pool_id = db.Column(db.Integer, db.ForeignKey('task_pool.id', ondelete='SET NULL'), nullable=True)
+    status = db.Column(db.String(16), nullable=False, default='pending')
+    priority = db.Column(db.Integer, nullable=False, default=0)  # 0=норм, 1=новый польз.
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    started_at = db.Column(db.DateTime, nullable=True)
+    finished_at = db.Column(db.DateTime, nullable=True)
+    error_message = db.Column(db.Text, nullable=True)
+
+    user = db.relationship('User', backref=db.backref('gen_conveyor_entries', lazy='dynamic'))
+    pool = db.relationship('TaskPool', backref=db.backref('gen_conveyor_entries', lazy='dynamic'))
+
+    __table_args__ = (
+        db.Index('idx_conveyor_fetch', 'status', 'priority', 'day_index', 'id'),
+        db.UniqueConstraint('user_id', 'curator_subtopic', name='_conveyor_user_subtopic_uc'),
+    )
+
+    def __repr__(self):
+        return (
+            f'<GenConveyor #{self.id} user={self.user_id} '
+            f'day={self.day_index} sub={self.curator_subtopic[:20]} '
+            f'status={self.status!r}>'
+        )

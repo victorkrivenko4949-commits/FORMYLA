@@ -271,6 +271,20 @@ def _get_user_grade(user_id: int) -> Optional[int]:
         return None
 
 
+def _save_non_student_role(user_id: int, role: str) -> None:
+    """Сохранить роль teacher/parent в User.role и отметку onboarded_at."""
+    from models import db, User
+    user = db.session.get(User, user_id)
+    if user is not None:
+        user.role = role
+        if not user.onboarded_at:
+            user.onboarded_at = datetime.utcnow()
+        db.session.commit()
+        logger.info(
+            f"onboarding: user={user_id} set role={role}, onboarded_at set"
+        )
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Выбор якорных задач из adaptive_tasks (с учётом разделов)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -477,6 +491,25 @@ def answer(user_id: int, qid: str, key: str) -> dict:
 
     state['answers'][qid] = key
     current_step = state['step']
+
+    # ── Q1: teacher/parent -> сразу завершаем и ставим роль ──────────
+    if current_step == 'q1' and qid == 'grade' and key in ('teacher', 'parent'):
+        _save_non_student_role(user_id, key)
+        _clear_session_state()
+        redirect_url = (
+            '/teacher' if key == 'teacher'
+            else '/parent'
+        )
+        return {
+            'done': True,
+            'role': key,
+            'redirect_url': redirect_url,
+            'message': (
+                'Вы зарегистрированы как учитель. Добро пожаловать в панель учителя!'
+                if key == 'teacher'
+                else 'Вы зарегистрированы как родитель. Добро пожаловать в панель родителя!'
+            ),
+        }
 
     # ── Q1 (grade) -> Q2 (target) ────────────────────────────────────────
     if current_step == 'q1' and qid == 'grade':

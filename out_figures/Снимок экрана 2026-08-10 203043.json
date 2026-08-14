@@ -1,0 +1,44 @@
+{
+  "given": [
+    {
+      "type": "triangle",
+      "id": "ABC",
+      "kind": "isosceles"
+    },
+    {
+      "type": "point_on_segment",
+      "id": "D",
+      "of": "BC",
+      "ratio": 0.5
+    },
+    {
+      "type": "angle_bisector",
+      "id": "AD",
+      "of": "BAC",
+      "vertex": "A",
+      "side1": "AB",
+      "side2": "AC"
+    }
+  ],
+  "draw": [
+    {
+      "polygon": "ABC"
+    },
+    {
+      "segment": "AD",
+      "style": "accent"
+    }
+  ],
+  "marks": [
+    {
+      "angle": [
+        "A",
+        "D",
+        "B"
+      ],
+      "text": "120°"
+    }
+  ],
+  "aux": [],
+  "draw_aux": []
+}

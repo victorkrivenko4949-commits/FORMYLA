@@ -110,6 +110,44 @@
   white-space: nowrap;
 }
 
+/* Pinned nav items injected from «Прочее» */
+.nav-pinned {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.nav-pinned-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-pinned-item .nav-unpin-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 2;
+}
+
+.nav-pinned-item:hover .nav-unpin-btn,
+.nav-pinned-item:focus-within .nav-unpin-btn {
+  display: inline-flex;
+}
+
 /* Daily pill override */
 .nav-pill {
   white-space: nowrap;

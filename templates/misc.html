@@ -2,74 +2,22 @@
 {% block title %}Прочее — FORMYLA{% endblock %}
 {% block extra_css %}
 <style>
-    .misc-page {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px 24px 80px;
-    }
-    .misc-page h1 {
-        font-size: 28px;
-        font-weight: 700;
-        color: #e2e8f0;
-        margin-bottom: 36px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #1e293b;
-    }
-    .misc-group {
-        margin-bottom: 32px;
-    }
-    .misc-group-title {
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: #64748b;
-        margin-bottom: 12px;
-        padding-left: 4px;
-    }
-    .misc-link {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-radius: 10px;
-        text-decoration: none;
-        color: #cbd5e1;
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid transparent;
-        transition: background 0.18s, border-color 0.18s;
-        margin-bottom: 4px;
-    }
-    .misc-link:hover {
-        background: rgba(30, 41, 59, 0.9);
-        border-color: #334155;
-        color: #f1f5f9;
-    }
-    .misc-link-label {
-        font-size: 15px;
-        font-weight: 500;
-    }
-    .misc-link-desc {
-        font-size: 13px;
-        color: #64748b;
-        flex-shrink: 0;
-        margin-left: 12px;
-        text-align: right;
-    }
-    @media (max-width: 600px) {
-        .misc-page {
-            padding: 24px 16px 100px;
-        }
-        .misc-link {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-        .misc-link-desc {
-            margin-left: 0;
-            text-align: left;
-        }
-    }
+    .misc-page { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+    .misc-page h1 { font-size: 28px; font-weight: 700; color: #e2e8f0; margin-bottom: 36px; padding-bottom: 16px; border-bottom: 1px solid #1e293b; }
+    .misc-group { margin-bottom: 32px; }
+    .misc-group-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 12px; padding-left: 4px; }
+    .misc-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+    .misc-link { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 10px; text-decoration: none; color: #cbd5e1; background: rgba(30,41,59,0.6); border: 1px solid transparent; transition: background 0.18s, border-color 0.18s; flex: 1; }
+    .misc-link:hover { background: rgba(30,41,59,0.9); border-color: #334155; color: #f1f5f9; }
+    .misc-link-label { font-size: 15px; font-weight: 500; }
+    .misc-link-desc { font-size: 13px; color: #64748b; flex-shrink: 0; margin-left: 12px; }
+    .pin-btn { background: none; border: 1px solid transparent; cursor: pointer; font-size: 18px; padding: 8px 10px; border-radius: 8px; transition: all 0.15s; color: #475569; line-height: 1; flex-shrink: 0; }
+    .pin-btn:hover { color: #fbbf24; background: rgba(251,191,36,0.12); }
+    .pin-btn.pinned { color: #fbbf24; }
+    .pin-btn.pinned:hover { color: #ef4444; background: rgba(239,68,68,0.15); font-size: 0; }
+    .pin-btn.pinned:hover::before { content: '✕'; font-size: 18px; line-height: 1; color: #ef4444; }
+    #tutorBtn { display: none !important; }
+    @media (max-width: 600px) { .misc-page { padding: 24px 16px 100px; } .misc-link { flex-direction: column; align-items: flex-start; gap: 4px; } .misc-link-desc { margin-left: 0; } }
 </style>
 {% endblock %}
 
@@ -78,86 +26,123 @@
     <h1>Прочее</h1>
 
     <div class="misc-group">
-        <div class="misc-group-title">Тренировка</div>
-        <a href="/probniks" class="misc-link">
-            <span class="misc-link-label">Тест по темам</span>
-            <span class="misc-link-desc">Адаптивный тест</span>
-        </a>
-        <a href="{{ url_for('secrets') }}" class="misc-link">
-            <span class="misc-link-label">Секреты</span>
-            <span class="misc-link-desc">Специальные подборки задач</span>
-        </a>
+        <div class="misc-group-title">📐 Доска и чертежи</div>
+        <div class="misc-row">
+            <a href="/figures" class="misc-link"><span class="misc-link-label">📐 ИИ-чертёж по задаче</span><span class="misc-link-desc">Генерация чертежа</span></a>
+            <button class="pin-btn" data-pin-id="figures" data-pin-label="📐 ИИ-чертёж по задаче" data-pin-href="/figures" data-pin-desc="Генерация чертежа" title="На главную">📌</button>
+        </div>
+        <div class="misc-row">
+            <a href="/figures/history" class="misc-link"><span class="misc-link-label">📋 История чертежей</span><span class="misc-link-desc">Все сгенерированные чертежи</span></a>
+            <button class="pin-btn" data-pin-id="figures_history" data-pin-label="📋 История чертежей" data-pin-href="/figures/history" data-pin-desc="Все сгенерированные чертежи" title="На главную">📌</button>
+        </div>
     </div>
 
     <div class="misc-group">
-        <div class="misc-group-title">Доска и чертежи</div>
-        <a href="/figures" class="misc-link">
-            <span class="misc-link-label">ИИ-чертёж по задаче</span>
-            <span class="misc-link-desc">Генерация чертежа</span>
-        </a>
+        <div class="misc-group-title">👥 Сообщество</div>
+        <div class="misc-row">
+            <a href="{{ url_for('leaderboard') }}" class="misc-link"><span class="misc-link-label">🏆 Лидеры</span><span class="misc-link-desc">Таблица лидеров</span></a>
+            <button class="pin-btn" data-pin-id="leaderboard" data-pin-label="🏆 Лидеры" data-pin-href="{{ url_for('leaderboard') }}" data-pin-desc="Таблица лидеров" title="На главную">📌</button>
+        </div>
+        <div class="misc-row">
+            <a href="/friends" class="misc-link"><span class="misc-link-label">👫 Друзья</span><span class="misc-link-desc">Список друзей</span></a>
+            <button class="pin-btn" data-pin-id="friends" data-pin-label="👫 Друзья" data-pin-href="/friends" data-pin-desc="Список друзей" title="На главную">📌</button>
+        </div>
+        <div class="misc-row">
+            <a href="/chat" class="misc-link"><span class="misc-link-label">💬 Чат</span><span class="misc-link-desc">Общий чат</span></a>
+            <button class="pin-btn" data-pin-id="chat" data-pin-label="💬 Чат" data-pin-href="/chat" data-pin-desc="Общий чат" title="На главную">📌</button>
+        </div>
     </div>
 
     <div class="misc-group">
-        <div class="misc-group-title">Сообщество</div>
-        <a href="{{ url_for('leaderboard') }}" class="misc-link">
-            <span class="misc-link-label">Лидеры</span>
-            <span class="misc-link-desc">Таблица лидеров</span>
-        </a>
-        <a href="/friends" class="misc-link">
-            <span class="misc-link-label">Друзья</span>
-            <span class="misc-link-desc">Список друзей</span>
-        </a>
-        <a href="/chat" class="misc-link">
-            <span class="misc-link-label">Чат</span>
-            <span class="misc-link-desc">Общий чат</span>
-        </a>
-    </div>
-
-    <div class="misc-group">
-        <div class="misc-group-title">Инструменты</div>
+        <div class="misc-group-title">🛠️ Инструменты</div>
         {% if current_user.is_authenticated %}
-        <a href="javascript:void(0)" class="misc-link"
-           onclick="event.preventDefault(); var b=document.getElementById('tutorBtn'); if(b){b.click();} return false;">
-            <span class="misc-link-label">AI Тьютор</span>
-            <span class="misc-link-desc">Персональный разбор задач</span>
-        </a>
+        <div class="misc-row">
+            <a href="javascript:void(0)" class="misc-link tutor-open-link"><span class="misc-link-label">🧠 AI Тьютор</span><span class="misc-link-desc">Персональный разбор задач</span></a>
+            <button class="pin-btn" data-pin-id="ai_tutor" data-pin-label="🧠 AI Тьютор" data-pin-href="/misc#tutor" data-pin-desc="Персональный разбор задач" title="На главную">📌</button>
+        </div>
         {% endif %}
-        <a href="/problems" class="misc-link">
-            <span class="misc-link-label">Поиск задач</span>
-            <span class="misc-link-desc">Поиск по базе задач</span>
-        </a>
-        {% if current_user.is_authenticated and (((current_user.nickname or '')|lower in ['pavelznaka','victorkrivenko','victor']) or ((current_user.username or '')|lower in ['pavelznaka','victorkrivenko','victor'])) %}
-        <a href="/matstat" class="misc-link">
-            <span class="misc-link-label">Матстатистика</span>
-            <span class="misc-link-desc">Познать мат статистику</span>
-        </a>
-        {% endif %}
+        <div class="misc-row">
+            <a href="/problems" class="misc-link"><span class="misc-link-label">🔍 Поиск задач</span><span class="misc-link-desc">Поиск по базе задач</span></a>
+            <button class="pin-btn" data-pin-id="problems" data-pin-label="🔍 Поиск задач" data-pin-href="/problems" data-pin-desc="Поиск по базе задач" title="На главную">📌</button>
+        </div>
     </div>
 
     <div class="misc-group">
-        <div class="misc-group-title">Информация</div>
-        <a href="/about" class="misc-link">
-            <span class="misc-link-label">О сайте</span>
-            <span class="misc-link-desc">О платформе FORMYLA</span>
-        </a>
-        <a href="/about#review-form" class="misc-link">
-            <span class="misc-link-label">Написать отзыв</span>
-            <span class="misc-link-desc">Предложения и пожелания</span>
-        </a>
+        <div class="misc-group-title">ℹ️ Информация</div>
+        <div class="misc-row">
+            <a href="/about" class="misc-link"><span class="misc-link-label">📖 О сайте</span><span class="misc-link-desc">О платформе FORMYLA</span></a>
+            <button class="pin-btn" data-pin-id="about" data-pin-label="📖 О сайте" data-pin-href="/about" data-pin-desc="О платформе FORMYLA" title="На главную">📌</button>
+        </div>
+        <div class="misc-row">
+            <a href="/about#review-form" class="misc-link"><span class="misc-link-label">✍️ Написать отзыв</span><span class="misc-link-desc">Предложения и пожелания</span></a>
+            <button class="pin-btn" data-pin-id="review" data-pin-label="✍️ Написать отзыв" data-pin-href="/about#review-form" data-pin-desc="Предложения и пожелания" title="На главную">📌</button>
+        </div>
     </div>
 
     {% if current_user.is_authenticated and not current_user.is_guest %}
     <div class="misc-group">
-        <div class="misc-group-title">Аккаунт</div>
-        <a href="{{ url_for('profile') }}" class="misc-link">
-            <span class="misc-link-label">Профиль</span>
-            <span class="misc-link-desc">Личный кабинет</span>
-        </a>
-        <a href="{{ url_for('logout') }}" class="misc-link">
-            <span class="misc-link-label">Выйти</span>
-            <span class="misc-link-desc">Завершить сеанс</span>
-        </a>
+        <div class="misc-group-title">👤 Аккаунт</div>
+        <div class="misc-row">
+            <a href="{{ url_for('profile') }}" class="misc-link"><span class="misc-link-label">👤 Профиль</span><span class="misc-link-desc">Личный кабинет</span></a>
+            <button class="pin-btn" data-pin-id="profile" data-pin-label="👤 Профиль" data-pin-href="{{ url_for('profile') }}" data-pin-desc="Личный кабинет" title="На главную">📌</button>
+        </div>
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% include 'tutor_widget.html' %}
+<script>
+var PIN_KEY = 'formyla_pinned_misc';
+function miscGetPinned(){try{return JSON.parse(localStorage.getItem(PIN_KEY)||'[]')}catch(e){return[]}}
+function miscSavePinned(p){localStorage.setItem(PIN_KEY,JSON.stringify(p));miscUpdatePins();if(window.refreshPinnedNav)window.refreshPinnedNav()}
+function miscTogglePin(el){
+    var id=el.getAttribute('data-pin-id');
+    if(id==='profile'){
+        // Профиль авто-закреплён: управляем синей кнопкой в шапке (не списком в меню).
+        var hidden=false;
+        try{hidden=localStorage.getItem('formyla_profile_hidden')==='1'}catch(e){}
+        if(hidden){localStorage.removeItem('formyla_profile_hidden')}else{localStorage.setItem('formyla_profile_hidden','1')}
+        if(window.refreshProfilePin)window.refreshProfilePin();
+        miscUpdatePins();
+        return;
+    }
+    var label=el.getAttribute('data-pin-label'),href=el.getAttribute('data-pin-href'),desc=el.getAttribute('data-pin-desc');
+    var p=miscGetPinned(),i=p.findIndex(function(x){return x.id===id});
+    if(i>=0)p.splice(i,1);else p.push({id:id,label:label,href:href,desc:desc||''});
+    miscSavePinned(p)
+}
+function miscUpdatePins(){
+    var ids=miscGetPinned().map(function(x){return x.id});
+    var profileHidden=false;
+    try{profileHidden=localStorage.getItem('formyla_profile_hidden')==='1'}catch(e){}
+    var btns=document.getElementsByClassName('pin-btn');
+    for(var i=0;i<btns.length;i++){var b=btns[i];var id=b.getAttribute('data-pin-id');
+        var pinned=(id==='profile')?(!profileHidden):(ids.indexOf(id)>=0);
+        if(pinned){b.classList.add('pinned');b.title='Открепить'}else{b.classList.remove('pinned');b.title='На главную'}
+    }
+}
+function miscOpenTutor(e){
+    e.preventDefault();
+    var popup=document.getElementById('ai-tutor-popup');
+    if(!popup)return;
+    // Force open: show popup, show agent selection, then auto-select universal agent
+    popup.style.display='flex';
+    var selScreen=document.getElementById('agentSelectionScreen');
+    var chatScreen=document.getElementById('chatScreen');
+    if(selScreen)selScreen.style.display='flex';
+    if(chatScreen)chatScreen.style.display='none';
+    if(typeof selectAgent==='function'){
+        setTimeout(function(){selectAgent('general','Универсальный агент')},200);
+    }
+}
+document.addEventListener('DOMContentLoaded',function(){
+    miscUpdatePins();
+    var bl=document.getElementsByClassName('pin-btn');
+    for(var i=0;i<bl.length;i++){bl[i].onclick=function(){miscTogglePin(this)}}
+    var tl=document.getElementsByClassName('tutor-open-link');
+    for(var j=0;j<tl.length;j++){tl[j].onclick=miscOpenTutor}
+});
+</script>
 {% endblock %}

@@ -28,7 +28,7 @@
     .group-actions {
         display: flex;
         gap: 12px;
-        margin-bottom: 28px;
+        margin-bottom: 16px;
         flex-wrap: wrap;
     }
     .btn {
@@ -120,6 +120,29 @@
         font-size: 12px;
         color: var(--muted);
     }
+    .student-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(56,239,125,0.12);
+        border: 1px solid rgba(56,239,125,0.25);
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-size: 14px;
+        color: #38ef7d;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+    .flash-msg {
+        padding: 10px 16px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .flash-success { background: rgba(62,207,142,0.12); border: 1px solid rgba(62,207,142,0.3); color: #3ecf8e; }
+    .flash-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
+    .flash-info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; }
     @media (max-width: 600px) {
         .group-page { padding: 24px 16px 100px; }
         .student-table { font-size: 13px; }
@@ -135,10 +158,27 @@
         Код приглашения: <span>{{ group.invite_code }}</span>
     </div>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Student count -->
+    <div class="student-count-badge">
+        👥 Учеников в группе: <strong>{{ students|length }}</strong>
+    </div>
+
     <div class="group-actions">
         <form method="POST" action="{{ url_for('parent_teacher.teacher_group_rename', gid=group.id) }}" class="rename-form">
             <input type="text" name="name" value="{{ group.name }}" required maxlength="120">
             <button type="submit" class="btn btn-accent">Переименовать</button>
+        </form>
+        <form method="POST" action="{{ url_for('parent_teacher.teacher_group_add_student', gid=group.id) }}" class="rename-form">
+            <input type="text" name="nickname" placeholder="Никнейм ученика" required maxlength="50">
+            <button type="submit" class="btn btn-accent">➕ Добавить ученика</button>
         </form>
         <form method="POST" action="{{ url_for('parent_teacher.teacher_group_delete', gid=group.id) }}"
               onsubmit="return confirm('Удалить группу навсегда?');">
@@ -187,4 +227,16 @@
     <div style="text-align:center;padding:40px;color:var(--muted);">В группе пока нет учеников.</div>
     {% endif %}
 </div>
+<script>
+(function() {
+    var flashes = document.querySelectorAll('.flash-msg');
+    flashes.forEach(function(el) {
+        setTimeout(function() {
+            el.style.transition = 'opacity 0.4s';
+            el.style.opacity = '0';
+            setTimeout(function() { el.remove(); }, 400);
+        }, 4500);
+    });
+})();
+</script>
 {% endblock %}

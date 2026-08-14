@@ -379,58 +379,5 @@
     </div>
     {% endif %}
 
-    <!-- Персональный план подготовки -->
-    <div class="opd-plan-section">
-        <h2> Персональный план подготовки</h2>
-
-        {% if user_plan %}
-        {# ── User has an active/paused plan ── #}
-        <div class="opd-plan-active">
-            <div class="opd-plan-info">
-                <div class="opd-plan-stage">
-                    {{ user_plan.target_stage }}
-                    {% if user_plan.current_streak >= 3 %}
-                    <span class="opd-streak-badge"> {{ user_plan.current_streak }} дн.</span>
-                    {% endif %}
-                </div>
-                <div class="opd-plan-meta">
-                    День <strong>{{ user_plan.days_elapsed }}</strong> из <strong>{{ user_plan.days_total }}</strong>
-                    · Осталось <strong>{{ user_plan.days_remaining }}</strong> дн.<br>
-                    Завершено дней: <strong>{{ user_plan.completed_days_count }}</strong>
-                    {% if user_plan.status == 'paused' %}
-                    · <span style="color:#f59e0b;">⏸ На паузе</span>
-                    {% endif %}
-                </div>
-                <div class="opd-plan-progress">
-                    <div class="opd-plan-progress-bar" style="width: {{ user_plan.progress_pct }}%;"></div>
-                </div>
-            </div>
-            <div class="opd-plan-actions">
-                <a href="{{ url_for('prep.today_problems', plan_id=user_plan.id) }}" class="opd-btn opd-btn-primary">
-                    ▶ Задачи на сегодня
-                </a>
-                <a href="{{ url_for('prep.plan_detail', plan_id=user_plan.id) }}" class="opd-btn opd-btn-secondary">
-                     Детали плана
-                </a>
-            </div>
-        </div>
-
-        {% elif current_user.is_authenticated %}
-        {# ── Logged in but no plan yet ── #}
-        <div class="opd-plan-cta">
-            <p>AI составит индивидуальный план подготовки к {{ olympiad.short_name }} с учётом твоего уровня и сроков.</p>
-            <a href="{{ url_for('prep.new_plan_form') }}?olympiad={{ olympiad.slug }}" class="opd-btn opd-btn-primary">
-                 Создать план подготовки
-            </a>
-        </div>
-
-        {% else %}
-        {# ── Not logged in ── #}
-        <div class="opd-login-prompt">
-            <p>Войди, чтобы создать персональный план подготовки к {{ olympiad.short_name }}.</p>
-            <a href="{{ url_for('login') }}" class="opd-login-link">Войти -></a>
-        </div>
-        {% endif %}
-    </div>
 </div>
 {% endblock %}

@@ -22,7 +22,6 @@ from typing import Any, Dict, Optional
 
 from flask import jsonify, render_template, request, current_app
 from flask_login import current_user, login_required
-
 from models import db
 from models_curator import CuratorState
 from . import daily_tasks_bp
@@ -710,47 +709,12 @@ def regenerate():
     user_id = current_user.id
     today = today_in_user_tz()
 
-    # ── проверяем лимит для обычных пользователей ───────────────────
-    if not current_user.is_admin:
-        existing_set = DailyTaskSet.query.filter_by(
-            user_id=user_id,
-            target_date=today,
-        ).first()
-
-        # Лимит срабатывает ТОЛЬКО когда сегодня уже есть УСПЕШНЫЙ сет.
-        # Failed / generating / отсутствие сета — повторная попытка разрешена.
-        if existing_set and existing_set.status in ("ready", "partial"):
-            logger.warning(
-                "User %d пытается перегенерировать задачи, "
-                "но сегодня уже есть готовый сет #%d (status=%s)",
-                user_id, existing_set.id, existing_set.status,
-            )
-            return jsonify({
-                "success": False,
-                "message": "Перегенерация доступна 1 раз в день",
-            }), 429
-
-    # ── удаляем существующий сет (каскадно удалит items + jobs) ─────
-    existing_set = DailyTaskSet.query.filter_by(
-        user_id=user_id,
-        target_date=today,
-    ).first()
-
-    if existing_set:
-        # удаляем связанные jobs
-        DailyGenerationJob.query.filter_by(
-            user_id=user_id,
-            target_date=today,
-        ).delete()
-
-        db.session.delete(existing_set)
-        db.session.commit()
-        logger.info("Удалён существующий сет #%s для перегенерации", existing_set.id)
-
-    # ── запускаем новую генерацию ───────────────────────────────────
+    # ── enqueue_daily_generation сама удалит старый сет если skip_bank=True ──
     result = services.enqueue_daily_generation(
         user_id=user_id,
-        triggered_by="manual",         forced_topic=((request.get_json(silent=True) or {}).get("topic") or "").strip() or None,
+        triggered_by="manual",
+        skip_bank=True,
+        forced_topic=((request.get_json(silent=True) or {}).get("topic") or "").strip() or None,
     )
 
     return jsonify(result), 202

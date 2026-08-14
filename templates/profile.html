@@ -234,41 +234,186 @@
         </div>
     </div>
 
-    <!-- ── Выбор класса ── -->
+    <!-- ── Сменить аккаунт (только администратор) ── -->
+    {% set admin_nicks = ['pavelznaka', 'victorkrivenko', 'victor', 'nikolaev'] %}
+    {% set is_admin = current_user.is_authenticated and (current_user.nickname or '')|lower in admin_nicks %}
+    {% if is_admin %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: #fbbf24; margin-bottom: 20px; font-size: 1.5em;">
+            🔄 Сменить профиль
+        </h2>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
+            Эта кнопка видна только вам. Позволяет быстро переключиться в другой аккаунт без повторного ввода кода.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button onclick="switchProfile()" style="padding: 12px 24px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🔄 Переключить аккаунт
+            </button>
+            <span id="switchStatus" style="color: var(--text-muted); font-size: 14px; align-self: center;"></span>
+        </div>
+    </div>
+    <script>
+    async function switchProfile() {
+        var status = document.getElementById('switchStatus');
+        if (!status) return;
+        status.textContent = 'Открываю страницу входа...';
+        status.style.color = '#fbbf24';
+        // Logout then redirect to login
+        try {
+            await fetch('/logout', { method: 'GET', credentials: 'include' });
+        } catch(e) {}
+        window.location.href = '/login';
+    }
+    </script>
+    {% endif %}
+
+    <!-- ── Выбор класса / Роль ── -->
+    {% if is_teacher_or_parent %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="margin: 0 0 4px; font-size: 1.1em; color: var(--text-main);">
+            {% if user_role == 'teacher' %}👨‍🏫 Учитель{% else %}👨‍👩‍👧 Родитель{% endif %}
+          </h3>
+          <p style="margin: 0; color: var(--text-muted); font-size: 0.85em;">
+            {% if user_role == 'teacher' %}
+            Вы зарегистрированы как учитель. Перейдите в раздел учителя для управления группами.
+            {% else %}
+            Вы зарегистрированы как родитель. Перейдите в раздел родителя для просмотра прогресса ребёнка.
+            {% endif %}
+          </p>
+        </div>
+        <a href="{{ '/teacher' if user_role == 'teacher' else '/parent' }}"
+           style="display: inline-block; padding: 10px 20px; border-radius: 10px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; font-weight: 700; text-decoration: none; font-size: 0.95em; transition: transform 0.2s;"
+           onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          Перейти в раздел
+        </a>
+      </div>
+    </div>
+    {% else %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div>
           <h3 style="margin: 0 0 4px; font-size: 1.1em; color: var(--text-main);"> Мой класс</h3>
           <p style="margin: 0; color: var(--text-muted); font-size: 0.85em;">Задачи дня и адаптивный тест подбираются под твой класс</p>
+          <p id="currentGradeDisplay" style="margin: 6px 0 0; color: #38ef7d; font-weight: 700; font-size: 1.1em;">
+            {% if user.preferred_grade %} {{ user.preferred_grade }} класс{% else %}Не выбран{% endif %}
+          </p>
         </div>
-        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-          {% for g in range(5, 12) %}
-          <button onclick="setMyGrade({{ g }}, this)"
-                  style="width: 44px; height: 44px; border-radius: 10px; border: 2px solid {% if user.preferred_grade == g %}#38ef7d{% else %}var(--border-soft){% endif %}; background: {% if user.preferred_grade == g %}rgba(56,239,125,0.15){% else %}transparent{% endif %}; color: {% if user.preferred_grade == g %}#38ef7d{% else %}var(--text-soft){% endif %}; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
-                  onmouseover="this.style.borderColor='#38ef7d'" onmouseout="if({{ user.preferred_grade or 0 }}!=={{ g }})this.style.borderColor='var(--border-soft)'">
-            {{ g }}
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <!-- Edit button (visible by default) -->
+          <button id="editGradeBtn" onclick="startEditGrade()"
+                  style="padding: 8px 16px; border-radius: 8px; border: 1px solid #38ef7d; background: rgba(56,239,125,0.1); color: #38ef7d; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s;"
+                  onmouseover="this.style.background='rgba(56,239,125,0.2)'" onmouseout="this.style.background='rgba(56,239,125,0.1)'">
+            ✏️ Поменять класс
           </button>
-          {% endfor %}
+          <!-- Grade buttons (hidden by default, shown during edit) -->
+          <div id="gradeButtons" style="display: none; gap: 6px; flex-wrap: wrap;">
+            {% for g in range(5, 12) %}
+            <button onclick="selectNewGrade({{ g }}, this)"
+                    data-grade="{{ g }}"
+                    class="grade-btn"
+                    style="width: 44px; height: 44px; border-radius: 10px; border: 2px solid var(--border-soft); background: transparent; color: var(--text-soft); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                    onmouseover="this.style.borderColor='#38ef7d'" onmouseout="if(!this.classList.contains('selected'))this.style.borderColor='var(--border-soft)'">
+              {{ g }}
+            </button>
+            {% endfor %}
+          </div>
+          <!-- Save button (hidden by default, shown after selecting a new grade) -->
+          <button id="saveGradeBtn" onclick="saveMyGrade()"
+                  style="display: none; padding: 10px 20px; border-radius: 10px; border: none; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.2s;"
+                  onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            Сохранить
+          </button>
         </div>
       </div>
     </div>
     <script>
-    function setMyGrade(grade, btn) {
+    var pendingGrade = null;
+
+    function startEditGrade() {
+      document.getElementById('editGradeBtn').style.display = 'none';
+      document.getElementById('gradeButtons').style.display = 'flex';
+      document.getElementById('currentGradeDisplay').style.display = 'none';
+      // Highlight current grade
+      var current = {{ user.preferred_grade or 0 }};
+      document.querySelectorAll('.grade-btn').forEach(function(btn) {
+        var g = parseInt(btn.getAttribute('data-grade'));
+        if (g === current) {
+          btn.style.borderColor = '#38ef7d';
+          btn.style.background = 'rgba(56,239,125,0.15)';
+          btn.style.color = '#38ef7d';
+          btn.classList.add('selected');
+          pendingGrade = current;
+        }
+      });
+      if (current > 0 && current >= 5 && current <= 11) {
+        document.getElementById('saveGradeBtn').style.display = 'inline-block';
+      }
+    }
+
+    function selectNewGrade(grade, btn) {
+      // Deselect all
+      document.querySelectorAll('.grade-btn').forEach(function(b) {
+        b.style.borderColor = 'var(--border-soft)';
+        b.style.background = 'transparent';
+        b.style.color = 'var(--text-soft)';
+        b.classList.remove('selected');
+      });
+      // Select clicked
+      btn.style.borderColor = '#38ef7d';
+      btn.style.background = 'rgba(56,239,125,0.15)';
+      btn.style.color = '#38ef7d';
+      btn.classList.add('selected');
+      pendingGrade = grade;
+      document.getElementById('saveGradeBtn').style.display = 'inline-block';
+    }
+
+    function saveMyGrade() {
+      if (!pendingGrade) return;
+      var btn = document.getElementById('saveGradeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Сохраняю...';
       fetch('/api/set_grade', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({grade: grade})
+        body: JSON.stringify({grade: pendingGrade})
       })
-      .then(r => r.json())
-      .then(data => {
+      .then(function(r) {
+        if (!r.ok) {
+          throw new Error('HTTP ' + r.status);
+        }
+        return r.json();
+      })
+      .then(function(data) {
         if (data.success) {
-          window.location.reload();
+          // Update the display immediately to give feedback
+          var display = document.getElementById('currentGradeDisplay');
+          if (display) {
+            display.textContent = pendingGrade + ' класс';
+            display.style.display = 'block';
+          }
+          document.getElementById('gradeButtons').style.display = 'none';
+          document.getElementById('editGradeBtn').style.display = 'inline-block';
+          btn.style.display = 'none';
+          btn.disabled = false;
+          btn.textContent = 'Сохранить';
+          pendingGrade = null;
         } else {
           alert(data.error || 'Ошибка');
+          btn.disabled = false;
+          btn.textContent = 'Сохранить';
         }
+      })
+      .catch(function(err) {
+        console.error('saveMyGrade error:', err);
+        alert('Ошибка сохранения. Проверьте соединение и попробуйте снова.');
+        btn.disabled = false;
+        btn.textContent = 'Сохранить';
       });
     }
     </script>
+    {% endif %}
 
     <!-- ── Подписка ── -->
     {% include 'partials/upgrade_banner.html' %}
@@ -417,10 +562,11 @@
         </p>
     </div>
 
+    {% if not is_teacher_or_parent %}
     <!-- Daily Quest Streak Widget -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-             Daily Quest Streak
+            🔥Daily Quest Streak
         </h2>
         
         <div id="streakWidget" style="text-align: center; padding: 20px;">
@@ -449,6 +595,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     <!-- SVG gradient for rings -->
     <svg width="0" height="0" style="position:absolute">
@@ -459,101 +606,6 @@
         </linearGradient>
       </defs>
     </svg>
-
-    <!-- Mastery Dashboard -->
-    <section class="mastery-dashboard">
-      <header class="mastery-header">
-        <h2> Результаты адаптивного теста
-          {% if user.current_plan and user.current_plan != 'free' %}
-            <span style="font-size: 0.6em; color: #fbbf24; font-weight: 400;">⭐ платная версия</span>
-          {% else %}
-            <span style="font-size: 0.6em; color: #94a3b8; font-weight: 400;">(бесплатная версия)</span>
-            <a href="/subscribe" style="font-size: 0.5em; margin-left: 8px; padding: 4px 14px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; border-radius: 20px; text-decoration: none; font-weight: 600; white-space: nowrap;"> Перейти на Premium</a>
-          {% endif %}
-        </h2>
-        <div class="mastery-summary">
-          <span class="overall-level">{{ overall_level }}</span>
-          <span class="overall-label">общий уровень</span>
-        </div>
-
-        {% if streak_data %}
-        <div style="margin-top:16px;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <span style="color:var(--muted);font-size:14px;">Серия:</span>
-            <strong style="font-size:18px;margin-left:6px;">{{ streak_data.current_streak }} дней</strong>
-            <span style="color:var(--muted);font-size:13px;margin-left:8px;">(макс: {{ streak_data.max_streak }})</span>
-          </div>
-          {% if streak_data.days_off_available > 0 %}
-          <span style="color:var(--ok);font-size:14px;">Выходных: {{ streak_data.days_off_available }}</span>
-          {% endif %}
-        </div>
-        {% endif %}
-      </header>
-
-      {% if mastery_list %}
-      <!-- Радар-диаграмма -->
-      <div class="radar-container">
-        <canvas id="masteryRadar"
-                data-mastery='{{ mastery_list_json | tojson }}'
-                width="400" height="400"></canvas>
-      </div>
-
-      <!-- Сетка карточек тем -->
-      <div class="mastery-grid">
-        {% for topic in mastery_list %}
-        <article class="mastery-card" data-level="{{ topic.level_category }}">
-          <div class="mastery-ring-wrapper">
-            <svg class="mastery-ring" viewBox="0 0 100 100">
-              <circle class="ring-bg" cx="50" cy="50" r="42" />
-              <circle class="ring-fill" cx="50" cy="50" r="42"
-                      stroke-dasharray="{{ (264 * topic.mastery)|int }} 264"
-                      transform="rotate(-90 50 50)" />
-            </svg>
-            <div class="ring-content">
-              <div class="ring-icon">{{ topic.icon }}</div>
-              <div class="ring-percent">{{ (topic.mastery * 100)|int }}%</div>
-            </div>
-          </div>
-          <div class="mastery-info">
-            <h3 class="mastery-topic">{{ topic.name_ru }}</h3>
-            <div class="mastery-level-badge">{{ topic.level_label }}</div>
-            <div class="mastery-trend">
-              {% if topic.trend > 0 %}
-                <span class="trend-up">️ +{{ topic.trend }}% за неделю</span>
-              {% elif topic.trend < 0 %}
-                <span class="trend-down">️ {{ topic.trend }}% за неделю</span>
-              {% else %}
-                <span class="trend-flat">️ без изменений</span>
-              {% endif %}
-            </div>
-            <div class="mastery-stats">
-              <span>Решено: <strong>{{ topic.solved }}</strong></span>
-              <span>Ср. уровень: <strong>{{ topic.avg_level }}</strong></span>
-            </div>
-          </div>
-        </article>
-        {% endfor %}
-      </div>
-
-      <!-- AI-рекомендация -->
-      <aside class="mastery-ai-tip">
-        <div class="tip-icon"></div>
-        <div class="tip-content">
-          <h4>Рекомендация AI</h4>
-          <p>{{ ai_recommendation | safe }}</p>
-        </div>
-      </aside>
-
-      {% else %}
-      <div style="text-align:center; padding: 40px; color: rgba(255,255,255,0.5);">
-        <div style="font-size:3rem; margin-bottom:1rem;"></div>
-        <p>Пройди адаптивный тест, чтобы увидеть свой уровень по темам!</p>
-        <a href="{{ url_for('adaptive_test_select_class') }}" style="display:inline-block; margin-top:1rem; padding:10px 24px; background:linear-gradient(135deg,#11998e,#38ef7d); color:#000; border-radius:8px; font-weight:700; text-decoration:none;">
-           Пройти тест
-        </a>
-      </div>
-      {% endif %}
-    </section>
 
     <!-- Прогресс по темам -->
     {% if progress_dict %}
@@ -585,79 +637,6 @@
             </div>
             {% endfor %}
         </div>
-    </div>
-    {% endif %}
-
-    <!-- История тестов -->
-    {% if recent_tests %}
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
-        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-             Последние тесты
-        </h2>
-        
-        <div style="display: grid; gap: 12px;">
-            {% for test in recent_tests %}
-            <div style="padding: 15px; background: rgba(30, 41, 59, 0.6); border-radius: var(--radius-sm); border: 1px solid var(--border-soft);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="color: var(--text-main); font-weight: 600;">Класс {{ test.class_level }}</div>
-                        <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
-                            {{ test.completed_at.strftime('%d.%m.%Y %H:%M') if test.completed_at else 'Н/Д' }}
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="color: var(--accent-2); font-weight: 600; font-size: 18px;">{{ test.tasks_correct }}/{{ test.tasks_total }}</div>
-                        <div style="color: var(--text-muted); font-size: 13px;">Уровень: {{ ((test.final_level|float * 8 / 7) | round | int) }}/8</div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- AI Профиль -->
-    {% if user.onboarding_completed %}
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
-        <h2 style="color: var(--accent-1); margin-bottom: 20px; font-size: 1.5em;">
-             AI Профиль
-        </h2>
-        
-        <!-- Уровень -->
-        <div style="margin-bottom: 25px;">
-            <p style="color: var(--text-muted); margin-bottom: 10px;">Ваш уровень:</p>
-            <div style="display: inline-block; padding: 10px 20px; border-radius: 20px; font-weight: 600; 
-                {% if user.math_level == 'beginner' %}background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-                {% elif user.math_level == 'advanced' %}background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-                {% else %}background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);{% endif %}
-                color: white;">
-                {% if user.math_level == 'beginner' %} Начинающий
-                {% elif user.math_level == 'advanced' %} Продвинутый
-                {% else %}⭐ Средний уровень{% endif %}
-            </div>
-        </div>
-
-        <!-- Отчет AI -->
-        <div style="background: rgba(30, 41, 59, 0.6); padding: 20px; border-radius: var(--radius-md); margin-bottom: 20px; border-left: 4px solid var(--accent-2);">
-            <h3 style="color: var(--accent-2); margin-top: 0; font-size: 1.2em;">
-                 Отчет AI-тренера
-            </h3>
-            <p style="color: var(--text-soft); line-height: 1.8; white-space: pre-wrap; margin: 0;">{{ user.ai_report }}</p>
-        </div>
-
-        <!-- Рекомендуемые темы -->
-        {% if user.recommended_topics %}
-        <div>
-            <p style="color: var(--text-muted); margin-bottom: 10px;">Рекомендуемые темы:</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                {% for topic in user.get_recommended_topics_list() %}
-                <span style="display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent-1) 100%); color: white; border-radius: 15px; font-weight: 600; font-size: 0.9em;">
-                    {{ topic_name_map.get(topic, topic) }}
-                </span>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
     </div>
     {% endif %}
 
@@ -708,111 +687,27 @@
         </div>
         <a href="/friends" class="btn-primary" style="padding: 10px 22px; text-decoration: none; white-space: nowrap;">Перейти в раздел друзей</a>
     </div>
-    <!--  ИСТОРИЯ АДАПТИВНЫХ ТЕСТОВ -->
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
-        <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">
-             История адаптивных тестов
-        </h2>
-        
-        {% if test_stats.total_tests > 0 %}
-        <!-- Сводная статистика -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
-            <div style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(59, 130, 246, 0.3); text-align: center;">
-                <div style="font-size: 2em; font-weight: 700; color: var(--accent-1); margin-bottom: 5px;">
-                    {{ test_stats.total_tests }}
-                </div>
-                <div style="color: var(--text-muted); font-size: 0.9em;">Всего тестов</div>
-            </div>
-            
-            <div style="background: rgba(251, 191, 36, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(251, 191, 36, 0.3); text-align: center;">
-                <div style="font-size: 2em; font-weight: 700; color: #fbbf24; margin-bottom: 5px;">
-                    {{ ((test_stats.avg_level|float * 8 / 7) | round | int) }}/8
-                </div>
-                <div style="color: var(--text-muted); font-size: 0.9em;">Средний уровень</div>
-            </div>
-            
-            <div style="background: rgba(34, 197, 94, 0.1); padding: 20px; border-radius: var(--radius-sm); border: 1px solid rgba(34, 197, 94, 0.3); text-align: center;">
-                <div style="font-size: 2em; font-weight: 700; color: #22c55e; margin-bottom: 5px;">
-                    {{ test_stats.max_level }}/8
-                </div>
-                <div style="color: var(--text-muted); font-size: 0.9em;">Рекордный уровень</div>
-            </div>
-        </div>
-        
-        <!-- Список последних тестов -->
-        <h3 style="color: var(--text-main); margin-bottom: 15px; font-size: 1.2em;">Последние тесты:</h3>
-        <div style="display: grid; gap: 15px;">
-            {% for test in recent_tests %}
-            <div style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: var(--radius-sm); border-left: 4px solid {% if test.final_level >= 6 %}#22c55e{% elif test.final_level >= 4 %}#fbbf24{% else %}#3b82f6{% endif %};">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                    <div>
-                        <div style="color: var(--text-main); font-weight: 600; font-size: 1.1em; margin-bottom: 5px;">
-                            {{ test.topic or 'Адаптивный тест' }} - Класс {{ test.class_level or '?' }}
-                        </div>
-                        <div style="color: var(--text-muted); font-size: 0.9em;">
-                            {{ test.completed_at.strftime('%d.%m.%Y в %H:%M') if test.completed_at else 'Дата неизвестна' }}
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="color: {% if test.final_level >= 6 %}#22c55e{% elif test.final_level >= 4 %}#fbbf24{% else %}#3b82f6{% endif %}; font-weight: 700; font-size: 1.3em;">
-                            {% for i in range(test.final_level) %}⭐{% endfor %} {{ ((test.final_level|float * 8 / 7) | round | int) }}/8
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div style="color: var(--text-soft);">
-                        <span style="color: var(--text-muted);">Результат:</span>
-                        <span style="color: {% if (test.tasks_correct / test.tasks_total * 100) >= 80 %}#22c55e{% elif (test.tasks_correct / test.tasks_total * 100) >= 60 %}#fbbf24{% else %}#ef4444{% endif %}; font-weight: 600;">
-                            {{ test.tasks_correct }}/{{ test.tasks_total }} верно ({{ (test.tasks_correct / test.tasks_total * 100)|round(0)|int }}%)
-                        </span>
-                    </div>
-                    <div style="color: var(--text-soft);">
-                        <span style="color: var(--text-muted);">Получено:</span>
-                        <span style="color: #fbbf24; font-weight: 600;">+50 XP</span>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        {% if test_stats.total_tests > 5 %}
-        <div style="text-align: center; margin-top: 20px;">
-            <p style="color: var(--text-muted); font-size: 0.9em;">
-                Показаны последние 5 тестов из {{ test_stats.total_tests }}
-            </p>
-        </div>
-        {% endif %}
-        
-        {% else %}
-        <!-- Заглушка если тестов нет -->
-        <div style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 4em; margin-bottom: 15px; opacity: 0.5;"></div>
-            <h3 style="color: var(--text-main); margin-bottom: 10px;">Вы еще не проходили адаптивных тестов</h3>
-            <p style="color: var(--text-muted); margin-bottom: 25px;">
-                Пройдите адаптивный тест, чтобы определить свой уровень и получить персонализированные рекомендации!
-            </p>
-            <a href="{{ url_for('adaptive_test_select_class') }}"
-               style="display: inline-block; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: transform 0.2s;"
-               onmouseover="this.style.transform='translateY(-2px)'"
-               onmouseout="this.style.transform='translateY(0)'">
-                 Пройти первый тест
-            </a>
-        </div>
-        {% endif %}
-    </div>
 
-    <!-- Отмена подписки -->
-    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(239,68,68,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px; text-align: center;">
-        <h3 style="color: var(--text-main); margin-bottom: 12px;"> Управление подпиской</h3>
+    {% if not is_teacher_or_parent %}
+    <!-- Премиум -->
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56,239,125,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px; text-align: center;">
+        <h3 style="color: var(--text-main); margin-bottom: 12px;">⭐ Премиум</h3>
         <p style="color: var(--text-soft); margin-bottom: 16px;">
             Текущий тариф: <strong style="color: #38ef7d;">{{ current_user.current_plan or 'free' }}</strong>
         </p>
+        {% if (current_user.current_plan or 'free') == 'free' %}
+        <a href="/subscribe" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #38ef7d, #11998e); color: #000; border: none; border-radius: 12px; font-weight: 700; font-size: 1em; text-decoration: none; cursor: pointer; transition: transform 0.2s;"
+           onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            ⭐ Купить подписку
+        </a>
+        {% else %}
         <button id="cancelSubBtn" onclick="cancelSubscription()"
                 style="padding: 12px 28px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: all 0.2s;">
              Отменить подписку
         </button>
+        {% endif %}
     </div>
+    {% endif %}
 
     </div>
 
@@ -831,7 +726,7 @@
            onmouseover="this.style.borderColor='#ef4444'; this.style.color='#fca5a5'"
            onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
         >
-             Выйти
+             🚪 Выйти
         </a>
     </div>
 

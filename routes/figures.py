@@ -83,10 +83,12 @@ def _credit_balance_response(user) -> dict:
 def figures_page():
     """Render the figure vitrine page."""
     balance = _credit_balance_response(current_user)
+    import os
     return render_template(
         "figures.html",
         credits=balance.get("credits", 0),
         figures_built=balance.get("figures_built", 0),
+        max_problem_length=int(os.environ.get("FIGURE_MAX_LENGTH", "4000")),
     )
 
 
@@ -244,6 +246,24 @@ def aux_daily(item_id: int):
         return jsonify({"error": "Ошибка сервера."}), 500
 
 
+# ── CH5: Build + status routes (delegating to figures_generator) ─────────
+
+@figures_bp.route("/api/figures/build", methods=["POST"])
+@login_required
+def api_figures_build():
+    """Delegate to figures_generator.start_build()."""
+    from routes.figures_generator import start_build as _start_build
+    return _start_build()
+
+
+@figures_bp.route("/api/figures/status/<int:job_id>", methods=["GET"])
+@login_required
+def api_figures_status(job_id: int):
+    """Delegate to figures_generator.job_status()."""
+    from routes.figures_generator import job_status as _job_status
+    return _job_status(job_id)
+
+
 @figures_bp.route("/figures/aux/method/<int:method_task_id>", methods=["GET"])
 def aux_method(method_task_id: int):
     """Отдать aux-SVG для метода олимпиад — без проверки ответа."""
@@ -260,3 +280,39 @@ def aux_method(method_task_id: int):
     except Exception as e:
         logger.error("[figures] aux_method error method_task_id=%d: %s", method_task_id, e)
         return jsonify({"error": "Ошибка сервера."}), 500
+
+
+@figures_bp.route("/figures/history", methods=["GET"])
+@login_required
+def figures_history():
+    """History page — all completed figure builds for the current user."""
+    from models import FigureBuildJob
+    jobs = (
+        FigureBuildJob.query
+        .filter_by(user_id=current_user.id)
+        .filter(FigureBuildJob.status.in_(['done', 'failed']))
+        .order_by(FigureBuildJob.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return render_template("figures_history.html", jobs=jobs)
+
+
+@figures_bp.route("/api/figures/recognize-photo", methods=["POST"])
+def fig_recognize_photo():
+    """Recognize math text from photo using KIMI."""
+    import base64
+    from services.kimi_vision import process_photo_with_kimi
+    data = request.get_json(silent=True) or {}
+    img_b64 = data.get('image', '')
+    mime = data.get('mime', 'image/jpeg')
+    if not img_b64:
+        return jsonify({'error': 'No image'}), 400
+    try:
+        raw_bytes = base64.b64decode(img_b64)
+        text, err = process_photo_with_kimi(raw_bytes, mime)
+        if text:
+            return jsonify({'text': text})
+        return jsonify({'error': err or 'Recognition failed'}), 422
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

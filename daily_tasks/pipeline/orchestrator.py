@@ -36,7 +36,7 @@ FLAGGED_THRESHOLD = 3
 """При >= этого числа is_flagged задач запускается rescue-проход."""
 GEMINI_PLAN_MAX_ATTEMPTS = 3
 
-_FIX_PARALLEL_WORKERS = 5
+_FIX_PARALLEL_WORKERS = 10
 """Сколько Opus-fix запускаем параллельно в одной итерации fix-loop."""
 
 

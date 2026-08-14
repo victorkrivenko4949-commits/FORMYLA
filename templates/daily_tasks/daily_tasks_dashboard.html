@@ -612,32 +612,7 @@
 <div class="page-daily-tasks" style="max-width:1200px;margin:0 auto;padding:24px 16px 60px;">
 
   <!-- Page header -->
-  <h2 style="font-size:26px;font-weight:700;margin-bottom:8px;color:var(--text);">Задачи дня</h2>
-  <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
-    Персональные задачи на основе твоего уровня — каждый день новый набор
-  </p>
-
-  <!-- P4 DEBT BLOCK -->
-  {% if data and data.debt and data.debt.total > 0 %}
-  <div class="dt-debt-block">
-    <div class="dt-debt-header">
-      <span class="dt-debt-title">Долг: {{ data.debt.total }} задач</span>
-      <span class="dt-debt-hint">реши до истечения срока, иначе сгорят</span>
-    </div>
-    {% for group in data.debt.by_date %}
-    <div class="dt-debt-group">
-      <div class="dt-debt-group-date">{{ group.date }} &mdash; {{ group.count }} задач</div>
-      {% for item in group.tasks %}
-      <div class="dt-debt-item">
-        <span class="dt-debt-item-topic">{{ item.topic or item.subject or 'Задача' }}</span>
-        <span class="dt-debt-item-level">уровень {{ item.difficulty_level }}</span>
-        <span class="dt-debt-item-days">осталось {{ item.days_left }} дн.</span>
-      </div>
-      {% endfor %}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:16px;color:var(--text);">Задачи дня</h2>
 
   <!-- Two-column layout -->
   <div class="dt-layout">

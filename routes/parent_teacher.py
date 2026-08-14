@@ -202,6 +202,38 @@ def teacher_group_view(gid: int):
     )
 
 
+@parent_teacher_bp.route('/teacher/group/<int:gid>/add-student', methods=['POST'])
+@login_required
+def teacher_group_add_student(gid: int):
+    _require_role('teacher')
+    g = T10Group.query.get(gid)
+    if g is None or g.teacher_id != current_user.id:
+        abort(404)
+
+    nickname = (request.form.get('nickname', '') or '').strip()
+    if not nickname:
+        flash('Введите никнейм ученика', 'error')
+        return redirect(url_for('parent_teacher.teacher_group_view', gid=gid))
+
+    student = User.query.filter_by(nickname=nickname).first()
+    if student is None:
+        flash(f'Ученик с никнеймом "{nickname}" не найден', 'error')
+        return redirect(url_for('parent_teacher.teacher_group_view', gid=gid))
+
+    existing = T10GroupMember.query.filter_by(
+        group_id=g.id, user_id=student.id
+    ).first()
+    if existing:
+        flash(f'{nickname} уже в группе', 'info')
+        return redirect(url_for('parent_teacher.teacher_group_view', gid=gid))
+
+    gm = T10GroupMember(group_id=g.id, user_id=student.id, role='student')
+    db.session.add(gm)
+    db.session.commit()
+    flash(f'{nickname} добавлен в группу', 'success')
+    return redirect(url_for('parent_teacher.teacher_group_view', gid=gid))
+
+
 @parent_teacher_bp.route('/teacher/group/<int:gid>/rename', methods=['POST'])
 @login_required
 def teacher_group_rename(gid: int):

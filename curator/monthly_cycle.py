@@ -355,6 +355,12 @@ def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dic
     _save_monthly_cycle(cs, mc)
     db.session.commit()
 
+    # ── Hook: schedule conveyor generation for this new cycle ──
+    try:
+        _on_cycle_activated(user_id)
+    except Exception:
+        pass
+
     return mc
 
 
@@ -568,3 +574,22 @@ def generate_tasks_only(user_id: int, subtopic: str = None) -> Dict[str, Any]:
         'generation_queued': queued,
         'message': 'Tasks generation queued' if queued else 'Daily set already exists or generation not available',
     }
+
+
+def _on_cycle_activated(user_id: int) -> bool:
+    """Hook: add 7 entries to gen_conveyor after cycle creation.
+
+    Called after build_or_get_cycle creates a new cycle.
+    New users get priority=1 (jump the queue).
+    """
+    try:
+        from daily_tasks.services import schedule_conveyor_for_user
+        created = schedule_conveyor_for_user(user_id, priority=1)
+        logger.info(
+            "_on_cycle_activated: user=%s created=%d conveyor entries",
+            user_id, created,
+        )
+        return created > 0
+    except Exception:
+        logger.exception("_on_cycle_activated: user=%s failed", user_id)
+        return False

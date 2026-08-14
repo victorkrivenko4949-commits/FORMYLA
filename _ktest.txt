@@ -1,0 +1,4 @@
+api.moonshot.cn(moonshot-v1-8k): 401
+api.moonshot.cn(kimi-latest): 401
+api.kimi.com(kimi-latest): 404
+api.kimi.com(moonshot-v1-8k): 404

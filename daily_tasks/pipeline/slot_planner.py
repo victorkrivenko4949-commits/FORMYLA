@@ -314,8 +314,8 @@ def plan_slots(
         )
         return _plan_thematic_fallback(profile, max(total_slots, 5), today)
 
-    # ── 2. Count: daily_tasks from ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ ─────────────
-    count = get_daily_task_count(user_id)
+    # ── 2. Count: ВСЕГДА 10 задач (TOTAL_SLOTS) ──────────────────────
+    count = max(total_slots, TOTAL_SLOTS)
 
     # ── 3. Level: allowed_difficulty by current mu, capped by route_ceiling ─
     mu = state.get("mu", 3.0)

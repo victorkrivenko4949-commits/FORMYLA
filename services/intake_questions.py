@@ -23,20 +23,22 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 # ══════════════════════════════════════════════════════════════════════
-# ВОПРОС 1: КЛАСС
+# ВОПРОС 1: КЛАСС / РОЛЬ
 # ══════════════════════════════════════════════════════════════════════
 
 Q1_CLASS = {
     "id": "class",
-    "text": "В каком классе учишься?",
+    "text": "Кто ты?",
     "options": [
-        {"key": "5",  "label": "5 класс",  "value": 5},
-        {"key": "6",  "label": "6 класс",  "value": 6},
-        {"key": "7",  "label": "7 класс",  "value": 7},
-        {"key": "8",  "label": "8 класс",  "value": 8},
-        {"key": "9",  "label": "9 класс",  "value": 9},
-        {"key": "10", "label": "10 класс", "value": 10},
-        {"key": "11", "label": "11 класс", "value": 11},
+        {"key": "teacher", "label": "Я учитель",     "value": "teacher", "role": "teacher"},
+        {"key": "parent",  "label": "Я родитель",     "value": "parent",  "role": "parent"},
+        {"key": "5",       "label": "5 класс",        "value": 5         },
+        {"key": "6",       "label": "6 класс",        "value": 6         },
+        {"key": "7",       "label": "7 класс",        "value": 7         },
+        {"key": "8",       "label": "8 класс",        "value": 8         },
+        {"key": "9",       "label": "9 класс",        "value": 9         },
+        {"key": "10",      "label": "10 класс",       "value": 10        },
+        {"key": "11",      "label": "11 класс",       "value": 11        },
     ],
 }
 
@@ -80,10 +82,9 @@ Q4_TIME = {
     "id": "time",
     "text": "Сколько времени в день готов уделять занятиям?",
     "options": [
-        {"key": "m15",   "label": "15 минут",    "tasks_per_day": 5},
-        {"key": "m30",   "label": "30 минут",    "tasks_per_day": 10},
-        {"key": "m60",   "label": "Час",          "tasks_per_day": 15},
-        {"key": "m90",   "label": "Больше часа",  "tasks_per_day": 20},
+        {"key": "m30",   "label": "30 минут",    "tasks_per_day": 5},
+        {"key": "m60",   "label": "Час",          "tasks_per_day": 8},
+        {"key": "m90",   "label": "Больше часа",  "tasks_per_day": 10},
     ],
 }
 

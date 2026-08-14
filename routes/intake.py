@@ -31,6 +31,15 @@ intake_bp = Blueprint('intake', __name__, url_prefix='/intake')
 @login_required
 def intake_page():
     """Страница анкеты входа."""
+    # Если роль уже teacher/parent — редирект в соответствующий раздел
+    _role = getattr(current_user, 'role', 'student') or 'student'
+    if _role == 'teacher':
+        from flask import redirect, url_for
+        return redirect(url_for('parent_teacher.teacher_dashboard'))
+    if _role == 'parent':
+        from flask import redirect, url_for
+        return redirect(url_for('parent_teacher.parent_dashboard'))
+
     # Если уже пройдена — редирект на /daily_tasks
     try:
         from models_curator import CuratorState

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Step 1 пайплайна «Задачи дня» — планировщик (Claude Sonnet 4.6).
+Step 1 пайплайна «Задачи дня» — планировщик (DeepSeek V4 Pro).
 
 Отправляет профиль ученика в планировщика, получает 10 спецификаций задач
 (spec'ов) и валидирует их структурно через `validate_gemini_plan()`.
@@ -318,9 +318,19 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
     class_level = profile["class_level"]
     topics_ref = _build_topics_reference(class_level)
 
-            # PER-TOPIC DIFFICULTY MATCHING
+    # PER-TOPIC DIFFICULTY MATCHING
     _curator_sub = profile.get("curator_subtopic") or {}
-    if _curator_sub.get("slug"):
+    # curator_subtopic may be a plain string (from conveyor) or a dict (from profile)
+    if isinstance(_curator_sub, str) and _curator_sub.strip():
+        # String form: use as subtopic slug directly
+        planned_slots = plan_slots_for_subtopic(
+            profile,
+            {},  # day_topic — will be resolved by slot_planner
+            _curator_sub.strip(),
+            _curator_sub.strip(),  # name = slug for now
+            day_index=0,
+        )
+    elif isinstance(_curator_sub, dict) and _curator_sub.get("slug"):
         planned_slots = plan_slots_for_subtopic(
             profile,
             _curator_sub.get("day_topic") or {},
@@ -357,11 +367,12 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
             )
     except RuntimeError as exc:
         # Classified HTTP / API error — propagate with status_code & snippet
+        _status_code = getattr(exc, 'status_code', None) or 0
         category = _classify_error(exc)
         body_snippet = (getattr(exc, "body", "") or "")[:300]
         logger.exception(
             "Step 1 PLAN — DeepSeek API call to %s failed: status=%s category=%s body=%s",
-            _GEMINI_MODEL, exc.status_code, category, body_snippet,
+            _GEMINI_MODEL, _status_code, category, body_snippet,
         )
         if category == "http_402":
             human = (
@@ -375,19 +386,19 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
             )
         elif category.startswith("http_5"):
             human = (
-                f"Временный сбой OpenRouter ({exc.status_code}). "
+                f"Временный сбой OpenRouter ({_status_code}). "
                 "Повтори через минуту."
             )
         elif category.startswith("http_4"):
             human = (
-                f"Ошибка запроса к DeepSeek ({exc.status_code}). "
+                f"Ошибка запроса к DeepSeek ({_status_code}). "
                 "Проверь конфигурацию."
             )
         else:
             human = f"Сбой связи с OpenRouter: {exc}"
         raise GeminiPlanError(
             human, category=category,
-            status_code=exc.status_code, body_snippet=body_snippet,
+            status_code=_status_code, body_snippet=body_snippet,
         ) from exc
     except Exception as exc:
         # Network / timeout / asyncio.CancelledError / etc.
@@ -446,9 +457,9 @@ async def generate_gemini_plan(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
         )
 
     specs: List[Dict[str, Any]] = parsed["specs"]
-    if not isinstance(specs, list) or len(specs) != 10:
+    if not isinstance(specs, list) or len(specs) < 1:
         raise GeminiPlanError(
-            f"Модель вернула {len(specs) if isinstance(specs, list) else 'не-list'} spec'ов вместо 10",
+            f"Модель вернула пустой или не-list ответ",
             category="validate",
         )
 

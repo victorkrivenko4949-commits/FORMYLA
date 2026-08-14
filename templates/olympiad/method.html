@@ -73,8 +73,14 @@ header .subtitle { color: #e6ebf7; font-size: 14px; margin-top: 4px; }
 </head>
 <body>
 <header>
-  <h1>FORMYLA — 102 метода олимпиадной математики</h1>
-  <div class="subtitle">Реальные задачи: ВсОШ, Ломоносов, Высшая проба, ПВГ, СПбГУ, МФТИ</div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a href="/prep/coach" style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:22px;cursor:pointer;padding:6px 12px;border-radius:8px;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'" title="На главную ←">←</a>
+    <div>
+      <h1>FORMYLA — 102 метода олимпиадной математики</h1>
+      <div class="subtitle">Реальные задачи: ВсОШ, Ломоносов, Высшая проба, ПВГ, СПбГУ, МФТИ</div>
+    </div>
+    <button id="backToList" onclick="showList()" style="display:none;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:16px;cursor:pointer;padding:6px 14px;border-radius:8px;margin-left:auto;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">← К списку методов</button>
+  </div>
 </header>
 <div class="layout">
   <div class="sidebar">
@@ -173,10 +179,17 @@ function renderExample(exText) {
   return html;
 }
 
+function showList() {
+  document.getElementById('content').innerHTML = '<div class="welcome"><h2>Выберите метод слева</h2><p>102 метода, 378 примеров с реальными задачами</p></div>';
+  document.getElementById('backToList').style.display = 'none';
+  document.querySelectorAll('.method-item').forEach(i => i.classList.remove('active'));
+}
+
 function selectMethod(code) {
   const m = DATA.find(d => d.method_code === code);
   if (!m) return;
   
+  document.getElementById('backToList').style.display = 'inline-block';
   document.querySelectorAll('.method-item').forEach(item => {
     item.classList.toggle('active', item.dataset.code === code);
   });

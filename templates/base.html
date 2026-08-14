@@ -150,7 +150,13 @@
 </head>
 <body class="{% if request.path.startswith('/chat') %}page-chat{% endif %}{% if request.path.startswith('/daily_tasks') %} page-daily-tasks{% endif %}"{% if current_user.is_authenticated %} data-user-id="{{ current_user.id }}"{% endif %}>
     <header class="header">
-        <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="logo">
+        {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+        <a href="/teacher" class="logo">
+        {% elif current_user.is_authenticated and current_user.role == 'parent' %}
+        <a href="/parent" class="logo">
+        {% else %}
+        <a href="{{ url_for('index') }}" class="logo">
+        {% endif %}
             <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="grad_logo" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -175,23 +181,7 @@
         </button>
 
         <nav class="nav" id="navLinks">
-            <!-- 1. Задачи дня -->
-            <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="daily-nav-link nav-link nav-pill">
-                <span class="daily-flame">🔥</span>
-                <span class="daily-text">Задачи дня</span>
-                {% if current_user.is_authenticated %}
-                {% set dq = current_user.today_quest() %}
-                {% if dq and dq.completed_count >= dq.total_count %}
-                  <span class="daily-badge done">[OK]</span>
-                {% elif dq %}
-                  <span class="daily-badge">{{ dq.completed_count }}/{{ dq.total_count }}</span>
-                {% else %}
-                  <span class="daily-badge new">NEW</span>
-                {% endif %}
-                {% endif %}
-            </a>
-
-            <!-- 2. Олимпиады (dropdown) -->
+            <!-- 1. Олимпиады (dropdown) -->
             <div class="nav-dropdown">
                 <button class="nav-item nav-toggle" type="button">
                     🏆 Олимпиады <span class="chev">▾</span>
@@ -202,22 +192,25 @@
                 </div>
             </div>
 
-            <!-- 3. Куратор подготовки -->
-            <a href="/prep/coach" class="nav-item">🎓 Куратор подготовки</a>
+            <!-- 2. Ученик: Задачи дня + Куратор -->
+            {% if current_user.is_authenticated %}
+            {% if current_user.role == 'teacher' %}
+            <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
+            {% elif current_user.role == 'parent' %}
+            <a href="/parent" class="nav-item">👨‍👩‍👧 Мои гении (дети)</a>
+            {% else %}
+            <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
+            <a href="{{ url_for('prep.coach') }}" class="nav-item">🎓 Куратор подготовки</a>
+            {% endif %}
+            {% endif %}
 
-            <!-- 4. Прочее -->
+            <!-- Закреплённые из «Прочее» (📌, localStorage) -->
+            <span id="pinnedNavItems" class="nav-pinned"></span>
+
+            <!-- 3. Прочее -->
             <a href="/misc" class="nav-item">📦 Прочее</a>
         </nav>
         
-        <!-- Форма поиска -->
-        <form action="/problems" method="get" style="margin-left: auto; display: flex; gap: 8px;">
-            <input type="text" name="q" placeholder="🔍 Поиск по задачам..."
-                   value="{{ request.args.get('q', '') }}"
-                   style="padding: 8px 16px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #fff; min-width: 250px; font-size: 14px;">
-            <button type="submit" style="padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
-                🔍 Найти
-            </button>
-        </form>
 
         <!-- Авторизация -->
         <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
@@ -243,13 +236,19 @@
                 </a>
                 {% endif %}
 
-                <!-- Авторизованный пользователь -->
-                <a href="{{ url_for('profile') }}"
-                   style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
-                   onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'"
-                   onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
-                    👤 Профиль
-                </a>
+                <!-- Авторизованный пользователь: «Профиль» авто-закреплён (всегда виден).
+                     Открепить можно наведением — появляется красная ✕. -->
+                <span id="profileNavWrap" class="nav-pinned-item">
+                    <a href="{{ url_for('profile') }}"
+                       style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
+                       onmouseover="this.style.background='rgba(56, 189, 248, 0.2)'"
+                       onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">
+                        👤 Профиль
+                    </a>
+                    <button type="button" class="nav-unpin-btn"
+                            title="Открепить" aria-label="Открепить профиль"
+                            onclick="unpinProfile()">✕</button>
+                </span>
                 
                 <a href="{{ url_for('logout') }}"
                    style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); text-decoration: none; border-radius: 8px; font-size: 14px; border: 1px solid var(--border-soft); transition: all 0.2s;"
@@ -305,14 +304,6 @@
         </div>
         {% endif %}
 
-        <!-- Search -->
-        <div class="drawer-search">
-            <form action="/problems" method="get">
-                <input type="text" name="q" placeholder="🔍 Поиск задач..."
-                       value="{{ request.args.get('q', '') }}">
-                <button type="submit">Найти</button>
-            </form>
-        </div>
 
         <!-- Navigation links -->
         <nav class="drawer-nav">
@@ -513,9 +504,6 @@
     }
     </script>
     
-    {# AI-Тьютор — глобальная плавающая кнопка (правый нижний угол) для разбора задач. #}
-    {% include 'tutor_widget.html' %}
-
     {# Site Concierge (FAB-помощник по сайту) — НЕ подключаем глобально.
        Inline-секция «Помощник FORMYLA» есть только на странице /about. #}
 

@@ -586,27 +586,23 @@ function detectPipelineStep(currentStep, progressPct) {
 
 // Перевод технического current_step -> человеко-читаемая строка
 var DT_STEP_HUMAN = {
-    'queued': 'Запуск…',
-    'build_profile': 'Анализ твоего профиля',
-    'profile': 'Анализ твоего профиля',
-    'gemini_plan': 'Claude Sonnet 4.6 планирует задачи',
-    'opus_generate': 'Claude Sonnet 4.6 пишет задачи (5 потоков)',
-    'gpt_audit': 'Claude Opus 4.8 Fast проверяет качество (5 потоков)',
-    'opus_fix': 'Claude Opus 4.8 Fast исправляет замечания',
-    'rescue_pass': 'Rescue: повторная генерация проблемных задач',
-    'persist': 'Сохраняем результат…',
-    'completed': 'Готово!',
-    'failed': 'Ошибка'
+    'queued': '',
+    'build_profile': '',
+    'profile': '',
+    'gemini_plan': '',
+    'opus_generate': '',
+    'gpt_audit': '',
+    'opus_fix': '',
+    'rescue_pass': '',
+    'persist': '',
+    'completed': '',
+    'failed': ''
 };
 function humanizeStep(raw) {
-    if (!raw) return 'Запуск…';
+    if (!raw) return '';
     var key = String(raw).trim().toLowerCase();
-    if (DT_STEP_HUMAN[key]) return DT_STEP_HUMAN[key];
-    // Если уже на русском (например «Анализ профиля») — оставляем как есть
-    if (/[А-Яа-я]/.test(raw)) return raw;
-    // Заменяем подчёркивания на пробелы, делаем первую букву большой
-    var pretty = String(raw).replace(/_/g, ' ');
-    return pretty.charAt(0).toUpperCase() + pretty.slice(1);
+    if (key in DT_STEP_HUMAN) return DT_STEP_HUMAN[key];
+    return '';
 }
 
 // Порядок шагов

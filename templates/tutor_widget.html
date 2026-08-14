@@ -34,7 +34,6 @@
                     <div style="font-weight: 700; font-size: 17px; margin-bottom: 4px;">Универсальный агент</div>
                     <div style="font-size: 12.5px; opacity: 0.92; line-height: 1.45;">Сам определяет тему задачи и отвечает как профильный эксперт</div>
                 </div>
-                <div style="font-size: 20px; opacity: 0.85;">-></div>
             </button>
 
             <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 12px; color: var(--text-muted); font-size: 12.5px; line-height: 1.5; text-align: center; border: 1px dashed var(--border-soft); border-radius: 12px;">
@@ -55,6 +54,7 @@
             <div style="padding: 15px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button onclick="backToAgentSelection()" style="background: none; border: none; color: var(--accent-2); font-size: 18px; cursor: pointer; padding: 5px;" title="Вернуться к агентам">⬅</button>
+                    <button onclick="clearTutorHistory()" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; color: #fca5a5; font-size: 12px; cursor: pointer; padding: 4px 10px; margin-left: 8px;" title="Очистить историю">🗑</button>
                     <div>
                         <div style="font-weight: 600; color: var(--text-main);" id="currentAgentName">Агент</div>
                         <div style="font-size: 12px; color: var(--text-muted);">Ваш специализированный помощник</div>
@@ -107,6 +107,16 @@
                     </svg>
                     <input type="file" id="chatFileInput" accept="image/*" multiple hidden>
                 </label>
+
+                <!-- Кнопка камеры -->
+                <button type="button" class="btn-attach" title="Сфотографировать" onclick="openCamera()"
+                    style="background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;color:var(--text-muted);transition:all 0.2s;"
+                    onmouseover="this.style.color='var(--accent-2)'" onmouseout="this.style.color='var(--text-muted)'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </button>
                 
                 <!-- Поле ввода -->
                 <textarea id="tutorInput" class="chat-input" placeholder="Напишите вопрос..." rows="1"></textarea>
@@ -506,6 +516,9 @@ let currentAgent = null;
 let currentAgentName = '';
 let attachedFiles = [];  // [{id, file, dataUrl}]
 let selectedText = '';
+let _tutorAbort = null;   // global AbortController for in-flight tutor request
+let _tutorTimer = null;   // global timeout timer
+let _tutorLoading = false; // true while AI is thinking (3 dots)
 
 function toggleTutorPopup() {
     popupOpen = !popupOpen;
@@ -636,25 +649,69 @@ document.addEventListener('DOMContentLoaded', function() {
         textarea.addEventListener('paste', function(e) {
             var items = e.clipboardData && e.clipboardData.items;
             if (!items) return;
+            var handled = false;
             for (var i = 0; i < items.length; i++) {
-                if (items[i].kind === 'file') {
-                    var file = items[i].getAsFile();
-                    if (file) {
-                        if (!file.type.startsWith('image/')) {
-                            alert('Можно вставлять только изображения');
-                            return;
-                        }
+                var item = items[i];
+                // Handle file paste (screenshots from Snip & Sketch, etc.)
+                if (item.kind === 'file') {
+                    var file = item.getAsFile();
+                    if (file && file.type.startsWith('image/')) {
                         if (file.size > 10 * 1024 * 1024) {
                             alert('Файл больше 10 MB — слишком большой');
-                            return;
+                            continue;
                         }
                         e.preventDefault();
                         addFileChip(file);
+                        handled = true;
                     }
-                    return;
+                }
+                // Handle inline image paste (Ctrl+V from browser screenshots)
+                else if (item.kind === 'string' && item.type === 'text/html') {
+                    // Check if clipboard contains an <img> tag
+                    item.getAsString(function(html) {
+                        var div = document.createElement('div');
+                        div.innerHTML = html;
+                        var img = div.querySelector('img');
+                        if (img && img.src && img.src.startsWith('data:image/')) {
+                            e.preventDefault();
+                            // Convert data URL to blob and then to File
+                            var arr = img.src.split(',');
+                            if (arr.length >= 2) {
+                                var mime = arr[0].match(/:(.*?);/);
+                                mime = mime ? mime[1] : 'image/png';
+                                var bstr = atob(arr[1]);
+                                var n = bstr.length;
+                                var u8arr = new Uint8Array(n);
+                                while (n--) { u8arr[n] = bstr.charCodeAt(n); }
+                                var blob = new Blob([u8arr], {type: mime});
+                                var file = new File([blob], 'clipboard.' + (mime === 'image/png' ? 'png' : 'jpg'), {type: mime});
+                                addFileChip(file);
+                            }
+                        }
+                    });
                 }
             }
         });
+
+        // Also listen for paste on the popup itself (global paste)
+        var popupEl = document.getElementById('ai-tutor-popup');
+        if (popupEl && 'onglobalpaste' === 'onglobalpaste') {
+            document.addEventListener('paste', function(e) {
+                if (!popupOpen) return;
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+                var items = e.clipboardData && e.clipboardData.items;
+                if (!items) return;
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                        var file = items[i].getAsFile();
+                        if (file && file.size <= 10 * 1024 * 1024) {
+                            e.preventDefault();
+                            addFileChip(file);
+                        }
+                    }
+                }
+            });
+        }
     }
     
     // Drag & Drop
@@ -725,6 +782,8 @@ async function sendToTutor() {
     
     if (!message && attachedFiles.length === 0) return;
     if (!currentAgent) return;
+    // Block if AI is already thinking
+    if (_tutorLoading) return;
     
     const hintMode = document.getElementById('hintModeToggle').checked;
     
@@ -748,27 +807,28 @@ async function sendToTutor() {
     // Clear attachments after capturing
     clearAllFiles();
     
-    // Show typing indicator
+    // Show typing indicator + set loading flag
+    _tutorLoading = true;
     document.getElementById('typingIndicator').style.display = 'block';
     scrollChatToBottom();
     
     // Таймаут 180 сек: серверная цепочка из 3 vision-моделей по 45с может занять до ~135с,
     // плюс запас на сеть. Если совсем ничего не пришло — режем, чтобы UI не висел вечно.
-    let _abort = null;
-    let _timer = null;
     try {
         if (typeof AbortController !== 'undefined') {
-            _abort = new AbortController();
-            _timer = setTimeout(() => { try { _abort.abort(); } catch(_) {} }, 180000);
+            _tutorAbort = new AbortController();
+            _tutorTimer = setTimeout(() => { try { _tutorAbort.abort(); } catch(_) {} }, 180000);
         }
         const response = await fetch('/api/tutor/send', {
             method: 'POST',
             body: formData,
-            signal: _abort ? _abort.signal : undefined
+            signal: _tutorAbort ? _tutorAbort.signal : undefined
         });
-        if (_timer) { clearTimeout(_timer); _timer = null; }
+        if (_tutorTimer) { clearTimeout(_tutorTimer); _tutorTimer = null; }
 
         document.getElementById('typingIndicator').style.display = 'none';
+        _tutorLoading = false;
+        _tutorAbort = null;
 
         // Handle non-JSON responses (429 rate limit HTML, 500 errors, etc.)
         let data;
@@ -776,11 +836,11 @@ async function sendToTutor() {
             data = await response.json();
         } catch (jsonErr) {
             if (response.status === 429) {
-                addMessageToChat('assistant', '⏳ Слишком много запросов. Подождите минуту и попробуйте снова.');
+                addMessageToChat('assistant', '\u23f3 \u0421\u043b\u0438\u0448\u043a\u043e\u043c \u043c\u043d\u043e\u0433\u043e \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432. \u041f\u043e\u0434\u043e\u0436\u0434\u0438\u0442\u0435 \u043c\u0438\u043d\u0443\u0442\u0443 \u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0441\u043d\u043e\u0432\u0430.');
             } else if (response.status === 401) {
-                addMessageToChat('assistant', ' Необходима авторизация. Пожалуйста, войдите в аккаунт.');
+                addMessageToChat('assistant', '\ud83d\udd12 \u041d\u0435\u043e\u0431\u0445\u043e\u0434\u0438\u043c\u0430 \u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u044f. \u041f\u043e\u0436\u0430\u043b\u0443\u0439\u0441\u0442\u0430, \u0432\u043e\u0439\u0434\u0438\u0442\u0435 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442.');
             } else {
-                addMessageToChat('assistant', '[ERROR] Ошибка сервера (' + response.status + '). Попробуйте ещё раз.');
+                addMessageToChat('assistant', '[ERROR] \u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0430 (' + response.status + '). \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437.');
             }
             console.error('Non-JSON response:', response.status, jsonErr);
             return;
@@ -790,10 +850,10 @@ async function sendToTutor() {
             if (typeof window.showPaywall === 'function') {
                 window.showPaywall(data);
             } else {
-                addMessageToChat('assistant', ' ' + data.message + ' <a href="/subscribe" style="color:#38ef7d">Оформить Premium -></a>');
+                addMessageToChat('assistant', '\ud83c\udf1f ' + data.message + ' <a href="/subscribe" style="color:#38ef7d">\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u044c Premium -></a>');
             }
         } else if (data.error === 'rate_limit_exceeded') {
-            addMessageToChat('assistant', '⏳ Слишком много запросов. Подождите минуту и попробуйте снова.');
+            addMessageToChat('assistant', '\u23f3 \u0421\u043b\u0438\u0448\u043a\u043e\u043c \u043c\u043d\u043e\u0433\u043e \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432. \u041f\u043e\u0434\u043e\u0436\u0434\u0438\u0442\u0435 \u043c\u0438\u043d\u0443\u0442\u0443 \u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0441\u043d\u043e\u0432\u0430.');
         } else if (data.ai_response) {
             addMessageToChat('assistant', data.ai_response.content);
         } else if (data.error) {
@@ -801,15 +861,19 @@ async function sendToTutor() {
         }
 
     } catch (error) {
-        if (_timer) { try { clearTimeout(_timer); } catch(_) {} }
+        if (_tutorTimer) { try { clearTimeout(_tutorTimer); } catch(_) {} }
+        _tutorTimer = null;
         document.getElementById('typingIndicator').style.display = 'none';
+        _tutorLoading = false;
+        _tutorAbort = null;
         let msg;
         if (error && (error.name === 'AbortError' || /aborted/i.test(String(error)))) {
-            msg = '⏱️ Запрос длился слишком долго (>3 мин) и был отменён. Попробуй задать вопрос покороче или без фото.';
+            // If aborted by clearTutorHistory, silently ignore — no error message
+            return;
         } else if (error && /Failed to fetch|NetworkError|net::|TypeError/i.test(String(error))) {
-            msg = '[ERROR] Не получилось связаться с сервером. Возможно, сервер перезагружается — подожди 5 секунд и попробуй ещё раз.';
+            msg = '[ERROR] \u041d\u0435 \u043f\u043e\u043b\u0443\u0447\u0438\u043b\u043e\u0441\u044c \u0441\u0432\u044f\u0437\u0430\u0442\u044c\u0441\u044f \u0441 \u0441\u0435\u0440\u0432\u0435\u0440\u043e\u043c. \u0412\u043e\u0437\u043c\u043e\u0436\u043d\u043e, \u0441\u0435\u0440\u0432\u0435\u0440 \u043f\u0435\u0440\u0435\u0437\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u0442\u0441\u044f \u2014 \u043f\u043e\u0434\u043e\u0436\u0434\u0438 5 \u0441\u0435\u043a\u0443\u043d\u0434 \u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439 \u0435\u0449\u0451 \u0440\u0430\u0437.';
         } else {
-            msg = '[ERROR] Ошибка связи: ' + (error && error.message ? error.message : 'неизвестная') + '. Попробуй ещё раз.';
+            msg = '[ERROR] \u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u0432\u044f\u0437\u0438: ' + (error && error.message ? error.message : '\u043d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u0430\u044f') + '. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439 \u0435\u0449\u0451 \u0440\u0430\u0437.';
         }
         addMessageToChat('assistant', msg);
         console.error('Tutor fetch error:', error);
@@ -869,6 +933,43 @@ function addMessageToChat(role, content, scroll, imageUrls) {
     if (scroll) scrollChatToBottom();
 }
 
+// ═══ CLEAR HISTORY ═══
+
+async function clearTutorHistory() {
+    if (!confirm('Очистить всю историю чата с этим агентом?')) return;
+
+    // 1. Abort any in-flight AI request (stop 3-dot animation)
+    if (_tutorAbort) {
+        try { _tutorAbort.abort(); } catch(_) {}
+        _tutorAbort = null;
+    }
+    if (_tutorTimer) {
+        try { clearTimeout(_tutorTimer); } catch(_) {}
+        _tutorTimer = null;
+    }
+    _tutorLoading = false;
+    document.getElementById('typingIndicator').style.display = 'none';
+
+    // 2. Clear chat history on server
+    try {
+        var resp = await fetch('/api/tutor/clear', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({agent_type: currentAgent || 'general'})
+        });
+        var data = await resp.json();
+        if (data.ok) {
+            document.getElementById('chatMessages').innerHTML = '';
+            var greeting = document.createElement('div');
+            greeting.style.cssText = 'text-align:center;color:var(--text-muted);font-size:14px;padding:20px';
+            greeting.textContent = 'История очищена. Задайте новый вопрос!';
+            document.getElementById('chatMessages').appendChild(greeting);
+        }
+    } catch(e) {
+        alert('Ошибка: ' + e.message);
+    }
+}
+
 // ═══ TEXT SELECTION POPUP ═══
 
 function handleTextSelection(event) {
@@ -916,5 +1017,55 @@ function scrollChatToBottom() {
     const container = document.getElementById('chatMessages');
     container.scrollTop = container.scrollHeight;
 }
+
+// ═══ CAMERA ═══
+let _cameraStream = null;
+
+async function openCamera() {
+    const modal = document.getElementById('camera-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    try {
+        _cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+        });
+        document.getElementById('camera-stream').srcObject = _cameraStream;
+    } catch (err) {
+        alert('Не удалось получить доступ к камере');
+        closeCamera();
+    }
+}
+
+function capturePhoto() {
+    const video = document.getElementById('camera-stream');
+    if (!video || !_cameraStream) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(function(blob) {
+        const file = new File([blob], 'camera_photo.jpg', { type: 'image/jpeg' });
+        addFileChip(file);
+        closeCamera();
+    }, 'image/jpeg', 0.9);
+}
+
+function closeCamera() {
+    if (_cameraStream) {
+        _cameraStream.getTracks().forEach(function(t) { t.stop(); });
+        _cameraStream = null;
+    }
+    const modal = document.getElementById('camera-modal');
+    if (modal) modal.classList.add('hidden');
+}
 </script>
+
+<!-- Camera Modal -->
+<div id="camera-modal" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:10001;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;">
+    <video id="camera-stream" autoplay style="max-width:90vw;max-height:70vh;border-radius:14px;border:2px solid rgba(255,255,255,0.1);"></video>
+    <div style="display:flex;gap:16px;margin-top:20px;">
+        <button onclick="capturePhoto()" style="padding:12px 32px;background:#4C7DFF;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">Снять</button>
+        <button onclick="closeCamera()" style="padding:12px 32px;background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:10px;font-size:15px;cursor:pointer;">Отмена</button>
+    </div>
+</div>
 {% endif %}

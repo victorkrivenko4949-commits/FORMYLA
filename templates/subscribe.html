@@ -358,7 +358,8 @@
         [OK] Premium активирован! Перезагружаем страницу...
     </div>
 
-    <!-- Cancel subscription block -->
+    <!-- Cancel subscription block (only for non-free plans) -->
+    {% if current_plan and current_plan != 'free' %}
     <div style="background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.3); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center;">
         <p style="color: #f87171; margin-bottom: 16px; font-size: 1em;">
             Ваш текущий тариф: <strong>{{ current_plan or 'free' }}</strong>
@@ -369,6 +370,14 @@
              Отменить подписку
         </button>
     </div>
+    {% else %}
+    <!-- Current plan info for free users (no cancel button) -->
+    <div style="background: rgba(56,239,125,0.05); border: 1px solid rgba(56,239,125,0.2); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center;">
+        <p style="color: #38ef7d; margin: 0; font-size: 1em;">
+            Ваш текущий тариф: <strong>free</strong> — бесплатно навсегда
+        </p>
+    </div>
+    {% endif %}
 
     <!-- Free-period banner -->
     <div style="background: linear-gradient(135deg, rgba(56,239,125,0.18), rgba(17,153,142,0.12)); border: 1px solid rgba(56,239,125,0.4); border-radius: 14px; padding: 18px 22px; margin: 0 0 28px; text-align: center; font-size: 1.05em; color:#d1fae5;">
@@ -488,39 +497,14 @@
             [OK] Текущий план
         </button>
         {% else %}
-        <button class="btn-plan btn-plan-premium">
+        <button class="btn-plan btn-plan-premium" id="activateBtn"
+                onclick="activatePremium('premium_monthly')">
              Попробовать Premium бесплатно
         </button>
         {% endif %}
     </div>
 
 </div>
-
-            {% if current_plan and current_plan != 'free' %}
-            <button class="btn-plan btn-plan-current" disabled>
-                [OK] Текущий план
-                {% if plan_expires_at %}
-                · до {{ plan_expires_at }}
-                {% endif %}
-            </button>
-            <button class="btn-plan btn-cancel" id="cancelBtn"
-                    onclick="cancelSubscription()"
-                    style="margin-top:12px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.3); cursor:pointer;">
-                 Отменить подписку
-            </button>
-            {% elif current_user.is_authenticated %}
-            <button class="btn-plan btn-plan-premium" id="activateBtn"
-                    onclick="activatePremium('premium_monthly')">
-                 Попробовать Premium бесплатно
-            </button>
-            {% else %}
-            <a href="{{ url_for('login') }}" class="btn-plan btn-plan-premium">
-                 Войти и получить Premium
-            </a>
-            {% endif %}
-        </div>
-
-    </div>
 
     <!-- Yearly block -->
     <div class="yearly-block">
@@ -532,7 +516,7 @@
             <span class="price-main"><del style="opacity:0.55;color:#94a3b8;">2790₽</del> <span style="color:#38ef7d;">0₽</span></span>
             <span class="price-sub"><del style="opacity:0.55;">232₽/мес</del> · сейчас бесплатно</span>
         </div>
-        {% if current_user.is_authenticated and current_plan not in ('premium_monthly', 'premium_yearly') %}
+        {% if current_user.is_authenticated and current_plan == 'free' %}
         <button class="btn-yearly" onclick="activatePremium('premium_yearly')">
             Выбрать годовой
         </button>

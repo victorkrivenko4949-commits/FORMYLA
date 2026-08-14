@@ -46,8 +46,11 @@ logger = logging.getLogger(__name__)
 figures_gen_bp = Blueprint("figures_generator", __name__, url_prefix="/figures/generate")
 
 # ── Config ──────────────────────────────────────────────────────────────
-REASONER_MODEL = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash").strip()
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+_REASONER_FALLBACK = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro").strip()
+REASONER_MODEL = os.environ.get("FIGURE_MODEL", _REASONER_FALLBACK).strip()
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "") or "sk-87c7e276289a48269afe7d91d08d3f38"
+if DEEPSEEK_API_KEY:
+    DEEPSEEK_API_KEY = DEEPSEEK_API_KEY.strip()
 DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1/chat/completions"
 DEEPSEEK_TIMEOUT = 90  # seconds
 MAX_RETRIES = 2
@@ -253,7 +256,7 @@ def _refund_credit(job_id: int) -> None:
 def _call_deepseek(messages: list[dict]) -> dict:
     """Call DeepSeek API directly. Returns dict with 'content' and 'cost_usd'."""
     model_name = REASONER_MODEL
-    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    api_key = DEEPSEEK_API_KEY
     if not api_key:
         raise RuntimeError("DEEPSEEK_API_KEY not set")
 
@@ -325,13 +328,34 @@ def _run_build_job(job_id: int):
 
     user_message = f"Условие задачи:\n{job.problem_text}"
 
+    # Extract build_type marker from problem_text
+    system_prompt = _REASONER_SYSTEM_PROMPT
+    build_type = "plain"
+    text_for_prompt = job.problem_text
+    if text_for_prompt.startswith("##BT:"):
+        newline_idx = text_for_prompt.index("\n")
+        build_type = text_for_prompt[5:newline_idx]
+        text_for_prompt = text_for_prompt[newline_idx + 1:]
+        user_message = f"Условие задачи:\n{text_for_prompt}"
+        if build_type == "aux":
+            system_prompt = system_prompt + (
+                "\n\nПри построении чертежа добавь вспомогательные элементы: "
+                "линии, точки, окружности, которые помогают увидеть идею решения. "
+                "Вспомогательные элементы рисуй пунктиром, цветом отличным от основного."
+            )
+        else:
+            system_prompt = system_prompt + (
+                "\n\nСтрой только объекты, прямо описанные в условии. "
+                "Не добавляй вспомогательных элементов."
+            )
+
     final_json = None
     last_errors = []
     last_resp = None
 
     for attempt in range(1 + MAX_RETRIES):
         messages = [
-            {"role": "system", "content": _REASONER_SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
         ]
 
         if attempt == 0:
@@ -479,14 +503,15 @@ def _run_build_job(job_id: int):
 
 # ── Queue worker ────────────────────────────────────────────────────────
 
-def _queue_worker_loop():
+def _queue_worker_loop(app=None):
     """Background daemon thread: poll figure_build_jobs for queued tasks."""
     global QUEUE_WORKER_STARTED
+    if app is None:
+        from flask import current_app as _app
+        app = _app._get_current_object()
     logger.info("[figures_gen] queue worker started")
     while True:
         try:
-            from flask import current_app as _app
-            app = _app._get_current_object()
             with app.app_context():
                 from models import db, FigureBuildJob
 
@@ -526,7 +551,7 @@ def _queue_worker_loop():
         time.sleep(QUEUE_POLL_INTERVAL)
 
 
-def _ensure_queue_worker():
+def _ensure_queue_worker(app=None):
     """Start the queue worker thread once per process."""
     global QUEUE_WORKER_STARTED
     with _queue_worker_lock:
@@ -534,8 +559,13 @@ def _ensure_queue_worker():
             return
         QUEUE_WORKER_STARTED = True
 
+    if app is None:
+        from flask import current_app as _app
+        app = _app._get_current_object()
+
     t = threading.Thread(
         target=_queue_worker_loop,
+        args=(app,),
         daemon=True,
         name="figures-gen-queue",
     )
@@ -569,6 +599,7 @@ def start_build():
     # Parse request
     data = request.get_json(silent=True) or {}
     problem = (data.get("problem_text") or data.get("problem") or "").strip()
+    build_type = (data.get("build_type") or "plain").strip()
 
     if not problem:
         return jsonify({"error": "Введите условие задачи."}), 400
@@ -603,9 +634,11 @@ def start_build():
                     job_priority = 1
             except Exception:
                 job_priority = 0
+        # Prepend build_type marker to problem_text for the worker
+        stored_problem = f"##BT:{build_type}\n{problem}"
         job = FigureBuildJob(
             user_id=current_user.id,
-            problem_text=problem,
+            problem_text=stored_problem,
             status="queued",
             model_name=REASONER_MODEL,
             priority=job_priority,

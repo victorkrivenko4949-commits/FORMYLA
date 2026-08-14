@@ -35,47 +35,47 @@ MSK_TZ = timezone(timedelta(hours=3))
 
 # ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ: сколько задач в день получает ученик.
 # ПРАВИЛО:
-#   - дни 1..7 месячного цикла -> 5 задач (режим зондирования)
-#   - после 7-го дня цикла -> норма ученика из анкеты, по умолчанию 10
-#   - если цикл ещё не начат -> день 1 (5 задач)
-# Все потребители обязаны спрашивать get_daily_task_count().
-# Номер дня цикла — из curator/monthly_cycle._get_monthly_cycle() -> day_index.
-CUTOFF_DAILY_TASKS = 5       # дни 1..7 цикла — всегда 5
-DEFAULT_DAILY_TASKS = 10     # после дня 7, если в анкете не указано иное
+#   - дни 1..7: утренний срез (5 задач) + задачи дня.
+#     Задач дня = max(норма - 5, 5), минимум 5.
+#     >часа (10): срез 5 + 5 задач дня = 10
+#     час (8):    срез 5 + 5 задач дня = 10 (min 5)
+#     30мин (10): срез 5 + 5 задач дня = 10
+#     15мин (5):  срез 5 + 0 задач дня → но min 5 → 5
+#   - после дня 7: полная норма из анкеты
+#   - если цикл не начат -> день 1
+CUTOFF_DAILY_TASKS = 5       # минимум в первые 7 дней
+DEFAULT_DAILY_TASKS = 5      # дефолт после дня 7 (30 мин)
+MIN_DAILY_TASKS = 5          # абсолютный минимум
 
 def get_daily_task_count(user_id: int) -> int:
     """ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ: сколько задач получает ученик сегодня.
 
     Правило:
-      - дни 1..7 месячного цикла -> 5 задач (режим зондирования)
-      - после 7-го дня цикла -> норма из анкеты, по умолчанию 10
-      - если цикл ещё не начат -> считаем день 1 (5 задач)
-
-    P11 FIX: номер дня цикла вычисляется из даты начала цикла
-    (curator.monthly_cycle.get_cycle_info -> day_index), а не из
-    хранимого статичного счётчика.
-
-    Все потребители (банковская ротация, LLM-конвейер, slot_planner)
-    обязаны спрашивать эту функцию.
+      - дни 1..7: утренний срез (5 задач) + задачи дня.
+        Задач дня = max(дневная_норма - 5, 5)
+      - после 7-го дня цикла -> полная норма из анкеты
+      - если цикл ещё не начат -> день 1
     """
     from curator.monthly_cycle import get_cycle_info
 
-    # P11 FIX: используем get_cycle_info, которая считает day_index
-    # от started_at динамически
     cycle = get_cycle_info(user_id)
     day_index = cycle.get('day_index', 1) if cycle.get('active') else 1
 
-    # Дни 1..7: всегда 5 задач (режим зондирования)
-    if day_index <= 7:
-        return CUTOFF_DAILY_TASKS
-
-    # После дня 7: норма из анкеты
+    # Дневная норма из анкеты
     onboard = _get_onboarding(user_id)
+    daily_norm = DEFAULT_DAILY_TASKS
     if onboard:
         n = onboard.get('daily_tasks')
         if isinstance(n, (int, float)) and n > 0:
-            return int(n)
-    return DEFAULT_DAILY_TASKS
+            daily_norm = int(n)
+
+    if day_index <= 7:
+        # Режим зондирования: срез 5 + задачи дня
+        tasks_after_probe = max(daily_norm - 5, MIN_DAILY_TASKS)
+        return tasks_after_probe
+
+    # День 8+: полная норма
+    return max(daily_norm, MIN_DAILY_TASKS)
 
 # Канонические разделы level_engine
 CANONICAL_SECTIONS = ('algebra', 'geometry', 'combinatorics', 'logic', 'number_theory')
@@ -418,6 +418,31 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
     """
     today = datetime.now(MSK_TZ).date()
 
+    # ═══════════════════════════════════════════════════════════════
+    # ШАГ -1: Утренний срез — если день 1-7 и зонд не пройден
+    # ═══════════════════════════════════════════════════════════════
+    try:
+        from curator.monthly_cycle import get_cycle_info
+        from services.theme_probe import has_active_probe, get_active_probe_theme
+        cycle = get_cycle_info(user_id)
+        if cycle.get('active'):
+            day_idx = cycle.get('day_index', 1)
+            current_theme = cycle.get('current_theme')
+            if day_idx <= 7 and current_theme:
+                probe_active = has_active_probe(user_id)
+                probe_theme = get_active_probe_theme(user_id)
+                if not probe_active or probe_theme != current_theme:
+                    return {
+                        'probe_required': True,
+                        'theme_id': current_theme,
+                        'theme_name': current_theme,
+                        'grade': grade,
+                        'day_index': day_idx,
+                        'shown_date': today.isoformat(),
+                    }
+    except Exception as _pe:
+        logger.warning("daily_rotation: probe check failed: %s", _pe)
+
     # Проверяем существующий сет на сегодня
     if not force_regenerate:
         existing = DailyTaskSet.query.filter_by(
@@ -475,6 +500,48 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
                 grade = int(g) if g else 9
             except (ValueError, TypeError):
                 grade = 9
+
+    # ═══════════════════════════════════════════════════════════════
+    # ШАГ 0 — JSONL-банк: (grade, topic, week_level)
+    # ═══════════════════════════════════════════════════════════════
+    try:
+        from curator.monthly_cycle import get_cycle_info
+        cycle = get_cycle_info(user_id)
+        if cycle.get('active') and grade >= 5:
+            current_theme = cycle.get('current_theme')
+            day_idx = cycle.get('day_index', 1)
+            # week_level: 1..4 in 28-day cycle
+            week_level = min((day_idx - 1) // 7 + 1, 4)
+            if current_theme:
+                from daily_tasks.jsonl_bank import get_tasks as jb_get, load as jb_load
+                jb_load()
+                tasks = jb_get(grade, current_theme, week_level, count=count)
+                if tasks and len(tasks) >= count:
+                    daily_set = DailyTaskSet(
+                        user_id=user_id, target_date=today, status='ready',
+                        triggered_by='jsonl_bank', generated_at=datetime.utcnow(),
+                        class_level=grade,
+                        reason_summary=f'JSONL: G{grade} {current_theme} W{week_level} L{week_level} ({len(tasks)} tasks)',
+                    )
+                    db.session.add(daily_set); db.session.flush()
+                    for pos, t in enumerate(tasks[:count], start=1):
+                        item = DailyTaskItem(
+                            daily_set_id=daily_set.id, position=pos,
+                            slot_kind='jsonl_bank', subject='math',
+                            topic=t.get('topic', current_theme),
+                            difficulty_level=week_level,
+                            task_text=t.get('task_text', ''),
+                            correct_answer=t.get('correct_answer', ''),
+                            solution='', hints=json.dumps([], ensure_ascii=False),
+                            gemini_spec_json=json.dumps({'source':'jsonl_bank','grade':grade,'topic':current_theme,'level':week_level}, ensure_ascii=False),
+                            status='approved',
+                        )
+                        db.session.add(item)
+                    db.session.commit()
+                    logger.info("daily_rotation JSONL: user=%d G%d topic=%s W%d count=%d", user_id, grade, current_theme, week_level, len(tasks))
+                    return {'tasks': [{'task_id': t.get('position', i), 'task_text': t.get('task_text', ''), 'correct_answer': t.get('correct_answer', ''), 'solution': '', 'subject': 'math', 'topic': t.get('topic', current_theme), 'difficulty_level': week_level} for i, t in enumerate(tasks[:count])], 'subject': 'math', 'shown_date': today.isoformat(), 'count': len(tasks)}
+    except Exception as _jl_err:
+        logger.warning("daily_rotation: jsonl_bank failed: %s", _jl_err)
 
     # ═══════════════════════════════════════════════════════════════
     # P11 FIX: ШАГ 1 — пробуем JSON-банк задач (синхронно, без AI)

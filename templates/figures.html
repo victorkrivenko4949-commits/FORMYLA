@@ -6,7 +6,7 @@
     <section class="figures-inner">
         <header class="figures-header">
             <h1 class="figures-title">📐 Построение чертежа</h1>
-            <p class="figures-hint">Введите условие геометрической задачи и при желании решение — нейросеть создаст декларативное описание, а геометрический движок отрисует SVG-чертёж.</p>
+            <p class="figures-hint">Введите условие геометрической задачи — нейросеть создаст декларативное описание, а геометрический движок отрисует SVG-чертёж.</p>
             <div class="figures-balance" id="figuresBalance">
                 <span class="figures-balance-label">Осталось чертежей:</span>
                 <span class="figures-balance-value" id="balanceValue">{{ credits }}</span>
@@ -14,17 +14,36 @@
         </header>
 
         <div class="figures-form glass">
-            <label for="figureProblem" class="fig-label">Условие задачи</label>
+            <label for="figureProblem" class="fig-label">Условие задачи (текст или фото)</label>
+            <!-- Загрузка фото задачи -->
+            <div id="figPhotoArea" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <label class="fig-btn" style="cursor:pointer;padding:8px 14px;font-size:13px;color:#38bdf8;border:1px dashed rgba(56,189,248,0.3);border-radius:8px;">
+                    🖼 Выбрать фото
+                    <input type="file" id="figPhotoInput" accept="image/*" capture="environment" style="display:none">
+                </label>
+                <button type="button" id="figClearPhoto" class="fig-btn" style="display:none;color:#ef4444;border-color:rgba(239,68,68,0.3);">✕ Убрать</button>
+                <span id="figPhotoName" style="color:var(--text-muted);font-size:12px;display:none;"></span>
+                <span id="figRecognizing" style="color:#fbbf24;font-size:12px;display:none;">Распознаю...</span>
+            </div>
             <textarea id="figureProblem" rows="6" maxlength="{{ max_problem_length }}"
-                placeholder="Например: В треугольнике ABC угол A = 60°, AB = 5, AC = 7. Точка M — середина BC."
+                placeholder="Например: В треугольнике ABC угол A = 60°, AB = 5, AC = 7. Точка M — середина BC. Или вставьте фото/Ctrl+V."
                 class="fig-textarea"></textarea>
             <span class="fig-counter" id="problemCounter">0 / {{ max_problem_length }} символов</span>
 
-            <label for="figureSolution" class="fig-label" style="margin-top: 16px;">Решение</label>
-            <textarea id="figureSolution" rows="4" maxlength="{{ max_solution_length }}"
-                placeholder="Ход решения поможет модели точнее построить чертёж..."
-                class="fig-textarea"></textarea>
-            <span class="fig-counter" id="solutionCounter">0 / {{ max_solution_length }} символов</span>
+            <!-- Переключатель типа чертежа -->
+            <div class="fig-build-type" style="margin-top: 16px;">
+                <label class="fig-label">Тип чертежа</label>
+                <div class="build-type-toggle" style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--fig-border);margin-top:8px;">
+                    <button type="button" class="build-type-btn active" data-type="plain" id="btnPlain"
+                        style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(59,130,246,0.15);color:var(--fig-accent);font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
+                        Без доп. построения
+                    </button>
+                    <button type="button" class="build-type-btn" data-type="aux" id="btnAux"
+                        style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--fig-muted);font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
+                        С доп. построением
+                    </button>
+                </div>
+            </div>
 
             <div class="fig-actions">
                 <button id="generateFigureBtn" type="button" class="fig-btn-primary">✏️ Построить чертёж</button>
@@ -344,7 +363,6 @@
 <script>
 (function() {
     const problemEl = document.getElementById('figureProblem');
-    const solutionEl = document.getElementById('figureSolution');
     const generateBtn = document.getElementById('generateFigureBtn');
     const loader = document.getElementById('figureLoader');
     const errorEl = document.getElementById('figureError');
@@ -354,15 +372,34 @@
     const metaEl = document.getElementById('figureMeta');
     const balanceValue = document.getElementById('balanceValue');
     const zeroBalance = document.getElementById('figureZeroBalance');
+    const btnPlain = document.getElementById('btnPlain');
+    const btnAux = document.getElementById('btnAux');
 
     let pollTimer = null;
     let currentBaseSvg = null;
     let currentAuxSvg = null;
     let currentShowAux = false;
+    let currentBuildType = 'plain';
     const auxToggle = document.getElementById('figureAuxToggle');
     const auxBaseBtn = document.getElementById('auxBaseBtn');
     const auxFullBtn = document.getElementById('auxFullBtn');
     const auxReasonEl = document.getElementById('figureAuxReason');
+
+    // Build type toggle
+    const btns = document.querySelectorAll('.build-type-btn');
+    btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            btns.forEach(function(b) {
+                b.classList.remove('active');
+                b.style.background = 'rgba(255,255,255,0.04)';
+                b.style.color = 'var(--fig-muted)';
+            });
+            btn.classList.add('active');
+            btn.style.background = 'rgba(59,130,246,0.15)';
+            btn.style.color = 'var(--fig-accent)';
+            currentBuildType = btn.getAttribute('data-type');
+        });
+    });
 
     function showSvg() {
         if (currentShowAux && currentAuxSvg) {
@@ -386,12 +423,90 @@
         showSvg();
     });
 
-    // Character counters
+    // === PHOTO UPLOAD: file picker + Ctrl+V paste ===
+    const photoInput = document.getElementById('figPhotoInput');
+    const photoClearBtn = document.getElementById('figClearPhoto');
+    const photoNameEl = document.getElementById('figPhotoName');
+    const recognizingEl = document.getElementById('figRecognizing');
+
+    async function recognizePhoto(b64, mime) {
+        recognizingEl.style.display = 'inline';
+        photoClearBtn.style.display = 'none';
+        try {
+            const resp = await fetch('/api/figures/recognize-photo', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({image: b64, mime: mime})
+            });
+            const data = await resp.json();
+            if (data.text) {
+                problemEl.value = (problemEl.value ? problemEl.value + '\n' : '') + data.text;
+                problemEl.dispatchEvent(new Event('input'));
+            } else {
+                showError('Не удалось распознать текст с фото. Введите условие вручную.');
+            }
+        } catch(e) {
+            showError('Ошибка при распознавании фото.');
+        }
+        recognizingEl.style.display = 'none';
+        photoClearBtn.style.display = 'none';
+        photoNameEl.style.display = 'none';
+        photoInput.value = '';
+    }
+
+    function handlePhotoFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        photoNameEl.textContent = file.name;
+        photoNameEl.style.display = 'inline';
+        photoClearBtn.style.display = 'inline';
+        const reader = new FileReader();
+        reader.onload = function() {
+            const b64 = reader.result.split(',')[1];
+            recognizePhoto(b64, file.type);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // File input change
+    photoInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            handlePhotoFile(this.files[0]);
+        }
+    });
+
+    // Ctrl+V paste — works when textarea is focused
+    document.addEventListener('paste', function(e) {
+        if (document.activeElement !== problemEl) return;
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.startsWith('image/')) {
+                e.preventDefault();
+                handlePhotoFile(items[i].getAsFile());
+                return;
+            }
+        }
+    });
+
+    // Drag & drop on textarea
+    problemEl.addEventListener('dragover', function(e) { e.preventDefault(); });
+    problemEl.addEventListener('drop', function(e) {
+        e.preventDefault();
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) handlePhotoFile(file);
+    });
+
+    // Clear photo
+    photoClearBtn.addEventListener('click', function() {
+        photoInput.value = '';
+        photoNameEl.style.display = 'none';
+        photoClearBtn.style.display = 'none';
+        recognizingEl.style.display = 'none';
+    });
+
+    // Character counter
     problemEl.addEventListener('input', function() {
         document.getElementById('problemCounter').textContent = this.value.length + ' / {{ max_problem_length }} символов';
-    });
-    solutionEl.addEventListener('input', function() {
-        document.getElementById('solutionCounter').textContent = this.value.length + ' / {{ max_solution_length }} символов';
     });
 
     // Update balance display
@@ -451,7 +566,6 @@
                 return;
             }
 
-            // Update loader text with step label
             if (data.step_label && !loader.hidden) {
                 loader.querySelector('.fig-note').textContent = data.step_label + '…';
             }
@@ -479,8 +593,6 @@
                         auxToggle.hidden = true;
                         auxReasonEl.hidden = true;
                     }
-                    const svgBlob = new Blob([data.svg], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(svgBlob);
                     downloadBtn.onclick = function() {
                         const svgToDownload = currentShowAux && currentAuxSvg ? currentAuxSvg : currentBaseSvg;
                         const blob = new Blob([svgToDownload], { type: 'image/svg+xml' });
@@ -502,7 +614,6 @@
                 await fetchBalance();
                 generateBtn.disabled = false;
             }
-            // else: still queued/thinking/drawing — keep polling
         } catch(e) {
             clearPoll();
             showError('Ошибка соединения. Проверьте интернет и попробуйте снова.');
@@ -529,7 +640,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     problem: problem,
-                    solution: solutionEl.value.trim()
+                    build_type: currentBuildType
                 })
             });
 
@@ -542,12 +653,10 @@
                 return;
             }
 
-            // Start polling
             const jobId = data.job_id;
             pollTimer = setInterval(function() {
                 pollJobStatus(jobId);
             }, 2000);
-            // Immediate first poll
             pollJobStatus(jobId);
 
         } catch(e) {

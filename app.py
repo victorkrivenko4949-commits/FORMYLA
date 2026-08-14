@@ -1299,9 +1299,11 @@ except Exception as _e:
 
 # CH5: New figure generation pipeline with its own /figures/generate prefix.
 try:
-    from routes.figures_generator import figures_gen_bp
+    from routes.figures_generator import figures_gen_bp, _ensure_queue_worker
     app.register_blueprint(figures_gen_bp)
     print("[BP] figures_gen_bp registered (/figures/generate)")
+    # Start figure build queue worker daemon
+    _ensure_queue_worker(app)
 except Exception as _e:
     print(f"[BP] figures_gen_bp NOT registered: {_e}")
 
@@ -2180,6 +2182,41 @@ def process_pregen_queue_job():
                 app.logger.info(f"[OK] Pre-gen queue: launched {launched}, reaped {reaped}")
         except Exception as e:
             app.logger.error(f" Pre-gen queue processing failed: {e}")
+
+# ── Conveyor: schedule all users (every 60 minutes) ─────────────────
+@scheduler.task('interval', id='conveyor_schedule_all', minutes=60)
+def conveyor_schedule_all_job():
+    """Rescan all users with monthly_cycle and fill gen_conveyor."""
+    with app.app_context():
+        from daily_tasks.services import schedule_all_users
+        result = schedule_all_users()
+        app.logger.info(
+            "[CONVEYOR] schedule_all: scanned=%(users_scanned)d "
+            "created=%(entries_created)d skipped=%(entries_skipped)d",
+            result,
+        )
+
+# ── Conveyor: worker (every 2 minutes) ─────────────────────────────
+@scheduler.task('interval', id='conveyor_worker', minutes=2)
+def conveyor_worker_job():
+    """Process gen_conveyor queue: launch up to MAX_CONVEYOR_WORKERS."""
+    with app.app_context():
+        from daily_tasks.services import conveyor_worker
+        launched = conveyor_worker()
+        if launched:
+            app.logger.info("[CONVEYOR] worker launched %d generation(s)", launched)
+
+# Auto-clean tutor chat history every 3 days
+@scheduler.task('cron', id='tutor_history_cleanup', day='*/3', hour=3, minute=0)
+def tutor_history_cleanup_job():
+    """Delete chat history older than 3 days for all users."""
+    with app.app_context():
+        from models import ChatMessage, db
+        from datetime import datetime, timedelta
+        cutoff = datetime.utcnow() - timedelta(days=3)
+        deleted = ChatMessage.query.filter(ChatMessage.timestamp < cutoff).delete()
+        db.session.commit()
+        app.logger.info("[TUTOR] cleaned %d old messages", deleted)
 
 # Daily midnight auto-assignment (runs at 00:05 MSK)
 # CRITICAL: this is the job that actually creates DailyTaskSet for users
@@ -3408,20 +3445,15 @@ def welcome():
 
 @app.route("/")
 def index():
-    """Главная страница - список предметов."""
-    solved_count = len(session.get('solved_problems', []))
-    return render_template("index.html",
-        subjects=SUBJECTS,
-        solved_count=solved_count
-    )
-
-
-@app.route("/topics")
-def topics():
-    """Страница со всеми темами (8 предметов)."""
-    return render_template("topics.html",
-        subjects=SUBJECTS
-    )
+    """Главная страница — редирект по роли."""
+    if current_user.is_authenticated:
+        _role = getattr(current_user, 'role', 'student') or 'student'
+        if _role == 'teacher':
+            return redirect('/teacher')
+        if _role == 'parent':
+            return redirect('/parent')
+        return redirect(url_for('prep.coach'))
+    return redirect(url_for('login'))
 
 
 @app.route("/leaderboard")
@@ -4852,9 +4884,8 @@ def login():
         user = User.query.filter_by(email=email).first()
         
         if not user:
-            # Создаем нового пользователя
-            user = User(email=email, trial_started_at=datetime.utcnow())
-            db.session.add(user)
+            flash('Такого email не существует', 'error')
+            return render_template('login.html', email=email)
         
         # Генерируем код
         code = user.generate_auth_code()
@@ -4964,14 +4995,14 @@ def verify_code():
 
             # Редирект:
             #   1) если есть next — туда
-            #   2) если пользователь ещё не прошёл онбординг — /about?onboarding=1
-            #   3) иначе — главная
+            #   2) если пользователь ещё не прошёл онбординг — /intake
+            #   3) иначе — "О сайте"
             next_page = request.args.get('next')
             if next_page:
                 return redirect(next_page)
             if getattr(user, 'onboarded_at', None) is None:
                 return redirect(url_for('intake.intake_page'))
-            return redirect('/daily_tasks')
+            return redirect('/about')
         
         flash('Неверный или просроченный код', 'error')
         return render_template('verify_code.html', email=email)
@@ -4984,7 +5015,7 @@ def logout():
     """Выход пользователя."""
     logout_user()
     session.clear()
-    resp = redirect(url_for('index'))
+    resp = redirect(url_for('login'))
     # Удаляем remember_me cookie (с учётом secure/samesite флагов для production)
     resp.delete_cookie('remember_token', path='/', samesite='Lax')
     resp.delete_cookie('formyla_device_id', path='/', samesite='Lax')
@@ -5190,6 +5221,23 @@ def tutor_history():
     return jsonify([msg.to_dict() for msg in messages])
 
 
+@app.route("/api/tutor/clear", methods=["POST"])
+@login_required
+def tutor_clear():
+    """Delete all chat history for current user."""
+    from models import ChatMessage, db
+    try:
+        agent_type = (request.get_json(silent=True) or {}).get('agent_type', 'general')
+        deleted = ChatMessage.query.filter_by(
+            user_id=current_user.id, agent_type=agent_type
+        ).delete()
+        db.session.commit()
+        return jsonify({'ok': True, 'deleted': deleted})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+
 @app.route("/api/tutor/send", methods=["POST"])
 @login_required
 def tutor_send():
@@ -5224,10 +5272,34 @@ def tutor_send():
                     files = [f]
             
             if files:
-                # Берём первый файл для vision API (DeepSeek/OpenRouter поддерживает 1 изображение)
                 first_file = files[0]
                 if first_file and first_file.filename:
-                    image_data = base64.b64encode(first_file.read()).decode('utf-8')
+                    raw_bytes = first_file.read()
+                    image_data = base64.b64encode(raw_bytes).decode('utf-8')
+                    # KIMI recognizes → text goes to DeepSeek
+                    kimi_failed = False
+                    try:
+                        from services.kimi_vision import process_photo_with_kimi
+                        recognized, kimi_err = process_photo_with_kimi(raw_bytes, first_file.mimetype or 'image/jpeg')
+                        if recognized:
+                            message = (recognized + "\n\n[Пользователь также написал: " + message + "]" if message else recognized)
+                            app.logger.info("[tutor] KIMI recognized %d chars", len(recognized))
+                            image_data = None
+                        else:
+                            kimi_failed = True
+                            app.logger.warning("[tutor] KIMI failed: %s", kimi_err)
+                    except Exception as _kimi_exc:
+                        kimi_failed = True
+                        app.logger.warning("[tutor] KIMI error: %s", _kimi_exc)
+                    
+                    if kimi_failed:
+                        # KIMI couldn't read the photo - tell user, don't send to AI
+                        if not message:
+                            return jsonify({'error': 'Не удалось распознать фото. Пожалуйста, опишите задачу текстом или попробуйте другое фото.'}), 422
+                        else:
+                            # User typed text + attached photo - use text, mention photo
+                            image_data = None
+                            message = message + "\n\n[P.S. К сообщению было прикреплено фото, но его не удалось распознать.]"
         
         if not message and not image_data:
             return jsonify({'error': 'Сообщение пустое'}), 400
@@ -5380,6 +5452,24 @@ def get_ai_solution(problem_id):
 @login_required
 def profile():
     """Личный кабинет пользователя с прогрессом и учениками."""
+    # ── Проверка роли: teacher/parent — показываем упрощённый профиль ──
+    _user_role = getattr(current_user, 'role', 'student') or 'student'
+    if _user_role in ('teacher', 'parent'):
+        return render_template('profile.html',
+                             user=current_user,
+                             user_role=_user_role,
+                             is_teacher_or_parent=True,
+                             progress_dict={},
+                             recent_tests=[],
+                             test_stats={},
+                             students=[],
+                             incoming_requests=[],
+                             mastery_list=[],
+                             mastery_list_json=[],
+                             overall_level=0,
+                             ai_recommendation='',
+                             streak_data=None)
+
     # Получаем прогресс по темам
     topic_progress = UserTopicProgress.query.filter_by(user_id=current_user.id).all()
     
@@ -5565,6 +5655,8 @@ def profile():
 
     return render_template('profile.html',
                          user=current_user,
+                         user_role=_user_role,
+                         is_teacher_or_parent=False,
                          progress_dict=progress_dict,
                          recent_tests=recent_tests,
                          test_stats=test_stats,
@@ -11628,14 +11720,18 @@ def api_set_grade():
         grade_int = int(grade)
         if grade_int < 5 or grade_int > 11:
             return jsonify({'error': 'Класс должен быть от 5 до 11'}), 400
-        current_user.preferred_grade = grade_int
+        user = db.session.merge(current_user)
+        user.preferred_grade = grade_int
         db.session.commit()
         return jsonify({'success': True, 'grade': grade_int})
     except (ValueError, TypeError):
         return jsonify({'error': 'Некорректный класс'}), 400
     except Exception as e:
-        db.session.rollback()
-        app.logger.error(f"Failed to set grade: {e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        app.logger.error(f"Failed to set grade for user={current_user.id}: {e}")
         return jsonify({'error': 'Ошибка сохранения'}), 500
 
 

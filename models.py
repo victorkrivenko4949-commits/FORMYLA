@@ -278,11 +278,13 @@ class User(UserMixin, db.Model):
     # ── T4: trial & subscription helpers ──
 
     def is_trial_active(self):
-        """Return True if trial started and is younger than 24 hours."""
-        if self.trial_started_at is None:
-            return False
-        elapsed = (datetime.utcnow() - self.trial_started_at).total_seconds()
-        return elapsed < 86400
+        """Return True — trial is always active until real payments are connected."""
+        # When real payments are connected, restore this logic:
+        # if self.trial_started_at is None:
+        #     return False
+        # elapsed = (datetime.utcnow() - self.trial_started_at).total_seconds()
+        # return elapsed < 86400
+        return True
 
     def has_active_subscription(self):
         """Return True if plan_expires_at is set and still in the future."""

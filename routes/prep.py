@@ -43,23 +43,28 @@ def _is_onboarding_done(user_id):
     from models_curator import CuratorState as _CS2
     try:
         cs = _CS2.query.filter_by(user_id=user_id).first()
-        if not cs:
-            return False
-        ps = getattr(cs, 'prep_state', None) or {}
-        if not isinstance(ps, dict):
-            return False
-        # P9 intake (routes/intake.py:finish) — key 'intake'
-        if ps.get('intake', {}).get('completed'):
+        if cs:
+            ps = getattr(cs, 'prep_state', None) or {}
+            if isinstance(ps, dict):
+                # P9 intake (routes/intake.py:finish) — key 'intake'
+                if ps.get('intake', {}).get('completed'):
+                    return True
+                # new onboarding (services/onboarding.py:finish) — key 'onboarding'
+                if ps.get('onboarding', {}).get('completed_at'):
+                    return True
+                # old questionnaire (services/questionnaire_storage.py) — key 'questionnaire'
+                q = ps.get('questionnaire', {}) or {}
+                if q.get('completed') and q.get('completed_at'):
+                    return True
+            # fallback: DB flag
+            if bool(getattr(cs, 'onboarding_done', False)):
+                return True
+        # If CuratorState missing or has no valid prep_state — check User.onboarded_at
+        from models import User as _U
+        user = db.session.get(_U, user_id)
+        if user and getattr(user, 'onboarded_at', None):
             return True
-        # new onboarding (services/onboarding.py:finish) — key 'onboarding'
-        if ps.get('onboarding', {}).get('completed_at'):
-            return True
-        # old questionnaire (services/questionnaire_storage.py) — key 'questionnaire'
-        q = ps.get('questionnaire', {}) or {}
-        if q.get('completed') and q.get('completed_at'):
-            return True
-        # fallback: DB flag
-        return bool(getattr(cs, 'onboarding_done', False))
+        return False
     except Exception:
         return False
 
@@ -939,6 +944,13 @@ def get_subtopic_test(grade, subtopic_key, count=5):
 @login_required
 def coach():
     """Страница Куратора: радар по 7 выбранным куратором подтемам + чат с ИИ-агентом."""
+    # Teacher/parent have no profile — redirect to their section
+    _role = getattr(current_user, 'role', 'student') or 'student'
+    if _role == 'teacher':
+        return redirect('/teacher')
+    if _role == 'parent':
+        return redirect('/parent')
+
     # ── T3: compute user name for personalized greeting ─────────────────
     _t3_user_name = display_name_from_email(
         getattr(current_user, 'email', '') or ''
@@ -1371,6 +1383,9 @@ def coach():
                                curator_card=curator_card,
                                curator_debt_breakdown=curator_debt_breakdown,
                                user_name=_t3_user_name)
+
+    # Не пройден онбординг — редирект на /about
+    return redirect('/about')
 
 
 # ─── Morning probe (monthly cycle) ─────────────────────────────────────

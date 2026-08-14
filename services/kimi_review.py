@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Kimi K2.5 client for solution review (vision + text).
+Kimi client for solution review (vision + text) via api.moonshot.ai.
+For users from Russia: uses .ai domain (not .cn which is geo-blocked).
 
 Usage:
     from services.kimi_review import review_solution
@@ -8,8 +9,8 @@ Usage:
     # result: {'raw_response': str, 'label': str, 'error': Optional[str]}
 
 Requirements:
-    - KIMI_API_KEY env var (api key)
-    - KIMI_MODEL env var (model name, e.g. 'kimi-k2-0905-preview')
+    - KIMI_API_KEY env var (api key for Kimi Platform)
+    - KIMI_MODEL env var (model name, e.g. 'kimi-k3')
     - Images: base64 only (no URL) -- Kimi API constraint
 """
 
@@ -23,8 +24,8 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# ── Kimi API endpoint ───────────────────────────────────────────────
-KIMI_API_URL = "https://api.moonshot.cn/v1/chat/completions"
+# ── Kimi API endpoint (use .ai domain — .cn is geo-blocked in Russia) ─
+KIMI_API_URL = "https://api.moonshot.ai/v1/chat/completions"
 
 # ── Valid labels (strict set of 3) ──────────────────────────────────
 VALID_LABELS = {
@@ -43,10 +44,15 @@ def _get_kimi_key() -> str:
 
 
 def _get_kimi_model() -> str:
-    """Read KIMI_MODEL from environment; raise if missing."""
+    """Read KIMI_MODEL from environment; auto-upgrade slow models."""
     model = os.environ.get("KIMI_MODEL", "").strip()
     if not model:
-        raise RuntimeError("KIMI_MODEL not set in environment")
+        # kimi-k2.6: fast (3s), returns content directly. kimi-k3 is slow (56s).
+        model = "kimi-k2.6"
+    # auto-upgrade old/slow models to kimi-k2.6
+    if "k2-0905" in model or "kimi-k3" in model:
+        logger.info("[Kimi] model %s → upgrading to kimi-k2.6 (faster)", model)
+        model = "kimi-k2.6"
     return model
 
 
@@ -76,7 +82,7 @@ def call_kimi_api(
     image_base64: Optional[str] = None,
     image_mime: str = "image/jpeg",
 ) -> str:
-    """Call Kimi API with text and/or image, return raw text response.
+    """Call Kimi API (api.moonshot.ai) with text and/or image, return raw response.
 
     Args:
         text: Text prompt (solution text or task description).
@@ -125,7 +131,7 @@ def call_kimi_api(
     payload = {
         "model": model,
         "messages": messages,
-        "temperature": 0.3,
+        "temperature": 1.0,
         "max_tokens": 1024,
     }
 
@@ -139,7 +145,7 @@ def call_kimi_api(
 
     for attempt in range(max_retries):
         try:
-            logger.info(f"[Kimi] attempt {attempt + 1}/{max_retries}")
+            logger.info(f"[Kimi] api.moonshot.ai attempt {attempt + 1}/{max_retries} model={model}")
             resp = requests.post(
                 KIMI_API_URL,
                 headers=headers,
@@ -150,12 +156,24 @@ def call_kimi_api(
             if resp.status_code == 200:
                 data = resp.json()
                 if "choices" in data and len(data["choices"]) > 0:
-                    content = data["choices"][0].get("message", {}).get("content", "")
+                    msg = data["choices"][0].get("message", {}) or {}
+                    content = msg.get("content") or ""
+                    # All moonshot.ai models are reasoning models:
+                    # content is often empty, real answer in reasoning_content.
+                    if not content:
+                        content = msg.get("reasoning_content") or ""
+                        if content:
+                            logger.info(f"[Kimi] using reasoning_content ({len(content)} chars)")
                     if content:
                         logger.info(f"[Kimi] ok ({len(content)} chars)")
                         return content
-                    raise RuntimeError("Kimi: empty content in response")
+                    raise RuntimeError("Kimi: empty content in response (both content and reasoning_content empty)")
                 raise RuntimeError("Kimi: no choices in response")
+
+            if resp.status_code in (401, 403):
+                raise RuntimeError(
+                    f"Kimi auth/access denied ({resp.status_code}): {resp.text[:200]}"
+                )
 
             if resp.status_code == 429:
                 wait = 30
@@ -169,9 +187,6 @@ def call_kimi_api(
                 time.sleep(wait)
                 continue
 
-            if resp.status_code == 401:
-                raise RuntimeError(f"Kimi: auth failed (401): {resp.text[:200]}")
-
             raise RuntimeError(f"Kimi HTTP {resp.status_code}: {resp.text[:300]}")
 
         except requests.exceptions.Timeout:
@@ -182,6 +197,8 @@ def call_kimi_api(
             wait = base_delay * (2 ** attempt)
             logger.warning(f"[Kimi] connection error: {e}, waiting {wait}s")
             time.sleep(wait)
+        except RuntimeError:
+            raise  # non-retryable
 
     raise RuntimeError(f"Kimi: failed after {max_retries} attempts")
 

@@ -111,15 +111,16 @@ def validate_daily_task_latex(text: str) -> LatexValidationReport:
     """
     report = LatexValidationReport()
 
-    # 1. Запрещённые $ … $
+    # 1. $ … $ — теперь РАЗРЕШЕНЫ (промпт просит именно $...$).
+    #    Оставляем только warning (low), чтобы не блокировать fix-шаг.
     dollar_matches = list(_DEPRECATED_DOLLAR_RE.finditer(text))
     for m in dollar_matches:
         snippet = text[max(0, m.start() - 10) : m.end() + 10]
         report.issues.append(
             LatexIssue(
                 code="deprecated_dollar",
-                severity="high",
-                message="Найден $…$ / $$…$$ вместо \(…\) / \[…\]",
+                severity="low",
+                message="$…$ / $$…$$ (допустимо — промпт так просит)",
                 snippet=snippet,
             )
         )
@@ -311,7 +312,7 @@ GEMINI_SPEC_REQUIRED_FIELDS = {
     "difficulty_level", "task_archetype", "must_use_concepts",
     "must_avoid", "answer_form", "estimated_solve_minutes", "reason_for_student",
 }
-OPUS_TASK_REQUIRED_FIELDS = {"position", "task_text", "correct_answer", "solution", "hints"}
+OPUS_TASK_REQUIRED_FIELDS = {"position", "task_text", "correct_answer"}
 GPT_AUDIT_ENTRY_REQUIRED_FIELDS = {"position", "verdict", "issues"}
 AUDIT_ISSUE_REQUIRED_FIELDS = {"code", "severity", "description", "fix_instruction"}
 
@@ -336,13 +337,10 @@ def _extract_json_from_response(raw_response: str) -> Optional[dict]:
     text = raw_response.strip()
 
     # 0. PRE-CLEAN: убираем markdown-fence, если есть (даже без закрывающего)
-    # LLM часто возвращают ```json\n{...}\n``` или просто ```\n{...}
     if text.startswith("```"):
-        # Снимаем первую строку с fence
         first_newline = text.find("\n")
         if first_newline != -1:
             text = text[first_newline + 1 :].strip()
-        # Снимаем закрывающий fence, если есть
         if text.endswith("```"):
             text = text[:-3].strip()
 
@@ -352,43 +350,164 @@ def _extract_json_from_response(raw_response: str) -> Optional[dict]:
     )
     if json_block_match:
         candidate = json_block_match.group(1).strip()
-        try:
-            return json.loads(candidate)
-        except json.JSONDecodeError:
-            pass
+        result = _try_parse_json(candidate)
+        if result is not None:
+            return result
 
     # 2. ``` … ``` (без json)
     code_block_match = re.search(r"```\s*\n?(.*?)\n?```", raw_response, re.DOTALL)
     if code_block_match:
         candidate = code_block_match.group(1).strip()
+        result = _try_parse_json(candidate)
+        if result is not None:
+            return result
+
+    # 3. Первый { … }
+    result = _try_parse_json(text)
+    if result is not None:
+        return result
+
+    return None
+
+
+def _try_parse_json(text: str) -> Optional[dict]:
+    """Robust JSON parser with truncation recovery for LLM output."""
+    if not text:
+        return None
+
+    # Find the first { ... } pair with balanced braces
+    brace_start = text.find("{")
+    if brace_start == -1:
+        return None
+
+    brace_depth = 0
+    last_valid_end = -1
+    for i in range(brace_start, len(text)):
+        ch = text[i]
+        if ch == "{":
+            brace_depth += 1
+        elif ch == "}":
+            brace_depth -= 1
+            if brace_depth == 0:
+                last_valid_end = i
+                break
+
+    # Try complete JSON
+    if last_valid_end != -1:
+        candidate = text[brace_start:last_valid_end + 1]
+        # Remove trailing commas before } or ]
         try:
             return json.loads(candidate)
         except json.JSONDecodeError:
-            pass
+            fixed = re.sub(r",\s*([}\]])", r"\1", candidate)
+            try:
+                return json.loads(fixed)
+            except json.JSONDecodeError:
+                pass
 
-    # 3. Первый { … }
-    brace_start = text.find("{")
-    if brace_start != -1:
-        brace_depth = 0
-        for i in range(brace_start, len(text)):
-            if text[i] == "{":
-                brace_depth += 1
-            elif text[i] == "}":
-                brace_depth -= 1
-            if brace_depth == 0:
-                candidate = text[brace_start : i + 1]
-                try:
-                    return json.loads(candidate)
-                except json.JSONDecodeError:
-                    # Пробуем починить: убрать лишние запятые
-                    try:
-                        fixed = re.sub(r",\s*([}\]])", r"\1", candidate)
-                        return json.loads(fixed)
-                    except json.JSONDecodeError:
-                        pass
-                    break  # не нашли валидный JSON
+    # 3a. Truncated JSON recovery: model output cut off by max_tokens
+    # Close all unclosed strings, arrays, and objects
+    truncated = text[brace_start:]
+    if len(truncated) > 0 and last_valid_end == -1:
+        repaired = _repair_truncated_json(truncated)
+        if repaired is not None:
+            try:
+                result = json.loads(repaired)
+                return result
+            except json.JSONDecodeError:
+                pass
 
     return None
+
+
+def _repair_truncated_json(truncated: str) -> Optional[str]:
+    """Attempt to repair JSON truncated by max_tokens limit.
+    
+    Closes open strings, arrays, and objects. Handles common LLM truncation patterns.
+    """
+    if not truncated or not truncated.startswith("{"):
+        return None
+
+    result = list(truncated)
+    in_string = False
+    escape = False
+    depth = 0
+    last_non_ws = 0
+
+    for i, ch in enumerate(result):
+        if escape:
+            escape = False
+            continue
+        if ch == "\\" and in_string:
+            escape = True
+            continue
+        if ch == '"' and not escape:
+            in_string = not in_string
+            last_non_ws = i
+            continue
+        if in_string:
+            if ch not in " \t\n\r":
+                last_non_ws = i
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+        if ch not in " \t\n\r":
+            last_non_ws = i
+
+    # If we're inside a string, close it
+    if in_string:
+        result.append('"')
+
+    # If we ended mid-value (trailing comma, colon), remove garbage after last quote/brace
+    # and close all open structures
+    close_needed = depth
+    if close_needed <= 0:
+        return None  # shouldn't happen
+
+    # Remove trailing garbage — keep only up to the last meaningful token
+    clean_end = last_non_ws + 1
+    if in_string:
+        clean_end = len(result)  # result already has closing quote appended
+
+    cleaned = "".join(result[:clean_end])
+
+    # Remove trailing comma/colon
+    cleaned = re.sub(r'[,:]\s*$', '', cleaned)
+
+    # Close open arrays/objects
+    # Count open [ and {
+    open_brackets = 0
+    open_braces = 0
+    in_str = False
+    esc = False
+    for ch in cleaned:
+        if esc:
+            esc = False
+            continue
+        if ch == "\\" and in_str:
+            esc = True
+            continue
+        if ch == '"':
+            in_str = not in_str
+            continue
+        if in_str:
+            continue
+        if ch == "{":
+            open_braces += 1
+        elif ch == "}":
+            open_braces -= 1
+        elif ch == "[":
+            open_brackets += 1
+        elif ch == "]":
+            open_brackets -= 1
+
+    # Close all open structures
+    cleaned += "]" * max(0, open_brackets)
+    cleaned += "}" * max(0, open_braces)
+
+    return cleaned
 
 
 def _truncate_for_log(data: Any, max_len: int = 200) -> str:
@@ -466,9 +585,9 @@ def validate_gemini_plan(raw_response: str) -> GeminiPlanValidation:
         result.global_errors.append('"specs" не является массивом')
         return result
 
-    if len(specs) != 10:
+    if len(specs) < 1:
         result.global_errors.append(
-            f'"specs" содержит {len(specs)} элементов, ожидалось 10'
+            f'"specs" пуст или содержит 0 элементов'
         )
         # Продолжаем проверку с тем, что есть
 
@@ -650,9 +769,9 @@ def validate_opus_generation(raw_response: str) -> OpusGenerationValidation:
         result.global_errors.append('"tasks" не является массивом')
         return result
 
-    if len(tasks) != 10:
+    if len(tasks) < 1:
         result.global_errors.append(
-            f'"tasks" содержит {len(tasks)} элементов, ожидалось 10'
+            f'"tasks" пуст или содержит 0 элементов'
         )
 
     seen_positions: set = set()

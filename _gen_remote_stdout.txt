@@ -1,0 +1,35 @@
+PID: 25764
+======================================================================
+  FORMYLA REMOTE — cycles 4-5
+======================================================================
+
+  -- DB Cleanup --
+  OK daily_task_items: removed 30 records
+  OK daily_task_sets: removed 3 records
+  OK daily_generation_jobs: removed 1 records
+  OK task_pool: removed 0 records
+  OK gen_conveyor: removed 2086 records
+  DB cleaned.
+
+  -- Starting --
+
+======================================================================
+  CYCLES: 4..5
+  TOTAL: 1000 batches, 8750 tasks
+  LEFT: 1000 batches, 8750 tasks
+  KEY: sk-a695537b0da54da79...
+  MODEL: deepseek-v4-pro
+======================================================================
+
+
+[1/1000] G5 L1 | Числа, цифры и арифметические вычисления (5 tasks)
+    generated 0/5 valid, tokens: 71450in/43349out
+    iter 1: 0 approved, 0 needs_fix
+  OK 0/5 valid, 208s | 1/1000 (0%) | ETA: 3461min | saved: 5
+
+[2/1000] G5 L2 | Числа, цифры и арифметические вычисления (10 tasks)
+    generated 0/10 valid, tokens: 142900in/86706out
+    iter 1: 0 approved, 0 needs_fix
+  OK 0/10 valid, 384s | 2/1000 (0%) | ETA: 4925min | saved: 15
+
+[3/1000] G5 L3 | Числа, цифры и арифметические вычисления (10 tasks)

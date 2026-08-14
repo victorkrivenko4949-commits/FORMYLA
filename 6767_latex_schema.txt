@@ -1,0 +1,1 @@
+results: 62 строк | колонки: idx, input_hash, result_json, updated_at

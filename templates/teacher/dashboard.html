@@ -96,14 +96,14 @@
 
 {% block content %}
 <div class="teacher-page">
-    <h1>Мои группы</h1>
+    <h1>👨‍🏫 Мои группы</h1>
 
     <div class="create-form">
-        <h3>Создать новую группу</h3>
+        <h3>➕ Создать новую группу</h3>
         <form method="POST" action="{{ url_for('parent_teacher.teacher_group_create') }}">
             <div class="form-row">
                 <input type="text" name="name" placeholder="Название группы" required maxlength="120">
-                <button type="submit" class="btn btn-accent">Создать</button>
+                <button type="submit" class="btn btn-accent">➕ Создать</button>
             </div>
         </form>
     </div>
@@ -116,13 +116,13 @@
                     {{ gs.group.name }}
                 </a>
                 <div class="group-meta">
-                    Код: {{ gs.group.invite_code }} |
-                    Учеников: {{ gs.student_count }} |
-                    Среднее задач/день: {{ gs.group_avg }}
+                    🔑 Код: {{ gs.group.invite_code }} |
+                    👥 Учеников: {{ gs.student_count }} |
+                    📊 Среднее: {{ gs.group_avg }}
                 </div>
             </div>
             <a href="{{ url_for('parent_teacher.teacher_group_view', gid=gs.group.id) }}"
-               class="btn btn-accent">Открыть</a>
+               class="btn btn-accent">📂 Открыть</a>
         </div>
         {% endfor %}
     {% else %}

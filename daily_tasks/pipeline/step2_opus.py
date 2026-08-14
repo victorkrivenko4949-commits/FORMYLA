@@ -34,12 +34,12 @@ logger = logging.getLogger(__name__)
 # == kontseptualnye konstanty ==
 
 _OPUS_MODEL = "deepseek/deepseek-v4-pro"
-_PARALLEL_WORKERS = 5
+_PARALLEL_WORKERS = 10
 _MAX_REGEN_ROUNDS = 3
 _GEN_HARD_THRESHOLD = 3
 _GEN_MODEL_EASY = "deepseek/deepseek-v4-pro"
 _GEN_MODEL_HARD = "deepseek/deepseek-v4-pro"
-_JSON_RESPONSE_FORMAT = {"type": "json_object"}
+_JSON_RESPONSE_FORMAT = None
 
 
 # == helpers dlya modeli ==
@@ -55,19 +55,7 @@ def _model_for_level(difficulty_level: Any) -> str:
 
 
 def _max_tokens_for_level(difficulty_level: Any) -> int:
-    """Bolshe tokenov dlya slozhnyh urovnej - inache JSON obrezaetsya.
-
-    Uvelichen do 20000 dlya R1 (lvl >= 4), chtoby chain-of-thought
-    ne zhirala ves limit i model ne vozvrashchala pustoj JSON.
-    """
-    try:
-        lvl = int(difficulty_level or 1)
-    except (TypeError, ValueError):
-        lvl = 1
-    if lvl >= _GEN_HARD_THRESHOLD:
-        return 20000
-    if lvl >= 4:
-        return 6144
+    """Dostatochno tokenov dlya usloviya + otveta (bez resheniya)."""
     return 4096
 
 
@@ -127,7 +115,7 @@ def _topic_keywords(spec: Dict[str, Any]) -> set:
 
 
 def _audit_task(task: Optional[Dict[str, Any]], spec: Dict[str, Any]) -> Tuple[bool, str]:
-    """Prostaya proverka: ne GEN_FAILED i sootvetstvie teme."""
+    """Prostaya proverka: ne GEN_FAILED."""
     if task is None:
         return False, "missing"
     if task.get("_generation_failed"):
@@ -135,22 +123,6 @@ def _audit_task(task: Optional[Dict[str, Any]], spec: Dict[str, Any]) -> Tuple[b
     task_text = task.get("task_text", "")
     if not task_text or len(task_text.strip()) < 20:
         return False, "too_short"
-    # Proverka tematicheskogo sootvetstviya
-    spec_kw = _topic_keywords(spec)
-    if not spec_kw:
-        return True, "ok"  # net klyuchevyh slov - ne mozhem proverit
-    task_kw = _tokenize(task_text)
-    intersection = spec_kw & task_kw
-    if not intersection:
-        logger.warning(
-            "Step 2 AUDIT - pos=%s topic=%r subtopic=%r: "
-            "net peresecheniya klyuchevyh slov s temoj (spec_kw=%s)",
-            spec.get("position"),
-            spec.get("topic"),
-            spec.get("subtopic"),
-            spec_kw,
-        )
-        return False, "off_topic"
     return True, "ok"
 
 
@@ -224,11 +196,12 @@ async def _generate_one_spec(
             {
                 "role": "user",
                 "content": (
-                    "Tvoj predydushchij otvet ne yavlyaetsya validnym JSON ili ne "
-                    "soderzhit klyuch 'tasks'. Verni TOLKO korrektnyj JSON-objekt "
-                    'vida {"tasks": [{"position": N, "task_text": "...", '
-                    '"correct_answer": "...", "solution": "...", "hints": ["..."]}]} '
-                    "bez kakih-libo poyasnenij, markdown-blokov ili lishnego teksta."
+                    "Твой предыдущий ответ не является валидным JSON или не "
+                    "содержит ключ 'tasks'. Верни ТОЛЬКО корректный JSON-объект "
+                    'вида {"tasks": [{"position": N, "task_text": "...", '
+                    '"correct_answer": "..."}]} '
+                    "Без решений, подсказок, markdown-блоков или лишнего текста. "
+                    "ТОЛЬКО JSON с полями position, task_text, correct_answer."
                 ),
             },
         ]

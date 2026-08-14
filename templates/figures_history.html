@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}История чертежей — FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+    .fig-hist-wrap { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+    .fig-hist-wrap h1 { font-size: 28px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
+    .fig-hist-wrap .subtitle { color: #64748b; font-size: 14px; margin-bottom: 32px; }
+    .fig-card { background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
+    .fig-card.done { border-left: 3px solid #38ef7d; }
+    .fig-card.failed { border-left: 3px solid #ef4444; opacity: 0.7; }
+    .fig-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .fig-status { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 6px; }
+    .fig-status.done { background: rgba(56,239,125,0.15); color: #38ef7d; }
+    .fig-status.failed { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .fig-date { font-size: 12px; color: #64748b; }
+    .fig-problem { font-size: 14px; color: #cbd5e1; line-height: 1.5; max-height: 60px; overflow: hidden; }
+    .fig-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .fig-btn { padding: 6px 14px; border-radius: 8px; font-size: 13px; text-decoration: none; font-weight: 500; border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; background: transparent; cursor: pointer; transition: all 0.15s; }
+    .fig-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .fig-empty { text-align: center; padding: 60px 20px; color: #64748b; }
+    .fig-empty a { color: #38bdf8; }
+    .fig-svg-bar { display: flex; gap: 6px; margin-bottom: 8px; justify-content: flex-end; }
+    @media (max-width: 600px) { .fig-hist-wrap { padding: 24px 16px 100px; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="fig-hist-wrap">
+    <h1>📐 История чертежей</h1>
+    <p class="subtitle">Все сгенерированные вами чертежи. Очередь обрабатывается в фоне — можете уходить со страницы.</p>
+    {% if jobs %}
+        {% for j in jobs %}
+        <div class="fig-card {{ j.status }}">
+            <div class="fig-card-header">
+                <span class="fig-status {{ j.status }}">{{ '✅ Готов' if j.status == 'done' else '❌ Ошибка' }}</span>
+                <span class="fig-date">{{ j.created_at.strftime('%d.%m.%Y %H:%M') if j.created_at else '' }}</span>
+            </div>
+            <div class="fig-problem">{{ (j.problem_text or '')[:200] }}{{ '…' if (j.problem_text or '')|length > 200 else '' }}</div>
+            <div class="fig-actions">
+                {% if j.status == 'done' and j.svg_path %}
+                <button onclick="var d=this.nextElementSibling;var v=d.style.display==='none'?'block':'none';d.style.display=v;this.textContent=v==='none'?'📐 Показать чертёж':'📐 Скрыть чертёж'" class="fig-btn">📐 Показать чертёж</button>
+                <div style="display:none;margin-top:10px;background:#0f172a;border-radius:8px;padding:6px 12px 12px;overflow:auto;max-height:500px;position:relative">
+                    <div class="fig-svg-bar">
+                        <button onclick="copySvg(this)" class="fig-btn" style="font-size:11px;padding:3px 8px;">📋 Копировать</button>
+                        <button onclick="downloadSvg(this)" class="fig-btn" style="font-size:11px;padding:3px 8px;">💾 Сохранить</button>
+                    </div>
+                    {{ j.svg_path | safe }}
+                </div>
+                {% endif %}
+                {% if j.error %}
+                <span style="font-size:12px;color:#ef4444;align-self:center;">{{ j.error[:100] }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="fig-empty">
+            <p>У вас пока нет сгенерированных чертежей.</p>
+            <p><a href="/figures">Перейти к генератору →</a></p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copySvg(btn) {
+    var svg = btn.closest('[style]').querySelector('svg');
+    if (!svg) return alert('SVG не найден');
+    var text = new XMLSerializer().serializeToString(svg);
+    navigator.clipboard.writeText(text).then(function(){
+        btn.textContent = '✓ Скопировано';
+        setTimeout(function(){btn.textContent='📋 Копировать'},2000);
+    }).catch(function(){
+        alert('Не удалось скопировать');
+    });
+}
+function downloadSvg(btn) {
+    var svg = btn.closest('[style]').querySelector('svg');
+    if (!svg) return alert('SVG не найден');
+    var clone = svg.cloneNode(true);
+    var bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    bg.setAttribute('width','100%');bg.setAttribute('height','100%');
+    bg.setAttribute('fill','#0f172a');
+    clone.insertBefore(bg, clone.firstChild);
+    var text = new XMLSerializer().serializeToString(clone);
+    var blob = new Blob([text], {type:'image/svg+xml'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'figure.svg';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

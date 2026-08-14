@@ -547,15 +547,33 @@ def _resolve_class_level(user: User) -> int:
     """Явный, не-молчаливый резолв класса.
 
     Если ``preferred_grade`` пуст или не парсится — бросаем ProfileBuildError.
+    Для пользователей с role='teacher' или 'parent' — сообщаем, что задачи дня
+    для них не генерируются (у них нет класса).
+
     Никакого silent ``class_level=9`` (ТЗ п.6).
     """
+    role = getattr(user, 'role', 'student') or 'student'
+
+    # Учителя и родители не имеют класса — им задачи дня не нужны
+    if role in ('teacher', 'parent'):
+        msg = (
+            f"Профиль: {role}. У {role} нет класса ученика — "
+            "задачи дня не генерируются. Перейдите в раздел "
+            f"{'учителя' if role == 'teacher' else 'родителя'}."
+        )
+        raise ProfileBuildError(msg)
+
     raw_grade = getattr(user, 'preferred_grade', None)
     if raw_grade in (None, '', 0, '0'):
+        msg = (
+            "Не указан класс ученика (preferred_grade пуст). "
+            "Зайди в Профиль -> укажи класс."
+        )
         logger.warning(
-            "build_profile: user_id=%s missing preferred_grade — defaulting to class 9",
+            "build_profile: user_id=%s missing preferred_grade",
             getattr(user, 'id', '?'),
         )
-        return 9
+        raise ProfileBuildError(msg)
     try:
         class_level = int(raw_grade)
     except (TypeError, ValueError):
@@ -1122,9 +1140,12 @@ def build_profile(
         measured_slots, calibration_slots,
     )
     # CURATOR (sub-theme system): inject today's locked subtopic
+    # Priority 1: curator/monthly_cycle.get_cycle_info (same source as coach page)
+    # Priority 2: daily_tasks/monthly_plan (prep_plan fallback)
     profile['curator_subtopic'] = None
     try:
         from models_curator import CuratorState
+        from curator.monthly_cycle import get_cycle_info
         from .monthly_plan import (
             get_or_build_plan,
             pick_day_subtopic,
@@ -1132,10 +1153,15 @@ def build_profile(
             parent_topic_for_subtopic,
         )
         _cs = CuratorState.query.filter_by(user_id=user_id).first()
-        if _cs is not None and getattr(_cs, 'enabled', True):
-            _today = today or date.today()
-            _plan = get_or_build_plan(_cs, class_level, _today)
-            _slug = pick_day_subtopic(_plan, _today)
+        if _cs is not None:
+            _today = date.today() if today is None else today
+            # Try cycle_info first (coach page source)
+            _cycle = get_cycle_info(user_id)
+            _slug = _cycle.get('current_theme') if _cycle.get('active') else None
+            # Fallback to prep_plan
+            if not _slug:
+                _plan = get_or_build_plan(_cs, class_level, _today)
+                _slug = pick_day_subtopic(_plan, _today)
             if _slug:
                 _parent = parent_topic_for_subtopic(_slug, class_level)
                 _day_topic = None

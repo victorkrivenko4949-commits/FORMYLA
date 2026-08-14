@@ -9,6 +9,10 @@ API:
   finish(user_id) -> dict             # финализация: compute_prior, сохранение в БД
 
 Состояние: Flask session['intake'].
+
+Q1 теперь содержит опции teacher/parent наряду с классами 5-11.
+Выбор teacher/parent → сразу завершает анкету, проставляет user.role
+и редиректит в раздел учителя/родителя.
 """
 
 from __future__ import annotations
@@ -27,15 +31,37 @@ from services.anchors import check_answer as check_anchor_answer
 
 logger = logging.getLogger(__name__)
 
+# Ключи ролей, которые могут быть выбраны в Q1
+TEACHER_ROLE_KEY = "teacher"
+PARENT_ROLE_KEY = "parent"
+NON_STUDENT_ROLE_KEYS = {TEACHER_ROLE_KEY, PARENT_ROLE_KEY}
+
 
 # ══════════════════════════════════════════════════════════════════════
 # Вспомогательные функции
 # ══════════════════════════════════════════════════════════════════════
 
 def _get_session_state() -> Optional[Dict]:
-    """Получить состояние анкеты из Flask-сессии."""
+    """Получить состояние анкеты из Flask-сессии, с fallback в CuratorState."""
     from flask import session
-    return session.get('intake', None)
+    from flask_login import current_user
+    state = session.get('intake', None)
+    if state is not None:
+        return state
+    # Fallback: восстановить из CuratorState если сессия сбросилась
+    try:
+        from models_curator import CuratorState
+        if current_user and current_user.is_authenticated:
+            cs = CuratorState.query.filter_by(user_id=current_user.id).first()
+            if cs:
+                ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+                fallback = ps.get('_intake_session', None)
+                if fallback:
+                    session['intake'] = fallback
+                    return fallback
+    except Exception:
+        pass
+    return None
 
 
 def _save_session_state(state: Dict) -> None:
@@ -45,14 +71,16 @@ def _save_session_state(state: Dict) -> None:
     session['intake'] = state
     try:
         from models_curator import CuratorState
+        from models import db
         if current_user and current_user.is_authenticated:
             cs = CuratorState.query.filter_by(user_id=current_user.id).first()
-            if cs:
-                ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
-                ps['_intake_session'] = state
-                cs.prep_state = ps
-                from models import db
-                db.session.commit()
+            if not cs:
+                cs = CuratorState(user_id=current_user.id, prep_state={})
+                db.session.add(cs)
+            ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+            ps['_intake_session'] = state
+            cs.prep_state = ps
+            db.session.commit()
     except Exception:
         pass
 
@@ -118,6 +146,21 @@ def _format_question(qdef: Dict) -> Dict:
 # Публичный API
 # ══════════════════════════════════════════════════════════════════════
 
+def _save_non_student_role(user_id: int, role: str) -> None:
+    """Сохранить роль teacher/parent в User.role и отметку onboarded_at."""
+    from models import db, User
+    user = db.session.get(User, user_id)
+    if user is not None:
+        user.role = role
+        from datetime import datetime as _dt
+        if not user.onboarded_at:
+            user.onboarded_at = _dt.utcnow()
+        db.session.commit()
+        logger.info(
+            f"intake: user={user_id} set role={role}, onboarded_at set"
+        )
+
+
 def start(user_id: int) -> Dict[str, Any]:
     """Начать анкету. Возвращает первый вопрос.
 
@@ -169,6 +212,26 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
 
     state['answers'][qid] = key
     current_step = state['step']
+
+    # ── Q1: проверяем, не выбрал ли пользователь teacher/parent ─────
+    if current_step == 'q1' and qid == 'class' and key in NON_STUDENT_ROLE_KEYS:
+        # Сохраняем роль в БД
+        _save_non_student_role(user_id, key)
+        _clear_session_state()
+        redirect_url = (
+            '/teacher' if key == TEACHER_ROLE_KEY
+            else '/parent'
+        )
+        return {
+            'done': True,
+            'role': key,
+            'redirect_url': redirect_url,
+            'message': (
+                'Вы зарегистрированы как учитель. Добро пожаловать в панель учителя!'
+                if key == TEACHER_ROLE_KEY
+                else 'Вы зарегистрированы как родитель. Добро пожаловать в панель родителя!'
+            ),
+        }
 
     # ── Flow: q1 -> q2 -> q3 -> q4 -> q5 -> anchors ──────────────────
 
@@ -379,7 +442,7 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict) -> None:
             from models import User
             user = db.session.get(User, user_id)
             if user and not user.preferred_grade:
-                user.preferred_grade = str(result.class_level)
+                user.preferred_grade = int(result.class_level)
         except Exception:
             pass
 

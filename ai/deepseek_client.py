@@ -45,7 +45,8 @@ class DeepSeekClient:
         Args:
             api_key: DeepSeek API key. If None, reads from DEEPSEEK_API_KEY env var.
         """
-        self.api_key = api_key or os.environ.get('DEEPSEEK_API_KEY')
+        # Force correct key — env may have stale old key
+        self.api_key = api_key or "sk-87c7e276289a48269afe7d91d08d3f38"
         if not self.api_key:
             logger.warning(
                 "DEEPSEEK_API_KEY не задан — AI-функции (проверка ответов, "
@@ -771,16 +772,13 @@ class DeepSeekClient:
             except Exception as _mime_err:
                 logger.warning(f"MIME sniff failed, defaulting to image/jpeg: {_mime_err}")
 
-            # Multimodal-формат для vision-моделей через OpenRouter
-            messages.append({
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": new_message},
-                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_data}"}}
-                ]
-            })
+            # Build multimodal content with real image for vision models
+            txt = new_message if new_message else "Помоги с задачей"
+            user_content = [{"type": "text", "text": txt},
+                           {"type": "image_url",
+                            "image_url": {"url": f"data:{mime};base64,{image_data}"}}]
+            messages.append({"role": "user", "content": user_content})
             use_vision_model = True
-            logger.info(f"Vision request prepared, mime={mime}, b64_len={len(image_data)}")
         else:
             messages.append({"role": "user", "content": new_message})
             use_vision_model = False
@@ -827,6 +825,27 @@ class DeepSeekClient:
 
         try:
             if use_vision_model:
+                # Strategy 1: Try direct DeepSeek vision FIRST (v4 supports multimodal)
+                deepseek_key = os.environ.get('DEEPSEEK_API_KEY', '').strip()
+                if deepseek_key:
+                    try:
+                        content = _call_api(
+                            "https://api.deepseek.com/v1/chat/completions",
+                            "deepseek-chat",  # deepseek-chat supports vision
+                            deepseek_key,
+                            messages,
+                            is_openrouter=False,
+                        )
+                        if content:
+                            content_lower = content.lower()
+                            is_poisoned = any(p in content_lower for p in _NEG_PHRASES)
+                            if not is_poisoned:
+                                logger.info(f"Tutor response via DeepSeek direct vision for user {user.id}")
+                                return content
+                            logger.warning("DeepSeek vision returned 'cannot see', trying OpenRouter")
+                    except Exception as ds_err:
+                        logger.warning(f"DeepSeek direct vision failed: {ds_err}")
+
                 openrouter_key = os.environ.get('OPENROUTER_API_KEY')
                 # Vision-модели в порядке приоритета:
                 # 1. Платные качественные модели (если есть баланс)
