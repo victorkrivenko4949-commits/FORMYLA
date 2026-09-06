@@ -1,0 +1,509 @@
+ M .env.example
+ M _final_check.py
+ M _fix_subtopic_mismatches.py
+ M _full_gen_week4.py
+ M _regenerate_675_failed.py
+ M _stress_final.py
+ M _theme_count.py
+ M ai/deepseek_client.py
+ M ai/gemini_client.py
+ M app.py
+ M audit_formyla.py
+ M curator/diagnostics.py
+ M curator/messenger.py
+ M curator/monthly_cycle.py
+ M curator/routes.py
+ M curator/task_bank.py
+ M daily_tasks/buffer.py
+ M daily_tasks/pipeline/orchestrator.py
+ M daily_tasks/pipeline/prompts/gemini_plan.md
+ M daily_tasks/pipeline/prompts/opus_fix.md
+ M daily_tasks/pipeline/prompts/opus_generate.md
+ M daily_tasks/pipeline/slot_planner.py
+ M daily_tasks/pipeline/step1_gemini.py
+ M daily_tasks/pipeline/validators.py
+ M daily_tasks/profile.py
+ M daily_tasks/routes.py
+ M daily_tasks/running_pct.py
+ M daily_tasks/services.py
+ M daily_tasks/task_bank.py
+ M data/figures/reasoner_task.txt
+ M geometric_engine/CONSTRUCTIONS.md
+ M geometric_engine/engine.py
+ M geometric_engine/geom.py
+ M geometric_engine/schema.json
+ M migrations/add_methods_catalog_fields.py
+ M models.py
+ M routes/account.py
+ M routes/figures.py
+ M routes/figures_generator.py
+ M routes/handwriting.py
+ M routes/olympiad.py
+ M routes/parent_teacher.py
+ M routes/prep.py
+ M scripts/bank_migration.py
+ M scripts/import_formyla_jsonl.py
+ M services/ai_tutor_review.py
+ M services/bank_daily.py
+ M services/cost_calculation.py
+ M services/daily_task_rotation.py
+ M services/diagnostic_questionnaire.py
+ M services/difficulty_calibration.py
+ M services/figure_validator.py
+ M services/intake_questions.py
+ M services/kimi_vision.py
+ M services/level_engine.py
+ M services/olympiad_adaptive.py
+ M services/onboarding.py
+ M services/onboarding_tree.py
+ M services/prep_planner.py
+ M services/questionnaire_storage.py
+ M services/task_validator.py
+ M services/theme_probe.py
+ M services/tutor_prompt.py
+ M static/js/daily_tasks_modal.js
+ M static/js/mastery_radar.js
+ M templates/about.html
+ M templates/base.html
+ M templates/daily_tasks/daily_tasks_dashboard.html
+ M templates/figures.html
+ M templates/figures_generate.html
+ M templates/figures_history.html
+ M templates/olympiad/method.html
+ M templates/olympiad_test_select_level.html
+ M templates/parent/dashboard.html
+ M templates/payment_stub.html
+ M templates/prep/coach.html
+ M templates/prep/probe.html
+ M templates/pricing.html
+ M templates/profile.html
+ M templates/student/profile_detail.html
+ M templates/teacher/group.html
+ M templates/tutor_widget.html
+ M tests/test_profile_percent_levels.py
+ M utils/math_text_fixer.py
+ M victor2_generated_REPORT.md
+?? 148
+?? FORMYLA_L1_L5_TOP5.jsonl.bak_5level
+?? FORMYLA_SREZ.jsonl.bak_before_remove_broken
+?? "FORMYLA_SREZ_\320\261\320\260\320\275\320\272_\321\201\321\200\320\265\320\267\320\260.zip"
+?? README_METHODS_TUTOR.md
+?? _analyze_errors.py
+?? _api_test.txt
+?? _atlas_paths.txt
+?? _atlas_tutor_prompt.md
+?? _audit_total.txt
+?? _backfill_idx.py
+?? _backfill_report.txt
+?? _ch151_f3_gen.py
+?? _ch151_f4_gen.py
+?? _ch151_f5_gen.py
+?? _ch31_add_4_tasks.py
+?? _ch31_add_4_tasks.txt
+?? _ch31_atlas_dots.py
+?? _ch31_audit_status.py
+?? _ch31_audit_status.txt
+?? _ch31_bank.py
+?? _ch31_bank2.py
+?? _ch31_bank_audit.py
+?? _ch31_bank_audit.txt
+?? _ch31_bank_inspect.py
+?? _ch31_bank_probe.py
+?? _ch31_bank_sources.py
+?? _ch31_banks_all.txt
+?? _ch31_banks_summary.py
+?? _ch31_check_canon.py
+?? _ch31_check_canon.txt
+?? _ch31_check_srez.py
+?? _ch31_check_srez.txt
+?? _ch31_cleanup_env.py
+?? _ch31_coach_find.py
+?? _ch31_coach_find.txt
+?? _ch31_coach_json.py
+?? _ch31_coach_json.txt
+?? _ch31_coach_route.py
+?? _ch31_coach_route.txt
+?? _ch31_const5.py
+?? _ch31_const5.txt
+?? _ch31_css2.py
+?? _ch31_css2.txt
+?? _ch31_curator.py
+?? _ch31_curator.txt
+?? _ch31_cycle_check.py
+?? _ch31_cycle_defs.py
+?? _ch31_cycle_test.py
+?? _ch31_cycle_test.txt
+?? _ch31_daily_count.py
+?? _ch31_db_tables.py
+?? _ch31_deepseek_test.py
+?? _ch31_deepseek_test.txt
+?? _ch31_diag_probe2.py
+?? _ch31_diag_probe2_out.txt
+?? _ch31_diff5.py
+?? _ch31_diff_range.py
+?? _ch31_difficulty5.txt
+?? _ch31_difficulty_values.py
+?? _ch31_difficulty_values.txt
+?? _ch31_dots.py
+?? _ch31_ds_raw.py
+?? _ch31_ds_raw.txt
+?? _ch31_dtb_model.py
+?? _ch31_dup_check.py
+?? _ch31_dup_check.txt
+?? _ch31_envkeys.py
+?? _ch31_filler_test.py
+?? _ch31_filler_test.txt
+?? _ch31_final_check.txt
+?? _ch31_finalcheck.py
+?? _ch31_finalcheck.txt
+?? _ch31_find_adaptive.py
+?? _ch31_find_adaptive.txt
+?? _ch31_find_banks.py
+?? _ch31_find_hints.py
+?? _ch31_find_srez.py
+?? _ch31_find_unlatexed.py
+?? _ch31_find_unlatexed.txt
+?? _ch31_fix_test.py
+?? _ch31_fix_test.txt
+?? _ch31_gemini37_test.py
+?? _ch31_gemini37_test.txt
+?? _ch31_gemini_key.py
+?? _ch31_gemini_models.py
+?? _ch31_gemini_models.txt
+?? _ch31_gemini_probe.py
+?? _ch31_gemini_probe.txt
+?? _ch31_gemini_realimg.py
+?? _ch31_gemini_realimg.txt
+?? _ch31_gemini_vision_full.py
+?? _ch31_gemini_vision_full.txt
+?? _ch31_gemini_vision_test.py
+?? _ch31_gemini_vision_test.txt
+?? _ch31_google.py
+?? _ch31_google2.py
+?? _ch31_gscan.py
+?? _ch31_gscan_result.txt
+?? _ch31_hints.txt
+?? _ch31_incomplete_detail.py
+?? _ch31_incomplete_detail.txt
+?? _ch31_incomplete_themes.py
+?? _ch31_incomplete_themes.txt
+?? _ch31_inspect_diff.py
+?? _ch31_latexify.py
+?? _ch31_latexify.txt
+?? _ch31_latexify2.py
+?? _ch31_latexify2.txt
+?? _ch31_latexify3.txt
+?? _ch31_level5.py
+?? _ch31_level5.txt
+?? _ch31_level_names.py
+?? _ch31_level_names.txt
+?? _ch31_level_ui.py
+?? _ch31_level_ui.txt
+?? _ch31_live5.py
+?? _ch31_live5.txt
+?? _ch31_live_status.py
+?? _ch31_live_status.txt
+?? _ch31_method_dots.py
+?? _ch31_methods.txt
+?? _ch31_methods_search.py
+?? _ch31_mtime.py
+?? _ch31_mtime.txt
+?? _ch31_musor_detail.py
+?? _ch31_musor_detail.txt
+?? _ch31_na.py
+?? _ch31_na_out.txt
+?? _ch31_odi_probe.py
+?? _ch31_odi_probe.txt
+?? _ch31_parse_test.py
+?? _ch31_parse_test.txt
+?? _ch31_pipeline_test.py
+?? _ch31_pipeline_test.txt
+?? _ch31_prior.py
+?? _ch31_probe.py
+?? _ch31_probe.txt
+?? _ch31_probe_http.py
+?? _ch31_probe_http.txt
+?? _ch31_probe_json_test.py
+?? _ch31_probe_json_test.txt
+?? _ch31_probe_out.txt
+?? _ch31_probe_search.py
+?? _ch31_probe_search.txt
+?? _ch31_probe_state_dump.py
+?? _ch31_probe_state_dump.txt
+?? _ch31_probnik_dup.py
+?? _ch31_probnik_dup.txt
+?? _ch31_prompt_files.py
+?? _ch31_prompt_files.txt
+?? _ch31_prompt_final.py
+?? _ch31_prompt_final.txt
+?? _ch31_prompts5.py
+?? _ch31_prompts5.txt
+?? _ch31_qlevel.py
+?? _ch31_qlevel.txt
+?? _ch31_questionnaire.py
+?? _ch31_quick_css.py
+?? _ch31_quick_css.txt
+?? _ch31_radar_data.py
+?? _ch31_rate.py
+?? _ch31_rate.txt
+?? _ch31_recheck.py
+?? _ch31_recheck.txt
+?? _ch31_remap_diff.py
+?? _ch31_remove_broken.py
+?? _ch31_remove_broken.txt
+?? _ch31_reset_full.py
+?? _ch31_reset_full.txt
+?? _ch31_reset_probe.py
+?? _ch31_reset_probe2.py
+?? _ch31_reset_probe2.txt
+?? _ch31_reset_probe3.py
+?? _ch31_reset_probe3.txt
+?? _ch31_restart_check.py
+?? _ch31_restart_check.txt
+?? _ch31_route.py
+?? _ch31_route.txt
+?? _ch31_route_test.py
+?? _ch31_route_test.txt
+?? _ch31_schema_sample.py
+?? _ch31_schema_sample.txt
+?? _ch31_search.py
+?? _ch31_search.txt
+?? _ch31_server_check.py
+?? _ch31_server_check.txt
+?? _ch31_set_gemini.py
+?? _ch31_set_gemini_example.py
+?? _ch31_set_key.py
+?? _ch31_set_odi.py
+?? _ch31_set_photo_fallback.py
+?? _ch31_slot.py
+?? _ch31_solution_latex.py
+?? _ch31_solution_latex.txt
+?? _ch31_src_bank.py
+?? _ch31_srez.txt
+?? _ch31_srez_diag.py
+?? _ch31_srez_diag_out.txt
+?? _ch31_srez_inventory.py
+?? _ch31_srez_record.py
+?? _ch31_srez_record_out.txt
+?? _ch31_subtopic_count.py
+?? _ch31_subtopic_count.txt
+?? _ch31_syntax.py
+?? _ch31_syntax.txt
+?? _ch31_test_fixer.py
+?? _ch31_test_fixer.txt
+?? _ch31_test_out.txt
+?? _ch31_theme_count.py
+?? _ch31_theme_count.txt
+?? _ch31_theme_report.py
+?? _ch31_theme_report.txt
+?? _ch31_theme_stats.py
+?? _ch31_themes.py
+?? _ch31_themes.txt
+?? _ch31_urlmap.py
+?? _ch31_user_level.py
+?? _ch31_user_level.txt
+?? _ch31_verify_4.py
+?? _ch31_verify_key.py
+?? _ch31_verify_key2.py
+?? _ch31_verify_key3.py
+?? _ch31_verify_key3.txt
+?? _ch31_verify_restore.py
+?? _ch31_verify_restore.txt
+?? _ch31_verify_result.txt
+?? _ch31_verify_result2.txt
+?? _ch31_walk_dt.py
+?? _cnt.txt
+?? _cnt2.txt
+?? _compare_skeletons.py
+?? _convert_srez2.py
+?? _copy_atlas.py
+?? _copy_atlas2.py
+?? _copy_prompt.py
+?? _copy_report.txt
+?? _copy_report2.txt
+?? _count_files.py
+?? _count_rows.py
+?? _counts.txt
+?? _cp.txt
+?? _diag_raw_response.py
+?? _dump_doublefail.py
+?? _error_analysis.txt
+?? _fg_head_backup.py
+?? _final_summary.py
+?? _find_atlas.py
+?? _inspect_balanced.py
+?? _latest_screen_1.png
+?? _latest_screen_2.png
+?? _merge_balanced_all.py
+?? _methods_test.txt
+?? _prog2.txt
+?? _progress.txt
+?? _purchase_test.txt
+?? _qa_shot.py
+?? _rawresp.txt
+?? _recon_check_anchors.py
+?? _render_ch151_fixtures.py
+?? _render_demo2_figures.py
+?? _render_demo_figures.py
+?? _sample_check.txt
+?? _sample_task.txt
+?? _skeleton_check.py
+?? _smoke_check.txt
+?? _srez_check.py
+?? _svg_to_png.py
+?? _test_methods_routes.py
+?? _test_purchase.py
+?? _unique.txt
+?? _verdict_breakdown.py
+?? audit_balanced_checkpoint.json
+?? audit_balanced_deepseek.py
+?? audit_formyla_1_4_double.py
+?? audit_formyla_1_4_double_checkpoint.json
+?? audit_l4_checkpoint.json
+?? audit_l4_deepseek.py
+?? audit_l4_final_pass.py
+?? audit_l4_refix.py
+?? audit_run_stdout.txt
+?? base'))
+?? ch151_f1_aux.png
+?? ch151_f1_aux.svg
+?? ch151_f1_base.png
+?? ch151_f1_base.svg
+?? ch151_f2_aux.png
+?? ch151_f2_aux.svg
+?? ch151_f2_base.png
+?? ch151_f2_base.svg
+?? ch151_f3_aux.svg
+?? ch151_f3_base.svg
+?? ch151_f4_aux.svg
+?? ch151_f4_base.svg
+?? ch151_f5_aux.svg
+?? ch151_f5_base.svg
+?? chertezhi_zadachi_1_2.py
+?? daily_tasks/formyla_bank.py
+?? demo2_aux.png
+?? demo2_aux.svg
+?? demo2_base.png
+?? demo2_base.svg
+?? demo_aux.png
+?? demo_aux.svg
+?? demo_base.png
+?? demo_base.svg
+?? docs/REPORT_REC_2_8.md
+?? flask_output_new.txt
+?? geometric_engine/semantic_theme.py
+?? migrations/add_figure_build_stages.py
+?? output/ch19/
+?? output/ch22/
+?? output/ch23/
+?? output/ch24/
+?? output/ch26/
+?? output/ch27/
+?? output/ch28_validate.json
+?? output/figures_bench/
+?? output/figures_smoke/
+?? output/final_rehearsal/
+?? output/stage1/
+?? output/stage1b/
+?? output/zadacha1_8_tochek.png
+?? output/zadacha2_pyatiugolnik.png
+?? qa_shots/
+?? scripts/audit_report.py
+?? scripts/audit_report_4files.py
+?? scripts/audit_total.py
+?? scripts/ch19_batch_figures.py
+?? scripts/ch19_dark_view.py
+?? scripts/ch19_inventory.py
+?? scripts/ch19_lib.py
+?? scripts/ch19_manual_review.py
+?? scripts/ch19_qa.py
+?? scripts/ch19_regenerate_fixtures.py
+?? scripts/ch19_report.py
+?? scripts/ch19_select_pilot.py
+?? scripts/ch20_probe.py
+?? scripts/ch21_aux_diag.py
+?? scripts/ch21_aux_diag2.py
+?? scripts/ch21_aux_dump.py
+?? scripts/ch21_constructive_probe.py
+?? scripts/ch21_geom_diag.py
+?? scripts/ch21_geom_diag2.py
+?? scripts/ch22_audit_count.py
+?? scripts/ch22_report.py
+?? scripts/ch22_top5.py
+?? scripts/ch23_aux_probe.py
+?? scripts/ch23_find_bg.py
+?? scripts/ch24_gallery.py
+?? scripts/ch24_report.py
+?? scripts/ch26_gallery.py
+?? scripts/ch26_probe.py
+?? scripts/ch27_gallery.py
+?? scripts/ch27_probe.py
+?? scripts/ch27c_diag.py
+?? scripts/check_audit_resume.py
+?? scripts/figures_diag.py
+?? scripts/figures_diag_deepseek.py
+?? scripts/figures_diag_real.py
+?? scripts/figures_doctor.py
+?? scripts/figures_hard_task.py
+?? scripts/figures_smoke_ch15.py
+?? scripts/final_rehearsal.py
+?? scripts/final_rehearsal_gallery.py
+?? scripts/final_rehearsal_good.py
+?? scripts/find_automigration.py
+?? scripts/import_daily_bank.py
+?? scripts/recon/
+?? scripts/stage1_analyze.py
+?? scripts/stage1_gallery.py
+?? scripts/stage1b_etalon.py
+?? scripts/stage1b_gallery.py
+?? scripts/validate_aux_batch.py
+?? scripts/verify/
+?? services/answer_verifier.py
+?? services/atlas_methods.py
+?? services/atlas_tutor.py
+?? services/aux_compiler.py
+?? services/aux_ops.py
+?? services/aux_templates.py
+?? services/aux_usefulness.py
+?? services/condition_coverage.py
+?? services/figure_plan_schemas.py
+?? services/figure_plan_validator.py
+?? services/llm_router.py
+?? services/novita_vision.py
+?? services/solution_check_pipeline.py
+?? services/solution_generator.py
+?? services/solution_ocr.py
+?? services/solution_style.py
+?? services/srez_bank.py
+?? services/tesseract_ocr.py
+?? services/text_normalize.py
+?? services/visual_audit.py
+?? static/methods/
+?? templates/olympiad/methods_atlas.html
+?? tests/browser_atlas_tutor.py
+?? tests/eval_atlas_tutor.py
+?? tests/live_eval_atlas_tutor.py
+?? tests/test_atlas_tutor.py
+?? tests/test_aux_pipeline.py
+?? tests/test_ch15_condition_solution.py
+?? tests/test_ch15_e2e.py
+?? tests/test_ch15_quality_pass.py
+?? tests/test_ch16_semantic_colors.py
+?? tests/test_ch19_credits_enforced.py
+?? tests/test_ch19_visual_defects.py
+?? tests/test_ch20_llm_policy.py
+?? tests/test_ch21_fixes.py
+?? tests/test_ch22_aux_status.py
+?? tests/test_ch23_aux_compiler.py
+?? tests/test_ch23_dark_theme.py
+?? tests/test_ch26_incidence.py
+?? tests/test_ch27_ops.py
+?? tests/test_ch27_unsupported.py
+?? tests/test_ch27b_base_missing_point.py
+?? tests/test_condition_coverage.py
+?? tests/test_gemini_switch.py
+?? tests/test_llm_router.py
+?? tests/test_rec4_constraints.py
+?? tests/test_text_normalize.py
+?? tests/test_visual_audit.py
+?? uploads/

@@ -1,0 +1,133 @@
+<style>
+    .ins-modal-overlay {
+        position: fixed; inset: 0; background: rgba(2,6,23,0.6); backdrop-filter: blur(4px);
+        display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px;
+    }
+    .ins-modal-overlay.open { display: flex; }
+    .ins-modal {
+        background: #111827; border: 1px solid #1e293b; border-radius: 18px;
+        max-width: 420px; width: 100%; padding: 28px 26px; text-align: center;
+        transform: scale(0.96); transition: transform .2s ease; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .ins-modal-overlay.open .ins-modal { transform: scale(1); }
+    .ins-modal-icon { font-size: 34px; margin-bottom: 10px; }
+    .ins-modal h2 { font-size: 20px; color: #f1f5f9; margin: 0 0 8px; font-weight: 700; }
+    .ins-modal .ins-modal-sub { color: #94a3b8; font-size: 14px; margin-bottom: 16px; }
+    .ins-modal .ins-modal-body { color: #e2e8f0; font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+    .ins-modal .ins-modal-btns { display: flex; gap: 10px; justify-content: center; }
+    .ins-modal .ins-modal-btn {
+        padding: 10px 18px; border-radius: 10px; font-size: 14px; cursor: pointer;
+        border: 1px solid #334155; background: rgba(30,41,59,.8); color: #cbd5e1;
+    }
+    .ins-modal .ins-modal-btn.primary { border-color: #fbbf24; color: #fbbf24; }
+    .insights-badge {
+        display: none; align-items: center; justify-content: center;
+        min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px;
+        background: #fbbf24; color: #0f172a; font-size: 11px; font-weight: 700;
+        border-radius: 999px; vertical-align: middle;
+    }
+</style>
+
+<div class="ins-modal-overlay" id="insModalOverlay" role="dialog" aria-modal="true" aria-labelledby="insModalTitle">
+    <div class="ins-modal">
+        <div class="ins-modal-icon">✨</div>
+        <h2 id="insModalTitle">Твой банк неточностей пополнился</h2>
+        <p class="ins-modal-sub">Формула разобрала твоё решение и нашла место, которое стоит отточить.</p>
+        <div class="ins-modal-body" id="insModalBody"></div>
+        <div class="ins-modal-btns">
+            <button class="ins-modal-btn" id="insModalLater">Позже</button>
+            <button class="ins-modal-btn primary" id="insModalView">Посмотреть</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+    var POLL_INTERVAL_MS = 15000;
+    var currentCount = 0;
+
+    function updateBadge(count) {
+        var els = document.querySelectorAll('.insights-badge');
+        for (var i = 0; i < els.length; i++) {
+            var b = els[i];
+            if (count > 0) {
+                b.textContent = count > 99 ? '99+' : String(count);
+                b.style.display = 'inline-flex';
+            } else {
+                b.style.display = 'none';
+            }
+        }
+    }
+
+    function pollPending() {
+        fetch('/api/insights/notifications/pending', {credentials: 'same-origin'})
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                if (!data) return;
+                var pendingCount = data.count || 0;
+                updateBadge(pendingCount);
+
+                if (data.suppressed) return;
+                if (pendingCount === 0) { currentCount = 0; return; }
+
+                var overlay = document.getElementById('insModalOverlay');
+                var body = document.getElementById('insModalBody');
+                var first = data.notifications && data.notifications[0];
+
+                if (data.insights_count === 1) {
+                    body.innerHTML = '«…» +3 задачи на отработку';
+                } else {
+                    body.innerHTML = 'Добавлено ' + data.insights_count + ' неточностей · ' + data.tasks_count + ' задач';
+                }
+                if (first && first.kind === 'repeat') {
+                    body.innerHTML = 'Неточность повторилась · +3 задачи на отработку';
+                }
+
+                overlay.dataset.notifId = first ? first.id : '';
+
+                if (pendingCount !== currentCount && !overlay.classList.contains('open')) {
+                    overlay.classList.add('open');
+                    overlay.focus();
+                }
+                currentCount = pendingCount;
+            })
+            .catch(function(){});
+    }
+
+    function markSeen(id) {
+        if (!id) return;
+        fetch('/api/insights/notifications/' + id + '/seen', {method: 'POST', credentials: 'same-origin'})
+            .then(function(){ pollPending(); })
+            .catch(function(){});
+    }
+
+    function closeModal() {
+        var overlay = document.getElementById('insModalOverlay');
+        markSeen(overlay.dataset.notifId);
+        overlay.classList.remove('open');
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        var overlay = document.getElementById('insModalOverlay');
+        if (!overlay) return;
+        document.getElementById('insModalLater').addEventListener('click', closeModal);
+        document.getElementById('insModalView').addEventListener('click', function(){
+            markSeen(overlay.dataset.notifId);
+            window.location.href = '/insights';
+        });
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+        });
+        overlay.addEventListener('keydown', function(e){
+            if (e.key === 'Tab') {
+                var btns = [document.getElementById('insModalLater'), document.getElementById('insModalView')];
+                e.preventDefault();
+                var idx = btns.indexOf(document.activeElement);
+                btns[(idx + 1) % btns.length].focus();
+            }
+        });
+        pollPending();
+        setInterval(pollPending, POLL_INTERVAL_MS);
+    });
+})();
+</script>

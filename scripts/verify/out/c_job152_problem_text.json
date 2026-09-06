@@ -1,0 +1,18 @@
+{
+  "id": 152,
+  "len": 269,
+  "problem_text": "В остроугольном треугольнике \\(ABC\\) угол \\(A\\) равен \\(45^\\circ\\). Точка \\(O\\) — центр описанной окружности. Прямая \\(BO\\) пересекает сторону \\(AC\\) в точке \\(D\\), а прямая \\(CO\\) пересекает сторону \\(AB\\) в точке \\(E\\). Оказалось, что \\(BD = CE\\). Найдите угол \\(B\\).",
+  "has_latex_paren": true,
+  "has_dollar": false,
+  "has_degree_tex": true,
+  "has_degree_char": false,
+  "status": "done",
+  "generation_mode": "solver_aux",
+  "trust_level": "unverified",
+  "answer_verdict": "unverifiable",
+  "solver_answer": "67.5",
+  "measured_answer": "None",
+  "aux_source": null,
+  "aux_usefulness": null,
+  "aux_dropped_reason": "aux_compile_empty"
+}

@@ -1,0 +1,4 @@
+finish: stop
+content: '4'
+reasoning_len: 124
+usage: {'prompt_tokens': 93, 'completion_tokens': 35, 'total_tokens': 128, 'prompt_tokens_details': {'cached_tokens': 0}, 'completion_tokens_details': {'reasoning_tokens': 33}, 'prompt_cache_hit_tokens': 0, 'prompt_cache_miss_tokens': 93}

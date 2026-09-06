@@ -23,7 +23,10 @@ logger = logging.getLogger(__name__)
 
 # ─── Constants ──────────────────────────────────────────────────────────
 
-ACTIVE_DAYS = 7           # days with morning probes
+ACTIVE_DAYS = 7           # days with morning probes (legacy)
+MONTH_DAYS = 31           # виртуальный месяц: всегда 31 день
+THEME_DAYS = 4            # одна тема идёт 4 дня (7 тем × 4 = 28 дней)
+REVIEW_DAYS = 3           # дни 29..31 — повтор 3 худших тем месяца
 CANONICAL_SECTIONS = ('algebra', 'geometry', 'combinatorics', 'logic', 'number_theory')
 
 # ─── Prep state helpers ─────────────────────────────────────────────────
@@ -36,6 +39,7 @@ def _default_monthly_cycle() -> Dict[str, Any]:
         'day_index': 1,         # 1..7
         'done_themes': [],      # completed theme_ids
         'finished_at': None,
+        'covered_themes': [],   # темы, уже пройденные в предыдущих месяцах
     }
 
 
@@ -48,9 +52,14 @@ def _get_monthly_cycle(cs: CuratorState) -> Dict[str, Any]:
 
 
 def _save_monthly_cycle(cs: CuratorState, mc: Dict[str, Any]):
+    from sqlalchemy.orm.attributes import flag_modified
     ps = dict(cs.prep_state) if cs.prep_state else {}
     ps['monthly_cycle'] = mc
     cs.prep_state = ps
+    # JSON-колонка: без flag_modified SQLAlchemy не увидит изменения
+    # вложенного словаря и НЕ запишет их при commit (done_themes терялся,
+    # из-за чего срез после 5-й задачи начинался заново).
+    flag_modified(cs, 'prep_state')
 
 
 # ─── Theme selection ────────────────────────────────────────────────────
@@ -107,7 +116,10 @@ def _section_aware_extras(all_grade_themes, selected, grade, section_order,
         key=lambda s: (section_priority(s), s)
     )
 
-    # Pick one from each eligible section, round-robin until done
+    # Pick one from each eligible section, round-robin until done.
+    # `all_grade_themes` — допустимый пул тем (в последующих месяцах
+    # из него уже исключены ранее пройденные темы).
+    allowed = set(all_grade_themes)
     extra_count = 0
     while extra_count < needed:
         picked_this_round = False
@@ -116,7 +128,7 @@ def _section_aware_extras(all_grade_themes, selected, grade, section_order,
                 break
             if section_counts.get(sec, 0) >= max_per_section:
                 continue
-            sec_themes = themes_of_section(grade, sec)
+            sec_themes = [t for t in themes_of_section(grade, sec) if t in allowed]
             if not sec_themes:
                 continue
             # Pick the smallest T that's not already selected
@@ -202,19 +214,22 @@ def _select_first_cycle_themes(grade: int) -> List[str]:
     return selected[:7]
 
 
-def _select_subsequent_cycle_themes(user_id: int, grade: int) -> List[str]:
+def _select_subsequent_cycle_themes(user_id: int, grade: int,
+                                    exclude: Optional[set] = None) -> List[str]:
     """Select up to 7 themes for subsequent cycles, strictly within the student's grade.
 
     Rule: 4 from 2 weakest sections, 3 new unmeasured.
     Low-mu themes from the previous cycle carry over.
+    ``exclude`` — темы, уже пройденные в предыдущих месяцах (их не выдаём повторно).
     If the grade has fewer than 7 themes, the cycle is shorter.
     """
     from services.theme_registry import themes_of_grade, themes_of_section, section_of_theme
     from services.level_engine import get_state as _get_level_state
 
-    grade_themes = themes_of_grade(grade)
+    exclude = set(exclude or ())
+    grade_themes = [t for t in themes_of_grade(grade) if t not in exclude]
     if not grade_themes:
-        return _select_first_cycle_themes(grade)
+        return []
 
     grade_prefix = f"G{grade}"
 
@@ -244,7 +259,7 @@ def _select_subsequent_cycle_themes(user_id: int, grade: int) -> List[str]:
     # 4 themes from 2 weakest sections
     needed_from_weak = 4
     for sec in weakest_sections[:2]:
-        sec_themes = themes_of_section(grade, sec)
+        sec_themes = [t for t in themes_of_section(grade, sec) if t not in exclude]
         # Sort by measured mu (lowest first), then unmeasured
         sec_themes.sort(key=lambda t: measured_themes.get(t, 5.0))
         for t in sec_themes:
@@ -260,7 +275,7 @@ def _select_subsequent_cycle_themes(user_id: int, grade: int) -> List[str]:
         for sec in weakest_sections[2:]:
             if len(selected) >= needed_from_weak:
                 break
-            sec_themes = themes_of_section(grade, sec)
+            sec_themes = [t for t in themes_of_section(grade, sec) if t not in exclude]
             sec_themes.sort(key=lambda t: measured_themes.get(t, 5.0))
             for t in sec_themes:
                 if t not in selected and len(selected) < needed_from_weak:
@@ -297,7 +312,12 @@ def _select_subsequent_cycle_themes(user_id: int, grade: int) -> List[str]:
 def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dict[str, Any]:
     """Build or retrieve the monthly cycle for a user.
 
-    If no cycle exists or force_new=True, selects 7 themes and starts a new cycle.
+    Месяцы:
+      - 1-й и 2-й: до 7 тем (4 дня на тему + 3 дня повтора худших);
+      - финальный: когда осталось < 7 тем — крутим ВСЕ оставшиеся темы
+        весь месяц (31 день, round-robin от худшей к лучшей).
+
+    При завершении месяца (день > 31) переходим к следующему.
     """
     cs = CuratorState.query.filter_by(user_id=user_id).first()
     if not cs:
@@ -306,41 +326,36 @@ def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dic
         db.session.commit()
 
     mc = _get_monthly_cycle(cs)
+    covered = set(mc.get('covered_themes') or [])
+
+    # Если текущий цикл завершён и не принудительно пересоздаётся —
+    # переходим к следующему месяцу.
+    if mc.get('themes') and mc.get('finished_at') and not force_new:
+        covered |= set(mc.get('themes') or [])
+        next_themes = _next_month_themes(user_id, grade, covered)
+        if next_themes:
+            now_iso = datetime.now(timezone.utc).isoformat()
+            mc = {
+                'started_at': now_iso,
+                'themes': next_themes,
+                'day_index': 1,
+                'done_themes': [],
+                'finished_at': None,
+                'covered_themes': sorted(covered),
+            }
+            _save_monthly_cycle(cs, mc)
+            db.session.commit()
+            return mc
+        # Тем для следующего месяца нет — оставляем завершённый цикл.
+        return mc
 
     if mc.get('themes') and not force_new:
-        # Validate cached cycle: max 2 themes per section.
-        # P11 FIX: only rebuild if a KNOWN section exceeds 2.
-        # Unknown sections ('?') mean theme IDs are synthetic/test data —
-        # don't destroy the cached started_at date.
-        from services.theme_registry import section_of_theme
-        sec_counts = {}
-        unknown_count = 0
-        for tid in mc['themes']:
-            sec = section_of_theme(tid) or '?'
-            if sec == '?':
-                unknown_count += 1
-            else:
-                sec_counts[sec] = sec_counts.get(sec, 0) + 1
-        # Only rebuild if a known section exceeds 2 (ignore '?' for all-unknown cycles)
-        if any(cnt > 2 for cnt in sec_counts.values()):
-            logger.info(
-                'build_or_get_cycle: cached cycle violates max-2 rule — rebuilding. '
-                'Counts: %s  Themes: %s', sec_counts, mc['themes']
-            )
-        elif unknown_count == len(mc['themes']) and mc.get('started_at'):
-            # All themes unknown (test/fake data) — preserve started_at, return as-is
-            return mc
-        else:
-            return mc
+        return mc
 
-    # Determine if first cycle
-    if mc.get('finished_at') or not mc.get('started_at'):
-        # Check if any cycle was ever completed
-        had_prev = bool(mc.get('finished_at')) or bool(mc.get('done_themes'))
-        if had_prev:
-            themes = _select_subsequent_cycle_themes(user_id, grade)
-        else:
-            themes = _select_first_cycle_themes(grade)
+    # Определяем: первый цикл или последующий
+    had_prev = bool(mc.get('finished_at')) or bool(mc.get('done_themes')) or bool(covered)
+    if had_prev:
+        themes = _next_month_themes(user_id, grade, covered)
     else:
         themes = _select_first_cycle_themes(grade)
 
@@ -351,6 +366,7 @@ def build_or_get_cycle(user_id: int, grade: int, force_new: bool = False) -> Dic
         'day_index': 1,
         'done_themes': [],
         'finished_at': None,
+        'covered_themes': sorted(covered),
     }
     _save_monthly_cycle(cs, mc)
     db.session.commit()
@@ -391,23 +407,88 @@ def _compute_day_index(started_at_iso: Optional[str], themes_count: int = 0) -> 
         return 1
 
 
+def _grade_for_user(user_id: int, cs: CuratorState) -> Optional[int]:
+    """Класс ученика: CuratorState.grade -> User.preferred_grade -> None."""
+    g = getattr(cs, 'grade', None)
+    if g:
+        try:
+            return int(g)
+        except (TypeError, ValueError):
+            pass
+    try:
+        user = User.query.get(user_id)
+        if user:
+            g = getattr(user, 'preferred_grade', None) or getattr(user, 'class_level', None)
+            if g:
+                return int(g)
+    except Exception:
+        pass
+    return None
+
+
+def _order_themes_worst_first(user_id: int, themes: List[str]) -> List[str]:
+    """Все темы месяца, отсортированные от худшей к лучшей.
+
+    Измеренные (mu по level_by_theme) — по возрастанию mu, затем
+    неизмеренные (в порядке появления).  Худшие идут первыми, поэтому при
+    равномерном round-robin остаток дней достаётся именно им.
+    """
+    from services.level_engine import get_level_by_theme
+
+    lbt = {}
+    try:
+        lbt = get_level_by_theme(user_id) or {}
+    except Exception:
+        lbt = {}
+
+    def sort_key(t: str):
+        entry = lbt.get(t)
+        mu = entry.get('mu') if isinstance(entry, dict) else None
+        try:
+            mu = float(mu) if mu is not None else None
+        except (TypeError, ValueError):
+            mu = None
+        if mu is None:
+            return (1, 0.0)
+        return (0, mu)
+
+    return sorted(themes, key=sort_key)
+
+
+def _worst_themes(user_id: int, themes: List[str], k: int = REVIEW_DAYS) -> List[str]:
+    """Вернуть до ``k`` самых слабых тем месяца (наименьший mu по level_by_theme)."""
+    return _order_themes_worst_first(user_id, themes)[:k]
+
+
+def _next_month_themes(user_id: int, grade: int, covered: set) -> List[str]:
+    """Темы для следующего месяца.
+
+    Если оставшихся тем класса < 7 — возвращаем ВСЕ оставшиеся (финальный
+    месяц: крутим сколько осталось).  Иначе — обычная выборка до 7 тем.
+    """
+    from services.theme_registry import themes_of_grade
+
+    remaining = [t for t in themes_of_grade(grade) if t not in covered]
+    if not remaining:
+        return []
+    if len(remaining) < 7:
+        return remaining
+    return _select_subsequent_cycle_themes(user_id, grade, exclude=covered)
+
+
 def get_cycle_info(user_id: int) -> Dict[str, Any]:
     """Get current cycle status for the user.
 
-    day_index is computed from started_at date (calendar arithmetic),
-    NOT from a stored static counter. This means day_index auto-advances
-    as calendar days pass.
+    Виртуальный месяц = 31 день:
+      - дни 1..28: 7 тем, каждая тема идёт 4 дня (тема = (день-1)//4);
+      - дни 29..31: повтор 3 худших тем месяца (по mu);
+      - день > 31: месяц завершён, при следующем обращении запускается
+        СЛЕДУЮЩИЙ месяц из оставшихся тем класса.
 
     Returns:
         {
-            'active': bool,
-            'started_at': iso_str | None,
-            'day_index': 1..7 (computed from started_at),
-            'themes': [theme_id, ...],
-            'done_themes': [theme_id, ...],
-            'finished': bool,
-            'current_theme': str | None,   # theme for current day
-            'blocked': bool,               # True if probe not done for current day
+            'active', 'started_at', 'day_index', 'themes', 'done_themes',
+            'finished', 'current_theme', 'blocked'
         }
     """
     cs = CuratorState.query.filter_by(user_id=user_id).first()
@@ -415,30 +496,80 @@ def get_cycle_info(user_id: int) -> Dict[str, Any]:
         return {'active': False}
 
     mc = _get_monthly_cycle(cs)
-    if not mc.get('themes'):
+    themes = mc.get('themes', [])
+    if not themes:
         return {'active': False}
 
-    # P11 FIX: compute day_index from started_at date, not stored counter
-    day_idx = _compute_day_index(mc.get('started_at'))
-    themes = mc.get('themes', [])
     done = mc.get('done_themes', [])
-    finished = len(done) >= ACTIVE_DAYS
+    day_idx = _compute_day_index(mc.get('started_at'))
 
-    # theme_index clamps to themes_count for safe array access
-    theme_idx = min(day_idx, len(themes)) if themes else 1
-    current_theme = themes[theme_idx - 1] if theme_idx <= len(themes) else None
+    # Месяц завершён (день > 31) — переходим к следующему месяцу.
+    if day_idx > MONTH_DAYS:
+        grade = _grade_for_user(user_id, cs)
+        if grade:
+            covered = set(mc.get('covered_themes') or []) | set(themes)
+            next_themes = _select_subsequent_cycle_themes(user_id, grade, exclude=covered)
+            if next_themes:
+                mc = {
+                    'started_at': datetime.now(timezone.utc).isoformat(),
+                    'themes': next_themes,
+                    'day_index': 1,
+                    'done_themes': [],
+                    'finished_at': None,
+                    'covered_themes': sorted(covered),
+                }
+                _save_monthly_cycle(cs, mc)
+                db.session.commit()
+                themes = next_themes
+                done = []
+                day_idx = 1
+            else:
+                # Все темы класса пройдены.
+                mc['finished_at'] = mc.get('finished_at') or datetime.now(timezone.utc).isoformat()
+                _save_monthly_cycle(cs, mc)
+                db.session.commit()
+                return {
+                    'active': True,
+                    'started_at': mc.get('started_at'),
+                    'day_index': day_idx,
+                    'themes': themes,
+                    'done_themes': done,
+                    'finished': True,
+                    'current_theme': None,
+                    'blocked': False,
+                }
+        else:
+            return {
+                'active': True,
+                'started_at': mc.get('started_at'),
+                'day_index': day_idx,
+                'themes': themes,
+                'done_themes': done,
+                'finished': True,
+                'current_theme': None,
+                'blocked': False,
+            }
 
-    # Check if probe is pending
-    from services.theme_probe import has_active_probe, get_active_probe_theme
-    probe_pending = has_active_probe(user_id)
-    probe_theme = get_active_probe_theme(user_id)
-    blocked = False
+    finished = False
 
-    if not finished and current_theme and current_theme not in done and not probe_pending:
-        blocked = True  # No probe started yet for today
-
-    if probe_pending and probe_theme and probe_theme != current_theme:
-        blocked = True  # Probe for different theme is pending
+    n = len(themes)
+    # ── Финальный месяц: тем < 7 → круглое чередование весь месяц ──
+    if n < 7:
+        ordered = _order_themes_worst_first(user_id, themes)
+        current_theme = ordered[(day_idx - 1) % n] if ordered else None
+        blocked = False
+    else:
+        # Дни 1..28 — 7 тем по 4 дня.
+        if day_idx <= 7 * THEME_DAYS:
+            theme_pos = (day_idx - 1) // THEME_DAYS
+            current_theme = themes[theme_pos] if theme_pos < len(themes) else None
+            blocked = bool(current_theme and current_theme not in done)
+        else:
+            # Дни 29..31 — повтор 3 худших тем месяца.
+            worst = _worst_themes(user_id, themes, k=REVIEW_DAYS)
+            k_idx = day_idx - 7 * THEME_DAYS - 1  # 0..2
+            current_theme = worst[k_idx] if 0 <= k_idx < len(worst) else None
+            blocked = False  # повторы — только задачи дня, без нового среза
 
     return {
         'active': True,
@@ -453,48 +584,40 @@ def get_cycle_info(user_id: int) -> Dict[str, Any]:
 
 
 def advance_day(user_id: int) -> Dict[str, Any]:
-    """Mark current day's probe as done. Day index stays — the done_themes
-    list tells get_cycle_info that the current theme is measured, unblocking
-    daily tasks for today. Day index only advances when get_cycle_info is
-    called on a different calendar day (outside this function).
+    """Отметить текущую тему месяца как пройденную (после утреннего среза).
 
-    Called after a probe is completed.
+    Раскладка 7 тем × 4 дня: помечается тема текущего календарного дня.
+    В финальном месяце (< 7 тем) и в дни-повторы (29..31) ничего не помечаем —
+    там идёт простое кручение задач.
     """
     cs = CuratorState.query.filter_by(user_id=user_id).first()
     if not cs:
         return {'error': 'no_state'}
 
     mc = _get_monthly_cycle(cs)
-    day_idx = mc.get('day_index', 1)
+    day_idx = _compute_day_index(mc.get('started_at'))
     themes = mc.get('themes', [])
     done = list(mc.get('done_themes', []))
 
-    if day_idx > len(themes):
+    if day_idx > MONTH_DAYS:
         return {'error': 'cycle_already_done'}
 
-    current_theme = themes[day_idx - 1]
-    if current_theme not in done:
-        done.append(current_theme)
+    # Только для месяца с 7 темами и только в дни 1..28.
+    if len(themes) == 7 and day_idx <= 7 * THEME_DAYS:
+        theme_pos = (day_idx - 1) // THEME_DAYS
+        current_theme = themes[theme_pos] if theme_pos < len(themes) else None
+        if current_theme and current_theme not in done:
+            done.append(current_theme)
 
     mc['done_themes'] = done
-
-    # DO NOT advance day_index — stay on current day.
-    # When the student visits /daily_tasks, get_cycle_info will see
-    # current_theme in done_themes -> blocked=False -> tasks are shown.
-    # Day index only advances when get_cycle_info is called on a
-    # calendar day where the student already finished the previous probe.
-
-    if len(done) >= ACTIVE_DAYS:
-        mc['finished_at'] = datetime.now(timezone.utc).isoformat()
-
     _save_monthly_cycle(cs, mc)
     db.session.commit()
 
     return {
-        'day_index': mc['day_index'],
-        'done_count': len(mc['done_themes']),
-        'finished': len(mc['done_themes']) >= ACTIVE_DAYS,
-        'current_theme': themes[mc['day_index'] - 1] if mc['day_index'] <= len(themes) else None,
+        'day_index': day_idx,
+        'done_count': len(done),
+        'finished': False,
+        'current_theme': None,
     }
 
 
@@ -549,6 +672,10 @@ def get_today_info(user_id: int) -> Dict[str, Any]:
 def generate_tasks_only(user_id: int, subtopic: str = None) -> Dict[str, Any]:
     """Queue daily task generation for task-only days (8-30) without a probe.
 
+    AI-генерация «Задач дня» отключена (см. daily_tasks/services.py).
+    Задачи дня выдаются только из банка daily_task_bank, поэтому
+    генерация LLM не запускается.
+
     Returns {success: bool, subtopic: str, generation_queued: bool, message: str}.
     """
     from services.level_engine import get_state as _get_level_state
@@ -559,37 +686,19 @@ def generate_tasks_only(user_id: int, subtopic: str = None) -> Dict[str, Any]:
         info = get_today_info(user_id)
         subtopic = info.get('subtopic', '')
 
-    queued = False
-    try:
-        from daily_tasks.services import enqueue_daily_generation
-        enqueue_daily_generation(user_id)
-        queued = True
-    except Exception:
-        pass
-
     return {
-        'success': queued,
+        'success': False,
         'subtopic': subtopic,
         'level': level,
-        'generation_queued': queued,
-        'message': 'Tasks generation queued' if queued else 'Daily set already exists or generation not available',
+        'generation_queued': False,
+        'message': 'AI-генерация задач дня отключена (выдача из банка)',
     }
 
 
 def _on_cycle_activated(user_id: int) -> bool:
     """Hook: add 7 entries to gen_conveyor after cycle creation.
 
-    Called after build_or_get_cycle creates a new cycle.
-    New users get priority=1 (jump the queue).
+    AI-генерация «Задач дня» отключена (см. daily_tasks/services.py).
+    Конвейер gen_conveyor не заполняется.
     """
-    try:
-        from daily_tasks.services import schedule_conveyor_for_user
-        created = schedule_conveyor_for_user(user_id, priority=1)
-        logger.info(
-            "_on_cycle_activated: user=%s created=%d conveyor entries",
-            user_id, created,
-        )
-        return created > 0
-    except Exception:
-        logger.exception("_on_cycle_activated: user=%s failed", user_id)
-        return False
+    return False

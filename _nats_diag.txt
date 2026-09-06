@@ -1,0 +1,6 @@
+attempt 0: connect_ex=0
+  recv 537 bytes: b'INFO {"server_id":"NBEEG4BMOLHONUXGP4C3FZBMYHYZWPPMXP3VJ6TN5UOEG6KU5R7LO4TM","server_name":"h2-node-a","version":"2.10.2'
+attempt 1: connect_ex=0
+  recv 537 bytes: b'INFO {"server_id":"NBEEG4BMOLHONUXGP4C3FZBMYHYZWPPMXP3VJ6TN5UOEG6KU5R7LO4TM","server_name":"h2-node-a","version":"2.10.2'
+attempt 2: connect_ex=0
+  recv 537 bytes: b'INFO {"server_id":"NBEEG4BMOLHONUXGP4C3FZBMYHYZWPPMXP3VJ6TN5UOEG6KU5R7LO4TM","server_name":"h2-node-a","version":"2.10.2'

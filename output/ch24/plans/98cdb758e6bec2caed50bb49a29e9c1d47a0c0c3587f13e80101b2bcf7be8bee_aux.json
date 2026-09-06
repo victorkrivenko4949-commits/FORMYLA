@@ -1,0 +1,1 @@
+{"has_aux": true, "reason": "", "constructions": [{"type": "point_on_segment", "p1": "A", "p2": "B", "id": "aux_point_on_segment_A_B", "style": "aux", "dashed": false, "visual_role": "key_point", "purpose": "Точка на отрезке", "solution_evidence": {"step_no": 14, "quote": "выберем на одной стороне исходного треугольника 672 внутренних точки"}}]}

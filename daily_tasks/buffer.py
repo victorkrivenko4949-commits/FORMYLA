@@ -15,7 +15,11 @@ from typing import Any, Dict, List, Optional
 
 from models import db
 from daily_tasks.models import DailyTaskSet, DailyTaskItem, DailyGenerationJob
-from daily_tasks.services import today_in_user_tz, generate_daily_set
+from daily_tasks.services import (
+    today_in_user_tz,
+    generate_daily_set,
+    AI_GENERATION_ENABLED,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +67,10 @@ def ensure_daily_buffer(
             "pipeline_calls": int,
         }
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info("ensure_daily_buffer: AI-генерация отключена, пропускаем user=%d", user_id)
+        return {"status": "disabled", "days": {}, "pipeline_calls": 0}
+
     today = today_in_user_tz()
     days_result: Dict[str, Dict[str, Any]] = {}
     pipeline_calls = 0

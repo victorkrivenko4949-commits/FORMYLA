@@ -1,0 +1,383 @@
+7: from utils.rating_utils import add_xp_for_task, add_xp_for_adaptive_test, add_xp_for_mock_exam, get_xp_for_nex
+30:     from adaptive_data import ADAPTIVE_DB
+32:     ADAPTIVE_DB = []
+33:     print("ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.")
+341:     db, User, Friendship, Mentorship, AdaptiveTask, UserTopicProgress,
+342:     AdaptiveTestResult, TestResult, UserProgress,
+407: # AUTO-MIGRATION: Add difficulty calibration columns to adaptive_tasks
+412:         if 'adaptive_tasks' in inspector.get_table_names():
+413:             columns = [col['name'] for col in inspector.get_columns('adaptive_tasks')]
+422:                 # Поля для адаптивного сидера (services/adaptive_full_seed.py).
+434:                     db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {col_name} {col_type}"))
+436:                     print(f"[AUTO-MIGRATION] [OK] Column '{col_name}' added to adaptive_tasks")
+440:     print(f"[AUTO-MIGRATION] adaptive_tasks Warning: {e}")
+553: # AUTO-MIGRATION: Add needs_review columns to adaptive_tasks for AI-тьютор self-check
+561:         if 'adaptive_tasks' in _inspector_nr.get_table_names():
+562:             _cols_nr = [col['name'] for col in _inspector_nr.get_columns('adaptive_tasks')]
+573:                         db.session.execute(text(f"ALTER TABLE adaptive_tasks ADD COLUMN {_col_name} {_col_type
+575:                         print(f"[AUTO-MIGRATION] [OK] Column '{_col_name}' added to adaptive_tasks")
+578:                         print(f"[AUTO-MIGRATION] adaptive_tasks.{_col_name} skipped: {_e_col_nr}")
+582: # AUTO-MIGRATION D3: Add figure_json + figure_status to adaptive_tasks
+592:         if 'adaptive_tasks' in _inspector_fig.get_table_names():
+593:             _columns_fig = [col['name'] for col in _inspector_fig.get_columns('adaptive_tasks')]
+602:                             f"ALTER TABLE adaptive_tasks ADD COLUMN {_col_name_fig} {_col_type_fig}"
+605:                         print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_fig}' added to adaptive_tasks")
+608:                         print(f"[AUTO-MIGRATION] adaptive_tasks.{_col_name_fig} skipped: {_e_col_fig}")
+610:                     print(f"[AUTO-MIGRATION] \u2713 Column '{_col_name_fig}' already exists on adaptive_tasks"
+614:                     "CREATE INDEX IF NOT EXISTS ix_adaptive_tasks_figure_status "
+615:                     "ON adaptive_tasks(figure_status)"
+1449: # ── Adaptive bank seed (9120 калиброванных задач L1..L8) ─────────────────
+1450: # Идемпотентно перезаливает таблицу adaptive_tasks из
+1451: # data/adaptive/adaptive_full_9120.json. Если уже >= 9000 строк с
+1453: # Включается переменной окружения ADAPTIVE_FORCE_IMPORT=1.
+1454: if os.environ.get('ADAPTIVE_FORCE_IMPORT', '0') == '1':
+1456:         from services.adaptive_full_seed import run_adaptive_full_seed
+1457:         _ad_seed_result = run_adaptive_full_seed(app, db)
+1458:         print(f"[ADAPTIVE-FULL-SEED] result={_ad_seed_result}")
+1461:         print(f"[ADAPTIVE-FULL-SEED] hook FAILED: {_e_ad_seed}")
+1464:     print("[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)")
+1469: # olympiad_tasks / method_tasks / adaptive_tasks через normalize_roots и
+1878:         AdaptiveTask.is_flagged.is_(None),
+1879:         AdaptiveTask.is_flagged == False,  # noqa: E712
+2796: print(f"Адаптивный тест: загружено {len(ADAPTIVE_DB)} задач из adaptive_data")
+3529:     Сценарий: реклама / Метрика -> /welcome -> CTA -> /adaptive_test/select_class.
+3574:             'adaptive_tests_completed': user.adaptive_tests_completed,
+3944: # NEW: Olympiad adaptive test (JSONL-based, 5 tasks, L1-L5)
+3976:     from services.olympiad_adaptive import get_sections
+3995:     from services.olympiad_adaptive import get_themes
+4074:     from services.olympiad_adaptive import (
+5762:     recent_tests = AdaptiveTestResult.query.filter_by(
+5764:     ).order_by(AdaptiveTestResult.completed_at.desc()).limit(5).all()
+5767:     all_tests = AdaptiveTestResult.query.filter_by(user_id=current_user.id).all()
+5787:     from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
+5791:     # из ADAPTIVE_TOPICS_BY_GRADE (по 7 тем на класс). Для 5-6 и для
+5817:     if _user_grade_int in ADAPTIVE_TOPICS_BY_GRADE:
+5818:         for t in ADAPTIVE_TOPICS_BY_GRADE[_user_grade_int]:
+7066: # ADAPTIVE TESTING (Адаптивное тестирование)
+7069: # ── Adaptive test cooldown: 30 дней между тестами ─────────────────────────
+7073: #   - Залогиненный: учитываем по AdaptiveTestResult.completed_at для user_id.
+7074: #   - Гость: учитываем по session['adaptive_completed_at'] (ISO-таймстамп).
+7075: ADAPTIVE_COOLDOWN_DAYS = 0
+7078: def _adaptive_cooldown_status():
+7089:             from models import AdaptiveTestResult
+7090:             res = (AdaptiveTestResult.query
+7092:                    .order_by(AdaptiveTestResult.completed_at.desc())
+7097:             raw = session.get('adaptive_completed_at')
+7104:         logger.warning('[ADAPTIVE-COOLDOWN] check failed: %s', e)
+7111:     cd = _td(days=ADAPTIVE_COOLDOWN_DAYS)
+7118: def _adaptive_in_progress_summary():
+7122:       url         — ссылка для продолжения (/adaptive_test_simple)
+7130:       1. Flask-сессию — наличие adaptive_filtered_tasks и adaptive_slots
+7137:     if session.get('adaptive_filtered_tasks'):
+7138:         slots = session.get('adaptive_slots')
+7142:                 topic_name = session.get('adaptive_topic_name') or 'Адаптивный тест'
+7143:                 grade = session.get('adaptive_grade', '')
+7145:                     'url': url_for('adaptive_test_simple_page'),
+7163:             slots = state.get('adaptive_slots') or []
+7165:             topic_name = state.get('adaptive_topic_name') or 'Адаптивный тест'
+7166:             grade = state.get('adaptive_grade', '')
+7168:             url = url_for('adaptive_test_simple_page', session=ts_id) if ts_id else url_for('adaptive_test_sim
+7178:         print(f"[adaptive_in_progress_summary] DB check error: {_e}")
+7183: @app.route("/adaptive_test/select_class")
+7184: def adaptive_test_select_class():
+7185:     """Redirect old adaptive test to new JSONL-based olympiad test."""
+7189: @app.route("/adaptive_test/select_topic")
+7190: def adaptive_test_select_topic():
+7191:     """Redirect old adaptive test to new JSONL-based olympiad test."""
+7220:                 'url':       url_for('adaptive_test_start_grade',
+7225:         # ТОЧНАЯ строка `AdaptiveTask.topic` из БД (без эвристик по keyword-ам).
+7226:         from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
+7227:         registry = ADAPTIVE_TOPICS_BY_GRADE.get(grade_int, [])
+7228:         all_tasks = AdaptiveTask.query.filter(
+7229:             AdaptiveTask.class_level == grade_int,
+7251:                 'url':       url_for('adaptive_test_start_simple',
+7256:         'adaptive_test_select_topic.html',
+7260:         in_progress=_adaptive_in_progress_summary(),
+7264: @app.route("/adaptive_test/start_grade")
+7265: def adaptive_test_start_grade():
+7271:     т.к. он завязан на поля AdaptiveTask.
+7275:     is_blocked, days_left, _ = _adaptive_cooldown_status()
+7281:         return redirect('/adaptive_test_simple/results')
+7287:         return redirect(url_for('adaptive_test_select_class'))
+7292:         return redirect(url_for('adaptive_test_select_class'))
+7297:         return redirect(url_for('adaptive_test_select_topic', grade=grade_int))
+7303: @app.route("/adaptive_test/select_grade")
+7304: def adaptive_test_select_grade():
+7330:     from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+7331:     MIN_TASKS = 10  # должен совпадать с порогом в adaptive_test_start_simple
+7348:         all_tasks = AdaptiveTask.query.filter(
+7349:             AdaptiveTask.class_level == grade_int,
+7364:     return render_template('adaptive_test_select_grade.html',
+7372: @app.route("/adaptive_test/start")
+7373: def adaptive_test_start_simple():
+7380:     is_blocked, days_left, _ = _adaptive_cooldown_status()
+7386:         return redirect('/adaptive_test_simple/results')
+7401:         return redirect(url_for('adaptive_test_select_grade', topic=topic))
+7408:         return redirect(url_for('adaptive_test_select_grade', topic=topic))
+7413:             last_result = AdaptiveTestResult.query.filter_by(
+7418:                 AdaptiveTestResult.completed_at.isnot(None)
+7420:                 AdaptiveTestResult.completed_at.desc()
+7436:                                 rows = AdaptiveTask.query.filter(
+7437:                                     AdaptiveTask.id.in_(ids)
+7445:                         print(f'[ADAPTIVE] Failed to decode answers_history: {_e}')
+7477:                     return render_template('adaptive_test_already_completed.html',
+7491:             print(f'[ADAPTIVE] Completion check failed: {_e}')
+7494:     # Для 7–11 классов мы регистрируем темы в services.adaptive_topics_registry
+7495:     # и фильтруем задачи строгим равенством AdaptiveTask.topic == db_topic.
+7497:     from services.adaptive_topics_registry import get_topic_entry
+7528:         print(f"[ADAPTIVE FIX] 5 класс + Алгебра -> расширенный поиск по математике")
+7533:     from services.adaptive_topic_mapping import get_keywords_for_grade_topic
+7537:         print(f"[ADAPTIVE FIX] {grade_int} класс + {topic} -> ключевые слова: {grade_kw}")
+7562:     #     AdaptiveTask.topic == db_topic. Это надёжно и не зависит от keyword-эвристик.
+7568:         filtered_tasks = AdaptiveTask.query.filter(
+7569:             AdaptiveTask.class_level == grade_int,
+7571:             AdaptiveTask.topic.in_(candidates),
+7573:         print(f"[ADAPTIVE registry] grade={grade_int} key={topic} "
+7577:         all_tasks = AdaptiveTask.query.filter(
+7578:             AdaptiveTask.class_level == grade_int,
+7590:         filtered_tasks = AdaptiveTask.query.filter(
+7591:             AdaptiveTask.class_level == grade_int,
+7600:         return redirect(url_for('adaptive_test_select_grade', topic=topic))
+7603:     session['adaptive_topic'] = topic
+7604:     session['adaptive_topic_name'] = topic_name
+7605:     session['adaptive_grade'] = grade
+7607:     # Используется как дополнительный страховочный фильтр в _adaptive_pick_task_for_slot.
+7608:     session['adaptive_db_topic'] = db_topic_exact
+7609:     session['adaptive_filtered_tasks'] = sorted(t.id for t in filtered_tasks)
+7610:     session['adaptive_current_difficulty'] = 3  # Начальная сложность
+7626:     session['adaptive_slots'] = [
+7639:     # которые могут читать session['adaptive_answers'] / current_index.
+7640:     session['adaptive_answers'] = []
+7641:     session['adaptive_current_index'] = 0
+7642:     session['adaptive_current_task_id'] = None
+7643:     session['adaptive_shown_task_ids'] = []
+7647:     return redirect('/adaptive_test_simple')
+7651: def _adaptive_get_slots():
+7655:     slots = session.get('adaptive_slots')
+7660:     legacy_answers = session.get('adaptive_answers', []) or []
+7679:     session['adaptive_slots'] = new_slots
+7684: def _adaptive_save_slots(slots):
+7685:     session['adaptive_slots'] = slots
+7689: def _adaptive_answered_count(slots=None):
+7690:     slots = slots if slots is not None else _adaptive_get_slots()
+7694: def _adaptive_pick_task_for_slot(slot_index, slots, current_difficulty):
+7695:     """Подобрать AdaptiveTask для слота. Не дублирует ранее выбранные задачи.
+7697:     task_ids = session.get('adaptive_filtered_tasks', []) or []
+7711:         rows = AdaptiveTask.query.filter(
+7712:             AdaptiveTask.id.in_(task_ids),
+7713:             AdaptiveTask.difficulty_level == level
+7714:         ).order_by(AdaptiveTask.id.asc()).all()
+7732:                             f"[ADAPTIVE-PICK] WARNING: no free tasks at level "
+7741:             picked = AdaptiveTask.query.get(remaining[0])
+7750: def _adaptive_slots_summary(slots):
+7770: _ADAPTIVE_SESSION_KEYS = (
+7771:     'adaptive_current_difficulty',
+7772:     'adaptive_filtered_tasks',
+7773:     'adaptive_topic',
+7774:     'adaptive_topic_name',
+7775:     'adaptive_grade',
+7776:     'adaptive_db_topic',
+7777:     'adaptive_current_index',
+7778:     'adaptive_current_task_id',
+7779:     'adaptive_current_slot',
+7780:     'adaptive_shown_task_ids',
+7796: def _ts_serialize_adaptive_state():
+7799:     for k in _ADAPTIVE_SESSION_KEYS:
+7805: def _get_active_test_session(test_type='adaptive'):
+7840: def _save_adaptive_state_to_db(session_id=None, status=None, mark_completed=False):
+7853:     if 'adaptive_filtered_tasks' not in session:
+7861:     slots = _adaptive_get_slots()
+7862:     answered_cnt = _adaptive_answered_count(slots)
+7864:     state = _ts_serialize_adaptive_state()
+7867:     topic = session.get('adaptive_topic') or ''
+7868:     topic_name = session.get('adaptive_topic_name') or topic
+7869:     grade = str(session.get('adaptive_grade') or '')
+7885:             row = _get_active_test_session('adaptive')
+7896:                     "answers = :answers, adaptive_state = :state, "
+7919:                 "answers, adaptive_state, current_result, "
+7921:                 "VALUES (:uid, :did, 'adaptive', :topic, :tname, :grade, "
+7947:                     "AND test_type = 'adaptive' AND status = :st "
+7955:         print(f"[test_sessions] _save_adaptive_state_to_db error: {_e}")
+7963: def _load_adaptive_state_from_db(session_id):
+7988:         state_raw = rec.get('adaptive_state')
+8005:         for k in _ADAPTIVE_SESSION_KEYS:
+8009:             session['adaptive_slots'] = answers
+8010:         # Поддерживаем минимум: если в state не было adaptive_filtered_tasks —
+8011:         # фронт всё равно пометит сессию активной благодаря adaptive_slots.
+8012:         if 'adaptive_filtered_tasks' not in session:
+8013:             session['adaptive_filtered_tasks'] = state.get('adaptive_filtered_tasks', [])
+8019:         print(f"[test_sessions] _load_adaptive_state_from_db error: {_e}")
+8028:     if 'adaptive_filtered_tasks' not in session:
+8030:     sid = _save_adaptive_state_to_db()
+8041:     row = _get_active_test_session('adaptive')
+8064:     ok = _load_adaptive_state_from_db(session_id)
+8072:     state_raw = rec.get('adaptive_state')
+8087:         'adaptive_state': state,
+8097:     sid = _save_adaptive_state_to_db(session_id=session_id)
+8106:     sid = _save_adaptive_state_to_db(session_id=session_id, mark_completed=True)
+8150: @app.route("/adaptive_test_simple")
+8151: def adaptive_test_simple_page():
+8164:             _ok = _load_adaptive_state_from_db(int(_resume_sid))
+8173:     if 'adaptive_filtered_tasks' not in session:
+8175:         return redirect(url_for('adaptive_test_select_class'))
+8177:     grade = session.get('adaptive_grade', '9')
+8178:     slots = _adaptive_get_slots()
+8179:     current_difficulty = session.get('adaptive_current_difficulty', 3)
+8216:         current_task = AdaptiveTask.query.get(slot['task_id'])
+8222:         current_task = _adaptive_pick_task_for_slot(slot_index, slots, current_difficulty)
+8223:         _adaptive_save_slots(slots)
+8225:         current_task = AdaptiveTask.query.get(slot['task_id'])
+8247:     # AdaptiveTask — работаем с копией task_dict.
+8256:             f"[math_normalizer] adaptive_test_simple task {current_task.id}: {_norm_err}"
+8259:     answered_count = _adaptive_answered_count(slots)
+8263:     # Сохраняем «текущий слот» для совместимости со старым check_adaptive_answer
+8264:     session['adaptive_current_slot'] = slot_index
+8265:     session['adaptive_current_task_id'] = current_task.id
+8269:         'adaptive_test_simple.html',
+8277:         slots_summary=_adaptive_slots_summary(slots),
+8289: @app.route("/adaptive_test_simple/skip", methods=["POST"])
+8290: def adaptive_test_simple_skip():
+8293:     if 'adaptive_filtered_tasks' not in session:
+8305:     slots = _adaptive_get_slots()
+8317:     _adaptive_save_slots(slots)
+8329:     answered_count = _adaptive_answered_count(slots)
+8339: @app.route("/adaptive_test_simple/finish", methods=["GET", "POST"])
+8340: def adaptive_test_simple_finish():
+8343:     if 'adaptive_filtered_tasks' not in session:
+8347:     slots = _adaptive_get_slots()
+8348:     answered_count = _adaptive_answered_count(slots)
+8365:         return redirect(f'/adaptive_test_simple?slot={unfinished}')
+8367:     # ── Все 25 отвечены: переносим слоты в legacy adaptive_answers,
+8380:     session['adaptive_answers'] = answers_for_results
+8381:     session['adaptive_current_index'] = 25
+8386:         _save_adaptive_state_to_db(mark_completed=True)
+8392:     # AdaptiveTestResult.completed_at на странице результатов).
+8395:         session['adaptive_completed_at'] = _dt_now.utcnow().isoformat()
+8398:         print(f"[ADAPTIVE-COOLDOWN] failed to stamp session: {_e_cd}")
+8401:         return jsonify({'status': 'success', 'redirect': '/adaptive_test_simple/results'})
+8402:     return redirect('/adaptive_test_simple/results')
+8405: @app.route("/adaptive_test_simple/submit", methods=["POST"])
+8406: def adaptive_test_simple_submit():
+8408:     /api/check_adaptive_answer). Оставлен на случай прямой отправки формы:
+8410:     if 'adaptive_filtered_tasks' not in session:
+8413:     return redirect('/adaptive_test_simple')
+8416: @app.route("/api/check_adaptive_answer", methods=["POST"])
+8418: def check_adaptive_answer():
+8423:     if 'adaptive_filtered_tasks' not in session:
+8463:         from models import AdaptiveTask
+8464:         current_task = AdaptiveTask.query.get(task_id)
+8480:         _slots = _adaptive_get_slots()
+8483:             slot_index_fallback = session.get('adaptive_current_slot')
+8548:             f"[ADAPTIVE] AI tutor verdict: float_score={float_score}, "
+8580:         current_difficulty = session.get('adaptive_current_difficulty', 3)
+8591:             f"[ADAPTIVE] Score={score} (delta={delta}), "
+8599:         session['adaptive_current_difficulty'] = new_level
+8611:         _adaptive_save_slots(_slots)
+8614:         answered_count = _adaptive_answered_count(_slots)
+8633:             _save_adaptive_state_to_db()
+8635:             print(f"[test_sessions] save in check_adaptive_answer failed: {_e_save}")
+8638:         # Реальное завершение теперь только через /adaptive_test_simple/finish
+8658:         print(f"[ERROR] check_adaptive_answer: {e}")
+8673:         task = AdaptiveTask.query.get(task_id)
+8709: @app.route("/adaptive_test_simple/results")
+8710: def adaptive_test_simple_results():
+8715:     if 'adaptive_filtered_tasks' not in session and 'adaptive_answers' not in session:
+8720:     slots = session.get('adaptive_slots')
+8732:             return redirect(f'/adaptive_test_simple?slot={unfinished}')
+8734:         session['adaptive_answers'] = [
+8746:     answers = session.get('adaptive_answers', [])
+8747:     topic = session.get('adaptive_topic', 'algebra')
+8748:     topic_name = session.get('adaptive_topic_name', 'Математика')
+8749:     grade = session.get('adaptive_grade', '9')
+8758:                 rows = AdaptiveTask.query.filter(
+8759:                     AdaptiveTask.id.in_(ids)
+8789:             print(f"[ADAPTIVE results] feedback rehydrate failed: {_e}")
+8804:             f"[math_normalizer] adaptive_test_simple_results: {_norm_err}"
+8815:     final_level = session.get('adaptive_current_difficulty', 3)
+8825:             test_result = AdaptiveTestResult(
+8864:             xp_result = add_xp_for_adaptive_test(current_user)
+8865:             adaptive_xp_bonus = xp_result['xp_gained']
+8874:             adaptive_xp_bonus = 0
+8878:         adaptive_xp_bonus = 0
+8882:     return render_template('adaptive_test_simple_results.html',
+8892:         adaptive_xp_bonus=adaptive_xp_bonus,
+8898: @app.route("/api/adaptive-test/start", methods=["POST"])
+8900: def start_adaptive_test():
+8902:     from models import AdaptiveTest, AdaptiveTestProblem
+8903:     from services.adaptive_test import AdaptiveTestEngine
+8912:     previous_tests = AdaptiveTest.query.filter_by(
+8915:     ).order_by(AdaptiveTest.completed_at.desc()).limit(5).all()
+8926:     engine = AdaptiveTestEngine(PROBLEMS_DB)
+8932:     test = AdaptiveTest(
+8956:     test_problem = AdaptiveTestProblem(
+8985: @app.route("/api/adaptive-test/<int:test_id>/submit", methods=["POST"])
+8987: def submit_adaptive_answer(test_id):
+8989:     from models import AdaptiveTest, AdaptiveTestProblem
+8990:     from services.adaptive_test import AdaptiveTestEngine
+8992:     test = AdaptiveTest.query.get_or_404(test_id)
+9006:     current_problem_record = AdaptiveTestProblem.query.filter_by(
+9033:     engine = AdaptiveTestEngine(PROBLEMS_DB)
+9044:     answered_count = AdaptiveTestProblem.query.filter_by(test_id=test_id).filter(
+9045:         AdaptiveTestProblem.is_correct.isnot(None)
+9061:             next_problem_record = AdaptiveTestProblem(
+9096: @app.route("/api/adaptive-test/<int:test_id>/analyze", methods=["POST"])
+9098: def analyze_adaptive_test(test_id):
+9100:     from models import AdaptiveTest, AdaptiveTestProblem
+9101:     from services.adaptive_test import AdaptiveTestEngine, get_olympiad_status
+9103:     test = AdaptiveTest.query.get_or_404(test_id)
+9115:     for problem_record in test.problems.order_by(AdaptiveTestProblem.sequence_number):
+9126:     engine = AdaptiveTestEngine(PROBLEMS_DB)
+9204:                     logger.warning("analyze_adaptive_test: DeepSeek timeout (15s) — fallback")
+9229: @app.route("/adaptive-test/<int:test_id>")
+9231: def adaptive_test_page(test_id):
+9233:     from models import AdaptiveTest
+9235:     test = AdaptiveTest.query.get_or_404(test_id)
+9243:     return render_template('adaptive_test.html', test=test, problems_list=problems_list)
+9246: @app.route("/adaptive-test/<int:test_id>/results")
+9248: def adaptive_test_results(test_id):
+9250:     from models import AdaptiveTest
+9251:     from services.adaptive_test import get_olympiad_status
+9253:     test = AdaptiveTest.query.get_or_404(test_id)
+9260:     for problem_record in test.problems.order_by(AdaptiveTestProblem.sequence_number):
+9276:     return render_template('adaptive_test_results.html', test=test, results=results_data, olympiad_status=olym
+9809:     from models import AdaptiveTestResult, TopicMastery
+9812:     all_tests = AdaptiveTestResult.query.filter_by(user_id=friend.id).order_by(
+9813:         AdaptiveTestResult.completed_at.desc()
+9936:             LEFT JOIN adaptive_tasks at ON at.id = tc.task_id
+9981:         LEFT JOIN adaptive_tasks at ON at.id = tc.task_id
+10005:     flagged_tasks = AdaptiveTask.query.filter_by(is_flagged=True)\
+10006:         .order_by(AdaptiveTask.reports_count.desc()).all()
+10028:         task = AdaptiveTask.query.get_or_404(task_id)
+10058:         FROM adaptive_tasks
+10076:         task = AdaptiveTask.query.get_or_404(task_id)
+10131:             sa_text("SELECT COUNT(*) FROM adaptive_tasks WHERE task_text LIKE '% rac{%'")
+10135:             sa_text("SELECT COUNT(*) FROM adaptive_tasks WHERE solution LIKE '% rac{%'")
+10141:                 sa_text("SELECT id, SUBSTR(task_text, 1, 200) FROM adaptive_tasks WHERE task_text LIKE '% rac{
+10157:             sa_text("UPDATE adaptive_tasks SET task_text = REPLACE(task_text, ' rac{', '\\frac{') WHERE task_t
+10161:             sa_text("UPDATE adaptive_tasks SET solution = REPLACE(solution, ' rac{', '\\frac{') WHERE solution
+10176: # ── [DISABLED 2026-05] Legacy hard-coded flag для AdaptiveTask.id == 1650 ──
+10183: # делать это нужно по стабильному source_id (AdaptiveTask.source_id):
+10185: #     _bad = AdaptiveTask.query.filter_by(source_id='<vsosh-...-id>').first()
+10213:             _t = AdaptiveTask.query.get(_row.task_id)
+11294:       • source=adaptive — последние/любые задачи из таблицы AdaptiveTask
+11296:                           (берём из adaptive_answers в сессии + AdaptiveTask)
+11298:     from models import AdaptiveTask
+11299:     source = (request.args.get('source') or 'adaptive').strip()
+11310:         for entry in (session.get('adaptive_answers') or []):
+11336:             tasks = AdaptiveTask.query.filter(AdaptiveTask.id.in_(seen_ids)).all()
+11345:             AdaptiveTask.query
+11346:             .order_by(AdaptiveTask.id.desc())
+11358:             'source': 'adaptive',
+11363:             'url': f"{domain}/adaptive_task/{t.id}",
+11369: @app.route('/adaptive_task/<int:task_id>')
+11371: def view_shared_adaptive_task(task_id):
+11377:     from models import AdaptiveTask
+11378:     task = AdaptiveTask.query.get_or_404(task_id)
+11669:     recent_tests = AdaptiveTestResult.query.filter_by(
+11671:     ).order_by(AdaptiveTestResult.completed_at.desc()).limit(5).all()
+11794:     """Export table rows as JSON (paginated). Usage: ?secret=...&table=adaptive_task&offset=0&limit=500"""
+11798:     table = request.args.get('table', 'adaptive_task')
+12032:         rows = (AdaptiveTestResult.query
+12033:                 .filter(AdaptiveTestResult.user_id == user_id)
+12034:                 .order_by(AdaptiveTestResult.completed_at.asc())
+12898:             'adaptive_tests_completed': u.adaptive_tests_completed or 0,

@@ -1,0 +1,11 @@
+file2_2187_conditions.jsonl rows: 2187
+keys: ['task_id', 'grade', 'level', 'condition', 'answer', 'solution']
+sample: {"task_id": "f2_560", "grade": 5, "level": 1, "condition": "Длина прямоугольника 12 дм, а ширина в 3 раза меньше. Из трёх таких прямоугольников составили квадрат. Найдите периметр этого квадрата.", "answer": "48 дм", "solution": "Найдём ширину прямоугольника. Так как ширина в 3 раза меньше длины, то:\n\n\\[\n12 : 3 = 4 \\text{ дм}.\n\\]\n\nЗначит, каждый прямоугольник имеет размеры \\(12\\) дм на \\(4\\) дм.\n\nИз трёх таких прямоугольников можно составить квадрат: если положить три прямоугольника длинной стороной \\(12\\) дм друг к другу, то их ширины \\(4\\) дм сложатся:\n\n\\[\n4 + 4 + 4 = 
+
+FORMYLA_BANK.jsonl rows: 19600
+keys: ['grade', 'topic', 'level', 'position', 'task_text', 'correct_answer', 'failed', 'generated_at', 'solution', 'verified']
+sample: {"grade": 5, "topic": "Взвешивания и переливания", "level": 1, "position": 1, "task_text": "У продавца есть чашечные весы и две гири: одна 2 кг, другая 3 кг. Покупатель просит взвесить ровно 1 кг сахара. Как это сделать?", "correct_answer": "Положить гирю 3 кг на одну чашу, гирю 2 кг и сахар — на другую", "failed": false, "generated_at": "2026-08-10 00:05:56", "solution": "Чтобы взвесить ровно $1$
+
+bank has f2_ task_id field: False
+bank ids sample: []
+intersection bank_ids vs f2_ids: 0

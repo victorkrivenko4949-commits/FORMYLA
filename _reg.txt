@@ -1,0 +1,121 @@
+6: //   * shared file ~/.roo-bridge/instances.json (cross VS Code window state);
+7: //   * atomic-rename writes (write-to-tmp + rename) per §1.5.3;
+8: //   * stale-entry purge через `process.kill(pid_vscode, 0)` per §1.5.4;
+33: var __importStar = (this && this.__importStar) || (function () {
+50: Object.defineProperty(exports, "__esModule", { value: true });
+51: exports.isUuidTombstoned = exports.TOMBSTONES_SIDECAR_SUFFIX = void 0;
+52: exports.getDefaultRegistryPath = getDefaultRegistryPath;
+53: exports.isPidAlive = isPidAlive;
+54: exports.readRegistry = readRegistry;
+55: exports.isEntryStale = isEntryStale;
+56: exports.purgeStaleSnapshot = purgeStaleSnapshot;
+57: exports.purgeStale = purgeStale;
+58: exports.writeRegistryAtomic = writeRegistryAtomic;
+59: exports.deleteRegistryEntry = deleteRegistryEntry;
+60: exports.resolveWorkspaceOwner = resolveWorkspaceOwner;
+61: exports.getByWorkspace = getByWorkspace;
+62: exports.getByPort = getByPort;
+63: exports.setOwnership = setOwnership;
+64: exports.registerHostFresh = registerHostFresh;
+65: exports.tryRebindOwner = tryRebindOwner;
+66: exports.tombstoneSidecarPath = tombstoneSidecarPath;
+67: exports.isUuidClosedPersistent = isUuidClosedPersistent;
+68: exports.markUuidClosed = markUuidClosed;
+69: const fs = __importStar(require("fs"));
+70: const os = __importStar(require("os"));
+71: const path = __importStar(require("path"));
+73: Object.defineProperty(exports, "isUuidTombstoned", { enumerable: true, get: function () { return owner_rebind_1.isUuidTombstoned; } });
+82:  *   On portable / mis-configured Windows VS Code launches, Node.js
+88:  *   `D:\Microsoft VS Code\~\.roo-bridge\instances.json` instead of
+89:  *   `%USERPROFILE%\.roo-bridge\instances.json`. This broke the
+131:     throw new Error(`[roo-bridge.registry] Cannot resolve home directory for instances.json. ` +
+159:     return path.join(resolveHomeDir(), ".roo-bridge", "instances.json");
+213:  * Читает instances.json и возвращает текущий snapshot.
+268:  * проверяем PID и age. Если writer мёртв ИЛИ lock старше LOCK_STALE_MS —
+288:                 fs.writeSync(fd, JSON.stringify(meta), 0, "utf-8");
+377:  * Гарантирует, что параллельные writers из других Extension Host'ов не
+378:  * затрут друг друга при read-modify-write последовательности.
+390: // Atomic write — per §1.5.3
+393:  * Atomic write через write-to-tmp + rename.
+396:  * 2. write `<final>.tmp.<pid>.<rand>` → fsync → rename → final.
+400:  * **Запрещено:** прямой `fs.writeFileSync(final, json)` — partial-write на
+416:                 fs.writeSync(fd, data, 0, "utf-8");
+458:  *   * `pid_vscode` мёртв (`isPidAlive=false`);
+465:     if (!isPidAlive(entry.pid_vscode))
+492:  * уже-locked секций ({@link writeRegistryAtomic}). Public {@link purgeStale}
+503:             console.warn(`[roo-bridge.registry] purgeStale: write failed (${err}); ` +
+514:  * как defensive sweep перед каждым writeRegistryAtomic.
+517:  * file lock, чтобы concurrent writers из других Extension Host'ов не
+518:  * затирали друг друга read-modify-write последовательностью.
+533:  * Другие patch'и (initial-write со state=ready, switching, etc.) сюда не
+541:  * Atomic merge-and-write записи `port`.
+547:  *   3. Если allowCreate=false (heartbeat-mode) И existing для нашего port
+554:  *   5. Purge stale entries (только в момент write, в той же locked-секции).
+555:  *   6. Atomic-write обратно.
+564:  *       (когда purgeStaleUnlocked удалял запись зомби-pid_vscode из
+568:  *       нет — он fail-safe, ждёт следующего initial write от startServer.
+572: function writeRegistryAtomic(args) {
+580:         const key = String(args.port);
+586:         // следующий tick попробует снова, либо initial-write от
+589:             console.warn(`[roo-bridge.registry] writeRegistryAtomic(port=${args.port}): ` +
+590:                 `heartbeat-only patch on missing entry — skip write ` +
+593:                 port: args.port,
+594:                 pid_vscode: process.pid,
+596:                 current_workspace: null,
+617:         const snapshot = purgeStaleSnapshotPreservingPort(snapshotBeforePurge, stale, args.port);
+619:         // возможно только если pid_vscode оригинальной записи мёртв,
+620:         // что означает наш текущий process != original writer). В этом
+625:             port: args.port,
+626:             pid_vscode: args.patch.pid_vscode ?? existing?.pid_vscode ?? process.pid,
+630:             current_workspace: args.patch.current_workspace !== undefined
+631:                 ? args.patch.current_workspace
+632:                 : existing?.current_workspace ?? null,
+641:             // ready, initial-write сам поставит state явно.
+717:  * read и purge (другим concurrent writer'ом из второго Extension Host'а),
+740:  * Удалить запись `port` из registry. Идемпотентно (отсутствующий port → no-op).
+744: function deleteRegistryEntry(port, registryPath) {
+748:         const key = String(port);
+756:             console.warn(`[roo-bridge.registry] deleteRegistryEntry(${port}): ` +
+757:                 `write failed (${err})`);
+764: /** Нормализация workspace-пути для сравнения (case-insensitive на Windows). */
+780:  * PMA_EXTENSION_OWNER_REBIND_I22_20260820: fail-closed resolution по workspace.
+781:  * Duplicate workspace owners -> explicit "ambiguous" conflict (entry=null,
+784: function resolveWorkspaceOwner(workspacePath, options) {
+788:     const want = normalizeWorkspace(workspacePath);
+792:         if (normalizeWorkspace(entry.current_workspace) === want) {
+810:  * Найти запись по workspace_path.
+813:  * Две и более не-stale записи на одном workspace -> возвращаем null
+821: function getByWorkspace(workspacePath, options) {
+822:     const r = resolveWorkspaceOwner(workspacePath, options);
+826: function getByPort(port, options) {
+828:     return snapshot[String(port)] ?? null;
+831:  * Установить ownership записи `port` атомарно.
+834: function setOwnership(port, pidOwner, options) {
+835:     return writeRegistryAtomic({
+836:         port,
+861:         pidVscode: typeof entry.pid_vscode === "number" ? entry.pid_vscode : null,
+863:         currentWorkspace: entry.current_workspace ?? null,
+873:  * PID/generation/port. Идемпотентна для того же pid_vscode. Другой живой
+876: function registerHostFresh(port, req, options) {
+882:         const key = String(port);
+909:             port,
+910:             pid_vscode: req.pidVscode,
+912:             current_workspace: req.workspace,
+939:             console.warn(`[roo-bridge.registry] registerHostFresh: write failed (${err}); ` +
+953:  * Только proven live exact UUID на том же normalized workspace может
+960: function tryRebindOwner(port, req, isSessionUuidLive, options) {
+965:         const key = String(port);
+1002:             port,
+1005:             pid_vscode: req.pidVscode,
+1006:             current_workspace: req.workspace ?? existing?.current_workspace ?? null,
+1027:             console.warn(`[roo-bridge.registry] tryRebindOwner: write failed (${err}); ` +
+1048: //   { "uuid": { uuid, lifecycle, generation, closed_at, port } }
+1054: exports.TOMBSTONES_SIDECAR_SUFFIX = ".tombstones.json";
+1057:     return registryPath + exports.TOMBSTONES_SIDECAR_SUFFIX;
+1074: function writeTombstoneStore(registryPath, store) {
+1080:         console.warn(`[roo-bridge.registry] writeTombstoneStore failed (${err}); ` +
+1117: function markUuidClosed(port, uuid, options) {
+1125:         const key = String(port);
+1142:                 console.warn(`[roo-bridge.registry] markUuidClosed: write failed (${err}); ` +
+1153:             port,
+1155:         writeTombstoneStore(target, updated);

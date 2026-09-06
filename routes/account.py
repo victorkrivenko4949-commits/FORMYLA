@@ -37,6 +37,59 @@ def privacy_page():
     return render_template('account/privacy.html', stats=stats)
 
 
+@account_bp.route('/reintake', methods=['POST'])
+@login_required
+def reintake_account():
+    """Временная кнопка «Перепройти анкету»: удаляет текущий аккаунт
+    и возвращает пользователя на страницу входа/анкеты.
+
+    Требует JSON: {"confirm": "DELETE"} — фронт показывает предупреждение
+    о том, что аккаунт будет удалён безвозвратно.
+    """
+    data = request.get_json(silent=True) or {}
+    if data.get('confirm') != 'DELETE':
+        return jsonify(error='Send {"confirm": "DELETE"} to confirm'), 400
+
+    user_id = current_user.id
+    email = current_user.email or ''
+    email_hash = hashlib.sha256(email.encode()).hexdigest()
+
+    logger.warning(f"Account re-intake deletion requested: user_id={user_id}")
+
+    try:
+        # 1. Delete photos from R2/local + TaskSolution records
+        try:
+            from services.storage import delete_all_solutions
+            delete_all_solutions(user_id)
+        except Exception as e:
+            logger.error(f"Error deleting solutions: {e}")
+
+        # 2. Delete prep plans
+        PrepPlan.query.filter_by(user_id=user_id).delete()
+        db.session.flush()
+
+        # 3. Delete other related records
+        _delete_related_records(user_id)
+
+        # 4. Audit log
+        _log_deletion_audit(user_id, email_hash)
+
+        # 5. Delete user (raw SQL — обходим ORM-nullify, который ломается
+        #    на NOT NULL FK-колонках без ON DELETE CASCADE).
+        _delete_user_row(user_id)
+
+        db.session.commit()
+        logout_user()
+
+        logger.warning(f"Account deleted via re-intake: user_id={user_id}")
+        return jsonify(status='deleted', redirect_url=url_for('login'))
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Re-intake deletion failed: {e}")
+        return jsonify(error='Deletion failed. Contact support.'), 500
+
+
 @account_bp.route('/delete', methods=['POST'])
 @login_required
 def delete_account():
@@ -72,10 +125,8 @@ def delete_account():
         # 4. Audit log
         _log_deletion_audit(user_id, email_hash)
 
-        # 5. Delete user
-        user = db.session.get(User, user_id)
-        if user:
-            db.session.delete(user)
+        # 5. Delete user (raw SQL — обходим ORM-nullify).
+        _delete_user_row(user_id)
 
         db.session.commit()
         logout_user()
@@ -108,6 +159,20 @@ def toggle_ml_consent():
     return jsonify(status='ok', ml_training_consent=consent)
 
 
+def _delete_user_row(user_id):
+    """Удалить строку пользователя напрямую через raw SQL.
+
+    Используем raw DELETE вместо ORM `db.session.delete(user)`, потому что
+    SQLAlchemy при удалении родителя пытается "отвязать" зависимые записи
+    (выставить FK в NULL) для колонок без ON DELETE CASCADE — а если колонка
+    NOT NULL, это падает с IntegrityError (например figure_build_jobs.user_id,
+    progress_log.user_id). Мы заранее чистим всё в _delete_related_records,
+    поэтому raw DELETE безопасен.
+    """
+    from sqlalchemy import text
+    db.session.execute(text("DELETE FROM users WHERE id = :uid"), {'uid': user_id})
+
+
 def _delete_related_records(user_id):
     """Delete all user-related records from auxiliary tables."""
     from sqlalchemy import text
@@ -117,6 +182,22 @@ def _delete_related_records(user_id):
         'user_topic_progress', 'daily_quests', 'user_streaks',
         'topic_mastery', 'notifications', 'test_results_detail',
         'user_progress', 'mock_exams',
+        # ── Curator module (NOT NULL user_id — удаляем до удаления юзера) ──
+        'student_diagnostics', 'learning_plans', 'task_attempts',
+        'progress_log', 'curator_state', 'subtopic_progress',
+        # ── Daily tasks module ──
+        'daily_task_sets', 'user_task_assignments', 'thematic_day_sets',
+        'pre_gen_queue', 'gen_conveyor', 'bank_issues',
+        # ── Прочее (прямая привязка к пользователю) ──
+        'streak_records', 'user_subtopic_assignments',
+        'user_dashboard_items', 'solution_attempts', 'task_solutions',
+        'task_assignment_history', 'photo_recognize_requests',
+        'olympiad_generation_log',
+        # ── Чертежи / фигуры (NOT NULL user_id без ON DELETE CASCADE) ──
+        'figure_jobs', 'figure_build_jobs', 'figure_credit_transactions',
+        'figure_generations', 'drawing_generations',
+        # ── Группы (колонка user_id) ──
+        'group_members', 'teacher_group_members',
     ]
 
     for table in tables_with_user_id:
@@ -127,6 +208,17 @@ def _delete_related_records(user_id):
             )
         except Exception as e:
             logger.warning(f"Could not clean {table}: {e}")
+
+    # Дочерние таблицы без user_id (FK к родительскому daily_task_sets):
+    # удаляем до daily_task_sets, иначе FK-каскад может не сработать.
+    try:
+        db.session.execute(
+            text("DELETE FROM daily_task_items WHERE daily_set_id IN "
+                 "(SELECT id FROM daily_task_sets WHERE user_id = :uid)"),
+            {'uid': user_id}
+        )
+    except Exception as e:
+        logger.warning(f"Could not clean daily_task_items: {e}")
 
     # Friendships (both directions)
     try:

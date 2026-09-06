@@ -543,9 +543,9 @@ def _build_thematic_slot_plan(subject: str) -> List[Dict[str, Any]]:
 
     Для тематического дня нет данных адаптивных тестов, поэтому slot_kind
     для всех слотов — ``calibration``, а difficulty_level ступенчато растёт
-    с 1 до 7 (первые 2 слота L1, затем L2, L3, и т.д.).
+    в пределах 1..4 (каноническая четырёхуровневая шкала).
     """
-    difficulty_map = [1, 1, 2, 2, 3, 3, 4, 5, 6, 7]
+    difficulty_map = [1, 1, 2, 2, 3, 3, 4, 4, 4, 4]
     slots: List[Dict[str, Any]] = []
     for pos in range(1, 11):
         slots.append({
@@ -556,7 +556,7 @@ def _build_thematic_slot_plan(subject: str) -> List[Dict[str, Any]]:
             "topic_key": "",
             "difficulty_level": difficulty_map[pos - 1],
             "target_level": 1,
-            "level_window": [1, 8],
+            "level_window": [1, 4],
             "is_calibration": True,
             "measured": False,
             "pct": None,

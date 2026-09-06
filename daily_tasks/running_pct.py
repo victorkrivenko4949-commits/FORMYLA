@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 # ── Параметры — все в одном месте для тюнинга ────────────────────────
 HALF_LIFE_DAYS: float = 30.0      # за 30 дней вес ответа падает в 2 раза
-MAX_DIFFICULTY: int = 5           # шкала задач 1..5 в нашей системе
+MAX_DIFFICULTY: int = 4           # шкала задач 1..4 в нашей системе
 MIN_ANSWERS_FOR_MEASURED: int = 8 # сколько ответов нужно, чтобы measured=True
 MAX_LOOKBACK_DAYS: int = 180      # ответы старше 180 дней не учитываем
 MAX_ANSWERS_CONSIDERED: int = 50  # верхняя граница (производительность)
@@ -60,7 +60,7 @@ def _decay_weight(answered_at: Optional[datetime], now: datetime) -> float:
 
 
 def _difficulty_weight(difficulty: Optional[int]) -> float:
-    """Вес сложности: lvl 5 весит в 5× больше lvl 1."""
+    """Вес сложности: lvl 4 весит в 4× больше lvl 1."""
     if difficulty is None:
         # неизвестная сложность -> нейтральный вес = середина шкалы
         return (MAX_DIFFICULTY / 2.0) / MAX_DIFFICULTY
@@ -83,7 +83,7 @@ def compute_running_pct(
     answers : iterable[dict]
         Каждый элемент содержит ключи:
           - ``is_correct`` (bool)
-          - ``difficulty_level`` (int 1..5 или 1..8) — опционально
+          - ``difficulty_level`` (int 1..4 или 1..8) — опционально
           - ``answered_at`` (datetime) — опционально
     now : datetime
         Текущий момент (для тестов можно подставить фиксированный).

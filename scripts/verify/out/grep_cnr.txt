@@ -1,0 +1,7 @@
+1281: def plan_uses_constraints(plan: Any) -> bool:
+1455:     # ── REC-4: реакция на CONDITION_NOT_REALIZED ──
+1459:     if "CONDITION_NOT_REALIZED" in coverage_codes:
+1460:         if not plan_uses_constraints(base_plan):
+1462:                 "CONDITION_NOT_REALIZED: данные условия не реализованы на чертеже. "
+1482:                 if "CONDITION_NOT_REALIZED" not in [
+1494:                       or "CONDITION_NOT_REALIZED: геометрия не реализована.")

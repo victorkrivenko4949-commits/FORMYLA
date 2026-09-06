@@ -1,0 +1,90 @@
+126:     New-Item -ItemType Directory -Path $dir -Force | Out-Null
+127: }
+128: [IO.File]::WriteAllText(
+129:     (Join-Path $CanaryWorkspace "input.txt"),
+130:     "VICTOR_BRIDGE_CANARY_INPUT_v1`n",
+131:     (New-Object Text.UTF8Encoding($false))
+132: )
+133: 
+134: if (-not (Test-Path -LiteralPath $RooBridgeVsix -PathType Leaf)) {
+135:     Stop-Block "BLOCK_ROO_BRIDGE_VSIX_MISSING" $RooBridgeVsix
+136: }
+137: $CodeCli = (Get-Command code.cmd -ErrorAction SilentlyContinue).Source
+138: if (-not $CodeCli) {
+139:     $CodeCli = (Get-Command code.exe -ErrorAction SilentlyContinue).Source
+140: }
+141: if (-not $CodeCli) {
+142:     Stop-Block "BLOCK_VSCODE_CLI_MISSING" "code.cmd/code.exe not found in PATH."
+143: }
+144: $CodeVersionOutput = @(& $CodeCli --version 2>&1)
+145: if ($LASTEXITCODE -ne 0 -or -not ($CodeVersionOutput -match '^1\.135\.0$')) {
+146:     Stop-Block "BLOCK_VSCODE_VERSION" "expected=1.135.0 actual=$($CodeVersionOutput -join '|')"
+147: }
+148: $Extensions = @(& $CodeCli --list-extensions --show-versions 2>&1)
+149: if ($LASTEXITCODE -ne 0) {
+150:     Stop-Block "BLOCK_VSCODE_EXTENSION_ENUMERATION" ($Extensions -join "|")
+151: }
+152: if (-not ($Extensions -match '(?i)^rooveterinaryinc\.roo-cline@3\.54\.0$')) {
+153:     Stop-Block "BLOCK_ROO_EXTENSION_VERSION" "required=rooveterinaryinc.roo-cline@3.54.0"
+154: }
+155: $BridgeExtensionExact = $Extensions -match "(?i)^$([regex]::Escape($RooBridgeExtensionId))@$([regex]::Escape($RooBridgeExtensionVersion))$"
+156: if (-not $BridgeExtensionExact) {
+157:     $InstallOutput = @(& $CodeCli --install-extension $RooBridgeVsix --force 2>&1)
+158:     if ($LASTEXITCODE -ne 0) {
+159:         Stop-Block "BLOCK_ROO_BRIDGE_VSIX_INSTALL" ($InstallOutput -join "|")
+160:     }
+161:     $Extensions = @(& $CodeCli --list-extensions --show-versions 2>&1)
+162:     if (-not ($Extensions -match "(?i)^$([regex]::Escape($RooBridgeExtensionId))@$([regex]::Escape($RooBridgeExtensionVersion))$")) {
+163:         Stop-Block "BLOCK_ROO_BRIDGE_VSIX_VERSION" "required=$RooBridgeExtensionId@$RooBridgeExtensionVersion"
+164:     }
+165:     Write-Host "ROO_BRIDGE_EXTENSION=APPLIED"
+166: } else {
+167:     Write-Host "ROO_BRIDGE_EXTENSION=KEEP"
+168: }
+169: 
+170: function Get-ReadyCanaryInstances {
+171:     if (-not (Test-Path -LiteralPath $InstancesRegistry -PathType Leaf)) { return @() }
+172:     try {
+173:         $snapshot = Get-Content -LiteralPath $InstancesRegistry -Raw | ConvertFrom-Json
+174:     } catch {
+175:         return @()
+176:     }
+177:     $want = [IO.Path]::GetFullPath($CanaryWorkspace).TrimEnd('\').ToLowerInvariant()
+178:     $now = [DateTime]::UtcNow
+179:     @($snapshot.PSObject.Properties | ForEach-Object {
+180:         $entry = $_.Value
+181:         if (-not $entry.current_workspace) { return }
+182:         try {
+183:             $actual = [IO.Path]::GetFullPath([string]$entry.current_workspace).TrimEnd('\').ToLowerInvariant()
+184:             $heartbeat = [DateTime]::Parse([string]$entry.last_heartbeat).ToUniversalTime()
+185:             $pidAlive = $null -ne (Get-Process -Id ([int]$entry.pid_vscode) -ErrorAction SilentlyContinue)
+186:             if ($actual -eq $want -and
+187:                 [string]$entry.state -eq "ready" -and
+188:                 [bool]$entry.roo_webview_ready -and
+189:                 $pidAlive -and
+190:                 ($now - $heartbeat).TotalSeconds -le 30) {
+191:                 [pscustomobject]@{ Port = [int]$entry.port; Entry = $entry }
+192:             }
+193:         } catch {}
+194:     })
+195: }
+196: 
+197: $ReadyCanary = @(Get-ReadyCanaryInstances)
+198: if ($ReadyCanary.Count -eq 0) {
+199:     $OpenOutput = @(& $CodeCli -n $CanaryWorkspace 2>&1)
+200:     if ($LASTEXITCODE -ne 0) {
+201:         Stop-Block "BLOCK_ROO_CANARY_WINDOW_LAUNCH" ($OpenOutput -join "|")
+202:     }
+203:     $deadline = [DateTime]::UtcNow.AddSeconds(120)
+204:     do {
+205:         Start-Sleep -Seconds 3
+206:         $ReadyCanary = @(Get-ReadyCanaryInstances)
+207:     } while ($ReadyCanary.Count -eq 0 -and [DateTime]::UtcNow -lt $deadline)
+208: }
+209: if ($ReadyCanary.Count -ne 1) {
+210:     Stop-Block "BLOCK_ROO_INSTANCES_NOT_READY" "expected exactly one fresh ready writer-owned canary instance; actual=$($ReadyCanary.Count)"
+211: }
+212: Write-Host "PASS_ROO_BRIDGE_EXTENSION=$RooBridgeExtensionId@$RooBridgeExtensionVersion"
+213: Write-Host "PASS_ROO_CANARY_INSTANCE_PORT=$($ReadyCanary[0].Port)"
+214: 
+215: $existing = Get-BridgeProcesses

@@ -15,7 +15,7 @@
             {% endif %}
         </header>
 
-        <!-- Price packages: 10|99, 30|249, 100|599 (source of truth in routes/figures.py FIGURE_PACKAGES) -->
+        <!-- Все пакеты сейчас бесплатны (бета-период) -->
         <div class="pricing-cards">
             {% for pkg in packages %}
             <div class="pricing-card glass {% if pkg.featured %}pricing-card--featured{% endif %}">
@@ -24,15 +24,17 @@
                 {% endif %}
                 <div class="pricing-amount" data-amount="{{ pkg.amount }}">{{ pkg.amount }}</div>
                 <div class="pricing-label">{{ pkg.label }}</div>
-                <div class="pricing-price" data-price="{{ pkg.price_rub }}">{{ pkg.price_rub }} руб.</div>
-                <div class="pricing-per-unit">{{ "%.2f"|format(pkg.price_rub / pkg.amount) }} руб. / чертёж</div>
-                <a href="/payment-stub?package={{ pkg.id }}" class="pricing-btn">🛒 Купить</a>
+                <div class="pricing-price" data-price="0">0 руб.</div>
+                <div class="pricing-per-unit">Бесплатно</div>
+                <button type="button" class="pricing-btn" data-package="{{ pkg.id }}" onclick="buyPackage('{{ pkg.id }}', this)">🛒 Получить бесплатно</button>
             </div>
             {% endfor %}
         </div>
 
+        <div id="purchaseResult" class="pricing-result" hidden></div>
+
         <div class="pricing-note glass">
-            <p>Тестовый режим оплаты, реальное списание денег не происходит. Оплата временно недоступна. Нажмите «Купить», чтобы оставить заявку — мы сообщим, когда оплата заработает.</p>
+            <p>Сейчас все функции доступны бесплатно. Оплата появится позже — мы сообщим, когда она заработает.</p>
         </div>
     </section>
 </div>
@@ -93,10 +95,55 @@
     .pricing-btn:hover { background: var(--accent-hi); }
     .pricing-note { padding: 16px 24px; text-align: center; }
     .pricing-note p { color: var(--muted); font-size: 14px; margin: 0; }
+    .pricing-result {
+        text-align: center; padding: 12px 20px; border-radius: 10px;
+        font-size: 15px; font-weight: 600;
+    }
+    .pricing-result--ok { background: rgba(62,207,142,0.12); color: #3ecf8e; border: 1px solid rgba(62,207,142,0.3); }
+    .pricing-result--err { background: rgba(232,106,98,0.12); color: #e86a62; border: 1px solid rgba(232,106,98,0.3); }
     @media (max-width: 600px) {
         .pricing-page { padding: 24px 12px 100px; }
         .pricing-title { font-size: 24px; }
         .pricing-cards { grid-template-columns: 1fr; }
     }
 </style>
+
+<script>
+async function buyPackage(packageId, btn) {
+    if (!{{ 'true' if current_user.is_authenticated else 'false' }}) {
+        window.location.href = '{{ url_for("login") }}';
+        return;
+    }
+    const result = document.getElementById('purchaseResult');
+    btn.disabled = true;
+    btn.textContent = 'Начисляем...';
+    result.hidden = false;
+    result.className = 'pricing-result';
+    result.textContent = '';
+
+    try {
+        const r = await fetch('/api/figures/purchase', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({package: packageId})
+        });
+        const data = await r.json();
+        if (data.ok) {
+            result.className = 'pricing-result pricing-result--ok';
+            result.textContent = data.message + '. Остаток: ' + data.credits + ' чертежей.';
+            const balanceEl = document.querySelector('.pricing-balance-value');
+            if (balanceEl) balanceEl.textContent = data.credits + ' чертежей';
+        } else {
+            result.className = 'pricing-result pricing-result--err';
+            result.textContent = data.error || 'Ошибка';
+        }
+    } catch (e) {
+        result.className = 'pricing-result pricing-result--err';
+        result.textContent = 'Ошибка соединения';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🛒 Получить бесплатно';
+    }
+}
+</script>
 {% endblock %}

@@ -10,8 +10,8 @@
 /* ── Карточка задачи внутри модалки ───────────────────────────────── */
 
 .dt-modal-body .dt-task-card {
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #121F3C;
+  border: 1px solid #1C2B4F;
   border-radius: 14px;
   padding: 18px 18px 22px;
   margin-top: 6px;
@@ -521,9 +521,9 @@
 .dt-modal-body .dt-feedback-block {
   margin-top: 22px;
   padding: 20px;
-  background: rgba(15, 23, 42, 0.55);
+  background: #121F3C;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #1C2B4F;
 }
 .dt-modal-body .dt-feedback-title {
   color: #38ef7d;

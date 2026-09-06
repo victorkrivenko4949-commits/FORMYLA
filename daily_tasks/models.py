@@ -125,6 +125,10 @@ class DailyTaskItem(db.Model):
     aux_svg_path = db.Column(db.Text, nullable=True)
     has_aux = db.Column(db.Boolean, nullable=False, default=False)
     aux_reason = db.Column(db.Text, nullable=True)
+    # Готовый SVG-чертёж из статики (static/daily_figures/<...>.svg).
+    # Заполняется для задач банка FORMYLA_BANK.jsonl / file2, когда у
+    # условия есть готовый чертёж. Отдаётся фронту как figure_url.
+    figure_svg_path = db.Column(db.Text, nullable=True)
 
     # --- relationships ---
     daily_set = db.relationship('DailyTaskSet', back_populates='items')

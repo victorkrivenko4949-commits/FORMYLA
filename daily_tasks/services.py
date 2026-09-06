@@ -35,6 +35,8 @@ except ImportError:
 
 from models import db
 
+from utils.math_text_fixer import wrap_bare_math
+
 from .models import (
     DailyTaskSet,
     DailyTaskItem,
@@ -61,14 +63,49 @@ from . import task_bank as tb
 
 logger = logging.getLogger(__name__)
 
+# ──────────────────────────────────────────────────────────────────────
+# AI-генерация «Задач дня» ОТКЛЮЧЕНА (по требованию).
+# Выдача задач дня идёт ТОЛЬКО из банка daily_task_bank (bank_daily).
+# LLM-пайплайны (regenerate, prewarm, conveyor, buffer, midnight assign)
+# выключены. Проверка ответов НЕ затрагивается.
+# ──────────────────────────────────────────────────────────────────────
+AI_GENERATION_ENABLED = False
+
 
 def _get_item_figure_url(item) -> Optional[str]:
     """Получить URL готового SVG-чертежа для элемента задачи дня.
 
     Только отдача готового файла, ничего не рисуется в момент показа.
-    Если figure_json заполнен и figure_status == 'figure_built' — возвращает URL.
+    Приоритет:
+      1. figure_svg_path — готовый статический чертёж (daily_figures).
+      2. figure_json + figure_status == 'figure_built' — чертёж из кэша
+         фигур (services.figure_cache).
     Иначе None.
     """
+    # 1. Готовый статический SVG из банка/file2.
+    static_svg = getattr(item, 'figure_svg_path', None)
+    if static_svg:
+        path = str(static_svg).strip()
+        if path:
+            if path.startswith('/'):
+                return path
+            return f'/static/daily_figures/{path}'
+
+    # 1б. Рантайм-фолбэк по карте file2 (когда figure_svg_path ещё не проставлен
+    # в БД, но для условия есть готовый чертёж в static/daily_figures/).
+    try:
+        from .figure_map import resolve as _figure_resolve
+        grade = None
+        ds = getattr(item, 'daily_set', None)
+        if ds is not None:
+            grade = getattr(ds, 'class_level', None)
+        svg = _figure_resolve(grade, getattr(item, 'task_text', '') or '')
+        if svg:
+            return svg if svg.startswith('/') else f'/static/daily_figures/{svg}'
+    except Exception:
+        pass
+
+    # 2. Чертёж, собранный пайплайном (figure_json + figure_built).
     figure = getattr(item, 'figure_json', None)
     status = getattr(item, 'figure_status', None)
     if not figure or status != 'figure_built':
@@ -270,6 +307,18 @@ def enqueue_daily_generation(
         * ``status`` — текущий статус сета
         * ``message`` — человеко-читаемое пояснение
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info(
+            "enqueue_daily_generation: AI-генерация отключена (AI_GENERATION_ENABLED=False), пропускаем user=%d",
+            user_id,
+        )
+        return {
+            "daily_set_id": None,
+            "job_id": None,
+            "status": "disabled",
+            "message": "AI-генерация задач дня отключена",
+        }
+
     today = today_in_user_tz()
 
     # ── lazy zombie-cleanup: размораживаем зависшие jobs пользователя ──
@@ -547,7 +596,9 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "weakness_score": item.weakness_score,
             "reason": item.reason,
             "is_calibration": is_calibration,
-            "task_text": item.task_text,                 "text": item.task_text,                 "preview": (item.task_text or "")[:300],
+            "task_text": wrap_bare_math(item.task_text or ""),
+            "text": wrap_bare_math(item.task_text or ""),
+            "preview": wrap_bare_math((item.task_text or "")[:300]),
             "correct_answer": item.correct_answer,
             "solution": item.solution,
             "hints": _parse_json_field(item.hints, []),
@@ -556,6 +607,7 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "status": item.status,
             "user_answer": item.user_answer,
             "is_correct": item.is_correct,
+            "is_answered": item.user_answer is not None,
             "answered_at": item.answered_at.isoformat() if item.answered_at else None,
             "time_spent_seconds": item.time_spent_seconds,
             "figure_url": _get_item_figure_url(item),
@@ -1826,6 +1878,10 @@ def trigger_daily_prewarm(user_id: int) -> Dict[str, Any]:
 
     Возвращает словарь с ``status``, ``pool_id``, ``message``.
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info("trigger_daily_prewarm: AI-генерация отключена, пропускаем user=%d", user_id)
+        return {"status": "disabled", "pool_id": None, "message": "AI-генерация задач дня отключена"}
+
     import concurrent.futures as _cf
     with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
         _future = _executor.submit(build_profile, user_id)
@@ -2104,6 +2160,10 @@ def _process_pregen_queue() -> int:
     int
         Количество запущенных генераций.
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info("_process_pregen_queue: AI-генерация отключена, пропускаем")
+        return 0
+
     now = datetime.utcnow()
     tomorrow = today_in_user_tz() + timedelta(days=1)
 
@@ -2731,6 +2791,15 @@ def generate_daily_set(
         * ``status`` -- ``"generating"``, ``"empty_pool"``, or ``"error"``
         * ``message`` -- human-readable explanation
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info("generate_daily_set: AI-генерация отключена, пропускаем user=%d", user_id)
+        return {
+            "daily_set_id": None,
+            "job_id": None,
+            "status": "disabled",
+            "message": "AI-генерация задач дня отключена",
+        }
+
     # -- Lazy zombie cleanup --
     _reap_stale_jobs(user_id=user_id)
 
@@ -2913,6 +2982,10 @@ def schedule_conveyor_for_user(user_id: int, priority: int = 0) -> int:
     int
         Количество созданных записей.
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info("schedule_conveyor_for_user: AI-генерация отключена, пропускаем user=%d", user_id)
+        return 0
+
     from curator.monthly_cycle import get_cycle_info
     from .profile import build_profile
     from .models import GenConveyor
@@ -2989,6 +3062,10 @@ def schedule_all_users() -> Dict[str, int]:
     dict
         {'users_scanned': N, 'entries_created': N, 'entries_skipped': N}
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info("schedule_all_users: AI-генерация отключена, пропускаем")
+        return {'users_scanned': 0, 'entries_created': 0, 'entries_skipped': 0}
+
     from curator.monthly_cycle import _get_monthly_cycle
     from models_curator import CuratorState
     from .models import GenConveyor
@@ -3072,6 +3149,10 @@ def conveyor_worker() -> int:
     int
         Количество запущенных генераций.
     """
+    if not AI_GENERATION_ENABLED:
+        logger.info("conveyor_worker: AI-генерация отключена, пропускаем")
+        return 0
+
     from .models import GenConveyor
     from .pipeline.orchestrator import run_daily_generation_pipeline
 

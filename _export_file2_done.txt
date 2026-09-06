@@ -1,0 +1,3 @@
+exported done SVGs: 628
+file2 coverage: 0 / 2187 (missing=2187)
+file2 zip rebuilt: 1931 svg

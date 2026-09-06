@@ -245,7 +245,7 @@ def compute_prior(answers: Dict[str, Any], anchors: List[Dict]) -> IntakeResult:
         mu += ANCHOR_PLAN["mu_shift_correct"] if ok else ANCHOR_PLAN["mu_shift_wrong"]
         sigma = max(0.45, sigma - ANCHOR_PLAN["sigma_gain"])
 
-    mu = min(5.0, max(1.0, mu))
+    mu = min(4.0, max(1.0, mu))
 
     # ── Время -> дневная норма ─────────────────────────────────────
     time_key = answers.get("time", "m30")

@@ -335,7 +335,13 @@ def _get_level_week_ago(user_id: int) -> Optional[int]:
 
 
 def _get_weakest_sections(user_id: int) -> List[Dict[str, Any]]:
-    """Разделы с самой низкой долей верных ответов (≤ 3 худших)."""
+    """Разделы с самой низкой долей верных ответов (≤ 3 худших).
+
+    Важное правило: раздел, у которого mu на максимуме (≈ 100% верных),
+    НЕ может считаться «слабым» — иначе при единственном измеренном
+    разделе с mu=4.0 карточка показывала бы абсурд «Слабый раздел:
+    Алгебра — 100%». Такие разделы отбрасываются.
+    """
     try:
         from services.level_engine import get_state
         state = get_state(user_id)
@@ -352,13 +358,20 @@ def _get_weakest_sections(user_id: int) -> List[Dict[str, Any]]:
             n = data.get("n", 0)
             if mu is None or n == 0:
                 continue
-            # mu (1..5) -> переводим в проценты: (mu-1)/4 * 100
-            accuracy_pct = round((mu - 1) / 4 * 100, 1)
+            try:
+                mu_f = float(mu)
+            except (TypeError, ValueError):
+                continue
+            # Раздел с mu на максимуме (>= 3.99) = ~100% верных — не слабый.
+            if mu_f >= 3.99:
+                continue
+            # mu (1..4) -> переводим в проценты: (mu-1)/3 * 100
+            accuracy_pct = round((mu_f - 1) / 3 * 100, 1)
             entries.append({
                 "section": sec,
                 "accuracy_pct": accuracy_pct,
                 "total_attempts": n,
-                "mu": mu,
+                "mu": mu_f,
             })
 
         entries.sort(key=lambda x: x["accuracy_pct"])
@@ -451,7 +464,7 @@ def _pick_method(section: str, grade: int) -> Optional[Dict[str, Any]]:
         return None
 
     # Сортируем по difficulty_level (простые первыми)
-    candidates.sort(key=lambda m: m.get("difficulty_level", 5))
+    candidates.sort(key=lambda m: m.get("difficulty_level", 4))
     best = candidates[0]
 
     return {

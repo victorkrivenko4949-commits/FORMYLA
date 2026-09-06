@@ -856,7 +856,7 @@ class AdaptiveTask(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     class_level = db.Column(db.Integer, nullable=False, index=True)  # Класс (5, 6, 7, etc.)
-    difficulty_level = db.Column(db.Integer, nullable=False, index=True)  # Уровень сложности 1-5
+    difficulty_level = db.Column(db.Integer, nullable=False, index=True)  # Уровень сложности 1-4
     topic = db.Column(db.String(200), nullable=False, index=True)  # Тема из матрицы 25 тем
     subtopic = db.Column(db.String(100), nullable=True, index=True)  # Подтема для уникальности в пробнике
     task_text = db.Column(db.Text, nullable=False)  # Условие задачи (с LaTeX)
@@ -1783,7 +1783,9 @@ class FigureJob(db.Model):
 class FigureBuildJob(db.Model):
     """CH5: Background figure build queue (new /figures/generate pipeline).
 
-    Статусы: queued -> thinking -> drawing -> done | failed.
+    Статусы (legacy): queued -> thinking -> drawing -> done | failed.
+    Статусы (condition_solution, CH15): queued -> base_thinking -> base_drawing
+        -> aux_thinking -> aux_drawing -> auditing -> done | failed.
     Кредит списывается только в момент перехода в done (флаг credit_charged).
     Хранится в БД, а не в памяти процесса — переживает перезапуск.
     """
@@ -1793,15 +1795,56 @@ class FigureBuildJob(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
                         nullable=False, index=True)
     problem_text = db.Column(db.Text, nullable=False)
+
+    # CH15: condition → solution two-layer pipeline.
+    #       solution_text is nullable — if absent, only the base pipeline runs.
+    solution_text = db.Column(db.Text, nullable=True)
+    generation_mode = db.Column(
+        db.String(32), nullable=False, default='legacy',
+        server_default='legacy',
+    )  # 'legacy' | 'condition_solution'
+
     status = db.Column(
         db.String(20), nullable=False, default='queued', index=True,
-    )  # queued | thinking | drawing | done | failed
+    )  # legacy: queued | thinking | drawing | done | failed
+       # condition_solution: queued | base_thinking | base_drawing |
+       #                     aux_thinking | aux_drawing | auditing | done | failed
+    current_stage = db.Column(db.String(20), nullable=True)
+
     model_name = db.Column(db.String(120), nullable=True)
+    base_model = db.Column(db.String(120), nullable=True)
+    aux_model = db.Column(db.String(120), nullable=True)
+    audit_model = db.Column(db.String(120), nullable=True)
+
     svg_path = db.Column(db.Text, nullable=True)
     aux_svg_path = db.Column(db.Text, nullable=True)
+    base_plan_json = db.Column(db.Text, nullable=True)
+    aux_plan_json = db.Column(db.Text, nullable=True)
+    audit_json = db.Column(db.Text, nullable=True)
+
     has_aux = db.Column(db.Boolean, nullable=False, default=False)
     aux_reason = db.Column(db.Text, nullable=True)
+    # CH22: статус aux-слоя (AUX_NOT_NEEDED / AUX_BUILT / AUX_BUILD_FAILED /
+    # AUX_PLAN_REJECTED / AUX_ROLLED_BACK / AUX_UNSUPPORTED /
+    # AUX_EXTRACT_FAILED) и коды/причины отказа.
+    aux_status = db.Column(db.String(40), nullable=True)
+    aux_fail_reason = db.Column(db.Text, nullable=True)
     error = db.Column(db.Text, nullable=True)
+    # CH-aux: solver-driven aux телеметрия.
+    solution_json = db.Column(db.Text, nullable=True)        # SolverResult
+    solver_answer = db.Column(db.String(64), nullable=True)
+    measured_answer = db.Column(db.String(64), nullable=True)
+    answer_verdict = db.Column(db.String(16), nullable=True)  # verified/mismatch/unverifiable
+    trust_level = db.Column(db.String(16), nullable=True)     # verified/unverified/failed
+    aux_source = db.Column(db.String(16), nullable=True)      # template/solver/none
+    aux_usefulness = db.Column(db.Float, nullable=True)
+    # CH-fidelity: доля объявленных построений, реально попавших на чертёж
+    # (compiled / declared).  1.0 — ничего не потеряно компилятором.
+    aux_fidelity = db.Column(db.Float, nullable=True)
+    aux_dropped_reason = db.Column(db.String(64), nullable=True)
+    # CH-aux: результат визуальной проверки полноты (Gemini vision).
+    # 1 — чертёж полон, 0 — есть пропуски, NULL — проверка не выполнялась.
+    aux_completeness = db.Column(db.Integer, nullable=True)
     credit_charged = db.Column(db.Boolean, nullable=False, default=False)
     priority = db.Column(db.Integer, nullable=False, default=0, index=True)
     # 0 — обычный (бесплатный), 1 — высокий (подписчик)
@@ -1823,6 +1866,51 @@ class FigureBuildJob(db.Model):
             f'<FigureBuildJob id={self.id} user={self.user_id} '
             f'status={self.status}>'
         )
+
+
+class FigureBuildStage(db.Model):
+    """CH22: телеметрия по стадиям генерации чертежа (одна строка на стадию).
+
+    FK на figure_build_jobs.  Пишется по каждой стадии, чтобы считать
+    метрики (first_pass_success_rate, audit_invocation_rate, cost_per_done_job
+    и т.п.) без разбора логов.
+    """
+    __tablename__ = 'figure_build_stages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('figure_build_jobs.id'),
+                       index=True, nullable=False)
+    stage = db.Column(db.String(32))   # base_thinking / base_drawing / coverage_check / ...
+    role = db.Column(db.String(32))    # base / aux / audit / repair
+    provider = db.Column(db.String(32))
+    model = db.Column(db.String(64))
+    attempt = db.Column(db.Integer, default=1)
+    input_tokens = db.Column(db.Integer)
+    output_tokens = db.Column(db.Integer)
+    latency_ms = db.Column(db.Integer)
+    coverage_score = db.Column(db.Float)
+    validation_passed = db.Column(db.Boolean)
+    audit_invoked = db.Column(db.Boolean, default=False)
+    error_codes = db.Column(db.Text)   # JSON-массив кодов
+    estimated_cost_usd = db.Column(db.Float)
+    # CH22/visual_check: пост-рендер аудит.
+    visual_score = db.Column(db.Float)
+    label_collisions = db.Column(db.Integer, default=0)
+    autofix_applied = db.Column(db.Boolean, default=False)
+    reseed_count = db.Column(db.Integer, default=0)
+    # REC-7: reasoning-токены и флаги fallback/timeout для solver-стадий.
+    reasoning_tokens = db.Column(db.Integer)
+    fallback_used = db.Column(db.Boolean, default=False)
+    timeout_hit = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    job = db.relationship(
+        'FigureBuildJob',
+        backref=db.backref('build_stages', lazy='dynamic'),
+    )
+
+    def __repr__(self):
+        return f'<FigureBuildStage id={self.id} job={self.job_id} stage={self.stage}>'
 
 
 class SolutionAttempt(db.Model):
@@ -1993,7 +2081,7 @@ class UserDashboardItem(db.Model):
 class DailyTaskBank(db.Model):
     """Банк задач дня, наполняемый человеком заранее.
 
-    132 подтемы x 5 уровней x 35 задач = 23100 строк.
+    132 подтемы x 4 уровня x 35 задач = 18480 строк.
     Схема — контракт для заливки, имена колонок не менять.
     """
 
@@ -2002,7 +2090,7 @@ class DailyTaskBank(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     subtopic = db.Column(db.String(200), nullable=False)
     section = db.Column(db.String(50), nullable=False)  # algebra, number_theory, geometry, combinatorics, logic
-    level = db.Column(db.Integer, nullable=False)  # 1..5
+    level = db.Column(db.Integer, nullable=False)  # 1..4
     statement = db.Column(db.Text, nullable=False)
     answer = db.Column(db.Text, nullable=True)
     solution = db.Column(db.Text, nullable=True)

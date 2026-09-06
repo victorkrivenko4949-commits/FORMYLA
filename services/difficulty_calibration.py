@@ -8,9 +8,8 @@ Provides level labels, few-shot examples, and calibration utilities.
 LEVEL_LABELS = {
     1: 'Базовый',
     2: 'Школьный',
-    3: 'Олимпиада (школа)',
-    4: 'Муниципальный',
-    5: 'Региональный',
+    3: 'Муниципальный',
+    4: 'Региональный',
 }
 
 # Level colors for UI
@@ -18,26 +17,23 @@ LEVEL_COLORS = {
     1: '#22c55e',
     2: '#22c55e',
     3: '#fbbf24',
-    4: '#f97316',
-    5: '#ef4444',
+    4: '#ef4444',
 }
 
 # Expected solve rates per level (for calibration)
 LEVEL_EXPECTED_RATES = {
     1: 0.95,
     2: 0.85,
-    3: 0.60,
-    4: 0.35,
-    5: 0.10,
+    3: 0.45,
+    4: 0.10,
 }
 
 # Level descriptions for prompts
 LEVEL_DESCRIPTIONS = {
     1: "Базовый уровень. Прямое применение одной формулы. Решается за 1-2 минуты. 95% учеников решат.",
     2: "Школьный уровень. 2-3 шага, стандартные техники. Решается за 2-5 минут. 80-90% учеников решат.",
-    3: "Школьная олимпиада. Требует нестандартного подхода или доказательства. 5-15 минут. 50-70% решат.",
-    4: "Муниципальный этап. Комбинаторика или теория чисел с инсайтом. 15-30 минут. 25-40% решат.",
-    5: "Региональный/Заключительный. Турнир городов, финал Всерос, IMO. 60-120 минут. 5-15% решат.",
+    3: "Школьная олимпиада / муниципальный этап. Требует нестандартного подхода или доказательства. 5-15 минут. 40-70% решат.",
+    4: "Региональный/Заключительный. Турнир городов, финал Всерос, IMO. 60-120 минут. 5-15% решат.",
 }
 
 # Few-shot examples for each level (real olympiad problems)
@@ -54,17 +50,12 @@ LEVEL_EXAMPLES = {
     ],
     3: [
         "Докажи, что сумма трёх последовательных натуральных чисел делится на 3.",
-        "Найди все натуральные числа n, при которых n^2 + n + 1 делится на 3.",
+        "В таблице 3x3 расставлены числа 1-9. Докажи, что можно выбрать 3 клетки (не в одной строке и столбце) с суммой >= 15.",
         "Сколько трёхзначных чисел имеют сумму цифр, равную 5? Ответ: 15",
     ],
     4: [
-        "В таблице 3x3 расставлены числа 1-9. Докажи, что можно выбрать 3 клетки (не в одной строке и столбце) с суммой >= 15.",
-        "Найди все целые решения уравнения x^2 - y^2 = 2023.",
-        "Докажи, что для любого натурального n число n^5 - n делится на 30.",
-    ],
-    5: [
         "Турнир городов 2019: Докажи, что среди любых 5 целых чисел найдутся три, сумма которых делится на 3.",
-        "Найди все простые числа p, для которых p^2 + 2 тоже простое.",
+        "Найди все целые решения уравнения x^2 - y^2 = 2023.",
         "В выпуклом многоугольнике проведены все диагонали. Докажи, что не все они могут пересекаться в одной точке.",
     ],
 }
@@ -88,12 +79,12 @@ def build_generation_prompt(grade, topic, subtopic, level):
         grade: School grade (5-11)
         topic: Main topic (algebra, geometry, etc.)
         subtopic: Specific subtopic
-        level: Difficulty level (1-5)
+        level: Difficulty level (1-4)
         
     Returns:
         Formatted prompt string
     """
-    level_clamped = max(1, min(5, int(level)))
+    level_clamped = max(1, min(4, int(level)))
     examples = LEVEL_EXAMPLES.get(level_clamped, LEVEL_EXAMPLES[3])[:3]
     examples_text = '\n\n'.join([
         f'ПРИМЕР {i+1} (уровень {level_clamped}):\n{ex}'
@@ -108,7 +99,7 @@ def build_generation_prompt(grade, topic, subtopic, level):
 - Класс: {grade}
 - Тема: {topic}
 - Подтема: {subtopic}
-- Уровень сложности: {level_clamped} из 5
+- Уровень сложности: {level_clamped} из 4
 
 КРИТИЧНО: Уровень {level_clamped} означает:
 {description}
@@ -143,7 +134,7 @@ def validate_generated_task(task_data, expected_level):
     Returns:
         (is_valid, reason) tuple
     """
-    exp = max(1, min(5, int(expected_level)))
+    exp = max(1, min(4, int(expected_level)))
     self_level = task_data.get('self_assessed_level', exp)
     estimated_time = task_data.get('estimated_time_minutes', 0)
     text = task_data.get('text', '')
@@ -152,12 +143,12 @@ def validate_generated_task(task_data, expected_level):
     if abs(self_level - exp) >= 2:
         return False, f"Self-assessed level {self_level} differs too much from expected {exp}"
     
-    # Check text length (level 5 tasks should be longer)
-    if exp >= 5 and len(text) < 150:
+    # Check text length (level 4 tasks should be longer)
+    if exp >= 4 and len(text) < 150:
         return False, f"Level {exp} task text too short ({len(text)} chars)"
     
     # Check estimated time
-    min_time = {1: 1, 2: 2, 3: 5, 4: 15, 5: 60}.get(exp, 5)
+    min_time = {1: 1, 2: 2, 3: 10, 4: 30}.get(exp, 5)
     if estimated_time < min_time * 0.5:
         return False, f"Estimated time {estimated_time} min too low for level {exp}"
     
@@ -172,9 +163,9 @@ def get_level_by_solve_rate(actual_rate):
         actual_rate: Fraction of users who solved the task (0.0-1.0)
         
     Returns:
-        Suggested level (1-5)
+        Suggested level (1-4)
     """
-    for level in range(5, 0, -1):
+    for level in range(4, 0, -1):
         expected = LEVEL_EXPECTED_RATES[level]
         if actual_rate <= expected * 1.5:
             return level

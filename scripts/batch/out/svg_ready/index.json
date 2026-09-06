@@ -1,0 +1,1750 @@
+{
+ "total": 349,
+ "files": [
+  {
+   "file": "f2_10284_8.svg",
+   "task_id": "f2_10284",
+   "grade": 8
+  },
+  {
+   "file": "f2_10285_8.svg",
+   "task_id": "f2_10285",
+   "grade": 8
+  },
+  {
+   "file": "f2_10286_8.svg",
+   "task_id": "f2_10286",
+   "grade": 8
+  },
+  {
+   "file": "f2_10287_8.svg",
+   "task_id": "f2_10287",
+   "grade": 8
+  },
+  {
+   "file": "f2_10288_8.svg",
+   "task_id": "f2_10288",
+   "grade": 8
+  },
+  {
+   "file": "f2_10289_8.svg",
+   "task_id": "f2_10289",
+   "grade": 8
+  },
+  {
+   "file": "f2_10325_8.svg",
+   "task_id": "f2_10325",
+   "grade": 8
+  },
+  {
+   "file": "f2_10327_8.svg",
+   "task_id": "f2_10327",
+   "grade": 8
+  },
+  {
+   "file": "f2_10328_8.svg",
+   "task_id": "f2_10328",
+   "grade": 8
+  },
+  {
+   "file": "f2_10329_8.svg",
+   "task_id": "f2_10329",
+   "grade": 8
+  },
+  {
+   "file": "f2_10330_8.svg",
+   "task_id": "f2_10330",
+   "grade": 8
+  },
+  {
+   "file": "f2_10339_8.svg",
+   "task_id": "f2_10339",
+   "grade": 8
+  },
+  {
+   "file": "f2_10343_8.svg",
+   "task_id": "f2_10343",
+   "grade": 8
+  },
+  {
+   "file": "f2_10344_8.svg",
+   "task_id": "f2_10344",
+   "grade": 8
+  },
+  {
+   "file": "f2_10345_8.svg",
+   "task_id": "f2_10345",
+   "grade": 8
+  },
+  {
+   "file": "f2_10346_8.svg",
+   "task_id": "f2_10346",
+   "grade": 8
+  },
+  {
+   "file": "f2_10347_8.svg",
+   "task_id": "f2_10347",
+   "grade": 8
+  },
+  {
+   "file": "f2_10348_8.svg",
+   "task_id": "f2_10348",
+   "grade": 8
+  },
+  {
+   "file": "f2_10349_8.svg",
+   "task_id": "f2_10349",
+   "grade": 8
+  },
+  {
+   "file": "f2_10350_8.svg",
+   "task_id": "f2_10350",
+   "grade": 8
+  },
+  {
+   "file": "f2_10351_8.svg",
+   "task_id": "f2_10351",
+   "grade": 8
+  },
+  {
+   "file": "f2_10352_8.svg",
+   "task_id": "f2_10352",
+   "grade": 8
+  },
+  {
+   "file": "f2_10353_8.svg",
+   "task_id": "f2_10353",
+   "grade": 8
+  },
+  {
+   "file": "f2_10354_8.svg",
+   "task_id": "f2_10354",
+   "grade": 8
+  },
+  {
+   "file": "f2_10355_8.svg",
+   "task_id": "f2_10355",
+   "grade": 8
+  },
+  {
+   "file": "f2_10356_8.svg",
+   "task_id": "f2_10356",
+   "grade": 8
+  },
+  {
+   "file": "f2_10357_8.svg",
+   "task_id": "f2_10357",
+   "grade": 8
+  },
+  {
+   "file": "f2_10358_8.svg",
+   "task_id": "f2_10358",
+   "grade": 8
+  },
+  {
+   "file": "f2_10359_8.svg",
+   "task_id": "f2_10359",
+   "grade": 8
+  },
+  {
+   "file": "f2_11200_8.svg",
+   "task_id": "f2_11200",
+   "grade": 8
+  },
+  {
+   "file": "f2_11201_8.svg",
+   "task_id": "f2_11201",
+   "grade": 8
+  },
+  {
+   "file": "f2_11202_8.svg",
+   "task_id": "f2_11202",
+   "grade": 8
+  },
+  {
+   "file": "f2_11203_8.svg",
+   "task_id": "f2_11203",
+   "grade": 8
+  },
+  {
+   "file": "f2_11204_8.svg",
+   "task_id": "f2_11204",
+   "grade": 8
+  },
+  {
+   "file": "f2_11205_8.svg",
+   "task_id": "f2_11205",
+   "grade": 8
+  },
+  {
+   "file": "f2_11206_8.svg",
+   "task_id": "f2_11206",
+   "grade": 8
+  },
+  {
+   "file": "f2_11207_8.svg",
+   "task_id": "f2_11207",
+   "grade": 8
+  },
+  {
+   "file": "f2_11208_8.svg",
+   "task_id": "f2_11208",
+   "grade": 8
+  },
+  {
+   "file": "f2_11209_8.svg",
+   "task_id": "f2_11209",
+   "grade": 8
+  },
+  {
+   "file": "f2_11210_8.svg",
+   "task_id": "f2_11210",
+   "grade": 8
+  },
+  {
+   "file": "f2_11211_8.svg",
+   "task_id": "f2_11211",
+   "grade": 8
+  },
+  {
+   "file": "f2_11212_8.svg",
+   "task_id": "f2_11212",
+   "grade": 8
+  },
+  {
+   "file": "f2_11213_8.svg",
+   "task_id": "f2_11213",
+   "grade": 8
+  },
+  {
+   "file": "f2_11214_8.svg",
+   "task_id": "f2_11214",
+   "grade": 8
+  },
+  {
+   "file": "f2_11215_8.svg",
+   "task_id": "f2_11215",
+   "grade": 8
+  },
+  {
+   "file": "f2_11216_8.svg",
+   "task_id": "f2_11216",
+   "grade": 8
+  },
+  {
+   "file": "f2_11217_8.svg",
+   "task_id": "f2_11217",
+   "grade": 8
+  },
+  {
+   "file": "f2_11218_8.svg",
+   "task_id": "f2_11218",
+   "grade": 8
+  },
+  {
+   "file": "f2_11219_8.svg",
+   "task_id": "f2_11219",
+   "grade": 8
+  },
+  {
+   "file": "f2_11220_8.svg",
+   "task_id": "f2_11220",
+   "grade": 8
+  },
+  {
+   "file": "f2_11221_8.svg",
+   "task_id": "f2_11221",
+   "grade": 8
+  },
+  {
+   "file": "f2_11222_8.svg",
+   "task_id": "f2_11222",
+   "grade": 8
+  },
+  {
+   "file": "f2_11223_8.svg",
+   "task_id": "f2_11223",
+   "grade": 8
+  },
+  {
+   "file": "f2_11224_8.svg",
+   "task_id": "f2_11224",
+   "grade": 8
+  },
+  {
+   "file": "f2_11225_8.svg",
+   "task_id": "f2_11225",
+   "grade": 8
+  },
+  {
+   "file": "f2_11226_8.svg",
+   "task_id": "f2_11226",
+   "grade": 8
+  },
+  {
+   "file": "f2_11227_8.svg",
+   "task_id": "f2_11227",
+   "grade": 8
+  },
+  {
+   "file": "f2_11228_8.svg",
+   "task_id": "f2_11228",
+   "grade": 8
+  },
+  {
+   "file": "f2_11229_8.svg",
+   "task_id": "f2_11229",
+   "grade": 8
+  },
+  {
+   "file": "f2_11230_8.svg",
+   "task_id": "f2_11230",
+   "grade": 8
+  },
+  {
+   "file": "f2_11231_8.svg",
+   "task_id": "f2_11231",
+   "grade": 8
+  },
+  {
+   "file": "f2_11232_8.svg",
+   "task_id": "f2_11232",
+   "grade": 8
+  },
+  {
+   "file": "f2_11233_8.svg",
+   "task_id": "f2_11233",
+   "grade": 8
+  },
+  {
+   "file": "f2_11234_8.svg",
+   "task_id": "f2_11234",
+   "grade": 8
+  },
+  {
+   "file": "f2_11236_8.svg",
+   "task_id": "f2_11236",
+   "grade": 8
+  },
+  {
+   "file": "f2_11237_8.svg",
+   "task_id": "f2_11237",
+   "grade": 8
+  },
+  {
+   "file": "f2_11238_8.svg",
+   "task_id": "f2_11238",
+   "grade": 8
+  },
+  {
+   "file": "f2_11239_8.svg",
+   "task_id": "f2_11239",
+   "grade": 8
+  },
+  {
+   "file": "f2_11240_8.svg",
+   "task_id": "f2_11240",
+   "grade": 8
+  },
+  {
+   "file": "f2_11241_8.svg",
+   "task_id": "f2_11241",
+   "grade": 8
+  },
+  {
+   "file": "f2_11242_8.svg",
+   "task_id": "f2_11242",
+   "grade": 8
+  },
+  {
+   "file": "f2_11243_8.svg",
+   "task_id": "f2_11243",
+   "grade": 8
+  },
+  {
+   "file": "f2_11244_8.svg",
+   "task_id": "f2_11244",
+   "grade": 8
+  },
+  {
+   "file": "f2_11245_8.svg",
+   "task_id": "f2_11245",
+   "grade": 8
+  },
+  {
+   "file": "f2_11246_8.svg",
+   "task_id": "f2_11246",
+   "grade": 8
+  },
+  {
+   "file": "f2_11247_8.svg",
+   "task_id": "f2_11247",
+   "grade": 8
+  },
+  {
+   "file": "f2_11248_8.svg",
+   "task_id": "f2_11248",
+   "grade": 8
+  },
+  {
+   "file": "f2_11249_8.svg",
+   "task_id": "f2_11249",
+   "grade": 8
+  },
+  {
+   "file": "f2_11251_8.svg",
+   "task_id": "f2_11251",
+   "grade": 8
+  },
+  {
+   "file": "f2_11252_8.svg",
+   "task_id": "f2_11252",
+   "grade": 8
+  },
+  {
+   "file": "f2_11253_8.svg",
+   "task_id": "f2_11253",
+   "grade": 8
+  },
+  {
+   "file": "f2_11254_8.svg",
+   "task_id": "f2_11254",
+   "grade": 8
+  },
+  {
+   "file": "f2_11255_8.svg",
+   "task_id": "f2_11255",
+   "grade": 8
+  },
+  {
+   "file": "f2_11256_8.svg",
+   "task_id": "f2_11256",
+   "grade": 8
+  },
+  {
+   "file": "f2_11257_8.svg",
+   "task_id": "f2_11257",
+   "grade": 8
+  },
+  {
+   "file": "f2_11258_8.svg",
+   "task_id": "f2_11258",
+   "grade": 8
+  },
+  {
+   "file": "f2_11261_8.svg",
+   "task_id": "f2_11261",
+   "grade": 8
+  },
+  {
+   "file": "f2_11262_8.svg",
+   "task_id": "f2_11262",
+   "grade": 8
+  },
+  {
+   "file": "f2_11263_8.svg",
+   "task_id": "f2_11263",
+   "grade": 8
+  },
+  {
+   "file": "f2_11264_8.svg",
+   "task_id": "f2_11264",
+   "grade": 8
+  },
+  {
+   "file": "f2_11265_8.svg",
+   "task_id": "f2_11265",
+   "grade": 8
+  },
+  {
+   "file": "f2_11266_8.svg",
+   "task_id": "f2_11266",
+   "grade": 8
+  },
+  {
+   "file": "f2_11268_8.svg",
+   "task_id": "f2_11268",
+   "grade": 8
+  },
+  {
+   "file": "f2_11305_8.svg",
+   "task_id": "f2_11305",
+   "grade": 8
+  },
+  {
+   "file": "f2_11306_8.svg",
+   "task_id": "f2_11306",
+   "grade": 8
+  },
+  {
+   "file": "f2_11307_8.svg",
+   "task_id": "f2_11307",
+   "grade": 8
+  },
+  {
+   "file": "f2_11308_8.svg",
+   "task_id": "f2_11308",
+   "grade": 8
+  },
+  {
+   "file": "f2_11309_8.svg",
+   "task_id": "f2_11309",
+   "grade": 8
+  },
+  {
+   "file": "f2_11310_8.svg",
+   "task_id": "f2_11310",
+   "grade": 8
+  },
+  {
+   "file": "f2_11311_8.svg",
+   "task_id": "f2_11311",
+   "grade": 8
+  },
+  {
+   "file": "f2_11312_8.svg",
+   "task_id": "f2_11312",
+   "grade": 8
+  },
+  {
+   "file": "f2_11313_8.svg",
+   "task_id": "f2_11313",
+   "grade": 8
+  },
+  {
+   "file": "f2_11314_8.svg",
+   "task_id": "f2_11314",
+   "grade": 8
+  },
+  {
+   "file": "f2_11315_8.svg",
+   "task_id": "f2_11315",
+   "grade": 8
+  },
+  {
+   "file": "f2_11316_8.svg",
+   "task_id": "f2_11316",
+   "grade": 8
+  },
+  {
+   "file": "f2_11317_8.svg",
+   "task_id": "f2_11317",
+   "grade": 8
+  },
+  {
+   "file": "f2_11318_8.svg",
+   "task_id": "f2_11318",
+   "grade": 8
+  },
+  {
+   "file": "f2_11319_8.svg",
+   "task_id": "f2_11319",
+   "grade": 8
+  },
+  {
+   "file": "f2_11320_8.svg",
+   "task_id": "f2_11320",
+   "grade": 8
+  },
+  {
+   "file": "f2_11321_8.svg",
+   "task_id": "f2_11321",
+   "grade": 8
+  },
+  {
+   "file": "f2_11322_8.svg",
+   "task_id": "f2_11322",
+   "grade": 8
+  },
+  {
+   "file": "f2_11323_8.svg",
+   "task_id": "f2_11323",
+   "grade": 8
+  },
+  {
+   "file": "f2_11324_8.svg",
+   "task_id": "f2_11324",
+   "grade": 8
+  },
+  {
+   "file": "f2_11325_8.svg",
+   "task_id": "f2_11325",
+   "grade": 8
+  },
+  {
+   "file": "f2_11326_8.svg",
+   "task_id": "f2_11326",
+   "grade": 8
+  },
+  {
+   "file": "f2_11327_8.svg",
+   "task_id": "f2_11327",
+   "grade": 8
+  },
+  {
+   "file": "f2_11328_8.svg",
+   "task_id": "f2_11328",
+   "grade": 8
+  },
+  {
+   "file": "f2_11330_8.svg",
+   "task_id": "f2_11330",
+   "grade": 8
+  },
+  {
+   "file": "f2_11331_8.svg",
+   "task_id": "f2_11331",
+   "grade": 8
+  },
+  {
+   "file": "f2_11332_8.svg",
+   "task_id": "f2_11332",
+   "grade": 8
+  },
+  {
+   "file": "f2_11334_8.svg",
+   "task_id": "f2_11334",
+   "grade": 8
+  },
+  {
+   "file": "f2_11335_8.svg",
+   "task_id": "f2_11335",
+   "grade": 8
+  },
+  {
+   "file": "f2_11337_8.svg",
+   "task_id": "f2_11337",
+   "grade": 8
+  },
+  {
+   "file": "f2_11338_8.svg",
+   "task_id": "f2_11338",
+   "grade": 8
+  },
+  {
+   "file": "f2_11339_8.svg",
+   "task_id": "f2_11339",
+   "grade": 8
+  },
+  {
+   "file": "f2_12460_9.svg",
+   "task_id": "f2_12460",
+   "grade": 9
+  },
+  {
+   "file": "f2_12461_9.svg",
+   "task_id": "f2_12461",
+   "grade": 9
+  },
+  {
+   "file": "f2_12462_9.svg",
+   "task_id": "f2_12462",
+   "grade": 9
+  },
+  {
+   "file": "f2_12463_9.svg",
+   "task_id": "f2_12463",
+   "grade": 9
+  },
+  {
+   "file": "f2_12464_9.svg",
+   "task_id": "f2_12464",
+   "grade": 9
+  },
+  {
+   "file": "f2_12466_9.svg",
+   "task_id": "f2_12466",
+   "grade": 9
+  },
+  {
+   "file": "f2_12467_9.svg",
+   "task_id": "f2_12467",
+   "grade": 9
+  },
+  {
+   "file": "f2_12469_9.svg",
+   "task_id": "f2_12469",
+   "grade": 9
+  },
+  {
+   "file": "f2_12470_9.svg",
+   "task_id": "f2_12470",
+   "grade": 9
+  },
+  {
+   "file": "f2_12471_9.svg",
+   "task_id": "f2_12471",
+   "grade": 9
+  },
+  {
+   "file": "f2_12472_9.svg",
+   "task_id": "f2_12472",
+   "grade": 9
+  },
+  {
+   "file": "f2_12473_9.svg",
+   "task_id": "f2_12473",
+   "grade": 9
+  },
+  {
+   "file": "f2_12474_9.svg",
+   "task_id": "f2_12474",
+   "grade": 9
+  },
+  {
+   "file": "f2_12476_9.svg",
+   "task_id": "f2_12476",
+   "grade": 9
+  },
+  {
+   "file": "f2_12477_9.svg",
+   "task_id": "f2_12477",
+   "grade": 9
+  },
+  {
+   "file": "f2_12478_9.svg",
+   "task_id": "f2_12478",
+   "grade": 9
+  },
+  {
+   "file": "f2_12479_9.svg",
+   "task_id": "f2_12479",
+   "grade": 9
+  },
+  {
+   "file": "f2_12480_9.svg",
+   "task_id": "f2_12480",
+   "grade": 9
+  },
+  {
+   "file": "f2_12481_9.svg",
+   "task_id": "f2_12481",
+   "grade": 9
+  },
+  {
+   "file": "f2_12482_9.svg",
+   "task_id": "f2_12482",
+   "grade": 9
+  },
+  {
+   "file": "f2_12483_9.svg",
+   "task_id": "f2_12483",
+   "grade": 9
+  },
+  {
+   "file": "f2_12484_9.svg",
+   "task_id": "f2_12484",
+   "grade": 9
+  },
+  {
+   "file": "f2_12485_9.svg",
+   "task_id": "f2_12485",
+   "grade": 9
+  },
+  {
+   "file": "f2_12486_9.svg",
+   "task_id": "f2_12486",
+   "grade": 9
+  },
+  {
+   "file": "f2_12487_9.svg",
+   "task_id": "f2_12487",
+   "grade": 9
+  },
+  {
+   "file": "f2_12489_9.svg",
+   "task_id": "f2_12489",
+   "grade": 9
+  },
+  {
+   "file": "f2_12491_9.svg",
+   "task_id": "f2_12491",
+   "grade": 9
+  },
+  {
+   "file": "f2_12493_9.svg",
+   "task_id": "f2_12493",
+   "grade": 9
+  },
+  {
+   "file": "f2_12494_9.svg",
+   "task_id": "f2_12494",
+   "grade": 9
+  },
+  {
+   "file": "f2_12495_9.svg",
+   "task_id": "f2_12495",
+   "grade": 9
+  },
+  {
+   "file": "f2_12496_9.svg",
+   "task_id": "f2_12496",
+   "grade": 9
+  },
+  {
+   "file": "f2_12497_9.svg",
+   "task_id": "f2_12497",
+   "grade": 9
+  },
+  {
+   "file": "f2_12498_9.svg",
+   "task_id": "f2_12498",
+   "grade": 9
+  },
+  {
+   "file": "f2_12499_9.svg",
+   "task_id": "f2_12499",
+   "grade": 9
+  },
+  {
+   "file": "f2_12500_9.svg",
+   "task_id": "f2_12500",
+   "grade": 9
+  },
+  {
+   "file": "f2_12501_9.svg",
+   "task_id": "f2_12501",
+   "grade": 9
+  },
+  {
+   "file": "f2_12502_9.svg",
+   "task_id": "f2_12502",
+   "grade": 9
+  },
+  {
+   "file": "f2_12503_9.svg",
+   "task_id": "f2_12503",
+   "grade": 9
+  },
+  {
+   "file": "f2_12504_9.svg",
+   "task_id": "f2_12504",
+   "grade": 9
+  },
+  {
+   "file": "f2_12505_9.svg",
+   "task_id": "f2_12505",
+   "grade": 9
+  },
+  {
+   "file": "f2_12506_9.svg",
+   "task_id": "f2_12506",
+   "grade": 9
+  },
+  {
+   "file": "f2_12508_9.svg",
+   "task_id": "f2_12508",
+   "grade": 9
+  },
+  {
+   "file": "f2_12509_9.svg",
+   "task_id": "f2_12509",
+   "grade": 9
+  },
+  {
+   "file": "f2_12510_9.svg",
+   "task_id": "f2_12510",
+   "grade": 9
+  },
+  {
+   "file": "f2_12511_9.svg",
+   "task_id": "f2_12511",
+   "grade": 9
+  },
+  {
+   "file": "f2_12512_9.svg",
+   "task_id": "f2_12512",
+   "grade": 9
+  },
+  {
+   "file": "f2_12513_9.svg",
+   "task_id": "f2_12513",
+   "grade": 9
+  },
+  {
+   "file": "f2_12514_9.svg",
+   "task_id": "f2_12514",
+   "grade": 9
+  },
+  {
+   "file": "f2_12515_9.svg",
+   "task_id": "f2_12515",
+   "grade": 9
+  },
+  {
+   "file": "f2_12516_9.svg",
+   "task_id": "f2_12516",
+   "grade": 9
+  },
+  {
+   "file": "f2_12517_9.svg",
+   "task_id": "f2_12517",
+   "grade": 9
+  },
+  {
+   "file": "f2_12518_9.svg",
+   "task_id": "f2_12518",
+   "grade": 9
+  },
+  {
+   "file": "f2_12519_9.svg",
+   "task_id": "f2_12519",
+   "grade": 9
+  },
+  {
+   "file": "f2_12520_9.svg",
+   "task_id": "f2_12520",
+   "grade": 9
+  },
+  {
+   "file": "f2_12521_9.svg",
+   "task_id": "f2_12521",
+   "grade": 9
+  },
+  {
+   "file": "f2_12525_9.svg",
+   "task_id": "f2_12525",
+   "grade": 9
+  },
+  {
+   "file": "f2_12526_9.svg",
+   "task_id": "f2_12526",
+   "grade": 9
+  },
+  {
+   "file": "f2_12527_9.svg",
+   "task_id": "f2_12527",
+   "grade": 9
+  },
+  {
+   "file": "f2_12528_9.svg",
+   "task_id": "f2_12528",
+   "grade": 9
+  },
+  {
+   "file": "f2_12529_9.svg",
+   "task_id": "f2_12529",
+   "grade": 9
+  },
+  {
+   "file": "f2_12565_9.svg",
+   "task_id": "f2_12565",
+   "grade": 9
+  },
+  {
+   "file": "f2_12566_9.svg",
+   "task_id": "f2_12566",
+   "grade": 9
+  },
+  {
+   "file": "f2_12568_9.svg",
+   "task_id": "f2_12568",
+   "grade": 9
+  },
+  {
+   "file": "f2_12569_9.svg",
+   "task_id": "f2_12569",
+   "grade": 9
+  },
+  {
+   "file": "f2_12572_9.svg",
+   "task_id": "f2_12572",
+   "grade": 9
+  },
+  {
+   "file": "f2_12574_9.svg",
+   "task_id": "f2_12574",
+   "grade": 9
+  },
+  {
+   "file": "f2_12575_9.svg",
+   "task_id": "f2_12575",
+   "grade": 9
+  },
+  {
+   "file": "f2_12576_9.svg",
+   "task_id": "f2_12576",
+   "grade": 9
+  },
+  {
+   "file": "f2_12577_9.svg",
+   "task_id": "f2_12577",
+   "grade": 9
+  },
+  {
+   "file": "f2_12578_9.svg",
+   "task_id": "f2_12578",
+   "grade": 9
+  },
+  {
+   "file": "f2_12579_9.svg",
+   "task_id": "f2_12579",
+   "grade": 9
+  },
+  {
+   "file": "f2_12580_9.svg",
+   "task_id": "f2_12580",
+   "grade": 9
+  },
+  {
+   "file": "f2_12582_9.svg",
+   "task_id": "f2_12582",
+   "grade": 9
+  },
+  {
+   "file": "f2_12583_9.svg",
+   "task_id": "f2_12583",
+   "grade": 9
+  },
+  {
+   "file": "f2_12584_9.svg",
+   "task_id": "f2_12584",
+   "grade": 9
+  },
+  {
+   "file": "f2_12585_9.svg",
+   "task_id": "f2_12585",
+   "grade": 9
+  },
+  {
+   "file": "f2_12586_9.svg",
+   "task_id": "f2_12586",
+   "grade": 9
+  },
+  {
+   "file": "f2_12587_9.svg",
+   "task_id": "f2_12587",
+   "grade": 9
+  },
+  {
+   "file": "f2_12588_9.svg",
+   "task_id": "f2_12588",
+   "grade": 9
+  },
+  {
+   "file": "f2_12589_9.svg",
+   "task_id": "f2_12589",
+   "grade": 9
+  },
+  {
+   "file": "f2_12590_9.svg",
+   "task_id": "f2_12590",
+   "grade": 9
+  },
+  {
+   "file": "f2_12591_9.svg",
+   "task_id": "f2_12591",
+   "grade": 9
+  },
+  {
+   "file": "f2_12592_9.svg",
+   "task_id": "f2_12592",
+   "grade": 9
+  },
+  {
+   "file": "f2_12593_9.svg",
+   "task_id": "f2_12593",
+   "grade": 9
+  },
+  {
+   "file": "f2_12594_9.svg",
+   "task_id": "f2_12594",
+   "grade": 9
+  },
+  {
+   "file": "f2_12595_9.svg",
+   "task_id": "f2_12595",
+   "grade": 9
+  },
+  {
+   "file": "f2_12596_9.svg",
+   "task_id": "f2_12596",
+   "grade": 9
+  },
+  {
+   "file": "f2_12598_9.svg",
+   "task_id": "f2_12598",
+   "grade": 9
+  },
+  {
+   "file": "f2_12600_9.svg",
+   "task_id": "f2_12600",
+   "grade": 9
+  },
+  {
+   "file": "f2_12601_9.svg",
+   "task_id": "f2_12601",
+   "grade": 9
+  },
+  {
+   "file": "f2_12602_9.svg",
+   "task_id": "f2_12602",
+   "grade": 9
+  },
+  {
+   "file": "f2_12603_9.svg",
+   "task_id": "f2_12603",
+   "grade": 9
+  },
+  {
+   "file": "f2_12604_9.svg",
+   "task_id": "f2_12604",
+   "grade": 9
+  },
+  {
+   "file": "f2_12606_9.svg",
+   "task_id": "f2_12606",
+   "grade": 9
+  },
+  {
+   "file": "f2_12607_9.svg",
+   "task_id": "f2_12607",
+   "grade": 9
+  },
+  {
+   "file": "f2_12608_9.svg",
+   "task_id": "f2_12608",
+   "grade": 9
+  },
+  {
+   "file": "f2_12609_9.svg",
+   "task_id": "f2_12609",
+   "grade": 9
+  },
+  {
+   "file": "f2_12610_9.svg",
+   "task_id": "f2_12610",
+   "grade": 9
+  },
+  {
+   "file": "f2_12611_9.svg",
+   "task_id": "f2_12611",
+   "grade": 9
+  },
+  {
+   "file": "f2_12612_9.svg",
+   "task_id": "f2_12612",
+   "grade": 9
+  },
+  {
+   "file": "f2_12613_9.svg",
+   "task_id": "f2_12613",
+   "grade": 9
+  },
+  {
+   "file": "f2_12614_9.svg",
+   "task_id": "f2_12614",
+   "grade": 9
+  },
+  {
+   "file": "f2_12616_9.svg",
+   "task_id": "f2_12616",
+   "grade": 9
+  },
+  {
+   "file": "f2_12617_9.svg",
+   "task_id": "f2_12617",
+   "grade": 9
+  },
+  {
+   "file": "f2_12618_9.svg",
+   "task_id": "f2_12618",
+   "grade": 9
+  },
+  {
+   "file": "f2_12619_9.svg",
+   "task_id": "f2_12619",
+   "grade": 9
+  },
+  {
+   "file": "f2_12623_9.svg",
+   "task_id": "f2_12623",
+   "grade": 9
+  },
+  {
+   "file": "f2_12624_9.svg",
+   "task_id": "f2_12624",
+   "grade": 9
+  },
+  {
+   "file": "f2_12626_9.svg",
+   "task_id": "f2_12626",
+   "grade": 9
+  },
+  {
+   "file": "f2_12627_9.svg",
+   "task_id": "f2_12627",
+   "grade": 9
+  },
+  {
+   "file": "f2_12628_9.svg",
+   "task_id": "f2_12628",
+   "grade": 9
+  },
+  {
+   "file": "f2_12629_9.svg",
+   "task_id": "f2_12629",
+   "grade": 9
+  },
+  {
+   "file": "f2_12632_9.svg",
+   "task_id": "f2_12632",
+   "grade": 9
+  },
+  {
+   "file": "f2_12635_9.svg",
+   "task_id": "f2_12635",
+   "grade": 9
+  },
+  {
+   "file": "f2_12636_9.svg",
+   "task_id": "f2_12636",
+   "grade": 9
+  },
+  {
+   "file": "f2_12637_9.svg",
+   "task_id": "f2_12637",
+   "grade": 9
+  },
+  {
+   "file": "f2_12638_9.svg",
+   "task_id": "f2_12638",
+   "grade": 9
+  },
+  {
+   "file": "f2_12639_9.svg",
+   "task_id": "f2_12639",
+   "grade": 9
+  },
+  {
+   "file": "f2_12640_9.svg",
+   "task_id": "f2_12640",
+   "grade": 9
+  },
+  {
+   "file": "f2_12641_9.svg",
+   "task_id": "f2_12641",
+   "grade": 9
+  },
+  {
+   "file": "f2_12642_9.svg",
+   "task_id": "f2_12642",
+   "grade": 9
+  },
+  {
+   "file": "f2_12643_9.svg",
+   "task_id": "f2_12643",
+   "grade": 9
+  },
+  {
+   "file": "f2_12644_9.svg",
+   "task_id": "f2_12644",
+   "grade": 9
+  },
+  {
+   "file": "f2_12645_9.svg",
+   "task_id": "f2_12645",
+   "grade": 9
+  },
+  {
+   "file": "f2_12646_9.svg",
+   "task_id": "f2_12646",
+   "grade": 9
+  },
+  {
+   "file": "f2_12647_9.svg",
+   "task_id": "f2_12647",
+   "grade": 9
+  },
+  {
+   "file": "f2_12648_9.svg",
+   "task_id": "f2_12648",
+   "grade": 9
+  },
+  {
+   "file": "f2_12649_9.svg",
+   "task_id": "f2_12649",
+   "grade": 9
+  },
+  {
+   "file": "f2_12650_9.svg",
+   "task_id": "f2_12650",
+   "grade": 9
+  },
+  {
+   "file": "f2_12651_9.svg",
+   "task_id": "f2_12651",
+   "grade": 9
+  },
+  {
+   "file": "f2_12652_9.svg",
+   "task_id": "f2_12652",
+   "grade": 9
+  },
+  {
+   "file": "f2_12653_9.svg",
+   "task_id": "f2_12653",
+   "grade": 9
+  },
+  {
+   "file": "f2_12654_9.svg",
+   "task_id": "f2_12654",
+   "grade": 9
+  },
+  {
+   "file": "f2_12655_9.svg",
+   "task_id": "f2_12655",
+   "grade": 9
+  },
+  {
+   "file": "f2_12656_9.svg",
+   "task_id": "f2_12656",
+   "grade": 9
+  },
+  {
+   "file": "f2_12657_9.svg",
+   "task_id": "f2_12657",
+   "grade": 9
+  },
+  {
+   "file": "f2_12658_9.svg",
+   "task_id": "f2_12658",
+   "grade": 9
+  },
+  {
+   "file": "f2_12659_9.svg",
+   "task_id": "f2_12659",
+   "grade": 9
+  },
+  {
+   "file": "f2_12660_9.svg",
+   "task_id": "f2_12660",
+   "grade": 9
+  },
+  {
+   "file": "f2_12661_9.svg",
+   "task_id": "f2_12661",
+   "grade": 9
+  },
+  {
+   "file": "f2_12662_9.svg",
+   "task_id": "f2_12662",
+   "grade": 9
+  },
+  {
+   "file": "f2_12664_9.svg",
+   "task_id": "f2_12664",
+   "grade": 9
+  },
+  {
+   "file": "f2_12666_9.svg",
+   "task_id": "f2_12666",
+   "grade": 9
+  },
+  {
+   "file": "f2_12667_9.svg",
+   "task_id": "f2_12667",
+   "grade": 9
+  },
+  {
+   "file": "f2_12668_9.svg",
+   "task_id": "f2_12668",
+   "grade": 9
+  },
+  {
+   "file": "f2_12669_9.svg",
+   "task_id": "f2_12669",
+   "grade": 9
+  },
+  {
+   "file": "f2_12696_9.svg",
+   "task_id": "f2_12696",
+   "grade": 9
+  },
+  {
+   "file": "f2_12705_9.svg",
+   "task_id": "f2_12705",
+   "grade": 9
+  },
+  {
+   "file": "f2_12706_9.svg",
+   "task_id": "f2_12706",
+   "grade": 9
+  },
+  {
+   "file": "f2_12707_9.svg",
+   "task_id": "f2_12707",
+   "grade": 9
+  },
+  {
+   "file": "f2_12709_9.svg",
+   "task_id": "f2_12709",
+   "grade": 9
+  },
+  {
+   "file": "f2_12710_9.svg",
+   "task_id": "f2_12710",
+   "grade": 9
+  },
+  {
+   "file": "f2_12711_9.svg",
+   "task_id": "f2_12711",
+   "grade": 9
+  },
+  {
+   "file": "f2_12712_9.svg",
+   "task_id": "f2_12712",
+   "grade": 9
+  },
+  {
+   "file": "f2_12713_9.svg",
+   "task_id": "f2_12713",
+   "grade": 9
+  },
+  {
+   "file": "f2_12714_9.svg",
+   "task_id": "f2_12714",
+   "grade": 9
+  },
+  {
+   "file": "f2_12715_9.svg",
+   "task_id": "f2_12715",
+   "grade": 9
+  },
+  {
+   "file": "f2_12716_9.svg",
+   "task_id": "f2_12716",
+   "grade": 9
+  },
+  {
+   "file": "f2_12717_9.svg",
+   "task_id": "f2_12717",
+   "grade": 9
+  },
+  {
+   "file": "f2_12718_9.svg",
+   "task_id": "f2_12718",
+   "grade": 9
+  },
+  {
+   "file": "f2_12719_9.svg",
+   "task_id": "f2_12719",
+   "grade": 9
+  },
+  {
+   "file": "f2_12720_9.svg",
+   "task_id": "f2_12720",
+   "grade": 9
+  },
+  {
+   "file": "f2_12721_9.svg",
+   "task_id": "f2_12721",
+   "grade": 9
+  },
+  {
+   "file": "f2_12722_9.svg",
+   "task_id": "f2_12722",
+   "grade": 9
+  },
+  {
+   "file": "f2_12724_9.svg",
+   "task_id": "f2_12724",
+   "grade": 9
+  },
+  {
+   "file": "f2_12727_9.svg",
+   "task_id": "f2_12727",
+   "grade": 9
+  },
+  {
+   "file": "f2_12728_9.svg",
+   "task_id": "f2_12728",
+   "grade": 9
+  },
+  {
+   "file": "f2_12729_9.svg",
+   "task_id": "f2_12729",
+   "grade": 9
+  },
+  {
+   "file": "f2_12732_9.svg",
+   "task_id": "f2_12732",
+   "grade": 9
+  },
+  {
+   "file": "f2_12733_9.svg",
+   "task_id": "f2_12733",
+   "grade": 9
+  },
+  {
+   "file": "f2_12734_9.svg",
+   "task_id": "f2_12734",
+   "grade": 9
+  },
+  {
+   "file": "f2_12735_9.svg",
+   "task_id": "f2_12735",
+   "grade": 9
+  },
+  {
+   "file": "f2_12736_9.svg",
+   "task_id": "f2_12736",
+   "grade": 9
+  },
+  {
+   "file": "f2_12737_9.svg",
+   "task_id": "f2_12737",
+   "grade": 9
+  },
+  {
+   "file": "f2_12738_9.svg",
+   "task_id": "f2_12738",
+   "grade": 9
+  },
+  {
+   "file": "f2_12739_9.svg",
+   "task_id": "f2_12739",
+   "grade": 9
+  },
+  {
+   "file": "f2_13300_9.svg",
+   "task_id": "f2_13300",
+   "grade": 9
+  },
+  {
+   "file": "f2_13301_9.svg",
+   "task_id": "f2_13301",
+   "grade": 9
+  },
+  {
+   "file": "f2_13302_9.svg",
+   "task_id": "f2_13302",
+   "grade": 9
+  },
+  {
+   "file": "f2_13303_9.svg",
+   "task_id": "f2_13303",
+   "grade": 9
+  },
+  {
+   "file": "f2_13304_9.svg",
+   "task_id": "f2_13304",
+   "grade": 9
+  },
+  {
+   "file": "f2_13305_9.svg",
+   "task_id": "f2_13305",
+   "grade": 9
+  },
+  {
+   "file": "f2_13306_9.svg",
+   "task_id": "f2_13306",
+   "grade": 9
+  },
+  {
+   "file": "f2_13307_9.svg",
+   "task_id": "f2_13307",
+   "grade": 9
+  },
+  {
+   "file": "f2_13308_9.svg",
+   "task_id": "f2_13308",
+   "grade": 9
+  },
+  {
+   "file": "f2_13309_9.svg",
+   "task_id": "f2_13309",
+   "grade": 9
+  },
+  {
+   "file": "f2_13310_9.svg",
+   "task_id": "f2_13310",
+   "grade": 9
+  },
+  {
+   "file": "f2_13311_9.svg",
+   "task_id": "f2_13311",
+   "grade": 9
+  },
+  {
+   "file": "f2_13313_9.svg",
+   "task_id": "f2_13313",
+   "grade": 9
+  },
+  {
+   "file": "f2_13314_9.svg",
+   "task_id": "f2_13314",
+   "grade": 9
+  },
+  {
+   "file": "f2_13315_9.svg",
+   "task_id": "f2_13315",
+   "grade": 9
+  },
+  {
+   "file": "f2_13317_9.svg",
+   "task_id": "f2_13317",
+   "grade": 9
+  },
+  {
+   "file": "f2_13318_9.svg",
+   "task_id": "f2_13318",
+   "grade": 9
+  },
+  {
+   "file": "f2_13319_9.svg",
+   "task_id": "f2_13319",
+   "grade": 9
+  },
+  {
+   "file": "f2_13320_9.svg",
+   "task_id": "f2_13320",
+   "grade": 9
+  },
+  {
+   "file": "f2_13321_9.svg",
+   "task_id": "f2_13321",
+   "grade": 9
+  },
+  {
+   "file": "f2_13322_9.svg",
+   "task_id": "f2_13322",
+   "grade": 9
+  },
+  {
+   "file": "f2_13323_9.svg",
+   "task_id": "f2_13323",
+   "grade": 9
+  },
+  {
+   "file": "f2_13324_9.svg",
+   "task_id": "f2_13324",
+   "grade": 9
+  },
+  {
+   "file": "f2_13325_9.svg",
+   "task_id": "f2_13325",
+   "grade": 9
+  },
+  {
+   "file": "f2_13326_9.svg",
+   "task_id": "f2_13326",
+   "grade": 9
+  },
+  {
+   "file": "f2_13327_9.svg",
+   "task_id": "f2_13327",
+   "grade": 9
+  },
+  {
+   "file": "f2_13328_9.svg",
+   "task_id": "f2_13328",
+   "grade": 9
+  },
+  {
+   "file": "f2_13329_9.svg",
+   "task_id": "f2_13329",
+   "grade": 9
+  },
+  {
+   "file": "f2_13330_9.svg",
+   "task_id": "f2_13330",
+   "grade": 9
+  },
+  {
+   "file": "f2_13331_9.svg",
+   "task_id": "f2_13331",
+   "grade": 9
+  },
+  {
+   "file": "f2_13332_9.svg",
+   "task_id": "f2_13332",
+   "grade": 9
+  },
+  {
+   "file": "f2_13333_9.svg",
+   "task_id": "f2_13333",
+   "grade": 9
+  },
+  {
+   "file": "f2_13334_9.svg",
+   "task_id": "f2_13334",
+   "grade": 9
+  },
+  {
+   "file": "f2_13335_9.svg",
+   "task_id": "f2_13335",
+   "grade": 9
+  },
+  {
+   "file": "f2_13336_9.svg",
+   "task_id": "f2_13336",
+   "grade": 9
+  },
+  {
+   "file": "f2_13337_9.svg",
+   "task_id": "f2_13337",
+   "grade": 9
+  },
+  {
+   "file": "f2_13338_9.svg",
+   "task_id": "f2_13338",
+   "grade": 9
+  },
+  {
+   "file": "f2_13340_9.svg",
+   "task_id": "f2_13340",
+   "grade": 9
+  },
+  {
+   "file": "f2_13341_9.svg",
+   "task_id": "f2_13341",
+   "grade": 9
+  },
+  {
+   "file": "f2_13342_9.svg",
+   "task_id": "f2_13342",
+   "grade": 9
+  },
+  {
+   "file": "f2_13344_9.svg",
+   "task_id": "f2_13344",
+   "grade": 9
+  },
+  {
+   "file": "f2_13346_9.svg",
+   "task_id": "f2_13346",
+   "grade": 9
+  },
+  {
+   "file": "f2_13347_9.svg",
+   "task_id": "f2_13347",
+   "grade": 9
+  },
+  {
+   "file": "f2_13348_9.svg",
+   "task_id": "f2_13348",
+   "grade": 9
+  },
+  {
+   "file": "f2_13349_9.svg",
+   "task_id": "f2_13349",
+   "grade": 9
+  },
+  {
+   "file": "f2_13351_9.svg",
+   "task_id": "f2_13351",
+   "grade": 9
+  },
+  {
+   "file": "f2_13352_9.svg",
+   "task_id": "f2_13352",
+   "grade": 9
+  },
+  {
+   "file": "f2_13354_9.svg",
+   "task_id": "f2_13354",
+   "grade": 9
+  }
+ ]
+}

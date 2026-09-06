@@ -31,10 +31,10 @@ API_BASE      = "https://api.deepseek.com"
 MODEL_AUDIT   = "deepseek-chat"       # аудит и исправление
 MODEL_EXPERT  = "deepseek-reasoner"   # экспертный разбор спорных
 MAX_TOKENS    = 16000                 # лимит токенов на ответ
-N_WORKERS     = 5                     # потоков
+N_WORKERS     = 3                     # потоков
 AUDIT_PASSES  = 2                     # сколько раз аудировать каждую задачу
 TEMPERATURE   = 0.2
-MAX_RETRIES   = 4                     # ретраи при сетевых/лимитных ошибках
+MAX_RETRIES   = 5                    # ретраи при сетевых/лимитных ошибках
 
 DEFAULT_IN    = "FORMYLA_L1_L3_FINAL"
 # ------------------------------------------------------------------

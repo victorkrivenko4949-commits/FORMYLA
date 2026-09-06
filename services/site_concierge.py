@@ -163,16 +163,13 @@ _ROUTER_SYSTEM_PROMPT_TEMPLATE = """Ты — диспетчер AI-помощн�
 
 ОГРАНИЧЕНИЯ для action=free:
    • Не выдумывай цены, фичи, обещания. Опирайся только на факты:
-     – Free: 5 задач в день.
-     – Pro Месяц 390 ₽: безлимит задач, все ИИ-агенты, доска и AI-чертежи.
-     – Pro Год 2790 ₽: всё то же + родительский доступ.
-     – Оплата российскими картами через ЮKassa, без VPN.
+     – Все функции FORMYLA сейчас полностью бесплатны — подписок и тарифов нет.
      – 7 ИИ-агентов: алгебра, геометрия, теория чисел, комбинаторика, движение, логика, стратегия.
-     – База: 295 задач ВсОШ-9 за 17 лет, разобранные по 89 методам.
+     – База: задачи ВсОШ-9 прошлых лет, разобранные по 102 методам.
      – Поддержка — Telegram-бот по ссылке внизу /about.
-   • Допустимые URL: /, /about, /about#pricing, /about#unique, /about#support,
+   • Допустимые URL: /, /about, /about#unique, /about#support,
      /daily, /probniks, /problems, /olympiads, /olympiads/courses, /olympiads/methods,
-     /olympiad-prep, /subscribe, /profile, /section/algebra, /section/geometry,
+     /olympiad-prep, /profile, /section/algebra, /section/geometry,
      /leaderboard, /chat, /friends.
 
 ВСЕГДА возвращай ровно один JSON-объект, без обёрток ```json, без комментариев.
@@ -361,6 +358,59 @@ def answer_site_question(message: str, context: Optional[dict] = None) -> dict:
         "source": "fallback",
         "intent_id": None,
     }
+
+
+# ── Полная справка по сайту для ИИ-куратора ────────────────────────────────
+
+
+def build_site_context_for_llm() -> str:
+    """Текстовый блок «всей базы сайта» для инъекции в system_prompt куратора.
+
+    Содержит: все разделы/функции FORMYLA с реальными URL и фактами
+    (тарифы, лимиты, инструменты). Куратор обязан опираться ТОЛЬКО на этот
+    блок и не выдумывать кнопки/страницы/цены, которых здесь нет.
+    """
+    kb = _load_kb()
+    lines = [
+        "ПОЛНАЯ СПРАВКА О САЙТЕ FORMYLA (единственный источник правды о сайте):",
+        "",
+        "Функции и разделы:",
+    ]
+    for entry in kb:
+        icon = entry.get('icon', '')
+        intent = entry.get('intent', '')
+        answer = (entry.get('answer') or '').strip()
+        actions = entry.get('suggested_actions') or []
+        urls = ', '.join(a.get('url', '') for a in actions if a.get('url'))
+        line = f"  • {icon} {intent}"
+        if answer:
+            # сжимаем длинный ответ до сути
+            short = ' '.join(answer.split())
+            if len(short) > 220:
+                short = short[:219].rstrip() + '…'
+            line += f" — {short}"
+        if urls:
+            line += f" [ссылки: {urls}]"
+        lines.append(line)
+
+    lines += [
+        "",
+        "Ключевые факты (не выдумывай другие):",
+        "  • Все функции FORMYLA сейчас полностью бесплатны — подписок, тарифов и оплат нет.",
+        "  • 7 ИИ-агентов: алгебра, геометрия, теория чисел, комбинаторика, движение, логика, стратегия.",
+        "  • База: задачи ВсОШ-9 прошлых лет (муниципальный, региональный, заключительный этапы), разобраны по 102 методам.",
+        "  • Поддержка — Telegram-бот, ссылка внизу /about.",
+        "",
+        "Реальные страницы (ссылайся только на существующие):",
+        "  /, /about, /about#unique, /about#support, /daily, /daily_tasks,",
+        "  /prep/coach, /prep/probe, /probniks, /problems, /olympiads, /olympiads/methods,",
+        "  /olympiad-prep, /profile, /section/algebra, /section/geometry,",
+        "  /leaderboard, /chat, /friends, /insights, /figures, /intake, /adaptive_test_simple.",
+        "",
+        "Правило: если ученик спрашивает про фичу/страницу/цену, которой нет выше —",
+        "честно скажи, что такого в FORMYLA нет, и не выдумывай.",
+    ]
+    return "\n".join(lines)
 
 
 # ── Top intents (для quick-replies на фронте) ────────────────────────────────

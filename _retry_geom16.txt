@@ -1,0 +1,34 @@
+REG-ed413efbd4810754c0bf1c81                            status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+GEN-L123-par33_s2-263f1cc1ca86026f                      status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+db0715f78ccab1a01ce7cd009efe1086c3120c5b3cdac19fb349cc70a2a094c3 status=failed       Геометрические ограничения base-чертежа не выполнены: ["Пров
+   -> re-enqueued
+GEN-L123-w2_110_s4-63185e6182e0fc21                     status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+GEN-fill_0549                                           status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+GEN-L123-w2_46_s5-9792b493667fe9f2                      status=failed       LLM_AUTH_ERROR: code=401 reason=FAILED_TO_AUTH message=faile
+   -> re-enqueued
+GEN-L123-w2_16_s6-9f9aee6a7e1d60f6                      status=failed       LLM_TRANSPORT: ('Connection aborted.', RemoteDisconnected('R
+   -> re-enqueued
+GEN-fill_0697                                           status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+5cfb4680abbc4c37292fb3862ec384d7497ae7299c81c3d2cd7b1d9bf4f8c3e4 status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+bb45489aa58525b10c2f9f5ac9c392098899ec9145dd1e139eba47f3a0d1d23d status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+GEN-fill_0695                                           status=failed       Job timed out (was failed for >20 min)
+   -> re-enqueued
+3498879ad7cbd61e011122021fd40d6b6df5a3902938c8845ebbba27ef56ff2d status=failed       Геометрические ограничения base-чертежа не выполнены: ["[int
+   -> re-enqueued
+c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+7bcb88ddb5256e2c81e094d087e7c9f1cf80c64d7e23021ecb56ac2d37794bed status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+GEN-fill_0438                                           status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+GEN-fill_0440                                           status=failed       LLM_NO_PROVIDER: нет доступного провайдера для модели 'deeps
+   -> re-enqueued
+
+reinserted=16, total queued now=16

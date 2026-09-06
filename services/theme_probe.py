@@ -27,14 +27,23 @@ from models_curator import CuratorState
 
 logger = logging.getLogger(__name__)
 
+
+def _srez_figure(raw: Dict[str, Any]) -> Optional[str]:
+    """Вернуть SVG-чертёж задачи среза (по task_uid), если он есть."""
+    try:
+        from services.srez_bank import load_figure_svg
+        return load_figure_svg((raw or {}).get("task_uid") or "")
+    except Exception:  # pragma: no cover
+        return None
+
 # ══════════════════════════════════════════════════════════════════════
 # Constants
 # ══════════════════════════════════════════════════════════════════════
 
 PROBE_SIZE = 5           # exact 5 tasks per probe
-ROUTE_CEILING = 5        # max level regardless of questionnaire
+ROUTE_CEILING = 4        # max level regardless of questionnaire
 MIN_LEVEL = 1
-MAX_LEVEL = 5
+MAX_LEVEL = 4
 
 CORRECT_DELTA = +1
 PARTIAL_DELTA = 0
@@ -143,6 +152,15 @@ def get_active_probe_theme(user_id: int) -> Optional[str]:
     return None
 
 
+def cancel_probe(user_id: int) -> None:
+    """Сбросить активный срез (например, если он относится к прошлой теме цикла)."""
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if not cs:
+        return
+    _save_probe_state(cs, None)
+    db.session.commit()
+
+
 def resolve_start_level(user_id: int, theme_id: str, grade: int) -> int:
     """Resolve the starting level for a theme probe.
 
@@ -190,14 +208,10 @@ def resolve_start_level(user_id: int, theme_id: str, grade: int) -> int:
         except Exception:
             pass
 
-    # 4. Global mu
-    try:
-        lvl_state = _get_level_state(user_id)
-        global_mu = lvl_state.get('mu', 2)
-        return max(1, min(ROUTE_CEILING, int(round(float(global_mu)))))
-    except Exception:
-        pass
-
+    # 4. Неизмеренная тема в неизмеренном разделе — стартуем со среднего
+    #    уровня 2. НЕ используем глобальный mu: он может быть завышен
+    #    измерением другой темы (например алгебры), и тогда новая тема
+    #    (например геометрия) ошибочно начиналась бы с 4 уровня.
     return 2
 
 
@@ -253,8 +267,34 @@ def _current_task_state(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
         # No task selected yet — select one
         return _select_and_advance(cs, probe, grade)
 
-    # Return the current (last seen) task
+    # Return the current (last seen) task.
     last_task_id = seen_ids[-1]
+
+    # Отрицательный pseudo-id → задача из банка среза (_srez_tasks).
+    if last_task_id < 0:
+        srez_tasks = probe.get('_srez_tasks', {}) or {}
+        raw = srez_tasks.get(last_task_id) or srez_tasks.get(str(last_task_id))
+        if isinstance(raw, dict):
+            return {
+                'probe_id': probe.get('probe_id'),
+                'theme_id': theme_id,
+                'current_index': idx,
+                'total': PROBE_SIZE,
+                'current_level': current_level,
+                'task': {
+                    'id': last_task_id,
+                    'task_text': raw.get('text') or raw.get('statement', ''),
+                    'difficulty_level': int(raw.get('level', current_level) or current_level),
+                    'topic': raw.get('theme', theme_id),
+                    'correct_answer': raw.get('answer', ''),
+                    'solution': raw.get('solution', ''),
+                    'task_uid': str(raw.get('task_uid') or ''),
+                    'figure_svg': _srez_figure(raw),
+                },
+            }
+        # pseudo-id не найден в _srez_tasks — выбираем новую
+        return _select_and_advance(cs, probe, grade)
+
     task = db.session.get(AdaptiveTask, last_task_id)
     if not task:
         # Task deleted — select new one
@@ -291,6 +331,61 @@ def _select_and_advance(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
     idx = probe['current_index']
 
     task = None
+    srez_task = None
+
+    # ── ПРИОРИТЕТ: FORMYLA_SREZ.jsonl (утренний срез) ───────────────────
+    try:
+        from services.srez_bank import get_tasks as _srez_get, has_rows as _srez_rows
+        _srez_rows()
+        seen_texts = set()
+        # Тексты уже показанных задач среза (pseudo-id → _srez_tasks).
+        # Банк среза хранит условие в поле 'statement' (или 'text'), поэтому
+        # учитываем ОБА поля, иначе исключение повторов не работает и
+        # ученику выдаются одинаковые задачи.
+        for st in probe.get('_srez_tasks', {}).values():
+            if isinstance(st, dict):
+                _st_txt = (st.get('statement') or st.get('text') or '').strip()
+                if _st_txt:
+                    seen_texts.add(_st_txt)
+        # Тексты задач из AdaptiveTask (старый путь)
+        for tid in probe.get('seen_task_ids', []):
+            if isinstance(tid, int) and tid > 0:
+                t_ = db.session.get(AdaptiveTask, tid)
+                if t_ is not None:
+                    seen_texts.add((t_.task_text or '').strip())
+        srez_tasks = _srez_get(
+            grade=grade, theme_id=theme_id, level=current_level,
+            count=1, exclude_texts=seen_texts,
+        )
+        if srez_tasks:
+            srez_task = srez_tasks[0]
+    except Exception as _srez_err:
+        logger.warning("[probe] srez_bank lookup failed: %s", _srez_err)
+
+    if srez_task:
+        # Сохраняем состояние среза с псевдо-id (отрицательный) и текстом.
+        pseudo_id = -int(datetime.now(timezone.utc).timestamp() * 1_000_000)
+        probe.setdefault('_srez_tasks', {})[pseudo_id] = srez_task
+        probe['seen_task_ids'] = list(seen_ids) + [pseudo_id]
+        _save_probe_state(cs, probe)
+        db.session.commit()
+        return {
+            'probe_id': probe.get('probe_id'),
+            'theme_id': theme_id,
+            'current_index': idx,
+            'total': PROBE_SIZE,
+            'current_level': current_level,
+            'task': {
+                'id': pseudo_id,
+                'task_text': srez_task.get('text') or srez_task.get('statement', ''),
+                'difficulty_level': int(srez_task.get('level', current_level)),
+                'topic': srez_task.get('theme', theme_id),
+                'correct_answer': srez_task.get('answer', ''),
+                'solution': srez_task.get('solution', ''),
+                'task_uid': str(srez_task.get('task_uid') or ''),
+                'figure_svg': _srez_figure(srez_task),
+            },
+        }
 
     # Determine section from theme_id for fallback
     section = None
@@ -302,7 +397,7 @@ def _select_and_advance(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
 
     # Stage 1: Try exact grade + level ladder (same as before, but with NULL-safe filter)
     for offset in [0, -1, 1, -2, 2]:
-        level = max(1, min(5, current_level + offset))
+        level = max(1, min(4, current_level + offset))
         candidate = (
             AdaptiveTask.query
             .filter_by(class_level=grade, difficulty_level=level)
@@ -464,10 +559,30 @@ def _finish_probe(cs: CuratorState, probe: Dict[str, Any], user_id: int) -> Dict
     if section:
         _recalc_section_mu(cs, section)
 
+    # Sync global level with measured themes (was stuck at questionnaire prior)
+    try:
+        if lbt:
+            mus = [float(d['mu']) for d in lbt.values() if isinstance(d, dict) and d.get('mu') is not None]
+            if mus:
+                global_mu = round(sum(mus) / len(mus), 3)
+                cs.level_mu = max(1.0, min(4.0, global_mu))
+                cs.level_updated_at = now_iso
+    except Exception as _gm_err:
+        logger.warning("[probe] global mu sync failed: %s", _gm_err)
+
     # Mark probe as done
     _save_probe_state(cs, None)
 
     db.session.commit()
+
+    # ── Разблокировать задачи дня: пометить тему цикла как пройденную. ──
+    # Без этого get_cycle_info оставляет blocked=True, и после 5-й задачи
+    # /prep/probe снова запускает срез с первой задачи (второй круг).
+    try:
+        from curator.monthly_cycle import advance_day as _advance_day
+        _advance_day(user_id)
+    except Exception as _adv_err:
+        logger.warning("[probe] advance_day failed after finish: %s", _adv_err)
 
     return {
         'done': True,

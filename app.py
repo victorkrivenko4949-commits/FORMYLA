@@ -103,6 +103,11 @@ import subprocess as _sp
 from datetime import datetime, timezone as _tz
 
 _BUILD_TIME = datetime.now(_tz.utc).isoformat()
+# Уникальная метка для cache-busting статики при каждом перезапуске:
+# git-коммит не меняется при правках, поэтому браузер кэширует старые
+# css/js. Добавляем unix-метку запуска, чтобы после рестарта всегда
+# подтягивались свежие файлы (asset_version в шаблонах).
+_BUILD_START_TS = str(int(datetime.now(_tz.utc).timestamp()))
 
 def _get_commit_info():
     """Returns (commit, source, branch) — computed once at module load."""
@@ -198,7 +203,7 @@ else:
 # same as /__version and footer. One source, all consumers agree.
 @app.context_processor
 def _inject_asset_version():
-    return dict(asset_version=_BUILD_COMMIT_SHORT,
+    return dict(asset_version=f"{_BUILD_COMMIT_SHORT}-{_BUILD_START_TS}",
                 build_commit=_BUILD_COMMIT,
                 build_commit_short=_BUILD_COMMIT_SHORT,
                 build_branch=_BUILD_BRANCH,
@@ -630,6 +635,7 @@ try:
             _new_dtf_cols = {
                 'figure_json': 'TEXT',
                 'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
+                'figure_svg_path': 'TEXT',
             }
             for _col_name_dtf, _col_type_dtf in _new_dtf_cols.items():
                 if _col_name_dtf not in _columns_dtf:
@@ -686,6 +692,29 @@ try:
                     print(f"[AUTO-MIGRATION] avatar_emoji add Warning: {_e_av}")
 except Exception as e:
     print(f"[AUTO-MIGRATION] group_chats Warning: {e}")
+
+# AUTO-MIGRATION CH22: aux_status / aux_fail_reason для figure_build_jobs.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_ch22
+        _ins_ch22 = _inspect_ch22(db.engine)
+        if 'figure_build_jobs' in set(_ins_ch22.get_table_names()):
+            _cols_ch22 = {c['name'] for c in _ins_ch22.get_columns('figure_build_jobs')}
+            for _col, _typ in (('aux_status', 'VARCHAR(40)'),
+                               ('aux_fail_reason', 'TEXT')):
+                if _col in _cols_ch22:
+                    continue
+                try:
+                    db.session.execute(db.text(
+                        f"ALTER TABLE figure_build_jobs ADD COLUMN {_col} {_typ}"
+                    ))
+                    db.session.commit()
+                    print(f"[AUTO-MIGRATION] OK Added figure_build_jobs.{_col}")
+                except Exception as _e_ch22:
+                    db.session.rollback()
+                    print(f"[AUTO-MIGRATION] figure_build_jobs.{_col} skipped: {_e_ch22}")
+except Exception as _e_ch22_outer:
+    print(f"[AUTO-MIGRATION] CH22 figure_build_jobs fields skipped: {_e_ch22_outer}")
 
 # AUTO-MIGRATION: VsOSh-9 method-bank fields для olympiad_theory / olympiad_tasks.
 # Модели в models_olympiad.py содержат новые колонки (total_count, share_percent,
@@ -1302,6 +1331,10 @@ try:
     from routes.figures_generator import figures_gen_bp, _ensure_queue_worker
     app.register_blueprint(figures_gen_bp)
     print("[BP] figures_gen_bp registered (/figures/generate)")
+    # CH22: телеметрия стадий генерации чертежа.
+    from migrations.add_figure_build_stages import _ensure_table as _ensure_figure_stages
+    with app.app_context():
+        _ensure_figure_stages()
     # Start figure build queue worker daemon
     _ensure_queue_worker(app)
 except Exception as _e:
@@ -1766,6 +1799,22 @@ except Exception as _e:
     print(f"[BP] dashboard_settings_bp NOT registered: {_e}")
     print(_tb.format_exc())
 
+# ── «Банк неточностей» (insights): модели, blueprint, очередь ──────────
+try:
+    import models_insights  # noqa: F401  — регистрирует 4 таблицы в metadata
+    from routes.insights import insights_bp
+    from migrations.add_insights_tables import _ensure_table as _ensure_insights_tables
+    app.register_blueprint(insights_bp)
+    with app.app_context():
+        _ensure_insights_tables()
+    from services.insight_queue import ensure_queue_worker as _ensure_insight_worker
+    _ensure_insight_worker(app)
+    print("[BP] insights_bp registered (/insights, /api/insights)")
+except Exception as _e:
+    import traceback as _tb
+    print(f"[BP] insights_bp NOT registered: {_e}")
+    print(_tb.format_exc())
+
 # ── AUTO-MIGRATION: test_sessions (для восстановления адаптивного теста) ──
 try:
     from migrations.add_test_sessions import _ensure_test_sessions_table
@@ -1977,7 +2026,7 @@ def daily_quest_deadline_reminder_job():
                     user_id=user.id,
                     title='⏳ Задачи дня',
                     body='Осталось меньше 3 часов, чтобы решить задачи дня!',
-                    url='/daily_tasks',
+                    url='/curator',
                 )
                 sent += 1
             if sent:
@@ -2074,7 +2123,7 @@ def curator_morning_prep_reminder_job():
                             user_id=user.id,
                             title=' Утренний тест',
                             body=f'Сегодня тест по теме «{subtopic_title}». Пройди 5 задач!',
-                            url='/prep',
+                            url='/curator',
                         )
                         reminded += 1
                     elif not has_tasks and not is_test_day:
@@ -2083,7 +2132,7 @@ def curator_morning_prep_reminder_job():
                             user_id=user.id,
                             title=' Задачи дня',
                             body=f'Сегодня тренируем тему «{subtopic_title}». Задачи придут вечером!',
-                            url='/prep',
+                            url='/curator',
                         )
                         reminded += 1
                 except Exception as user_err:
@@ -2146,7 +2195,7 @@ def curator_evening_prep_generate_job():
                             title='[!]️ Пропущен тест',
                             body=f'Ты ещё не прошёл тест по теме «{subtopic_title}». '
                                  f'Пройди скорее, чтобы получить задачи дня!',
-                            url='/prep',
+                            url='/curator',
                         )
                         reminded_test += 1
                     elif not is_test_day:
@@ -2172,6 +2221,7 @@ def curator_evening_prep_generate_job():
 @scheduler.task('cron', id='process_pregen_queue', minute='*/30')
 def process_pregen_queue_job():
     """Process pre-generation queue for tomorrow's tasks."""
+    return  # AI-генерация «Задач дня» отключена
     with app.app_context():
         try:
             from daily_tasks.services import _process_pregen_queue
@@ -2187,6 +2237,7 @@ def process_pregen_queue_job():
 @scheduler.task('interval', id='conveyor_schedule_all', minutes=60)
 def conveyor_schedule_all_job():
     """Rescan all users with monthly_cycle and fill gen_conveyor."""
+    return  # AI-генерация «Задач дня» отключена
     with app.app_context():
         from daily_tasks.services import schedule_all_users
         result = schedule_all_users()
@@ -2200,6 +2251,7 @@ def conveyor_schedule_all_job():
 @scheduler.task('interval', id='conveyor_worker', minutes=2)
 def conveyor_worker_job():
     """Process gen_conveyor queue: launch up to MAX_CONVEYOR_WORKERS."""
+    return  # AI-генерация «Задач дня» отключена
     with app.app_context():
         from daily_tasks.services import conveyor_worker
         launched = conveyor_worker()
@@ -2226,13 +2278,11 @@ def tutor_history_cleanup_job():
 def daily_midnight_assign_job():
     """At 00:05 MSK, auto-assign daily tasks to active users.
 
-    Two-tier strategy:
-    1. Users with PreGenQueue for today -> instant cache hit from TaskPool
-    2. Users active yesterday (had DailyTaskSet) -> try cache, else AI pipeline
-
-    All assignments use ``enqueue_daily_generation()`` which internally
-    checks TaskPool cache — ready pools deliver tasks instantly (no AI wait).
+    AI-генерация «Задач дня» отключена (см. daily_tasks/services.py).
+    Выдача задач дня идёт только из банка daily_task_bank, поэтому
+    полночное автоназначение LLM-сетов не требуется.
     """
+    return
     with app.app_context():
         from daily_tasks.models import (
             DailyTaskSet, PreGenQueue, TaskPool,
@@ -2342,11 +2392,10 @@ def daily_midnight_assign_job():
 def daily_buffer_fill_job():
     """Fill 3-day buffer for all active users.
 
-    For each user with a DailyTaskSet in the last 3 days, calls
-    ``ensure_daily_buffer`` to create sets for today through +2 days.
-    Users with empty profiles (no adaptive_tasks, no grade) are
-    skipped gracefully — the buffer returns ``empty_pool`` status.
+    AI-генерация «Задач дня» отключена (см. daily_tasks/services.py).
+    Буфер предгенерации на 3 дня вперёд не нужен — задачи выдаются из банка.
     """
+    return
     with app.app_context():
         from daily_tasks.buffer import ensure_daily_buffer
         from daily_tasks.models import DailyTaskSet as DTS
@@ -2582,6 +2631,51 @@ def require_registration():
     return redirect(url_for('login', next=path))
 
 
+@app.before_request
+def force_intake_completion():
+    """Пока анкета входа не пройдена — ученик не может покинуть /intake.
+
+    Действует для залогиненных не-гостевых учеников (role != teacher/parent).
+    На любой странице, кроме самой анкеты (/intake), статики и auth-эндпоинтов,
+    если CuratorState.prep_state.intake.completed отсутствует — редирект на анкету.
+    Это переживает перезагрузку страницы/телефона, т.к. состояние хранится в БД.
+    """
+    path = request.path
+
+    # Только реальные пользователи
+    if not (current_user.is_authenticated and not getattr(current_user, 'is_guest', False)):
+        return
+
+    # teacher/parent завершают анкету выбором роли — их не трогаем
+    role = getattr(current_user, 'role', 'student') or 'student'
+    if role in ('teacher', 'parent'):
+        return
+
+    # Пути, доступные до завершения анкеты
+    for _p in (
+        '/intake',        # сама анкета и её API (/intake/start, /answer, ...)
+        '/static/',
+        '/favicon.ico',
+        '/login',
+        '/logout',
+        '/verify-code',
+        '/dev_login',
+    ):
+        if path == _p or path.startswith(_p):
+            return
+
+    try:
+        from models_curator import CuratorState
+        cs = CuratorState.query.filter_by(user_id=current_user.id).first()
+        if cs is None:
+            return redirect(url_for('intake.intake_page'))
+        ps = cs.prep_state if isinstance(cs.prep_state, dict) else {}
+        if not ps.get('intake', {}).get('completed'):
+            return redirect(url_for('intake.intake_page'))
+    except Exception:
+        pass
+
+
 def get_or_create_guest_user():
     """Lazy-helper. Вызывать ТОЛЬКО из роутов которые реально требуют user-id
     (например: отправка решения, открытие чата, сохранение прогресса).
@@ -2662,6 +2756,7 @@ def add_security_headers(response):
             )
     except Exception:
         pass
+
     return response
 
 
@@ -3457,6 +3552,7 @@ def index():
 
 
 @app.route("/leaderboard")
+@login_required
 def leaderboard():
     """Таблица лидеров - все зарегистрированные пользователи по рейтингу."""
     from models import User
@@ -3596,6 +3692,7 @@ def section_subtopic(subject_key, subtopic_key):
 
 
 @app.route("/problems")
+@login_required
 def problems_list():
     subject_key = request.args.get("subject")
     subtopic_key = request.args.get("subtopic")
@@ -3912,10 +4009,10 @@ def olympiad_test_select_theme():
 
 @app.route("/olympiad-test/select-level")
 def olympiad_test_select_level():
-    """Step 4: Select difficulty level (L1-L5) for chosen theme.
+    """Step 4: Select difficulty level (L1-L4) for chosen theme.
 
     Если у пользователя уже есть пройденный адаптивный тест (measured > 0),
-    показываем только один рекомендуемый уровень. Иначе — все 5 уровней.
+    показываем только один рекомендуемый уровень. Иначе — все 4 уровня.
     """
     try:
         grade = int(request.args.get('grade', ''))
@@ -3958,13 +4055,13 @@ def olympiad_test_select_level():
                             if t.get('measured'):
                                 lvl = t.get('target_level')
                                 if lvl is not None:
-                                    recommended_level = max(1, min(5, round(int(lvl) * 5 / 8)))
+                                    recommended_level = max(1, min(4, round(int(lvl) * 4 / 8)))
                                     break
                     if recommended_level is None:
                         measured = [t for t in topics_full if t.get('measured')]
                         if measured:
                             avg = sum(t.get('target_level') or 0 for t in measured) / len(measured)
-                            recommended_level = max(1, min(5, round(avg * 5 / 8)))
+                            recommended_level = max(1, min(4, round(avg * 4 / 8)))
                 except ProfileBuildError:
                     pass
                 except Exception:
@@ -3975,6 +4072,22 @@ def olympiad_test_select_level():
     return render_template('olympiad_test_select_level.html',
                            grade=grade, theme=theme, section=section,
                            recommended_level=recommended_level)
+
+
+def _lookup_olyad_task(task_uid):
+    """Find a full olympiad task dict by uid (in-memory JSONL cache).
+
+    Used to avoid storing full task text (statement/solution/answer) in the
+    client-side session cookie, which overflows the ~4 KB browser cookie limit
+    and silently resets the test (throwing the pupil back to task 1).
+    """
+    if not task_uid:
+        return None
+    from services.olympiad_adaptive import _all_tasks
+    for t in _all_tasks:
+        if t.get('task_uid') == task_uid:
+            return t
+    return None
 
 
 @app.route("/olympiad-test/start", methods=['GET', 'POST'])
@@ -4011,7 +4124,9 @@ def olympiad_test_run():
                     st = {}
                 by_sec = st.get('by_section', {}) if st else {}
                 picked = pick_all_sections_tasks(grade, total_len, by_sec, level_hint)
-                queue = picked.get('tasks', [])
+                # Store only lightweight uid refs — full task dicts overflow the
+                # client-side session cookie (~4 KB) and reset the test.
+                queue = [{'task_uid': t.get('task_uid')} for t in picked.get('tasks', [])]
                 session['olyad_task_queue'] = queue
                 session['olyad_queue_pos'] = 0
                 session['olyad_uid'] = '1'
@@ -4029,7 +4144,7 @@ def olympiad_test_run():
             else:
                 theme = request.args.get('theme', '').strip()
                 level = int(request.args.get('level', str(level_hint)))
-                if not theme or level not in range(1, 6):
+                if not theme or level not in range(1, 5):
                     return redirect('/olympiad-test')
                 session['olyad_uid'] = '1'
                 session['olyad_grade'] = grade
@@ -4052,15 +4167,17 @@ def olympiad_test_run():
             if pos >= len(queue):
                 task = None
             else:
-                task = queue[pos]
-                session['olyad_current_task'] = task['task_uid']
-                session['olyad_level'] = task.get('level', level_hint)
-                session['olyad_current_section'] = (task.get('section') or '').strip()
-                shown = set(session.get('olyad_shown', []))
-                shown.add(task['task_uid'])
-                session['olyad_shown'] = list(shown)
-                session['olyad_queue_pos'] = pos + 1
-                session.modified = True
+                ref = queue[pos]
+                task = _lookup_olyad_task(ref.get('task_uid'))
+                if task is not None:
+                    session['olyad_current_task'] = task['task_uid']
+                    session['olyad_level'] = task.get('level', level_hint)
+                    session['olyad_current_section'] = (task.get('section') or '').strip()
+                    shown = set(session.get('olyad_shown', []))
+                    shown.add(task['task_uid'])
+                    session['olyad_shown'] = list(shown)
+                    session['olyad_queue_pos'] = pos + 1
+                    session.modified = True
         else:
             shown = set(session.get('olyad_shown', []))
             task = get_task(grade, theme, level, shown)
@@ -4133,14 +4250,13 @@ def olympiad_test_run():
             )
 
     results = session.get('olyad_results', [])
+    # Store only lightweight refs — full statement/solution/answer text overflows
+    # the client-side session cookie (~4 KB) and silently resets the test.
     results.append({
         'level': level,
         'ball': ball,
         'task_uid': task_uid,
         'user_answer': user_answer,
-        'correct_answer': correct,
-        'solution': ref_sol,
-        'statement': statement,
         'is_correct': is_correct,
     })
     session['olyad_results'] = results
@@ -4191,8 +4307,22 @@ def olympiad_test_run():
             except Exception as _ps_err:
                 _ol_log.warning("prep_state update failed: %s", _ps_err)
 
+        # Re-attach full task text for display (session kept only light refs).
+        enriched_results = []
+        for r in results:
+            rt = _lookup_olyad_task(r.get('task_uid')) or {}
+            enriched_results.append({
+                'level': r.get('level'),
+                'ball': r.get('ball'),
+                'task_uid': r.get('task_uid'),
+                'user_answer': r.get('user_answer'),
+                'is_correct': r.get('is_correct'),
+                'statement': rt.get('statement', ''),
+                'solution': rt.get('solution', ''),
+                'correct_answer': rt.get('answer', ''),
+            })
         result = {
-            'results': results,
+            'results': enriched_results,
             'correct_count': correct_count,
             'partial_count': partial_count,
             'wrong_count': wrong_count,
@@ -4208,15 +4338,17 @@ def olympiad_test_run():
         queue = session.get('olyad_task_queue', [])
         pos = session.get('olyad_queue_pos', 0)
         if pos < len(queue):
-            task = queue[pos]
-            session['olyad_current_task'] = task['task_uid']
-            session['olyad_level'] = task.get('level', level_hint)
-            session['olyad_current_section'] = (task.get('section') or '').strip()
-            shown = set(session.get('olyad_shown', []))
-            shown.add(task['task_uid'])
-            session['olyad_shown'] = list(shown)
-            session['olyad_queue_pos'] = pos + 1
-            session.modified = True
+            ref = queue[pos]
+            task = _lookup_olyad_task(ref.get('task_uid'))
+            if task is not None:
+                session['olyad_current_task'] = task['task_uid']
+                session['olyad_level'] = task.get('level', level_hint)
+                session['olyad_current_section'] = (task.get('section') or '').strip()
+                shown = set(session.get('olyad_shown', []))
+                shown.add(task['task_uid'])
+                session['olyad_shown'] = list(shown)
+                session['olyad_queue_pos'] = pos + 1
+                session.modified = True
         else:
             task = None
     else:
@@ -4880,12 +5012,17 @@ def login():
             flash('Email обязателен', 'error')
             return render_template('login.html')
         
-        # Проверяем или создаем пользователя
+        # Проверяем или создаем пользователя.
+        # Passwordless-вход = passwordless-регистрация: если email ещё не
+        # существует (например, после «Перепройти анкету», которая удаляет
+        # аккаунт), создаём нового пользователя и ведём его на анкету.
         user = User.query.filter_by(email=email).first()
         
         if not user:
-            flash('Такого email не существует', 'error')
-            return render_template('login.html', email=email)
+            user = User(email=email)
+            db.session.add(user)
+            db.session.commit()
+            app.logger.warning(f"НОВЫЙ ПОЛЬЗОВАТЕЛЬ СОЗДАН ПРИ ВХОДЕ: {email}")
         
         # Генерируем код
         code = user.generate_auth_code()
@@ -5253,11 +5390,16 @@ def tutor_send():
             agent_type = data.get('agent_type', 'general')
             hint_mode = data.get('hint_mode', True)
             image_data = None
+            check_solution_mode = False
         else:
             # FormData с файлами (multiple)
             message = request.form.get('message', '').strip()
             agent_type = request.form.get('agent_type', 'general')
             hint_mode = request.form.get('hint_mode', 'true').lower() == 'true'
+            # Режим «Проверить решение» — фото проходят через НОВЫЙ единый OCR-слой
+            # (services.solution_ocr) и ОСТАЮТСЯ приложенными (image_data), чтобы
+            # vision-модель читала рукопись напрямую даже при неточном OCR.
+            check_solution_mode = request.form.get('check_solution', 'false').lower() == 'true'
             
             # Обработка файлов (поддержка multiple)
             import base64
@@ -5276,30 +5418,84 @@ def tutor_send():
                 if first_file and first_file.filename:
                     raw_bytes = first_file.read()
                     image_data = base64.b64encode(raw_bytes).decode('utf-8')
-                    # KIMI recognizes → text goes to DeepSeek
-                    kimi_failed = False
-                    try:
-                        from services.kimi_vision import process_photo_with_kimi
-                        recognized, kimi_err = process_photo_with_kimi(raw_bytes, first_file.mimetype or 'image/jpeg')
+
+                    if check_solution_mode:
+                        # ── НОВЫЙ единый OCR-слой (services.solution_ocr): все фото
+                        # проходят Tesseract -> DeepSeek vision -> normalizer. Первое фото
+                        # ДОПОЛНИТЕЛЬНО остаётся приложенным (image_data), чтобы vision-
+                        # модель видела рукопись напрямую, даже если OCR вернул мусор.
+                        all_images = []
+                        for _f in files:
+                            if not (_f and _f.filename):
+                                continue
+                            _f.seek(0)
+                            all_images.append(base64.b64encode(_f.read()).decode('utf-8'))
+                        recognized = ''
+                        ocr_low = False
+                        try:
+                            from services.solution_ocr import ocr_solution_images
+                            ocr_meta = ocr_solution_images(all_images, task_text=message or '')
+                            recognized = (ocr_meta.get('text') or '').strip()
+                            ocr_low = bool(ocr_meta.get('low_confidence'))
+                            app.logger.info(
+                                "[tutor] solution_ocr: engine=%s confidence=%s parts=%d chars=%d low=%s",
+                                ocr_meta.get('engine'), ocr_meta.get('confidence'),
+                                ocr_meta.get('parts'), len(recognized), ocr_low,
+                            )
+                        except Exception as _ocr_exc:
+                            app.logger.exception("[tutor] solution_ocr failed: %s", _ocr_exc)
+                            recognized = ''
+
+                        if recognized:
+                            if ocr_low:
+                                message = (
+                                    (message + "\n\n[OCR распознал фото неуверенно — доверяй фото, а не тексту ниже.]\n" + recognized)
+                                    if message else
+                                    ("Проверь моё решение по фото.\n\n[OCR распознал фото неуверенно — доверяй фото, а не тексту ниже.]\n" + recognized)
+                                )
+                            else:
+                                message = (
+                                    (message + "\n\n[Распознанный текст решения (сверь с фото):]\n" + recognized)
+                                    if message else
+                                    ("Проверь моё решение по фото.\n\n[Распознанный текст решения (сверь с фото):]\n" + recognized)
+                                )
+                        # image_data остаётся первым фото — vision-модель прочитает рукопись сама.
+                    else:
+                        # Обычный чат с фото (не режим проверки): старый OCR
+                        # (Tesseract -> KIMI vision) + фото для vision при неудаче OCR.
+                        recognized = None
+                        ocr_err = None
+                        try:
+                            from services.tesseract_ocr import recognize_bytes as _tesseract_ocr
+                            recognized, ocr_err = _tesseract_ocr(raw_bytes, first_file.mimetype or 'image/jpeg')
+                            if recognized:
+                                app.logger.info("[tutor] Tesseract recognized %d chars", len(recognized))
+                        except Exception as _tess_exc:
+                            ocr_err = str(_tess_exc)
+                            app.logger.warning("[tutor] Tesseract error: %s", _tess_exc)
+
+                        if not recognized:
+                            try:
+                                from services.novita_vision import transcribe_handwritten_solution as _novita_ocr
+                                recognized = _novita_ocr(image_data)
+                                if recognized:
+                                    app.logger.info("[tutor] Novita recognized %d chars", len(recognized))
+                                else:
+                                    app.logger.warning("[tutor] Novita returned empty")
+                            except Exception as _novita_exc:
+                                app.logger.warning("[tutor] Novita error: %s", _novita_exc)
+
                         if recognized:
                             message = (recognized + "\n\n[Пользователь также написал: " + message + "]" if message else recognized)
-                            app.logger.info("[tutor] KIMI recognized %d chars", len(recognized))
                             image_data = None
                         else:
-                            kimi_failed = True
-                            app.logger.warning("[tutor] KIMI failed: %s", kimi_err)
-                    except Exception as _kimi_exc:
-                        kimi_failed = True
-                        app.logger.warning("[tutor] KIMI error: %s", _kimi_exc)
-                    
-                    if kimi_failed:
-                        # KIMI couldn't read the photo - tell user, don't send to AI
-                        if not message:
-                            return jsonify({'error': 'Не удалось распознать фото. Пожалуйста, опишите задачу текстом или попробуйте другое фото.'}), 422
-                        else:
-                            # User typed text + attached photo - use text, mention photo
-                            image_data = None
-                            message = message + "\n\n[P.S. К сообщению было прикреплено фото, но его не удалось распознать.]"
+                            # Не удалось распознать фото - сообщить пользователю
+                            if not message:
+                                return jsonify({'error': 'Не удалось распознать фото. Пожалуйста, опишите задачу текстом или попробуйте другое фото.'}), 422
+                            else:
+                                # Пользователь написал текст + прикрепил фото — используем текст
+                                image_data = None
+                                message = message + "\n\n[P.S. К сообщению было прикреплено фото, но его не удалось распознать.]"
         
         if not message and not image_data:
             return jsonify({'error': 'Сообщение пустое'}), 400
@@ -5376,6 +5572,124 @@ def tutor_send():
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Ошибка AI: {str(e)}'}), 500
+
+
+@app.route("/api/tutor/chat", methods=["POST"])
+def tutor_atlas_chat():
+    """Наставник визуального атласа методов (настоящий вызов модели).
+
+    Принимает JSON: {methodCode, exampleIndex, mode, hintLevel,
+    spoilerAllowed, studentGrade, message, history, selection, images,
+    stage}.  Контекст метода берётся ТОЛЬКО из серверной копии атласа —
+    клиентским полям метода мы не доверяем.
+
+    Возвращает {message, status, hintLevel, suggestedActions, methodLinks}.
+    """
+    from services import atlas_tutor
+    from services.atlas_tutor import TutorError
+
+    # Ограничиваем размер входящего JSON (защита от гигантских запросов).
+    if request.content_length and request.content_length > atlas_tutor.MAX_INPUT_JSON_BYTES:
+        return jsonify({"message": "Запрос слишком большой.", "status": "error"}), 413
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        data = {}
+
+    user_id = getattr(current_user, "id", None) if current_user and getattr(current_user, "is_authenticated", False) else None
+    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr
+
+    try:
+        result = atlas_tutor.handle_chat(data, user_id=user_id, client_ip=client_ip)
+        return jsonify(result)
+    except TutorError as e:
+        if e.status_code >= 500:
+            app.logger.error("[atlas_tutor] %s: %s", e.code, e.message)
+        else:
+            app.logger.warning("[atlas_tutor] %s: %s", e.code, e.message)
+        return jsonify({"message": e.message, "status": "error", "errorCode": e.code}), e.status_code
+    except Exception as e:
+        app.logger.exception("[atlas_tutor] unexpected error: %s", e)
+        return jsonify({"message": "Наставник временно недоступен. Попробуйте позже.", "status": "error"}), 500
+
+
+@app.route("/api/tutor/chat/stream", methods=["POST"])
+def tutor_atlas_chat_stream():
+    """Потоковый вывод ответа наставника атласа (SSE).
+
+    События:
+      data: {"type":"meta", "hintLevel":N, "spoilerAllowed":bool, "mode":...}
+      data: {"type":"delta", "text":"..."}
+      data: {"type":"done"}
+      data: {"type":"error", "message":"..."}
+    """
+    from services import atlas_tutor
+    from services.atlas_tutor import TutorError
+
+    if request.content_length and request.content_length > atlas_tutor.MAX_INPUT_JSON_BYTES:
+        return jsonify({"message": "Запрос слишком большой.", "status": "error"}), 413
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        data = {}
+
+    user_id = getattr(current_user, "id", None) if current_user and getattr(current_user, "is_authenticated", False) else None
+    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr
+
+    def _sse(obj):
+        import json as _json
+        return "data: %s\n\n" % _json.dumps(obj, ensure_ascii=False)
+
+    def generate():
+        try:
+            prepared = atlas_tutor.prepare_chat(data, user_id=user_id, client_ip=client_ip)
+        except TutorError as e:
+            yield _sse({"type": "error", "message": e.message, "errorCode": e.code})
+            return
+        except Exception as e:
+            app.logger.exception("[atlas_tutor:stream] prepare error: %s", e)
+            yield _sse({"type": "error", "message": "Наставник временно недоступен."})
+            return
+
+        yield _sse({
+            "type": "meta",
+            "hintLevel": prepared["hint_level"],
+            "spoilerAllowed": prepared["spoiler_allowed"],
+            "mode": prepared["mode"],
+        })
+
+        try:
+            for chunk in atlas_tutor.stream_chat(prepared["messages"], model=prepared["model"]):
+                yield _sse({"type": "delta", "text": chunk})
+            yield _sse({"type": "done"})
+        except TutorError as e:
+            if e.status_code >= 500:
+                app.logger.error("[atlas_tutor:stream] %s: %s", e.code, e.message)
+            yield _sse({"type": "error", "message": e.message, "errorCode": e.code})
+        except GeneratorExit:
+            # Client disconnected / aborted — stop the upstream generator.
+            raise
+        except Exception as e:
+            app.logger.exception("[atlas_tutor:stream] error: %s", e)
+            yield _sse({"type": "error", "message": "Наставник временно недоступен."})
+
+    resp = app.response_class(
+        generate(),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+    return resp
+
+
+@app.route("/api/tutor/health", methods=["GET"])
+def tutor_atlas_health():
+    """Состояние наставника атласа (для статуса «ИИ подключён/недоступен»)."""
+    from services import atlas_tutor
+    return jsonify(atlas_tutor.health())
 
 
 from utils.tutor_lookup import find_problem_for_tutor as _find_problem_for_tutor_impl  # noqa: E402
@@ -8247,18 +8561,17 @@ def check_adaptive_answer():
         # review_attempt() сам внутри использует sympy/match-equivalent
         # ИСКЛЮЧИТЕЛЬНО как подсказку для модели; финальные answer_correct /
         # method_correct берутся из JSON-ответа DeepSeek.
-        from services.ai_tutor_review import review_attempt
-        result = review_attempt(
+        from services.solution_check_pipeline import check_solution
+        result = check_solution(
+            entity_type="regular",
             task_text=current_task.task_text or "",
             correct_answer=correct_answer,
             solution_ref=current_task.solution or "",
             user_answer=user_answer,
             user_solution=user_solution,
             images_b64=images_b64,
-            deepseek_client_cls=DeepSeekClient if DEEPSEEK_AVAILABLE else None,
-            deepseek_available=bool(DEEPSEEK_AVAILABLE),
-            max_tokens=4096,
             difficulty_level=current_task.difficulty_level or 5,
+            max_tokens=4096,
         )
 
         float_score = float(result.get("score", 0.0))
@@ -8267,6 +8580,10 @@ def check_adaptive_answer():
         confidence = float(result.get("confidence") or 0.0)
         answer_correct = result.get("answer_correct")
         method_correct = result.get("method_correct")
+        # Низкое доверие OCR — предупреждаем ученика
+        if result.get("ocr") and result["ocr"].get("low_confidence"):
+            warn = result["ocr"].get("warning") or "Распознавание фото ненадёжно."
+            feedback = f"⚠️ {warn}\n\n{feedback}"
         has_solution = bool((user_solution or "").strip()) or bool(images_b64)
         print(
             f"[ADAPTIVE] AI tutor verdict: float_score={float_score}, "
@@ -8936,6 +9253,8 @@ def analyze_adaptive_test(test_id):
     db.session.commit()
     
     # ── Fix 4: Проактивная предгенерация «Задач дня» после адаптивного теста ──
+    # AI-генерация «Задач дня» отключена — prewarm пропускается.
+    # (см. daily_tasks/services.py: AI_GENERATION_ENABLED)
     try:
         trigger_daily_prewarm(current_user.id)
     except Exception:

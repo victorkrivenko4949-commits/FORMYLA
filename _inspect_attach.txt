@@ -1,0 +1,122 @@
+SREZ rows=2640, keys=['task_uid', 'grade', 'level', 'level_name', 'section', 'theme_id', 'theme', 'statement', 'answer', 'solution', 'methods', 'tags', 'diversity_signature', 'generator_model', 'solver_model', 'critic_model', 'quality_status', 'verification', 'origin', 'old_level']
+SREZ figure-related keys: set()
+
+.\app.py:582: # AUTO-MIGRATION D3: Add figure_json + figure_status to adaptive_tasks
+.\app.py:584: # figure_json — описание геометрических построений (JSON geometric_engine).
+.\app.py:585: # figure_status — статус чертежа: no_description/has_description/figure_built/
+.\app.py:595: 'figure_json': 'TEXT',
+.\app.py:596: 'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
+.\app.py:611: # Ensure index on figure_status
+.\app.py:614: "CREATE INDEX IF NOT EXISTS ix_adaptive_tasks_figure_status "
+.\app.py:615: "ON adaptive_tasks(figure_status)"
+.\app.py:623: # AUTO-MIGRATION D3: Add figure_json + figure_status to daily_task_items
+.\app.py:631: 'figure_json': 'TEXT',
+.\app.py:632: 'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
+.\app.py:649: "CREATE INDEX IF NOT EXISTS ix_daily_task_items_figure_status "
+.\app.py:650: "ON daily_task_items(figure_status)"
+.\models.py:909: figure_json = db.Column(db.Text, nullable=True)
+.\models.py:912: figure_status = db.Column(db.String(32), nullable=False, default='no_description', index=True)
+.\_fg_head_backup.py:42: from services.figure_validator import validate_figure_json
+.\_fg_head_backup.py:400: validation = validate_figure_json(json_str)
+.\_inspect_attach.py:16: # 2) daily_task_items — поля чертежа (из models.py уже знаем: figure_json, figure_status, aux_svg_path, has_aux)
+.\_inspect_attach.py:30: if ('figure_json' in l or 'figure_status' in l or 'aux_svg' in l) and ('daily' in p.lower() or 'figure' in l.lower()):
+.\_p2_restore.py:25: 'figure_status': 'pending',
+.\_p2_restore.py:41: 'figure_json': None,
+.\_photo_to_figure.py:8: 4. build() + render()     — figure_json → SVG
+.\daily_tasks\models.py:120: figure_json = db.Column(db.Text, nullable=True)
+.\daily_tasks\models.py:123: figure_status = db.Column(db.String(32), nullable=False, default='no_description', index=True)
+.\daily_tasks\models.py:125: aux_svg_path = db.Column(db.Text, nullable=True)
+.\daily_tasks\routes.py:730: "aux_svg_path": item.aux_svg_path if item.has_aux else None,
+.\daily_tasks\services.py:79: Если figure_json заполнен и figure_status == 'figure_built' — возвращает URL.
+.\daily_tasks\services.py:82: figure = getattr(item, 'figure_json', None)
+.\daily_tasks\services.py:83: status = getattr(item, 'figure_status', None)
+.\migrations\add_figure_fields.py:4: Миграция: добавление полей figure_json и figure_status в таблицу adaptive_tasks.
+.\migrations\add_figure_fields.py:25: # figure_json — TEXT nullable, описание построений в JSON-формате geometric_engine
+.\migrations\add_figure_fields.py:26: "ALTER TABLE adaptive_tasks ADD COLUMN figure_json TEXT",
+.\migrations\add_figure_fields.py:27: # figure_status — VARCHAR(32) NOT NULL DEFAULT 'no_description'
+.\migrations\add_figure_fields.py:30: f"ALTER TABLE adaptive_tasks ADD COLUMN figure_status VARCHAR(32) NOT NULL {bool_default}",
+.\migrations\add_figure_fields.py:35: "CREATE INDEX IF NOT EXISTS ix_adaptive_tasks_figure_status "
+.\migrations\add_figure_fields.py:36: "ON adaptive_tasks(figure_status)"
+.\migrations\add_figure_fields.py:40: "CREATE INDEX IF NOT EXISTS ix_adaptive_tasks_figure_status "
+.\migrations\add_figure_fields.py:41: "ON adaptive_tasks(figure_status)"
+.\migrations\add_figure_fields.py:48: """Добавляет колонки figure_json и figure_status, если их нет. Идемпотентно.
+.\migrations\add_figure_fields.py:68: 'figure_json': 'TEXT',
+.\migrations\add_figure_fields.py:69: 'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
+.\migrations\add_figure_fields.py:91: "CREATE INDEX IF NOT EXISTS ix_adaptive_tasks_figure_status "
+.\migrations\add_figure_fields.py:92: "ON adaptive_tasks(figure_status)"
+.\migrations\add_figure_fields.py:104: print("МИГРАЦИЯ: figure_json + figure_status для adaptive_tasks")
+.\routes\figures_generator.py:43: from services.figure_validator import validate_figure_json
+.\routes\figures_generator.py:302: def _repair_figure_json(figure_data) -> dict:
+.\routes\figures_generator.py:813: repaired = _repair_figure_json(json_str)
+.\routes\figures_generator.py:819: validation = validate_figure_json(json_str)
+.\routes\figures_generator.py:1109: repaired = _repair_figure_json(json_str)
+.\routes\figures_generator.py:1428: base_validation = validate_figure_json(plan)
+.\routes\figures_generator.py:1726: if not validate_figure_json(plan).get("valid"):
+.\routes\figures_generator.py:1889: visual = audit_rendered_figure(aux_svg, aux_ctx, merged, condition_text,
+.\routes\figures_generator.py:1905: completeness = audit_figure_completeness(aux_svg, condition_text)
+.\routes\figures_generator.py:2028: base_validation = validate_figure_json(plan)
+.\scripts\batch_draw.py:6: Берёт задачи со статусом «описание есть» (figure_status='has_description'),
+.\scripts\batch_draw.py:14: --retry-failures       повторный прогон только отказов (figure_status='engine_rejected')
+.\scripts\batch_draw.py:74: q = q.filter(AdaptiveTask.figure_status == 'engine_rejected')
+.\scripts\batch_draw.py:77: AdaptiveTask.figure_status.in_(['has_description', 'engine_rejected'])
+.\scripts\batch_draw.py:80: q = q.filter(AdaptiveTask.figure_status == 'has_description')
+.\scripts\batch_draw.py:114: figure_json = task.figure_json
+.\scripts\batch_draw.py:115: if not figure_json:
+.\scripts\batch_draw.py:116: log(f"  [{i+1}/{len(tasks)}] task#{task.id}: нет figure_json — skip")
+.\scripts\batch_draw.py:124: svg, h, elapsed, was_cached = build_figure(figure_json, task.id)
+.\scripts\batch_draw.py:126: task.figure_status = 'figure_built'
+.\scripts\batch_draw.py:140: task.figure_status = 'engine_rejected'
+.\scripts\batch_draw.py:149: task.figure_status = 'engine_rejected'
+.\scripts\batch_draw.py:180: "SELECT figure_status, COUNT(*) FROM adaptive_tasks "
+.\scripts\batch_draw.py:181: "WHERE figure_status IS NOT NULL "
+.\scripts\batch_draw.py:182: "GROUP BY figure_status ORDER BY COUNT(*) DESC"
+.\scripts\cleanup_figure_cache.py:7: ни одному figure_json в БД (adaptive_tasks).
+.\scripts\figures_diag.py:197: from services.figure_validator import validate_figure_json
+.\scripts\figures_diag.py:201: v = validate_figure_json(plan)
+.\scripts\figures_diag.py:202: print("validate_figure_json:", v.get("valid"), v.get("errors"))
+.\scripts\verify\debug_audit.py:16: "SELECT problem_text, aux_svg_path, svg_path FROM figure_build_jobs WHERE id=618"
+.\scripts\verify\debug_base_path.py:53: # _repair_figure_json
+.\scripts\verify\debug_base_path.py:55: repaired = fg._repair_figure_json(json_str)
+.\scripts\verify\debug_base_path.py:65: v = fg.validate_figure_json(plan)
+.\scripts\verify\debug_base_path.py:66: print("validate_figure_json.valid:", v.get("valid"))
+.\scripts\verify\debug_vision_raw.py:22: r = con.execute("SELECT aux_svg_path, svg_path, problem_text FROM figure_build_jobs WHERE id=618").fetchone()
+.\scripts\verify\debug_visual.py:37: res = audit_rendered_figure(aux_svg, aux_ctx, merged, cond, settings=engine.settings)
+.\services\anchors.py:332: figure_json (описание построения) в таблице задач.
+.\services\figures_service.py:8: поле figure_json (описание построения) в таблице задач.
+.\services\figures_service.py:277: Фильтры: class_level, subject, figure_status.
+.\services\figures_service.py:286: AdaptiveTask.figure_json.isnot(None)
+.\services\figures_service.py:294: q = q.filter(AdaptiveTask.figure_status == status_filter)
+.\services\figures_service.py:306: if t.figure_json and t.figure_status == 'figure_built':
+.\services\figures_service.py:308: h = figure_hash(t.figure_json)
+.\services\figures_service.py:321: 'figure_status': t.figure_status,
+.\services\figures_service.py:323: 'has_figure_json': bool(t.figure_json),
+.\services\figure_cache.py:5: Имя файла — SHA256-отпечаток figure_json (описания построений).
+.\services\figure_cache.py:29: def figure_hash(figure_json: str) -> str:
+.\services\figure_cache.py:34: if isinstance(figure_json, dict):
+.\services\figure_cache.py:36: canonical = json.dumps(figure_json, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+.\services\figure_cache.py:40: parsed = json.loads(figure_json)
+.\services\figure_cache.py:43: canonical = str(figure_json)
+.\services\figure_cache.py:76: def build_figure(figure_json: str, task_id: int = 0) -> Tuple[str, str, float, bool]:
+.\services\figure_cache.py:77: """Построить чертёж из figure_json, с кешированием по хешу.
+.\services\figure_cache.py:80: figure_json: JSON-строка или dict с описанием построений
+.\services\figure_cache.py:86: h = figure_hash(figure_json)
+.\services\figure_cache.py:106: if isinstance(figure_json, str):
+.\services\figure_cache.py:108: description = json.loads(figure_json)
+.\services\figure_cache.py:110: raise ValueError(f"Invalid figure_json JSON: {e}")
+.\services\figure_cache.py:112: description = figure_json
+.\services\figure_cache.py:139: Если figure_json заполнен и чертёж построен (figure_built),
+.\services\figure_cache.py:143: figure = getattr(task, 'figure_json', None)
+.\services\figure_cache.py:144: status = getattr(task, 'figure_status', None)
+.\services\figure_cache.py:158: """Собрать все хеши figure_json, которые реально используются в БД."""
+.\services\figure_cache.py:165: "SELECT id, figure_json FROM adaptive_tasks WHERE figure_json IS NOT NULL"
+.\services\figure_validator.py:72: def validate_figure_json(figure_data) -> Dict[str, Any]:
+.\services\figure_validator.py:289: result = validate_figure_json(data)
+.\templates\figures_tasks.html:78: <span class="badge-status status-{{ t.figure_status }}">{{ t.figure_status }}</span>
+.\tests\conftest.py:333: figure_status='no_description',
+.\tests\test_ch26_incidence.py:224: from services.figure_validator import validate_figure_json
+.\tests\test_ch26_incidence.py:236: result = validate_figure_json(plan)
+.\tests\test_foot_id_validation.py:4: Дефект: validate_figure_json считал ссылку на foot_id (например 'H' из altitude)
+.\tests\test_foot_id_validation.py:14: from services.figure_validator import validate_figure_json
+.\tests\test_foot_id_validation.py:40: r = validate_figure_json(plan)
+.\tests\test_foot_id_validation.py:56: r = validate_figure_json(plan)
+.\tests\test_foot_id_validation.py:70: r = validate_figure_json(plan)

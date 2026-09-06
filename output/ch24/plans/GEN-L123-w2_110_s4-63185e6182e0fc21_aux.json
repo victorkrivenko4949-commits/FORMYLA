@@ -1,0 +1,1 @@
+{"has_aux": true, "reason": "", "constructions": [{"type": "perpendicular_bisector", "p1": "C", "p2": "AB", "id": "aux_perpendicular_bisector_C_AB", "style": "aux", "dashed": true, "visual_role": "aux", "purpose": "Перпендикуляр из решения", "solution_evidence": {"step_no": 2, "quote": "опустим на неё перпендикуляр CE из точки C"}}]}

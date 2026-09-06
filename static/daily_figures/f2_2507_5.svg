@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<text x="300" y="28" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">Максимальное покрытие доски 7×6</text>
+<text x="300" y="472" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">Вырезаны клетки (6;2) и (5;2) • 20 доминошек</text>
+<!-- fills of the 20 dominoes -->
+<g fill="#3B7298" fill-opacity="0.42">
+<rect x="330" y="70" width="120" height="60"/>
+<rect x="210" y="130" width="120" height="60"/>
+<rect x="90" y="190" width="120" height="60"/>
+<rect x="210" y="190" width="120" height="60"/>
+<rect x="90" y="250" width="120" height="60"/>
+<rect x="390" y="190" width="120" height="60"/>
+<rect x="330" y="190" width="60" height="120"/>
+<rect x="210" y="250" width="120" height="60"/>
+<rect x="390" y="250" width="120" height="60"/>
+<rect x="150" y="310" width="120" height="60"/>
+<rect x="90" y="310" width="60" height="120"/>
+<rect x="150" y="370" width="120" height="60"/>
+<rect x="390" y="310" width="120" height="60"/>
+<rect x="270" y="370" width="120" height="60"/>
+<rect x="270" y="310" width="120" height="60"/>
+<rect x="390" y="370" width="120" height="60"/>
+<rect x="90" y="70" width="120" height="60"/>
+<rect x="90" y="130" width="120" height="60"/>
+<rect x="450" y="70" width="60" height="120"/>
+<rect x="210" y="70" width="120" height="60"/>
+</g>
+<!-- removed cells -->
+<rect x="330" y="130" width="60" height="60" fill="#0F1729"/>
+<rect x="390" y="130" width="60" height="60" fill="#0F1729"/>
+<!-- grid -->
+<g fill="none" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round">
+<rect x="90" y="70" width="420" height="360"/>
+<path d="M150 70V430 M210 70V430 M270 70V430 M330 70V430 M390 70V430 M450 70V430"/>
+<path d="M90 130H510 M90 190H510 M90 250H510 M90 310H510 M90 370H510"/>
+</g>
+<!-- domino boundaries -->
+<g fill="none" stroke="#73B6E6" stroke-width="2" stroke-linecap="round">
+<rect x="330" y="70" width="120" height="60"/>
+<rect x="210" y="130" width="120" height="60"/>
+<rect x="90" y="190" width="120" height="60"/>
+<rect x="210" y="190" width="120" height="60"/>
+<rect x="90" y="250" width="120" height="60"/>
+<rect x="390" y="190" width="120" height="60"/>
+<rect x="330" y="190" width="60" height="120"/>
+<rect x="210" y="250" width="120" height="60"/>
+<rect x="390" y="250" width="120" height="60"/>
+<rect x="150" y="310" width="120" height="60"/>
+<rect x="90" y="310" width="60" height="120"/>
+<rect x="150" y="370" width="120" height="60"/>
+<rect x="390" y="310" width="120" height="60"/>
+<rect x="270" y="370" width="120" height="60"/>
+<rect x="270" y="310" width="120" height="60"/>
+<rect x="390" y="370" width="120" height="60"/>
+<rect x="90" y="70" width="120" height="60"/>
+<rect x="90" y="130" width="120" height="60"/>
+<rect x="450" y="70" width="60" height="120"/>
+<rect x="210" y="70" width="120" height="60"/>
+</g>
+<!-- removed-cell marks -->
+<g stroke="#FF6B6B" stroke-width="2" stroke-linecap="round">
+<path d="M342 142L378 178 M378 142L342 178"/>
+<path d="M402 142L438 178 M438 142L402 178"/>
+</g>
+<g fill="#A6B7CC" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">
+<text x="120" y="52">1</text><text x="180" y="52">2</text><text x="240" y="52">3</text><text x="300" y="52">4</text><text x="360" y="52">5</text><text x="420" y="52">6</text><text x="480" y="52">7</text>
+<text x="68" y="100">1</text><text x="68" y="160">2</text><text x="68" y="220">3</text><text x="68" y="280">4</text><text x="68" y="340">5</text><text x="68" y="400">6</text>
+</g>
+<text x="360" y="160" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#FFB4A2" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">(5;2)</text>
+<text x="420" y="160" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#FFB4A2" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">(6;2)</text>
+</svg>

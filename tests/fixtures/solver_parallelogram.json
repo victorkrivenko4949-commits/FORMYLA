@@ -1,0 +1,90 @@
+{
+  "solvable": true,
+  "target": {
+    "kind": "prove",
+    "object": "четырёхугольник ABCK",
+    "description": "Докажите, что четырёхугольник ABCK является параллелограммом."
+  },
+  "answer": {
+    "value": null,
+    "unit": null,
+    "exact": null,
+    "is_numeric": false
+  },
+  "steps": [
+    {
+      "no": 1,
+      "text": "Построим медиану BM треугольника ABC (M — середина стороны AC)."
+    },
+    {
+      "no": 2,
+      "text": "Продлим медиану BM за точку M на отрезок MK, равный BM (K — новая точка)."
+    },
+    {
+      "no": 3,
+      "text": "Рассмотрим четырёхугольник ABCK."
+    },
+    {
+      "no": 4,
+      "text": "В четырёхугольнике ABCK диагонали AC и BK пересекаются в точке M."
+    },
+    {
+      "no": 5,
+      "text": "Так как BM — медиана, M — середина AC, значит AM = MC."
+    },
+    {
+      "no": 6,
+      "text": "По построению MK = BM и точки B, M, K лежат на одной прямой, поэтому M — середина BK."
+    },
+    {
+      "no": 7,
+      "text": "Следовательно, диагонали AC и BK четырёхугольника ABCK точкой пересечения M делятся пополам."
+    },
+    {
+      "no": 8,
+      "text": "По признаку параллелограмма: если диагонали четырёхугольника точкой пересечения делятся пополам, то этот четырёхугольник — параллелограмм. Значит, ABCK — параллелограмм."
+    }
+  ],
+  "aux_needed": true,
+  "aux_constructions": [
+    {
+      "op": "median",
+      "from_point": "B",
+      "to_side": [
+        "A",
+        "C"
+      ],
+      "foot_id": "M",
+      "quote": "Построим медиану BM треугольника ABC",
+      "step_no": 1,
+      "purpose": "Зафиксировать медиану BM и середину M стороны AC."
+    },
+    {
+      "op": "line_extension",
+      "segment": [
+        "B",
+        "M"
+      ],
+      "beyond": "M",
+      "id": "K",
+      "quote": "Продлим медиану BM за точку M на отрезок MK, равный BM",
+      "step_no": 2,
+      "purpose": "Построить точку K так, чтобы BM = MK и точки B, M, K лежали на одной прямой."
+    }
+  ],
+  "confidence": 0.98,
+  "_usage": {
+    "prompt_tokens": 1346,
+    "completion_tokens": 3273,
+    "total_tokens": 4619,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2624
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 1346
+  },
+  "_model": "deepseek-v4-pro"
+}

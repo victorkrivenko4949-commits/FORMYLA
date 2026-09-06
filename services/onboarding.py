@@ -303,7 +303,7 @@ def _pick_anchor_task_for_section(
 
     Параметры:
         grade:         класс ученика (5-11)
-        target_level:  желаемый канонический уровень (1..5)
+        target_level:  желаемый канонический уровень (1..4)
         section:       канонический slug раздела (algebra, geometry, ...)
         exclude_ids:   множество id задач, которые нельзя выбирать
         source:        источник задач (formyla_anchors)
@@ -365,10 +365,10 @@ def _pick_anchor_fallback_level(
     exclude_ids: set,
 ) -> Optional[dict]:
     """Если нет задачи нужного уровня в разделе — ищем ближайший уровень в том же разделе."""
-    for delta in range(1, 6):
+    for delta in range(1, 5):
         for sign in [1, -1]:
             candidate_level = desired_level + sign * delta
-            if candidate_level < 1 or candidate_level > 5:
+            if candidate_level < 1 or candidate_level > 4:
                 continue
             task = _pick_anchor_task_for_section(
                 grade, candidate_level, section, exclude_ids
@@ -1060,7 +1060,7 @@ def finish(user_id: int) -> dict:
         'message': (
             f" Онбординг завершён!\n\n"
             f" Класс: {result.grade}\n"
-            f" Целевой уровень: {result.target_level}/5 "
+            f" Целевой уровень: {result.target_level}/4 "
             f"(потолок маршрута: {result.route_ceiling})\n"
             f" Твой уровень: {display_mu} "
             f"(среднее по разделам, стартовый уровень задач: {result.start_level})\n"

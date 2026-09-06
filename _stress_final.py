@@ -151,3 +151,4 @@ async def main():
 
 asyncio.run(main())
 print("\n[DONE]")
+# СОЗДАНИЕ ИНТЕГРАЦИИ ПО ИНТЕРНЕТУ И ВО ВРЕМЯ ПРОЭЭЭКРТИИ

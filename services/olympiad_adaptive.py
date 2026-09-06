@@ -78,7 +78,7 @@ def get_task(
     ]
     if not pool:
         # Try adjacent level
-        alt_level = level + 1 if level < 5 else level - 1
+        alt_level = level + 1 if level < 4 else level - 1
         pool = [
             t for t in _all_tasks
             if t.get('grade') == grade
@@ -144,7 +144,7 @@ def distribution_plan(grade: int, length: int,
     for p in plan:
         sec_data = by_section.get(p['section'])
         if sec_data and isinstance(sec_data, dict) and sec_data.get('n', 0) > 0:
-            p['start_level'] = max(1, min(5, round(sec_data.get('mu', level_hint))))
+            p['start_level'] = max(1, min(4, round(sec_data.get('mu', level_hint))))
         else:
             p['start_level'] = int(level_hint)
 
@@ -174,7 +174,7 @@ def get_task_by_section(
     ]
     if not pool:
         # Try adjacent level (prefer up, then down)
-        alt_level = level + 1 if level < 5 else level - 1
+        alt_level = level + 1 if level < 4 else level - 1
         pool = [
             t for t in _all_tasks
             if t.get('grade') == grade
@@ -347,7 +347,7 @@ def process_answer(
     else:
         ball = -1
 
-    new_level = max(1, min(5, current_level + ball))
+    new_level = max(1, min(4, current_level + ball))
 
     # Update session
     session['olyad_current_level'] = new_level
@@ -384,14 +384,13 @@ def get_final_result(session) -> Optional[Dict[str, Any]]:
         return None
 
     total = sum(r['ball'] for r in results)
-    final_level = max(1, min(5, 2 + total))
+    final_level = max(1, min(4, 2 + total))
 
     level_names = {
         1: 'Школьная математика',
         2: 'Школьный этап ВОШ',
         3: 'Муниципальный этап ВОШ',
-        4: 'Региональный этап ВОШ',
-        5: 'Заключительный этап / Всеросс',
+        4: 'Региональный этап ВОШ и выше',
     }
 
     correct_count = sum(1 for r in results if r['is_correct'])

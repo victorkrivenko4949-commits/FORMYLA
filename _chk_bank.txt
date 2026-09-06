@@ -1,0 +1,10 @@
+FORMYLA_BANK.jsonl: exists=True size=44315977
+  rows=17360
+  keys=['grade', 'topic', 'level', 'position', 'task_text', 'correct_answer', 'failed', 'generated_at', 'solution', 'verified']
+  grade=Counter({6: 2590, 11: 2590, 5: 2520, 7: 2520, 8: 2450, 9: 2380, 10: 2310})
+  sample={"grade": 5, "topic": "Взвешивания и переливания", "level": 1, "position": 1, "task_text": "У продавца есть чашечные весы и две гири: одна 2 кг, другая 3 кг. Покупатель просит взвесить ровно 1 кг сахара. Как это сделать?", "correct_answer": "Положить гирю 3 кг на одну чашу, гирю 2 кг и сахар — на др
+FORMYLA_SREZ.jsonl: exists=True size=10447424
+  rows=2640
+  keys=['task_uid', 'grade', 'level', 'level_name', 'section', 'theme_id', 'theme', 'statement', 'answer', 'solution', 'methods', 'tags', 'diversity_signature', 'generator_model', 'solver_model', 'critic_model', 'quality_status', 'verification', 'origin', 'old_level']
+  grade=Counter({6: 400, 11: 400, 7: 380, 8: 380, 5: 360, 9: 360, 10: 360})
+  sample={"task_uid": "NEW-20260830-G5-08", "grade": 5, "level": 1, "level_name": "школьный", "section": "Комбинаторика", "theme_id": "G5_T13", "theme": "Графы, знакомства и маршруты", "statement": "В метро конечное число станций. Каждая станция соединена прямыми тоннелями ровно с двумя другими станциями, и 

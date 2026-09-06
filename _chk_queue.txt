@@ -1,0 +1,13 @@
+queued by priority: {0: 306}
+non-final active: {'aux_thinking': 1, 'base_thinking': 8}
+last 10 jobs (id, user_id, status, priority):
+(1713, 1301, 'queued', 0)
+(1712, 1301, 'queued', 0)
+(1711, 1301, 'queued', 0)
+(1710, 1301, 'queued', 0)
+(1709, 1301, 'queued', 0)
+(1708, 1301, 'queued', 0)
+(1707, 1301, 'queued', 0)
+(1706, 1301, 'queued', 0)
+(1705, 1301, 'queued', 0)
+(1704, 1301, 'queued', 0)

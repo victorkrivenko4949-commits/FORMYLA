@@ -212,11 +212,17 @@
                 <td>{{ s.avg_tasks }}</td>
                 <td>{{ s.streak }}</td>
                 <td>
-                    <div class="anchor-badges">
-                        {% for anchor, vals in s.anchors.items() %}
-                        <span class="anchor-badge"
-                              title="{{ anchor }}">{{ anchor[0].upper() }} {{ vals.mu }}/{{ vals.sigma }}</span>
-                        {% endfor %}
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="anchor-badges">
+                            {% for anchor, vals in s.anchors.items() %}
+                            <span class="anchor-badge"
+                                  title="{{ anchor }}">{{ anchor[0].upper() }} {{ vals.mu }}/{{ vals.sigma }}</span>
+                            {% endfor %}
+                        </div>
+                        <a href="{{ url_for('parent_teacher.student_detail', sid=s.id) }}"
+                           style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                            📂 Открыть профиль
+                        </a>
                     </div>
                 </td>
             </tr>

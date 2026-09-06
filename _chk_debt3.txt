@@ -1,0 +1,6 @@
+status=200 len=175751
+has toggle btn: True
+has toggleDebt fn: True
+has openDebtTask fn: True
+onclick openDebtTask count: 4
+sample onclick id: 2

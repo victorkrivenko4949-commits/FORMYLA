@@ -1,0 +1,28 @@
+ocked-message">
+        Сначала утренний срез: «тема дня». 5 задач, примерно 15 минут.
+      </div>
+      <a id="dt-probe-link" href="/prep/probe" class="dt-btn-primary" style="text-decoration:none; background: #4c7dff;">
+        Пройти утренний срез
+      </a>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="dt-empty-state" class="dt-hidden">
+    <div class="dt-empty-card">
+      <div class="dt-empty-title">Задач пока нет</div>
+      <div class="dt-empty-sub">
+        Задачи дня выдаются автоматически по плану месяца.<br>
+        Если ты видишь это сообщение — обнови страницу или пройди утренний срез.
+      </div>
+    </div>
+  </div>
+
+  <!-- Generating state -->
+  <div id="dt-generating-state" class="dt-hidden">
+    <div class="dt-generating-card">
+      <div class="dt-gen-title">Генерируем задачи…</div>
+      <div class="dt-gen-sub" id="dt-elapsed">прошло 0:00</div>
+      <div class="dt-progress-bar">
+        <div class="dt-progress-fill" id="dt-progress-fill"></div>
+      </di

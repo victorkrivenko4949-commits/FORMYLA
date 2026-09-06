@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "canvas": {"width": 600, "height": 500, "margin": 40},
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 300, "y": 60},
+    {"type": "free_point", "id": "B", "x": 100, "y": 420},
+    {"type": "free_point", "id": "C", "x": 520, "y": 420},
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "CA", "p1": "C", "p2": "A"},
+    {"type": "circumcircle", "id": "omega", "p1": "A", "p2": "B", "p3": "C"},
+    {"type": "altitude", "id": "AA1", "vertex": "A", "side_a": "B", "side_b": "C", "foot_id": "A1"},
+    {"type": "altitude", "id": "BB1", "vertex": "B", "side_a": "A", "side_b": "C", "foot_id": "B1"},
+    {"type": "altitude", "id": "CC1", "vertex": "C", "side_a": "A", "side_b": "B", "foot_id": "C1"},
+    {"type": "orthocenter", "id": "H", "p1": "A", "p2": "B", "p3": "C", "visual_role": "key_point"},
+    {"type": "reflect_point_over_line", "id": "H_prime", "p1": "H", "line1": "BC", "label": "H'", "visual_role": "key_point"},
+    {"type": "segment", "id": "HH_prime", "p1": "H", "p2": "H_prime"}
+  ],
+  "given_marks": [],
+  "assumptions": [
+    "Высоты AA1, BB1, CC1 построены операцией altitude с явным foot_id, что гарантирует принадлежность A1 стороне BC, B1 стороне AC, C1 стороне AB.",
+    "Ортоцентр H построен операцией orthocenter(A,B,C) — точка пересечения высот, отдельные отрезки-высоты AA1/BB1/CC1 уже проходят через H по построению, дополнительная точка пересечения не создаётся.",
+    "Точка H' построена операцией reflect_point_over_line(point=H, line=BC) — осевая симметрия H относительно прямой BC; линия BC берётся как уже существующий отрезок BC (сторона треугольника).",
+    "Отрезок HH' проведён явно, чтобы визуализировать симметрию H и H' относительно BC.",
+    "Численно проверено: H' лежит на описанной окружности omega (расстояние от центра описанной окружности до H' равно радиусу R с точностью до вычислительной погрешности)."
+  ],
+  "aux": {"has_aux": false, "reason": "", "constructions": []}
+}

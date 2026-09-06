@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "canvas": {"width": 600, "height": 500, "margin": 40},
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 300, "y": 60},
+    {"type": "free_point", "id": "B", "x": 100, "y": 420},
+    {"type": "free_point", "id": "C", "x": 520, "y": 420},
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "segment", "id": "CA", "p1": "C", "p2": "A"},
+
+    {"type": "angle_bisector", "id": "bis_A", "vertex": "A", "side_a": "B", "side_b": "C", "foot_id": "_dirA"},
+    {"type": "angle_bisector", "id": "bis_B", "vertex": "B", "side_a": "A", "side_b": "C", "foot_id": "_dirB"},
+    {"type": "angle_bisector", "id": "bis_C", "vertex": "C", "side_a": "A", "side_b": "B", "foot_id": "_dirC"},
+
+    {"type": "intersect_lines", "id": "D", "line1": "bis_A", "line2_p1": "B", "line2_p2": "C", "visual_role": "key_point"},
+    {"type": "intersect_lines", "id": "E", "line1": "bis_B", "line2_p1": "A", "line2_p2": "C", "visual_role": "key_point"},
+    {"type": "intersect_lines", "id": "F", "line1": "bis_C", "line2_p1": "A", "line2_p2": "B", "visual_role": "key_point"},
+
+    {"type": "segment", "id": "AD", "p1": "A", "p2": "D"},
+    {"type": "segment", "id": "BE", "p1": "B", "p2": "E"},
+    {"type": "segment", "id": "CF", "p1": "C", "p2": "F"},
+
+    {"type": "incenter", "id": "I", "p1": "A", "p2": "B", "p3": "C", "visual_role": "key_point"},
+    {"type": "incircle", "id": "omega", "p1": "A", "p2": "B", "p3": "C"}
+  ],
+  "given_marks": [],
+  "assumptions": [
+    "Точки D, E, F заданы как пересечение соответствующей биссектрисы (angle_bisector) с противолежащей стороной через intersect_lines, что гарантирует их реальную принадлежность сторонам BC, AC, AB.",
+    "Вспомогательные точки _dirA, _dirB, _dirC — служебные foot_id операции angle_bisector (направление луча), не являются точками условия и не подписываются."
+  ],
+  "aux": {"has_aux": false, "reason": "", "constructions": []}
+}

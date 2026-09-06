@@ -357,6 +357,8 @@ def _format_anchor_response(state: Dict, idx: int) -> Dict[str, Any]:
             'anchor_idx': idx + 1,
             'total_anchors': len(state['anchor_tasks']),
             'figure_url': anchor.get('figure_url'),
+            'solution': anchor.get('solution', ''),
+            'answer': anchor.get('answer', ''),
         },
     }
 
@@ -381,6 +383,29 @@ def finish(user_id: int, state: Optional[Dict] = None) -> Dict[str, Any]:
     # Вычисляем результат
     result = compute_prior(state.get('answers', {}), state.get('anchor_results', []))
 
+    # Собираем решения всех 5 якорей для финального показа
+    anchor_solutions = []
+    anchor_tasks = state.get('anchor_tasks', [])
+    anchor_results = state.get('anchor_results', [])
+    for i, task in enumerate(anchor_tasks):
+        user_correct = None
+        if i < len(anchor_results):
+            user_correct = anchor_results[i].get('correct')
+        anchor_solutions.append({
+            'section': task.get('section', ''),
+            'section_ru': {
+                'algebra': 'Алгебра',
+                'number_theory': 'Теория чисел',
+                'geometry': 'Геометрия',
+                'combinatorics': 'Комбинаторика',
+                'logic': 'Логика',
+            }.get(task.get('section', ''), task.get('section', '')),
+            'statement': task.get('statement', ''),
+            'answer': task.get('answer', ''),
+            'solution': task.get('solution', ''),
+            'correct': user_correct,
+        })
+
     # Сохраняем в БД
     _save_intake_to_db(user_id, result, state)
 
@@ -401,6 +426,7 @@ def finish(user_id: int, state: Optional[Dict] = None) -> Dict[str, Any]:
             'prior_sigma': result.prior_sigma,
             'anchors_count': len(result.anchors),
             'anchors_correct': sum(1 for a in result.anchors if a.get('correct')),
+            'anchor_solutions': anchor_solutions,
         },
     }
 

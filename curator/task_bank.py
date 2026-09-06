@@ -37,7 +37,7 @@ class TaskBank(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     topic = db.Column(db.String(64), nullable=False, index=True)
     subtopic = db.Column(db.String(128), nullable=True, index=True)
-    difficulty = db.Column(db.Integer, nullable=False, default=5)
+    difficulty = db.Column(db.Integer, nullable=False, default=4)
     statement = db.Column(db.Text, nullable=False)
     answer = db.Column(db.Text, nullable=False)
     solution = db.Column(db.Text, nullable=True)

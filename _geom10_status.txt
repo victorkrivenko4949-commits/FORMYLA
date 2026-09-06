@@ -1,0 +1,10 @@
+db0715f78ccab1a01ce7cd009efe1086c3120c5b3cdac19fb349cc70a2a094c3 job=2216 status=failed         svg=N error=Геометрические ограничения base-чертежа не выполнены: ["Проверка 3 (ра
+GEN-fill_0549                                           job=2206 status=failed         svg=N error=MISSING_CONDITION_POINT: MISSING_CONDITION_POINT: точка 'D' объявлена 
+GEN-L123-w2_46_s5-9792b493667fe9f2                      job=2207 status=failed         svg=N error=MISSING_CONDITION_POINT: MISSING_CONDITION_POINT: точка 'D' объявлена 
+GEN-L123-w2_16_s6-9f9aee6a7e1d60f6                      job=2208 status=base_thinking  svg=N error=
+GEN-fill_0697                                           job=2209 status=base_thinking  svg=N error=
+5cfb4680abbc4c37292fb3862ec384d7497ae7299c81c3d2cd7b1d9bf4f8c3e4 job=2210 status=failed         svg=N error=Геометрические ограничения base-чертежа не выполнены: ["[circle_center
+bb45489aa58525b10c2f9f5ac9c392098899ec9145dd1e139eba47f3a0d1d23d job=2211 status=failed         svg=N error=Модель не смогла создать корректный base-план.
+3498879ad7cbd61e011122021fd40d6b6df5a3902938c8845ebbba27ef56ff2d job=2212 status=failed         svg=N error=Геометрические ограничения base-чертежа не выполнены: ["[intersect_lin
+c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe job=2213 status=base_thinking  svg=N error=
+7bcb88ddb5256e2c81e094d087e7c9f1cf80c64d7e23021ecb56ac2d37794bed job=2214 status=failed         svg=N error=Геометрические ограничения base-чертежа не выполнены: ["[intersect_lin

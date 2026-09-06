@@ -1,0 +1,12 @@
+{
+  "constructions": [
+    {"type":"free_point","id":"A","x":100,"y":400,"label":"A"},
+    {"type":"free_point","id":"B","x":300,"y":90,"label":"B"},
+    {"type":"free_point","id":"C","x":460,"y":400,"label":"C"},
+    {"type":"segment","id":"AB","p1":"A","p2":"B"},
+    {"type":"segment","id":"BC","p1":"B","p2":"C"},
+    {"type":"segment","id":"CA","p1":"C","p2":"A"},
+    {"type":"midpoint","id":"M","p1":"A","p2":"C","label":"M"},
+    {"type":"segment","id":"BM","p1":"B","p2":"M","style":"aux","dashed":true}
+  ]
+}

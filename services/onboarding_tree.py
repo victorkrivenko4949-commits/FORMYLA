@@ -4,7 +4,7 @@ FORMYLA — линейная анкета онбординга (5 вопросо
 
 Дерево из 5 вопросов БЕЗ ветвления:
   Q1: grade      — класс (5-11), автозаполнение из профиля
-  Q2: target     — целевой уровень (1-5)
+  Q2: target     — целевой уровень (1-4)
   Q3: olymp_reach — олимпиадный опыт (mu/w из Q2_BY_GOAL["olympiad"])
   Q4: load       — нагрузка (без изменений)
   Q5: deadline   — дата олимпиады или "нет даты"
@@ -44,8 +44,7 @@ Q2_TARGET = {
         {"key": "lvl1", "label": "Вводный уровень, первые олимпиадные задачи", "target_level": 1},
         {"key": "lvl2", "label": "Школьный этап ВОШ",                          "target_level": 2},
         {"key": "lvl3", "label": "Муниципальный этап",                         "target_level": 3},
-        {"key": "lvl4", "label": "Региональный этап",                          "target_level": 4},
-        {"key": "lvl5", "label": "Заключительный этап, сильные финалы",        "target_level": 5},
+        {"key": "lvl4", "label": "Региональный этап и выше",                   "target_level": 4},
     ],
 }
 
@@ -85,13 +84,13 @@ Q5_DEADLINE = {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ЧАСТЬ 2. ROUTE_CEILING = min(5, target_level + 1)
+# ЧАСТЬ 2. ROUTE_CEILING = min(4, target_level + 1)
 # ══════════════════════════════════════════════════════════════════════════════
 
 
 def compute_route_ceiling(target_level: int) -> int:
-    """Вычислить потолок маршрута: min(5, target_level + 1)."""
-    return min(5, max(1, int(target_level) + 1))
+    """Вычислить потолок маршрута: min(4, target_level + 1)."""
+    return min(4, max(1, int(target_level) + 1))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -133,13 +132,13 @@ def compute_deadline_bucket(days_left: int | None) -> str:
 @dataclass
 class OnboardingResult:
     grade: int                        # класс из Q1
-    target_level: int                 # цель 1..5 из Q2
+    target_level: int                 # цель 1..4 из Q2
     olymp_reach: str                  # ключ ответа Q3
     daily_tasks: int                  # задач в день из Q4
     deadline_date: str | None         # YYYY-MM-DD или None
     days_left: int | None             # дней до дедлайна или None
     deadline_bucket: str              # soon | mid | far | none
-    prior_mu: float                   # ожидаемый уровень 1..5
+    prior_mu: float                   # ожидаемый уровень 1..4
     prior_sigma: float                # неопределённость
     start_level: int                  # стартовый уровень теста
     route_ceiling: int                # потолок маршрута
@@ -193,7 +192,7 @@ def compute_prior(answers: dict[str, Any], anchors: list[dict]) -> OnboardingRes
         mu += ANCHOR_PLAN["mu_shift_correct"] if ok else ANCHOR_PLAN["mu_shift_wrong"]
         sigma = max(0.45, sigma - ANCHOR_PLAN["sigma_gain"])
 
-    mu = min(5.0, max(1.0, mu))
+    mu = min(4.0, max(1.0, mu))
     conflict = (declared - mu) >= 1.25 or (mu - declared) >= 1.6
     if conflict:
         sigma = min(1.6, sigma + 0.35)

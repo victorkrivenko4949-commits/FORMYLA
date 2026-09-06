@@ -1,0 +1,234 @@
+[conftest] Test DB copy created: C:\Users\Redmi\AppData\Local\Temp\formyla_test_31204.db
+......................s................................................. [ 56%]
+.................F...F.................................                  [100%]
+================================== FAILURES ===================================
+E   assert 8 == (10 - 1)
+     +  where 8 = <User test1@test.ru>.figure_credits
+---------------------------- Captured stderr call -----------------------------
+2026-08-30 06:08:23,954 - routes.figures_generator - INFO - [figures_gen] picked job 179 from queue
+2026-08-30 06:08:23,960 - routes.figures_generator - INFO - [figures_gen] picked job 179 from queue
+2026-08-30 06:08:36,617 - apscheduler.executors.default - INFO - Running job "conveyor_worker_job (trigger: interval[0:02:00], next run at: 2026-08-30 06:10:36 MSK)" (scheduled at 2026-08-30 06:08:36.603152+03:00)
+2026-08-30 06:08:36,617 - apscheduler.executors.default - INFO - Job "conveyor_worker_job (trigger: interval[0:02:00], next run at: 2026-08-30 06:10:36 MSK)" executed successfully
+2026-08-30 06:09:02,276 - routes.figures_generator - INFO - [figures_gen] credit charged for job 179
+2026-08-30 06:09:27,004 - routes.figures_generator - INFO - [figures_gen] credit charged for job 180
+------------------------------ Captured log call ------------------------------
+INFO     routes.figures_generator:figures_generator.py:2364 [figures_gen] picked job 179 from queue
+INFO     routes.figures_generator:figures_generator.py:2364 [figures_gen] picked job 179 from queue
+INFO     apscheduler.executors.default:base.py:129 Running job "conveyor_worker_job (trigger: interval[0:02:00], next run at: 2026-08-30 06:10:36 MSK)" (scheduled at 2026-08-30 06:08:36.603152+03:00)
+INFO     apscheduler.executors.default:base.py:156 Job "conveyor_worker_job (trigger: interval[0:02:00], next run at: 2026-08-30 06:10:36 MSK)" executed successfully
+INFO     routes.figures_generator:figures_generator.py:498 [figures_gen] credit charged for job 179
+INFO     routes.figures_generator:figures_generator.py:498 [figures_gen] credit charged for job 180
+c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:193: assert 8 == (10 - 1)
+E   AssertionError: assert 'deepseek-v4-pro' == 'deepseek-v4-flash'
+      
+      - deepseek-v4-flash
+      ?             ^^^^^
+      + deepseek-v4-pro
+      ?             ^^^
+c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:282: AssertionError: assert 'deepseek-v4-pro' == 'deepseek-v4-flash'
+============================== warnings summary ===============================
+app.py:1047
+  c:\Users\Redmi\Desktop\Новая папка (2)\app.py:1047: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff = _dt.utcnow() - _td(minutes=10)
+
+routes\figures_generator.py:2324: 6 warnings
+tests/test_c11_aux_allowed_after_answer.py: 7 warnings
+tests/test_c11_aux_blocked_before_answer.py: 8 warnings
+tests/test_c11_base_svg_still_open.py: 7 warnings
+tests/test_c11_method_aux_immediate.py: 4 warnings
+tests/test_c11_no_aux_no_broken_image.py: 7 warnings
+tests/test_ch15_condition_solution.py: 1 warning
+tests/test_ch22_aux_status.py: 18 warnings
+tests/test_figures_ch5.py: 234 warnings
+tests/test_fixtures_smoke.py: 4 warnings
+tests/test_import_figures.py: 15 warnings
+tests/test_x8_four_surfaces.py: 13 warnings
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:2324: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff = datetime.utcnow()
+
+app.py:10184
+  c:\Users\Redmi\Desktop\Новая папка (2)\app.py:10184: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff_7d = _dt_now.utcnow() - _td_7d(days=7)
+
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:952
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:952: DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12; see the sqlite3 documentation for suggested replacement recipes
+    cursor.execute(statement, parameters)
+
+tests/test_c11_aux_allowed_after_answer.py: 13 warnings
+tests/test_c11_aux_blocked_before_answer.py: 12 warnings
+tests/test_c11_base_svg_still_open.py: 12 warnings
+tests/test_c11_method_aux_immediate.py: 1 warning
+tests/test_c11_no_aux_no_broken_image.py: 13 warnings
+tests/test_ch22_aux_status.py: 59 warnings
+tests/test_figures_ch5.py: 30 warnings
+tests/test_fixtures_smoke.py: 6 warnings
+tests/test_import_figures.py: 15 warnings
+tests/test_x8_four_surfaces.py: 19 warnings
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/test_c11_aux_allowed_after_answer.py::test_daily_aux_allowed_after_answer
+tests/test_c11_aux_blocked_before_answer.py::test_daily_aux_blocked_before_answer
+tests/test_c11_no_aux_no_broken_image.py::test_no_aux_no_broken_image_daily
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures.py:244: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item = DailyTaskItem.query.get(item_id)
+
+tests/test_c11_aux_allowed_after_answer.py::test_daily_aux_allowed_after_answer
+tests/test_c11_no_aux_no_broken_image.py::test_no_aux_no_broken_image_daily
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures.py:285: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    item = DailyTaskItem.query.get(item_id)
+
+tests/test_ch22_aux_status.py: 23 warnings
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:929: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_not_needed
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_built
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_rolled_back
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_build_failed
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:2293: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_not_needed
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_built
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_rolled_back
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_build_failed
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:475: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_not_needed
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_built
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_rolled_back
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_build_failed
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:478: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(job.user_id)
+
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_plan_rejected
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:938: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_ch22_aux_status.py::TestAuxStatus::test_aux_plan_rejected
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:525: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_before_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_persisted_in_db
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+tests/test_figures_ch5.py::TestFigureModel::test_model_used_in_job
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:55: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    u = User.query.get(1)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:646: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:671: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:810: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:862: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.updated_at = datetime.utcnow()
+
+tests/test_figures_ch5.py::TestStatusCycle::test_full_cycle
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:121: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestStatusCycle::test_status_sequence
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:147: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:173: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  C:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:470: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:189: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_doneC:\Users\Redmi\Desktop\Новая папка (2)\routes\figures_generator.py:2324: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  _cutoff = datetime.utcnow()
+
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:190: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:202: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:216: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job.id)
+
+tests/test_figures_ch5.py::TestCreditHandling::test_credit_not_charged_on_failed
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:218: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    user = User.query.get(1)
+
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_persisted_in_db
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:239: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job2 = FigureBuildJob.query.get(job_id)
+
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:254: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at=datetime.utcnow() - timedelta(minutes=15),
+
+tests/test_figures_ch5.py::TestQueueSurvival::test_job_recovered_after_crash
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\test_figures_ch5.py:270: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    job = FigureBuildJob.query.get(job_id)
+
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+tests/test_x8_four_surfaces.py::test_figures_build_job_has_aux_fields
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\conftest.py:297: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/test_fixtures_smoke.py::test_figure_build_job_status_and_links
+tests/test_x8_four_surfaces.py::test_figures_build_job_has_aux_fields
+  c:\Users\Redmi\Desktop\Новая папка (2)\tests\conftest.py:298: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at=datetime.utcnow(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_figures_ch5.py::TestCreditHandling::test_credit_charged_on_done
+FAILED tests/test_figures_ch5.py::TestFigureModel::test_model_from_env - Asse...
+2 failed, 124 passed, 1 skipped, 1177 deselected, 606 warnings in 321.99s (0:05:21)

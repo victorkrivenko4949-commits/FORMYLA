@@ -336,7 +336,7 @@ _OCR_SYSTEM_PROMPT = (
 
 
 def _ocr_image(image_b64: str) -> Dict[str, Any]:
-    """Send a PNG dataURL fragment to OpenRouter vision and parse the JSON.
+    """Send a PNG dataURL fragment to Novita vision and parse the JSON.
 
     Returns:
         {"ok": True, "text": str, "model": str}  on success
@@ -346,10 +346,8 @@ def _ocr_image(image_b64: str) -> Dict[str, Any]:
     """
     if not image_b64:
         return {"ok": False, "error": "empty image"}
-    if not os.environ.get("OPENROUTER_API_KEY"):
-        return {"ok": False, "error": "OPENROUTER_API_KEY not set"}
 
-    # Detect mime quickly so we feed OpenRouter a valid data URL.
+    # Detect mime quickly so we feed the model a valid data URL.
     mime = "image/png"
     head_raw = image_b64
     if head_raw.startswith("data:"):
@@ -363,54 +361,18 @@ def _ocr_image(image_b64: str) -> Dict[str, Any]:
             return {"ok": False, "error": "malformed data URL"}
 
     try:
-        from services.openrouter_client import openrouter, OpenRouterError
+        from services.novita_vision import transcribe_handwritten_solution
     except Exception as e:           # pragma: no cover — defensive
-        return {"ok": False, "error": f"openrouter import failed: {e}"}
+        return {"ok": False, "error": f"novita import failed: {e}"}
 
-    data_url = f"data:{mime};base64,{image_b64}"
-    # Try the configured model first; if OpenRouter responds with «model
-    # not found / no endpoints» we transparently fall back to the next
-    # candidate. This makes the feature resilient when OpenRouter
-    # renames or deprecates model slugs.
-    candidates = [OCR_VISION_MODEL] + [m for m in OCR_FALLBACK_MODELS if m != OCR_VISION_MODEL]
-    last_err: str = ""
-    resp = None
     used_model = None
-    for model in candidates:
-        try:
-            resp = openrouter.chat(
-                model=model,
-                messages=[
-                    {"role": "system", "content": _OCR_SYSTEM_PROMPT},
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "Распознай рукопись на картинке и верни JSON."},
-                            {"type": "image_url", "image_url": {"url": data_url}},
-                        ],
-                    },
-                ],
-                temperature=0.0,
-                max_tokens=300,
-            )
-            used_model = model
-            break
-        except OpenRouterError as e:
-            msg = str(e)
-            last_err = f"{model}: {msg}"
-            # "No endpoints found" / "404" -> try next; other errors -> stop.
-            if "404" in msg or "No endpoints" in msg or "model" in msg.lower():
-                logger.warning("[handwriting/recognize] %s — trying next", last_err)
-                continue
-            return {"ok": False, "error": f"openrouter: {last_err}"}
-        except Exception as e:       # pragma: no cover
-            last_err = f"{model}: {e}"
-            logger.warning("[handwriting/recognize] vision call failed: %s", last_err)
-            continue
-    if resp is None:
-        return {"ok": False, "error": f"all vision models failed; last: {last_err}"}
+    content = ""
+    try:
+        content = transcribe_handwritten_solution(image_b64) or ""
+    except Exception as e:
+        return {"ok": False, "error": f"novita: {e}"}
 
-    content = (resp.get("content") or "").strip()
+    content = (content or "").strip()
     # Some models still wrap in ```json fences — strip defensively.
     if content.startswith("```"):
         content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content, flags=re.I).strip()
@@ -430,7 +392,7 @@ def _ocr_image(image_b64: str) -> Dict[str, Any]:
     # renderer never displays raw markup like `$\sqrt{2x}$`.
     text = _delatex(text)
 
-    return {"ok": True, "text": text, "model": used_model or OCR_VISION_MODEL}
+    return {"ok": True, "text": text, "model": "novita/qwen3-vl"}
 
 
 @handwriting_bp.post("/recognize")

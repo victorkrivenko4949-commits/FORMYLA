@@ -19,6 +19,7 @@ import json
 import hashlib
 import random
 from datetime import date, datetime, timedelta
+from types import SimpleNamespace
 
 from flask import Blueprint, jsonify, request, abort, render_template, current_app, session, redirect
 from flask_login import current_user, login_required
@@ -527,103 +528,254 @@ def complete_problem(plan_id, problem_id):
     )
 
 
-def _evaluate_solution(task, user_answer, user_solution):
+def _resolve_probe_task(task_id):
+    """Разрешить задачу утреннего среза по id (включая отрицательные pseudo-id).
+
+    Задачи из FORMYLA_SREZ.jsonl хранятся в активном состоянии среза
+    (CuratorState.probe_json['_srez_tasks']) под отрицательным pseudo-id —
+    см. services/theme_probe.py:_select_and_advance. Обычные задачи
+    AdaptiveTask имеют положительный id.
+
+    Возвращает объект с полями task_text / correct_answer / solution /
+    difficulty_level / has_aux / aux_svg_path / aux_reason, либо None.
     """
-    Evaluate user's solution against the DB reference.
-    Returns (is_correct: bool, feedback: dict).
+    try:
+        tid = int(task_id)
+    except (TypeError, ValueError):
+        return None
+
+    # Отрицательный id → задача среза из FORMYLA_SREZ.jsonl
+    if tid < 0:
+        from models_curator import CuratorState as _CS
+        cs = _CS.query.filter_by(user_id=current_user.id).first()
+        if cs:
+            from services.theme_probe import _get_probe_state as _gps
+            probe = _gps(cs) or {}
+            srez_tasks = probe.get('_srez_tasks', {}) or {}
+            raw = srez_tasks.get(tid) or srez_tasks.get(str(tid))
+            if isinstance(raw, dict):
+                # CH: подтянуть SVG-чертёж задачи среза (static/srez_figures/<uid>.svg)
+                _srez_svg = None
+                try:
+                    from services.srez_bank import load_figure_svg
+                    _srez_svg = load_figure_svg(str(raw.get('task_uid') or ''))
+                except Exception:
+                    _srez_svg = None
+                return SimpleNamespace(
+                    id=tid,
+                    task_text=(raw.get('text') or raw.get('statement') or '').strip(),
+                    correct_answer=(raw.get('answer') or '').strip(),
+                    solution=(raw.get('solution') or '').strip(),
+                    difficulty_level=int(raw.get('level', 1) or 1),
+                    task_uid=str(raw.get('task_uid') or ''),
+                    figure_svg=_srez_svg,
+                    has_aux=False,
+                    aux_svg_path=None,
+                    aux_reason=None,
+                )
+        return None
+
+    # Положительный id → обычная задача AdaptiveTask
+    return db.session.get(AdaptiveTask, tid)
+
+
+def _is_filler_solution(text: str) -> bool:
+    """Определить, что «решение» — пустышка/название метода без содержания.
+
+    Примеры: «от противного», «предположим противное», «не знаю», «решил
+    в уме», «по формуле». Такие ответы не показывают ход решения и должны
+    оцениваться как −1, даже если краткий ответ совпал с эталоном.
+    """
+    if not text:
+        return True
+    s = text.strip().lower()
+    # убираем пунктуацию и лишние пробелы
+    import re as _re
+    s = _re.sub(r"[^\w\s]", " ", s)
+    s = _re.sub(r"\s+", " ", s).strip()
+    if not s:
+        return True
+
+    fillers = {
+        "от противного", "предположим противное", "метод от противного",
+        "доказательство от противного", "методом от противного",
+        "не знаю", "не знал", "не помню", "не понял", "не смог",
+        "решил в уме", "решил устно", "посчитал в уме", "по формуле",
+        "по определению", "по теореме", "очевидно", "тривиально",
+        "подбором", "перебором", "методом подбора", "угадал",
+        "противным", "противного",
+    }
+    # Точное совпадение с фразой-пустышкой
+    if s in fillers:
+        return True
+    # Короткая фраза, состоящая только из названия метода
+    if len(s) <= 20 and any(f in s for f in ("от противного", "противном", "не знаю", "в уме", "очевидно", "подбором", "угадал", "по формуле")):
+        return True
+    return False
+
+
+def _checking_model_name() -> str:
+    """Имя модели, которой проверяется решение."""
+    import os as _os
+    return (_os.environ.get("FIGURE_MODEL") or "deepseek-v4-flash").strip()
+
+
+def _normalize_latex(text: str) -> str:
+    r"""Привести LaTeX из банка/модели к корректному виду для KaTeX.
+
+    Убирает «чёрточки»-артефакты и делает формулы красивыми:
+      - ``\\(`` / ``\\)``  ->  ``\(`` / ``\)``  (одинарные слэши)
+      - Unicode-степени ² ³ ⁴ … -> ^{2} ^{3} …
+      - ``·`` -> ``\\cdot``, ``√`` -> ``\\sqrt``
+    """
+    if not text:
+        return text
+    t = text
+    # JSON-экранированные разделители \( \) \[ \]
+    t = t.replace("\\\\(", "\\(").replace("\\\\)", "\\)")
+    t = t.replace("\\\\[", "\\[").replace("\\\\]", "\\]")
+    # Unicode-степени и символы
+    for ch, cmd in [
+        ("²", "^{2}"), ("³", "^{3}"), ("⁴", "^{4}"), ("⁵", "^{5}"),
+        ("⁶", "^{6}"), ("⁷", "^{7}"), ("⁸", "^{8}"), ("⁹", "^{9}"),
+        ("−", "-"),
+        ("·", "\\cdot "), ("√", "\\sqrt"), ("≤", "\\leq "), ("≥", "\\geq "),
+        ("≠", "\\neq "), ("×", "\\times "), ("÷", "\\div "), ("∞", "\\infty "),
+        ("π", "\\pi "), ("α", "\\alpha "), ("β", "\\beta "), ("γ", "\\gamma "),
+        ("Δ", "\\Delta "), ("θ", "\\theta "), ("°", "^{\\circ}"),
+    ]:
+        t = t.replace(ch, cmd)
+
+    # Починка частых ошибок DeepSeek в LaTeX: \sqrt x -> \sqrt{x}, \frac a b -> ...
+    from utils.math_text_fixer import fix_latex_commands, wrap_bare_math
+    t = fix_latex_commands(t)
+
+    # Обернуть «голую» математику (степени x^2, Unicode-², \sqrt и т.п.)
+    # в \( ... \), чтобы KaTeX отрендерил. Русский текст и уже обёрнутые
+    # блоки \(...\) / \[...\] / $...$ не трогаем.
+    t = wrap_bare_math(t)
+    return t
+
+
+def _md_solution(text: str) -> str:
+    """Отрендерить решение/разбор красиво: переносы строк, **жирный**, LaTeX.
+
+    Использует общий Markdown-рендер (services.md_render), который сохраняет
+    LaTeX-блоки и превращает ``\\n`` в ``<p>``/``<br>``, чтобы решение не
+    выглядело сплошной простынёй текста. Падение рендера не должно ломать
+    ответ — fallback на обычную LaTeX-нормализацию.
+    """
+    if not text:
+        return ""
+    try:
+        from services.md_render import md_render
+        from utils.math_text_fixer import wrap_bare_math
+        return str(md_render(wrap_bare_math(text)))
+    except Exception:
+        return _normalize_latex(text)
+
+
+def _evaluate_solution(task, user_answer, user_solution, images_b64=None):
+    """
+    Evaluate user's solution via the unified pipeline (services.solution_check_pipeline).
+
+    Returns (is_correct: bool, feedback: dict) — обратная совместимость со старым
+    форматом вызова. Фото (images_b64) прогоняется через OCR -> normalizer ->
+    тот же единый checker.
     """
     if not task:
         return False, {'verdict': 'error', 'message': 'Задача не найдена.'}
 
-    correct_answer = (task.correct_answer or '').strip()
-    reference_solution = (task.solution or '').strip()
-    task_text = (task.task_text or '').strip()
+    correct_answer = _normalize_latex((task.correct_answer or '').strip())
+    reference_solution = _normalize_latex((task.solution or '').strip())
+    task_text = _normalize_latex((task.task_text or '').strip())
 
-    # ── Step 1: Quick answer check (if short answer provided) ──
-    if user_answer and correct_answer:
-        if _answers_match(user_answer, correct_answer):
-            return True, {
-                'verdict': 'correct',
-                'message': 'Верно! Ответ совпадает.',
-                'correct_answer': correct_answer,
-            }
-
-    # ── Step 2: If user provided a full solution, evaluate via DeepSeek ──
     solution_text = user_solution or user_answer
-    if not solution_text:
+    if not solution_text and not images_b64:
         return False, {'verdict': 'empty', 'message': 'Введи ответ или решение.'}
 
-    # If only short answer and it didn't match — try DeepSeek for equivalence
-    try:
-        from ai.deepseek_client import DeepSeekClient
-        client = DeepSeekClient()
-
-        prompt = f"""Ты — строгий проверяющий олимпиадных работ по математике.
-
-УСЛОВИЕ ЗАДАЧИ:
-{task_text[:1500]}
-
-ПРАВИЛЬНЫЙ ОТВЕТ: {correct_answer}
-
-ЭТАЛОННОЕ РЕШЕНИЕ:
-{reference_solution[:2000]}
-
-РЕШЕНИЕ УЧЕНИКА:
-{solution_text[:2000]}
-
-Оцени решение ученика. Ответь СТРОГО в формате JSON:
-{{
-  "is_correct": true/false,
-  "score": 0-2,
-  "errors": ["список ошибок, если есть"],
-  "feedback": "краткий комментарий (1-3 предложения): что верно, что нет, как исправить",
-  "hint": "подсказка, если решение неверное (1 предложение)",
-  "solution": "ПОЛНОЕ пошаговое решение задачи (на русском, с LaTeX-формулами в $...$). Если эталонное решение дано — перепиши его своими словами. Если эталонного решения нет — составь полное решение сам. Обязательно покажи все шаги."
-}}
-
-Правила оценки:
-- 2 балла: полностью верное решение (ответ правильный, логика верная)
-- 1 балл: частично верное (правильный ход мысли, но ошибка в вычислениях или неполное обоснование)
-- 0 баллов: неверное решение или ответ"""
-
-        import re as _re
-        raw = client.generate(prompt, max_tokens=500, temperature=0.1)
-        # Parse JSON from response
-        raw = _re.sub(r'```json\s*', '', raw)
-        raw = _re.sub(r'```\s*', '', raw).strip()
-        result = json.loads(raw)
-
-        is_correct = bool(result.get('is_correct', False))
-        score = int(result.get('score', 0))
-        if score >= 2:
-            is_correct = True
-
-        return is_correct, {
-            'verdict': 'correct' if is_correct else ('partial' if score == 1 else 'wrong'),
-            'score': score,
-            'message': result.get('feedback', ''),
-            'errors': result.get('errors', []),
-            'hint': result.get('hint', ''),
-            'correct_answer': correct_answer,
-            'solution': result.get('solution', ''),
-            'ai_checked': True,
-        }
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        # Fallback: simple answer comparison
-        if user_answer and correct_answer:
-            matched = _answers_match(user_answer, correct_answer)
-            return matched, {
-                'verdict': 'correct' if matched else 'wrong',
-                'message': 'Проверено по ответу (AI недоступен).',
-                'correct_answer': correct_answer,
-            }
+    # ── Правило пустышки: «от противного» и т.п. -> жёсткое −1 ────────
+    # Если ученик вместо хода решения написал только название метода/фразу,
+    # не показывающую рассуждение — сразу −1, без обращения к ИИ.
+    if not images_b64 and _is_filler_solution(user_solution):
+        model = _checking_model_name()
         return False, {
-            'verdict': 'error',
-            'message': 'Не удалось проверить решение. Попробуй позже.',
+            'verdict': 'wrong',
+            'score': 0,
+            'message': _md_solution(
+                "**Оценка тьютора: −1 балл, уровень −1** (нет хода решения — "
+                "напиши, как именно ты рассуждал, а не только название метода).\n\n"
+                "Проверяла модель: " + model
+            ),
+            'errors': [],
+            'hint': 'Опиши решение по шагам: что предположил, что вычислил, какой вывод сделал.',
+            'correct_answer': correct_answer,
+            'solution': _md_solution(reference_solution),
+            'ai_checked': False,
+            'checking_model': model,
+            'current_level_note': 'флаг пустышки сработал',
         }
+
+    # ── Step 2: единый pipeline (OCR + checker) ──
+    from services.solution_check_pipeline import check_solution
+
+    verdict = check_solution(
+        entity_type='srez',
+        task_text=task_text,
+        correct_answer=correct_answer,
+        solution_ref=reference_solution,
+        user_answer=user_answer,
+        user_solution=user_solution,
+        images_b64=list(images_b64 or []),
+        difficulty_level=getattr(task, 'difficulty_level', 4) or 4,
+    )
+
+    # ── Детекция сбоя AI (как в app.py:check_adaptive_answer) ──────────
+    ai_failure = bool(verdict.get('ai_failure')) or (verdict.get('status') == 'failed')
+
+    is_correct = bool(verdict.get('is_correct'))
+    category = verdict.get('category', '')
+    score = verdict.get('score', 0.0)
+    if score >= 1.0:
+        is_correct = True
+
+    if ai_failure:
+        verdict_label = 'partial'
+        is_correct = False
+        message = (
+            verdict.get('feedback')
+            or 'AI-проверка временно недоступна — оценка нейтральная, уровень не изменится.'
+        )
+    else:
+        verdict_label = 'correct' if is_correct else (
+            'partial' if category in ('wrong_answer_good_method', 'correct_no_justification')
+            else 'wrong'
+        )
+        message = verdict.get('feedback', '')
+
+    model = _checking_model_name()
+    # Добавляем в конец разбора строку о модели-проверяющем (если её ещё нет).
+    if model and model not in (message or ''):
+        message = f"{message}\n\n_Проверяла модель: {model}_"
+
+    feedback = {
+        'verdict': verdict_label,
+        'score': 2 if score >= 1.0 else (1 if category == 'wrong_answer_good_method' else 0),
+        'message': _md_solution(message),
+        'errors': [],
+        'hint': '',
+        'correct_answer': correct_answer,
+        'solution': _md_solution(verdict.get('solution', '') or reference_solution),
+        'ai_checked': not ai_failure,
+        'checking_model': model,
+    }
+
+    # Низкое доверие OCR — добавляем предупреждение (message уже HTML).
+    if verdict.get('ocr') and verdict['ocr'].get('low_confidence'):
+        warn = verdict['ocr'].get('warning') or 'Распознавание фото ненадёжно.'
+        feedback['message'] = f"⚠️ {warn}<br><br>{feedback['message']}"
+
+    return is_correct, feedback
 
 
 def _answers_match(user_ans, correct_ans):
@@ -970,20 +1122,18 @@ def coach():
             # Средний target_level по измеренным темам (шкала 1..8)
             avg_target = sum(t.get('target_level') or 0 for t in measured) / len(measured)
             overall_level = round(avg_target)
-            # Маппинг в сжатую шкалу 1..5 для отображения
+            # Маппинг в сжатую шкалу 1..4 для отображения
             if avg_target <= 2:
                 display_level = 1
             elif avg_target <= 4:
                 display_level = 2
             elif avg_target <= 6:
                 display_level = 3
-            elif avg_target <= 7:
-                display_level = 4
             else:
-                display_level = 5
+                display_level = 4
             level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
-                            4: ' Продвинутый', 5: ' Высокий'}
-            level_label = f'{level_labels.get(display_level, " Средний")} (уровень {display_level}/5)'
+                            4: ' Продвинутый'}
+            level_label = f'{level_labels.get(display_level, " Средний")} (уровень {display_level}/4)'
         # Также пробуем взять из анкеты (наивысший приоритет)
         if overall_level is None:
             try:
@@ -992,8 +1142,8 @@ def coach():
                 if q_level is not None:
                     overall_level = q_level
                     level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
-                                    4: ' Продвинутый', 5: ' Высокий'}
-                    level_label = f'{level_labels.get(min(q_level, 5), " Средний")} (уровень {min(q_level, 5)}/5)'
+                                    4: ' Продвинутый'}
+                    level_label = f'{level_labels.get(min(q_level, 4), " Средний")} (уровень {min(q_level, 4)}/4)'
             except Exception:
                 pass
         # Затем пробуем взять из CuratorState.prep_state.level (monthly cycle)
@@ -1005,12 +1155,12 @@ def coach():
                     prep_lvl = _cs2.prep_state['level']
                     overall_level = prep_lvl
                     level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
-                                    4: ' Продвинутый', 5: ' Высокий'}
-                    level_label = f'{level_labels.get(min(prep_lvl, 5), " Средний")} (уровень {min(prep_lvl, 5)}/5)'
+                                    4: ' Продвинутый'}
+                    level_label = f'{level_labels.get(min(prep_lvl, 4), " Средний")} (уровень {min(prep_lvl, 4)}/4)'
             except Exception:
                 pass
 
-    # ── Build mastery_list: PRIMARY = level_by_section (level_engine, canonical 1..5)
+    # ── Build mastery_list: PRIMARY = level_by_section (level_engine, canonical 1..4)
     #    FALLBACK = old TopicMastery + ADAPTIVE_TOPICS_BY_GRADE (kept as-is)
     from models import TopicMastery
     from services.adaptive_topics_registry import ADAPTIVE_TOPICS_BY_GRADE
@@ -1138,9 +1288,9 @@ def coach():
                 'value': mastery_val,
             })
 
-        # Нормализуем mastery_val (0.0-1.0 -> 0-5) для radar chart
+        # Нормализуем mastery_val (0.0-1.0 -> 0-4) для radar chart
         for _m in mastery_list:
-            _m['value'] = round(_m['value'] * 5, 1)
+            _m['value'] = round(_m['value'] * 4, 1)
 
     # ── D4: Ensure radar ALWAYS has 5 canonical axes, even at zero ──
     # Applies regardless of PRIMARY or FALLBACK path.
@@ -1449,6 +1599,14 @@ def morning_probe():
     probe_active = has_active_probe(user_id)
     probe_theme = get_active_probe_theme(user_id)
 
+    # Сброс устаревшего среза: если активный срез относится к ДРУГОЙ подтеме
+    # (например, к прошлому дню цикла), отменяем его и начинаем заново.
+    if probe_active and probe_theme and probe_theme != current_theme:
+        from services.theme_probe import cancel_probe
+        cancel_probe(user_id)
+        probe_active = False
+        probe_theme = None
+
     if not probe_active and cycle.get('blocked'):
         # Need to start the probe
         result = start_probe(user_id, current_theme, grade)
@@ -1467,6 +1625,48 @@ def morning_probe():
 
     from services.theme_probe import _get_probe_state
     probe = _get_probe_state(cs)
+
+    # ── Срез для текущей темы уже завершён? Показываем итог, а НЕ новый круг ──
+    # Если тема уже в done_themes (т.е. advance_day был вызван при завершении
+    # среза), а активного probe нет и задачи дня разблокированы — значит срез
+    # только что закончился. Рендерим итоговую карточку, иначе после 5-й задачи
+    # страница запускала бы срез заново с первой задачи.
+    if not probe and not cycle.get('blocked'):
+        total_tasks = 5
+        done_themes = set(cycle.get('done_themes') or [])
+        if current_theme in done_themes:
+            final_mu = None
+            previous_mu = None
+            lbt = {}
+            try:
+                if cs.level_by_theme:
+                    lbt = json.loads(cs.level_by_theme) if isinstance(cs.level_by_theme, str) else cs.level_by_theme
+                    final_mu = lbt.get(current_theme, {}).get('mu')
+            except (json.JSONDecodeError, TypeError):
+                lbt = {}
+            if final_mu is None:
+                final_mu = 1
+            final_mu = float(final_mu)
+            if _wants_json():
+                return jsonify({
+                    'done': True,
+                    'theme_id': current_theme,
+                    'theme_title': theme_title,
+                    'section': section,
+                    'final_mu': final_mu,
+                    'previous_mu': previous_mu,
+                    'answers': [],
+                    'total': total_tasks,
+                })
+            return render_template('prep/probe.html',
+                                   done=True,
+                                   theme_id=current_theme,
+                                   theme_title=theme_title,
+                                   section=section,
+                                   final_mu=final_mu,
+                                   previous_mu=previous_mu,
+                                   answers=[],
+                                   total=total_tasks)
 
     if not probe:
         # No probe started yet -> start it
@@ -1543,17 +1743,20 @@ def morning_probe():
     seen_ids = probe.get('seen_task_ids', [])
 
     if seen_ids and current_index > 0:
-        # Get the last seen task (the current one)
+        # Get the last seen task (the current one).
+        # Negative pseudo-id → задача утреннего среза из FORMYLA_SREZ.jsonl;
+        # положительный id → обычная AdaptiveTask.
         last_seen_id = seen_ids[-1]
-        from models import AdaptiveTask
-        current_task_obj = db.session.get(AdaptiveTask, last_seen_id)
-        if current_task_obj:
+        resolved = _resolve_probe_task(last_seen_id)
+        if resolved is not None:
             current_task = {
-                'id': current_task_obj.id,
-                'task_text': current_task_obj.task_text,
-                'difficulty_level': current_task_obj.difficulty_level,
-                'topic': current_task_obj.topic,
-                'has_aux': bool(current_task_obj.has_aux),
+                'id': resolved.id,
+                'task_text': resolved.task_text,
+                'difficulty_level': getattr(resolved, 'difficulty_level', 1) or 1,
+                'topic': getattr(resolved, 'topic', '') or '',
+                'task_uid': getattr(resolved, 'task_uid', '') or '',
+                'figure_svg': getattr(resolved, 'figure_svg', None),
+                'has_aux': bool(getattr(resolved, 'has_aux', False)),
             }
 
     if current_task is None:
@@ -1571,6 +1774,11 @@ def morning_probe():
         if _wants_json():
             return jsonify(error='no_tasks')
         return render_template('prep/probe.html', error='Нет доступных задач.')
+
+    # Нормализуем LaTeX условия задачи для корректного отображения KaTeX:
+    # степени x^2, Unicode-², \sqrt и т.п. оборачиваем в \(...\).
+    if isinstance(current_task, dict) and current_task.get('task_text'):
+        current_task['task_text'] = _normalize_latex(current_task['task_text'])
 
     if _wants_json():
         return jsonify({
@@ -1613,7 +1821,7 @@ def probe_submit():
     from models import AdaptiveTask as _PTask
 
     # Evaluate via AI — the system decides correct/partial/wrong
-    task = db.session.get(_PTask, int(task_id))
+    task = _resolve_probe_task(task_id)
     is_correct, feedback = _evaluate_solution(task, user_answer, user_solution)
     verdict = feedback.get('verdict', 'wrong')
 
@@ -1621,6 +1829,28 @@ def probe_submit():
         current_user.id, int(task_id), verdict,
         user_solution or user_answer
     )
+
+    # «Банк неточностей»: ставим решение в очередь на скрининг (фоновый анализ).
+    try:
+        from services.insight_queue import enqueue_screen
+        _t_text = getattr(task, 'task_text', None) or (task.get('text') if isinstance(task, dict) else '') or ''
+        _t_answer = getattr(task, 'correct_answer', None) or (task.get('answer') if isinstance(task, dict) else '') or ''
+        _t_solution = getattr(task, 'solution', None) or (task.get('solution') if isinstance(task, dict) else '') or ''
+        _t_topic = getattr(task, 'topic', None) or (task.get('theme') if isinstance(task, dict) else '') or ''
+        _t_level = getattr(task, 'difficulty_level', None) or (task.get('level') if isinstance(task, dict) else None)
+        enqueue_screen(
+            user_id=current_user.id,
+            task_text=_t_text,
+            correct_answer=_t_answer,
+            solution_ref=_t_solution,
+            user_solution=user_solution or user_answer,
+            topic=_t_topic,
+            difficulty_level=_t_level,
+            source="srez",
+            source_task_id=int(task_id),
+        )
+    except Exception:
+        pass  # анализ неточностей никогда не должен ронять основной поток
 
     # CH8: include aux figure path if available after answer
     if task and task.has_aux:
@@ -1637,6 +1867,7 @@ def probe_submit():
         'hint': feedback.get('hint', ''),
         'solution': feedback.get('solution', ''),
         'correct_answer': feedback.get('correct_answer', ''),
+        'checking_model': feedback.get('checking_model', ''),
     }
     if feedback.get('ai_checked'):
         result['ai_checked'] = True
@@ -1708,16 +1939,38 @@ def prep_answer():
         file_path_rel = None
         file_size = None
 
+    # ── Фото для единого OCR-pipeline (base64 без data: префикса) ──
+    images_b64 = []
+    if solution_method == 'photo':
+        try:
+            import base64 as _b64
+            images_b64 = [_b64.b64encode(photo_bytes).decode("utf-8")]
+        except Exception:
+            images_b64 = []
+
     # Evaluate via AI
     from services.theme_probe import record_answer as probe_record_answer
     from models import AdaptiveTask as _PTask
 
-    task = db.session.get(_PTask, int(task_id))
+    task = _resolve_probe_task(task_id)
     if not task:
         return jsonify(error='Задача не найдена'), 404
 
-    is_correct, feedback = _evaluate_solution(task, user_answer, solution_text)
+    is_correct, feedback = _evaluate_solution(task, user_answer, solution_text, images_b64)
     verdict = feedback.get('verdict', 'wrong')
+
+    # Чертёж к задаче — отдаём вместе с разбором, чтобы показать его
+    # ПОСЛЕ отправки решения (в блоке решения), а не в условии.
+    _task_figure_svg = None
+    try:
+        _task_figure_svg = getattr(task, 'figure_svg', None)
+        if not _task_figure_svg:
+            _uid = getattr(task, 'task_uid', None)
+            if _uid:
+                from services.srez_bank import load_figure_svg
+                _task_figure_svg = load_figure_svg(str(_uid))
+    except Exception:
+        _task_figure_svg = None
 
     result = probe_record_answer(
         current_user.id, int(task_id), verdict,
@@ -1737,6 +1990,29 @@ def prep_answer():
     db.session.add(attempt)
     db.session.commit()
 
+    # «Банк неточностей»: ставим решение в очередь на скрининг (фоновый анализ).
+    try:
+        from services.insight_queue import enqueue_screen
+        _task_text = getattr(task, 'task_text', None) or (task.get('text') if isinstance(task, dict) else '') or ''
+        _task_answer = getattr(task, 'correct_answer', None) or (task.get('answer') if isinstance(task, dict) else '') or ''
+        _task_solution = getattr(task, 'solution', None) or (task.get('solution') if isinstance(task, dict) else '') or ''
+        _task_topic = getattr(task, 'topic', None) or (task.get('theme') if isinstance(task, dict) else '') or ''
+        _task_level = getattr(task, 'difficulty_level', None) or (task.get('level') if isinstance(task, dict) else None)
+        enqueue_screen(
+            user_id=current_user.id,
+            task_text=_task_text,
+            correct_answer=_task_answer,
+            solution_ref=_task_solution,
+            user_solution=solution_text or user_answer,
+            topic=_task_topic,
+            difficulty_level=_task_level,
+            source="srez",
+            source_task_id=attempt.id,
+            source_attempt_id=attempt.id,
+        )
+    except Exception:
+        pass  # анализ неточностей никогда не должен ронять основной поток
+
     # CH10: Kimi review
     kimi_result = None
     try:
@@ -1751,7 +2027,10 @@ def prep_answer():
         'hint': feedback.get('hint', ''),
         'solution': feedback.get('solution', ''),
         'correct_answer': feedback.get('correct_answer', ''),
+        'checking_model': feedback.get('checking_model', ''),
     }
+    # Чертёж показываем только в разборе (после ответа ученика)
+    result['figure_svg'] = _task_figure_svg
     if feedback.get('ai_checked'):
         result['ai_checked'] = True
 
@@ -1909,10 +2188,10 @@ def coach_greeting():
             if questionnaire_done:
                 # Анкета пройдена — уровень известен, предлагаем тест по темам
                 level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
-                                4: ' Продвинутый', 5: ' Высокий'}
+                                4: ' Продвинутый'}
                 label = level_labels.get(questionnaire_level, ' Средний')
                 return jsonify(
-                    greeting=f' Анкета пройдена! Твой уровень: <strong>{label} (уровень {questionnaire_level}/5)</strong>.\n\n'
+                    greeting=f' Анкета пройдена! Твой уровень: <strong>{label} (уровень {questionnaire_level}/4)</strong>.\n\n'
                              f'Теперь пройди адаптивный тест по темам — он настроен под твой уровень.',
                     scenario='open_url',
                     recommended_olympiad=None,
@@ -2078,7 +2357,7 @@ def coach_greeting():
                 # Сценарий 3a.2: Тест пройден, ждём задачи
                 greeting = (
                     f'[OK] Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
-    f'Задачи дня уже готовятся под твой уровень (сложность {_level}/5). '
+    f'Задачи дня уже готовятся под твой уровень (сложность {_level}/4). '
                     f'Они придут вечером — проверь уведомления!\n\n'
                     f'{_cycle_progress}. Осталось тестов: **{_remaining_tests}** из 7. '
                 )
@@ -2106,7 +2385,7 @@ def coach_greeting():
                         f' Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
                         f'Тема: **«{_subtopic_title}»**.\n'
                         f'Задачи дня уже готовы — продолжай тренироваться! \n\n'
-                        f'Уровень сложности: {_level}/5.'
+                        f'Уровень сложности: {_level}/4.'
                     )
                     return jsonify(
                         greeting=greeting,
@@ -2128,7 +2407,7 @@ def coach_greeting():
                     greeting = (
                         f' Доброе утро! Сегодня **тренировочный день** ({_cycle_progress}).\n\n'
                         f'Тема недели: **«{_subtopic_title}»**.\n'
-                        f'Задачи придут вечером — настроим их под твой уровень ({_level}/5).\n\n'
+                        f'Задачи придут вечером — настроим их под твой уровень ({_level}/4).\n\n'
                         f'А пока можешь повторить теорию или решить несколько задач для разминки! '
                     )
                     return jsonify(
@@ -2255,8 +2534,8 @@ def coach_onboarding_submit():
 
                 if score_val >= 1:
                     topic_results[topic]['correct'] += 1
-                topic_results[topic]['final_level'] = max(1, min(5, int(
-                    topic_results[topic]['correct'] / max(1, topic_results[topic]['total']) * 5
+                topic_results[topic]['final_level'] = max(1, min(4, int(
+                    topic_results[topic]['correct'] / max(1, topic_results[topic]['total']) * 4
                 )))
             except (ValueError, TypeError):
                 continue
@@ -2326,7 +2605,7 @@ def coach_daily_submit():
     Ожидает JSON: {'subtopic_key': str, 'results': {task_id: score, ...}}
 
     Вычисляет уровень ученика по подтеме, создаёт DailyQuest с задачами
-    на уровне [level-1, level+1] (окно ±1, clamped 1..5).
+    на уровне [level-1, level+1] (окно ±1, clamped 1..4).
     Возвращает: tasks (первые 5 из квеста), level, subtopic_key.
     """
     data = request.get_json(silent=True) or {}
@@ -2354,11 +2633,11 @@ def coach_daily_submit():
         # Определение уровня: используем score_to_target_level
         from daily_tasks.profile import CALIBRATION_START_LEVEL
         level = score_to_target_level(correct, total, final_level=CALIBRATION_START_LEVEL)
-        level = max(1, min(5, level or CALIBRATION_START_LEVEL))
+        level = max(1, min(4, level or CALIBRATION_START_LEVEL))
 
         # Окно ±1 для задач дня
         min_level = max(1, level - 1)
-        max_level = min(5, level + 1)
+        max_level = min(4, level + 1)
 
         # Получаем db_topic для подтемы
         db_topic = get_db_topic(grade, subtopic_key)
@@ -2498,7 +2777,7 @@ def coach_day_complete():
 
     Ожидает JSON: {'correct': int, 'total': int}
 
-    Адаптация уровня (шкала 1..5):
+    Адаптация уровня (шкала 1..4):
       - correct ≥ 8 -> +1 (вверх)
       - 4 ≤ correct ≤ 7 -> 0 (без изменений)
       - correct ≤ 3 -> -1 (вниз)
@@ -2551,7 +2830,7 @@ def coach_day_complete():
         else:
             delta = 0
 
-        new_level = max(1, min(5, prev_level + delta))
+        new_level = max(1, min(4, prev_level + delta))
         pct = int(round(correct / total * 100))
 
         # Сообщение
@@ -2706,7 +2985,7 @@ def _submit_onboarding_results(solutions_dict, difficulty_ratings=None):
 
                 if score_val >= 1:
                     topic_results[topic]['correct'] += 1
-                topic_results[topic]['final_level'] = max(1, min(5, int(
+                topic_results[topic]['final_level'] = max(1, min(4, int(
                     topic_results[topic]['correct'] / max(1, topic_results[topic]['total']) * 5
                 )))
             except (ValueError, TypeError):
@@ -2758,7 +3037,7 @@ def _submit_onboarding_results(solutions_dict, difficulty_ratings=None):
 
         reply = (
             f" <strong>Диагностика завершена!</strong>\n\n"
-            f" <strong>Твой общий уровень:</strong> {level_label} (уровень {overall_level}/5)\n"
+            f" <strong>Твой общий уровень:</strong> {level_label} (уровень {overall_level}/4)\n"
             f" Измерено <strong>{profile.get('measured_topics_count', 0)}</strong> тем.\n"
         )
         if weak_names:
@@ -2768,7 +3047,7 @@ def _submit_onboarding_results(solutions_dict, difficulty_ratings=None):
         if recommended:
             reply += f"\n\n <strong>Рекомендуемая олимпиада:</strong> {recommended['name']}"
 
-        reply += "\n\n <em>Оцени сложность каждой задачи от 1 до 5 в следующем сообщении.</em>"
+        reply += "\n\n <em>Оцени сложность каждой задачи от 1 до 4 в следующем сообщении.</em>"
 
         _save_chat_message(current_user.id, 'assistant', reply)
         return jsonify(reply=reply)
@@ -2922,7 +3201,7 @@ def coach_chat():
             difficulty_str = message.strip()
             try:
                 difficulty = int(difficulty_str)
-                if 1 <= difficulty <= 5:
+                if 1 <= difficulty <= 4:
                     # Save difficulty rating
                     test_state.setdefault('difficulty_ratings', {})[str(awaiting_task_id)] = difficulty
                     test_state['awaiting_difficulty_for'] = None
@@ -2959,7 +3238,7 @@ def coach_chat():
             except (ValueError, TypeError):
                 pass
             # Invalid difficulty — ask again
-            reply = " Пожалуйста, оцените сложность задачи по шкале от 1 до 5 — именно для вас, с учётом ваших текущих знаний (просто напишите число)."
+            reply = " Пожалуйста, оцените сложность задачи по шкале от 1 до 4 — именно для вас, с учётом ваших текущих знаний (просто напишите число)."
             _save_chat_message(current_user.id, 'assistant', reply)
             return jsonify(reply=reply)
 
@@ -3013,7 +3292,7 @@ def coach_chat():
                 # Ask for difficulty rating
                 reply += (
                     f"<hr>\n"
-                    f" <em>Оцени сложность этой задачи от 1 до 5.</em>"
+                    f" <em>Оцени сложность этой задачи от 1 до 4.</em>"
                 )
 
                 # Set awaiting difficulty flag
@@ -3033,7 +3312,7 @@ def coach_chat():
                     reply += f" <strong>Полное решение:</strong>\n{reference_solution}\n\n"
                 reply += (
                     f"<hr>\n"
-                    f" <em>Оцени сложность этой задачи от 1 до 5.</em>"
+                    f" <em>Оцени сложность этой задачи от 1 до 4.</em>"
                 )
                 test_state['awaiting_difficulty_for'] = task_id
                 session['coach_test'] = test_state
@@ -3104,6 +3383,13 @@ def coach_chat():
     )
     _coach_user_name = _coach_user_name if _coach_user_name and _coach_user_name != 'Игрок' else 'ученик'
 
+    # ── Полная справка о сайте FORMYLA (единый источник правды) ────────────
+    try:
+        from services.site_concierge import build_site_context_for_llm
+        _site_context = build_site_context_for_llm()
+    except Exception:
+        _site_context = ""
+
     # Build rich system prompt
     system_prompt = (
         "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам. "
@@ -3115,6 +3401,8 @@ def coach_chat():
         "Ты не назначаешь число задач в день и разделы/подтемы — это уже определено системой. "
         "Отвечай кратко, на русском, давай конкретные шаги на ближайшие дни. "
         "Используй эмодзи для наглядности.\n\n"
+        + _site_context
+        + "\n\n"
         "ЖЁСТКОЕ ПРАВИЛО: НЕ ВЫДУМЫВАЙ ДАННЫХ, которых нет в карточке ученика. "
         "Все числа (уровень, mu, sigma, количество задач) бери ТОЛЬКО из карточки. "
         "Если данных нет — честно скажи об этом. "
@@ -3143,7 +3431,7 @@ def coach_chat():
 
     plan_block = "\n".join(plan_lines) or "  (планов нет)"
 
-    # Q3 (2026-07-28): if level_by_section exists, card_text already has mu 1..5;
+    # Q3 (2026-07-28): if level_by_section exists, card_text already has mu 1..4;
     # remove old radar (0-100) to avoid two conflicting scales in one prompt.
     _has_by_section = bool(student_card.get("level_by_section")) if student_card else False
     if _has_by_section:

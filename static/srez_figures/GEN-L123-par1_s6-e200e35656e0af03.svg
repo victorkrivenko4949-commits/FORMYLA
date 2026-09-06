@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="456" height="456" viewBox="0 0 456 456" style="background-color: #0F1729;">
+<rect x="0" y="0" width="456" height="456" fill="#0F1729" />
+<rect x="30.00" y="30.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="162.00" y="30.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="294.00" y="30.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="118.00" y="74.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="250.00" y="74.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="382.00" y="74.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="74.00" y="118.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="206.00" y="118.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="338.00" y="118.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="30.00" y="162.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="162.00" y="162.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="294.00" y="162.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="118.00" y="206.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="250.00" y="206.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="382.00" y="206.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="74.00" y="250.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="206.00" y="250.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="338.00" y="250.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="30.00" y="294.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="162.00" y="294.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="294.00" y="294.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="118.00" y="338.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="250.00" y="338.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="382.00" y="338.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="74.00" y="382.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="206.00" y="382.00" width="44.00" height="44.00" fill="#3B82F6" />
+<rect x="338.00" y="382.00" width="44.00" height="44.00" fill="#3B82F6" />
+<line x1="30.00" y1="30.00" x2="30.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="30.00" x2="426.00" y2="30.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="74.00" y1="30.00" x2="74.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="74.00" x2="426.00" y2="74.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="118.00" y1="30.00" x2="118.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="118.00" x2="426.00" y2="118.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="162.00" y1="30.00" x2="162.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="162.00" x2="426.00" y2="162.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="206.00" y1="30.00" x2="206.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="206.00" x2="426.00" y2="206.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="250.00" y1="30.00" x2="250.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="250.00" x2="426.00" y2="250.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="294.00" y1="30.00" x2="294.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="294.00" x2="426.00" y2="294.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="338.00" y1="30.00" x2="338.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="338.00" x2="426.00" y2="338.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="382.00" y1="30.00" x2="382.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="382.00" x2="426.00" y2="382.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="426.00" y1="30.00" x2="426.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+<line x1="30.00" y1="426.00" x2="426.00" y2="426.00" stroke="#D9E5F5" stroke-width="1.4" stroke-linecap="round" />
+</svg>

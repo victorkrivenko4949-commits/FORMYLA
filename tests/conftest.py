@@ -140,6 +140,7 @@ def app(tmp_path):
     import models              # noqa: F401 ensure all models loaded
     import daily_tasks.models  # noqa: F401 ensure DailyTaskSet/Item
     import models_curator      # noqa: F401 curator models
+    import models_insights     # noqa: F401 insight models
 
     db_path = tmp_path / "test_formyla.db"
     uri = 'sqlite:///' + db_path.as_posix()
@@ -176,6 +177,8 @@ def app(tmp_path):
     test_app.register_blueprint(parent_teacher_bp)
     from routes.dashboard_settings import dashboard_settings_bp
     test_app.register_blueprint(dashboard_settings_bp)
+    from routes.insights import insights_bp
+    test_app.register_blueprint(insights_bp)
     try:
         from routes.olympiad import olympiad_bp
         test_app.register_blueprint(olympiad_bp)

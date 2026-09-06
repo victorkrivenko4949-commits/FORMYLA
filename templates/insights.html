@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Банк неточностей — FORMYLA{% endblock %}
+{% block extra_css %}
+<style>
+    .insights-page { max-width: 860px; margin: 0 auto; padding: 40px 20px 90px; }
+    .insights-page h1 { font-size: 26px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
+    .insights-sub { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+    .ins-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .ins-filters select, .ins-filters button {
+        background: rgba(30,41,59,0.7); color: #cbd5e1; border: 1px solid #334155;
+        border-radius: 8px; padding: 8px 12px; font-size: 13px;
+    }
+    .ins-filters button { cursor: pointer; }
+    .ins-filters button.active { border-color: #fbbf24; color: #fbbf24; }
+    .ins-card {
+        background: rgba(30,41,59,0.6); border: 1px solid #1e293b; border-radius: 14px;
+        padding: 16px 18px; margin-bottom: 12px; cursor: pointer; transition: border-color .15s;
+    }
+    .ins-card:hover { border-color: #334155; }
+    .ins-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .ins-card-title { font-size: 15px; font-weight: 600; color: #f1f5f9; line-height: 1.35; }
+    .ins-badge {
+        font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px;
+        background: rgba(59,130,246,0.15); color: #93c5fd; white-space: nowrap;
+    }
+    .ins-badge.time_loss { background: rgba(251,191,36,0.15); color: #fcd34d; }
+    .ins-badge.missing_fact { background: rgba(34,197,94,0.15); color: #86efac; }
+    .ins-badge.proof_gap { background: rgba(168,85,247,0.15); color: #d8b4fe; }
+    .ins-badge.bad_form { background: rgba(236,72,153,0.15); color: #f9a8d4; }
+    .ins-meta { display: flex; gap: 14px; flex-wrap: wrap; color: #64748b; font-size: 12px; margin-top: 8px; }
+    .ins-progress { color: #fbbf24; }
+    .ins-repeat { color: #f87171; }
+    .ins-empty { text-align: center; padding: 60px 20px; color: #64748b; font-size: 15px; line-height: 1.6; }
+    /* Detail */
+    .ins-detail { display: none; background: rgba(15,23,42,0.9); border: 1px solid #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+    .ins-detail h2 { font-size: 19px; color: #f1f5f9; margin-bottom: 14px; }
+    .ins-block { margin-bottom: 16px; }
+    .ins-block-label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: #64748b; margin-bottom: 4px; }
+    .ins-block-text { color: #cbd5e1; font-size: 14px; line-height: 1.6; }
+    .ins-practice { border: 1px solid #1e293b; border-radius: 12px; padding: 14px; margin-bottom: 12px; background: rgba(30,41,59,0.4); }
+    .ins-practice-vis { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+    .ins-practice .task-text { color: #e2e8f0; font-size: 14px; margin-bottom: 8px; }
+    .ins-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .ins-btn {
+        background: rgba(30,41,59,0.8); color: #cbd5e1; border: 1px solid #334155;
+        border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+    }
+    .ins-btn.primary { border-color: #fbbf24; color: #fbbf24; }
+    .ins-btn.danger { border-color: #ef4444; color: #fca5a5; }
+    .ins-answer-input {
+        background: rgba(15,23,42,0.8); color: #e2e8f0; border: 1px solid #334155;
+        border-radius: 8px; padding: 8px 12px; font-size: 14px; width: 100%;
+    }
+    .ins-feedback { font-size: 13px; margin-top: 6px; }
+    @media (max-width: 600px) { .insights-page { padding: 24px 14px 90px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="insights-page">
+    <h1>💡 Банк неточностей</h1>
+    <p class="insights-sub">Формула находит в решениях места, которые стоит отточить, — и подбирает по 3 задачи на каждое.</p>
+
+    <div class="ins-filters">
+        <select id="fStatus">
+            <option value="">Все статусы</option>
+            <option value="active">Неотработанные</option>
+            <option value="in_progress">В работе</option>
+            <option value="mastered">Отработанные</option>
+            <option value="dismissed">Отклонённые</option>
+        </select>
+        <select id="fType">
+            <option value="">Все типы</option>
+            <option value="wrong_approach">Неверный подход</option>
+            <option value="time_loss">Потеря времени</option>
+            <option value="missing_fact">Незнание факта</option>
+            <option value="proof_gap">Пробел в доказательстве</option>
+            <option value="bad_form">Неудобная форма</option>
+        </select>
+    </div>
+
+    <div id="insList"></div>
+    <div id="insEmpty" class="ins-empty" style="display:none">
+        Пока пусто — и это хорошо. Формула разобрала <b>{{ analyzed_count }}</b> твоих решений и грубых недочётов не нашла. Описки и невезение сюда не попадают.
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var TYPE_LABELS = {
+    wrong_approach: 'неверный подход',
+    time_loss: 'потеря времени',
+    missing_fact: 'незнание факта',
+    proof_gap: 'пробел в доказательстве',
+    bad_form: 'неудобная форма'
+};
+var VIS_LABELS = { obvious: 'идея на поверхности', medium: 'идея видна средне', hidden: 'идея не очевидна' };
+
+function insEscape(s) {
+    var d = document.createElement('div');
+    d.textContent = (s == null ? '' : String(s));
+    return d.innerHTML;
+}
+
+function loadInsights() {
+    var params = new URLSearchParams();
+    var st = document.getElementById('fStatus').value;
+    var ty = document.getElementById('fType').value;
+    if (st) params.set('status', st);
+    if (ty) params.set('type', ty);
+    fetch('/api/insights?' + params.toString())
+        .then(function(r){ return r.json(); })
+        .then(function(list){
+            var listEl = document.getElementById('insList');
+            var emptyEl = document.getElementById('insEmpty');
+            listEl.innerHTML = '';
+            if (!list.length) { emptyEl.style.display = 'block'; return; }
+            emptyEl.style.display = 'none';
+            list.forEach(function(it){
+                var card = document.createElement('div');
+                card.className = 'ins-card';
+                card.innerHTML =
+                    '<div class="ins-card-head">' +
+                        '<div class="ins-card-title">' + insEscape(it.title) + '</div>' +
+                        '<span class="ins-badge ' + insEscape(it.type) + '">' + (TYPE_LABELS[it.type] || it.type) + '</span>' +
+                    '</div>' +
+                    '<div class="ins-meta">' +
+                        '<span class="ins-progress">прогресс ' + it.progress_done + '/' + it.progress_total + '</span>' +
+                        (it.occurrences > 1 ? '<span class="ins-repeat">повтор ×' + it.occurrences + '</span>' : '') +
+                        '<span>' + (it.source === 'srez' ? 'Срез' : 'Задача дня') + '</span>' +
+                        '<span>severity ' + it.severity + '</span>' +
+                    '</div>' +
+                    '<div class="ins-detail" id="detail-' + it.id + '"></div>';
+                card.querySelector('.ins-card-head').addEventListener('click', function(){
+                    toggleDetail(it.id);
+                });
+                card.querySelector('.ins-meta').addEventListener('click', function(){
+                    toggleDetail(it.id);
+                });
+                listEl.appendChild(card);
+            });
+        });
+}
+
+function toggleDetail(id) {
+    var det = document.getElementById('detail-' + id);
+    if (det.style.display === 'block') { det.style.display = 'none'; det.innerHTML = ''; return; }
+    fetch('/api/insights/' + id)
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            det.innerHTML = renderDetail(d);
+            det.style.display = 'block';
+            if (window.renderMathInElement) {
+                try { renderMathInElement(det, { delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]}); } catch(e){}
+            }
+        });
+}
+
+function renderDetail(d) {
+    var html = '<h2>' + insEscape(d.title) + '</h2>';
+    html += '<div class="ins-block"><div class="ins-block-label">Что пошло не так</div><div class="ins-block-text">' + insEscape(d.what_went_wrong) + '</div></div>';
+    html += '<div class="ins-block"><div class="ins-block-label">Как надо было</div><div class="ins-block-text">' + insEscape(d.better_way) + '</div></div>';
+    if (d.canonical_fact) {
+        html += '<div class="ins-block"><div class="ins-block-label">Что выучить</div><div class="ins-block-text">' + insEscape(d.canonical_fact) + '</div></div>';
+    }
+    if (d.time_lost_estimate_min) {
+        html += '<div class="ins-block"><div class="ins-block-label">Потерянное время</div><div class="ins-block-text">~' + insEscape(d.time_lost_estimate_min) + ' мин</div></div>';
+    }
+    html += '<div class="ins-block"><div class="ins-block-label">Задачи на отработку</div></div>';
+    (d.practice || []).forEach(function(p){
+        html += '<div class="ins-practice">' +
+            '<div class="ins-practice-vis">' + (VIS_LABELS[p.visibility] || p.visibility) + ' · сложность ' + p.difficulty + ' · ' + (p.source === 'bank' ? 'из базы' : 'сгенерирована') + '</div>' +
+            '<div class="task-text">' + insEscape(p.statement) + '</div>' +
+            (p.solved ? '<div class="ins-feedback" style="color:#86efac">Решена верно ✓</div>' : '') +
+            '<div class="ins-answer-box" id="ans-' + p.id + '">' +
+                '<input class="ins-answer-input" id="ansinput-' + p.id + '" placeholder="Введи ответ…" />' +
+                '<button class="ins-btn primary" onclick="checkAnswer(' + d.id + ',' + p.id + ')">Проверить</button>' +
+                '<button class="ins-btn" onclick="showHint(' + p.id + ')">Подсказка</button>' +
+                '<div class="ins-feedback" id="ansfb-' + p.id + '"></div>' +
+            '</div>' +
+        '</div>';
+    });
+    html += '<div class="ins-actions">' +
+        '<button class="ins-btn" onclick="regenerate(' + d.id + ')">Дать ещё 3 задачи</button>' +
+        '<button class="ins-btn danger" onclick="dismiss(' + d.id + ', \'slip\')">Это была описка</button>' +
+        '<button class="ins-btn danger" onclick="dismiss(' + d.id + ', \'not_mine\')">Это не моя ошибка</button>' +
+    '</div>';
+    return html;
+}
+
+function checkAnswer(insightId, taskId) {
+    var inp = document.getElementById('ansinput-' + taskId);
+    var fb = document.getElementById('ansfb-' + taskId);
+    fb.textContent = '…';
+    fetch('/api/insights/' + insightId + '/practice/' + taskId + '/answer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({answer: inp.value})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+        fb.textContent = res.correct ? 'Верно!' : 'Неверно. Попробуй ещё раз.';
+        fb.style.color = res.correct ? '#86efac' : '#fca5a5';
+        if (!res.correct && res.correct_answer) {
+            fb.textContent += ' (ответ: ' + res.correct_answer + ')';
+        }
+    });
+}
+
+function showHint(taskId) {
+    fetch('/api/insights/0/practice/' + taskId + '/hint').catch(function(){});
+}
+
+function regenerate(id) {
+    fetch('/api/insights/' + id + '/practice/regenerate', {method: 'POST'})
+        .then(function(r){ return r.json(); })
+        .then(function(){ loadInsights(); });
+}
+
+function dismiss(id, reason) {
+    fetch('/api/insights/' + id + '/dismiss', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({reason: reason})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(){ loadInsights(); });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    loadInsights();
+    document.getElementById('fStatus').addEventListener('change', loadInsights);
+    document.getElementById('fType').addEventListener('change', loadInsights);
+});
+</script>
+{% endblock %}

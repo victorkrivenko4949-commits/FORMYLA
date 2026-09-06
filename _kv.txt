@@ -1,0 +1,55 @@
+import argparse
+import asyncio
+
+import nats
+from nats.js.api import KeyValueConfig
+
+
+async def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--url", required=True)
+    parser.add_argument("--bucket", required=True)
+    parser.add_argument("--ttl-seconds", type=int, default=60)
+    args = parser.parse_args()
+
+    nc = await nats.connect(args.url, connect_timeout=10)
+    try:
+        js = nc.jetstream()
+        created = False
+        try:
+            kv = await js.key_value(args.bucket)
+        except Exception:
+            kv = await js.create_key_value(
+                config=KeyValueConfig(
+                    bucket=args.bucket,
+                    history=1,
+                    ttl=float(args.ttl_seconds),
+                    description="Dedicated OWUI-Roo Bridge ownership lease for victor",
+                )
+            )
+            created = True
+
+        status = await kv.status()
+        history = int(getattr(status, "history", 0) or 0)
+        ttl = getattr(status, "ttl", None)
+        ttl_seconds = float(ttl) if ttl is not None else 0.0
+
+        if history != 1:
+            raise RuntimeError(f"BLOCK_OWNERSHIP_KV_HISTORY: expected=1 actual={history}")
+        if ttl_seconds < args.ttl_seconds:
+            raise RuntimeError(
+                f"BLOCK_OWNERSHIP_KV_TTL: expected>={args.ttl_seconds} actual={ttl_seconds}"
+            )
+
+        print(f"OWNERSHIP_KV={'CREATED' if created else 'KEEP'}")
+        print(f"BUCKET={args.bucket}")
+        print(f"HISTORY={history}")
+        print(f"TTL_SECONDS={ttl_seconds:.0f}")
+        return 0
+    finally:
+        await nc.drain()
+
+
+if __name__ == "__main__":
+    raise SystemExit(asyncio.run(main()))
+

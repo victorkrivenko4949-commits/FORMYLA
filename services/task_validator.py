@@ -351,11 +351,11 @@ def validate_generated_task(raw_response: str, few_shot_texts=None) -> dict:
         )
         return {'valid': False, 'task': data, 'errors': errors}
 
-    # Difficulty в диапазоне 1-5
+    # Difficulty в диапазоне 1-4
     try:
         diff = int(data['difficulty'])
-        if not 1 <= diff <= 5:
-            errors.append(f'Difficulty {diff} вне диапазона 1-5')
+        if not 1 <= diff <= 4:
+            errors.append(f'Difficulty {diff} вне диапазона 1-4')
             return {'valid': False, 'task': data, 'errors': errors}
         data['difficulty'] = diff
     except (ValueError, TypeError):

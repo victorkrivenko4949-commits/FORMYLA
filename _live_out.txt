@@ -1,0 +1,54 @@
+=== route_attest ===
+ERROR: C:\H2\victor_bridge_release\payload\VICTOR_BRIDGE_WHEELHOUSE_v1_r2\scripts\invoke_owui_function.ps1:27 знак:14
++     model = "h2_roo_function"
++              ~~~~~~~~~~~~~~~~
+Непредвиденная лексема "h2_roo_function"
+    stream = $false
+    messages = @(@{ role = "user"; content = $content })
+} | ConvertTo-Json -Depth 12 -Compress
+
+$response = Invoke-WebRequest -UseBasicParsing `
+    -Uri "https://chat.h2platform.ru/api/chat/completions" `
+    -Method Post `
+    -Headers @{ Authorization = "Bearer" в выражении или операторе.
+
+C:\H2\victor_bridge_release\payload\VICTOR_BRIDGE_WHEELHOUSE_v1_r2\scripts\invoke_owui_function.ps1:41 знак:60
++     throw "BLOCK_OWUI_FUNCTION_HTTP_$($response.StatusCode)"
++                                                            ~
+В строке отсутствует завершающий символ: ".
+=== health ===
+ERROR: C:\H2\victor_bridge_release\payload\VICTOR_BRIDGE_WHEELHOUSE_v1_r2\scripts\invoke_owui_function.ps1:27 знак:14
++     model = "h2_roo_function"
++              ~~~~~~~~~~~~~~~~
+Непредвиденная лексема "h2_roo_function"
+    stream = $false
+    messages = @(@{ role = "user"; content = $content })
+} | ConvertTo-Json -Depth 12 -Compress
+
+$response = Invoke-WebRequest -UseBasicParsing `
+    -Uri "https://chat.h2platform.ru/api/chat/completions" `
+    -Method Post `
+    -Headers @{ Authorization = "Bearer" в выражении или операторе.
+
+C:\H2\victor_bridge_release\payload\VICTOR_BRIDGE_WHEELHOUSE_v1_r2\scripts\invoke_owui_function.ps1:41 знак:60
++     throw "BLOCK_OWUI_FUNCTION_HTTP_$($response.StatusCode)"
++                                                            ~
+В строке отсутствует завершающий символ: ".
+=== list_instances ===
+ERROR: C:\H2\victor_bridge_release\payload\VICTOR_BRIDGE_WHEELHOUSE_v1_r2\scripts\invoke_owui_function.ps1:27 знак:14
++     model = "h2_roo_function"
++              ~~~~~~~~~~~~~~~~
+Непредвиденная лексема "h2_roo_function"
+    stream = $false
+    messages = @(@{ role = "user"; content = $content })
+} | ConvertTo-Json -Depth 12 -Compress
+
+$response = Invoke-WebRequest -UseBasicParsing `
+    -Uri "https://chat.h2platform.ru/api/chat/completions" `
+    -Method Post `
+    -Headers @{ Authorization = "Bearer" в выражении или операторе.
+
+C:\H2\victor_bridge_release\payload\VICTOR_BRIDGE_WHEELHOUSE_v1_r2\scripts\invoke_owui_function.ps1:41 знак:60
++     throw "BLOCK_OWUI_FUNCTION_HTTP_$($response.StatusCode)"
++                                                            ~
+В строке отсутствует завершающий символ: ".

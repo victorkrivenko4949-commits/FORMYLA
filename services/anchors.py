@@ -349,6 +349,7 @@ def _task_to_anchor_dict(task: AdaptiveTask) -> Dict[str, Any]:
         'level': task.difficulty_level,
         'statement': task.task_text or '',
         'answer': task.correct_answer or '',
+        'solution': task.solution or '',
         'theme_id': task.theme_id or '',
         'db_id': task.id,
         'figure_url': figure_url,

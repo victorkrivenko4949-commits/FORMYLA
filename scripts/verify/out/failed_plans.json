@@ -1,0 +1,197 @@
+[
+  {
+    "id": 593,
+    "stage": "base_drawing",
+    "mode": "solver_aux",
+    "base_model": "claude-sonnet-4-6",
+    "model_name": "deepseek-v4-pro",
+    "error": "Геометрические ограничения не выполнены: [\"Проверка 1 (границы): точка 'C' (-64.0, 167.8) выходит за поле [40,580]×[40,480]\"]",
+    "plan_len": 3926,
+    "plan_keys": [
+      "version",
+      "canvas",
+      "constructions",
+      "labels",
+      "given_facts",
+      "given_marks",
+      "assumptions",
+      "aux"
+    ],
+    "plan_constructions_count": 15
+  },
+  {
+    "id": 592,
+    "stage": "base_thinking",
+    "mode": "solver_aux",
+    "base_model": null,
+    "model_name": "deepseek-v4-pro",
+    "error": "Модель не смогла создать корректный base-план.",
+    "plan_len": 0,
+    "plan_keys": null,
+    "plan_constructions_count": null
+  },
+  {
+    "id": 591,
+    "stage": "base_drawing",
+    "mode": "solver_aux",
+    "base_model": "claude-sonnet-4-6",
+    "model_name": "deepseek-v4-pro",
+    "error": "Геометрические ограничения не выполнены: ['CONSTRAINT_VIOLATION: заявлено AB = BC, измерено 411.8 и 400.0', 'CONSTRAINT_VIOLATION: заявлено BC = CA, измерено 400.0 и 411.8']",
+    "plan_len": 4774,
+    "plan_keys": [
+      "version",
+      "canvas",
+      "constructions",
+      "labels",
+      "given_facts",
+      "given_marks",
+      "assumptions",
+      "aux"
+    ],
+    "plan_constructions_count": 19
+  },
+  {
+    "id": 589,
+    "stage": "base_thinking",
+    "mode": "solver_aux",
+    "base_model": null,
+    "model_name": "deepseek-v4-pro",
+    "error": "Модель не смогла создать корректный base-план.",
+    "plan_len": 0,
+    "plan_keys": null,
+    "plan_constructions_count": null
+  },
+  {
+    "id": 588,
+    "stage": "base_drawing",
+    "mode": "solver_aux",
+    "base_model": "claude-sonnet-4-6",
+    "model_name": "deepseek-v4-pro",
+    "error": "Геометрические ограничения не выполнены: [\"Проверка 1 (границы): точка 'AB1' (440.0, 740.0) выходит за поле [50,630]×[50,630]\", \"Проверка 1 (границы): точка 'AB2' (200.0, 720.0) выходит за поле [50,630]×[50,630]\", \"Проверка 1 (границы): точка 'P' (320.0, 730.0) выходит за поле [50,630]×[50,630]\"]",
+    "plan_len": 7582,
+    "plan_keys": [
+      "version",
+      "canvas",
+      "constructions",
+      "labels",
+      "given_facts",
+      "given_marks",
+      "assumptions",
+      "aux"
+    ],
+    "plan_constructions_count": 34
+  },
+  {
+    "id": 587,
+    "stage": "base_drawing",
+    "mode": "solver_aux",
+    "base_model": "claude-sonnet-4-6",
+    "model_name": "deepseek-v4-pro",
+    "error": "Геометрические ограничения не выполнены: [\"Проверка 1 (границы): точка 'M' (19.8, 142.8) выходит за поле [40,620]×[40,540]\", \"Проверка 1 (границы): точка 'N' (640.2, 142.8) выходит за поле [40,620]×[40,540]\"]",
+    "plan_len": 4465,
+    "plan_keys": [
+      "version",
+      "canvas",
+      "constructions",
+      "labels",
+      "given_facts",
+      "given_marks",
+      "assumptions",
+      "aux"
+    ],
+    "plan_constructions_count": 18
+  },
+  {
+    "id": 586,
+    "stage": "base_thinking",
+    "mode": "solver_aux",
+    "base_model": null,
+    "model_name": "deepseek-v4-pro",
+    "error": "Модель не смогла создать корректный base-план.",
+    "plan_len": 0,
+    "plan_keys": null,
+    "plan_constructions_count": null
+  },
+  {
+    "id": 585,
+    "stage": "base_drawing",
+    "mode": "solver_aux",
+    "base_model": "claude-sonnet-4-6",
+    "model_name": "deepseek-v4-pro",
+    "error": "Геометрические ограничения не выполнены: [\"[intersect_lines] 'E': intersect_lines требует line1/line2 или пары точек\"]",
+    "plan_len": 5007,
+    "plan_keys": [
+      "version",
+      "canvas",
+      "constructions",
+      "labels",
+      "given_facts",
+      "given_marks",
+      "assumptions",
+      "aux"
+    ],
+    "plan_constructions_count": 20
+  },
+  {
+    "id": 583,
+    "stage": "base_drawing",
+    "mode": "solver_aux",
+    "base_model": "claude-sonnet-4-6",
+    "model_name": "deepseek-v4-pro",
+    "error": "Геометрические ограничения не выполнены: [\"[segment] 'BC': Точки совпадают, прямая не определена\"]",
+    "plan_len": 3649,
+    "plan_keys": [
+      "version",
+      "canvas",
+      "constructions",
+      "labels",
+      "given_facts",
+      "given_marks",
+      "assumptions",
+      "aux"
+    ],
+    "plan_constructions_count": 14
+  },
+  {
+    "id": 573,
+    "stage": "base_drawing",
+    "mode": "condition_solution",
+    "base_model": "claude-sonnet-4-6",
+    "model_name": "deepseek-v4-pro",
+    "error": "Геометрические ограничения base-чертежа не выполнены: ['CONSTRAINT_VIOLATION: угол A заявлен 30.0, построен 41.6']",
+    "plan_len": 4105,
+    "plan_keys": [
+      "version",
+      "canvas",
+      "constructions",
+      "labels",
+      "given_facts",
+      "given_marks",
+      "assumptions",
+      "aux"
+    ],
+    "plan_constructions_count": 17
+  },
+  {
+    "id": 572,
+    "stage": "base_thinking",
+    "mode": "base_only",
+    "base_model": null,
+    "model_name": "deepseek-v4-pro",
+    "error": "Модель не смогла создать корректный base-план.",
+    "plan_len": 0,
+    "plan_keys": null,
+    "plan_constructions_count": null
+  },
+  {
+    "id": 571,
+    "stage": "base_thinking",
+    "mode": "solver_aux",
+    "base_model": null,
+    "model_name": "deepseek-v4-pro",
+    "error": "Модель не смогла создать корректный base-план.",
+    "plan_len": 0,
+    "plan_keys": null,
+    "plan_constructions_count": null
+  }
+]

@@ -1,0 +1,16 @@
+python-dotenv could not parse statement starting at line 45
+[A1] screen.needs_deep=True screen.skip=None deep=has=True/valid=True
+[A2] screen.needs_deep=True screen.skip=None deep=has=True/valid=True
+[A3] screen.needs_deep=True screen.skip=None deep=has=True/valid=False
+[A4] screen.needs_deep=True screen.skip=None deep=has=True/valid=True
+[A5] screen.needs_deep=True screen.skip=None deep=has=True/valid=True
+[A6] screen.needs_deep=True screen.skip=None deep=has=True/valid=True
+[A7] screen.needs_deep=True screen.skip=None deep=has=True/valid=True
+[A8] screen.needs_deep=True screen.skip=None deep=has=True/valid=True
+[B1] screen.needs_deep=False screen.skip=arithmetic_slip deep=skipped
+[B2] screen.needs_deep=False screen.skip=arithmetic_slip deep=skipped
+[B3] screen.needs_deep=False screen.skip=no_issue deep=skipped
+[B4] screen.needs_deep=False screen.skip=no_issue deep=skipped
+
+Saved summary: _insight_battletest_summary.json
+Saved raw: _insight_battletest_raw.jsonl

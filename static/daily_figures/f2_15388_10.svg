@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<g fill="none" stroke-linecap="round">
+  <circle cx="170" cy="250" r="90" stroke="#D9E5F5" stroke-width="1.8"/>
+  <circle cx="359" cy="250" r="153" stroke="#D9E5F5" stroke-width="1.8"/>
+  <line x1="125" y1="250" x2="404" y2="250" stroke="#73B6E6" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="170" y1="250" x2="224" y2="178" stroke="#73B6E6" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="359" y1="250" x2="224" y2="178" stroke="#73B6E6" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="224" y1="178" x2="224" y2="322" stroke="#D9E5F5" stroke-width="1.8"/>
+  <path d="M224 250 L224 238 L236 238 L236 250" stroke="#FFD166" stroke-width="1.2"/>
+</g>
+<g>
+  <circle cx="170" cy="250" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/>
+  <circle cx="359" cy="250" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/>
+  <circle cx="224" cy="178" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/>
+  <circle cx="224" cy="322" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/>
+  <circle cx="224" cy="250" r="3.5" fill="#A6B7CC" stroke="#A6B7CC"/>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">
+  <text x="170" y="280" font-size="14">O₁</text>
+  <text x="359" y="280" font-size="14">O₂</text>
+  <text x="209" y="166" font-size="14">M</text>
+  <text x="209" y="334" font-size="14">N</text>
+  <text x="224" y="270" font-size="14">H</text>
+  <text x="264" y="231" font-size="12">O₁O₂ = 21</text>
+  <text x="195" y="211" font-size="12">R₁ = 10</text>
+  <text x="298" y="211" font-size="12">R₂ = 17</text>
+  <text x="196" y="268" font-size="12">O₁H = 6</text>
+  <text x="244" y="250" font-size="12">MN</text>
+</g>
+</svg>

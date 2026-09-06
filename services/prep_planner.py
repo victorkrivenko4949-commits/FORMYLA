@@ -263,17 +263,15 @@ def select_problems_for_day(grade, target_topics, weak_topic_skill,
 # ─── Private helpers ──────────────────────────────────────────────────────────
 
 def _map_skill_to_difficulty(skill):
-    """Map skill (0-100) to difficulty level (1-5)."""
-    if skill <= 20:
+    """Map skill (0-100) to difficulty level (1-4)."""
+    if skill <= 25:
         return 1
-    elif skill <= 40:
+    elif skill <= 50:
         return 2
-    elif skill <= 60:
+    elif skill <= 75:
         return 3
-    elif skill <= 80:
-        return 4
     else:
-        return 5
+        return 4
 
 
 def _get_topic_priorities(radar):

@@ -112,7 +112,7 @@ def _build_system_prompt(task: Optional[dict], hint_mode: bool, user) -> str:
         difficulty = task.get('difficulty') or task.get('level') or ''
 
         topic_ru = _topic_ru(topic)
-        diff_str = f', сложность {difficulty}/5' if difficulty else ''
+        diff_str = f', сложность {difficulty}/4' if difficulty else ''
 
         task_block = f"""
 ══════════════════════════════════════════════════════

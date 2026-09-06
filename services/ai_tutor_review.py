@@ -201,24 +201,19 @@ def _safe_truncate_solution(text: str, max_len: int = 1500) -> str:
     return tail + " …"
 
 
-# ── OCR фото-решения через DeepSeek vision ────────────────────────────
+# ── OCR фото-решения через DeepSeek vision ──────────────────────────
 
-def transcribe_photos(images_b64: List[str], task_text: str, deepseek_client_cls) -> str:
-    """Распознаёт каждое фото и склеивает в строку."""
-    if not images_b64 or deepseek_client_cls is None:
+def transcribe_photos(images_b64: List[str], task_text: str, deepseek_client_cls=None) -> str:
+    """Распознаёт каждое фото через DeepSeek vision и склеивает в строку."""
+    if not images_b64:
         return ""
-    try:
-        client = deepseek_client_cls()
-    except Exception as e:
-        logger.warning("transcribe_photos: cannot init client: %s", e)
-        return ""
+    from services.solution_ocr import _ocr_deepseek_vision
+
     parts: List[str] = []
     total = len(images_b64)
     for idx, img_b64 in enumerate(images_b64, start=1):
         try:
-            part = client.transcribe_handwritten_solution(
-                image_data=img_b64, task_text=task_text or ""
-            )
+            part = _ocr_deepseek_vision(img_b64, task_text or "")
         except Exception as e:
             logger.warning("transcribe photo #%d failed: %s", idx, e)
             part = ""
@@ -233,23 +228,62 @@ def transcribe_photos(images_b64: List[str], task_text: str, deepseek_client_cls
 # ── Парсинг JSON-ответа DeepSeek ──────────────────────────────────────
 
 def _safe_json_parse(raw: str) -> Dict[str, Any]:
-    """Парсит JSON-ответ DeepSeek даже если внутри строк сырой LaTeX."""
-    s = re.sub(r"```json\s*", "", (raw or "").strip())
+    """Парсит JSON-ответ DeepSeek даже если внутри строк сырой LaTeX.
+
+    Устойчив к «обёртке» ответа прозой (например, когда модель пишет
+    пояснение перед JSON или оборачивает его в markdown), извлекает первый
+    полный JSON-объект с полями answer_correct/method_correct/...
+    """
+    s = (raw or "").strip()
+    s = re.sub(r"```(?:json)?\s*", "", s)
     s = re.sub(r"```\s*", "", s).strip()
-    try:
-        return json.loads(s)
-    except json.JSONDecodeError:
-        pass
+
+    candidates = [s]
+
+    # 1) Вытащить первый {...} объект (балансировка скобок — не порвём LaTeX).
+    for m in re.finditer(r"\{", s):
+        start = m.start()
+        depth = 0
+        in_str = False
+        esc = False
+        for i in range(start, len(s)):
+            ch = s[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    candidates.append(s[start:i + 1])
+                    break
+        if len(candidates) > 1:
+            break
 
     def _fix(m: "re.Match[str]") -> str:
         content = m.group(0)
         return re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", content)
 
-    s_fixed = re.sub(r'"(?:[^"\\]|\\.)*"', _fix, s, flags=re.DOTALL)
-    try:
-        return json.loads(s_fixed)
-    except json.JSONDecodeError:
-        pass
+    for cand in candidates:
+        try:
+            return json.loads(cand)
+        except json.JSONDecodeError:
+            pass
+        try:
+            fixed = re.sub(r'"(?:[^"\\]|\\.)*"', _fix, cand, flags=re.DOTALL)
+            return json.loads(fixed)
+        except json.JSONDecodeError:
+            pass
+
+    # Последний шанс — регулярками по полям (легаси-совместимость).
     score_m = re.search(r'"score"\s*:\s*(-?\d+)', s)
     fb_m = re.search(r'"feedback"\s*:\s*"(.*?)"(?=\s*[,}])', s, re.DOTALL)
     if score_m:
@@ -569,7 +603,7 @@ def _compute_score(
     answer_correct: bool,
     method_correct: bool,
     has_solution: bool,
-    difficulty_level: int = 5,
+    difficulty_level: int = 4,
 ) -> float:
     """Вычислить финальный балл по единой шкале.
 
@@ -608,7 +642,7 @@ def _pick_category(
     if answer_correct and method_correct and has_solution:
         return "correct"
     if answer_correct and method_correct and not has_solution:
-        if difficulty_level >= 7:
+        if difficulty_level >= 4:
             return "suspicious"
         return "correct_no_justification"
     if not answer_correct and method_correct:
@@ -639,8 +673,8 @@ def score_badge(
     """
     # Сбой AI или неопределённость -> нейтрально
     if answer_correct is None:
-        return (" **Оценка тьютора: 0 баллов** "
-                "(ответ не принят — попробуй ещё раз, уровень без изменений)")
+        return (" **Оценка тьютора: 0 баллов, уровень без изменений** "
+                "(проверка не завершена — уровень не изменится)")
 
     if answer_correct is True:
         if has_solution and method_correct is False:
@@ -678,7 +712,7 @@ def review_attempt(
     deepseek_client_cls: Any = None,
     deepseek_available: bool = True,
     max_tokens: int = 4096,
-    difficulty_level: int = 5,
+    difficulty_level: int = 4,
     sanitize_latex: bool = True,
 ) -> Dict[str, Any]:
     """Полная AI-проверка ответа ученика.
@@ -693,7 +727,7 @@ def review_attempt(
         deepseek_client_cls: класс DeepSeekClient (или None — тогда fallback).
         deepseek_available: флаг доступности AI (на случай ImportError).
         max_tokens:       лимит генерации DeepSeek.
-        difficulty_level: уровень сложности задачи (1-7, default 5).
+        difficulty_level: уровень сложности задачи (1-4, default 4).
                           Влияет на шкалу: correct без обоснования
                           на высоких уровнях снижает балл.
 
@@ -807,9 +841,12 @@ def review_attempt(
     # как is_ai_failure и НЕ изменит уровень/стрик ученика.
 
     # Defaults для нейтрального исхода — на случай любых сбоев ниже.
+    # ВАЖНО: answer_correct / method_correct = None (а не False), иначе
+    # score_badge() при сбое AI выведет «−1 балл», хотя фактически вердикт
+    # нейтральный (уровень не меняется). None -> нейтральный бейдж «0 баллов».
     has_sol = bool(user_solution.strip())
-    answer_correct = False
-    method_correct = False
+    answer_correct: Optional[bool] = None
+    method_correct: Optional[bool] = None
     category = "suspicious"
     confidence = 0.0
     error_location = None

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<text x="300" y="460" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#EAF1FA" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">Покрытие доски 6×7: 20 доминошек</text>
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">
+<text x="127.5" y="48">1</text><text x="182.5" y="48">2</text><text x="237.5" y="48">3</text><text x="292.5" y="48">4</text><text x="347.5" y="48">5</text><text x="402.5" y="48">6</text><text x="457.5" y="48">7</text>
+<text x="72" y="97.5">1</text><text x="72" y="152.5">2</text><text x="72" y="207.5">3</text><text x="72" y="262.5">4</text><text x="72" y="317.5">5</text><text x="72" y="372.5">6</text>
+</g>
+<!-- 20 dominoes -->
+<g stroke="#73B6E6" stroke-width="1.8" opacity="0.9">
+<rect x="100" y="290" width="55" height="110" rx="8" fill="#3976A8"/><rect x="155" y="235" width="55" height="110" rx="8" fill="#4F8F78"/><rect x="430" y="290" width="55" height="110" rx="8" fill="#8A648F"/><rect x="155" y="345" width="110" height="55" rx="8" fill="#A36E4A"/><rect x="210" y="70" width="55" height="110" rx="8" fill="#6B7FA8"/><rect x="265" y="70" width="55" height="110" rx="8" fill="#3976A8"/><rect x="210" y="235" width="55" height="110" rx="8" fill="#4F8F78"/><rect x="265" y="180" width="55" height="110" rx="8" fill="#8A648F"/><rect x="265" y="290" width="55" height="110" rx="8" fill="#A36E4A"/><rect x="320" y="180" width="55" height="110" rx="8" fill="#6B7FA8"/><rect x="320" y="70" width="110" height="55" rx="8" fill="#3976A8"/><rect x="375" y="125" width="55" height="110" rx="8" fill="#4F8F78"/><rect x="375" y="235" width="55" height="110" rx="8" fill="#8A648F"/><rect x="320" y="235" width="55" height="110" rx="8" fill="#A36E4A"/><rect x="320" y="345" width="110" height="55" rx="8" fill="#6B7FA8"/><rect x="100" y="70" width="110" height="55" rx="8" fill="#3976A8"/><rect x="430" y="70" width="55" height="110" rx="8" fill="#4F8F78"/><rect x="155" y="125" width="55" height="110" rx="8" fill="#8A648F"/><rect x="100" y="180" width="55" height="110" rx="8" fill="#A36E4A"/><rect x="430" y="180" width="55" height="110" rx="8" fill="#6B7FA8"/>
+</g>
+<!-- removed cells -->
+<g fill="#0F1729" stroke="#FFD166" stroke-width="1.8">
+<rect x="210" y="180" width="55" height="55"/><rect x="155" y="70" width="55" height="55"/>
+<path d="M216 186l43 43M259 186l-43 43M161 76l43 43M204 76l-43 43" fill="none"/>
+</g>
+<!-- grid -->
+<g fill="none" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round">
+<rect x="100" y="70" width="385" height="330"/>
+<path d="M155 70V400M210 70V400M265 70V400M320 70V400M375 70V400M430 70V400M100 125H485M100 180H485M100 235H485M100 290H485M100 345H485"/>
+</g>
+<!-- domino numbers -->
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">
+<text x="127.5" y="345">1</text><text x="182.5" y="290">2</text><text x="457.5" y="345">3</text><text x="210" y="372.5">4</text><text x="237.5" y="125">5</text><text x="292.5" y="125">6</text><text x="237.5" y="290">7</text><text x="292.5" y="235">8</text><text x="292.5" y="345">9</text><text x="347.5" y="235">10</text><text x="375" y="97.5">11</text><text x="402.5" y="180">12</text><text x="402.5" y="290">13</text><text x="347.5" y="290">14</text><text x="375" y="372.5">15</text><text x="155" y="97.5">16</text><text x="457.5" y="125">17</text><text x="182.5" y="180">18</text><text x="127.5" y="235">19</text><text x="457.5" y="235">20</text>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#FFD166" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">
+<text x="237.5" y="207.5">(3;3)</text><text x="182.5" y="97.5">(2;1)</text>
+</g>
+</svg>

@@ -678,6 +678,24 @@ function updateProgress(data) {
 // ── Task Modal ──
 
 function openTaskModal(item, index) {
+    // Подтягиваем СВЕЖИЕ данные задачи по id из dt-init-data — иначе
+    // при повторном открытии уже решённой задачи item.user_answer === null
+    // и показывается «только условие».
+    try {
+        var initEl = document.getElementById('dt-init-data');
+        if (initEl && item && item.id !== undefined) {
+            var d = JSON.parse(initEl.textContent || '{}');
+            if (d.items) {
+                for (var _fi = 0; _fi < d.items.length; _fi++) {
+                    if (String(d.items[_fi].id) === String(item.id)) {
+                        item = d.items[_fi];
+                        break;
+                    }
+                }
+            }
+        }
+    } catch (_e) {}
+
     var overlay = document.getElementById('dt-modal-overlay');
     var title = document.getElementById('dt-modal-title');
     var difficulty = document.getElementById('dt-modal-difficulty');
@@ -717,6 +735,11 @@ function openTaskModal(item, index) {
 
     // Main task text (contains LaTeX — render raw, KaTeX handles it)
     html += '<div class="dt-task-text">' + item.task_text + '</div>';
+
+    // Figure (готовый SVG из static/daily_figures)
+    if (item.figure_url) {
+        html += '<div class="dt-task-figure"><img src="' + escapeHtml(item.figure_url) + '" alt="Чертёж" style="max-width:100%;max-height:360px;border-radius:10px;background:#fff;padding:6px;box-sizing:border-box;"></div>';
+    }
 
     // Answer form or result
     if (item.user_answer === null) {
@@ -852,6 +875,26 @@ function submitAnswer(itemId) {
         // ── Update the task card in-place (no page reload) ──────────
         // Find the card by matching item ID from the modal's data attribute
         updateTaskCardInPlace(itemId, result.is_correct);
+
+        // ── Обновляем dt-init-data, чтобы при повторном открытии этой
+        //    задачи показывались ответ и решение, а не «только условие». ──
+        try {
+            var initEl = document.getElementById('dt-init-data');
+            if (initEl) {
+                var d = JSON.parse(initEl.textContent || '{}');
+                if (d.items) {
+                    for (var i = 0; i < d.items.length; i++) {
+                        if (String(d.items[i].id) === String(itemId)) {
+                            d.items[i].user_answer = answer;
+                            d.items[i].is_correct = !!result.is_correct;
+                            if (result.solution) d.items[i].solution = result.solution;
+                            break;
+                        }
+                    }
+                    initEl.textContent = JSON.stringify(d);
+                }
+            }
+        } catch (_e2) {}
 
         // Update progress badge without page reload
         var progressBadge = document.getElementById('dt-progress-summary');

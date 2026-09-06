@@ -85,7 +85,7 @@ def save_questionnaire_result_to_db(user_id, level, answers):
 
 
 def get_questionnaire_level(user_id):
-    """Получить уровень из анкеты (1-5), или None если анкета не пройдена."""
+    """Получить уровень из анкеты (1-4), или None если анкета не пройдена."""
     from models_curator import CuratorState
     cs = CuratorState.query.filter_by(user_id=user_id).first()
     if not cs:

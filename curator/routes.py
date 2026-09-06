@@ -502,7 +502,7 @@ def api_tutor_hints():
       "task_id": 123,
       "task_text": "Условие задачи...",
       "topic": "algebra",
-      "difficulty": 5,
+      "difficulty": 4,
       "hints_already_shown": 0
     }
     """
@@ -544,7 +544,7 @@ def api_tutor_review():
       "correct_answer": "Правильный ответ",
       "solution": "Решение (опционально)",
       "topic": "algebra",
-      "difficulty": 5,
+      "difficulty": 4,
       "plan_id": 1 (опционально),
       "task_source": "curator_plan" (опционально)
     }

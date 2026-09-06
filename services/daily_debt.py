@@ -142,6 +142,14 @@ def get_debt_items(user_id: int) -> List[Dict[str, Any]]:
         if item.debt_until:
             days_left = (item.debt_until - today).days
 
+        # Готовый SVG-чертёж (если есть) — отдаём как URL для показа в блоке долга.
+        figure_url = None
+        _svg = getattr(item, 'figure_svg_path', None)
+        if _svg:
+            _svg = str(_svg).strip()
+            if _svg:
+                figure_url = _svg if _svg.startswith('/') else f'/static/daily_figures/{_svg}'
+
         result.append({
             'id': item.id,
             'position': item.position,
@@ -157,6 +165,7 @@ def get_debt_items(user_id: int) -> List[Dict[str, Any]]:
             'days_left': days_left,
             'daily_set_id': item.daily_set_id,
             'slot_kind': item.slot_kind,
+            'figure_url': figure_url,
         })
 
     return result

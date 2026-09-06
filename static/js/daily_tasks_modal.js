@@ -348,6 +348,23 @@ function openTaskModal(item, index){
   var title   = document.getElementById('dt-modal-title');
   var body    = document.getElementById('dt-modal-body');
   if(!overlay || !body) return;
+  // Подтягиваем СВЕЖИЕ данные задачи по id из dt-init-data — иначе при
+  // повторном открытии уже решённой задачи item.user_answer === null,
+  // и показывается «только условие», хотя ответ сохранён.
+  try {
+    var initEl = document.getElementById('dt-init-data');
+    if (initEl && item && item.id !== undefined) {
+      var d = JSON.parse(initEl.textContent || '{}');
+      if (d.items) {
+        for (var _fi = 0; _fi < d.items.length; _fi++) {
+          if (String(d.items[_fi].id) === String(item.id)) {
+            item = d.items[_fi];
+            break;
+          }
+        }
+      }
+    }
+  } catch (_e) {}
   if(title) title.textContent = 'Задача '+(index+1)+' · '+(item.subtopic || '');
   overlay.classList.remove('dt-hidden');
   window.DT_PHOTO_BUFFER = [];
@@ -357,7 +374,7 @@ function openTaskModal(item, index){
   var h = '';
   h += '<div class="dt-task-card">';
   h += '<div class="dt-task-meta">';
-  h += '<span class="dt-difficulty-badge">⭐ Уровень: '+(item.difficulty || '?')+'/5</span>';
+  h += '<span class="dt-difficulty-badge">⭐ Уровень: '+(item.difficulty || '?')+'/4</span>';
   if(item.subtopic) h += '<span class="dt-topic-chip"> '+_esc(item.subtopic)+'</span>';
   if(item.is_flagged) h += '<span class="dt-topic-chip" style="background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.4);color:#fca5a5;">[!]️ Флаг</span>';
   h += '</div>';
@@ -669,8 +686,39 @@ function submitAnswer(itemId, KA, KS){
       return;
     }
     _dtShowResult(res.body);
-    // Clear localStorage drafts on success
-    try{ if(KA) localStorage.removeItem(KA); if(KS) localStorage.removeItem(KS); }catch(_){}
+    // Обновляем данные задачи в dt-init-data, чтобы при переключении
+    // между карточками (без перезагрузки) задача отображалась как решённая
+    // с полным решением, а не «только условие».
+    try {
+      var initEl = document.getElementById('dt-init-data');
+      if (initEl) {
+        var d = JSON.parse(initEl.textContent || '{}');
+        if (d.items) {
+          for (var i = 0; i < d.items.length; i++) {
+            if (String(d.items[i].id) === String(itemId)) {
+              d.items[i].user_answer = res.body.user_answer || '';
+              d.items[i].is_correct = !!res.body.is_correct;
+              if (res.body.solution) d.items[i].solution = res.body.solution;
+              break;
+            }
+          }
+          initEl.textContent = JSON.stringify(d);
+        }
+      }
+      // Обновляем карточку на сетке.
+      var cards = document.querySelectorAll('.dt-card');
+      for (var c2 = 0; c2 < cards.length; c2++) {
+        var card = cards[c2];
+        if (String(card.getAttribute('data-item-id')) === String(itemId)) {
+          var sr = card.querySelector('.dt-card-status');
+          if (sr) {
+            sr.textContent = res.body.is_correct ? '\u2713 Решено верно' : '\u2717 Неверно';
+            sr.className = 'dt-card-status ' + (res.body.is_correct ? 'dt-correct' : 'dt-incorrect');
+          }
+          break;
+        }
+      }
+    } catch (_upd) { /* ignore */ }
   }).catch(function(err){
     console.error('submit error:', err);
     _dtHideLoader();
@@ -729,6 +777,29 @@ function _dtShowResult(result){
   _renderKatexSafe(fb);
   // Заменяем \n на <br> ПОСЛЕ KaTeX, чтобы не сломать LaTeX-окружения
   fb.innerHTML = fb.innerHTML.replace(/\n/g, '<br>');
+
+  // ── Эталонное решение из банка (раньше возвращалось с бэкенда, но не
+  //    показывалось после отправки). Показываем отдельным ярким блоком,
+  //    чтобы ученик видел полный разбор, а не только отзыв ИИ. ──
+  if (result.solution) {
+    var solBlock = document.getElementById('dt-reference-solution');
+    if (!solBlock) {
+      solBlock = document.createElement('div');
+      solBlock.id = 'dt-reference-solution';
+      solBlock.className = 'dt-feedback-block';
+      solBlock.style.marginTop = '18px';
+      solBlock.innerHTML = '<div class="dt-feedback-title"> Эталонное решение:</div><div class="dt-feedback-text" id="dt-reference-solution-text"></div>';
+      rb.appendChild(solBlock);
+    }
+    var solText = dtAutoMathify(String(result.solution));
+    solText = solText.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+    var solTextEl = document.getElementById('dt-reference-solution-text');
+    if (solTextEl) {
+      solTextEl.innerHTML = solText;
+      _renderKatexSafe(solTextEl);
+      solTextEl.innerHTML = solTextEl.innerHTML.replace(/\n/g, '<br>');
+    }
+  }
 
   // CH8/X8: show aux figure if available after answer
   if (result.has_aux && result.aux_svg_path) {

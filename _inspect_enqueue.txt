@@ -1,0 +1,70 @@
+REASONER_MODEL = os.environ.get("FIGURE_MODEL", _REASONER_FALLBACK).strip()
+FIGURE_BASE_MODEL = logical_model_for_role("base")
+QUEUE_POLL_INTERVAL = float(os.environ.get("FIGURE_QUEUE_POLL_INTERVAL", "1"))
+MAX_CONCURRENT_JOBS = int(os.environ.get("FIGURE_MAX_CONCURRENT_JOBS", "2"))
+CONDITION_SOLUTION_ENABLED = (
+MAX_PROBLEM_LENGTH = 4000
+RATE_LIMIT_MAX = int(os.environ.get("FIGURE_RATE_LIMIT_MAX", "10") or "10")
+
+figure_build_jobs columns: ['id', 'user_id', 'problem_text', 'status', 'model_name', 'svg_path', 'aux_svg_path', 'has_aux', 'aux_reason', 'error', 'credit_charged', 'priority', 'created_at', 'updated_at', 'solution_text', 'generation_mode', 'current_stage', 'base_model', 'aux_model', 'audit_model', 'base_plan_json', 'aux_plan_json', 'audit_json', 'aux_status', 'aux_fail_reason', 'solution_json', 'solver_answer', 'measured_answer', 'answer_verdict', 'trust_level', 'aux_source', 'aux_usefulness', 'aux_dropped_reason', 'aux_completeness']
+
+sample job row:
+  id = 2047
+  user_id = 1301
+  problem_text = Ребро куба равно $6$. Найдите площадь диагонального сечения куба (сечения, прохо...
+  status = queued
+  model_name = deepseek-v4-pro
+  svg_path = None
+  aux_svg_path = None
+  has_aux = 0
+  aux_reason = None
+  error = None
+  credit_charged = 0
+  priority = 0
+  created_at = 2026-08-31 17:04:33.062665
+  updated_at = 2026-08-31 17:04:33.062665
+  solution_text = Рассмотрим куб $ABCDA_1B_1C_1D_1$ с ребром $6$. Все диагональные сечения куба ра...
+  generation_mode = condition_solution
+  current_stage = None
+  base_model = None
+  aux_model = None
+  audit_model = None
+  base_plan_json = None
+  aux_plan_json = None
+  audit_json = None
+  aux_status = None
+  aux_fail_reason = None
+  solution_json = None
+  solver_answer = None
+  measured_answer = None
+  answer_verdict = None
+  trust_level = None
+  aux_source = None
+  aux_usefulness = None
+  aux_dropped_reason = None
+  aux_completeness = None
+
+missing tasks: 23
+  NEW-DIFF-20260830-0029                                  grade=7 cond_len=150 existing_jobs=0
+  NEW-DIFF-20260830-0083                                  grade=9 cond_len=172 existing_jobs=0
+  REG-ed413efbd4810754c0bf1c81                            grade=9 cond_len=154 existing_jobs=0
+  GEN-L123-w2_4_s2-490dca5f7db66669                       grade=10 cond_len=195 existing_jobs=0
+  GEN-L123-par33_s2-263f1cc1ca86026f                      grade=7 cond_len=136 existing_jobs=0
+  db0715f78ccab1a01ce7cd009efe1086c3120c5b3cdac19fb349cc70a2a094c3 grade=9 cond_len=306 existing_jobs=0
+  GEN-L123-w2_110_s4-63185e6182e0fc21                     grade=7 cond_len=181 existing_jobs=0
+  GEN-fill_0549                                           grade=8 cond_len=243 existing_jobs=0
+  GEN-L123-w2_46_s5-9792b493667fe9f2                      grade=11 cond_len=197 existing_jobs=0
+  GEN-L123-w2_16_s6-9f9aee6a7e1d60f6                      grade=11 cond_len=257 existing_jobs=0
+  GEN-fill_0697                                           grade=10 cond_len=229 existing_jobs=0
+  5cfb4680abbc4c37292fb3862ec384d7497ae7299c81c3d2cd7b1d9bf4f8c3e4 grade=9 cond_len=313 existing_jobs=0
+  257737f7b381e51a9a6ece1bace7d9dd374b77682ea011dc709e62fddf64a4ce grade=9 cond_len=401 existing_jobs=0
+  GEN-fill_0626                                           grade=9 cond_len=192 existing_jobs=0
+  bb45489aa58525b10c2f9f5ac9c392098899ec9145dd1e139eba47f3a0d1d23d grade=10 cond_len=373 existing_jobs=0
+  4a81383c6f0895be39d6264051058d1c9912ed2bd3fe8fbb47b691e7bc7b6abb grade=10 cond_len=487 existing_jobs=0
+  GEN-fill_0695                                           grade=10 cond_len=253 existing_jobs=0
+  3498879ad7cbd61e011122021fd40d6b6df5a3902938c8845ebbba27ef56ff2d grade=10 cond_len=467 existing_jobs=0
+  c07cf2e182c27d30b4e7482f1d7f9cda26372a61107e147c6c2132acb4aaf2fe grade=11 cond_len=341 existing_jobs=0
+  7bcb88ddb5256e2c81e094d087e7c9f1cf80c64d7e23021ecb56ac2d37794bed grade=11 cond_len=421 existing_jobs=0
+  99ab7ea17e1a6e463c61409129b4c0052f7a4bc94d274764220af17ef17acc91 grade=11 cond_len=424 existing_jobs=0
+  GEN-fill_0438                                           grade=7 cond_len=141 existing_jobs=0
+  GEN-fill_0440                                           grade=7 cond_len=88 existing_jobs=0

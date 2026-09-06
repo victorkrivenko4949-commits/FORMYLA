@@ -1,0 +1,49 @@
+{
+  "solvable": false,
+  "target": {
+    "kind": "angle",
+    "object": "∠BAC",
+    "description": "Угол A треугольника ABC"
+  },
+  "answer": {
+    "value": null,
+    "unit": null,
+    "exact": null,
+    "is_numeric": false
+  },
+  "steps": [
+    {
+      "no": 1,
+      "text": "Возьмём равносторонний треугольник ABC со стороной 2."
+    },
+    {
+      "no": 2,
+      "text": "Проведём высоту CH к стороне AB и медиану AM к стороне BC."
+    },
+    {
+      "no": 3,
+      "text": "В равностороннем треугольнике все высоты и медианы равны, поэтому CH = AM = √3."
+    },
+    {
+      "no": 4,
+      "text": "Но в этом треугольнике ∠A = 60° и ∠B = 60°, следовательно, ∠A ≠ 2∠B."
+    }
+  ],
+  "aux_needed": false,
+  "aux_constructions": [],
+  "confidence": 1.0,
+  "_usage": {
+    "prompt_tokens": 1320,
+    "completion_tokens": 10729,
+    "total_tokens": 12049,
+    "prompt_tokens_details": {
+      "cached_tokens": 1280
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 10464
+    },
+    "prompt_cache_hit_tokens": 1280,
+    "prompt_cache_miss_tokens": 40
+  },
+  "_model": "deepseek-v4-pro"
+}

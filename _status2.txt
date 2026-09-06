@@ -1,0 +1,4 @@
+SVG total: 1293
+db jobs (1301): {'done': 349, 'failed': 198}
+results lines: 547
+failed lines: 198

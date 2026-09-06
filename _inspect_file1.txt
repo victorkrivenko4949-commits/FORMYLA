@@ -1,0 +1,20 @@
+== '1' exists=True
+size=0
+b''
+
+== '5' exists=True
+size=380
+b"Tasks: 4948\r\nDifficulty: {1: 770, 2: 770, 3: 770, 4: 770, 5: 834, 6: 495, 7: 349, 8: 190}\r\nGrade: {5: 615, 6: 581, 7: 625, 8: 689, 9: 1017, 10: 697, 11: 724}\r\nMethod codes: 22\r\nStatus: {'fixed': 525, 'keep': 2302, 'moved_level': 1628, 'generated': 21, 'imported': 39, 'olympiad_import': 433}\r\nIncomplete records: 0\r\nEmpty task_text: 0\r\nEmpty correct_answer: 0\r\nEmpty solution: 0\r\n"
+
+== '20' exists=True
+size=0
+b''
+
+== '148' exists=True
+size=12994
+b"(1, 'done', None, None, None, None, None, None, None, None, None, None)\r\n(2, 'done', None, None, None, None, None, None, None, None, None, None)\r\n(3, 'failed', None, None, None, None, None, None, None, None, None, '\xcc\xee\xe4\xe5\xeb\xfc \xed\xe5 \xf1\xec\xee\xe3\xeb\xe0 \xf1\xee\xe7\xe4\xe0\xf2\xfc \xea\xee\xf0\xf0\xe5\xea\xf2\xed\xee\xe5 \xee\xef\xe8\xf1\xe0\xed\xe8\xe5.')\r\n(4, 'done', None, None, None, None, None, None, None, None, None, None)\r\n(5, 'failed', None, None, None, None, None, None, None, None, None, 'Simulated failure')\r\n(6, 'done', None, None, None, None, None, None, None, None, None, None)\r\n"
+
+== '200' exists=True
+size=77
+b'exactly 200 chars: (41,)\r\n(1497, 1)\r\n(831, 1)\r\n(825, 1)\r\n(782, 1)\r\n(621, 1)\r\n'
+

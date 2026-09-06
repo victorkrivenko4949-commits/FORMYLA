@@ -341,6 +341,11 @@
   const API_BASE = '/intake';
   let currentState = null;
   let selectedMulti = [];
+  let currentAnchorSolution = '';
+  let currentAnchorStatement = '';
+  let currentAnchorAnswer = '';
+  let currentAnchorTaskId = null;
+  let currentAnchorSectionRu = '';
 
   async function apiCall(url, body) {
     const resp = await fetch(url, {
@@ -392,8 +397,32 @@
     document.getElementById('intake-card').innerHTML = html;
   }
 
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>');
+  }
+
+  function solutionToHtml(solution) {
+    // LaTeX-формулы ($...$, $$...$$, \(...\), \[...\]) сохраняем как есть,
+    // переводы строк превращаем в <br>, чтобы KaTeX их отрендерил.
+    if (!solution) return '<em>Решение отсутствует.</em>';
+    const s = String(solution).replace(/\r\n/g, '\n');
+    // Экранируем HTML-опасные символы, но НЕ трогаем $ и обратные слэши (LaTeX).
+    const parts = s.split('\n');
+    return parts.map(function(line) {
+      return escapeHtml(line);
+    }).join('<br>');
+  }
+
   function renderAnchor(anchor, qIndex, total) {
     updateProgress(qIndex, total);
+    currentAnchorSolution = anchor.solution || '';
+    currentAnchorStatement = anchor.statement || '';
+    currentAnchorAnswer = anchor.answer || '';
+    currentAnchorTaskId = anchor.task_id;
+    currentAnchorSectionRu = anchor.section_ru || '';
     let figureHtml = '';
     if (anchor.figure_url) {
       figureHtml = `<div class="intake-anchor-figure"><img src="${anchor.figure_url}" alt="Чертёж" loading="lazy"></div>`;
@@ -401,11 +430,13 @@
     const html = `
       <div class="intake-anchor-label">Задача по разделу «${anchor.section_ru}» (${anchor.anchor_idx} из ${anchor.total_anchors})</div>
       ${figureHtml}
-      <div class="intake-anchor-statement">${anchor.statement}</div>
+      <div class="intake-anchor-statement">${escapeHtml(anchor.statement).replace(/\n/g, '<br>')}</div>
       <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
       <div class="intake-btn-row">
         <button class="intake-btn intake-btn-primary" onclick="submitAnchor(${anchor.task_id})">Проверить</button>
+        <button class="intake-btn intake-btn-back" onclick="toggleSolution()">Проверить решение</button>
       </div>
+      <div id="anchor-solution" style="display:none;margin-top:16px;padding:16px;background:var(--surface2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);font-size:14px;line-height:1.7;color:var(--text-soft);"></div>
     `;
     document.getElementById('intake-card').innerHTML = html;
     document.getElementById('anchor-answer').focus();
@@ -414,9 +445,39 @@
     });
   }
 
+  function toggleSolution() {
+    const box = document.getElementById('anchor-solution');
+    if (!box) return;
+    if (box.style.display === 'none') {
+      box.innerHTML = '<strong style="color:var(--accent-hi);">Решение:</strong><br>' +
+        solutionToHtml(currentAnchorSolution) +
+        '<br><strong style="color:var(--accent-hi);">Ответ:</strong> ' + escapeHtml(currentAnchorAnswer);
+      box.style.display = 'block';
+      if (typeof reRenderMath === 'function') reRenderMath(box);
+    } else {
+      box.style.display = 'none';
+    }
+  }
+
   function renderFinish(result) {
     updateProgress(10, 10);
     const correct = result.anchors_correct || 0;
+    let solutionsHtml = '';
+    const anchorSolutions = result.anchor_solutions || [];
+    if (anchorSolutions.length > 0) {
+      solutionsHtml += '<div style="margin-top:24px;text-align:left;border-top:1px solid var(--border);padding-top:20px;">';
+      solutionsHtml += '<h3 style="color:#e2e8f0;font-size:16px;font-weight:700;margin:0 0 12px;">Решения якорных задач</h3>';
+      anchorSolutions.forEach(function(sol) {
+        const okIcon = sol.correct === true ? '✅' : (sol.correct === false ? '❌' : '');
+        solutionsHtml += '<div style="background:var(--surface2);border:1px solid var(--border-soft);border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+        solutionsHtml += '<div style="color:var(--accent-hi);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">' + escapeHtml(sol.section_ru) + ' ' + okIcon + '</div>';
+        solutionsHtml += '<div style="color:var(--muted);font-size:13px;margin-bottom:8px;">' + escapeHtml(sol.statement).replace(/\n/g, '<br>') + '</div>';
+        solutionsHtml += '<div style="color:var(--text-soft);font-size:13px;line-height:1.7;">' + solutionToHtml(sol.solution) + '</div>';
+        solutionsHtml += '<div style="color:var(--accent-hi);font-size:13px;margin-top:6px;">Ответ: ' + escapeHtml(sol.answer) + '</div>';
+        solutionsHtml += '</div>';
+      });
+      solutionsHtml += '</div>';
+    }
     const html = `
       <div class="intake-finish">
         <h2>Анкета пройдена!</h2>
@@ -424,6 +485,8 @@
         <p>Дневная норма: ${result.daily_tasks} задач</p>
         ${result.goal_auto ? '<p style="color:var(--warn);">Цель назначена автоматически</p>' : ''}
         <a href="/daily_tasks" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;margin-top:8px;">К задачам дня -></a>
+
+        ${solutionsHtml}
 
         <!-- Баннер генерации чертежей -->
         <div style="margin-top:28px;padding:24px 20px;background:linear-gradient(135deg,rgba(76,125,255,0.12),rgba(62,207,142,0.08));border:1px solid rgba(76,125,255,0.2);border-radius:14px;text-align:center;">
@@ -440,6 +503,7 @@
       </div>
     `;
     document.getElementById('intake-card').innerHTML = html;
+    if (typeof reRenderMath === 'function') reRenderMath(document.getElementById('intake-card'));
   }
 
   function renderError(msg) {

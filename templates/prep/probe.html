@@ -110,6 +110,8 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
     </div>
     <div class="probe-progress">
       Задача {{ current_index + 1 }} из {{ total }}
+      {% set shown_level = task.difficulty_level if task and task.difficulty_level is defined and task.difficulty_level else current_level %}
+      <span class="level-badge" id="levelBadge" style="margin-left:8px;">уровень {{ shown_level }}</span>
       <div class="progress-bar">
         <div class="progress-bar-fill" style="width: {{ (current_index / total * 100)|int }}%;"></div>
       </div>
@@ -127,6 +129,11 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
     <div id="verdictBlock" style="display:none;">
       <div class="verdict-section" id="verdictEl">
         <div class="verdict-text" id="verdictText"></div>
+        <!-- Чертёж к задаче (НАД решением) -->
+        <div id="solutionFigureBlock" style="display:none; margin: 16px 0; padding: 16px; background: rgba(76,125,255,0.05); border: 1px solid rgba(76,125,255,0.15); border-radius: 10px;">
+          <div style="font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:8px;">Чертёж к задаче:</div>
+          <div id="solutionFigureSvg" style="background:#E6EBF7; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:100px;"></div>
+        </div>
         <div class="verdict-explain" id="verdictExplain"></div>
       </div>
       <!-- CH10: Kimi review block -->
@@ -141,16 +148,22 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
     </div>
 
     <div id="inputBlock">
-      <div class="answer-section">
+      <div class="answer-section" id="answerSection">
         <label class="answer-label" for="userAnswer">Ваш ответ:</label>
-        <input type="text" id="userAnswer" class="answer-input"
-               placeholder="Введите краткий ответ (число, выражение)"
-               autocomplete="off">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="text" id="userAnswer" class="answer-input" data-kb data-kb-label="Ответ"
+                 placeholder="Введите краткий ответ (число, выражение)"
+                 autocomplete="off" style="flex:1;">
+          <button type="button" class="kb-field-btn" data-kb-target="userAnswer" onclick="openKbFor('userAnswer')" title="Открыть клавиатуру">⌨️</button>
+        </div>
       </div>
 
       <!-- D9: Как решал — обязательный блок -->
       <div class="answer-section">
-        <label class="answer-label">Как решал:</label>
+        <label class="answer-label" style="display:flex; align-items:center; gap:8px;">
+          <span>Как решал:</span>
+          <button type="button" class="kb-field-btn" data-kb-target="solutionText" onclick="openKbFor('solutionText')" title="Открыть клавиатуру" style="font-size:13px;min-width:32px;height:30px;">⌨️</button>
+        </label>
         <div class="solution-method-tabs">
           <button class="solution-method-tab active" type="button" onclick="switchSolutionMethod('text')" id="tabText">
              Текстом
@@ -160,19 +173,19 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
           </button>
         </div>
         <div class="solution-method-body" id="methodBodyText">
-          <textarea id="solutionText" class="solution-textarea"
+          <textarea id="solutionText" class="solution-textarea" data-kb data-kb-label="Решение"
                     placeholder="Опишите ход решения по шагам (минимум 30 символов)..."
                     rows="5"></textarea>
           <div id="solutionTextCounter" style="text-align:right;font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;">0 / 30 символов</div>
         </div>
         <div class="solution-method-body" id="methodBodyPhoto" style="display:none;">
-          <div class="photo-upload-area" id="photoDropArea" onclick="document.getElementById('photoInput').click()">
+          <label class="photo-upload-area" id="photoDropArea" for="photoInput" style="cursor:pointer;">
             <div class="photo-upload-icon"></div>
-            <div class="photo-upload-text">Нажмите или перетащите фото решения<br><small>jpg, png, heic — до 12 МБ</small></div>
+            <div class="photo-upload-text">Можете прикрепить фото из тетрадки — ИИ-тьютор его распознает<br><small>Нажмите, перетащите или вставьте из буфера (Ctrl+V) · jpg, png, heic — до 12 МБ</small></div>
             <img id="photoPreviewImg" class="photo-preview" style="display:none;" alt="preview">
-            <button type="button" class="photo-remove-btn" id="photoRemoveBtn" style="display:none;" onclick="event.stopPropagation();removePhoto()"> Удалить фото</button>
-          </div>
-          <input type="file" id="photoInput" accept="image/jpeg,image/png,image/heic,image/heif" style="display:none;" onchange="handlePhotoSelect(this)">
+            <button type="button" class="photo-remove-btn" id="photoRemoveBtn" style="display:none;" onclick="event.preventDefault();event.stopPropagation();removePhoto()"> Удалить фото</button>
+          </label>
+          <input type="file" id="photoInput" accept="image/*,.heic,.heif" style="display:none;" onchange="handlePhotoSelect(this)">
         </div>
       </div>
 
@@ -188,6 +201,7 @@ textarea.answer-input { resize: vertical; min-height: 100px; font-family: inheri
 let taskId = {{ task.id if task else 0 }};
 let taskIndex = {{ current_index if current_index is defined else 0 }};
 let totalTasks = {{ total if total is defined else 5 }};
+let taskText = {{ (task.task_text if task else '')|tojson }};
 let currentMethod = 'text';
 let selectedPhotoFile = null;
 
@@ -199,18 +213,62 @@ function switchSolutionMethod(method) {
   document.getElementById('methodBodyPhoto').style.display = method === 'photo' ? 'block' : 'none';
 }
 
+// Drag & drop + предотвращение открытия файла в новой вкладке браузера.
+(function () {
+  const drop = document.getElementById('photoDropArea');
+  if (!drop) return;
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.add('has-photo');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.remove('has-photo');
+    });
+  });
+  drop.addEventListener('drop', function (e) {
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files.length) {
+      const input = document.getElementById('photoInput');
+      // Передаём файл напрямую в обработчик, минуя input.
+      handlePhotoFile(files[0]);
+    }
+  });
+})();
+
 function handlePhotoSelect(input) {
   const file = input.files[0];
+  handlePhotoFile(file);
+}
+
+function _photoExt(file) {
+  // Расширение из имени файла, а если имени нет (вставка из буфера обмена
+  // даёт File с пустым name) — определяем по MIME-типу.
+  if (file.name) {
+    const e = (file.name.split('.').pop() || '').toLowerCase();
+    if (e) return e;
+  }
+  const type = (file.type || '').toLowerCase();
+  if (type.includes('png')) return 'png';
+  if (type.includes('jpg') || type.includes('jpeg')) return 'jpg';
+  if (type.includes('heic') || type.includes('heif')) return 'heic';
+  return '';
+}
+
+function handlePhotoFile(file) {
   if (!file) return;
   if (file.size > 12 * 1024 * 1024) {
     alert('Размер фотографии превышает 12 МБ.');
-    input.value = '';
     return;
   }
-  const ext = file.name.split('.').pop().toLowerCase();
+  const ext = _photoExt(file);
   if (!['jpg','jpeg','png','heic','heif'].includes(ext)) {
     alert('Неподдерживаемый формат. Принимаются jpg, png, heic.');
-    input.value = '';
     return;
   }
   selectedPhotoFile = file;
@@ -226,6 +284,25 @@ function handlePhotoSelect(input) {
   reader.readAsDataURL(file);
 }
 
+// ── Вставка фото из буфера обмена (Ctrl+V) ──────────────────────────────
+document.addEventListener('paste', function (e) {
+  // Работает всегда, даже если вкладка «Фотографией» не активна:
+  // при вставке картинки автоматически переключаемся на фото-режим.
+  const items = (e.clipboardData && e.clipboardData.items) || [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind === 'file' && item.type && item.type.indexOf('image/') === 0) {
+      const file = item.getAsFile();
+      if (file) {
+        e.preventDefault();
+        switchSolutionMethod('photo');
+        handlePhotoFile(file);
+        return;
+      }
+    }
+  }
+});
+
 function removePhoto() {
   selectedPhotoFile = null;
   document.getElementById('photoInput').value = '';
@@ -234,11 +311,31 @@ function removePhoto() {
   document.getElementById('photoRemoveBtn').style.display = 'none';
 }
 
+function isProofTask() {
+  const t = (taskText || '').toLowerCase();
+  return (
+    t.indexOf('докажите') !== -1 ||
+    t.indexOf('доказать') !== -1 ||
+    t.indexOf('покажите, что') !== -1 ||
+    t.indexOf('покажите что') !== -1 ||
+    t.indexOf('обоснуйте') !== -1
+  );
+}
+
+function initProofUi() {
+  if (!isProofTask()) return;
+  // В задачах на доказательство краткий ответ не требуется.
+  const sec = document.getElementById('answerSection');
+  if (sec) sec.style.display = 'none';
+  const ansInput = document.getElementById('userAnswer');
+  if (ansInput) ansInput.value = '';
+}
+
 async function submitAnswer() {
   const answerInput = document.getElementById('userAnswer');
   const answer = answerInput ? answerInput.value.trim() : '';
 
-  if (!answer) {
+  if (!isProofTask() && !answer) {
     alert('Введи ответ.');
     return;
   }
@@ -317,6 +414,9 @@ async function submitAnswer() {
     }
 
     let explainHtml = ai.message || '';
+    if (ai.checking_model) {
+      explainHtml += '<br><br> <strong>Модель проверки:</strong> ' + ai.checking_model;
+    }
     if (ai.correct_answer) {
       explainHtml += '<br><br> <strong>Правильный ответ:</strong> ' + ai.correct_answer;
     }
@@ -328,6 +428,11 @@ async function submitAnswer() {
     }
     verdictExplain.innerHTML = explainHtml;
 
+    // Рендерим LaTeX (корни, дроби, степени) через KaTeX в разборе решения.
+    if (typeof reRenderMath === 'function') {
+      try { reRenderMath(verdictExplain); } catch(e) { console.warn('reRenderMath error', e); }
+    }
+
     inputBlock.style.display = 'none';
     verdictBlock.style.display = 'block';
 
@@ -338,6 +443,16 @@ async function submitAnswer() {
       if (auxDiv && auxSvg) {
         auxSvg.innerHTML = data.aux_svg_path;
         auxDiv.style.display = 'block';
+      }
+    }
+
+    // Чертёж к задаче — показываем ПОСЛЕ отправки решения (в разборе).
+    if (data.figure_svg) {
+      const figDiv = document.getElementById('solutionFigureBlock');
+      const figSvg = document.getElementById('solutionFigureSvg');
+      if (figDiv && figSvg) {
+        figSvg.innerHTML = data.figure_svg;
+        figDiv.style.display = 'block';
       }
     }
 
@@ -359,6 +474,12 @@ async function submitAnswer() {
       }
     }
 
+    // Показать новый текущий уровень после ответа (если пришёл от сервера).
+    if (data.current_level != null) {
+      const lb = document.getElementById('levelBadge');
+      if (lb) lb.textContent = 'уровень ' + data.current_level;
+    }
+
     if (data.done) {
       document.getElementById('nextBtn').textContent = 'Смотреть итог ->';
     }
@@ -374,5 +495,9 @@ function goNext() {
   // Reload page — backend will handle next task or final screen
   window.location.reload();
 }
+
+// Скрыть поле ответа для задач на доказательство.
+initProofUi();
 </script>
+{% include 'partials/math_keyboard.html' %}
 {% endblock %}

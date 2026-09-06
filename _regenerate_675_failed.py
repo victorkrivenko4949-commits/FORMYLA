@@ -123,7 +123,7 @@ REGENERATE_SYSTEM_PROMPT = f"""Ты — эксперт-методист по с�
 {{{{"fixed_task":{{"statement":"...","answer":"...","solution":"...","level":1,"grade":5,"topic":"..."}},"changes_made":["...","..."],"reasoning":"..."}}}}
 
 Где:
-- fixed_task: исправленная версия задачи (statement — условие, answer — ответ, solution — решение, level — уровень 1-5, grade — класс, topic — тема)
+- fixed_task: исправленная версия задачи (statement — условие, answer — ответ, solution — решение, level — уровень 1-4, grade — класс, topic — тема)
 - changes_made: массив строк с описанием каждого изменения
 - reasoning: краткое обоснование исправлений
 

@@ -1,0 +1,4 @@
+FILE2 missing: total=380 done=0 failed=0 timeout=0 remaining=380
+GEOMETRY: 352/362 (missing=10)
+DB active: {'base_thinking': 4, 'queued': 767}
+DB done total: 743, failed total: 2351

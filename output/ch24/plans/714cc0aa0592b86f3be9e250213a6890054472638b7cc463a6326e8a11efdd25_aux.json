@@ -1,0 +1,1 @@
+{"has_aux": true, "reason": "", "constructions": [{"type": "intersect_lines", "line1": "AB", "line2": "CD", "id": "P", "style": "aux", "dashed": false, "visual_role": "key_point", "purpose": "Точка пересечения", "solution_evidence": {"step_no": 1, "quote": "Точка P=AB∩CD существует"}}]}

@@ -4,9 +4,19 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/prep.css') }}?v={{ asset_version }}">
 <style>
-.coach-wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
-.coach-grid { display: grid; grid-template-columns: 0.85fr 1fr; gap: 20px; align-items: start; }
-@media (max-width: 860px) { .coach-grid { grid-template-columns: 1fr; } }
+.main { max-width: none !important; padding: 0 !important; }
+.coach-wrap { width: 100%; max-width: none; margin: 0; padding: 20px 28px 56px; box-sizing: border-box; }
+.coach-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 24px; align-items: start; }
+.coach-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+.coach-section-radars { margin-top: 28px; }
+@media (max-width: 960px) {
+  .coach-layout { grid-template-columns: 1fr; gap: 16px; }
+  .coach-wrap { padding: 14px 12px 56px; }
+  .coach-card { padding: 14px; }
+  .chat-box { height: 420px; }
+  .section-radars-grid { grid-template-columns: 1fr; }
+  .section-radar-card .radar-chart canvas { max-width: 100%; }
+}
 .coach-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 16px; padding: 18px; }
 
 /* ── Section radars grid ── */
@@ -25,7 +35,7 @@
 .section-radar-card h3 {
   margin: 0 0 4px;
   font-size: 14px;
-  color: #e5e7eb;
+  color: #E6EBF7;
   font-weight: 600;
 }
 .section-radar-card .radar-subtitle {
@@ -69,16 +79,16 @@
   color: rgba(255,255,255,0.25);
 }
 
-.coach-card h2 { margin: 0 0 14px; font-size: 16px; color: #e5e7eb; }
-.chat-box { display: flex; flex-direction: column; height: 420px; }
+.coach-card h2 { margin: 0 0 14px; font-size: 16px; color: #E6EBF7; }
+.chat-box { display: flex; flex-direction: column; height: 780px; }
 .chat-log { flex: 1; overflow-y: auto; border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
 .chat-msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
-.chat-msg.user { background: #6366f1; color: #fff; margin-left: auto; }
-.chat-msg.bot { background: rgba(255,255,255,0.08); color: #e5e7eb; }
+.chat-msg.user { background: #4C7DFF; color: #fff; margin-left: auto; }
+.chat-msg.bot { background: rgba(255,255,255,0.08); color: #E6EBF7; }
 .chat-msg .katex { white-space: nowrap; overflow-x: auto; max-width: 100%; display: inline-block; vertical-align: middle; }
 .chat-input-row { display: flex; gap: 8px; }
 .chat-input-row input { flex: 1; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 14px; background: rgba(0,0,0,0.25); color: #fff; }
-.chat-input-row button { padding: 10px 18px; border: 0; border-radius: 10px; background: #6366f1; color: #fff; font-weight: 600; cursor: pointer; }
+.chat-input-row button { padding: 10px 18px; border: 0; border-radius: 10px; background: #4C7DFF; color: #fff; font-weight: 600; cursor: pointer; }
 
 /* FAQ quick buttons */
 .faq-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
@@ -87,7 +97,7 @@
   border: 1px solid rgba(139,92,246,0.3);
   border-radius: 8px;
   background: rgba(139,92,246,0.08);
-  color: #c4b5fd;
+  color: #6B95FF;
   font-size: 12px;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
@@ -99,75 +109,6 @@
 }
 .faq-btn-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 
-/* ---- Клавиатура ввода ---- */
-.unified-kb-toggle {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 18px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-    color: #fff; border: none; border-radius: var(--radius-sm);
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s; margin-top: 4px;
-    user-select: none; -webkit-user-select: none;
-}
-.unified-kb-toggle:hover { opacity: 0.9; }
-.unified-kb-toggle:active { transform: scale(0.96); }
-.unified-kb-toggle.active { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.unified-keyboard {
-    display: none; margin-top: 16px; margin-bottom: 10px;
-    background: rgba(15, 23, 42, 0.95); border: 1px solid var(--border-mid);
-    border-radius: var(--radius-sm); overflow: hidden;
-    user-select: none; -webkit-user-select: none; position: relative; z-index: 100;
-}
-.unified-keyboard.open { display: block; }
-.kb-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
-.kb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid var(--border-mid); }
-.kb-field-indicator { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-.kb-field-indicator .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-1); animation: pulse-dot 1.5s infinite; }
-@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-.kb-close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
-.kb-close-btn:hover { color: #fff; }
-.kb-tabs { display: flex; border-bottom: 1px solid var(--border-mid); }
-.kb-tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-muted); background: transparent; border: none; cursor: pointer; transition: background 0.2s, color 0.2s; position: relative; }
-.kb-tab:hover { color: var(--text-main); background: rgba(59,130,246,0.08); }
-.kb-tab.active { color: var(--accent-1); background: rgba(59,130,246,0.12); }
-.kb-tab.active::after { content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 2px; background: var(--accent-1); border-radius: 1px; }
-.kb-layout { display: none; padding: 10px 8px; }
-.kb-layout.active { display: block; }
-.kb-row { display: flex; gap: 5px; justify-content: center; margin-bottom: 6px; }
-.kb-row:last-child { margin-bottom: 0; }
-.kb-key { display: flex; align-items: center; justify-content: center; min-width: 36px; height: 42px; padding: 0 8px; background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(100, 116, 139, 0.25); border-radius: 6px; color: #e2e8f0; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.12s, transform 0.08s, border-color 0.12s; user-select: none; -webkit-user-select: none; touch-action: manipulation; flex-shrink: 0; }
-.kb-key:hover { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); }
-.kb-key:active { transform: scale(0.92); background: rgba(59, 130, 246, 0.3); }
-.kb-key.math-symbol { font-size: 18px; min-width: 42px; }
-.kb-key.math-greek { font-size: 17px; min-width: 40px; font-style: italic; }
-.kb-key.math-command { font-size: 12px; font-weight: 600; min-width: 52px; padding: 0 10px; background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.2); }
-.kb-key.math-command:hover { background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.4); }
-.kb-key.wide { min-width: 60px; }
-.kb-key.space { min-width: 140px; font-size: 12px; color: var(--text-muted); }
-.kb-key.action { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.2); min-width: 50px; font-size: 13px; }
-.kb-key.action:hover { background: rgba(239, 68, 68, 0.3); border-color: rgba(239, 68, 68, 0.4); }
-.kb-key.enter { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); border-color: transparent; color: #fff; font-weight: 700; min-width: 60px; }
-.kb-key.enter:hover { opacity: 0.9; }
-@media (max-width: 640px) {
-    .unified-keyboard { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; border-radius: 12px 12px 0 0; max-height: 55vh; overflow-y: auto; z-index: 200; box-shadow: 0 -8px 32px rgba(0,0,0,0.5); }
-    .unified-keyboard.open + .kb-backdrop, .unified-keyboard.open ~ .kb-backdrop { display: block; }
-    .kb-key { height: 38px; min-width: 32px; font-size: 14px; }
-    .kb-key.math-symbol { font-size: 16px; min-width: 36px; }
-    .kb-key.math-greek { font-size: 15px; min-width: 36px; }
-    .kb-key.math-command { font-size: 11px; min-width: 44px; }
-    .kb-key.wide { min-width: 48px; }
-    .kb-key.space { min-width: 100px; }
-    .kb-key.enter { min-width: 50px; }
-    .kb-row { gap: 3px; margin-bottom: 4px; }
-    .kb-layout { padding: 8px 4px; }
-    .kb-tab { font-size: 12px; padding: 8px 4px; }
-}
-@media (min-width: 641px) and (max-width: 1024px) {
-    .unified-keyboard { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; border-radius: 12px 12px 0 0; max-height: 50vh; overflow-y: auto; z-index: 200; box-shadow: 0 -8px 32px rgba(0,0,0,0.5); }
-    .unified-keyboard.open + .kb-backdrop { display: block; }
-    .kb-key { height: 44px; min-width: 40px; font-size: 16px; }
-    .kb-key.space { min-width: 180px; }
-}
-body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 </style>
 {% endblock %}
 
@@ -177,12 +118,15 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 <p style="color:rgba(255,255,255,0.6);">
   Радар твоих сильных и слабых подтем + персональный ИИ-куратор, который подскажет, что подтянуть.
   {% if user and user.preferred_grade %}
-  <br><span style="color:#38ef7d;"> Класс: {{ user.preferred_grade }}</span>
+  <br><span style="color:#3ECF8E;"> Класс: {{ user.preferred_grade }}</span>
   {% if level_label %}
-  &nbsp;&nbsp;<span style="color:#f59e0b;">⭐ {{ level_label }}</span>
+  &nbsp;&nbsp;<span style="color:#E5AC3A;">⭐ {{ level_label }}</span>
   {% endif %}
   {% endif %}
 </p>
+
+<div class="coach-layout">
+<div class="coach-left">
 
 <!-- ═══ MAIN ACTION BLOCK ═══ -->
 <div id="mainActionBlock" style="display:none; background: linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.20)); border: 1px solid rgba(139,92,246,0.5); border-radius: 16px; padding: 20px 24px; margin-bottom: 20px; text-align: center;">
@@ -198,7 +142,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
   <h2> Цикл месяца</h2>
   <div style="margin-bottom:12px; font-size:14px; color:rgba(255,255,255,0.65);">
     Замерено {{ cycle_measured_count }} из {{ cycle_total }}
-    <span style="margin-left:12px; color:#38ef7d;">▰</span>
+    <span style="margin-left:12px; color:#3ECF8E;">▰</span>
     <span style="color:rgba(255,255,255,0.2);">▱</span>
   </div>
   <div style="display:flex; flex-direction:column; gap:6px;">
@@ -207,7 +151,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
       <span style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.3); min-width:20px;">{{ loop.index }}.</span>
       <span style="flex:1; font-size:14px; color:rgba(255,255,255,0.85);">{{ t.name }}</span>
       <span style="font-size:11px; color:rgba(255,255,255,0.35); text-transform:uppercase;">{{ t.section }}</span>
-      <span style="font-size:12px; {% if t.state.startswith('замерена') %}color:#38ef7d;{% elif t.state == 'сегодняшняя' %}color:#6366f1;{% else %}color:rgba(255,255,255,0.35);{% endif %}">
+      <span style="font-size:12px; {% if t.state.startswith('замерена') %}color:#3ECF8E;{% elif t.state == 'сегодняшняя' %}color:#4C7DFF;{% else %}color:rgba(255,255,255,0.35);{% endif %}">
         {{ t.state }}
       </span>
     </div>
@@ -222,7 +166,7 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
   <p style="color:rgba(255,255,255,0.7); font-size:16px; margin-bottom:20px;">
      Чтобы начать подготовку, заполни анкету — она займёт 2 минуты.
   </p>
-  <a href="/prep/onboarding" class="quick-action-btn" style="display:inline-block; padding:14px 36px; font-size:16px; text-decoration:none; background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+  <a href="/prep/onboarding" class="quick-action-btn" style="display:inline-block; padding:14px 36px; font-size:16px; text-decoration:none; background:linear-gradient(135deg,#4C7DFF,#6B95FF);">
     Пройти анкету
   </a>
 </div>
@@ -231,10 +175,10 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
 <!-- ═══ CURATOR FACTS CARD ═══ -->
 {% if curator_card and onboarding_done %}
 <div class="coach-card" id="curatorFactsCard" style="margin-bottom:20px; border-color: rgba(99,102,241,0.4);">
-  <h2 style="color:#a5b4fc;"> Сводка куратора</h2>
+  <h2 style="color:#6B95FF;"> Сводка куратора</h2>
   {% set f = curator_card.facts %}
   {% if curator_card.message %}
-  <div style="background:rgba(99,102,241,0.12); border-left:3px solid #6366f1; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:14px; font-size:15px; line-height:1.5; color:rgba(255,255,255,0.9);">
+  <div style="background:rgba(99,102,241,0.12); border-left:3px solid #4C7DFF; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:14px; font-size:15px; line-height:1.5; color:rgba(255,255,255,0.9);">
     {{ curator_card.message }}
   </div>
   {% endif %}
@@ -242,51 +186,51 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
     {% if f.cycle_day is not none and f.slice_total %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);"> День цикла</div>
-      <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.cycle_day }} / {{ f.slice_total }}</div>
+      <div style="font-size:18px; font-weight:700; color:#E6EBF7;">{{ f.cycle_day }} / {{ f.slice_total }}</div>
     </div>
     {% endif %}
     {% if f.today_total %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Сегодня</div>
-      <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.today_solved }} / {{ f.today_total }}</div>
-      {% if f.today_solved == 0 %}<div style="font-size:11px; color:#f59e0b;">ещё не решал</div>{% endif %}
+      <div style="font-size:18px; font-weight:700; color:#E6EBF7;">{{ f.today_solved }} / {{ f.today_total }}</div>
+      {% if f.today_solved == 0 %}<div style="font-size:11px; color:#E5AC3A;">ещё не решал</div>{% endif %}
     </div>
     {% endif %}
     {% if f.debt_size and f.debt_size > 0 %}
     <div style="background:rgba(239,68,68,0.06); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);">[!]️ Долг</div>
-      <div style="font-size:18px; font-weight:700; color:#ef4444;">{{ f.debt_size }} задач</div>
-      {% if f.debt_burns_tomorrow %}<div style="font-size:11px; color:#ef4444;">{{ f.debt_burns_tomorrow }} сгорят завтра</div>{% endif %}
+      <div style="font-size:18px; font-weight:700; color:#E86A62;">{{ f.debt_size }} задач</div>
+      {% if f.debt_burns_tomorrow %}<div style="font-size:11px; color:#E86A62;">{{ f.debt_burns_tomorrow }} сгорят завтра</div>{% endif %}
     </div>
     {% endif %}
     {% if f.level_now is not none %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);">⭐ Уровень</div>
-      <div style="font-size:18px; font-weight:700; color:#e5e7eb;">{{ f.level_now }}/5</div>
+      <div style="font-size:18px; font-weight:700; color:#E6EBF7;">{{ f.level_now }}/4</div>
       {% if f.level_delta is not none and f.level_delta > 0 %}
-      <div style="font-size:11px; color:#38ef7d;">+{{ f.level_delta }} за неделю</div>
+      <div style="font-size:11px; color:#3ECF8E;">+{{ f.level_delta }} за неделю</div>
       {% elif f.level_delta is not none and f.level_delta < 0 %}
-      <div style="font-size:11px; color:#ef4444;">{{ f.level_delta }} за неделю</div>
+      <div style="font-size:11px; color:#E86A62;">{{ f.level_delta }} за неделю</div>
       {% endif %}
     </div>
     {% endif %}
     {% if f.streak_days is not none and f.streak_days > 0 %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Серия</div>
-      <div style="font-size:18px; font-weight:700; color:#38ef7d;">{{ f.streak_days }} дн.</div>
+      <div style="font-size:18px; font-weight:700; color:#3ECF8E;">{{ f.streak_days }} дн.</div>
       <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;" title="Дней подряд, когда решено верно больше 80% задач дня">дней подряд с 80%+ верных</div>
     </div>
     {% endif %}
     {% if f.method_code %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Метод</div>
-      <div style="font-size:14px; font-weight:600; color:#a5b4fc;">{{ f.method_code }} «{{ f.method_name }}»</div>
+      <div style="font-size:14px; font-weight:600; color:#6B95FF;">{{ f.method_code }} «{{ f.method_name }}»</div>
     </div>
     {% endif %}
     {% if f.weakest_sections %}
     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:10px;">
       <div style="font-size:11px; color:rgba(255,255,255,0.45);"> Слабый раздел</div>
-      <div style="font-size:14px; font-weight:600; color:#f59e0b;">
+      <div style="font-size:14px; font-weight:600; color:#E5AC3A;">
         {% set ws = f.weakest_sections[0] %}
         {% set snames = {"algebra":"Алгебра","geometry":"Геометрия","combinatorics":"Комбинаторика","logic":"Логика","number_theory":"Теория чисел"} %}
         {{ snames.get(ws.section, ws.section) }} — {{ ("%.0f"|format(ws.accuracy_pct)) if ws.accuracy_pct == ws.accuracy_pct|int else ws.accuracy_pct|string }}%
@@ -296,6 +240,77 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
   </div>
 </div>
 {% endif %}
+
+</div><!-- /coach-left -->
+<div class="coach-right">
+
+<div class="coach-grid">
+<div class="coach-card">
+<h2> Чат с ИИ-куратором</h2>
+<!-- ═══ FAQ QUICK BUTTONS (TASK 2 V4) ═══ -->
+<div class="faq-buttons" id="faqButtons">
+  <button class="faq-btn" onclick="askFaq('Как начать?')">Как начать?</button>
+  <button class="faq-btn" onclick="askFaq('Как работает адаптивный тест?')">Адаптивный тест</button>
+  <button class="faq-btn" onclick="askFaq('Где найти задачи?')">Где задачи?</button>
+  <button class="faq-btn" onclick="askFaq('Что такое методы?')">Что такое методы?</button>
+  <button class="faq-btn" onclick="askFaq('Как работают пробники?')">Пробники</button>
+  <button class="faq-btn" onclick="askFaq('Как следить за прогрессом?')">Прогресс</button>
+</div>
+<div class="chat-box">
+<div class="chat-log" id="chatLog"><div class="chat-msg bot" id="greetingMsg">⏳ Загружаю приветствие…</div></div>
+<form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Спроси куратора…" autocomplete="off"><button type="submit">Отправить</button></form>
+
+<div class="cta-row" id="ctaRow" style="display:none; margin-top:10px;"></div>
+<div id="quick-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+<div style="margin-top:8px; text-align:right;">
+  <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">️ Очистить историю</button>
+</div>
+
+<!-- ═══ OTHER 6 ENTRY POINTS ═══ -->
+<details id="otherTestsDetails" style="margin-top:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 16px;">
+  <summary style="cursor:pointer; color:rgba(255,255,255,0.55); font-size:13px; font-weight:600; user-select:none; list-style:none;">
+    </summary>
+  <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+    <a href="/profile" class="cta-btn secondary" style="text-align:left;">️ Профиль и класс</a>
+    <a href="/daily-set" class="cta-btn secondary" style="text-align:left;"> Задачи дня</a>
+    <a href="/prep/onboarding" class="cta-btn secondary" style="text-align:left;"> Анкета онбординга</a>
+  </div>
+</details>
+
+</div>
+</div>
+</div><!-- /coach-grid -->
+</div><!-- /coach-right -->
+</div><!-- /coach-layout -->
+
+<div class="coach-section-radars">
+<!-- ═══ GENERAL RADAR (перемещён вниз) ═══ -->
+<div class="coach-card" id="generalRadarCard" style="margin-bottom:20px;">
+<h2> Радар по разделам (общий)</h2>
+<div class="radar-chart" style="max-width:680px; margin:0 auto;">
+<canvas id="masteryRadar"
+        data-mastery='{{ mastery_list_json | safe }}'
+        width="400" height="400"></canvas>
+</div>
+<!-- ═══ Screen 4: Measured subtopics ═══ -->
+{% if measured_subtopics_list %}
+<div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+  <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);"> Замеренные подтемы</h2>
+  <div style="display:flex; flex-direction:column; gap:4px; max-height:260px; overflow-y:auto;">
+    {% for st in measured_subtopics_list %}
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.04);">
+      <span style="font-size:12px; color:rgba(255,255,255,0.5); min-width:18px;">{{ loop.index }}.</span>
+      <span style="flex:1; font-size:13px; color:rgba(255,255,255,0.8);">{{ st.name }}</span>
+      <span style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">{{ st.section }}</span>
+      <span style="font-size:13px; font-weight:700; {% if st.mu <= 2.0 %}color:#E86A62;{% elif st.mu <= 3.0 %}color:#E5AC3A;{% elif st.mu <= 4.0 %}color:#4C7DFF;{% else %}color:#3ECF8E;{% endif %}">
+        {{ "%.1f"|format(st.mu) }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+</div>
 
 <!-- ═══ SECTION RADARS GRID (TASK 1 V4) ═══ -->
 {% if section_radars and onboarding_done %}
@@ -325,230 +340,19 @@ body.kb-open { overflow: hidden; position: fixed; width: 100%; }
   <p style="color:rgba(255,255,255,0.4);">Нет данных для радаров по разделам. Пройдите диагностику или тест по темам.</p>
 </div>
 {% endif %}
-
-<div class="coach-grid">
-<div class="coach-card">
-<h2> Радар по разделам (общий)</h2>
-<div class="radar-chart">
-<canvas id="masteryRadar"
-        data-mastery='{{ mastery_list_json | safe }}'
-        width="400" height="400"></canvas>
-</div>
-<!-- ═══ Screen 4: Measured subtopics ═══ -->
-{% if measured_subtopics_list %}
-<div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-  <h2 style="font-size:14px; margin-bottom:10px; color: rgba(255,255,255,0.65);"> Замеренные подтемы</h2>
-  <div style="display:flex; flex-direction:column; gap:4px; max-height:260px; overflow-y:auto;">
-    {% for st in measured_subtopics_list %}
-    <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid rgba(255,255,255,0.04);">
-      <span style="font-size:12px; color:rgba(255,255,255,0.5); min-width:18px;">{{ loop.index }}.</span>
-      <span style="flex:1; font-size:13px; color:rgba(255,255,255,0.8);">{{ st.name }}</span>
-      <span style="font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase;">{{ st.section }}</span>
-      <span style="font-size:13px; font-weight:700; {% if st.mu <= 2.0 %}color:#ef4444;{% elif st.mu <= 3.0 %}color:#f59e0b;{% elif st.mu <= 4.0 %}color:#6366f1;{% else %}color:#38ef7d;{% endif %}">
-        {{ "%.1f"|format(st.mu) }}
-      </span>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-{% endif %}
-</div>
-<div class="coach-card">
-<h2> Чат с ИИ-куратором</h2>
-<!-- ═══ FAQ QUICK BUTTONS (TASK 2 V4) ═══ -->
-<div class="faq-buttons" id="faqButtons">
-  <button class="faq-btn" onclick="askFaq('Как начать?')">Как начать?</button>
-  <button class="faq-btn" onclick="askFaq('Как работает адаптивный тест?')">Адаптивный тест</button>
-  <button class="faq-btn" onclick="askFaq('Где найти задачи?')">Где задачи?</button>
-  <button class="faq-btn" onclick="askFaq('Что такое методы?')">Что такое методы?</button>
-  <button class="faq-btn" onclick="askFaq('Как работают пробники?')">Пробники</button>
-  <button class="faq-btn" onclick="askFaq('Как следить за прогрессом?')">Прогресс</button>
-</div>
-<div class="chat-box">
-<div class="chat-log" id="chatLog"><div class="chat-msg bot" id="greetingMsg">⏳ Загружаю приветствие…</div></div>
-<form class="chat-input-row" id="chatForm"><input type="text" id="chatInput" placeholder="Спроси куратора…" autocomplete="off"><button type="submit">Отправить</button></form>
-
-<!-- Клавиатура ввода -->
-<div class="kb-wrapper" style="margin-bottom: 0;">
-    <button type="button" id="kbToggleBtn" class="unified-kb-toggle" onclick="toggleKeyboard()">
-        ⌨️ Клавиатура
-    </button>
-
-    <div id="unifiedKeyboard" class="unified-keyboard">
-        <div class="kb-header">
-            <span class="kb-field-indicator">
-                <span class="dot"></span>
-                <span id="kbFieldLabel">Чат</span>
-            </span>
-            <button type="button" class="kb-close-btn" onclick="toggleKeyboard()"></button>
-        </div>
-
-        <div class="kb-tabs">
-            <button type="button" class="kb-tab active" data-layout="math" onclick="switchKbTab('math')"> Математическая</button>
-            <button type="button" class="kb-tab" data-layout="regular" onclick="switchKbTab('regular')">⌨️ Обычная</button>
-        </div>
-
-        <div id="kbLayoutMath" class="kb-layout active">
-            <div class="kb-row">
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\alpha')">α</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\beta')">β</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\gamma')">γ</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\delta')">δ</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\theta')">θ</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\lambda')">λ</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\mu')">μ</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\pi')">π</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\sigma')">σ</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\phi')">φ</button>
-                <button type="button" class="kb-key math-greek" onclick="kbInsert('\\omega')">ω</button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sqrt{}')">√</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\sum')">∑</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\int')">∫</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\pm')">±</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\infty')">∞</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\approx')">≈</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\neq')">≠</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leq')">≤</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\geq')">≥</button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\rightarrow')">-></button>
-                <button type="button" class="kb-key math-symbol" onclick="kbInsert('\\leftrightarrow')"><-></button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\frac{}{}')">\frac</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\sqrt{}')">\sqrt</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\cdot')">\cdot</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\times')">\times</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\div')">\div</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\partial')">\partial</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\nabla')">\nabla</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\leq')">\le</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\geq')">\ge</button>
-                <button type="button" class="kb-key math-command" onclick="kbInsert('\\\\neq')">\ne</button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
-                <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
-                <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
-                <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
-                <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
-                <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
-                <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
-                <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
-                <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
-                <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
-                <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
-                <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key" onclick="kbInsert('(')">(</button>
-                <button type="button" class="kb-key" onclick="kbInsert(')')">)</button>
-                <button type="button" class="kb-key" onclick="kbInsert('[')">[</button>
-                <button type="button" class="kb-key" onclick="kbInsert(']')">]</button>
-                <button type="button" class="kb-key" onclick="kbInsert('\\\\{')">{</button>
-                <button type="button" class="kb-key" onclick="kbInsert('\\\\}')">}</button>
-                <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
-                <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
-                <button type="button" class="kb-key enter" onclick="kbInsert('\\\\quad ')">⏎</button>
-            </div>
-        </div>
-
-        <div id="kbLayoutRegular" class="kb-layout">
-            <div class="kb-row">
-                <button type="button" class="kb-key" onclick="kbInsert('й')">й</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ц')">ц</button>
-                <button type="button" class="kb-key" onclick="kbInsert('у')">у</button>
-                <button type="button" class="kb-key" onclick="kbInsert('к')">к</button>
-                <button type="button" class="kb-key" onclick="kbInsert('е')">е</button>
-                <button type="button" class="kb-key" onclick="kbInsert('н')">н</button>
-                <button type="button" class="kb-key" onclick="kbInsert('г')">г</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ш')">ш</button>
-                <button type="button" class="kb-key" onclick="kbInsert('щ')">щ</button>
-                <button type="button" class="kb-key" onclick="kbInsert('з')">з</button>
-                <button type="button" class="kb-key" onclick="kbInsert('х')">х</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ъ')">ъ</button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key" onclick="kbInsert('ф')">ф</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ы')">ы</button>
-                <button type="button" class="kb-key" onclick="kbInsert('в')">в</button>
-                <button type="button" class="kb-key" onclick="kbInsert('а')">а</button>
-                <button type="button" class="kb-key" onclick="kbInsert('п')">п</button>
-                <button type="button" class="kb-key" onclick="kbInsert('р')">р</button>
-                <button type="button" class="kb-key" onclick="kbInsert('о')">о</button>
-                <button type="button" class="kb-key" onclick="kbInsert('л')">л</button>
-                <button type="button" class="kb-key" onclick="kbInsert('д')">д</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ж')">ж</button>
-                <button type="button" class="kb-key" onclick="kbInsert('э')">э</button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key" onclick="kbInsert('я')">я</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ч')">ч</button>
-                <button type="button" class="kb-key" onclick="kbInsert('с')">с</button>
-                <button type="button" class="kb-key" onclick="kbInsert('м')">м</button>
-                <button type="button" class="kb-key" onclick="kbInsert('и')">и</button>
-                <button type="button" class="kb-key" onclick="kbInsert('т')">т</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ь')">ь</button>
-                <button type="button" class="kb-key" onclick="kbInsert('б')">б</button>
-                <button type="button" class="kb-key" onclick="kbInsert('ю')">ю</button>
-                <button type="button" class="kb-key" onclick="kbInsert('.')">.</button>
-                <button type="button" class="kb-key" onclick="kbInsert(',')">,</button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key" onclick="kbInsert('1')">1</button>
-                <button type="button" class="kb-key" onclick="kbInsert('2')">2</button>
-                <button type="button" class="kb-key" onclick="kbInsert('3')">3</button>
-                <button type="button" class="kb-key" onclick="kbInsert('4')">4</button>
-                <button type="button" class="kb-key" onclick="kbInsert('5')">5</button>
-                <button type="button" class="kb-key" onclick="kbInsert('6')">6</button>
-                <button type="button" class="kb-key" onclick="kbInsert('7')">7</button>
-                <button type="button" class="kb-key" onclick="kbInsert('8')">8</button>
-                <button type="button" class="kb-key" onclick="kbInsert('9')">9</button>
-                <button type="button" class="kb-key" onclick="kbInsert('0')">0</button>
-            </div>
-            <div class="kb-row">
-                <button type="button" class="kb-key action wide" onclick="kbBackspace()">⌫</button>
-                <button type="button" class="kb-key space" onclick="kbInsert(' ')">Пробел</button>
-                <button type="button" class="kb-key enter" onclick="submitCurrentAnswer()">Готово [OK]</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="kb-backdrop" id="kbBackdrop" onclick="toggleKeyboard()"></div>
-</div>
-<div class="cta-row" id="ctaRow" style="display:none; margin-top:10px;"></div>
-<div id="quick-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
-<div style="margin-top:8px; text-align:right;">
-  <button class="cta-btn secondary" id="deleteHistoryBtn" style="font-size:12px; padding:4px 10px;">️ Очистить историю</button>
 </div>
 
-<!-- ═══ OTHER 6 ENTRY POINTS ═══ -->
-<details id="otherTestsDetails" style="margin-top:14px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 16px;">
-  <summary style="cursor:pointer; color:rgba(255,255,255,0.55); font-size:13px; font-weight:600; user-select:none; list-style:none;">
-    </summary>
-  <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
-    <a href="/profile" class="cta-btn secondary" style="text-align:left;">️ Профиль и класс</a>
-    <a href="/daily-set" class="cta-btn secondary" style="text-align:left;"> Задачи дня</a>
-    <a href="/prep/onboarding" class="cta-btn secondary" style="text-align:left;"> Анкета онбординга</a>
-  </div>
-</details>
-
-</div>
-</div>
-</div>
-</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <style>
 .cta-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.cta-btn { display: inline-block; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; color: #fff; background: #6366f1; transition: background 0.2s; }
-.cta-btn:hover { background: #4f46e5; }
-.cta-btn.secondary { background: rgba(255,255,255,0.08); color: #e5e7eb; }
+.cta-btn { display: inline-block; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; color: #fff; background: #4C7DFF; transition: background 0.2s; }
+.cta-btn:hover { background: #4C7DFF; }
+.cta-btn.secondary { background: rgba(255,255,255,0.08); color: #E6EBF7; }
 .cta-btn.secondary:hover { background: rgba(255,255,255,0.15); }
-.quick-action-btn { display: inline-flex; padding: 10px 18px; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
+.quick-action-btn { display: inline-flex; padding: 10px 18px; background: linear-gradient(135deg,#4C7DFF,#6B95FF); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
 .quick-action-btn:hover { opacity: 0.9; }
 </style>
 <script>
@@ -723,73 +527,8 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
     } else if (data.scenario === 'prep_morning_test') {
       var prepInfo = data.prep_info || {};
       var topicTitle = prepInfo.subtopic_title || '';
-      var remaining = prepInfo.remaining_tests || 0;
-      addCtaAction(' Начать тест: «' + topicTitle + '»', function () {
-        ctaRow.innerHTML = '';
-        greetingEl.innerHTML = '⏳ Загружаю тест по теме <strong>' + topicTitle + '</strong>…';
-        fetch('{{ url_for("prep.coach_greeting") }}?action=prep_test_tasks')
-          .then(function (r) { return r.json(); })
-          .then(function (taskData) {
-            if (taskData.tasks && taskData.tasks.length) {
-              var html = '<div style="max-height:350px;overflow-y:auto;">';
-              html += '<p><strong> Тест по теме «' + (taskData.subtopic_title || topicTitle) + '»</strong></p>';
-              html += '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Отметь правильность каждой задачи (5 задач):</p>';
-              taskData.tasks.forEach(function (t, i) {
-                html += '<div style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">';
-                html += '<p><strong>Задача ' + (i+1) + ':</strong> ' + (t.task_text || t.text || '') + '</p>';
-                html += '<div><button class="cta-btn" data-task="' + t.id + '" data-score="1">[OK] Правильно</button> ';
-                html += '<button class="cta-btn secondary" data-task="' + t.id + '" data-score="0">[ERROR] Неверно</button></div>';
-                html += '</div>';
-              });
-              html += '<div style="margin-top:12px;"><button class="cta-btn" id="finishPrepTest"> Завершить тест</button></div>';
-              html += '</div>';
-              greetingEl.innerHTML = html;
-              document.getElementById('finishPrepTest').addEventListener('click', function () {
-                var results = {};
-                document.querySelectorAll('[data-task]').forEach(function (btn) {
-                  var taskId = btn.getAttribute('data-task');
-                  if (!taskId) return;
-                  if (btn.classList.contains('cta-btn') && !btn.classList.contains('secondary')) {
-                    results[taskId] = 1;
-                  } else if (btn.classList.contains('secondary')) {
-                    if (!results[taskId]) results[taskId] = 0;
-                  }
-                });
-                greetingEl.innerHTML = '⏳ Отправляю результаты теста…';
-                fetch('{{ url_for("prep.coach_prep_submit_test") }}', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ results: results })
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (res) {
-                  if (res.status === 'ok') {
-                    var msg = '[OK] <strong>Тест завершён!</strong><br>';
-                    msg += 'Правильно: ' + res.correct + ' из ' + res.total + '<br>';
-                    msg += ' Уровень: ' + res.level + '/5.';
-                    if (res.generation_queued) {
-                      msg += '<br><br> Задачи дня уже готовятся под твой уровень. Они придут вечером!';
-                    }
-                    greetingEl.innerHTML = msg;
-                    ctaRow.innerHTML = '';
-                    if (res.generation_queued) {
-                      addCtaButton(' Перейти к задачам дня', '/daily-tasks', '');
-                    }
-                    addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
-                  } else {
-                    greetingEl.innerHTML = '[ERROR] Ошибка: ' + (res.error || 'попробуй ещё раз');
-                  }
-                })
-                .catch(function () { greetingEl.innerHTML = '[ERROR] Ошибка соединения. Попробуй ещё раз.'; });
-              });
-            } else {
-              greetingEl.innerHTML = ' Нет задач для теста. Попробуй позже.';
-              ctaRow.innerHTML = '';
-              ctaRow.style.display = 'none';
-            }
-          })
-          .catch(function () { greetingEl.innerHTML = '[ERROR] Ошибка загрузки теста.'; });
-      }, '');
+      greetingEl.innerHTML = ' Сейчас тебе нужно пройти утренний срез по теме «<strong>' + topicTitle + '</strong>».';
+      addCtaButton(' Пройти утренний срез', '/prep/probe', '');
     } else if (data.scenario === 'prep_test_taken') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
@@ -935,138 +674,6 @@ function showBotMessage(text) {
     addMsg(text, 'bot');
 }
 
-// ─── Единая клавиатура ввода ───
-let _kbActiveField = null;
-
-document.addEventListener('focusin', function(e) {
-    const el = e.target;
-    if (el && el.id === 'chatInput') {
-        _kbActiveField = el;
-        const label = document.getElementById('kbFieldLabel');
-        if (label) label.textContent = 'Чат';
-    }
-});
-
-function _kbIsTextarea(el) {
-    return el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT');
-}
-function _kbGetValue(el) {
-    if (!el) return '';
-    if (_kbIsTextarea(el)) return el.value || '';
-    return el.value || '';
-}
-function _kbSetValue(el, val) {
-    if (!el) return;
-    if (_kbIsTextarea(el)) {
-        el.value = val;
-    } else {
-        el.value = val;
-    }
-}
-function _kbInsertAtCursor(el, text) {
-    if (_kbIsTextarea(el)) {
-        const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
-        const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
-        const before = el.value.substring(0, start);
-        const after  = el.value.substring(end);
-        el.value = before + text + after;
-        const pos = start + text.length;
-        try { el.setSelectionRange(pos, pos); } catch(e) {}
-    } else {
-        _kbSetValue(el, _kbGetValue(el) + text);
-    }
-}
-
-function kbInsert(text) {
-    if (!_kbActiveField) {
-        _kbActiveField = document.getElementById('chatInput');
-    }
-    if (!_kbActiveField) return;
-    try {
-        if (_kbIsTextarea(_kbActiveField) && text === '\\quad ') {
-            text = '\n';
-        }
-        _kbInsertAtCursor(_kbActiveField, text);
-        _kbActiveField.focus();
-        _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
-    } catch(e) {
-        console.warn('kbInsert error:', e);
-    }
-}
-
-function kbBackspace() {
-    if (!_kbActiveField) {
-        _kbActiveField = document.getElementById('chatInput');
-    }
-    if (!_kbActiveField) return;
-    try {
-        if (_kbIsTextarea(_kbActiveField)) {
-            const el = _kbActiveField;
-            const start = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
-            const end   = (typeof el.selectionEnd === 'number')   ? el.selectionEnd   : el.value.length;
-            if (start === end && start > 0) {
-                el.value = el.value.substring(0, start - 1) + el.value.substring(end);
-                try { el.setSelectionRange(start - 1, start - 1); } catch(e) {}
-            } else if (start !== end) {
-                el.value = el.value.substring(0, start) + el.value.substring(end);
-                try { el.setSelectionRange(start, start); } catch(e) {}
-            }
-            el.focus();
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            return;
-        }
-        const current = _kbGetValue(_kbActiveField);
-        if (current && current.length > 0) {
-            _kbSetValue(_kbActiveField, current.slice(0, -1));
-            _kbActiveField.focus();
-            _kbActiveField.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-    } catch(e) {
-        console.warn('kbBackspace error:', e);
-    }
-}
-
-function toggleKeyboard() {
-    const kb = document.getElementById('unifiedKeyboard');
-    const btn = document.getElementById('kbToggleBtn');
-    const body = document.body;
-    const isMobile = window.innerWidth <= 640;
-    if (!kb) return;
-    const isOpen = kb.classList.contains('open');
-    if (isOpen) {
-        kb.classList.remove('open');
-        if (btn) btn.classList.remove('active');
-        if (isMobile) body.classList.remove('kb-open');
-    } else {
-        kb.classList.add('open');
-        if (btn) btn.classList.add('active');
-        if (isMobile) body.classList.add('kb-open');
-        if (_kbActiveField) _kbActiveField.focus();
-    }
-}
-
-function switchKbTab(tabName) {
-    document.querySelectorAll('.kb-tab').forEach(function(t) { t.classList.remove('active'); });
-    document.querySelectorAll('.kb-layout').forEach(function(l) { l.classList.remove('active'); });
-    var tab = document.querySelector('.kb-tab[data-layout="' + tabName + '"]');
-    var layoutId = 'kbLayout' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
-    var layout = document.getElementById(layoutId);
-    if (tab) tab.classList.add('active');
-    if (layout) layout.classList.add('active');
-}
-
-function submitCurrentAnswer() {
-    var form = document.getElementById('chatForm');
-    if (form) {
-        form.dispatchEvent(new Event('submit', { cancelable: true }));
-    }
-}
-
-document.addEventListener('click', function(e) {
-    if (e.target && e.target.classList.contains('kb-backdrop')) {
-        toggleKeyboard();
-    }
-});
 </script>
 
 <!-- Chart.js for Radar Chart -->
@@ -1104,7 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         scales: {
                             r: {
                                 beginAtZero: true,
-                                max: 5,
+                                max: 4,
                                 ticks: { stepSize: 1, font: { size: 10 } },
                                 grid: { color: 'rgba(0,0,0,0.1)' }
                             }
@@ -1149,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         pointBackgroundColor: subtopics.map(function(s) {
                             return s.has_data ? 'rgba(99, 102, 241, 1)' : 'rgba(255,255,255,0.2)';
                         }),
-                        pointBorderColor: '#1e293b',
+                        pointBorderColor: '#0E1830',
                         pointRadius: subtopics.map(function(s) { return s.has_data ? 3 : 2; }),
                         pointHoverRadius: 5,
                         spanGaps: false

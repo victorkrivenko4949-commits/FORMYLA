@@ -292,7 +292,7 @@ VALID_SLOT_KINDS = {
     "calibration",
 }
 VALID_SUBJECTS = {"algebra", "geometry", "number_theory", "combinatorics", "logic"}
-VALID_DIFFICULTY_RANGE = (1, 5)
+VALID_DIFFICULTY_RANGE = (1, 4)
 VALID_VERDICTS = {"approved", "needs_fix"}
 VALID_SEVERITIES = {"low", "medium", "high"}
 VALID_AUDIT_CODES = {

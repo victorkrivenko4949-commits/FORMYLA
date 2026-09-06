@@ -78,6 +78,7 @@
   .dt-btn-primary:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+  }
 
   /* ── P4 DEBT block ─────────────────────────────── */
   .dt-debt-block {
@@ -87,6 +88,25 @@
     background: rgba(229, 172, 58, 0.06);
     padding: 16px 20px;
   }
+  .dt-debt-toggle-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 12px 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    color: #E5AC3A;
+    text-align: left;
+  }
+  .dt-debt-toggle-arrow {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+  }
+  .dt-debt-body { margin-top: 12px; }
   .dt-debt-header {
     display: flex;
     justify-content: space-between;
@@ -117,11 +137,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     padding: 6px 12px;
     margin-bottom: 4px;
     background: rgba(255,255,255,0.03);
     border-radius: 8px;
     font-size: 13px;
+  }
+  .dt-debt-item-figure {
+    width: 56px;
+    height: 44px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #fff;
+    padding: 2px;
+    flex: none;
+    box-sizing: border-box;
   }
   .dt-debt-item-topic {
     color: var(--text);
@@ -136,8 +167,21 @@
     font-weight: 600;
     white-space: nowrap;
   }
-    transform: none;
-    box-shadow: none;
+  .dt-debt-item-open {
+    flex: none;
+    padding: 4px 12px;
+    background: rgba(229, 172, 58, 0.16);
+    border: 1px solid rgba(229, 172, 58, 0.4);
+    border-radius: 8px;
+    color: #E5AC3A;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .dt-debt-item-open:hover {
+    background: rgba(229, 172, 58, 0.28);
   }
 
   /* Generating state */
@@ -279,6 +323,19 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: 12px;
+  }
+  .dt-card-figure {
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .dt-card-figure img {
+    max-width: 100%;
+    max-height: 140px;
+    border-radius: 10px;
+    background: #fff;
+    padding: 4px;
+    border: 1px solid var(--border-soft);
+    box-sizing: border-box;
   }
 
   /* Card footer with status — separated by shadow line */
@@ -719,15 +776,11 @@
   <!-- Empty state -->
   <div id="dt-empty-state" class="dt-hidden">
     <div class="dt-empty-card">
-      <div class="dt-empty-title">Начнём?</div>
+      <div class="dt-empty-title">Задач пока нет</div>
       <div class="dt-empty-sub">
-        Нажми «Сгенерировать», чтобы получить 10 персонализированных задач<br>
-        на основе твоего уровня и прогресса.
+        Задачи дня выдаются автоматически по плану месяца.<br>
+        Если ты видишь это сообщение — обнови страницу или пройди утренний срез.
       </div>
-<input type="text" id="dt-topic-input" class="dt-topic-input" value="{{ data.theme_today or 'Теория чисел' }}" placeholder="Тема (необязательно)" autocomplete="off" style="display:block;margin:0 auto 12px;max-width:320px;width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:15px;text-align:center;">
-      <button class="dt-btn-primary" id="dt-btn-generate" onclick="startGeneration()">
-        Сгенерировать
-      </button>
     </div>
   </div>
 
@@ -772,12 +825,12 @@
           Выполнено <span id="dt-progress-summary">0/0</span>
         </div>
       </div>
-      <div class="dt-ready-actions"><button class="dt-btn-secondary" id="dt-btn-regenerate" onclick="startGeneration()">Перегенерировать</button></div>
+      <div class="dt-ready-actions"></div>
     </div>
 
     <!-- Summary card -->
     <div id="dt-summary-card" class="dt-summary-card dt-hidden">
-      <strong>Рекомендация:</strong> <span id="dt-summary-text"></span>
+      <span id="dt-summary-text"></span>
     </div>
 
     <!-- Partial notice -->
@@ -819,6 +872,36 @@
         Взять выходной ({{ data.streak.days_off_available }})
       </button>
       {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- P4 DEBT block -->
+    {% if data and data.debt and data.debt.total %}
+    <div class="dt-debt-block">
+      <button type="button" class="dt-debt-toggle-btn" id="dt-debt-toggle" onclick="toggleDebt()">
+        <span>&#9203; Открыть долг: {{ data.debt.total }} задач</span>
+        <span class="dt-debt-toggle-arrow" id="dt-debt-toggle-arrow">&#9660;</span>
+      </button>
+      <div class="dt-debt-body dt-hidden" id="dt-debt-body">
+        <div class="dt-debt-header">
+          <span class="dt-debt-title">Долг: {{ data.debt.total }} задач</span>
+          <span class="dt-debt-hint">Нерешённые задачи прошлых дней — реши, пока не сгорели</span>
+        </div>
+        {% for _grp in data.debt.by_date %}
+        <div class="dt-debt-group">
+          <div class="dt-debt-group-date">{{ _grp.date }}</div>
+          {% for _dt in _grp.tasks %}
+          <div class="dt-debt-item" data-debt-item-id="{{ _dt.id }}">
+            {% if _dt.figure_url %}<img class="dt-debt-item-figure" src="{{ _dt.figure_url }}" alt="Чертёж" loading="lazy">{% endif %}
+            <span class="dt-debt-item-topic">#{{ _dt.position }} {{ _dt.topic or '' }}</span>
+            {% if _dt.difficulty_level %}<span class="dt-debt-item-level">уровень {{ _dt.difficulty_level }}</span>{% endif %}
+            {% if _dt.days_left is not none %}<span class="dt-debt-item-days">{% if _dt.days_left >= 0 %}{{ _dt.days_left }} дн.{% else %}сгорел{% endif %}</span>{% endif %}
+            <button type="button" class="dt-debt-item-open" onclick="openDebtTask({{ _dt.id }})">Открыть задачу</button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
     </div>
     {% endif %}
 
@@ -1260,19 +1343,60 @@
     var ov = document.createElement('div');
     ov.className = 'dt-modal';
     ov.id = 'dt-modal';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,0.7);overflow-y:auto;padding:40px 16px;';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;background:rgba(7,12,24,0.35);overflow-y:auto;padding:40px 16px;';
     ov.innerHTML =
       '<div class="dt-modal-box" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);max-width:680px;width:100%;padding:24px 26px;color:var(--text);position:relative;">' +
       '<button id="dt-modal-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;">\u00d7</button>' +
       '<div class="dt-modal-title" id="dt-modal-title" style="font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent-hi);margin-bottom:10px;"></div>' +
       '<div class="dt-modal-body" id="dt-modal-statement" style="font-size:16px;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div>' +
-      '<input type="text" id="dt-answer-input" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:16px;margin-bottom:14px;">' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">' +
+        '<input type="text" id="dt-answer-input" data-kb data-kb-label="\u041e\u0442\u0432\u0435\u0442" placeholder="\u0422\u0432\u043e\u0439 \u043e\u0442\u0432\u0435\u0442 (\u043d\u0430\u043f\u0440. 0.25 \u0438\u043b\u0438 1/4)" autocomplete="off" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:16px;">' +
+        '<button type="button" class="kb-field-btn" data-kb-target="dt-answer-input" onclick="openKbFor(\'dt-answer-input\')" title="\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0443">\u2328\ufe0f</button>' +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">' +
+          '<div style="font-size:13px;color:var(--muted);">Решение (текст или фото из тетрадки — ИИ-тьютор распознает фото):</div>' +
+          '<button type="button" class="kb-field-btn" data-kb-target="dt-solution-input" onclick="openKbFor(\'dt-solution-input\')" title="\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0443" style="font-size:13px;min-width:32px;height:30px;">\u2328\ufe0f</button>' +
+        '</div>' +
+        '<textarea id="dt-solution-input" data-kb data-kb-label="\u0420\u0435\u0448\u0435\u043d\u0438\u0435" placeholder="Опиши ход решения..." autocomplete="off" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#070C18;color:var(--text);font-size:15px;min-height:70px;resize:vertical;box-sizing:border-box;"></textarea>' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;">' +
+          '<input type="file" id="dt-solution-photo" accept="image/jpeg,image/png,image/heic,image/heif" style="display:none;">' +
+          '<button type="button" id="dt-photo-btn" class="dt-btn-secondary" style="font-size:13px;">\ud83d\udcf7 Прикрепить фото</button>' +
+          '<span id="dt-photo-name" style="font-size:12px;color:var(--muted);"></span>' +
+          '<button type="button" id="dt-photo-remove" class="dt-btn-secondary" style="display:none;font-size:12px;color:#e86a62;">\u2715</button>' +
+        '</div>' +
+      '</div>' +
       '<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button><button id="dt-hint-btn" class="dt-btn-secondary">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430</button></div>' +
       '<div id="dt-modal-result" style="margin-top:16px;"></div>' +
       '</div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', function(e) { if (e.target === ov) closeModal(); });
     ov.querySelector('#dt-modal-close').addEventListener('click', closeModal);
+
+    // ── Фото решения из тетрадки ──
+    var photoBtn = ov.querySelector('#dt-photo-btn');
+    var photoInput = ov.querySelector('#dt-solution-photo');
+    var photoName = ov.querySelector('#dt-photo-name');
+    var photoRemove = ov.querySelector('#dt-photo-remove');
+    dtSolutionPhotoFile = null;
+    if (photoBtn && photoInput) {
+      photoBtn.addEventListener('click', function() { photoInput.click(); });
+      photoInput.addEventListener('change', function() {
+        var f = photoInput.files[0];
+        if (!f) return;
+        if (f.size > 12 * 1024 * 1024) { alert('Фото больше 12 МБ'); photoInput.value = ''; return; }
+        dtSolutionPhotoFile = f;
+        photoName.textContent = f.name;
+        photoRemove.style.display = 'inline-block';
+      });
+      photoRemove.addEventListener('click', function() {
+        dtSolutionPhotoFile = null;
+        photoInput.value = '';
+        photoName.textContent = '';
+        photoRemove.style.display = 'none';
+      });
+    }
+
     dtModalEl = ov;
     return ov;
   }
@@ -1280,8 +1404,56 @@
   function closeModal() { if (dtModalEl) dtModalEl.style.display = 'none'; }
 
   var dtCurrentItem = null;
+  var dtSolutionPhotoFile = null;   // фото решения из тетрадки (File)
+
+  function dtDraftKey(itemId) { return 'dt_draft_' + itemId; }
+
+  function dtSaveDraft(itemId) {
+    if (!itemId) return;
+    try {
+      var inp = $('dt-answer-input');
+      var sol = $('dt-solution-input');
+      var draft = {
+        answer: inp ? inp.value : '',
+        solution: sol ? sol.value : ''
+      };
+      localStorage.setItem(dtDraftKey(itemId), JSON.stringify(draft));
+    } catch (e) { /* ignore */ }
+  }
+
+  function dtLoadDraft(itemId) {
+    try {
+      var raw = localStorage.getItem(dtDraftKey(itemId));
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) { return null; }
+  }
+
+  function dtClearDraft(itemId) {
+    try { localStorage.removeItem(dtDraftKey(itemId)); } catch (e) {}
+  }
 
   function openTask(it) {
+    // Сохраняем черновик предыдущей задачи перед переключением.
+    if (dtCurrentItem && dtCurrentItem.id !== it.id) {
+      dtSaveDraft(dtCurrentItem.id);
+    }
+    // Подтягиваем свежие данные по id из dt-init-data — иначе при
+    // повторном открытии решённой задачи item.user_answer === null.
+    try {
+      var initDataEl = document.getElementById('dt-init-data');
+      if (initDataEl && it && it.id !== undefined) {
+        var d = JSON.parse(initDataEl.textContent || '{}');
+        if (d.items) {
+          for (var _fi = 0; _fi < d.items.length; _fi++) {
+            if (String(d.items[_fi].id) === String(it.id)) {
+              it = d.items[_fi];
+              break;
+            }
+          }
+        }
+      }
+    } catch (_e4) {}
     ensureModal();
     dtCurrentItem = it;
     dtOpenStart = Date.now();
@@ -1289,12 +1461,39 @@
     $('dt-modal-statement').innerHTML = escapeHtmlPreserveLatex(it.text || it.preview || '');
     if (typeof renderMath === 'function') renderMath($('dt-modal-statement'));
     var inp = $('dt-answer-input');
+    var sol = $('dt-solution-input');
     inp.value = (it.user_answer || '');
+    if (sol) sol.value = '';
+    dtSolutionPhotoFile = null;
+    var photoName = $('dt-photo-name');
+    var photoRemove = $('dt-photo-remove');
+    if (photoName) photoName.textContent = '';
+    if (photoRemove) photoRemove.style.display = 'none';
+    var photoInput = $('dt-solution-photo');
+    if (photoInput) photoInput.value = '';
+    // Восстанавливаем сохранённый черновик (ответ + решение) для этой задачи.
+    var draft = dtLoadDraft(it.id);
+    if (draft && !it.is_answered) {
+      if (draft.answer) inp.value = draft.answer;
+      if (sol && draft.solution) sol.value = draft.solution;
+    }
     var res = $('dt-modal-result');
     res.innerHTML = '';
     if (it.is_answered) {
-      res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';">' +
-        (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>';
+      var _sol = it.solution || '';
+      var _ansHtml = '';
+      if (it.user_answer) {
+        _ansHtml += '<div style="color:var(--muted);margin-top:8px;">Твой ответ: <b>' + escapeHtmlPreserveLatex(it.user_answer) + '</b></div>';
+      }
+      if (_sol) {
+        // Чертёж прикрепляем к решению (если есть).
+        _ansHtml += '<div style="color:var(--text);line-height:1.5;margin-top:10px;white-space:pre-wrap;padding:12px;background:rgba(76,125,255,0.06);border:1px solid rgba(76,125,255,0.15);border-radius:10px;">' +
+          (it.figure_url ? '<img src="' + escapeHtml(it.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
+          escapeHtmlPreserveLatex(_sol) + '</div>';
+      }
+      res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';font-weight:600;">' +
+        (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>' + _ansHtml;
+      if (typeof renderMath === 'function') renderMath(res);
       inp.disabled = true;
       $('dt-submit-btn').disabled = true;
     } else {
@@ -1304,6 +1503,11 @@
     $('dt-submit-btn').onclick = submitAnswer;
     $('dt-hint-btn').onclick = loadHint;
     inp.onkeydown = function(e) { if (e.key === 'Enter') submitAnswer(); };
+    // Автосохранение черновика при вводе (ответ и решение).
+    inp.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
+    if (sol) {
+      sol.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
+    }
     dtModalEl.style.display = 'flex';
     inp.focus();
   }
@@ -1311,83 +1515,118 @@
   function submitAnswer() {
     if (!dtCurrentItem || dtCurrentItem.is_answered) return;
     var inp = $('dt-answer-input');
+    var solutionInp = $('dt-solution-input');
     var res = $('dt-modal-result');
     var btn = $('dt-submit-btn');
     var raw = inp.value.trim();
     if (!raw) { inp.focus(); return; }
     var normalized = normalizeAnswer(raw);
+
+    // Решение: текст или фото из тетрадки
+    var solutionText = solutionInp ? solutionInp.value.trim() : '';
+    var photoFile = dtSolutionPhotoFile;
+    if (!solutionText && !photoFile) {
+      alert('Опиши решение текстом или прикрепи фото из тетрадки.');
+      if (solutionInp) solutionInp.focus();
+      return;
+    }
+
     btn.disabled = true;
     var oldTxt = btn.textContent;
     btn.textContent = 'Проверяю…';
-    res.innerHTML = '<div style="color:var(--muted);">DeepSeek проверяет ответ…</div>';
+    res.innerHTML = '<div style="color:var(--muted);">DeepSeek проверяет ответ и решение…</div>';
     var secs = Math.max(0, Math.round((Date.now() - dtOpenStart) / 1000));
-    fetch('/daily_tasks/' + dtCurrentItem.id + '/submit', {
-      method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ answer: raw, normalized_answer: normalized, time_spent_seconds: secs })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(p) {
-      btn.disabled = false;
-      btn.textContent = oldTxt;
-      if (!p) { res.innerHTML = '<div style="color:var(--bad);">Ошибка проверки</div>'; return; }
-      var _dtFinish = function() {
-        var ok = p.is_correct === true;
-        var html = '<div style="color:' + (ok ? '#3ECF8E' : '#E86A62') + ';font-weight:600;margin-bottom:8px;">' +
-          (ok ? '\u2713 Верно!' : '\u2717 Неверно') + '</div>';
-        if (!ok && p.correct_answer != null) {
-          html += '<div style="margin-bottom:6px;">Правильный ответ: <b>' + escapeHtmlPreserveLatex(p.correct_answer) + '</b></div>';
-        }
-        if (p.explanation) {
-          html += '<div style="color:var(--text);line-height:1.5;margin-top:6px;">' + escapeHtmlPreserveLatex(p.explanation) + '</div>';
-        }
-        if (p.solution) {
-          html += '<div style="color:var(--muted);line-height:1.5;margin-top:8px;white-space:pre-wrap;">' + escapeHtmlPreserveLatex(p.solution) + '</div>';
-        }
-        // CH10: Kimi review
-        if (p.kimi_review) {
-          html += '<div style="margin-top:10px;padding:10px;background:rgba(76,125,255,0.05);border:1px solid rgba(76,125,255,0.15);border-radius:8px;">';
-          html += '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:4px;">Разбор Kimi:</div>';
-          if (p.kimi_review.label) {
-            html += '<div style="font-size:14px;font-weight:600;color:#8c9abc;margin-bottom:4px;">' + escapeHtmlPreserveLatex(p.kimi_review.label) + '</div>';
+
+    // ── Собираем фото в base64 для submit_ai ──
+    function buildSubmitBody(imagesB64) {
+      return JSON.stringify({
+        user_answer: raw,
+        user_solution: solutionText,
+        solution_images_b64: imagesB64,
+        time_spent_seconds: secs
+      });
+    }
+
+    function doAiSubmit(imagesB64) {
+      fetch('/daily_tasks/' + dtCurrentItem.id + '/submit_ai', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: buildSubmitBody(imagesB64)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(a) {
+        btn.disabled = false;
+        btn.textContent = oldTxt;
+        if (a && a.status === 'success') {
+          var ok = a.is_correct === true;
+          var html = '<div style="color:' + (ok ? '#3ECF8E' : '#E86A62') + ';font-weight:600;margin-bottom:8px;">' +
+            (ok ? '\u2713 Верно!' : '\u2717 Неверно') + '</div>';
+          if (!ok && a.correct_answer != null) {
+            html += '<div style="margin-bottom:6px;">Правильный ответ: <b>' + escapeHtmlPreserveLatex(a.correct_answer) + '</b></div>';
           }
-          if (p.kimi_review.raw_response) {
-            html += '<div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.4;">' + escapeHtmlPreserveLatex(p.kimi_review.raw_response) + '</div>';
+          if (a.feedback) {
+            html += '<div style="color:var(--text);line-height:1.5;margin-top:6px;">' + escapeHtmlPreserveLatex(a.feedback) + '</div>';
           }
-          html += '</div>';
+          if (a.solution) {
+            html += '<div style="color:var(--muted);line-height:1.5;margin-top:8px;white-space:pre-wrap;">' +
+              (dtCurrentItem.figure_url ? '<img src="' + escapeHtml(dtCurrentItem.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
+              escapeHtmlPreserveLatex(a.solution) + '</div>';
+          }
+          res.innerHTML = html;
+          if (typeof renderMath === 'function') renderMath(res);
+          dtCurrentItem.is_answered = true;
+          dtCurrentItem.is_correct = ok;
+          dtCurrentItem.user_answer = raw;
+          dtCurrentItem.solution = a.solution || dtCurrentItem.solution || '';
+          dtClearDraft(dtCurrentItem.id);
+          // Обновляем dt-init-data, чтобы при повторном открытии этой задачи
+          // показывался ответ и решение, а не «только условие».
+          try {
+            var initDataEl = document.getElementById('dt-init-data');
+            if (initDataEl) {
+              var d = JSON.parse(initDataEl.textContent || '{}');
+              if (d.items) {
+                for (var _di = 0; _di < d.items.length; _di++) {
+                  if (String(d.items[_di].id) === String(dtCurrentItem.id)) {
+                    d.items[_di].user_answer = raw;
+                    d.items[_di].is_correct = !!ok;
+                    if (a.solution) d.items[_di].solution = a.solution;
+                    break;
+                  }
+                }
+                initDataEl.textContent = JSON.stringify(d);
+              }
+            }
+          } catch (_e3) {}
+          renderTasks();
+        } else {
+          res.innerHTML = '<div style="color:var(--bad);">' + escapeHtmlPreserveLatex((a && (a.message || a.error)) || 'Ошибка проверки') + '</div>';
         }
-        res.innerHTML = html;
-        if (typeof renderMath === 'function') renderMath(res);
-        dtCurrentItem.is_answered = true;
-        dtCurrentItem.is_correct = ok;
-        dtCurrentItem.user_answer = raw;
-        renderTasks();
+      })
+      .catch(function(e) {
+        btn.disabled = false;
+        btn.textContent = oldTxt;
+        res.innerHTML = '<div style="color:var(--bad);">Сетевая ошибка</div>';
+        console.warn('[dt-submit-ai]', e);
+      });
+    }
+
+    if (photoFile) {
+      // Читаем фото в base64 и сразу шлём в AI-проверку
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var b64 = (e.target.result || '').split(',')[1] || '';
+        doAiSubmit(b64 ? [b64] : []);
       };
-      if (p.is_correct === true) {
-        _dtFinish();
-      } else {
-        res.innerHTML = '<div style="color:var(--muted);">DeepSeek проверяет ответ…</div>';
-        fetch('/daily_tasks/' + dtCurrentItem.id + '/submit_ai', {
-          method: 'POST', credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ user_answer: raw, user_solution: raw, time_spent_seconds: secs })
-        }).then(function(r) { return r.json(); }).then(function(a) {
-          if (a && a.status === 'success') {
-            p.is_correct = a.is_correct === true;
-            if (a.correct_answer != null) p.correct_answer = a.correct_answer;
-            if (a.feedback) p.explanation = a.feedback;
-            if (a.solution) p.solution = a.solution;
-          }
-          _dtFinish();
-        }).catch(function(e) { console.warn('[dt-submit-ai]', e); _dtFinish(); });
-      }
-    })
-    .catch(function(err) {
-      btn.disabled = false;
-      btn.textContent = oldTxt;
-      res.innerHTML = '<div style="color:var(--bad);">Сетевая ошибка</div>';
-      console.warn('[dt-submit]', err);
-    });
+      reader.onerror = function() {
+        btn.disabled = false;
+        btn.textContent = oldTxt;
+        res.innerHTML = '<div style="color:var(--bad);">Не удалось прочитать фото</div>';
+      };
+      reader.readAsDataURL(photoFile);
+    } else {
+      doAiSubmit([]);
+    }
   }
 
   function loadHint() {
@@ -1446,6 +1685,55 @@
     })
     .catch(function(err) { console.warn('[t8-dayoff]', err); });
   };
+
+  // ── Долг: раскрытие блока ──────────────────────────────
+  window.toggleDebt = function() {
+    var body = document.getElementById('dt-debt-body');
+    var arrow = document.getElementById('dt-debt-toggle-arrow');
+    if (!body) return;
+    var hidden = body.classList.contains('dt-hidden');
+    if (hidden) {
+      body.classList.remove('dt-hidden');
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+      body.classList.add('dt-hidden');
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+  };
+
+  // ── Долг: открыть задачу в той же модалке (условие + решение + чертёж) ──
+  window.openDebtTask = function(itemId) {
+    try {
+      var initDataEl = document.getElementById('dt-init-data');
+      if (!initDataEl) return;
+      var d = JSON.parse(initDataEl.textContent || '{}');
+      var debt = d.debt;
+      if (!debt || !debt.by_date) return;
+      for (var g = 0; g < debt.by_date.length; g++) {
+        var tasks = debt.by_date[g].tasks || [];
+        for (var t = 0; t < tasks.length; t++) {
+          var it = tasks[t];
+          if (String(it.id) === String(itemId)) {
+            openTask({
+              id: it.id,
+              position: it.position,
+              topic: it.topic,
+              difficulty_level: it.difficulty_level,
+              text: it.task_text,
+              preview: it.task_text,
+              correct_answer: it.correct_answer,
+              solution: it.solution,
+              figure_url: it.figure_url,
+              is_answered: false,
+              user_answer: null,
+              is_correct: null
+            });
+            return;
+          }
+        }
+      }
+    } catch (e) { console.warn('[dt-debt-open]', e); }
+  };
 })();
 
 // Yearly calendar toggle
@@ -1465,4 +1753,5 @@ function escapeHtmlPreserveLatex(s) {
   return s;
 }
 </script>
+{% include 'partials/math_keyboard.html' %}
 {% endblock %}

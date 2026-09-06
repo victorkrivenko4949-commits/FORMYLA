@@ -1,0 +1,41 @@
+--- /tmp/e_old.py	2026-09-01 15:22:16.143792668 +0000
++++ /tmp/e_new.py	2026-09-01 15:22:16.147792668 +0000
+@@ -820,19 +820,30 @@
+ 
+         elif ctype == "circle_center_radius":
+             center = ctx.get_point(constr["center"], cid)
+-            # Радиус можно задать числом (radius) или точкой (radius_point /
+-            # through): тогда r = distance(center, point).  Раньше игнорировался
+-            # radius_point и окружность схлопывалась в r=1.
++            # Радиус можно задать числом (radius) или точкой
++            # (radius_point / through / radius_from): r = distance(center, point).
++            #
++            # CH-fix: если ни один из ключей не указан — падаем явно.  Раньше
++            # возвращалась вырожденная окружность r=1, которая тихо ломала aux-чертеж:
++            # касания не совпадали с foot-точками, а визуал-аудит кидал INCIDENCE_VIOLATED.
+             radius = constr.get("radius")
+             if radius is None:
+-                rp = constr.get("radius_point") or constr.get("through")
++                rp = (constr.get("radius_point")
++                      or constr.get("through")
++                      or constr.get("radius_from"))
+                 if rp:
+                     rp_pt = ctx.get_point(rp, cid)
+                     radius = math.hypot(rp_pt[0] - center[0], rp_pt[1] - center[1])
+-                else:
+-                    radius = 1.0
+-            if radius is None or radius <= 0:
+-                radius = 1.0
++            if radius is None:
++                raise ConstructionError(
++                    cid, ctype,
++                    "circle_center_radius требует radius или radius_point/through/radius_from"
++                )
++            if radius <= geom.EPS:
++                raise ConstructionError(
++                    cid, ctype,
++                    f"CIRCLE_RADIUS_ZERO: радиус {radius} не положителен"
++                )
+             ctx.circles[cid] = (center, radius)
+             ctx.meta[cid] = {"type": "circle_center_radius", "label": constr.get("label", cid),
+                              "dashed": constr.get("dashed", False)}

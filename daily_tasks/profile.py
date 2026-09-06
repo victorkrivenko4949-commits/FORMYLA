@@ -13,7 +13,7 @@ daily_tasks/profile.py — Step 1: построение профиля поль�
      задачам со временем превращаются в собственный «running_pct» (см.
      ``update_topic_running_pct``).
 
-2. Процент знания темы -> уровень сложности задачи (1–5) через
+2. Процент знания темы -> уровень сложности задачи (1–4) через
    :func:`percent_to_level`. Пороги вынесены в
    :data:`PERCENT_LEVEL_THRESHOLDS` для удобного тюнинга.
 
@@ -67,16 +67,15 @@ logger = logging.getLogger(__name__)
 # Константы — все пороги и веса ВЫНЕСЕНЫ сюда, чтобы тюнить без правки логики
 # ══════════════════════════════════════════════════════════════════════
 
-# ── Маппинг процент -> уровень сложности 1–5 (см. ТЗ п.1) ──────────────
+# ── Маппинг процент -> уровень сложности 1–4 (см. ТЗ п.1) ──────────────
 # Формат: список (верхняя граница включительно, уровень).
 # Низкий % -> низкий уровень (ученик слаб -> задаём проще).
 # Высокий % -> высокий уровень (ученик силён -> задаём челлендж).
 PERCENT_LEVEL_THRESHOLDS: List[Tuple[int, int]] = [
-    (20, 1),   #   0–20% -> lvl 1 (база)
-    (40, 2),   #  21–40% -> lvl 2
-    (60, 3),   #  41–60% -> lvl 3
-    (80, 4),   #  61–80% -> lvl 4
-    (100, 5),  # 81–100% -> lvl 5 (челлендж)
+    (25, 1),   #   0–25% -> lvl 1 (база)
+    (50, 2),   #  26–50% -> lvl 2
+    (75, 3),   #  51–75% -> lvl 3
+    (100, 4),  # 76–100% -> lvl 4 (челлендж)
 ]
 
 # ── Поведение для измеренных слабых тем ───────────────────────────────
@@ -114,9 +113,9 @@ _TOP_WEAK_COUNT_WHEN_EMPTY = 10
 _TOP_STRONG_COUNT = 3
 _MIN_STRONG_ATTEMPTS = 5
 
-# ── Минимально допустимый уровень сложности (1–5 каноническая) ────────
+# ── Минимально допустимый уровень сложности (1–4 каноническая) ────────
 MIN_TASK_LEVEL = 1
-MAX_TASK_LEVEL = 5  # каноническая пятибалльная шкала 1..5
+MAX_TASK_LEVEL = 4  # каноническая четырёхуровневая шкала 1..4
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -138,7 +137,7 @@ class ProfileBuildError(Exception):
 
 
 def percent_to_level(pct: Optional[float]) -> Optional[int]:
-    """Конвертация процента знания темы (0–100) в уровень сложности (1–5).
+    """Конвертация процента знания темы (0–100) в уровень сложности (1–4).
 
     Параметры
     ---------
@@ -149,7 +148,7 @@ def percent_to_level(pct: Optional[float]) -> Optional[int]:
     Возвращает
     ----------
     int | None
-        Уровень из :data:`PERCENT_LEVEL_THRESHOLDS` (1..5) или ``None``.
+        Уровень из :data:`PERCENT_LEVEL_THRESHOLDS` (1..4) или ``None``.
 
     Примеры
     -------
@@ -161,9 +160,9 @@ def percent_to_level(pct: Optional[float]) -> Optional[int]:
     >>> percent_to_level(21)
     2
     >>> percent_to_level(100)
-    5
+    4
     >>> percent_to_level(150)  # clamp
-    5
+    4
     """
     if pct is None:
         return None
@@ -198,7 +197,7 @@ def compute_target_level_from_pct(
     floor: int = MIN_TASK_LEVEL,
     ceil: int = MAX_TASK_LEVEL,
 ) -> Optional[int]:
-    """[DEPRECATED] Target-уровень из pct в сжатой шкале 1..5.
+    """[DEPRECATED] Target-уровень из pct в сжатой шкале 1..4.
 
     Сохранена для обратной совместимости. Новый код должен использовать
     :func:`score_to_target_level` (полная шкала 1..8 на основе
@@ -216,7 +215,7 @@ def compute_stretch_level_from_pct(
     floor: int = MIN_TASK_LEVEL,
     ceil: int = MAX_TASK_LEVEL,
 ) -> Optional[int]:
-    """[DEPRECATED] Stretch-уровень в сжатой шкале 1..5."""
+    """[DEPRECATED] Stretch-уровень в сжатой шкале 1..4."""
     lvl = percent_to_level(pct)
     if lvl is None:
         return None
@@ -849,7 +848,7 @@ def build_profile(
         # target_level и окно [low, high] берутся ИЗ результата
         # адаптивного теста по этой теме (не из общего % ученика).
         # 8/8 алгебры -> target=L8, окно [L7, L8]; геометрия независимо.
-        pct_level = percent_to_level(pct)  # legacy 1..5 — для совместимости
+        pct_level = percent_to_level(pct)  # legacy 1..4 — для совместимости
         if measured:
             tr = test_results.get(db_topic, {})
             target_level = score_to_target_level(
@@ -859,11 +858,11 @@ def build_profile(
             )
             # Если в БД нет final_level (старая запись теста или running_pct)
             # — фолбэк: оцениваем по pct через старую сжатую шкалу + растяжка
-            # в шкалу 1..8 (умножаем на 8/5).
+            # в шкалу 1..4.
             if target_level is None:
                 legacy = compute_target_level_from_pct(pct) or MIN_TASK_LEVEL
                 target_level = max(MIN_TASK_LEVEL, min(MAX_TASK_LEVEL,
-                    round(legacy * (MAX_TASK_LEVEL / 5.0))))
+                    round(legacy * (MAX_TASK_LEVEL / 4.0))))
             level_lo, level_hi = compute_level_window(target_level)
             stretch_level = level_hi  # для совместимости с Gemini-промптом
             calibration = False

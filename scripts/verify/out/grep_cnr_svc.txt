@@ -1,0 +1,3 @@
+280:                 f"CONDITION_NOT_REALIZED: ∠{name} на чертеже {actual:.2f}°, "
+457:         "realization":  {"errors": [e for e in errors if e.startswith("CONDITION_NOT_REALIZED")]},
+540:     if code == "CONDITION_NOT_REALIZED":

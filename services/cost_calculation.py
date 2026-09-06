@@ -19,15 +19,15 @@
 
 USD_RUB = 90.0                     # курс ЦБ РФ, допущение на 2026-08
 
-# Подписка (из задания)
-SUBSCRIPTION_PRICE_RUB = 400       # 400 руб/мес
+# Подписка (из задания) — сейчас всё бесплатно (бета-период)
+SUBSCRIPTION_PRICE_RUB = 0         # 0 руб/мес
 SLICES_PER_MONTH = 7               # 7 срезов включено
 
-# Чертежи (из задания)
+# Чертежи (из задания) — сейчас всё бесплатно (бета-период)
 FIGURES_FREE = 3                   # бесплатно при регистрации
-FIGURE_PACK_10_RUB = 99
-FIGURE_PACK_30_RUB = 249
-FIGURE_PACK_100_RUB = 599
+FIGURE_PACK_10_RUB = 0
+FIGURE_PACK_30_RUB = 0
+FIGURE_PACK_100_RUB = 0
 
 # Модели (из задания)
 FIGURE_MODEL = "deepseek-chat"     # таймаут 90 сек

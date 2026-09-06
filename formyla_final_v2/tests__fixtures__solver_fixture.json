@@ -1,0 +1,119 @@
+{
+  "solvable": true,
+  "target": {
+    "kind": "perimeter",
+    "object": "треугольник EBD",
+    "description": "Найдите периметр треугольника EBD."
+  },
+  "answer": {
+    "value": 18.0,
+    "unit": null,
+    "exact": 18.0,
+    "is_numeric": true
+  },
+  "steps": [
+    {
+      "no": 1,
+      "text": "Проведём высоту AH на сторону BC."
+    },
+    {
+      "no": 2,
+      "text": "Проведём биссектрисы углов A и B, их пересечение O — центр вписанной окружности."
+    },
+    {
+      "no": 3,
+      "text": "Опустим перпендикуляр из O на BC в точку D и построим окружность с центром O."
+    },
+    {
+      "no": 4,
+      "text": "Проведём через D прямую, параллельную AC, до пересечения с AB в точке E."
+    },
+    {
+      "no": 5,
+      "text": "Продлим AE за E до F так, что EF = ED."
+    },
+    {
+      "no": 6,
+      "text": "Тогда EB = 39/7, BD = 6, ED = 585/91, поэтому периметр треугольника EBD равен 18."
+    }
+  ],
+  "aux_needed": true,
+  "aux_constructions": [
+    {
+      "op": "altitude",
+      "vertex": "A",
+      "to_line": ["B", "C"],
+      "foot_id": "H",
+      "quote": "Проведём высоту AH на сторону BC",
+      "step_no": 1,
+      "purpose": "Опустить высоту AH на основание BC."
+    },
+    {
+      "op": "angle_bisector",
+      "points": ["A", "B", "C"],
+      "quote": "Проведём биссектрисы углов A и B",
+      "step_no": 2,
+      "purpose": "Биссектриса угла B."
+    },
+    {
+      "op": "angle_bisector",
+      "points": ["B", "A", "C"],
+      "quote": "Проведём биссектрисы углов A и B",
+      "step_no": 2,
+      "purpose": "Биссектриса угла A."
+    },
+    {
+      "op": "perpendicular_through",
+      "from_point": "O",
+      "to_line": ["B", "C"],
+      "quote": "Опустим перпендикуляр из O на BC",
+      "step_no": 3,
+      "purpose": "Опустить перпендикуляр из инцентра O на BC."
+    },
+    {
+      "op": "line_intersection",
+      "line1": ["O", "D"],
+      "line2": ["B", "C"],
+      "id": "D",
+      "quote": "Опустим перпендикуляр из O на BC в точку D",
+      "step_no": 3,
+      "purpose": "Точка касания D вписанной окружности на стороне BC."
+    },
+    {
+      "op": "circle_center_radius",
+      "center": "O",
+      "through": "D",
+      "quote": "построим окружность с центром O",
+      "step_no": 3,
+      "purpose": "Вписанная окружность с центром O."
+    },
+    {
+      "op": "parallel_through",
+      "point": "D",
+      "to_line": ["A", "C"],
+      "quote": "Проведём через D прямую, параллельную AC",
+      "step_no": 4,
+      "purpose": "Прямая через D, параллельная AC."
+    },
+    {
+      "op": "line_intersection",
+      "points": ["D", "E", "A", "B"],
+      "id": "E",
+      "quote": "до пересечения с AB в точке E",
+      "step_no": 4,
+      "purpose": "Пересечение параллели с AB в точке E."
+    },
+    {
+      "op": "line_extension",
+      "segment": ["A", "E"],
+      "beyond": "E",
+      "id": "F",
+      "length_from": ["E", "D"],
+      "quote": "Продлим AE за E до F так, что EF = ED",
+      "step_no": 5,
+      "purpose": "Продлить AE за E до F, чтобы EF = ED."
+    }
+  ],
+  "confidence": 0.97,
+  "_model": "deepseek-v4-pro"
+}

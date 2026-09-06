@@ -1,0 +1,18 @@
+2026-08-30 22:31:32,556 - routes.figures_generator - INFO - [llm_router] role=base logical=deepseek-v4-pro providers=[('deepseek', 'deepseek-v4-pro')]
+2026-08-30 22:31:32,556 - routes.figures_generator - INFO - [llm_router] role=repair logical=deepseek-v4-pro providers=[('deepseek', 'deepseek-v4-pro')]
+2026-08-30 22:32:57,793 - routes.figures_generator - INFO - [figures_gen] picked job 594 from queue
+2026-08-30 22:32:57,793 - routes.figures_generator - INFO - [figures_gen] picked job 594 from queue
+2026-08-30 22:33:04,644 - routes.figures_generator - INFO - [llm_router] role=base provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=3000 prompt_tokens=3561 completion_tokens=671 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=6688
+2026-08-30 22:33:05,584 - routes.figures_generator - INFO - [llm_router] role=base provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=3000 prompt_tokens=3561 completion_tokens=711 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=7628
+2026-08-30 22:33:26,878 - routes.figures_generator - INFO - [figures_gen] picked job 595 from queue
+2026-08-30 22:33:26,884 - routes.figures_generator - INFO - [figures_gen] picked job 595 from queue
+2026-08-30 22:33:32,800 - routes.figures_generator - INFO - [llm_router] role=base provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=3000 prompt_tokens=3540 completion_tokens=550 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=5898
+2026-08-30 22:33:32,926 - routes.figures_generator - INFO - [llm_router] role=base provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=3000 prompt_tokens=3540 completion_tokens=547 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=6031
+2026-08-30 22:33:38,466 - routes.figures_generator - INFO - [llm_router] role=repair provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=6000 prompt_tokens=3594 completion_tokens=546 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=5670
+2026-08-30 22:33:38,945 - routes.figures_generator - INFO - [llm_router] role=repair provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=6000 prompt_tokens=3596 completion_tokens=584 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=6018
+2026-08-30 22:33:51,971 - routes.figures_generator - INFO - [figures_gen] picked job 596 from queue
+2026-08-30 22:33:51,977 - routes.figures_generator - INFO - [figures_gen] picked job 596 from queue
+2026-08-30 22:33:57,703 - routes.figures_generator - INFO - [llm_router] role=base provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=3000 prompt_tokens=3537 completion_tokens=550 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=5722
+2026-08-30 22:33:57,707 - routes.figures_generator - INFO - [llm_router] role=base provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=3000 prompt_tokens=3537 completion_tokens=550 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=5726
+2026-08-30 22:34:03,484 - routes.figures_generator - INFO - [llm_router] role=repair provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=6000 prompt_tokens=3591 completion_tokens=547 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=5781
+2026-08-30 22:34:03,708 - routes.figures_generator - INFO - [llm_router] role=repair provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=6000 prompt_tokens=3591 completion_tokens=546 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=5999

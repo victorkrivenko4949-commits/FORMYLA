@@ -3,9 +3,10 @@
 
 import json
 import logging
+import os
 from datetime import datetime, date
 
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, current_app, send_from_directory
 from flask_login import current_user, login_required
 
 from models import db, User
@@ -400,18 +401,19 @@ def stage_submit(code):
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/methods')
 def methods():
-    """РЎРїРёСЃРѕРє РІСЃРµС… СЂР°Р·РґРµР»РѕРІ РјРµС‚РѕРґРѕРІ СЃ РіСЂСѓРїРїРёСЂРѕРІРєРѕР№."""
-    blocks = (TheoryBlock.query
-              .order_by(TheoryBlock.section, TheoryBlock.sort_order)
-              .all())
-    # Р“СЂСѓРїРїРёСЂРѕРІРєР° РїРѕ СЂР°Р·РґРµР»Р°Рј
-    grouped = {}
-    for b in blocks:
-        sec = b.section or 'Р‘РµР· СЂР°Р·РґРµР»Р°'
-        grouped.setdefault(sec, []).append(b)
-    return render_template('olympiad/method.html',
-                           sections=grouped, blocks=blocks, detail_block=None,
-                           related_blocks=None, tasks_for_method=None)
+    """Каталог методов (102) — страница-обёртка с шапкой сайта + iframe атласа.
+
+    Сам атлас отдаётся отдельно по /olympiads/methods/atlas.html потоком
+    (send_from_directory), НЕ читается в память — он крупный (~5.5 МБ).
+    """
+    return render_template('olympiad/methods_atlas.html')
+
+
+@olympiad_bp.route('/methods/atlas.html')
+def methods_atlas():
+    """Отдать сам файл атласа методов (внутри iframe)."""
+    _methods_dir = os.path.join(current_app.static_folder, 'methods')
+    return send_from_directory(_methods_dir, 'index.html')
 
 
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ

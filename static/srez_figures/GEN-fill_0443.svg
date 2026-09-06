@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="380" viewBox="0 0 560 380" style="background-color: #0F1729;">
+<rect x="0" y="0" width="560" height="380" fill="#0F1729" />
+<line x1="208.00" y1="104.00" x2="118.00" y2="320.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<line x1="118.00" y1="320.00" x2="442.00" y2="320.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<line x1="442.00" y1="320.00" x2="352.00" y2="104.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<line x1="352.00" y1="104.00" x2="208.00" y2="104.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<line x1="208.00" y1="104.00" x2="442.00" y2="320.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<line x1="118.00" y1="320.00" x2="352.00" y2="104.00" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" />
+<line x1="208.00" y1="104.00" x2="208.00" y2="320.00" stroke="#A6B7CC" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="6,4" />
+<polyline points="208.00,310.00 218.00,310.00 218.00,320.00" fill="none" stroke="#A6B7CC" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
+<circle cx="280.00" cy="170.46" r="3.5" stroke="#A6B7CC" stroke-width="1.8" fill="#A6B7CC" />
+<text x="280.00" y="88.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">4</text>
+<text x="280.00" y="340.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">9</text>
+<text x="224.00" y="208.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">6</text>
+<text x="192.00" y="86.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">A</text>
+<text x="368.00" y="86.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">D</text>
+<text x="104.00" y="340.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">B</text>
+<text x="456.00" y="340.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">C</text>
+<text x="296.00" y="180.00" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">O</text>
+</svg>

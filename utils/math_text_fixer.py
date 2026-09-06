@@ -8,6 +8,7 @@ _UNICODE_MAP = {
     "\u2260": r"\neq ",
     "\u2264": r"\leq ",
     "\u2265": r"\geq ",
+    "\u2212": "-",
     "\u00b7": r"\cdot ",
     "\u2022": r"\cdot ",
     "\u00d7": r"\times ",
@@ -228,6 +229,113 @@ def fix_latex_commands(text):
     )
 
     return s
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# wrap_bare_math — обёртка «голой» математики в \( ... \) для KaTeX
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Unicode-степени -> ^{n} (идемпотентно).
+_SUP_TO_CARET = {
+    "\u00b2": "2", "\u00b3": "3", "\u2074": "4", "\u2075": "5",
+    "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9",
+}
+
+# Уже обёрнутые LaTeX-блоки — их не трогаем (защищаем плейсхолдерами).
+_LATEX_BLOCK_RE = re.compile(
+    r'(\\\(.*?\\\)|\\\[.*?\\\]|\$\$.*?\$\$|\$[^$\n]+?\$)',
+    re.DOTALL,
+)
+
+# Фрагмент «похожий на математику»: латиница/цифры, операторы, скобки,
+# степени, LaTeX-команды. Пробел/таб — как продолжение внутри фрагмента,
+# но НЕ перевод строки (чтобы не склеивать разные строки решения).
+_MATH_RUN_RE = re.compile(
+    "["
+    "A-Za-z0-9"
+    "\\\\^_{}()"
+    "+\\-*/=<>"
+    "\u00b7\u00d7\u00f7\u2264\u2265\u2260\u221a\u00b0\u2212"
+    "\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079"
+    "\u03c0\u03a0\u03b1\u03b2\u03b3\u03b4\u03b8\u0394"
+    " \t"
+    "]+",
+)
+
+_MATH_PURE_DELIM_RE = re.compile(r'^\\[\(\)\[\]]+$')
+_MATH_TRIGGER_POW_RE = re.compile(r"[\^_\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]")
+_MATH_TRIGGER_CMP_RE = re.compile(r"[=\<\>\u2264\u2265\u2260]")
+_MATH_TRIGGER_OP_RE = re.compile(r"[+\-*/\u00b7\u00d7\u00f7]")
+_MATH_TRIGGER_ALNUM_RE = re.compile(r"[A-Za-z0-9]")
+
+
+def _is_math_run(run):
+    r"""Стоит ли оборачивать фрагмент в \(...\)."""
+    run = run.strip()
+    if not run:
+        return False
+    # Голый разделитель без содержимого
+    if _MATH_PURE_DELIM_RE.match(run):
+        return False
+    # LaTeX-команда (\sqrt, \frac, \geq ...)
+    if "\\" in run:
+        return True
+    # Степень / индекс: x^2, x^{2}, x_1 ...
+    if _MATH_TRIGGER_POW_RE.search(run):
+        return True
+    # Сравнение (=, <, >, ≤, ≥, ≠) — только рядом с числом/буквой
+    if _MATH_TRIGGER_CMP_RE.search(run) and _MATH_TRIGGER_ALNUM_RE.search(run):
+        return True
+    # Арифметический оператор с операндом (6×6, x + y, n^3 - n)
+    if _MATH_TRIGGER_OP_RE.search(run) and _MATH_TRIGGER_ALNUM_RE.search(run):
+        return True
+    return False
+
+
+def wrap_bare_math(text):
+    r"""Обернуть «голую» математику в \( ... \) для корректного рендера KaTeX.
+
+    Примеры:
+      ``P(a) = a^2 + xa + y``  ->  ``\(P(a) = a^2 + xa + y\)``
+      ``x² + y² ≥ 1``          ->  ``\(x^{2} + y^{2} \geq 1\)``
+
+    Безопасно: уже обёрнутые блоки \(...\), \[...\], $...$ и русский текст
+    (кириллица) не затрагиваются; простые числа и одиночные буквы в прозе
+    остаются как есть.
+    """
+    if not text or not isinstance(text, str):
+        return text
+
+    # 1) Unicode-степени -> ^{n} (идемпотентно; после этого ^ ловится ниже).
+    for uni, num in _SUP_TO_CARET.items():
+        text = text.replace(uni, "^{" + num + "}")
+
+    # 2) Защищаем уже обёрнутые LaTeX-блоки.
+    placeholders = []
+
+    def _protect(m):
+        placeholders.append(m.group(0))
+        return "\x00%d\x00" % (len(placeholders) - 1)
+
+    protected = _LATEX_BLOCK_RE.sub(_protect, text)
+
+    # 3) Оборачиваем голые математические фрагменты (сохраняя отступы).
+    def _wrap(m):
+        run = m.group(0)
+        lead = run[:len(run) - len(run.lstrip(" \t"))]
+        trail = run[len(run.rstrip(" \t")):]
+        core = run.strip(" \t")
+        if _is_math_run(core):
+            return lead + r"\(" + core + r"\)" + trail
+        return run
+
+    wrapped = _MATH_RUN_RE.sub(_wrap, protected)
+
+    # 4) Восстанавливаем защищённые блоки.
+    for i, ph in enumerate(placeholders):
+        wrapped = wrapped.replace("\x00%d\x00" % i, ph)
+
+    return wrapped
 
 
 # Alias for backward compatibility

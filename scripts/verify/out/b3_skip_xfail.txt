@@ -1,0 +1,153 @@
+============================= test session starts =============================
+collecting ... [olympiads.py] Loaded 5218 entries from JSONL
+ВНИМАНИЕ: Файл adaptive_data.py не найден или пуст.
+[figures_manifest] MANIFEST.json not found - figures disabled
+DEBUG: Загружено 81 привязок картинок из problem_images.py
+ℹ️  SENTRY_DSN не задан — Sentry отключен.
+[OK] ProxyFix applied (x_for=2, x_proto=1, x_host=1, x_prefix=1)
+============================================================
+P12 TASK3: проверка переменных окружения
+  Всего переменных в окружении: 87
+  Все 9 проверяемых переменных заданы.
+============================================================
+[DB] Using: sqlite:///c:/Users/Redmi/Desktop/Новая папка (2)/instance/formyla.db@***
+============================================================
+DEBUG: Flask-Mail Configuration:
+MAIL_SERVER = smtp.yandex.ru
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = kr1venkovictor@yandex.ru
+MAIL_PASSWORD = **************** (16 символов)
+============================================================
+[OK] База данных инициализирована
+[AUTO-MIGRATE/V10] Schema up-to-date — nothing to do
+[AUTO-MIGRATION] [OK] Column 'agent_type' already exists
+[AUTO-MIGRATION] [OK] Column 'subtopic' already exists
+[AUTO-MIGRATION] [OK] Column 'attempts_count' already exists
+[AUTO-MIGRATION] [OK] Column 'solves_count' already exists
+[AUTO-MIGRATION] [OK] Column 'actual_solve_rate' already exists
+[AUTO-MIGRATION] [OK] Column 'suggested_level' already exists
+[AUTO-MIGRATION] [OK] Column 'needs_reclassification' already exists
+[AUTO-MIGRATION] [OK] Column 'last_calibrated_at' already exists
+[AUTO-MIGRATION] [OK] Column 'task_type' already exists
+[AUTO-MIGRATION] [OK] Column 'source' already exists
+[AUTO-MIGRATION] [OK] Column 'origin' already exists
+[AUTO-MIGRATION] [OK] Column 'methods_json' already exists
+[AUTO-MIGRATION] [OK] Column 'theme_id' already exists
+[AUTO-MIGRATION] [OK] Column 'theme_title' already exists
+[AUTO-MIGRATION] [OK] Column 'is_calibration' already exists on daily_task_items
+[AUTO-MIGRATION] [OK] Column 'prep_state' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_mu' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_sigma' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_by_section' already exists on curator_state
+[AUTO-MIGRATION] ✓ Column 'level_updated_at' already exists on curator_state
+[AUTO-MIGRATION] [OK] Table 'tutor_calls' ready
+[AUTO-MIGRATION] ✓ Column 'figure_json' already exists on adaptive_tasks
+[AUTO-MIGRATION] ✓ Column 'figure_status' already exists on adaptive_tasks
+[AUTO-MIGRATION] ✓ Column 'figure_json' already exists on daily_task_items
+[AUTO-MIGRATION] ✓ Column 'figure_status' already exists on daily_task_items
+[AUTO-MIGRATION] [OK] Group chat tables already exist
+[AUTO-MIGRATION] [OK] olympiad_task_attempts.status already normalized
+  [pregen_queue migration] dialect = sqlite
+  [OK] pre_gen_queue: 11 колонок
+[migration] pre_gen_queue table ensured
+[AUTO-MIGRATION] [OK] figure_jobs table already exists
+[AUTO-MIGRATION] [OK] friendships table schema OK
+[AUTO-MIGRATION] [OK] support_messages table already exists
+[AUTO-MIGRATION] [OK] site_reviews table already exists
+[AUTO-MIGRATION] [OK] Column 'solved_indices' already exists
+[BP] prep_bp registered (/prep)
+[BP] olympiad_prep_bp registered (/olympiad-prep)
+[BP] account_bp registered (/account)
+[BP] figures_bp registered (/figures)
+[BP] figures_gen_bp registered (/figures/generate)
+[BP] wb_call_bp registered (/api/wb_call/*)
+[BP] wb_meet_bp registered (/api/wb_meet/*)
+[BP] conference_api_bp registered (/api/conference/*)
+[BP] chat_presence_bp registered (/api/chat/*/presence, typing)
+[BP] olympiad_bp registered (/olympiads/*: probnik, task, stage, methods)
+[BP] admin_support_bp registered (/admin/support, /my/support)
+[OLYMPIAD-SEED] disabled (set OLYMPIAD_AUTOSEED=1 to enable)
+[SocketIO] Conference WebSocket signalling initialized (/ws-call)
+[VSOSH-FULL-SEED] disabled (set VSOSH9_2027_FORCE_IMPORT=1 to enable)
+[VSOSH10_11-ADD] result={'status': 'skipped', 'reason': 'already_present', 'count': 43}
+[ADAPTIVE-FULL-SEED] disabled (set ADAPTIVE_FORCE_IMPORT=1 to enable)
+[LATEX-ROOT-DB-FIX] olympiad_tasks: updated 0 / 860 rows
+[LATEX-ROOT-DB-FIX] method_tasks: updated 0 / 860 rows
+[LATEX-ROOT-DB-FIX] adaptive_tasks: updated 0 / 0 rows
+[LATEX-ROOT-DB-FIX] total rows updated: 0
+[LATEX-ROOT-DB-FIX] result={'olympiad_tasks': {'updated': 0, 'scanned': 860}, 'method_tasks': {'updated': 0, 'scanned': 860}, 'adaptive_tasks': {'updated': 0, 'scanned': 0}}
+[OLYMPIAD-SEED] Theory source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\methods_catalog_105.json (102 rows; in DB: 102 — ensuring all present)
+[OLYMPIAD-SEED] TheoryBlock: created 0 rows, updated 0 rows
+[THEORY-SEED] body source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\theory_65_methods.json (65 rows)
+[THEORY-SEED] body source: c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\theory_24_methods.json (24 rows)
+[THEORY-SEED] Theory bodies filled: 0 methods updated
+[THEORY-MD] No MD content parsed from c:\Users\Redmi\Desktop\Новая папка (2)\data\olympiads\formyla_vsosh9_10_methods_combined.md
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-1' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-2' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-3' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-4' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-5' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-6' not found in DB — skipping
+[PROBNIK-THEORY] Probnik 'vsosh-9-2027-topic-7' not found in DB — skipping
+[PROBNIK-THEORY] Created 0 probnik-theory links (skipped 41)
+[THEORY-FIX] No placeholder method names — nothing to do
+[SECRETS-SEED] Already populated (102 rows)
+[BP] grade_bp registered (/grade-5, /grade-6, /grade-task/*)
+[BP] assistant_bp registered (/api/assistant, /api/concierge/ask, /api/concierge/intents) + KB seeded
+[BP] telegram_auth_bp registered (/auth/telegram/callback)
+  [daily_tasks migration] dialect = sqlite
+  [OK] daily_task_sets: 10 колонок
+  [OK] daily_task_items: 32 колонок
+  [OK] daily_generation_jobs: 11 колонок
+  [task_pool migration] dialect = sqlite
+  [OK] task_pool: 12 колонок
+  [OK] user_task_assignments: 5 колонок
+[BP] daily_tasks_bp registered (/daily_tasks)
+  [curator migration] dialect = sqlite
+  [OK] student_diagnostics: 14 колонок
+  [OK] learning_plans: 18 колонок
+  [OK] task_attempts: 19 колонок
+  [OK] progress_log: 16 колонок
+  [OK] task_bank: 11 колонок
+[BP] curator_bp registered (/curator) — diagnostics, plans, tutor, progress
+[BP] intake_bp registered (/intake)
+[BP] parent_teacher_bp registered (/teacher, /parent, /student/*)
+[BP] dashboard_settings_bp registered (/dashboard/settings)
+  [test_sessions migration] dialect = sqlite
+  [OK] test_sessions: 16 колонок
+[BP] test_sessions migration ensured
+[JINJA] filter md_render registered
+[JINJA] filter inject_geometry registered
+[OK] VAPID keys loaded — Web Push notifications enabled
+[OK] APScheduler started - Daily Quest cron jobs active
+olympiads.py: старый формат, 5218 задач -> 1209 пробников
+Пробников всего: 1209, с задачами: 1209
+Адаптивный тест: загружено 0 задач из adaptive_data
+OLYMPIADS_INFO: 13 олимпиад с grades/rounds
+collected 0 items
+
+============================== warnings summary ===============================
+app.py:1047
+  c:\Users\Redmi\Desktop\����� ����� (2)\app.py:1047: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff = _dt.utcnow() - _td(minutes=10)
+
+routes\figures_generator.py:2324
+routes\figures_generator.py:2324
+routes\figures_generator.py:2324
+routes\figures_generator.py:2324
+routes\figures_generator.py:2324
+  C:\Users\Redmi\Desktop\����� ����� (2)\routes\figures_generator.py:2324: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff = datetime.utcnow()
+
+app.py:10184
+  c:\Users\Redmi\Desktop\����� ����� (2)\app.py:10184: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _cutoff_7d = _dt_now.utcnow() - _td_7d(days=7)
+
+..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:952
+  C:\Users\Redmi\AppData\Local\Programs\Python\Python312\Lib\site-packages\sqlalchemy\engine\default.py:952: DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12; see the sqlite3 documentation for suggested replacement recipes
+    cursor.execute(statement, parameters)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= 8 warnings in 0.00s =============================

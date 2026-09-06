@@ -73,9 +73,60 @@
         color: var(--accent-hi);
         font-weight: 600;
     }
+    .radar-wrap {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .radar-box {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+    }
+    .radar-box h3 {
+        margin: 0 0 12px 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .radar-box canvas {
+        max-height: 260px;
+    }
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+    }
+    .cal-cell {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 6px;
+        text-align: center;
+        min-height: 58px;
+    }
+    .cal-cell.today {
+        border-color: var(--accent-hi);
+        box-shadow: 0 0 0 1px var(--accent-hi) inset;
+    }
+    .cal-day {
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .cal-count {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        margin-top: 4px;
+    }
+    .cal-count.good { color: var(--ok); }
+    .cal-count.mid { color: #fbbf24; }
+    .cal-count.zero { color: var(--muted); }
     @media (max-width: 600px) {
         .student-page { padding: 24px 16px 100px; }
         .stat-row { flex-direction: column; }
+        .radar-wrap { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -85,10 +136,10 @@
     <h1>{{ student_display }}</h1>
 
     <div class="card">
-        <h2>Активность</h2>
+        <h2>Успеваемость</h2>
         <div class="stat-row">
             <div class="stat-item">
-                <div class="stat-label">Задач/день (7 дн.)</div>
+                <div class="stat-label">Среднее задач/день (7 дн.)</div>
                 <div class="stat-value {{ 'green' if avg_tasks >= 4 else 'red' }}">
                     {{ avg_tasks }}
                 </div>
@@ -101,6 +152,30 @@
     </div>
 
     <div class="card">
+        <h2>Радар по разделам</h2>
+        <div class="radar-wrap">
+            <div class="radar-box">
+                <h3>Разделы</h3>
+                <canvas id="sectionRadar" data-radar='{{ section_radar | tojson }}'></canvas>
+            </div>
+        </div>
+    </div>
+
+    {% if theme_radars %}
+    <div class="card">
+        <h2>Радары по подтемам</h2>
+        <div class="radar-wrap">
+            {% for tr in theme_radars %}
+            <div class="radar-box">
+                <h3>{{ tr.section_name }}</h3>
+                <canvas id="themeRadar{{ loop.index0 }}" data-radar='{{ tr.points | tojson }}'></canvas>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
         <h2>Уровни по якорям (mu/sigma)</h2>
         <div class="anchor-badges">
             {% for anchor, vals in anchors.items() %}
@@ -110,5 +185,87 @@
             {% endfor %}
         </div>
     </div>
+
+    <div class="card">
+        <h2>Календарь месяца</h2>
+        <div class="calendar-grid">
+            {% for cell in calendar_days %}
+            <div class="cal-cell {{ 'today' if cell.is_today else '' }}">
+                <div class="cal-day">{{ cell.day }}</div>
+                <div class="cal-count {{ 'good' if cell.solved == cell.total and cell.total > 0 else ('mid' if cell.solved > 0 else 'zero') }}">
+                    {{ cell.solved }}/{{ cell.total }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    function buildRadar(canvas) {
+        if (!canvas) return;
+        var data;
+        try {
+            data = JSON.parse(canvas.dataset.radar || '[]');
+        } catch (e) {
+            return;
+        }
+        if (!data || data.length === 0) return;
+
+        var labels = data.map(function(d) { return d.name; });
+        var values = data.map(function(d) { return d.value || 0; });
+
+        new Chart(canvas, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Уровень',
+                    data: values,
+                    backgroundColor: 'rgba(56,239,125,0.12)',
+                    borderColor: '#38ef7d',
+                    pointBackgroundColor: '#38ef7d',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                layout: { padding: 16 },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var v = ctx.parsed.r;
+                                if (v === 0) return 'Нет данных';
+                                return 'Уровень ' + v.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 5,
+                        ticks: { stepSize: 1, color: 'rgba(255,255,255,0.3)', backdropColor: 'transparent', font: { size: 10 } },
+                        grid: { color: 'rgba(255,255,255,0.08)' },
+                        angleLines: { color: 'rgba(255,255,255,0.12)' },
+                        pointLabels: { color: '#e2e8f0', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    buildRadar(document.getElementById('sectionRadar'));
+    var themeCanvases = document.querySelectorAll('canvas[id^="themeRadar"]');
+    themeCanvases.forEach(buildRadar);
+})();
+</script>
 {% endblock %}

@@ -25,7 +25,6 @@ LEVEL_NAME_CANON = {
     2: "school_vsosh",
     3: "municipal_vsosh",
     4: "regional_vsosh",
-    5: "final_vsosh",
 }
 
 SOURCE_VALUE = "formyla_L1_L5_TOP5"
@@ -139,7 +138,7 @@ class FormylaImporter:
         mapping = [
             ("task_uid", "source_id", "[OK] маппится"),
             ("grade", "class_level", "[OK] маппится"),
-            ("level", "difficulty_level", "[OK] маппится (1..5)"),
+            ("level", "difficulty_level", "[OK] маппится (1..4)"),
             ("level_name", "—", "[ERROR] нет приёмника, значение отбрасывается"),
             ("section", "subject", "[OK] маппится"),
             ("theme_id", "subtopic", "[OK] маппится"),
@@ -199,8 +198,8 @@ class FormylaImporter:
         except (TypeError, ValueError):
             errors.append(f"invalid level: {level!r}")
             return None, errors
-        if level < 1 or level > 5:
-            errors.append(f"level out of range 1..5: {level}")
+        if level < 1 or level > 4:
+            errors.append(f"level out of range 1..4: {level}")
             return None, errors
 
         grade = row.get("grade")
@@ -547,7 +546,7 @@ class FormylaImporter:
         # Таблица grade × level
         print("\n── Таблица grade × level ──")
         grades = sorted(set(g for g, _ in self.grade_level_counter.keys()))
-        levels = [1, 2, 3, 4, 5]
+        levels = [1, 2, 3, 4]
         header = "grade\\L | " + " | ".join(f"L{l}" for l in levels)
         print(header)
         print("-" * len(header))
@@ -600,7 +599,7 @@ class FormylaImporter:
         # B. Normalization
         lines.append("## B. Normalization")
         lines.append("")
-        lines.append(f"- **level_name**: канонизирован по `level` (1..5), игнорируя "
+        lines.append(f"- **level_name**: канонизирован по `level` (1..4), игнорируя "
                      f"значение в файле.  Приёмника в AdaptiveTask нет, "
                      f"канонизированное значение отбрасывается.")
         lines.append(
@@ -704,7 +703,7 @@ class FormylaImporter:
         lines.append("### Grade × Level Grid")
         lines.append("")
         grades = sorted(set(g for g, _ in self.grade_level_counter.keys()))
-        levels = [1, 2, 3, 4, 5]
+        levels = [1, 2, 3, 4]
         header = "| grade \\ level | " + " | ".join(f"L{l}" for l in levels) + " |"
         sep = "|---|" + "|".join(["---"] * len(levels)) + "|"
         lines.append(header)

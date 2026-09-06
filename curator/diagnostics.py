@@ -490,21 +490,18 @@ def _check_answer(task, user_answer: str) -> bool:
 
 
 def _pct_to_level(pct: float) -> int:
-    """Конвертировать процент в уровень (1-5).
+    """Конвертировать процент в уровень (1-4).
 
-    Level 1: 0-20%  — начальный
-    Level 2: 21-40% — базовый
-    Level 3: 41-60% — средний
-    Level 4: 61-80% — продвинутый
-    Level 5: 81-100% — высокий
+    Level 1: 0-25%  — начальный
+    Level 2: 26-50% — базовый
+    Level 3: 51-75% — средний
+    Level 4: 76-100% — продвинутый
     """
-    if pct >= 81:
-        return 5
-    elif pct >= 61:
+    if pct >= 76:
         return 4
-    elif pct >= 41:
+    elif pct >= 51:
         return 3
-    elif pct >= 21:
+    elif pct >= 26:
         return 2
     return 1
 

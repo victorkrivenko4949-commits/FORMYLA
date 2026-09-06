@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<defs>
+  <style>
+    .label{font-family:Arial,Helvetica,sans-serif;font-size:14px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2px;stroke-linejoin:round}
+    .small{font-family:Arial,Helvetica,sans-serif;font-size:12px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2px;stroke-linejoin:round}
+    .grid{stroke:#D9E5F5;stroke-width:1.8;stroke-linecap:round}
+    .dom{fill:#73B6E6;fill-opacity:.18;stroke:#73B6E6;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+</defs>
+<text x="300" y="30" class="label" font-size="17">Покрытие доски доминошками</text>
+<text x="300" y="53" class="small">5 × 6 клеток; удалены (5;5) и (5;6)</text>
+<!-- шахматная доска -->
+<g>
+ <rect x="100" y="80" width="66.667" height="66.667" fill="#1C2A40"/><rect x="233.333" y="80" width="66.667" height="66.667" fill="#1C2A40"/><rect x="366.667" y="80" width="66.667" height="66.667" fill="#1C2A40"/>
+ <rect x="166.667" y="146.667" width="66.666" height="66.666" fill="#1C2A40"/><rect x="300" y="146.667" width="66.667" height="66.666" fill="#1C2A40"/><rect x="433.333" y="146.667" width="66.667" height="66.666" fill="#1C2A40"/>
+ <rect x="100" y="213.333" width="66.667" height="66.667" fill="#1C2A40"/><rect x="233.333" y="213.333" width="66.667" height="66.667" fill="#1C2A40"/><rect x="366.667" y="213.333" width="66.667" height="66.667" fill="#1C2A40"/>
+ <rect x="166.667" y="280" width="66.666" height="66.667" fill="#1C2A40"/><rect x="300" y="280" width="66.667" height="66.667" fill="#1C2A40"/><rect x="433.333" y="280" width="66.667" height="66.667" fill="#1C2A40"/>
+ <rect x="100" y="346.667" width="66.667" height="66.666" fill="#1C2A40"/><rect x="233.333" y="346.667" width="66.667" height="66.666" fill="#1C2A40"/><rect x="366.667" y="346.667" width="133.333" height="66.666" fill="#0F1729"/>
+</g>
+<!-- доминошки -->
+<g class="dom">
+ <rect x="366.667" y="146.667" width="66.666" height="133.333" rx="8"/>
+ <rect x="100" y="346.667" width="133.333" height="66.666" rx="8"/>
+ <rect x="300" y="80" width="133.333" height="66.667" rx="8"/>
+ <rect x="166.667" y="213.333" width="66.666" height="133.334" rx="8"/>
+ <rect x="433.333" y="80" width="66.667" height="133.333" rx="8"/>
+ <rect x="233.333" y="80" width="66.667" height="133.333" rx="8"/>
+ <rect x="233.333" y="213.333" width="66.667" height="133.334" rx="8"/>
+ <rect x="300" y="146.667" width="66.667" height="133.333" rx="8"/>
+ <rect x="433.333" y="213.333" width="66.667" height="133.334" rx="8"/>
+ <rect x="100" y="80" width="66.667" height="133.333" rx="8"/>
+ <rect x="166.667" y="80" width="66.666" height="133.333" rx="8"/>
+ <rect x="233.333" y="346.667" width="133.334" height="66.666" rx="8"/>
+ <rect x="300" y="280" width="133.333" height="66.667" rx="8"/>
+ <rect x="100" y="213.333" width="66.667" height="133.334" rx="8"/>
+</g>
+<!-- внешняя рамка и сетка -->
+<path d="M100 80H500V413.333H100Z" fill="none" class="grid" stroke-width="2.4"/>
+<g class="grid" fill="none">
+ <path d="M166.667 80V413.333M233.333 80V413.333M300 80V413.333M366.667 80V413.333M433.333 80V413.333"/>
+ <path d="M100 146.667H500M100 213.333H500M100 280H500M100 346.667H500"/>
+</g>
+<!-- удалённые клетки -->
+<g stroke="#D96C75" stroke-width="2" stroke-linecap="round">
+ <path d="M373 353L427 407M427 353L373 407M440 353L494 407M494 353L440 407"/>
+</g>
+<!-- номера домино -->
+<g class="small" fill="#FFD166">
+ <text x="400" y="213">1</text><text x="166.7" y="380">2</text><text x="366.7" y="113">3</text><text x="200" y="280">4</text><text x="466.7" y="146">5</text><text x="266.7" y="146">6</text><text x="266.7" y="280">7</text><text x="333.3" y="213">8</text><text x="466.7" y="280">9</text><text x="133.3" y="146">10</text><text x="200" y="146">11</text><text x="300" y="380">12</text><text x="366.7" y="313">13</text><text x="133.3" y="280">14</text>
+</g>
+<!-- координатные подписи -->
+<g class="label">
+ <text x="133.333" y="65">1</text><text x="200" y="65">2</text><text x="266.667" y="65">3</text><text x="333.333" y="65">4</text><text x="400" y="65">5</text><text x="466.667" y="65">6</text>
+ <text x="82" y="113.333">1</text><text x="82" y="180">2</text><text x="82" y="246.667">3</text><text x="82" y="313.333">4</text><text x="82" y="380">5</text>
+</g>
+<text x="300" y="450" class="label" font-size="16">14 доминошек покрывают все 28 оставшихся клеток</text>
+<text x="55" y="246" class="small" transform="rotate(-90 55 246)">строки</text>
+<text x="300" y="475" class="small">столбцы →</text>
+</svg>

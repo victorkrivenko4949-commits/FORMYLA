@@ -1,8 +1,52 @@
-\$LASTEXITCODE : Имя "\$LASTEXITCODE" не распознано как имя командлета, функции, файла сценария или выполняемой програм
-мы. Проверьте правильность написания имени, а также наличие и правильность пути, после чего повторите попытку.
-строка:1 знак:252
-+ ... IMI_API_KEY\s*=\s*[''"]' -Exclude '.env' ; if (\$LASTEXITCODE -eq 0)  ...
-+                                                    ~~~~~~~~~~~~~~
-    + CategoryInfo          : ObjectNotFound: (\$LASTEXITCODE:String) [], CommandNotFoundException
-    + FullyQualifiedErrorId : CommandNotFoundException
- 
+python-dotenv could not parse statement starting at line 45
+python-dotenv could not parse statement starting at line 45
+2026-09-06 10:51:27,178 - app - INFO - [security] init_security applied (headers + csrf helpers)
+2026-09-06 10:51:27,237 - app - INFO - === App started, logging to c:\Users\Redmi\Desktop\╨Э╨╛╨▓╨░╤П ╨┐╨░╨┐╨║╨░ (2)\logs\app.log
+2026-09-06 10:51:28,342 - routes.figures_generator - INFO - [figures_gen] reasoner prompt loaded (8500 chars)
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=base logical=gemini-3.7-flash providers=[]
+2026-09-06 10:51:28,343 - routes.figures_generator - WARNING - [llm_router] role=base logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=aux logical=gemini-3.7-flash providers=[]
+2026-09-06 10:51:28,343 - routes.figures_generator - WARNING - [llm_router] role=aux logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=audit logical=gemini-3.7-flash providers=[]
+2026-09-06 10:51:28,343 - routes.figures_generator - WARNING - [llm_router] role=audit logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=repair logical=deepseek-v4-pro providers=[('novita', 'deepseek/deepseek-v4-pro'), ('deepseek', 'deepseek-v4-pro')]
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=legacy_reasoner logical=deepseek-v4-pro providers=[('novita', 'deepseek/deepseek-v4-pro'), ('deepseek', 'deepseek-v4-pro')]
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=solver logical=deepseek-v4-pro providers=[('novita', 'deepseek/deepseek-v4-pro'), ('deepseek', 'deepseek-v4-pro')]
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=solver_shadow logical=gemini-3.7-flash providers=[]
+2026-09-06 10:51:28,343 - routes.figures_generator - WARNING - [llm_router] role=solver_shadow logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
+2026-09-06 10:51:28,343 - routes.figures_generator - INFO - [llm_router] role=insight_deep logical=deepseek-v4-pro providers=[('novita', 'deepseek/deepseek-v4-pro'), ('deepseek', 'deepseek-v4-pro')]
+2026-09-06 10:51:28,347 - routes.figures_generator - INFO - [figures_gen] queue worker started
+2026-09-06 10:51:28,348 - routes.figures_generator - INFO - [figures_gen] queue worker thread launched
+2026-09-06 10:51:28,690 - routes.wb_ws - INFO - [ws] SocketIO initialized on namespace /ws-call
+2026-09-06 10:51:28,705 - services.vsosh_10_11_additive_seed - INFO - [VSOSH10_11-ADD] DB already has 43 probniks (target 43) - skip
+2026-09-06 10:51:29,103 - services.insight_queue - INFO - [insight] queue worker started (max=5)
+2026-09-06 10:51:29,119 - services.insight_queue - INFO - [insight] queue worker thread launched
+2026-09-06 10:51:29,192 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,192 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,192 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-06 10:51:29,194 - apscheduler.scheduler - INFO - Added job "daily_streak_reset_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "daily_quest_deadline_reminder_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "curator_evening_notification_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "curator_morning_prep_reminder_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "curator_evening_prep_generate_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "process_pregen_queue_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "conveyor_schedule_all_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "conveyor_worker_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "tutor_history_cleanup_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "daily_midnight_assign_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Added job "daily_buffer_fill_job" to job store "default"
+2026-09-06 10:51:29,196 - apscheduler.scheduler - INFO - Scheduler started
+2026-09-06 10:51:29,251 - services.theme_registry - INFO - theme_registry: loaded 132 theme->section mappings
+2026-09-06 10:51:29,348 - services.theme_registry - INFO - theme_registry: loaded 132 theme->title mappings from JSONL
+2026-09-06 10:51:29,348 - services.theme_registry - INFO - theme_registry: derived themes for grades [5, 6, 7, 8, 9, 10, 11] from theme_to_section.json
+2026-09-06 10:51:29,353 - services.curator_plan_service - INFO - get_active_subtopics: user=1302 month=1 found=0 (plan_missing)
+2026-09-06 10:51:29,353 - services.bank_daily - WARNING - build_daily_set: user=1302 date=2026-09-06 ╨┐╨╗╨░╨╜ ╨╜╨░ ╨╝╨╡╤Б╤П╤Ж ╨╜╨╡ ╨╖╨░╨┤╨░╨╜
+2026-09-06 10:51:29,353 - daily_tasks.routes - INFO - daily_tasks: bank_empty ╨┤╨╗╤П user=1302 тАФ fallback ╨╜╨░ pick_daily_set

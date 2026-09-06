@@ -50,16 +50,15 @@ MIN_DAILY_TASKS = 5          # абсолютный минимум
 def get_daily_task_count(user_id: int) -> int:
     """ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ: сколько задач получает ученик сегодня.
 
-    Правило:
-      - дни 1..7: утренний срез (5 задач) + задачи дня.
-        Задач дня = max(дневная_норма - 5, 5)
-      - после 7-го дня цикла -> полная норма из анкеты
-      - если цикл ещё не начат -> день 1
+    Правило (виртуальный месяц = 31 день):
+      - в день утреннего среза (cycle.blocked, первый день темы в 7-темном
+        месяце): срез 5 + задачи дня = max(дневная_норма - 5, 5);
+      - в остальные дни (в т.ч. финальный месяц и повторы 29..31):
+        полная норма из анкеты.
     """
     from curator.monthly_cycle import get_cycle_info
 
     cycle = get_cycle_info(user_id)
-    day_index = cycle.get('day_index', 1) if cycle.get('active') else 1
 
     # Дневная норма из анкеты
     onboard = _get_onboarding(user_id)
@@ -69,12 +68,12 @@ def get_daily_task_count(user_id: int) -> int:
         if isinstance(n, (int, float)) and n > 0:
             daily_norm = int(n)
 
-    if day_index <= 7:
+    if cycle.get('active') and cycle.get('blocked'):
         # Режим зондирования: срез 5 + задачи дня
         tasks_after_probe = max(daily_norm - 5, MIN_DAILY_TASKS)
         return tasks_after_probe
 
-    # День 8+: полная норма
+    # Остальные дни: полная норма
     return max(daily_norm, MIN_DAILY_TASKS)
 
 # Канонические разделы level_engine
@@ -122,13 +121,13 @@ def _get_daily_tasks_count(user_id: int) -> int:
 
 
 def _get_route_ceiling(user_id: int) -> int:
-    """Потолок маршрута из анкеты (1..5)."""
+    """Потолок маршрута из анкеты (1..4)."""
     onboard = _get_onboarding(user_id)
     if onboard:
         c = onboard.get('route_ceiling')
         if isinstance(c, (int, float)):
-            return max(1, min(5, int(c)))
-    return 5
+            return max(1, min(4, int(c)))
+    return 4
 
 
 def _get_level_state(user_id: int) -> Dict[str, Any]:
@@ -141,7 +140,7 @@ def _get_allowed_difficulty(user_id: int, ceiling: int) -> List[int]:
     """Разрешённые difficulty_level для этого ученика."""
     state = _get_level_state(user_id)
     mu = state.get('mu', 3.0)
-    rounded_level = max(1, min(5, int(round(mu))))
+    rounded_level = max(1, min(4, int(round(mu))))
     # Берём allowed из level_engine
     from services.level_engine import allowed_difficulty
     allowed = allowed_difficulty(rounded_level, 'formyla_L1_L5_TOP5')
@@ -394,12 +393,12 @@ def _get_bank_day(user_id: int) -> int:
 
 
 def _map_canonical_to_bank_level(canonical_level: int) -> int:
-    """Отобразить канонический уровень (1–5) в банковский (1–5).
+    """Отобразить канонический уровень (1–4) в банковский (1–4).
 
-    Банк задач оперирует уровнями сложности 1–5 (каноническая шкала).
-    Отображение: тождественное (bank level = canonical level), зажато в [1, 5].
+    Банк задач оперирует уровнями сложности 1–4 (каноническая шкала).
+    Отображение: тождественное (bank level = canonical level), зажато в [1, 4].
     """
-    return max(1, min(5, canonical_level))
+    return max(1, min(4, canonical_level))
 
 
 def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, Any]:
@@ -419,16 +418,17 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
     today = datetime.now(MSK_TZ).date()
 
     # ═══════════════════════════════════════════════════════════════
-    # ШАГ -1: Утренний срез — если день 1-7 и зонд не пройден
+    # ШАГ -1: Утренний срез — если cycle.blocked (первый день темы в
+    # 7-темном месяце).  Финальный месяц (< 7 тем) среза не требует.
     # ═══════════════════════════════════════════════════════════════
     try:
         from curator.monthly_cycle import get_cycle_info
         from services.theme_probe import has_active_probe, get_active_probe_theme
         cycle = get_cycle_info(user_id)
-        if cycle.get('active'):
+        if cycle.get('active') and cycle.get('blocked'):
             day_idx = cycle.get('day_index', 1)
             current_theme = cycle.get('current_theme')
-            if day_idx <= 7 and current_theme:
+            if current_theme:
                 probe_active = has_active_probe(user_id)
                 probe_theme = get_active_probe_theme(user_id)
                 if not probe_active or probe_theme != current_theme:
@@ -502,7 +502,72 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
                 grade = 9
 
     # ═══════════════════════════════════════════════════════════════
-    # ШАГ 0 — JSONL-банк: (grade, topic, week_level)
+    # ШАГ 0 — FORMYLA_BANK.jsonl: ПРИОРИТЕТНЫЙ источник «Задач дня».
+    # Ключ (grade, topic, level). Заполняется вручную в FORMYLA_BANK.jsonl.
+    # ═══════════════════════════════════════════════════════════════
+    try:
+        from daily_tasks.formyla_bank import get_tasks as fb_get, has_rows as fb_rows
+        fb_rows()
+        if grade and grade >= 5:
+            from curator.monthly_cycle import get_cycle_info
+            cycle = get_cycle_info(user_id)
+            current_theme = cycle.get('current_theme') if cycle.get('active') else None
+            # Уровень ученика по разделу текущей подтемы (mu из level_engine)
+            from services.level_engine import get_state as _get_state
+            _st = _get_state(user_id)
+            _mu = int(round(float(_st.get('mu', 3.0))))
+            _bank_level = max(1, min(4, _mu))
+            # topic: банк FORMYLA_BANK.jsonl индексирован по ЧЕЛОВЕЧЕСКОМУ
+            # названию темы (например «Многочлены и алгебраические тождества»),
+            # а cycle.current_theme — theme_id slug (G9_T05). Переводим slug в
+            # название через theme_registry.theme_title, иначе банк не найдёт
+            # задачи и дашборд покажет «Задач пока нет».
+            _bank_topic = current_theme
+            if current_theme:
+                try:
+                    from services.theme_registry import theme_title as _theme_title
+                    _title = _theme_title(current_theme)
+                    if _title and _title != current_theme:
+                        _bank_topic = _title
+                except Exception:
+                    pass
+            if current_theme:
+                tasks = fb_get(grade, _bank_topic, _bank_level, count=count, user_id=user_id)
+                if not tasks:
+                    # fallback: попробовать по slug, если в банке вдруг slug-ключи
+                    tasks = fb_get(grade, current_theme, _bank_level, count=count, user_id=user_id)
+                if tasks and len(tasks) >= 1:
+                    daily_set = DailyTaskSet(
+                        user_id=user_id, target_date=today, status='ready',
+                        triggered_by='formyla_bank', generated_at=datetime.utcnow(),
+                        class_level=grade,
+                        reason_summary=f'Подобрано {len(tasks)} задач по теме «{_bank_topic}» (уровень {_bank_level})',
+                    )
+                    db.session.add(daily_set); db.session.flush()
+                    for pos, t in enumerate(tasks[:count], start=1):
+                        _t_svg = (t.get('figure_svg_path') or '').strip()
+                        item = DailyTaskItem(
+                            daily_set_id=daily_set.id, position=pos,
+                            slot_kind='formyla_bank', subject='math',
+                            topic=t.get('topic', current_theme),
+                            difficulty_level=int(t.get('level', _bank_level)),
+                            task_text=t.get('task_text', ''),
+                            correct_answer=t.get('correct_answer', ''),
+                            solution=t.get('solution', '') or '',
+                            hints=json.dumps([], ensure_ascii=False),
+                            gemini_spec_json=json.dumps({'source':'formyla_bank','grade':grade,'topic':current_theme,'level':_bank_level}, ensure_ascii=False),
+                            status='approved',
+                            figure_svg_path=(_t_svg or None),
+                        )
+                        db.session.add(item)
+                    db.session.commit()
+                    logger.info("daily_rotation FORMYLA_BANK: user=%d G%d topic=%s L%d count=%d", user_id, grade, current_theme, _bank_level, len(tasks[:count]))
+                    return {'tasks': [{'task_id': t.get('position', i), 'task_text': t.get('task_text', ''), 'correct_answer': t.get('correct_answer', ''), 'solution': t.get('solution', ''), 'subject': 'math', 'topic': t.get('topic', current_theme), 'difficulty_level': int(t.get('level', _bank_level))} for i, t in enumerate(tasks[:count])], 'subject': 'math', 'shown_date': today.isoformat(), 'count': len(tasks[:count])}
+    except Exception as _fb_err:
+        logger.warning("daily_rotation: formyla_bank failed: %s", _fb_err)
+
+    # ═══════════════════════════════════════════════════════════════
+    # ШАГ 0б — JSONL-банк: (grade, topic, week_level) [старый источник]
     # ═══════════════════════════════════════════════════════════════
     try:
         from curator.monthly_cycle import get_cycle_info
@@ -550,7 +615,7 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
         from daily_tasks.task_bank import get_tasks as bank_get_tasks
 
         mu = state.get('mu', 3.0)
-        canonical_level = max(1, min(5, int(round(mu))))
+        canonical_level = max(1, min(4, int(round(mu))))
         bank_level = _map_canonical_to_bank_level(canonical_level)
         bank_day = _get_bank_day(user_id)
 
@@ -1088,7 +1153,7 @@ def format_student_card_for_prompt(card: Dict[str, Any]) -> str:
     lines: List[str] = []
     lines.append("=== КАРТОЧКА УЧЕНИКА ===")
     lines.append(f"Класс: {card.get('grade', '?')}")
-    lines.append(f"Целевой уровень: {card.get('target_level', '?')}/5 — {card.get('target_level_name', '?')}")
+    lines.append(f"Целевой уровень: {card.get('target_level', '?')}/4 — {card.get('target_level_name', '?')}")
     lines.append(f"Уровень (mu): {card.get('level_mu', '?')} (σ={card.get('level_sigma', '?')})")
     lines.append(f"Задач в день: {card.get('daily_tasks', '?')}")
 
@@ -1098,7 +1163,7 @@ def format_student_card_for_prompt(card: Dict[str, Any]) -> str:
         lines.append("Дедлайн: не установлен")
 
     lines.append("")
-    lines.append("Уровень по разделам (1..5):")
+    lines.append("Уровень по разделам (1..4):")
     for name, data in card.get('level_by_section', {}).items():
         lines.append(f"  {name}: mu={data['mu']} σ={data['sigma']} задач={data['n']}")
 
@@ -1196,7 +1261,7 @@ def cell_deficit_for_student(
 
     result = []
     for sec in CANONICAL_SECTIONS:
-        for lvl in range(1, 6):
+        for lvl in range(1, 5):
             pool_n = pool_map.get((sec, lvl), 0)
             unseen_n = unseen_map.get((sec, lvl), 0)
             result.append({
@@ -1272,7 +1337,7 @@ def cell_deficit_report() -> List[Dict[str, Any]]:
             pool_map[(sec, lvl)] += 1
 
         for sec in CANONICAL_SECTIONS:
-            for lvl in range(1, 6):
+            for lvl in range(1, 5):
                 pool_n = pool_map.get((sec, lvl), 0)
                 deficit = pool_n  # если пул 0 -> дефицит 0 (но видно пустые ячейки)
                 result.append({

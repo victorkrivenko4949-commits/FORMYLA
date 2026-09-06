@@ -55,25 +55,23 @@ from daily_tasks.running_pct import (
 
 
 class TestPercentToLevel:
-    """Маппинг 0–100% -> 1..5."""
+    """Маппинг 0–100% -> 1..4."""
 
     @pytest.mark.parametrize(
         "pct,expected",
         [
-            # нижняя граница каждого диапазона
+            # нижняя граница каждого диапазона (шкала 1..4)
             (0, 1),
-            (20, 1),
-            (21, 2),
-            (40, 2),
-            (41, 3),
-            (60, 3),
-            (61, 4),
-            (80, 4),
-            (81, 5),
-            (100, 5),
+            (25, 1),
+            (26, 2),
+            (50, 2),
+            (51, 3),
+            (75, 3),
+            (76, 4),
+            (100, 4),
             # точно на стыке
-            (20.0, 1),
-            (40.0001, 3),  # > 40 -> lvl 3
+            (25.0, 1),
+            (50.0001, 3),  # > 50 -> lvl 3
         ],
     )
     def test_boundaries(self, pct, expected):
@@ -86,15 +84,15 @@ class TestPercentToLevel:
         assert percent_to_level(-50) == 1
 
     def test_above_hundred_clamps_to_max(self):
-        assert percent_to_level(150) == 5
+        assert percent_to_level(150) == 4
 
     def test_non_numeric_returns_none(self):
         assert percent_to_level("not-a-number") is None  # type: ignore[arg-type]
 
-    def test_thresholds_constant_is_5_levels(self):
+    def test_thresholds_constant_is_4_levels(self):
         # защита от случайного изменения шкалы
         levels = [lvl for _, lvl in PERCENT_LEVEL_THRESHOLDS]
-        assert sorted(set(levels)) == [1, 2, 3, 4, 5]
+        assert sorted(set(levels)) == [1, 2, 3, 4]
 
 
 # ══════════════════════════════════════════════════════════════════════

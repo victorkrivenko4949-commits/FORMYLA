@@ -4,7 +4,7 @@
 Добавляет 4 колонки в таблицу `olympiad_theory`:
     - grades                    JSON  (массив классов 5..11)
     - recommended_competitions  JSON  (список названий олимпиад)
-    - difficulty_level          INT   (1..5)
+    - difficulty_level          INT   (1..4)
     - frequency_vsosh_9         INT   (0..10, частота на ВсОШ-9)
     - sort_order                INT   (порядок отображения в каталоге)
 

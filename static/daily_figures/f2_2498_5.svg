@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500">
+<rect x="0" y="0" width="600" height="500" fill="#0F1729"/>
+<text x="300" y="24" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">Покрытие доски 6×7 доминошками</text>
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">
+<text x="120" y="43">1</text><text x="180" y="43">2</text><text x="240" y="43">3</text><text x="300" y="43">4</text><text x="360" y="43">5</text><text x="420" y="43">6</text><text x="480" y="43">7</text>
+<text x="65" y="90">1</text><text x="65" y="150">2</text><text x="65" y="210">3</text><text x="65" y="270">4</text><text x="65" y="330">5</text><text x="65" y="390">6</text>
+</g>
+<g>
+<rect x="90" y="60" width="420" height="360" fill="#18243A"/>
+<g fill="#21314A" opacity="0.7">
+<rect x="90" y="60" width="60" height="60"/><rect x="210" y="60" width="60" height="60"/><rect x="330" y="60" width="60" height="60"/><rect x="450" y="60" width="60" height="60"/>
+<rect x="150" y="120" width="60" height="60"/><rect x="270" y="120" width="60" height="60"/><rect x="390" y="120" width="60" height="60"/>
+<rect x="90" y="180" width="60" height="60"/><rect x="210" y="180" width="60" height="60"/><rect x="330" y="180" width="60" height="60"/><rect x="450" y="180" width="60" height="60"/>
+<rect x="150" y="240" width="60" height="60"/><rect x="270" y="240" width="60" height="60"/><rect x="390" y="240" width="60" height="60"/>
+<rect x="90" y="300" width="60" height="60"/><rect x="210" y="300" width="60" height="60"/><rect x="330" y="300" width="60" height="60"/><rect x="450" y="300" width="60" height="60"/>
+<rect x="150" y="360" width="60" height="60"/><rect x="270" y="360" width="60" height="60"/><rect x="390" y="360" width="60" height="60"/>
+</g>
+<rect x="90" y="300" width="60" height="60" fill="#59364A"/><rect x="210" y="360" width="60" height="60" fill="#59364A"/>
+<g stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round" fill="none">
+<path d="M90 60H510M90 120H510M90 180H510M90 240H510M90 300H510M90 360H510M90 420H510"/>
+<path d="M90 60V420M150 60V420M210 60V420M270 60V420M330 60V420M390 60V420M450 60V420M510 60V420"/>
+</g>
+<g stroke="#73B6E6" stroke-width="3" fill="none" opacity="0.95">
+<rect x="150" y="180" width="60" height="120" rx="8"/><rect x="450" y="300" width="60" height="120" rx="8"/><rect x="90" y="360" width="120" height="60" rx="8"/><rect x="210" y="60" width="60" height="120" rx="8"/><rect x="210" y="180" width="60" height="120" rx="8"/><rect x="270" y="60" width="60" height="120" rx="8"/><rect x="150" y="300" width="120" height="60" rx="8"/><rect x="270" y="180" width="60" height="120" rx="8"/><rect x="270" y="300" width="60" height="120" rx="8"/><rect x="330" y="120" width="60" height="120" rx="8"/><rect x="330" y="60" width="120" height="60" rx="8"/><rect x="390" y="120" width="60" height="120" rx="8"/><rect x="390" y="240" width="60" height="120" rx="8"/><rect x="330" y="240" width="60" height="120" rx="8"/><rect x="330" y="360" width="120" height="60" rx="8"/><rect x="90" y="60" width="60" height="120" rx="8"/><rect x="150" y="60" width="60" height="120" rx="8"/><rect x="90" y="180" width="60" height="120" rx="8"/><rect x="450" y="60" width="60" height="120" rx="8"/><rect x="450" y="180" width="60" height="120" rx="8"/>
+</g>
+<g stroke="#FFD166" stroke-width="2.2" stroke-linecap="round">
+<path d="M100 310L140 350M140 310L100 350M220 370L260 410M260 370L220 410"/>
+</g>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#EAF1FA" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2">
+<text x="120" y="330">вырезана</text><text x="240" y="390">вырезана</text>
+<text x="300" y="458" font-size="14">20 доминошек покрывают все 40 оставшихся клеток</text>
+</g>
+</svg>

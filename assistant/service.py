@@ -76,7 +76,8 @@ _ACTIONS_BY_CATEGORY: Dict[str, List[Dict[str, str]]] = {
         {"label": "Открыть пробники",   "url": "/probniki"},
     ],
     "tariffs": [
-        {"label": "Посмотреть тарифы",  "url": "/pricing"},
+        {"label": "Открыть задачи дня",  "url": "/daily"},
+        {"label": "О сервисе",           "url": "/about"},
     ],
     "errors": [
         {"label": "Написать в поддержку", "url": "/support"},

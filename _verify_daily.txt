@@ -1,0 +1,5 @@
+files in static/daily_figures (incl manifest): 2188
+manifest entries: 2187
+records with figure_svg_path: 2187 / 2187
+sample: f2_560 -> /static/daily_figures/f2_560_5.svg
+exists on disk: True (static\daily_figures\f2_560_5.svg)

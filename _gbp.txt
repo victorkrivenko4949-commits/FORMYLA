@@ -1,0 +1,77 @@
+25:     }
+26: }
+27: 
+28: function Get-BridgeProcesses {
+29:     @(Get-CimInstance Win32_Process -Filter "Name='python.exe'" -ErrorAction SilentlyContinue |
+30:         Where-Object { $_.CommandLine -and $_.CommandLine -match 'owui_roo_bridge|bridge_compat_runner[.]py' })
+31: }
+32: 
+33: Require-Administrator
+34: 
+35: if ($env:COMPUTERNAME -ine $ExpectedHostname) {
+36:     Stop-Block "BLOCK_NODE_HOSTNAME_MISMATCH" "expected=$ExpectedHostname actual=$env:COMPUTERNAME"
+37: }
+38: if ($env:USERNAME -ine $ExpectedUser) {
+39:     Stop-Block "BLOCK_RUNTIME_USER_MISMATCH" "expected=$ExpectedUser actual=$env:USERNAME"
+---
+212: Write-Host "PASS_ROO_BRIDGE_EXTENSION=$RooBridgeExtensionId@$RooBridgeExtensionVersion"
+213: Write-Host "PASS_ROO_CANARY_INSTANCE_PORT=$($ReadyCanary[0].Port)"
+214: 
+215: $existing = Get-BridgeProcesses
+216: $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+217: if ($existing.Count -gt 1) {
+218:     Stop-Block "BLOCK_MULTIPLE_BRIDGE_PROCESSES" "count=$($existing.Count)"
+219: }
+220: if ($existing.Count -eq 1 -and -not $existingTask) {
+221:     Stop-Block "BLOCK_UNMANAGED_BRIDGE_PROCESS" "A bridge process already runs without the canonical task."
+222: }
+223: 
+224: if (-not (Test-Path -LiteralPath $PythonExe -PathType Leaf)) {
+225:     & $BootstrapPython -m venv "C:\ProgramData\H2\bridge_venv"
+226:     if ($LASTEXITCODE -ne 0) { Stop-Block "BLOCK_VENV_CREATE" "exit=$LASTEXITCODE" }
+---
+302:         $actions[0].Execute -ieq "powershell.exe" -and
+303:         $actions[0].Arguments -like "*$InstalledRunner*" -and
+304:         $actions[0].WorkingDirectory -ieq $ConfigDir
+305:     if (-not $canonical -and (Get-BridgeProcesses).Count -gt 0) {
+306:         Stop-Block "BLOCK_AUTOSTART_DRIFT_RUNNING_PROCESS" "Task differs while Bridge is running."
+307:     }
+308:     if (-not $canonical) {
+309:         Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+310:         $existingTask = $null
+311:     }
+312: }
+313: 
+314: if (-not $existingTask) {
+315:     Register-ScheduledTask `
+316:         -TaskName $TaskName `
+---
+324:     Write-Host "TASK=KEEP"
+325: }
+326: 
+327: if ((Get-BridgeProcesses).Count -eq 0) {
+328:     Start-ScheduledTask -TaskName $TaskName
+329:     Start-Sleep -Seconds 12
+330: }
+331: 
+332: $after = Get-BridgeProcesses
+333: if ($after.Count -ne 1) {
+334:     Stop-Block "BLOCK_BRIDGE_PROCESS_CARDINALITY" "expected=1 actual=$($after.Count)"
+335: }
+336: 
+337: $taskState = (Get-ScheduledTask -TaskName $TaskName).State
+338: Write-Host "PASS_BRIDGE_PROCESS_CARDINALITY=1"
+---
+329:     Start-Sleep -Seconds 12
+330: }
+331: 
+332: $after = Get-BridgeProcesses
+333: if ($after.Count -ne 1) {
+334:     Stop-Block "BLOCK_BRIDGE_PROCESS_CARDINALITY" "expected=1 actual=$($after.Count)"
+335: }
+336: 
+337: $taskState = (Get-ScheduledTask -TaskName $TaskName).State
+338: Write-Host "PASS_BRIDGE_PROCESS_CARDINALITY=1"
+339: Write-Host "TASK_STATE=$taskState"
+340: Write-Host "VERDICT=INSTALL_APPLIED_PENDING_LIVE_E2E"
+---

@@ -8,8 +8,8 @@
             <h1 class="figures-title">📐 Построение чертежа</h1>
             <p class="figures-hint">Введите условие геометрической задачи — нейросеть создаст декларативное описание, а геометрический движок отрисует SVG-чертёж.</p>
             <div class="figures-balance" id="figuresBalance">
-                <span class="figures-balance-label">Осталось чертежей:</span>
-                <span class="figures-balance-value" id="balanceValue">{{ credits }}</span>
+                <span class="figures-balance-label">Чертежи:</span>
+                <span class="figures-balance-value" id="balanceValue">∞ (безлимит)</span>
             </div>
         </header>
 
@@ -34,12 +34,12 @@
             <div class="fig-build-type" style="margin-top: 16px;">
                 <label class="fig-label">Тип чертежа</label>
                 <div class="build-type-toggle" style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--fig-border);margin-top:8px;">
-                    <button type="button" class="build-type-btn active" data-type="plain" id="btnPlain"
-                        style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(59,130,246,0.15);color:var(--fig-accent);font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
+                    <button type="button" class="build-type-btn" data-type="plain" id="btnPlain"
+                        style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--fig-muted);font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
                         Без доп. построения
                     </button>
-                    <button type="button" class="build-type-btn" data-type="aux" id="btnAux"
-                        style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--fig-muted);font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
+                    <button type="button" class="build-type-btn active" data-type="aux" id="btnAux"
+                        style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(59,130,246,0.15);color:var(--fig-accent);font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
                         С доп. построением
                     </button>
                 </div>
@@ -53,7 +53,11 @@
 
         <div id="figureLoader" hidden class="figure-loader">
             <div class="figure-spinner"></div>
-            <p class="fig-note">Строим чертёж… Обычно это занимает 10–30 секунд.</p>
+            <p class="fig-note" id="figureLoaderStage">Строим чертёж… Обычно это занимает 10–30 секунд.</p>
+            <div class="figure-loader-meta">
+                <span class="fig-loader-chip" id="figLoaderStageChip" hidden></span>
+                <span class="fig-loader-chip" id="figLoaderModelChip" hidden></span>
+            </div>
         </div>
 
         <div id="figureError" hidden class="figure-error"></div>
@@ -61,8 +65,8 @@
         <div id="figureResultWrap" hidden class="figure-result-wrap glass">
             <h3 class="fig-h3">Готовый чертёж</h3>
             <div id="figureAuxToggle" hidden class="fig-aux-toggle">
-                <button id="auxBaseBtn" type="button" class="fig-aux-tab active">базовый</button>
-                <button id="auxFullBtn" type="button" class="fig-aux-tab">с построением</button>
+                <button id="auxBaseBtn" type="button" class="fig-aux-tab">базовый</button>
+                <button id="auxFullBtn" type="button" class="fig-aux-tab active">с построением</button>
             </div>
             <div class="figure-svg-frame" id="figureSvgContainer"></div>
             <p id="figureAuxReason" hidden class="fig-aux-reason"></p>
@@ -82,10 +86,8 @@
                     <ul>
                         <li>Решайте задачи 7 дней подряд — получите <strong>+5</strong> чертежей</li>
                         <li>Пройдите срез знаний — получите <strong>+3</strong> чертежа</li>
-                        <li>Приобретите пакет чертежей</li>
                     </ul>
                 </div>
-                <a href="/pricing" class="fig-btn-primary" style="display:inline-block;text-decoration:none;margin-top:12px;">Купить чертежи</a>
             </div>
         </div>
     </section>
@@ -236,6 +238,28 @@
         text-align: center;
         padding: 40px;
     }
+    .figure-loader-meta {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 14px;
+    }
+    .fig-loader-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        background: rgba(76, 125, 255, 0.12);
+        border: 1px solid rgba(76, 125, 255, 0.3);
+        color: #6b95ff;
+    }
+    .fig-loader-chip.model {
+        background: rgba(62, 207, 142, 0.1);
+        border-color: rgba(62, 207, 142, 0.3);
+        color: #3ecf8e;
+    }
     .figure-spinner {
         width: 36px;
         height: 36px;
@@ -379,7 +403,7 @@
     let currentBaseSvg = null;
     let currentAuxSvg = null;
     let currentShowAux = false;
-    let currentBuildType = 'plain';
+    let currentBuildType = 'aux';
     const auxToggle = document.getElementById('figureAuxToggle');
     const auxBaseBtn = document.getElementById('auxBaseBtn');
     const auxFullBtn = document.getElementById('auxFullBtn');
@@ -511,20 +535,14 @@
 
     // Update balance display
     function updateBalance(credits) {
-        if (balanceValue) balanceValue.textContent = credits;
-        if (credits <= 0 && zeroBalance) {
-            zeroBalance.hidden = false;
-            if (generateBtn) generateBtn.disabled = true;
-        } else {
-            if (zeroBalance) zeroBalance.hidden = true;
-            if (generateBtn) generateBtn.disabled = false;
-        }
+        // Безлимит: показываем «∞» вместо счётчика кредитов.
+        if (balanceValue) balanceValue.textContent = '∞ (безлимит)';
+        // Генерация бесплатна по клику — блок «чертежи закончились» не показываем.
+        if (zeroBalance) zeroBalance.hidden = true;
+        if (generateBtn) generateBtn.disabled = false;
     }
 
-    // Initial balance check
-    if ({{ credits }} <= 0) {
-        updateBalance({{ credits }});
-    }
+    // Генерация бесплатна по клику — не блокируем по балансу.
 
     async function fetchBalance() {
         try {
@@ -569,20 +587,35 @@
             if (data.step_label && !loader.hidden) {
                 loader.querySelector('.fig-note').textContent = data.step_label + '…';
             }
+            // Показать этап и работающую модель справа.
+            const stageChip = document.getElementById('figLoaderStageChip');
+            const modelChip = document.getElementById('figLoaderModelChip');
+            if (data.current_stage && !loader.hidden) {
+                stageChip.textContent = data.step_label || data.current_stage;
+                stageChip.hidden = false;
+            }
+            if (data.current_model && !loader.hidden) {
+                modelChip.textContent = 'Модель: ' + data.current_model;
+                modelChip.classList.add('model');
+                modelChip.hidden = false;
+            }
 
             if (data.status === 'done') {
                 clearPoll();
+                try { sessionStorage.removeItem('activeFigureJobId'); } catch(e) {}
                 loader.hidden = true;
                 if (data.svg) {
                     currentBaseSvg = data.svg;
                     currentAuxSvg = data.aux_svg || null;
-                    currentShowAux = false;
+                    // Переключатель базовый/с построением показываем ТОЛЬКО
+                    // для режима «С доп. построением».
+                    currentShowAux = !!(currentAuxSvg && currentBuildType === 'aux');
                     showSvg();
                     resultWrap.hidden = false;
-                    if (currentAuxSvg) {
+                    if (currentAuxSvg && currentBuildType === 'aux') {
                         auxToggle.hidden = false;
-                        auxBaseBtn.classList.add('active');
-                        auxFullBtn.classList.remove('active');
+                        auxBaseBtn.classList.remove('active');
+                        auxFullBtn.classList.add('active');
                         if (data.aux_reason) {
                             auxReasonEl.textContent = data.aux_reason;
                             auxReasonEl.hidden = false;
@@ -604,12 +637,13 @@
                     };
                     if (data.credits_remaining !== undefined) {
                         updateBalance(data.credits_remaining);
-                        metaEl.textContent = 'Осталось чертежей: ' + data.credits_remaining;
+                        metaEl.textContent = 'Чертежи: безлимит';
                     }
                 }
                 generateBtn.disabled = false;
             } else if (data.status === 'failed') {
                 clearPoll();
+                try { sessionStorage.removeItem('activeFigureJobId'); } catch(e) {}
                 showError(data.error || 'Построение не удалось.');
                 await fetchBalance();
                 generateBtn.disabled = false;
@@ -654,6 +688,9 @@
             }
 
             const jobId = data.job_id;
+            // CH-fix: сохраняем jobId, чтобы генерация могла продолжиться/возобновиться
+            // даже если пользователь уйдёт со страницы и вернётся.
+            try { sessionStorage.setItem('activeFigureJobId', String(jobId)); } catch(e) {}
             pollTimer = setInterval(function() {
                 pollJobStatus(jobId);
             }, 2000);
@@ -670,6 +707,28 @@
 
     // Cleanup on page unload
     window.addEventListener('beforeunload', clearPoll);
+
+    // ── Возобновление генерации после ухода со страницы ───────────────────
+    // Генерация продолжается на сервере (задание хранится в БД).  При возврате
+    // на страницу восстанавливаем jobId из sessionStorage и возобновляем опрос,
+    // чтобы показать готовый чертёж, даже если пользователь ушёл в середине.
+    function resumeActiveJob() {
+        let jobId = null;
+        try { jobId = sessionStorage.getItem('activeFigureJobId'); } catch(e) {}
+        if (!jobId) return;
+
+        // Проверяем, что задание ещё не завершено (иначе не возобновляем опрос).
+        hideAll();
+        loader.hidden = false;
+        loader.querySelector('.fig-note').textContent = 'продолжаем построение…';
+        generateBtn.disabled = true;
+
+        pollTimer = setInterval(function() {
+            pollJobStatus(jobId);
+        }, 2000);
+        pollJobStatus(jobId);
+    }
+    resumeActiveJob();
 })();
 </script>
 {% endblock %}

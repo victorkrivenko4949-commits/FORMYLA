@@ -11,7 +11,7 @@
 QUESTIONNAIRE_FLOW = [
     {"field": "daily_minutes", "question": "Сколько минут в день ты готов заниматься математикой? (напиши число)", "type": "number"},
     {"field": "goal_text",     "question": "Какая у тебя цель?", "type": "choice", "options": ["Школьная программа", "ОГЭ/ЕГЭ", "Олимпиады"]},
-    {"field": "self_confidence","question": "Насколько уверенно ты себя чувствуешь в математике? (1-5)", "type": "number", "min": 1, "max": 5},
+    {"field": "self_confidence","question": "Насколько уверенно ты себя чувствуешь в математике? (1-4)", "type": "number", "min": 1, "max": 4},
 ]
 
 
@@ -23,7 +23,7 @@ def get_question(index):
 
 
 def compute_provisional_level(answers, return_full=False):
-    """Вычислить предварительный уровень (1-5) — делегирует onboarding_tree.
+    """Вычислить предварительный уровень (1-4) — делегирует onboarding_tree.
 
     Для обратной совместимости: если ответы в старом формате
     (daily_minutes, goal_text, self_confidence), эмулирует результат
@@ -89,7 +89,7 @@ def compute_provisional_level(answers, return_full=False):
 
     result = _compute_prior(new_answers, [])
     level = int(round(result.prior_mu))
-    level = max(1, min(5, level))
+    level = max(1, min(4, level))
 
     if return_full:
         return level, result
@@ -108,7 +108,6 @@ def build_summary(answers, level):
         2: ' Базовый',
         3: ' Средний',
         4: ' Продвинутый',
-        5: ' Высокий',
     }
     label = labels.get(level, ' Средний')
 
@@ -117,7 +116,7 @@ def build_summary(answers, level):
 
     return (
         f" <strong>Анкета пройдена!</strong>\n\n"
-        f" <strong>Твой уровень:</strong> {label} (уровень {level}/5)\n"
+        f" <strong>Твой уровень:</strong> {label} (уровень {level}/4)\n"
         f" Цель: {goal}\n"
         f"⏱ Готов заниматься: {minutes} мин/день\n\n"
         f"Теперь ты можешь пройти тест по темам — "

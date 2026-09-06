@@ -147,6 +147,53 @@ def api_figure_transactions():
         return jsonify({"transactions": []})
 
 
+@figures_bp.route("/api/figures/purchase", methods=["POST"])
+@login_required
+def api_figures_purchase():
+    """Начислить пакет чертежей (бесплатно в бета-периоде, 0 руб.).
+
+    Тело: {package: 'p10'|'p30'|'p100'}.
+    Начисляет кредиты пользователю и пишет запись в журнал транзакций.
+    """
+    data = request.get_json(silent=True) or {}
+    package_id = (data.get("package") or "p30").strip()
+    pkg = next((p for p in FIGURE_PACKAGES if p["id"] == package_id), None)
+    if pkg is None:
+        return jsonify({"error": "Неизвестный пакет"}), 400
+
+    try:
+        from models import db, FigureCreditTransaction
+
+        credits = _get_figure_credits(current_user)
+        amount = int(pkg["amount"])
+
+        current_user.figure_credits = credits + amount
+
+        txn = FigureCreditTransaction(
+            user_id=current_user.id,
+            amount=amount,
+            reason="purchase",
+            reference=package_id,
+        )
+        db.session.add(txn)
+        db.session.commit()
+
+        return jsonify({
+            "ok": True,
+            "credits": current_user.figure_credits,
+            "added": amount,
+            "message": f"Начислено {amount} чертежей",
+        })
+    except Exception as e:
+        logger.error("[figures] purchase failed: %s", e)
+        try:
+            from models import db
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({"error": "Ошибка начисления. Попробуйте позже."}), 500
+
+
 @figures_bp.route("/api/figures/subscribe-email", methods=["POST"])
 def api_subscribe_email():
     """Save email from payment stub 'notify me when ready' form."""
@@ -264,6 +311,19 @@ def api_figures_status(job_id: int):
     return _job_status(job_id)
 
 
+@figures_bp.route("/api/figures/active", methods=["GET"])
+@login_required
+def api_figures_active():
+    """Delegate to figures_generator.active_job().
+
+    Позволяет фронтенду возобновить незавершённую генерацию после того, как
+    пользователь ушёл со страницы и вернулся: задание живёт в БД, поэтому
+    queued/thinking/drawing переживает навигацию и перезагрузку.
+    """
+    from routes.figures_generator import active_job as _active_job
+    return _active_job()
+
+
 @figures_bp.route("/figures/aux/method/<int:method_task_id>", methods=["GET"])
 def aux_method(method_task_id: int):
     """Отдать aux-SVG для метода олимпиад — без проверки ответа."""
@@ -301,13 +361,16 @@ def figures_history():
 @figures_bp.route("/api/figures/recognize-photo", methods=["POST"])
 @login_required
 def fig_recognize_photo():
-    """Recognize math text from photo using KIMI (paid external service).
+    """Recognize math text from photo.
+
+    Primary: DeepSeek vision (DEEPSEEK_VISION_MODEL).
+    Fallback: local Tesseract OCR (free, no network) if DeepSeek fails.
 
     Rate limit: at most 10 requests per user per hour.  The counter is
     stored in the DB (photo_recognize_requests table).
     """
     import base64
-    from services.kimi_vision import process_photo_with_kimi
+    from services.tesseract_ocr import recognize_bytes as _tesseract_ocr
 
     # ── Rate limit (DB counter, per user + hour bucket) ─────────────────
     try:
@@ -350,11 +413,54 @@ def fig_recognize_photo():
     mime = data.get('mime', 'image/jpeg')
     if not img_b64:
         return jsonify({'error': 'No image'}), 400
+
     try:
         raw_bytes = base64.b64decode(img_b64)
-        text, err = process_photo_with_kimi(raw_bytes, mime)
-        if text:
-            return jsonify({'text': text})
-        return jsonify({'error': err or 'Recognition failed'}), 422
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Bad base64: {e}'}), 400
+
+    # ── Шаг 1: DeepSeek vision (основной распознаватель) ────────────────
+    try:
+        import os as _os
+        import requests as _requests
+        _ds_key = _os.environ.get('DEEPSEEK_API_KEY', '').strip()
+        _ds_model = _os.getenv('DEEPSEEK_VISION_MODEL', 'deepseek-v4-flash-vision-exp').strip()
+        if _ds_key:
+            _ds_resp = _requests.post(
+                'https://api.deepseek.com/v1/chat/completions',
+                headers={'Authorization': f'Bearer {_ds_key}', 'Content-Type': 'application/json'},
+                json={
+                    'model': _ds_model,
+                    'messages': [
+                        {'role': 'user', 'content': [
+                            {'type': 'text', 'text': 'Верни текст с изображения, формулы в LaTeX.'},
+                            {'type': 'image_url', 'image_url': {'url': f'data:{mime};base64,{img_b64}'}},
+                        ]},
+                    ],
+                    'temperature': 0.7,
+                    'max_tokens': 8192,
+                },
+                timeout=(15, 60),
+            )
+            if _ds_resp.status_code == 200:
+                _ds_body = _ds_resp.json()
+                if _ds_body.get('choices'):
+                    text = (_ds_body['choices'][0].get('message', {}) or {}).get('content') or ''
+                    if text:
+                        logger.info("[figures] photo recognized via DeepSeek vision (%d chars)", len(text))
+                        return jsonify({'text': text, 'engine': 'deepseek_vision'})
+    except Exception as e:
+        logger.warning("[figures] deepseek vision OCR raised: %s", e)
+
+    # ── Шаг 2: локальный Tesseract OCR (резерв) ────────────────────────
+    try:
+        text, t_err = _tesseract_ocr(raw_bytes, mime)
+        if text:
+            logger.info("[figures] photo recognized via Tesseract (%d chars)", len(text))
+            return jsonify({'text': text, 'engine': 'tesseract'})
+    except Exception as e:
+        t_err = str(e)
+        logger.warning("[figures] tesseract OCR raised: %s", e)
+
+    err = t_err or 'Recognition failed'
+    return jsonify({'error': err}), 422

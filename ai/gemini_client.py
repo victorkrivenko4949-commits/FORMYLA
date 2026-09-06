@@ -78,11 +78,21 @@ class GeminiClient:
 
             if response.status_code == 200:
                 data = response.json()
+                usage = data.get('usage') or {}
+                logger.info(
+                    "llm usage role=gemini provider=gemini model=%s in=%s out=%s reasoning=%s",
+                    self.model,
+                    usage.get('prompt_tokens'),
+                    usage.get('completion_tokens'),
+                    usage.get('reasoning_tokens'),
+                )
                 if 'choices' in data and len(data['choices']) > 0:
                     content = data['choices'][0].get('message', {}).get('content')
                     if content:
                         logger.info("[OK] Gemini request successful")
                         return content
+                else:
+                    logger.warning("llm usage missing choices provider=gemini model=%s", self.model)
 
             logger.error(f"Gemini API error: HTTP {response.status_code}: {response.text[:200]}")
             raise RuntimeError(f"Gemini API error: HTTP {response.status_code}")

@@ -1,0 +1,77 @@
+{
+  "solvable": true,
+  "target": {
+    "kind": "angle",
+    "object": "BAC",
+    "description": "Доказать, что угол A прямой"
+  },
+  "answer": {
+    "value": null,
+    "unit": null,
+    "exact": null,
+    "is_numeric": false
+  },
+  "steps": [
+    {
+      "no": 1,
+      "text": "Проведём медиану AM."
+    },
+    {
+      "no": 2,
+      "text": "Построим окружность с центром M радиусом MB."
+    },
+    {
+      "no": 3,
+      "text": "Отметим равные отрезки BM, CM и AM."
+    },
+    {
+      "no": 4,
+      "text": "Так как M — середина BC, то BM = CM; по условию AM = BM = CM, значит точки A, B и C лежат на окружности с центром M."
+    },
+    {
+      "no": 5,
+      "text": "Точки B и C лежат на одной прямой с центром M, поэтому BC — диаметр этой окружности."
+    },
+    {
+      "no": 6,
+      "text": "Угол BAC опирается на диаметр BC, значит ∠BAC = 90°."
+    }
+  ],
+  "aux_needed": true,
+  "aux_constructions": [
+    {
+      "op": "segment",
+      "points": [
+        "A",
+        "M"
+      ],
+      "quote": "Проведём медиану AM.",
+      "step_no": 1,
+      "purpose": "Дана медиана AM, используемая в доказательстве"
+    },
+    {
+      "op": "circle_center_radius",
+      "center": "M",
+      "through": "B",
+      "quote": "Построим окружность с центром M радиусом MB.",
+      "step_no": 2,
+      "purpose": "Показать, что A лежит на окружности с диаметром BC"
+    },
+    {
+      "op": "mark_equal_segments",
+      "segments": [
+        "B",
+        "M",
+        "C",
+        "M",
+        "A",
+        "M"
+      ],
+      "count": 1,
+      "quote": "Отметим равные отрезки BM, CM и AM.",
+      "step_no": 3,
+      "purpose": "Подчеркнуть равенство BM = CM = AM"
+    }
+  ],
+  "confidence": 0.98
+}

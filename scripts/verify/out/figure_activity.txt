@@ -1,0 +1,74 @@
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [figures_gen] reasoner prompt loaded (8500 chars)
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [llm_router] role=base logical=claude-sonnet-4-6 providers=[]
+2026-08-30 21:08:32,063 - routes.figures_generator - WARNING - [llm_router] role=base logical=claude-sonnet-4-6 has no mapping for providers=['novita', 'deepseek']
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [llm_router] role=aux logical=claude-sonnet-4-6 providers=[]
+2026-08-30 21:08:32,063 - routes.figures_generator - WARNING - [llm_router] role=aux logical=claude-sonnet-4-6 has no mapping for providers=['novita', 'deepseek']
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [llm_router] role=audit logical=claude-sonnet-4-6 providers=[]
+2026-08-30 21:08:32,063 - routes.figures_generator - WARNING - [llm_router] role=audit logical=claude-sonnet-4-6 has no mapping for providers=['novita', 'deepseek']
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [llm_router] role=repair logical=deepseek-v4-pro providers=[('deepseek', 'deepseek-v4-pro')]
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [llm_router] role=legacy_reasoner logical=deepseek-v4-pro providers=[('deepseek', 'deepseek-v4-pro')]
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [llm_router] role=solver logical=deepseek-v4-pro providers=[('deepseek', 'deepseek-v4-pro')]
+2026-08-30 21:08:32,063 - routes.figures_generator - INFO - [llm_router] role=solver_shadow logical=gemini-3.7-flash providers=[]
+2026-08-30 21:08:32,063 - routes.figures_generator - WARNING - [llm_router] role=solver_shadow logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
+2026-08-30 21:08:32,070 - routes.figures_generator - INFO - [figures_gen] queue worker started
+2026-08-30 21:08:32,079 - routes.figures_generator - INFO - [figures_gen] queue worker thread launched
+[BP] figures_gen_bp registered (/figures/generate)
+2026-08-30 21:10:01,470 - routes.figures_generator - INFO - [figures_gen] picked job 574 from queue
+2026-08-30 21:10:01,478 - routes.figures_generator - INFO - [figures_gen] picked job 574 from queue
+2026-08-30 21:10:02,486 - routes.figures_generator - INFO - [figures_gen] picked job 576 from queue
+2026-08-30 21:10:11,869 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:11,869 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4073 completion_tokens=777 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=10256
+2026-08-30 21:10:13,369 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:13,369 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4073 completion_tokens=904 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=11755
+2026-08-30 21:10:15,960 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:15,960 - routes.figures_generator - INFO - [llm_router] role=aux provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3500 prompt_tokens=2248 completion_tokens=126 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=3985
+2026-08-30 21:10:16,025 - routes.figures_generator - INFO - [figures_gen] job 574 aux: planner_has_aux=False valid=True svg_built=False status=AUX_UNSUPPORTED fail_codes={"unsupported": [{"step_no": 1, "needed": "поворот плоскости вокруг вершины B на 60° (точка A → C, точка P → P′)", "quote": "Повернём плоскость вокруг вершины B на 60° так, чтобы точка A перешла в точку C"}]}
+2026-08-30 21:10:16,041 - routes.figures_generator - INFO - [figures_gen] credit charged for job 574
+2026-08-30 21:10:16,532 - routes.figures_generator - INFO - [figures_gen] picked job 579 from queue
+2026-08-30 21:10:17,042 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:17,042 - routes.figures_generator - INFO - [llm_router] role=aux provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3500 prompt_tokens=2264 completion_tokens=123 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=3611
+2026-08-30 21:10:17,107 - routes.figures_generator - INFO - [figures_gen] job 574 aux: planner_has_aux=False valid=True svg_built=False status=AUX_UNSUPPORTED fail_codes={"unsupported": [{"step_no": 1, "needed": "поворот плоскости вокруг вершины B на 60°, точка P переходит в P′", "quote": "Повернём плоскость вокруг вершины B на 60° так, чтобы точка A перешла в точку C"}]}
+2026-08-30 21:10:19,444 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:19,444 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4166 completion_tokens=1425 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=16921
+2026-08-30 21:10:25,286 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:25,286 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4102 completion_tokens=566 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=8717
+2026-08-30 21:10:28,252 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:28,252 - routes.figures_generator - INFO - [llm_router] role=aux provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3500 prompt_tokens=2368 completion_tokens=25 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=2900
+2026-08-30 21:10:28,297 - routes.figures_generator - INFO - [figures_gen] job 579 aux: planner_has_aux=False valid=True svg_built=False status=AUX_NOT_NEEDED fail_codes=None
+2026-08-30 21:10:28,306 - routes.figures_generator - INFO - [figures_gen] credit charged for job 579
+2026-08-30 21:10:28,583 - routes.figures_generator - INFO - [figures_gen] picked job 581 from queue
+2026-08-30 21:10:29,891 - routes.figures_generator - INFO - [llm_router] role=repair provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=6000 prompt_tokens=3616 completion_tokens=1183 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=10441
+2026-08-30 21:10:32,941 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:32,941 - routes.figures_generator - INFO - [llm_router] role=aux provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3500 prompt_tokens=2774 completion_tokens=25 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=3009
+2026-08-30 21:10:33,014 - routes.figures_generator - INFO - [figures_gen] job 576 aux: planner_has_aux=False valid=True svg_built=False status=AUX_NOT_NEEDED fail_codes=None
+2026-08-30 21:10:33,023 - routes.figures_generator - INFO - [figures_gen] credit charged for job 576
+2026-08-30 21:10:33,603 - routes.figures_generator - INFO - [figures_gen] picked job 582 from queue
+2026-08-30 21:10:40,392 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:40,394 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4116 completion_tokens=849 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=11799
+2026-08-30 21:10:43,300 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:43,300 - routes.figures_generator - INFO - [llm_router] role=aux provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3500 prompt_tokens=2489 completion_tokens=25 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=2866
+2026-08-30 21:10:43,375 - routes.figures_generator - INFO - [figures_gen] job 581 aux: planner_has_aux=False valid=True svg_built=False status=AUX_NOT_NEEDED fail_codes=None
+2026-08-30 21:10:43,383 - routes.figures_generator - INFO - [figures_gen] credit charged for job 581
+2026-08-30 21:10:43,643 - routes.figures_generator - INFO - [figures_gen] picked job 583 from queue
+2026-08-30 21:10:47,712 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:47,712 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4115 completion_tokens=1167 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=14102
+2026-08-30 21:10:53,752 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:10:53,752 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4062 completion_tokens=766 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=10058
+2026-08-30 21:10:54,694 - routes.figures_generator - INFO - [figures_gen] picked job 585 from queue
+2026-08-30 21:10:57,127 - routes.figures_generator - INFO - [llm_router] role=repair provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=6000 prompt_tokens=3669 completion_tokens=906 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=9408
+2026-08-30 21:11:00,220 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:11:00,220 - routes.figures_generator - INFO - [llm_router] role=aux provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3500 prompt_tokens=2156 completion_tokens=25 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=3020
+2026-08-30 21:11:00,250 - routes.figures_generator - INFO - [figures_gen] job 582 aux: planner_has_aux=False valid=True svg_built=False status=AUX_NOT_NEEDED fail_codes=None
+2026-08-30 21:11:00,252 - routes.figures_generator - INFO - [figures_gen] credit charged for job 582
+2026-08-30 21:11:00,720 - routes.figures_generator - INFO - [figures_gen] picked job 587 from queue
+2026-08-30 21:11:09,621 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:11:09,621 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4148 completion_tokens=1113 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=14887
+2026-08-30 21:11:09,749 - routes.figures_generator - INFO - [figures_gen] picked job 589 from queue
+2026-08-30 21:11:13,413 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:11:13,413 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4094 completion_tokens=920 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=12653
+2026-08-30 21:11:13,770 - routes.figures_generator - INFO - [figures_gen] picked job 591 from queue
+2026-08-30 21:11:20,170 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:11:20,170 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4093 completion_tokens=791 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=10410
+2026-08-30 21:11:25,448 - routes.figures_generator - INFO - [llm_router] role=repair provider=deepseek_direct model_id=deepseek-v4-pro thinking=disabled max_tokens=6000 prompt_tokens=3536 completion_tokens=513 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=5275
+2026-08-30 21:11:26,723 - routes.figures_generator - WARNING - [llm_router] COST_PRICE_UNKNOWN provider=odirouter model=claude-sonnet-4-6
+2026-08-30 21:11:26,736 - routes.figures_generator - INFO - [llm_router] role=base provider=odirouter model_id=claude-sonnet-4-6 thinking=disabled max_tokens=3000 prompt_tokens=4071 completion_tokens=932 reasoning_tokens=0 finish_reason=stop http_status=200 latency_ms=12912

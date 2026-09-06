@@ -2,11 +2,11 @@
 """
 services/level_engine.py — Единый держатель канонического уровня FORMYLA.
 
-Шкала: 1..5 (каноническая). Всё остальное — производное.
+Шкала: 1..4 (каноническая). Всё остальное — производное.
 
 Источники задач и их шкалы определены по результатам ШАГА 1 аудита
 (см. docs/LEVEL_ENGINE_PLAN.md):
-  - formyla_L1_L5_TOP5  -> пятибалльная шкала (difficulty_level 1..5)
+  - formyla_L1_L5_TOP5  -> четырёхуровневая шкала (difficulty_level 1..4)
 
 Восьмибалльные источники (curator diagnostic, profile-based движок)
 будут добавлены в EIGHT_POINT_SOURCES при их появлении в пуле.
@@ -26,27 +26,26 @@ logger = logging.getLogger(__name__)
 # Константы — источники задач и их шкалы (определены ШАГОМ 1)
 # ══════════════════════════════════════════════════════════════════════
 
-# Источники с пятибалльной шкалой (difficulty_level in {1, 2, 3, 4, 5})
+# Источники с четырёхуровневой шкалой (difficulty_level in {1, 2, 3, 4})
 FIVE_POINT_SOURCES: set = {
     'formyla_L1_L5_TOP5',
 }
 
 # ══════════════════════════════════════════════════════════════════════
-# Маппинг канонического уровня (1..5) -> список difficulty_level
+# Маппинг канонического уровня (1..4) -> список difficulty_level
 #
 # P3 BAND FIX (2026-07-31):
 #   Каждый уровень отдаёт основной + соседние уровни выше и ниже,
 #   с предпочтением основного (он первый в списке).
 #   Полоса не зависит от того, сколько задач осталось.
-#   Диапазон зажат в 1..5.
+#   Диапазон зажат в 1..4.
 # ══════════════════════════════════════════════════════════════════════
 
 FIVE_POINT_MAP: Dict[int, List[int]] = {
     1: [1, 2],
     2: [2, 1, 3],
     3: [3, 2, 4],
-    4: [4, 3, 5],
-    5: [5, 4],
+    4: [4, 3],
 }
 
 # ══════════════════════════════════════════════════════════════════════
@@ -60,7 +59,7 @@ SIGMA_OFFSET = 0.3
 SIGMA_DECAY = 0.94
 MIN_SIGMA = 0.35
 MIN_MU = 1.0
-MAX_MU = 5.0
+MAX_MU = 4.0
 
 # ══════════════════════════════════════════════════════════════════════
 # Маппинг русских названий разделов из JSONL -> латинские slug'и
@@ -102,9 +101,9 @@ def get_state(user_id: int) -> Dict[str, Any]:
 
     Возвращает:
         {
-            "mu": float,           # оценка уровня (1.0..5.0)
+            "mu": float,           # оценка уровня (1.0..4.0)
             "sigma": float,        # неопределённость (≥ 0.35)
-            "level": int,          # округлённый уровень (1..5)
+            "level": int,          # округлённый уровень (1..4)
             "by_section": dict,    # {section: {mu, sigma, n}, ...}
             "updated_at": str|None # ISO-строка последнего обновления
         }
@@ -127,7 +126,7 @@ def get_state(user_id: int) -> Dict[str, Any]:
             by_section = {}
 
     mu = float(cs.level_mu)
-    level = max(1, min(5, int(round(mu))))
+    level = max(1, min(4, int(round(mu))))
 
     return {
         "mu": mu,
@@ -144,7 +143,7 @@ def set_prior(user_id: int, mu: float, sigma: float,
 
     Параметры:
         user_id: ID пользователя
-        mu:      начальная оценка уровня (будет зажата в [1.0, 5.0])
+        mu:      начальная оценка уровня (будет зажата в [1.0, 4.0])
         sigma:   начальная неопределённость (будет зажата ≥ 0.35)
         source:  строка-источник (для логов, не сохраняется)
 
@@ -182,15 +181,15 @@ def record_result(user_id: int, section: Optional[str], level_shown: int,
       верно   -> mu += 0.22 * (sigma + 0.3)
       неверно -> mu -= 0.28 * (sigma + 0.3)
       sigma   -> max(0.35, sigma * 0.94)
-      mu      -> clamp(1.0, 5.0)
-      level   -> int(round(mu)), clamp(1, 5)
+      mu      -> clamp(1.0, 4.0)
+      level   -> int(round(mu)), clamp(1, 4)
 
     Параметры:
         user_id:     ID пользователя
         section:     имя раздела (например, 'algebra', 'geometry').
                      Если None — обновляется только глобальный mu,
                      by_section не трогается.
-        level_shown: уровень задачи, которую показывали (1..5)
+        level_shown: уровень задачи, которую показывали (1..4)
         correct:     True если решена верно
 
     Возвращает:
@@ -255,25 +254,25 @@ def record_result(user_id: int, section: Optional[str], level_shown: int,
 
 
 def allowed_difficulty(level_5: int, source: str) -> List[int]:
-    """Перевести канонический уровень (1..5) в список допустимых
+    """Перевести канонический уровень (1..4) в список допустимых
     difficulty_level для заданного источника задач.
 
     Маппинг — явный словарь, без интерполяции:
-      - Пятибалльные источники: 1->[1] 2->[2] 3->[3] 4->[4] 5->[5]
+      - Четырёхуровневые источники: 1->[1] 2->[2] 3->[3] 4->[4]
 
     Параметры:
-        level_5: канонический уровень (1..5, будет зажат)
+        level_5: канонический уровень (1..4, будет зажат)
         source:  строка-источник из adaptive_tasks.source
 
     Возвращает:
         Список допустимых значений difficulty_level (list[int]).
     """
-    level_5 = max(1, min(5, int(level_5)))
+    level_5 = max(1, min(4, int(level_5)))
 
     if source not in FIVE_POINT_SOURCES and source:
         logger.warning(
             "level_engine.allowed_difficulty: unknown source %r, "
-            "treating as 5-point", source
+            "treating as 4-point", source
         )
 
     return list(FIVE_POINT_MAP.get(level_5, [level_5]))

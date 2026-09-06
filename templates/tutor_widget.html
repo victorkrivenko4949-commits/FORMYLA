@@ -64,7 +64,7 @@
             </div>
             
             <!-- Hint-mode pill toggle (compact glass-pill) -->
-            <div style="padding: 10px 15px; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: flex-end;">
+            <div style="padding: 10px 15px; background: rgba(30, 41, 59, 0.5); border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <label class="hint-toggle" title="Только подсказки: ИИ не даёт готовое решение, а помогает наводящими вопросами">
                     <span class="hint-toggle__label">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -72,11 +72,14 @@
                         </svg>
                          Только подсказки
                     </span>
-                    <input type="checkbox" id="hintModeToggle" checked>
+                    <input type="checkbox" id="hintModeToggle">
                     <span class="hint-toggle__switch"></span>
                 </label>
             </div>
-            
+
+            <!-- Лимит сообщений: баннер-предупреждение (появляется с 5-го сообщения) -->
+            <div id="tutorLimitBanner" style="display:none; padding: 8px 15px; background: rgba(245,158,11,0.12); border-bottom: 1px solid rgba(245,158,11,0.25); color: #e5ac3a; font-size: 12.5px; text-align: center; line-height: 1.4;"></div>
+             
             <!-- Сообщения -->
             <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
                 <!-- Сообщения будут добавляться динамически -->
@@ -519,6 +522,89 @@ let selectedText = '';
 let _tutorAbort = null;   // global AbortController for in-flight tutor request
 let _tutorTimer = null;   // global timeout timer
 let _tutorLoading = false; // true while AI is thinking (3 dots)
+// (Функция «Проверить решение» временно отключена)
+
+// LIMIT: ограничение числа сообщений в чате тьютора.
+const TUTOR_MESSAGE_LIMIT = 8;
+const TUTOR_WARN_START = 5;   // предупреждаем, начиная с 5-го сообщения
+let _tutorUserMsgCount = 0;   // сколько сообщений пользователь уже отправил
+
+function _tutorRemaining() {
+    return Math.max(0, TUTOR_MESSAGE_LIMIT - _tutorUserMsgCount);
+}
+
+function _updateTutorLimitBanner() {
+    const banner = document.getElementById('tutorLimitBanner');
+    const input = document.getElementById('tutorInput');
+    const sendBtn = document.getElementById('chatSendBtn');
+    if (!banner || !input) return;
+
+    const remaining = _tutorRemaining();
+
+    if (_tutorUserMsgCount >= TUTOR_MESSAGE_LIMIT) {
+        banner.style.display = 'block';
+        banner.textContent = 'Лимит сообщений в этом чате исчерпан.';
+        input.disabled = true;
+        input.placeholder = 'Лимит сообщений исчерпан';
+        if (sendBtn) sendBtn.disabled = true;
+        return;
+    }
+
+    if (_tutorUserMsgCount >= TUTOR_WARN_START) {
+        banner.style.display = 'block';
+        if (remaining === 1) {
+            banner.textContent = 'Через 1 сообщение в этот чат нельзя будет писать.';
+        } else if (remaining === 2) {
+            banner.textContent = 'Через 2 сообщения в этот чат нельзя будет писать.';
+        } else if (remaining === 3) {
+            banner.textContent = 'Через 3 сообщения в этот чат нельзя будет писать.';
+        } else {
+            banner.textContent = 'Через ' + remaining + ' сообщений в этот чат нельзя будет писать.';
+        }
+    } else {
+        banner.style.display = 'none';
+    }
+
+    input.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
+}
+
+// ═══ TERMINAL-STYLE HISTORY (↑ / ↓) ═══
+// История отправленных сообщений (как команды в терминале), ВКЛЮЧАЯ ФОТО.
+// Каждый элемент: {text: string, images: [dataUrl, ...]}.
+// ↑ — предыдущая команда, ↑↑ — пред-предыдущая и т.д. ↓ — вперёд.
+let _history = [];          // массив {text, images}
+let _historyIndex = -1;     // текущая позиция (-1 = «живой» черновик)
+let _historyDraft = '';     // текст живого черновика (восстанавливаем по ↓)
+let _historyDraftImages = []; // dataUrl'ы фото живого черновика
+
+// dataUrl -> File (для повторного прикрепления фото из истории)
+function dataUrlToFile(dataUrl, name) {
+    var arr = dataUrl.split(',');
+    var mimeMatch = arr[0].match(/:(.*?);/);
+    var mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    var ext = (mime === 'image/png') ? 'png' : ((mime === 'image/jpeg' || mime === 'image/jpg') ? 'jpg' : 'img');
+    var bstr = atob(arr[1]);
+    var n = bstr.length;
+    var u8arr = new Uint8Array(n);
+    for (var i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i);
+    var blob = new Blob([u8arr], {type: mime});
+    return new File([blob], (name || ('history.' + ext)), {type: mime});
+}
+
+// Восстановить фото (чипы) из списка dataUrl'ов
+function restoreHistoryImages(imageDataUrls) {
+    clearAllFiles();
+    if (!imageDataUrls || imageDataUrls.length === 0) return;
+    for (var i = 0; i < imageDataUrls.length; i++) {
+        addFileChip(dataUrlToFile(imageDataUrls[i], 'history_' + (i + 1)));
+    }
+}
+
+// Текущие фото черновика (dataUrl'ы)
+function currentDraftImages() {
+    return attachedFiles.map(function(f) { return f.dataUrl; });
+}
 
 function toggleTutorPopup() {
     popupOpen = !popupOpen;
@@ -642,6 +728,49 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendToTutor();
+                return;
+            }
+
+            // Terminal-style history: ↑ — предыдущая команда, ↓ — следующая
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (_history.length === 0) return;
+                // Сохраняем текущий черновик (текст + фото) при первом нажатии ↑
+                if (_historyIndex === -1) {
+                    _historyDraft = textarea.value;
+                    _historyDraftImages = currentDraftImages();
+                }
+                if (_historyIndex < _history.length - 1) {
+                    _historyIndex++;
+                    var entry = _history[_history.length - 1 - _historyIndex];
+                    textarea.value = entry.text || '';
+                    restoreHistoryImages(entry.images || []);
+                }
+                // Auto-resize после подстановки
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+                return;
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (_historyIndex === -1) return;
+                if (_historyIndex > 0) {
+                    _historyIndex--;
+                    var entryDown = _history[_history.length - 1 - _historyIndex];
+                    textarea.value = entryDown.text || '';
+                    restoreHistoryImages(entryDown.images || []);
+                } else {
+                    // Вернулись к «живому» черновику (текст + фото)
+                    _historyIndex = -1;
+                    textarea.value = _historyDraft;
+                    restoreHistoryImages(_historyDraftImages || []);
+                    _historyDraft = '';
+                    _historyDraftImages = [];
+                }
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+                return;
             }
         });
         
@@ -752,6 +881,12 @@ async function loadChatHistory(agentType) {
         
         const container = document.getElementById('chatMessages');
         container.innerHTML = '';
+
+        // Считаем уже отправленные сообщения пользователя (для лимита).
+        _tutorUserMsgCount = 0;
+        messages.forEach(function(msg) {
+            if (msg.role === 'user') _tutorUserMsgCount++;
+        });
         
         if (messages.length === 0) {
             const greeting = document.createElement('div');
@@ -764,6 +899,8 @@ async function loadChatHistory(agentType) {
             });
         }
         
+        _updateTutorLimitBanner();
+
         if (typeof reRenderMath === 'function') {
             reRenderMath(container);
         }
@@ -784,12 +921,40 @@ async function sendToTutor() {
     if (!currentAgent) return;
     // Block if AI is already thinking
     if (_tutorLoading) return;
+
+    // Лимит сообщений: после 8-го сообщения писать нельзя.
+    if (_tutorUserMsgCount >= TUTOR_MESSAGE_LIMIT) {
+        const banner = document.getElementById('tutorLimitBanner');
+        if (banner) {
+            banner.style.display = 'block';
+            banner.textContent = 'Лимит сообщений в этом чате исчерпан.';
+        }
+        return;
+    }
     
     const hintMode = document.getElementById('hintModeToggle').checked;
-    
+    var effectiveAgent = currentAgent;
+    var effectiveMessage = message;
+
     // Render user message in UI (with images if any)
     const imageUrls = attachedFiles.map(function(f) { return f.dataUrl; });
     addMessageToChat('user', message, true, imageUrls);
+
+    // Учитываем отправленное сообщение в лимите.
+    _tutorUserMsgCount++;
+    _updateTutorLimitBanner();
+
+    // Запоминаем команду (текст + фото) в терминальной истории.
+    // Без дублей подряд: сравниваем текст и количество фото.
+    var historyEntry = { text: message || '', images: imageUrls.slice() };
+    var lastEntry = _history[_history.length - 1];
+    if (!lastEntry || lastEntry.text !== historyEntry.text || (lastEntry.images || []).length !== historyEntry.images.length) {
+        _history.push(historyEntry);
+    }
+    // Сбрасываем навигацию по истории и черновик
+    _historyIndex = -1;
+    _historyDraft = '';
+    _historyDraftImages = [];
     
     // Clear input and chips
     input.value = '';
@@ -797,9 +962,10 @@ async function sendToTutor() {
     
     // Build FormData
     const formData = new FormData();
-    formData.append('message', message || '');
-    formData.append('agent_type', currentAgent);
+    formData.append('message', effectiveMessage || '');
+    formData.append('agent_type', effectiveAgent);
     formData.append('hint_mode', hintMode);
+    formData.append('check_solution', 'false');
     for (var i = 0; i < attachedFiles.length; i++) {
         formData.append('files', attachedFiles[i].file);
     }
@@ -850,7 +1016,7 @@ async function sendToTutor() {
             if (typeof window.showPaywall === 'function') {
                 window.showPaywall(data);
             } else {
-                addMessageToChat('assistant', '\ud83c\udf1f ' + data.message + ' <a href="/subscribe" style="color:#38ef7d">\u041e\u0444\u043e\u0440\u043c\u0438\u0442\u044c Premium -></a>');
+                addMessageToChat('assistant', '\ud83c\udf1f ' + data.message);
             }
         } else if (data.error === 'rate_limit_exceeded') {
             addMessageToChat('assistant', '\u23f3 \u0421\u043b\u0438\u0448\u043a\u043e\u043c \u043c\u043d\u043e\u0433\u043e \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432. \u041f\u043e\u0434\u043e\u0436\u0434\u0438\u0442\u0435 \u043c\u0438\u043d\u0443\u0442\u0443 \u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0441\u043d\u043e\u0432\u0430.');
@@ -964,6 +1130,10 @@ async function clearTutorHistory() {
             greeting.style.cssText = 'text-align:center;color:var(--text-muted);font-size:14px;padding:20px';
             greeting.textContent = 'История очищена. Задайте новый вопрос!';
             document.getElementById('chatMessages').appendChild(greeting);
+
+            // Сбрасываем счётчик лимита сообщений.
+            _tutorUserMsgCount = 0;
+            _updateTutorLimitBanner();
         }
     } catch(e) {
         alert('Ошибка: ' + e.message);

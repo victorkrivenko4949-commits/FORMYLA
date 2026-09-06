@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Методы — визуальный атлас олимпиадной математики — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Атлас методов — iframe на всю высоту под шапкой, без отступов контейнера. */
+    body.atlas-embed .main {
+        max-width: none;
+        padding: 0;
+        margin: 0;
+    }
+    .atlas-shell {
+        position: fixed;
+        top: var(--atlas-header-h, 62px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        padding: 0;
+    }
+    .atlas-shell iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: block;
+    }
+    @media (max-width: 768px) {
+        .atlas-shell {
+            top: var(--atlas-header-h, 56px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="atlas-shell">
+    <iframe
+        src="/olympiads/methods/atlas.html"
+        title="Атлас методов"
+        loading="lazy"
+    ></iframe>
+</div>
+{% endblock %}

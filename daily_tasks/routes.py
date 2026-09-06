@@ -29,6 +29,7 @@ from .models import DailyTaskSet, DailyTaskItem, DailyGenerationJob, TaskPool
 from . import services
 from .services import today_in_user_tz
 from .monthly_plan import get_or_build_plan, current_month_index, pick_day_subtopic, subtopic_title
+from utils.math_text_fixer import wrap_bare_math
 from services.streak_service import (
     get_or_create_streak, check_streak_on_open, complete_day,
     take_day_off, set_is_fully_answered, compute_all_correct,
@@ -117,95 +118,124 @@ def get_daily_tasks():
     # ── T8 streak: check on open ────────────────────────────────────
     streak = check_streak_on_open(user_id, today)
 
-    # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
-    # build_daily_set сам пишет выданное в bank_issues и идемпотентен
-    # по (user_id, issued_date). Флаги plan_missing/bank_exhausted/
-    # bank_empty дают код 200 с русским текстом.
+    # ── Цикл месяца: реальная тема дня + блокировка срезом ──────────
+    cycle_info = {}
+    blocked = False
+    blocked_theme_title = None
     try:
-        from services.bank_daily import build_daily_set as _build_bank_set
-        _bank = _build_bank_set(user_id, today)
-        if _bank.get("bank_empty"):
-            _bank_data = {
-                "status": "bank_empty",
-                "daily_set_id": None,
-                "target_date": today.isoformat(),
-                "message": "Задачи дня ещё не загружены в базу",
-                "curator_note": "Банк daily_task_bank пуст: данные ещё не залиты.",
-                "class_level": None,
-                "summary": None,
-                "generated_at": None,
-                "total_cost_usd": None,
-                "progress": {"completed": 0, "total": 0},
-                "items": [],
-            }
-            if True:  # HTML — страница
-                return render_template(
-                    "daily_tasks/daily_tasks_dashboard.html",
-                    data={**_bank_data, "theme_today": _theme_for_day(today, None)},
-                )
-            return jsonify(_bank_data), 200
-        if _bank.get("plan_missing"):
-            _bank_data = {
-                "status": "plan_missing",
-                "daily_set_id": None,
-                "target_date": today.isoformat(),
-                "message": "План на месяц не задан",
-                "curator_note": "План на месяц не задан: у ученика нет 7 активных подтем.",
-                "class_level": None,
-                "summary": None,
-                "generated_at": None,
-                "total_cost_usd": None,
-                "progress": {"completed": 0, "total": 0},
-                "items": [],
-            }
-            if True:
-                return render_template(
-                    "daily_tasks/daily_tasks_dashboard.html",
-                    data={**_bank_data, "theme_today": _theme_for_day(today, None)},
-                )
-            return jsonify(_bank_data), 200
-        if _bank.get("bank_exhausted"):
-            logger.warning(
-                "daily_tasks: bank_exhausted для user=%d date=%s, выдано %d задач",
-                user_id, today, len(_bank.get("items", [])),
-            )
-        _bank_items = _bank.get("items", [])
-        _bank_data = {
-            "status": "ready" if _bank_items else "partial",
+        from curator.monthly_cycle import get_cycle_info
+        cycle_info = get_cycle_info(user_id)
+        if cycle_info.get('active') and cycle_info.get('blocked') and not cycle_info.get('finished'):
+            blocked = True
+            _ct = cycle_info.get('current_theme', '')
+            from daily_tasks.monthly_plan import subtopic_title as _stt
+            blocked_theme_title = _stt(_ct) if _ct else 'тема дня'
+    except Exception:
+        pass
+
+    # ── Реальная тема дня из цикла (fallback на ротацию) ────────────
+    real_theme_title = None
+    if cycle_info.get('current_theme'):
+        try:
+            from daily_tasks.monthly_plan import subtopic_title as _stt2
+            real_theme_title = _stt2(cycle_info['current_theme'])
+        except Exception:
+            pass
+    if not real_theme_title:
+        real_theme_title = _theme_for_day(today, None)
+
+    # ── BLOCKED: если в первую неделю срез не пройден — блокируем
+    # выдачу задач дня ДО обращения к банку (иначе банк вернёт
+    # plan_missing/empty и пользователь не увидит требование среза). ──
+    if blocked:
+        data = {
+            "status": "blocked",
             "daily_set_id": None,
             "target_date": today.isoformat(),
+            "message": (
+                f"До получения задач дня нужно выполнить утренний срез: "
+                f"«{blocked_theme_title}». 5 задач, примерно 15 минут."
+            ),
             "class_level": None,
             "summary": None,
             "generated_at": None,
             "total_cost_usd": None,
-            "bank_exhausted": bool(_bank.get("bank_exhausted")),
-            "progress": {"completed": 0, "total": len(_bank_items)},
-            "items": [
-                {
-                    "id": t.id,
-                    "position": getattr(t, "position", None) or (i + 1),
-                    "task_text": t.statement or "",
-                    "correct_answer": t.answer or "",
-                    "solution": t.solution or "",
-                    "subtopic": t.subtopic or "",
-                    "topic": t.section or "",
-                    "difficulty": t.level or 1,
-                    "difficulty_level": t.level or 1,
-                    "user_answer": None,
-                    "is_correct": None,
-                    "is_flagged": False,
-                    "is_calibration": False,
-                    "figure_url": None,
-                }
-                for i, t in enumerate(_bank_items)
-            ],
+            "progress": {"completed": 0, "total": 0},
+            "items": [],
+            "blocked": True,
+            "blocked_theme": cycle_info.get('current_theme'),
+            "blocked_theme_title": blocked_theme_title,
+            "probe_url": "/prep/probe",
         }
-        if True:
-            return render_template(
-                "daily_tasks/daily_tasks_dashboard.html",
-                data={**_bank_data, "theme_today": _theme_for_day(today, None)},
+        return render_template(
+            "daily_tasks/daily_tasks_dashboard.html",
+            data={**data, "theme_today": real_theme_title},
+        )
+
+    # ── BANK: задачи дня выдаются из предзаполненного банка ─────────
+    # build_daily_set сам пишет выданное в bank_issues и идемпотентен
+    # по (user_id, issued_date). Флаги plan_missing/bank_exhausted/
+    # bank_empty дают код 200 с русским текстом.
+    # ── BANK: предзаполненный daily_task_bank (заливает человек). ──────
+    # Если банк пуст (bank_empty) или план месяца не задан в
+    # UserSubtopicAssignment (plan_missing), НЕ показываем empty-state:
+    # проваливаемся ниже к pick_daily_set — ротации по monthly_cycle +
+    # FORMYLA_BANK.jsonl, которая умеет выдать задачи дня.
+    try:
+        from services.bank_daily import build_daily_set as _build_bank_set
+        _bank = _build_bank_set(user_id, today)
+        if _bank.get("bank_empty"):
+            logger.info(
+                "daily_tasks: bank_empty для user=%d — fallback на pick_daily_set",
+                user_id,
             )
-        return jsonify(_bank_data), 200
+        elif _bank.get("plan_missing"):
+            logger.info(
+                "daily_tasks: plan_missing для user=%d — fallback на pick_daily_set",
+                user_id,
+            )
+        else:
+            if _bank.get("bank_exhausted"):
+                logger.warning(
+                    "daily_tasks: bank_exhausted для user=%d date=%s, выдано %d задач",
+                    user_id, today, len(_bank.get("items", [])),
+                )
+            _bank_items = _bank.get("items", [])
+            if _bank_items:
+                _bank_data = {
+                    "status": "ready" if _bank_items else "partial",
+                    "daily_set_id": None,
+                    "target_date": today.isoformat(),
+                    "class_level": None,
+                    "summary": None,
+                    "generated_at": None,
+                    "total_cost_usd": None,
+                    "bank_exhausted": bool(_bank.get("bank_exhausted")),
+                    "progress": {"completed": 0, "total": len(_bank_items)},
+                    "items": [
+                        {
+                            "id": t.id,
+                            "position": getattr(t, "position", None) or (i + 1),
+                            "task_text": wrap_bare_math(t.statement or ""),
+                            "correct_answer": t.answer or "",
+                            "solution": t.solution or "",
+                            "subtopic": t.subtopic or "",
+                            "topic": t.section or "",
+                            "difficulty": t.level or 1,
+                            "difficulty_level": t.level or 1,
+                            "user_answer": None,
+                            "is_correct": None,
+                            "is_flagged": False,
+                            "is_calibration": False,
+                            "figure_url": None,
+                        }
+                        for i, t in enumerate(_bank_items)
+                    ],
+                }
+                return render_template(
+                    "daily_tasks/daily_tasks_dashboard.html",
+                    data={**_bank_data, "theme_today": real_theme_title},
+                )
     except Exception as _bank_err:
         logger.exception("daily_tasks: build_daily_set failed for user=%d: %s", user_id, _bank_err)
 
@@ -479,7 +509,7 @@ def get_daily_tasks():
     }
 
     if wants_html:
-        return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+        return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": real_theme_title})
     return jsonify(data), 200
 
 
@@ -763,26 +793,14 @@ def take_day_off_route():
 def regenerate():
     """Перегенерировать сегодняшний набор задач.
 
-    Правила лимита:
-    * Обычный пользователь — 1 успешная генерация в день
-      (``status == 'ready'`` или ``'partial'``).
-    * **Failed-сеты НЕ считаются** израсходованной попыткой —
-      пользователь может повторить, если генерация сломалась
-      (например, исчерпался баланс OpenRouter, упал LLM-провайдер).
-    * Админ — без лимита.
+    AI-генерация «Задач дня» отключена (см. AI_GENERATION_ENABLED в
+    daily_tasks/services.py). Выдача задач дня идёт только из банка
+    daily_task_bank, поэтому ручная перегенерация LLM недоступна.
     """
-    user_id = current_user.id
-    today = today_in_user_tz()
-
-    # ── enqueue_daily_generation сама удалит старый сет если skip_bank=True ──
-    result = services.enqueue_daily_generation(
-        user_id=user_id,
-        triggered_by="manual",
-        skip_bank=True,
-        forced_topic=((request.get_json(silent=True) or {}).get("topic") or "").strip() or None,
-    )
-
-    return jsonify(result), 202
+    return jsonify({
+        "status": "disabled",
+        "message": "AI-генерация задач дня отключена. Задачи выдаются из банка.",
+    }), 200
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -980,41 +998,46 @@ def submit_answer_ai(item_id: int):
             "message": "AI-проверка временно недоступна",
         }), 503
 
-    # AI-проверка через общий сервис с жёстким таймаутом 20 секунд
-    # (DeepSeekClient.timeout=90с, но Render LB отбивает через ~30с)
+    # Единый pipeline проверки (OCR + checker) с жёстким таймаутом 60 секунд.
     import concurrent.futures as _cf
-    _result = None
+    _verdict = None
     try:
+        from services.solution_check_pipeline import check_solution
         with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
             _future = _executor.submit(
-                review_attempt,
+                check_solution,
+                entity_type="daily_task",
                 task_text=item.task_text or "",
                 correct_answer=item.correct_answer or "",
                 solution_ref=item.solution or "",
                 user_answer=user_answer,
                 user_solution=user_solution,
                 images_b64=images_b64,
-                deepseek_client_cls=DeepSeekClient if _DEEPSEEK_AVAILABLE else None,
-                deepseek_available=_DEEPSEEK_AVAILABLE,
-                max_tokens=4096,
-                sanitize_latex=False,
+                difficulty_level=getattr(item, "difficulty_level", 4) or 4,
             )
             try:
-                _result = _future.result(timeout=20)
+                _verdict = _future.result(timeout=60)
             except _cf.TimeoutError:
-                logger.warning("submit_answer_ai: review_attempt timed out after 20s — fallback")
+                logger.warning("submit_answer_ai: pipeline timed out after 60s — fallback")
     except Exception as e:  # pragma: no cover
-        logger.exception("submit_answer_ai: review_attempt failed: %s", e)
+        logger.exception("submit_answer_ai: pipeline failed: %s", e)
 
-    if _result is None:
+    from services.md_render import md_render
+    from utils.math_text_fixer import wrap_bare_math
+
+    if _verdict is None:
         # Таймаут или ошибка — сохраняем ответ без AI-проверки
         score = 0.0
         feedback = "AI-проверка временно недоступна. Ответ сохранён."
         is_correct = False
     else:
-        score = _result.get("score", 0.0)
-        feedback = str(_result.get("feedback") or "")
-        is_correct = bool(_result.get("is_correct"))
+        score = float(_verdict.get("score", 0.0))
+        feedback = str(md_render(wrap_bare_math(_verdict.get("feedback") or "")))
+        is_correct = bool(_verdict.get("is_correct"))
+        # Низкое доверие OCR — предупреждаем ученика
+        if _verdict.get("ocr") and _verdict["ocr"].get("low_confidence"):
+            warn = _verdict["ocr"].get("warning") or "Распознавание фото ненадёжно."
+            feedback = f"⚠️ {warn}<br><br>{feedback}"
 
     # Сохраняем ответ ученика в БД
     from datetime import datetime as _dt
@@ -1042,6 +1065,24 @@ def submit_answer_ai(item_id: int):
         db.session.rollback()
         logger.exception("submit_answer_ai: db commit failed: %s", e)
 
+    # «Банк неточностей»: ставим решение в очередь на скрининг (фоновый анализ).
+    try:
+        from services.insight_queue import enqueue_screen
+        enqueue_screen(
+            user_id=current_user.id,
+            task_text=item.task_text or "",
+            correct_answer=item.correct_answer or "",
+            solution_ref=item.solution or "",
+            user_solution=user_solution or user_answer,
+            topic=getattr(item, "topic", "") or "",
+            difficulty_level=getattr(item, "difficulty_level", 4) or 4,
+            time_spent_sec=int(data.get("time_spent_seconds") or 0) or None,
+            source="daily_task",
+            source_task_id=item.id,
+        )
+    except Exception:
+        pass  # анализ неточностей никогда не должен ронять основной поток
+
     # Прогресс сета
     try:
         all_items = DailyTaskItem.query.filter_by(daily_set_id=item.daily_set_id).all()
@@ -1056,7 +1097,7 @@ def submit_answer_ai(item_id: int):
         "feedback": feedback,
         "is_correct": is_correct,
         "correct_answer": item.correct_answer or "",
-        "solution": item.solution or "",
+        "solution": str(md_render(wrap_bare_math(item.solution or ""))),
         "set_progress": {"completed": completed, "total": total},
     })
 
@@ -1222,7 +1263,7 @@ def day_history(date_iso: str):
     items_payload = []
     for it in items:
         # Краткий превью текста задачи (для модалки).
-        preview = (it.task_text or "").strip()
+        preview = wrap_bare_math((it.task_text or "").strip())
         if len(preview) > 220:
             preview = preview[:220].rstrip() + "…"
         items_payload.append({

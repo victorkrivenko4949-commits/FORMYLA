@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="460" viewBox="0 0 620 460" style="background-color: #0F1729;">
+<rect x="0" y="0" width="620" height="460" fill="#0F1729" />
+<polygon points="60.00,285.20 560.00,285.20 210.00,56.07" fill="none" stroke="#D9E5F5" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" />
+<line x1="210.00" y1="56.07" x2="210.00" y2="285.20" stroke="#F6B44C" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="6 4" />
+<polyline points="203.43,66.11 213.47,72.68 220.04,62.64" fill="none" stroke="#A6B7CC" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
+<polyline points="210.00,275.20 220.00,275.20 220.00,285.20" fill="none" stroke="#A6B7CC" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
+<circle cx="60.00" cy="285.20" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<text x="48.00" y="291.20" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">A</text>
+<circle cx="560.00" cy="285.20" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<text x="572.00" y="291.20" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">B</text>
+<circle cx="210.00" cy="56.07" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<text x="210.00" y="42.07" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">C</text>
+<circle cx="210.00" cy="285.20" r="3.5" stroke="#D9E5F5" stroke-width="1.8" fill="#D9E5F5" />
+<text x="210.00" y="299.20" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">H</text>
+<text x="135.00" y="299.20" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">AH</text>
+<text x="385.00" y="299.20" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">BH</text>
+<text x="224.00" y="170.64" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-width="2" stroke-linejoin="round">CH</text>
+</svg>

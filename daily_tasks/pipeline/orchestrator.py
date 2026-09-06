@@ -27,7 +27,7 @@ MAX_FIX_ITERATIONS = 3
 """Максимальное число итераций Opus-fix -> GPT-audit для одной задачи."""
 
 LEVEL_TOLERANCE = 1
-"""Допустимое расхождение уровня сложности (1-5), при котором needs_fix считается приемлемым."""
+"""Допустимое расхождение уровня сложности (1-4), при котором needs_fix считается приемлемым."""
 
 MIN_VALID_TASKS = 7
 """Минимальное количество валидных задач для статуса ready."""
@@ -41,7 +41,7 @@ _FIX_PARALLEL_WORKERS = 10
 
 
 def _level_within_tolerance(spec, audit_entry):
-    """needs_fix приемлем, если уровень сложности (1-5) расходится с целевым не больше чем на LEVEL_TOLERANCE."""
+    """needs_fix приемлем, если уровень сложности (1-4) расходится с целевым не больше чем на LEVEL_TOLERANCE."""
     est = audit_entry.get("estimated_actual_level")
     target = spec.get("difficulty_level")
     if est is None or target is None:

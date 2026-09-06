@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+  <rect width="600" height="500" fill="#0F1729"/>
+  <style>
+    .grid{stroke:#D9E5F5;stroke-width:1.8;stroke-linecap:round;fill:none}
+    .domino{stroke:#D9E5F5;stroke-width:1.8;stroke-linecap:round}
+    .label{font-family:Arial,Helvetica,sans-serif;font-size:14px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+    .small{font-family:Arial,Helvetica,sans-serif;font-size:12px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+    .aux{stroke:#73B6E6;stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+  </style>
+  <text x="300" y="35" class="label">Покрытие доски 6×6 доминошками</text>
+  <text x="300" y="480" class="small">17 доминошек покрывают все 34 оставшиеся клетки</text>
+  <text x="102" y="42" class="small">номер столбца</text>
+  <text x="45" y="255" class="small" transform="rotate(-90 45 255)">номер строки</text>
+  <g class="small">
+    <text x="150" y="52">1</text><text x="210" y="52">2</text><text x="270" y="52">3</text><text x="330" y="52">4</text><text x="390" y="52">5</text><text x="450" y="52">6</text>
+    <text x="92" y="100">1</text><text x="92" y="160">2</text><text x="92" y="220">3</text><text x="92" y="280">4</text><text x="92" y="340">5</text><text x="92" y="400">6</text>
+  </g>
+  <g>
+    <rect x="120" y="70" width="120" height="60" rx="10" class="domino" fill="#294B68"/>
+    <rect x="120" y="130" width="60" height="120" rx="10" class="domino" fill="#365B70"/>
+    <rect x="180" y="130" width="120" height="60" rx="10" class="domino" fill="#294B68"/>
+    <rect x="180" y="190" width="60" height="120" rx="10" class="domino" fill="#365B70"/>
+    <rect x="240" y="70" width="120" height="60" rx="10" class="domino" fill="#365B70"/>
+    <rect x="240" y="190" width="60" height="120" rx="10" class="domino" fill="#294B68"/>
+    <rect x="240" y="310" width="60" height="120" rx="10" class="domino" fill="#365B70"/>
+    <rect x="300" y="130" width="120" height="60" rx="10" class="domino" fill="#365B70"/>
+    <rect x="300" y="190" width="60" height="120" rx="10" class="domino" fill="#294B68"/>
+    <rect x="300" y="310" width="60" height="120" rx="10" class="domino" fill="#294B68"/>
+    <rect x="360" y="70" width="120" height="60" rx="10" class="domino" fill="#294B68"/>
+    <rect x="360" y="190" width="60" height="120" rx="10" class="domino" fill="#365B70"/>
+    <rect x="360" y="370" width="120" height="60" rx="10" class="domino" fill="#365B70"/>
+    <rect x="420" y="130" width="60" height="120" rx="10" class="domino" fill="#294B68"/>
+    <rect x="420" y="250" width="60" height="120" rx="10" class="domino" fill="#365B70"/>
+    <rect x="180" y="310" width="60" height="120" rx="10" class="domino" fill="#294B68"/>
+    <rect x="120" y="310" width="60" height="120" rx="10" class="domino" fill="#365B70"/>
+  </g>
+  <g class="grid">
+    <rect x="120" y="70" width="360" height="360"/>
+    <path d="M180 70V430 M240 70V430 M300 70V430 M360 70V430 M420 70V430 M120 130H480 M120 190H480 M120 250H480 M120 310H480 M120 370H480" opacity="0.55"/>
+  </g>
+  <g>
+    <rect x="360" y="310" width="60" height="60" fill="#536174" stroke="#D9E5F5" stroke-width="1.8"/>
+    <path d="M370 320L410 360 M410 320L370 360" stroke="#FFD166" stroke-width="1.8" stroke-linecap="round"/>
+    <rect x="120" y="250" width="60" height="60" fill="#536174" stroke="#D9E5F5" stroke-width="1.8"/>
+    <path d="M130 260L170 300 M170 260L130 300" stroke="#FFD166" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+  <g class="small">
+    <text x="390" y="338">(5;5)</text>
+    <text x="150" y="278">(4;1)</text>
+  </g>
+  <g>
+    <line x1="510" y1="105" x2="550" y2="105" class="aux"/>
+    <text x="530" y="125" class="small">одна доминошка</text>
+    <rect x="510" y="145" width="40" height="20" rx="5" fill="#294B68" stroke="#D9E5F5" stroke-width="1.8"/>
+    <text x="530" y="185" class="small">вырезанная клетка</text>
+    <rect x="510" y="195" width="40" height="20" fill="#536174" stroke="#D9E5F5" stroke-width="1.8"/>
+    <path d="M514 199L546 211 M546 199L514 211" stroke="#FFD166" stroke-width="1.2"/>
+  </g>
+</svg>

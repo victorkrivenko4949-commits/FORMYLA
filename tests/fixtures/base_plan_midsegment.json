@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "canvas": {"width": 600, "height": 500, "margin": 40},
+  "constructions": [
+    {"type": "free_point", "id": "A", "x": 300, "y": 60},
+    {"type": "free_point", "id": "B", "x": 100, "y": 420},
+    {"type": "free_point", "id": "C", "x": 500, "y": 420},
+    {"type": "segment", "id": "AB", "p1": "A", "p2": "B"},
+    {"type": "segment", "id": "AC", "p1": "A", "p2": "C"},
+    {"type": "segment", "id": "BC", "p1": "B", "p2": "C"},
+    {"type": "midpoint", "id": "M", "p1": "A", "p2": "B"},
+    {"type": "midpoint", "id": "N", "p1": "A", "p2": "C"},
+    {"type": "segment", "id": "MN", "p1": "M", "p2": "N", "visual_role": "key_point"},
+    {"type": "midpoint_mark", "id": "mm_M", "p1": "A", "p2": "M", "p3": "M", "p4": "B"},
+    {"type": "midpoint_mark", "id": "mm_N", "p1": "A", "p2": "N", "p3": "N", "p4": "C"},
+    {"type": "parallel_mark", "id": "par_MN_BC", "line1": "MN", "line2": "BC", "visual_role": "key_point"},
+    {"type": "length_label", "id": "len_MN_target", "p1": "M", "p2": "N", "text": "?", "visual_role": "key_point"}
+  ],
+  "given_marks": [
+    {"type": "midpoint_mark", "p1": "A", "p2": "M", "p3": "M", "p4": "B"},
+    {"type": "midpoint_mark", "p1": "A", "p2": "N", "p3": "N", "p4": "C"}
+  ],
+  "assumptions": [
+    "Треугольник ABC произвольный (невырожденный), координаты вершин выбраны свободно без потери общности.",
+    "Цель доказательства (MN || BC и MN = BC/2) отмечена визуально как key_point: parallel_mark на MN/BC и length_label со знаком '?' на MN, поскольку это искомые утверждения, а не заданные числовые величины."
+  ],
+  "aux": {"has_aux": false, "reason": "", "constructions": []}
+}

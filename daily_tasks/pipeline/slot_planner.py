@@ -5,7 +5,7 @@ daily_tasks/pipeline/slot_planner.py - daily slot planner driven by onboarding +
 NEW LOGIC (2026-07-28):
     - COUNT  = daily_tasks from onboarding (default 5). Hardcoded 10 removed.
     - LEVEL  = level_engine.allowed_difficulty by current mu,
-               capped by route_ceiling = min(5, target_level + 1).
+               capped by route_ceiling = min(4, target_level + 1).
     - SECTIONS = priority to sections with lowest mu in level_by_section;
                  section without data is priority (needs measurement).
                  No more than 2 consecutive slots from same section.
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 TOTAL_SLOTS = 10  # kept for backwards compat; new logic ignores this
 MIN_LEVEL = 1
-MAX_LEVEL = 5
+MAX_LEVEL = 4
 
 # Fallback-список универсальных методов, если в каталоге нет данных
 SOLUTION_METHODS: List[str] = [
@@ -56,7 +56,7 @@ _GRADE_LEVEL_FLOOR = {
     8: 3,
     9: 4,
     10: 4,
-    11: 5,
+    11: 4,
 }
 
 
@@ -277,7 +277,7 @@ def plan_slots(
       1. COUNT  — daily_tasks from onboarding (default 5).  total_slots
          param is ONLY used if onboarding is absent.
       2. LEVEL  — level_engine.allowed_difficulty by current mu,
-         capped above by route_ceiling = min(5, target_level + 1).
+         capped above by route_ceiling = min(4, target_level + 1).
       3. SECTIONS — priority to sections with lowest mu in level_by_section;
          section without data counts as priority (mu=1.0, needs measurement).
          No more than 2 consecutive slots from the same section.
@@ -319,15 +319,15 @@ def plan_slots(
 
     # ── 3. Level: allowed_difficulty by current mu, capped by route_ceiling ─
     mu = state.get("mu", 3.0)
-    rounded_level = max(1, min(5, int(round(mu))))
+    rounded_level = max(1, min(4, int(round(mu))))
 
-    # route_ceiling = min(5, target_level + 1)
-    target_level = 5
+    # route_ceiling = min(4, target_level + 1)
+    target_level = 4
     if onboard:
         tl = onboard.get("target_level")
         if isinstance(tl, (int, float)):
             target_level = int(tl)
-    route_ceiling = min(5, target_level + 1)
+    route_ceiling = min(4, target_level + 1)
     logger.info(
         "plan_slots: user=%d target_level=%d route_ceiling=%d",
         user_id, target_level, route_ceiling,

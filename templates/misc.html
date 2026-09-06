@@ -55,16 +55,12 @@
 
     <div class="misc-group">
         <div class="misc-group-title">🛠️ Инструменты</div>
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated and not current_user.is_guest %}
         <div class="misc-row">
-            <a href="javascript:void(0)" class="misc-link tutor-open-link"><span class="misc-link-label">🧠 AI Тьютор</span><span class="misc-link-desc">Персональный разбор задач</span></a>
-            <button class="pin-btn" data-pin-id="ai_tutor" data-pin-label="🧠 AI Тьютор" data-pin-href="/misc#tutor" data-pin-desc="Персональный разбор задач" title="На главную">📌</button>
+            <a href="/insights" class="misc-link"><span class="misc-link-label">💡 Банк неточностей</span><span class="misc-link-desc">Найденные недочёты и задачи на отработку</span></a>
+            <button class="pin-btn" data-pin-id="insights" data-pin-label="💡 Банк неточностей" data-pin-href="/insights" data-pin-desc="Найденные недочёты и задачи на отработку" title="На главную">📌</button>
         </div>
         {% endif %}
-        <div class="misc-row">
-            <a href="/problems" class="misc-link"><span class="misc-link-label">🔍 Поиск задач</span><span class="misc-link-desc">Поиск по базе задач</span></a>
-            <button class="pin-btn" data-pin-id="problems" data-pin-label="🔍 Поиск задач" data-pin-href="/problems" data-pin-desc="Поиск по базе задач" title="На главную">📌</button>
-        </div>
     </div>
 
     <div class="misc-group">

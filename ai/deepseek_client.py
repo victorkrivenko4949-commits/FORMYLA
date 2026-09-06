@@ -121,13 +121,21 @@ class DeepSeekClient:
                     
                     # Validate response structure
                     if 'choices' in data and len(data['choices']) > 0:
-                        content = data['choices'][0].get('message', {}).get('content')
+                        message = data['choices'][0].get('message', {}) or {}
+                        content = message.get('content')
                         if content:
                             logger.info("[OK] Request successful")
                             return content
-                        else:
-                            logger.warning("Response missing content field")
-                            raise ValueError("Invalid response structure")
+                        # v4 reasoning-модели иногда отдают весь текст в
+                        # reasoning_content, оставляя content пустым. Используем
+                        # reasoning_content как запасной вариант, чтобы не
+                        # ронять проверку ответа/решения.
+                        reasoning = message.get('reasoning_content')
+                        if reasoning:
+                            logger.info("[OK] Request successful (reasoning_content fallback)")
+                            return reasoning
+                        logger.warning("Response missing content field")
+                        raise ValueError("Invalid response structure")
                     else:
                         logger.warning("Response missing choices field")
                         raise ValueError("Invalid response structure")
@@ -620,8 +628,14 @@ class DeepSeekClient:
         # специализированный ключ. Дальше всё работает как обычно — то есть
         # ответ генерируется уже под профильным системным промптом, что
         # сохраняет качество специализированных агентов.
+        #
+        # Оптимизация: короткие текстовые сообщения (< 25 символов, без фото)
+        # НЕ гоняем через LLM-классификатор — это сэкономит один лишний
+        # вызов и ускорит ответ на «привет», «спасибо» и т.п. Для них сразу
+        # используем универсальный промпт (agent_type остаётся 'general').
         routed_from_general = False
-        if agent_type == 'general':
+        _short_text = (not image_data) and (len((new_message or '').strip()) < 25)
+        if agent_type == 'general' and not _short_text:
             try:
                 classified = self.classify_topic(
                     new_message,
@@ -633,6 +647,8 @@ class DeepSeekClient:
             logger.info(f"[router] general -> {classified}")
             agent_type = classified
             routed_from_general = True
+        elif agent_type == 'general' and _short_text:
+            logger.info("[router] short message — skip topic classification")
 
         # Формируем системный промпт. С новой архитектурой (1 универсальный
         # агент) get_agent_system_prompt возвращает один и тот же
@@ -825,13 +841,21 @@ class DeepSeekClient:
 
         try:
             if use_vision_model:
-                # Strategy 1: Try direct DeepSeek vision FIRST (v4 supports multimodal)
+                # Strategy 1: анализируем фото отдельной vision-моделью.
+                # ВАЖНО: deepseek-chat НЕ поддерживает image input (возвращает
+                # 400 "This model does not support image"), поэтому для
+                # изображений используем отдельную модель DEEPSEEK_VISION_MODEL,
+                # а deepseek-chat остаётся ТОЛЬКО текстовой моделью тьютора.
+                vision_model = os.getenv(
+                    "DEEPSEEK_VISION_MODEL",
+                    "deepseek-v4-flash-vision-exp",
+                ).strip()
                 deepseek_key = os.environ.get('DEEPSEEK_API_KEY', '').strip()
                 if deepseek_key:
                     try:
                         content = _call_api(
                             "https://api.deepseek.com/v1/chat/completions",
-                            "deepseek-chat",  # deepseek-chat supports vision
+                            vision_model,
                             deepseek_key,
                             messages,
                             is_openrouter=False,
@@ -911,8 +935,18 @@ class DeepSeekClient:
                         "Опиши задачу текстом, и я помогу!"
                     )
 
-            # Используем DeepSeek для текста
-            content = _call_api(self.base_url, os.environ.get("FIGURE_MODEL", "deepseek-v4-flash"), self.api_key, messages)
+            # Используем DeepSeek для текста.
+            # Лёгкие короткие вопросы (< 25 символов) отдаём в быструю модель
+            # flash, чтобы отвечать быстрее; сложные — в сильную v4-pro.
+            _flash_model = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash").strip()
+            _pro_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro").strip()
+            _short_q = len((new_message or "").strip()) < 25
+            _text_model = _flash_model if _short_q else _pro_model
+            logger.info(
+                "Tutor model routing: len=%d -> %s",
+                len((new_message or "").strip()), _text_model,
+            )
+            content = _call_api(self.base_url, _text_model, self.api_key, messages)
             logger.info(f"Tutor response generated for user {user.id}")
             return content
 
@@ -1115,7 +1149,7 @@ class DeepSeekClient:
         Args:
             problem_text: Текст задачи
             problem_answer: Правильный ответ (для контекста AI)
-            difficulty: Уровень сложности (1-5)
+            difficulty: Уровень сложности (1-4)
             
         Returns:
             str: Наводящая подсказка
@@ -1138,7 +1172,7 @@ class DeepSeekClient:
 
 Формат ответа: 2-3 абзаца с наводящими вопросами и подсказками."""
 
-        user_prompt = f"""Задача (уровень {difficulty}/5):
+        user_prompt = f"""Задача (уровень {difficulty}/4):
 {problem_text}
 
 Дай наводящую подсказку, которая поможет ученику самому найти решение."""
@@ -1163,7 +1197,7 @@ class DeepSeekClient:
         Args:
             problem_text: Текст задачи
             problem_answer: Правильный ответ
-            difficulty: Уровень сложности (1-5)
+            difficulty: Уровень сложности (1-4)
             
         Returns:
             str: Подробное решение с объяснениями
@@ -1188,7 +1222,7 @@ class DeepSeekClient:
 
 Пиши понятно для школьника, объясняй каждый шаг. Текст должен читаться в любом блокноте."""
 
-        user_prompt = f"""Задача (уровень {difficulty}/5):
+        user_prompt = f"""Задача (уровень {difficulty}/4):
 {problem_text}
 
 Правильный ответ: {problem_answer}

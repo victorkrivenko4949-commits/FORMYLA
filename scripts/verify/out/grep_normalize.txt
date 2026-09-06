@@ -1,0 +1,22 @@
+services\answer_verifier.py:132: from services.text_normalize import normalize_condition
+services\answer_verifier.py:133: condition_text = normalize_condition(condition_text)
+services\aux_templates.py:430: from services.text_normalize import normalize_condition
+services\aux_templates.py:431: condition = normalize_condition(condition)
+services\condition_coverage.py:413: from services.text_normalize import normalize_condition
+services\condition_coverage.py:414: condition_text = normalize_condition(condition_text)
+services\figure_plan_validator.py:309: from services.text_normalize import normalize_condition
+services\figure_plan_validator.py:310: statement = normalize_condition(statement)
+services\figure_plan_validator.py:434: from services.text_normalize import normalize_condition
+services\figure_plan_validator.py:435: condition_text = normalize_condition(condition_text)
+services\figure_plan_validator.py:568: from services.text_normalize import normalize_condition
+services\figure_plan_validator.py:569: condition_text = normalize_condition(condition_text)
+services\figure_plan_validator.py:823: from services.text_normalize import normalize_condition
+services\figure_plan_validator.py:824: condition_text = normalize_condition(condition_text)
+services\solution_generator.py:122: from services.text_normalize import normalize_condition
+services\solution_generator.py:128: norm_condition = normalize_condition(condition_text)
+services\text_normalize.py:83: def normalize_condition(text: str) -> str:
+services\text_normalize.py:86: Идемпотентна: normalize_condition(normalize_condition(x)) == normalize_condition(x).
+services\text_normalize.py:130: return normalize_condition(text), (text or "")
+services\text_normalize.py:125: def normalized_or_original(text: str) -> Tuple[str, str]:
+services\visual_audit.py:117: from services.text_normalize import normalize_condition
+services\visual_audit.py:119: condition = normalize_condition(condition)

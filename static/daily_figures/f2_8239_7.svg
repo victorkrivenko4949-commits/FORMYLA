@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500">
+<rect width="600" height="500" fill="#0F1729"/>
+<defs>
+  <style>
+    .label{font-family:Arial,Helvetica,sans-serif;font-size:14px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+    .small{font-family:Arial,Helvetica,sans-serif;font-size:12px;fill:#EAF1FA;text-anchor:middle;dominant-baseline:central;paint-order:stroke fill;stroke:#0F1729;stroke-width:2;stroke-linejoin:round}
+  </style>
+</defs>
+<text x="285" y="28" class="label" font-size="18">Покрытие доски доминошками</text>
+<text x="285" y="48" class="small">7×6, вырезаны клетки (6;2) и (4;3)</text>
+<!-- шахматная доска -->
+<g stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round">
+  <rect x="75" y="65" width="420" height="360" fill="#1B2B42"/>
+  <g fill="#29445C" stroke="none">
+    <rect x="75" y="65" width="60" height="60"/><rect x="195" y="65" width="60" height="60"/><rect x="315" y="65" width="60" height="60"/><rect x="435" y="65" width="60" height="60"/>
+    <rect x="135" y="125" width="60" height="60"/><rect x="255" y="125" width="60" height="60"/><rect x="375" y="125" width="60" height="60"/>
+    <rect x="75" y="185" width="60" height="60"/><rect x="195" y="185" width="60" height="60"/><rect x="315" y="185" width="60" height="60"/><rect x="435" y="185" width="60" height="60"/>
+    <rect x="135" y="245" width="60" height="60"/><rect x="255" y="245" width="60" height="60"/><rect x="375" y="245" width="60" height="60"/>
+    <rect x="75" y="305" width="60" height="60"/><rect x="195" y="305" width="60" height="60"/><rect x="315" y="305" width="60" height="60"/><rect x="435" y="305" width="60" height="60"/>
+    <rect x="135" y="365" width="60" height="60"/><rect x="255" y="365" width="60" height="60"/><rect x="375" y="365" width="60" height="60"/>
+  </g>
+  <path d="M135 65V425M195 65V425M255 65V425M315 65V425M375 65V425M435 65V425M75 125H495M75 185H495M75 245H495M75 305H495M75 365H495" fill="none"/>
+  <rect x="75" y="65" width="420" height="360" fill="none" stroke-width="2.4"/>
+</g>
+<!-- вырезанные клетки -->
+<g fill="#0F1729" stroke="#FFD166" stroke-width="1.8">
+  <rect x="375" y="125" width="60" height="60"/>
+  <rect x="255" y="185" width="60" height="60"/>
+  <path d="M385 135l40 40M425 135l-40 40M265 195l40 40M305 195l-40 40"/>
+</g>
+<!-- 20 доминошек -->
+<g fill="#385A76" fill-opacity="0.82" stroke="#73B6E6" stroke-width="2" stroke-linejoin="round">
+  <rect x="315" y="65" width="120" height="60" rx="8"/>
+  <rect x="75" y="65" width="120" height="60" rx="8"/>
+  <rect x="435" y="65" width="60" height="120" rx="8"/>
+  <rect x="195" y="65" width="120" height="60" rx="8"/>
+  <rect x="255" y="125" width="120" height="60" rx="8"/>
+  <rect x="75" y="125" width="120" height="60" rx="8"/>
+  <rect x="375" y="185" width="120" height="60" rx="8"/>
+  <rect x="195" y="185" width="60" height="120" rx="8"/>
+  <rect x="315" y="185" width="60" height="60" rx="8"/>
+  <rect x="135" y="185" width="60" height="120" rx="8"/>
+  <rect x="255" y="245" width="120" height="60" rx="8"/>
+  <rect x="375" y="245" width="120" height="60" rx="8"/>
+  <rect x="135" y="305" width="120" height="60" rx="8"/>
+  <rect x="75" y="305" width="60" height="120" rx="8"/>
+  <rect x="375" y="305" width="120" height="60" rx="8"/>
+  <rect x="195" y="305" width="120" height="60" rx="8"/>
+  <rect x="315" y="365" width="120" height="60" rx="8"/>
+  <rect x="135" y="365" width="120" height="60" rx="8"/>
+  <rect x="375" y="365" width="120" height="60" rx="8"/>
+  <rect x="75" y="185" width="60" height="60" rx="8"/>
+</g>
+<!-- номера строк и столбцов -->
+<g class="small">
+  <text x="105" y="52">1</text><text x="165" y="52">2</text><text x="225" y="52">3</text><text x="285" y="52">4</text><text x="345" y="52">5</text><text x="405" y="52">6</text><text x="465" y="52">7</text>
+  <text x="58" y="95">1</text><text x="58" y="155">2</text><text x="58" y="215">3</text><text x="58" y="275">4</text><text x="58" y="335">5</text><text x="58" y="395">6</text>
+</g>
+<g class="small">
+  <text x="535" y="155" fill="#FFD166">(6;2)</text>
+  <text x="285" y="215" fill="#FFD166">(4;3)</text>
+  <text x="285" y="462" fill="#EAF1FA">20 доминошек покрывают все 40 оставшихся клеток</text>
+</g>
+</svg>

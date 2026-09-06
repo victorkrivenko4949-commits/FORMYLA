@@ -276,11 +276,14 @@ def teacher_group_delete(gid: int):
 @login_required
 def parent_dashboard():
     _require_role('parent')
-    child_email = getattr(current_user, 'child_email', None)
-    if not child_email:
-        return render_template('parent/dashboard.html', child=None, not_found=True)
+    child_nick = getattr(current_user, 'child_email', None)
+    if not child_nick:
+        # Ребёнок ещё не привязан — показываем форму добавления.
+        return render_template('parent/dashboard.html', child=None, no_child_bound=True)
 
-    child = User.query.filter_by(email=child_email).first()
+    # Привязка идёт по НИКНЕЙМУ ребёнка (поле child_email исторически
+    # хранит идентификатор привязки — здесь это nickname).
+    child = User.query.filter_by(nickname=child_nick).first()
     if child is None:
         return render_template('parent/dashboard.html', child=None, not_found=True)
 
@@ -307,8 +310,119 @@ def parent_dashboard():
 
 
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Student detail page (accessible by teacher / parent)
 # ---------------------------------------------------------------------------
+
+SECTION_NAMES_RU = {
+    'algebra': 'Алгебра',
+    'geometry': 'Геометрия',
+    'combinatorics': 'Комбинаторика',
+    'logic': 'Логика',
+    'number_theory': 'Теория чисел',
+}
+
+
+def _section_radar(student_id: int) -> list:
+    """Собрать данные для радара по 5 разделам (mu из level_engine)."""
+    from services.level_engine import get_state
+    state = get_state(student_id)
+    by_section = state.get('by_section', {}) or {}
+    radar = []
+    for section in ('algebra', 'geometry', 'combinatorics', 'logic', 'number_theory'):
+        sec = by_section.get(section) or {}
+        mu = sec.get('mu', state.get('mu', 3.0))
+        try:
+            mu = float(mu)
+        except (TypeError, ValueError):
+            mu = 3.0
+        radar.append({
+            'name': SECTION_NAMES_RU.get(section, section),
+            'value': round(mu, 2),
+        })
+    return radar
+
+
+def _theme_radars(student_id: int, grade: int) -> list:
+    """Собрать по одному радару на раздел: точки = подтемы (mu)."""
+    from services.level_engine import get_level_by_theme
+    from services.theme_registry import themes_of_section, theme_title
+    lbt = get_level_by_theme(student_id) or {}
+
+    radars = []
+    for section in ('algebra', 'geometry', 'combinatorics', 'logic', 'number_theory'):
+        theme_ids = themes_of_section(grade, section)
+        points = []
+        for tid in theme_ids:
+            mu = None
+            entry = lbt.get(tid)
+            if isinstance(entry, dict):
+                mu = entry.get('mu')
+            if mu is None:
+                mu = 0
+            try:
+                mu = float(mu)
+            except (TypeError, ValueError):
+                mu = 0.0
+            points.append({
+                'name': theme_title(tid),
+                'value': round(mu, 2),
+            })
+        if points:
+            radars.append({
+                'section': section,
+                'section_name': SECTION_NAMES_RU.get(section, section),
+                'points': points,
+            })
+    return radars
+
+
+def _month_calendar(student_id: int) -> list:
+    """Календарь текущего месяца: сколько задач решено / выдано за день."""
+    from calendar import monthrange
+    from daily_tasks.models import DailyTaskSet, DailyTaskItem
+    from collections import defaultdict
+
+    today = date.today()
+    year, month = today.year, today.month
+    last_day = monthrange(year, month)[1]
+    start = date(year, month, 1)
+    end = date(year, month, last_day)
+
+    sets = DailyTaskSet.query.filter(
+        DailyTaskSet.user_id == student_id,
+        DailyTaskSet.target_date >= start,
+        DailyTaskSet.target_date <= end,
+    ).all()
+
+    by_day = defaultdict(lambda: {'solved': 0, 'total': 0})
+    set_ids = [s.id for s in sets]
+    if set_ids:
+        items = DailyTaskItem.query.filter(
+            DailyTaskItem.daily_set_id.in_(set_ids)
+        ).all()
+        set_map = {s.id: s for s in sets}
+        for it in items:
+            ds = set_map.get(it.daily_set_id)
+            if not ds:
+                continue
+            d = ds.target_date
+            by_day[d]['total'] += 1
+            if it.is_correct:
+                by_day[d]['solved'] += 1
+
+    days = []
+    for day in range(1, last_day + 1):
+        d = date(year, month, day)
+        info = by_day.get(d, {'solved': 0, 'total': 0})
+        days.append({
+            'day': day,
+            'solved': info['solved'],
+            'total': info['total'],
+            'is_today': d == today,
+        })
+    return days
+
 
 @parent_teacher_bp.route('/student/<int:sid>')
 @login_required
@@ -329,7 +443,7 @@ def student_detail(sid: int):
         if member is None:
             abort(403)
     elif role == 'parent':
-        if getattr(current_user, 'child_email', None) != student.email:
+        if getattr(current_user, 'child_email', None) != student.nickname:
             abort(403)
     else:
         abort(403)
@@ -339,6 +453,13 @@ def student_detail(sid: int):
 
     today = date.today()
     avg = _week_avg_tasks(student, today)
+
+    grade = getattr(student, 'preferred_grade', None)
+    try:
+        grade = int(grade) if grade else 7
+    except (TypeError, ValueError):
+        grade = 7
+
     return render_template(
         'student/profile_detail.html',
         student=student,
@@ -346,6 +467,9 @@ def student_detail(sid: int):
         avg_tasks=avg,
         streak=student_streak(student.id),
         anchors=_latest_mu_sigma(student.id),
+        section_radar=_section_radar(student.id),
+        theme_radars=_theme_radars(student.id, grade),
+        calendar_days=_month_calendar(student.id),
     )
 
 
@@ -388,3 +512,24 @@ def profile_share_toggle():
     db.session.commit()
     flash('Настройки доступа обновлены', 'success')
     return redirect('/profile')
+
+
+@parent_teacher_bp.route('/parent/bind-child', methods=['POST'])
+@login_required
+def parent_bind_child():
+    """Привязать ребёнка к родителю по НИКНЕЙМУ ребёнка."""
+    _require_role('parent')
+    nickname = (request.form.get('child_nickname', '') or '').strip()
+    if not nickname:
+        flash('Введите никнейм ребёнка', 'error')
+        return redirect(url_for('parent_teacher.parent_dashboard'))
+
+    child = User.query.filter_by(nickname=nickname).first()
+    if child is None:
+        flash('Ребёнок с таким никнеймом не найден в системе', 'error')
+        return redirect(url_for('parent_teacher.parent_dashboard'))
+
+    current_user.child_email = child.nickname
+    db.session.commit()
+    flash('Ребёнок привязан. Теперь вы видите его прогресс.', 'success')
+    return redirect(url_for('parent_teacher.parent_dashboard'))

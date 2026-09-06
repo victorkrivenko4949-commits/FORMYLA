@@ -8,12 +8,11 @@
             <h1 class="paystub-title">Оплата скоро появится</h1>
             <div class="paystub-package-info">
                 <div class="paystub-amount">{{ package.amount }} чертежей</div>
-                <div class="paystub-price">{{ package.price_rub }} руб.</div>
+                <div class="paystub-price">0 руб.</div>
             </div>
             <p class="paystub-text">
-                Тестовый режим оплаты, реальное списание денег не происходит.
-                Оплата временно недоступна. Мы работаем над подключением платёжной системы
-                и сообщим вам, как только она заработает.
+                Сейчас всё доступно бесплатно. Оплата появится позже — мы сообщим,
+                как только платёжная система заработает.
             </p>
             <form id="notifyForm" class="paystub-form" onsubmit="return handleNotify(event)">
                 <label for="notifyEmail" class="paystub-label">Сообщить мне, когда заработает:</label>

@@ -1,0 +1,6 @@
+== активные по статусу ==
+{'base_thinking': 2, 'queued': 244}
+
+== зависшие base_thinking (по возрастанию updated_at) ==
+  job=5083 status=base_thinking  prio=1 age=358s
+  job=5085 status=base_thinking  prio=1 age=213s

@@ -13,16 +13,16 @@ return;
 
 if (!data || data.length === 0) return;
 
-// Values now come in canonical 1..5 scale from level_by_section mu.
-// If the data was already 0..5 (from level_engine), use directly.
-// If data appears in 0..1 scale (old TopicMastery), map to 1..5.
+// Values now come in canonical 1..4 scale from level_by_section mu.
+// If the data was already 0..4 (from level_engine), use directly.
+// If data appears in 0..1 scale (old TopicMastery), map to 1..4.
 const values = data.map(d => {
     const v = d.value || 0;
-    // Heuristic: if all values <= 1.0, treat as 0..1 ratio and scale to 5
+    // Heuristic: if all values <= 1.0, treat as 0..1 ratio and scale to 4
     if (v <= 1.0 && data.every(dd => (dd.value || 0) <= 1.0)) {
-        return Math.round(v * 5);
+        return Math.round(v * 4);
     }
-    // Already in 1..5 scale from level_engine
+    // Already in 1..4 scale from level_engine
     return Math.round(v);
 });
 const names = data.map(d => d.name || '');
@@ -111,7 +111,7 @@ return `${v.toFixed(0)}%`;
 scales: {
 r: {
       min: 1,
-      max: 5,
+      max: 4,
 ticks: {
         stepSize: 1,
 color: 'rgba(255,255,255,0.3)',

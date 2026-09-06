@@ -1,0 +1,80 @@
+=== FILE: deliverables/generate_diagrams.py
+"""
+Production-пайплайн: аудит существующего SVG + перегенерация или генерация с нуля.
+
+Работает через pplx_sdk.llm.extract_many + Checkpoint.
+Идемпотентен: повторный запуск скипает уже готовые чертежи.
+
+Использование:
+    python /home/user/workspace/pipeline/generate_diagrams.py [--limit N] [--only-missing] [--grade N]
+
+Выходы:
+    /home/user/workspace/svg_final/<chart_id>.svg      — итоговые SVG
+    /home/user/workspace/pipeline/ck/fragments/*.jsonl — чекпоинты
+    /home/user/workspace/pipeline/report.jsonl         — сводный отчёт по всем задачам
+"""
+import argparse
+import asyncio
+import hashlib
+import json
+import os
+import re
+from pathlib import Path
+
+import pplx_sdk
+from pplx_sdk import AsyncLlmApiClient
+from pplx_sdk.utils import Checkpoint, fanout, read_jsonl, write_jsonl
+
+ROOT = Path("/home/user/workspace")
+DATA = ROOT / "data"
+SVG_ORIG = ROOT / "svg_original"
+SVG_FINAL = ROOT / "svg_final"
+CK_DIR = ROOT / "pipeline" / "ck"
+SVG_FINAL.mkdir(exist_ok=True)
+CK_DIR.mkdir(parents=True, exist_ok=True)
+
+INSTRUCTION = """Ты — эксперт по геометрии и SVG-графике. Тебе даны:
+- условие математической задачи (класс с 5 по 11)
+- решение задачи (там могут упоминаться вспомогательные построения)
+- существующий SVG-чертёж (может быть пустой или отсутствовать)
+
+Твоя задача: выдать ОДИН корректный итоговый SVG-чертёж к задаче, соблюдая ВСЕ правила ниже.
+
+СТИЛЬ (ОБЯЗАТЕЛЬНО):
+- Фон: #0F1729 (тёмный).
+- Основные линии фигуры: цвет #D9E5F5, stroke-width 1.8, stroke-linecap="round".
+- Вспомогательные линии/построения (высоты, медианы, диагонали, средние линии, вспомогательные окружности): цвет #73B6E6, stroke-width 1.2, stroke-dasharray "4 4" если построение.
+- Пометки прямого угла (маленький квадратик): цвет #FFD166, stroke-width 1.2, fill="none".
+- Точки: circle r=3.5, fill и stroke #D9E5F5; вспомогательные точки — #A6B7CC.
+- Подписи (буквы вершин и числовые метки): text, font-family="Arial, Helvetica, sans-serif", font-size 14 для вершин и 12 для чисел, fill #EAF1FA, text-anchor
+=== FILE: deliverables/README.md
+# Итоговые чертежи (2187 шт.)
+
+## Содержимое
+- **all_charts.txt** — все 2187 SVG в исходном формате, разделены `### ЧЕРТЁЖ <chart_id>`.
+- **svg/** — каждый SVG отдельным файлом (`<chart_id>.svg`).
+- **generate_diagrams.py** — идемпотентный production-скрипт, которым сделаны эти чертежи. Идёт с checkpoint'ами, можно пере-запустить, чтобы перегенерировать конкретный класс или подмножество:
+  ```
+  python generate_diagrams.py --grade 9       # только 9 класс
+  python generate_diagrams.py --only-missing  # только те, где чертежа изначально не было
+  ```
+- **report.jsonl** — по одной строке на задачу: что было изменено, какие проблемы исправлены.
+
+## Как получено
+- Стиль (тёмный фон #0F1729, синие линии, оранжевые пометки прямых углов, подписанные вершины и размеры) взят из вашего оригинального `paste-2.txt`.
+- Каждой задаче LLM подавалось: условие, ответ, полное решение, исходный SVG (если был). Она выдавала итоговый SVG с корректными подписями вершин, числовыми метками из условия и вспомогательными построениями из решения.
+- Все 2187 файлов прошли XML-валидацию (0 битых).
+- Механический аудит показал: 1561 (71%) чертёж полностью соответствует условию/решению по вершинам и числам; у 626 остаются замечания (значительная часть — ложные срабатывания на номерах/годах).
+
+## Что важно знать
+- Механический аудит **не гарантирует геометрическую корректность** (правильные углы, точные пропорции). Это принципиально нельзя проверить автоматом на 2187 разных задачах.
+- Для того чтобы «дожать» оставшиеся ~29%, запустите `generate_diagrams.py` повторно, предварительно удалив нужные `pipeline/ck/gen/fragments/*.jsonl` для тех chart_id, которые хотите перегенерировать. Скрипт возобновляется с точности того же места.
+
+=== FILE: deliverables/report.jsonl
+{"task_id":"f2_560","chart_id":"f2_560_5","grade":5,"ok":true,"changes":"Перерисована схема: квадрат разделён на три равных горизонтальных прямоугольника размером 12×4 дм; добавлены подписи трёх прямоугольников, размеры 12 дм и 4 дм, а также корректные точки и вспомогательные линии разделения.","fixed":["Исправлено представление трёх прямоугольников 12×4 дм, сложенных в квадрат.","Добавлена подпись ширины 4 дм для одного прямоугольника.","Добавлены подписи 12 дм для длины прямоугольника и стороны получившегося квадрата.","Сохранены пропорции: сторона квадрата равна 12 дм, высота каждого прямоугольника — 4 дм."],"size":4272}
+{"task_id":"f2_562","chart_id":"f2_562_5","grade":5,"ok":true,"changes":"Перерисован чертёж с корректными пропорциями двух равных прямоугольников 6×3, добавлены размерные обозначения 6 см и 3 см, а также подпись периметра квадрата P = 24 см. Удалены лишние отметки середин на верхней стороне.","fixed":["Исправлена визуальная передача разреза квадрата на два равных прямоугольника.","Добавлены числовые размеры из условия и решения.","Корректно обозначены точки A, B, C, D, M и N.","Размерные линии и подписи размещены без выхода за границы viewBox."],"size":4083}
+{"task_id":"f2_566","chart_id":"f2_566_5","grade":5,"ok":true,"changes":"Перерисована фигура с сохранением пропорций: сторона исходного квадрата 10 см, сторона выреза 4 см. Добавлена пунктирная граница удалённого углового квадрата, исправлено размещение подписей и добавлены обозначения всех прямых углов.","fixed":["Улучшена читаемость числовых подписей: они вынесены за пределы линий.","Добавлена вспомогательная пунктирная граница вырезанного квадрата.","Добавлены пометки всех прямых углов получившейся фигуры.","Сохранены требуемые цвета, толщины линий, точки и подписи вершин."],"size":3234}
+{"task_id":"f2_569","chart_id":"f2_569_5","grade":5,"ok":true,"changes":"Чертёж переработан с нуля: вместо условного прямоугольника с обозначениями вершин показана комната в масштабе 6:4 с сеткой из 12 сто
+=== FILE: deliverables/all_charts.txt
+### ЧЕРТЁЖ f2_560_5
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500" viewBox="0 0 600 500" style="background-color:#0F1729"><rect x="0" y="0" width="600" height="500" fill="#0F1729"/><rect x="187" y="137" width="226" height="75.33" fill="#18263D"/><rect x="187" y="212.33" width="226" height="75.34" fill="#1B2B43"/><rect x="187" y="287.67" width="226" height="75.33" fill="#18263D"/><line x1="187" y1="137" x2="413" y2="137" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/><line x1="413" y1="137" x2="413" y2="363" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/><line x1="413" y1="363" x2="187" y2="363" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/><line x1="187" y1="363" x2="187" y2="137" stroke="#D9E5F5" stroke-width="1.8" stroke-linecap="round"/><line x1="187" y1="212.33" x2="413" y2="212.33" stroke="#73B6E6" stroke-width="1.2" stroke-dasharray="4 4" stroke-linecap="round"/><line x1="187" y1="287.67" x2="413" y2="287.67" stroke="#73B6E6" stroke-width="1.2" stroke-dasharray="4 4" stroke-linecap="round"/><polyline points="199,363 199,351 187,351" fill="none" stroke="#FFD166" stroke-width="1.2"/><polyline points="401,137 401,149 413,149" fill="none" stroke="#FFD166" stroke-width="1.2"/><circle cx="187" cy="363" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/><circle cx="413" cy="363" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/><circle cx="413" cy="137" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/><circle cx="187" cy="137" r="3.5" fill="#D9E5F5" stroke="#D9E5F5"/><circle cx="187" cy="212.33" r="3.5" fill="#A6B7CC" stroke="#A6B7CC"/><circle cx="413" cy="212.33" r="3.5" fill="#A6B7CC" stroke="#A6B7CC"/><circle cx="187" cy="287.67" r="3.5" fill="#A6B7CC" stroke="#A6B7CC"/><circle cx="413" cy="287.67" r="3.5" fill="#A6B7CC" stroke="#A6B7CC"/><text x="174" y="375" fill="#EAF1FA" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle" dominant-baseline="central" paint-order="stroke fill" stroke="#0F1729" stroke-widt

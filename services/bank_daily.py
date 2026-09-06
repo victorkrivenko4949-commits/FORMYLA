@@ -2,7 +2,7 @@
 """
 services/bank_daily.py — выдача задач дня из предзаполненного банка.
 
-Банк daily_task_bank наполняет человек (132 подтемы x 5 уровней x 35 задач).
+Банк daily_task_bank наполняет человек (132 подтемы x 4 уровня x 35 задач).
 Этот модуль НЕ генерирует задачи и не обращается к внешним моделям: только
 SQLAlchemy-чтение daily_task_bank и запись в bank_issues.
 """
@@ -93,7 +93,7 @@ def _section_for_subtopic(subtopic: str) -> str:
 
 
 def user_level(user_id: int, subtopic: str) -> int:
-    """Уровень ученика по разделу подтемы: round(mu) зажатый в 1..5.
+    """Уровень ученика по разделу подтемы: round(mu) зажатый в 1..4.
 
     Только читает механику mu. Профиля нет — уровень 3 (DEFAULT_MU).
     """
@@ -119,7 +119,7 @@ def user_level(user_id: int, subtopic: str) -> int:
         except (TypeError, ValueError):
             mu = 3.0
 
-    return max(1, min(5, int(round(mu))))
+    return max(1, min(4, int(round(mu))))
 
 
 def _issued_task_ids(user_id: int) -> set:
@@ -144,7 +144,7 @@ def pick_tasks(user_id: int, subtopic: str, level: int, count: int):
     Уже выданные (bank_issues) исключаются.
     Возвращает (список DailyTaskBank, bank_exhausted: bool).
     """
-    level = max(1, min(5, int(level)))
+    level = max(1, min(4, int(level)))
     issued = _issued_task_ids(user_id)
 
     candidates = (
