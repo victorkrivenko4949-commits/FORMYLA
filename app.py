@@ -604,6 +604,14 @@ try:
             _new_fig_cols = {
                 'figure_json': 'TEXT',
                 'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
+                # CH8 aux-figure колонки (см. models.AdaptiveTask) — без них
+                # вставка AdaptiveTask (в т.ч. якорей анкеты) падает на проде:
+                # SQLAlchemy включает has_aux/svg_path/aux_svg_path/aux_reason
+                # в INSERT, а колонок в БД нет.
+                'svg_path': 'TEXT',
+                'aux_svg_path': 'TEXT',
+                'has_aux': 'BOOLEAN NOT NULL DEFAULT FALSE',
+                'aux_reason': 'TEXT',
             }
             for _col_name_fig, _col_type_fig in _new_fig_cols.items():
                 if _col_name_fig not in _columns_fig:
