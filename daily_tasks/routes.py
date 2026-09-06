@@ -375,18 +375,38 @@ def get_daily_tasks():
             target_date=today,
         ).first()
 
-        # считаем примерное ETA (если знаем, когда начали)
-        eta_seconds = None
-        elapsed_seconds = None
-        started_at_iso = None
-        if job and job.started_at:
-            elapsed = (datetime.utcnow() - job.started_at).total_seconds()
-            eta_seconds = max(0, int(90 - elapsed))  # ~90 секунд в среднем
-            elapsed_seconds = max(0, int(elapsed))
-            # started_at в БД хранится как datetime.utcnow() (naive UTC).
-            # Отдаём ISO-строку с явным суффиксом 'Z', чтобы JS
-            # Date.parse(...) корректно интерпретировал её как UTC.
-            started_at_iso = job.started_at.isoformat() + "Z"
+        # FIX: сет застрял в 'generating', но активного джоба нет.
+        # Бывает после рестарта gunicorn: поток умер, сет остался generating,
+        # фронт делает job_status -> 404 -> location.reload() = бесконечный
+        # рефреш. Размораживаем сет в failed, чтобы показать кнопку retry.
+        if job is None:
+            try:
+                daily_set.status = "failed"
+                daily_set.reason_summary = (
+                    "[ERROR] Генерация прервана - попробуйте ещё раз"
+                )
+                daily_set.generated_at = datetime.utcnow()
+                db.session.commit()
+                logger.warning(
+                    "daily_tasks: un-stuck generating set #%s (no job) -> failed",
+                    daily_set.id,
+                )
+            except Exception as _unstuck_err:
+                db.session.rollback()
+                logger.warning("daily_tasks: un-stuck failed: %s", _unstuck_err)
+        else:
+            # считаем примерное ETA (если знаем, когда начали)
+            eta_seconds = None
+            elapsed_seconds = None
+            started_at_iso = None
+            if job and job.started_at:
+                elapsed = (datetime.utcnow() - job.started_at).total_seconds()
+                eta_seconds = max(0, int(90 - elapsed))  # ~90 секунд в среднем
+                elapsed_seconds = max(0, int(elapsed))
+                # started_at в БД хранится как datetime.utcnow() (naive UTC).
+                # Отдаём ISO-строку с явным суффиксом 'Z', чтобы JS
+                # Date.parse(...) корректно интерпретировал её как UTC.
+                started_at_iso = job.started_at.isoformat() + "Z"
 
         data = {
             "status": "generating",
