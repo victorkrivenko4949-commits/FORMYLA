@@ -433,6 +433,11 @@ try:
                 # П1: theme_id и theme_title для человеческого названия подтем
                 'theme_id': 'VARCHAR(50)',
                 'theme_title': 'VARCHAR(300)',
+                # Якоря анкеты (services/anchors.py): без этих колонок вставка
+                # AdaptiveTask(subject=..., source_id=...) падает на проде,
+                # и анкета выдаёт «0 из 5» вместо якорных задач.
+                'subject': 'VARCHAR(20)',
+                'source_id': 'VARCHAR(120)',
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
