@@ -151,7 +151,7 @@ def load_anchors(dry_run: bool = False) -> Dict[str, Any]:
         if db.engine.dialect.name == 'postgresql':
             db.session.execute(_text_seq(
                 "SELECT setval(pg_get_serial_sequence('adaptive_tasks','id'), "
-                "GREATEST((SELECT MAX(id) FROM adaptive_tasks), 1), true)"
+                "COALESCE((SELECT MAX(id) FROM adaptive_tasks), 0) + 1, false)"
             ))
             db.session.commit()
     except Exception as _seq_err:
