@@ -104,6 +104,15 @@ _do_cleanup.py
 *.bak
 *.bak.*
 
+# Leaked-secret cleanup (never track debug probes / env dumps again)
+scripts/verify/out/
+_ch31_*
+_test_*
+_diag_*
+_scan_*
+_pma_*
+_secret_scan.py
+
 # Patches
 *.patch
 

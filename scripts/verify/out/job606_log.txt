@@ -1,5 +1,0 @@
-2026-08-30 23:00:12,908 - routes.figures_generator - INFO - [llm_router] role=solver logical=deepseek-v4-pro providers=[('deepseek', 'deepseek-v4-pro')]
-2026-08-30 23:00:12,908 - routes.figures_generator - INFO - [llm_router] role=solver_shadow logical=gemini-3.7-flash providers=[]
-2026-08-30 23:00:12,908 - routes.figures_generator - WARNING - [llm_router] role=solver_shadow logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
-2026-08-30 23:02:40,464 - routes.figures_generator - INFO - [figures_gen] picked job 606 from queue
-2026-08-30 23:02:40,466 - routes.figures_generator - INFO - [figures_gen] picked job 606 from queue

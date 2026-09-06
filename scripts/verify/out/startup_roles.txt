@@ -1,6 +1,0 @@
-2026-08-30 23:11:09,781 - routes.figures_generator - INFO - [llm_router] role=base logical=gemini-3.7-flash providers=[]
-2026-08-30 23:11:09,781 - routes.figures_generator - WARNING - [llm_router] role=base logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
-2026-08-30 23:11:09,781 - routes.figures_generator - INFO - [llm_router] role=solver logical=gemini-3.7-flash providers=[]
-2026-08-30 23:11:09,781 - routes.figures_generator - WARNING - [llm_router] role=solver logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
-2026-08-30 23:11:09,781 - routes.figures_generator - INFO - [llm_router] role=solver_shadow logical=gemini-3.7-flash providers=[]
-2026-08-30 23:11:09,781 - routes.figures_generator - WARNING - [llm_router] role=solver_shadow logical=gemini-3.7-flash has no mapping for providers=['novita', 'deepseek']
