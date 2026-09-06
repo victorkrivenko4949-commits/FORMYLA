@@ -1516,6 +1516,28 @@ if os.environ.get('VSOSH10_2027_FORCE_IMPORT', '1').strip().lower() in ('1', 'tr
 else:
     print("[VSOSH10_11-ADD] disabled (set VSOSH10_2027_FORCE_IMPORT=1 to enable)")
 
+# ── Intake anchors seed (35 якорей анкеты) ────────────────────────────────
+# Безусловно (не lazy) загружаем якоря анкеты на старте. Раньше load_anchors
+# вызывался только из pick_anchors() когда строк 0, и при ошибке вставки на
+# проде ошибка молча терялась (анкета выдавала «0 из 5»). Теперь сидер идёт
+# при каждом boot: либо вставит недостающие, либо выведет точную причину.
+try:
+    with app.app_context():
+        from services.anchors import load_anchors as _load_anchors_boot
+        from models import AdaptiveTask as _AT_boot
+        _anch_before = _AT_boot.query.filter(_AT_boot.source == 'formyla_anchors').count()
+        _anch_res = _load_anchors_boot(dry_run=False)
+        _anch_after = _AT_boot.query.filter(_AT_boot.source == 'formyla_anchors').count()
+        print(
+            f"[ANCHOR-SEED] before={_anch_before} after={_anch_after} "
+            f"loaded={_anch_res.get('loaded', 0)} skipped={_anch_res.get('skipped', 0)} "
+            f"errors={_anch_res.get('errors', [])}"
+        )
+except Exception as _e_anchor:
+    import traceback as _tb_anchor
+    print(f"[ANCHOR-SEED] hook FAILED: {_e_anchor}")
+    print(_tb_anchor.format_exc())
+
 # ── Adaptive bank seed (9120 калиброванных задач L1..L8) ─────────────────
 # Идемпотентно перезаливает таблицу adaptive_tasks из
 # data/adaptive/adaptive_full_9120.json. Если уже >= 9000 строк с
