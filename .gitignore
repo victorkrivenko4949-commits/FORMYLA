@@ -68,6 +68,13 @@ data/*
 !data/olympiads/**
 # Exception: olympiads_db.py — extracted data dict used by olympiad Blueprint.
 !data/olympiads_db.py
+# Exception: runtime-required curated data files (анкета/куратор/консьерж).
+# Без них на Render якоря анкеты и справочники тем не грузятся.
+!data/anchors.jsonl
+!data/anchors_solutions.json
+!data/theme_to_section.json
+!data/curator_faq.json
+!data/site_kb.json
 # Exception: adaptive bank seed (9120 калиброванных задач L1..L8).
 # Используется services/adaptive_full_seed.py при ADAPTIVE_FORCE_IMPORT=1.
 !data/adaptive/
@@ -77,6 +84,8 @@ data/*
 !data/figures/
 !data/figures/*.txt
 *.jsonl
+# Exception: якоря анкеты — маленький hand-curated файл, обязателен на Render.
+!data/anchors.jsonl
 *.bak
 checkpoint.json
 
