@@ -408,12 +408,27 @@
     // LaTeX-формулы ($...$, $$...$$, \(...\), \[...\]) сохраняем как есть,
     // переводы строк превращаем в <br>, чтобы KaTeX их отрендерил.
     if (!solution) return '<em>Решение отсутствует.</em>';
-    const s = String(solution).replace(/\r\n/g, '\n');
-    // Экранируем HTML-опасные символы, но НЕ трогаем $ и обратные слэши (LaTeX).
-    const parts = s.split('\n');
-    return parts.map(function(line) {
-      return escapeHtml(line);
-    }).join('<br>');
+    let s = String(solution).replace(/\r\n/g, '\n');
+
+    // Выносим display-математику (\[...\] и $$...$$) за пределы разбивки по
+    // строкам: вставка <br> между \[ и \] разрывает блок на отдельные текстовые
+    // узлы, из-за чего KaTeX auto-render не видит цельный блок и показывает
+    // сырые команды (\frac, \left\lfloor и т.п.).
+    const mathBlocks = [];
+    s = s.replace(/(\\\[[\s\S]*?\\\]|\$\$[\s\S]*?\$\$)/g, function(match) {
+      mathBlocks.push(match);
+      return '\u0000' + (mathBlocks.length - 1) + '\u0000';
+    });
+
+    // Экранируем HTML-опасные символы (вне математики), НЕ трогая $ и слэши.
+    let html = escapeHtml(s).replace(/\n/g, '<br>');
+
+    // Возвращаем display-блоки в первозданном виде.
+    html = html.replace(/\u0000(\d+)\u0000/g, function(_m, idx) {
+      return mathBlocks[+idx];
+    });
+
+    return html;
   }
 
   function renderAnchor(anchor, qIndex, total) {
@@ -423,6 +438,7 @@
     currentAnchorAnswer = anchor.answer || '';
     currentAnchorTaskId = anchor.task_id;
     currentAnchorSectionRu = anchor.section_ru || '';
+    // Решение/ответ НЕ показываем во время прохождения анкеты — только на финальном экране.
     let figureHtml = '';
     if (anchor.figure_url) {
       figureHtml = `<div class="intake-anchor-figure"><img src="${anchor.figure_url}" alt="Чертёж" loading="lazy"></div>`;
@@ -434,7 +450,6 @@
       <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
       <div class="intake-btn-row">
         <button class="intake-btn intake-btn-primary" onclick="submitAnchor(${anchor.task_id})">Проверить</button>
-        <button class="intake-btn intake-btn-back" onclick="toggleSolution()">Проверить решение</button>
       </div>
       <div id="anchor-solution" style="display:none;margin-top:16px;padding:16px;background:var(--surface2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);font-size:14px;line-height:1.7;color:var(--text-soft);"></div>
     `;
@@ -445,6 +460,9 @@
     });
   }
 
+  // Кнопка «Проверить решение» убрана из анкеты: решение и ответ показываются
+  // только после прохождения (см. renderFinish). Функция оставлена на случай,
+  // если её вызовут из других мест шаблона, но сама кнопка больше не рендерится.
   function toggleSolution() {
     const box = document.getElementById('anchor-solution');
     if (!box) return;

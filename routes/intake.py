@@ -40,18 +40,9 @@ def intake_page():
         from flask import redirect, url_for
         return redirect(url_for('parent_teacher.parent_dashboard'))
 
-    # Если уже пройдена — редирект на /daily_tasks
-    try:
-        from models_curator import CuratorState
-        cs = CuratorState.query.filter_by(user_id=current_user.id).first()
-        if cs:
-            ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
-            if ps.get('intake', {}).get('completed'):
-                from flask import redirect, url_for
-                return redirect(url_for('index'))
-    except Exception:
-        pass
-
+    # Анкету всегда рендерим: если она уже пройдена, фронтенд через
+    # POST /intake/start получит сохранённый результат (решения переживают
+    # перезагрузку страницы), а не редирект на главную.
     return render_template('intake.html')
 
 

@@ -161,11 +161,91 @@ def _save_non_student_role(user_id: int, role: str) -> None:
         )
 
 
-def start(user_id: int) -> Dict[str, Any]:
-    """Начать анкету. Возвращает первый вопрос.
+def _resume_state(user_id: int, state: Dict[str, Any]) -> Dict[str, Any]:
+    """Продолжить анкету с сохранённого шага (после перезагрузки страницы)."""
+    step = state.get('step', 'q1')
+    q_index = state.get('q_index', 1)
 
-    Если класс уже известен из профиля — Q1 пропускается.
+    if step in ('q1', 'q2', 'q3', 'q4', 'q5'):
+        qmap = {
+            'q1': Q1_CLASS,
+            'q2': Q2_GOAL,
+            'q3': Q3_EXPERIENCE,
+            'q4': Q4_TIME,
+            'q5': Q5_WEAK_SECTIONS,
+        }
+        return {
+            'done': False,
+            'question': _format_question(qmap[step]),
+            'step': step,
+            'q_index': q_index,
+            'total_questions': 5,
+            'anchor': None,
+        }
+
+    if step == 'anchors':
+        idx = state.get('current_anchor_idx', 0)
+        anchor_tasks = state.get('anchor_tasks', [])
+        if idx < len(anchor_tasks):
+            state['total_questions'] = 10
+            return _format_anchor_response(state, idx)
+        # Якоря были пройдены, но финализация не отработала — завершаем.
+        return finish(user_id, state)
+
+    return {'done': True, 'error': f'Неизвестный шаг: {step}'}
+
+
+def _get_completed_result(user_id: int) -> Optional[Dict[str, Any]]:
+    """Вернуть сохранённый результат пройденной анкеты (для показа после refresh)."""
+    try:
+        from models_curator import CuratorState
+        cs = CuratorState.query.filter_by(user_id=user_id).first()
+        if cs:
+            ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+            intake = ps.get('intake', {})
+            if isinstance(intake, dict) and intake.get('completed'):
+                return {
+                    'done': True,
+                    'result': {
+                        'class_level': intake.get('class_level'),
+                        'goal': intake.get('goal'),
+                        'goal_auto': intake.get('goal_auto'),
+                        'experience': intake.get('experience'),
+                        'daily_tasks': intake.get('daily_tasks'),
+                        'weak_sections': intake.get('weak_sections'),
+                        'weak_priority': intake.get('weak_priority'),
+                        'prior_mu': intake.get('prior_mu'),
+                        'prior_sigma': intake.get('prior_sigma'),
+                        'anchors_count': len(intake.get('anchor_results', [])),
+                        'anchors_correct': sum(
+                            1 for a in intake.get('anchor_results', [])
+                            if isinstance(a, dict) and a.get('correct')
+                        ),
+                        'anchor_solutions': intake.get('anchor_solutions', []),
+                    },
+                }
+    except Exception:
+        pass
+    return None
+
+
+def start(user_id: int) -> Dict[str, Any]:
+    """Начать анкету, продолжить с сохранённого шага или показать результат.
+
+    Порядок:
+      1) если анкета уже пройдена — вернуть сохранённый результат (решения
+         переживают перезагрузку страницы);
+      2) если есть незавершённое состояние — продолжить с текущего шага;
+      3) иначе начать заново (Q1 пропускается, если класс известен из профиля).
     """
+    completed = _get_completed_result(user_id)
+    if completed is not None:
+        return completed
+
+    existing = _get_session_state()
+    if existing and existing.get('step') and existing.get('step') != 'done':
+        return _resume_state(user_id, existing)
+
     grade_from_profile = _get_user_grade(user_id)
 
     state = {
@@ -406,32 +486,34 @@ def finish(user_id: int, state: Optional[Dict] = None) -> Dict[str, Any]:
             'correct': user_correct,
         })
 
-    # Сохраняем в БД
-    _save_intake_to_db(user_id, result, state)
+    result_payload = {
+        'class_level': result.class_level,
+        'goal': result.goal,
+        'goal_auto': result.goal_auto,
+        'experience': result.experience,
+        'daily_tasks': result.daily_tasks,
+        'weak_sections': result.weak_sections,
+        'weak_priority': result.weak_priority,
+        'prior_mu': result.prior_mu,
+        'prior_sigma': result.prior_sigma,
+        'anchors_count': len(result.anchors),
+        'anchors_correct': sum(1 for a in result.anchors if a.get('correct')),
+        'anchor_solutions': anchor_solutions,
+    }
+
+    # Сохраняем в БД (включая решения, чтобы они пережили перезагрузку страницы)
+    _save_intake_to_db(user_id, result, state, anchor_solutions)
 
     # Очищаем сессию
     _clear_session_state()
 
     return {
         'done': True,
-        'result': {
-            'class_level': result.class_level,
-            'goal': result.goal,
-            'goal_auto': result.goal_auto,
-            'experience': result.experience,
-            'daily_tasks': result.daily_tasks,
-            'weak_sections': result.weak_sections,
-            'weak_priority': result.weak_priority,
-            'prior_mu': result.prior_mu,
-            'prior_sigma': result.prior_sigma,
-            'anchors_count': len(result.anchors),
-            'anchors_correct': sum(1 for a in result.anchors if a.get('correct')),
-            'anchor_solutions': anchor_solutions,
-        },
+        'result': result_payload,
     }
 
 
-def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict) -> None:
+def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_solutions: Optional[List] = None) -> None:
     """Сохранить результат анкеты в CuratorState.prep_state.intake."""
     from models import db
     from models_curator import CuratorState
@@ -457,6 +539,7 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict) -> None:
         'prior_sigma': result.prior_sigma,
         'answers': state.get('answers', {}),
         'anchor_results': state.get('anchor_results', []),
+        'anchor_solutions': anchor_solutions or [],
     }
 
     cs.prep_state = prep_state
