@@ -487,6 +487,44 @@ try:
                 ))
                 db.session.commit()
                 print("[AUTO-MIGRATION] [OK] Column 'prep_state' added to curator_state!")
+            # ── FIX: сброс только «битых» результатов анкеты ──
+            # На проде у части пользователей сохранён «Анкета пройдена: 0 из 5»
+            # (якоря не вставлялись из-за отсутствовавших колонок adaptive_tasks).
+            # Точечно сбрасываем intake у тех, у кого completed=true, но якорей
+            # 0 (anchors_count=0), чтобы анкета пересоздалась с якорями.
+            # Остальных пользователей (корректно прошедших) не трогаем.
+            try:
+                from models_curator import CuratorState
+                import json as _json_reset
+                _reset_count = 0
+                for _cs in CuratorState.query.all():
+                    _ps = getattr(_cs, 'prep_state', None)
+                    _d = None
+                    if isinstance(_ps, dict):
+                        _d = _ps
+                    elif isinstance(_ps, str):
+                        try:
+                            _d = _json_reset.loads(_ps)
+                        except Exception:
+                            _d = None
+                    if not isinstance(_d, dict):
+                        continue
+                    _intake = _d.get('intake') or {}
+                    if isinstance(_intake, dict) and _intake.get('completed'):
+                        _anchor_res = _intake.get('anchor_results') or []
+                        if len(_anchor_res) == 0:
+                            _d.pop('intake', None)
+                            _d.pop('_intake_session', None)
+                            _cs.prep_state = _json_reset.dumps(_d, ensure_ascii=False)
+                            _reset_count += 1
+                if _reset_count:
+                    db.session.commit()
+                    print(f"[AUTO-MIGRATION] [OK] reset {_reset_count} broken intake states")
+                else:
+                    print("[AUTO-MIGRATION] [OK] no broken intake states to reset")
+            except Exception as _reset_err:
+                db.session.rollback()
+                print(f"[AUTO-MIGRATION] curator_state intake reset skipped: {_reset_err}")
             else:
                 print("[AUTO-MIGRATION] [OK] Column 'prep_state' already exists on curator_state")
 except Exception as e:
