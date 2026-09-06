@@ -17,6 +17,7 @@ Q1 теперь содержит опции teacher/parent наряду с кл�
 
 from __future__ import annotations
 
+import json as _json
 import logging
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -41,6 +42,27 @@ NON_STUDENT_ROLE_KEYS = {TEACHER_ROLE_KEY, PARENT_ROLE_KEY}
 # Вспомогательные функции
 # ══════════════════════════════════════════════════════════════════════
 
+def _prep_state_dict(cs: Any) -> Dict:
+    """Прочитать prep_state из CuratorState как dict.
+
+    На PostgreSQL колонка curator_state.prep_state создаётся как TEXT
+    (см. auto-migration в app.py), поэтому SQLAlchemy db.JSON там возвращает
+    JSON-строку, а не dict. Обрабатываем оба варианта, чтобы анкета не
+    падала с «Сессия истекла» на проде.
+    """
+    ps = getattr(cs, 'prep_state', None)
+    if isinstance(ps, dict):
+        return ps
+    if isinstance(ps, str):
+        try:
+            parsed = _json.loads(ps)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return {}
+
+
 def _get_session_state() -> Optional[Dict]:
     """Получить состояние анкеты из CuratorState (БД).
 
@@ -55,8 +77,7 @@ def _get_session_state() -> Optional[Dict]:
         if current_user and current_user.is_authenticated:
             cs = CuratorState.query.filter_by(user_id=current_user.id).first()
             if cs:
-                ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
-                return ps.get('_intake_session', None)
+                return _prep_state_dict(cs).get('_intake_session', None)
     except Exception:
         pass
     return None
@@ -77,7 +98,7 @@ def _save_session_state(state: Dict) -> None:
             if not cs:
                 cs = CuratorState(user_id=current_user.id, prep_state={})
                 db.session.add(cs)
-            ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+            ps = _prep_state_dict(cs)
             ps['_intake_session'] = state
             cs.prep_state = ps
             db.session.commit()
@@ -105,7 +126,7 @@ def _clear_session_state() -> None:
         if current_user and current_user.is_authenticated:
             cs = CuratorState.query.filter_by(user_id=current_user.id).first()
             if cs:
-                ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+                ps = _prep_state_dict(cs)
                 ps.pop('_intake_session', None)
                 cs.prep_state = ps
                 from models import db
@@ -199,7 +220,7 @@ def _get_completed_result(user_id: int) -> Optional[Dict[str, Any]]:
         from models_curator import CuratorState
         cs = CuratorState.query.filter_by(user_id=user_id).first()
         if cs:
-            ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+            ps = _prep_state_dict(cs)
             intake = ps.get('intake', {})
             if isinstance(intake, dict) and intake.get('completed'):
                 return {
@@ -521,7 +542,7 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
         cs = CuratorState(user_id=user_id)
         db.session.add(cs)
 
-    prep_state = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+    prep_state = _prep_state_dict(cs)
 
     prep_state['intake'] = {
         'completed': True,
