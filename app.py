@@ -422,8 +422,8 @@ try:
                 'solves_count': 'INTEGER DEFAULT 0',
                 'actual_solve_rate': 'REAL',
                 'suggested_level': 'INTEGER',
-                'needs_reclassification': 'BOOLEAN DEFAULT 0',
-                'last_calibrated_at': 'DATETIME',
+                'needs_reclassification': 'BOOLEAN DEFAULT FALSE' if _database_url.startswith('postgresql') else 'BOOLEAN DEFAULT 0',
+                'last_calibrated_at': 'TIMESTAMP' if _database_url.startswith('postgresql') else 'DATETIME',
                 # Поля для адаптивного сидера (services/adaptive_full_seed.py).
                 # Используются для idempotency и трассировки источника датасета.
                 'task_type': 'TEXT',
@@ -945,8 +945,9 @@ try:
 
         # --- OlympiadTask: method_codes (JSON), year (Int), stage (String) ---
         # Используются импортёром scripts/import_vsosh9_methods.py для архива ВсОШ-9.
+        _method_codes_type = 'JSONB' if _database_url.startswith('postgresql') else 'JSON'
         for _stmt, _label in (
-            ("ALTER TABLE olympiad_tasks ADD COLUMN method_codes JSON", "method_codes"),
+            (f"ALTER TABLE olympiad_tasks ADD COLUMN method_codes {_method_codes_type}", "method_codes"),
             ("ALTER TABLE olympiad_tasks ADD COLUMN year INTEGER", "year"),
             ("ALTER TABLE olympiad_tasks ADD COLUMN stage VARCHAR(20)", "stage"),
         ):
@@ -958,11 +959,13 @@ try:
                 db.session.rollback()
 
         # --- User: generation limits (free mock / exam generation) ---
+        _is_pg_gen = _database_url.startswith('postgresql')
+        _gens_unlimited_type = 'BOOLEAN NOT NULL DEFAULT FALSE' if _is_pg_gen else 'BOOLEAN NOT NULL DEFAULT 0'
         for _stmt, _label in (
             ("ALTER TABLE users ADD COLUMN generation_count_today INTEGER NOT NULL DEFAULT 0", "generation_count_today"),
             ("ALTER TABLE users ADD COLUMN generation_reset_date DATE", "generation_reset_date"),
             ("ALTER TABLE users ADD COLUMN gens_extra_purchased INTEGER NOT NULL DEFAULT 0", "gens_extra_purchased"),
-            ("ALTER TABLE users ADD COLUMN gens_unlimited BOOLEAN NOT NULL DEFAULT 0", "gens_unlimited"),
+            (f"ALTER TABLE users ADD COLUMN gens_unlimited {_gens_unlimited_type}", "gens_unlimited"),
         ):
             try:
                 db.session.execute(db.text(_stmt))

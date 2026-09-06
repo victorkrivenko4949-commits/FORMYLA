@@ -72,6 +72,10 @@ data/*
 # Используется services/adaptive_full_seed.py при ADAPTIVE_FORCE_IMPORT=1.
 !data/adaptive/
 !data/adaptive/**
+# Exception: figure-generation prompts are small hand-curated text files and are
+# REQUIRED at runtime (routes/figures_generator.py, services/solution_generator.py).
+!data/figures/
+!data/figures/*.txt
 *.jsonl
 *.bak
 checkpoint.json

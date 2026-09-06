@@ -11,6 +11,10 @@ the expected schema from SQLAlchemy model metadata, and:
 4. Idempotent — safe to run on every application start.
 
 Called from ``app.py`` after all blueprints and models are loaded.
+
+Important: every ``ALTER TABLE`` runs in its own transaction (``engine.begin()``)
+so a single failing statement cannot leave the connection in an aborted
+transaction state (PostgreSQL) and poison all subsequent queries.
 """
 
 from __future__ import annotations
@@ -23,13 +27,18 @@ from sqlalchemy import inspect, text
 logger = logging.getLogger(__name__)
 
 
-def _column_type_for_dialect(col, dialect_name: str) -> str:
+def _column_type_for_dialect(col, dialect) -> str:
     """Convert a SQLAlchemy Column type to a dialect-specific SQL type string.
+
+    ``dialect`` must be the engine's real SQLAlchemy dialect object
+    (``db.engine.dialect``). Passing the real dialect is critical: compiling
+    against it yields types valid for the target database (e.g. ``TIMESTAMP``
+    for PostgreSQL instead of the SQLite-only ``DATETIME``).
 
     Returns a string suitable for ``ALTER TABLE ... ADD COLUMN col TYPE``.
     """
     try:
-        compiled = col.type.compile(dialect=getattr(col.type, 'dialect', None))
+        compiled = col.type.compile(dialect=dialect)
         return str(compiled)
     except Exception:
         pass
@@ -41,30 +50,34 @@ def _column_type_for_dialect(col, dialect_name: str) -> str:
     if type_name is None:
         type_name = type(type_obj).__name__.lower()
 
-    # Map common SQLAlchemy types to SQLite-compatible strings.
+    pg = getattr(dialect, 'name', '') == 'postgresql'
+
+    # Map common SQLAlchemy types to per-dialect SQL strings.
+    # Values differ between SQLite and PostgreSQL where type names diverge
+    # (DATETIME / JSONB / BYTEA / INTERVAL / BIGINT etc.).
     type_map: Dict[str, str] = {
         'integer': 'INTEGER',
-        'biginteger': 'INTEGER',
-        'smallinteger': 'INTEGER',
-        'bigint': 'INTEGER',
+        'biginteger': 'BIGINT' if pg else 'INTEGER',
+        'smallinteger': 'SMALLINT' if pg else 'INTEGER',
+        'bigint': 'BIGINT' if pg else 'INTEGER',
         'float': 'REAL',
-        'numeric': 'REAL',
-        'double': 'REAL',
-        'double_precision': 'REAL',
+        'numeric': 'NUMERIC',
+        'double': 'DOUBLE PRECISION' if pg else 'REAL',
+        'double_precision': 'DOUBLE PRECISION' if pg else 'REAL',
         'string': 'VARCHAR',
         'text': 'TEXT',
         'unicode': 'VARCHAR',
         'unicodetext': 'TEXT',
         'boolean': 'BOOLEAN',
         'date': 'DATE',
-        'datetime': 'TIMESTAMP',
+        'datetime': 'TIMESTAMP' if pg else 'DATETIME',
         'time': 'TIME',
-        'json': 'TEXT',
-        'jsonb': 'TEXT',
-        'interval': 'TEXT',
+        'json': 'JSONB' if pg else 'TEXT',
+        'jsonb': 'JSONB' if pg else 'TEXT',
+        'interval': 'INTERVAL' if pg else 'TEXT',
         'pickletype': 'TEXT',
-        'largebinary': 'BLOB',
-        'binary': 'BLOB',
+        'largebinary': 'BYTEA' if pg else 'BLOB',
+        'binary': 'BYTEA' if pg else 'BLOB',
         'enum': 'VARCHAR(255)',
     }
 
@@ -117,7 +130,8 @@ def auto_migrate(app, db) -> Tuple[List[str], List[str]]:
     added_columns: List[str] = []
 
     with app.app_context():
-        dialect_name = db.engine.dialect.name
+        dialect = db.engine.dialect
+        dialect_name = dialect.name
         inspector = inspect(db.engine)
         existing_tables: Set[str] = set(inspector.get_table_names())
 
@@ -159,7 +173,7 @@ def auto_migrate(app, db) -> Tuple[List[str], List[str]]:
                     continue
 
                 # Column missing — add it.
-                col_type_str = _column_type_for_dialect(col, dialect_name)
+                col_type_str = _column_type_for_dialect(col, dialect)
 
                 # Build ALTER TABLE statement.
                 if dialect_name == 'postgresql':
@@ -173,14 +187,16 @@ def auto_migrate(app, db) -> Tuple[List[str], List[str]]:
                         f"ADD COLUMN {col_name} {col_type_str}"
                     )
 
+                # Each ALTER runs in its own transaction so that one failing
+                # statement rolls back cleanly and never leaves the connection
+                # in an aborted state (PostgreSQL) for subsequent queries.
                 try:
-                    db.session.execute(text(sql))
-                    db.session.commit()
+                    with db.engine.begin() as conn:
+                        conn.execute(text(sql))
                     msg = f"{table_name}.{col_name} ({col_type_str})"
                     print(f"[AUTO-MIGRATE] + {msg}")
                     added_columns.append(msg)
                 except Exception as e:
-                    db.session.rollback()
                     print(f"[AUTO-MIGRATE] SKIP {table_name}.{col_name}: {e}")
 
     return created_tables, added_columns
