@@ -641,6 +641,12 @@ try:
                 'figure_json': 'TEXT',
                 'figure_status': "VARCHAR(32) NOT NULL DEFAULT 'no_description'",
                 'figure_svg_path': 'TEXT',
+                # Модель daily_tasks/models.py DailyTaskItem использует эти
+                # колонки (aux_svg_path/has_aux/aux_reason) при вставке задач
+                # банка с доп. построениями — без них вставка падает на проде.
+                'aux_svg_path': 'TEXT',
+                'has_aux': 'BOOLEAN NOT NULL DEFAULT FALSE',
+                'aux_reason': 'TEXT',
             }
             for _col_name_dtf, _col_type_dtf in _new_dtf_cols.items():
                 if _col_name_dtf not in _columns_dtf:
