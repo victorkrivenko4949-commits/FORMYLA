@@ -140,6 +140,27 @@ def load_anchors(dry_run: bool = False) -> Dict[str, Any]:
     except Exception as e:
         logger.warning("Не удалось получить existing_uids: %s", e)
 
+    # ── Синхронизация sequence для PostgreSQL ────────────────────────
+    # Сидеры (олимпиады/адаптивный банк) вставляли строки adaptive_tasks с
+    # ЯВНЫМ id, не обновляя sequence. Из-за этого bulk-INSERT якорей падает с
+    # "duplicate key value violates unique constraint adaptive_tasks_pkey"
+    # (sequence выдаёт id, который уже занят). Сбрасываем sequence на
+    # MAX(id)+1 ДО вставки — идемпотентно и безопасно.
+    try:
+        from sqlalchemy import text as _text_seq
+        if db.engine.dialect.name == 'postgresql':
+            db.session.execute(_text_seq(
+                "SELECT setval(pg_get_serial_sequence('adaptive_tasks','id'), "
+                "GREATEST((SELECT MAX(id) FROM adaptive_tasks), 1), true)"
+            ))
+            db.session.commit()
+    except Exception as _seq_err:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        logger.warning("adaptive_tasks sequence sync failed: %s", _seq_err)
+
     for data in lines:
         anchor_uid = str(data.get('anchor_uid', '')).strip()
         grade = int(data.get('grade', 0))
