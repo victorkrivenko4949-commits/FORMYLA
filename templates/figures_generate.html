@@ -133,7 +133,7 @@
 {% block content %}
 <div class="gen-page">
     <h1>Генератор чертежей</h1>
-    <p class="subtitle">Опишите геометрическую задачу — модель DeepSeek построит чертёж</p>
+    <p class="subtitle">Опишите геометрическую задачу — нейросеть построит чертёж</p>
 
     <div class="gen-form">
         <label for="problemText">Условие задачи</label>
@@ -166,10 +166,7 @@
             <span style="color:#8C9ABC;">Статус:</span>
             <span class="status-badge" id="statusBadge">—</span>
         </div>
-        <div class="status-row" id="modelRow" style="display:none;">
-            <span style="color:#8C9ABC;">Модель:</span>
-            <span style="color:#E6EBF7;font-size:13px;font-weight:600;" id="modelLabel">—</span>
-        </div>
+        {# Название модели ИИ пользователю не показываем (внутренняя деталь). #}
         <div id="errorMsg" class="error-msg"></div>
         <div class="credits-info" id="creditsInfo"></div>
         <div id="auxToggle" style="display:none;gap:0;border-radius:10px;overflow:hidden;border:1px solid #1C2B4F;margin-bottom:12px;">
@@ -435,15 +432,7 @@
         badge.textContent = labels[display] || labels[status] || display;
         badge.className = 'status-badge ' + (status || display);
 
-        // Модель, которая сейчас работает.
-        var modelRow = document.getElementById('modelRow');
-        var modelLabel = document.getElementById('modelLabel');
-        if (model) {
-            modelLabel.textContent = model;
-            modelRow.style.display = 'flex';
-        } else {
-            modelRow.style.display = 'none';
-        }
+        // Название модели ИИ пользователю не показываем.
     }
 
     function toggleDash() {

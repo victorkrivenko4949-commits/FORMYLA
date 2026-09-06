@@ -116,9 +116,8 @@ def intake_back():
 
     Возвращает предыдущий вопрос с сохранённым ответом.
     """
-    from flask import session as flask_session
-
-    state = flask_session.get('intake', None)
+    from services.intake_service import _get_session_state
+    state = _get_session_state()
     if not state:
         return jsonify({'done': False, 'error': 'Нет активной анкеты.'}), 400
 
@@ -149,7 +148,8 @@ def intake_back():
 
     state['step'] = prev_step
     state['q_index'] = q_index
-    flask_session['intake'] = state
+    from services.intake_service import _save_session_state
+    _save_session_state(state)
 
     prev_q = questions[prev_step]
     return jsonify({

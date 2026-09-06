@@ -12181,9 +12181,19 @@ def _inject_subscription_flags():
 
 @app.context_processor
 def _inject_user_helpers():
-    """Делает display_name_from_email доступной во всех шаблонах."""
+    """Делает display_name_from_email и флаг активного среза доступными."""
     from services.user_helpers import display_name_from_email
-    return dict(display_name_from_email=display_name_from_email)
+    helpers = dict(display_name_from_email=display_name_from_email)
+    # Флаг «есть незавершённый срез» — для глобального баннера «Вернуться в срез».
+    try:
+        if current_user.is_authenticated and not getattr(current_user, 'is_guest', False):
+            from services.theme_probe import has_active_probe
+            helpers['has_active_probe'] = has_active_probe(current_user.id)
+        else:
+            helpers['has_active_probe'] = False
+    except Exception:
+        helpers['has_active_probe'] = False
+    return helpers
 
 
 @app.route('/api/subscribe', methods=['POST'])

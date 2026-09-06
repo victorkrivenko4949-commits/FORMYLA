@@ -35,7 +35,9 @@
     user-select: none; -webkit-user-select: none; z-index: 2147483000;
 }
 .unified-keyboard.open { display: block !important; }
-.kb-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2147482999; }
+/* Бэкдроп НЕ блокирует страницу: он прозрачный и пропускает клики/скролл,
+   чтобы при открытой клавиатуре можно было листать страницу. */
+.kb-backdrop { display: none; position: fixed; inset: 0; background: transparent; z-index: 2147482999; pointer-events: none; }
 .kb-backdrop.open { display: block !important; }
 
 .kb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(30, 41, 59, 0.9); border-bottom: 1px solid rgba(148, 163, 184, 0.2); }
@@ -79,7 +81,8 @@
     .kb-layout { padding: 8px 4px; }
     .kb-tab { font-size: 12px; padding: 8px 4px; }
 }
-body.kb-open { overflow: hidden; }
+/* Клавиатура открыта, но страница остаётся прокручиваемой:
+   убираем блокировку overflow, чтобы можно было листать контент. */
 </style>
 
 <div id="unifiedKeyboard" class="unified-keyboard">
@@ -268,7 +271,7 @@ body.kb-open { overflow: hidden; }
         if (!kb) { console.warn('[kb] #unifiedKeyboard not found'); return; }
         kb.classList.add('open');
         if (backdrop) backdrop.classList.add('open');
-        document.body.classList.add('kb-open');
+        // Не блокируем прокрутку страницы при открытой клавиатуре.
     };
 
     window.closeKeyboard = function () {
@@ -276,7 +279,6 @@ body.kb-open { overflow: hidden; }
         var backdrop = document.getElementById('kbBackdrop');
         if (kb) kb.classList.remove('open');
         if (backdrop) backdrop.classList.remove('open');
-        document.body.classList.remove('kb-open');
     };
 
     window.toggleKeyboard = function () {

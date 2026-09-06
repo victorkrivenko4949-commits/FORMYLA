@@ -33,7 +33,7 @@
   }
 
   .intake-container {
-    max-width: 600px;
+    max-width: 760px;
     margin: 0 auto;
     padding: 60px 20px 80px;
   }
@@ -153,6 +153,21 @@
     font-size: 15px;
     line-height: 1.6;
     color: var(--text);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* ── Anchor solution blocks (финал) — не даём LaTeX/тексту вылезти ── */
+  .intake-solution-block {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
+  }
+  .intake-solution-block .katex-display,
+  .intake-solution-block .katex {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   /* ── Anchor figure ─────────────────────────────── */
@@ -490,7 +505,7 @@
         solutionsHtml += '<div style="background:var(--surface2);border:1px solid var(--border-soft);border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
         solutionsHtml += '<div style="color:var(--accent-hi);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">' + escapeHtml(sol.section_ru) + ' ' + okIcon + '</div>';
         solutionsHtml += '<div style="color:var(--muted);font-size:13px;margin-bottom:8px;">' + escapeHtml(sol.statement).replace(/\n/g, '<br>') + '</div>';
-        solutionsHtml += '<div style="color:var(--text-soft);font-size:13px;line-height:1.7;">' + solutionToHtml(sol.solution) + '</div>';
+        solutionsHtml += '<div class="intake-solution-block" style="color:var(--text-soft);font-size:13px;line-height:1.7;">' + solutionToHtml(sol.solution) + '</div>';
         solutionsHtml += '<div style="color:var(--accent-hi);font-size:13px;margin-top:6px;">Ответ: ' + escapeHtml(sol.answer) + '</div>';
         solutionsHtml += '</div>';
       });

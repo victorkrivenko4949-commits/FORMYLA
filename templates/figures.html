@@ -594,11 +594,8 @@
                 stageChip.textContent = data.step_label || data.current_stage;
                 stageChip.hidden = false;
             }
-            if (data.current_model && !loader.hidden) {
-                modelChip.textContent = 'Модель: ' + data.current_model;
-                modelChip.classList.add('model');
-                modelChip.hidden = false;
-            }
+            // Название модели ИИ пользователю НЕ показываем (внутренняя деталь).
+            if (modelChip) modelChip.hidden = true;
 
             if (data.status === 'done') {
                 clearPoll();

@@ -270,18 +270,11 @@
                 </span>
                 {% endif %}
                 
-                <!-- Выпадающее меню: «Выйти» / «Удалить аккаунт» -->
-                <div class="nav-dropdown" style="position: relative;">
-                    <button type="button" class="nav-item nav-toggle"
-                            style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 8px; font-size: 14px; border: 1px solid var(--border-soft); cursor: pointer;">
-                        🚪 Выйти/Удалить аккаунт
-                    </button>
-                    <div class="nav-menu" style="min-width: 180px;">
-                        <a href="{{ url_for('logout') }}" class="nav-menu-item" style="display: block; padding: 10px 14px; color: var(--text-main); text-decoration: none;">🚪 Выйти</a>
-                        <a href="javascript:void(0)" class="nav-menu-item" id="navDeleteAccount"
-                           style="display: block; padding: 10px 14px; color: #fca5a5; text-decoration: none;">🗑️ Удалить аккаунт</a>
-                    </div>
-                </div>
+                <!-- Простая кнопка «Выйти» (с подтверждением). Удаление аккаунта — в конце профиля. -->
+                <a href="{{ url_for('logout') }}" onclick="return confirmLogout(event)"
+                   style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 8px; font-size: 14px; border: 1px solid var(--border-soft); text-decoration: none; cursor: pointer;">
+                    🚪 Выйти
+                </a>
             {% else %}
                 <!-- Неавторизованный пользователь -->
                 <a href="{{ url_for('login') }}"
@@ -293,6 +286,17 @@
             {% endif %}
         </div>
     </header>
+
+    <!-- Баннер «Вернуться в срез» (если есть незавершённый утренний срез) -->
+    {% if has_active_probe %}
+    <div id="probeResumeBanner" style="display:flex;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #a78bfa;border-radius:8px;padding:12px 20px;margin:8px auto;max-width:900px;align-items:center;justify-content:space-between;gap:12px;">
+        <span style="color:#e2e8f0;font-size:0.95em;">У вас есть незавершённый срез. <span style="color:#a78bfa;font-weight:600;">Вернуться в срез?</span></span>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+            <a href="/prep/probe" style="padding:6px 16px;border:none;border-radius:6px;background:#a78bfa;color:#0f172a;font-weight:600;cursor:pointer;text-decoration:none;">Вернуться</a>
+            <button onclick="document.getElementById('probeResumeBanner').style.display='none'" style="padding:6px 10px;border:none;border-radius:6px;background:transparent;color:#64748b;cursor:pointer;font-size:1.1em;">x</button>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Баннер восстановления теста -->
     <div id="testResumeBanner" style="display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #38bdf8;border-radius:8px;padding:12px 20px;margin:8px auto;max-width:900px;align-items:center;justify-content:space-between;gap:12px;">
@@ -381,7 +385,7 @@
         <!-- Footer: auth actions -->
         <div class="drawer-footer">
             {% if current_user.is_authenticated and not current_user.is_guest %}
-            <a href="{{ url_for('logout') }}" class="drawer-link">
+            <a href="{{ url_for('logout') }}" class="drawer-link" onclick="return confirmLogout(event)">
                 <span class="drawer-link-icon">🚪</span>
                 Выйти
             </a>
@@ -890,34 +894,14 @@
 
     <script defer src="/static/js/wb_pip.js?v={{ asset_version }}"></script>
     <script>
-    // Глобальная кнопка «Удалить аккаунт» в шапке (для всех авторизованных).
-    (function(){
-        var btn = document.getElementById('navDeleteAccount');
-        if (!btn) return;
-        btn.addEventListener('click', function(){
-            var ok = confirm(
-                '⚠️ Внимание!\n\n' +
-                'Аккаунт будет удалён безвозвратно.\n' +
-                'Все данные (прогресс, решения, серия, планы, переписка) будут стёрты.\n\n' +
-                'Удалить аккаунт?'
-            );
-            if (!ok) return;
-            fetch('/account/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                credentials: 'same-origin',
-                body: JSON.stringify({ confirm: 'DELETE' })
-            }).then(function(r){ return r.json(); }).then(function(data){
-                if (data && data.status === 'deleted') {
-                    window.location.href = '/login';
-                } else {
-                    alert((data && data.error) || 'Не удалось удалить аккаунт.');
-                }
-            }).catch(function(){
-                alert('Ошибка сети. Попробуйте ещё раз.');
-            });
-        });
-    })();
+    // Подтверждение выхода (единая функция для всех ссылок «Выйти»).
+    function confirmLogout(event) {
+        if (!confirm('Вы точно хотите выйти?')) {
+            if (event) event.preventDefault();
+            return false;
+        }
+        return true;
+    }
     </script>
     {% block extra_js %}{% endblock %}
     {% if current_user.is_authenticated and not current_user.is_guest %}

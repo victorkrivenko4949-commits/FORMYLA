@@ -780,8 +780,11 @@ def review_attempt(
     sympy_correct = False     # sympy's verdict
 
     if not proof_mode:
-        # 2a) Empty answer -> blank immediately (skip sympy + AI)
-        if not user_answer:
+        # 2a) Полностью пустой ответ (нет ни поля, ни решения, ни фото) -> blank.
+        # Если поле пустое, но есть решение (текст или распознанное фото),
+        # НЕ ставим blank — даём ИИ проверить решение: правильный ответ внутри
+        # решения всё равно должен приносить баллы (требование FORMYLA).
+        if not user_answer and not user_solution and not images_b64:
             return {
                 "score": 0.0,
                 "feedback": (

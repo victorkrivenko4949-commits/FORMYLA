@@ -42,33 +42,33 @@ NON_STUDENT_ROLE_KEYS = {TEACHER_ROLE_KEY, PARENT_ROLE_KEY}
 # ══════════════════════════════════════════════════════════════════════
 
 def _get_session_state() -> Optional[Dict]:
-    """Получить состояние анкеты из Flask-сессии, с fallback в CuratorState."""
-    from flask import session
-    from flask_login import current_user
-    state = session.get('intake', None)
-    if state is not None:
-        return state
-    # Fallback: восстановить из CuratorState если сессия сбросилась
+    """Получить состояние анкеты из CuratorState (БД).
+
+    Состояние намеренно НЕ хранится во Flask-сессии: полный state
+    (включая anchor_tasks с условиями и решениями) раздувает signed-cookie
+    свыше 4KB, браузер молча отбрасывает такой cookie, и анкета «заедает»
+    на середине (ответы перестают регистрироваться).
+    """
     try:
         from models_curator import CuratorState
+        from flask_login import current_user
         if current_user and current_user.is_authenticated:
             cs = CuratorState.query.filter_by(user_id=current_user.id).first()
             if cs:
                 ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
-                fallback = ps.get('_intake_session', None)
-                if fallback:
-                    session['intake'] = fallback
-                    return fallback
+                return ps.get('_intake_session', None)
     except Exception:
         pass
     return None
 
 
 def _save_session_state(state: Dict) -> None:
-    """Сохранить состояние в сессию и в CuratorState как fallback."""
-    from flask import session
+    """Сохранить состояние анкеты ТОЛЬКО в CuratorState (БД).
+
+    Не пишем в Flask-сессию — это устраняет переполнение cookie (>4KB) и
+    связанные с ним «зависания» анкеты. CuratorState — единственный источник.
+    """
     from flask_login import current_user
-    session['intake'] = state
     try:
         from models_curator import CuratorState
         from models import db
@@ -98,10 +98,8 @@ def _call_set_prior(user_id: int, mu: float, sigma: float) -> None:
 
 
 def _clear_session_state() -> None:
-    """Очистить состояние анкеты из сессии."""
-    from flask import session
+    """Очистить состояние анкеты (только CuratorState, БД)."""
     from flask_login import current_user
-    session.pop('intake', None)
     try:
         from models_curator import CuratorState
         if current_user and current_user.is_authenticated:

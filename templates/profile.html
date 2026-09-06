@@ -195,12 +195,6 @@
                                 onmouseover="this.style.background='rgba(56, 189, 248, 0.18)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.08)'">
                             ✏️
                         </button>
-                        <button type="button" onclick="reintakeAccount()" aria-label="Перепройти анкету"
-                                title="Перепройти анкету (аккаунт будет удалён)"
-                                style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); color: #fca5a5; cursor: pointer; font-size: 13px; padding: 8px 12px; min-height: 40px; border-radius: 8px; transition: transform 0.2s, background 0.2s; white-space: nowrap;"
-                                onmouseover="this.style.background='rgba(239, 68, 68, 0.18)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'">
-                            ↺ Перепройти анкету
-                        </button>
                     </div>
                 </div>
                 <form id="nickname-form" action="/update_nickname" method="POST" style="display: none;" onsubmit="return submitNicknameAjax(event)">
@@ -626,13 +620,25 @@
              На главную
         </a>
         
-        <a href="{{ url_for('logout') }}"
+        <a href="{{ url_for('logout') }}" onclick="return confirmLogout(event)"
            style="display: inline-block; color: var(--text-soft); text-decoration: none; padding: 12px 24px; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); transition: all 0.3s;"
            onmouseover="this.style.borderColor='#ef4444'; this.style.color='#fca5a5'"
            onmouseout="this.style.borderColor='var(--border-mid)'; this.style.color='var(--text-soft)'"
         >
              🚪 Выйти
         </a>
+    </div>
+
+    <!-- ── Удаление аккаунта (в самом конце профиля) ── -->
+    <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border-soft); text-align: center;">
+        <button type="button" onclick="deleteAccount()"
+                style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; cursor: pointer; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; transition: all 0.2s;"
+                onmouseover="this.style.background='rgba(239, 68, 68, 0.18)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'">
+            🗑️ Удалить аккаунт
+        </button>
+        <p style="margin-top: 10px; color: var(--text-muted); font-size: 12px; line-height: 1.5;">
+            Удаление безвозвратно сотрёт все данные: прогресс, решения, серию, планы и переписку.
+        </p>
     </div>
 
 </div>
@@ -681,18 +687,17 @@ function _showNicknameFeedback(msg, kind) {
     }
 }
 
-async function reintakeAccount() {
+async function deleteAccount() {
     const confirmed = confirm(
-        '⚠️ Внимание!\n\n' +
-        'Если вы продолжите, ваш аккаунт будет удалён безвозвратно.\n' +
-        'Все данные (прогресс, решения, серия, планы) будут стёрты.\n' +
-        'После этого вы сможете заново пройти анкету и начать с чистого листа.\n\n' +
+        '⚠️ Вы точно хотите удалить аккаунт?\n\n' +
+        'Это действие безвозвратно.\n' +
+        'Все данные (прогресс, решения, серия, планы, переписка) будут стёрты.\n\n' +
         'Удалить аккаунт?'
     );
     if (!confirmed) return;
 
     try {
-        const resp = await fetch('/account/reintake', {
+        const resp = await fetch('/account/delete', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -709,8 +714,7 @@ async function reintakeAccount() {
             return;
         }
         // Успех: переходим на страницу входа
-        const redirectUrl = (data && data.redirect_url) || '/login';
-        window.location.href = redirectUrl;
+        window.location.href = '/login';
     } catch (err) {
         alert('Сеть недоступна. Повторите попытку.');
     }

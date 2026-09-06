@@ -1275,11 +1275,13 @@
     var items = (data.items && data.items.length) ? data.items : [];
     if (!items.length) { return; }
     grid.innerHTML = '';
-    items.forEach(function(it) {
+    items.forEach(function(it, idx) {
       var card = document.createElement('div');
       card.className = 'dt-card' + (it.is_answered ? (it.is_correct ? ' dt-done' : ' dt-flagged') : '');
       if (it.is_calibration) card.className += ' dt-calibration';
       card.setAttribute('data-item-id', it.id);
+      // Понятная сквозная нумерация 1..N (вместо внутреннего position из БД).
+      it._display_number = idx + 1;
 
       var subtopicHtml = '';
       if (it.subtopic) {
@@ -1303,7 +1305,7 @@
       card.innerHTML =
         subtopicHtml +
         '<div class="dt-card-header">' +
-          '<span class="dt-card-number">' + escapeHtml(it.position || '') + '</span>' +
+          '<span class="dt-card-number">' + escapeHtml(it._display_number) + '</span>' +
           '<span class="dt-topic-badge">' + escapeHtml(it.topic || '') + '</span>' +
           '<span class="dt-difficulty">' + escapeHtml(it.difficulty_level || '') + '</span>' +
           calBadge +
@@ -1534,7 +1536,7 @@
     btn.disabled = true;
     var oldTxt = btn.textContent;
     btn.textContent = 'Проверяю…';
-    res.innerHTML = '<div style="color:var(--muted);">DeepSeek проверяет ответ и решение…</div>';
+    res.innerHTML = '<div style="color:var(--muted);">ИИ-тьютор проверяет ответ и решение…</div>';
     var secs = Math.max(0, Math.round((Date.now() - dtOpenStart) / 1000));
 
     // ── Собираем фото в base64 для submit_ai ──
