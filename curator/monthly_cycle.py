@@ -43,8 +43,23 @@ def _default_monthly_cycle() -> Dict[str, Any]:
     }
 
 
+def _prep_state_dict(cs: CuratorState) -> Dict[str, Any]:
+    """Прочитать prep_state как dict (на проде колонка TEXT -> JSON-строка)."""
+    raw = getattr(cs, 'prep_state', None)
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return {}
+
+
 def _get_monthly_cycle(cs: CuratorState) -> Dict[str, Any]:
-    ps = cs.prep_state or {}
+    ps = _prep_state_dict(cs)
     mc = ps.get('monthly_cycle')
     if not isinstance(mc, dict) or not mc.get('themes'):
         return _default_monthly_cycle()
@@ -53,7 +68,7 @@ def _get_monthly_cycle(cs: CuratorState) -> Dict[str, Any]:
 
 def _save_monthly_cycle(cs: CuratorState, mc: Dict[str, Any]):
     from sqlalchemy.orm.attributes import flag_modified
-    ps = dict(cs.prep_state) if cs.prep_state else {}
+    ps = _prep_state_dict(cs)
     ps['monthly_cycle'] = mc
     cs.prep_state = ps
     # JSON-колонка: без flag_modified SQLAlchemy не увидит изменения

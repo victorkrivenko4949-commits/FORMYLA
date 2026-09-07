@@ -523,6 +523,16 @@ def finish(user_id: int, state: Optional[Dict] = None) -> Dict[str, Any]:
     # Сохраняем в БД (включая решения, чтобы они пережили перезагрузку страницы)
     _save_intake_to_db(user_id, result, state, anchor_solutions)
 
+    # Создаём месячный цикл подготовки сразу после анкеты, чтобы
+    # /daily_tasks увидел активный цикл и показал «пройди утренний срез»
+    # вместо «Задач пока нет». Без этого get_cycle_info вернёт active=False.
+    try:
+        from curator.monthly_cycle import build_or_get_cycle
+        _grade = int(result.class_level) if result.class_level else 9
+        build_or_get_cycle(user_id, _grade)
+    except Exception as _cycle_err:
+        logger.warning("intake: build_or_get_cycle failed: %s", _cycle_err)
+
     # Очищаем сессию
     _clear_session_state()
 
