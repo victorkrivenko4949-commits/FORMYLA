@@ -2752,11 +2752,26 @@ def force_intake_completion():
 
     try:
         from models_curator import CuratorState
+        import json as _json_intake
         cs = CuratorState.query.filter_by(user_id=current_user.id).first()
         if cs is None:
             return redirect(url_for('intake.intake_page'))
-        ps = cs.prep_state if isinstance(cs.prep_state, dict) else {}
-        if not ps.get('intake', {}).get('completed'):
+        # prep_state на проде хранится как JSON-строка (TEXT), а не dict.
+        # Парсим оба варианта, иначе `ps.get('intake', {}).get('completed')`
+        # всегда пусто -> вечный редирект на /intake даже после анкеты.
+        _raw = getattr(cs, 'prep_state', None)
+        if isinstance(_raw, dict):
+            ps = _raw
+        elif isinstance(_raw, str):
+            try:
+                _parsed = _json_intake.loads(_raw)
+                ps = _parsed if isinstance(_parsed, dict) else {}
+            except Exception:
+                ps = {}
+        else:
+            ps = {}
+        _intake = ps.get('intake', {}) if isinstance(ps.get('intake'), dict) else {}
+        if not _intake.get('completed'):
             return redirect(url_for('intake.intake_page'))
     except Exception:
         pass
