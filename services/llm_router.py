@@ -35,6 +35,7 @@ PROVIDER_MODEL_MAP = {
     # REC-5: OdiRouter (OpenAI-compatible), модели без префикса.
     # BATCH FIX: добавлен Claude Sonnet для base/aux/audit планировщиков.
     "odirouter": {
+        "gemini-3.8-flash": "gemini-3.8-flash",
         "gemini-3.7-flash": "gemini-3.7-flash",
         "claude-sonnet-4-6": "claude-sonnet-4-6",
         "claude-sonnet-4-5": "claude-sonnet-4-5",
@@ -78,21 +79,15 @@ PROVIDER_BASE_URLS = {
 
 # Логические роли -> дефолтная логическая модель.
 ROLE_DEFAULT_MODEL = {
-    # REC-5: структурный JSON и извлечение — Gemini (flash) через OdiRouter.
-    "base": "gemini-3.7-flash",
-    "aux": "gemini-3.7-flash",
-    "audit": "gemini-3.7-flash",
-    "repair": "deepseek-v4-pro",
-    "legacy_reasoner": "deepseek-v4-pro",
-    # CH-aux: решатель.  gpt-5.4 через OdiRouter отклонялся провайдером с
-    # permission_error (LLM_AUTH_ERROR), из-за чего aux не строился вовсе.
-    # Переключаемся на deepseek-v4-pro через прямой DeepSeek API — провайдер
-    # уже проверен в проекте (роль repair) и доступен.
-    "solver": "deepseek-v4-pro",
-    # REC-5 Part 6: shadow-прогон solver'а на Gemini (сравнение качества).
-    "solver_shadow": "gemini-3.7-flash",
-    # Банк неточностей: deep-разбор на deepseek-v4-pro (прямой DeepSeek API).
-    "insight_deep": "deepseek-v4-pro",
+    # Генератор чертежей: всё на Gemini 3.8 Flash через OdiRouter.
+    "base": "gemini-3.8-flash",
+    "aux": "gemini-3.8-flash",
+    "audit": "gemini-3.8-flash",
+    "repair": "gemini-3.8-flash",
+    "legacy_reasoner": "gemini-3.8-flash",
+    "solver": "gemini-3.8-flash",
+    "solver_shadow": "gemini-3.8-flash",
+    "insight_deep": "gemini-3.8-flash",
 }
 
 # Env-переменные, переопределяющие дефолт для роли (в порядке приоритета).
@@ -184,17 +179,16 @@ ROLE_PROVIDER_ENV = {
 }
 
 # REC-5: цепочки fallback по ролям.
-# OdiRouter и Novita отключены из дефолтных цепочек: их ключи
-# (GEMINI_API_KEY / NOVITA_API_KEY) отдают 403 (error code 1010) — невалидны.
-# Рабочий провайдер — только прямой DeepSeek (api.deepseek.com, HTTP 200).
+# Всё идёт через OdiRouter (Gemini 3.8 Flash). Ключ GEMINI_API_KEY валиден,
+# но OdiRouter сидит за Cloudflare и требует User-Agent (иначе 403 code 1010).
 ROLE_PROVIDER_ORDER = {
-    "base": ("deepseek_direct",),
-    "aux": ("deepseek_direct",),
-    "audit": ("deepseek_direct",),
-    "solver": ("deepseek_direct",),
-    "repair": ("deepseek_direct",),
-    "solver_shadow": ("deepseek_direct",),
-    "insight_deep": ("deepseek_direct",),
+    "base": ("odirouter",),
+    "aux": ("odirouter",),
+    "audit": ("odirouter",),
+    "solver": ("odirouter",),
+    "repair": ("odirouter",),
+    "solver_shadow": ("odirouter",),
+    "insight_deep": ("odirouter",),
 }
 
 # TTL кэша недоступных пар (provider, model_id) после 404 MODEL_NOT_FOUND.
@@ -660,10 +654,21 @@ def call_llm(
 
             start = time.perf_counter()
             try:
+                _hdrs = {
+                    "Authorization": f"Bearer {cfg['api_key']}",
+                    "Content-Type": "application/json",
+                }
+                # OdiRouter сидит за Cloudflare и блокирует запросы без
+                # нормального User-Agent (403 error code 1010).
+                if provider == "odirouter":
+                    _hdrs["User-Agent"] = (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/150.0.0.0 Safari/537.36"
+                    )
                 resp = requests.post(
                     cfg["base_url"],
-                    headers={"Authorization": f"Bearer {cfg['api_key']}",
-                             "Content-Type": "application/json"},
+                    headers=_hdrs,
                     json=payload,
                     timeout=timeout,
                 )
