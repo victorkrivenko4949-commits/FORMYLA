@@ -85,6 +85,10 @@ services:
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_API_BASE
+        sync: false
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD
