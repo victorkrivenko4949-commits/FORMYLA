@@ -378,7 +378,9 @@ def get_daily_tasks():
         # FIX: сет застрял в 'generating', но активного джоба нет.
         # Бывает после рестарта gunicorn: поток умер, сет остался generating,
         # фронт делает job_status -> 404 -> location.reload() = бесконечный
-        # рефреш. Размораживаем сет в failed, чтобы показать кнопку retry.
+        # рефреш. Размораживаем сет в failed и СРАЗУ проваливаемся в ветку
+        # failed/ready ниже (не отдаём status=generating, иначе фронт снова
+        # пойдёт в polling -> 404 -> reload).
         if job is None:
             try:
                 daily_set.status = "failed"
@@ -394,7 +396,7 @@ def get_daily_tasks():
             except Exception as _unstuck_err:
                 db.session.rollback()
                 logger.warning("daily_tasks: un-stuck failed: %s", _unstuck_err)
-        else:
+        if job is not None:
             # считаем примерное ETA (если знаем, когда начали)
             eta_seconds = None
             elapsed_seconds = None
@@ -408,36 +410,36 @@ def get_daily_tasks():
                 # Date.parse(...) корректно интерпретировал её как UTC.
                 started_at_iso = job.started_at.isoformat() + "Z"
 
-        data = {
-            "status": "generating",
-            "daily_set_id": daily_set.id,
-            "target_date": today.isoformat(),
-            "progress_pct": job.progress_pct if job else 0,
-            "current_step": job.current_step if job else None,
-            "eta_seconds": eta_seconds,
-            # Fix «прошло X:XX» сбрасывается при F5: отдаём серверное
-            # время старта (UTC, ISO с 'Z') + уже посчитанное elapsed,
-            # чтобы JS-таймер мог восстановиться с правильной отметки.
-            "started_at": started_at_iso,
-            "elapsed_seconds": elapsed_seconds,
-            "class_level": None,
-            "summary": None,
-            "generated_at": None,
-            "total_cost_usd": None,
-            "progress": {"completed": 0, "total": 0},
-            "items": [],
-        }
-        if wants_html:
-            return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
-        return jsonify({
-            "status": "generating",
-            "daily_set_id": daily_set.id,
-            "progress_pct": job.progress_pct if job else 0,
-            "current_step": job.current_step if job else None,
-            "eta_seconds": eta_seconds,
-            "started_at": started_at_iso,
-            "elapsed_seconds": elapsed_seconds,
-        }), 202
+            data = {
+                "status": "generating",
+                "daily_set_id": daily_set.id,
+                "target_date": today.isoformat(),
+                "progress_pct": job.progress_pct if job else 0,
+                "current_step": job.current_step if job else None,
+                "eta_seconds": eta_seconds,
+                # Fix «прошло X:XX» сбрасывается при F5: отдаём серверное
+                # время старта (UTC, ISO с 'Z') + уже посчитанное elapsed,
+                # чтобы JS-таймер мог восстановиться с правильной отметки.
+                "started_at": started_at_iso,
+                "elapsed_seconds": elapsed_seconds,
+                "class_level": None,
+                "summary": None,
+                "generated_at": None,
+                "total_cost_usd": None,
+                "progress": {"completed": 0, "total": 0},
+                "items": [],
+            }
+            if wants_html:
+                return render_template("daily_tasks/daily_tasks_dashboard.html", data={**data, "theme_today": _theme_for_day(today, data.get("class_level"))})
+            return jsonify({
+                "status": "generating",
+                "daily_set_id": daily_set.id,
+                "progress_pct": job.progress_pct if job else 0,
+                "current_step": job.current_step if job else None,
+                "eta_seconds": eta_seconds,
+                "started_at": started_at_iso,
+                "elapsed_seconds": elapsed_seconds,
+            }), 202
 
     # ── failed / ready / partial ─────────────────────────────────────
     # пользуемся сервисной функцией, которая уже умеет сериализовать
