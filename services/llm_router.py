@@ -184,17 +184,16 @@ ROLE_PROVIDER_ENV = {
 }
 
 # REC-5: цепочки fallback по ролям.
+# OdiRouter и Novita отключены из дефолтных цепочек: их ключи
+# (GEMINI_API_KEY / NOVITA_API_KEY) отдают 403 (error code 1010) — невалидны.
+# Рабочий провайдер — только прямой DeepSeek (api.deepseek.com, HTTP 200).
 ROLE_PROVIDER_ORDER = {
-    "base": ("odirouter", "deepseek_direct", "novita"),
-    "aux": ("odirouter", "deepseek_direct"),
-    "audit": ("odirouter", "deepseek_direct"),
-    # solver — GPT-5.6-SOL через OdiRouter первым, fallback на Gemini и DeepSeek.
-    "solver": ("odirouter", "deepseek_direct", "novita"),
-    "repair": ("deepseek_direct", "novita"),
-    # Shadow-сравнение solver'а — только Gemini через OdiRouter.
-    "solver_shadow": ("odirouter",),
-    # Банк неточностей: deep-разбор — строго прямой DeepSeek API
-    # (api.deepseek.com), без Novita/OdiRouter.
+    "base": ("deepseek_direct",),
+    "aux": ("deepseek_direct",),
+    "audit": ("deepseek_direct",),
+    "solver": ("deepseek_direct",),
+    "repair": ("deepseek_direct",),
+    "solver_shadow": ("deepseek_direct",),
     "insight_deep": ("deepseek_direct",),
 }
 
