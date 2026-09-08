@@ -1814,6 +1814,14 @@ def morning_probe():
 @login_required
 def probe_submit():
     """Submit an answer for the morning probe. AI evaluates correctness."""
+    try:
+        return _probe_submit_impl()
+    except Exception as e:
+        current_app.logger.exception('probe_submit failed: %s', e)
+        return jsonify(error='Внутренняя ошибка проверки. Попробуй ещё раз.'), 500
+
+
+def _probe_submit_impl():
     data = request.get_json(silent=True) or {}
     task_id = data.get('task_id')
     user_answer = (data.get('answer') or '').strip()
