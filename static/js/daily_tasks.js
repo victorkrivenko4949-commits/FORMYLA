@@ -751,9 +751,7 @@ function openTaskModal(item, index) {
         html += '<input type="text" class="dt-answer-input" id="dt-answer-input" placeholder="Введи ответ..." autocomplete="off">';
         html += '<div class="dt-answer-actions">';
         html += '<button class="dt-btn-check" id="dt-btn-check" onclick="submitAnswer(\'' + item.id + '\')">[OK] Проверить</button>';
-        html += '<button class="dt-btn-hint" id="dt-btn-hint" onclick="getHint(\'' + item.id + '\')"> Подсказка</button>';
         html += '</div>';
-        html += '<div id="dt-hint-container"></div>';
         html += '</div>';
 
         // Auto-focus after render
@@ -812,7 +810,6 @@ function closeModal() {
 function submitAnswer(itemId) {
     var input = document.getElementById('dt-answer-input');
     var btn = document.getElementById('dt-btn-check');
-    var hintBtn = document.getElementById('dt-btn-hint');
 
     if (!input || !input.value.trim()) return;
 
@@ -821,7 +818,6 @@ function submitAnswer(itemId) {
         btn.disabled = true;
         btn.textContent = '⏳ Проверка...';
     }
-    if (hintBtn) hintBtn.disabled = true;
 
     fetch('/daily_tasks/' + itemId + '/submit', {
         method: 'POST',

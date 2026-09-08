@@ -461,9 +461,7 @@ function openTaskModal(item, index){
   h += '</div>';
   h += '<div class="dt-actions">';
   h += '<button type="submit" id="dt-submit-btn" class="dt-btn dt-btn-primary"> Отправить ответ</button>';
-  h += '<button type="button" class="dt-btn dt-btn-hint" onclick="getHint(\''+item.id+'\')"> Подсказка</button>';
   h += '</div>';
-  h += '<div id="dt-hint-container"></div>';
   h += '</form>';
   h += '</div>';
 
