@@ -1094,6 +1094,13 @@ def submit_answer_ai(item_id: int):
     else:
         score = float(_verdict.get("score", 0.0))
         feedback = str(md_render(wrap_bare_math(_verdict.get("feedback") or "")))
+        # В задачах дня не показываем строку «Оценка тьютора: ±N балл».
+        import re as _re_fb
+        feedback = _re_fb.sub(
+            r"(?is)^\s*\*\*Оценка тьютора:[^*]*\*\*\s*(\n|$)",
+            "",
+            feedback,
+        )
         is_correct = bool(_verdict.get("is_correct"))
         # Низкое доверие OCR — предупреждаем ученика
         if _verdict.get("ocr") and _verdict["ocr"].get("low_confidence"):

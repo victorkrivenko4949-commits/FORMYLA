@@ -368,6 +368,7 @@ function openTaskModal(item, index){
   if(title) title.textContent = 'Задача '+(index+1)+' · '+(item.subtopic || '');
   overlay.classList.remove('dt-hidden');
   window.DT_PHOTO_BUFFER = [];
+  window.dtCurrentDifficulty = (typeof item.difficulty === 'number' ? item.difficulty : (parseInt(item.difficulty, 10) || 0));
   _dtKbActiveField = null;
 
   var done = (item.user_answer !== null && item.user_answer !== undefined);
@@ -625,10 +626,13 @@ function submitAnswer(itemId, KA, KS){
     return;
   }
 
-  // D2: проверка наличия решения перед отправкой
+  // D2: проверка наличия решения перед отправкой.
+  // Со 2 уровня решение должно быть текстом >= 30 символов (или фото).
   var hasPhoto = (window.DT_PHOTO_BUFFER && window.DT_PHOTO_BUFFER.length > 0);
   var hasTextSolution = userSolution.length > 0;
-  if(!hasTextSolution && !hasPhoto){
+  var needLongSolution = (window.dtCurrentDifficulty || 0) >= 2;
+  var shortSolution = needLongSolution && !hasPhoto && userSolution.length < 30;
+  if((!hasTextSolution && !hasPhoto) || shortSolution){
     var hintEl = document.getElementById('dt-solution-hint');
     if(!hintEl){
       hintEl = document.createElement('div');
@@ -637,7 +641,9 @@ function submitAnswer(itemId, KA, KS){
       var taParent = ta ? ta.parentNode : null;
       if(taParent) taParent.appendChild(hintEl);
     }
-    hintEl.textContent = 'Опиши решение или прикрепи фото';
+    hintEl.textContent = shortSolution
+      ? 'Опиши решение подробнее (минимум 30 символов) или прикрепи фото.'
+      : 'Опиши решение или прикрепи фото';
     hintEl.style.display = 'block';
     return;
   } else {

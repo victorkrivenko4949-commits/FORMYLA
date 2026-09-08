@@ -1936,9 +1936,25 @@ def _prep_answer_impl():
     if solution_method not in ('text', 'photo'):
         return jsonify(error='Выберите способ решения: текстом или фотографией. Блок «Как решал» обязателен.'), 400
 
+    # Уровень задачи (для уровня 1 не требуем минимум 30 символов решения).
+    _task_level = None
+    try:
+        _probe_task = _resolve_probe_task(task_id)
+        if _probe_task is not None:
+            _task_level = getattr(_probe_task, 'difficulty_level', None)
+            if _task_level is None and isinstance(_probe_task, dict):
+                _task_level = _probe_task.get('level')
+            try:
+                _task_level = int(_task_level) if _task_level is not None else None
+            except (TypeError, ValueError):
+                _task_level = None
+    except Exception:
+        _task_level = None
+
     if solution_method == 'text':
-        if len(solution_text) < 30:
-            return jsonify(error='Текстовое решение должно содержать минимум 30 символов. Опишите ход решения подробнее.'), 400
+        if _task_level is None or _task_level >= 2:
+            if len(solution_text) < 30:
+                return jsonify(error='Текстовое решение должно содержать минимум 30 символов. Опишите ход решения подробнее.'), 400
     elif solution_method == 'photo':
         if 'solution_photo' not in request.files:
             return jsonify(error='Прикрепите фотографию решения (jpg, png, heic).'), 400
