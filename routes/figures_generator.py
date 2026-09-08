@@ -1015,6 +1015,20 @@ def _concrete_base_feedback(errors: list) -> str:
             )
         elif "INVALID_LABEL_TEXT" in e:
             lines.append("Убери служебное имя из подписи — пиши реальную величину.")
+        elif "CONSTRAINT_VIOLATION" in e:
+            # Угол/длина не сошлись: модель поставила free_point «на глаз» вместо
+            # точного построения. Учим модель строить численно точную фигуру.
+            if "угол" in e:
+                lines.append(
+                    "Числовой угол не сошёлся с подписями: не ставь вершины свободно "
+                    "«на глаз». Для заданного угла используй triangle_by_two_angles или "
+                    "angle_at_vertex, а не free_point с произвольными координатами."
+                )
+            else:
+                lines.append(
+                    "Числовое условие не сошлось: задавай длины/равенства "
+                    "операциями segment_length / equal_segments, а не подбором координат."
+                )
         else:
             lines.append(e)
     return "\n".join(lines)
