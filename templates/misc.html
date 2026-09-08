@@ -42,16 +42,6 @@
     </div>
 
     <div class="misc-group">
-        <div class="misc-group-title">🛠️ Инструменты</div>
-        {% if current_user.is_authenticated and not current_user.is_guest %}
-        <div class="misc-row">
-            <a href="/insights" class="misc-link"><span class="misc-link-label">💡 Банк неточностей</span><span class="misc-link-desc">Найденные недочёты и задачи на отработку</span></a>
-            <button class="pin-btn" data-pin-id="insights" data-pin-label="💡 Банк неточностей" data-pin-href="/insights" data-pin-desc="Найденные недочёты и задачи на отработку" title="На главную">📌</button>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="misc-group">
         <div class="misc-group-title">ℹ️ Информация</div>
         <div class="misc-row">
             <a href="/about" class="misc-link"><span class="misc-link-label">📖 О сайте</span><span class="misc-link-desc">О платформе FORMYLA</span></a>
