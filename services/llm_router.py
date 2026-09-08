@@ -35,6 +35,7 @@ PROVIDER_MODEL_MAP = {
     # REC-5: OdiRouter (OpenAI-compatible), модели без префикса.
     # BATCH FIX: добавлен Claude Sonnet для base/aux/audit планировщиков.
     "odirouter": {
+        "kimi-k3": "kimi-k3",
         "gemini-3.8-flash": "gemini-3.8-flash",
         "gemini-3.7-flash": "gemini-3.7-flash",
         "claude-sonnet-4-6": "claude-sonnet-4-6",
@@ -78,16 +79,17 @@ PROVIDER_BASE_URLS = {
 }
 
 # Логические роли -> дефолтная логическая модель.
-# gemini-3.8-flash через OdiRouter стабильно отвечает и на ДЛИННЫХ промптах
-# (base-план 12K символов -> HTTP 200 за ~15s, валидный JSON). gpt-5.6-sol
-# на длинном промпте падает (RemoteDisconnected/504), gpt-5.4 — 429.
+# kimi-k3 через OdiRouter на длинном промпте (12K) отвечает за ~28s и сразу
+# выдаёт корректный структурный JSON (free_point/segment/equal_segments/
+# angle_bisector/...), проходящий валидатор без ошибок. Ставим его на все
+# структурные роли генерации чертежей. gemini-3.8-flash — fallback для лёгких.
 ROLE_DEFAULT_MODEL = {
-    "base": "gemini-3.8-flash",
-    "aux": "gemini-3.8-flash",
-    "audit": "gemini-3.8-flash",
-    "repair": "gemini-3.8-flash",
-    "legacy_reasoner": "gemini-3.8-flash",
-    "solver": "gemini-3.8-flash",
+    "base": "kimi-k3",
+    "aux": "kimi-k3",
+    "audit": "kimi-k3",
+    "repair": "kimi-k3",
+    "legacy_reasoner": "kimi-k3",
+    "solver": "kimi-k3",
     "solver_shadow": "gemini-3.8-flash",
     "insight_deep": "gemini-3.8-flash",
 }
@@ -521,6 +523,7 @@ MODEL_PRICES_USD_PER_MTOK = {
     "deepseek-v4-flash": {"in": 0.03,   "out": 0.10},
     "gemini-3.7-flash":  {"in": 0.75,   "out": 3.75},
     "gemini-3.8-flash":  {"in": 0.75,   "out": 3.75},
+    "kimi-k3":           {"in": 0.60,   "out": 2.50},
 }
 
 
