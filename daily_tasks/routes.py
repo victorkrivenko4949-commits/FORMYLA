@@ -118,6 +118,45 @@ def get_daily_tasks():
     # ── T8 streak: check on open ────────────────────────────────────
     streak = check_streak_on_open(user_id, today)
 
+    # ── Lazy-init цикла: если анкета пройдена, но месячного цикла ещё нет ──
+    # (например, пользователь прошёл анкету до деплоя этих фиксов), создаём
+    # цикл здесь, чтобы /daily_tasks показал «Сначала пройди утренний срез»,
+    # а не «Задач пока нет».
+    try:
+        from curator.monthly_cycle import get_cycle_info, build_or_get_cycle
+        _cycle_probe = get_cycle_info(user_id)
+        if not _cycle_probe.get('active'):
+            from models_curator import CuratorState
+            _cs = CuratorState.query.filter_by(user_id=user_id).first()
+            _intake_done = False
+            _grade = None
+            if _cs is not None:
+                import json as _json_li
+                _raw = getattr(_cs, 'prep_state', None)
+                _ps = None
+                if isinstance(_raw, dict):
+                    _ps = _raw
+                elif isinstance(_raw, str):
+                    try:
+                        _ps = _json_li.loads(_raw)
+                    except Exception:
+                        _ps = None
+                if isinstance(_ps, dict):
+                    _intake_done = bool((_ps.get('intake') or {}).get('completed'))
+                _grade = getattr(_cs, 'grade', None)
+            if _intake_done:
+                if _grade is None:
+                    from models import User
+                    _u = User.query.get(user_id)
+                    _grade = getattr(_u, 'preferred_grade', None) or getattr(_u, 'class_level', None) if _u else None
+                if _grade:
+                    try:
+                        build_or_get_cycle(user_id, int(_grade))
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
     # ── Цикл месяца: реальная тема дня + блокировка срезом ──────────
     cycle_info = {}
     blocked = False
