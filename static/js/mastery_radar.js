@@ -110,7 +110,7 @@ return `${v.toFixed(0)}%`;
 },
 scales: {
 r: {
-      min: 1,
+      min: 0,
       max: 4,
 ticks: {
         stepSize: 1,

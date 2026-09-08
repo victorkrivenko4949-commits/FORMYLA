@@ -113,12 +113,19 @@ def _save_probe_state(cs: CuratorState, probe: Optional[Dict[str, Any]]):
         cs.probe_json = _json.dumps(probe, ensure_ascii=False)
     
     # Also update prep_state for backward compat
-    ps = dict(cs.prep_state) if cs.prep_state else {}
-    if isinstance(ps, str):
+    # prep_state на проде — JSON-строка (TEXT), а не dict. Парсим оба варианта.
+    _raw = cs.prep_state
+    if isinstance(_raw, dict):
+        ps = _raw
+    elif isinstance(_raw, str):
         try:
-            ps = _json.loads(ps)
+            ps = _json.loads(_raw)
         except (_json.JSONDecodeError, TypeError):
             ps = {}
+    else:
+        ps = {}
+    if not isinstance(ps, dict):
+        ps = {}
     if probe is None:
         ps.pop('active_probe', None)
     else:

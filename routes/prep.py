@@ -1151,8 +1151,15 @@ def coach():
             try:
                 from models_curator import CuratorState as _CS2
                 _cs2 = _CS2.query.filter_by(user_id=current_user.id).first()
-                if _cs2 and _cs2.prep_state and _cs2.prep_state.get('level'):
-                    prep_lvl = _cs2.prep_state['level']
+                _ps2 = _cs2.prep_state if _cs2 else None
+                if isinstance(_ps2, str):
+                    import json as _json_p2
+                    try:
+                        _ps2 = _json_p2.loads(_ps2)
+                    except Exception:
+                        _ps2 = None
+                if isinstance(_ps2, dict) and _ps2.get('level'):
+                    prep_lvl = _ps2['level']
                     overall_level = prep_lvl
                     level_labels = {1: ' Начальный', 2: ' Базовый', 3: ' Средний',
                                     4: ' Продвинутый'}
@@ -3370,7 +3377,17 @@ def coach_chat():
     try:
         cs = CuratorState.query.filter_by(user_id=current_user.id).first()
         if cs and getattr(cs, 'prep_state', None):
-            _ps = cs.prep_state if isinstance(cs.prep_state, dict) else {}
+            _raw_ps = cs.prep_state
+            if isinstance(_raw_ps, dict):
+                _ps = _raw_ps
+            elif isinstance(_raw_ps, str):
+                import json as _json_ps
+                try:
+                    _ps = _json_ps.loads(_raw_ps)
+                except Exception:
+                    _ps = {}
+            else:
+                _ps = {}
             _onboarding = _ps.get('onboarding', {}) or {}
     except Exception:
         pass

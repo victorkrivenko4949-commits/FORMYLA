@@ -111,7 +111,17 @@ def _get_onboarding(user_id: int) -> Optional[Dict[str, Any]]:
     cs = CuratorState.query.filter_by(user_id=user_id).first()
     if not cs or not cs.prep_state:
         return None
-    prep = cs.prep_state if isinstance(cs.prep_state, dict) else {}
+    _raw_prep = cs.prep_state
+    if isinstance(_raw_prep, dict):
+        prep = _raw_prep
+    elif isinstance(_raw_prep, str):
+        import json as _json_dr
+        try:
+            prep = _json_dr.loads(_raw_prep)
+        except Exception:
+            prep = {}
+    else:
+        prep = {}
     return prep.get('intake') or prep.get('onboarding')
 
 

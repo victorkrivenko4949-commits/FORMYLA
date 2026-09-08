@@ -141,13 +141,15 @@
                   oninput="onProblemChanged()"></textarea>
         <div class="hint">Длина условия ограничена 4000 символами. Генерация обычно занимает 20–40 секунд, для сложных задач — более минуты.</div>
 
-        <div class="build-type-toggle" style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid #1C2B4F;margin-top:14px;">
+        <!-- Разделение «базовый / с доп. построениями» убрано: чертёж строится
+             всегда без доп. построений (единый режим). -->
+        <div class="build-type-toggle" style="display:none;">
             <button type="button" class="build-type-btn" data-type="plain" id="btnPlain"
-                style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.04);color:#8C9ABC;font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
+                style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(76,125,255,0.15);color:#6B95FF;font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
                 Без доп. построения
             </button>
-            <button type="button" class="build-type-btn active" data-type="aux" id="btnAux"
-                style="flex:1;padding:10px 16px;text-align:center;cursor:pointer;background:rgba(76,125,255,0.15);color:#6B95FF;font-size:14px;font-weight:600;border:none;transition:all 0.2s;">
+            <button type="button" class="build-type-btn" data-type="aux" id="btnAux"
+                style="display:none;">
                 С доп. построением
             </button>
         </div>
@@ -169,7 +171,7 @@
         {# Название модели ИИ пользователю не показываем (внутренняя деталь). #}
         <div id="errorMsg" class="error-msg"></div>
         <div class="credits-info" id="creditsInfo"></div>
-        <div id="auxToggle" style="display:none;gap:0;border-radius:10px;overflow:hidden;border:1px solid #1C2B4F;margin-bottom:12px;">
+        <div id="auxToggle" style="display:none !important;gap:0;border-radius:10px;overflow:hidden;border:1px solid #1C2B4F;margin-bottom:12px;">
             <button type="button" id="auxBaseBtn"
                 style="flex:1;padding:8px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.04);color:#8C9ABC;font-size:13px;font-weight:600;border:none;">
                 базовый
@@ -193,7 +195,7 @@
     var POLL_INTERVAL = 2000;
     var currentJobId = null;
     var pollTimer = null;
-    var currentBuildType = 'aux';   // 'aux' (с доп. построением) | 'plain'
+    var currentBuildType = 'plain'; // единый режим: без доп. построений
     var currentBaseSvg = null;
     var currentAuxSvg = null;
     var currentShowAux = false;

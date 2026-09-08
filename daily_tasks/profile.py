@@ -682,7 +682,17 @@ def _load_intake_weak_sections(user_id: int) -> list:
         cs = CuratorState.query.filter_by(user_id=user_id).first()
         if not cs:
             return []
-        ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+        _raw_ps = cs.prep_state
+        if isinstance(_raw_ps, dict):
+            ps = _raw_ps
+        elif isinstance(_raw_ps, str):
+            import json as _json_pf
+            try:
+                ps = _json_pf.loads(_raw_ps)
+            except Exception:
+                ps = {}
+        else:
+            ps = {}
         intake = ps.get('intake', {}) or {}
         if not intake.get('completed'):
             return []

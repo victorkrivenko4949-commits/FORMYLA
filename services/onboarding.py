@@ -205,7 +205,17 @@ def _get_session_state() -> dict:
         if current_user and current_user.is_authenticated:
             cs = CuratorState.query.filter_by(user_id=current_user.id).first()
             if cs and cs.prep_state:
-                ps = cs.prep_state if isinstance(cs.prep_state, dict) else {}
+                _raw_ps = cs.prep_state
+                if isinstance(_raw_ps, dict):
+                    ps = _raw_ps
+                elif isinstance(_raw_ps, str):
+                    import json as _json_ob
+                    try:
+                        ps = _json_ob.loads(_raw_ps)
+                    except Exception:
+                        ps = {}
+                else:
+                    ps = {}
                 saved = ps.get('_onboarding_session')
                 if isinstance(saved, dict) and saved.get('step') and saved.get('step') != 'done':
                     session['onboarding'] = saved
@@ -226,7 +236,17 @@ def _save_session_state(state: dict) -> None:
         if current_user and current_user.is_authenticated:
             cs = CuratorState.query.filter_by(user_id=current_user.id).first()
             if cs:
-                ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+                _raw_ps = cs.prep_state
+                if isinstance(_raw_ps, dict):
+                    ps = _raw_ps
+                elif isinstance(_raw_ps, str):
+                    import json as _json_ob
+                    try:
+                        ps = _json_ob.loads(_raw_ps)
+                    except Exception:
+                        ps = {}
+                else:
+                    ps = {}
                 ps['_onboarding_session'] = state
                 cs.prep_state = ps
                 from models import db
@@ -245,7 +265,17 @@ def _clear_session_state() -> None:
         if current_user and current_user.is_authenticated:
             cs = CuratorState.query.filter_by(user_id=current_user.id).first()
             if cs:
-                ps = dict(cs.prep_state) if isinstance(cs.prep_state, dict) else {}
+                _raw_ps = cs.prep_state
+                if isinstance(_raw_ps, dict):
+                    ps = _raw_ps
+                elif isinstance(_raw_ps, str):
+                    import json as _json_ob
+                    try:
+                        ps = _json_ob.loads(_raw_ps)
+                    except Exception:
+                        ps = {}
+                else:
+                    ps = {}
                 ps.pop('_onboarding_session', None)
                 cs.prep_state = ps
                 from models import db
