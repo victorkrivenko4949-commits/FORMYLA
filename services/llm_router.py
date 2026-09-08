@@ -78,14 +78,17 @@ PROVIDER_BASE_URLS = {
 }
 
 # Логические роли -> дефолтная логическая модель.
+# Для ролей со сложным структурным JSON (генерация геометрических планов)
+# используем gpt-5.6-sol через OdiRouter: flash-модель не справляется с
+# длинными промптами и отдаёт невалидный base-план.
+# Лёгкие роли (solver_shadow, insight_deep) оставляем на gemini-3.8-flash.
 ROLE_DEFAULT_MODEL = {
-    # Генератор чертежей: всё на Gemini 3.8 Flash через OdiRouter.
-    "base": "gemini-3.8-flash",
-    "aux": "gemini-3.8-flash",
-    "audit": "gemini-3.8-flash",
-    "repair": "gemini-3.8-flash",
-    "legacy_reasoner": "gemini-3.8-flash",
-    "solver": "gemini-3.8-flash",
+    "base": "gpt-5.6-sol",
+    "aux": "gpt-5.6-sol",
+    "audit": "gpt-5.6-sol",
+    "repair": "gpt-5.6-sol",
+    "legacy_reasoner": "gpt-5.6-sol",
+    "solver": "gpt-5.6-sol",
     "solver_shadow": "gemini-3.8-flash",
     "insight_deep": "gemini-3.8-flash",
 }
@@ -129,14 +132,15 @@ ROLE_MAX_TOKENS_ENV = {
 # отдавать JSON сразу, без CoT; repair/legacy_reasoner — reasoning-модели,
 # у которых thinking оставляем включённым.
 ROLE_DEFAULT_THINKING = {
-    "base": "enabled",
-    "aux": "enabled",
-    "audit": "enabled",
-    "repair": "enabled",
-    "legacy_reasoner": "enabled",
-    # solver = gpt-5.6-sol через OdiRouter.  reasoning-канал (thinking=enabled)
-    # вызывает 504 Gateway Timeout на nginx OdiRouter при длинном промпте,
-    # поэтому для solver рассуждение отключено — GPT отвечает быстро.
+    # gpt-5.6-sol через OdiRouter: reasoning-канал (thinking=enabled) вызывает
+    # 504 Gateway Timeout на nginx OdiRouter при длинном промпте. Поэтому для
+    # всех структурных ролей генерации чертежей отключаем thinking — модель
+    # сразу отдаёт JSON.
+    "base": "disabled",
+    "aux": "disabled",
+    "audit": "disabled",
+    "repair": "disabled",
+    "legacy_reasoner": "disabled",
     "solver": "disabled",
     "solver_shadow": "disabled",
     # Банк неточностей: deep-разбор с включённым reasoning-каналом.
