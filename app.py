@@ -1383,26 +1383,8 @@ try:
 except Exception as _e:
     print(f"[BP] account_bp NOT registered: {_e}")
 
-try:
-    from routes.figures import figures_bp
-    app.register_blueprint(figures_bp)
-    print("[BP] figures_bp registered (/figures)")
-except Exception as _e:
-    print(f"[BP] figures_bp NOT registered: {_e}")
-
-# CH5: New figure generation pipeline with its own /figures/generate prefix.
-try:
-    from routes.figures_generator import figures_gen_bp, _ensure_queue_worker
-    app.register_blueprint(figures_gen_bp)
-    print("[BP] figures_gen_bp registered (/figures/generate)")
-    # CH22: телеметрия стадий генерации чертежа.
-    from migrations.add_figure_build_stages import _ensure_table as _ensure_figure_stages
-    with app.app_context():
-        _ensure_figure_stages()
-    # Start figure build queue worker daemon
-    _ensure_queue_worker(app)
-except Exception as _e:
-    print(f"[BP] figures_gen_bp NOT registered: {_e}")
+# FIGURES REMOVED: система генерации чертежей отключена с сайта.
+# Код сохранён в figures_archive/. Blueprint'ы не регистрируются.
 
 # Whiteboard 1-to-1 video call signalling (WebRTC, no SocketIO).
 try:

@@ -22,12 +22,6 @@ AVAILABLE_WIDGETS = [
         'description': 'Специальные подборки задач',
     },
     {
-        'key': 'figures',
-        'title': 'ИИ-чертёж по задаче',
-        'template': 'widgets/figures.html',
-        'description': 'Генерация геометрического чертежа',
-    },
-    {
         'key': 'leaderboard',
         'title': 'Лидеры',
         'template': 'widgets/leaderboard.html',

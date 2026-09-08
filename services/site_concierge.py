@@ -405,7 +405,7 @@ def build_site_context_for_llm() -> str:
         "  /, /about, /about#unique, /about#support, /daily, /daily_tasks,",
         "  /prep/coach, /prep/probe, /probniks, /problems, /olympiads, /olympiads/methods,",
         "  /olympiad-prep, /profile, /section/algebra, /section/geometry,",
-        "  /leaderboard, /chat, /friends, /insights, /figures, /intake, /adaptive_test_simple.",
+        "  /leaderboard, /chat, /friends, /insights, /intake, /adaptive_test_simple.",
         "",
         "Правило: если ученик спрашивает про фичу/страницу/цену, которой нет выше —",
         "честно скажи, что такого в FORMYLA нет, и не выдумывай.",
