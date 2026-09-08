@@ -845,16 +845,11 @@
         <div class="dt-cal-banner-title">Профиль ещё в калибровке</div>
         <div class="dt-cal-banner-text">
           {{ data.calibration_items_count }} из {{ data.progress.total }}
-          задач — по темам, по которым ты пока не проходил адаптивный
-          тест. Они помечены бейджем «Калибровка» и подобраны на
-          среднем уровне. Пройди диагностику, чтобы задачи стали
-          точнее под твой уровень.
+          задач — по темам, по которым ты пока не проходил диагностику.
+          Они помечены бейджем «Калибровка» и подобраны на среднем
+          уровне.
         </div>
       </div>
-      <a class="dt-cal-banner-btn"
-         href="{{ data.adaptive_tests_url or '/adaptive_test/select_class' }}">
-        Пройти тест &rarr;
-      </a>
     </div>
     {% endif %}
 

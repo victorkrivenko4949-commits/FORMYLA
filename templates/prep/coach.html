@@ -533,22 +533,18 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     } else if (data.scenario === 'prep_tasks_ready') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     } else if (data.scenario === 'prep_task_day') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     } else if (data.scenario === 'prep_month_complete') {
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }
-      addCtaButton(' Пройти адапт тест', '/adaptive-test', 'secondary');
     }
     if (ctaRow.children.length) {
       ctaRow.style.display = 'flex';
