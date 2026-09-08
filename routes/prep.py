@@ -2049,12 +2049,25 @@ def _prep_answer_impl():
     except Exception:
         pass  # Kimi failure must never block the main flow
 
+    # Эталонные ответ/решение задачи — всегда подставляем как fallback, чтобы
+    # после ответа ученик видел ПОЛНЫЙ разбор (правильный ответ + решение),
+    # даже если AI-проверка недоступна (feedback пустой) или srez-задача
+    # без эталонного решения.
+    _ref_answer = (feedback.get('correct_answer') or '').strip()
+    _ref_solution = (feedback.get('solution') or '').strip()
+    if not _ref_answer:
+        _ref_answer = (getattr(task, 'correct_answer', None) or '').strip()
+    if not _ref_solution:
+        _ref_solution = (getattr(task, 'solution', None) or '').strip()
+        if not _ref_solution and isinstance(task, dict):
+            _ref_solution = (task.get('solution') or '').strip()
+
     result['ai_feedback'] = {
         'verdict': verdict,
         'message': feedback.get('message', ''),
         'hint': feedback.get('hint', ''),
-        'solution': feedback.get('solution', ''),
-        'correct_answer': feedback.get('correct_answer', ''),
+        'solution': _ref_solution,
+        'correct_answer': _ref_answer,
         'checking_model': feedback.get('checking_model', ''),
     }
     # Чертёж показываем только в разборе (после ответа ученика)
