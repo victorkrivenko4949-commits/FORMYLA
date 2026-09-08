@@ -1898,6 +1898,19 @@ def _probe_submit_impl():
 def prep_answer():
     """Submit an answer for the morning probe WITH required solution method.
 
+    Обёрнут в try/except: любой внутренний сбой возвращает JSON (не HTML 500),
+    чтобы фронт не падал с «Unexpected token '<'».
+    """
+    try:
+        return _prep_answer_impl()
+    except Exception as e:
+        current_app.logger.exception('prep_answer failed: %s', e)
+        return jsonify(error='Внутренняя ошибка проверки. Попробуй ещё раз.'), 500
+
+
+def _prep_answer_impl():
+    """Submit an answer for the morning probe WITH required solution method.
+
     Expects JSON:
       - task_id: int
       - answer: str (short answer)
