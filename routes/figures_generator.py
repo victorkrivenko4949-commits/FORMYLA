@@ -79,6 +79,7 @@ DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1/chat/completions"
 # Use a generous per-request timeout so the job isn't killed mid-reasoning.
 DEEPSEEK_TIMEOUT = 300  # seconds
 MAX_RETRIES = 2
+MAX_ENGINE_REPAIRS = 3
 MAX_PROBLEM_LENGTH = 4000
 # Лимит генераций в час на пользователя (настраивается env для тестов).
 RATE_LIMIT_MAX = int(os.environ.get("FIGURE_RATE_LIMIT_MAX", "10") or "10")
@@ -2136,6 +2137,8 @@ def _run_condition_solution_job(job_id: int, job) -> None:
         return
 
     base_plan = None
+    base_svg = None
+    base_ctx = None
     base_errors: list = []
     base_history = []
     prev_base_sig = None
@@ -2204,20 +2207,39 @@ def _run_condition_solution_job(job_id: int, job) -> None:
                 # CH27b: конкретный feedback с перечнем недостающих точек.
                 base_errors = list(missing_points)
             else:
-                base_plan = plan
-                job.base_model = model
-                job.base_plan_json = _fmt_plan_json(plan)
-                db.session.commit()
-                _record_stage(
-                    job_id, "base_thinking", role=role,
-                    provider=resp.get("provider"), model=model,
-                    attempt=attempt + 1,
-                    input_tokens=(resp.get("usage") or {}).get("prompt_tokens"),
-                    output_tokens=(resp.get("usage") or {}).get("completion_tokens"),
-                    validation_passed=True,
-                    estimated_cost_usd=resp.get("cost_usd"),
-                )
-                break
+                # План прошёл схему — сразу пробуем построить движком.
+                # Если геометрия не сходится, добавляем предметный feedback
+                # и продолжаем repair-цикл (НЕ фейлим сразу).
+                try:
+                    from geometric_engine.engine import GeometricEngine
+                    _engine = GeometricEngine()
+                    _engine.settings.semantic_colors = FIGURE_SEMANTIC_COLORS_ENABLED
+                    _engine.settings.auto_fit = FIGURE_AUTO_FIT_ENABLED
+                    _base_svg, _base_ctx, _, _base_violations = _engine.build_with_retry(plan)
+                except Exception as _be:
+                    _base_svg = None
+                    _base_violations = [f"ENGINE_EXCEPTION: {_be}"]
+                if _base_svg:
+                    base_plan = plan
+                    base_svg = _base_svg
+                    base_ctx = _base_ctx
+                    job.base_model = model
+                    job.base_plan_json = _fmt_plan_json(plan)
+                    db.session.commit()
+                    _record_stage(
+                        job_id, "base_thinking", role=role,
+                        provider=resp.get("provider"), model=model,
+                        attempt=attempt + 1,
+                        input_tokens=(resp.get("usage") or {}).get("prompt_tokens"),
+                        output_tokens=(resp.get("usage") or {}).get("completion_tokens"),
+                        validation_passed=True,
+                        estimated_cost_usd=resp.get("cost_usd"),
+                    )
+                    break
+                else:
+                    # Геометрия не сошлась — repair с конкретным feedback.
+                    base_errors = [f"ENGINE: {v}" for v in (_base_violations or [])][:5]
+                    base_history.append({"attempt": attempt, "codes": [_base_violations[:5] if _base_violations else []]})
         else:
             base_errors = base_validation.get(
                 "errors", ["Неизвестная ошибка валидации base-плана"]
@@ -2230,7 +2252,13 @@ def _run_condition_solution_job(job_id: int, job) -> None:
             if sig == prev_base_sig:
                 base_loop = True
             prev_base_sig = sig
-            base_repair_feedback = _concrete_base_feedback(base_errors)
+            # Для ENGINE-ошибок (геометрия не сошлась) — отдельный feedback.
+            _engine_errs = [e for e in base_errors if e.startswith("ENGINE:")]
+            if _engine_errs:
+                _raw_viols = [e.split("ENGINE:", 1)[-1] for e in _engine_errs]
+                base_repair_feedback = _concrete_engine_feedback(_raw_viols)
+            else:
+                base_repair_feedback = _concrete_base_feedback(base_errors)
 
         if attempt >= MAX_RETRIES + MAX_BASE_REPAIRS:
             job.audit_json = _fmt_plan_json({"base_history": base_history})
@@ -2249,40 +2277,20 @@ def _run_condition_solution_job(job_id: int, job) -> None:
         _fail_job(job, "Не удалось построить base-план.")
         return
 
-    # ── Stage: base_drawing ──
+    # ── Stage: base_drawing (SVG уже построен движком внутри repair-цикла) ──
     _set_stage(job, "base_drawing")
+    if not base_svg:
+        _fail_job(job, "Не удалось построить base-чертёж.")
+        return
+
     try:
         from geometric_engine.engine import GeometricEngine
         engine = GeometricEngine()
         engine.settings.semantic_colors = FIGURE_SEMANTIC_COLORS_ENABLED
-        # CH19 DEFECT 3: auto-fit по умолчанию для condition_solution
-        # (только масштаб и сдвиг, без изменения относительной геометрии).
         engine.settings.auto_fit = FIGURE_AUTO_FIT_ENABLED
-        base_svg, base_ctx, _, base_violations = engine.build_with_retry(base_plan)
-        if not base_svg:
-            # CH21 PART 2: HARD-отказ движка — предметный feedback и repair.
-            base_repair_feedback = _concrete_engine_feedback(base_violations)
-            base_history.append({"attempt": "engine", "codes": base_violations[:5]})
-            # Повторяем base_thinking с этим feedback (если остались попытки).
-            # Для простоты: это уже финальный failure, т.к. repair-цикл выше
-            # исчерпал попытки валидации; но фиксируем диагностику.
-            job.audit_json = _fmt_plan_json({
-                "engine_violations": base_violations,
-                "base_history": base_history,
-            })
-            db.session.commit()
-            _fail_job(
-                job,
-                f"Геометрические ограничения base-чертежа не выполнены: "
-                f"{base_violations[:3]}",
-            )
-            return
-    except ImportError:
-        _fail_job(job, "Движок построения недоступен.")
-        return
     except Exception as e:
-        logger.error("[figures_gen] base build error job %d: %s", job_id, e)
-        _fail_job(job, "Ошибка при построении base-чертежа.")
+        logger.error("[figures_gen] engine init error job %d: %s", job_id, e)
+        _fail_job(job, "Движок построения недоступен.")
         return
 
     job.svg_path = base_svg
