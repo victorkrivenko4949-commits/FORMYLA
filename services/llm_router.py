@@ -602,7 +602,7 @@ def call_llm(
     # Здесь подставляем fallback-цепочку DeepSeek для Gemini-ролей, чтобы
     # планировщик не умирал из-за сбоя одного провайдера.
     chain = build_provider_chain(logical_model, providers=providers)
-    if not chain and logical_model in ("gemini-3.7-flash", "claude-sonnet-4-6", "claude-sonnet-4-5"):
+    if not chain and logical_model in ("gemini-3.8-flash", "gemini-3.7-flash", "claude-sonnet-4-6", "claude-sonnet-4-5"):
         fallback_providers = tuple(p for p in ("deepseek_direct", "novita", "deepseek")
                                    if p not in providers)
         chain = build_provider_chain("deepseek-v4-pro", providers=fallback_providers)
@@ -834,7 +834,7 @@ def call_llm(
             # BATCH FIX: Gemini/Claude роли (base/aux/audit) на OdiRouter при 401
             # (FAILED_TO_AUTH) не имеют следующего провайдера в цепочке —
             # однократно переключаемся на DeepSeek, чтобы задача не падала.
-            if (logical_model in ("gemini-3.7-flash", "claude-sonnet-4-6", "claude-sonnet-4-5")
+            if (logical_model in ("gemini-3.8-flash", "gemini-3.7-flash", "claude-sonnet-4-6", "claude-sonnet-4-5")
                     and getattr(last_error, "code", "") == "LLM_AUTH_ERROR"):
                 fb_chain = build_provider_chain("deepseek-v4-pro",
                                                 providers=("deepseek_direct", "novita", "deepseek"))

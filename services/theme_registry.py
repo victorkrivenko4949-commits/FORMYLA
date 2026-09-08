@@ -45,23 +45,20 @@ def _load():
         logger.error("theme_registry: cannot load %s: %s", path, e)
         _THEME_TO_SECTION = {}
 
-    # Load human-readable theme titles from JSONL
+    # Load human-readable theme titles from a compact JSON (theme_id -> title).
+    # Раньше грузили из FORMYLA_L1_L5_TOP5.jsonl (17 МБ, не в git), из-за чего
+    # на проде названия тем падали в theme_id («G9_T05»). Теперь — маленький
+    # data/theme_titles.json (132 записи), закоммичен в git.
     _THEME_TO_TITLE.clear()
-    jsonl_path = os.path.join(os.path.dirname(__file__), '..', 'FORMYLA_L1_L5_TOP5.jsonl')
+    titles_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'theme_titles.json')
     try:
-        with open(jsonl_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                try:
-                    d = json.loads(line)
-                    tid = d.get('theme_id', '')
-                    title = d.get('theme', '')
-                    if tid and title and tid not in _THEME_TO_TITLE:
-                        _THEME_TO_TITLE[tid] = title
-                except json.JSONDecodeError:
-                    continue
-        logger.info("theme_registry: loaded %d theme->title mappings from JSONL", len(_THEME_TO_TITLE))
-    except FileNotFoundError:
-        logger.warning("theme_registry: JSONL file not found at %s, theme titles will fall back to theme_id", jsonl_path)
+        with open(titles_path, 'r', encoding='utf-8') as f:
+            _titles = json.load(f)
+        if isinstance(_titles, dict):
+            _THEME_TO_TITLE = {str(k): str(v) for k, v in _titles.items() if k and v}
+        logger.info("theme_registry: loaded %d theme->title mappings from theme_titles.json", len(_THEME_TO_TITLE))
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.warning("theme_registry: cannot load %s: %s — titles fall back to theme_id", titles_path, e)
 
     # Derive grade->theme mapping from theme_id prefixes (e.g. G5_T002_S0 -> grade 5)
     for tid in _THEME_TO_SECTION:

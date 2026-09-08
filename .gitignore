@@ -73,6 +73,7 @@ data/*
 !data/anchors.jsonl
 !data/anchors_solutions.json
 !data/theme_to_section.json
+!data/theme_titles.json
 !data/curator_faq.json
 !data/site_kb.json
 # Exception: adaptive bank seed (9120 калиброванных задач L1..L8).
