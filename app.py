@@ -10651,15 +10651,6 @@ def figures_vitrine():
     return render_template('admin/figures_vitrine.html', figures=figures, counts=counts)
 
 
-@app.route("/admin/figures/tasks")
-@login_required
-def figures_tasks_vitrine():
-    """Таблица задач с чертежами. Только для администраторов."""
-    if not current_user.is_admin:
-        abort(403)
-    return render_template('figures_tasks.html')
-
-
 @app.route("/admin/figures/rebuild/<anchor_uid>", methods=["POST"])
 @login_required
 def figures_rebuild(anchor_uid):
