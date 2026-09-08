@@ -77,14 +77,22 @@ def get_tasks(grade: int, topic: str, level: int,
             tasks.extend(extra)
             if len(tasks) >= count:
                 break
-    # De-duplicate by position
+    # De-duplicate by position И по тексту условия (в банке есть дубли
+    # одинаковых условий с разными position — «2 задачи в один»).
     seen = set()
+    seen_text = set()
     unique = []
     for t in sorted(tasks, key=lambda t: t.get('position', 0)):
         p = t.get('position', 0)
-        if p not in seen:
-            seen.add(p)
-            unique.append(t)
+        _txt = (t.get('task_text') or t.get('statement') or '').strip()
+        if p in seen:
+            continue
+        if _txt and _txt in seen_text:
+            continue
+        seen.add(p)
+        if _txt:
+            seen_text.add(_txt)
+        unique.append(t)
     return unique[:count]
 
 

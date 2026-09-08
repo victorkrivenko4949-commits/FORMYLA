@@ -103,14 +103,23 @@ def get_tasks(grade: int, topic: str, level: int,
             if len(tasks) >= count:
                 break
 
-    # Уникализируем по position
-    seen: Set[int] = set()
+    # Уникализируем по position И по тексту задачи (в банке есть дубли
+    # одинаковых условий с разными position — из-за этого в выдачу
+    # попадали «2 задачи в один»).
+    seen_pos: Set[int] = set()
+    seen_text: Set[str] = set()
     unique: List[Dict[str, Any]] = []
     for t in tasks:
         pos = t.get("position")
-        if pos is None or int(pos) in seen:
+        if pos is not None and int(pos) in seen_pos:
             continue
-        seen.add(int(pos))
+        _txt = (t.get("task_text") or t.get("statement") or "").strip()
+        if _txt and _txt in seen_text:
+            continue
+        if pos is not None:
+            seen_pos.add(int(pos))
+        if _txt:
+            seen_text.add(_txt)
         unique.append(t)
 
     if exclude_positions:
