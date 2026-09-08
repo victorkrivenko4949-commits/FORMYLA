@@ -78,17 +78,16 @@ PROVIDER_BASE_URLS = {
 }
 
 # Логические роли -> дефолтная логическая модель.
-# Для ролей со сложным структурным JSON (генерация геометрических планов)
-# используем gpt-5.6-sol через OdiRouter: flash-модель не справляется с
-# длинными промптами и отдаёт невалидный base-план.
-# Лёгкие роли (solver_shadow, insight_deep) оставляем на gemini-3.8-flash.
+# gemini-3.8-flash через OdiRouter стабильно отвечает и на ДЛИННЫХ промптах
+# (base-план 12K символов -> HTTP 200 за ~15s, валидный JSON). gpt-5.6-sol
+# на длинном промпте падает (RemoteDisconnected/504), gpt-5.4 — 429.
 ROLE_DEFAULT_MODEL = {
-    "base": "gpt-5.6-sol",
-    "aux": "gpt-5.6-sol",
-    "audit": "gpt-5.6-sol",
-    "repair": "gpt-5.6-sol",
-    "legacy_reasoner": "gpt-5.6-sol",
-    "solver": "gpt-5.6-sol",
+    "base": "gemini-3.8-flash",
+    "aux": "gemini-3.8-flash",
+    "audit": "gemini-3.8-flash",
+    "repair": "gemini-3.8-flash",
+    "legacy_reasoner": "gemini-3.8-flash",
+    "solver": "gemini-3.8-flash",
     "solver_shadow": "gemini-3.8-flash",
     "insight_deep": "gemini-3.8-flash",
 }
