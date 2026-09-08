@@ -395,6 +395,10 @@ def _repair_figure_json(figure_data) -> dict:
             c["type"] = "angle_label"
         elif ctype == "segment_mark":
             c["type"] = "equal_segments_mark"
+        # gpt-5.6-sol выдаёт простую точку как type="point" (id + x + y),
+        # а движок ожидает free_point.
+        elif ctype == "point":
+            c["type"] = "free_point"
 
         # Авто-id для объектов без id.
         if not c.get("id"):
