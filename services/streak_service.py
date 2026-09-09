@@ -132,3 +132,29 @@ def set_is_fully_answered(daily_set_id: int) -> bool:
     if not items:
         return False
     return all(it.user_answer is not None for it in items)
+
+
+def check_and_reset_streaks(today: Optional[date] = None) -> int:
+    """Полночная cron-задача: сбросить «протухшие» streak всем пользователям.
+
+    Если у пользователя есть last_solved_date и с тех пор прошло больше
+    одного дня (без взятых выходных), current_streak обнуляется.
+    Вызывается планировщиком в 00:00 MSK.
+
+    Возвращает число сброшенных streak.
+    """
+    today = today or date.today()
+    records = StreakRecord.query.all()
+    reset_count = 0
+    for rec in records:
+        if rec.last_solved_date is None:
+            continue
+        gap = (today - rec.last_solved_date).days
+        # Пропуск > 1 дня без day-off — streak сломан.
+        if gap > 1:
+            rec.current_streak = 0
+            rec.days_off_available = 0
+            reset_count += 1
+    if reset_count:
+        db.session.flush()
+    return reset_count
