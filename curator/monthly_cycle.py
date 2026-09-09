@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 # ─── Constants ──────────────────────────────────────────────────────────
 
-ACTIVE_DAYS = 7           # days with morning probes (legacy)
+ACTIVE_DAYS = 7           # первые 7 дней: по тесту (срезу) на каждую из 7 тем
 MONTH_DAYS = 31           # виртуальный месяц: всегда 31 день
-THEME_DAYS = 4            # одна тема идёт 4 дня (7 тем × 4 = 28 дней)
+THEME_DAYS = 1            # одна тема идёт 1 день (7 тем × 1 = 7 дней тестов)
 REVIEW_DAYS = 3           # дни 29..31 — повтор 3 худших тем месяца
 CANONICAL_SECTIONS = ('algebra', 'geometry', 'combinatorics', 'logic', 'number_theory')
 
@@ -568,23 +568,17 @@ def get_cycle_info(user_id: int) -> Dict[str, Any]:
     finished = False
 
     n = len(themes)
-    # ── Финальный месяц: тем < 7 → круглое чередование весь месяц ──
-    if n < 7:
-        ordered = _order_themes_worst_first(user_id, themes)
-        current_theme = ordered[(day_idx - 1) % n] if ordered else None
+    if n == 0:
+        current_theme = None
         blocked = False
     else:
-        # Дни 1..28 — 7 тем по 4 дня.
-        if day_idx <= 7 * THEME_DAYS:
-            theme_pos = (day_idx - 1) // THEME_DAYS
-            current_theme = themes[theme_pos] if theme_pos < len(themes) else None
-            blocked = bool(current_theme and current_theme not in done)
-        else:
-            # Дни 29..31 — повтор 3 худших тем месяца.
-            worst = _worst_themes(user_id, themes, k=REVIEW_DAYS)
-            k_idx = day_idx - 7 * THEME_DAYS - 1  # 0..2
-            current_theme = worst[k_idx] if 0 <= k_idx < len(worst) else None
-            blocked = False  # повторы — только задачи дня, без нового среза
+        # Круговая схема: каждый день новая тема по кругу.
+        # Дни 1..7 — тест (утренний срез) по каждой из 7 тем, задача дня
+        # блокируется до прохождения среза. Дни 8+ — задачи дня по кругу
+        # без блокировки.
+        current_theme = themes[(day_idx - 1) % n]
+        in_first_week = day_idx <= ACTIVE_DAYS
+        blocked = bool(in_first_week and current_theme not in done)
 
     return {
         'active': True,
@@ -617,10 +611,11 @@ def advance_day(user_id: int) -> Dict[str, Any]:
     if day_idx > MONTH_DAYS:
         return {'error': 'cycle_already_done'}
 
-    # Только для месяца с 7 темами и только в дни 1..28.
-    if len(themes) == 7 and day_idx <= 7 * THEME_DAYS:
-        theme_pos = (day_idx - 1) // THEME_DAYS
-        current_theme = themes[theme_pos] if theme_pos < len(themes) else None
+    # Отмечаем тему текущего дня пройденной только в первую неделю (дни 1..7),
+    # когда идёт утренний срез. После среза тема уходит в done, и задачи дня
+    # разблокируются.
+    if len(themes) > 0 and day_idx <= ACTIVE_DAYS:
+        current_theme = themes[(day_idx - 1) % len(themes)]
         if current_theme and current_theme not in done:
             done.append(current_theme)
 
