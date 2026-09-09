@@ -1080,3 +1080,8 @@
         max-width: 100% !important;
     }
 }
+
+/* Скрыть глобальную кнопку «Назад» на мобильных (снизу слева) */
+@media (max-width: 768px) {
+    #globalBackBtn { display: none !important; }
+}
