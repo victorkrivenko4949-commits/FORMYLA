@@ -279,20 +279,10 @@ def start(user_id: int) -> Dict[str, Any]:
         'current_anchor_idx': 0,
     }
 
-    if grade_from_profile is not None:
-        state['answers']['class'] = str(grade_from_profile)
-        state['step'] = 'q2'
-        state['q_index'] = 2
-        _save_session_state(state)
-        return {
-            'done': False,
-            'question': _format_question(Q2_GOAL),
-            'step': 'q2',
-            'q_index': 2,
-            'total_questions': 5,
-            'grade_auto': grade_from_profile,
-        }
-
+    # Анкета ВСЕГДА начинается с Q1 (класс), даже если класс уже известен из
+    # профиля — иначе пользователь видит «сразу второй вопрос», что выглядит
+    # как баг. Профильный класс используем как предзаполнение, но вопрос всё
+    # равно показываем для подтверждения.
     _save_session_state(state)
     return {
         'done': False,
