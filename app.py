@@ -53,7 +53,10 @@ import threading
 
 # Load environment variables
 from dotenv import load_dotenv
-load_dotenv()
+# override=True: значения из .env ДОЛЖНЫ перекрывать системные переменные
+# окружения (иначе устаревшие ключи в Windows env — например старый
+# DEEPSEEK_API_KEY — перекрывают актуальный ключ из .env и AI падает с 401).
+load_dotenv(override=True)
 
 # Import prefetch system
 from simple_prefetch import get_cached_task, add_task_to_cache, clear_cache, get_cache_size
