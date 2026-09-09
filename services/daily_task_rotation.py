@@ -522,11 +522,19 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
             from curator.monthly_cycle import get_cycle_info
             cycle = get_cycle_info(user_id)
             current_theme = cycle.get('current_theme') if cycle.get('active') else None
-            # Уровень ученика по разделу текущей подтемы (mu из level_engine)
-            from services.level_engine import get_state as _get_state
+            # Уровень ученика ПО ТЕКУЩЕЙ ТЕМЕ (mu из level_by_theme).
+            # Приоритет: level_by_theme[current_theme].mu -> глобальный mu -> 3.
+            from services.level_engine import get_level_by_theme as _get_lbt, \
+                get_state as _get_state
             _st = _get_state(user_id)
-            _mu = int(round(float(_st.get('mu', 3.0))))
-            _bank_level = max(1, min(4, _mu))
+            _global_mu = float(_st.get('mu', 3.0))
+            _lbt = _get_lbt(user_id) or {}
+            _theme_entry = _lbt.get(current_theme) if current_theme else None
+            if isinstance(_theme_entry, dict) and _theme_entry.get('mu') is not None:
+                _theme_mu = float(_theme_entry.get('mu'))
+            else:
+                _theme_mu = _global_mu
+            _bank_level = max(1, min(4, int(round(_theme_mu))))
             # topic: банк FORMYLA_BANK.jsonl индексирован по ЧЕЛОВЕЧЕСКОМУ
             # названию темы (например «Многочлены и алгебраические тождества»),
             # а cycle.current_theme — theme_id slug (G9_T05). Переводим slug в
@@ -575,6 +583,25 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
                     return {'tasks': [{'task_id': t.get('position', i), 'task_text': t.get('task_text', ''), 'correct_answer': t.get('correct_answer', ''), 'solution': t.get('solution', ''), 'subject': 'math', 'topic': t.get('topic', current_theme), 'difficulty_level': int(t.get('level', _bank_level))} for i, t in enumerate(tasks[:count])], 'subject': 'math', 'shown_date': today.isoformat(), 'count': len(tasks[:count])}
     except Exception as _fb_err:
         logger.warning("daily_rotation: formyla_bank failed: %s", _fb_err)
+
+    # ═══════════════════════════════════════════════════════════════
+    # ВАЖНО: fallback на jsonl_bank и task_bank УБРАН намеренно.
+    # Раньше при нехватке задач в formyla_bank по теме дня они выдавали
+    # задачи ЧУЖОЙ темы (или «шаблонные» по номеру дня), из-за чего
+    # «Задачи дня» не совпадали с темой месячного цикла. Теперь, если по
+    # теме дня нет задач — честно возвращаем пустой набор (без подмены).
+    # ═══════════════════════════════════════════════════════════════
+    logger.warning(
+        "daily_rotation: formyla_bank has no tasks for user=%d grade=%d — "
+        "returning empty set (no cross-topic fallback)",
+        user_id, grade,
+    )
+    return {
+        'tasks': [],
+        'subject': 'math',
+        'shown_date': today.isoformat(),
+        'count': 0,
+    }
 
     # ═══════════════════════════════════════════════════════════════
     # ШАГ 0б — JSONL-банк: (grade, topic, week_level) [старый источник]
