@@ -34,13 +34,16 @@ logger = logging.getLogger(__name__)
 # Порог глубины рассуждения. Подбирается по факту (раздел 6 ТЗ); env-переменная
 # позволяет откалибровать без деплоя кода.
 AI_INSIGHT_MIN_REASONING_TOKENS = int(
-    os.environ.get("AI_INSIGHT_MIN_REASONING_TOKENS", "300") or "300"
+    os.environ.get("AI_INSIGHT_MIN_REASONING_TOKENS", "0") or "0"
 )
 
-# Логическая модель для глубокого разбора (reasoning-модель).
-INSIGHT_DEEP_MODEL = os.environ.get("INSIGHT_DEEP_MODEL", "deepseek-v4-pro")
+# Логическая модель для глубокого разбора.  Раньше deepseek-v4-pro через
+# OdiRouter не отдавал reasoning_tokens (OpenAI-compatible API), из-за чего
+# глубокий разбор падал с reasoning_short.  kimi-k3 стабильно отвечает через
+# OdiRouter и не требует reasoning-канала.
+INSIGHT_DEEP_MODEL = os.environ.get("INSIGHT_DEEP_MODEL", "kimi-k3")
 # Логическая модель для дешёвых вызовов.
-INSIGHT_LOW_MODEL = os.environ.get("INSIGHT_LOW_MODEL", "gemini-3.7-flash")
+INSIGHT_LOW_MODEL = os.environ.get("INSIGHT_LOW_MODEL", "gemini-3.8-flash")
 
 
 class InsightLlmError(Exception):
@@ -86,9 +89,10 @@ class InsightLlmClient:
         if effort == "max":
             model = INSIGHT_DEEP_MODEL
             max_tokens = self._deep_max_tokens
-            # Роль insight_deep -> строго прямой DeepSeek API (deepseek_direct).
+            # Роль insight_deep идёт через OdiRouter (kimi-k3). thinking
+            # отключаем, чтобы не получить 504 на длинном промпте.
             role = "insight_deep"
-            thinking_mode = "enabled"
+            thinking_mode = "disabled"
         else:
             model = INSIGHT_LOW_MODEL
             max_tokens = self._low_max_tokens

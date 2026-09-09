@@ -91,7 +91,7 @@ ROLE_DEFAULT_MODEL = {
     "legacy_reasoner": "kimi-k3",
     "solver": "kimi-k3",
     "solver_shadow": "gemini-3.8-flash",
-    "insight_deep": "gemini-3.8-flash",
+    "insight_deep": "kimi-k3",
 }
 
 # Env-переменные, переопределяющие дефолт для роли (в порядке приоритета).
@@ -144,8 +144,8 @@ ROLE_DEFAULT_THINKING = {
     "legacy_reasoner": "disabled",
     "solver": "disabled",
     "solver_shadow": "disabled",
-    # Банк неточностей: deep-разбор с включённым reasoning-каналом.
-    "insight_deep": "enabled",
+    # Банк неточностей: kimi-k3 через OdiRouter (без reasoning-канала).
+    "insight_deep": "disabled",
 }
 
 ROLE_THINKING_ENV = {
