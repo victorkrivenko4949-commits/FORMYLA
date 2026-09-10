@@ -1600,7 +1600,15 @@ def morning_probe():
         return redirect('/daily_tasks')
 
     theme_title = subtopic_title(current_theme)
-    section = section_of_theme(current_theme) or ''
+    _section_slug = section_of_theme(current_theme) or ''
+    # Русское название раздела для шапки среза (иначе показывается сырой slug).
+    section = {
+        'algebra': 'Алгебра',
+        'geometry': 'Геометрия',
+        'combinatorics': 'Комбинаторика',
+        'logic': 'Логика и методы',
+        'number_theory': 'Теория чисел',
+    }.get(_section_slug, _section_slug)
 
     # 2. Check for existing active probe
     probe_active = has_active_probe(user_id)
@@ -1755,6 +1763,28 @@ def morning_probe():
         # положительный id → обычная AdaptiveTask.
         last_seen_id = seen_ids[-1]
         resolved = _resolve_probe_task(last_seen_id)
+        if resolved is not None and int(last_seen_id) > 0:
+            # LEGACY-GUARD: положительный id — задача AdaptiveTask, которая
+            # могла попасть в срез старым кодом без фильтра темы (например,
+            # геометрия внутри среза по комбинаторике). Чужую задачу
+            # выбрасываем из seen — ниже сработает start_probe, который
+            # подберёт новую задачу строго из банка среза.
+            from services.theme_probe import (
+                task_matches_theme as _tmt,
+                _save_probe_state as _sps,
+            )
+            if not _tmt(getattr(resolved, 'topic', '') or '', current_theme):
+                current_app.logger.warning(
+                    'prep/probe: off-theme AdaptiveTask #%s (topic=%r) for '
+                    'theme=%s — dropping from probe state',
+                    last_seen_id, getattr(resolved, 'topic', None),
+                    current_theme,
+                )
+                probe['seen_task_ids'] = list(seen_ids[:-1])
+                _sps(cs, probe)
+                db.session.commit()
+                resolved = None
+                current_task = None
         if resolved is not None:
             current_task = {
                 'id': resolved.id,
