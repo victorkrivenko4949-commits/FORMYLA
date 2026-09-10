@@ -159,6 +159,31 @@ def get_active_probe_theme(user_id: int) -> Optional[str]:
     return None
 
 
+def task_matches_theme(task_topic: str, theme_id: str) -> bool:
+    """Проверить, что задача относится к теме среза (по её полю topic).
+
+    Положительные id в seen_task_ids — задачи AdaptiveTask, которые старый
+    код подбирал БЕЗ фильтра темы (cross-topic fallback, удалён в 429d1f06).
+    Считаем задачу соответствующей теме, если её topic совпадает с theme_id
+    или с человеческим названием темы из theme_registry. Пустой/незнакомый
+    topic трактуем как несоответствие: такая задача заменяется строгой
+    выборкой из FORMYLA_SREZ.jsonl.
+    """
+    topic = (task_topic or '').strip().lower()
+    if not topic or not theme_id:
+        return False
+    if topic == theme_id.strip().lower():
+        return True
+    try:
+        from services.theme_registry import theme_title as _theme_title
+        title = (_theme_title(theme_id) or '').strip().lower()
+        if title and topic == title:
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def cancel_probe(user_id: int) -> None:
     """Сбросить активный срез (например, если он относится к прошлой теме цикла)."""
     cs = CuratorState.query.filter_by(user_id=user_id).first()
@@ -305,6 +330,23 @@ def _current_task_state(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
     task = db.session.get(AdaptiveTask, last_task_id)
     if not task:
         # Task deleted — select new one
+        return _select_and_advance(cs, probe, grade)
+
+    # LEGACY-GUARD: положительный id — задача AdaptiveTask, подобранная ещё
+    # до удаления cross-topic fallback. Такая задача может не относиться к
+    # теме среза (например, геометрия внутри среза по комбинаторике) и при
+    # этом бесконечно показываться из сохранённого состояния среза.
+    # Проверяем соответствие теме; чужую задачу выбрасываем из seen и
+    # выбираем новую строго из банка среза.
+    if not task_matches_theme(getattr(task, 'topic', '') or '', theme_id):
+        logger.warning(
+            "theme_probe: off-theme AdaptiveTask #%s (topic=%r) in probe "
+            "theme=%s — replacing via strict bank selection",
+            last_task_id, getattr(task, 'topic', None), theme_id,
+        )
+        probe['seen_task_ids'] = seen_ids[:-1]
+        _save_probe_state(cs, probe)
+        db.session.commit()
         return _select_and_advance(cs, probe, grade)
 
     return {
