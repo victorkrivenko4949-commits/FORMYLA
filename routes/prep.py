@@ -2052,17 +2052,26 @@ def _prep_answer_impl():
     )
 
     # Save SolutionAttempt
-    attempt = SolutionAttempt(
-        user_id=current_user.id,
-        task_id=int(task_id),
-        probe_id=result.get('probe_id'),
-        attempt_type=solution_method,
-        solution_text=solution_text if solution_method == 'text' else None,
-        file_path=file_path_rel if solution_method == 'photo' else None,
-        file_size=file_size if solution_method == 'photo' else None,
-    )
-    db.session.add(attempt)
-    db.session.commit()
+    # ВАЖНО: для задач среза task_id — отрицательный pseudo-id, которого нет
+    # в adaptive_tasks. FK на Postgres ронял весь запрос (500 → фронт показывал
+    # «Неверно» без разбора). Сбой записи попытки не должен ломать ответ.
+    attempt = None
+    try:
+        attempt = SolutionAttempt(
+            user_id=current_user.id,
+            task_id=int(task_id),
+            probe_id=result.get('probe_id'),
+            attempt_type=solution_method,
+            solution_text=solution_text if solution_method == 'text' else None,
+            file_path=file_path_rel if solution_method == 'photo' else None,
+            file_size=file_size if solution_method == 'photo' else None,
+        )
+        db.session.add(attempt)
+        db.session.commit()
+    except Exception as _e_attempt:
+        db.session.rollback()
+        attempt = None
+        current_app.logger.warning('SolutionAttempt save skipped: %s', _e_attempt)
 
     # «Банк неточностей»: ставим решение в очередь на скрининг (фоновый анализ).
     try:
@@ -2081,8 +2090,8 @@ def _prep_answer_impl():
             topic=_task_topic,
             difficulty_level=_task_level,
             source="srez",
-            source_task_id=attempt.id,
-            source_attempt_id=attempt.id,
+            source_task_id=(attempt.id if attempt is not None else None),
+            source_attempt_id=(attempt.id if attempt is not None else None),
         )
     except Exception:
         pass  # анализ неточностей никогда не должен ронять основной поток
@@ -2090,8 +2099,9 @@ def _prep_answer_impl():
     # CH10: Kimi review
     kimi_result = None
     try:
-        from services.kimi_review import review_solution as _kimi_review
-        kimi_result = _kimi_review(attempt_id=attempt.id, surface='probe')
+        if attempt is not None:
+            from services.kimi_review import review_solution as _kimi_review
+            kimi_result = _kimi_review(attempt_id=attempt.id, surface='probe')
     except Exception:
         pass  # Kimi failure must never block the main flow
 
