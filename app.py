@@ -1599,6 +1599,59 @@ try:
 except Exception as _e_logos:
     print(f"[OLYMP-LOGOS] hook skipped: {_e_logos}")
 
+# ── Olympiad prep stage dates (idempotent) ──────────────────────────────────
+# Проставляет уточнённые даты этапов сезона 2025/26 там, где стояло
+# «Уточняется» (и точную дату финала «Курчатова» вместо «Весна 2026»).
+# Идемпотентно: как только дата задана, больше не трогает запись.
+try:
+    import json as _json_dates
+    with app.app_context():
+        from models import OlympiadPrep as _OlympiadPrepDates
+        _date_fixes = {
+            "kurchatov": {
+                "Отборочный этап": "2 – 16 февраля 2026",
+                "Заключительный этап": "14 марта 2026 (математика)",
+            },
+            "otkrytaya": {
+                "Заключительный этап": "14 – 20 апреля 2026 (математика)",
+            },
+            "vsesibirskaya": {
+                "Отборочный этап": "19 октября 2025 (математика)",
+            },
+            "nadezhda-energetiki": {
+                "Отборочный этап": "Ноябрь 2025 (математика — 16 и 29 ноября)",
+            },
+            "rosatom": {
+                "Отборочный этап": "16 ноября 2025 (очно, математика)",
+            },
+            "plekhanovskaya": {
+                "Отборочный этап": "21 ноября 2025 – 24 января 2026 (онлайн)",
+            },
+        }
+        _dates_updated = 0
+        for _slug, _fixes in _date_fixes.items():
+            _row = _OlympiadPrepDates.query.filter_by(slug=_slug).first()
+            if _row is None or not _row.stages:
+                continue
+            try:
+                _stages = _json_dates.loads(_row.stages)
+            except Exception:
+                continue
+            _changed = False
+            for _st in _stages:
+                _want = _fixes.get((_st or {}).get('name'))
+                if _want and _st.get('date_range') in ('Уточняется', 'Весна 2026'):
+                    _st['date_range'] = _want
+                    _changed = True
+            if _changed:
+                _row.stages = _json_dates.dumps(_stages, ensure_ascii=False)
+                _dates_updated += 1
+        if _dates_updated:
+            db.session.commit()
+        print(f"[OLYMP-DATES] updated={_dates_updated}")
+except Exception as _e_dates:
+    print(f"[OLYMP-DATES] hook skipped: {_e_dates}")
+
 # ── Olympiad prep catalog seed (idempotent, без env-гейта) ───────────────────
 # Засевает olympiad_prep дефолтным набором олимпиад России, если таблица
 # пуста. Безопасно: ничего не пересоздаёт, если уже есть хотя бы одна запись.
