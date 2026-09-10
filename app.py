@@ -96,6 +96,8 @@ else:
 
 
 app = Flask(__name__)
+# Иначе /page и /page/ — разные URL и один из них даёт 404
+app.url_map.strict_slashes = False
 
 # ─── Security: CSRF, CSP, Rate Limiting, Input Validation ──────────
 from services.security import init_security, sanitize_text, sanitize_json_payload, get_csrf_token
@@ -1576,16 +1578,14 @@ try:
     with app.app_context():
         from models import OlympiadPrep as _OlympiadPrepLogos
         _logo_map = {
-            "fiztekh": "/static/olympiads/fiztekh.svg",
-            "kurchatov": "/static/olympiads/kurchatov.svg",
-            "shag-v-budushchee": "/static/olympiads/shag-v-budushchee.svg",
-            "otkrytaya": "/static/olympiads/otkrytaya.svg",
-            "vsesibirskaya": "/static/olympiads/vsesibirskaya.svg",
-            "itmo": "/static/olympiads/itmo.svg",
-            "nadezhda-energetiki": "/static/olympiads/nadezhda-energetiki.svg",
-            "rosatom": "/static/olympiads/rosatom.svg",
-            "inzhenernaya": "/static/olympiads/inzhenernaya.svg",
-            "plekhanovskaya": "/static/olympiads/plekhanovskaya.svg",
+            "vsosh": "/static/olympiads/vsosh.svg",
+            "turnir-gorodov": "/static/olympiads/turnir-gorodov.svg",
+            "euler": "/static/olympiads/euler.svg",
+            "lomonosov": "/static/olympiads/lomonosov.svg",
+            "vysshaya-proba": "/static/olympiads/vysshaya-proba.svg",
+            "matprazdnik": "/static/olympiads/matprazdnik.svg",
+            "mmo": "/static/olympiads/mmo.svg",
+            "pokori-vorobievy-gory": "/static/olympiads/pokori-vorobievy-gory.svg",
         }
         _logos_updated = 0
         for _slug, _path in _logo_map.items():
