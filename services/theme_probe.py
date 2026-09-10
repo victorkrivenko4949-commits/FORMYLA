@@ -394,76 +394,13 @@ def _select_and_advance(cs: CuratorState, probe: Dict[str, Any], grade: int) -> 
             },
         }
 
-    # Determine section from theme_id for fallback
-    section = None
-    try:
-        from services.theme_registry import section_of_theme
-        section = section_of_theme(theme_id)
-    except Exception:
-        pass
-
-    # Stage 1: Try exact grade + level ladder (same as before, but with NULL-safe filter)
-    for offset in [0, -1, 1, -2, 2]:
-        level = max(1, min(4, current_level + offset))
-        candidate = (
-            AdaptiveTask.query
-            .filter_by(class_level=grade, difficulty_level=level)
-            .filter(_not_flagged())
-            .filter(_not_anchor())
-            .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
-            .order_by(db.func.random())
-            .first()
-        )
-        if candidate:
-            task = candidate
-            break
-
-    # Stage 2: Same grade, any level
-    if not task:
-        candidate = (
-            AdaptiveTask.query
-            .filter_by(class_level=grade)
-            .filter(_not_flagged())
-            .filter(_not_anchor())
-            .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
-            .order_by(db.func.random())
-            .first()
-        )
-        if candidate:
-            task = candidate
-
-    # Stage 3: Same section, nearby grades, any level
-    if not task and section:
-        # Try grades near the student's grade
-        for g in [grade - 1, grade + 1, grade - 2, grade + 2, grade - 3, grade + 3]:
-            if g < 5 or g > 11:
-                continue
-            candidate = (
-                AdaptiveTask.query
-                .filter_by(class_level=g)
-                .filter(_not_flagged())
-                .filter(_not_anchor())
-                .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
-                .order_by(db.func.random())
-                .first()
-            )
-            if candidate:
-                task = candidate
-                break
-
-    # Stage 4: Any non-flagged, non-anchor task
-    if not task:
-        task = (
-            AdaptiveTask.query
-            .filter(_not_flagged())
-            .filter(_not_anchor())
-            .filter(~AdaptiveTask.id.in_(seen_ids) if seen_ids else True)
-            .order_by(db.func.random())
-            .first()
-        )
-
-    if not task:
-        return {'error': 'no_tasks', 'theme_id': theme_id, 'current_index': idx}
+    # ВАЖНО: fallback на AdaptiveTask УБРАН намеренно. Раньше при нехватке
+    # задач в FORMYLA_SREZ.jsonl по теме дня срез подставлял случайную
+    # задачу ИЗ ДРУГОЙ ТЕМЫ (по классу/уровню без фильтра темы) — из-за
+    # этого «Комбинаторный подсчёт» показывал геометрическую задачу.
+    # Теперь, если задач по теме среза нет — честно завершаем срез
+    # (или возвращаем ошибку no_tasks), не подмешивая чужую тему.
+    return {'error': 'no_tasks', 'theme_id': theme_id, 'current_index': idx}
 
     # Save seen task IDs to probe state
     probe['seen_task_ids'] = list(seen_ids) + [task.id]
