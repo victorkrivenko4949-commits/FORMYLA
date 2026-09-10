@@ -7150,7 +7150,7 @@ def api_free_mock_evaluate():
             percentage = (stats['correct'] / stats['total']) * 100 if stats['total'] > 0 else 0
             if percentage >= 70:
                 strong_topics.append(topic)
-elif percentage < 50:
+            elif percentage < 50:
                 weak_topics.append(topic)
         
         # Формируем фидбек
