@@ -3,12 +3,12 @@
 Blueprint: Подготовка к олимпиадам (olympiad_prep)
 
 Endpoints:
-  GET /olympiad-prep              — список всех олимпиад (карточки)
+  GET /olympiad-prep              — редирект на календарь (каталог упразднён)
   GET /olympiad-prep/calendar     — календарь олимпиад (заглушка)
   GET /olympiad-prep/<slug>       — страница конкретной олимпиады
 """
 
-from flask import Blueprint, render_template, abort
+from flask import Blueprint, render_template, abort, redirect, url_for
 from flask_login import current_user
 
 from models import OlympiadPrep, PrepPlan
@@ -22,15 +22,8 @@ olympiad_prep_bp = Blueprint(
 
 @olympiad_prep_bp.route('/olympiad-prep')
 def index():
-    """Главная страница — сетка карточек всех активных олимпиад."""
-    olympiads = (
-        OlympiadPrep.query
-        .filter_by(is_active=True)
-        .order_by(OlympiadPrep.sort_order)
-        .all()
-    )
-    print(f"[olympiad_prep] index: found {len(olympiads)} active olympiads")
-    return render_template('olympiad_prep/index.html', olympiads=olympiads)
+    """Страница-каталог упразднена: отправляем в календарь олимпиад."""
+    return redirect(url_for('olympiad_prep.calendar'), code=302)
 
 
 @olympiad_prep_bp.route('/olympiad-prep/calendar')
