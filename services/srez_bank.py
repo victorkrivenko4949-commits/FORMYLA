@@ -31,9 +31,27 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 logger = logging.getLogger(__name__)
 
 _BANK_PATH: Path = Path(__file__).resolve().parents[1] / "FORMYLA_SREZ.jsonl"
+# Запасной источник: банк в zip-архиве. Сам FORMYLA_SREZ.jsonl лежит в
+# .gitignore (*.jsonl), а файловая система Render эфемерна и чистится при
+# каждом деплое — поэтому на продакшене доступен именно закоммиченный архив.
+_BANK_ZIP: Path = Path(__file__).resolve().parents[1] / "FORMYLA_SREZ_банк_среза.zip"
 
 _index: Dict[Tuple[int, str, int], List[Dict[str, Any]]] = {}
 _loaded: bool = False
+
+
+def _read_bank_lines() -> List[str]:
+    """Прочитать строки банка: из FORMYLA_SREZ.jsonl, а при его отсутствии —
+    из закоммиченного архива FORMYLA_SREZ_банк_среза.zip."""
+    if _BANK_PATH.exists():
+        with open(_BANK_PATH, "r", encoding="utf-8") as f:
+            return f.read().splitlines()
+    if _BANK_ZIP.exists():
+        import zipfile
+        with zipfile.ZipFile(_BANK_ZIP) as zf:
+            with zf.open("FORMYLA_SREZ.jsonl") as zobj:
+                return zobj.read().decode("utf-8").splitlines()
+    return []
 
 
 def load() -> None:
@@ -42,27 +60,27 @@ def load() -> None:
     if _loaded:
         return
     _index = {}
-    if not _BANK_PATH.exists():
-        logger.warning("srez_bank: %s not found", _BANK_PATH)
+    lines = _read_bank_lines()
+    if not lines:
+        logger.warning("srez_bank: bank not found (%s or %s)", _BANK_PATH, _BANK_ZIP)
         _loaded = True
         return
 
-    with open(_BANK_PATH, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                d = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            grade = d.get("grade")
-            theme_id = (d.get("theme_id") or "").strip()
-            level = d.get("level")
-            if grade is None or not theme_id or level is None:
-                continue
-            key = (int(grade), theme_id, int(level))
-            _index.setdefault(key, []).append(d)
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            d = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        grade = d.get("grade")
+        theme_id = (d.get("theme_id") or "").strip()
+        level = d.get("level")
+        if grade is None or not theme_id or level is None:
+            continue
+        key = (int(grade), theme_id, int(level))
+        _index.setdefault(key, []).append(d)
 
     total = sum(len(v) for v in _index.values())
     logger.info("srez_bank: loaded %d tasks for %d keys", total, len(_index))
