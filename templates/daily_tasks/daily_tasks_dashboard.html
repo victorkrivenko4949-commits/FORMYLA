@@ -1261,7 +1261,7 @@
   // ── Task cards rendering ────────────────────────────────
   function escapeHtml(s) {
     s = (s == null ? '' : String(s));
-    return s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   function renderTasks() {
@@ -1746,7 +1746,7 @@ function toggleYearlyCal() {
 
 function escapeHtmlPreserveLatex(s) {
   s = (s == null ? '' : String(s));
-  s = s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   return s;
 }
 </script>
