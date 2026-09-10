@@ -287,8 +287,9 @@
         </div>
     </header>
 
-    <!-- Баннер «Вернуться в срез» (если есть незавершённый утренний срез) -->
-    {% if has_active_probe %}
+    <!-- Баннер «Вернуться в срез» (если есть незавершённый утренний срез).
+         На самой странице среза (/prep/probe) не показываем — пользователь и так в нём. -->
+    {% if has_active_probe and request.path != '/prep/probe' %}
     <div id="probeResumeBanner" style="display:flex;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #a78bfa;border-radius:8px;padding:12px 20px;margin:8px auto;max-width:900px;align-items:center;justify-content:space-between;gap:12px;">
         <span style="color:#e2e8f0;font-size:0.95em;">У вас есть незавершённый срез. <span style="color:#a78bfa;font-weight:600;">Вернуться в срез?</span></span>
         <div style="display:flex;gap:8px;flex-shrink:0;">
