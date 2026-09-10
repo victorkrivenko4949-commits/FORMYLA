@@ -642,9 +642,7 @@ async function loadStreakData() {
             document.getElementById('currentStreak').textContent = data.streak || 0;
         }
         
-        // Load streak stats from backend (would need new endpoint)
-        // For now, use the current streak
-        document.getElementById('longestStreak').textContent = data.streak || 0;
+        document.getElementById('longestStreak').textContent = data.longest_streak ?? data.streak ?? 0;
         
     } catch (error) {
         console.error('Error loading streak data:', error);
