@@ -1569,6 +1569,36 @@ try:
 except Exception as _e_theory_seed:
     print(f"[THEORY-SEED] hook skipped: {_e_theory_seed}")
 
+# ── Olympiad prep logos (idempotent) ─────────────────────────────────────────
+# Проставляет logo_path по slug, если поле пустое. Файлы лежат в
+# static/olympiads/<slug>.svg. Ничего не трогает, если путь уже задан.
+try:
+    with app.app_context():
+        from models import OlympiadPrep as _OlympiadPrepLogos
+        _logo_map = {
+            "fiztekh": "/static/olympiads/fiztekh.svg",
+            "kurchatov": "/static/olympiads/kurchatov.svg",
+            "shag-v-budushchee": "/static/olympiads/shag-v-budushchee.svg",
+            "otkrytaya": "/static/olympiads/otkrytaya.svg",
+            "vsesibirskaya": "/static/olympiads/vsesibirskaya.svg",
+            "itmo": "/static/olympiads/itmo.svg",
+            "nadezhda-energetiki": "/static/olympiads/nadezhda-energetiki.svg",
+            "rosatom": "/static/olympiads/rosatom.svg",
+            "inzhenernaya": "/static/olympiads/inzhenernaya.svg",
+            "plekhanovskaya": "/static/olympiads/plekhanovskaya.svg",
+        }
+        _logos_updated = 0
+        for _slug, _path in _logo_map.items():
+            _row = _OlympiadPrepLogos.query.filter_by(slug=_slug).first()
+            if _row is not None and not (_row.logo_path or '').strip():
+                _row.logo_path = _path
+                _logos_updated += 1
+        if _logos_updated:
+            db.session.commit()
+        print(f"[OLYMP-LOGOS] updated={_logos_updated}")
+except Exception as _e_logos:
+    print(f"[OLYMP-LOGOS] hook skipped: {_e_logos}")
+
 # ── Olympiad prep catalog seed (idempotent, без env-гейта) ───────────────────
 # Засевает olympiad_prep дефолтным набором олимпиад России, если таблица
 # пуста. Безопасно: ничего не пересоздаёт, если уже есть хотя бы одна запись.
