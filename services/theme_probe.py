@@ -139,13 +139,21 @@ def _save_probe_state(cs: CuratorState, probe: Optional[Dict[str, Any]]):
 # ══════════════════════════════════════════════════════════════════════
 
 
-def has_active_probe(user_id: int) -> bool:
-    """Check if the student has an unfinished probe."""
+def has_active_probe(user_id: int, min_answered: int = 0) -> bool:
+    """Check if the student has an unfinished probe.
+
+    min_answered=1 — для баннера «Вернуться в срез»: срез считается активным,
+    только если ученик реально начал решать (дан хотя бы один ответ). Срез,
+    который просто открыли и закрыли без ответов, баннером не напоминаем.
+    """
     cs = CuratorState.query.filter_by(user_id=user_id).first()
     if not cs:
         return False
     probe = _get_probe_state(cs)
-    return probe is not None and probe.get('current_index', 0) < PROBE_SIZE
+    if not probe:
+        return False
+    idx = probe.get('current_index', 0)
+    return min_answered <= idx < PROBE_SIZE
 
 
 def get_active_probe_theme(user_id: int) -> Optional[str]:
