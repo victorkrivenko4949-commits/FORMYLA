@@ -2715,6 +2715,10 @@ def force_intake_completion():
 
     # Только реальные пользователи
     if not (current_user.is_authenticated and not getattr(current_user, 'is_guest', False)):
+        # Для API-запросов вместо HTML-редиректа на логин возвращаем JSON-ошибку,
+        # иначе response.json() на клиенте падает в catch и виджеты молча не работают.
+        if path.startswith('/api/'):
+            return jsonify({'error': 'authentication_required'}), 401
         return
 
     # teacher/parent завершают анкету выбором роли — их не трогаем
@@ -10702,6 +10706,45 @@ def figures_counts():
 # ============================================================================
 # DAILY QUEST ROUTES
 # ============================================================================
+
+@app.route('/api/daily/status')
+@login_required
+def api_daily_quest_status():
+    """API: статус задач дня + текущая серия (для профиля и daily.js).
+
+    Контракт, который ждёт фронт (static/js/daily.js, templates/profile.html):
+    {exists, completed, total, streak, longest_streak}
+    """
+    try:
+        from services.streak_service import get_or_create_streak
+        rec = get_or_create_streak(current_user.id)
+        streak = rec.current_streak or 0
+        longest_streak = rec.max_streak or 0
+    except Exception:
+        streak = 0
+        longest_streak = 0
+
+    payload = {
+        'exists': False,
+        'streak': streak,
+        'longest_streak': longest_streak,
+    }
+    try:
+        from services.daily_quest_service import get_today_quest
+        quest = get_today_quest(current_user.id)
+        if quest:
+            payload.update({
+                'exists': True,
+                'completed': quest.completed_count or 0,
+                'total': quest.total_count or 0,
+                'xp_earned': quest.xp_earned or 0,
+                'is_complete': (quest.completed_count or 0) >= (quest.total_count or 0),
+            })
+        else:
+            payload.update({'completed': 0, 'total': 0})
+    except Exception:
+        payload.update({'completed': 0, 'total': 0})
+    return jsonify(payload)
 
 # ============================================================================
 # DAILY TASK ROTATION (Задача дня)
