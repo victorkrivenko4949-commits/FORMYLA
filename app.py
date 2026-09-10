@@ -7150,7 +7150,7 @@ def api_free_mock_evaluate():
             percentage = (stats['correct'] / stats['total']) * 100 if stats['total'] > 0 else 0
             if percentage >= 70:
                 strong_topics.append(topic)
-            elif percentage < 50:
+elif percentage < 50:
                 weak_topics.append(topic)
         
         # Формируем фидбек
@@ -12262,7 +12262,9 @@ def _inject_user_helpers():
     try:
         if current_user.is_authenticated and not getattr(current_user, 'is_guest', False):
             from services.theme_probe import has_active_probe
-            helpers['has_active_probe'] = has_active_probe(current_user.id)
+            # Баннер «Вернуться в срез» — только если срез реально начат
+            # (min_answered=1: есть хотя бы один ответ), а не просто открыт.
+            helpers['has_active_probe'] = has_active_probe(current_user.id, min_answered=1)
         else:
             helpers['has_active_probe'] = False
     except Exception:
