@@ -143,7 +143,6 @@
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/{{ config.YANDEX_METRIKA_ID }}" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     {% endif %}
-
     <script defer src="{{ url_for('static', filename='js/analytics.js') }}?v={{ asset_version }}"></script>
     <!-- Mobile home swipe-pager (≤768px). На десктопе скрипт ничего не делает (init ищет #mHome, которого там нет). -->
     <script defer src="{{ url_for('static', filename='js/mobile_home_slider.js') }}?v={{ asset_version }}"></script>
@@ -271,8 +270,7 @@
                 {% endif %}
                 
                 <!-- Простая кнопка «Выйти» (с подтверждением). Удаление аккаунта — в конце профиля. -->
-                <a href="{{ url_for('logout') }}" onclick="return confirmLogout(event)"
-                   style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 8px; font-size: 14px; border: 1px solid var(--border-soft); text-decoration: none; cursor: pointer;">
+                <a href="{{ url_for('logout') }}" onclick="return confirmLogout(event)"                   style="padding: 8px 16px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border-radius: 8px; font-size: 14px; border: 1px solid var(--border-soft); text-decoration: none; cursor: pointer;">
                     🚪 Выйти
                 </a>
             {% else %}
@@ -335,7 +333,8 @@
                 Мои ученики
             </a>
             {% elif current_user.is_authenticated and current_user.role == 'parent' %}
-            <a href="/parent" class="drawer-link">                <span class="drawer-link-icon">👨‍👩‍👧</span>
+            <a href="/parent" class="drawer-link">
+                <span class="drawer-link-icon">👨‍👩‍👧</span>
                 Мои гении (дети)
             </a>
             {% else %}
@@ -425,8 +424,7 @@
             <span class="bottom-nav-label">Куратор</span>
         </a>
         <a href="/misc" class="bottom-nav-item" data-path="/misc*,/profile*,/friends*,/leaderboard*,/chat*,/about*,/probniks*,/secrets*,/problems*,/matstat*,/index*">
-            <span class="bottom-nav-icon">📦</span>
-            <span class="bottom-nav-label">Прочее</span>
+            <span class="bottom-nav-icon">📦</span>            <span class="bottom-nav-label">Прочее</span>
         </a>
         {% endif %}
     </nav>
@@ -632,8 +630,7 @@
     .wb-pip-label {
         font-weight: 600;
         color: #fff;
-        white-space: nowrap;
-        flex-shrink: 0;
+        white-space: nowrap;        flex-shrink: 0;
     }
     .wb-pip-code {
         color: #94a3b8;
@@ -825,7 +822,8 @@
         #cf-pip-overlay .cf-pip-btn--leave {
             color: #ef4444;
         }
-        #cf-pip-overlay .cf-pip-btn--leave:hover {            background: rgba(239,68,68,0.2);
+        #cf-pip-overlay .cf-pip-btn--leave:hover {
+            background: rgba(239,68,68,0.2);
         }
         #cf-pip-overlay .cf-pip-count {
             font-size: 11px;
@@ -846,8 +844,7 @@
                     <span class="cf-pip-count" id="cf-pip-count">1</span>
                 </div>
             </div>
-            <div class="cf-pip-actions">
-                <button class="cf-pip-btn cf-pip-btn--expand" title="Развернуть" onclick="if(window.__pipManager)window.__pipManager.expand()"></button>
+            <div class="cf-pip-actions">                <button class="cf-pip-btn cf-pip-btn--expand" title="Развернуть" onclick="if(window.__pipManager)window.__pipManager.expand()"></button>
                 <button class="cf-pip-btn cf-pip-btn--leave" title="Покинуть" onclick="if(window.__pipManager)window.__pipManager.clear()"></button>
             </div>
         </div>
