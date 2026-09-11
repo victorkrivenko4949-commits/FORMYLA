@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Олимпиады — FORMYLA{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ─── Олимпиады: мобильный выбор раздела ─────────────────── */
+.olm-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+.olm-hero {
+  margin-bottom: 28px;
+  text-align: center;
+}
+.olm-hero h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+.olm-hero p {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+.olm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.olm-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r);
+  padding: 22px 20px;
+  text-decoration: none;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.olm-card:hover,
+.olm-card:active {
+  transform: translateY(-2px);
+  border-color: var(--accent, #22d3a6);
+}
+.olm-card-icon {
+  font-size: 30px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.olm-card-body {
+  min-width: 0;
+}
+.olm-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px 0;
+}
+.olm-card-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.45;
+}
+.olm-card-arrow {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="olm-wrap">
+    <div class="olm-hero">
+        <h1>Олимпиады</h1>
+        <p>Что открыть?</p>
+    </div>
+    <div class="olm-list">
+        <a href="{{ url_for('olympiad_prep.calendar') }}" class="olm-card">
+            <span class="olm-card-icon">📅</span>
+            <span class="olm-card-body">
+                <span class="olm-card-title">Календарь олимпиад</span>
+                <p class="olm-card-sub">Даты этапов, регистрации и результаты ключевых олимпиад</p>
+            </span>
+            <span class="olm-card-arrow">›</span>
+        </a>
+        <a href="{{ url_for('olympiads') }}" class="olm-card">
+            <span class="olm-card-icon">🏆</span>
+            <span class="olm-card-body">
+                <span class="olm-card-title">Пробники</span>
+                <p class="olm-card-sub">Выбери олимпиаду, год, этап и класс — полный пробник как на настоящей олимпиаде</p>
+            </span>
+            <span class="olm-card-arrow">›</span>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
