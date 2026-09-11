@@ -188,7 +188,6 @@ def task_attempt(task_id):
     db.session.commit()
     return jsonify({'ok': True, 'status': attempt.status})
 
-
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 # 6. TASK_SUBMIT вЂ” С„РёРЅР°Р»СЊРЅР°СЏ РѕС‚РїСЂР°РІРєР° РѕС‚РІРµС‚Р° (JSON)
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
@@ -342,8 +341,7 @@ def stage_start(code):
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 @olympiad_bp.route('/probnik/<code>/active')
 @login_required
-def stage_active(code):
-    """РЎС‚СЂР°РЅРёС†Р° Р°РєС‚РёРІРЅРѕРіРѕ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ РїСЂРѕР±РЅРёРєР°."""
+def stage_active(code):    """РЎС‚СЂР°РЅРёС†Р° Р°РєС‚РёРІРЅРѕРіРѕ РїСЂРѕС…РѕР¶РґРµРЅРёСЏ РїСЂРѕР±РЅРёРєР°."""
     p = Probnik.query.filter_by(code=code).first_or_404()
     attempt = (StageAttempt.query
                .filter_by(user_id=current_user.id, probnik_id=p.id, result=None)
@@ -420,7 +418,8 @@ def methods():
 
 
 @olympiad_bp.route('/methods/atlas.html')
-def methods_atlas():    """Отдать сам файл атласа методов (внутри iframe)."""
+def methods_atlas():
+    """Отдать сам файл атласа методов (внутри iframe)."""
     _methods_dir = os.path.join(current_app.static_folder, 'methods')
     return send_from_directory(_methods_dir, 'index.html')
 
@@ -504,7 +503,6 @@ def method_detail(method_code):
                            detail_block=block,
                            related_blocks=related_blocks,
                            tasks_for_method=tasks_for_method)
-
 
 # в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 # 12. METHOD_SECTION вЂ” Р·Р°РґР°С‡Рё РїРѕ СЂР°Р·РґРµР»Сѓ РјРµС‚РѕРґРѕРІ
