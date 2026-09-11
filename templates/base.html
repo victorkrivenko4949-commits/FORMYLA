@@ -335,8 +335,7 @@
                 Мои ученики
             </a>
             {% elif current_user.is_authenticated and current_user.role == 'parent' %}
-            <a href="/parent" class="drawer-link">
-                <span class="drawer-link-icon">👨‍👩‍👧</span>
+            <a href="/parent" class="drawer-link">                <span class="drawer-link-icon">👨‍👩‍👧</span>
                 Мои гении (дети)
             </a>
             {% else %}
@@ -417,7 +416,7 @@
             {% endif %}
             {% endif %}
         </a>
-        <a href="{{ url_for('olympiads') }}" class="bottom-nav-item" data-path="/olympiads*,/practice*,/olympiad*">
+        <a href="{{ url_for('olympiad.menu') }}" class="bottom-nav-item" data-path="/olympiads*,/practice*,/olympiad*">
             <span class="bottom-nav-icon">🏆</span>
             <span class="bottom-nav-label">Олимпиады</span>
         </a>
@@ -826,8 +825,7 @@
         #cf-pip-overlay .cf-pip-btn--leave {
             color: #ef4444;
         }
-        #cf-pip-overlay .cf-pip-btn--leave:hover {
-            background: rgba(239,68,68,0.2);
+        #cf-pip-overlay .cf-pip-btn--leave:hover {            background: rgba(239,68,68,0.2);
         }
         #cf-pip-overlay .cf-pip-count {
             font-size: 11px;
