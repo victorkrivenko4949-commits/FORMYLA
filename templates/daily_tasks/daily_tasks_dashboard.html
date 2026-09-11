@@ -530,9 +530,9 @@
     border-radius: 4px; flex-shrink: 0;
   }
 
-  /* Mobile calendar */
+  /* Mobile: календарь скрыт */
   @media (max-width: 1080px) {
-    .dt-sidebar { margin-top: 16px; padding: 16px; }
+    .dt-sidebar { display: none; }
     .dt-cal-day { font-size: 15px; min-height: 44px; }
     .dt-cal-nav-btn { width: 40px; height: 40px; font-size: 20px; flex: 0 0 40px; }
     .dt-cal-title { font-size: 18px; }
@@ -1261,7 +1261,7 @@
   // ── Task cards rendering ────────────────────────────────
   function escapeHtml(s) {
     s = (s == null ? '' : String(s));
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
   }
 
   function renderTasks() {
@@ -1746,7 +1746,7 @@ function toggleYearlyCal() {
 
 function escapeHtmlPreserveLatex(s) {
   s = (s == null ? '' : String(s));
-  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  s = s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
   return s;
 }
 </script>
