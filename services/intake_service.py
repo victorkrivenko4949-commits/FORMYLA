@@ -594,4 +594,3 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
         f"daily={result.daily_tasks} weak={result.weak_sections} "
         f"mu={result.prior_mu} sigma={result.prior_sigma}"
     )
-
