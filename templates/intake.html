@@ -460,12 +460,11 @@
     }
     const html = `
       <div class="intake-anchor-label">Задача по разделу «${anchor.section_ru}» (${anchor.anchor_idx} из ${anchor.total_anchors})</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Это не экзамен — ответь, как получится. По этим задачам мы просто подберём тебе стартовый уровень. Зашла в тупик — смело жми «Не знаю».</div>
+      <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px;line-height:1.6;padding:12px 14px;background:rgba(76,125,255,0.07);border:1px solid rgba(76,125,255,0.22);border-radius:10px;">Это главный шаг на FORMYLA: по твоим ответам на эти 5 задач система точно определит твой уровень и построит личный план именно под тебя. Поэтому так важно попробовать каждую — даже если не уверен, введи то, что получилось.</div>
       ${figureHtml}
       <div class="intake-anchor-statement">${escapeHtml(anchor.statement).replace(/\n/g, '<br>')}</div>
       <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
-      <div class="intake-btn-row">
-        <button class="intake-btn intake-btn-back" onclick="submitAnchor(${anchor.task_id}, true)">Не знаю -></button>
+      <div class="intake-btn-row" style="justify-content:center;">
         <button class="intake-btn intake-btn-primary" onclick="submitAnchor(${anchor.task_id})">Проверить</button>
       </div>
       <div id="anchor-solution" style="display:none;margin-top:16px;padding:16px;background:var(--surface2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);font-size:14px;line-height:1.7;color:var(--text-soft);"></div>
