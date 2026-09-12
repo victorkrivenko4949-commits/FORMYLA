@@ -400,14 +400,16 @@ def submit_anchor(user_id: int, task_id: int, user_answer: str) -> Dict[str, Any
 
     current_anchor = anchor_tasks[idx]
     correct_answer = current_anchor.get('answer', '')
-    is_correct = check_anchor_answer(user_answer, correct_answer)
+    skipped = user_answer.strip() == '__skip__'
+    is_correct = False if skipped else check_anchor_answer(user_answer, correct_answer)
 
     state['anchor_results'].append({
         'task_id': current_anchor['db_id'],
         'correct': is_correct,
         'section': current_anchor['section'],
         'level': current_anchor.get('level', 1),
-        'user_answer': user_answer,
+        'user_answer': '' if skipped else user_answer,
+        'skipped': skipped,
     })
 
     idx += 1
