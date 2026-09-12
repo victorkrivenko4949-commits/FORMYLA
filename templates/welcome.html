@@ -1,15 +1,32 @@
 {% extends "base.html" %}
-{% block title %}FORMYLA — диагностика готовности к ВсОШ за 25 минут{% endblock %}
+{% block title %}FORMYLA — узнай уровень за 2 минуты и получи план к олимпиаде{% endblock %}
 {% block content %}
 <div style="max-width:1100px;margin:0 auto;padding:60px 24px 80px;">
   <div style="text-align:center;margin-bottom:56px;">
-    <h1 style="font-size:clamp(2em,5vw,3.4em);line-height:1.15;margin:0 0 18px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 60%,#ec4899 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-0.5px;">Узнайте за 25 минут, на каком уровне ребёнок готов к ВсОШ</h1>
-    <p style="font-size:clamp(1.05em,2vw,1.3em);color:rgba(255,255,255,0.8);line-height:1.55;max-width:760px;margin:0 auto 32px;">Адаптивная диагностика по 6 темам математики. Радар сильных/слабых сторон + персональный план подготовки.</p>
-    <a href="/prep/probe" data-track="cta" style="display:inline-block;padding:18px 44px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:14px;font-size:1.15em;font-weight:700;box-shadow:0 8px 28px rgba(56,189,248,0.45);transition:transform 0.25s ease,box-shadow 0.25s ease;"> Пройти диагностику бесплатно</a>
-    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px 28px;margin-top:22px;color:rgba(255,255,255,0.7);font-size:0.96em;">
-      <span><span style="color:#38ef7d;font-weight:800;">[OK]</span> 25 минут</span>
-      <span><span style="color:#38ef7d;font-weight:800;">[OK]</span> Бесплатно</span>
-      <span><span style="color:#38ef7d;font-weight:800;">[OK]</span> Радар по 6 темам</span>
+    <h1 style="font-size:clamp(2em,5vw,3.4em);line-height:1.15;margin:0 0 18px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 60%,#ec4899 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-0.5px;">Узнай свой уровень за 2 минуты — и получи план к олимпиаде</h1>
+    <p style="font-size:clamp(1.05em,2vw,1.3em);color:rgba(255,255,255,0.8);line-height:1.55;max-width:760px;margin:0 auto 32px;">Короткий срез: 5 якорных задач сразу после регистрации. Потом — ежедневные задачи под твой уровень, ИИ-разбор ошибок и подготовка к ВсОШ, Турниру городов и Эйлеру.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 20px;max-width:820px;margin:0 auto 34px;text-align:left;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="color:#38ef7d;font-weight:800;font-size:1.1em;line-height:1.4;">[OK]</span>
+        <span style="color:rgba(255,255,255,0.85);font-size:0.98em;line-height:1.45;"><b>Срез за 2 минуты</b> — 5 коротких задач, без нервов и «экзамена»</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="color:#38ef7d;font-weight:800;font-size:1.1em;line-height:1.4;">[OK]</span>
+        <span style="color:rgba(255,255,255,0.85);font-size:0.98em;line-height:1.45;"><b>План под тебя</b> — ежедневные задачи ровно твоего уровня</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="color:#38ef7d;font-weight:800;font-size:1.1em;line-height:1.4;">[OK]</span>
+        <span style="color:rgba(255,255,255,0.85);font-size:0.98em;line-height:1.45;"><b>Реальные олимпиады</b> — ВсОШ, Турнир городов, Эйлер с датами и разборами</span>
+      </div>
+    </div>
+    <a href="/prep/probe" data-track="cta" style="display:inline-block;padding:18px 44px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:14px;font-size:1.15em;font-weight:700;box-shadow:0 8px 28px rgba(56,189,248,0.45);transition:transform 0.25s ease,box-shadow 0.25s ease;"> Пройти срез за 2 минуты</a>
+    <div style="margin-top:16px;font-size:0.95em;">
+      <a href="/about" style="color:rgba(255,255,255,0.65);text-decoration:underline;text-underline-offset:3px;">Сначала посмотреть, как устроен сайт</a>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px 28px;margin-top:18px;color:rgba(255,255,255,0.7);font-size:0.96em;">
+      <span>Бесплатно</span>
+      <span>Без паролей: e-mail + код</span>
+      <span>5 задач — и план готов</span>
     </div>
   </div>
   <h2 style="text-align:center;font-size:1.8em;color:var(--text-main);margin:64px 0 36px;font-weight:700;">Как работает</h2>
@@ -40,3 +57,4 @@
   </div>
 </div>
 {% endblock %}
+
