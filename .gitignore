@@ -85,6 +85,7 @@ data/*
 !data/figures/
 !data/figures/*.txt
 *.jsonl
+!FORMYLA_BANK.jsonl
 # Exception: якоря анкеты — маленький hand-curated файл, обязателен на Render.
 !data/anchors.jsonl
 *.bak
