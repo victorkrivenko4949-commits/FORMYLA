@@ -319,6 +319,7 @@
     .intake-container { padding: 30px 14px 60px; }
     .intake-card { padding: 24px 18px; }
     .intake-card h2 { font-size: 16px; }
+
     .intake-option { padding: 12px 14px; font-size: 14px; }
     .intake-btn { padding: 10px 20px; font-size: 14px; }
   }
@@ -414,9 +415,9 @@
 
   function escapeHtml(s) {
     return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>');
   }
 
   function solutionToHtml(solution) {
@@ -460,10 +461,12 @@
     }
     const html = `
       <div class="intake-anchor-label">Задача по разделу «${anchor.section_ru}» (${anchor.anchor_idx} из ${anchor.total_anchors})</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Это не экзамен — ответь, как получится. По этим задачам мы просто подберём тебе стартовый уровень. Зашла в тупик — смело жми «Не знаю».</div>
       ${figureHtml}
       <div class="intake-anchor-statement">${escapeHtml(anchor.statement).replace(/\n/g, '<br>')}</div>
       <input type="text" class="intake-answer-input" id="anchor-answer" placeholder="Твой ответ..." autofocus>
       <div class="intake-btn-row">
+        <button class="intake-btn intake-btn-back" onclick="submitAnchor(${anchor.task_id}, true)">Не знаю -></button>
         <button class="intake-btn intake-btn-primary" onclick="submitAnchor(${anchor.task_id})">Проверить</button>
       </div>
       <div id="anchor-solution" style="display:none;margin-top:16px;padding:16px;background:var(--surface2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);font-size:14px;line-height:1.7;color:var(--text-soft);"></div>
@@ -517,7 +520,9 @@
         <p>Якоря: ${correct} из 5 верно. Уровень: ${result.prior_mu}</p>
         <p>Дневная норма: ${result.daily_tasks} задач</p>
         ${result.goal_auto ? '<p style="color:var(--warn);">Цель назначена автоматически</p>' : ''}
-        <a href="/daily_tasks" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;margin-top:8px;">К задачам дня -></a>
+        <p style="color:var(--text);font-weight:600;">Остался последний шаг — утренний срез: 5 задач, примерно 15 минут. По нему соберём твой личный план подготовки.</p>
+        <a href="/prep/probe" class="intake-btn intake-btn-primary" style="display:inline-block;text-decoration:none;margin-top:8px;">Пройти утренний срез -></a>
+        <div style="margin-top:14px;"><a href="/daily_tasks" style="color:var(--muted);font-size:13px;text-decoration:none;">Позже, к задачам дня</a></div>
 
         ${solutionsHtml}
 
@@ -564,10 +569,10 @@
     processResponse(result);
   }
 
-  async function submitAnchor(taskId) {
+  async function submitAnchor(taskId, skip) {
     const answerEl = document.getElementById('anchor-answer');
     if (!answerEl) return;
-    const answer = answerEl.value.trim();
+    const answer = skip ? '__skip__' : answerEl.value.trim();
     if (!answer) return;
 
     document.getElementById('intake-card').innerHTML =
