@@ -3317,4 +3317,3 @@ def _save_to_task_pool(cache_key: str, subject: str, grade: int,
     db.session.commit()
     logger.info("Created new task_pool #%s for key=%s", pool.id, cache_key[:12])
     return pool
-
