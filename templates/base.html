@@ -234,10 +234,14 @@
         <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
             {% if current_user.is_authenticated and not current_user.is_guest %}
                 {% if (current_user.nickname or '')|lower == 'lavrik' %}
-                <!-- Поддержка — только для Lavrik -->
-                <a href="{{ url_for('admin_support.my_support_page') }}"
+                <!-- Модератор поддержки — одна страница: чаты поддержки -->
+                <style>
+                    #navLinks, .mobile-bottom-nav, .drawer-nav, .drawer-user, #profileNavWrap,
+                    #globalBackBtn { display: none !important; }
+                </style>
+                <a href="{{ url_for('admin_support.admin_support_inbox') }}"
                    id="navMySupportLink"
-                   title="Твоя поддержка — личный чат с командой FORMYLA"
+                   title="Чаты поддержки — все обращения пользователей"
                    style="position:relative; padding: 8px 14px; background: rgba(168, 85, 247, 0.12);
                           color: #d8b4fe; text-decoration: none; border-radius: 8px;
                           font-weight: 600; font-size: 14px;

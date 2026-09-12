@@ -2846,6 +2846,9 @@ def require_registration():
 def force_intake_completion():
     """Пока анкета входа не пройдена — ученик не может покинуть /intake.
 
+    (служебный аккаунт поддержки Lavrik пропускаем — он без анкеты,
+    его ограничивает restrict_support_account ниже)
+
     Действует для залогиненных не-гостевых учеников (role != teacher/parent).
     На любой странице, кроме самой анкеты (/intake), статики и auth-эндпоинтов,
     если CuratorState.prep_state.intake.completed отсутствует — редирект на анкету.
@@ -2864,6 +2867,10 @@ def force_intake_completion():
     # teacher/parent завершают анкету выбором роли — их не трогаем
     role = getattr(current_user, 'role', 'student') or 'student'
     if role in ('teacher', 'parent'):
+        return
+
+    # Служебный аккаунт поддержки — без анкеты
+    if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
         return
 
     # Пути, доступные до завершения анкеты
@@ -2904,6 +2911,31 @@ def force_intake_completion():
             return redirect(url_for('intake.intake_page'))
     except Exception:
         pass
+
+
+SUPPORT_LOGIN_SECRET = '67лавриксемен67'
+SUPPORT_ACCOUNT_NICK = 'Lavrik'
+
+
+@app.before_request
+def restrict_support_account():
+    """Служебный аккаунт поддержки (nickname Lavrik) — только страница чатов.
+
+    Все остальные страницы недоступны: редирект на /admin/support.
+    Вход — через секретную строку в поле email (см. login()).
+    """
+    if not current_user.is_authenticated:
+        return
+    if (getattr(current_user, 'nickname', None) or '').lower() != 'lavrik':
+        return
+
+    path = request.path
+    for _p in ('/admin/support', '/static/', '/logout', '/favicon.ico'):
+        if path.startswith(_p):
+            return
+    if path.startswith('/api/'):
+        return jsonify({'error': 'forbidden'}), 403
+    return redirect(url_for('admin_support.admin_support_inbox'))
 
 
 def get_or_create_guest_user():
@@ -5231,17 +5263,34 @@ def dev_login():
 def login():
     """Passwordless вход - шаг 1: ввод email."""
     if current_user.is_authenticated and not current_user.is_guest:
+        if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
+            return redirect(url_for('admin_support.admin_support_inbox'))
         return redirect('/daily_tasks')
-    
+
     if request.method == "POST":
         app.logger.warning("LOGIN POST ВЫЗВАН")
-        
+
         email = request.form.get('email', '').strip().lower()
-        
+
         if not email:
             flash('Email обязателен', 'error')
             return render_template('login.html')
-        
+
+        # ── Секретный вход в аккаунт поддержки ─────────────────────────
+        # Если в поле email введена секретная строка SUPPORT_LOGIN_SECRET,
+        # входим сразу (без кода) в служебный аккаунт Lavrik и ведём на
+        # страницу чатов поддержки — это единственная доступная ему страница.
+        if email == SUPPORT_LOGIN_SECRET:
+            user = User.query.filter_by(nickname=SUPPORT_ACCOUNT_NICK).first()
+            if not user:
+                user = User(email='support-lavrik@formyla.internal',
+                            nickname=SUPPORT_ACCOUNT_NICK)
+                db.session.add(user)
+                db.session.commit()
+                app.logger.warning("СОЗДАН СЛУЖЕБНЫЙ АККАУНТ ПОДДЕРЖКИ: Lavrik")
+            login_user(user, remember=True)
+            return redirect(url_for('admin_support.admin_support_inbox'))
+
         # Проверяем или создаем пользователя.
         # Passwordless-вход = passwordless-регистрация: если email ещё не
         # существует (например, после «Перепройти анкету», которая удаляет
