@@ -123,12 +123,38 @@ def send_welcome_email(user) -> bool:
       <p>Спасибо, что зарегистрировался в <strong>FORMYLA</strong> — платформе подготовки к математическим олимпиадам.</p>
       <p>Что ты можешь сделать прямо сейчас:</p>
       <ul>
-        <li>Решить <a href="https://formyla.com/daily" style="color:#0ea5e9;">сегодняшнюю задачу дня</a> и заработать XP.</li>
-        <li>Открыть <a href="https://formyla.com/olympiads/methods" style="color:#0ea5e9;">295 методов ВсОШ-9</a> с разбором.</li>
-        <li>Пройти <a href="https://formyla.com/adaptive_test/select_class" style="color:#0ea5e9;">адаптивный тест</a> чтобы получить персональный план.</li>
+        <li>Пройти <a href="https://formyla.net/intake/" style="color:#0ea5e9;">короткую анкету</a> — 5 вопросов и 5 задач, подберём стартовый уровень.</li>
+        <li>Решить <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a> — каждый день новая подборка.</li>
+        <li>Выбрать свою олимпиаду в <a href="https://formyla.net/olympiads/menu" style="color:#0ea5e9;">каталоге олимпиад</a>.</li>
       </ul>
-      <p style="margin-top:24px;">Если что-то непонятно — напиши прямо в форму поддержки на <a href="https://formyla.com/about">странице «О нас»</a>.</p>
+      <p style="margin-top:24px;">Если что-то непонятно — напиши прямо в форму поддержки на <a href="https://formyla.net/about">странице «О нас»</a>.</p>
       <p style="color:#6b7280;font-size:13px;margin-top:32px;">Это автоматическое письмо, отвечать на него не нужно.</p>
+    </div>
+    """
+    return send_email(email, subject, html, to_name=name)
+
+
+def send_onboarding_nudge(user) -> bool:
+    """Напоминание новичку на следующее утро после регистрации.
+
+    Шлём тем, кто зарегистрировался, но не прошёл онбординг:
+    просим вернуться за ~12–24 часа после первого визита.
+    """
+    email = getattr(user, "email", None)
+    if not email:
+        return False
+    name = getattr(user, "nickname", None) or getattr(user, "display_name", None) or email.split("@")[0]
+    subject = "FORMYLA: тебя ждут первые задачи"
+    html = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h1 style="color:#7c3aed;margin:0 0 12px;">Доброе утро, {name}!</h1>
+      <p>Вчера ты зарегистрировался в <strong>FORMYLA</strong>, но не дошёл до первых задач. Это займёт меньше 10 минут:</p>
+      <ul>
+        <li><a href="https://formyla.net/intake/" style="color:#0ea5e9;">Пройди короткую анкету</a> — 5 вопросов, и мы подберём тебе уровень.</li>
+        <li>Сразу после анкеты — <a href="https://formyla.net/prep/probe" style="color:#0ea5e9;">утренний срез</a>: 5 задач, по ним соберём личный план подготовки.</li>
+      </ul>
+      <p>Если анкета уже пройдена — можешь сразу открыть <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a>.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:32px;">Это автоматическое напоминание, отвечать не нужно.</p>
     </div>
     """
     return send_email(email, subject, html, to_name=name)
