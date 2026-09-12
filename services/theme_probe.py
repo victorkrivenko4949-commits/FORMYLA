@@ -567,6 +567,15 @@ def _finish_probe(cs: CuratorState, probe: Dict[str, Any], user_id: int) -> Dict
     # Mark probe as done
     _save_probe_state(cs, None)
 
+    # +20 рейтинга за прохождение среза
+    try:
+        from models import User as _User
+        _u = db.session.get(_User, user_id)
+        if _u is not None:
+            _u.experience_points = (_u.experience_points or 0) + 20
+    except Exception as _xp_err:
+        logger.warning(f"[probe] +XP за срез не начислен user={user_id}: {_xp_err}")
+
     db.session.commit()
 
     # ── Разблокировать задачи дня: пометить тему цикла как пройденную. ──
@@ -625,3 +634,4 @@ def _recalc_section_mu(cs: CuratorState, section: str):
     by_section[section]['mu'] = round(avg_mu, 3)
     by_section[section]['n'] = len(measured)
     cs.level_by_section = _json.dumps(by_section, ensure_ascii=False)
+
