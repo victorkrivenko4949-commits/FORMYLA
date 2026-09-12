@@ -197,13 +197,12 @@ class User(UserMixin, db.Model):
         self.current_level = min(10, 1 + (self.experience_points // 100))
     
     def get_leaderboard_score(self):
-        """Вычислить общий рейтинг для leaderboard"""
-        # Формула рейтинга: XP + бонусы за достижения
-        score = self.experience_points or 0
-        score += (self.mock_exams_passed or 0) * 100  # Большой бонус за пробники
-        score += (self.adaptive_tests_completed or 0) * 50
-        score += (self.highest_difficulty_solved or 0) * 20
-        return score
+        """Вычислить общий рейтинг для leaderboard.
+
+        Рейтинг = сумма XP. Начисление: +20 за анкету (один раз),
+        +5 за каждую правильную задачу дня, +20 за каждый срез.
+        """
+        return self.experience_points or 0
     
     def get_friends(self):
         """Все принятые друзья (с двух сторон)."""
