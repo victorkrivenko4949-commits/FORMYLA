@@ -25,7 +25,35 @@ logger = logging.getLogger(__name__)
 
 SOURCE_NAME = 'formyla_anchors'
 ANCHORS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'anchors.jsonl')
+ANCHORS_SOLUTIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'anchors_solutions.json')
 THEME_MAP_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'theme_to_section.json')
+
+
+def _load_anchor_solutions() -> Dict[str, str]:
+    """Загрузить эталонные решения якорей из data/anchors_solutions.json.
+
+    Файл ключуется по номеру задачи, внутри — поле anchor_uid.
+    Возвращает словарь anchor_uid -> solution (LaTeX-текст).
+    Если файла нет или он битый — пустой словарь (якоря без решений).
+    """
+    if not os.path.exists(ANCHORS_SOLUTIONS_FILE):
+        logger.warning("anchors_solutions.json не найден: %s", ANCHORS_SOLUTIONS_FILE)
+        return {}
+    try:
+        with open(ANCHORS_SOLUTIONS_FILE, 'r', encoding='utf-8') as f:
+            raw = json.load(f)
+    except Exception as e:
+        logger.warning("anchors_solutions.json: ошибка чтения: %s", e)
+        return {}
+    out: Dict[str, str] = {}
+    for _num, rec in raw.items():
+        if not isinstance(rec, dict):
+            continue
+        uid = str(rec.get('anchor_uid', '')).strip()
+        sol = str(rec.get('solution', '')).strip()
+        if uid and sol:
+            out[uid] = sol
+    return out
 
 # Канонические разделы в порядке приоритета (п.4)
 CANONICAL_SECTIONS_ORDER = ('algebra', 'number_theory', 'geometry', 'combinatorics', 'logic')
@@ -94,6 +122,7 @@ def load_anchors(dry_run: bool = False) -> Dict[str, Any]:
         Если True — только парсит и валидирует, не пишет в БД.
     """
     theme_map = get_theme_map()
+    solutions_map = _load_anchor_solutions()
     result: Dict[str, Any] = {
         'loaded': 0,
         'skipped': 0,
@@ -182,9 +211,24 @@ def load_anchors(dry_run: bool = False) -> Dict[str, Any]:
             result['errors'].append(f"Строка {line_no}: пустой statement")
             continue
 
-        # Пропускаем уже существующие
+        # Уже существующие — не пропускаем молча: дозаписываем решение,
+        # если оно появилось в anchors_solutions.json (backfill для продов,
+        # где якоря были созданы без решений).
         if anchor_uid in existing_uids:
             result['skipped'] += 1
+            sol_new = solutions_map.get(anchor_uid, '')
+            if sol_new and not dry_run:
+                try:
+                    _row = (AdaptiveTask.query
+                            .filter(AdaptiveTask.source == SOURCE_NAME,
+                                    AdaptiveTask.source_id == anchor_uid)
+                            .first())
+                    if _row is not None and not (getattr(_row, 'solution', '') or '').strip():
+                        _row.solution = sol_new
+                        result.setdefault('solutions_backfilled', 0)
+                        result['solutions_backfilled'] += 1
+                except Exception as _bf_err:
+                    logger.warning("anchor solution backfill failed uid=%s: %s", anchor_uid, _bf_err)
             continue
 
         # Ищем theme_id по разделу и классу
@@ -208,7 +252,7 @@ def load_anchors(dry_run: bool = False) -> Dict[str, Any]:
                 topic=section,
                 subtopic=subtopic,
                 task_text=statement,
-                solution='',  # якоря без эталонного решения
+                solution=solutions_map.get(anchor_uid, ''),  # решение из anchors_solutions.json
                 criteria_1_point='',
                 criteria_2_points='',
                 correct_answer=answer,
