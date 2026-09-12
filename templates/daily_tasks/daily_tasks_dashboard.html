@@ -828,6 +828,11 @@
       <div class="dt-ready-actions"></div>
     </div>
 
+    <!-- План подготовки -->
+    <div class="dt-plan-note" style="padding:12px 16px;margin-bottom:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:14px;line-height:1.6;">
+      <strong style="color:var(--text);">План подготовки:</strong> решай все задачи дня, изучи все методы нужного класса, решай пробники реальных олимпиад.
+    </div>
+
     <!-- Summary card -->
     <div id="dt-summary-card" class="dt-summary-card dt-hidden">
       <span id="dt-summary-text"></span>
@@ -1363,7 +1368,7 @@
           '<button type="button" id="dt-photo-remove" class="dt-btn-secondary" style="display:none;font-size:12px;color:#e86a62;">\u2715</button>' +
         '</div>' +
       '</div>' +
-      '<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button><button id="dt-hint-btn" class="dt-btn-secondary">\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430</button></div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;"><button id="dt-submit-btn" class="dt-btn-primary">\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c</button></div>' +
       '<div id="dt-modal-result" style="margin-top:16px;"></div>' +
       '</div>';
     document.body.appendChild(ov);
@@ -1498,7 +1503,6 @@
       $('dt-submit-btn').disabled = false;
     }
     $('dt-submit-btn').onclick = submitAnswer;
-    $('dt-hint-btn').onclick = loadHint;
     inp.onkeydown = function(e) { if (e.key === 'Enter') submitAnswer(); };
     // Автосохранение черновика при вводе (ответ и решение).
     inp.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
@@ -1626,21 +1630,6 @@
     }
   }
 
-  function loadHint() {
-    if (!dtCurrentItem) return;
-    var res = $('dt-modal-result');
-    fetch('/daily_tasks/' + dtCurrentItem.id + '/hint', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
-    .then(function(r) { return r.json(); })
-    .then(function(p) {
-      if (p && p.hint) {
-        res.innerHTML = '<div style="color:var(--warn);line-height:1.5;">\uD83D\uDCA1 ' + escapeHtmlPreserveLatex(p.hint) + '</div>';
-        if (typeof renderMath === 'function') renderMath(res);
-      } else {
-        res.innerHTML = '<div style="color:var(--muted);">Подсказок нет</div>';
-      }
-    })
-    .catch(function(err) { console.warn('[dt-hint]', err); });
-  }
 
   function bindActionButtons() {
     var buttons = document.querySelectorAll('.dt-btn-primary, .dt-btn-secondary');

@@ -218,7 +218,6 @@
             {% else %}
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
             <a href="{{ url_for('prep.coach') }}" class="nav-item">🎓 Куратор подготовки</a>
-            <a href="{{ url_for('prep.dashboard') }}" class="nav-item">🎯 Моя подготовка</a>
             {% endif %}
 
             <!-- 3. Прочее — скрыт для родителя/учителя (остался только их раздел) -->
@@ -368,10 +367,6 @@
                 Куратор подготовки
             </a>
 
-            <a href="{{ url_for('prep.dashboard') }}" class="drawer-link">
-                <span class="drawer-link-icon">🎯</span>
-                Моя подготовка
-            </a>
 
             <a href="/misc" class="drawer-link">
                 <span class="drawer-link-icon">📦</span>
