@@ -707,6 +707,19 @@ def submit_answer(
     if time_spent is not None:
         item.time_spent_seconds = time_spent
 
+    # +5 рейтинга за каждую правильную задачу дня (переотправка невозможна —
+    # роут отвечает 409, если item.user_answer уже заполнен).
+    if is_correct:
+        try:
+            from models import User as _User
+            _ds = DailyTaskSet.query.get(item.daily_set_id)
+            if _ds is not None:
+                _u = db.session.get(_User, _ds.user_id)
+                if _u is not None:
+                    _u.experience_points = (_u.experience_points or 0) + 5
+        except Exception as _xp_err:
+            logger.warning("submit_answer: +XP не начислен item=%d: %s", item_id, _xp_err)
+
     db.session.commit()
 
     # ── Записать результат в level_engine ──────────────────────────
@@ -3304,3 +3317,4 @@ def _save_to_task_pool(cache_key: str, subject: str, grade: int,
     db.session.commit()
     logger.info("Created new task_pool #%s for key=%s", pool.id, cache_key[:12])
     return pool
+
