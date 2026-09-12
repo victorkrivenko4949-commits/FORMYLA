@@ -365,6 +365,42 @@ def calibration_target_level(class_expected_level: int) -> int:
     return max(MIN_TASK_LEVEL, min(MAX_TASK_LEVEL, int(class_expected_level or 3)))
 
 
+def intake_target_level(user_id: int, class_expected_level: int) -> int:
+    """Уровень из анкеты для калибровочных тем (срез убран, 2026-09).
+
+    Приоритет: level_engine (global mu после анкеты и её якорей) →
+    сырой prior_mu из prep_state.intake → середина по классу.
+    Результат зажимается в каноническую шкалу 1..4.
+    """
+    level = None
+    try:
+        from services.level_engine import get_state
+        st = get_state(user_id)
+        if st and st.get('updated_at'):
+            level = st.get('level')
+    except Exception:
+        level = None
+
+    if level is None:
+        try:
+            from models_curator import CuratorState
+            import json as _json
+            cs = CuratorState.query.filter_by(user_id=user_id).first()
+            raw = getattr(cs, 'prep_state', None) if cs is not None else None
+            if isinstance(raw, str):
+                raw = _json.loads(raw)
+            mu = ((raw or {}).get('intake') or {}).get('prior_mu')
+            if mu is not None:
+                level = int(round(float(mu)))
+        except Exception:
+            level = None
+
+    if level is None:
+        level = int(class_expected_level or 3)
+
+    return max(MIN_TASK_LEVEL, min(MAX_TASK_LEVEL, int(level)))
+
+
 def compute_slot_allocation(
     measured_count: int,
     total_topics: int = 7,
@@ -877,8 +913,10 @@ def build_profile(
             stretch_level = level_hi  # для совместимости с Gemini-промптом
             calibration = False
         else:
-            # Калибровочная тема — нет теста. Берём середину по классу.
-            target_level = calibration_target_level(expected_level)
+            # Калибровочная тема — нет теста. Берём уровень из анкеты
+            # (после отказа от среза анкета = единственный источник уровня);
+            # фолбэк внутри — середина по классу для старых анкет без mu.
+            target_level = intake_target_level(user_id, expected_level)
             level_lo, level_hi = compute_level_window(target_level)
             stretch_level = level_hi
             calibration = True
@@ -1125,7 +1163,10 @@ def build_profile(
     profile: Dict[str, Any] = {
         'user_id': user_id,
         'class_level': class_level,
-        'class_expected_level': expected_level,
+        # Для свежих анкет — уровень из анкеты (mu 1..4 → round), для старых
+        # анкет без mu — середина по классу. Банк задач (уровни 1..4)
+        # выбирается по этому значению, пока нет измеренных тем.
+        'class_expected_level': intake_target_level(user_id, expected_level),
         'profile_completeness': completeness,
         'measured_topics_count': measured_count,
         'calibration_topics_count': len(calibration_candidate_topics),

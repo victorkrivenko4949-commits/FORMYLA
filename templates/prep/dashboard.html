@@ -6,8 +6,69 @@
 {% endblock %}
 
 {% block content %}
-{# Раздел "Моя подготовка" временно пуст — оставлено только название. #}
 <section class="prep-hero">
-    <h1> Моя подготовка</h1>
+    <h1>🎯 Моя подготовка</h1>
 </section>
+
+<div style="max-width:900px;margin:0 auto;padding:0 20px 60px;">
+
+    {% if plan_cards %}
+        {% for card in plan_cards %}
+        {% set plan = card.plan %}
+        {% set pace = card.pace %}
+        <a href="/prep/{{ plan.id }}" style="text-decoration:none;display:block;">
+            <div class="prep-plan-card" style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px 22px;margin-bottom:14px;transition:border-color .2s;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:700;color:#fff;">
+                            {{ plan.olympiad.short_name }} · {{ plan.target_stage }}
+                        </div>
+                        <div style="color:#94a3b8;font-size:.85rem;margin-top:4px;">
+                            До олимпиады: {{ pace.days_left }} дн.
+                            {% if pace.streak > 0 %} · Серия: {{ pace.streak }} дн. 🔥{% endif %}
+                        </div>
+                    </div>
+                    {% if pace.on_track %}
+                    <span style="padding:5px 12px;border-radius:999px;font-size:.8rem;font-weight:600;background:rgba(34,211,166,.12);color:#22d3a6;border:1px solid rgba(34,211,166,.35);">По плану</span>
+                    {% else %}
+                    <span style="padding:5px 12px;border-radius:999px;font-size:.8rem;font-weight:600;background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.35);">Отстаёшь</span>
+                    {% endif %}
+                </div>
+                <div class="prep-progress" style="height:8px;margin:12px 0 8px;">
+                    <div class="prep-progress-fill" style="width:{{ plan.progress_pct }}%;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;color:#94a3b8;font-size:.85rem;flex-wrap:wrap;gap:8px;">
+                    <span>{{ plan.progress_pct }}% пройдено · решено {{ pace.solved_problems }} из {{ pace.total_problems }} задач</span>
+                    <span style="color:#cbd5e1;font-weight:600;">Сегодня: {{ pace.need_per_day }} задач (~{{ pace.minutes_per_day }} мин)</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    {% endif %}
+
+    <a href="{{ url_for('prep.new_plan_form') }}" style="text-decoration:none;display:block;">
+        <div style="border:2px dashed #334155;border-radius:14px;padding:26px;text-align:center;color:#8b5cf6;font-weight:700;font-size:1rem;">
+            {% if plan_cards %}+ Добавить ещё одну олимпиаду{% else %}＋ Составить план подготовки{% endif %}
+        </div>
+    </a>
+
+    {% if not plan_cards %}
+    <p style="color:#94a3b8;text-align:center;margin-top:18px;line-height:1.7;">
+        Выбери олимпиаду — и план сам посчитает, сколько задач и минут в день
+        нужно, чтобы прийти к дате готовым. Каждый день — короткий набор задач
+        под твой уровень. Пропустишь день — план честно пересчитает темп.
+    </p>
+    {% endif %}
+
+    {% if completed_plans %}
+    <h2 style="color:#cbd5e1;font-size:1rem;margin:32px 0 12px;">Завершённые</h2>
+    {% for plan in completed_plans %}
+    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:14px 18px;margin-bottom:10px;color:#64748b;display:flex;justify-content:space-between;">
+        <span>{{ plan.olympiad.short_name }} · {{ plan.target_stage }}</span>
+        <span>завершён</span>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+</div>
 {% endblock %}

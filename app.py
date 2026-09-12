@@ -12443,13 +12443,10 @@ def _inject_user_helpers():
     helpers = dict(display_name_from_email=display_name_from_email)
     # Флаг «есть незавершённый срез» — для глобального баннера «Вернуться в срез».
     try:
-        if current_user.is_authenticated and not getattr(current_user, 'is_guest', False):
-            from services.theme_probe import has_active_probe
-            # Баннер «Вернуться в срез» — только если срез реально начат
-            # (min_answered=1: есть хотя бы один ответ), а не просто открыт.
-            helpers['has_active_probe'] = has_active_probe(current_user.id, min_answered=1)
-        else:
-            helpers['has_active_probe'] = False
+        # Срез убран из воронки (2026-09): баннер «Вернуться в срез»
+        # отключён — задачи дня больше не требуют среза. Страница /prep/probe
+        # остаётся доступной по прямой ссылке, но никуда не навязывается.
+        helpers['has_active_probe'] = False
     except Exception:
         helpers['has_active_probe'] = False
     return helpers

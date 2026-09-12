@@ -178,6 +178,70 @@ def conflict(e):
 
 # ─── Routes ──────────────────────────────────────────────────────────────────
 
+MINUTES_PER_TASK = 6  # одна задача ≈ 6 минут: оценка темпа в минутах в день
+
+
+def plan_pace(plan, days=None):
+    """Динамический темп плана: серия, сколько задач/минут нужно сейчас.
+
+    Пересчёт честный: все нерешённые задачи (пропущенные дни включительно)
+    равномерно растекаются на оставшиеся до даты дни. Так «пропустил 3 дня»
+    мгновенно удорожает завтрашний день, а не растворяется молча.
+    """
+    if days is None:
+        days = (PrepDay.query.filter_by(plan_id=plan.id)
+                .order_by(PrepDay.date).all())
+    today = date.today()
+    total_problems = sum(d.total_problems for d in days)
+    solved_problems = sum(d.completed_count for d in days)
+    remaining_problems = max(0, total_problems - solved_problems)
+
+    days_left = max(0, (plan.target_date - today).days)
+    remaining_days = max(1, days_left + 1)  # включая сегодня
+    need_per_day = -(-remaining_problems // remaining_days)  # ceil
+    behind = need_per_day > (plan.daily_task_count or 5)
+
+    # Серия: подряд завершённые дни, считая назад от вчера/сегодня.
+    by_date = {d.date: d for d in days}
+    streak = 0
+    cur = today if (today in by_date and by_date[today].status == 'completed') else today - timedelta(days=1)
+    while by_date.get(cur) is not None and by_date[cur].status == 'completed':
+        streak += 1
+        cur -= timedelta(days=1)
+
+    return {
+        'streak': streak,
+        'days_left': days_left,
+        'total_problems': total_problems,
+        'solved_problems': solved_problems,
+        'remaining_problems': remaining_problems,
+        'need_per_day': need_per_day,
+        'minutes_per_day': need_per_day * MINUTES_PER_TASK,
+        'behind': behind,
+        'on_track': (days_left > 0 and not behind) or remaining_problems == 0,
+    }
+
+
+def sync_day_statuses(plan):
+    """Лениво поправить статусы дней: прошедшие несделанные → missed,
+    сегодняшний upcoming → today. Без этого все старые дни висели
+    'upcoming' навсегда — 'missed' нигде не проставлялся."""
+    today = date.today()
+    days = (PrepDay.query.filter_by(plan_id=plan.id)
+            .order_by(PrepDay.date).all())
+    changed = False
+    for d in days:
+        if d.date < today and d.status in ('upcoming', 'today'):
+            d.status = 'missed'
+            changed = True
+        elif d.date == today and d.status == 'upcoming':
+            d.status = 'today'
+            changed = True
+    if changed:
+        db.session.commit()
+    return days
+
+
 def _wants_json():
     """Check if client prefers JSON (API) over HTML."""
     return (
@@ -209,8 +273,14 @@ def dashboard():
     if _wants_json():
         return jsonify(plans=[p.to_dict() for p in active_plans])
 
+    plan_cards = []
+    for p in active_plans:
+        days = sync_day_statuses(p)
+        plan_cards.append({'plan': p, 'pace': plan_pace(p, days)})
+
     return render_template('prep/dashboard.html',
                            active_plans=active_plans,
+                           plan_cards=plan_cards,
                            completed_plans=completed_plans)
 
 
@@ -292,9 +362,22 @@ def create_plan():
     else:
         radar = _get_user_radar()
 
-    # Determine daily task count
+    # Determine daily task count: дневная норма из анкеты, если она есть —
+    # план тогда не просит больше, чем человек обещал сам себе. Иначе:
+    # 7, если олимпиада ближе месяца, 5 по умолчанию.
     days_to_olympiad = (target_dt - date.today()).days
     daily_count = 7 if days_to_olympiad < 30 else 5
+    try:
+        from models_curator import CuratorState
+        _cs = CuratorState.query.filter_by(user_id=current_user.id).first()
+        _raw = getattr(_cs, 'prep_state', None) if _cs is not None else None
+        if isinstance(_raw, str):
+            _raw = json.loads(_raw)
+        _intake = ((_raw or {}).get('intake') or {})
+        if _intake.get('completed') and _intake.get('daily_tasks'):
+            daily_count = max(1, int(_intake['daily_tasks']))
+    except Exception:
+        pass
 
     # Generate plan
     plan = generate_prep_plan(
@@ -320,12 +403,8 @@ def plan_detail(plan_id):
     """Детали плана: календарь дней + радар."""
     plan = _get_plan_or_404(plan_id)
 
-    days = (
-        PrepDay.query
-        .filter_by(plan_id=plan_id)
-        .order_by(PrepDay.date)
-        .all()
-    )
+    days = sync_day_statuses(plan)
+    pace = plan_pace(plan, days)
 
     days_data = [{
         'id': d.id,
@@ -352,6 +431,8 @@ def plan_detail(plan_id):
     return render_template('prep/plan_detail.html',
                            plan=plan,
                            days=days,
+                           pace=pace,
+                           minutes_per_task=MINUTES_PER_TASK,
                            days_json=json.dumps(days_data, ensure_ascii=False),
                            total_solved=total_solved,
                            completed_days=completed_days,

@@ -199,7 +199,8 @@ function populateSummary() {
         const days = Math.max(7, Math.min(180, Math.ceil((target - today) / 86400000)));
         setEl('sum-days', days);
         setEl('mot-days', days);
-        setEl('sum-tasks', days < 30 ? '7' : '5');
+        const tasks = days < 30 ? 7 : 5;
+        setEl('sum-tasks', `${tasks} (~${tasks * 6} мин в день)`);
     }
 
     setEl('sum-baseline', wizState.baseline === 'adaptive_test' ? 'Адаптивный тест' : 'Текущий Радар');
@@ -260,6 +261,16 @@ document.addEventListener('keydown', function (e) {
         if (nextBtn && !nextBtn.disabled) nextBtn.click();
     }
 });
+
+// ─── Preselect olympiad from ?slug= (link «Составить план» из календаря) ────
+(function preselectFromQuery() {
+    try {
+        const slug = new URLSearchParams(location.search).get('slug');
+        if (!slug) return;
+        const card = document.getElementById('wiz-oly-' + slug);
+        if (card) selectOlympiad(card);
+    } catch (e) { /* ignore */ }
+})();
 
 // ─── Restore state from sessionStorage (after adaptive test redirect) ────────
 (function restoreState() {

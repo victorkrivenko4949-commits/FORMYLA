@@ -17,7 +17,29 @@
     <h1 style="font-size:1.6rem;font-weight:800;color:#fff;margin:0 0 6px;">{{ plan.olympiad.name }}</h1>
     <div style="color:#94a3b8;font-size:.95rem;margin-bottom:16px;">{{ plan.target_stage }}</div>
     <div style="font-size:1.1rem;color:#22d3a6;font-weight:700;margin-bottom:16px;" id="countdown-timer">
-        &#x0414;&#x043E; &#x043E;&#x043B;&#x0438;&#x043C;&#x043F;&#x0438;&#x0430;&#x0434;&#x044B;: <strong>{{ plan.days_remaining }}</strong> &#x0434;&#x043D;&#x0435;&#x0439;
+        &#x0414;&#x043E; &#x043E;&#x043B;&#x0438;&#x043C;&#x043F;&#x0438;&#x0430;&#x0434;&#x044B;: <strong>{{ pace.days_left }}</strong> &#x0434;&#x043D;&#x0435;&#x0439;
+    </div>
+    <!-- Динамический темп: честно пересчитывается каждый день -->
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;">
+        <div>
+            <div style="font-size:1.5rem;font-weight:800;color:{{ '#22d3a6' if pace.on_track else '#f59e0b' }};">{{ pace.need_per_day }}</div>
+            <div style="color:#94a3b8;font-size:.8rem;">задач в день (~{{ pace.minutes_per_day }} мин)</div>
+        </div>
+        {% if pace.streak > 0 %}
+        <div>
+            <div style="font-size:1.5rem;font-weight:800;color:#f97316;">{{ pace.streak }}</div>
+            <div style="color:#94a3b8;font-size:.8rem;">дней подряд</div>
+        </div>
+        {% endif %}
+        <div>
+            <div style="font-size:1.5rem;font-weight:800;color:#cbd5e1;">{{ pace.solved_problems }}/{{ pace.total_problems }}</div>
+            <div style="color:#94a3b8;font-size:.8rem;">задач решено</div>
+        </div>
+        {% if not pace.on_track and pace.remaining_problems > 0 %}
+        <div style="flex-basis:100%;color:#f59e0b;font-size:.88rem;">
+            Есть отставание — темп уже пересчитан на оставшиеся дни. Сегодня: {{ pace.need_per_day }} задач.
+        </div>
+        {% endif %}
     </div>
     <div class="prep-progress" style="height:12px;margin-bottom:8px;">
         <div class="prep-progress-fill" style="width:{{ plan.progress_pct }}%;"></div>

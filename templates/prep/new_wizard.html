@@ -29,7 +29,7 @@
 
         <div class="wiz-oly-grid">
             {% for o in olympiads %}
-            <div class="wiz-oly-card" data-slug="{{ o.slug }}" data-name="{{ o.name }}"
+            <div class="wiz-oly-card" data-slug="{{ o.slug }}" data-name="{{ o.name }}" id="wiz-oly-{{ o.slug }}"
                  data-short="{{ o.short_name }}" data-color="{{ o.color_hex }}"
                  data-stages='{{ o.stages_list | tojson }}'
                  data-grades='{{ o.grades_list | tojson }}'

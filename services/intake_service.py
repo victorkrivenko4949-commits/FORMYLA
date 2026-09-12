@@ -578,6 +578,12 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
 
     cs.grade = result.class_level
 
+    # Финальный уровень анкеты (опыт + якоря) — в level_engine. Раньше
+    # level_mu застревал на приоре из вопроса про опыт (set_prior до якорей),
+    # а якоря двигали только prior_mu внутри анкеты. После отказа от среза
+    # этот уровень — основа подбора задач дня.
+    _call_set_prior(user_id, result.prior_mu, result.prior_sigma)
+
     # +20 рейтинга за пройденную анкету (один раз — анкета завершается лишь раз)
     try:
         from models import User as _User
