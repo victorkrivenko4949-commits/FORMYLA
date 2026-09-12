@@ -634,4 +634,3 @@ def _recalc_section_mu(cs: CuratorState, section: str):
     by_section[section]['mu'] = round(avg_mu, 3)
     by_section[section]['n'] = len(measured)
     cs.level_by_section = _json.dumps(by_section, ensure_ascii=False)
-
