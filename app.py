@@ -2305,27 +2305,43 @@ def onboarding_nudge_email_job():
     """Утреннее email-напоминание новичкам, не прошедшим онбординг.
 
     Отправляем один раз тем, кто зарегистрировался 22–26 часов назад
-    и так и не завершил анкету (onboarded_at IS NULL). Узкое окно вокруг
-    ежедневного запуска гарантирует, что письмо уйдёт ровно один раз,
-    а onboarded_at остаётся признаком пройденного онбординга и не
-    трогается этой задачей.
+    и так и не завершил анкету. Узкое окно вокруг ежедневного запуска
+    гарантирует, что письмо уйдёт ровно один раз. onboarded_at не
+    используем как фильтр: он проставляется уже при первом визите на
+    /about, а не после анкеты; реальный признак пройденной анкеты —
+    intake.completed в curator_state.prep_state.
     Запускается в 10:30 MSK.
     """
     with app.app_context():
         try:
             from datetime import datetime, timedelta
             from models import User
+            from models_curator import CuratorState
 
             now = datetime.utcnow()
             window_from = now - timedelta(hours=26)
             window_to = now - timedelta(hours=22)
 
-            fresh = User.query.filter(
+            candidates = User.query.filter(
                 User.created_at.between(window_from, window_to),
-                User.onboarded_at.is_(None),
                 User.is_guest.is_(False),
                 User.email.isnot(None),
             ).all()
+
+            # Оставляем только тех, кто не завершил анкету
+            states = {
+                cs.user_id: cs.prep_state
+                for cs in CuratorState.query.filter(
+                    CuratorState.user_id.in_([u.id for u in candidates])
+                ).all()
+            } if candidates else {}
+
+            fresh = []
+            for user in candidates:
+                ps = states.get(user.id) or {}
+                intake = (ps.get('intake') or {}) if isinstance(ps, dict) else {}
+                if not intake.get('completed'):
+                    fresh.append(user)
 
             from services.email_service import send_onboarding_nudge
             sent = 0
@@ -13421,5 +13437,3 @@ if __name__ == '__main__':
             port=5000,
             use_reloader=_use_reloader,
         )
-
-
