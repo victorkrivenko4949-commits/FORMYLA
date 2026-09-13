@@ -59,6 +59,13 @@
     border: 1px solid rgba(255,255,255,0.1);
   }
   .hero-cta:hover { transform: translateY(-2px); }
+  .hero-cta-block { margin-top: 26px; }
+  .hero-cta-note {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #fbbf24;
+    font-weight: 600;
+  }
   .hero-description {
     color: #cbd5e1;
     font-size: 1rem;
@@ -321,6 +328,12 @@
       Это не школьный курс и не подготовка к экзаменам. Здесь только олимпиадные задачи:
       всероссийская олимпиада, Эйлер, Физтех, Курчатов, Матпраздник и другие.
     </p>
+    {% if not current_user.is_authenticated %}
+    <div class="hero-cta-block">
+      <a href="/login" class="hero-cta hero-cta-primary">Зарегистрироваться</a>
+      <p class="hero-cta-note">Без регистрации дальше никуда: анкета, задачи дня и персональный план открываются только после входа.</p>
+    </div>
+    {% endif %}
   </section>
 
   {# ── 3. Как это работает: анкета, якорные задачи, задачи дня ── #}
