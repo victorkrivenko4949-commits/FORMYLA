@@ -556,9 +556,21 @@
       '</div>';
     document.body.appendChild(overlay);
     document.getElementById('dt-modal-yes').addEventListener('click', function () {
+      // Цель Метрики: нажатие «Да, погнали» в поп-апе после анкеты
+      try {
+        if (typeof ym === 'function') {
+          ym({{ config.YANDEX_METRIKA_ID | default(109394525) }}, 'reachGoal', 'daily_tasks_start_yes');
+        }
+      } catch (e) {}
       window.location.href = '/daily_tasks';
     });
     document.getElementById('dt-modal-later').addEventListener('click', function () {
+      // Цель Метрики: нажатие «Позже» в том же поп-апе
+      try {
+        if (typeof ym === 'function') {
+          ym({{ config.YANDEX_METRIKA_ID | default(109394525) }}, 'reachGoal', 'daily_tasks_start_later');
+        }
+      } catch (e) {}
       overlay.remove();
     });
     overlay.addEventListener('click', function (e) {
