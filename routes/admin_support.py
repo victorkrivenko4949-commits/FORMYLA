@@ -211,6 +211,56 @@ def admin_support_reply(msg_id):
     return redirect(url_for('admin_support.admin_support_inbox'))
 
 
+@admin_support_bp.route('/admin/support/user_intake/<int:user_id>')
+@login_required
+def admin_support_user_intake(user_id):
+    """Админ: анкета пользователя (ответы, включая commitment, и якоря).
+
+    Источник: CuratorState.prep_state.intake. Доступно и аккаунту поддержки
+    (Lavrik): путь под разрешённым префиксом /admin/support.
+    """
+    if not _is_admin():
+        return jsonify({'error': 'forbidden'}), 403
+
+    import json as _json
+    from models import User
+    from models_curator import CuratorState
+
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'not_found'}), 404
+
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    ps = getattr(cs, 'prep_state', None) if cs is not None else None
+    if isinstance(ps, str):
+        try:
+            ps = _json.loads(ps)
+        except Exception:
+            ps = {}
+    if not isinstance(ps, dict):
+        ps = {}
+    intake = ps.get('intake') or {}
+    answers = intake.get('answers') or {}
+    anchors = intake.get('anchor_results') or []
+
+    return jsonify({
+        'user': {
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'xp': user.xp,
+            'problems_solved': getattr(user, 'problems_solved', None),
+            'created_at': user.created_at.isoformat() if getattr(user, 'created_at', None) else None,
+        },
+        'intake_completed': bool(intake.get('completed')),
+        'answers': answers,
+        'commitment': answers.get('commitment'),
+        'anchors_correct': sum(1 for a in anchors if a.get('correct')),
+        'anchors_total': len(anchors),
+        'completed_at': intake.get('completed_at'),
+    })
+
+
 def _escape(s):
     """Простой HTML escape."""
     return (str(s or '')
