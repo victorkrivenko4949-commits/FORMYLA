@@ -2143,48 +2143,107 @@ def daily_streak_reset_job():
         except Exception as e:
             app.logger.error(f" Daily streak reset failed: {e}")
 
-# Daily Quest Deadline Reminder (runs at 18:00 and 21:00 MSK)
-@scheduler.task('cron', id='daily_quest_deadline_reminder', hour='18,21', minute=0)
+# Daily Quest Deadline Reminder (runs at 19:00 and 21:00 MSK)
+@scheduler.task('cron', id='daily_quest_deadline_reminder', hour='19,21', minute=0)
 def daily_quest_deadline_reminder_job():
-    """Send push notifications to users who haven't completed today's Daily Tasks."""
-    if not VAPID_PUBLIC_KEY or not VAPID_PRIVATE_KEY:
-        return  # Push notifications not configured
+    """Вечернее напоминание о нерешённых задачах дня (push + email + админ-дайджест).
+
+    Когда до конца задач дня (00:00) остаётся меньше 5 часов — напоминаем
+    всем, у кого набор на сегодня есть, но не решён полностью:
+      * 19:00 МСК — «осталось меньше 5 часов»,
+      * 21:00 МСК — «осталось меньше 3 часов».
+    Email уходит даже без push-подписки (пушей мало у кого есть).
+    Владельцу (DAILY_DIGEST_EMAIL / ADMIN_EMAILS) приходит дайджест —
+    кому именно ушли напоминания.
+    """
     with app.app_context():
         try:
-            from datetime import date
+            import os
+            from datetime import date, datetime
             from models import PushSubscription, User
             from daily_tasks.models import DailyTaskSet, DailyTaskItem
+            from services.email_service import (
+                send_daily_tasks_deadline,
+                send_daily_tasks_deadline_digest,
+            )
+
+            hour = datetime.now().hour
+            hours_left = max(1, 24 - hour)  # 19 -> 5, 21 -> 3
+
             today = date.today()
-            # Find all users with push subscriptions
-            sub_rows = PushSubscription.query.distinct(PushSubscription.user_id).all()
-            sent = 0
-            for sub in sub_rows:
-                user = User.query.get(sub.user_id)
+            has_push = bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY)
+            push_user_ids = (
+                {s.user_id for s in PushSubscription.query.distinct(PushSubscription.user_id).all()}
+                if has_push else set()
+            )
+
+            # Все, у кого сегодня есть готовый набор задач дня
+            sets_today = DailyTaskSet.query.filter_by(
+                target_date=today, status='ready'
+            ).all()
+
+            pending = []  # {'user': User, 'daily_set': DailyTaskSet}
+            for ds in sets_today:
+                unfinished = DailyTaskItem.query.filter(
+                    DailyTaskItem.daily_set_id == ds.id,
+                    DailyTaskItem.is_correct.is_(None)
+                ).count() > 0
+                if not unfinished:
+                    continue  # всё решено — не беспокоим
+                user = User.query.get(ds.user_id)
                 if not user or user.is_guest:
                     continue
-                # Check if user has a daily task set for today
-                daily_set = DailyTaskSet.query.filter_by(
-                    user_id=user.id, target_date=today, status='ready'
-                ).first()
-                if not daily_set:
-                    continue
-                # Check if all tasks are answered (is_correct is not null)
-                all_answered = DailyTaskItem.query.filter(
-                    DailyTaskItem.daily_set_id == daily_set.id,
-                    DailyTaskItem.is_correct.is_(None)
-                ).count() == 0
-                if all_answered:
-                    continue  # Already completed
-                # Send push notification
-                _send_push_notification(
-                    user_id=user.id,
-                    title='⏳ Задачи дня',
-                    body='Осталось меньше 3 часов, чтобы решить задачи дня!',
-                    url='/curator',
+                pending.append(user)
+
+            push_sent = 0
+            email_sent = 0
+            for user in pending:
+                try:
+                    if has_push and user.id in push_user_ids:
+                        _send_push_notification(
+                            user_id=user.id,
+                            title='⏳ Задачи дня',
+                            body=f'Осталось меньше {hours_left} часов, чтобы решить задачи дня!',
+                            url='/daily_tasks',
+                        )
+                        push_sent += 1
+                    if getattr(user, 'email', None):
+                        if send_daily_tasks_deadline(user, hours_left=hours_left):
+                            email_sent += 1
+                except Exception as user_err:
+                    app.logger.warning(
+                        f"[daily_deadline] Error for user #{user.id}: {user_err}"
+                    )
+
+            if pending:
+                app.logger.info(
+                    f"[OK] Daily deadline reminder: {len(pending)} pending, "
+                    f"push={push_sent}, email={email_sent}"
                 )
-                sent += 1
-            if sent:
-                app.logger.info(f"[OK] Daily quest reminder sent to {sent} users")
+                # Дайджест владельцу: кому ушли напоминания
+                digest_email = (os.environ.get('DAILY_DIGEST_EMAIL') or '').strip()
+                if not digest_email:
+                    _admins = [e.strip() for e in os.environ.get('ADMIN_EMAILS', '').split(',') if e.strip()]
+                    digest_email = _admins[0] if _admins else ''
+                if digest_email:
+                    try:
+                        send_daily_tasks_deadline_digest(
+                            digest_email,
+                            total_pending=len(pending),
+                            recipients=[
+                                {
+                                    'id': u.id,
+                                    'name': getattr(u, 'nickname', None) or getattr(u, 'name', None),
+                                    'email': getattr(u, 'email', None),
+                                }
+                                for u in pending
+                            ],
+                            hours_left=hours_left,
+                        )
+                    except Exception as digest_err:
+                        app.logger.warning(
+                            f"[daily_deadline] Digest email failed: {digest_err}"
+                        )
         except Exception as e:
             app.logger.error(f" Daily quest reminder failed: {e}")
 

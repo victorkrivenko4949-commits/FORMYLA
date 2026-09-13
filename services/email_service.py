@@ -160,6 +160,65 @@ def send_onboarding_nudge(user) -> bool:
     return send_email(email, subject, html, to_name=name)
 
 
+def send_daily_tasks_deadline(user, hours_left: int = 5) -> bool:
+    """Напоминание: до конца задач дня осталось меньше `hours_left` часов.
+
+    Шлётся в 19:00 и 21:00 МСК тем, у кого сегодня есть готовый набор
+    задач дня и он ещё не полностью решён (см. app.py:
+    daily_quest_deadline_reminder_job).
+    """
+    email = getattr(user, "email", None)
+    if not email:
+        return False
+    name = getattr(user, "nickname", None) or getattr(user, "name", None) or email.split("@")[0]
+    subject = f"FORMYLA: до конца задач дня меньше {hours_left} часов"
+    html = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h1 style="color:#7c3aed;margin:0 0 12px;">⏳ {name}, задачи дня ещё не решены</h1>
+      <p>До конца сегодняшнего набора осталось меньше {hours_left} часов. Завтра задачи обновятся, а серия дней засчитывается только при полностью решённом наборе.</p>
+      <p style="text-align:center;margin:24px 0;">
+        <a href="https://formyla.net/daily_tasks" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Открыть задачи дня</a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;margin-top:32px;">Это автоматическое напоминание, отвечать не нужно.</p>
+    </div>
+    """
+    return send_email(email, subject, html, to_name=name)
+
+
+def send_daily_tasks_deadline_digest(
+    admin_email: str,
+    total_pending: int,
+    recipients: list,
+    hours_left: int = 5,
+) -> bool:
+    """Админ-дайджест: кому ушло вечернее напоминание о задачах дня.
+
+    recipients — список dict'ов с ключами id/email/name. Шлём только
+    когда total_pending > 0, чтобы не спамить пустым отчётом.
+    """
+    if not admin_email or total_pending <= 0:
+        return False
+    rows = "".join(
+        f'<tr><td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">#{r.get("id", "?")}</td>'
+        f'<td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">{r.get("name") or "—"}</td>'
+        f'<td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">{r.get("email") or "—"}</td></tr>'
+        for r in recipients
+    )
+    subject = f"FORMYLA digest: напоминания о задачах дня ({total_pending})"
+    html = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:640px;margin:0 auto;padding:24px;color:#1f2937;">
+      <h1 style="color:#7c3aed;margin:0 0 12px;">Вечернее напоминание о задачах дня</h1>
+      <p>До конца задач дня меньше {hours_left} часов. Не закончили сегодняшний набор: <strong>{total_pending}</strong>. Им отправлены email и push-напоминание:</p>
+      <table style="border-collapse:collapse;font-size:14px;margin-top:12px;">
+        <tr style="color:#6b7280;text-align:left;"><th style="padding:4px 12px;">ID</th><th style="padding:4px 12px;">Имя</th><th style="padding:4px 12px;">Email</th></tr>
+        {rows}
+      </table>
+      <p style="color:#6b7280;font-size:13px;margin-top:24px;">Автоматический дайджест, отвечать не нужно.</p>
+    </div>
+    """
+    return send_email(admin_email, subject, html, to_name="Admin")
+
+
 def send_password_reset(user, reset_link: str) -> bool:
     """Send a password-reset link (auth is passwordless today, so this is
     reserved for future use — e.g. account recovery via Telegram-linked email)."""
