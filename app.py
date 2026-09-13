@@ -5350,6 +5350,15 @@ def login():
             login_user(user, remember=True)
             return redirect(url_for('admin_support.admin_support_inbox'))
 
+        # Базовая валидация ДО создания пользователя и отправки письма:
+        # иначе опечатка (пропущен @, кириллица, лишние пробелы) приводит к
+        # созданию кривого аккаунта и падающей отправке с технической ошибкой
+        # вида «501 Bad recipient address syntax».
+        import re as _re
+        if not _re.fullmatch(r'[^@\sа-яА-Я]+@[^@\sа-яА-Я]+\.[^@\sа-яА-Я]+', email):
+            flash('Проверьте адрес почты: похоже, в нём опечатка', 'error')
+            return render_template('login.html')
+
         # Проверяем или создаем пользователя.
         # Passwordless-вход = passwordless-регистрация: если email ещё не
         # существует (например, после «Перепройти анкету», которая удаляет
