@@ -123,7 +123,7 @@ def send_welcome_email(user) -> bool:
       <p>Спасибо, что зарегистрировался в <strong>FORMYLA</strong> — платформе подготовки к математическим олимпиадам.</p>
       <p>Что ты можешь сделать прямо сейчас:</p>
       <ul>
-        <li>Пройти <a href="https://formyla.net/intake/" style="color:#0ea5e9;">короткую анкету</a> — 5 вопросов и 5 задач, подберём стартовый уровень.</li>
+        <li>Пройти <a href="https://formyla.net/intake/" style="color:#0ea5e9;">короткую анкету</a> — 6 вопросов и 5 задач, подберём стартовый уровень.</li>
         <li>Решить <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a> — каждый день новая подборка.</li>
         <li>Выбрать свою олимпиаду в <a href="https://formyla.net/olympiads/menu" style="color:#0ea5e9;">каталоге олимпиад</a>.</li>
       </ul>
@@ -150,7 +150,7 @@ def send_onboarding_nudge(user) -> bool:
       <h1 style="color:#7c3aed;margin:0 0 12px;">Доброе утро, {name}!</h1>
       <p>Вчера ты зарегистрировался в <strong>FORMYLA</strong>, но не дошёл до первых задач. Это займёт меньше 10 минут:</p>
       <ul>
-        <li><a href="https://formyla.net/intake/" style="color:#0ea5e9;">Пройди короткую анкету</a> — 5 вопросов, и мы подберём тебе уровень.</li>
+        <li><a href="https://formyla.net/intake/" style="color:#0ea5e9;">Пройди короткую анкету</a> — 6 вопросов, и мы подберём тебе уровень.</li>
         <li>Сразу после анкеты — <a href="https://formyla.net/prep/probe" style="color:#0ea5e9;">утренний срез</a>: 5 задач, по ним соберём личный план подготовки.</li>
       </ul>
       <p>Если анкета уже пройдена — можешь сразу открыть <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a>.</p>

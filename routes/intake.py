@@ -125,10 +125,11 @@ def intake_back():
 
     from services.intake_questions import (
         Q1_CLASS, Q2_GOAL, Q3_EXPERIENCE, Q4_TIME, Q5_WEAK_SECTIONS,
+        Q6_COMMITMENT,
     )
 
     # Определяем предыдущий шаг
-    steps = ['q1', 'q2', 'q3', 'q4', 'q5']
+    steps = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6']
     if current_step not in steps:
         return jsonify({'done': False, 'error': f'Нельзя вернуться с шага {current_step}.'}), 400
 
@@ -143,6 +144,7 @@ def intake_back():
         'q3': Q3_EXPERIENCE,
         'q4': Q4_TIME,
         'q5': Q5_WEAK_SECTIONS,
+        'q6': Q6_COMMITMENT,
     }
     q_index = idx  # 1-based after going back
 
@@ -162,7 +164,7 @@ def intake_back():
         },
         'step': prev_step,
         'q_index': q_index,
-        'total_questions': 5,
+        'total_questions': 6,
         'saved_answer': state['answers'].get(prev_q['id'], None),
         'anchor': None,
     }), 200

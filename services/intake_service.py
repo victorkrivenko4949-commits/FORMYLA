@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from services.intake_questions import (
     Q1_CLASS, Q2_GOAL, Q3_EXPERIENCE, Q4_TIME, Q5_WEAK_SECTIONS,
+    Q6_COMMITMENT,
     ANCHOR_SECTION_ORDER, compute_prior, IntakeResult,
     assign_goal,
 )
@@ -185,20 +186,21 @@ def _resume_state(user_id: int, state: Dict[str, Any]) -> Dict[str, Any]:
     step = state.get('step', 'q1')
     q_index = state.get('q_index', 1)
 
-    if step in ('q1', 'q2', 'q3', 'q4', 'q5'):
+    if step in ('q1', 'q2', 'q3', 'q4', 'q5', 'q6'):
         qmap = {
             'q1': Q1_CLASS,
             'q2': Q2_GOAL,
             'q3': Q3_EXPERIENCE,
             'q4': Q4_TIME,
             'q5': Q5_WEAK_SECTIONS,
+            'q6': Q6_COMMITMENT,
         }
         return {
             'done': False,
             'question': _format_question(qmap[step]),
             'step': step,
             'q_index': q_index,
-            'total_questions': 5,
+            'total_questions': 6,
             'anchor': None,
         }
 
@@ -206,7 +208,7 @@ def _resume_state(user_id: int, state: Dict[str, Any]) -> Dict[str, Any]:
         idx = state.get('current_anchor_idx', 0)
         anchor_tasks = state.get('anchor_tasks', [])
         if idx < len(anchor_tasks):
-            state['total_questions'] = 10
+            state['total_questions'] = 11
             return _format_anchor_response(state, idx)
         # Якоря были пройдены, но финализация не отработала — завершаем.
         return finish(user_id, state)
@@ -270,7 +272,7 @@ def start(user_id: int) -> Dict[str, Any]:
     state = {
         'step': 'q1',
         'q_index': 1,          # 1-based index for progress display
-        'total_questions': 5,
+        'total_questions': 6,
         'answers': {},
         'anchor_tasks': [],
         'anchor_results': [],
@@ -289,7 +291,7 @@ def start(user_id: int) -> Dict[str, Any]:
         'question': _format_question(Q1_CLASS),
         'step': 'q1',
         'q_index': 1,
-        'total_questions': 5,
+        'total_questions': 6,
     }
 
 
@@ -322,13 +324,14 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
             ),
         }
 
-    # ── Flow: q1 -> q2 -> q3 -> q4 -> q5 -> anchors ──────────────────
+    # ── Flow: q1 -> q2 -> q3 -> q4 -> q5 -> q6 -> anchors ────────────
 
     transitions = {
         'q1': ('q2', Q2_GOAL, 2),
         'q2': ('q3', Q3_EXPERIENCE, 3),
         'q3': ('q4', Q4_TIME, 4),
         'q4': ('q5', Q5_WEAK_SECTIONS, 5),
+        'q5': ('q6', Q6_COMMITMENT, 6),
     }
 
     if current_step in transitions:
@@ -341,17 +344,17 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
             'question': _format_question(next_q),
             'step': next_step,
             'q_index': qi,
-            'total_questions': 5,
+            'total_questions': 6,
             'anchor': None,
         }
 
-    # ── q5 -> выбираем якоря и показываем первый ──────────────────
-    if current_step == 'q5' and qid == 'weak_sections':
+    # ── q6 -> выбираем якоря и показываем первый ──────────────────
+    if current_step == 'q6' and qid == 'commitment':
         # Выбираем 5 якорей
         grade = int(state['answers'].get('class', 9))
         state['step'] = 'anchors'
-        state['q_index'] = 6  # "шаг 6 из 10"
-        state['total_questions'] = 10  # 5 вопросов + 5 якорей
+        state['q_index'] = 7  # "шаг 7 из 11"
+        state['total_questions'] = 11  # 6 вопросов + 5 якорей
 
         from services.intake_questions import EXPERIENCE_PRIOR
         exp_key = state['answers'].get('experience', 'none')
@@ -414,7 +417,7 @@ def submit_anchor(user_id: int, task_id: int, user_answer: str) -> Dict[str, Any
 
     idx += 1
     state['current_anchor_idx'] = idx
-    state['q_index'] = 6 + idx  # 6, 7, 8, 9, 10
+    state['q_index'] = 7 + idx  # 7, 8, 9, 10, 11
 
     if idx >= len(anchor_tasks):
         # Все якоря пройдены -> финал
@@ -432,8 +435,8 @@ def _format_anchor_response(state: Dict, idx: int) -> Dict[str, Any]:
         'done': False,
         'question': None,
         'step': 'anchors',
-        'q_index': 6 + idx,
-        'total_questions': 10,
+        'q_index': 7 + idx,
+        'total_questions': 11,
         'anchor': {
             'task_id': anchor['db_id'],
             'statement': anchor['statement'],

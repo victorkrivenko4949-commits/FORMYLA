@@ -329,13 +329,13 @@
 <div class="intake-container">
   <div class="intake-header">
     <h1>Анкета</h1>
-    <p>Ответь на 5 вопросов, чтобы мы подобрали задачи под тебя</p>
+    <p>Ответь на 6 вопросов, чтобы мы подобрали задачи под тебя</p>
   </div>
 
   <!-- Progress -->
   <div class="intake-progress-wrap">
     <div class="intake-progress-label">
-      <span id="intake-progress-text">Вопрос 1 из 5</span>
+      <span id="intake-progress-text">Вопрос 1 из 6</span>
       <span id="intake-progress-pct">20%</span>
     </div>
     <div class="intake-progress-bar">
@@ -374,7 +374,7 @@
   function updateProgress(qIndex, total) {
     const pct = Math.round((qIndex / total) * 100);
     document.getElementById('intake-progress-text').textContent =
-      total > 5 ? `Задача ${qIndex - 5} из 5 (якорь)` : `Вопрос ${qIndex} из ${total}`;
+      total > 6 ? `Задача ${qIndex - 6} из 5 (якорь)` : `Вопрос ${qIndex} из ${total}`;
     document.getElementById('intake-progress-pct').textContent = pct + '%';
     document.getElementById('intake-progress-fill').style.width = pct + '%';
   }
