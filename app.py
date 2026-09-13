@@ -5362,9 +5362,18 @@ def login():
             db.session.commit()
             app.logger.warning(f"НОВЫЙ ПОЛЬЗОВАТЕЛЬ СОЗДАН ПРИ ВХОДЕ: {email}")
         
-        # Генерируем код
-        code = user.generate_auth_code()
-        db.session.commit()
+        # Генерируем код. Если действующий код уже существует и не истёк,
+        # переиспользуем его: повторный запрос не должен ломать код из
+        # предыдущего письма (иначе у пользователя два письма, и код из
+        # первого уже мёртвый — классическая жалоба «первый код неверный»).
+        from datetime import datetime as _dt, timedelta as _td
+        _existing = getattr(user, 'auth_code', None)
+        _expires = getattr(user, 'code_expires', None)
+        if _existing and _expires and _expires > _dt.utcnow() + _td(minutes=1):
+            code = _existing
+        else:
+            code = user.generate_auth_code()
+            db.session.commit()
         
         app.logger.warning(f"КОД СГЕНЕРИРОВАН: {code} для {email}")
         
