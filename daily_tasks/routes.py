@@ -1119,6 +1119,19 @@ def submit_answer_ai(item_id: int):
             item.time_spent_seconds = 0
         db.session.commit()
 
+        # +5 XP и +1 к решённым за правильную задачу дня (как в submit_answer).
+        # Баг: раньше AI-путь не начислял ни XP, ни problems_solved.
+        if is_correct:
+            try:
+                from models import User as _User
+                _u = db.session.get(_User, current_user.id)
+                if _u is not None:
+                    _u.experience_points = (_u.experience_points or 0) + 5
+                    _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                    db.session.commit()
+            except Exception as _xp_err:
+                logger.warning("submit_answer_ai: +XP не начислен item=%d: %s", item_id, _xp_err)
+
         # ── Записать результат в level_engine ──────────────────────────
         try:
             from services.daily_task_rotation import record_daily_answer
