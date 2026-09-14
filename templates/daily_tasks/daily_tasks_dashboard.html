@@ -1480,9 +1480,15 @@
     res.innerHTML = '';
     if (it.is_answered) {
       var _sol = it.solution || '';
+      var _feedback = it.ai_feedback || '';
       var _ansHtml = '';
       if (it.user_answer) {
         _ansHtml += '<div style="color:var(--muted);margin-top:8px;">Твой ответ: <b>' + escapeHtmlPreserveLatex(it.user_answer) + '</b></div>';
+      }
+      // 2026-09-15: показываем сохранённый в БД ИИ-разбор, чтобы при
+      // повторном открытии выглядело так же, как после ответа.
+      if (_feedback) {
+        _ansHtml += '<div style="color:var(--text);line-height:1.5;margin-top:8px;white-space:pre-wrap;padding:10px 12px;background:rgba(76,125,255,0.05);border-left:3px solid rgba(76,125,255,0.35);border-radius:8px;">' + escapeHtmlPreserveLatex(_feedback) + '</div>';
       }
       if (_sol) {
         // Чертёж прикрепляем к решению (если есть).
@@ -1493,18 +1499,34 @@
       res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';font-weight:600;">' +
         (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>' + _ansHtml;
       if (typeof renderMath === 'function') renderMath(res);
+      // 2026-09-15: повторный ответ запрещён — и поля, и кнопку блокируем.
       inp.disabled = true;
+      var solInput = $('dt-solution-input');
+      if (solInput) solInput.disabled = true;
+      var photoLabel = document.querySelector('label[for="dt-solution-photo"]');
+      if (photoLabel) { photoLabel.style.opacity = '0.45'; photoLabel.style.pointerEvents = 'none'; }
+      var photoInp = $('dt-solution-photo');
+      if (photoInp) photoInp.disabled = true;
       $('dt-submit-btn').disabled = true;
+      $('dt-submit-btn').textContent = 'Ответ уже отправлен';
+      $('dt-submit-btn').onclick = null;
+      inp.onkeydown = null;
+      inp.oninput = null;
+      if (sol) sol.oninput = null;
+      dtModalEl.style.display = 'flex';
+      return;
     } else {
+      if (typeof renderMath === 'function') renderMath(res);
       inp.disabled = false;
       $('dt-submit-btn').disabled = false;
-    }
-    $('dt-submit-btn').onclick = submitAnswer;
-    inp.onkeydown = function(e) { if (e.key === 'Enter') submitAnswer(); };
-    // Автосохранение черновика при вводе (ответ и решение).
-    inp.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
-    if (sol) {
-      sol.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
+      $('dt-submit-btn').textContent = 'Проверить';
+      $('dt-submit-btn').onclick = submitAnswer;
+      inp.onkeydown = function(e) { if (e.key === 'Enter') submitAnswer(); };
+      // Автосохранение черновика при вводе (ответ и решение).
+      inp.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
+      if (sol) {
+        sol.oninput = function() { if (dtCurrentItem) dtSaveDraft(dtCurrentItem.id); };
+      }
     }
     dtModalEl.style.display = 'flex';
     inp.focus();

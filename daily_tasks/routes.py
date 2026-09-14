@@ -108,13 +108,18 @@ def _submit_bank_answer(task_id: int, issue):
         return jsonify({"status": "error", "message": "Задача не найдена"}), 404
 
     if issue.user_answer is not None:
+        # Уже отвечено — отдаём ранее сохранённые ответ и разбор, чтобы
+        # фронт показал то же самое, что после ответа (а не пустую форму).
+        from services.md_render import md_render as _mdr
+        from utils.math_text_fixer import wrap_bare_math as _wbm
         return jsonify({
-            "status": "error",
+            "status": "already_answered",
             "message": "На эту задачу уже отвечено.",
             "already_answered": True,
-            "is_correct": issue.is_correct,
+            "is_correct": bool(issue.is_correct),
+            "user_answer": issue.user_answer or "",
             "correct_answer": task.answer or "",
-            "solution": task.solution or "",
+            "solution": str(_mdr(_wbm(task.solution or ""))),
         }), 409
 
     data = request.get_json(silent=True) or {}
@@ -173,6 +178,18 @@ def _submit_bank_answer(task_id: int, issue):
     except Exception as e:
         logger.exception("_submit_bank_answer: pipeline failed: %s", e)
 
+    # 2026-09-15: фото не распозналось — не пишем «неверно», просим
+    # переслать. Ответ не сохраняем, чтобы можно было попробовать ещё раз.
+    if _verdict and _verdict.get("ocr_failed"):
+        return jsonify({
+            "status": "error",
+            "ocr_failed": True,
+            "message": _verdict.get("feedback") or (
+                "Не удалось разобрать, что написано на фото. "
+                "Сфотографируй решение чётче или опиши шаги текстом."
+            ),
+        }), 422
+
     if not feedback:
         # Fallback без AI: простое сравнение ответа
         def _norm(s):
@@ -186,6 +203,7 @@ def _submit_bank_answer(task_id: int, issue):
         issue.user_answer = user_answer[:4000]
         issue.is_correct = is_correct
         issue.answered_at = _dt.utcnow()
+        issue.ai_feedback = (feedback or "")[:8000]
         try:
             issue.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
         except (TypeError, ValueError):
@@ -199,6 +217,7 @@ def _submit_bank_answer(task_id: int, issue):
                 if _u is not None:
                     _u.experience_points = (_u.experience_points or 0) + 5
                     _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                    issue.xp_awarded = True
                     db.session.commit()
             except Exception as _xp_err:
                 logger.warning("_submit_bank_answer: +XP не начислен task=%d: %s", task_id, _xp_err)
@@ -213,6 +232,7 @@ def _submit_bank_answer(task_id: int, issue):
         "feedback": feedback,
         "is_correct": is_correct,
         "correct_answer": task.answer or "",
+        "user_answer": issue.user_answer or "",
         "solution": str(md_render(wrap_bare_math(task.solution or ""))),
     })
 
@@ -261,6 +281,8 @@ def _serialize_bank_items(user_id: int, bank_items) -> list:
             "user_answer": (iss.user_answer if iss else None),
             "is_correct": (iss.is_correct if iss else None),
             "is_answered": bool(iss and iss.user_answer),
+            # 2026-09-15: ИИ-разбор сохраняем в БД — не теряем после выхода.
+            "ai_feedback": (iss.ai_feedback if iss else None),
             "answered_at": (iss.answered_at.isoformat() if iss and iss.answered_at else None),
             "is_flagged": False,
             "is_calibration": False,
@@ -1259,6 +1281,18 @@ def submit_answer_ai(item_id: int):
         score = 0.0
         feedback = "AI-проверка временно недоступна. Ответ сохранён."
         is_correct = False
+    elif _verdict.get("ocr_failed"):
+        # 2026-09-15: фото не распозналось — НЕ считаем «неверно», просто
+        # просим перефотографировать. Ответ в БД не пишем, чтобы можно было
+        # попробовать ещё раз.
+        return jsonify({
+            "status": "error",
+            "ocr_failed": True,
+            "message": _verdict.get("feedback") or (
+                "Не удалось разобрать, что написано на фото. "
+                "Сфотографируй решение чётче или опиши шаги текстом."
+            ),
+        }), 422
     else:
         score = float(_verdict.get("score", 0.0))
         feedback = str(md_render(wrap_bare_math(_verdict.get("feedback") or "")))
@@ -1281,6 +1315,7 @@ def submit_answer_ai(item_id: int):
         item.user_answer = user_answer[:4000]
         item.is_correct = is_correct
         item.answered_at = _dt.utcnow()
+        item.ai_feedback = (feedback or "")[:8000]
         try:
             item.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
         except (TypeError, ValueError):
@@ -1296,6 +1331,7 @@ def submit_answer_ai(item_id: int):
                 if _u is not None:
                     _u.experience_points = (_u.experience_points or 0) + 5
                     _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                    item.xp_awarded = True
                     db.session.commit()
             except Exception as _xp_err:
                 logger.warning("submit_answer_ai: +XP не начислен item=%d: %s", item_id, _xp_err)

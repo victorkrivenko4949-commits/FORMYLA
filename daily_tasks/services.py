@@ -608,6 +608,9 @@ def get_daily_tasks(user_id: int) -> Dict[str, Any]:
             "user_answer": item.user_answer,
             "is_correct": item.is_correct,
             "is_answered": item.user_answer is not None,
+            # 2026-09-15: ИИ-разбор сохраняем в БД, чтобы при перезаходе
+            # показывать то же, что после ответа (а не «только условие»).
+            "ai_feedback": getattr(item, "ai_feedback", None),
             "answered_at": item.answered_at.isoformat() if item.answered_at else None,
             "time_spent_seconds": item.time_spent_seconds,
             "figure_url": _get_item_figure_url(item),

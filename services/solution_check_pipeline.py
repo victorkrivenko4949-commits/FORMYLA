@@ -95,7 +95,45 @@ def check_solution(
             from services.solution_ocr import ocr_solution_images
             ocr_meta = ocr_solution_images(images, task_text or "")
             ocr_text = (ocr_meta.get("text") or "").strip()
+            # 2026-09-15: строгий пропуск — если фото шли, OCR пуст и
+            # текстового решения тоже нет, проверять НЕЧЕГО. Раньше
+            # фото попадало в checker напрямую и случайная картинка
+            # могла получить «верно».
+            if not ocr_text and not user_solution:
+                verdict_fail: Dict[str, Any] = {
+                    "status": "failed",
+                    "entity_type": entity_type,
+                    "is_correct": False,
+                    "score": 0.0,
+                    "answer_correct": None,
+                    "method_correct": None,
+                    "category": "ocr_failed",
+                    "confidence": 0.0,
+                    "feedback": (
+                        "Не удалось разобрать, что написано на фото. "
+                        "Сфотографируй решение чётче (при хорошем свете, "
+                        "по центру, без тени) или опиши шаги текстом — тогда "
+                        "проверю ещё раз."
+                    ),
+                    "solution": solution_ref or "",
+                    "correct_answer": correct_answer or "",
+                    "error_location": None,
+                    "needs_escalation": False,
+                    "ocr": ocr_meta,
+                    "ai_failure": True,
+                    "ocr_failed": True,
+                }
+                logger.warning(
+                    "[pipeline] %s OCR empty for %d image(s) and no solution text — refused to judge",
+                    entity_type, len(images),
+                )
+                return verdict_fail
+
             if ocr_text:
+                # 2026-09-15: дальше проверяет DeepSeek ТОЛЬКО по распознанному
+                # тексту — фото в checker не уходит (раньше vision-fallback мог
+                # выдать «верно» за случайное фото).
+                images = []
                 header = (
                     "[Распознанное фото-решение]"
                     if ocr_meta.get("parts", 0) > 1
@@ -178,6 +216,12 @@ def check_solution(
         "needs_escalation": bool(result.get("needs_escalation")),
         "ocr": ocr_meta,
         "ai_failure": ai_failure,
+        "ocr_failed": (
+            bool(images_b64)
+            and bool(ocr_meta)
+            and not (ocr_meta or {}).get("text")
+            and not (user_solution or "").strip()
+        ),
     }
 
     logger.info(

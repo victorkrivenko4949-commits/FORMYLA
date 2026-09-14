@@ -879,8 +879,12 @@ class DeepSeekClient:
                 # 1. Платные качественные модели (если есть баланс)
                 # 2. Бесплатные fallback-модели
                 vision_models = [
-                    # Платные модели — лучшее качество распознавания
+                    # 2026-09-15: Gemini flash через OpenRouter (лучше всего
+                    # читает рукописную математику, см. services/solution_ocr)
+                    "google/gemini-2.5-flash",
+                    "google/gemini-2.5-flash-lite",
                     "google/gemini-2.0-flash-001",      # Отличное vision, быстрая
+                    "google/gemini-3-flash-preview",
                     "openai/gpt-4o-mini",               # Хорошее vision, дешёвая
                     "anthropic/claude-3.5-sonnet",      # Премиум качество
                     # FREE-tier vision модели OpenRouter — fallback если нет баланса

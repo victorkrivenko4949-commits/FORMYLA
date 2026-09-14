@@ -87,6 +87,89 @@ def _ocr_novita_vision(b64: str, task_text: str) -> Optional[str]:
         return None
 
 
+def _ocr_openrouter_gemini(b64: str, task_text: str) -> Optional[str]:
+    """Gemini flash через OpenRouter — распознавание рукописи (основной движок).
+
+    2026-09-15: добавлено, т.к. GEMINI_API_KEY/OdiRouter на проде может
+    отсутствовать, а OPENROUTER_API_KEY всегда есть. Распознаём фото ->
+    ВЕСЬ текст уходит DeepSeek-проверяльщику как текст (см. pipeline).
+    """
+    try:
+        import os as _os
+        import requests as _requests
+        _key = _os.environ.get("OPENROUTER_API_KEY", "").strip()
+        if not _key:
+            return None
+        # Кандидаты по приоритету; можно переопределить одной моделью или
+        # списком через запятую в OCR_OPENROUTER_MODEL.
+        _env_models = [m.strip() for m in (_os.environ.get("OCR_OPENROUTER_MODEL", "") or "").split(",") if m.strip()]
+        _candidates = _env_models or [
+            "google/gemini-3-flash-preview",
+            "google/gemini-3.7-flash",
+            "google/gemini-2.5-flash",
+            "google/gemini-2.5-flash-lite",
+            "google/gemini-2.0-flash-001",
+        ]
+        _mime = _mime_from_b64(b64)
+        _prompt = (
+            "Ты — система распознавания рукописного математического текста. "
+            "Пожалуйста, РАСПОЗНАЙ ВСЁ, что написано на фото, буква в букву: "
+            "весь ход решения, формулы, слова, цифры. Ничего не выдумывай, "
+            "не исправляй ошибки, НЕ решай задачу и НЕ комментируй. "
+            "Формулы оформи в LaTeX. Если на фото нет решения или текст "
+            "нечитабелен — ответь одним словом: UNREADABLE."
+        )
+        if task_text:
+            _prompt += f"\n\nДля контекста, задача: {task_text[:600]}"
+        for _model in _candidates:
+            try:
+                _resp = _requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": _os.environ.get("DOMAIN_URL", "https://formyla.net"),
+                        "X-Title": "FORMYLA.net OCR",
+                    },
+                    json={
+                        "model": _model,
+                        "messages": [
+                            {"role": "user", "content": [
+                                {"type": "text", "text": _prompt},
+                                {"type": "image_url", "image_url": {"url": f"data:{_mime};base64,{b64}"}},
+                            ]},
+                        ],
+                        "temperature": 0.1,
+                        "max_tokens": 4096,
+                    },
+                    timeout=(15, 50),
+                )
+                if _resp.status_code != 200:
+                    logger.warning(
+                        "[solution_ocr] openrouter %s HTTP %s: %s",
+                        _model, _resp.status_code, _resp.text[:160],
+                    )
+                    continue
+                _body = _resp.json()
+                if not _body.get("choices"):
+                    continue
+                _txt = ((_body["choices"][0].get("message", {}) or {}).get("content") or "").strip()
+                if not _txt or _txt.upper().startswith("UNREADABLE"):
+                    logger.info(
+                        "[solution_ocr] openrouter %s: модель не смогла прочитать фото", _model,
+                    )
+                    # UNREADABLE — честный ответ модели, не пробуем ресурсы впустую
+                    return None
+                return _txt
+            except Exception as _one:
+                logger.warning("[solution_ocr] openrouter %s failed: %s", _model, _one)
+                continue
+        return None
+    except Exception as e:
+        logger.warning("[solution_ocr] openrouter gemini failed: %s", e)
+        return None
+
+
 def _ocr_gemini_vision(b64: str, task_text: str) -> Optional[str]:
     """Gemini vision (через OdiRouter OpenAI-compatible endpoint) — распознавание рукописных решений.
 
@@ -249,12 +332,18 @@ def ocr_solution_images(
         b64 = _strip_dataurl(raw)
         mime = _mime_from_b64(b64)
 
-        # Шаг 1: Gemini vision — ОСНОВНОЙ распознаватель рукописных решений.
+        # Шаг 1: Gemini flash через OpenRouter — ОСНОВНОЙ распознаватель.
         text = None
         engine = "none"
-        text = _ocr_gemini_vision(b64, task_text)
+        text = _ocr_openrouter_gemini(b64, task_text)
         if text:
-            engine = "gemini_vision"
+            engine = "openrouter_gemini"
+
+        # Шаг 1b: Gemini через OdiRouter (резерв, если задан GEMINI_API_KEY).
+        if not text:
+            text = _ocr_gemini_vision(b64, task_text)
+            if text:
+                engine = "gemini_vision"
 
         # Шаг 2: DeepSeek vision (резерв).
         if not text:
@@ -311,6 +400,8 @@ def ocr_solution_images(
     # Итоговая уверенность — минимум по частям (грубая оценка)
     if "none" in engines_used:
         confidence = 0.3
+    elif "openrouter_gemini" in engines_used and engines_used[0] == "openrouter_gemini":
+        confidence = 0.9
     elif "gemini_vision" in engines_used and engines_used[0] == "gemini_vision":
         confidence = 0.9
     elif "deepseek_vision" in engines_used and "tesseract" in engines_used:
@@ -320,8 +411,10 @@ def ocr_solution_images(
     else:
         confidence = 0.7
 
-    # Приоритет имени движка для аудита: gemini > tesseract > novita > deepseek.
-    if "gemini_vision" in engines_used:
+    # Приоритет имени движка для аудита: gemini(openrouter/odirouter) > tesseract > novita > deepseek.
+    if "openrouter_gemini" in engines_used:
+        engine_name = "openrouter_gemini"
+    elif "gemini_vision" in engines_used:
         engine_name = "gemini_vision"
     elif "tesseract" in engines_used:
         engine_name = "tesseract"

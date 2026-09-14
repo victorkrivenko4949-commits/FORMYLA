@@ -115,6 +115,12 @@ class DailyTaskItem(db.Model):
     is_correct = db.Column(db.Boolean, nullable=True)
     answered_at = db.Column(db.DateTime, nullable=True)
     time_spent_seconds = db.Column(db.Integer, nullable=True)
+    # 2026-09-15: сохраняем итог ИИ-проверки, чтобы после перезахода
+    # показать то же самое (а не «только условие задачи»).
+    ai_feedback = db.Column(db.Text, nullable=True)
+    # 2026-09-15: отметка, что за эту строку уже начислено XP
+    # (для задолженности/dedupe — не начислять дважды).
+    xp_awarded = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
 
     # D3 PIPELINE: описание геометрических построений и статус чертежа
     figure_json = db.Column(db.Text, nullable=True)

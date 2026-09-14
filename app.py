@@ -523,6 +523,125 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] bank_issues answers Warning: {e}")
 
+# AUTO-MIGRATION (2026-09-15): ai_feedback + xp_awarded для ответов на задачи.
+# ai_feedback — сохраняем итог ИИ-проверки, чтобы при перезаходе показать то же,
+# что после ответа. xp_awarded — отметка, что за строку уже начислено XP
+# (для доначисления за старые решённые без двойного начисления).
+try:
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        _insp = inspect(db.engine)
+        for _tbl, _extra_cols in (
+            ('bank_issues', (
+                ('ai_feedback', 'TEXT'),
+                ('xp_awarded', "BOOLEAN DEFAULT FALSE NOT NULL"),
+            )),
+            ('daily_task_items', (
+                ('ai_feedback', 'TEXT'),
+                ('xp_awarded', "BOOLEAN DEFAULT FALSE NOT NULL"),
+            )),
+        ):
+            if _tbl not in _insp.get_table_names():
+                continue
+            _existing = {c['name'] for c in _insp.get_columns(_tbl)}
+            for _cname, _ctype in _extra_cols:
+                if _cname not in _existing:
+                    print(f"[AUTO-MIGRATION] Adding '{_cname}' to {_tbl}...")
+                    db.session.execute(text(
+                        f"ALTER TABLE {_tbl} ADD COLUMN {_cname} {_ctype}"
+                    ))
+                    db.session.commit()
+                    print(f"[AUTO-MIGRATION] [OK] Column '{_cname}' added to {_tbl}")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] answers ai_feedback/xp_awarded Warning: {e}")
+
+# ── ONE-OFF BACKFILL (2026-09-15): доначислить +5 XP и +1 решённую задачу
+# за все правильно решённые задачи дня, по которым XP ещё не был начислен.
+# Был баг: раньше ответы засчитывались, а XP не падал в лидерборд.
+# xp_awarded=True на уже начисленных строках (из кода) гарантирует: двойного
+# начисления не будет, и этот блок можно запускать на каждом старте.
+try:
+    with app.app_context():
+        from models import BankIssue, User as _User
+        from daily_tasks.models import DailyTaskItem as _DailyTaskItem, DailyTaskSet as _DailyTaskSet
+        _credited_users = set()
+
+        # ВАЖНО: фильтр по времени, чтобы не начислить дважды за ответы,
+        # которые уже получили XP после выката кода начисления
+        # (21ed37af — daily_task_items с ~19:16 МСК 14.09,
+        # 09384b99 — bank_issues с ~20:44 МСК 14.09). Обратный отсчёт
+        # с запасом: ответы ДО 14.09 19:00 МСК точно не получали +XP.
+        from datetime import datetime as _dti
+        _cutoff_bank = _dti(2026, 9, 14, 16, 0, 0)   # 19:00 МСК — до выката bank XP
+        _cutoff_items = _dti(2026, 9, 14, 13, 30, 0)  # 16:30 МСК — до выката items XP
+
+        # ── банковские задачи ────────────────────────────────────────
+        for _iss in BankIssue.query.filter(
+            BankIssue.is_correct.is_(True),
+            BankIssue.xp_awarded.is_(False),
+            BankIssue.answered_at < _cutoff_bank,
+        ).all():
+            _u = db.session.get(_User, _iss.user_id)
+            if _u is None:
+                continue
+            _u.experience_points = (_u.experience_points or 0) + 5
+            _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+            _iss.xp_awarded = True
+            _credited_users.add(_iss.user_id)
+
+        # ── старые задачи из daily_task_items ───────────────────────
+        try:
+            for _it in _DailyTaskItem.query.filter(
+                _DailyTaskItem.is_correct.is_(True),
+                _DailyTaskItem.xp_awarded.is_(False),
+                _DailyTaskItem.answered_at < _cutoff_items,
+            ).all():
+                _set = db.session.get(_DailyTaskSet, _it.daily_set_id)
+                if _set is None:
+                    continue
+                _u = db.session.get(_User, _set.user_id)
+                if _u is None:
+                    continue
+                _u.experience_points = (_u.experience_points or 0) + 5
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                _it.xp_awarded = True
+                _credited_users.add(_set.user_id)
+        except Exception as _dte:
+            print(f"[XP-BACKFILL] daily_task_items skipped: {_dte}")
+
+        if _credited_users:
+            db.session.commit()
+            print(f"[XP-BACKFILL] [OK] начислено XP пользователям: {sorted(_credited_users)}")
+        else:
+            print("[XP-BACKFILL] нет решённых без XP — пропускаю")
+
+        # Ответы ПОСЛЕ выката кода начисления уже получили XP — просто
+        # ставим флаг, чтобы в будущем бэкфилл их пропускал.
+        try:
+            _marked = 0
+            for _iss in BankIssue.query.filter(
+                BankIssue.is_correct.is_(True),
+                BankIssue.xp_awarded.is_(False),
+                BankIssue.answered_at >= _cutoff_bank,
+            ).all():
+                _iss.xp_awarded = True
+                _marked += 1
+            for _it in _DailyTaskItem.query.filter(
+                _DailyTaskItem.is_correct.is_(True),
+                _DailyTaskItem.xp_awarded.is_(False),
+                _DailyTaskItem.answered_at >= _cutoff_items,
+            ).all():
+                _it.xp_awarded = True
+                _marked += 1
+            if _marked:
+                db.session.commit()
+                print(f"[XP-BACKFILL] помечено xp_awarded у {_marked} уже начисленных ответов")
+        except Exception as _merr:
+            print(f"[XP-BACKFILL] mark-after cutoff skipped: {_merr}")
+except Exception as e:
+    db.session.rollback()
+    print(f"[XP-BACKFILL] Warning: {e}")
+
 # ── FIX: сброс только «битых» результатов анкеты (ВЫПОЛНЯЕТСЯ ВСЕГДА) ──
 # Раньше блок сброса был вложен внутрь `if 'prep_state' not in columns`,
 # поэтому на проде (где колонка уже есть) он НИКОГДА не выполнялся.
@@ -5889,6 +6008,14 @@ def tutor_send():
             if files:
                 first_file = files[0]
                 if first_file and first_file.filename:
+                    # 2026-09-15: проверяем, что прислали именно картинку,
+                    # а не случайный файл — раньше не-изображение падало
+                    # с 500 «Ошибка AI: ...» при попытке распознать.
+                    _mime_in = (first_file.mimetype or '').lower()
+                    if not _mime_in.startswith('image/'):
+                        return jsonify({
+                            'error': 'Пришёл не файл изображения. Пришли фото решения (JPG/PNG).'
+                        }), 400
                     raw_bytes = first_file.read()
                     image_data = base64.b64encode(raw_bytes).decode('utf-8')
 
@@ -5934,18 +6061,30 @@ def tutor_send():
                                 )
                         # image_data остаётся первым фото — vision-модель прочитает рукопись сама.
                     else:
-                        # Обычный чат с фото (не режим проверки): старый OCR
-                        # (Tesseract -> KIMI vision) + фото для vision при неудаче OCR.
+                        # Обычный чат с фото (не режим проверки): единая OCR-цепочка
+                        # (Gemini через OpenRouter -> Tesseract -> Novita) + фото для vision.
                         recognized = None
                         ocr_err = None
+                        # 2026-09-15: сначала пробуем Gemini через OpenRouter — она
+                        # лучше всего читает рукописную математику.
                         try:
-                            from services.tesseract_ocr import recognize_bytes as _tesseract_ocr
-                            recognized, ocr_err = _tesseract_ocr(raw_bytes, first_file.mimetype or 'image/jpeg')
-                            if recognized:
-                                app.logger.info("[tutor] Tesseract recognized %d chars", len(recognized))
-                        except Exception as _tess_exc:
-                            ocr_err = str(_tess_exc)
-                            app.logger.warning("[tutor] Tesseract error: %s", _tess_exc)
+                            from services.solution_ocr import _ocr_openrouter_gemini as _og
+                            _openrouter_ocr = _og(image_data, (message or '')[:600])
+                            if _openrouter_ocr:
+                                recognized = _openrouter_ocr
+                                app.logger.info("[tutor] OpenRouter Gemini OCR recognized %d chars", len(recognized))
+                        except Exception as _og_exc:
+                            app.logger.warning("[tutor] OpenRouter Gemini OCR error: %s", _og_exc)
+
+                        if not recognized:
+                            try:
+                                from services.tesseract_ocr import recognize_bytes as _tesseract_ocr
+                                recognized, ocr_err = _tesseract_ocr(raw_bytes, first_file.mimetype or 'image/jpeg')
+                                if recognized:
+                                    app.logger.info("[tutor] Tesseract recognized %d chars", len(recognized))
+                            except Exception as _tess_exc:
+                                ocr_err = str(_tess_exc)
+                                app.logger.warning("[tutor] Tesseract error: %s", _tess_exc)
 
                         if not recognized:
                             try:
@@ -6041,10 +6180,14 @@ def tutor_send():
         })
         
     except Exception as e:
+        # 2026-09-15: не отдаём ученику техническую причину — пугает и
+        # ни о чём не говорит. Пишем в лог, а в UI — понятное сообщение.
         app.logger.error(f"AI Tutor error: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': f'Ошибка AI: {str(e)}'}), 500
+        return jsonify({
+            'error': 'Не удалось обработать фото. Попробуй сделать снимок чётче (при хорошем свете, по центру) или опиши задачу текстом.'
+        }), 500
 
 
 @app.route("/api/tutor/chat", methods=["POST"])
