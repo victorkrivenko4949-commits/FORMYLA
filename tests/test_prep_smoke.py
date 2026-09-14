@@ -121,18 +121,16 @@ def auth_client(app):
 class TestPrepSmoke:
 
     def test_dashboard_loads(self, auth_client):
-        """GET /prep/ with login -> 200 + 'Моя подготовка'."""
+        """GET /prep/ with login -> 302 redirect на календарь (раздел удалён 2026-09-14)."""
         resp = auth_client.get('/prep/')
-        assert resp.status_code == 200
-        html = resp.data.decode('utf-8')
-        assert 'Моя подготовка' in html
+        assert resp.status_code == 302
+        assert '/olympiad-prep/calendar' in resp.headers.get('Location', '')
 
     def test_wizard_loads(self, auth_client):
-        """GET /prep/new with login -> 200 + 'Выбери олимпиаду'."""
+        """GET /prep/new with login -> 302 redirect на календарь (раздел удалён 2026-09-14)."""
         resp = auth_client.get('/prep/new')
-        assert resp.status_code == 200
-        html = resp.data.decode('utf-8')
-        assert 'Выбери олимпиаду' in html
+        assert resp.status_code == 302
+        assert '/olympiad-prep/calendar' in resp.headers.get('Location', '')
 
     def test_dashboard_unauthorized(self, client):
         """GET /prep/ without login -> 302 redirect to /login."""

@@ -21,7 +21,7 @@ import random
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
-from flask import Blueprint, jsonify, request, abort, render_template, current_app, session, redirect
+from flask import Blueprint, jsonify, request, abort, render_template, current_app, session, redirect, url_for
 from flask_login import current_user, login_required
 
 from models import db, AdaptiveTask, AdaptiveTestResult, OlympiadPrep, PrepPlan, PrepDay, TaskSolution, DailyQuest, ChatMessage, SolutionAttempt
@@ -251,41 +251,56 @@ def _wants_json():
     )
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Раздел «Мои подготовки» удалён (2026-09-14). Старый дашборд планов
+# (/prep/, /prep/new, /prep/<id>...) больше недоступен — все такие URL
+# редиректим в календарь олимпиад. Актуальный куратор: /prep/coach.
+# ──────────────────────────────────────────────────────────────────────
+
+def _legacy_prep_redirect():
+    return redirect(url_for('olympiad_prep.calendar'), code=302)
+
+
 @prep_bp.route('/')
 @login_required
 def dashboard():
-    """Дашборд: список активных/паузированных планов."""
-    active_plans = (
-        PrepPlan.query
-        .filter_by(user_id=current_user.id)
-        .filter(PrepPlan.status.in_(['active', 'paused']))
-        .order_by(PrepPlan.created_at.desc())
-        .all()
-    )
-    completed_plans = (
-        PrepPlan.query
-        .filter_by(user_id=current_user.id, status='completed')
-        .order_by(PrepPlan.created_at.desc())
-        .limit(8)
-        .all()
-    )
-
-    if _wants_json():
-        return jsonify(plans=[p.to_dict() for p in active_plans])
-
-    plan_cards = []
-    for p in active_plans:
-        days = sync_day_statuses(p)
-        plan_cards.append({'plan': p, 'pace': plan_pace(p, days)})
-
-    return render_template('prep/dashboard.html',
-                           active_plans=active_plans,
-                           plan_cards=plan_cards,
-                           completed_plans=completed_plans)
+    """Дашборд планов удалён → календарь олимпиад."""
+    return _legacy_prep_redirect()
 
 
-@prep_bp.route('/new', methods=['GET'])
+@prep_bp.route('/new', methods=['GET', 'POST'])
 @login_required
+def new_plan_form_redirect():
+    """Создание плана удалено → календарь олимпиад."""
+    return _legacy_prep_redirect()
+
+
+@prep_bp.route('/<int:plan_id>', methods=['GET', 'DELETE'])
+@prep_bp.route('/<int:plan_id>/day/<int:day_id>')
+@prep_bp.route('/<int:plan_id>/today')
+@prep_bp.route('/<int:plan_id>/today/complete/<int:problem_id>', methods=['POST'])
+@prep_bp.route('/<int:plan_id>/pause', methods=['POST'])
+@prep_bp.route('/<int:plan_id>/resume', methods=['POST'])
+@prep_bp.route('/<int:plan_id>/today/upload_photo/<int:problem_id>', methods=['POST'])
+@login_required
+def legacy_plan_gone(plan_id, day_id=None, problem_id=None):
+    """Все операции со старыми планами закрыты → календарь олимпиад."""
+    return _legacy_prep_redirect()
+
+
+if False:  # noqa: E115 — старый дашборд сохранён ниже для справки, не исполняется
+    def _old_dashboard():
+        active_plans = (
+            PrepPlan.query
+            .filter_by(user_id=current_user.id)
+            .filter(PrepPlan.status.in_(['active', 'paused']))
+            .order_by(PrepPlan.created_at.desc())
+            .all()
+        )
+        return active_plans
+
+
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def new_plan_form():
     """Мастер создания плана."""
     olympiads = OlympiadPrep.query.filter_by(is_active=True).order_by(OlympiadPrep.sort_order).all()
@@ -314,8 +329,7 @@ def new_plan_form():
                            topic_names=TOPIC_NAMES_RU)
 
 
-@prep_bp.route('/new', methods=['POST'])
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def create_plan():
     """Создать персональный план подготовки."""
     data = request.get_json(silent=True) or {}
@@ -397,8 +411,7 @@ def create_plan():
     ), 201
 
 
-@prep_bp.route('/<int:plan_id>')
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def plan_detail(plan_id):
     """Детали плана: календарь дней + радар."""
     plan = _get_plan_or_404(plan_id)
@@ -442,8 +455,7 @@ def plan_detail(plan_id):
                            topic_names=TOPIC_NAMES_RU)
 
 
-@prep_bp.route('/<int:plan_id>/day/<int:day_id>')
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def day_detail(plan_id, day_id):
     """JSON: задачи конкретного дня (для modal в календаре)."""
     plan = _get_plan_or_404(plan_id)
@@ -479,8 +491,7 @@ def _fetch_problems_for_day(day):
     return problems
 
 
-@prep_bp.route('/<int:plan_id>/today')
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def today_problems(plan_id):
     """Задачи на сегодня."""
     plan = _get_plan_or_404(plan_id)
@@ -514,8 +525,7 @@ def today_problems(plan_id):
                            topic_names=TOPIC_NAMES_RU)
 
 
-@prep_bp.route('/<int:plan_id>/today/complete/<int:problem_id>', methods=['POST'])
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def complete_problem(plan_id, problem_id):
     """Отметить задачу решённой + проверить решение через DeepSeek."""
     plan = _get_plan_or_404(plan_id)
@@ -884,8 +894,7 @@ def _answers_match(user_ans, correct_ans):
     return False
 
 
-@prep_bp.route('/<int:plan_id>/pause', methods=['POST'])
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def pause_plan(plan_id):
     """Поставить план на паузу."""
     plan = _get_plan_or_404(plan_id)
@@ -896,8 +905,7 @@ def pause_plan(plan_id):
     return jsonify(status='paused', plan_id=plan.id)
 
 
-@prep_bp.route('/<int:plan_id>/resume', methods=['POST'])
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def resume_plan(plan_id):
     """Возобновить план."""
     plan = _get_plan_or_404(plan_id)
@@ -910,8 +918,7 @@ def resume_plan(plan_id):
     return jsonify(status='active', plan_id=plan.id)
 
 
-@prep_bp.route('/<int:plan_id>', methods=['DELETE'])
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def delete_plan(plan_id):
     """Удалить план (каскадно удаляет все PrepDay)."""
     plan = _get_plan_or_404(plan_id)
@@ -920,8 +927,7 @@ def delete_plan(plan_id):
     return '', 204
 
 
-@prep_bp.route('/<int:plan_id>/today/upload_photo/<int:problem_id>', methods=['POST'])
-@login_required
+# РОУТ УДАЛЁН (2026-09-14): раздел «Мои подготовки» закрыт
 def upload_solution_photo(plan_id, problem_id):
     """Upload handwritten solution photo with security checks."""
     plan = _get_plan_or_404(plan_id)

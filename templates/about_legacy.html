@@ -38,13 +38,13 @@
           <tr><th>Возможность</th><th class="highlight-col">FORMYLA</th><th>Khanmigo</th><th>Photomath</th><th>Учи.ру</th></tr>
         </thead>
         <tbody>
-          <tr><td>Работает в РФ без VPN</td><td class="highlight-col check">[OK]</td><td class="cross"></td><td>частично</td><td class="check">[OK]</td></tr>
-          <tr><td>Русский язык</td><td class="highlight-col check">[OK]</td><td class="cross"></td><td>частично</td><td class="check">[OK]</td></tr>
-          <tr><td>7 специализированных ИИ-агентов</td><td class="highlight-col check">[OK]</td><td class="cross"></td><td class="cross"></td><td class="cross"></td></tr>
-          <tr><td>База олимпиад РФ (ВсОШ, ТГ, Эйлер)</td><td class="highlight-col check">[OK]</td><td class="cross"></td><td class="cross"></td><td>частично</td></tr>
-          <tr><td>Адаптивные задачи под слабые темы</td><td class="highlight-col check">[OK]</td><td class="cross"></td><td class="cross"></td><td>частично</td></tr>
-          <tr><td>Радар навыков ученика</td><td class="highlight-col check">[OK]</td><td class="cross"></td><td class="cross"></td><td class="cross"></td></tr>
-          <tr><td>Родитель видит прогресс ребёнка</td><td class="highlight-col check">[OK]</td><td class="cross"></td><td class="cross"></td><td>частично</td></tr>
+          <tr><td>Работает в РФ без VPN</td><td class="highlight-col check">✅</td><td class="cross"></td><td>частично</td><td class="check">✅</td></tr>
+          <tr><td>Русский язык</td><td class="highlight-col check">✅</td><td class="cross"></td><td>частично</td><td class="check">✅</td></tr>
+          <tr><td>7 специализированных ИИ-агентов</td><td class="highlight-col check">✅</td><td class="cross"></td><td class="cross"></td><td class="cross"></td></tr>
+          <tr><td>База олимпиад РФ (ВсОШ, ТГ, Эйлер)</td><td class="highlight-col check">✅</td><td class="cross"></td><td class="cross"></td><td>частично</td></tr>
+          <tr><td>Адаптивные задачи под слабые темы</td><td class="highlight-col check">✅</td><td class="cross"></td><td class="cross"></td><td>частично</td></tr>
+          <tr><td>Радар навыков ученика</td><td class="highlight-col check">✅</td><td class="cross"></td><td class="cross"></td><td class="cross"></td></tr>
+          <tr><td>Родитель видит прогресс ребёнка</td><td class="highlight-col check">✅</td><td class="cross"></td><td class="cross"></td><td>частично</td></tr>
           <tr><td>Цена в месяц</td><td class="highlight-col"><strong>390 ₽</strong></td><td>~400 ₽</td><td>~950 ₽</td><td>990 ₽</td></tr>
         </tbody>
       </table>
@@ -183,9 +183,9 @@ form.addEventListener("submit", async (e) => {
   try {
     const r = await fetch("/api/support", { method: "POST", headers: {"Content-Type": "application/json"}, credentials: "include", body: JSON.stringify(data) });
     let j; try { j = await r.json(); } catch (_) { j = {}; }
-    if (r.ok && j.ok) { result.textContent = "[OK] Спасибо! Мы получили ваше сообщение."; result.className = "form-result ok"; form.reset(); counter.textContent = "0"; }
-    else { result.textContent = "[ERROR] " + (j.error || "Ошибка отправки"); result.className = "form-result err"; }
-  } catch (err) { result.textContent = "[ERROR] Нет соединения. Попробуйте позже."; result.className = "form-result err"; }
+    if (r.ok && j.ok) { result.textContent = "✅ Спасибо! Мы получили ваше сообщение."; result.className = "form-result ok"; form.reset(); counter.textContent = "0"; }
+    else { result.textContent = "❌ " + (j.error || "Ошибка отправки"); result.className = "form-result err"; }
+  } catch (err) { result.textContent = "❌ Нет соединения. Попробуйте позже."; result.className = "form-result err"; }
 });
 </script>
 

@@ -497,6 +497,32 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] curator_state.prep_state Warning: {e}")
 
+# AUTO-MIGRATION: Ответы ученика на задачи банка (2026-09-14)
+# Раньше ответы на задачи из daily_task_bank никуда не сохранялись —
+# после перезахода задачу можно было ответить заново. Добавляем
+# user_answer/is_correct/answered_at/time_spent_seconds в bank_issues.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        if 'bank_issues' in inspector.get_table_names():
+            _bi_cols = [col['name'] for col in inspector.get_columns('bank_issues')]
+            for _cname, _ctype in (
+                ('user_answer', 'TEXT'),
+                ('is_correct', 'BOOLEAN'),
+                ('answered_at', 'DATETIME'),
+                ('time_spent_seconds', 'INTEGER'),
+            ):
+                if _cname not in _bi_cols:
+                    print(f"[AUTO-MIGRATION] Adding '{_cname}' to bank_issues...")
+                    db.session.execute(text(
+                        f"ALTER TABLE bank_issues ADD COLUMN {_cname} {_ctype}"
+                    ))
+                    db.session.commit()
+                    print(f"[AUTO-MIGRATION] [OK] Column '{_cname}' added to bank_issues")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] bank_issues answers Warning: {e}")
+
 # ── FIX: сброс только «битых» результатов анкеты (ВЫПОЛНЯЕТСЯ ВСЕГДА) ──
 # Раньше блок сброса был вложен внутрь `if 'prep_state' not in columns`,
 # поэтому на проде (где колонка уже есть) он НИКОГДА не выполнялся.

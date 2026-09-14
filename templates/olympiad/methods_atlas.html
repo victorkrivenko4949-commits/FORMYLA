@@ -40,4 +40,20 @@
         loading="lazy"
     ></iframe>
 </div>
+<script>
+// Верх атласа раньше обрезался: --atlas-header-h был зашит на 62px,
+// а реальная шапка выше. Меряем её и ставим точную высоту.
+(function () {
+    function syncAtlasTop() {
+        var header = document.querySelector('.header');
+        if (!header) return;
+        document.documentElement.style.setProperty(
+            '--atlas-header-h', header.offsetHeight + 'px'
+        );
+    }
+    syncAtlasTop();
+    window.addEventListener('resize', syncAtlasTop);
+    window.addEventListener('load', syncAtlasTop);
+})();
+</script>
 {% endblock %}

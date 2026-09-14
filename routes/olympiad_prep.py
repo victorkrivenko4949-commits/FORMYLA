@@ -50,18 +50,10 @@ def detail(slug):
     if not olympiad:
         abort(404)
 
-    # Check if the logged-in user already has a plan for this olympiad
-    user_plan = None
-    if current_user.is_authenticated:
-        user_plan = (
-            PrepPlan.query
-            .filter_by(user_id=current_user.id, olympiad_id=olympiad.id)
-            .filter(PrepPlan.status.in_(['active', 'paused']))
-            .first()
-        )
-
+    # Старые планы подготовки удалены (2026-09-14) — на странице олимпиады
+    # больше не показываем их. user_plan оставляем None для шаблона.
     return render_template(
         'olympiad_prep/detail.html',
         olympiad=olympiad,
-        user_plan=user_plan,
+        user_plan=None,
     )

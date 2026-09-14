@@ -95,6 +95,180 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def _submit_bank_answer(task_id: int, issue):
+    """AI-проверка и сохранение ответа на задачу из банка (DailyTaskBank).
+
+    2026-09-14: раньше ответы на банковские задачи не сохранялись —
+    после перезахода на страницу задачу можно было ответить заново.
+    Сохраняем в BankIssue (user_answer/is_correct/answered_at).
+    """
+    from models import DailyTaskBank
+    task = db.session.get(DailyTaskBank, task_id)
+    if not task:
+        return jsonify({"status": "error", "message": "Задача не найдена"}), 404
+
+    if issue.user_answer is not None:
+        return jsonify({
+            "status": "error",
+            "message": "На эту задачу уже отвечено.",
+            "already_answered": True,
+            "is_correct": issue.is_correct,
+            "correct_answer": task.answer or "",
+            "solution": task.solution or "",
+        }), 409
+
+    data = request.get_json(silent=True) or {}
+    user_answer = (data.get("user_answer") or data.get("answer") or "").strip()
+    user_solution = (data.get("user_solution") or "").strip()
+    if not user_answer:
+        return jsonify({"status": "error", "message": "Не указан ответ"}), 400
+
+    raw_images = []
+    single = data.get("solution_image_b64", "") or ""
+    if single:
+        raw_images.append(single)
+    multi = data.get("solution_images_b64") or []
+    if isinstance(multi, list):
+        for it in multi:
+            if isinstance(it, str) and it.strip():
+                raw_images.append(it)
+    images_b64 = [
+        (b.split(",", 1)[-1] if b.startswith("data:") else b)
+        for b in raw_images if b
+    ]
+
+    if not user_solution and not images_b64:
+        return jsonify({
+            "status": "error",
+            "error": "Опиши решение или прикрепи фото.",
+        }), 400
+
+    # ── AI-проверка (тот же pipeline) ───────────────────────────────
+    is_correct = False
+    feedback = ""
+    score = None
+    try:
+        from services.solution_check_pipeline import check_solution
+        import concurrent.futures as _cf
+        with _cf.ThreadPoolExecutor(max_workers=1) as _executor:
+            _future = _executor.submit(
+                check_solution,
+                entity_type="daily_task",
+                task_text=task.statement or "",
+                correct_answer=task.answer or "",
+                solution_ref=task.solution or "",
+                user_answer=user_answer,
+                user_solution=user_solution,
+                images_b64=images_b64,
+                difficulty_level=task.level or 1,
+            )
+            try:
+                _verdict = _future.result(timeout=60)
+            except _cf.TimeoutError:
+                _verdict = None
+        if _verdict:
+            is_correct = bool(_verdict.get("is_correct"))
+            feedback = _verdict.get("feedback") or ""
+            score = _verdict.get("score")
+    except Exception as e:
+        logger.exception("_submit_bank_answer: pipeline failed: %s", e)
+
+    if not feedback:
+        # Fallback без AI: простое сравнение ответа
+        def _norm(s):
+            return (s or "").strip().lower().replace(" ", "").replace(",", ".")
+        is_correct = _norm(user_answer) == _norm(task.answer or "")
+        feedback = "Молодец, верно!" if is_correct else "Неверно. Посмотри решение ниже."
+
+    # ── Сохраняем в BankIssue ────────────────────────────────────────
+    from datetime import datetime as _dt
+    try:
+        issue.user_answer = user_answer[:4000]
+        issue.is_correct = is_correct
+        issue.answered_at = _dt.utcnow()
+        try:
+            issue.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
+        except (TypeError, ValueError):
+            issue.time_spent_seconds = 0
+        db.session.commit()
+
+        if is_correct:
+            try:
+                from models import User as _User
+                _u = db.session.get(_User, current_user.id)
+                if _u is not None:
+                    _u.experience_points = (_u.experience_points or 0) + 5
+                    _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                    db.session.commit()
+            except Exception as _xp_err:
+                logger.warning("_submit_bank_answer: +XP не начислен task=%d: %s", task_id, _xp_err)
+    except Exception as e:  # pragma: no cover
+        db.session.rollback()
+        logger.exception("_submit_bank_answer: db commit failed: %s", e)
+
+    from services.md_render import md_render
+    return jsonify({
+        "status": "success",
+        "score": score,
+        "feedback": feedback,
+        "is_correct": is_correct,
+        "correct_answer": task.answer or "",
+        "solution": str(md_render(wrap_bare_math(task.solution or ""))),
+    })
+
+
+def _bank_progress(user_id: int, bank_items) -> dict:
+    """Прогресс по банковским задачам дня: сколько уже отвечено."""
+    from models import BankIssue
+    total = len(bank_items)
+    if not total:
+        return {"completed": 0, "total": 0}
+    task_ids = [t.id for t in bank_items]
+    completed = BankIssue.query.filter(
+        BankIssue.user_id == user_id,
+        BankIssue.task_id.in_(task_ids),
+        BankIssue.user_answer.isnot(None),
+    ).count()
+    return {"completed": completed, "total": total}
+
+
+def _serialize_bank_items(user_id: int, bank_items) -> list:
+    """Сериализует задачи банка для шаблона, подтягивая ответы ученика
+    из bank_issues (2026-09-14: раньше всегда отдавали user_answer=None)."""
+    from models import BankIssue
+    task_ids = [t.id for t in bank_items]
+    issues = {}
+    if task_ids:
+        rows = BankIssue.query.filter(
+            BankIssue.user_id == user_id,
+            BankIssue.task_id.in_(task_ids),
+        ).all()
+        issues = {r.task_id: r for r in rows}
+    out = []
+    for i, t in enumerate(bank_items):
+        iss = issues.get(t.id)
+        out.append({
+            "id": t.id,
+            "position": getattr(t, "position", None) or (i + 1),
+            "task_text": wrap_bare_math(t.statement or ""),
+            "text": wrap_bare_math(t.statement or ""),
+            "correct_answer": t.answer or "",
+            "solution": t.solution or "",
+            "subtopic": t.subtopic or "",
+            "topic": t.section or "",
+            "difficulty": t.level or 1,
+            "difficulty_level": t.level or 1,
+            "user_answer": (iss.user_answer if iss else None),
+            "is_correct": (iss.is_correct if iss else None),
+            "is_answered": bool(iss and iss.user_answer),
+            "answered_at": (iss.answered_at.isoformat() if iss and iss.answered_at else None),
+            "is_flagged": False,
+            "is_calibration": False,
+            "figure_url": None,
+        })
+    return out
+
+
 # ──────────────────────────────────────────────────────────────────────
 # GET /daily_tasks
 # ──────────────────────────────────────────────────────────────────────
@@ -250,26 +424,8 @@ def get_daily_tasks():
                     "generated_at": None,
                     "total_cost_usd": None,
                     "bank_exhausted": bool(_bank.get("bank_exhausted")),
-                    "progress": {"completed": 0, "total": len(_bank_items)},
-                    "items": [
-                        {
-                            "id": t.id,
-                            "position": getattr(t, "position", None) or (i + 1),
-                            "task_text": wrap_bare_math(t.statement or ""),
-                            "correct_answer": t.answer or "",
-                            "solution": t.solution or "",
-                            "subtopic": t.subtopic or "",
-                            "topic": t.section or "",
-                            "difficulty": t.level or 1,
-                            "difficulty_level": t.level or 1,
-                            "user_answer": None,
-                            "is_correct": None,
-                            "is_flagged": False,
-                            "is_calibration": False,
-                            "figure_url": None,
-                        }
-                        for i, t in enumerate(_bank_items)
-                    ],
+                    "progress": _bank_progress(user_id, _bank_items),
+                    "items": _serialize_bank_items(user_id, _bank_items),
                 }
                 return render_template(
                     "daily_tasks/daily_tasks_dashboard.html",
@@ -997,6 +1153,18 @@ def solve_task_preview(item_id: int):
 @login_required
 def submit_answer_ai(item_id: int):
     """AI-проверка решения «Задач дня» — тот же pipeline, что в адаптивном тесте."""
+    # ── Сначала проверяем, не задача ли это из банка ─────────────────
+    # Фронт задач дня шлёт id банковской задачи (daily_task_bank.id),
+    # а раньше тут искали только в daily_task_items — ответ на задачу
+    # из банка либо падал 404, либо (хуже) попадал в чужую задачу с
+    # тем же id. BankIssue однозначно связывает (user, task_id).
+    from models import BankIssue
+    _bank_issue = BankIssue.query.filter_by(
+        user_id=current_user.id, task_id=item_id,
+    ).first()
+    if _bank_issue is not None:
+        return _submit_bank_answer(item_id, _bank_issue)
+
     item = DailyTaskItem.query.get(item_id)
     if not item:
         return jsonify({"status": "error", "message": "Задача не найдена"}), 404

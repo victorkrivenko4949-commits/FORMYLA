@@ -182,13 +182,13 @@ async function analyzeBackground() {
     errorDiv.style.display = 'none';
     
     if (!text) {
-        errorDiv.textContent = '[ERROR] Пожалуйста, расскажите о своем опыте';
+        errorDiv.textContent = '❌ Пожалуйста, расскажите о своем опыте';
         errorDiv.style.display = 'block';
         return;
     }
     
     if (text.length < 20) {
-        errorDiv.textContent = '[ERROR] Расскажите подробнее (минимум 20 символов)';
+        errorDiv.textContent = '❌ Расскажите подробнее (минимум 20 символов)';
         errorDiv.style.display = 'block';
         return;
     }
@@ -220,7 +220,7 @@ async function analyzeBackground() {
         console.error('Error:', error);
         document.getElementById('loader').style.display = 'none';
         document.getElementById('step1').style.display = 'block';
-        errorDiv.textContent = '[ERROR] ' + error.message;
+        errorDiv.textContent = '❌ ' + error.message;
         errorDiv.style.display = 'block';
         analyzeBtn.disabled = false;
     }

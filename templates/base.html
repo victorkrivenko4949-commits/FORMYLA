@@ -350,11 +350,11 @@
                 {% if current_user.is_authenticated %}
                 {% set dq = current_user.today_quest() %}
                 {% if dq and dq.completed_count >= dq.total_count %}
-                  <span class="drawer-daily-badge done">[OK]</span>
+                  <span class="drawer-daily-badge done">✓</span>
                 {% elif dq %}
                   <span class="drawer-daily-badge progress">{{ dq.completed_count }}/{{ dq.total_count }}</span>
                 {% else %}
-                  <span class="drawer-daily-badge new">NEW</span>
+                  <span class="drawer-daily-badge new">Новое</span>
                 {% endif %}
                 {% endif %}
             </a>

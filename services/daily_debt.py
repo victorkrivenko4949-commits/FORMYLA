@@ -168,6 +168,54 @@ def get_debt_items(user_id: int) -> List[Dict[str, Any]]:
             'figure_url': figure_url,
         })
 
+    # ── Банковские задачи (2026-09-14) ──────────────────────────────────
+    # Раньше нерешённые задачи дня из daily_task_bank никуда не попадали:
+    # ученик просто «останавливался на этом месте». Теперь просроченные
+    # банковские выдачи (issued_date < сегодня, ответа нет) идут в долг,
+    # как и обычные DailyTaskItem. id = task_id банковской задачи —
+    # submit_ai по BankIssue поймёт, что это банковский ответ.
+    try:
+        from models import BankIssue, DailyTaskBank
+        debt_floor = today - timedelta(days=DEBT_TTL_DAYS)
+        bank_rows = (
+            BankIssue.query
+            .filter(
+                BankIssue.user_id == user_id,
+                BankIssue.issued_date < today,
+                BankIssue.user_answer.is_(None),
+            )
+            .order_by(BankIssue.issued_date.desc(), BankIssue.id)
+            .all()
+        )
+        existing_ids = {r['id'] for r in result}
+        for bi in bank_rows:
+            if bi.id in existing_ids:
+                continue
+            task = db.session.get(DailyTaskBank, bi.task_id)
+            if task is None:
+                continue
+            days_left = (bi.issued_date + timedelta(days=DEBT_TTL_DAYS) - today).days
+            result.append({
+                'id': task.id,
+                'position': getattr(task, 'position', None),
+                'subject': 'math',
+                'topic': task.subtopic or task.section,
+                'difficulty_level': task.level,
+                'task_text': task.statement or '',
+                'correct_answer': task.answer or '',
+                'solution': task.solution or '',
+                'hints': None,
+                'issued_date': bi.issued_date.isoformat(),
+                'debt_until': (bi.issued_date + timedelta(days=DEBT_TTL_DAYS)).isoformat(),
+                'days_left': days_left,
+                'daily_set_id': None,
+                'slot_kind': 'bank',
+                'figure_url': None,
+                'from_bank': True,
+            })
+    except Exception as e:
+        logger.warning("get_debt_items: bank debt failed user=%d: %s", user_id, e)
+
     return result
 
 

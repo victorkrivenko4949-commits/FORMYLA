@@ -112,6 +112,8 @@ def get_student_facts(user_id: int) -> Dict[str, Any]:
         logger.warning("messenger: cycle_info failed: %s", e)
 
     # ── 3. Сегодняшний набор задач ─────────────────────────────────────────
+    # 2026-09-14: задачи дня выдаются из банка (bank_issues), а не из
+    # DailyTaskSet — считаем оба источника, иначе куратор показывал 0.
     daily_set = DailyTaskSet.query.filter_by(
         user_id=user_id, target_date=today,
     ).first()
@@ -123,6 +125,22 @@ def get_student_facts(user_id: int) -> Dict[str, Any]:
         facts["today_solved"] = len(answered)
         facts["today_correct"] = len(correct)
         facts["today_pending"] = len(items) - len(answered)
+
+    # Банковские задачи дня (основной источник на проде)
+    try:
+        from models import BankIssue
+        bank_issues = BankIssue.query.filter_by(
+            user_id=user_id, issued_date=today,
+        ).all()
+        if bank_issues:
+            bank_answered = [i for i in bank_issues if i.user_answer is not None]
+            bank_correct = [i for i in bank_answered if i.is_correct is True]
+            facts["today_total"] += len(bank_issues)
+            facts["today_solved"] += len(bank_answered)
+            facts["today_correct"] += len(bank_correct)
+            facts["today_pending"] += len(bank_issues) - len(bank_answered)
+    except Exception as e:
+        logger.warning("messenger: bank_issues facts failed: %s", e)
 
     # ── 4. Долг ────────────────────────────────────────────────────────────
     debt_items = _get_active_debt(user_id)

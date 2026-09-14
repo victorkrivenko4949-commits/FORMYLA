@@ -2122,6 +2122,12 @@ class BankIssue(db.Model):
     level = db.Column(db.Integer, nullable=False)
     issued_date = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # ── Ответ ученика (2026-09-14): раньше ответы на банковские задачи
+    # никуда не сохранялись — после перезахода можно было ответить заново.
+    user_answer = db.Column(db.Text, nullable=True)
+    is_correct = db.Column(db.Boolean, nullable=True)
+    answered_at = db.Column(db.DateTime, nullable=True)
+    time_spent_seconds = db.Column(db.Integer, nullable=True)
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'task_id', name='uq_bank_issue_user_task'),
