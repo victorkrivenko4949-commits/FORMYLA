@@ -61,10 +61,11 @@ def get_next_action(user_id: int) -> Dict[str, Any]:
         }
 
     # ── 1.5. Monthly cycle: morning probe pending ──────────────────────
+    # 2026-09-15: срез временно отключён — не рекомендуем его действием.
     try:
         from curator.monthly_cycle import get_cycle_info
         cycle = get_cycle_info(user_id)
-        if cycle.get('active') and cycle.get('blocked') and not cycle.get('finished'):
+        if False and cycle.get('active') and cycle.get('blocked') and not cycle.get('finished'):
             current_theme = cycle.get('current_theme', '')
             from daily_tasks.monthly_plan import subtopic_title
             theme_title = subtopic_title(current_theme) if current_theme else 'тема дня'
@@ -84,9 +85,10 @@ def get_next_action(user_id: int) -> Dict[str, Any]:
         pass
 
     # ── 1.6. Active probe exists (even if not blocked) — resume it ─────
+    # 2026-09-15: срез временно отключён — не предлагаем его продолжать.
     try:
         from services.theme_probe import has_active_probe, get_active_probe_theme
-        if has_active_probe(user_id):
+        if False and has_active_probe(user_id):
             probe_theme = get_active_probe_theme(user_id) or ''
             from daily_tasks.monthly_plan import subtopic_title
             theme_title = subtopic_title(probe_theme) if probe_theme else 'тема дня'

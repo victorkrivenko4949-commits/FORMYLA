@@ -95,13 +95,10 @@ function showBlockedState(data) {
     if (el) {
         // Update message with theme title
         var msgEl = document.getElementById('dt-blocked-message');
-        if (msgEl && data.blocked_theme_title) {
-            msgEl.textContent = 'Сначала утренний срез: «' + data.blocked_theme_title + '». 5 задач, примерно 15 минут.';
-        }
-        // Update probe link
-        var linkEl = document.getElementById('dt-probe-link');
-        if (linkEl && data.probe_url) {
-            linkEl.href = data.probe_url;
+        // 2026-09-15: срез временно отключён — нейтральный текст,
+        // пока бэкенд может вернуть blocked по устаревшему состоянию цикла.
+        if (msgEl) {
+            msgEl.textContent = 'Задачи дня появятся автоматически — обнови страницу через пару минут.';
         }
         el.classList.remove('dt-hidden');
     }

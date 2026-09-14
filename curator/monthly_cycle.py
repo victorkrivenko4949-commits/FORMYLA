@@ -653,7 +653,9 @@ def get_today_info(user_id: int) -> Dict[str, Any]:
     subtopic_title = _theme_title(current_theme)
 
     # test day = blocked (probe not done) or probe still active
-    is_test_day = info.get('blocked', False) or has_active_probe(user_id)
+    # 2026-09-15: срез временно отключён — активный probe НЕ делает день
+    # «тестовым», куратор не предлагает «пройди утренний срез».
+    is_test_day = info.get('blocked', False)
     tested = current_theme in info.get('done_themes', [])
 
     # has_tasks = daily task set exists for today for this user

@@ -1484,8 +1484,8 @@ def coach():
 
             # Determine CTA
             if ci.get('blocked') and not ci.get('finished'):
-                cycle_cta_url = '/prep/probe'
-                cycle_cta_text = 'Пройти утренний срез'
+                cycle_cta_url = '/daily_tasks'
+                cycle_cta_text = 'Перейти к задачам дня'
             elif ci.get('finished'):
                 cycle_cta_url = '/daily_tasks'
                 cycle_cta_text = 'Перейти к задачам дня'
@@ -1641,7 +1641,12 @@ def coach():
 @prep_bp.route('/probe')
 @login_required
 def morning_probe():
-    """Страница утреннего среза подтемы (5 задач, лесенка)."""
+    # 2026-09-15: срез временно отключён — старые ссылки ведут на задачи дня.
+    return redirect(url_for('daily_tasks.get_daily_tasks'))
+
+
+def _morning_probe_disabled():
+    """Страница утреннего среза подтемы (5 задач, лесенка). Временно не используется."""
     if not current_user.has_access():
         return render_template('trial_expired.html'), 402
     from curator.monthly_cycle import get_cycle_info, build_or_get_cycle, advance_day
@@ -2512,7 +2517,7 @@ def coach_greeting():
                     cta_text=' Начать новый месяц',
                 )
 
-            if _is_test_day and not _tested:
+            if False and _is_test_day and not _tested:  # 2026-09-15: срез временно отключён
                 # Сценарий 3a.1: Утренний тест — "7 дней чтобы пройти 7 тестов"
                 greeting = (
                     f' Доброе утро! У тебя **7 дней, чтобы пройти 7 тестов** — '
@@ -2540,7 +2545,7 @@ def coach_greeting():
                     cta_text=' Начать тест',
                 )
 
-            elif _is_test_day and _tested:
+            elif False and _is_test_day and _tested:  # 2026-09-15: срез временно отключён
                 # Сценарий 3a.2: Тест пройден, ждём задачи
                 greeting = (
                     f'[OK] Отлично! Ты уже прошёл тест по теме **«{_subtopic_title}»** сегодня.\n\n'
@@ -3614,7 +3619,6 @@ def coach_chat():
         "которая сейчас активна.\n\n"
         "ДОСТУПНЫЕ КНОПКИ И СТРАНИЦЫ В FORMYLA (ссылайся только на них):\n"
         "  • /prep/coach — страница куратора (ты здесь)\n"
-        "  • /prep/probe — \"Пройти утренний срез\" (замер текущей подтемы, 5 задач)\n"
         "  • /daily_tasks — \"Перейти к задачам дня\" ({_daily_count} задач из текущей подтемы)\n"
         "  • /adaptive-test — \"Пройти адаптивный тест\" (диагностика по всем темам)\n"
         "  • /intake — \"Пройти анкету\" (анкета входа, если не пройдена)\n"

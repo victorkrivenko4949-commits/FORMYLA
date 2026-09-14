@@ -524,12 +524,8 @@ fetch('{{ url_for("prep.coach_greeting") }}', { signal: greetingController.signa
       } else {
         addCtaButton(' Создать план подготовки', '/prep/new', '');
       }
-    } else if (data.scenario === 'prep_morning_test') {
-      var prepInfo = data.prep_info || {};
-      var topicTitle = prepInfo.subtopic_title || '';
-      greetingEl.innerHTML = ' Сейчас тебе нужно пройти утренний срез по теме «<strong>' + topicTitle + '</strong>».';
-      addCtaButton(' Пройти утренний срез', '/prep/probe', '');
-    } else if (data.scenario === 'prep_test_taken') {
+    } else if (data.scenario === 'prep_morning_test' || data.scenario === 'prep_test_taken') {
+      // 2026-09-15: срез временно отключён — эти сценарии бэкенд не присылает.
       if (data.cta_url && data.cta_text) {
         addCtaButton(data.cta_text, data.cta_url, '');
       }

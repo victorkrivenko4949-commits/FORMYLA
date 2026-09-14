@@ -151,7 +151,7 @@ def send_onboarding_nudge(user) -> bool:
       <p>Вчера ты зарегистрировался в <strong>FORMYLA</strong>, но не дошёл до первых задач. Это займёт меньше 10 минут:</p>
       <ul>
         <li><a href="https://formyla.net/intake/" style="color:#0ea5e9;">Пройди короткую анкету</a> — 6 вопросов, и мы подберём тебе уровень.</li>
-        <li>Сразу после анкеты — <a href="https://formyla.net/prep/probe" style="color:#0ea5e9;">утренний срез</a>: 5 задач, по ним соберём личный план подготовки.</li>
+        <li>Сразу после анкеты откроются <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a> — уровень уже подобран под тебя.</li>
       </ul>
       <p>Если анкета уже пройдена — можешь сразу открыть <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a>.</p>
       <p style="color:#6b7280;font-size:13px;margin-top:32px;">Это автоматическое напоминание, отвечать не нужно.</p>

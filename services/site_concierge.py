@@ -403,7 +403,7 @@ def build_site_context_for_llm() -> str:
         "",
         "Реальные страницы (ссылайся только на существующие):",
         "  /, /about, /about#unique, /about#support, /daily, /daily_tasks,",
-        "  /prep/coach, /prep/probe, /probniks, /problems, /olympiads, /olympiads/methods,",
+        "  /prep/coach, /probniks, /problems, /olympiads, /olympiads/methods,",
         "  /olympiad-prep, /profile, /section/algebra, /section/geometry,",
         "  /leaderboard, /chat, /friends, /insights, /intake, /adaptive_test_simple.",
         "",
