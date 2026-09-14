@@ -280,7 +280,7 @@ def admin_support_user_daily3(user_id):
 
     import json as _json
     from datetime import datetime as _dt, timedelta as _td
-    from models import DailyQuest, BankIssue
+    from models import DailyQuest, BankIssue, UserPresence
 
     # Продуктовая дата задач дня — московская.
     today_msk = (_dt.utcnow() + _td(hours=3)).date()
@@ -304,7 +304,17 @@ def admin_support_user_daily3(user_id):
             **_quest_stats(user_id, d, _json),
         })
 
-    return jsonify({'user_id': user_id, 'days': out_days})
+    # Возвращения: last_seen из UserPresence обновляется при любой
+    # активности пользователя — по нему видно, заходил ли он после
+    # регистрации (и когда в последний раз).
+    presence = UserPresence.query.filter_by(user_id=user_id).first()
+    last_seen = presence.last_seen if presence is not None else None
+
+    return jsonify({
+        'user_id': user_id,
+        'last_seen': last_seen.isoformat() if last_seen else None,
+        'days': out_days,
+    })
 
 
 def _set_stats(user_id, day):
