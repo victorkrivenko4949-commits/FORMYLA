@@ -261,6 +261,64 @@ def admin_support_user_intake(user_id):
     })
 
 
+@admin_support_bp.route('/admin/support/user_daily3/<int:user_id>')
+@login_required
+def admin_support_user_daily3(user_id):
+    """Админ: попытки и решения задач дня за последние 3 дня (по МСК).
+
+    По каждому дню два источника:
+      - bank_* — банковские задачи дня (BankIssue): выдано, отвечено, верно;
+      - quest_* — старый DailyQuest: решено (completed_count) и кол-во
+        неверных попыток (attempts_map).
+    """
+    if not _is_admin():
+        return jsonify({'error': 'forbidden'}), 403
+
+    import json as _json
+    from datetime import datetime as _dt, timedelta as _td
+    from models import DailyQuest, BankIssue
+
+    # Продуктовая дата задач дня — московская.
+    today_msk = (_dt.utcnow() + _td(hours=3)).date()
+    days = [today_msk - _td(days=i) for i in range(3)]
+
+    out_days = []
+    for d in days:
+        issues = (BankIssue.query
+                  .filter(BankIssue.user_id == user_id,
+                          BankIssue.issued_date == d)
+                  .all())
+        out_days.append({
+            'date': d.isoformat(),
+            'bank_issued': len(issues),
+            'bank_attempts': sum(
+                1 for i in issues
+                if i.answered_at is not None or i.user_answer is not None
+            ),
+            'bank_correct': sum(1 for i in issues if bool(i.is_correct)),
+            **_quest_stats(user_id, d, _json),
+        })
+
+    return jsonify({'user_id': user_id, 'days': out_days})
+
+
+def _quest_stats(user_id, day, _json):
+    """Решено/неверные попытки по старому DailyQuest за день."""
+    from models import DailyQuest
+    quest = DailyQuest.query.filter_by(user_id=user_id, date=day).first()
+    if quest is None:
+        return {'quest_solved': 0, 'quest_wrong_attempts': 0}
+    try:
+        amap = _json.loads(quest.attempts_map or '{}')
+        wrong = sum(int(v) for v in amap.values())
+    except Exception:
+        wrong = 0
+    return {
+        'quest_solved': int(quest.completed_count or 0),
+        'quest_wrong_attempts': wrong,
+    }
+
+
 def _escape(s):
     """Простой HTML escape."""
     return (str(s or '')
