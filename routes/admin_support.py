@@ -266,8 +266,12 @@ def admin_support_user_intake(user_id):
 def admin_support_user_daily3(user_id):
     """Админ: попытки и решения задач дня за последние 3 дня (по МСК).
 
-    По каждому дню два источника:
+    По каждому дню три источника:
       - bank_* — банковские задачи дня (BankIssue): выдано, отвечено, верно;
+      - set_* — запасной контур DailyTaskSet/DailyTaskItem
+        (file2/FORMYLA_BANK.jsonl + генерация): выдано, отвечено, верно.
+        Именно сюда пишутся ответы пользователей без месячного плана —
+        у них bank_issued всегда 0;
       - quest_* — старый DailyQuest: решено (completed_count) и кол-во
         неверных попыток (attempts_map).
     """
@@ -296,10 +300,34 @@ def admin_support_user_daily3(user_id):
                 if i.answered_at is not None or i.user_answer is not None
             ),
             'bank_correct': sum(1 for i in issues if bool(i.is_correct)),
+            **_set_stats(user_id, d),
             **_quest_stats(user_id, d, _json),
         })
 
     return jsonify({'user_id': user_id, 'days': out_days})
+
+
+def _set_stats(user_id, day):
+    """Выдано/отвечено/верно по запасному контуру DailyTaskSet за день."""
+    from daily_tasks.models import DailyTaskSet, DailyTaskItem
+    sets = (DailyTaskSet.query
+            .filter(DailyTaskSet.user_id == user_id,
+                    DailyTaskSet.target_date == day)
+            .all())
+    if not sets:
+        return {'set_issued': 0, 'set_attempts': 0, 'set_correct': 0}
+    set_ids = [s.id for s in sets]
+    items = (DailyTaskItem.query
+             .filter(DailyTaskItem.daily_set_id.in_(set_ids))
+             .all())
+    return {
+        'set_issued': len(items),
+        'set_attempts': sum(
+            1 for i in items
+            if i.answered_at is not None or i.user_answer is not None
+        ),
+        'set_correct': sum(1 for i in items if bool(i.is_correct)),
+    }
 
 
 def _quest_stats(user_id, day, _json):
