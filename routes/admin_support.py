@@ -310,9 +310,38 @@ def admin_support_user_daily3(user_id):
     presence = UserPresence.query.filter_by(user_id=user_id).first()
     last_seen = presence.last_seen if presence is not None else None
 
+    # VISIT_COUNT_V1 (2026-09-15): число заходов. Отдельного счётчика
+    # визитов в базе нет (User.last_login перезаписывается, не считает),
+    # поэтому считаем ДНИ активности как прокси визитов: объединение
+    # дат из DailyTaskSet (открытие страницы задач дня) + BankIssue +
+    # answered_at. 1 день = 1 визит (нижняя оценка; если заходил 3 раза
+    # за день — посчитается 1).
+    from models import User
+    from daily_tasks.models import DailyTaskSet as _DTS
+    user = db.session.get(User, user_id)
+    visit_days = set()
+    for s in _DTS.query.filter_by(user_id=user_id).all():
+        if s.target_date:
+            visit_days.add(s.target_date)
+    for b in BankIssue.query.filter_by(user_id=user_id).all():
+        if b.issued_date:
+            visit_days.add(b.issued_date)
+        if b.answered_at:
+            visit_days.add(b.answered_at.date())
+    for s in _DTS.query.filter_by(user_id=user_id).all():
+        for it in s.items.all():
+            if it.answered_at:
+                visit_days.add(it.answered_at.date())
+    visits = len(visit_days)
+    created = user.created_at.date() if getattr(user, 'created_at', None) else None
+    returned = bool(visits and created and any(d > created for d in visit_days))
+
     return jsonify({
         'user_id': user_id,
         'last_seen': last_seen.isoformat() if last_seen else None,
+        'visits': visits,
+        'visit_dates': sorted(d.isoformat() for d in visit_days),
+        'returned': returned,
         'days': out_days,
     })
 
