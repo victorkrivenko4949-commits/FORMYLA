@@ -108,10 +108,11 @@ def _save_session_state(state: Dict) -> None:
 
 
 def _mark_intake_skipped(user_id: int) -> None:
-    """Пометить анкету как пропущенную — гейт на /intake больше не срабатывает.
+    """Пометить анкету как пропущенную (пользователь читает сайт, но анкету не проходил).
 
-    Уровень не выставляем: задачи дня подберутся по дефолтному приору,
-    пройти анкету можно будет позже с любой страницы.
+    Гейт на /intake НЕ снимается: всё, кроме «С чего начать» и «О сайте»,
+    по-прежнему ведёт на анкету. Пройти её можно в любой момент —
+    кнопка «Пройти анкету» есть на обеих разрешённых страницах.
     """
     from models_curator import CuratorState
     from models import db
@@ -124,7 +125,9 @@ def _mark_intake_skipped(user_id: int) -> None:
     if not isinstance(intake, dict):
         intake = {}
     intake['skipped'] = True
-    intake['completed'] = True  # гейт пропускает только completed=True
+    # НЕ completed: теперь гейт пропускает только реально пройденную анкету —
+    # всё, кроме «С чего начать» и «О сайте», отправляет на /intake.
+    intake['completed'] = False
     intake['skipped_at'] = datetime.utcnow().isoformat()
     ps['intake'] = intake
     ps.pop('_intake_session', None)
@@ -374,13 +377,12 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
             'anchor': None,
         }
 
-    # ── q6 -> выбираем якоря и показываем первый ──────────────────
+    # ── q6 -> финал. Срез (5 якорных задач) временно отключён —
+    #    пока работаем без него: приор и сложность задач задают ответы анкеты,
+    #    номинальный срез скоро вернём в шлифованном виде (тогда state['step']='anchors').
     if current_step == 'q6' and qid == 'commitment':
-        # Выбираем 5 якорей
         grade = int(state['answers'].get('class', 9))
-        state['step'] = 'anchors'
-        state['q_index'] = 7  # "шаг 7 из 11"
-        state['total_questions'] = 11  # 6 вопросов + 5 якорей
+        _ = grade
 
         from services.intake_questions import EXPERIENCE_PRIOR
         exp_key = state['answers'].get('experience', 'none')
@@ -388,10 +390,17 @@ def answer(user_id: int, qid: str, key: str) -> Dict[str, Any]:
         mu = exp_opt["mu"]
         sigma = 1.35 if exp_opt["w"] >= 0.8 else 1.9
 
-        # ── set_prior ДО первого якоря (как требует ТЗ) ──────────
         _call_set_prior(user_id, mu, sigma)
 
-        # Use anchors.pick_anchors for the canonical anchored tasks
+        # Временно (2026-09-15): срез отключён — сразу финализируем анкету.
+        state['step'] = 'done'
+        _save_session_state(state)
+        return finish(user_id, state)
+
+        # TODO(restore_probe): вернуть подбор новых якорей (5 срезовых задач).
+        state['step'] = 'anchors'
+        state['q_index'] = 7  # "шаг 7 из 11"
+        state['total_questions'] = 11  # 6 вопросов + 5 якорей
         anchor_tasks, anchor_meta = pick_anchors(grade)
 
         if not anchor_tasks:
@@ -578,6 +587,7 @@ def _save_intake_to_db(user_id: int, result: IntakeResult, state: Dict, anchor_s
     prep_state['intake'] = {
         'completed': True,
         'completed_at': datetime.utcnow().isoformat(),
+        'skip_probe': True,  # 2026-09-15: срез временно отключён
         'class_level': result.class_level,
         'goal': result.goal,
         'goal_auto': result.goal_auto,

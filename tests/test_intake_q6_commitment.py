@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Q6 «Готов заниматься регулярно?» в анкете: переходы q5 -> q6 -> anchors,
-нумерация шагов 6/6 и 7..11 из 11, ответ сохраняется в intake.answers."""
+"""Q6 «Готов заниматься регулярно?» в анкете: переходы q5 -> q6 -> finish.
+2026-09-15: срез (якорные задачи) временно отключён — после Q6 анкета
+сразу финализируется, ответ сохраняется в intake.answers."""
 import json
 
 import pytest
@@ -50,16 +51,7 @@ def test_q6_flow(intake_flow):
     assert labels == ['Да, готов', 'Нет']
 
     r = svc.answer(1, 'commitment', 'yes')
-    # якоря начинаются с шага 7 из 11
-    assert r['step'] == 'anchors' and r['q_index'] == 7 and r['total_questions'] == 11
-    assert r['anchor']['task_id'] == 9000
-
-    idx_expected = 8
-    for i in range(0, 5):
-        r = svc.submit_anchor(1, 9000 + i, '1')
-        if i < 4:
-            assert r['q_index'] == idx_expected and r['total_questions'] == 11
-            idx_expected += 1
+    # срез временно отключён — после Q6 сразу финал
     assert r['done'] is True
     assert r['result']['answers'].get('commitment') == 'yes'
 
@@ -73,9 +65,6 @@ def test_q6_answer_no_stored(intake_flow):
     svc.answer(1, 'time', 'm30')
     svc.answer(1, 'weak_sections', 'dont_know')
     r = svc.answer(1, 'commitment', 'no')  # «Нет» не блокирует — просто сохраняется
-    assert r['step'] == 'anchors'
-    for i in range(5):
-        r = svc.submit_anchor(1, 9000 + i, '0')
     assert r['done'] is True
     assert r['result']['answers'].get('commitment') == 'no'
 

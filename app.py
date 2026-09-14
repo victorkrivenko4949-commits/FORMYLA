@@ -528,6 +528,9 @@ except Exception as e:
 # поэтому на проде (где колонка уже есть) он НИКОГДА не выполнялся.
 # Вынесен наружу, чтобы при каждом деплое находить и сбрасывать анкеты
 # «0 из 5» (completed=true, anchor_results пуст) у всех пользователей.
+#
+# 2026-09-15: срез (якорные задачи) временно отключён — теперь анкета без
+# якорей ЭТО НОРМАЛЬНО (skip_probe=True), такие записи НЕ сбрасываем.
 try:
     with app.app_context():
         from models_curator import CuratorState
@@ -547,6 +550,9 @@ try:
                 continue
             _intake = _d.get('intake') or {}
             if isinstance(_intake, dict) and _intake.get('completed'):
+                # 2026-09-15: анкета без якорей — нормально, не сбрасываем.
+                if _intake.get('skip_probe'):
+                    continue
                 _anchor_res = _intake.get('anchor_results') or []
                 if len(_anchor_res) == 0:
                     _d.pop('intake', None)
@@ -3010,7 +3016,9 @@ def force_intake_completion():
         else:
             ps = {}
         _intake = ps.get('intake', {}) if isinstance(ps.get('intake'), dict) else {}
-        if not _intake.get('completed'):
+        # Пропущенная анкета не считается пройденной: гейт держим,
+        # свободны только /about и /olympiad-start (см. allowlist выше).
+        if not _intake.get('completed') or _intake.get('skipped'):
             return redirect(url_for('intake.intake_page'))
     except Exception:
         pass
@@ -3893,6 +3901,32 @@ def conference_page():
     return render_template("conference.html")
 
 
+def _user_needs_intake() -> bool:
+    """Авторизованный ученик без пройденной (не пропущенной-не-завершённой) анкеты."""
+    try:
+        if not (current_user.is_authenticated and not getattr(current_user, 'is_guest', False)):
+            return False
+        if (getattr(current_user, 'role', 'student') or 'student') in ('teacher', 'parent'):
+            return False
+        if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
+            return False
+        from models_curator import CuratorState
+        import json as _json_ps
+        cs = CuratorState.query.filter_by(user_id=current_user.id).first()
+        if cs is None:
+            return True
+        raw = getattr(cs, 'prep_state', None)
+        if isinstance(raw, str):
+            try:
+                raw = _json_ps.loads(raw)
+            except Exception:
+                raw = {}
+        intake = (raw or {}).get('intake', {}) if isinstance(raw, dict) else {}
+        return not (isinstance(intake, dict) and intake.get('completed') and not intake.get('skipped'))
+    except Exception:
+        return False
+
+
 @app.route("/olympiad-start")
 def olympiad_start():
     """Статья «Как войти в олимпиадную математику» (гайд для новичков).
@@ -3901,7 +3935,7 @@ def olympiad_start():
     это та самая страница «почитать, что вообще за сайт», на которую
     ведёт пропуск анкеты.
     """
-    return render_template("olympiad_start.html")
+    return render_template("olympiad_start.html", need_intake=_user_needs_intake())
 
 
 @app.route("/api/track/page-time", methods=["POST"])
@@ -12743,7 +12777,7 @@ def about_page():
         except Exception:
             pass
         app.logger.warning(f"[about] failed to set onboarded_at: {_onb_err}")
-    return render_template('about.html')
+    return render_template('about.html', need_intake=_user_needs_intake())
 
 
 @app.route('/misc')

@@ -340,7 +340,16 @@
   {% if request.args.get('onboarding') %}
   <div class="onboarding-banner">
     <span> <strong>Добро пожаловать в FORMYLA!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
-    <a href="/daily_tasks" class="btn-secondary">Сразу к тренажёру -></a>
+    <a href="/intake" class="btn-secondary">Пройти анкету -></a>
+  </div>
+  {% endif %}
+
+  {# ── 1.5. Кнопка «Пройти анкету» для тех, кто читает без анкеты ── #}
+  {% if need_intake %}
+  <div style="text-align:center;background:linear-gradient(135deg,rgba(56,189,248,0.14),rgba(139,92,246,0.14));border:1px solid rgba(56,189,248,0.4);border-radius:20px;padding:26px 24px;margin-bottom:28px;">
+    <div style="color:var(--text-main);font-size:1.08em;font-weight:700;margin-bottom:6px;">Чтобы начать заниматься — пройди короткую анкету</div>
+    <div style="color:rgba(255,255,255,0.7);font-size:0.95em;margin-bottom:16px;">6 вопросов, 2 минуты. Дальше откроются задачи дня, куратор и весь остальной сайт.</div>
+    <a href="/intake" data-track="cta" style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:12px;font-size:1.08em;font-weight:700;box-shadow:0 6px 20px rgba(56,189,248,0.4);">Пройти анкету</a>
   </div>
   {% endif %}
 

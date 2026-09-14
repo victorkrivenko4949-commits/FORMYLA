@@ -582,8 +582,9 @@
   }
 
   function renderFinish(result) {
-    updateProgress(10, 10);
+    updateProgress(6, 6);
     const correct = result.anchors_correct || 0;
+    const hasAnchors = (result.anchors_count || 0) > 0;
     let solutionsHtml = '';
     const anchorSolutions = result.anchor_solutions || [];
     if (anchorSolutions.length > 0) {
@@ -601,7 +602,9 @@
       solutionsHtml += '</div>';
     }
     let finishMsg;
-    if (correct >= 4) {
+    if (!hasAnchors) {
+      finishMsg = 'Анкета пройдена! Мы уже настроили план и начальную сложность под твои ответы.';
+    } else if (correct >= 4) {
       finishMsg = 'Сильный старт — уровень заметно выше школьного. План соберём под серьёзную подготовку.';
     } else if (correct >= 2) {
       finishMsg = 'Хороший старт — видна база. Теперь докрутим до уверенного уровня.';
@@ -613,13 +616,13 @@
         <h2>Готово — день 1 из 7 начался</h2>
         <p style="color:var(--text);font-size:15px;line-height:1.6;">${finishMsg}</p>
         <div style="display:flex;justify-content:center;gap:24px;margin:18px 0 4px;">
-          <div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:var(--accent-hi);">${correct}/5</div><div style="font-size:12px;color:var(--muted);">якорных задач</div></div>
+          ${hasAnchors ? `<div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:var(--accent-hi);">${correct}/5</div><div style="font-size:12px;color:var(--muted);">якорных задач</div></div>` : ''}
           <div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:var(--accent-hi);">${result.daily_tasks}</div><div style="font-size:12px;color:var(--muted);">задач в день</div></div>
           <div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:#38ef7d;">1</div><div style="font-size:12px;color:var(--muted);">день серии</div></div>
         </div>
         <div style="margin:18px 0;padding:14px 16px;background:rgba(76,125,255,0.07);border:1px solid rgba(76,125,255,0.22);border-radius:10px;color:var(--text-soft);font-size:14px;line-height:1.6;">
           <b style="color:var(--text);">Задачи дня уже готовы.</b><br>
-          Уровень подобран по анкете, темы — все разделы по кругу. Завтра в 10:30 пришлём письмо со следующим днём — серия уже идёт.
+          Уровень подобран по анкете, темы — все разделы по кругу. Срез пока выключен — первая оценка идёт от твоих ответов. Завтра в 10:30 пришлём письмо со следующим днём — серия уже идёт.
         </div>
         <div style="margin:18px 0;padding:16px 18px;background:linear-gradient(135deg,rgba(56,189,248,0.10),rgba(139,92,246,0.10));border:1px solid rgba(139,92,246,0.35);border-radius:12px;color:var(--text-soft);font-size:14px;line-height:1.65;text-align:left;">
           <b style="color:var(--text);">Почему это стоит твоего времени?</b><br>
