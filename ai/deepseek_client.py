@@ -57,7 +57,10 @@ class DeepSeekClient:
         # Маршрутизация через OpenRouter оставлена ТОЛЬКО для vision-фолбэка
         # (см. _call_api ниже), который использует свой OPENROUTER_API_KEY.
         self.base_url = "https://api.deepseek.com/v1/chat/completions"
-        self.model = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash")
+        # FLASH_DOWN: дефолт flash → pro, пока FLASH_DOWN=True в llm_router.
+        # ОТКАТ: FLASH_DOWN = False или FIGURE_MODEL=deepseek-v4-flash в .env.
+        from services.llm_router import resolve_flash_model as _rfm
+        self.model = _rfm(os.environ.get("FIGURE_MODEL", "deepseek-v4-flash"))
         logger.info(" Using official DeepSeek API (direct)")
         
         self.max_retries = 2  # 2 попытки для устойчивости к ошибкам парсинга JSON
@@ -215,7 +218,8 @@ class DeepSeekClient:
         # If the client was configured for OpenRouter, point this single call back
         # to the official API so reasoner works.
         url = "https://api.deepseek.com/v1/chat/completions"
-        model = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash")
+        from services.llm_router import resolve_flash_model as _rfm
+        model = _rfm(os.environ.get("FIGURE_MODEL", "deepseek-v4-flash"))
 
         messages = []
         if system_prompt:
@@ -938,7 +942,8 @@ class DeepSeekClient:
             # Используем DeepSeek для текста.
             # Лёгкие короткие вопросы (< 25 символов) отдаём в быструю модель
             # flash, чтобы отвечать быстрее; сложные — в сильную v4-pro.
-            _flash_model = os.environ.get("FIGURE_MODEL", "deepseek-v4-flash").strip()
+            from services.llm_router import resolve_flash_model as _rfm
+            _flash_model = _rfm(os.environ.get("FIGURE_MODEL", "deepseek-v4-flash").strip())
             _pro_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro").strip()
             _short_q = len((new_message or "").strip()) < 25
             _text_model = _flash_model if _short_q else _pro_model

@@ -55,6 +55,30 @@ PROVIDER_MODEL_MAP = {
     },
 }
 
+# ─────────────────────────────────────────────────────────────────────
+# FLASH_DOWN_2026-09-14: временный фолбэк deepseek-v4-flash → deepseek-v4-pro.
+# Причина: flash не отвечает у провайдера. ОТКАТ: вернуть
+# FLASH_DOWN = False (все дефолты снова укажут на flash), либо точечно
+# задать переменные окружения FIGURE_MODEL / ATLAS_TUTOR_MODEL.
+# ─────────────────────────────────────────────────────────────────────
+FLASH_DOWN = True
+FLASH_STANDBY_MODEL = "deepseek-v4-pro"
+
+
+def resolve_flash_model(model_name: str) -> str:
+    """Если выбрана flash-модель и FLASH_DOWN=True — вернуть pro.
+
+    Текстовые flash-запросы временно перенаправляются на v4-pro, vision
+    (deepseek-v4-flash-vision-exp) не затрагиваются — это отдельная модель.
+    """
+    if not FLASH_DOWN:
+        return model_name
+    name = (model_name or "").strip()
+    if name == "deepseek-v4-flash":
+        return FLASH_STANDBY_MODEL
+    return model_name
+
+
 def _odirouter_base_url() -> str:
     """REC-5: OdiRouter — OpenAI-compatible endpoint (полный URL до /chat/completions).
 

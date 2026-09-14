@@ -708,7 +708,10 @@ def _is_filler_solution(text: str) -> bool:
 def _checking_model_name() -> str:
     """Имя модели, которой проверяется решение."""
     import os as _os
-    return (_os.environ.get("FIGURE_MODEL") or "deepseek-v4-flash").strip()
+    # FLASH_DOWN: дефолт flash → pro, пока FLASH_DOWN=True в llm_router.
+    # ОТКАТ: FLASH_DOWN = False или FIGURE_MODEL=deepseek-v4-flash в .env.
+    from services.llm_router import resolve_flash_model as _rfm
+    return _rfm((_os.environ.get("FIGURE_MODEL") or "deepseek-v4-flash").strip())
 
 
 def _normalize_latex(text: str) -> str:

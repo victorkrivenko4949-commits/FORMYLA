@@ -41,7 +41,10 @@ logger = logging.getLogger(__name__)
 
 API_BASE = os.environ.get("ATLAS_TUTOR_API_BASE", "https://api.deepseek.com/v1").rstrip("/")
 API_KEY = os.environ.get("ATLAS_TUTOR_API_KEY", "") or os.environ.get("DEEPSEEK_API_KEY", "")
-MODEL = os.environ.get("ATLAS_TUTOR_MODEL", "deepseek-v4-flash").strip()
+# FLASH_DOWN: дефолт flash → pro, пока FLASH_DOWN=True в llm_router.
+# ОТКАТ: FLASH_DOWN = False или ATLAS_TUTOR_MODEL=deepseek-v4-flash в .env.
+from services.llm_router import resolve_flash_model as _resolve_flash_model
+MODEL = _resolve_flash_model(os.environ.get("ATLAS_TUTOR_MODEL", "deepseek-v4-flash").strip())
 VISION_MODEL = os.environ.get("ATLAS_TUTOR_VISION_MODEL", "deepseek-v4-flash-vision-exp").strip()
 
 REQUEST_TIMEOUT = int(os.environ.get("ATLAS_TUTOR_TIMEOUT", "60"))
