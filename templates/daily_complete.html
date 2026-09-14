@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Quest завершён! - FORMYLA{% endblock %}
+{% block title %}Quest завершён! - FORMYLA.net{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}?v={{ asset_version }}">
@@ -342,11 +342,11 @@ function createConfetti() {
 
 // Share Results
 function shareResults() {
-    const text = ` Я завершил Daily Quest на FORMYLA!\n Заработано: {{ quest.xp_earned }} XP\n Streak: {{ streak_stats.current_streak }} дней`;
+    const text = ` Я завершил Daily Quest на FORMYLA.net!\n Заработано: {{ quest.xp_earned }} XP\n Streak: {{ streak_stats.current_streak }} дней`;
     
     if (navigator.share) {
         navigator.share({
-            title: 'FORMYLA Daily Quest',
+            title: 'FORMYLA.net Daily Quest',
             text: text
         }).catch(err => console.log('Share cancelled'));
     } else {

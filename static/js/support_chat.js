@@ -1,5 +1,5 @@
 /* ====================================================================
-   FORMYLA — Support Chat JS
+   FORMYLA.net — Support Chat JS
    Used by both admin/support_inbox.html and my_support.html.
 
    Responsibilities:
@@ -113,7 +113,7 @@
 
         var role = form.getAttribute('data-role') || 'admin';
         var label = form.getAttribute('data-label') || (role === 'admin'
-            ? 'Поддержка FORMYLA' : 'Ты');
+            ? 'Поддержка FORMYLA.net' : 'Ты');
         var ticketCard = form.closest('.ticket-card');
         var chatEl = ticketCard
             ? ticketCard.querySelector('.support-chat, .user-support-chat')

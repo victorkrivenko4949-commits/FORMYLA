@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""High-level orchestration for the FORMYLA Site Assistant.
+"""High-level orchestration for the FORMYLA.net Site Assistant.
 
 Pipeline (TZ section 3):
 

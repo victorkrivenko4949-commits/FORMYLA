@@ -1,4 +1,4 @@
-/* Site Concierge — AI-помощник по сайту FORMYLA.
+/* Site Concierge — AI-помощник по сайту FORMYLA.net.
  *
  * НЕ путать с виджетом ИИ-тьютора (#tutorBtn) — это отдельный концьерж по UX.
  * Виджет читает /api/concierge/intents для quick-replies и стучится в

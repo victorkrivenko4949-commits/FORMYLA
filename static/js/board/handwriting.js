@@ -1,6 +1,6 @@
 /* eslint-disable no-bitwise */
 /**
- * FORMYLA — Handwriting Renderer.
+ * FORMYLA.net — Handwriting Renderer.
  * Renders text onto a 2D canvas with natural-looking hand-written
  * variations (jitter, slight rotation, size wobble). Inspired by
  * Thalamus / Goodnotes "ink" text. Pure client-side (no API),

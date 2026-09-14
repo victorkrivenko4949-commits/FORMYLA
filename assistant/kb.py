@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""FORMYLA assistant knowledge base (renamed from knowledge.py to dodge a
+"""FORMYLA.net assistant knowledge base (renamed from knowledge.py to dodge a
 mysterious file-watcher that kept truncating ``knowledge.py`` to 0 bytes).
 
 The table schema (TZ §8) is portable between SQLite (local dev) and
@@ -19,11 +19,11 @@ logger = logging.getLogger(__name__)
 
 SEED_RECORDS: List[dict] = [
     {
-        "title": "Как начать пользоваться FORMYLA",
+        "title": "Как начать пользоваться FORMYLA.net",
         "category": "getting_started",
         "question": "Как начать?",
         "answer": (
-            "Чтобы начать пользоваться FORMYLA: 1) зарегистрируйся или войди в "
+            "Чтобы начать пользоваться FORMYLA.net: 1) зарегистрируйся или войди в "
             "аккаунт; 2) выбери свой класс; 3) пройди стартовую диагностику. "
             "После этого платформа покажет, какие темы и методы стоит "
             "прокачать в первую очередь."
@@ -73,7 +73,7 @@ SEED_RECORDS: List[dict] = [
         "category": "methods",
         "question": "Что такое методы?",
         "answer": (
-            "Методы — это приёмы решения олимпиадных задач. В FORMYLA задачи "
+            "Методы — это приёмы решения олимпиадных задач. В FORMYLA.net задачи "
             "связаны с методами, чтобы ученик понимал не только ответ, но и "
             "идею решения."
         ),
@@ -97,7 +97,7 @@ SEED_RECORDS: List[dict] = [
         "category": "olympiads",
         "question": "Как готовиться к ВсОШ?",
         "answer": (
-            "Для подготовки к ВсОШ в FORMYLA: 1) пройди диагностику; "
+            "Для подготовки к ВсОШ в FORMYLA.net: 1) пройди диагностику; "
             "2) решай тематические и этапные пробники; 3) изучай методы "
             "решения; 4) отслеживай прогресс в личном кабинете."
         ),
@@ -107,9 +107,9 @@ SEED_RECORDS: List[dict] = [
     {
         "title": "Стоимость",
         "category": "tariffs",
-        "question": "Сколько стоит FORMYLA?",
+        "question": "Сколько стоит FORMYLA.net?",
         "answer": (
-            "Сейчас FORMYLA полностью бесплатна: все разделы, задачи, "
+            "Сейчас FORMYLA.net полностью бесплатна: все разделы, задачи, "
             "ИИ-агенты, доска и AI-чертежи доступны без подписок и оплат."
         ),
         "keywords": "тариф, тарифы, цена, оплата, подписка, доступ, premium, про, стоимость, бесплатно",

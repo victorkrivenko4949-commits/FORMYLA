@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}О проекте FORMYLA{% endblock %}
+{% block title %}О проекте FORMYLA.net{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ asset_version }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/review_form.css') }}?v={{ asset_version }}">
@@ -74,7 +74,7 @@
     margin: 18px auto 0;
   }
 
-  /* ── Плашка «почему FORMYLA» в хиро ── */
+  /* ── Плашка «почему FORMYLA.net» в хиро ── */
   .hero-proof {
     display: flex;
     flex-wrap: wrap;
@@ -339,7 +339,7 @@
   {# ── 1. Onboarding banner (only after signup) ── #}
   {% if request.args.get('onboarding') %}
   <div class="onboarding-banner">
-    <span> <strong>Добро пожаловать в FORMYLA!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
+    <span> <strong>Добро пожаловать в FORMYLA.net!</strong> Это короткое знакомство — за 30 секунд поймёшь, что тут можно делать.</span>
     <a href="/intake" class="btn-secondary">Пройти анкету -></a>
   </div>
   {% endif %}
@@ -355,7 +355,7 @@
 
   {# ── 2. Hero ── #}
   <section class="about-hero formyla-hero-v2" id="how-it-works">
-    <h1 class="about-title">FORMYLA</h1>
+    <h1 class="about-title">FORMYLA.net</h1>
     <p class="about-subtitle">Персональная подготовка к олимпиадам по математике.</p>
 
     <p class="hero-description">
@@ -528,7 +528,7 @@
 
   {# ── 12. Отличия ── #}
   <section class="about-section">
-    <h2>✨ Что делает FORMYLA особенной</h2>
+    <h2>✨ Что делает FORMYLA.net особенной</h2>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon">🎯</span>
@@ -570,7 +570,7 @@
 
   {# ── 13. Для кого ── #}
   <section class="about-section">
-    <h2>💪 Для кого FORMYLA</h2>
+    <h2>💪 Для кого FORMYLA.net</h2>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon"></span>
@@ -601,7 +601,7 @@
     <div class="faq-list">
 
       <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Для какого класса подходит FORMYLA? <span class="faq-arrow">▼</span></div>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Для какого класса подходит FORMYLA.net? <span class="faq-arrow">▼</span></div>
         <div class="faq-a">Платформа рассчитана на 5–11 классы. Сложность задач дня — от 1 до 4 — подстраивается под ученика автоматически. Для 5–7 классов — школьный этап ВсОШ, Матпраздник, логические игры. Для 8–11 — муниципальный/региональный этапы, Турнир городов, Эйлер, Физтех, Курчатов.</div>
       </div>
 
@@ -621,8 +621,8 @@
       </div>
 
       <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Чем FORMYLA отличается от ChatGPT? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">ChatGPT — общий ИИ. FORMYLA заточена именно под олимпиадную математику: адаптивный уровень, персональный куратор, радары по подтемам, система долга и серий, банк 8000+ реальных олимпиадных задач с разборами. ChatGPT не подберёт задачи дня под твои пробелы и не построит план подготовки к ВсОШ.</div>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Чем FORMYLA.net отличается от ChatGPT? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">ChatGPT — общий ИИ. FORMYLA.net заточена именно под олимпиадную математику: адаптивный уровень, персональный куратор, радары по подтемам, система долга и серий, банк 8000+ реальных олимпиадных задач с разборами. ChatGPT не подберёт задачи дня под твои пробелы и не построит план подготовки к ВсОШ.</div>
       </div>
 
       <div class="faq-item">
@@ -636,8 +636,8 @@
       </div>
 
       <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Сколько стоит FORMYLA? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Сейчас FORMYLA полностью бесплатна: все разделы, задачи и ИИ-агенты доступны без подписок и оплат. Никаких тарифов и лимитов нет.</div>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Сколько стоит FORMYLA.net? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Сейчас FORMYLA.net полностью бесплатна: все разделы, задачи и ИИ-агенты доступны без подписок и оплат. Никаких тарифов и лимитов нет.</div>
       </div>
 
       <div class="faq-item">
@@ -654,7 +654,7 @@
       <h2>🚀 Готов начать?</h2>
       <p>Пройди анкету, реши якорные задачи — и получи персональный план подготовки.</p>
       <div class="final-cta-row">
-        <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA -></a>
+        <a href="/login" class="hero-cta hero-cta-primary">Войти в FORMYLA.net -></a>
       </div>
     </div>
   </section>
@@ -669,7 +669,7 @@
   {# ── Review form: пользовательский отзыв о сайте (приходит на email владельцу) ── #}
   <section class="about-section review-section" id="review-form">
     <h2>✍️ Написать отзыв</h2>
-    <p>Понравилось пользоваться FORMYLA? Поставь оценку и оставь пару слов — это очень помогает нам становиться лучше.</p>
+    <p>Понравилось пользоваться FORMYLA.net? Поставь оценку и оставь пару слов — это очень помогает нам становиться лучше.</p>
     <form id="review-form-inner" class="support-form">
       <div class="form-row">
         <label>Оценка</label>
@@ -1152,7 +1152,7 @@
       <div class="contact-chat__header">
         <div class="contact-chat__avatar"></div>
         <div>
-          <div class="contact-chat__title">Поддержка FORMYLA</div>
+          <div class="contact-chat__title">Поддержка FORMYLA.net</div>
           <div class="contact-chat__status">Обычно отвечаем за 1-2 часа</div>
         </div>
       </div>
@@ -1197,7 +1197,7 @@
     </div>
   </section>
 
-  {# ── AI-помощник FORMYLA перенесён в чат куратора (/prep/coach). #}
+  {# ── AI-помощник FORMYLA.net перенесён в чат куратора (/prep/coach). #}
   {# ── Секция убрана по задаче V4. ───────────── #}
 
 </div>

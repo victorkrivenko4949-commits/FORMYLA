@@ -1,5 +1,5 @@
 /* =====================================================================
-   FORMYLA Whiteboard — 1-to-1 video call panel
+   FORMYLA.net Whiteboard — 1-to-1 video call panel
    Loaded only by templates/drawing.html.  All selectors are scoped under
    .wb-call-panel / #wbCallPanel so we don't leak into the rest of the UI.
    ===================================================================== */

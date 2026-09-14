@@ -1,4 +1,4 @@
-/* FORMYLA — клиентская аналитика поверх Plausible.
+/* FORMYLA.net — клиентская аналитика поверх Plausible.
  *
  * Все события идут только если Plausible подключён (config.PLAUSIBLE_DOMAIN).
  * Если нет — функции остаются доступны и просто пишут лог в console (dev).

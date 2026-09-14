@@ -1,4 +1,4 @@
-// Mastery Radar Chart - FORMYLA
+// Mastery Radar Chart - FORMYLA.net
 document.addEventListener('DOMContentLoaded', () => {
 const el = document.getElementById('masteryRadar');
 if (!el) return;

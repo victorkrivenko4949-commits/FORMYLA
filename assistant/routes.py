@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Flask blueprint for the FORMYLA Site Assistant.
+"""Flask blueprint for the FORMYLA.net Site Assistant.
 
 Routes:
     POST /api/assistant            — new canonical endpoint (TZ section 5)

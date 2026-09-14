@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Daily Quest Service for FORMYLA
+Daily Quest Service for FORMYLA.net
 Generates personalized daily tasks based on user's topic mastery
 """
 

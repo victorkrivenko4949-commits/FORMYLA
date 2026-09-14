@@ -1,4 +1,4 @@
-// FORMYLA Whiteboard - Thalamus-style infinite canvas.
+// FORMYLA.net Whiteboard - Thalamus-style infinite canvas.
 // Tools: select/pen/eraser/rect/ellipse/line/arrow/text/sticky.
 // Pan: middle-mouse or space+drag. Zoom: ctrl+wheel.
 // Undo/Redo, auto-save to localStorage, export PNG, import image.

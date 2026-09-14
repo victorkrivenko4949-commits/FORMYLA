@@ -9,7 +9,7 @@ is not configured, so local development keeps working without a real key.
 Environment variables:
     BREVO_API_KEY        — API key from https://app.brevo.com -> SMTP & API
     BREVO_SENDER_EMAIL   — verified sender address (default: no-reply@formyla.com)
-    BREVO_SENDER_NAME    — display name (default: FORMYLA)
+    BREVO_SENDER_NAME    — display name (default: FORMYLA.net)
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def _get_api_client():
 def _sender_block() -> dict:
     return {
         "email": os.environ.get("BREVO_SENDER_EMAIL", "no-reply@formyla.com"),
-        "name": os.environ.get("BREVO_SENDER_NAME", "FORMYLA"),
+        "name": os.environ.get("BREVO_SENDER_NAME", "FORMYLA.net"),
     }
 
 
@@ -116,11 +116,11 @@ def send_welcome_email(user) -> bool:
     if not email:
         return False
     name = getattr(user, "nickname", None) or getattr(user, "display_name", None) or email.split("@")[0]
-    subject = "Добро пожаловать в FORMYLA!"
+    subject = "Добро пожаловать в FORMYLA.net!"
     html = f"""
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
       <h1 style="color:#7c3aed;margin:0 0 12px;">Привет, {name}!</h1>
-      <p>Спасибо, что зарегистрировался в <strong>FORMYLA</strong> — платформе подготовки к математическим олимпиадам.</p>
+      <p>Спасибо, что зарегистрировался в <strong>FORMYLA.net</strong> — платформе подготовки к математическим олимпиадам.</p>
       <p>Что ты можешь сделать прямо сейчас:</p>
       <ul>
         <li>Пройти <a href="https://formyla.net/intake/" style="color:#0ea5e9;">короткую анкету</a> — 6 вопросов и 5 задач, подберём стартовый уровень.</li>
@@ -144,11 +144,11 @@ def send_onboarding_nudge(user) -> bool:
     if not email:
         return False
     name = getattr(user, "nickname", None) or getattr(user, "display_name", None) or email.split("@")[0]
-    subject = "FORMYLA: тебя ждут первые задачи"
+    subject = "FORMYLA.net: тебя ждут первые задачи"
     html = f"""
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
       <h1 style="color:#7c3aed;margin:0 0 12px;">Доброе утро, {name}!</h1>
-      <p>Вчера ты зарегистрировался в <strong>FORMYLA</strong>, но не дошёл до первых задач. Это займёт меньше 10 минут:</p>
+      <p>Вчера ты зарегистрировался в <strong>FORMYLA.net</strong>, но не дошёл до первых задач. Это займёт меньше 10 минут:</p>
       <ul>
         <li><a href="https://formyla.net/intake/" style="color:#0ea5e9;">Пройди короткую анкету</a> — 6 вопросов, и мы подберём тебе уровень.</li>
         <li>Сразу после анкеты откроются <a href="https://formyla.net/daily_tasks" style="color:#0ea5e9;">задачи дня</a> — уровень уже подобран под тебя.</li>
@@ -171,7 +171,7 @@ def send_daily_tasks_deadline(user, hours_left: int = 5) -> bool:
     if not email:
         return False
     name = getattr(user, "nickname", None) or getattr(user, "name", None) or email.split("@")[0]
-    subject = f"FORMYLA: до конца задач дня меньше {hours_left} часов"
+    subject = f"FORMYLA.net: до конца задач дня меньше {hours_left} часов"
     html = f"""
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
       <h1 style="color:#7c3aed;margin:0 0 12px;">⏳ {name}, задачи дня ещё не решены</h1>
@@ -204,7 +204,7 @@ def send_daily_tasks_deadline_digest(
         f'<td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">{r.get("email") or "—"}</td></tr>'
         for r in recipients
     )
-    subject = f"FORMYLA digest: напоминания о задачах дня ({total_pending})"
+    subject = f"FORMYLA.net digest: напоминания о задачах дня ({total_pending})"
     html = f"""
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:640px;margin:0 auto;padding:24px;color:#1f2937;">
       <h1 style="color:#7c3aed;margin:0 0 12px;">Вечернее напоминание о задачах дня</h1>
@@ -226,13 +226,13 @@ def send_password_reset(user, reset_link: str) -> bool:
     if not email or not reset_link:
         return False
     name = getattr(user, "nickname", None) or email.split("@")[0]
-    subject = "FORMYLA: восстановление доступа"
+    subject = "FORMYLA.net: восстановление доступа"
     html = f"""
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
       <h2 style="color:#7c3aed;">Восстановление доступа</h2>
       <p>Привет, {name}. По твоему запросу мы выслали ссылку для входа без пароля:</p>
       <p style="text-align:center;margin:24px 0;">
-        <a href="{reset_link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Войти в FORMYLA</a>
+        <a href="{reset_link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Войти в FORMYLA.net</a>
       </p>
       <p style="color:#6b7280;font-size:13px;">Если ссылку запрашивал не ты — просто проигнорируй это письмо. Ссылка действует 30 минут.</p>
     </div>
@@ -246,7 +246,7 @@ def send_payment_receipt(user, plan: str, amount_rub: int, period: str = "мес
     if not email:
         return False
     name = getattr(user, "nickname", None) or email.split("@")[0]
-    subject = f"FORMYLA Pro {period}: оплата получена"
+    subject = f"FORMYLA.net Pro {period}: оплата получена"
     html = f"""
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937;">
       <h2 style="color:#7c3aed;">Спасибо за оплату!</h2>

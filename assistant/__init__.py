@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-FORMYLA AI Site Assistant — closed-domain helper for the FORMYLA platform.
+FORMYLA.net AI Site Assistant — closed-domain helper for the FORMYLA.net platform.
 
 Public entry points:
     * Blueprint: ``assistant_bp`` (registered at ``/api/assistant``).
@@ -9,7 +9,7 @@ Public entry points:
 
 This package is a clean rebuild of the previous ``site_concierge`` helper.
 It exposes NO general-purpose chat — every answer is grounded in the
-FORMYLA knowledge base, and out-of-scope questions are refused before
+FORMYLA.net knowledge base, and out-of-scope questions are refused before
 any LLM call.
 """
 from .routes import assistant_bp  # noqa: F401

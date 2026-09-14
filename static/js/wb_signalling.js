@@ -1,4 +1,4 @@
-// FORMYLA — WebSocket signalling client (Flask-SocketIO).
+// FORMYLA.net — WebSocket signalling client (Flask-SocketIO).
 //
 // Загружается внутри call_engine.html (iframe). Устанавливает постоянное
 // SocketIO-соединение с сервером и общается с родительской страницей через

@@ -1,4 +1,4 @@
-// FORMYLA — WebRTC engine (mesh topology).
+// FORMYLA.net — WebRTC engine (mesh topology).
 //
 // Загружается внутри call_engine.html (iframe). Управляет RTCPeerConnection
 // для каждого удалённого пира в mesh-сетке. Использует wb_signalling для

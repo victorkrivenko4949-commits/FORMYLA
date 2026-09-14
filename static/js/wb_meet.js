@@ -1,4 +1,4 @@
-// FORMYLA Whiteboard - group video meeting via LiveKit.
+// FORMYLA.net Whiteboard - group video meeting via LiveKit.
 // Pulls the official LiveKit client (ESM build) from a CDN at runtime,
 // so we don't need a build step.  Falls back to "feature disabled" if the
 // server says LIVEKIT_* env vars are missing.

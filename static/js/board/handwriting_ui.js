@@ -1,5 +1,5 @@
 /**
- * FORMYLA — Handwriting Modal Controller.
+ * FORMYLA.net — Handwriting Modal Controller.
  *
  * Wires the «️ Текст -> Рукопись» button in the whiteboard toolbar to
  * the modal defined in templates/whiteboard.html and the renderer from

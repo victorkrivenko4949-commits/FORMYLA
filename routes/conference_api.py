@@ -1,4 +1,4 @@
-# FORMYLA — Conference HTTP API blueprint.
+# FORMYLA.net — Conference HTTP API blueprint.
 #
 # Provides REST endpoints for the conference page:
 #   POST /api/conference/create-room  — generate a 6-digit room code

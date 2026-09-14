@@ -1,4 +1,4 @@
-// FORMYLA — Picture-in-Picture (PiP) overlay manager.
+// FORMYLA.net — Picture-in-Picture (PiP) overlay manager.
 // Загружается в base.html на ВСЕХ страницах.
 // При обнаружении сохранённого состояния конференции в sessionStorage
 // показывает плавающее окно в правом нижнем углу и переподключается к комнате.

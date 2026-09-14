@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Topic Mastery Service for FORMYLA
+Topic Mastery Service for FORMYLA.net
 Calculates user mastery level for each topic based on adaptive test history
 """
 

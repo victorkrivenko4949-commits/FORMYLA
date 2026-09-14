@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Email-уведомления для FORMYLA: support-форма и отзывы."""
+"""Email-уведомления для FORMYLA.net: support-форма и отзывы."""
 import logging
 import os
 
@@ -36,7 +36,7 @@ def send_support_email(mail_instance, *, nickname, email, category,
     }
     cat_label = cat_labels.get(category, 'Message')
 
-    subject = '[FORMYLA #' + str(ticket_id) + '] ' + cat_label
+    subject = '[FORMYLA.net #' + str(ticket_id) + '] ' + cat_label
     subject += ' from ' + (nickname or 'Guest')
 
     lines = [cat_label, 'Ticket: #' + str(ticket_id), '',
@@ -55,7 +55,7 @@ def send_support_email(mail_instance, *, nickname, email, category,
     parts = [
         '<div style="font-family:-apple-system,sans-serif;max-width:600px;'
         'margin:0 auto;">',
-        '<h2 style="color:#7c3aed;">' + cat_label + ' &mdash; FORMYLA</h2>',
+        '<h2 style="color:#7c3aed;">' + cat_label + ' &mdash; FORMYLA.net</h2>',
         '<p><b>Ticket:</b> #' + str(ticket_id) + '</p>',
         '<p><b>User:</b> ' + _esc(nickname or 'Guest') + '</p>',
     ]
@@ -189,11 +189,11 @@ def send_review_email(mail_instance, *, nickname, email, rating, message,
         r = 5
     stars = ('' * r) + ('' * (5 - r)) if r > 0 else '(без оценки)'
 
-    subject = '[FORMYLA отзыв #' + str(ticket_id) + '] '
+    subject = '[FORMYLA.net отзыв #' + str(ticket_id) + '] '
     subject += stars + ' от ' + (nickname or 'Гость')
 
     lines = [
-        'Новый отзыв на FORMYLA',
+        'Новый отзыв на FORMYLA.net',
         'Тикет: #' + str(ticket_id),
         'Оценка: ' + stars + (' (' + str(r) + '/5)' if r > 0 else ''),
         '',
@@ -213,7 +213,7 @@ def send_review_email(mail_instance, *, nickname, email, rating, message,
     parts = [
         '<div style="font-family:-apple-system,sans-serif;max-width:600px;'
         'margin:0 auto;">',
-        '<h2 style="color:#10b981;">Новый отзыв &mdash; FORMYLA</h2>',
+        '<h2 style="color:#10b981;">Новый отзыв &mdash; FORMYLA.net</h2>',
         '<p><b>Тикет:</b> #' + str(ticket_id) + '</p>',
         '<p style="font-size:22px;letter-spacing:2px;color:#f59e0b;">'
         + stars + '</p>',

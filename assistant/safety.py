@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Pre- and post-processing safety checks for the FORMYLA Site Assistant.
+"""Pre- and post-processing safety checks for the FORMYLA.net Site Assistant.
 
 Two layers:
 
@@ -31,7 +31,7 @@ ALLOWED_KEYWORDS = (
     "стрик", "балл", "баллы", "рейтинг",
 )
 
-# Indirect/UX-style phrases that DO belong to FORMYLA even without
+# Indirect/UX-style phrases that DO belong to FORMYLA.net even without
 # the obvious keyword. Anything matching is whitelisted as on-topic.
 _ALLOWED_PATTERNS = (
     r"\bкак\s+(пройти|сдать|начать|следить|смотреть|открыть|найти|готовиться)\b",
@@ -109,14 +109,14 @@ _HEDGE_PATTERNS = (
 )
 _re_hedge = [re.compile(p, re.IGNORECASE) for p in _HEDGE_PATTERNS]
 
-# Reject URLs that aren't relative to FORMYLA.
+# Reject URLs that aren't relative to FORMYLA.net.
 _re_external_url = re.compile(r"https?://(?!(?:www\.)?formyla\.)[^\s)]+", re.IGNORECASE)
 
 _MAX_ANSWER_LEN = 1200
 
 SAFE_FALLBACK = (
     "Пока у меня нет точной информации по этому вопросу. "
-    "Лучше уточнить у поддержки FORMYLA."
+    "Лучше уточнить у поддержки FORMYLA.net."
 )
 
 
@@ -146,13 +146,13 @@ def sanitize_answer(answer: str) -> Tuple[str, bool]:
 
 # Canonical refusal phrases (matched in service to short-circuit).
 REFUSAL_OFF_TOPIC = (
-    "Я помощник по сайту FORMYLA и могу отвечать только на вопросы о "
+    "Я помощник по сайту FORMYLA.net и могу отвечать только на вопросы о "
     "платформе: адаптивный тест, прогресс, задачи, методы, тарифы и "
     "подготовка."
 )
 REFUSAL_SOLVE_TASK = (
     "Я не решаю школьные и олимпиадные задачи за тебя. Я помогаю "
-    "разобраться, как пользоваться сайтом FORMYLA: где найти задачи, как "
+    "разобраться, как пользоваться сайтом FORMYLA.net: где найти задачи, как "
     "пройти адаптивный тест, как отслеживать прогресс."
 )
 

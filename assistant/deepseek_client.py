@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Thin, dependency-free DeepSeek wrapper used by the FORMYLA site assistant.
+"""Thin, dependency-free DeepSeek wrapper used by the FORMYLA.net site assistant.
 
 Why a separate wrapper?
 -----------------------

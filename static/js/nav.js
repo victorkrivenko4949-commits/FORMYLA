@@ -1,5 +1,5 @@
 /**
- * FORMYLA - Dropdown Navigation
+ * FORMYLA.net - Dropdown Navigation
  */
 document.addEventListener('DOMContentLoaded', function () {
 

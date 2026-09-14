@@ -1,5 +1,5 @@
 /*!
- * FORMYLA — WhatsApp-style emoji picker
+ * FORMYLA.net — WhatsApp-style emoji picker
  * Self-contained: no dependencies. Public API:
  *   EmojiPicker.attach({ button, target, anchor })
  *     - button: HTMLElement that toggles the picker (e.g.  button)

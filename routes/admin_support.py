@@ -191,7 +191,7 @@ def admin_support_reply(msg_id):
         try:
             from utils.mail import send_email as resend_send, is_configured as resend_ready
             if resend_ready():
-                subject = 'Ответ от поддержки FORMYLA'
+                subject = 'Ответ от поддержки FORMYLA.net'
                 html = (
                     f'<p>Привет!</p>'
                     f'<p>На твоё обращение ответили:</p>'

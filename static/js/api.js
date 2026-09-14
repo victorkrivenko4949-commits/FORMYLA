@@ -1,5 +1,5 @@
 /**
- * api.js — Универсальный fetch-wrapper для FORMYLA
+ * api.js — Универсальный fetch-wrapper для FORMYLA.net
  *
  * Автоматически перехватывает 403 с error='limit_reached'
  * и показывает paywall модалку.

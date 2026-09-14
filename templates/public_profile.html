@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ target.name or 'Пользователь' }} — FORMYLA{% endblock %}
+{% block title %}{{ target.name or 'Пользователь' }} — FORMYLA.net{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/public_profile.css') }}?v={{ asset_version }}">
@@ -24,7 +24,7 @@
       <div class="pp-hero-info">
         <h1 class="pp-name">{{ target.name or 'Пользователь' }}</h1>
         {% if target.nickname %}<p class="pp-nick">@{{ target.nickname }}</p>{% endif %}
-        <p class="pp-joined">На FORMYLA с {{ target.created_at.strftime('%B %Y') if target.created_at else '—' }}</p>
+        <p class="pp-joined">На FORMYLA.net с {{ target.created_at.strftime('%B %Y') if target.created_at else '—' }}</p>
         {% if streak and streak.current_streak > 0 %}
         <div class="pp-streak">
            <strong>{{ streak.current_streak }}</strong> дней подряд

@@ -1,4 +1,4 @@
-// FORMYLA Whiteboard - 1-to-1 video call panel.
+// FORMYLA.net Whiteboard - 1-to-1 video call panel.
 // WebRTC peer connection + HTTP polling signalling (/api/wb_call/*).
 //
 // UI: small floating panel anchored bottom-right of the whiteboard.

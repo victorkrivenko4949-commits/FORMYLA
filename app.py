@@ -574,7 +574,7 @@ except Exception as _reset_err:
 # AUTO-MIGRATION: Add level_engine columns to curator_state
 # Колонки добавлены в models_curator.py (level_mu, level_sigma, level_by_section,
 # level_updated_at). Используются services/level_engine.py как единый держатель
-# канонического уровня FORMYLA (шкала 1..5). Идемпотентно.
+# канонического уровня FORMYLA.net (шкала 1..5). Идемпотентно.
 try:
     with app.app_context():
         from sqlalchemy import inspect as _inspect_le, text as _text_le
@@ -1897,7 +1897,7 @@ try:
 except Exception as _e_secrets:
     print(f"[SECRETS-SEED] hook skipped: {_e_secrets}")
 
-# /grade-5 and /grade-6 — тренажёр FORMYLA по школьным классам.
+# /grade-5 and /grade-6 — тренажёр FORMYLA.net по школьным классам.
 try:
     from routes.grade import grade_bp
     app.register_blueprint(grade_bp)
@@ -1905,7 +1905,7 @@ try:
 except Exception as _e:
     print(f"[BP] grade_bp NOT registered: {_e}")
 
-# /api/assistant + legacy /api/concierge/* — FORMYLA AI Site Assistant
+# /api/assistant + legacy /api/concierge/* — FORMYLA.net AI Site Assistant
 # (отдельный от ИИ-тьютора). Полная переcборка: см. assistant/ package.
 try:
     from assistant import assistant_bp
@@ -5306,13 +5306,13 @@ def send_auth_email(recipient_email, code):
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background: #ffffff; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #4F46E5; margin: 0;">FORMYLA</h1>
+            <h1 style="color: #4F46E5; margin: 0;">FORMYLA.net</h1>
             <p style="color: #666; font-size: 14px; margin-top: 5px;">Образовательная платформа по математике</p>
         </div>
         
         <p style="color: #333; font-size: 16px; line-height: 1.6;">
             Здравствуйте!<br><br>
-            Вы запросили код для входа на образовательную платформу FORMYLA.
+            Вы запросили код для входа на образовательную платформу FORMYLA.net.
         </p>
         
         <div style="text-align: center; margin: 30px 0;">
@@ -5332,12 +5332,12 @@ def send_auth_email(recipient_email, code):
         
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <p style="color: #666; font-size: 14px; margin: 0;">С уважением,</p>
-            <p style="color: #4F46E5; font-size: 16px; font-weight: 600; margin: 5px 0;">Команда FORMYLA</p>
+            <p style="color: #4F46E5; font-size: 16px; font-weight: 600; margin: 5px 0;">Команда FORMYLA.net</p>
         </div>
     </div>
     """
 
-    subject = 'Код подтверждения для доступа к платформе FORMYLA'
+    subject = 'Код подтверждения для доступа к платформе FORMYLA.net'
 
     # ─── Path 1: Resend HTTP API ────────────────────────────────────────
     from utils.mail import send_email as resend_send, is_configured as resend_ready
@@ -8709,7 +8709,7 @@ def adaptive_test_simple_page():
 
     slot = slots[slot_index]
 
-    # ── Stale-slot reassignment (FORMYLA v2 calibration fix) ────────────
+    # ── Stale-slot reassignment (FORMYLA.net v2 calibration fix) ────────────
     # Если активный слот ещё pending (т.е. на него не отвечено) и был
     # назначен при ином уровне (level_at_assign != current_difficulty) —
     # сбрасываем task_id, чтобы пикер выбрал свежую задачу под актуальный
@@ -9075,7 +9075,7 @@ def check_adaptive_answer():
             and answer_correct is None
         )
 
-        # — Шкала FORMYLA: уровень определяется ТОЛЬКО по вердикту ИИ-тьютора —
+        # — Шкала FORMYLA.net: уровень определяется ТОЛЬКО по вердикту ИИ-тьютора —
         #   answer_correct is True  -> +1 (верно)
         #   answer_correct is False -> -1 (неверно)
         #   answer_correct is None / AI failure -> 0 (нейтрально, без изм.)
@@ -9089,7 +9089,7 @@ def check_adaptive_answer():
             score = -1
 
         # ── Применяем дельту к уровню (clamp 1..8) ─────────────────────
-        # FORMYLA v2: уровни 1..8, дельта +1/0/-1 от СОХРАНЁННОГО уровня
+        # FORMYLA.net v2: уровни 1..8, дельта +1/0/-1 от СОХРАНЁННОГО уровня
         # (а не от difficulty показанной задачи).
         current_difficulty = session.get('adaptive_current_difficulty', 3)
         partial_streak = session.get('partial_correct_streak', 0)
@@ -9696,7 +9696,7 @@ def analyze_adaptive_test(test_id):
 Сильные разделы: {', '.join(strong_names) if strong_names else 'пока не выявлены'}
 Слабые разделы: {', '.join(weak_names) if weak_names else 'пока не выявлены'}
 
-Напиши короткий, ободряющий отзыв (3-4 предложения) с конкретной рекомендацией, на какие разделы на сайте FORMYLA ему нужно сделать упор в ближайший месяц, чтобы достичь следующего статуса: {olympiad_status.get('next_status', 'высшего уровня')}.
+Напиши короткий, ободряющий отзыв (3-4 предложения) с конкретной рекомендацией, на какие разделы на сайте FORMYLA.net ему нужно сделать упор в ближайший месяц, чтобы достичь следующего статуса: {olympiad_status.get('next_status', 'высшего уровня')}.
 
 Будь мотивирующим, но честным. Говори прямо и по делу, как настоящий тренер."""
 

@@ -1,4 +1,4 @@
-// FORMYLA — Conference UI module.
+// FORMYLA.net — Conference UI module.
 //
 // Загружается на странице конференции (templates/conference.html).
 // Управляет UI: лобби, видеосетка, тулбар, панели участников и чата, реакции.

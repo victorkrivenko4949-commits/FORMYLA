@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-FORMYLA Task Bank — банк готовых задач для «Задачи дня».
+FORMYLA.net Task Bank — банк готовых задач для «Задачи дня».
 
 Читает pre-made JSON-файлы (grades 5–11) из ``daily_tasks/data/task_bank/``
 и предоставляет детерминированный доступ к задачам по (grade, level, day).

@@ -55,7 +55,7 @@
                 {% if is_support %}
                     <div class="support-message support-message-admin">
                         <div class="support-message-meta">
-                            Поддержка FORMYLA{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
+                            Поддержка FORMYLA.net{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
                         </div>
                         <div class="support-message-bubble">{{ m.text }}</div>
                     </div>
@@ -74,7 +74,7 @@
               action="{{ url_for('admin_support.admin_support_reply', msg_id=t.id) }}"
               class="support-composer"
               data-role="admin"
-              data-label="Поддержка FORMYLA">
+              data-label="Поддержка FORMYLA.net">
             {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
             <textarea name="reply_text"
                       rows="1"

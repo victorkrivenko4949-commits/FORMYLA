@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-services/level_engine.py — Единый держатель канонического уровня FORMYLA.
+services/level_engine.py — Единый держатель канонического уровня FORMYLA.net.
 
 Шкала: 1..4 (каноническая). Всё остальное — производное.
 

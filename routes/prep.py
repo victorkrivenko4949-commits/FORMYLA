@@ -2295,7 +2295,7 @@ def coach_greeting():
 
     if not grade:
         return jsonify(
-            greeting=f'{name_greeting_fmt} Я твой ИИ-куратор FORMYLA. Для начала выбери свой класс, '
+            greeting=f'{name_greeting_fmt} Я твой ИИ-куратор FORMYLA.net. Для начала выбери свой класс, '
                      'чтобы я мог построить радар твоих подтем.',
             scenario='need_grade',
             recommended_olympiad=None,
@@ -2645,7 +2645,7 @@ def coach_greeting():
     except Exception as _greeting_err:
         current_app.logger.exception('coach_greeting safety net caught error')
         return jsonify(
-            greeting=f'{name_greeting_fmt} Я твой ИИ-куратор FORMYLA. Задай мне вопрос!',
+            greeting=f'{name_greeting_fmt} Я твой ИИ-куратор FORMYLA.net. Задай мне вопрос!',
             scenario='fallback',
             recommended_olympiad=None,
             subtopics_to_test=[],
@@ -3585,7 +3585,7 @@ def coach_chat():
     )
     _coach_user_name = _coach_user_name if _coach_user_name and _coach_user_name != 'Игрок' else 'ученик'
 
-    # ── Полная справка о сайте FORMYLA (единый источник правды) ────────────
+    # ── Полная справка о сайте FORMYLA.net (единый источник правды) ────────────
     try:
         from services.site_concierge import build_site_context_for_llm
         _site_context = build_site_context_for_llm()
@@ -3594,11 +3594,11 @@ def coach_chat():
 
     # Build rich system prompt
     system_prompt = (
-        "Ты — персональный ИИ-куратор FORMYLA для подготовки к математическим олимпиадам. "
+        "Ты — персональный ИИ-куратор FORMYLA.net для подготовки к математическим олимпиадам. "
         f"Обращайся к ученику по имени: {_coach_user_name}. "
-        "Ты работаешь ТОЛЬКО внутри платформы FORMYLA. "
+        "Ты работаешь ТОЛЬКО внутри платформы FORMYLA.net. "
         "Ты не советуешь внешние учебники, сайты, задачники (Атанасян, problems.ru и т.п.) — "
-        "все материалы для подготовки уже есть в FORMYLA. "
+        "все материалы для подготовки уже есть в FORMYLA.net. "
         "Ты не выдумываешь кнопки и действия, которых нет на странице. "
         "Ты не назначаешь число задач в день и разделы/подтемы — это уже определено системой. "
         "Отвечай кратко, на русском, давай конкретные шаги на ближайшие дни. "
@@ -3617,7 +3617,7 @@ def coach_chat():
         "ПОДТЕМЫ ЦИКЛА: они уже выбраны системой и видны в блоке «Цикл месяца». "
         "Ты не можешь назначать или менять подтемы — только объяснять, как решать ту, "
         "которая сейчас активна.\n\n"
-        "ДОСТУПНЫЕ КНОПКИ И СТРАНИЦЫ В FORMYLA (ссылайся только на них):\n"
+        "ДОСТУПНЫЕ КНОПКИ И СТРАНИЦЫ В FORMYLA.net (ссылайся только на них):\n"
         "  • /prep/coach — страница куратора (ты здесь)\n"
         "  • /daily_tasks — \"Перейти к задачам дня\" ({_daily_count} задач из текущей подтемы)\n"
         "  • /adaptive-test — \"Пройти адаптивный тест\" (диагностика по всем темам)\n"
@@ -3715,7 +3715,7 @@ def coach_faq():
     data = request.get_json(silent=True) or {}
     question = (data.get('question') or '').strip()
     if not question:
-        return jsonify(answer='Задайте вопрос о сайте FORMYLA.')
+        return jsonify(answer='Задайте вопрос о сайте FORMYLA.net.')
 
     # Load FAQ data
     faq_path = _os_.path.join(_os_.path.dirname(__file__), '..', 'data', 'curator_faq.json')

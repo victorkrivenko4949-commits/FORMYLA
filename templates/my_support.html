@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Твоя поддержка — FORMYLA{% endblock %}
+{% block title %}Твоя поддержка — FORMYLA.net{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/support_chat.css') }}?v={{ asset_version }}">
@@ -9,7 +9,7 @@
 <div class="support-page-wrap" style="max-width: 860px;">
     <header class="support-page-header">
         <h1> Твоя поддержка</h1>
-        <p>Все твои обращения и переписка с командой FORMYLA.</p>
+        <p>Все твои обращения и переписка с командой FORMYLA.net.</p>
     </header>
 
     {% with flashes = get_flashed_messages(with_categories=true) %}
@@ -48,7 +48,7 @@
                 {% if is_support %}
                     <div class="user-support-message user-support-message-support">
                         <div class="user-support-message-meta">
-                            Поддержка FORMYLA{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
+                            Поддержка FORMYLA.net{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
                         </div>
                         <div class="user-support-message-bubble">{{ m.text }}</div>
                     </div>

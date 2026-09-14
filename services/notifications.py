@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Notification service for FORMYLA.
+Notification service for FORMYLA.net.
 Sends messages via Telegram bot and email (Resend).
 
 Email delivery went through several providers (Gmail -> Yandex -> Resend).

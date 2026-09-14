@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-SubscriptionService for FORMYLA Free/Premium subscriptions.
+SubscriptionService for FORMYLA.net Free/Premium subscriptions.
 
 Works with two DB connection types:
   1. raw sqlite3.Connection (tests)

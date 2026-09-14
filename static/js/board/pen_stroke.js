@@ -1,5 +1,5 @@
 /**
- * FORMYLA — Beautiful Pen Stroke Renderer.
+ * FORMYLA.net — Beautiful Pen Stroke Renderer.
  *
  * Replaces the «лоtaня прямых отрезков» rendering of the default pen tool
  * with a smooth, ink-like stroke:

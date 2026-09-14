@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Subject classification for FORMYLA adaptive tasks.
+"""Subject classification for FORMYLA.net adaptive tasks.
 
 Single source of truth that maps a task (from new JSON dataset
 ``formyla_adaptive_full_with_full_level8_by_topics.json`` or from

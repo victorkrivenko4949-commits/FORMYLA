@@ -198,7 +198,7 @@ class OpenRouterClient:
                             "Authorization": f"Bearer {self.api_key}",
                             "Content-Type": "application/json",
                             "HTTP-Referer": "https://formyla.com",
-                            "X-Title": "FORMYLA Daily Pool",
+                            "X-Title": "FORMYLA.net Daily Pool",
                         },
                         json=payload,
                     )
@@ -352,7 +352,7 @@ class OpenRouterClient:
                             "Authorization": f"Bearer {self.api_key}",
                             "Content-Type": "application/json",
                             "HTTP-Referer": "https://formyla.com",
-                            "X-Title": "FORMYLA Daily Pool",
+                            "X-Title": "FORMYLA.net Daily Pool",
                         },
                         json=payload,
                     )

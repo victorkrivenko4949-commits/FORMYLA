@@ -1,4 +1,4 @@
-// FORMYLA Whiteboard - LiveKit collaborative sync.
+// FORMYLA.net Whiteboard - LiveKit collaborative sync.
 // Bridges static/js/whiteboard.js (window.WB) with static/js/wb_meet.js
 // (LiveKit room) via the room data-channel.  Listens for the custom
 // events "wb-meet-room" and "wb-meet-leave" that wb_meet.js dispatches.

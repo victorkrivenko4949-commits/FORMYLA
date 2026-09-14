@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>{% block title %}FORMYLA — Подготовка к олимпиадам по математике{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}FORMYLA — онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике: ВсОШ, Ломоносов, Эйлер, Турнир городов. ИИ-тьютор, задачи дня, теория, разборы.{% endblock %}">
+    <title>{% block title %}FORMYLA.net — Подготовка к олимпиадам по математике{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}FORMYLA.net — онлайн-платформа для подготовки школьников 5–11 классов к олимпиадам по математике: ВсОШ, Ломоносов, Эйлер, Турнир городов. ИИ-тьютор, задачи дня, теория, разборы.{% endblock %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
@@ -177,7 +177,7 @@
                         <stop offset="100%" stop-color="#11998e"/>
                     </linearGradient>
                 </defs>
-                <text x="100" y="65" font-family="'Segoe UI', sans-serif" font-style="italic" font-weight="800" font-size="38" fill="#ffffff" letter-spacing="2">FORMYLA</text>
+                <text x="100" y="65" font-family="'Segoe UI', sans-serif" font-style="italic" font-weight="800" font-size="38" fill="#ffffff" letter-spacing="2">FORMYLA.net</text>
                 <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
                 <polyline points="35,42 50,50 50,80" fill="none" stroke="url(#grad_logo)" stroke-width="4"/>
                 <line x1="50" y1="50" x2="65" y2="42" stroke="url(#grad_logo)" stroke-width="4"/>
@@ -315,7 +315,7 @@
     <aside class="mobile-drawer" id="mobileDrawer">
         <!-- Drawer header -->
         <div class="drawer-header">
-            <span class="drawer-logo">FORMYLA</span>
+            <span class="drawer-logo">FORMYLA.net</span>
             <button class="drawer-close" onclick="closeDrawer()" aria-label="Закрыть"></button>
         </div>
 
@@ -587,7 +587,7 @@
     </script>
     
     {# Site Concierge (FAB-помощник по сайту) — НЕ подключаем глобально.
-       Inline-секция «Помощник FORMYLA» есть только на странице /about. #}
+       Inline-секция «Помощник FORMYLA.net» есть только на странице /about. #}
 
     {% if current_user.is_authenticated %}
     <!-- Слушатель приглашений на видеозвонок + PiP-оверлей межстраничного звонка. -->

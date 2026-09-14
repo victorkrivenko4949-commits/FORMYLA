@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Difficulty Calibration Service for FORMYLA
+Difficulty Calibration Service for FORMYLA.net
 Provides level labels, few-shot examples, and calibration utilities.
 """
 
@@ -93,7 +93,7 @@ def build_generation_prompt(grade, topic, subtopic, level):
     
     description = LEVEL_DESCRIPTIONS.get(level_clamped, LEVEL_DESCRIPTIONS[3])
     
-    prompt = f"""Ты — генератор олимпиадных задач для платформы FORMYLA.
+    prompt = f"""Ты — генератор олимпиадных задач для платформы FORMYLA.net.
 
 ТРЕБОВАНИЯ:
 - Класс: {grade}

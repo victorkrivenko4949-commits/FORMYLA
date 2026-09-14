@@ -1,5 +1,5 @@
 /**
- * paywall.js — Модалка paywall для FORMYLA
+ * paywall.js — Модалка paywall для FORMYLA.net
  *
  * Использование:
  *   showPaywall({ feature, message, usage_today, limit, current_plan, upgrade_price })

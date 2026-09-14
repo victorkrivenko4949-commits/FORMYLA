@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""services/security.py - lightweight security helpers for FORMYLA.
+"""services/security.py - lightweight security helpers for FORMYLA.net.
 Provides CSP/security headers, a simple session-based CSRF token and basic
 input sanitisation. Implemented without Flask-WTF so it has no extra deps
 beyond Flask + itsdangerous (both already in requirements).

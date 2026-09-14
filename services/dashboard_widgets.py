@@ -55,7 +55,7 @@ AVAILABLE_WIDGETS = [
         'key': 'about',
         'title': 'О сайте',
         'template': 'widgets/about.html',
-        'description': 'О платформе FORMYLA',
+        'description': 'О платформе FORMYLA.net',
     },
     {
         'key': 'feedback',

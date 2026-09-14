@@ -1,5 +1,5 @@
 /**
- * Reusable "Поделиться с другом" widget for FORMYLA.
+ * Reusable "Поделиться с другом" widget for FORMYLA.net.
  *
  * Usage: anywhere on a task page place a button like:
  *   <button class="share-friend-btn"
@@ -281,7 +281,7 @@
     }
     // Если ничего не нашли — пробуем title страницы
     if (!preview){
-      const ti = document.title.replace(/—.*FORMYLA\s*$/i, '').trim();
+      const ti = document.title.replace(/—.*FORMYLA.net\s*$/i, '').trim();
       if (ti && ti.length > 4) preview = ti;
     }
 

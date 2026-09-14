@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Friendship routes for FORMYLA
+Friendship routes for FORMYLA.net
 Bidirectional friend system with request/accept/decline/remove
 """
 from flask import Blueprint, jsonify, render_template, abort, request

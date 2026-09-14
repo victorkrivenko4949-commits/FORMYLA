@@ -159,7 +159,7 @@ def send_morning_reminder(plan_id):
     email_addr = getattr(user, 'email', None)
     if email_addr and not email_addr.startswith('guest_'):
         try:
-            subject = "FORMYLA — %s" % msg[:60]
+            subject = "FORMYLA.net — %s" % msg[:60]
             send_email(email_addr, subject, full_msg)
             channels.append('email')
         except Exception as exc:
@@ -256,7 +256,7 @@ def send_weekly_report(plan_id):
     email_addr = getattr(plan.user, 'email', None)
     if email_addr and not email_addr.startswith('guest_'):
         try:
-            subject = "FORMYLA — Еженедельный отчёт: %s" % short
+            subject = "FORMYLA.net — Еженедельный отчёт: %s" % short
             send_email(email_addr, subject, msg)
             channels.append('email')
         except Exception as exc:
@@ -321,7 +321,7 @@ def streak_rescue_cron():
         email_addr = getattr(plan.user, 'email', None)
         if email_addr and not email_addr.startswith('guest_'):
             try:
-                subject = "FORMYLA — Серия под угрозой! "
+                subject = "FORMYLA.net — Серия под угрозой! "
                 send_email(email_addr, subject, msg)
                 if not tg_id:
                     warned += 1  # count only if TG wasn't sent

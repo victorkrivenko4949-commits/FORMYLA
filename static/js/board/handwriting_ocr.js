@@ -1,5 +1,5 @@
 /**
- * FORMYLA — On-demand selective OCR for the whiteboard pencil.
+ * FORMYLA.net — On-demand selective OCR for the whiteboard pencil.
  *
  * UX:
  *   1. User scribbles whatever they want with the pen tool.
