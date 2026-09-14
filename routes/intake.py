@@ -83,6 +83,25 @@ def answer_intake():
 
 
 # ══════════════════════════════════════════════════════════════════════
+# POST /intake/skip — пропустить анкету (она становится необязательной)
+# ══════════════════════════════════════════════════════════════════════
+
+@intake_bp.route('/skip', methods=['POST'])
+@login_required
+def skip_intake():
+    """Пользователь пропускает анкету и уходит читать, что за сайт.
+
+    Отмечаем intake.completed=True (skipped=True) в CuratorState, чтобы
+    гейт app.before_request больше не редиректил на /intake. Пройти анкету
+    можно в любой момент позже — ссылка остаётся на странице /about и
+    на /olympiad-start.
+    """
+    from services.intake_service import _mark_intake_skipped
+    _mark_intake_skipped(current_user.id)
+    return jsonify({'done': True, 'redirect_url': '/olympiad-start'})
+
+
+# ══════════════════════════════════════════════════════════════════════
 # POST /intake/anchor
 # ══════════════════════════════════════════════════════════════════════
 

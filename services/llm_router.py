@@ -70,12 +70,15 @@ def resolve_flash_model(model_name: str) -> str:
 
     Текстовые flash-запросы временно перенаправляются на v4-pro, vision
     (deepseek-v4-flash-vision-exp) не затрагиваются — это отдельная модель.
+    Плюс легаси-алиас 'deepseek-chat' (куратор) мапим на тот же v4-pro:
+    он удалён из актуального API и вызывал «Ошибка соединения».
     """
     if not FLASH_DOWN:
         return model_name
     name = (model_name or "").strip()
-    if name == "deepseek-v4-flash":
-        return FLASH_STANDBY_MODEL
+    if name in ("deepseek-v4-flash", "deepseek/deepseek-v4-flash",
+                "deepseek/deepseek-chat", "deepseek-chat"):
+        return "deepseek/deepseek-v4-pro" if "/" in name else FLASH_STANDBY_MODEL
     return model_name
 
 

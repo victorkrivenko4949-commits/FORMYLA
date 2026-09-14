@@ -169,6 +169,12 @@ class OpenRouterClient:
         Returns: {"content": str, "usage": {...}, "cost_usd": float}
         Raises: OpenRouterError on failure after retries.
         """
+        # FLASH_DOWN: легаси-алиасы куратора на рабочую модель (откат через llm_router)
+        try:
+            from services.llm_router import resolve_flash_model
+            model = resolve_flash_model(model)
+        except Exception:
+            pass
         if not self.circuit_breaker.check(model):
             raise CircuitBreakerOpen(f"Model {model} is paused (circuit breaker)")
 

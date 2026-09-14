@@ -756,6 +756,18 @@ except Exception as e:
 # AUTO-MIGRATION: Создаём таблицы group_chats / group_members / group_messages
 # на проде, если их ещё нет. На локалке db.create_all() в init_db уже создал
 # их, но на проде Postgres может быть старая БД, где этих таблиц нет.
+# AUTO-MIGRATION: таблица article_views (PAGE_TIME_V1) — время просмотра статей.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_av
+        _ins_av = _inspect_av(db.engine)
+        if 'article_views' not in set(_ins_av.get_table_names()):
+            print("[AUTO-MIGRATION] Creating article_views")
+            db.create_all()
+            print("[AUTO-MIGRATION] [OK] article_views created")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] article_views Warning: {e}")
+
 try:
     with app.app_context():
         from sqlalchemy import inspect as _inspect_grp
@@ -2969,6 +2981,10 @@ def force_intake_completion():
         '/logout',
         '/verify-code',
         '/dev_login',
+        # Необязательная анкета: «пропустить и почитать, что за сайт»
+        '/about',
+        '/olympiad-start',
+        '/api/track/page-time',
     ):
         if path == _p or path.startswith(_p):
             return
@@ -3875,6 +3891,45 @@ def conference_page():
     Авторизация не требуется (можно звонить гостям).
     """
     return render_template("conference.html")
+
+
+@app.route("/olympiad-start")
+def olympiad_start():
+    """Статья «Как войти в олимпиадную математику» (гайд для новичков).
+
+    Публичная страница: видна и без входа, и без пройденной анкеты —
+    это та самая страница «почитать, что вообще за сайт», на которую
+    ведёт пропуск анкеты.
+    """
+    return render_template("olympiad_start.html")
+
+
+@app.route("/api/track/page-time", methods=["POST"])
+def track_page_time():
+    """Приём «ударов» времени просмотра страниц (PAGE_TIME_V1).
+
+    Клиент раз в ~20 секунд POSTит {"page": "/olympiad-start", "seconds": 20}.
+    Секунды клампим (0, 120], чтобы таймер вкладки не мог наливать часы.
+    """
+    data = request.get_json(silent=True) or {}
+    page = str(data.get('page', '')).strip()[:120]
+    try:
+        seconds = int(data.get('seconds', 0))
+    except (TypeError, ValueError):
+        seconds = 0
+    if not page or seconds <= 0:
+        return jsonify(ok=False), 400
+    seconds = min(seconds, 120)
+    try:
+        from models import ArticleView
+        uid = current_user.id if (current_user.is_authenticated and
+                                  not getattr(current_user, 'is_guest', False)) else None
+        db.session.add(ArticleView(user_id=uid, page=page, seconds=seconds))
+        db.session.commit()
+    except Exception as _e_pt:
+        db.session.rollback()
+        app.logger.warning(f"track_page_time failed: {_e_pt}")
+    return jsonify(ok=True)
 
 
 @app.route("/welcome")

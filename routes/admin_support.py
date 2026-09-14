@@ -336,12 +336,36 @@ def admin_support_user_daily3(user_id):
     created = user.created_at.date() if getattr(user, 'created_at', None) else None
     returned = bool(visits and created and any(d > created for d in visit_days))
 
+    # PAGE_TIME_V1 (2026-09-15): время просмотра статей/гайдов
+    # (ArticleView), суммарно и по дням по московской дате.
+    from models import ArticleView
+    from sqlalchemy import func as _func
+    from datetime import timedelta as _td3
+    page_rows = (db.session.query(ArticleView.page,
+                                  _func.sum(ArticleView.seconds),
+                                  _func.count(ArticleView.id))
+                 .filter(ArticleView.user_id == user_id)
+                 .group_by(ArticleView.page).all())
+    page_time = {
+        str(p): {'seconds': int(s or 0), 'views': int(c or 0)}
+        for p, s, c in page_rows
+    }
+    page_time_by_day = []
+    for d in days:
+        day_secs = {}
+        for av in ArticleView.query.filter(ArticleView.user_id == user_id).all():
+            if av.created_at and (av.created_at + _td3(hours=3)).date() == d:
+                day_secs[av.page] = day_secs.get(av.page, 0) + int(av.seconds or 0)
+        page_time_by_day.append({'date': d.isoformat(), 'seconds_by_page': day_secs})
+
     return jsonify({
         'user_id': user_id,
         'last_seen': last_seen.isoformat() if last_seen else None,
         'visits': visits,
         'visit_dates': sorted(d.isoformat() for d in visit_days),
         'returned': returned,
+        'page_time': page_time,
+        'page_time_by_day': page_time_by_day,
         'days': out_days,
     })
 

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Как войти в олимпиадную математику | FORMYLA{% endblock %}
+{% block content %}
+<div style="max-width:900px;margin:0 auto;padding:52px 24px 90px;">
+
+  <!-- Заголовок -->
+  <div style="text-align:center;margin-bottom:52px;">
+    <div style="display:inline-block;padding:6px 16px;border-radius:999px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);color:#7dd3fc;font-size:0.85em;font-weight:700;letter-spacing:0.4px;margin-bottom:18px;">ГАЙД ДЛЯ НОВИЧКОВ</div>
+    <h1 style="font-size:clamp(1.9em,4.5vw,3em);line-height:1.15;margin:0 0 18px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 60%,#ec4899 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-0.5px;">Как войти в олимпиадную математику</h1>
+    <p style="font-size:clamp(1.03em,1.8vw,1.22em);color:rgba(255,255,255,0.78);line-height:1.6;max-width:700px;margin:0 auto;">Зачем это нужно, что такое БВИ и 100 баллов, и почему стартовать проще, чем кажется.</p>
+  </div>
+
+  <!-- 1. Зачем -->
+  <section style="background:var(--bg-card,rgba(20,28,45,0.6));backdrop-filter:blur(12px);border:1px solid var(--border-soft,rgba(255,255,255,0.08));border-radius:20px;padding:32px 30px;margin-bottom:26px;">
+    <h2 style="font-size:1.5em;margin:0 0 16px;color:var(--text-main);font-weight:800;">1. Зачем сдавать олимпиады: БВИ и 100 баллов</h2>
+    <p style="color:rgba(255,255,255,0.82);line-height:1.7;font-size:1.02em;margin:0 0 14px;">Олимпиадная математика — это не «для избранных», а самый прямой путь в сильный вуз. Дипломы олимпиад из официального перечня дают реальные льготы при поступлении:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0;">
+      <div style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.25);border-radius:14px;padding:18px;">
+        <div style="font-weight:800;color:#7dd3fc;margin-bottom:6px;">БВИ</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:0.94em;line-height:1.55;">Поступление без вступительных испытаний: вуз зачисляет победителей и призёров по диплому, экзамен сдавать не нужно.</div>
+      </div>
+      <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.3);border-radius:14px;padding:18px;">
+        <div style="font-weight:800;color:#c4b5fd;margin-bottom:6px;">100 баллов</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:0.94em;line-height:1.55;">Диплом перечневой олимпиады можно засчитать как 100 баллов по профильному предмету — вместо результата ЕГЭ.</div>
+      </div>
+      <div style="background:rgba(236,72,153,0.07);border:1px solid rgba(236,72,153,0.28);border-radius:14px;padding:18px;">
+        <div style="font-weight:800;color:#f9a8d4;margin-bottom:6px;">Страховка</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:0.94em;line-height:1.55;">Плохой день на ЕГЭ перестаёт быть катастрофой: олимпиадный диплом действует и «подстраховывает» поступление.</div>
+      </div>
+    </div>
+    <p style="color:rgba(255,255,255,0.82);line-height:1.7;font-size:1.02em;margin:0;">Перечень олимпиад и уровни льгот (БВИ, 100 баллов или дополнительные баллы) каждая олимпиада даёт по своему профилю — конкретные условия вуз объявляет на сайте приёмной комиссии. Смысл тот же: один хороший сезон олимпиад заменяет год паники перед ЕГЭ.</p>
+  </section>
+
+  <!-- 2. Это не так сложно -->
+  <section style="background:var(--bg-card,rgba(20,28,45,0.6));backdrop-filter:blur(12px);border:1px solid var(--border-soft,rgba(255,255,255,0.08));border-radius:20px;padding:32px 30px;margin-bottom:26px;">
+    <h2 style="font-size:1.5em;margin:0 0 16px;color:var(--text-main);font-weight:800;">2. Это не так сложно, как кажется</h2>
+    <p style="color:rgba(255,255,255,0.82);line-height:1.7;font-size:1.02em;margin:0 0 14px;">Олимпиадные задачи пугают, потому что выглядят «нестандартно». Но за ними почти всегда стоит конечный набор приёмов. Человек, который решает олимпиадную задачу, не «гений от природы» — он просто уже видел такой ход.</p>
+    <ul style="color:rgba(255,255,255,0.82);line-height:1.75;font-size:1.02em;margin:0 0 14px;padding-left:22px;">
+      <li><b>Прогресс быстрый.</b> Первые недели дают самый видимый рост: задачи, которые казались неподъёмными, начинают решаться за 10 минут.</li>
+      <li><b>Мало — но регулярно.</b> Двадцать–тридцать минут в день дают больше, чем марафон раз в месяц.</li>
+      <li><b>Ошибки — это материал.</b> Неверное решение, разобранное до конца, учит сильнее, чем угаданный ответ.</li>
+      <li><b>Начинать можно с любого уровня.</b> Школьного курса 5–7 класса достаточно, чтобы решать первые настоящие олимпиадные задачи.</li>
+    </ul>
+    <p style="color:rgba(255,255,255,0.82);line-height:1.7;font-size:1.02em;margin:0;">Секрет прост: олимпиадная математика — это навык, а не дар. Навык тренируется.</p>
+  </section>
+
+  <!-- 3. 102 метода -->
+  <section style="background:linear-gradient(135deg,rgba(56,189,248,0.10),rgba(139,92,246,0.10));border:1px solid rgba(139,92,246,0.35);border-radius:20px;padding:32px 30px;margin-bottom:26px;">
+    <h2 style="font-size:1.5em;margin:0 0 16px;color:var(--text-main);font-weight:800;">3. Раздел «102 метода» — это твой кружок</h2>
+    <p style="color:rgba(255,255,255,0.84);line-height:1.7;font-size:1.02em;margin:0 0 14px;">Раньше олимпиадной математикой занимались в кружках при школах и вузах: час дороги, фиксированное расписание, один темп на всех. Раздел <a href="{{ url_for('olympiad.methods') }}" style="color:#7dd3fc;font-weight:700;text-decoration:underline;text-underline-offset:3px;">«Каталог методов (102)»</a> собирает весь этот опыт в одно место и заменяет кружок:</p>
+    <ul style="color:rgba(255,255,255,0.84);line-height:1.75;font-size:1.02em;margin:0 0 14px;padding-left:22px;">
+      <li><b>102 метода</b> — полный внутренний «язык» олимпиадной математики: инварианты, принцип Дирихле, вспомогательные построения, оценки, индукция и всё остальное.</li>
+      <li>Каждый метод — это не абстрактная теория, а <b>разбор с задачами</b>, на которых видно, как приём работает вживую.</li>
+      <li>Занимаешься <b>в своём темпе, из любого города</b>, без поиска кружка и записи.</li>
+      <li>Методы связаны с задачами дня и разборами ИИ-куратора — видно, какой приём уже твой, а какой ещё нет.</li>
+    </ul>
+    <p style="color:rgba(255,255,255,0.84);line-height:1.7;font-size:1.02em;margin:0;">Пройти каталог методов — значит получить то, что дают годы кружка: систему. Дальше остаётся только практика.</p>
+  </section>
+
+  <!-- 4. План на первый месяц -->
+  <section style="background:var(--bg-card,rgba(20,28,45,0.6));backdrop-filter:blur(12px);border:1px solid var(--border-soft,rgba(255,255,255,0.08));border-radius:20px;padding:32px 30px;margin-bottom:26px;">
+    <h2 style="font-size:1.5em;margin:0 0 16px;color:var(--text-main);font-weight:800;">4. Простой план на первый месяц</h2>
+    <ol style="color:rgba(255,255,255,0.82);line-height:1.8;font-size:1.02em;margin:0;padding-left:22px;">
+      <li><b>Неделя 1.</b> Пройди анкету и срез на сайте — система определит твой уровень и соберёт задачи под него.</li>
+      <li><b>Неделя 2.</b> Решай задачи дня каждый день, читай разборы ошибок — они важнее самих задач.</li>
+      <li><b>Неделя 3.</b> Открой каталог методов и проходи 1–2 метода в день, начиная с тех, что всплывают в твоих задачах.</li>
+      <li><b>Неделя 4.</b> Выбери первую реальную олимпиаду из календаря и начни готовиться к ней точечно.</li>
+    </ol>
+  </section>
+
+  <!-- Финальный мотивационный блок -->
+  <section style="text-align:center;background:linear-gradient(135deg,rgba(56,189,248,0.14),rgba(236,72,153,0.12));border:1px solid rgba(56,189,248,0.35);border-radius:22px;padding:44px 30px;">
+    <h2 style="font-size:clamp(1.5em,3vw,2.1em);margin:0 0 16px;color:var(--text-main);font-weight:800;line-height:1.25;">Готов начать? От этого зависит твоё будущее</h2>
+    <p style="color:rgba(255,255,255,0.85);line-height:1.7;font-size:1.06em;max-width:640px;margin:0 auto 12px;">Олимпиадный диплом — это БВИ, 100 баллов и спокойствие в 11 классе. А ещё это голова, которая умеет решать задачи, с которыми не сталкивалась раньше, — пригодится везде: в вузе, в работе, в жизни.</p>
+    <p style="color:rgba(255,255,255,0.85);line-height:1.7;font-size:1.06em;max-width:640px;margin:0 auto 26px;">Самый сильный шаг — тот, который сделан сегодня. Не «с понедельника». Сегодня.</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:14px;">
+      <a href="/daily_tasks" data-track="cta" style="display:inline-block;padding:16px 34px;background:linear-gradient(135deg,#38bdf8 0%,#8b5cf6 100%);color:#fff;text-decoration:none;border-radius:12px;font-size:1.05em;font-weight:700;box-shadow:0 6px 20px rgba(56,189,248,0.4);"> Решать задачи дня</a>
+      <a href="{{ url_for('olympiad.methods') }}" style="display:inline-block;padding:16px 28px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.25);color:var(--text-main);text-decoration:none;border-radius:12px;font-size:1.02em;font-weight:700;">📚 Открыть 102 метода</a>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  // PAGE_TIME_V1: шлём время активного просмотра раз в 20 секунд.
+  var page = '/olympiad-start';
+  var pending = 0;
+  var last = Date.now();
+
+  function flush(useBeacon) {
+    if (pending <= 0) return;
+    var body = JSON.stringify({ page: page, seconds: pending });
+    pending = 0;
+    try {
+      if (useBeacon && navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track/page-time', new Blob([body], { type: 'application/json' }));
+      } else {
+        fetch('/api/track/page-time', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: body,
+          keepalive: true
+        }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  setInterval(function () {
+    var now = Date.now();
+    if (document.visibilityState === 'visible') {
+      pending += Math.round((now - last) / 1000);
+    }
+    last = now;
+    flush(false);
+  }, 20000);
+
+  document.addEventListener('visibilitychange', function () {
+    var now = Date.now();
+    if (document.visibilityState === 'hidden') {
+      pending += Math.round((now - last) / 1000);
+      flush(true);
+    }
+    last = now;
+  });
+  window.addEventListener('pagehide', function () { flush(true); });
+})();
+</script>
+{% endblock %}

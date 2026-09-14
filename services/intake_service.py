@@ -107,6 +107,32 @@ def _save_session_state(state: Dict) -> None:
         pass
 
 
+def _mark_intake_skipped(user_id: int) -> None:
+    """Пометить анкету как пропущенную — гейт на /intake больше не срабатывает.
+
+    Уровень не выставляем: задачи дня подберутся по дефолтному приору,
+    пройти анкету можно будет позже с любой страницы.
+    """
+    from models_curator import CuratorState
+    from models import db
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if not cs:
+        cs = CuratorState(user_id=user_id, prep_state={})
+        db.session.add(cs)
+    ps = _prep_state_dict(cs)
+    intake = ps.get('intake', {})
+    if not isinstance(intake, dict):
+        intake = {}
+    intake['skipped'] = True
+    intake['completed'] = True  # гейт пропускает только completed=True
+    intake['skipped_at'] = datetime.utcnow().isoformat()
+    ps['intake'] = intake
+    ps.pop('_intake_session', None)
+    cs.prep_state = ps
+    db.session.commit()
+    logger.info(f"intake: user={user_id} skipped questionnaire")
+
+
 def _call_set_prior(user_id: int, mu: float, sigma: float) -> None:
     """Вызвать set_prior в level_engine ОДИН раз до якорей."""
     try:
@@ -224,7 +250,7 @@ def _get_completed_result(user_id: int) -> Optional[Dict[str, Any]]:
         if cs:
             ps = _prep_state_dict(cs)
             intake = ps.get('intake', {})
-            if isinstance(intake, dict) and intake.get('completed'):
+            if isinstance(intake, dict) and intake.get('completed') and not intake.get('skipped'):
                 return {
                     'done': True,
                     'result': {

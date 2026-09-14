@@ -753,6 +753,26 @@ class UserPresence(db.Model):
         return f'<UserPresence u={self.user_id} seen={self.last_seen}>'
 
 
+class ArticleView(db.Model):
+    """Время, проведённое пользователем на статьях/гайдах (PAGE_TIME_V1).
+
+    Клиент шлёт «удар» каждые N секунд с количеством секунд активного
+    просмотра; сервер суммирует по (user_id, page). Используется для
+    админ-статистики «сколько секунд каждый был на странице».
+    """
+    __tablename__ = 'article_views'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'),
+                        nullable=True, index=True)
+    page = db.Column(db.String(120), nullable=False, index=True)
+    seconds = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    def __repr__(self):
+        return f'<ArticleView u={self.user_id} page={self.page} sec={self.seconds}>'
+
+
 class MessageReaction(db.Model):
     """Эмодзи-реакции на сообщения в личке (CHAT_REACTIONS_V1).
 

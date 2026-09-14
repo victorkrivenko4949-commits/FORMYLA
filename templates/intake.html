@@ -375,6 +375,9 @@
   <div class="intake-header">
     <h1>Анкета</h1>
     <p>Ответь на 6 вопросов, чтобы мы подобрали задачи под тебя</p>
+    <p style="margin-top:14px;font-size:13px;">
+      <a href="#" onclick="skipIntake(event)" style="color:var(--muted);text-decoration:underline;text-underline-offset:3px;">Пропустить анкету и посмотреть, что это за сайт</a>
+    </p>
   </div>
 
   <!-- Progress -->
@@ -618,6 +621,11 @@
           <b style="color:var(--text);">Задачи дня уже готовы.</b><br>
           Уровень подобран по анкете, темы — все разделы по кругу. Завтра в 10:30 пришлём письмо со следующим днём — серия уже идёт.
         </div>
+        <div style="margin:18px 0;padding:16px 18px;background:linear-gradient(135deg,rgba(56,189,248,0.10),rgba(139,92,246,0.10));border:1px solid rgba(139,92,246,0.35);border-radius:12px;color:var(--text-soft);font-size:14px;line-height:1.65;text-align:left;">
+          <b style="color:var(--text);">Почему это стоит твоего времени?</b><br>
+          Олимпиадный диплом даёт <b style="color:var(--text);">БВИ или 100 баллов по профильному предмету</b> вместо ЕГЭ — и это реально не так сложно, как кажется. Раздел «102 метода» заменяет кружок: полный набор приёмов с разборами, в своём темпе.<br>
+          <a href="/olympiad-start" style="color:#7dd3fc;font-weight:700;text-decoration:underline;text-underline-offset:3px;">Прочитать, как войти в олимпиадную математику -></a>
+        </div>
         <button class="intake-btn intake-btn-primary" onclick="showDailyTasksConfirm()" style="margin-top:8px;font-size:16px;padding:14px 34px;">Начать задачи дня -&gt;</button>
 
         ${solutionsHtml}
@@ -681,6 +689,23 @@
   async function goBack() {
     const result = await apiCall(API_BASE + '/back', {});
     processResponse(result);
+  }
+
+  async function skipIntake(e) {
+    if (e) e.preventDefault();
+    try {
+      const resp = await fetch(API_BASE + '/skip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await resp.json();
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
+      }
+    } catch (err) {}
+    window.location.href = '/olympiad-start';
   }
 
   function processResponse(data) {
