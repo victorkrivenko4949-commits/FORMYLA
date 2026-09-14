@@ -2814,6 +2814,8 @@ _PUBLIC_PATHS = (
     '/yandex_receiver',
     '/link_yandex',
     '/api/reviews',   # Публичный список отзывов о сайте (для /about)
+    '/api/feedback',  # Отправка отзыва доступна и гостям
+    '/api/support',   # Обращение в поддержку доступно и гостям
     '/api/conference/',  # Конференции (гостевой доступ, WebRTC + SocketIO)
     '/',               # Главная страница — доступна без регистрации
     '/topics',
@@ -12670,7 +12672,6 @@ def misc_page():
 
 
 @app.route('/api/support', methods=['POST'])
-@login_required
 def submit_support():
     try:
         # Поддерживаем оба варианта: JSON и multipart/form-data (для прикреплённых файлов)
@@ -12900,7 +12901,6 @@ _REVIEW_RATE_LIMIT = {}
 
 
 @app.route('/api/feedback', methods=['POST'])
-@login_required
 def submit_feedback():
     """Принять отзыв пользователя и отправить его на почту владельцу.
 
@@ -12924,6 +12924,10 @@ def submit_feedback():
         email = (data.get('email') or '').strip() or None
         if email and '@' not in email:
             return jsonify({'error': 'некорректный email'}), 400
+
+        message_text = (data.get('message') or '').strip()
+        if not (5 <= len(message_text) <= 4000):
+            return jsonify({'error': 'отзыв должен быть от 5 до 4000 символов'}), 400
 
         # Rate-limit
         user_id = current_user.id if current_user.is_authenticated else None
@@ -13038,7 +13042,6 @@ def submit_feedback():
 
 
 @app.route('/api/reviews', methods=['GET'])
-@login_required
 def list_site_reviews():
     """Публичный список отзывов о сайте для страницы /about.
 

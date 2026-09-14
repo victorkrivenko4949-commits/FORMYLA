@@ -74,6 +74,31 @@
     margin: 18px auto 0;
   }
 
+  /* ── Плашка «почему FORMYLA» в хиро ── */
+  .hero-proof {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 22px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero-proof-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(56, 239, 125, 0.08);
+    border: 1px solid rgba(56, 239, 125, 0.25);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .hero-proof-item .hp-icon { font-size: 16px; }
+
   /* ── Final CTA section ── */
   .final-cta {
     text-align: center;
@@ -328,6 +353,14 @@
       Это не школьный курс и не подготовка к экзаменам. Здесь только олимпиадные задачи:
       всероссийская олимпиада, Эйлер, Физтех, Курчатов, Матпраздник и другие.
     </p>
+
+    <div class="hero-proof">
+      <div class="hero-proof-item"><span class="hp-icon">🎯</span> Персональный план под твой класс и цель</div>
+      <div class="hero-proof-item"><span class="hp-icon">🤖</span> ИИ проверяет не только ответ, но и решение</div>
+      <div class="hero-proof-item"><span class="hp-icon">📅</span> 10 новых задач каждый день — серия не прерывается</div>
+      <div class="hero-proof-item"><span class="hp-icon">📚</span> 102 олимпиадных метода с разборами</div>
+      <div class="hero-proof-item"><span class="hp-icon">🆓</span> Бесплатно и без установки — всё в браузере</div>
+    </div>
     {% if not current_user.is_authenticated %}
     <div class="hero-cta-block">
       <a href="/login" class="hero-cta hero-cta-primary">Зарегистрироваться</a>
@@ -1218,7 +1251,7 @@
 
   function addFile(file) {
     if (file.size > MAX_FILE_SIZE) {
-      addMessage('system', '[ERROR] Файл "' + file.name + '" слишком большой (макс 10 МБ)');
+      addMessage('system', '⚠️ Файл "' + file.name + '" слишком большой (макс 10 МБ)');
       return;
     }
     pendingFiles.push(file);
@@ -1411,17 +1444,17 @@
 
       if (r.ok && j.ok) {
         const emailNote = emailEl.value.trim() ? ' на ' + emailEl.value.trim() : '';
-        addMessage('bot', '[OK] Спасибо! Мы получили ваше сообщение и скоро ответим' + emailNote + '.');
+        addMessage('bot', '✅ Спасибо! Мы получили ваше сообщение и скоро ответим' + emailNote + '.');
         textEl.value = '';
         autoResize();
         pendingFiles = [];
         renderPendingFiles();
       } else {
-        addMessage('system', '[ERROR] ' + (j.error || 'Ошибка отправки. Попробуйте позже.'));
+        addMessage('system', '❌ ' + (j.error || 'Ошибка отправки. Попробуйте позже.'));
       }
     } catch (err) {
       sendingMsg.remove();
-      addMessage('system', '[ERROR] Нет соединения. Проверьте интернет и попробуйте снова.');
+      addMessage('system', '❌ Нет соединения. Проверьте интернет и попробуйте снова.');
     } finally {
       sendBtn.disabled = false;
     }
@@ -1500,7 +1533,7 @@
     // Валидация: без оценки отправка запрещена
     const ratingVal = parseInt(rRatingInput.value, 10) || 0;
     if (ratingVal < 1 || ratingVal > 5) {
-      rResult.textContent = "[!]️ Поставьте оценку от 1 до 5 звёзд";
+      rResult.textContent = "⚠️ Поставьте оценку от 1 до 5 звёзд";
       rResult.className = "form-result err";
       // Подсвечиваем звёзды лёгкой тряской, чтобы было заметно
       const starsBox = document.getElementById("review-stars");
@@ -1533,7 +1566,7 @@
       });
       let j; try { j = await r.json(); } catch (_) { j = {}; }
       if (r.ok && j.ok) {
-        rResult.textContent = "[OK] Спасибо за отзыв! Он уже виден другим ученикам ниже.";
+        rResult.textContent = "✅ Спасибо за отзыв! Он уже виден другим ученикам ниже.";
         rResult.className = "form-result ok";
         rForm.reset();
         rRatingInput.value = "0";
@@ -1547,11 +1580,11 @@
           if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (_) {}
       } else {
-        rResult.textContent = "[ERROR] " + (j.error || "Ошибка отправки");
+        rResult.textContent = "❌ " + (j.error || "Ошибка отправки");
         rResult.className = "form-result err";
       }
     } catch (err) {
-      rResult.textContent = "[ERROR] Нет соединения. Попробуйте позже.";
+      rResult.textContent = "❌ Нет соединения. Попробуйте позже.";
       rResult.className = "form-result err";
     }
   });
