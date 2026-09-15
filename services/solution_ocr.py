@@ -183,7 +183,14 @@ def _ocr_gemini_vision(b64: str, task_text: str) -> Optional[str]:
         if not _key:
             return None
         _base = (_os.environ.get("GEMINI_API_BASE") or "https://api.odirouter.ai/v1").strip().rstrip("/")
-        _model = (_os.environ.get("GEMINI_VISION_MODEL") or "gemini-3.7-flash").strip()
+        # 2026-09-15: перебор flash-моделей OdiRouter (gemini-3.6-flash —
+        # как просил пользователь; если у провайдера её нет — 3.7/3.8).
+        _env_model = (_os.environ.get("GEMINI_VISION_MODEL") or "").strip()
+        _models = [_env_model] if _env_model else [
+            "gemini-3.6-flash",
+            "gemini-3.7-flash",
+            "gemini-3.8-flash",
+        ]
         _mime = _mime_from_b64(b64)
         _prompt = (
             "Ты — система распознавания рукописного математического текста. "
@@ -192,29 +199,33 @@ def _ocr_gemini_vision(b64: str, task_text: str) -> Optional[str]:
         )
         if task_text:
             _prompt += f"\n\nДля контекста, задача: {task_text[:600]}"
-        _resp = _requests.post(
-            f"{_base}/chat/completions",
-            headers={"Authorization": f"Bearer {_key}", "Content-Type": "application/json"},
-            json={
-                "model": _model,
-                "messages": [
-                    {"role": "user", "content": [
-                        {"type": "text", "text": _prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:{_mime};base64,{b64}"}},
-                    ]},
-                ],
-                "temperature": 0.1,
-                "max_tokens": 4096,
-            },
-            timeout=(15, 60),
-        )
-        if _resp.status_code != 200:
-            logger.warning("[solution_ocr] gemini vision HTTP %s: %s", _resp.status_code, _resp.text[:200])
-            return None
-        _body = _resp.json()
-        if not _body.get("choices"):
-            return None
-        return (_body["choices"][0].get("message", {}) or {}).get("content") or None
+        for _model in _models:
+            _resp = _requests.post(
+                f"{_base}/chat/completions",
+                headers={"Authorization": f"Bearer {_key}", "Content-Type": "application/json"},
+                json={
+                    "model": _model,
+                    "messages": [
+                        {"role": "user", "content": [
+                            {"type": "text", "text": _prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:{_mime};base64,{b64}"}},
+                        ]},
+                    ],
+                    "temperature": 0.1,
+                    "max_tokens": 4096,
+                },
+                timeout=(15, 60),
+            )
+            if _resp.status_code != 200:
+                logger.warning("[solution_ocr] gemini vision %s HTTP %s: %s", _model, _resp.status_code, _resp.text[:200])
+                continue
+            _body = _resp.json()
+            if not _body.get("choices"):
+                continue
+            _text = (_body["choices"][0].get("message", {}) or {}).get("content") or None
+            if _text:
+                return _text
+        return None
     except Exception as e:
         logger.warning("[solution_ocr] gemini vision failed: %s", e)
         return None

@@ -170,7 +170,9 @@
         {% else %}
         <a href="{{ url_for('index') }}" class="logo">
         {% endif %}
-            <svg class="site-logo" width="200" height="60" viewBox="0 0 350 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- 2026-09-15 FIX: после ребренда «FORMYLA.net» длиннее «FORMYLA» —
+                 расширил viewBox до 400, иначе «.net» обрезалось справа. -->
+            <svg class="site-logo" width="200" height="60" viewBox="0 0 400 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="grad_logo" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stop-color="#38ef7d"/>
