@@ -6101,13 +6101,12 @@ def tutor_send():
                             message = (recognized + "\n\n[Пользователь также написал: " + message + "]" if message else recognized)
                             image_data = None
                         else:
-                            # Не удалось распознать фото - сообщить пользователю
-                            if not message:
-                                return jsonify({'error': 'Не удалось распознать фото. Пожалуйста, опишите задачу текстом или попробуйте другое фото.'}), 422
-                            else:
-                                # Пользователь написал текст + прикрепил фото — используем текст
-                                image_data = None
-                                message = message + "\n\n[P.S. К сообщению было прикреплено фото, но его не удалось распознать.]"
+                            # 2026-09-15 FIX: OCR не сработал — НЕ возвращаем 422,
+                            # а отдаём само фото vision-цепочке тьютора
+                            # (chat_with_tutor сам прочитает картинку через
+                            # OpenRouter vision-модели).
+                            app.logger.info("[tutor] OCR пустой — фото уходит в vision-цепочку")
+                            pass
         
         if not message and not image_data:
             return jsonify({'error': 'Сообщение пустое'}), 400
