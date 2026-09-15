@@ -239,13 +239,20 @@
     {% set is_admin = current_user.is_authenticated and (current_user.nickname or '')|lower in admin_nicks %}
     {% if is_admin %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
-        <h2 style="color: #fbbf24; margin-bottom: 20px; font-size: 1.5em;">
-            🔄 Сменить профиль
+        <h2 style="color: #fbbf24; margin-bottom: 8px; font-size: 1.5em;">
+            🔐 Аккаунт поддержки
         </h2>
         <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
-            Эта кнопка видна только вам. Позволяет быстро переключиться в другой аккаунт без повторного ввода кода.
+            Вы вошли как <strong>@{{ current_user.nickname }}</strong> — это служебный аккаунт поддержки.
+            Вам доступны все функции обычного пользователя и дополнительные админ-разделы ниже.
         </p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/admin/users" style="padding: 12px 24px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                📊 Статистика пользователей
+            </a>
+            <a href="/admin/support" style="padding: 12px 24px; background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                💬 Чат поддержки
+            </a>
             <button onclick="switchProfile()" style="padding: 12px 24px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                 🔄 Переключить аккаунт
             </button>
@@ -266,19 +273,24 @@
     }
     </script>
 
+    {% if is_admin %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(167,139,250,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: #a78bfa; margin-bottom: 12px; font-size: 1.5em;">
             Админ-раздел
         </h2>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
+            Полная статистика по каждому пользователю: входы, задачи, уровень, рейтинг, время на сайте.
+        </p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="/admin/users" style="padding: 12px 24px; background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
-                Статистика пользователей
+            <a href="/admin/users" style="padding: 12px 24px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                📊 Статистика пользователей
             </a>
             <a href="/admin/support" style="padding: 12px 24px; background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
-                Чат поддержки
+                💬 Чат поддержки
             </a>
         </div>
     </div>
+    {% endif %}
     {% endif %}
 
     <!-- ── Выбор класса / Роль ── -->
