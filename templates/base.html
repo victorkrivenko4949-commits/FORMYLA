@@ -110,6 +110,11 @@
             console.warn('KaTeX auto-render not loaded yet — reRenderMath deferred');
         }
     }
+    // KATEX_ALIAS_V1: legacy-код вызывает renderMath(element) — заводим алиас,
+    // чтобы формулы в задачах дня, решениях и ответах рендерились, а не показывались сырым TeX.
+    if (typeof window.renderMath !== 'function') {
+        window.renderMath = reRenderMath;
+    }
     </script>
     
     <!-- Marked.js for Markdown rendering -->
