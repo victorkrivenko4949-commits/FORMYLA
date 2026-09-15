@@ -1290,7 +1290,7 @@
   function escapeHtml(s) {
     return String(s || '')
       .replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>')
-      .replace(/"/g, '"').replace(/'/g, ''');
+      .replace(/"/g, '"').replace(/'/g, "'");
   }
 
   function addMessage(kind, text, attachments) {
@@ -1620,7 +1620,7 @@
       .replace(/&/g, "&")
       .replace(/</g, "<")
       .replace(/>/g, ">")
-      .replace(/"/g, """)
+      .replace(/"/g, '"')
       .replace(/'/g, "'");
   }
 

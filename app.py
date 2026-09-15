@@ -1504,6 +1504,27 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] WA-chat Warning: {e}")
 
+# AUTO-MIGRATION SITE_TIME_V1: site_seconds_total / login_count у User.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_st
+        _ins_st = _inspect_st(db.engine)
+        if 'users' in set(_ins_st.get_table_names()):
+            _cols_st = {c['name'] for c in _ins_st.get_columns('users')}
+            for _col_st in ('site_seconds_total', 'login_count'):
+                if _col_st not in _cols_st:
+                    try:
+                        db.session.execute(db.text(
+                            f"ALTER TABLE users ADD COLUMN {_col_st} INTEGER NOT NULL DEFAULT 0"
+                        ))
+                        db.session.commit()
+                        print(f"[AUTO-MIGRATION] users.{_col_st} added")
+                    except Exception as _e_st:
+                        db.session.rollback()
+                        print(f"[AUTO-MIGRATION] users.{_col_st} failed: {_e_st}")
+except Exception as _e_st_outer:
+    print(f"[AUTO-MIGRATION] SITE_TIME_V1 skipped: {_e_st_outer}")
+
 
 def _log_tutor_call(task_id: int, user_answer: str, result: dict):
     """Логирует вызов AI-тьютора v2 в таблицу tutor_calls."""
@@ -3160,26 +3181,9 @@ def force_intake_completion():
 SUPPORT_LOGIN_SECRET = '67лавриксемен67'
 SUPPORT_ACCOUNT_NICK = 'Lavrik'
 
-
-@app.before_request
-def restrict_support_account():
-    """Служебный аккаунт поддержки (nickname Lavrik) — только страница чатов.
-
-    Все остальные страницы недоступны: редирект на /admin/support.
-    Вход — через секретную строку в поле email (см. login()).
-    """
-    if not current_user.is_authenticated:
-        return
-    if (getattr(current_user, 'nickname', None) or '').lower() != 'lavrik':
-        return
-
-    path = request.path
-    for _p in ('/admin/support', '/static/', '/logout', '/favicon.ico'):
-        if path.startswith(_p):
-            return
-    if path.startswith('/api/'):
-        return jsonify({'error': 'forbidden'}), 403
-    return redirect(url_for('admin_support.admin_support_inbox'))
+# LAVRIK_MODE_V2: Лаврик теперь полноценный пользователь + поддержка.
+# Старый before_request restrict_support_account (запрещал всё кроме /admin/support)
+# убран 15.09.2026 — Лаврику нужны все страницы сайта + админ-раздел статистики.
 
 
 def get_or_create_guest_user():
@@ -4096,6 +4100,35 @@ def track_page_time():
     except Exception as _e_pt:
         db.session.rollback()
         app.logger.warning(f"track_page_time failed: {_e_pt}")
+    return jsonify(ok=True)
+
+
+@app.route("/api/track/site-time", methods=["POST"])
+def track_site_time():
+    """SITE_TIME_V1: heartbeat — прибавляет N секунд к users.site_seconds_total.
+
+    Клиент шлёт {seconds: 30} каждые 30 сек активного времени
+    (visibilitychange/pagehide добивают остаток sendBeacon-ом).
+    Клампим до (0, 120] сек, чтобы нельзя было налить часы одним запросом.
+    """
+    if not (current_user.is_authenticated and not getattr(current_user, 'is_guest', False)):
+        return jsonify(ok=False), 401
+    data = request.get_json(silent=True) or {}
+    try:
+        seconds = int(data.get('seconds', 0))
+    except (TypeError, ValueError):
+        seconds = 0
+    if seconds <= 0:
+        return jsonify(ok=False), 400
+    seconds = min(seconds, 120)
+    try:
+        u = db.session.get(User, current_user.id)
+        if u is not None:
+            u.site_seconds_total = (getattr(u, 'site_seconds_total', 0) or 0) + seconds
+            db.session.commit()
+    except Exception as _e_st:
+        db.session.rollback()
+        app.logger.warning(f"track_site_time failed: {_e_st}")
     return jsonify(ok=True)
 
 
@@ -5573,7 +5606,7 @@ def login():
     """Passwordless вход - шаг 1: ввод email."""
     if current_user.is_authenticated and not current_user.is_guest:
         if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
-            return redirect(url_for('admin_support.admin_support_inbox'))
+            return redirect('/profile')
         return redirect('/daily_tasks')
 
     if request.method == "POST":
@@ -5597,8 +5630,18 @@ def login():
                 db.session.add(user)
                 db.session.commit()
                 app.logger.warning("СОЗДАН СЛУЖЕБНЫЙ АККАУНТ ПОДДЕРЖКИ: Lavrik")
+            # SITE_TIME_V1: считаем вход Лаврика тоже
+            try:
+                user.login_count = (getattr(user, 'login_count', 0) or 0) + 1
+                user.last_login = datetime.utcnow()
+                db.session.commit()
+            except Exception as _e_lc:
+                db.session.rollback()
+                app.logger.warning(f"login_count Lavrik fail: {_e_lc}")
             login_user(user, remember=True)
-            return redirect(url_for('admin_support.admin_support_inbox'))
+            # LAVRIK_MODE_V2: ведём Лаврика на профиль (там же — ссылки на поддержку и статистику)
+            flash(f'Добро пожаловать, {SUPPORT_ACCOUNT_NICK}! Режим поддержки: включён.', 'success')
+            return redirect('/profile')
 
         # Базовая валидация ДО создания пользователя и отправки письма:
         # иначе опечатка (пропущен @, кириллица, лишние пробелы) приводит к
@@ -5715,6 +5758,8 @@ def verify_code():
             # Считаем нового юзера тем, у кого ещё нет онбординга
             _is_new_user = getattr(user, 'onboarded_at', None) is None and getattr(user, 'last_login', None) is None
             user.last_login = datetime.utcnow()
+            # SITE_TIME_V1: прибавляем +1 вход (для админ-статистики Лаврика)
+            user.login_count = (getattr(user, 'login_count', 0) or 0) + 1
             db.session.commit()
 
             # Welcome email через Brevo для первого входа

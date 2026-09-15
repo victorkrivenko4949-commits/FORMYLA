@@ -18,6 +18,11 @@
   transition: color 0.12s ease, transform 0.12s ease;
 }
 
+/* Глиф звезды — HTML-кнопки пустые, без ::before звезды невидимы. */
+.review-stars .rstar::before {
+  content: '★';
+}
+
 .review-stars .rstar:hover {
   transform: scale(1.12);
 }

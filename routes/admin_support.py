@@ -657,3 +657,45 @@ def my_support_unread_count():
     except Exception as e:
         logger.warning('unread_count failed: %r', e)
         return jsonify({'unread': 0})
+
+
+# ──────────────────────────────────────────────────────────────────
+# 3) ADMIN USERS STATS — большая таблица по каждому пользователю
+#    (только для админов: Victor + Lavrik)
+# ──────────────────────────────────────────────────────────────────
+@admin_support_bp.route('/admin/users')
+@login_required
+def admin_users_stats():
+    """Сводная статистика: кто сколько раз зашёл, задач решил, уровень, рейтинг,
+    сколько секунд на сайте провёл."""
+    if not _is_admin():
+        abort(403)
+    from models import User
+    users = (User.query
+             .filter(User.is_guest == False)
+             .order_by(User.experience_points.desc())
+             .all())
+    rows = []
+    for u in users:
+        rows.append({
+            'id': u.id,
+            'nickname': u.nickname or '—',
+            'name': u.name or '—',
+            'email': u.email or '—',
+            'created_at': u.created_at.strftime('%d.%m.%Y') if u.created_at else '—',
+            'last_login': u.last_login.strftime('%d.%m.%Y %H:%M') if u.last_login else '—',
+            'login_count': u.login_count or 0,
+            'problems': u.total_problems_solved or 0,
+            'level': u.current_level or 1,
+            'xp': u.experience_points or 0,
+            'seconds': u.site_seconds_total or 0,
+            'minutes': round((u.site_seconds_total or 0) / 60, 1),
+            'hours': round((u.site_seconds_total or 0) / 3600, 2),
+        })
+    total = {
+        'users': len(rows),
+        'logins': sum(r['login_count'] for r in rows),
+        'problems': sum(r['problems'] for r in rows),
+        'seconds': sum(r['seconds'] for r in rows),
+    }
+    return render_template('admin/users_stats.html', rows=rows, total=total)

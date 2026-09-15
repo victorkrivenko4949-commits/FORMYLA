@@ -875,6 +875,47 @@
         return true;
     }
     </script>
+
+    {% if current_user.is_authenticated and not current_user.is_guest %}
+    <script>
+    // ── SITE_TIME_V1: heartbeat времени на сайте ──
+    // Каждые 30 секунд активного времени шлём серверу "+30 сек".
+    // Активное = вкладка видна (document.visibilityState === 'visible').
+    // При закрытии/уходе со страницы добиваем остаток через sendBeacon.
+    (function () {
+        var PULSE_SEC = 30;
+        var acc = 0;
+        function send(sec, beacon) {
+            if (sec <= 0) return;
+            var body = JSON.stringify({ seconds: sec });
+            if (beacon && navigator.sendBeacon) {
+                try {
+                    navigator.sendBeacon('/api/track/site-time',
+                        new Blob([body], { type: 'application/json' }));
+                    return;
+                } catch (e) { /* упадёт в fetch ниже */ }
+            }
+            fetch('/api/track/site-time', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: body,
+                keepalive: true
+            }).catch(function () { /* тихий fail */ });
+        }
+        setInterval(function () {
+            if (document.visibilityState !== 'visible') return;
+            acc += PULSE_SEC;
+            send(acc, false);
+            acc = 0;
+        }, PULSE_SEC * 1000);
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') { send(acc, true); acc = 0; }
+        });
+        window.addEventListener('pagehide', function () { send(acc, true); acc = 0; });
+    })();
+    </script>
+    {% endif %}
     {% block extra_js %}{% endblock %}
     {% if current_user.is_authenticated and not current_user.is_guest %}
         {% include 'partials/insight_modal.html' %}

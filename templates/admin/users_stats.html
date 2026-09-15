@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Статистика пользователей — Админ FORMYLA.net{% endblock %}
+{% block extra_css %}
+<style>
+  .us-wrap { max-width: 1180px; margin: 24px auto; padding: 0 16px; }
+  .us-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+  .us-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .us-summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .us-card {
+    flex: 1 1 160px; min-width: 150px;
+    background: var(--card, rgba(255,255,255,0.04));
+    border: 1px solid var(--border, rgba(255,255,255,0.08));
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .us-card-num { font-size: 26px; font-weight: 800; }
+  .us-card-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .us-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border, rgba(255,255,255,0.08)); }
+  .us-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .us-table th {
+    text-align: left; padding: 10px 12px;
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+    background: rgba(255,255,255,0.03);
+    white-space: nowrap;
+  }
+  .us-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+    vertical-align: middle;
+  }
+  .us-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .us-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .us-time .secdim { color: var(--muted); font-size: 11px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="us-wrap">
+  <h1 class="us-title">Статистика пользователей</h1>
+  <div class="us-subtitle">Полная таблица: входы, задачи, уровень, рейтинг (XP), время на сайте. Доступно только вам.</div>
+
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num">{{ total.users }}</div><div class="us-card-label">пользователей</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.logins }}</div><div class="us-card-label">входов за всё время</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.problems }}</div><div class="us-card-label">решено задач (всеми</div></div>
+    <div class="us-card"><div class="us-card-num">{{ (total.seconds / 3600) | round(1) }} ч</div><div class="us-card-label">на сайте провели</div></div>
+  </div>
+
+  <div class="us-table-wrap">
+    <table class="us-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Ник</th><th>Имя</th><th>Email</th><th>Регистрация</th>
+          <th>Последний вход</th><th>Входов</th><th>Решено</th><th>Уровень</th>
+          <th>Рейтинг (XP)</th><th>Время на сайте</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td><strong>{{ r.nickname }}</strong></td>
+          <td>{{ r.name }}</td>
+          <td style="font-size:12px;word-break:break-all;">{{ r.email }}</td>
+          <td style="white-space:nowrap;">{{ r.created_at }}</td>
+          <td style="white-space:nowrap;">{{ r.last_login }}</td>
+          <td style="text-align:center;"><strong>{{ r.login_count }}</strong></td>
+          <td style="text-align:center;"><strong>{{ r.problems }}</strong></td>
+          <td style="text-align:center;">{{ r.level }}</td>
+          <td style="text-align:center;"><strong>{{ r.xp }}</strong></td>
+          <td class="us-time">
+            <strong>{{ r.seconds }}</strong> сек
+            <div class="secdim">({{ r.minutes }} мин / {{ r.hours }} ч)</div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

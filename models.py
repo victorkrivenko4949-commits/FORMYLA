@@ -79,6 +79,11 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
 
+    # SITE_TIME_V1: суммарное время активного присутствия на сайте (сек)
+    # и кол-во входов в аккаунт (для админской статистики Лаврика).
+    site_seconds_total = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+    login_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+
     # Onboarding flag: NULL = user hasn't seen the /about onboarding yet.
     # Set to utcnow() on first visit to /about (or first manual dismissal).
     onboarded_at = db.Column(db.DateTime, nullable=True)

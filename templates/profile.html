@@ -235,7 +235,7 @@
     </div>
 
     <!-- ── Сменить аккаунт (только администратор) ── -->
-    {% set admin_nicks = ['pavelznaka', 'victorkrivenko', 'victor', 'nikolaev'] %}
+    {% set admin_nicks = ['pavelznaka', 'victorkrivenko', 'victor', 'nikolaev', 'lavrik'] %}
     {% set is_admin = current_user.is_authenticated and (current_user.nickname or '')|lower in admin_nicks %}
     {% if is_admin %}
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
@@ -265,6 +265,20 @@
         window.location.href = '/login';
     }
     </script>
+
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 24px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(167,139,250,0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
+        <h2 style="color: #a78bfa; margin-bottom: 12px; font-size: 1.5em;">
+            Админ-раздел
+        </h2>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/admin/users" style="padding: 12px 24px; background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                Статистика пользователей
+            </a>
+            <a href="/admin/support" style="padding: 12px 24px; background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-block;">
+                Чат поддержки
+            </a>
+        </div>
+    </div>
     {% endif %}
 
     <!-- ── Выбор класса / Роль ── -->
