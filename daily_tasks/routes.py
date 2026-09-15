@@ -191,13 +191,21 @@ def _submit_bank_answer(task_id: int, issue):
         }), 422
 
     if not feedback:
-        # Fallback без AI: простое сравнение ответа
-        def _norm(s):
-            return (s or "").strip().lower().replace(" ", "").replace(",", ".")
-        is_correct = _norm(user_answer) == _norm(task.answer or "")
+        # Fallback без AI: умное сравнение ответа с эталоном
+        # (0,5↔0.5, «x=5»↔«5», пробелы, регистр — как в банке неточностей).
+        try:
+            from utils.math_answer_utils import compare_math_answers
+            is_correct = bool(compare_math_answers(
+                user_answer, task.answer or ""
+            ))
+        except Exception:
+            is_correct = False
         feedback = "Молодец, верно!" if is_correct else "Неверно. Посмотри решение ниже."
 
     # ── Сохраняем в BankIssue ────────────────────────────────────────
+    # ОДНА транзакция: ответ и +5 XP коммитятся вместе. Раньше было два
+    # commit подряд — если между ними что-то падало, ответ сохранялся,
+    # а XP терялся молча (баг 15.09: верный ответ без +5 в лидерборде).
     from datetime import datetime as _dt
     try:
         issue.user_answer = user_answer[:4000]
@@ -208,22 +216,27 @@ def _submit_bank_answer(task_id: int, issue):
             issue.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
         except (TypeError, ValueError):
             issue.time_spent_seconds = 0
-        db.session.commit()
 
-        if is_correct:
-            try:
-                from models import User as _User
-                _u = db.session.get(_User, current_user.id)
-                if _u is not None:
-                    _u.experience_points = (_u.experience_points or 0) + 5
-                    _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
-                    issue.xp_awarded = True
-                    db.session.commit()
-            except Exception as _xp_err:
-                logger.warning("_submit_bank_answer: +XP не начислен task=%d: %s", task_id, _xp_err)
+        if is_correct and not issue.xp_awarded:
+            from models import User as _User
+            _u = db.session.get(_User, current_user.id)
+            if _u is not None:
+                _u.experience_points = (_u.experience_points or 0) + 5
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                issue.xp_awarded = True
+            else:
+                logger.error(
+                    "_submit_bank_answer: user %s not found — XP не начислен",
+                    current_user.id,
+                )
+        db.session.commit()
     except Exception as e:  # pragma: no cover
         db.session.rollback()
-        logger.exception("_submit_bank_answer: db commit failed: %s", e)
+        # ГРОМКИЙ лог: потеря XP критична — должна сразу падать в мониторинг.
+        logger.exception(
+            "_submit_bank_answer: db commit failed — ответ и/или XP ПОТЕРЯНЫ task=%d user=%s: %s",
+            task_id, getattr(current_user, "id", None), e,
+        )
 
     from services.md_render import md_render
     return jsonify({
@@ -1277,10 +1290,23 @@ def submit_answer_ai(item_id: int):
     from utils.math_text_fixer import wrap_bare_math
 
     if _verdict is None:
-        # Таймаут или ошибка — сохраняем ответ без AI-проверки
+        # Таймаут или ошибка — сохраняем ответ без AI-проверки.
+        # Fallback: сверяем введённый ответ с эталоном тем же умным
+        # сравнением, что в банке неточностей (учитывает 0,5↔0.5, x=5↔5).
+        # Иначе XP за верные ответы терялись при каждом сбое AI (баг 15.09).
         score = 0.0
-        feedback = "AI-проверка временно недоступна. Ответ сохранён."
-        is_correct = False
+        try:
+            from utils.math_answer_utils import compare_math_answers
+            is_correct = bool(compare_math_answers(
+                user_answer, item.correct_answer or ""
+            ))
+        except Exception:
+            is_correct = False
+        feedback = (
+            "Молодец, верно!"
+            if is_correct
+            else "AI-проверка временно недоступна. Ответ сохранён."
+        )
     elif _verdict.get("ocr_failed"):
         # 2026-09-15: фото не распозналось — НЕ считаем «неверно», просто
         # просим перефотографировать. Ответ в БД не пишем, чтобы можно было
@@ -1320,21 +1346,20 @@ def submit_answer_ai(item_id: int):
             item.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
         except (TypeError, ValueError):
             item.time_spent_seconds = 0
+        # ОДНА транзакция: ответ и +5 XP коммитятся вместе (см. _submit_bank_answer).
+        if is_correct and not item.xp_awarded:
+            from models import User as _User
+            _u = db.session.get(_User, current_user.id)
+            if _u is not None:
+                _u.experience_points = (_u.experience_points or 0) + 5
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                item.xp_awarded = True
+            else:
+                logger.error(
+                    "submit_answer_ai: user %s not found — XP не начислен",
+                    current_user.id,
+                )
         db.session.commit()
-
-        # +5 XP и +1 к решённым за правильную задачу дня (как в submit_answer).
-        # Баг: раньше AI-путь не начислял ни XP, ни problems_solved.
-        if is_correct:
-            try:
-                from models import User as _User
-                _u = db.session.get(_User, current_user.id)
-                if _u is not None:
-                    _u.experience_points = (_u.experience_points or 0) + 5
-                    _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
-                    item.xp_awarded = True
-                    db.session.commit()
-            except Exception as _xp_err:
-                logger.warning("submit_answer_ai: +XP не начислен item=%d: %s", item_id, _xp_err)
 
         # ── Записать результат в level_engine ──────────────────────────
         try:

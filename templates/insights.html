@@ -205,6 +205,12 @@ function checkAnswer(insightId, taskId) {
     .then(function(res){
         fb.textContent = res.correct ? 'Верно!' : 'Неверно. Попробуй ещё раз.';
         fb.style.color = res.correct ? '#86efac' : '#fca5a5';
+        if (res.correct && res.xp_gained) {
+            fb.textContent += ' +' + res.xp_gained + ' XP';
+        }
+        if (res.status === 'mastered') {
+            fb.textContent += ' \u2014 неточность отработана';
+        }
         if (!res.correct && res.correct_answer) {
             fb.textContent += ' (ответ: ' + res.correct_answer + ')';
         }

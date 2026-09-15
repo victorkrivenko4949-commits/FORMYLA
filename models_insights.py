@@ -134,6 +134,9 @@ class Insight(db.Model):
     progress_done = db.Column(db.Integer, nullable=False, default=0)
     progress_total = db.Column(db.Integer, nullable=False, default=3)
 
+    # Флаг: +15 XP бонус за закрытие уже начислен.
+    mastered_xp_awarded = db.Column(db.Boolean, nullable=False, default=False)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

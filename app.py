@@ -609,35 +609,49 @@ try:
         except Exception as _dte:
             print(f"[XP-BACKFILL] daily_task_items skipped: {_dte}")
 
+        # ── ВЕЧНАЯ СВЕРКА (15.09): раньше тут был «маркер», который ставил
+        # xp_awarded=True без начисления — маскировал потери от бага двух
+        # commit'ов. Теперь сверка: верный ответ без флага = XP не начислен,
+        # доначисляем всегда (при любом старте), двойного начисления нет,
+        # т.к. после фикса флаг ставится в той же транзакции, что и ответ.
+        _reconciled_users = set()
+        try:
+            for _iss in BankIssue.query.filter(
+                BankIssue.is_correct.is_(True),
+                BankIssue.xp_awarded.is_(False),
+            ).all():
+                _u = db.session.get(_User, _iss.user_id)
+                if _u is None:
+                    continue
+                _u.experience_points = (_u.experience_points or 0) + 5
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                _iss.xp_awarded = True
+                _reconciled_users.add(_iss.user_id)
+            for _it in _DailyTaskItem.query.filter(
+                _DailyTaskItem.is_correct.is_(True),
+                _DailyTaskItem.xp_awarded.is_(False),
+            ).all():
+                _set = db.session.get(_DailyTaskSet, _it.daily_set_id)
+                if _set is None:
+                    continue
+                _u = db.session.get(_User, _set.user_id)
+                if _u is None:
+                    continue
+                _u.experience_points = (_u.experience_points or 0) + 5
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                _it.xp_awarded = True
+                _reconciled_users.add(_set.user_id)
+            if _reconciled_users:
+                db.session.commit()
+                print(f"[XP-RECONCILE] [OK] доначислено XP: {sorted(_reconciled_users)}")
+        except Exception as _merr:
+            print(f"[XP-RECONCILE] skipped: {_merr}")
+
         if _credited_users:
             db.session.commit()
             print(f"[XP-BACKFILL] [OK] начислено XP пользователям: {sorted(_credited_users)}")
         else:
             print("[XP-BACKFILL] нет решённых без XP — пропускаю")
-
-        # Ответы ПОСЛЕ выката кода начисления уже получили XP — просто
-        # ставим флаг, чтобы в будущем бэкфилл их пропускал.
-        try:
-            _marked = 0
-            for _iss in BankIssue.query.filter(
-                BankIssue.is_correct.is_(True),
-                BankIssue.xp_awarded.is_(False),
-                BankIssue.answered_at >= _cutoff_bank,
-            ).all():
-                _iss.xp_awarded = True
-                _marked += 1
-            for _it in _DailyTaskItem.query.filter(
-                _DailyTaskItem.is_correct.is_(True),
-                _DailyTaskItem.xp_awarded.is_(False),
-                _DailyTaskItem.answered_at >= _cutoff_items,
-            ).all():
-                _it.xp_awarded = True
-                _marked += 1
-            if _marked:
-                db.session.commit()
-                print(f"[XP-BACKFILL] помечено xp_awarded у {_marked} уже начисленных ответов")
-        except Exception as _merr:
-            print(f"[XP-BACKFILL] mark-after cutoff skipped: {_merr}")
 except Exception as e:
     db.session.rollback()
     print(f"[XP-BACKFILL] Warning: {e}")

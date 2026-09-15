@@ -31,12 +31,32 @@ def _ensure_table() -> bool:
     from models import db
     from sqlalchemy import inspect
 
+    from sqlalchemy import text
+
     with app.app_context():
         inspector = inspect(db.engine)
         existing = set(inspector.get_table_names())
         missing = [t for t in _TABLES if t not in existing]
         if missing:
             db.create_all()
+
+        # Долить недостающие колонки в существующие таблицы (idempotent).
+        _EXTRA_COLS = {
+            "insights": [
+                ("mastered_xp_awarded", "BOOLEAN DEFAULT FALSE NOT NULL"),
+            ],
+        }
+        for table, cols in _EXTRA_COLS.items():
+            if table not in set(inspect(db.engine).get_table_names()):
+                continue
+            have = {c["name"] for c in inspect(db.engine).get_columns(table)}
+            for cname, ctype in cols:
+                if cname not in have:
+                    db.session.execute(text(
+                        f"ALTER TABLE {table} ADD COLUMN {cname} {ctype}"
+                    ))
+                    db.session.commit()
+
         inspector = inspect(db.engine)
         now = set(inspector.get_table_names())
         return all(t in now for t in _TABLES)

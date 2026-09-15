@@ -122,6 +122,8 @@ def api_practice_answer(insight_id: int, task_id: int):
     user_answer = (data.get("answer") or "").strip()
     correct = compare_math_answers(user_answer, task.answer or "")
 
+    was_correct = bool(task.is_correct)
+
     task.user_answer = user_answer
     task.is_correct = bool(correct)
     if correct and task.solved_at is None:
@@ -135,6 +137,25 @@ def api_practice_answer(insight_id: int, task_id: int):
         insight.status = "mastered"
     elif solved > 0:
         insight.status = "in_progress"
+
+    # ── XP за отработку (связь с лидербордом), одна транзакция ─────
+    # +5 XP за каждую верно решённую задачу на отработку (один раз
+    # на задачу), +15 XP бонусом, когда неточность закрыта полностью.
+    xp_gained = 0
+    if correct and not was_correct:
+        from models import User as _User
+        _u = db.session.get(_User, current_user.id)
+        if _u is not None:
+            _u.experience_points = (_u.experience_points or 0) + 5
+            _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+            xp_gained += 5
+    if insight.status == "mastered" and not getattr(insight, "mastered_xp_awarded", False):
+        from models import User as _User2
+        _u2 = db.session.get(_User2, current_user.id)
+        if _u2 is not None:
+            _u2.experience_points = (_u2.experience_points or 0) + 15
+            xp_gained += 15
+        insight.mastered_xp_awarded = True
     db.session.commit()
 
     return jsonify({
@@ -142,6 +163,8 @@ def api_practice_answer(insight_id: int, task_id: int):
         "correct_answer": task.answer,
         "progress_done": insight.progress_done,
         "progress_total": total,
+        "xp_gained": xp_gained,
+        "status": insight.status,
     })
 
 
@@ -253,6 +276,14 @@ def api_admin_insights_stats():
     insights = Insight.query.all()
     dismissed = sum(1 for i in insights if i.status == "dismissed")
     dismissed_rate = (dismissed / len(insights)) if insights else 0.0
+    # Разбивка отклонений по причинам: not_mine — показатель ложных
+    # срабатываний анализа, slip — ученик считает это опиской.
+    dismissed_slip = sum(
+        1 for i in insights if i.status == "dismissed" and i.dismiss_reason == "slip"
+    )
+    dismissed_not_mine = sum(
+        1 for i in insights if i.status == "dismissed" and i.dismiss_reason == "not_mine"
+    )
 
     practice_tasks = InsightPracticeTask.query.all()
     from_bank = sum(1 for p in practice_tasks if p.source == "bank")
@@ -278,6 +309,12 @@ def api_admin_insights_stats():
             "total_insights": len(insights),
             "dismissed": dismissed,
             "dismissed_rate": round(dismissed_rate, 4),
+            # precision = 1 - not_mine_rate: доля реальных неточностей
+            "dismissed_slip": dismissed_slip,
+            "dismissed_not_mine": dismissed_not_mine,
+            "not_mine_rate": round(
+                (dismissed_not_mine / len(insights)) if insights else 0.0, 4
+            ),
         },
         "practice_sources": {
             "bank": from_bank,
