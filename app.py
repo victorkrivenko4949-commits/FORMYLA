@@ -4136,10 +4136,13 @@ def track_site_time():
 def welcome():
     """Маркетинговая посадка для холодного трафика.
 
-    Сценарий: реклама / Метрика -> /welcome -> CTA -> /adaptive_test/select_class.
-    Это не главная (/) — её не трогаем, чтобы не сломать UX для залогиненных.
+    WELCOME_REDIRECT_V1: раньше тут был лендинг с CTA — теперь по требованию
+    владельца клик по рекламе сразу ведёт на регистрацию (/login), а после
+    входа новый пользователь автоматически попадает на анкету (/intake)
+    через next=/intake и встроенный редирект "onboarded_at is None -> /intake".
+    Логику логина после регистрации НЕ трогаем — у залогиненных всё как было.
     """
-    return render_template("welcome.html")
+    return redirect('/login?next=/intake')
 
 
 @app.route("/")
