@@ -5603,12 +5603,11 @@ def dev_login():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Passwordless вход - шаг 1: ввод email."""
-    if current_user.is_authenticated and not current_user.is_guest:
-        if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
-            return redirect('/profile')
-        return redirect('/daily_tasks')
+    """Passwordless вход - шаг 1: ввод email.
 
+    Если в поле email введён секрет SUPPORT_LOGIN_SECRET (даже когда уже залогинен
+    под другим аккаунтом) — сначала разлогиниваемся, затем логиним Лаврика.
+    """
     if request.method == "POST":
         app.logger.warning("LOGIN POST ВЫЗВАН")
 
@@ -5620,9 +5619,16 @@ def login():
 
         # ── Секретный вход в аккаунт поддержки ─────────────────────────
         # Если в поле email введена секретная строка SUPPORT_LOGIN_SECRET,
-        # входим сразу (без кода) в служебный аккаунт Lavrik и ведём на
-        # страницу чатов поддержки — это единственная доступная ему страница.
+        # входим сразу (без кода) в служебный аккаунт Lavrik.
+        # Работает даже если пользователь уже залогинен под другим аккаунтом:
+        # сначала разлогиниваемся, затем входим в Lavrik.
         if email == SUPPORT_LOGIN_SECRET:
+            from flask_login import logout_user as _logout_user
+            try:
+                _logout_user()
+                session.clear()
+            except Exception:
+                pass
             user = User.query.filter_by(nickname=SUPPORT_ACCOUNT_NICK).first()
             if not user:
                 user = User(email='support-lavrik@formyla.internal',
@@ -5642,6 +5648,13 @@ def login():
             # LAVRIK_MODE_V2: ведём Лаврика на профиль (там же — ссылки на поддержку и статистику)
             flash(f'Добро пожаловать, {SUPPORT_ACCOUNT_NICK}! Режим поддержки: включён.', 'success')
             return redirect('/profile')
+
+    if current_user.is_authenticated and not current_user.is_guest:
+        if (getattr(current_user, 'nickname', None) or '').lower() == 'lavrik':
+            return redirect('/profile')
+        return redirect('/daily_tasks')
+
+    if request.method == "POST":
 
         # Базовая валидация ДО создания пользователя и отправки письма:
         # иначе опечатка (пропущен @, кириллица, лишние пробелы) приводит к
