@@ -5644,6 +5644,37 @@ def login():
             except Exception as _e_lc:
                 db.session.rollback()
                 app.logger.warning(f"login_count Lavrik fail: {_e_lc}")
+            # LAVRIK_TASKS_V1: гарантируем CuratorState с пройденной анкетой.
+            # Без него /daily_tasks не строит месячный план (гейт по intake.completed).
+            # Лаврик — полноценный пользователь, задачи дня должны появиться сразу.
+            try:
+                from models_curator import CuratorState
+                import json as _json_lav
+                cs = CuratorState.query.filter_by(user_id=user.id).first()
+                if cs is None:
+                    cs = CuratorState(user_id=user.id, prep_state={})
+                    db.session.add(cs)
+                _raw = getattr(cs, 'prep_state', None)
+                if isinstance(_raw, str):
+                    try: _ps = _json_lav.loads(_raw)
+                    except Exception: _ps = {}
+                elif isinstance(_raw, dict):
+                    _ps = dict(_raw)
+                else:
+                    _ps = {}
+                _intake = _ps.get('intake') if isinstance(_ps.get('intake'), dict) else {}
+                _intake['completed'] = True
+                _intake['skipped'] = False
+                _ps['intake'] = _intake
+                cs.prep_state = _ps
+                if not getattr(cs, 'grade', None):
+                    cs.grade = 9  # дефолтный класс: олимпиады сфокусированы на 9 классе
+                if not getattr(user, 'preferred_grade', None):
+                    user.preferred_grade = 9
+                db.session.commit()
+            except Exception as _e_cs:
+                db.session.rollback()
+                app.logger.warning(f"Lavrik CuratorState fail: {_e_cs}")
             login_user(user, remember=True)
             # LAVRIK_MODE_V2: ведём Лаврика на профиль (там же — ссылки на поддержку и статистику)
             flash(f'Добро пожаловать, {SUPPORT_ACCOUNT_NICK}! Режим поддержки: включён.', 'success')
