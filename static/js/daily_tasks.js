@@ -1041,23 +1041,9 @@ function renderMath(root, opts) {
     // Апгрейд: «тяжёлые» формулы (\frac, \sqrt, \sum и т.п.) в инлайн $...$
 // выносим в display $$...$$, чтобы высокая дробь рендерилась отдельным
 // блоком, а не втискивалась в строку. Работает для всех путей (модалка/карточки).
-    if (root && root.innerHTML && root.innerHTML.indexOf('$') !== -1) {
-        root.innerHTML = root.innerHTML.replace(/(^|[^$])\$([^$]*?)\$(?!\$)/g, function(m, pre, inner) {
-            if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
-                return pre + '$$' + inner + '$$';
-            }
-            return m;
-        });
-    }
-    // Апгрейд для inline \(...\): тяжёлые формулы выносим в display \[...\].
-    if (root && root.innerHTML && root.innerHTML.indexOf('\\(') !== -1) {
-        root.innerHTML = root.innerHTML.replace(/\\\(([\s\S]*?)\\\)/g, function(m, inner) {
-            if (/\\(frac|dfrac|sqrt|sum|int|prod|lim|binom|over)\b/.test(inner)) {
-                return '\\[' + inner + '\\]';
-                }
-            return m;
-            });
-        }
+        // DT_RENDER_V2: убрали пре-морф текста через regex — он ломался на
+    // \\begin{cases}...\\end{cases} с экранированными \\\\. Формула оставалась
+    // сырым TeX. Теперь вызываем честный KaTeX auto-render без трансформаций.
     if (typeof renderMathInElement !== 'undefined') {
         try {
             renderMathInElement(root, opts || {
