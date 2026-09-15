@@ -237,14 +237,12 @@
         <div style="display: flex; align-items: center; gap: 12px; margin-left: 16px;">
             {% if current_user.is_authenticated and not current_user.is_guest %}
                 {% if (current_user.nickname or '')|lower == 'lavrik' %}
-                <!-- Модератор поддержки — одна страница: чаты поддержки -->
-                <style>
-                    #navLinks, .mobile-bottom-nav, .drawer-nav, .drawer-user, #profileNavWrap,
-                    #globalBackBtn { display: none !important; }
-                </style>
-                <a href="{{ url_for('admin_support.admin_support_inbox') }}"
+                <!-- LAVRIK_FULL_USER_V2: Лаврик — полноценный пользователь + админ. Меню НЕ прячем.
+                     Кнопка «💬 Поддержка» ведёт на /my/support (чаты с командой).
+                     Админ-чат /admin/support доступен из профиля (блок «Админ-раздел»). -->
+                <a href="{{ url_for('admin_support.my_support_page') }}"
                    id="navMySupportLink"
-                   title="Чаты поддержки — все обращения пользователей"
+                   title="Твоя поддержка — обращения и переписка с командой"
                    style="position:relative; padding: 8px 14px; background: rgba(168, 85, 247, 0.12);
                           color: #d8b4fe; text-decoration: none; border-radius: 8px;
                           font-weight: 600; font-size: 14px;
