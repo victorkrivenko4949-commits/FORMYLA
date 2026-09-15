@@ -433,7 +433,11 @@ def student_detail(sid: int):
 
     role = _user_role()
 
-    # Check access
+    # STUDENT_VIEW_FIX_V1: явное разделение доступа.
+    # Раньше любой student получал 403 даже на собственный профиль, а у
+    # учителя/родителя падало из-за share_progress=NULL в старых строках
+    # PostgreSQL (поле nullable=False, но исторические записи могли быть NULL).
+    is_self = current_user.id == student.id
     if role == 'teacher':
         # Teacher must have this student in one of their groups
         member = T10GroupMember.query.join(T10Group).filter(
@@ -445,10 +449,13 @@ def student_detail(sid: int):
     elif role == 'parent':
         if getattr(current_user, 'child_email', None) != student.nickname:
             abort(403)
-    else:
+    elif not is_self:
+        # Обычный ученик может видеть только свой профиль.
         abort(403)
 
-    if not getattr(student, 'share_progress', True) and role != 'student':
+    # share_progress: NULL/отсутствует трактуем как «разрешено» (default=True).
+    # Блокируем только явный False/0 при чужом просмотре.
+    if not is_self and getattr(student, 'share_progress', True) in (False, 0):
         abort(403)
 
     today = date.today()

@@ -1458,6 +1458,9 @@
     dtOpenStart = Date.now();
     $('dt-modal-title').textContent = (it.topic || '') + (it.difficulty_level ? (' \u00b7 ' + it.difficulty_level) : '');
     $('dt-modal-statement').innerHTML = escapeHtmlPreserveLatex(it.text || it.preview || '');
+    // DT_LATEX_FIX_V1: функция называется reRenderMath (base.html), чтобы
+    // формулы \(...\), $...$, \begin{cases}... рендерились, а не показывались сырым \TeX.
+    if (typeof reRenderMath === 'function') reRenderMath($('dt-modal-statement'));
     if (typeof renderMath === 'function') renderMath($('dt-modal-statement'));
     var inp = $('dt-answer-input');
     var sol = $('dt-solution-input');
@@ -1498,6 +1501,8 @@
       }
       res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';font-weight:600;">' +
         (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>' + _ansHtml;
+      // DT_LATEX_FIX_V1: рендерим формулы в истории ответов (решение, фидбек, твой ответ).
+      if (typeof reRenderMath === 'function') reRenderMath(res);
       if (typeof renderMath === 'function') renderMath(res);
       // 2026-09-15: повторный ответ запрещён — и поля, и кнопку блокируем.
       inp.disabled = true;
