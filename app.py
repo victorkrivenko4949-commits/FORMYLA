@@ -11903,17 +11903,16 @@ def api_chat_upload(friend_id):
     if size > MAX_BYTES:
         return jsonify({'error': 'Файл больше 5 МБ'}), 400
 
-    folder = os.path.join('static', 'uploads', 'chat', str(current_user.id))
-    os.makedirs(folder, exist_ok=True)
-    name = uuid.uuid4().hex + '.' + ext
-    path = os.path.join(folder, name)
+    # Хранение вложений: R2 (переживает деплои) или исторический локальный путь,
+    # если R2 не настроен — поведение не меняется (см. services/storage.py).
+    from services.storage import upload_chat_attachment, StorageError
     try:
-        f.save(path)
-    except Exception as _se:
+        url = upload_chat_attachment(
+            f.read(), current_user.id, ext, f.mimetype or 'application/octet-stream',
+        )
+    except StorageError as _se:
         app.logger.warning("chat upload save failed: %r", _se)
         return jsonify({'error': 'Не удалось сохранить файл'}), 500
-
-    url = '/static/uploads/chat/' + str(current_user.id) + '/' + name
     return jsonify({
         'success': True,
         'attachment': {
@@ -13853,17 +13852,14 @@ def api_groups_upload(group_id):
         return jsonify({'error': 'Файл пустой'}), 400
     if size > MAX_BYTES:
         return jsonify({'error': 'Файл больше 5 МБ'}), 400
-    folder = os.path.join('static', 'uploads', 'chat', str(current_user.id))
-    os.makedirs(folder, exist_ok=True)
-    import uuid
-    name = uuid.uuid4().hex + '.' + ext
-    path = os.path.join(folder, name)
+    from services.storage import upload_chat_attachment, StorageError
     try:
-        f.save(path)
-    except Exception as _se:
+        url = upload_chat_attachment(
+            f.read(), current_user.id, ext, f.mimetype or 'application/octet-stream',
+        )
+    except StorageError as _se:
         app.logger.warning("group upload save failed: %r", _se)
         return jsonify({'error': 'Не удалось сохранить файл'}), 500
-    url = '/static/uploads/chat/' + str(current_user.id) + '/' + name
     return jsonify({
         'success': True,
         'attachment': {
