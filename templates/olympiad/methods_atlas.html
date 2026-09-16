@@ -56,4 +56,125 @@
     window.addEventListener('load', syncAtlasTop);
 })();
 </script>
+
+{% if current_user.is_authenticated %}
+<!-- Мини-чат с куратором: поле ввода сообщения прямо со страницы методов.
+     Сообщения идут в тот же чат ИИ-куратора, что и на /prep/coach. -->
+<style>
+    .mcur-fab {
+        position: fixed; right: 18px; bottom: 18px; z-index: 2000;
+        padding: 12px 18px; border: 0; border-radius: 999px;
+        background: #4C7DFF; color: #fff; font-weight: 600; font-size: 14px;
+        cursor: pointer; box-shadow: 0 6px 22px rgba(76,125,255,0.45);
+        display: flex; align-items: center; gap: 8px;
+    }
+    .mcur-fab:hover { background: #5d8bff; }
+    .mcur-panel {
+        position: fixed; right: 18px; bottom: 70px; z-index: 2000;
+        width: min(360px, calc(100vw - 36px));
+        background: rgba(13,18,32,0.97); border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 16px; overflow: hidden;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        display: none; flex-direction: column;
+    }
+    .mcur-panel.open { display: flex; }
+    .mcur-head {
+        padding: 12px 16px; font-weight: 700; font-size: 14px; color: #fff;
+        background: linear-gradient(135deg, #4C7DFF, #6366f1);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .mcur-close {
+        background: none; border: 0; color: #fff; font-size: 20px;
+        cursor: pointer; line-height: 1; opacity: 0.85;
+    }
+    .mcur-log {
+        max-height: 260px; overflow-y: auto; padding: 12px 14px;
+        font-size: 14px; line-height: 1.5; color: #e8ecf4;
+    }
+    .mcur-msg { margin-bottom: 10px; padding: 9px 12px; border-radius: 12px; max-width: 92%; word-wrap: break-word; }
+    .mcur-msg.user { background: rgba(76,125,255,0.22); margin-left: auto; border-bottom-right-radius: 4px; }
+    .mcur-msg.bot { background: rgba(255,255,255,0.06); border-bottom-left-radius: 4px; }
+    .mcur-form { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .mcur-form input {
+        flex: 1; padding: 10px 12px; font-size: 14px;
+        border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+        background: rgba(0,0,0,0.25); color: #fff;
+    }
+    .mcur-form button {
+        padding: 10px 16px; border: 0; border-radius: 10px;
+        background: #4C7DFF; color: #fff; font-weight: 600; cursor: pointer;
+    }
+    .mcur-form button:disabled { opacity: 0.55; cursor: default; }
+</style>
+
+<button type="button" class="mcur-fab" id="mcurFab">💬 Спросить куратора</button>
+<div class="mcur-panel" id="mcurPanel" aria-hidden="true">
+    <div class="mcur-head">
+        <span> Куратор подготовки</span>
+        <button type="button" class="mcur-close" id="mcurClose" aria-label="Закрыть">×</button>
+    </div>
+    <div class="mcur-log" id="mcurLog"></div>
+    <form class="mcur-form" id="mcurForm">
+        <input type="text" id="mcurInput" placeholder="Спроси куратора…" autocomplete="off">
+        <button type="submit" id="mcurSend">Отправить</button>
+    </form>
+</div>
+<script>
+(function () {
+    var fab = document.getElementById('mcurFab');
+    var panel = document.getElementById('mcurPanel');
+    var log = document.getElementById('mcurLog');
+    var form = document.getElementById('mcurForm');
+    var input = document.getElementById('mcurInput');
+    var sendBtn = document.getElementById('mcurSend');
+
+    function addMsg(text, who) {
+        var div = document.createElement('div');
+        div.className = 'mcur-msg ' + who;
+        div.textContent = text;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+        return div;
+    }
+
+    fab.addEventListener('click', function () {
+        panel.classList.toggle('open');
+        panel.setAttribute('aria-hidden', panel.classList.contains('open') ? 'false' : 'true');
+        if (panel.classList.contains('open') && !log.children.length) {
+            addMsg('Привет! Видишь вопрос по методу — пиши сюда, разберём.', 'bot');
+            input.focus();
+        }
+    });
+    document.getElementById('mcurClose').addEventListener('click', function () {
+        panel.classList.remove('open');
+        panel.setAttribute('aria-hidden', 'true');
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var text = input.value.trim();
+        if (!text) return;
+        addMsg(text, 'user');
+        input.value = '';
+        sendBtn.disabled = true;
+        var pending = addMsg(' Думаю…', 'bot');
+        fetch('{{ url_for("prep.coach_chat") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            pending.textContent = data.reply || 'Не удалось получить ответ.';
+        })
+        .catch(function () {
+            pending.textContent = '[ERROR] Ошибка соединения. Попробуй ещё раз.';
+        })
+        .finally(function () {
+            sendBtn.disabled = false;
+        });
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}
