@@ -19,10 +19,17 @@ Gunicorn открывает порт сразу, а приложение заг�
    Render не переключает трафик, пока новый инстанс не ответит 200 на
    `/healthz`. Пока новый грузится — работает старый. `/healthz` не ходит
    в БД и отвечает мгновенно.
-2. **Pre-Deploy Command = `flask db upgrade --directory alembic_migrations`**
-   (Settings → Build & Deploy → Pre-Deploy Command). Миграции выполняются
-   один раз до замены инстанса. Если миграция падает — деплой останавливается,
-   старая версия продолжает работать.
+2. **Pre-Deploy Command — пустой** (Settings → Build & Deploy). Мы
+   пробовали `flask db upgrade --directory alembic_migrations` — деплой
+   16.09.2026 (dep-dale50m5vjqs73f2qpvg) упал: Flask-Migrate установлен, но
+   `Migrate(app, db)` нигде не вызывается, поэтому команды `flask db`
+   не существует (exit 2), а в продовой БД нет таблицы `alembic_version`.
+   Упавший pre-deploy остановил деплой БЕЗ простоя (старый инстанс
+   продолжил работать) — но блокировал бы все дальнейшие деплои, поэтому
+   команду убрали. Схему сейчас поддерживают бутовые ensure-миграции
+   в app.py (идемпотентные). TODO: честный alembic-поток (прошить
+   `Migrate(app, db)`, сделать `stamp` продовой БД, вернуть pre-deploy)
+   — отдельная задача, там есть подводные камни с expand/contract.
 3. **Платный Instance Type** (у нас Pro Plus). Только на платных тарифах
    Render держит старый инстанс живым, пока поднимается новый.
 4. **`--graceful-timeout 30`** в startCommand: старый инстанс получает 30

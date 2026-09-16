@@ -16,14 +16,17 @@ services:
     # (8 GB RAM / 4 CPU). Значение `plan: starter` в этом YAML — историческое
     # и НЕ переопределяет Dashboard (Render берёт live setting).
     buildCommand: pip install -r requirements.txt
-    # Миграции — в pre-deploy команде: выполняются ОДИН раз до замены инстанса.
-    # Если миграция падает — деплой останавливается, старая версия продолжает
-    # работать (ноль простоя). Правило: миграции должны быть обратно
-    # совместимыми — сначала добавляем колонки/таблицы, удаляем старые только
-    # отдельным релизом после того, как код без них задеплоен (expand/contract).
-    # Для сервиса, созданного вручную через Dashboard, эта же команда должна
-    # быть прописана в Settings -> Build & Deploy -> Pre-Deploy Command.
-    preDeployCommand: flask db upgrade --directory alembic_migrations
+    # ВАЖНО: Pre-Deploy Command в Render дашборде должен оставаться ПУСТЫМ.
+    # Попытка вывести миграции в pre-deploy (16.09.2026, деплой
+    # dep-dale50m5vjqs73f2qpvg) провалилась: `flask db` не существует
+    # (Flask-Migrate установлен, но Migrate(app, db) нигде не вызывается;
+    # в продовой БД нет alembic_version) → "No such command 'db'" → exit 2 →
+    # деплой остановился (к счастью, без простоя: старый инстанс продолжил
+    # работать — так и задумано).
+    # Схему поддерживают бутовые ensure-миграции в app.py (идемпотентные
+    # CREATE/ALTER IF NOT EXISTS) — они безопасно бегут при старте.
+    # TODO: перевести миграции на честный alembic (stamp + upgrade) —
+    # отдельная аккуратная задача, см. DEPLOY_ZERO_DOWNTIME.md.
     # КРИТИЧНО: --workers 1 (НЕ 2!) + БЕЗ --preload.
     #
     # Почему НЕ повышаем --workers, даже на Pro Plus 8 GB:
