@@ -1615,14 +1615,39 @@
                   if (String(d.items[_di].id) === String(dtCurrentItem.id)) {
                     d.items[_di].user_answer = raw;
                     d.items[_di].is_correct = !!ok;
+                    // БЕЗ ЭТОГО ПОЛЯ renderTasks() ниже рисовал карточку как
+                    // «— Не решено», а openTask() при повторном открытии
+                    // показывал пустую форму вместо сохранённого ответа —
+                    // состояние появлялось только после перезагрузки страницы.
+                    d.items[_di].is_answered = true;
+                    // Сохраняем ИИ-разбор, чтобы повторное открытие без
+                    // перезагрузки выглядело один-в-один как после ответа.
+                    d.items[_di].ai_feedback = a.feedback || '';
                     if (a.solution) d.items[_di].solution = a.solution;
                     break;
                   }
                 }
                 initDataEl.textContent = JSON.stringify(d);
+                if (a.set_progress && typeof a.set_progress.completed === 'number') {
+                  d.progress = { completed: a.set_progress.completed, total: a.set_progress.total };
+                  try { initDataEl.textContent = JSON.stringify(d); } catch (_e5) {}
+                }
               }
             }
           } catch (_e3) {}
+          // Счётчик «Выполнено X/Y» в шапке — сразу, без перезагрузки.
+          try {
+            var _pb = $('dt-progress-summary');
+            if (_pb && a.set_progress && typeof a.set_progress.completed === 'number') {
+              _pb.textContent = a.set_progress.completed + '/' + a.set_progress.total;
+            } else if (_pb) {
+              // set_progress не пришёл (старое API) — инкремент локально.
+              var _parts = (_pb.textContent || '0/0').split('/');
+              var _completed = parseInt(_parts[0] || '0', 10) + 1;
+              var _total = parseInt(_parts[1] || '0', 10) || _completed;
+              _pb.textContent = _completed + '/' + _total;
+            }
+          } catch (_e6) {}
           renderTasks();
         } else {
           res.innerHTML = '<div style="color:var(--bad);">' + escapeHtmlPreserveLatex((a && (a.message || a.error)) || 'Ошибка проверки') + '</div>';
