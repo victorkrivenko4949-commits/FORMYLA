@@ -47,11 +47,13 @@ services:
     # per-thread). GIL отпускается на сетевых вызовах (OpenRouter/Gemini).
     #
     # Историю не повторять: f96cb1c (fix) → 26fa7c5 (revert) → 502.
-    # --timeout 120 — стандарт для psycopg wait на медленные запросы Postgres.
+    # --timeout 600 намеренно: длинные AI/OCR-запросы (генерация, разбор
+    # решений) не должны убиваться таймаутом worker. Держим синхронно со
+    # Start Command в Render дашборде — источник истины для этого сервиса.
     # Миграции НЕ запускаем здесь: они выполняются preDeployCommand до замены
     # инстанса, чтобы boot был быстрым и health check проходил сразу.
     startCommand: >-
-      gunicorn app:app --workers 1 --threads 4 --worker-class gthread --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+      gunicorn app:app --workers 1 --threads 4 --worker-class gthread --timeout 600 --graceful-timeout 30 --bind 0.0.0.0:$PORT
     # КРИТИЧНО: Health Check Path = /healthz (НЕ /, НЕ /profile!).
     # /healthz отдаёт 200 без обращения к БД. /profile требует Postgres +
     # Flask-Login → при тормозах БД health-check виснет → Render думает что
