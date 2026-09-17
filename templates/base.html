@@ -942,6 +942,12 @@
         var tip = document.getElementById('ft-onboard-arrow');
         var target = document.querySelector('a.nav-item[href="/olympiad-start"]');
         if (!tip || !target) return;
+        // Подсказка показывается только один раз на устройство.
+        var SEEN_KEY = 'ft_onboard_arrow_seen';
+        try {
+            if (localStorage.getItem(SEEN_KEY)) return;
+            localStorage.setItem(SEEN_KEY, '1');
+        } catch (e) { /* localStorage недоступен — показываем как раньше */ }
         var hideTimer = null;
         function place() {
             var r = target.getBoundingClientRect();
