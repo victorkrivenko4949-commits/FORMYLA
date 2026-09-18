@@ -4155,7 +4155,9 @@ def index():
         if _role == 'parent':
             return redirect('/parent')
         return redirect(url_for('prep.coach'))
-    return redirect(url_for('login'))
+    # Гость приходит по ссылке/объявлению — сначала показываем страницу
+    # «О проекте», а не сразу страницу входа.
+    return redirect('/about')
 
 
 @app.route("/leaderboard")
