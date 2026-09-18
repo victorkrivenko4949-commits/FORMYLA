@@ -16,6 +16,17 @@ services:
     # (8 GB RAM / 4 CPU). Значение `plan: starter` в этом YAML — историческое
     # и НЕ переопределяет Dashboard (Render берёт live setting).
     buildCommand: pip install -r requirements.txt
+    # ВАЖНО: Pre-Deploy Command в Render дашборде должен оставаться ПУСТЫМ.
+    # Попытка вывести миграции в pre-deploy (16.09.2026, деплой
+    # dep-dale50m5vjqs73f2qpvg) провалилась: `flask db` не существует
+    # (Flask-Migrate установлен, но Migrate(app, db) нигде не вызывается;
+    # в продовой БД нет alembic_version) → "No such command 'db'" → exit 2 →
+    # деплой остановился (к счастью, без простоя: старый инстанс продолжил
+    # работать — так и задумано).
+    # Схему поддерживают бутовые ensure-миграции в app.py (идемпотентные
+    # CREATE/ALTER IF NOT EXISTS) — они безопасно бегут при старте.
+    # TODO: перевести миграции на честный alembic (stamp + upgrade) —
+    # отдельная аккуратная задача, см. DEPLOY_ZERO_DOWNTIME.md.
     # КРИТИЧНО: --workers 1 (НЕ 2!) + БЕЗ --preload.
     #
     # Почему НЕ повышаем --workers, даже на Pro Plus 8 GB:
@@ -39,12 +50,13 @@ services:
     # per-thread). GIL отпускается на сетевых вызовах (OpenRouter/Gemini).
     #
     # Историю не повторять: f96cb1c (fix) → 26fa7c5 (revert) → 502.
-    # --timeout 120 — стандарт для psycopg wait на медленные запросы Postgres.
-    # Flask-Migrate: выполняем неприменённые миграции перед стартом сервера.
-    # Команда идемпотентна — безопасно запускать при каждом деплое/рестарте.
+    # --timeout 600 намеренно: длинные AI/OCR-запросы (генерация, разбор
+    # решений) не должны убиваться таймаутом worker. Держим синхронно со
+    # Start Command в Render дашборде — источник истины для этого сервиса.
+    # Миграции НЕ запускаем здесь: они выполняются preDeployCommand до замены
+    # инстанса, чтобы boot был быстрым и health check проходил сразу.
     startCommand: >-
-      flask db upgrade --directory alembic_migrations &&
-      gunicorn app:app --workers 1 --threads 4 --worker-class gthread --timeout 120 --graceful-timeout 30 --bind 0.0.0.0:$PORT
+      gunicorn app:app --workers 1 --threads 4 --worker-class gthread --timeout 600 --graceful-timeout 30 --bind 0.0.0.0:$PORT
     # КРИТИЧНО: Health Check Path = /healthz (НЕ /, НЕ /profile!).
     # /healthz отдаёт 200 без обращения к БД. /profile требует Postgres +
     # Flask-Login → при тормозах БД health-check виснет → Render думает что
@@ -132,4 +144,17 @@ services:
       - key: VAPID_PRIVATE_KEY
         sync: false
       - key: VAPID_CLAIM_EMAIL
+        sync: false
+      # --- Файловое хранилище (Cloudflare R2, S3-совместимое) ---
+      # Фото решений и вложения чатов лежат ВНЕ эфемерного диска Render:
+      # без этих ключей файлы пропадают при каждом деплое/рестарте.
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: R2_PUBLIC_URL
         sync: false

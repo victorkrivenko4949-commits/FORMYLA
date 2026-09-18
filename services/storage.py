@@ -86,6 +86,42 @@ def upload_photo(photo_bytes, user_id, content_type='image/jpeg'):
     return url, photo_hash
 
 
+def upload_chat_attachment(data, user_id, ext, content_type='application/octet-stream'):
+    """Сохранить вложение чата (изображение/PDF).
+
+    Если настроен R2 — файл уходит во внешнее хранилище (переживает деплои
+    и рестарты Render). Иначе — исторический локальный путь
+    ``static/uploads/chat/<user_id>/`` (поведение не меняется).
+
+    Returns:
+        str: публичный URL для сохранения в сообщении.
+    Raises:
+        StorageError: если сохранить не удалось.
+    """
+    import uuid as _uuid
+    safe_ext = (ext or 'bin').lower().strip().lstrip('.')[:8]
+    name = _uuid.uuid4().hex + '.' + safe_ext
+
+    if _r2_configured():
+        key = f"chat/{user_id}/{name}"
+        return _upload_to_r2(data, key, content_type or 'application/octet-stream')
+
+    folder = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'static', 'uploads', 'chat', str(user_id),
+    )
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, name)
+    try:
+        with open(path, 'wb') as fh:
+            fh.write(data)
+    except Exception as e:
+        logger.error("chat attachment local save failed: %s", e)
+        raise StorageError("Не удалось сохранить файл")
+    logger.info(f"Saved chat attachment locally: {path} ({len(data)} bytes)")
+    return f"/static/uploads/chat/{user_id}/{name}"
+
+
 def _r2_configured():
     """Check if R2 credentials are available."""
     return bool(R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY)

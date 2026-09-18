@@ -3,6 +3,10 @@
 Проект развёрнут на Render как Web Service. База данных: PostgreSQL (на Render),
 SQLite локально. Домен: `formyla.net`. Сервис: `srv-d73br5ffte5s73euc56g`.
 
+Обновление без простоя (zero-downtime): см. `DEPLOY_ZERO_DOWNTIME.md` —
+health check `/healthz`, pre-deploy миграции, хранение файлов в R2 и
+правило expand/contract для миграций.
+
 ## До выкладки
 
 1. Убедись, что все тесты проходят локально: `python -m pytest tests/ --tb=short -q`.
