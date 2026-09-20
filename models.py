@@ -2159,6 +2159,8 @@ class BankIssue(db.Model):
     # 2026-09-15: отметка, что за эту строку уже начислено XP
     # (для задолженности/dedupe — не начислять дважды).
     xp_awarded = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    # USERS_STATS_V2: JSON-список URL фото решений (для админ-статистики)
+    solution_photos_json = db.Column(db.Text, nullable=True)
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'task_id', name='uq_bank_issue_user_task'),

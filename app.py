@@ -1,7 +1,7 @@
 import re
 import markdown as md_lib
 from flask import Flask, render_template, request, abort, redirect, session, jsonify, url_for, flash
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, user_logged_in
 from flask_mail import Mail, Message
 from utils.math_answer_utils import compare_math_answers
 from utils.rating_utils import add_xp_for_task, add_xp_for_adaptive_test, add_xp_for_mock_exam, get_xp_for_next_level
@@ -535,10 +535,12 @@ try:
             ('bank_issues', (
                 ('ai_feedback', 'TEXT'),
                 ('xp_awarded', "BOOLEAN DEFAULT FALSE NOT NULL"),
+                ('solution_photos_json', 'TEXT'),
             )),
             ('daily_task_items', (
                 ('ai_feedback', 'TEXT'),
                 ('xp_awarded', "BOOLEAN DEFAULT FALSE NOT NULL"),
+                ('solution_photos_json', 'TEXT'),
             )),
         ):
             if _tbl not in _insp.get_table_names():
@@ -4150,7 +4152,26 @@ def track_site_time():
     except Exception as _e_st:
         db.session.rollback()
         app.logger.warning(f"track_site_time failed: {_e_st}")
+    # USERS_STATS_V2: heartbeat-статистика (presence, по дням, пик онлайна)
+    try:
+        from routes.admin_support import log_site_event
+        log_site_event(current_user.id, 'heartbeat', seconds)
+    except Exception as _e_se:
+        app.logger.warning(f"log_site_event heartbeat fail: {_e_se}")
     return jsonify(ok=True)
+
+
+# USERS_STATS_V2: фиксируем каждый успешный вход (email, OAuth, TG, Lavrik) одним сигналом
+try:
+    @user_logged_in.connect_via(app)
+    def _on_user_logged_in(sender, user, **extra):
+        try:
+            from routes.admin_support import log_site_event
+            log_site_event(user.id, 'login', 0)
+        except Exception as _e_li:
+            app.logger.warning(f"log_site_event login fail: {_e_li}")
+except Exception as _e_sig:
+    print(f"[USERS_STATS_V2] login signal skipped: {_e_sig}")
 
 
 @app.route("/welcome")

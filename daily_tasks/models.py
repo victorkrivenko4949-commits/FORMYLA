@@ -121,6 +121,8 @@ class DailyTaskItem(db.Model):
     # 2026-09-15: отметка, что за эту строку уже начислено XP
     # (для задолженности/dedupe — не начислять дважды).
     xp_awarded = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    # USERS_STATS_V2: JSON-список URL фото решений (для админ-статистики)
+    solution_photos_json = db.Column(db.Text, nullable=True)
 
     # D3 PIPELINE: описание геометрических построений и статус чертежа
     figure_json = db.Column(db.Text, nullable=True)
