@@ -947,6 +947,16 @@ def ensure_site_events_tables():
                     max_online INTEGER NOT NULL DEFAULT 0
                 )
             '''))
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS site_feedback (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL UNIQUE,
+                    rating INTEGER,
+                    feedback_text TEXT,
+                    asked_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                    answered_at TIMESTAMP
+                )
+            '''))
         else:
             db.session.execute(text('''
                 CREATE TABLE IF NOT EXISTS site_events (
@@ -966,6 +976,16 @@ def ensure_site_events_tables():
                     max_online INTEGER NOT NULL DEFAULT 0
                 )
             '''))
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS site_feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL UNIQUE,
+                    rating INTEGER,
+                    feedback_text TEXT,
+                    asked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    answered_at DATETIME
+                )
+            '''))
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -973,6 +993,88 @@ def ensure_site_events_tables():
 
 
 ONLINE_WINDOW_SEC = 300  # 5 минут — «онлайн»
+
+FEEDBACK_MIN_SECONDS = 25 * 60  # 25 минут на сайте → задаём вопрос «Как тебе сайт?»
+
+
+def maybe_ask_feedback(user_id: int, site_seconds_total: int) -> None:
+    """Если пользователь провёл на сайте >= 25 минут и вопрос ещё не задан —
+    создаём ожидающий отзыв (pending). Вызывается из heartbeat."""
+    try:
+        if site_seconds_total < FEEDBACK_MIN_SECONDS:
+            return
+        ensure_site_events_tables()
+        db.session.execute(text('''
+            INSERT INTO site_feedback (user_id)
+            SELECT :uid WHERE NOT EXISTS (
+                SELECT 1 FROM site_feedback WHERE user_id = :uid
+            )
+        '''), {'uid': user_id})
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logger.warning('maybe_ask_feedback: %r', e)
+
+
+def has_pending_feedback(user_id: int) -> bool:
+    """True, если пользователю показан вопрос, а он ещё не ответил."""
+    try:
+        ensure_site_events_tables()
+        row = db.session.execute(text('''
+            SELECT 1 FROM site_feedback
+            WHERE user_id = :uid AND answered_at IS NULL
+        '''), {'uid': user_id}).first()
+        return row is not None
+    except Exception:
+        db.session.rollback()
+        return False
+
+
+# ── USERS_STATS_V2: API для опроса «Как тебе сайт?» ────────────────────
+@admin_support_bp.route('/api/feedback/pending')
+@login_required
+def api_feedback_pending():
+    """Есть ли ожидающий ответа опрос у текущего пользователя."""
+    return jsonify(pending=has_pending_feedback(current_user.id))
+
+
+@admin_support_bp.route('/api/feedback', methods=['POST'])
+@login_required
+def api_feedback_submit():
+    """Сохранить ответ на вопрос «Как тебе сайт?» (1–5 + текст). Один раз."""
+    data = request.get_json(silent=True) or request.form or {}
+    try:
+        rating = int(data.get('rating'))
+    except (TypeError, ValueError):
+        return jsonify(ok=False, error='no_rating'), 400
+    if rating < 1 or rating > 5:
+        return jsonify(ok=False, error='bad_rating'), 400
+    fb_text = (data.get('text') or '')[:2000]
+    uid = current_user.id
+    try:
+        ensure_site_events_tables()
+        row = db.session.execute(text('''
+            SELECT 1 FROM site_feedback WHERE user_id = :uid AND answered_at IS NULL
+        '''), {'uid': uid}).first()
+        if row is None:
+            # Нет ожидающего — возможно уже ответил или ещё не задан вопрос
+            already = db.session.execute(text(
+                'SELECT 1 FROM site_feedback WHERE user_id = :uid'
+            ), {'uid': uid}).first()
+            if already is not None:
+                return jsonify(ok=True, already=True)
+            return jsonify(ok=False, error='not_asked'), 400
+        db.session.execute(text('''
+            UPDATE site_feedback
+            SET rating = :r, feedback_text = :t, answered_at = CURRENT_TIMESTAMP
+            WHERE user_id = :uid AND answered_at IS NULL
+        '''), {'r': rating, 't': fb_text, 'uid': uid})
+        db.session.commit()
+        return jsonify(ok=True)
+    except Exception as e:
+        db.session.rollback()
+        logger.warning('api_feedback_submit: %r', e)
+        return jsonify(ok=False, error='db'), 500
 
 
 def log_site_event(user_id: int, kind: str, seconds: int = 0) -> None:
@@ -1237,6 +1339,51 @@ def admin_users_stats():
     photo_items.sort(key=lambda x: x['when'], reverse=True)
     photo_items = photo_items[:60]
 
+    # USERS_STATS_V2: ответы на опрос «Как тебе сайт?»
+    fb_rows = db.session.execute(text('''
+        SELECT f.user_id, u.nickname, f.rating, f.feedback_text,
+               f.asked_at, f.answered_at
+        FROM site_feedback f JOIN users u ON u.id = f.user_id
+        ORDER BY f.answered_at DESC NULLS LAST, f.asked_at DESC
+        LIMIT 200
+    ''' if is_pg else '''
+        SELECT f.user_id, u.nickname, f.rating, f.feedback_text,
+               f.asked_at, f.answered_at
+        FROM site_feedback f JOIN users u ON u.id = f.user_id
+        ORDER BY f.answered_at IS NULL, f.answered_at DESC, f.asked_at DESC
+        LIMIT 200
+    ''')).fetchall()
+    feedback_list = []
+    fb_answered = 0
+    fb_pending = 0
+    fb_rating_sum = 0
+    for uid, nick, rating, ftext, asked, answered in fb_rows:
+        answered_bool = answered is not None
+        if answered_bool:
+            fb_answered += 1
+            fb_rating_sum += (rating or 0)
+        else:
+            fb_pending += 1
+        feedback_list.append({
+            'user_id': uid,
+            'nickname': nick or '—',
+            'rating': rating,
+            'text': ftext or '',
+            'asked': asked.strftime('%d.%m %H:%M') if asked else '—',
+            'answered': answered.strftime('%d.%m %H:%M') if answered else None,
+        })
+    fb_avg = round(fb_rating_sum / fb_answered, 2) if fb_answered else 0
+    fb_dist = [0, 0, 0, 0, 0]
+    for f in feedback_list:
+        if f['rating'] and 1 <= f['rating'] <= 5:
+            fb_dist[f['rating'] - 1] += 1
+    feedback_stats = {
+        'answered': fb_answered,
+        'pending': fb_pending,
+        'avg': fb_avg,
+        'dist': fb_dist,
+    }
+
     total = {
         'users': len(rows),
         'online_now': online_now,
@@ -1257,4 +1404,6 @@ def admin_users_stats():
                            by_day=by_day, reg_map=reg_map, by_hour=by_hour,
                            top_xp=top_xp, top_problems=top_problems,
                            top_time=top_time, inactive=inactive,
-                           photo_items=photo_items)
+                           photo_items=photo_items,
+                           feedback_list=feedback_list,
+                           feedback_stats=feedback_stats)

@@ -4153,12 +4153,20 @@ def track_site_time():
         db.session.rollback()
         app.logger.warning(f"track_site_time failed: {_e_st}")
     # USERS_STATS_V2: heartbeat-статистика (presence, по дням, пик онлайна)
+    # + опрос «Как тебе сайт?» для тех, кто провёл >= 25 минут.
+    _fb_pending = False
     try:
-        from routes.admin_support import log_site_event
+        from routes.admin_support import (
+            log_site_event, maybe_ask_feedback, has_pending_feedback,
+        )
         log_site_event(current_user.id, 'heartbeat', seconds)
+        u2 = db.session.get(User, current_user.id)
+        _total_sec = (getattr(u2, 'site_seconds_total', 0) or 0) if u2 else 0
+        maybe_ask_feedback(current_user.id, _total_sec)
+        _fb_pending = has_pending_feedback(current_user.id)
     except Exception as _e_se:
         app.logger.warning(f"log_site_event heartbeat fail: {_e_se}")
-    return jsonify(ok=True)
+    return jsonify(ok=True, feedback_pending=_fb_pending)
 
 
 # USERS_STATS_V2: фиксируем каждый успешный вход (email, OAuth, TG, Lavrik) одним сигналом
