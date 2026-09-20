@@ -46,18 +46,46 @@
             {% for m in t.messages %}
                 {% set is_support = (m.sender == 'admin' or m.sender == 'support' or m.is_admin) %}
                 {% if is_support %}
-                    <div class="user-support-message user-support-message-support">
+                    <div class="user-support-message user-support-message-support" data-msg-id="{{ m.id }}">
                         <div class="user-support-message-meta">
                             Поддержка FORMYLA.net{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
                         </div>
-                        <div class="user-support-message-bubble">{{ m.text }}</div>
+                        {% if m.deleted %}
+                            <div class="user-support-message-bubble support-msg-deleted">Сообщение удалено</div>
+                        {% else %}
+                            <div class="user-support-message-bubble">{{ m.text }}
+                                {% if m.edited_at %}<span class="support-edited-tag">(изменено)</span>{% endif %}
+                            </div>
+                            {% if m.attachment_url %}
+                            <a class="support-msg-photo" href="{{ m.attachment_url }}" target="_blank" rel="noopener">
+                                <img src="{{ m.attachment_url }}" alt="{{ m.attachment_name or 'фото' }}" loading="lazy">
+                            </a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 {% else %}
-                    <div class="user-support-message user-support-message-me">
+                    <div class="user-support-message user-support-message-me" data-msg-id="{{ m.id }}">
                         <div class="user-support-message-meta">
                             {% if current_user.is_authenticated %}{{ current_user.display_name or current_user.nickname or 'Ты' }}{% else %}Ты{% endif %}{% if m.created_at %} · {{ (m.created_at.strftime('%d.%m %H:%M') if m.created_at.strftime is defined else m.created_at|string)[:16] }}{% endif %}
+                            {% if not m.deleted %}
+                            <span class="support-msg-actions">
+                                <button type="button" class="support-msg-action" data-action="edit" title="Изменить">изм.</button>
+                                <button type="button" class="support-msg-action" data-action="delete" title="Удалить">удалить</button>
+                            </span>
+                            {% endif %}
                         </div>
-                        <div class="user-support-message-bubble">{{ m.text }}</div>
+                        {% if m.deleted %}
+                            <div class="user-support-message-bubble support-msg-deleted">Сообщение удалено</div>
+                        {% else %}
+                            <div class="user-support-message-bubble">{{ m.text }}
+                                {% if m.edited_at %}<span class="support-edited-tag">(изменено)</span>{% endif %}
+                            </div>
+                            {% if m.attachment_url %}
+                            <a class="support-msg-photo" href="{{ m.attachment_url }}" target="_blank" rel="noopener">
+                                <img src="{{ m.attachment_url }}" alt="{{ m.attachment_name or 'фото' }}" loading="lazy">
+                            </a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 {% endif %}
             {% endfor %}
@@ -70,14 +98,17 @@
         <form method="POST"
               action="{{ url_for('admin_support.my_support_reply', msg_id=t.id) }}"
               class="support-composer"
+              enctype="multipart/form-data"
               data-role="user"
               data-label="{% if current_user.is_authenticated %}{{ current_user.display_name or current_user.nickname or 'Ты' }}{% else %}Ты{% endif %}">
             {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+            <button type="button" class="attach-btn" title="Прикрепить фото">+</button>
+            <input type="file" name="photo" accept="image/*" class="support-photo-input" hidden>
+            <span class="support-photo-chip" hidden></span>
             <textarea name="reply_text"
                       rows="1"
                       maxlength="5000"
-                      placeholder="Напиши сообщение… (Ctrl+Enter — отправить)"
-                      required></textarea>
+                      placeholder="Напиши сообщение… (Ctrl+Enter — отправить)"></textarea>
             <button type="submit" class="send-btn"> Отправить</button>
         </form>
     </div>

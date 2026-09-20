@@ -84,6 +84,40 @@ def ensure_support_replies_table():
                     ))
             except Exception:
                 db.session.rollback()
+
+        # ── CHAT_V2: фото + редактирование + удаление ───────────────
+        # Колонки support_replies: attachment_* + edited_at/deleted_at.
+        for _col, _type in (
+            ('attachment_url', 'VARCHAR(400) NULL' if is_pg else 'TEXT NULL'),
+            ('attachment_kind', 'VARCHAR(16) NULL' if is_pg else 'TEXT NULL'),
+            ('attachment_name', 'VARCHAR(255) NULL' if is_pg else 'TEXT NULL'),
+            ('attachment_size', 'INTEGER NULL'),
+            ('edited_at', 'TIMESTAMP NULL'),
+            ('deleted_at', 'TIMESTAMP NULL'),
+        ):
+            try:
+                db.session.execute(text(
+                    f"ALTER TABLE support_replies ADD COLUMN IF NOT EXISTS {_col} {_type}"
+                    if is_pg else f"ALTER TABLE support_replies ADD COLUMN {_col} {_type}"
+                ))
+            except Exception:
+                db.session.rollback()
+        # support_messages: edited_at/deleted_at + фото для исходного сообщения тикета.
+        for _tbl in ('support_messages',):
+            for _col, _type in (
+                ('edited_at', 'TIMESTAMP NULL'),
+                ('deleted_at', 'TIMESTAMP NULL'),
+                ('attachment_url', 'VARCHAR(400) NULL' if is_pg else 'TEXT NULL'),
+                ('attachment_kind', 'VARCHAR(16) NULL' if is_pg else 'TEXT NULL'),
+                ('attachment_name', 'VARCHAR(255) NULL' if is_pg else 'TEXT NULL'),
+            ):
+                try:
+                    db.session.execute(text(
+                        f"ALTER TABLE {_tbl} ADD COLUMN IF NOT EXISTS {_col} {_type}"
+                        if is_pg else f"ALTER TABLE {_tbl} ADD COLUMN {_col} {_type}"
+                    ))
+                except Exception:
+                    db.session.rollback()
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -94,25 +128,102 @@ def _is_admin():
     return getattr(current_user, 'is_admin', False) is True
 
 
+# ──────────────────────────────────────────────────────────────────
+# CHAT_V2 helpers: фото-вложения, редактирование, удаление
+# ──────────────────────────────────────────────────────────────────
+_SUPPORT_PHOTO_EXTS = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
+_SUPPORT_PHOTO_MAX = 10 * 1024 * 1024  # 10 МБ
+
+
+def _save_support_photo(fs):
+    """Сохранить загруженное фото в static/uploads/support/<uid>/.
+
+    Возвращает dict с url/kind/name/size или (None, error_string).
+    """
+    import os, uuid
+    err = None
+    if not fs or not (fs.filename or '').strip():
+        return None, 'Пустой файл'
+    original_name = os.path.basename(fs.filename)[:255]
+    ext = (original_name.rsplit('.', 1)[-1] if '.' in original_name else '').lower()
+    if ext not in _SUPPORT_PHOTO_EXTS:
+        return None, 'Разрешены только изображения (jpg/png/webp/gif)'
+    fs.stream.seek(0, os.SEEK_END)
+    size = fs.stream.tell()
+    fs.stream.seek(0)
+    if size <= 0:
+        return None, 'Файл пустой'
+    if size > _SUPPORT_PHOTO_MAX:
+        return None, 'Файл больше 10 МБ'
+    folder = os.path.join('static', 'uploads', 'support', str(current_user.id))
+    try:
+        os.makedirs(folder, exist_ok=True)
+    except Exception:
+        return None, 'Не удалось создать каталог'
+    name = uuid.uuid4().hex + '.' + ext
+    path = os.path.join(folder, name)
+    try:
+        fs.save(path)
+    except Exception as _se:
+        logger.warning('support photo save failed: %r', _se)
+        return None, 'Не удалось сохранить файл'
+    return {
+        'url': '/static/uploads/support/%d/%s' % (current_user.id, name),
+        'kind': 'image',
+        'name': original_name,
+        'size': size,
+    }, None
+
+
 def _build_messages(ticket_row, replies):
     """Собирает единый хронологический список сообщений тикета."""
+    orig_deleted = bool(ticket_row.get('deleted_at'))
     messages = [{
         'sender': 'user',
-        'text': ticket_row.get('message') or '',
+        'text': '' if orig_deleted else (ticket_row.get('message') or ''),
         'created_at': ticket_row.get('created_at'),
+        'edited_at': ticket_row.get('edited_at'),
+        'deleted': orig_deleted,
+        'attachment_url': ticket_row.get('attachment_url'),
+        'attachment_kind': ticket_row.get('attachment_kind'),
+        'attachment_name': ticket_row.get('attachment_name'),
         'id': f"orig-{ticket_row.get('id')}",
     }]
     for rp in replies:
         kind = (rp.get('sender_kind') or 'admin').lower()
         if kind not in ('admin', 'user'):
             kind = 'admin'
+        rp_deleted = bool(rp.get('deleted_at'))
         messages.append({
             'sender': kind,
-            'text': rp.get('reply_text') or '',
+            'text': '' if rp_deleted else (rp.get('reply_text') or ''),
             'created_at': rp.get('created_at'),
+            'edited_at': rp.get('edited_at'),
+            'deleted': rp_deleted,
+            'attachment_url': rp.get('attachment_url'),
+            'attachment_kind': rp.get('attachment_kind'),
+            'attachment_name': rp.get('attachment_name'),
             'id': f"rep-{rp.get('id')}",
         })
     return messages
+
+
+def _can_touch_message(msg_ref, row):
+    """Право на edit/delete: author или admin.
+
+    msg_ref: 'orig-<ticket_id>' или 'rep-<reply_id>'.
+    row: строка БД (dict) с колонками для проверки владения.
+    """
+    if _is_admin():
+        # Админ может править/удалять admin-ответы; сообщения юзера — нет.
+        if msg_ref.startswith('orig-'):
+            return False
+        return (row.get('sender_kind') or 'admin').lower() == 'admin'
+    # Юзер: своё исходное сообщение тикета (orig) или свой user-ответ.
+    uid = current_user.id
+    if msg_ref.startswith('orig-'):
+        return row.get('user_id') == uid
+    return (row.get('sender_kind') or 'admin').lower() == 'user' and row.get('ticket_user_id') == uid
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -127,7 +238,7 @@ def admin_support_inbox():
 
     rows = db.session.execute(text('''
         SELECT id, user_id, user_nickname, user_email, category, message,
-               page_url, created_at
+               page_url, created_at, edited_at, deleted_at
         FROM support_messages
         ORDER BY created_at DESC
         LIMIT 500
@@ -139,7 +250,9 @@ def admin_support_inbox():
         in_clause = ','.join(str(int(i)) for i in msg_ids)
         rep_rows = db.session.execute(text(f'''
             SELECT id, support_message_id, admin_user_id, reply_text,
-                   is_read_by_user, sender_kind, created_at
+                   is_read_by_user, sender_kind, created_at,
+                   edited_at, deleted_at,
+                   attachment_url, attachment_kind, attachment_name
             FROM support_replies
             WHERE support_message_id IN ({in_clause})
             ORDER BY created_at ASC
@@ -166,8 +279,18 @@ def admin_support_reply(msg_id):
     ensure_support_replies_table()
 
     reply_text = (request.form.get('reply_text') or '').strip()
-    if not reply_text:
-        flash('Введи текст ответа', 'error')
+
+    # CHAT_V2: необязательное фото-вложение
+    photo = request.files.get('photo')
+    photo_meta = None
+    if photo is not None:
+        photo_meta, photo_err = _save_support_photo(photo)
+        if photo_err:
+            flash(photo_err, 'error')
+            return redirect(url_for('admin_support.admin_support_inbox'))
+
+    if not reply_text and not photo_meta:
+        flash('Введи текст ответа или прикрепи фото', 'error')
         return redirect(url_for('admin_support.admin_support_inbox'))
     if len(reply_text) > 5000:
         flash('Ответ слишком длинный (макс 5000)', 'error')
@@ -181,10 +304,22 @@ def admin_support_reply(msg_id):
         flash('Сообщение не найдено', 'error')
         return redirect(url_for('admin_support.admin_support_inbox'))
 
-    db.session.execute(text('''
-        INSERT INTO support_replies (support_message_id, admin_user_id, reply_text, sender_kind)
-        VALUES (:smid, :aid, :txt, 'admin')
-    '''), {'smid': msg_id, 'aid': current_user.id, 'txt': reply_text})
+    if photo_meta:
+        db.session.execute(text('''
+            INSERT INTO support_replies
+                (support_message_id, admin_user_id, reply_text, sender_kind,
+                 attachment_url, attachment_kind, attachment_name, attachment_size)
+            VALUES (:smid, :aid, :txt, 'admin', :aurl, :akind, :aname, :asize)
+        '''), {
+            'smid': msg_id, 'aid': current_user.id, 'txt': reply_text,
+            'aurl': photo_meta['url'], 'akind': photo_meta['kind'],
+            'aname': photo_meta['name'], 'asize': photo_meta['size'],
+        })
+    else:
+        db.session.execute(text('''
+            INSERT INTO support_replies (support_message_id, admin_user_id, reply_text, sender_kind)
+            VALUES (:smid, :aid, :txt, 'admin')
+        '''), {'smid': msg_id, 'aid': current_user.id, 'txt': reply_text})
     db.session.commit()
 
     if src['user_email']:
@@ -431,12 +566,12 @@ def my_support_page():
     uid = current_user.id
 
     rows = db.session.execute(text('''
-        SELECT id, category, message, created_at
+        SELECT id, category, message, created_at, edited_at, deleted_at
         FROM support_messages
         WHERE user_id = :uid
         ORDER BY created_at ASC
         LIMIT 200
-    '''), {'uid': uid}).mappings().all()
+    '''), {'uid': uid}).mappings().all() 
 
     msg_ids = [r['id'] for r in rows]
     replies_by_msg = {}
@@ -444,7 +579,8 @@ def my_support_page():
         in_clause = ','.join(str(int(i)) for i in msg_ids)
         rep_rows = db.session.execute(text(f'''
             SELECT id, support_message_id, reply_text, created_at,
-                   is_read_by_user, sender_kind
+                   is_read_by_user, sender_kind, edited_at, deleted_at,
+                   attachment_url, attachment_kind, attachment_name
             FROM support_replies
             WHERE support_message_id IN ({in_clause})
             ORDER BY created_at ASC
@@ -488,8 +624,18 @@ def my_support_reply(msg_id):
     ensure_support_replies_table()
 
     reply_text = (request.form.get('reply_text') or '').strip()
-    if not reply_text:
-        flash('Введи текст сообщения', 'error')
+
+    # CHAT_V2: необязательное фото-вложение
+    photo = request.files.get('photo')
+    photo_meta = None
+    if photo is not None:
+        photo_meta, photo_err = _save_support_photo(photo)
+        if photo_err:
+            flash(photo_err, 'error')
+            return redirect(url_for('admin_support.my_support_page'))
+
+    if not reply_text and not photo_meta:
+        flash('Введи текст сообщения или прикрепи фото', 'error')
         return redirect(url_for('admin_support.my_support_page'))
     if len(reply_text) > 5000:
         flash('Сообщение слишком длинное (макс 5000)', 'error')
@@ -510,11 +656,26 @@ def my_support_reply(msg_id):
     try:
         is_pg = (current_app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower().startswith('postgresql')
         true_lit = True if is_pg else 1
-        db.session.execute(text('''
-            INSERT INTO support_replies
-                (support_message_id, admin_user_id, reply_text, sender_kind, is_read_by_user)
-            VALUES (:smid, NULL, :txt, 'user', :read)
-        '''), {'smid': msg_id, 'txt': reply_text, 'read': true_lit})
+        _params = {'smid': msg_id, 'txt': reply_text, 'read': true_lit}
+        if photo_meta:
+            _params.update({
+                'aurl': photo_meta['url'], 'akind': photo_meta['kind'],
+                'aname': photo_meta['name'], 'asize': photo_meta['size'],
+            })
+            db.session.execute(text('''
+                INSERT INTO support_replies
+                    (support_message_id, admin_user_id, reply_text, sender_kind,
+                     is_read_by_user, attachment_url, attachment_kind,
+                     attachment_name, attachment_size)
+                VALUES (:smid, NULL, :txt, 'user', :read,
+                        :aurl, :akind, :aname, :asize)
+            '''), _params)
+        else:
+            db.session.execute(text('''
+                INSERT INTO support_replies
+                    (support_message_id, admin_user_id, reply_text, sender_kind, is_read_by_user)
+                VALUES (:smid, NULL, :txt, 'user', :read)
+            '''), _params)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -572,7 +733,7 @@ def my_support_messages_api():
 
     try:
         ticket_rows = db.session.execute(text('''
-            SELECT id, category, message, created_at
+            SELECT id, category, message, created_at, edited_at, deleted_at
             FROM support_messages
             WHERE user_id = :uid
             ORDER BY created_at ASC
@@ -584,32 +745,47 @@ def my_support_messages_api():
         if msg_ids:
             in_clause = ','.join(str(int(i)) for i in msg_ids)
             rep_rows = db.session.execute(text(f'''
-                SELECT id, support_message_id, reply_text, created_at, sender_kind
+                SELECT id, support_message_id, reply_text, created_at, sender_kind,
+                       edited_at, deleted_at,
+                       attachment_url, attachment_kind, attachment_name
                 FROM support_replies
                 WHERE support_message_id IN ({in_clause})
                 ORDER BY created_at ASC
             ''')).mappings().all()
 
+        def _iso(ts):
+            return ts.isoformat() if hasattr(ts, 'isoformat') else (str(ts) if ts else '')
+
         all_msgs = []
         for m in ticket_rows:
-            ts = m['created_at']
+            deleted = bool(m.get('deleted_at'))
             all_msgs.append({
                 'id': f"orig-{m['id']}",
                 'from': 'user',
-                'text': m['message'] or '',
-                'created_at': ts.isoformat() if hasattr(ts, 'isoformat') else (str(ts) if ts else ''),
+                'text': '' if deleted else (m['message'] or ''),
+                'created_at': _iso(m['created_at']),
+                'edited_at': _iso(m.get('edited_at')),
+                'deleted': deleted,
+                'attachment_url': m.get('attachment_url'),
+                'attachment_kind': m.get('attachment_kind'),
+                'attachment_name': m.get('attachment_name'),
                 'ticket_id': m['id'],
             })
         for r in rep_rows:
             kind = (r['sender_kind'] or 'admin').lower()
             if kind not in ('admin', 'user'):
                 kind = 'admin'
-            ts = r['created_at']
+            deleted = bool(r.get('deleted_at'))
             all_msgs.append({
                 'id': f"rep-{r['id']}",
                 'from': kind,
-                'text': r['reply_text'] or '',
-                'created_at': ts.isoformat() if hasattr(ts, 'isoformat') else (str(ts) if ts else ''),
+                'text': '' if deleted else (r['reply_text'] or ''),
+                'created_at': _iso(r['created_at']),
+                'edited_at': _iso(r.get('edited_at')),
+                'deleted': deleted,
+                'attachment_url': r.get('attachment_url'),
+                'attachment_kind': r.get('attachment_kind'),
+                'attachment_name': r.get('attachment_name'),
                 'ticket_id': r['support_message_id'],
             })
 
@@ -636,6 +812,86 @@ def my_support_messages_api():
     except Exception as e:
         logger.warning('my_support_messages_api failed: %r', e)
         return jsonify({'success': False, 'messages': [], 'error': str(e)}), 500
+
+
+# ──────────────────────────────────────────────────────────────────
+# CHAT_V2: редактирование и удаление сообщений (обе стороны)
+# ──────────────────────────────────────────────────────────────────
+def _fetch_support_msg(msg_ref):
+    """Достать сообщение по ссылке вида 'orig-12' / 'rep-34'.
+
+    Возвращает (row_dict, table_name) или (None, None).
+    """
+    try:
+        prefix, _, sid = msg_ref.partition('-')
+        row_id = int(sid)
+    except (ValueError, AttributeError):
+        return None, None
+    if prefix == 'orig':
+        row = db.session.execute(text('''
+            SELECT id, user_id, message, deleted_at
+            FROM support_messages WHERE id = :i
+        '''), {'i': row_id}).mappings().first()
+        if row:
+            return dict(row), 'support_messages'
+    elif prefix == 'rep':
+        row = db.session.execute(text('''
+            SELECT sr.id, sr.support_message_id, sr.reply_text, sr.sender_kind,
+                   sr.deleted_at, sm.user_id AS ticket_user_id
+            FROM support_replies sr
+            JOIN support_messages sm ON sm.id = sr.support_message_id
+            WHERE sr.id = :i
+        '''), {'i': row_id}).mappings().first()
+        if row:
+            return dict(row), 'support_replies'
+    return None, None
+
+
+@admin_support_bp.route('/api/support/message/<msg_ref>/edit', methods=['POST'])
+@login_required
+def support_message_edit(msg_ref):
+    """Изменить текст своего сообщения. Отмечается как «изменено»."""
+    ensure_support_replies_table()
+    new_text = (request.form.get('text') or '').strip()
+    if not new_text or len(new_text) > 5000:
+        return jsonify({'error': 'текст 1-5000 символов'}), 400
+
+    row, table = _fetch_support_msg(msg_ref)
+    if not row:
+        return jsonify({'error': 'Сообщение не найдено'}), 404
+    if row.get('deleted_at'):
+        return jsonify({'error': 'Сообщение удалено'}), 400
+    if not _can_touch_message(msg_ref, row):
+        return jsonify({'error': 'Можно редактировать только свои сообщения'}), 403
+
+    col = 'message' if table == 'support_messages' else 'reply_text'
+    db.session.execute(text(f'''
+        UPDATE {table}
+        SET {col} = :txt, edited_at = CURRENT_TIMESTAMP
+        WHERE id = :i
+    '''), {'txt': new_text, 'i': row['id']})
+    db.session.commit()
+    return jsonify({'success': True, 'id': msg_ref, 'text': new_text, 'edited': True})
+
+
+@admin_support_bp.route('/api/support/message/<msg_ref>/delete', methods=['POST'])
+@login_required
+def support_message_delete(msg_ref):
+    """Удалить своё сообщение (мягкое удаление — показываем «сообщение удалено»)."""
+    ensure_support_replies_table()
+    row, table = _fetch_support_msg(msg_ref)
+    if not row:
+        return jsonify({'error': 'Сообщение не найдено'}), 404
+    if not _can_touch_message(msg_ref, row):
+        return jsonify({'error': 'Можно удалять только свои сообщения'}), 403
+
+    db.session.execute(text(f'''
+        UPDATE {table}
+        SET deleted_at = CURRENT_TIMESTAMP
+        WHERE id = :i
+    '''), {'i': row['id']})
+    db.session.commit()
+    return jsonify({'success': True, 'id': msg_ref, 'deleted': True})
 
 
 @admin_support_bp.route('/api/my/support/unread_count')

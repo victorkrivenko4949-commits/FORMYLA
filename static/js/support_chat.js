@@ -59,7 +59,7 @@
     /* ---------------- append bubble ---------------- */
     /**
      * @param {HTMLElement} chatEl the .support-chat or .user-support-chat
-     * @param {Object} opts {text, side, label}
+     * @param {Object} opts {text, side, label, photoUrl}
      *   side: 'left' | 'right'
      *   The CSS class scheme is chosen based on which chat container we are in.
      */
@@ -98,12 +98,144 @@
         wrap.appendChild(meta);
         wrap.appendChild(bubble);
 
+        if (opts.photoUrl) {
+            var link = document.createElement('a');
+            link.className = 'support-msg-photo';
+            link.href = opts.photoUrl;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            var img = document.createElement('img');
+            img.src = opts.photoUrl;
+            img.alt = 'фото';
+            link.appendChild(img);
+            wrap.appendChild(link);
+        }
+
         // remove "waiting" hint if present
         var hint = chatEl.querySelector('.support-waiting-hint');
         if (hint) hint.remove();
 
         chatEl.appendChild(wrap);
         scrollChatToBottom(chatEl);
+    }
+
+    /* ---------------- edit / delete ---------------- */
+    function msgApiUrl(ref, action) {
+        return '/api/support/message/' + encodeURIComponent(ref) + '/' + action;
+    }
+
+    function bindMsgActions(chatRoot) {
+        if (!chatRoot || chatRoot.__actionsBound) return;
+        chatRoot.__actionsBound = true;
+
+        chatRoot.addEventListener('click', function (ev) {
+            var btn = ev.target.closest('.support-msg-action');
+            if (!btn) return;
+            var wrap = btn.closest('[data-msg-id]');
+            if (!wrap) return;
+            var ref = wrap.getAttribute('data-msg-id');
+            var action = btn.getAttribute('data-action');
+            var bubble = wrap.querySelector('.user-support-message-bubble, .support-message-bubble');
+            if (!bubble || bubble.classList.contains('support-msg-deleted')) return;
+
+            if (action === 'delete') {
+                if (!window.confirm('Удалить сообщение?')) return;
+                fetch(msgApiUrl(ref, 'delete'), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(function (resp) {
+                    if (resp.ok) {
+                        bubble.textContent = 'Сообщение удалено';
+                        bubble.classList.add('support-msg-deleted');
+                        var actions = wrap.querySelector('.support-msg-actions');
+                        if (actions) actions.remove();
+                        var photo = wrap.querySelector('.support-msg-photo');
+                        if (photo) photo.remove();
+                        showToast('Сообщение удалено', 'success');
+                    } else {
+                        showToast('Не удалось удалить (HTTP ' + resp.status + ')', 'error');
+                    }
+                }).catch(function () {
+                    showToast('Ошибка сети', 'error');
+                });
+                return;
+            }
+
+            if (action === 'edit') {
+                var currentText = '';
+                Array.prototype.forEach.call(bubble.childNodes, function (n) {
+                    if (n.nodeType === Node.TEXT_NODE) currentText += n.textContent;
+                });
+                currentText = currentText.trim();
+                var next = window.prompt('Изменить сообщение:', currentText);
+                if (next === null) return;
+                next = next.trim();
+                if (!next || next.length > 5000) {
+                    showToast('Текст 1-5000 символов', 'error');
+                    return;
+                }
+                if (next === currentText) return;
+                var fd = new FormData();
+                fd.append('text', next);
+                fetch(msgApiUrl(ref, 'edit'), {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(function (resp) {
+                    if (resp.ok) {
+                        bubble.textContent = next;
+                        var tag = document.createElement('span');
+                        tag.className = 'support-edited-tag';
+                        tag.textContent = '(изменено)';
+                        bubble.appendChild(tag);
+                        showToast('Сообщение изменено', 'success');
+                    } else {
+                        showToast('Не удалось изменить (HTTP ' + resp.status + ')', 'error');
+                    }
+                }).catch(function () {
+                    showToast('Ошибка сети', 'error');
+                });
+            }
+        });
+    }
+
+    /* ---------------- photo attach ---------------- */
+    function bindPhotoAttach(form) {
+        var btn = form.querySelector('.attach-btn');
+        var input = form.querySelector('.support-photo-input');
+        var chip = form.querySelector('.support-photo-chip');
+        if (!btn || !input) return;
+
+        btn.addEventListener('click', function () { input.click(); });
+        input.addEventListener('change', function () {
+            var f = input.files && input.files[0];
+            if (!f) { if (chip) { chip.hidden = true; chip.textContent = ''; } return; }
+            if (!f.type || !f.type.startsWith('image/')) {
+                showToast('Разрешены только изображения', 'error');
+                input.value = '';
+                if (chip) { chip.hidden = true; chip.textContent = ''; }
+                return;
+            }
+            if (f.size > 10 * 1024 * 1024) {
+                showToast('Фото больше 10 МБ', 'error');
+                input.value = '';
+                if (chip) { chip.hidden = true; chip.textContent = ''; }
+                return;
+            }
+            if (chip) {
+                chip.textContent = '\u{1F4CE} ' + f.name;
+                chip.hidden = false;
+                chip.title = 'Нажми, чтобы убрать фото';
+                chip.onclick = function () {
+                    input.value = '';
+                    chip.hidden = true;
+                    chip.textContent = '';
+                };
+            }
+            showToast('Фото прикреплено', 'success');
+        });
     }
 
     /* ---------------- form submission ---------------- */
@@ -124,9 +256,12 @@
 
             var textarea = form.querySelector('textarea, input[name="reply_text"]');
             var btn = form.querySelector('button[type="submit"], .send-btn');
+            var photoInput = form.querySelector('.support-photo-input');
+            var chip = form.querySelector('.support-photo-chip');
+            var photoFile = (photoInput && photoInput.files && photoInput.files[0]) || null;
             var raw = (textarea && textarea.value || '').trim();
-            if (!raw) {
-                showToast('Введите текст сообщения', 'error');
+            if (!raw && !photoFile) {
+                showToast('Введите текст сообщения или прикрепите фото', 'error');
                 if (textarea) textarea.focus();
                 return;
             }
@@ -135,12 +270,16 @@
                 return;
             }
 
-            // Optimistic UI
+            // Optimistic UI (для фото — временный локальный превью URL)
             var side = (role === 'admin') ? 'right' : 'right';
             // Note: in admin chat, admin replies -> RIGHT.
             //       In user chat,  user replies  -> RIGHT.
             // So "right" is always correct for the sender's own bubble.
-            appendBubble(chatEl, { text: raw, side: side, label: label });
+            var localPhotoUrl = null;
+            if (photoFile) {
+                try { localPhotoUrl = URL.createObjectURL(photoFile); } catch (e) {}
+            }
+            appendBubble(chatEl, { text: raw, side: side, label: label, photoUrl: localPhotoUrl });
 
             if (btn) { btn.disabled = true; btn.dataset._oldText = btn.textContent; btn.textContent = 'Отправка…'; }
 
@@ -155,6 +294,8 @@
                 // we treat any 2xx/3xx as success since we already updated UI.
                 if (resp.ok || (resp.status >= 300 && resp.status < 400)) {
                     if (textarea) textarea.value = '';
+                    if (photoInput) photoInput.value = '';
+                    if (chip) { chip.hidden = true; chip.textContent = ''; }
                     showToast('Сообщение отправлено', 'success');
                 } else {
                     showToast('Не удалось отправить (HTTP ' + resp.status + ')', 'error');
@@ -190,7 +331,11 @@
 
     /* ---------------- init ---------------- */
     function init() {
-        document.querySelectorAll('form.support-composer').forEach(bindForm);
+        document.querySelectorAll('form.support-composer').forEach(function (form) {
+            bindForm(form);
+            bindPhotoAttach(form);
+        });
+        document.querySelectorAll('.support-chat, .user-support-chat').forEach(bindMsgActions);
         scrollAllChatsToBottom();
     }
 

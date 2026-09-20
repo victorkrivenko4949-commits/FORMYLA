@@ -1338,7 +1338,44 @@
 
   // Рендер одного сообщения из истории/polling (от user или admin)
   function renderHistoryMessage(m) {
-    if (!m || !m.id || renderedIds.has(m.id)) return;
+    if (!m || !m.id) return;
+    const existing = messagesEl.querySelector('.contact-chat__msg[data-msg-id="' + m.id + '"]');
+
+    // CHAT_V2: уже отрисованные сообщения — обновляем (edit/delete) при polling
+    if (existing) {
+      const body = existing.querySelector('.contact-chat__body');
+      if (!body) return;
+      if (m.deleted) {
+        body.innerHTML = '<span style="opacity:.55;font-style:italic">Сообщение удалено</span>';
+        const photo = existing.querySelector('.contact-chat__photo');
+        if (photo) photo.remove();
+        const act = existing.querySelector('.contact-chat__msg-actions');
+        if (act) act.remove();
+        return;
+      }
+      let html = escapeHtml(m.text || '').replace(/\n/g, '<br>');
+      if (m.edited_at) html += ' <span style="font-size:11px;opacity:.55">(изменено)</span>';
+      if (body.__lastHtml !== html) {
+        body.innerHTML = html;
+        body.__lastHtml = html;
+      }
+      // фото могло появиться позже (например, optimistic без URL) — дорисуем
+      if (m.attachment_url && !existing.querySelector('.contact-chat__photo')) {
+        const a = document.createElement('a');
+        a.href = m.attachment_url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.className = 'contact-chat__photo';
+        a.style.cssText = 'display:block;margin-top:6px;';
+        const img = document.createElement('img');
+        img.src = m.attachment_url;
+        img.style.cssText = 'max-width:220px;border-radius:8px;display:block;';
+        a.appendChild(img);
+        existing.appendChild(a);
+      }
+      return;
+    }
+
     renderedIds.add(m.id);
     // ВАЖНО: чтобы не было дублей с локальным optimistic-рендером (когда юзер
     // только что отправил), при появлении server-side версии его сообщения
@@ -1370,8 +1407,31 @@
       div.appendChild(senderEl);
     }
     const body = document.createElement('div');
-    body.innerHTML = escapeHtml(m.text || '').replace(/\n/g, '<br>');
+    body.className = 'contact-chat__body';
+    if (m.deleted) {
+      body.innerHTML = '<span style="opacity:.55;font-style:italic">Сообщение удалено</span>';
+    } else {
+      let html = escapeHtml(m.text || '').replace(/\n/g, '<br>');
+      if (m.edited_at) html += ' <span style="font-size:11px;opacity:.55">(изменено)</span>';
+      body.innerHTML = html;
+      body.__lastHtml = html;
+    }
     div.appendChild(body);
+    // CHAT_V2: фото-вложение
+    if (!m.deleted && m.attachment_url) {
+      const a = document.createElement('a');
+      a.href = m.attachment_url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.className = 'contact-chat__photo';
+      a.style.cssText = 'display:block;margin-top:6px;';
+      const img = document.createElement('img');
+      img.src = m.attachment_url;
+      img.alt = escapeHtml(m.attachment_name || 'фото');
+      img.style.cssText = 'max-width:220px;border-radius:8px;display:block;';
+      a.appendChild(img);
+      div.appendChild(a);
+    }
     const ts = fmtTs(m.created_at);
     if (ts) {
       const tsEl = document.createElement('div');
@@ -1379,8 +1439,66 @@
       tsEl.textContent = ts;
       div.appendChild(tsEl);
     }
+    // CHAT_V2: изм./удалить для своих сообщений (только в истории, не у optimistic)
+    if (m.from === 'user' && !m.deleted) {
+      const act = document.createElement('div');
+      act.className = 'contact-chat__msg-actions';
+      act.style.cssText = 'font-size:11px;margin-top:3px;opacity:.7;text-align:right;';
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.textContent = 'изм.';
+      editBtn.style.cssText = 'background:none;border:none;color:inherit;cursor:pointer;font-size:11px;text-decoration:underline;padding:0 4px;';
+      editBtn.addEventListener('click', () => editSupportMsg(m.id, div));
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.textContent = 'удалить';
+      delBtn.style.cssText = 'background:none;border:none;color:inherit;cursor:pointer;font-size:11px;text-decoration:underline;padding:0 4px;';
+      delBtn.addEventListener('click', () => deleteSupportMsg(m.id, div));
+      act.appendChild(editBtn);
+      act.appendChild(delBtn);
+      div.appendChild(act);
+    }
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // CHAT_V2: редактирование и удаление своих сообщений в виджете
+  async function editSupportMsg(ref, msgDiv) {
+    const body = msgDiv.querySelector('.contact-chat__body');
+    if (!body) return;
+    const current = (body.textContent || '').replace(/\(изменено\)\s*$/, '').trim();
+    const next = window.prompt('Изменить сообщение:', current);
+    if (next === null) return;
+    const txt = next.trim();
+    if (!txt || txt.length > 5000) return;
+    try {
+      const fd = new FormData();
+      fd.append('text', txt);
+      const r = await fetch('/api/support/message/' + encodeURIComponent(ref) + '/edit', {
+        method: 'POST', body: fd, credentials: 'include',
+      });
+      if (r.ok) {
+        body.innerHTML = escapeHtml(txt).replace(/\n/g, '<br>')
+          + ' <span style="font-size:11px;opacity:.55">(изменено)</span>';
+      }
+    } catch (_) {}
+  }
+
+  async function deleteSupportMsg(ref, msgDiv) {
+    if (!window.confirm('Удалить сообщение?')) return;
+    try {
+      const r = await fetch('/api/support/message/' + encodeURIComponent(ref) + '/delete', {
+        method: 'POST', credentials: 'include',
+      });
+      if (r.ok) {
+        const body = msgDiv.querySelector('.contact-chat__body');
+        if (body) body.innerHTML = '<span style="opacity:.55;font-style:italic">Сообщение удалено</span>';
+        const photo = msgDiv.querySelector('.contact-chat__photo');
+        if (photo) photo.remove();
+        const act = msgDiv.querySelector('.contact-chat__msg-actions');
+        if (act) act.remove();
+      }
+    } catch (_) {}
   }
 
   // Загружаем всю историю и помечаем "новый ответ от админа" если есть
