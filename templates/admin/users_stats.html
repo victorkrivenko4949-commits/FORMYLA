@@ -167,6 +167,29 @@
     </div>
   </div>
 
+  <div class="us-sec">Фото решений задач дня</div>
+  <div class="us-box">
+    {% if photo_items %}
+    <div class="photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
+      {% for p in photo_items %}
+      <div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;">
+        <a href="{{ p.url }}" target="_blank">
+          <img src="{{ p.url }}" loading="lazy" style="width:100%;height:120px;object-fit:cover;display:block;" alt="фото решения">
+        </a>
+        <div style="padding:6px 8px;font-size:12px;">
+          <div><strong>{{ p.nickname }}</strong> {{ p.when }}</div>
+          {% if p.correct is not none %}
+          <div style="color:{{ '#34d399' if p.correct else '#f87171' }};">{{ '✓ Верно' if p.correct else '✗ Неверно' }}</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="color:var(--muted);font-size:13px;">Пока фото-решений нет — станут доступны после первого решённого задачи дня с фото после деплоя этого обновления.</div>
+    {% endif %}
+  </div>
+
   <div class="us-sec">Все пользователи</div>
   <div class="us-table-wrap">
     <table class="us-table">

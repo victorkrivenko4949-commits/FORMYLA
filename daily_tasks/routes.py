@@ -95,6 +95,28 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def _save_solution_photos(user_id: int, images_b64: list) -> list:
+    """USERS_STATS_V2: сохраняет фото решений в хранилище и возвращает список URL.
+    Никогда не бросает — при любой ошибке возвращает то, что успело сохраниться."""
+    urls = []
+    if not images_b64:
+        return urls
+    try:
+        import base64
+        from services.storage import upload_photo, StorageError
+        for b in images_b64[:3]:
+            try:
+                photo_bytes = base64.b64decode(b)
+                url, _ = upload_photo(photo_bytes, user_id, 'image/jpeg')
+                if url:
+                    urls.append(url)
+            except Exception as e:
+                logger.warning('_save_solution_photos: image failed: %s', e)
+    except Exception as e:
+        logger.warning('_save_solution_photos: storage unavailable: %s', e)
+    return urls
+
+
 def _submit_bank_answer(task_id: int, issue):
     """AI-проверка и сохранение ответа на задачу из банка (DailyTaskBank).
 
@@ -212,6 +234,12 @@ def _submit_bank_answer(task_id: int, issue):
         issue.is_correct = is_correct
         issue.answered_at = _dt.utcnow()
         issue.ai_feedback = (feedback or "")[:8000]
+        # USERS_STATS_V2: сохраняем фото решений, чтобы админ видел их
+        if images_b64:
+            _photo_urls = _save_solution_photos(current_user.id, images_b64)
+            if _photo_urls:
+                import json as _json_ph
+                issue.solution_photos_json = _json_ph.dumps(_photo_urls)
         try:
             issue.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
         except (TypeError, ValueError):
@@ -1342,6 +1370,12 @@ def submit_answer_ai(item_id: int):
         item.is_correct = is_correct
         item.answered_at = _dt.utcnow()
         item.ai_feedback = (feedback or "")[:8000]
+        # USERS_STATS_V2: сохраняем фото решений, чтобы админ видел их
+        if images_b64:
+            _photo_urls = _save_solution_photos(current_user.id, images_b64)
+            if _photo_urls:
+                import json as _json_ph
+                item.solution_photos_json = _json_ph.dumps(_photo_urls)
         try:
             item.time_spent_seconds = int(data.get("time_spent_seconds") or 0)
         except (TypeError, ValueError):

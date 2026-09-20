@@ -1177,6 +1177,66 @@ def admin_users_stats():
                 or datetime.strptime(r['last_login'], '%d.%m.%Y %H:%M') < week_ago]
     inactive = sorted(inactive, key=lambda r: r['xp'], reverse=True)[:10]
 
+    # USERS_STATS_V2: последние фото-решения по каждому пользователю
+    photo_items = []  # каждый: {nickname, when, url, kind, correct}
+    if is_pg:
+        ph_rows = db.session.execute(text('''
+            SELECT bi.user_id, bi.answered_at, bi.solution_photos_json,
+                   bi.is_correct, u.nickname, 'bank' AS kind
+            FROM bank_issues bi JOIN users u ON u.id = bi.user_id
+            WHERE bi.solution_photos_json IS NOT NULL AND bi.answered_at IS NOT NULL
+            UNION ALL
+            SELECT ds.user_id, dti.answered_at, dti.solution_photos_json,
+                   dti.is_correct, u.nickname, 'set' AS kind
+            FROM daily_task_items dti
+            JOIN daily_task_sets ds ON ds.id = dti.daily_set_id
+            JOIN users u ON u.id = ds.user_id
+            WHERE dti.solution_photos_json IS NOT NULL AND dti.answered_at IS NOT NULL
+            UNION ALL
+            SELECT sa.user_id, sa.created_at, sa.file_path,
+                   NULL, u.nickname, 'attempt' AS kind
+            FROM solution_attempts sa JOIN users u ON u.id = sa.user_id
+            WHERE sa.attempt_type = 'daily' AND sa.file_path IS NOT NULL
+        ''')).fetchall()
+    else:
+        ph_rows = db.session.execute(text('''
+            SELECT bi.user_id, bi.answered_at, bi.solution_photos_json,
+                   bi.is_correct, u.nickname, 'bank' AS kind
+            FROM bank_issues bi JOIN users u ON u.id = bi.user_id
+            WHERE bi.solution_photos_json IS NOT NULL AND bi.answered_at IS NOT NULL
+            UNION ALL
+            SELECT ds.user_id, dti.answered_at, dti.solution_photos_json,
+                   dti.is_correct, u.nickname, 'set' AS kind
+            FROM daily_task_items dti
+            JOIN daily_task_sets ds ON ds.id = dti.daily_set_id
+            JOIN users u ON u.id = ds.user_id
+            WHERE dti.solution_photos_json IS NOT NULL AND dti.answered_at IS NOT NULL
+            UNION ALL
+            SELECT sa.user_id, sa.created_at, sa.file_path,
+                   NULL, u.nickname, 'attempt' AS kind
+            FROM solution_attempts sa JOIN users u ON u.id = sa.user_id
+            WHERE sa.attempt_type = 'daily' AND sa.file_path IS NOT NULL
+        ''')).fetchall()
+    import json as _json
+    for uid, when, photos_json, correct, nickname, kind in ph_rows:
+        if kind == 'attempt':
+            urls = [photos_json]
+        else:
+            try:
+                urls = _json.loads(photos_json) or []
+            except Exception:
+                urls = []
+        for url in urls:
+            photo_items.append({
+                'user_id': uid,
+                'nickname': nickname or '—',
+                'when': when.strftime('%d.%m %H:%M') if when else '—',
+                'url': url,
+                'correct': correct,
+            })
+    photo_items.sort(key=lambda x: x['when'], reverse=True)
+    photo_items = photo_items[:60]
+
     total = {
         'users': len(rows),
         'online_now': online_now,
@@ -1191,8 +1251,10 @@ def admin_users_stats():
         'peak_ever': peak_ever,
         'solved_today': solved_today,
         'solved_week': solved_week,
+        'photos_total': len(photo_items),
     }
     return render_template('admin/users_stats.html', rows=rows, total=total,
                            by_day=by_day, reg_map=reg_map, by_hour=by_hour,
                            top_xp=top_xp, top_problems=top_problems,
-                           top_time=top_time, inactive=inactive)
+                           top_time=top_time, inactive=inactive,
+                           photo_items=photo_items)

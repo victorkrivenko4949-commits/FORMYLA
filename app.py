@@ -535,10 +535,12 @@ try:
             ('bank_issues', (
                 ('ai_feedback', 'TEXT'),
                 ('xp_awarded', "BOOLEAN DEFAULT FALSE NOT NULL"),
+                ('solution_photos_json', 'TEXT'),
             )),
             ('daily_task_items', (
                 ('ai_feedback', 'TEXT'),
                 ('xp_awarded', "BOOLEAN DEFAULT FALSE NOT NULL"),
+                ('solution_photos_json', 'TEXT'),
             )),
         ):
             if _tbl not in _insp.get_table_names():
