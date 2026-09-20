@@ -1,9 +1,9 @@
 {# USERS_STATS_V2: обязательный опрос «Как тебе сайт?» для пользователей,
    которые провели на сайте 25+ минут. Закрывать нельзя — только ответить. #}
-<div id="ft-feedback-overlay" style="display:none;position:fixed;inset:0;z-index:4000;
+<div id="ft-feedback-overlay" style="display:none;position:fixed;inset:0;z-index:40000;
      background:rgba(5,8,18,0.78);backdrop-filter:blur(4px);
      align-items:center;justify-content:center;padding:16px;">
-  <div style="background:var(--card, #141a2e);border:1px solid rgba(244,185,66,0.45);
+  <div id="ft-feedback-card" style="background:var(--card, #141a2e);border:1px solid rgba(244,185,66,0.45);
               border-radius:16px;max-width:440px;width:100%;padding:26px 24px;
               box-shadow:0 18px 60px rgba(0,0,0,0.55);">
     <div style="font-size:20px;font-weight:800;margin-bottom:6px;">Как тебе сайт?</div>
@@ -11,19 +11,19 @@
       Ты уже провёл на FORMYLA больше 25 минут — значит, тебе есть что сказать.
       Это займёт полминуты и поможет сделать сайт лучше.
     </div>
-    <div id="ft-fb-stars" style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
-      <button type="button" data-star="1" style="font-size:34px;background:none;border:none;cursor:pointer;color:#5c6478;padding:2px;">★</button>
-      <button type="button" data-star="2" style="font-size:34px;background:none;border:none;cursor:pointer;color:#5c6478;padding:2px;">★</button>
-      <button type="button" data-star="3" style="font-size:34px;background:none;border:none;cursor:pointer;color:#5c6478;padding:2px;">★</button>
-      <button type="button" data-star="4" style="font-size:34px;background:none;border:none;cursor:pointer;color:#5c6478;padding:2px;">★</button>
-      <button type="button" data-star="5" style="font-size:34px;background:none;border:none;cursor:pointer;color:#5c6478;padding:2px;">★</button>
+    <div id="ft-fb-stars" style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;">
+      <button type="button" class="ft-fb-star" data-star="1" onclick="ftFbPick(1,event)">★</button>
+      <button type="button" class="ft-fb-star" data-star="2" onclick="ftFbPick(2,event)">★</button>
+      <button type="button" class="ft-fb-star" data-star="3" onclick="ftFbPick(3,event)">★</button>
+      <button type="button" class="ft-fb-star" data-star="4" onclick="ftFbPick(4,event)">★</button>
+      <button type="button" class="ft-fb-star" data-star="5" onclick="ftFbPick(5,event)">★</button>
     </div>
     <textarea id="ft-fb-text" rows="3" maxlength="2000"
       placeholder="Пара слов: что понравилось, что бесит? (необязательно)"
       style="width:100%;box-sizing:border-box;border-radius:10px;padding:10px 12px;font-size:14px;
              background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
              color:inherit;resize:vertical;"></textarea>
-    <button id="ft-fb-submit" type="button"
+    <button id="ft-fb-submit" type="button" onclick="ftFbSubmit(event)"
       style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:10px;
              font-size:15px;font-weight:700;cursor:pointer;
              background:linear-gradient(135deg,#F4B942,#e09a1f);color:#1a1205;">
@@ -34,84 +34,93 @@
     </div>
   </div>
 </div>
+<style>
+  .ft-fb-star {
+    font-size: 40px; background: none; border: none; cursor: pointer;
+    color: #5c6478; padding: 4px 6px; line-height: 1;
+    transition: transform 0.12s ease, color 0.12s ease;
+    pointer-events: auto;
+  }
+  .ft-fb-star:hover { transform: scale(1.25); color: #F4B942; }
+  .ft-fb-star.on { color: #F4B942; }
+</style>
 <script>
-(function () {
-  var overlay = document.getElementById('ft-feedback-overlay');
-  var stars = document.querySelectorAll('#ft-fb-stars button');
-  var submitBtn = document.getElementById('ft-fb-submit');
-  var hint = document.getElementById('ft-fb-hint');
-  var textEl = document.getElementById('ft-fb-text');
-  var chosen = 0;
-  var shown = false;
-  var sending = false;
+var ftFb = { chosen: 0, shown: false, sending: false };
 
+window.ftFbPick = function (n, ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  ftFb.chosen = n;
+  var stars = document.querySelectorAll('#ft-fb-stars .ft-fb-star');
+  for (var i = 0; i < stars.length; i++) {
+    var s = parseInt(stars[i].getAttribute('data-star'), 10);
+    if (s <= n) { stars[i].classList.add('on'); } else { stars[i].classList.remove('on'); }
+  }
+  var hint = document.getElementById('ft-fb-hint');
+  if (hint) hint.style.display = 'none';
+};
+
+window.ftFbShow = function () {
+  if (ftFb.shown) return;
+  ftFb.shown = true;
+  var o = document.getElementById('ft-feedback-overlay');
+  o.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+};
+
+window.ftFbHide = function () {
+  ftFb.shown = false;
+  document.getElementById('ft-feedback-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+};
+
+window.ftFbSubmit = function (ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  if (ftFb.sending) return;
+  var hint = document.getElementById('ft-fb-hint');
+  if (ftFb.chosen < 1) { hint.style.display = 'block'; return; }
+  ftFb.sending = true;
+  var btn = document.getElementById('ft-fb-submit');
+  btn.textContent = 'Отправляю...';
+  fetch('/api/feedback', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      rating: ftFb.chosen,
+      text: document.getElementById('ft-fb-text').value || ''
+    })
+  }).then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.ok) {
+        window.ftFbHide();
+      } else {
+        ftFb.sending = false;
+        btn.textContent = 'Отправить';
+      }
+    })
+    .catch(function () {
+      ftFb.sending = false;
+      btn.textContent = 'Отправить';
+    });
+};
+
+(function () {
   // «Нельзя закрыть»: ни крестика, ни ESC, ни клика по фону.
   document.addEventListener('keydown', function (e) {
-    if (shown && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); }
+    if (ftFb.shown && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); }
   }, true);
+  var overlay = document.getElementById('ft-feedback-overlay');
   overlay.addEventListener('click', function (e) { e.stopPropagation(); });
 
-  function paintStars(n) {
-    stars.forEach(function (b) {
-      b.style.color = parseInt(b.dataset.star, 10) <= n ? '#F4B942' : '#5c6478';
-    });
-  }
-  stars.forEach(function (b) {
-    b.addEventListener('click', function () {
-      chosen = parseInt(b.dataset.star, 10);
-      paintStars(chosen);
-      hint.style.display = 'none';
-    });
-  });
-
-  function show() {
-    if (shown) return;
-    shown = true;
-    overlay.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  }
-  function hide() {
-    shown = false;
-    overlay.style.display = 'none';
-    document.body.style.overflow = '';
-  }
-
-  window.__ftShowFeedback = show;
-
-  submitBtn.addEventListener('click', function () {
-    if (sending) return;
-    if (chosen < 1) { hint.style.display = 'block'; return; }
-    sending = true;
-    submitBtn.textContent = 'Отправляю...';
-    fetch('/api/feedback', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating: chosen, text: textEl.value || '' })
-    }).then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d && d.ok) {
-          hide();
-        } else {
-          sending = false;
-          submitBtn.textContent = 'Отправить';
-        }
-      })
-      .catch(function () {
-        sending = false;
-        submitBtn.textContent = 'Отправить';
-      });
-  });
-
-  // Проверяем раз в минуту — появится ли обязательный вопрос.
+  // Проверяем раз в минуту — появился ли обязательный вопрос.
   function check() {
-    if (shown) return;
+    if (ftFb.shown) return;
     fetch('/api/feedback/pending', { credentials: 'include' })
       .then(function (r) { return r.json(); })
-      .then(function (d) { if (d && d.pending) show(); })
+      .then(function (d) { if (d && d.pending) window.ftFbShow(); })
       .catch(function () { /* тихо */ });
   }
-  setTimeout(check, 30000);          // первая проверка через 30 сек на странице
+  setTimeout(check, 30000);
   setInterval(check, 60000);
 })();
 </script>
