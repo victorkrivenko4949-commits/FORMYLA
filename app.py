@@ -1396,6 +1396,27 @@ try:
             print("[AUTO-MIGRATION] [OK] Created support_messages table")
         else:
             print("[AUTO-MIGRATION] [OK] support_messages table already exists")
+
+        # CHAT_V2: фото-вложение + edited/deleted для исходных сообщений тикета
+        _is_pg_sm2 = _database_url.startswith('postgresql')
+        _sm_cols = [c['name'] for c in _inspector_sm.get_columns('support_messages')]
+        for _col, _type in (
+            ('edited_at', 'TIMESTAMP NULL'),
+            ('deleted_at', 'TIMESTAMP NULL'),
+            ('attachment_url', 'VARCHAR(400) NULL'),
+            ('attachment_kind', 'VARCHAR(16) NULL'),
+            ('attachment_name', 'VARCHAR(255) NULL'),
+        ):
+            if _col not in _sm_cols:
+                try:
+                    db.session.execute(_text_sm(
+                        f"ALTER TABLE support_messages ADD COLUMN {_col} {_type}"
+                    ))
+                    db.session.commit()
+                    print(f"[AUTO-MIGRATION] support_messages.{_col} added")
+                except Exception as _alter_err:
+                    db.session.rollback()
+                    print(f"[AUTO-MIGRATION] support_messages.{_col} skipped: {_alter_err}")
 except Exception as e:
     print(f"[AUTO-MIGRATION] support_messages Warning: {e}")
 
@@ -13211,7 +13232,10 @@ def submit_support():
                 new_id = 0
 
         # Подготовить вложения для email (имя, content_type, bytes)
+        # + CHAT_V2: сохранить первое изображение на диск, чтобы показать в чате.
         email_attachments = []
+        first_image_meta = None
+        import os as _os_att, uuid as _uuid_att
         for f, _size in valid_files:
             try:
                 f.stream.seek(0)
@@ -13221,9 +13245,43 @@ def submit_support():
                     f.content_type or 'application/octet-stream',
                     data_bytes,
                 ))
+                # Сохраняем первое изображение для отображения в чате.
+                if first_image_meta is None and new_id:
+                    _ext = (_os_att.path.splitext(f.filename or '')[1] or '').lstrip('.').lower()
+                    if _ext in ('jpg', 'jpeg', 'png', 'webp', 'gif') and isinstance(user_id, int):
+                        try:
+                            _folder = _os_att.join('static', 'uploads', 'support', str(user_id))
+                            _os_att.makedirs(_folder, exist_ok=True)
+                            _name = _uuid_att.uuid4().hex + '.' + _ext
+                            _path = _os_att.join(_folder, _name)
+                            with open(_path, 'wb') as _fh:
+                                _fh.write(data_bytes)
+                            first_image_meta = {
+                                'url': '/static/uploads/support/%d/%s' % (user_id, _name),
+                                'kind': 'image',
+                                'name': _os_att.path.basename(f.filename or '')[:255],
+                            }
+                        except Exception as _sv_err:
+                            import logging
+                            logging.warning(f'[support] image save failed: {_sv_err}')
             except Exception as _read_err:
                 import logging
                 logging.warning(f'[support] failed to read file {f.filename}: {_read_err}')
+
+        # CHAT_V2: привязать фото к исходному сообщению тикета
+        if first_image_meta and new_id:
+            try:
+                db.session.execute(_text_support(
+                    '''UPDATE support_messages
+                       SET attachment_url=:u, attachment_kind=:k, attachment_name=:n
+                       WHERE id=:id'''
+                ), {
+                    'u': first_image_meta['url'], 'k': first_image_meta['kind'],
+                    'n': first_image_meta['name'], 'id': new_id,
+                })
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
         # 2. Отправить email владельцу — ни при каких ошибках не падаем,
         # сообщение уже сохранено в БД, отправка письма — best-effort.

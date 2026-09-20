@@ -393,6 +393,86 @@
     border-color: rgba(125, 211, 252, 0.45);
 }
 
+/* -------------------- CHAT_V2: фото / изменено / удалено -------------------- */
+.support-msg-photo {
+    display: block;
+    margin-top: 6px;
+    max-width: 260px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(125, 211, 252, 0.25);
+}
+.support-msg-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.support-edited-tag {
+    font-size: 11px;
+    opacity: 0.55;
+    margin-left: 6px;
+    font-style: normal;
+}
+.support-msg-deleted {
+    opacity: 0.5;
+    font-style: italic;
+}
+.support-msg-actions {
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.support-message:hover .support-msg-actions,
+.user-support-message:hover .support-msg-actions,
+.support-msg-actions:focus-within {
+    opacity: 1;
+}
+.support-msg-action {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 11px;
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 2px 4px;
+    text-decoration: underline;
+}
+.support-msg-action:hover {
+    opacity: 1;
+    color: #7dd3fc;
+}
+.support-composer .attach-btn {
+    flex: 0 0 auto;
+    background: rgba(56, 189, 248, 0.10);
+    border: 1px solid rgba(125, 211, 252, 0.3);
+    color: #93c5fd;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 17px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    align-self: flex-end;
+}
+.support-composer .attach-btn:hover {
+    background: rgba(56, 189, 248, 0.20);
+}
+.support-photo-chip {
+    flex: 0 0 auto;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(129, 140, 248, 0.35);
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+    align-self: center;
+}
+
 /* -------------------- mobile -------------------- */
 @media (max-width: 720px) {
     .support-page-wrap { padding: 16px 12px 48px; }
