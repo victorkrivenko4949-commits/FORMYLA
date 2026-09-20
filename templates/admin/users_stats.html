@@ -5,16 +5,55 @@
   .us-wrap { max-width: 1180px; margin: 24px auto; padding: 0 16px; }
   .us-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
   .us-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
-  .us-summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .us-sec { font-size: 17px; font-weight: 700; margin: 26px 0 12px; }
+
+  .us-summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
   .us-card {
-    flex: 1 1 160px; min-width: 150px;
+    flex: 1 1 150px; min-width: 140px;
     background: var(--card, rgba(255,255,255,0.04));
     border: 1px solid var(--border, rgba(255,255,255,0.08));
     border-radius: 12px; padding: 14px 16px;
   }
   .us-card-num { font-size: 26px; font-weight: 800; }
+  .us-card-num.online { color: #34d399; }
   .us-card-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .us-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border, rgba(255,255,255,0.08)); }
+  .us-card-sub { font-size: 11px; color: var(--muted); margin-top: 4px; opacity: .75; }
+
+  .us-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            background: #34d399; margin-right: 5px; vertical-align: 1px; }
+
+  /* по дням */
+  .us-daychart { display: flex; gap: 4px; align-items: flex-end; height: 110px; margin: 6px 0 2px; }
+  .us-daybar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; min-width: 0; }
+  .us-daybar .bar {
+    background: linear-gradient(180deg, #38bdf8, #6366f1);
+    border-radius: 4px 4px 0 0; min-height: 2px;
+  }
+  .us-daybar.reg .bar { background: linear-gradient(180deg, #34d399, #059669); }
+  .us-daybar.peak .bar { background: linear-gradient(180deg, #fbbf24, #d97706); }
+  .us-daylabels { display: flex; gap: 4px; font-size: 10px; color: var(--muted); }
+  .us-daylabels span { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; }
+  .us-legend { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .us-legend b { color: inherit; font-weight: 600; }
+
+  /* почасовой */
+  .us-hourchart { display: flex; gap: 3px; align-items: flex-end; height: 80px; margin: 6px 0 2px; }
+  .us-hourchart .hbar { flex: 1; background: linear-gradient(180deg, #f472b6, #a855f7);
+                        border-radius: 3px 3px 0 0; min-height: 2px; }
+
+  .us-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .us-grid2 { grid-template-columns: 1fr; } }
+  .us-box {
+    background: var(--card, rgba(255,255,255,0.04));
+    border: 1px solid var(--border, rgba(255,255,255,0.08));
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .us-box h3 { font-size: 14px; margin: 0 0 10px; font-weight: 700; }
+  .us-mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .us-mini-table td { padding: 5px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .us-mini-table td:last-child { text-align: right; font-weight: 700; white-space: nowrap; }
+
+  .us-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border, rgba(255,255,255,0.08)); margin-top: 10px; }
   .us-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .us-table th {
     text-align: left; padding: 10px 12px;
@@ -36,15 +75,99 @@
 {% block content %}
 <div class="us-wrap">
   <h1 class="us-title">Статистика пользователей</h1>
-  <div class="us-subtitle">Полная таблица: входы, задачи, уровень, рейтинг (XP), время на сайте. Доступно только вам.</div>
+  <div class="us-subtitle">Онлайн, активность по дням, пики, топы. Обновляется с каждым heartbeat (~30 сек).</div>
 
+  <div class="us-sec">Прямо сейчас</div>
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num online"><span class="us-dot"></span>{{ total.online_now }}</div><div class="us-card-label">онлайн сейчас</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.peak_today }}</div><div class="us-card-label">макс онлайна сегодня</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.peak_yesterday }}</div><div class="us-card-label">макс онлайна вчера</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.peak_ever }}</div><div class="us-card-label">рекорд онлайна</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.dau }}</div><div class="us-card-label">активны сегодня (DAU)</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.wau }}</div><div class="us-card-label">за 7 дней (WAU)</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.mau }}</div><div class="us-card-label">за 30 дней (MAU)</div></div>
+  </div>
+
+  <div class="us-sec">Всего</div>
   <div class="us-summary">
     <div class="us-card"><div class="us-card-num">{{ total.users }}</div><div class="us-card-label">пользователей</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.logins }}</div><div class="us-card-label">входов за всё время</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.problems }}</div><div class="us-card-label">решено задач (всеми</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.solved_today }}</div><div class="us-card-label">решено сегодня</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.solved_week }}</div><div class="us-card-label">решено за 7 дней</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.problems }}</div><div class="us-card-label">решено всего</div></div>
     <div class="us-card"><div class="us-card-num">{{ (total.seconds / 3600) | round(1) }} ч</div><div class="us-card-label">на сайте провели</div></div>
   </div>
 
+  <div class="us-sec">Активность по дням (14 дней)</div>
+  <div class="us-box">
+    <div class="us-daychart">
+      {% for d in by_day %}
+      <div class="us-daybar" title="{{ d.day }}: {{ d.active }} польз., {{ d.logins }} входов, {{ d.hours }} ч">
+        <div class="bar" style="height: {{ (d.active * 100 / (by_day|map(attribute='active')|max if (by_day|map(attribute='active')|max) > 0 else 1)) | round(0, 'floor') }}%"></div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="us-daylabels">
+      {% for d in by_day %}<span>{{ d.day[8:] }}.{{ d.day[5:7] }}</span>{% endfor %}
+    </div>
+    <div class="us-legend"><b>Синие</b> — активные пользователи в день. Наведи на столбик: входы и часы.</div>
+  </div>
+
+  <div class="us-grid2" style="margin-top:16px">
+    <div class="us-box">
+      <h3>Регистрации по дням</h3>
+      <div class="us-daychart">
+        {% for d in by_day %}
+        {% set rc = reg_map.get(d.day, 0) %}
+        <div class="us-daybar reg" title="{{ d.day }}: {{ rc }} регистраций">
+          <div class="bar" style="height: {{ (rc * 100 / (reg_map.values()|list|max if (reg_map.values()|list|max) > 0 else 1)) | round(0, 'floor') }}%"></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="us-daylabels">
+        {% for d in by_day %}<span>{{ d.day[8:] }}.{{ d.day[5:7] }}</span>{% endfor %}
+      </div>
+    </div>
+    <div class="us-box">
+      <h3>Активность по часам (сегодня)</h3>
+      <div class="us-hourchart">
+        {% for h in by_hour %}
+        <div class="hbar" title="{{ loop.index0 }}:00 — {{ h }} польз." style="height: {{ (h * 100 / (by_hour|max if (by_hour|max) > 0 else 1)) | round(0, 'floor') }}%"></div>
+        {% endfor %}
+      </div>
+      <div class="us-legend">0–23 часа, уникальные пользователи в час</div>
+    </div>
+  </div>
+
+  <div class="us-sec">Топы</div>
+  <div class="us-grid2">
+    <div class="us-box">
+      <h3>Топ-5 по XP</h3>
+      <table class="us-mini-table">
+        {% for r in top_xp %}<tr><td>{{ r.nickname }}</td><td>{{ r.xp }} XP</td></tr>{% endfor %}
+      </table>
+    </div>
+    <div class="us-box">
+      <h3>Топ-5 по задачам</h3>
+      <table class="us-mini-table">
+        {% for r in top_problems %}<tr><td>{{ r.nickname }}</td><td>{{ r.problems }}</td></tr>{% endfor %}
+      </table>
+    </div>
+    <div class="us-box">
+      <h3>Топ-5 по времени на сайте</h3>
+      <table class="us-mini-table">
+        {% for r in top_time %}<tr><td>{{ r.nickname }}</td><td>{{ r.hours }} ч</td></tr>{% endfor %}
+      </table>
+    </div>
+    <div class="us-box">
+      <h3>Отвалившиеся (нет входа 7+ дней)</h3>
+      <table class="us-mini-table">
+        {% for r in inactive %}<tr><td>{{ r.nickname }}</td><td>{{ r.last_login }}</td></tr>{% else %}<tr><td colspan="2">Все активны</td></tr>{% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div class="us-sec">Все пользователи</div>
   <div class="us-table-wrap">
     <table class="us-table">
       <thead>
@@ -58,7 +181,7 @@
       {% for r in rows %}
         <tr>
           <td>{{ r.id }}</td>
-          <td><strong>{{ r.nickname }}</strong></td>
+          <td><strong>{% if r.online %}<span class="us-dot"></span>{% endif %}{{ r.nickname }}</strong></td>
           <td>{{ r.name }}</td>
           <td style="font-size:12px;word-break:break-all;">{{ r.email }}</td>
           <td style="white-space:nowrap;">{{ r.created_at }}</td>

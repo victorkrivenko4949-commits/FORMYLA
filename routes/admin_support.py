@@ -916,23 +916,147 @@ def my_support_unread_count():
 
 
 # ──────────────────────────────────────────────────────────────────
-# 3) ADMIN USERS STATS — большая таблица по каждому пользователю
+# 3) ADMIN USERS STATS V2 — богатая статистика пользователей
 #    (только для админов: Victor + Lavrik)
 # ──────────────────────────────────────────────────────────────────
+# USERS_STATS_V2: события сайта (входы / heartbeat) и дневной пик онлайна.
+def ensure_site_events_tables():
+    """Auto-migration: site_events + site_daily_peak. Безопасно вызывать часто."""
+    try:
+        uri = (current_app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower()
+        is_pg = uri.startswith('postgresql')
+        if is_pg:
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS site_events (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL,
+                    kind VARCHAR(16) NOT NULL,
+                    seconds INTEGER NOT NULL DEFAULT 0,
+                    ts TIMESTAMP NOT NULL DEFAULT NOW()
+                )
+            '''))
+            db.session.execute(text('''
+                CREATE INDEX IF NOT EXISTS idx_site_events_ts ON site_events(ts)
+            '''))
+            db.session.execute(text('''
+                CREATE INDEX IF NOT EXISTS idx_site_events_user_ts ON site_events(user_id, ts)
+            '''))
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS site_daily_peak (
+                    day DATE PRIMARY KEY,
+                    max_online INTEGER NOT NULL DEFAULT 0
+                )
+            '''))
+        else:
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS site_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    kind VARCHAR(16) NOT NULL,
+                    seconds INTEGER NOT NULL DEFAULT 0,
+                    ts DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            '''))
+            db.session.execute(text('''
+                CREATE INDEX IF NOT EXISTS idx_site_events_ts ON site_events(ts)
+            '''))
+            db.session.execute(text('''
+                CREATE TABLE IF NOT EXISTS site_daily_peak (
+                    day DATE PRIMARY KEY,
+                    max_online INTEGER NOT NULL DEFAULT 0
+                )
+            '''))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logger.warning('ensure_site_events_tables: %r', e)
+
+
+ONLINE_WINDOW_SEC = 300  # 5 минут — «онлайн»
+
+
+def log_site_event(user_id: int, kind: str, seconds: int = 0) -> None:
+    """Публичный помощник: фиксирует событие (login/heartbeat), бьёт presence,
+    обновляет дневной пик одновременных пользователей. Вызывать из heartbeat
+    и точек входа. Никогда не бросает исключений наружу."""
+    try:
+        ensure_site_events_tables()
+        db.session.execute(text('''
+            INSERT INTO site_events (user_id, kind, seconds, ts)
+            VALUES (:uid, :kind, :sec, CURRENT_TIMESTAMP)
+        '''), {'uid': user_id, 'kind': kind, 'sec': int(seconds)})
+        # presence
+        db.session.execute(text('''
+            UPDATE user_presence SET last_seen = CURRENT_TIMESTAMP WHERE user_id = :uid
+        '''), {'uid': user_id})
+        db.session.execute(text('''
+            INSERT INTO user_presence (user_id, last_seen)
+            SELECT :uid, CURRENT_TIMESTAMP
+            WHERE NOT EXISTS (SELECT 1 FROM user_presence WHERE user_id = :uid)
+        '''), {'uid': user_id})
+        # пик онлайна за сегодня
+        uri = (current_app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower()
+        is_pg = uri.startswith('postgresql')
+        if is_pg:
+            online_now = db.session.execute(text('''
+                SELECT COUNT(*) FROM user_presence
+                WHERE last_seen > NOW() - INTERVAL '5 minutes'
+            ''')).scalar() or 0
+            db.session.execute(text('''
+                INSERT INTO site_daily_peak (day, max_online)
+                VALUES (CURRENT_DATE, :n)
+                ON CONFLICT (day) DO UPDATE
+                SET max_online = GREATEST(site_daily_peak.max_online, EXCLUDED.max_online)
+            '''), {'n': online_now})
+        else:
+            online_now = db.session.execute(text('''
+                SELECT COUNT(*) FROM user_presence
+                WHERE last_seen > datetime('now', '-5 minutes')
+            ''')).scalar() or 0
+            db.session.execute(text('''
+                INSERT INTO site_daily_peak (day, max_online)
+                VALUES (date('now'), :n)
+                ON CONFLICT(day) DO UPDATE
+                SET max_online = MAX(max_online, excluded.max_online)
+            '''), {'n': online_now})
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logger.warning('log_site_event failed: %r', e)
+
+
 @admin_support_bp.route('/admin/users')
 @login_required
 def admin_users_stats():
-    """Сводная статистика: кто сколько раз зашёл, задач решил, уровень, рейтинг,
-    сколько секунд на сайте провёл."""
+    """USERS_STATS_V2: богатая статистика — онлайн, DAU/WAU/MAU, по дням,
+    пики одновременных, топы по активности/XP/задачам, почасовой график."""
     if not _is_admin():
         abort(403)
+    ensure_site_events_tables()
+
     from models import User
+    from datetime import datetime, timedelta
+
+    uri = (current_app.config.get('SQLALCHEMY_DATABASE_URI') or '').lower()
+    is_pg = uri.startswith('postgresql')
+    now = datetime.utcnow()
+    today = now.date()
+
     users = (User.query
              .filter(User.is_guest == False)
              .order_by(User.experience_points.desc())
              .all())
+
+    # presence: онлайн прямо сейчас (last_seen < 5 мин назад)
+    presence_rows = db.session.execute(text(
+        'SELECT user_id, last_seen FROM user_presence'
+    )).fetchall()
+    presence_map = {r[0]: r[1] for r in presence_rows}
+
     rows = []
     for u in users:
+        seen = presence_map.get(u.id)
+        online = bool(seen and (now - seen).total_seconds() < ONLINE_WINDOW_SEC)
         rows.append({
             'id': u.id,
             'nickname': u.nickname or '—',
@@ -947,11 +1071,128 @@ def admin_users_stats():
             'seconds': u.site_seconds_total or 0,
             'minutes': round((u.site_seconds_total or 0) / 60, 1),
             'hours': round((u.site_seconds_total or 0) / 3600, 2),
+            'online': online,
         })
+
+    online_now = sum(1 for r in rows if r['online'])
+
+    # ---------- по дням (14 дней) ----------
+    day_expr = "DATE(ts)" if is_pg else "DATE(ts)"
+    ev_rows = db.session.execute(text(f'''
+        SELECT {day_expr} AS day,
+               COUNT(DISTINCT user_id) AS active_users,
+               COUNT(DISTINCT CASE WHEN kind='login' THEN user_id END) AS login_users,
+               SUM(seconds) AS seconds_total,
+               COUNT(*) AS events
+        FROM site_events
+        WHERE ts >= :since
+        GROUP BY {day_expr}
+        ORDER BY day
+    '''), {'since': today - timedelta(days=13)}).fetchall()
+    by_day = []
+    for r in ev_rows:
+        by_day.append({
+            'day': str(r[0]),
+            'active': int(r[1] or 0),
+            'logins': int(r[2] or 0),
+            'hours': round((r[3] or 0) / 3600.0, 2),
+            'events': int(r[4] or 0),
+        })
+    # дополняем нулями дни без событий
+    day_map = {d['day']: d for d in by_day}
+    by_day = []
+    for i in range(13, -1, -1):
+        d = today - timedelta(days=i)
+        key = d.isoformat()
+        by_day.append(day_map.get(key, {'day': key, 'active': 0, 'logins': 0, 'hours': 0.0, 'events': 0}))
+
+    # регистрации по дням (новые пользователи) — users.created_at
+    reg_rows = db.session.execute(text('''
+        SELECT DATE(created_at) AS day, COUNT(*) AS cnt
+        FROM users
+        WHERE is_guest = FALSE AND created_at >= :since
+        GROUP BY DATE(created_at)
+        ORDER BY day
+    ''' if is_pg else '''
+        SELECT DATE(created_at) AS day, COUNT(*) AS cnt
+        FROM users
+        WHERE is_guest = 0 AND created_at >= :since
+        GROUP BY DATE(created_at)
+        ORDER BY day
+    '''), {'since': today - timedelta(days=13)}).fetchall()
+    reg_map = {str(r[0]): int(r[1]) for r in reg_rows}
+
+    # пик одновременных за сегодня / вчера / всё время
+    peak_rows = db.session.execute(text('SELECT day, max_online FROM site_daily_peak')).fetchall()
+    peak_map = {str(r[0]): int(r[1]) for r in peak_rows}
+    peak_today = peak_map.get(today.isoformat(), online_now)
+    peak_yesterday = peak_map.get((today - timedelta(days=1)).isoformat(), 0)
+    peak_ever = max(peak_map.values(), default=online_now)
+
+    # DAU / WAU / MAU
+    dau = db.session.execute(text('''
+        SELECT COUNT(DISTINCT user_id) FROM site_events WHERE ts >= :since
+    '''), {'since': today}).scalar() or 0
+    wau = db.session.execute(text('''
+        SELECT COUNT(DISTINCT user_id) FROM site_events WHERE ts >= :since
+    '''), {'since': today - timedelta(days=7)}).scalar() or 0
+    mau = db.session.execute(text('''
+        SELECT COUNT(DISTINCT user_id) FROM site_events WHERE ts >= :since
+    '''), {'since': today - timedelta(days=30)}).scalar() or 0
+
+    # задачи решённые за сегодня / 7 дней (daily_task_items answered_at)
+    solved_today = db.session.execute(text('''
+        SELECT COUNT(*) FROM daily_task_items
+        WHERE answered_at >= :since AND is_correct IS TRUE
+    ''' if is_pg else '''
+        SELECT COUNT(*) FROM daily_task_items
+        WHERE answered_at >= :since AND is_correct = 1
+    '''), {'since': today}).scalar() or 0
+    solved_week = db.session.execute(text('''
+        SELECT COUNT(*) FROM daily_task_items
+        WHERE answered_at >= :since AND is_correct IS TRUE
+    ''' if is_pg else '''
+        SELECT COUNT(*) FROM daily_task_items
+        WHERE answered_at >= :since AND is_correct = 1
+    '''), {'since': today - timedelta(days=7)}).scalar() or 0
+
+    # почасовое распределение за сегодня (heartbeat + login)
+    hour_expr = "EXTRACT(HOUR FROM ts)" if is_pg else "CAST(strftime('%H', ts) AS INTEGER)"
+    hour_rows = db.session.execute(text(f'''
+        SELECT {hour_expr} AS h, COUNT(DISTINCT user_id) AS u
+        FROM site_events WHERE ts >= :since GROUP BY {hour_expr} ORDER BY h
+    '''), {'since': today}).fetchall()
+    by_hour = [0] * 24
+    for h, cnt in hour_rows:
+        by_hour[int(h)] = int(cnt)
+
+    # топ по XP / задачам / времени
+    top_xp = sorted(rows, key=lambda r: r['xp'], reverse=True)[:5]
+    top_problems = sorted(rows, key=lambda r: r['problems'], reverse=True)[:5]
+    top_time = sorted(rows, key=lambda r: r['seconds'], reverse=True)[:5]
+
+    # отвалившиеся: последний вход > 7 дней назад или нет входа
+    week_ago = now - timedelta(days=7)
+    inactive = [r for r in rows if r['last_login'] == '—'
+                or datetime.strptime(r['last_login'], '%d.%m.%Y %H:%M') < week_ago]
+    inactive = sorted(inactive, key=lambda r: r['xp'], reverse=True)[:10]
+
     total = {
         'users': len(rows),
+        'online_now': online_now,
         'logins': sum(r['login_count'] for r in rows),
         'problems': sum(r['problems'] for r in rows),
         'seconds': sum(r['seconds'] for r in rows),
+        'dau': dau,
+        'wau': wau,
+        'mau': mau,
+        'peak_today': peak_today,
+        'peak_yesterday': peak_yesterday,
+        'peak_ever': peak_ever,
+        'solved_today': solved_today,
+        'solved_week': solved_week,
     }
-    return render_template('admin/users_stats.html', rows=rows, total=total)
+    return render_template('admin/users_stats.html', rows=rows, total=total,
+                           by_day=by_day, reg_map=reg_map, by_hour=by_hour,
+                           top_xp=top_xp, top_problems=top_problems,
+                           top_time=top_time, inactive=inactive)
