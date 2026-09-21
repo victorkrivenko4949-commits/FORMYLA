@@ -1155,10 +1155,20 @@ def admin_users_stats():
     )).fetchall()
     presence_map = {r[0]: r[1] for r in presence_rows}
 
+    # Реальный уровень сложности (1..4) из curator_state.level_mu,
+    # а не XP-уровень 1..10 из users.current_level.
+    cs_rows = db.session.execute(text('''
+        SELECT user_id, level_mu FROM curator_state WHERE level_mu IS NOT NULL
+    ''')).fetchall()
+    mu_map = {r[0]: float(r[1]) for r in cs_rows}
+
     rows = []
     for u in users:
         seen = presence_map.get(u.id)
         online = bool(seen and (now - seen).total_seconds() < ONLINE_WINDOW_SEC)
+        mu = mu_map.get(u.id)
+        # уровень сложности 1..4 — из mu; если профиля нет — 1
+        diff_level = max(1, min(4, int(round(mu)))) if mu is not None else 1
         rows.append({
             'id': u.id,
             'nickname': u.nickname or '—',
@@ -1168,8 +1178,9 @@ def admin_users_stats():
             'last_login': u.last_login.strftime('%d.%m.%Y %H:%M') if u.last_login else '—',
             'login_count': u.login_count or 0,
             'problems': u.total_problems_solved or 0,
-            'level': u.current_level or 1,
+            'level': diff_level,
             'xp': u.experience_points or 0,
+            'xp_level': u.current_level or 1,
             'seconds': u.site_seconds_total or 0,
             'minutes': round((u.site_seconds_total or 0) / 60, 1),
             'hours': round((u.site_seconds_total or 0) / 3600, 2),
