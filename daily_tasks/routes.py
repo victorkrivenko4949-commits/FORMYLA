@@ -1212,6 +1212,181 @@ def solve_task_preview(item_id: int):
     })
 
 
+@daily_tasks_bp.route("/<int:item_id>/analyze_techniques", methods=["POST"])
+@login_required
+def analyze_techniques(item_id: int):
+    """TECHNIQUES_V1: определяет, какие из 102 методов использованы в решении.
+
+    Принимает id задачи. Для AI-сгенерированных задач (DailyTaskItem) —
+    проверяет принадлежность пользователю. Для банковских (DailyTaskBank →
+    BankIssue) — тоже через принадлежность issue.
+
+    Отдает DeepSeek-flash условие + решение + список всех 102 методов
+    (только код и название — контент методов не отправляем).
+    Возвращает список подходящих методов с URL для перехода.
+    """
+    from services import atlas_methods
+
+    # ── Восстанавливаем условие + решение в зависимости от источника ──
+    task_text = ""
+    solution = ""
+    task_label = ""
+
+    # 1) Сгенерированная ежедневная задача
+    item = DailyTaskItem.query.get(item_id)
+    if item:
+        daily_set = DailyTaskSet.query.get(item.daily_set_id)
+        if not daily_set or daily_set.user_id != current_user.id:
+            return jsonify({
+                "status": "error",
+                "message": "Задача не принадлежит текущему пользователю",
+            }), 403
+        task_text = item.task_text or ""
+        solution = item.solution or ""
+        task_label = f"Задача #{item.position or '—'}"
+        source = "generated"
+    else:
+        # 2) Банковская задача: ищем по BankIssue (user → task)
+        from models import DailyTaskBank, BankIssue
+        issue = BankIssue.query.filter_by(
+            user_id=current_user.id, task_id=item_id,
+        ).first()
+        if not issue:
+            return jsonify({
+                "status": "error",
+                "message": "Задача не найдена или не принадлежит пользователю",
+            }), 404
+        bank_task = db.session.get(DailyTaskBank, item_id)
+        if not bank_task:
+            return jsonify({
+                "status": "error",
+                "message": "Задача не найдена в банке",
+            }), 404
+        task_text = getattr(bank_task, "statement", "") or ""
+        solution = getattr(bank_task, "solution", "") or ""
+        task_label = f"Банковская задача #{item_id}"
+        source = "bank"
+
+    if not solution.strip():
+        return jsonify({
+            "status": "error",
+            "message": "У задачи нет эталонного решения",
+        }), 400
+
+    if not _DEEPSEEK_AVAILABLE or DeepSeekClient is None:
+        return jsonify({
+            "status": "error",
+            "message": "AI-проверка временно недоступна",
+        }), 503
+
+    # ── Берём минимальный список методов: код + название + раздел 1 строкой ─
+    cache = atlas_methods._load_atlas()
+    all_methods = cache.get("methods", [])  # type: ignore[assignment]
+    if not all_methods:
+        return jsonify({
+            "status": "error",
+            "message": "Атлас методов недоступен",
+        }), 503
+
+    # Формат: "A1 — Прямые вычисления и арифметика\nA2 — Текстовые задачи (общее)\n..."
+    catalog_lines = []
+    for m in all_methods:
+        if isinstance(m, dict):
+            code = m.get("method_code", "")
+            name = m.get("method_name", "")
+            section = m.get("section", "")
+            if code and name:
+                catalog_lines.append(f"{code} ({section}) — {name}")
+    catalog = "\n".join(catalog_lines)
+
+    # Ограничиваем размеры, чтобы промпт помещался
+    MAX_PROMPT_CONDITION = 4000
+    MAX_PROMPT_SOLUTION = 6000
+    MAX_PROMPT_CATALOG = 8000  # 102 * ~60 символов каждая, но с запасом
+
+    task_text_trimmed = (task_text or "")[:MAX_PROMPT_CONDITION]
+    solution_trimmed = (solution or "")[:MAX_PROMPT_SOLUTION]
+    catalog_trimmed = catalog[:MAX_PROMPT_CATALOG]
+
+    prompt = f"""Ты — эксперт по олимпиадной математике. Твоя задача: определить, какие методы/приёмы из приведённого каталога использованы в решении задачи.
+
+## Каталог всех методов (102)
+{catalog_trimmed}
+
+## Условие задачи
+{task_text_trimmed}
+
+## Решение задачи
+{solution_trimmed}
+
+---
+
+Ответь строго в формате JSON (массив кодов методов):
+["A1", "C4"]
+
+Правила:
+- Указывай ТОЛЬКО те методы, которые реально использованы в приведённом решении.
+- Не додумывай и не добавляй смежные методы.
+- Если решение — чистая арифметика без специальных методов, верни пустой массив [].
+- Обычно используется 1-3 метода. Не больше 3.
+"""
+
+    # ── Вызов DeepSeek flash ──────────────────────────────────────────────
+    import json, re
+    client = DeepSeekClient()  # сам прочитает DEEPSEEK_API_KEY
+    try:
+        raw = client.generate(
+            prompt,
+            system_prompt="Ты — помощник, возвращающий только валидный JSON-массив. Никаких пояснений, только JSON.",
+            temperature=0.1,
+            max_tokens=200,
+        )
+    except Exception as e:
+        logger.exception("analyze_techniques: deepseek failed: %s", e)
+        return jsonify({
+            "status": "error",
+            "message": "AI временно недоступен",
+        }), 503
+
+    # ── Парсим ответ ──────────────────────────────────────────────────────
+    codes = []
+    parsed_ok = False
+    try:
+        # Иногда модель добавляет markdown-блоки — ищем только массив
+        m = re.search(r'\[.*?\]', raw, re.DOTALL)
+        if m:
+            codes = json.loads(m.group(0))
+            if isinstance(codes, list):
+                parsed_ok = True
+    except (json.JSONDecodeError, TypeError):
+        pass
+    if not parsed_ok:
+        # fallback: ищем коды вида A1, B12 в тексте
+        codes = re.findall(r'[A-Z][0-9]+[a-z]*', raw)
+        codes = list(dict.fromkeys(codes))  # dedupe, keep order
+
+    # ── Фильтруем по реальному каталогу, чтобы не было выдуманных кодов ──
+    methods_out = []
+    valid_codes = {m.get("method_code") for m in all_methods if isinstance(m, dict)}
+    for code in codes:
+        if isinstance(code, str) and code in valid_codes:
+            method_data = atlas_methods.get_method(code)
+            if method_data:
+                methods_out.append({
+                    "code": code,
+                    "name": method_data.get("method_name", ""),
+                    "section": method_data.get("section", ""),
+                    "url": f"/olympiads/methods/{code}",
+                })
+
+    return jsonify({
+        "status": "success",
+        "task_label": task_label,
+        "source": source,
+        "methods": methods_out,
+    })
+
+
 @daily_tasks_bp.route("/<int:item_id>/submit_ai", methods=["POST"])
 @login_required
 def submit_answer_ai(item_id: int):
