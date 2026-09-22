@@ -1491,13 +1491,17 @@
       // 2026-09-15: показываем сохранённый в БД ИИ-разбор, чтобы при
       // повторном открытии выглядело так же, как после ответа.
       if (_feedback) {
-        _ansHtml += '<div style="color:var(--text);line-height:1.5;margin-top:8px;white-space:pre-wrap;padding:10px 12px;background:rgba(76,125,255,0.05);border-left:3px solid rgba(76,125,255,0.35);border-radius:8px;">' + escapeHtmlPreserveLatex(_feedback) + '</div>';
+        _ansHtml += '<div style="margin-top:10px;">' +
+          '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#7BA7F0;margin-bottom:6px;">💬 Комментарий ИИ-тьютора</div>' +
+          '<div style="color:var(--text);line-height:1.6;white-space:pre-wrap;padding:12px;background:rgba(76,125,255,0.10);border-left:3px solid rgba(76,125,255,0.6);border-radius:8px;">' + escapeHtmlPreserveLatex(_feedback) + '</div></div>';
       }
       if (_sol) {
         // Чертёж прикрепляем к решению (если есть).
-        _ansHtml += '<div style="color:var(--text);line-height:1.5;margin-top:10px;white-space:pre-wrap;padding:12px;background:rgba(76,125,255,0.06);border:1px solid rgba(76,125,255,0.15);border-radius:10px;">' +
+        _ansHtml += '<div style="margin-top:14px;">' +
+          '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#3ECF8E;margin-bottom:6px;">📘 Правильное решение</div>' +
+          '<div style="color:var(--text);line-height:1.6;white-space:pre-wrap;padding:12px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);border-radius:10px;">' +
           (it.figure_url ? '<img src="' + escapeHtml(it.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
-          escapeHtmlPreserveLatex(_sol) + '</div>';
+          escapeHtmlPreserveLatex(_sol) + '</div></div>';
       }
       res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';font-weight:600;">' +
         (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>' + _ansHtml;
@@ -1590,12 +1594,16 @@
             html += '<div style="margin-bottom:6px;">Правильный ответ: <b>' + escapeHtmlPreserveLatex(a.correct_answer) + '</b></div>';
           }
           if (a.feedback) {
-            html += '<div style="color:var(--text);line-height:1.5;margin-top:6px;">' + escapeHtmlPreserveLatex(a.feedback) + '</div>';
+            html += '<div style="margin-top:10px;">' +
+              '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#7BA7F0;margin-bottom:6px;">💬 Комментарий ИИ-тьютора</div>' +
+              '<div style="color:var(--text);line-height:1.6;white-space:pre-wrap;padding:12px;background:rgba(76,125,255,0.10);border-left:3px solid rgba(76,125,255,0.6);border-radius:8px;">' + escapeHtmlPreserveLatex(a.feedback) + '</div></div>';
           }
           if (a.solution) {
-            html += '<div style="color:var(--muted);line-height:1.5;margin-top:8px;white-space:pre-wrap;">' +
+            html += '<div style="margin-top:14px;">' +
+              '<div style="font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:#3ECF8E;margin-bottom:6px;">📘 Правильное решение</div>' +
+              '<div style="color:var(--text);line-height:1.6;white-space:pre-wrap;padding:12px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);border-radius:10px;">' +
               (dtCurrentItem.figure_url ? '<img src="' + escapeHtml(dtCurrentItem.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
-              escapeHtmlPreserveLatex(a.solution) + '</div>';
+              escapeHtmlPreserveLatex(a.solution) + '</div></div>';
           }
           res.innerHTML = html;
           if (typeof renderMath === 'function') renderMath(res);
