@@ -1266,6 +1266,60 @@
     return s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
   }
 
+  // ── TECHNIQUES_V1: анализ техник решения ────────────────────────────
+  function dtAnalyzeTechniques(itemId) {
+    if (typeof itemId === 'undefined' || itemId === null) return;
+    var resultEl = document.getElementById('dt-techniques-result');
+    if (!resultEl) return;
+    var btn = event && event.target;
+    if (btn) { btn.disabled = true; btn.textContent = 'Определяю методы…'; }
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">Анализирую решение…</div>';
+    fetch('/daily_tasks/' + itemId + '/analyze_techniques', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: '{}'
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(a) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔬 Изучить техники решения'; }
+      if (a.status !== 'success') {
+        resultEl.innerHTML = '<div style="color:#E86A62;font-size:13.5px;padding:10px;background:rgba(232,106,98,0.10);border-left:3px solid rgba(232,106,98,0.4);border-radius:6px;">' +
+          escapeHtml(a.message || 'Не удалось определить техники') + '</div>';
+        return;
+      }
+      var methods = a.methods || [];
+      if (!methods.length) {
+        resultEl.innerHTML = '<div style="color:var(--muted);font-size:13.5px;padding:10px;background:rgba(148,163,184,0.08);border-left:3px solid rgba(148,163,184,0.3);border-radius:6px;">' +
+          'В этом решении не используются специальные олимпиадные методы — чистая арифметика и логика.' +
+          '</div>';
+        return;
+      }
+      var html = '<div style="margin-bottom:8px;font-size:13px;color:var(--text);font-weight:600;">' +
+        '🔧 В этом решении использованы методы:' +
+        '</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">';
+      for (var i = 0; i < methods.length; i++) {
+        var m = methods[i];
+        html += '<a href="' + escapeHtml(m.url) + '" target="_blank" rel="noopener" ' +
+          'style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:rgba(76,125,255,0.12);border:1px solid rgba(76,125,255,0.35);border-radius:999px;color:#7BA7F0;text-decoration:none;font-size:13px;font-weight:500;transition:all 0.15s;" ' +
+          'onmouseover="this.style.background=\'rgba(76,125,255,0.22)\'" onmouseout="this.style.background=\'rgba(76,125,255,0.12)\'">' +
+          '<span style="font-family:monospace;font-size:11px;background:rgba(76,125,255,0.25);padding:1px 5px;border-radius:4px;">' + escapeHtml(m.code) + '</span>' +
+          '<span>' + escapeHtml(m.name) + '</span>' +
+          '</a>';
+      }
+      html += '</div>';
+      html += '<div style="margin-top:10px;font-size:12px;color:var(--muted);">' +
+        'Нажми на метод, чтобы перейти к его описанию и примерам.</div>';
+      resultEl.innerHTML = html;
+    })
+    .catch(function(err) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔬 Изучить техники решения'; }
+      resultEl.innerHTML = '<div style="color:#E86A62;font-size:13.5px;padding:10px;background:rgba(232,106,98,0.10);border-left:3px solid rgba(232,106,98,0.4);border-radius:6px;">Не удалось загрузить. Попробуй позже.</div>';
+    });
+  }
+  window.dtAnalyzeTechniques = dtAnalyzeTechniques;
+
   function renderTasks() {
     var data = parseInitData(); if (!data) return;
     var grid = $('dt-task-grid'); if (!grid) return;
@@ -1502,6 +1556,11 @@
           '<div style="color:var(--text);line-height:1.6;white-space:pre-wrap;padding:12px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);border-radius:10px;">' +
           (it.figure_url ? '<img src="' + escapeHtml(it.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
           escapeHtmlPreserveLatex(_sol) + '</div></div>';
+        // TECHNIQUES_V1: кнопка «Изучить техники решения» — идентифицирует методы и ведёт на них.
+        _ansHtml += '<div style="margin-top:10px;text-align:center;">' +
+          '<button onclick="dtAnalyzeTechniques(' + it.id + ')" style="padding:9px 18px;background:rgba(229,172,58,0.14);border:1px solid rgba(229,172,58,0.35);border-radius:8px;color:#E5AC3A;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(229,172,58,0.25)\'" onmouseout="this.style.background=\'rgba(229,172,58,0.14)\'">🔬 Изучить техники решения</button>' +
+          '</div>' +
+          '<div id="dt-techniques-result" style="margin-top:10px;display:none;"></div>';
       }
       res.innerHTML = '<div style="color:' + (it.is_correct ? '#3ECF8E' : '#E86A62') + ';font-weight:600;">' +
         (it.is_correct ? '\u2713 Ранее решено верно' : '\u2717 Ранее отвечено неверно') + '</div>' + _ansHtml;
@@ -1604,6 +1663,11 @@
               '<div style="color:var(--text);line-height:1.6;white-space:pre-wrap;padding:12px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);border-radius:10px;">' +
               (dtCurrentItem.figure_url ? '<img src="' + escapeHtml(dtCurrentItem.figure_url) + '" alt="Чертёж" style="display:block;max-width:100%;max-height:300px;margin:0 auto 10px;border-radius:8px;background:#fff;padding:4px;box-sizing:border-box;">' : '') +
               escapeHtmlPreserveLatex(a.solution) + '</div></div>';
+            // TECHNIQUES_V1: кнопка «Изучить техники решения» — идентифицирует методы и ведёт на них.
+            html += '<div style="margin-top:10px;text-align:center;">' +
+              '<button onclick="dtAnalyzeTechniques(' + dtCurrentItem.id + ')" style="padding:9px 18px;background:rgba(229,172,58,0.14);border:1px solid rgba(229,172,58,0.35);border-radius:8px;color:#E5AC3A;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(229,172,58,0.25)\'" onmouseout="this.style.background=\'rgba(229,172,58,0.14)\'">🔬 Изучить техники решения</button>' +
+              '</div>' +
+              '<div id="dt-techniques-result" style="margin-top:10px;display:none;"></div>';
           }
           res.innerHTML = html;
           if (typeof renderMath === 'function') renderMath(res);
