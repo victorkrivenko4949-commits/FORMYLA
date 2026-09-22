@@ -737,6 +737,18 @@ def submit_answer(
                 "submit_answer: level_engine updated user=%d item=%d correct=%s",
                 daily_set.user_id, item.id, is_correct,
             )
+            # Недельный буст: 70%+ верных за 7 дней -> уровень +1
+            try:
+                from services.level_engine import maybe_weekly_level_up
+                _boost = maybe_weekly_level_up(daily_set.user_id)
+                if _boost.get('boosted'):
+                    logger.info(
+                        "submit_answer: weekly level up user=%d %s -> %s",
+                        daily_set.user_id,
+                        _boost.get('old_level'), _boost.get('new_level'),
+                    )
+            except Exception as _we:
+                logger.warning("weekly_level_up check failed: %s", _we)
     except Exception as e:
         logger.warning("submit_answer: level_engine update failed: %s", e)
 

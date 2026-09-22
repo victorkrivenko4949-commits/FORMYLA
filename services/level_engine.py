@@ -96,6 +96,79 @@ DEFAULT_SIGMA = 1.5
 # Публичный API
 # ══════════════════════════════════════════════════════════════════════
 
+def maybe_weekly_level_up(user_id: int) -> Dict[str, Any]:
+    """Недельное повышение уровня: если за последние 7 дней пользователь
+    решил верно >= 70% задач дня (минимум 5 попыток), уровень поднимается
+    на +1. Срабатывает не чаще раза в 7 дней. Возвращает результат проверки.
+
+    Пометка о последнем повышении хранится в prep_state['last_weekly_boost']
+    (ISO-дата), чтобы не требовать миграции БД.
+    """
+    from datetime import datetime, timedelta
+
+    cs = CuratorState.query.filter_by(user_id=user_id).first()
+    if cs is None or cs.level_mu is None:
+        return {'boosted': False, 'reason': 'no_state'}
+
+    prep = cs.prep_state or {}
+    today = datetime.utcnow().date()
+    last_boost = None
+    try:
+        lb = prep.get('last_weekly_boost')
+        if lb:
+            last_boost = datetime.strptime(str(lb), '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        last_boost = None
+
+    if last_boost is not None and (today - last_boost).days < 7:
+        return {'boosted': False, 'reason': 'cooldown', 'last_boost': str(last_boost)}
+
+    # Считаем точность за последние 7 дней по задачам дня
+    from daily_tasks.models import DailyTaskItem, DailyTaskSet
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    items = (DailyTaskItem.query
+             .join(DailyTaskSet, DailyTaskItem.daily_set_id == DailyTaskSet.id)
+             .filter(DailyTaskSet.user_id == user_id,
+                     DailyTaskItem.answered_at.isnot(None),
+                     DailyTaskItem.answered_at >= week_ago)
+             .all())
+    total = len(items)
+    if total < 5:
+        return {'boosted': False, 'reason': 'too_few', 'total': total}
+
+    correct = sum(1 for i in items if i.is_correct)
+    accuracy = correct / total
+    if accuracy < 0.70:
+        return {'boosted': False, 'reason': 'low_accuracy',
+                'accuracy': round(accuracy, 3), 'total': total}
+
+    state = get_state(user_id)
+    old_level = state['level']
+    if old_level >= 4:
+        return {'boosted': False, 'reason': 'max_level', 'level': old_level}
+
+    new_level = old_level + 1
+    # Поднимаем mu до следующего целого уровня. by_section не трогаем —
+    # история по разделам сохраняется.
+    cs.level_mu = float(new_level)
+    cs.level_sigma = max(MIN_SIGMA, float(cs.level_sigma))
+    cs.level_updated_at = datetime.utcnow().isoformat()
+
+    prep = dict(cs.prep_state or {})
+    prep['last_weekly_boost'] = today.isoformat()
+    cs.prep_state = prep
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(cs, 'prep_state')
+    db.session.commit()
+
+    logger.info(
+        'weekly_level_up: user=%d %d -> %d (accuracy=%.2f, %d/%d)',
+        user_id, old_level, new_level, accuracy, correct, total,
+    )
+    return {'boosted': True, 'old_level': old_level, 'new_level': new_level,
+            'accuracy': round(accuracy, 3), 'correct': correct, 'total': total}
+
+
 def get_state(user_id: int) -> Dict[str, Any]:
     """Получить текущее состояние уровня ученика.
 
