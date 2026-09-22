@@ -976,6 +976,8 @@
         {# USERS_STATS_V2: обязательный опрос «Как тебе сайт?» (25+ мин на сайте).
            Показываем всем залогиненным, включая админов. #}
         {% include 'partials/feedback_modal.html' %}
+        {# GEOEXACT_ANNOUNCE_V1: разовый анонс генератора чертежей через 20 сек #}
+        {% include 'partials/geoexact_announce.html' %}
     {% endif %}
     <div style="text-align:center;padding:12px 0;font-size:11px;color:var(--muted);">build {{ build_commit_short }}</div>
 </body>

@@ -1609,6 +1609,10 @@ try:
 except Exception as _e:
     print(f"[BP] account_bp NOT registered: {_e}")
 
+# GEOEXACT INTEGRATION: disabled unless GEOEXACT_ENABLED=1
+from geoexact.web import init_app as init_geoexact
+init_geoexact(app)
+
 # FIGURES REMOVED: система генерации чертежей отключена с сайта.
 # Код сохранён в figures_archive/. Blueprint'ы не регистрируются.
 
@@ -13084,6 +13088,14 @@ def about_page():
 def misc_page():
     """Страница «Прочее» — все остальные разделы, не вошедшие в три основных."""
     return render_template('misc.html')
+
+
+@app.route('/meet')
+def meet_page():
+    """Раздел «Видеовстречи» (FORMYLA Meet): встречи, доска, чат, записи.
+    Полноэкранный режим как отдельный сайт; кнопка «Вернуться на FORMYLA»
+    сворачивает звонок в мини-окно, не завершая его."""
+    return render_template('meet.html')
 
 
 @app.route('/api/support', methods=['POST'])

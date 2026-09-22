@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Видеовстречи — FORMYLA.net{% endblock %}
+{% block meta_description %}Видеовстречи FORMYLA.net: HD-видео, общая доска, чат, демонстрация экрана, сессионные залы, опросы, записи и субтитры.{% endblock %}
+{% block extra_css %}
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='meet/meet.css') }}?v={{ asset_version }}">
+<style>
+    /* На странице видеовстреч прячем плавающие виджеты сайта, чтобы не перекрывали комнату */
+    #tutorBtn, #cf-pip-overlay { display: none !important; }
+    .main { padding: 0 0 40px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="fm">
+<div class="fm-bar">
+  <nav class="fm-tabs" id="navLinks" aria-label="Разделы видеовстреч">
+    <a href="#/home" class="fm-tab" data-route="home">🏠 Главная</a>
+    <a href="#/meetings" class="fm-tab" data-route="meetings">📅 Встречи</a>
+    <a href="#/recordings" class="fm-tab" data-route="recordings">🎥 Записи</a>
+    <a href="#/contacts" class="fm-tab" data-route="contacts">👥 Контакты</a>
+    <a href="#/whiteboard" class="fm-tab" data-route="whiteboard">🧑‍🏫 Доска</a>
+    <a href="#/settings" class="fm-tab" data-route="settings">⚙️ Настройки</a>
+  </nav>
+  <button class="btn-gradient btn-sm" id="headerNewMeeting">＋ Новая встреча</button>
+</div>
+
+<!-- ===== Основной контент (маршруты) ===== -->
+<main class="main" id="app"></main>
+
+<!-- ===== Комната встречи (полноэкранный слой) ===== -->
+<section class="meeting-layer hidden" id="meetingLayer" aria-live="polite"></section>
+
+<!-- ===== Всплывающие уведомления ===== -->
+<div class="toasts" id="toasts"></div>
+
+<!-- ===== Модальные окна ===== -->
+<div class="modal-root hidden" id="modalRoot"></div>
+</div><!-- /#fm -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Имя пользователя FORMYLA.net для встреч (гость — «Гость»)
+  window.FM_USER = {
+    name: {{ ((current_user.nickname or current_user.name or 'Гость') if current_user.is_authenticated else 'Гость') | tojson }},
+    email: {{ (current_user.email if current_user.is_authenticated and current_user.email else '') | tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='meet/icons.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='meet/whiteboard.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='meet/sim.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='meet/meeting.js') }}?v={{ asset_version }}"></script>
+<script src="{{ url_for('static', filename='meet/app.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

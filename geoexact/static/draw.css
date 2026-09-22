@@ -1,0 +1,20 @@
+.gx{max-width:960px;margin:40px auto;padding:0 20px;color:inherit}
+.gx h1{font-size:clamp(28px,4vw,40px);line-height:1.15;margin:8px 0 16px}
+.gx-kicker{font-size:12px;letter-spacing:.12em;opacity:.65}
+.gx form{margin:28px 0;padding:24px;border:1px solid #9ba7b866;border-radius:16px}
+.gx textarea{display:block;box-sizing:border-box;width:100%;margin:10px 0 20px;padding:14px;font:inherit;line-height:1.5;border:1px solid #9ba7b8;border-radius:8px;background:transparent;color:inherit;resize:vertical}
+.gx fieldset{border:0;padding:0;margin:0;display:flex;gap:12px 28px;flex-wrap:wrap}
+.gx legend{font-weight:600;margin-bottom:12px}
+.gx input{accent-color:#425ed8}
+.gx button{border:0;border-radius:8px;padding:13px 22px;background:#425ed8;color:white;font:inherit;cursor:pointer}
+.gx button:disabled{opacity:.5;cursor:wait}
+.gx :focus-visible{outline:3px solid #798dec;outline-offset:3px}
+.gx-hint{font-size:13px;line-height:1.5;opacity:.75}
+.gx-toolbar{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.gx a{color:inherit;text-decoration:underline;cursor:pointer}
+.gx img{display:block;width:100%;height:auto;max-height:780px;object-fit:contain;background:white;border:1px solid #9ba7b844;border-radius:12px}
+.gx #gx-detail{margin-top:24px}
+.gx #gx-status{min-height:24px;white-space:pre-wrap}
+.gx li{margin:8px 0}
+.gx [hidden]{display:none!important}
+@media(max-width:550px){.gx{padding:0 12px;margin-top:24px}.gx form{padding:16px}.gx fieldset{display:grid}.gx button{width:100%}}

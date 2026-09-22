@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Чертёж по условию | FORMYLA{% endblock %}
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('geoexact.static', filename='draw.css') }}">
+{% endblock %}
+{% block content %}
+<section id="geoexact" class="gx" data-api="{{ url_for('geoexact.submit') }}"
+         data-active="{{ url_for('geoexact.active') }}"
+         data-csrf="{{ geoexact_csrf }}">
+  <header><p class="gx-kicker">ГЕОМЕТРИЯ · FORMYLA</p>
+    <h1>Чертёж по условию</h1>
+    <p>Введите задачу. Выберите исходную конфигурацию или чертёж с дополнительными построениями.</p>
+  </header>
+  <form id="gx-form">
+    <label for="gx-problem">Условие задачи</label>
+    <textarea id="gx-problem" minlength="10" maxlength="12000" rows="7" required
+      placeholder="В треугольнике ABC стороны AB = 13, BC = 14, AC = 15. Проведена высота AH…"></textarea>
+    <fieldset><legend>Режим чертежа</legend>
+      <label><input type="radio" name="gx-mode" value="base" checked> Без дополнительных построений</label>
+      <label><input type="radio" name="gx-mode" value="aux"> С дополнительными построениями</label>
+    </fieldset>
+    <p class="gx-hint">Текст отправляется в DeepSeek для разбора. Не вводите персональные данные.
+      Измерения на рисунке не заменяют доказательство.</p>
+    <button id="gx-submit" type="submit">Построить чертёж</button>
+  </form>
+  <p id="gx-status" role="status" aria-live="polite"></p>
+  <button id="gx-resume" type="button" hidden>Проверить готовность</button>
+  <section id="gx-result" hidden aria-label="Результат">
+    <div class="gx-toolbar">
+      <label id="gx-toggle-wrap" hidden><input id="gx-toggle" type="checkbox" checked> Показывать дополнительные построения</label>
+      <a id="gx-download" download="formyla-drawing.svg">Скачать SVG</a>
+    </div>
+    <img id="gx-image" alt="Геометрический чертёж по условию задачи">
+    <section id="gx-detail" hidden><h2>Увеличенный фрагмент</h2>
+      <p class="gx-hint">Это отдельное увеличение. Полный чертёж показан выше.</p>
+      <img id="gx-detail-image" alt="Увеличенный фрагмент геометрического чертежа">
+    </section>
+    <p id="gx-measured"></p>
+    <ul id="gx-warnings"></ul>
+    <p class="gx-hint">Проверьте соответствие чертежа исходному условию. Автоматические проверки
+      относятся к формализованной конфигурации, а не к доказательству задачи.</p>
+  </section>
+</section>
+{% endblock %}
+{% block extra_js %}
+{{ super() }}
+<script src="{{ url_for('geoexact.static', filename='draw.js') }}" defer></script>
+{% endblock %}
