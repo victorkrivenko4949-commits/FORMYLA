@@ -1381,11 +1381,13 @@ def analyze_techniques(item_id: int):
                     "code": code,
                     "name": method_data.get("method_name", ""),
                     "section": method_data.get("section", ""),
-                    # TECHNIQUES_V2: ведём на визуальный атлас (102 метода),
-                    # не на старую текстовую страницу TheoryBlock.
-                    # Враппер /olympiads/methods — iframe; hash пробрасываем
-                    # в сам атлас, чтобы открылась карточка конкретного метода.
-                    "url": f"/olympiads/methods/atlas.html#/methods/{code}",
+                    # TECHNIQUES_V2: ведём на страницу-враппер /olympiads/methods
+                    # (шапка сайта + iframe атласа), hash пробрасывается в iframe
+                    # — откроется карточка конкретного метода с шапкой сайта.
+                    # НЕ /olympiads/methods/atlas.html (нет шапки) и
+                    # НЕ /olympiads/methods/<code> (старое: чистый текст,
+                    # Methods Block без визуализаций из атласа).
+                    "url": f"/olympiads/methods#/methods/{code}",
                 })
 
     return jsonify({
