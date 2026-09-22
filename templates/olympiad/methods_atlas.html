@@ -55,5 +55,24 @@
     window.addEventListener('resize', syncAtlasTop);
     window.addEventListener('load', syncAtlasTop);
 })();
+
+// TECHNIQUES_V2: если внешний URL содержит hash #/methods/<code>,
+// передаём его в iframe атласа, чтобы открылась нужная карточка.
+(function () {
+    function passHashToIframe() {
+        var hash = location.hash || '';
+        var iframe = document.querySelector('.atlas-shell iframe');
+        if (!iframe) return;
+        if (hash && hash.startsWith('#/methods')) {
+            var target = '/olympiads/methods/atlas.html' + hash;
+            var current = iframe.getAttribute('src') || '';
+            if (!current.endsWith(hash)) {
+                iframe.src = target;
+            }
+        }
+    }
+    passHashToIframe();
+    window.addEventListener('hashchange', passHashToIframe);
+})();
 </script>
 {% endblock %}
