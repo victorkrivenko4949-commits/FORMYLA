@@ -4,7 +4,7 @@ import os
 from flask import Blueprint, abort, current_app, jsonify, render_template, request
 from flask_login import current_user, login_required
 
-from .jobs import Queue, QueueFull, make_engine
+from .jobs import Queue, QueueFull, init_db, make_engine
 
 bp = Blueprint("geoexact", __name__, url_prefix="/geometry/draw",
                template_folder="templates", static_folder="static")
@@ -18,8 +18,13 @@ def init_app(app):
     url = app.config.get("SQLALCHEMY_DATABASE_URI") or os.environ.get("DATABASE_URL")
     if not url or not url.startswith(("postgres", "postgresql")):
         raise RuntimeError("GeoExact production queue requires PostgreSQL")
+    engine = make_engine(url)
+    # AUTO-INIT: таблицы geoexact_jobs_v1/geoexact_mutex_v1 создаются
+    # автоматически при первом старте (create_all идемпотентен),
+    # иначе любой запрос падает с 500 если забыть manage init-db.
+    init_db(engine)
     app.extensions["geoexact"] = Queue(
-        make_engine(url),
+        engine,
         per_hour=os.environ.get("GEOEXACT_PER_HOUR", "3"),
         per_day=os.environ.get("GEOEXACT_PER_DAY", "10"),
         daily_usd=os.environ.get("GEOEXACT_DAILY_USD", "5.00"),
