@@ -141,7 +141,11 @@ def _submit_bank_answer(task_id: int, issue):
             "is_correct": bool(issue.is_correct),
             "user_answer": issue.user_answer or "",
             "correct_answer": task.answer or "",
-            "solution": str(_mdr(_wbm(task.solution or ""))),
+            # LATEX_FIX_V2: сырой текст решения (без md_render) — фронт
+            # экранирует HTML и рендерит LaTeX через KaTeX. Раньше отдавали
+            # готовый HTML, который экранировался фронтом и показывался
+            # как видимый текст <p>/<br>.
+            "solution": _wbm(task.solution or ""),
         }), 409
 
     data = request.get_json(silent=True) or {}
@@ -266,7 +270,8 @@ def _submit_bank_answer(task_id: int, issue):
             task_id, getattr(current_user, "id", None), e,
         )
 
-    from services.md_render import md_render
+    # LATEX_FIX_V2: сырой текст решения (без md_render) — фронт экранирует
+    # и рендерит LaTeX через KaTeX сам, как для сгенерированных задач.
     return jsonify({
         "status": "success",
         "score": score,
@@ -274,7 +279,7 @@ def _submit_bank_answer(task_id: int, issue):
         "is_correct": is_correct,
         "correct_answer": task.answer or "",
         "user_answer": issue.user_answer or "",
-        "solution": str(md_render(wrap_bare_math(task.solution or ""))),
+        "solution": wrap_bare_math(task.solution or ""),
     })
 
 
@@ -314,7 +319,7 @@ def _serialize_bank_items(user_id: int, bank_items) -> list:
             "task_text": wrap_bare_math(t.statement or ""),
             "text": wrap_bare_math(t.statement or ""),
             "correct_answer": t.answer or "",
-            "solution": t.solution or "",
+            "solution": wrap_bare_math(t.solution or ""),
             "subtopic": t.subtopic or "",
             "topic": t.section or "",
             "difficulty": t.level or 1,
@@ -1376,7 +1381,11 @@ def analyze_techniques(item_id: int):
                     "code": code,
                     "name": method_data.get("method_name", ""),
                     "section": method_data.get("section", ""),
-                    "url": f"/olympiads/methods/{code}",
+                    # TECHNIQUES_V2: ведём на визуальный атлас (102 метода),
+                    # не на старую текстовую страницу TheoryBlock.
+                    # Враппер /olympiads/methods — iframe; hash пробрасываем
+                    # в сам атлас, чтобы открылась карточка конкретного метода.
+                    "url": f"/olympiads/methods/atlas.html#/methods/{code}",
                 })
 
     return jsonify({
