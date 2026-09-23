@@ -201,8 +201,8 @@
         </button>
 
         <nav class="nav" id="navLinks">
-            <!-- 1. Олимпиады (dropdown) — скрыт для родителя/учителя -->
-            {% if not (current_user.is_authenticated and current_user.role in ('teacher', 'parent')) %}
+            <!-- 1. Олимпиады (dropdown) — скрыт для родителя; учитель видит всё, что и ученик -->
+            {% if not (current_user.is_authenticated and current_user.role == 'parent') %}
             <div class="nav-dropdown">
                 <button class="nav-item nav-toggle" type="button">
                     🏆 Олимпиады <span class="chev">▾</span>
@@ -215,21 +215,21 @@
             {% endif %}
 
             <!-- 2. Ученик: Задачи дня + Куратор (видны всем; вход требуется при открытии)
-                 Родитель/учитель видят ТОЛЬКО свой раздел (одна ссылка). -->
-            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
-            <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
-            <a href="/about" class="nav-item">📖 О сайте</a>
-            {% elif current_user.is_authenticated and current_user.role == 'parent' %}
+                 Родитель видит ТОЛЬКО свой раздел. Учитель — свой раздел ПЛЮС все ученичьи. -->
+            {% if current_user.is_authenticated and current_user.role == 'parent' %}
             <a href="/parent" class="nav-item">👨‍👩‍👧 Мои гении (дети)</a>
             <a href="/about" class="nav-item">📖 О сайте</a>
             {% else %}
+            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+            <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
+            {% endif %}
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
             <a href="{{ url_for('prep.coach') }}" class="nav-item">🎓 Куратор подготовки</a>
             <a href="/olympiad-start" class="nav-item">📖 С чего начать</a>
             {% endif %}
 
-            <!-- 3. Прочее — скрыт для родителя/учителя (остался только их раздел) -->
-            {% if not (current_user.is_authenticated and current_user.role in ('teacher', 'parent')) %}
+            <!-- 3. Прочее — скрыт для родителя; учитель видит как ученик -->
+            {% if not (current_user.is_authenticated and current_user.role == 'parent') %}
             <a href="/misc" class="nav-item">📦 Прочее <span class="insights-badge"></span></a>
             {% endif %}
 
@@ -265,8 +265,8 @@
                 {% endif %}
 
                 <!-- Авторизованный пользователь: «Профиль» авто-закреплён (всегда виден).
-                     Для родителя/учителя профиль скрыт — остаётся только «Выйти». -->
-                {% if not (current_user.is_authenticated and current_user.role in ('teacher', 'parent')) %}
+                     Для родителя профиль скрыт — остаётся только «Выйти». -->
+                {% if not (current_user.is_authenticated and current_user.role == 'parent') %}
                 <span id="profileNavWrap" class="nav-pinned-item">
                     <a href="{{ url_for('profile') }}"
                        style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
@@ -340,17 +340,19 @@
 
         <!-- Navigation links -->
         <nav class="drawer-nav">
-            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
-            <a href="/teacher" class="drawer-link">
-                <span class="drawer-link-icon">👨‍🏫</span>
-                Мои ученики
-            </a>
-            {% elif current_user.is_authenticated and current_user.role == 'parent' %}
+            {% if current_user.is_authenticated and current_user.role == 'parent' %}
             <a href="/parent" class="drawer-link">
                 <span class="drawer-link-icon">👨‍👩‍👧</span>
                 Мои гении (дети)
             </a>
             {% else %}
+            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+            <a href="/teacher" class="drawer-link">
+                <span class="drawer-link-icon">👨‍🏫</span>
+                Мои ученики
+            </a>
+            <div class="drawer-divider"></div>
+            {% endif %}
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="drawer-link">
                 <span class="drawer-link-icon">🔥</span>
                 Задачи дня
@@ -406,17 +408,18 @@
          BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
          ═══════════════════════════════════════════════ -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
-        {% if current_user.is_authenticated and current_user.role == 'teacher' %}
-        <a href="/teacher" class="bottom-nav-item" data-path="/teacher*,/student*">
-            <span class="bottom-nav-icon">👨‍🏫</span>
-            <span class="bottom-nav-label">Мои ученики</span>
-        </a>
-        {% elif current_user.is_authenticated and current_user.role == 'parent' %}
+        {% if current_user.is_authenticated and current_user.role == 'parent' %}
         <a href="/parent" class="bottom-nav-item" data-path="/parent*,/student*">
             <span class="bottom-nav-icon">👨‍👩‍👧</span>
             <span class="bottom-nav-label">Мои гении</span>
         </a>
         {% else %}
+        {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+        <a href="/teacher" class="bottom-nav-item" data-path="/teacher*,/student*">
+            <span class="bottom-nav-icon">👨‍🏫</span>
+            <span class="bottom-nav-label">Мои ученики</span>
+        </a>
+        {% endif %}
         <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="bottom-nav-item" data-path="/daily*">
             <span class="bottom-nav-icon">🔥</span>
             <span class="bottom-nav-label">Задачи дня</span>

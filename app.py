@@ -6543,9 +6543,10 @@ def get_ai_solution(problem_id):
 @login_required
 def profile():
     """Личный кабинет пользователя с прогрессом и учениками."""
-    # ── Проверка роли: teacher/parent — показываем упрощённый профиль ──
+    # ── Проверка роли: parent — показываем упрощённый профиль.
+    #    Учитель видит полный профиль, как ученик (навигация учителя = ученик + раздел «Мои ученики»). ──
     _user_role = getattr(current_user, 'role', 'student') or 'student'
-    if _user_role in ('teacher', 'parent'):
+    if _user_role == 'parent':
         return render_template('profile.html',
                              user=current_user,
                              user_role=_user_role,
