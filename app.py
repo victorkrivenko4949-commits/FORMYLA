@@ -13394,8 +13394,22 @@ def submit_feedback():
         if not (5 <= len(message_text) <= 4000):
             return jsonify({'error': 'отзыв должен быть от 5 до 4000 символов'}), 400
 
-        # Rate-limit
+        # REVIEW_MIN_TIME_V1: отзыв можно отправить после 10 минут на сайте.
         user_id = current_user.id if current_user.is_authenticated else None
+        if user_id:
+            try:
+                _usr = db.session.get(User, user_id)
+                _spent = (getattr(_usr, 'site_seconds_total', 0) or 0) if _usr else 0
+            except Exception:
+                _spent = 0
+            if _spent < 10 * 60:
+                return jsonify({
+                    'ok': False,
+                    'error': 'Чтобы отправить отзыв, нужно '
+                             'провести на сайте минимум 10 минут'
+                }), 403
+
+        # Rate-limit
         rl_key = f'u:{user_id}' if user_id else f'ip:{request.remote_addr}'
         import time as _trl
         now = _trl.time()

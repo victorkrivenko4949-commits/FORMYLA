@@ -1031,14 +1031,14 @@ def has_pending_feedback(user_id: int) -> bool:
 
 
 # ── USERS_STATS_V2: API для опроса «Как тебе сайт?» ────────────────────
-@admin_support_bp.route('/api/feedback/pending')
+@admin_support_bp.route('/api/site-feedback/pending')
 @login_required
 def api_feedback_pending():
     """Есть ли ожидающий ответа опрос у текущего пользователя."""
     return jsonify(pending=has_pending_feedback(current_user.id))
 
 
-@admin_support_bp.route('/api/feedback', methods=['POST'])
+@admin_support_bp.route('/api/site-feedback', methods=['POST'])
 @login_required
 def api_feedback_submit():
     """Сохранить ответ на вопрос «Как тебе сайт?» (1–5 + текст). Один раз."""
