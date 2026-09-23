@@ -81,7 +81,7 @@ window.ftFbSubmit = function (ev) {
   ftFb.sending = true;
   var btn = document.getElementById('ft-fb-submit');
   btn.textContent = 'Отправляю...';
-  fetch('/api/feedback', {
+  fetch('/api/site-feedback', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -115,7 +115,7 @@ window.ftFbSubmit = function (ev) {
   // Проверяем раз в минуту — появился ли обязательный вопрос.
   function check() {
     if (ftFb.shown) return;
-    fetch('/api/feedback/pending', { credentials: 'include' })
+    fetch('/api/site-feedback/pending', { credentials: 'include' })
       .then(function (r) { return r.json(); })
       .then(function (d) { if (d && d.pending) window.ftFbShow(); })
       .catch(function () { /* тихо */ });

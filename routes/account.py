@@ -64,8 +64,9 @@ def reintake_account():
         except Exception as e:
             logger.error(f"Error deleting solutions: {e}")
 
-        # 2. Delete prep plans
-        PrepPlan.query.filter_by(user_id=user_id).delete()
+        # 2. Планы подготовки (после удаления prep_days в _delete_related_records)
+        _delete_in_savepoint(
+            "DELETE FROM prep_plans WHERE user_id = :uid", {'uid': user_id})
         db.session.flush()
 
         # 3. Delete other related records
@@ -115,8 +116,9 @@ def delete_account():
         except Exception as e:
             logger.error(f"Error deleting solutions: {e}")
 
-        # 2. Delete prep plans (cascade deletes prep_days)
-        PrepPlan.query.filter_by(user_id=user_id).delete()
+        # 2. Планы подготовки (после удаления prep_days в _delete_related_records)
+        _delete_in_savepoint(
+            "DELETE FROM prep_plans WHERE user_id = :uid", {'uid': user_id})
         db.session.flush()
 
         # 3. Delete other related records
@@ -173,92 +175,110 @@ def _delete_user_row(user_id):
     db.session.execute(text("DELETE FROM users WHERE id = :uid"), {'uid': user_id})
 
 
+def _delete_in_savepoint(sql, params):
+    """Выполняет DELETE внутри SAVEPOINT. Если одна таблица отсутствует
+    или запрос падает — откатываем только эту операцию и идём дальше,
+    а не гасим всю транзакцию (PostgreSQL иначе отменяет всё удаление)."""
+    from sqlalchemy import text
+    db.session.begin_nested()
+    try:
+        db.session.execute(text(sql), params)
+    except Exception as e:
+        db.session.rollback()
+        logger.warning(f"Account-cleanup skipped ({sql.split()[3]}): {e}")
+
+
 def _delete_related_records(user_id):
     """Delete all user-related records from auxiliary tables."""
-    from sqlalchemy import text
+    # Сначала «внуки» (FK на родительские таблицы, удаляемые ниже):
+    # prep_days → prep_plans; daily_task_items → daily_task_sets;
+    # task_solutions.plan_id → prep_plans (обнуляем привязку).
+    _delete_in_savepoint(
+        "DELETE FROM prep_days WHERE plan_id IN "
+        "(SELECT id FROM prep_plans WHERE user_id = :uid)",
+        {'uid': user_id})
+    _delete_in_savepoint(
+        "UPDATE task_solutions SET plan_id = NULL WHERE user_id = :uid",
+        {'uid': user_id})
+    _delete_in_savepoint(
+        "DELETE FROM daily_task_items WHERE daily_set_id IN "
+        "(SELECT id FROM daily_task_sets WHERE user_id = :uid)",
+        {'uid': user_id})
+    _delete_in_savepoint(
+        "UPDATE daily_generation_jobs SET daily_set_id = NULL "
+        "WHERE daily_set_id IN "
+        "(SELECT id FROM daily_task_sets WHERE user_id = :uid)",
+        {'uid': user_id})
 
+    # Таблицы с колонкой user_id (FK не CASCADE → чистим вручную).
     tables_with_user_id = [
         'chat_messages', 'adaptive_tests', 'adaptive_test_results',
         'user_topic_progress', 'daily_quests', 'user_streaks',
         'topic_mastery', 'notifications', 'test_results_detail',
         'user_progress', 'mock_exams',
-        # ── Curator module (NOT NULL user_id — удаляем до удаления юзера) ──
+        # ── Curator module ──
         'student_diagnostics', 'learning_plans', 'task_attempts',
         'progress_log', 'curator_state', 'subtopic_progress',
         # ── Daily tasks module ──
         'daily_task_sets', 'user_task_assignments', 'thematic_day_sets',
         'pre_gen_queue', 'gen_conveyor', 'bank_issues',
-        # ── Прочее (прямая привязка к пользователю) ──
+        'daily_generation_jobs',
+        # ── Олимпиады / тесты ──
+        'olympiad_generation_log', 'olympiad_variants',
+        'olympiad_task_attempts', 'olympiad_stage_attempts',
+        'test_sessions',
+        # ── Insights (банк неточностей) ──
+        'insight_jobs', 'insights', 'insight_notifications',
+        # ── Статистика сайта / опрос (без каскада) ──
+        'site_events', 'site_feedback', 'user_presence',
+        # ── Прочее ──
         'streak_records', 'user_subtopic_assignments',
         'user_dashboard_items', 'solution_attempts', 'task_solutions',
         'task_assignment_history', 'photo_recognize_requests',
-        'olympiad_generation_log',
-        # ── Чертежи / фигуры (NOT NULL user_id без ON DELETE CASCADE) ──
+        # ── Чертежи / фигуры ──
         'figure_jobs', 'figure_build_jobs', 'figure_credit_transactions',
         'figure_generations', 'drawing_generations',
         # ── Группы (колонка user_id) ──
         'group_members', 'teacher_group_members',
+        # ── Push-подписки ──
+        'push_subscriptions',
     ]
 
     for table in tables_with_user_id:
-        try:
-            db.session.execute(
-                text(f"DELETE FROM {table} WHERE user_id = :uid"),
-                {'uid': user_id}
-            )
-        except Exception as e:
-            logger.warning(f"Could not clean {table}: {e}")
+        _delete_in_savepoint(
+            f"DELETE FROM {table} WHERE user_id = :uid",
+            {'uid': user_id})
 
-    # Дочерние таблицы без user_id (FK к родительскому daily_task_sets):
-    # удаляем до daily_task_sets, иначе FK-каскад может не сработать.
-    try:
-        db.session.execute(
-            text("DELETE FROM daily_task_items WHERE daily_set_id IN "
-                 "(SELECT id FROM daily_task_sets WHERE user_id = :uid)"),
-            {'uid': user_id}
-        )
-    except Exception as e:
-        logger.warning(f"Could not clean daily_task_items: {e}")
+    # Friendships (обе колонки — CASCADE, но подстраховываемся)
+    _delete_in_savepoint(
+        "DELETE FROM friendships WHERE requester_id = :uid OR addressee_id = :uid "
+        "OR user_id = :uid OR friend_id = :uid",
+        {'uid': user_id})
 
-    # Friendships (both directions)
-    try:
-        db.session.execute(
-            text("DELETE FROM friendships WHERE user_id = :uid OR friend_id = :uid"),
-            {'uid': user_id}
-        )
-    except Exception:
-        pass
-
-    # Mentorships
-    try:
-        db.session.execute(
-            text("DELETE FROM mentorships WHERE teacher_id = :uid OR student_id = :uid"),
-            {'uid': user_id}
-        )
-    except Exception:
-        pass
+    # Mentorships (teacher_id / student_id — NOT NULL без каскада)
+    _delete_in_savepoint(
+        "DELETE FROM mentorships WHERE teacher_id = :uid OR student_id = :uid",
+        {'uid': user_id})
 
     # OAuth accounts
-    try:
-        db.session.execute(
-            text("DELETE FROM oauth_accounts WHERE user_id = :uid"),
-            {'uid': user_id}
-        )
-    except Exception:
-        pass
+    _delete_in_savepoint(
+        "DELETE FROM oauth_accounts WHERE user_id = :uid",
+        {'uid': user_id})
 
     db.session.flush()
 
 
 def _log_deletion_audit(user_id, email_hash):
-    """Log account deletion for audit trail."""
+    """Log account deletion for audit trail. Отдельная транзакция:
+    при любой ошибке (нет SEQUENCE на PG и т.п.) — откатываем сами логи,
+    но не ломаем основную транзакцию удаления."""
     from sqlalchemy import text
-
+    db.session.begin_nested()
     try:
         # Create audit table if not exists
         db.session.execute(text("""
             CREATE TABLE IF NOT EXISTS deleted_users_audit (
-                id INTEGER PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 original_user_id INTEGER NOT NULL,
                 email_hash VARCHAR(64) NOT NULL,
                 deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -270,6 +290,7 @@ def _log_deletion_audit(user_id, email_hash):
         )
         db.session.flush()
     except Exception as e:
+        db.session.rollback()
         logger.warning(f"Audit log failed: {e}")
 
 
