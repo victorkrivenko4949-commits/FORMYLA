@@ -6,8 +6,7 @@
     .misc-page h1 { font-size: 28px; font-weight: 700; color: #e2e8f0; margin-bottom: 36px; padding-bottom: 16px; border-bottom: 1px solid #1e293b; }
     .misc-group { margin-bottom: 32px; }
     .misc-group-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 12px; padding-left: 4px; }
-    /* INSTRUMENTS_V1: плашка «новое» для свежих инструментов */
-    .misc-new-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: #0b1220; background: linear-gradient(135deg, #fbbf24, #f59e0b); vertical-align: middle; }
+
     .misc-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
     .misc-link { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 10px; text-decoration: none; color: #cbd5e1; background: rgba(30,41,59,0.6); border: 1px solid transparent; transition: background 0.18s, border-color 0.18s; flex: 1; }
     .misc-link:hover { background: rgba(30,41,59,0.9); border-color: #334155; color: #f1f5f9; }
@@ -57,16 +56,6 @@
         <div class="misc-row">
             <a href="/insights" class="misc-link"><span class="misc-link-label">💡 Банк неточностей</span><span class="misc-link-desc">Найденные недочёты и задачи на отработку</span></a>
             <button class="pin-btn" data-pin-id="insights" data-pin-label="💡 Банк неточностей" data-pin-href="/insights" data-pin-desc="Найденные недочёты и задачи на отработку" title="На главную">📌</button>
-        </div>
-        {% if current_user.is_authenticated and not (current_user.is_guest or false) %}
-        <div class="misc-row">
-            <a href="/geometry/draw/" class="misc-link"><span class="misc-link-label">📐 Генерация чертежей<span class="misc-new-badge">новое</span></span><span class="misc-link-desc">Введи условие задачи по геометрии — получи чертёж, с доп. построением или без</span></a>
-            <button class="pin-btn" data-pin-id="geoexact" data-pin-label="📐 Генерация чертежей" data-pin-href="/geometry/draw/" data-pin-desc="Введи условие задачи по геометрии — получи чертёж" title="На главную">📌</button>
-        </div>
-        {% endif %}
-        <div class="misc-row">
-            <a href="/meet" class="misc-link"><span class="misc-link-label">🎥 Видеовстречи<span class="misc-new-badge">новое</span></span><span class="misc-link-desc">Конференции в стиле Zoom, но без таймаутов: доска, чат, записи</span></a>
-            <button class="pin-btn" data-pin-id="meet" data-pin-label="🎥 Видеовстречи" data-pin-href="/meet" data-pin-desc="Встречи, общая доска, чат, залы и записи" title="На главную">📌</button>
         </div>
     </div>
 
