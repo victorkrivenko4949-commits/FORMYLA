@@ -710,6 +710,12 @@ def submit_answer(
     if time_spent is not None:
         item.time_spent_seconds = time_spent
 
+    # DEBT_FIX_V1: если задача была в долге — снимаем её с долга.
+    # Иначе долг показывался «активным», хотя ученик уже ответил.
+    if item.debt_status == 'active':
+        item.debt_status = None
+        item.debt_until = None
+
     # +5 рейтинга за каждую правильную задачу дня (переотправка невозможна —
     # роут отвечает 409, если item.user_answer уже заполнен).
     if is_correct:
