@@ -27,20 +27,20 @@ BASE = "https://api.deepseek.com"
 # Verified 2026-09-22: https://api-docs.deepseek.com/quick_start/pricing
 # Off-peak USD / 1M; budget admission ALWAYS uses twice these (peak).
 PRICES = {
-    "deepseek-flash": {"in": 0.15, "cached": 0.003, "out": 0.60},
+    "deepseek-v4-flash": {"in": 0.15, "cached": 0.003, "out": 0.60},
     "deepseek-v4-pro": {"in": 0.66, "cached": 0.022, "out": 1.98},
 }
 
 # Маршрутизация: класс сложности -> (модель, лимит вывода) для каждого пути
 ROUTES = {
     # путь A: без доп. построений — только формализация
-    ("A", "S"):  ("deepseek-flash", 2400),
-    ("A", "M"):  ("deepseek-flash", 4000),
-    ("A", "L"):  ("deepseek-flash", 6000),
+    ("A", "S"):  ("deepseek-v4-flash", 2400),
+    ("A", "M"):  ("deepseek-v4-flash", 4000),
+    ("A", "L"):  ("deepseek-v4-flash", 6000),
     ("A", "XL"): ("deepseek-v4-pro", 10000),
     # путь B: с доп. построениями — модель обязана решить задачу
-    ("B", "S"):  ("deepseek-flash", 4000),
-    ("B", "M"):  ("deepseek-flash", 8000),
+    ("B", "S"):  ("deepseek-v4-flash", 4000),
+    ("B", "M"):  ("deepseek-v4-flash", 8000),
     ("B", "L"):  ("deepseek-v4-pro", 12000),
     ("B", "XL"): ("deepseek-v4-pro", 16000),
 }
@@ -240,11 +240,14 @@ def _chat(sess, model: str, system: str, user: str, max_out: int,
     now = datetime.now(timezone.utc)
     multiplier = 2.0 if now.weekday() < 5 and (1 <= now.hour < 4 or 6 <= now.hour < 10) else 1.0
     reserve = 2 * (input_bound * PRICES[model]["in"] + max_out * PRICES[model]["out"]) / 1e6
+    # GEOEXACT_MODEL_FIX: тело запроса повторяет проверенную форму AI-тьютора
+    # (services/atlas_tutor.py): model/messages/temperature/max_tokens
+    # (+ response_format json_object — сайт уже использует это в проде).
+    # Поля "thinking"/"reasoning_effort" удалены: непроверенные параметры
+    # не отправляются, чтобы прямой api.deepseek.com не отвечал HTTP 400.
     try:
         r = _post_limited(sess,
             {"model": model, "max_tokens": max_out, "temperature": temperature,
-              "thinking": {"type": "enabled" if thinking else "disabled"},
-              "reasoning_effort": "high" if thinking else "low",
               "messages": [{"role": "system", "content": system},
                            {"role": "user", "content": user}],
               "response_format": {"type": "json_object"}},
@@ -312,7 +315,7 @@ def _parse_json(text: str) -> dict:
 
 # ------------------------------------------------------------------ этап 2
 def classify(sess, problem: str, budget: Budget) -> dict:
-    txt, _ = _chat(sess, "deepseek-flash", SYS_CLASSIFY, problem, 300, "classify", budget)
+    txt, _ = _chat(sess, "deepseek-v4-flash", SYS_CLASSIFY, problem, 300, "classify", budget)
     d = _parse_json(txt)
     d.setdefault("space", "plane")
     d.setdefault("class", "M")
@@ -336,14 +339,14 @@ def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
         max_out = max(max_out, 8000)
     # деградация модели, если бюджета не хватает
     if not budget.can_afford(model, max_out) and model == "deepseek-v4-pro":
-        model, max_out = "deepseek-flash", min(max_out, 8000)
+        model, max_out = "deepseek-v4-flash", min(max_out, 8000)
     system = SYS_AUX if with_aux else SYS_FORMALIZE
     user = problem if not feedback else (
         f"{problem}\n\nПРЕДЫДУЩАЯ ПОПЫТКА ОТКЛОНЕНА ДВИЖКОМ: {feedback}\n"
         "Исправь план. Верни полный JSON заново.")
     bound = len((system + user).encode("utf-8")) + 512
     if not budget.can_afford(model, max_out, bound) and model == "deepseek-v4-pro":
-        model, max_out = "deepseek-flash", min(max_out, 8000)
+        model, max_out = "deepseek-v4-flash", min(max_out, 8000)
     txt, _ = _chat(sess, model, system, user, max_out, f"formalize-{path}", budget,
                   thinking=(bool(feedback) or cls in ("L", "XL") or (with_aux and cls == "M")))
     d = _parse_json(txt)
@@ -377,7 +380,7 @@ def formalize_space(sess, problem: str, cls: str, with_aux: bool, budget: Budget
     user = problem + (("\nИсправь отказ движка: " + feedback) if feedback else "")
     bound = len((system + user).encode()) + 512
     if not budget.can_afford(model, max_out, bound) and model == "deepseek-v4-pro":
-        model, max_out = "deepseek-flash", min(max_out, 8000)
+        model, max_out = "deepseek-v4-flash", min(max_out, 8000)
     text, _ = _chat(sess, model, system, user, max_out, "formalize-3D", budget,
                     thinking=cls in ("L", "XL"))
     d = _parse_json(text)
