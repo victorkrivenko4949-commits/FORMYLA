@@ -1,20 +1,133 @@
-.gx{max-width:960px;margin:40px auto;padding:0 20px;color:inherit}
-.gx h1{font-size:clamp(28px,4vw,40px);line-height:1.15;margin:8px 0 16px}
-.gx-kicker{font-size:12px;letter-spacing:.12em;opacity:.65}
-.gx form{margin:28px 0;padding:24px;border:1px solid #9ba7b866;border-radius:16px}
-.gx textarea{display:block;box-sizing:border-box;width:100%;margin:10px 0 20px;padding:14px;font:inherit;line-height:1.5;border:1px solid #9ba7b8;border-radius:8px;background:transparent;color:inherit;resize:vertical}
-.gx fieldset{border:0;padding:0;margin:0;display:flex;gap:12px 28px;flex-wrap:wrap}
-.gx legend{font-weight:600;margin-bottom:12px}
+/* ── Чертёж по условию · GeoExact ─────────────────────────────────── */
+.gx{max-width:880px;margin:48px auto;padding:0 20px;color:inherit}
+
+/* Шапка */
+.gx h1{
+  font-size:clamp(30px,4.5vw,44px);line-height:1.12;margin:14px 0 14px;
+  font-weight:800;letter-spacing:-.01em;
+  background:linear-gradient(120deg,#e8edff 30%,#9db4ff 70%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.gx-kicker{
+  display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:#9db4ff;background:rgba(66,94,216,.14);
+  border:1px solid rgba(66,94,216,.35);border-radius:999px;padding:5px 12px;margin:0;
+}
+.gx-lead{font-size:16px;line-height:1.55;opacity:.72;margin:0 0 8px}
+
+/* Карточка формы */
+.gx form{
+  margin:28px 0;padding:28px;border-radius:20px;position:relative;
+  border:1px solid rgba(155,167,184,.18);
+  background:
+    radial-gradient(120% 140% at 0% 0%,rgba(66,94,216,.10),transparent 55%),
+    radial-gradient(120% 140% at 100% 100%,rgba(124,58,237,.08),transparent 55%);
+  box-shadow:0 10px 40px rgba(2,6,23,.35);
+}
+.gx label[for="gx-problem"]{
+  display:block;font-size:12px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;opacity:.55;margin-bottom:10px;
+}
+.gx textarea{
+  display:block;box-sizing:border-box;width:100%;margin:0 0 22px;
+  padding:16px;font:inherit;font-size:15px;line-height:1.6;
+  border:1px solid rgba(155,167,184,.25);border-radius:12px;
+  background:rgba(2,6,23,.35);color:inherit;resize:vertical;
+  transition:border-color .18s,box-shadow .18s;
+}
+.gx textarea::placeholder{color:inherit;opacity:.38}
+.gx textarea:focus{
+  outline:none;border-color:#5a7bef;
+  box-shadow:0 0 0 4px rgba(66,94,216,.22);
+}
+
+/* Режим чертежа — сегментированный переключатель */
+.gx fieldset{border:0;padding:0;margin:0 0 24px}
+.gx legend{
+  font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  opacity:.55;margin-bottom:12px;padding:0;
+}
+.gx-modes{
+  display:inline-flex;gap:6px;padding:6px;border-radius:14px;
+  background:rgba(2,6,23,.35);border:1px solid rgba(155,167,184,.18);
+}
+.gx-modes label{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 18px;
+  border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;
+  color:inherit;opacity:.75;transition:all .18s;user-select:none;
+}
+.gx-modes label:hover{opacity:1}
+.gx-modes label:has(input:checked){
+  background:linear-gradient(135deg,rgba(66,94,216,.9),rgba(90,123,239,.9));
+  color:#fff;opacity:1;box-shadow:0 4px 14px rgba(66,94,216,.35);
+}
+.gx-modes label:has(input:checked) input{accent-color:#fff}
 .gx input{accent-color:#425ed8}
-.gx button{border:0;border-radius:8px;padding:13px 22px;background:#425ed8;color:white;font:inherit;cursor:pointer}
-.gx button:disabled{opacity:.5;cursor:wait}
+
+/* Кнопка отправки */
+.gx button{
+  border:0;border-radius:12px;padding:14px 30px;font:inherit;font-weight:700;
+  font-size:15px;cursor:pointer;color:#fff;
+  background:linear-gradient(135deg,#425ed8,#6d5df0);
+  box-shadow:0 6px 20px rgba(66,94,216,.4);
+  transition:transform .16s,box-shadow .16s,filter .16s;
+}
+.gx button:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(66,94,216,.5);filter:brightness(1.06)}
+.gx button:active{transform:translateY(0);box-shadow:0 4px 12px rgba(66,94,216,.4)}
+.gx button:disabled{opacity:.5;cursor:wait;transform:none;box-shadow:none}
 .gx :focus-visible{outline:3px solid #798dec;outline-offset:3px}
-.gx-hint{font-size:13px;line-height:1.5;opacity:.75}
-.gx-toolbar{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-.gx a{color:inherit;text-decoration:underline;cursor:pointer}
-.gx img{display:block;width:100%;height:auto;max-height:780px;object-fit:contain;background:white;border:1px solid #9ba7b844;border-radius:12px}
+
+/* Статус */
+.gx #gx-status{
+  min-height:24px;white-space:pre-wrap;font-size:14.5px;line-height:1.55;
+  opacity:.8;padding:2px 4px;
+}
+.gx #gx-resume{padding:10px 20px;font-size:14px;font-weight:600;
+  background:transparent;border:1px solid rgba(155,167,184,.35);color:inherit;
+  box-shadow:none}
+.gx #gx-resume:hover{border-color:#5a7bef;filter:none}
+
+/* Результат */
+.gx #gx-result{
+  margin-top:8px;padding:24px;border-radius:20px;
+  border:1px solid rgba(155,167,184,.18);
+  background:rgba(2,6,23,.25);
+}
+.gx-toolbar{display:flex;justify-content:space-between;align-items:center;
+  gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.gx-toolbar label{font-size:14px;opacity:.85;display:inline-flex;align-items:center;gap:8px}
+.gx a{
+  color:#9db4ff;text-decoration:none;cursor:pointer;font-size:14px;font-weight:600;
+  border:1px solid rgba(125,141,252,.4);border-radius:10px;padding:9px 18px;
+  transition:all .18s;
+}
+.gx a:hover{background:rgba(66,94,216,.15);border-color:#5a7bef}
+.gx img{
+  display:block;width:100%;height:auto;max-height:780px;object-fit:contain;
+  background:#fff;border:1px solid rgba(155,167,184,.25);border-radius:14px;
+}
 .gx #gx-detail{margin-top:24px}
-.gx #gx-status{min-height:24px;white-space:pre-wrap}
-.gx li{margin:8px 0}
+.gx #gx-detail h2{font-size:18px;margin:0 0 6px}
+.gx #gx-measured{font-size:14.5px;opacity:.85;margin:16px 0 4px}
+.gx ul{margin:8px 0 0;padding-left:20px}
+.gx li{margin:8px 0;font-size:13.5px;line-height:1.5;opacity:.8}
+.gx-hint{font-size:13px;line-height:1.5;opacity:.6;margin-top:16px}
 .gx [hidden]{display:none!important}
-@media(max-width:550px){.gx{padding:0 12px;margin-top:24px}.gx form{padding:16px}.gx fieldset{display:grid}.gx button{width:100%}}
+
+/* Пульсирующая точка при работе */
+.gx #gx-status:not(:empty)::before{
+  content:"";display:inline-block;width:8px;height:8px;margin-right:9px;
+  border-radius:50%;background:#5a7bef;vertical-align:1px;
+  animation:gx-pulse 1.2s ease-in-out infinite;
+}
+@keyframes gx-pulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+
+@media(max-width:550px){
+  .gx{padding:0 12px;margin-top:28px}
+  .gx form{padding:18px}
+  .gx-modes{display:flex;flex-direction:column;gap:6px;width:100%;box-sizing:border-box}
+  .gx-modes label{width:100%;box-sizing:border-box;justify-content:flex-start;padding:12px 14px;font-size:13.5px}
+  .gx button{width:100%}
+  .gx-toolbar{flex-direction:column;align-items:stretch;gap:10px}
+  .gx-toolbar a{width:100%;text-align:center;box-sizing:border-box}
+}
