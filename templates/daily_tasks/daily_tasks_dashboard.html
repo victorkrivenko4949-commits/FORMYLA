@@ -1459,6 +1459,37 @@
   var dtCurrentItem = null;
   var dtSolutionPhotoFile = null;   // фото решения из тетрадки (File)
 
+  // PHOTO_FIX_V1: сжатие/конвертация фото решения перед отправкой.
+  // HEIC с iPhone vision-модели не читают — конвертируем в JPEG через canvas
+  // (Safari на iPhone декодирует HEIC корректно), заодно ужимаем до 1600px
+  // с качеством 0.82: тяжёлые фото (5-12 МБ) уходили в base64 как есть и
+  // медленно проверялись. Если canvas недоступен или файл уже лёгкий JPEG —
+  // отдаём исходный файл без изменений.
+  function dtCompressPhoto(file) {
+    if (!file.type || file.type.indexOf('image/') !== 0) return Promise.resolve(file);
+    if (file.type === 'image/jpeg' && file.size < 400 * 1024) return Promise.resolve(file);
+    if (typeof createImageBitmap !== 'function') return Promise.resolve(file);
+    return createImageBitmap(file).then(function(bitmap) {
+      var maxDim = 1600, quality = 0.82;
+      var w = bitmap.width, h = bitmap.height;
+      if (Math.max(w, h) > maxDim) {
+        var k = maxDim / Math.max(w, h);
+        w = Math.round(w * k); h = Math.round(h * k);
+      }
+      var cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+      if (bitmap.close) bitmap.close();
+      return new Promise(function(resolve) {
+        cv.toBlob(function(blob) {
+          if (!blob) { resolve(file); return; }
+          var nm = (file.name || 'photo').replace(/\.[^.]+$/, '');
+          resolve(new File([blob], nm + '.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', quality);
+      });
+    }).catch(function() { return file; });
+  }
+
   function dtDraftKey(itemId) { return 'dt_draft_' + itemId; }
 
   function dtSaveDraft(itemId) {
@@ -1734,18 +1765,28 @@
     }
 
     if (photoFile) {
-      // Читаем фото в base64 и сразу шлём в AI-проверку
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var b64 = (e.target.result || '').split(',')[1] || '';
-        doAiSubmit(b64 ? [b64] : []);
-      };
-      reader.onerror = function() {
+      // PHOTO_FIX_V1: сначала сжимаем/конвертируем фото, потом в base64.
+      // Раньше сырой File уходил как есть: HEIC с iPhone vision-модели не
+      // читают («Не удалось разобрать, что написано на фото» на каждом
+      // фото), а тяжёлые JPEG 5-12 МБ медленно проверялись и раздували
+      // запрос. Теперь: HEIC/сырые фото → JPEG ≤1600px, ~0.82 качества.
+      dtCompressPhoto(photoFile).then(function(cf) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var b64 = (e.target.result || '').split(',')[1] || '';
+          doAiSubmit(b64 ? [b64] : []);
+        };
+        reader.onerror = function() {
+          btn.disabled = false;
+          btn.textContent = oldTxt;
+          res.innerHTML = '<div style="color:var(--bad);">Не удалось прочитать фото</div>';
+        };
+        reader.readAsDataURL(cf);
+      }).catch(function() {
         btn.disabled = false;
         btn.textContent = oldTxt;
-        res.innerHTML = '<div style="color:var(--bad);">Не удалось прочитать фото</div>';
-      };
-      reader.readAsDataURL(photoFile);
+        res.innerHTML = '<div style="color:var(--bad);">Не удалось обработать фото</div>';
+      });
     } else {
       doAiSubmit([]);
     }

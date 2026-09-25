@@ -85,7 +85,14 @@ def check_solution(
 
     user_answer = (user_answer or "").strip()
     user_solution = (user_solution or "").strip()
-    images = [x for x in (images_b64 or []) if x]
+    # PHOTO_FIX_V1: HEIC/HEIF → JPEG один раз на входе — дальше и OCR,
+    # и чекер работают с форматом, который читают vision-модели.
+    try:
+        from services.solution_ocr import ensure_jpeg_images
+        images = ensure_jpeg_images(images_b64)
+    except Exception as _fix_err:
+        logger.warning("[pipeline] ensure_jpeg_images failed: %s", _fix_err)
+        images = [x for x in (images_b64 or []) if x]
 
     ocr_meta: Optional[Dict[str, Any]] = None
 

@@ -59,6 +59,64 @@ def _strip_dataurl(b: str) -> str:
     return b.split(",", 1)[-1] if b.startswith("data:") else b
 
 
+# PHOTO_FIX_V1: HEIC/HEIF-фото (iPhone по умолчанию снимает в HEIC) —
+# vision-модели (OpenRouter/Gemini/DeepSeek) такой формат не принимают:
+# раньше _mime_from_b64 помечал их как «image/jpeg», все движки падали,
+# и ученик на каждом фото получал 422 «Не удалось разобрать, что написано
+# на фото». Конвертируем в JPEG на сервере (pillow_heif есть в requirements).
+_HEIC_BRANDS = (b"heic", b"heix", b"heim", b"heis", b"hevc", b"hevm", b"mif1", b"msf1")
+
+
+def _is_heic(b64: str) -> bool:
+    """HEIC/HEIF по magic bytes (ftyp-бокс с брендами heic/mif1/...)."""
+    try:
+        head = base64.b64decode(b64[:32] + "==", validate=False)[:16]
+        return head[4:8] == b"ftyp" and head[8:12].lower() in _HEIC_BRANDS
+    except Exception:
+        return False
+
+
+def _heic_to_jpeg_b64(b64: str) -> Optional[str]:
+    """HEIC/HEIF → JPEG (base64). None, если конвертация невозможна."""
+    try:
+        from io import BytesIO
+        from PIL import Image
+        try:
+            from pillow_heif import register_heif_opener
+            register_heif_opener()
+        except Exception:
+            logger.warning("[solution_ocr] pillow_heif недоступен — HEIC не конвертируется")
+            return None
+        img = Image.open(BytesIO(base64.b64decode(b64)))
+        img = img.convert("RGB")
+        buf = BytesIO()
+        img.save(buf, "JPEG", quality=88)
+        return base64.b64encode(buf.getvalue()).decode("ascii")
+    except Exception as e:
+        logger.warning("[solution_ocr] HEIC→JPEG conversion failed: %s", e)
+        return None
+
+
+def ensure_jpeg_images(images: List[str]) -> List[str]:
+    """PHOTO_FIX_V1: нормализовать список base64-фото — HEIC/HEIF → JPEG.
+
+    JPEG/PNG/WebP/GIF проходят без изменений. Используется и в OCR,
+    и в чекере (solution_check_pipeline), чтобы vision-модели всегда
+    получали читаемый формат.
+    """
+    out: List[str] = []
+    for raw in (images or []):
+        if not raw:
+            continue
+        b64 = _strip_dataurl(raw)
+        if _is_heic(b64):
+            conv = _heic_to_jpeg_b64(b64)
+            if conv:
+                b64 = conv
+        out.append(b64)
+    return out
+
+
 def _ocr_tesseract(image_bytes: bytes, mime: str) -> Optional[str]:
     """Локальный бесплатный OCR через Tesseract. None при недоступности."""
     try:
@@ -341,6 +399,11 @@ def ocr_solution_images(
 
     for idx, raw in enumerate(images, start=1):
         b64 = _strip_dataurl(raw)
+        # PHOTO_FIX_V1: HEIC → JPEG до вызова vision-моделей
+        if _is_heic(b64):
+            _conv = _heic_to_jpeg_b64(b64)
+            if _conv:
+                b64 = _conv
         mime = _mime_from_b64(b64)
 
         # Шаг 1: Gemini flash через OpenRouter — ОСНОВНОЙ распознаватель.
