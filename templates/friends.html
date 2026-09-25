@@ -140,7 +140,14 @@ function showToast(msg, ok) {
 
 function doFetch(url, cb) {
   fetch(url, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
-    .then(function(r){ return r.json(); })
+    .then(function(r){
+      return r.text().then(function(txt){
+        var d;
+        try { d = JSON.parse(txt); }
+        catch(e) { d = {error: r.ok ? 'Сервер вернул некорректный ответ' : 'Ошибка сервера (' + r.status + ')'}; }
+        return d;
+      });
+    })
     .then(cb)
     .catch(function(){ showToast('Ошибка сети', false); });
 }
@@ -225,6 +232,14 @@ document.getElementById('user-search').addEventListener('input', function() {
 function sendRequest(btn) {
   var uid = btn.dataset.uid;
   doFetch('/friends/request/' + uid, function(d) {
+    if (d.error === 'Запрос уже отправлен') {
+      // заявка уже есть в БД — считаем, что она отправлена
+      showToast('Запрос отправлен', true);
+      btn.textContent = 'Отправлено';
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      return;
+    }
     if (d.error) { showToast(d.error, false); return; }
     showToast(d.message || 'Запрос отправлен', true);
     btn.textContent = 'Отправлено';

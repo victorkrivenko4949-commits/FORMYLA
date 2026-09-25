@@ -11507,10 +11507,15 @@ def daily_set_page():
 # FRIENDSHIP SYSTEM ROUTES
 # ============================================================================
 
-def _make_notif(uid, ntype, sender_id):
-    """Create a notification."""
+def _make_notif(uid, ntype, sender_id, data=None):
+    """Create a notification (data — optional JSON-serializable payload)."""
     from models import Notification
-    n = Notification(user_id=uid, type=ntype, from_user_id=sender_id)
+    n = Notification(
+        user_id=uid,
+        type=ntype,
+        from_user_id=sender_id,
+        data=json.dumps(data, ensure_ascii=False) if data else None
+    )
     db.session.add(n)
     try:
         db.session.commit()
