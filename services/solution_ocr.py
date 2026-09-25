@@ -292,8 +292,13 @@ def _ocr_gemini_vision(b64: str, task_text: str) -> Optional[str]:
 def _ocr_deepseek_vision(b64: str, task_text: str) -> Optional[str]:
     """DeepSeek vision (deepseek-v4-flash-vision-exp) — распознавание рукописных решений.
 
-    Прямой вызов к api.deepseek.com с image_url; корректно читает LaTeX-дроби
-    и знаки неравенств (проверено). None при сбое.
+    OCR_PRIMARY_V1: ОСНОВНОЙ распознаватель задач дня — ровно та же
+    конфигурация, что в проверенной системе «Генерация чертежей»
+    (routes/figures.py fig_recognize_photo) и в ИИ-тьюторе
+    (ai_tutor_review.transcribe_photos): api.deepseek.com,
+    DEEPSEEK_VISION_MODEL, тот же промпт и параметры. Прямой вызов с
+    image_url; корректно читает LaTeX-дроби и знаки неравенств.
+    None при сбое.
     """
     try:
         import os as _os
@@ -303,7 +308,8 @@ def _ocr_deepseek_vision(b64: str, task_text: str) -> Optional[str]:
             return None
         _model = _os.getenv("DEEPSEEK_VISION_MODEL", "deepseek-v4-flash-vision-exp").strip()
         _mime = _mime_from_b64(b64)
-        _prompt = "Распознай это рукописное решение задачи. Формулы оформи в LaTeX."
+        # Промпт и параметры — один в один из работающей системы чертежей.
+        _prompt = "Верни текст с изображения, формулы в LaTeX."
         if task_text:
             _prompt += f"\n\nДля контекста, задача: {task_text[:600]}"
         _resp = _requests.post(
@@ -317,8 +323,8 @@ def _ocr_deepseek_vision(b64: str, task_text: str) -> Optional[str]:
                         {"type": "image_url", "image_url": {"url": f"data:{_mime};base64,{b64}"}},
                     ]},
                 ],
-                "temperature": 0.3,
-                "max_tokens": 4096,
+                "temperature": 0.7,
+                "max_tokens": 8192,
             },
             timeout=(15, 60),
         )
@@ -406,26 +412,28 @@ def ocr_solution_images(
                 b64 = _conv
         mime = _mime_from_b64(b64)
 
-        # Шаг 1: Gemini flash через OpenRouter — ОСНОВНОЙ распознаватель.
+        # Шаг 1: DeepSeek vision — ОСНОВНОЙ распознаватель (OCR_PRIMARY_V1).
+        # Та же система, что в «Генерации чертежей» и ИИ-тьюторе — она
+        # стабильно работает. Gemini/OpenRouter — резервы ниже.
         text = None
         engine = "none"
-        text = _ocr_openrouter_gemini(b64, task_text)
+        text = _ocr_deepseek_vision(b64, task_text)
         if text:
-            engine = "openrouter_gemini"
+            engine = "deepseek_vision"
 
-        # Шаг 1b: Gemini через OdiRouter (резерв, если задан GEMINI_API_KEY).
+        # Шаг 2: Gemini flash через OpenRouter (резерв).
+        if not text:
+            text = _ocr_openrouter_gemini(b64, task_text)
+            if text:
+                engine = "openrouter_gemini"
+
+        # Шаг 3: Gemini через OdiRouter (резерв, если задан GEMINI_API_KEY).
         if not text:
             text = _ocr_gemini_vision(b64, task_text)
             if text:
                 engine = "gemini_vision"
 
-        # Шаг 2: DeepSeek vision (резерв).
-        if not text:
-            text = _ocr_deepseek_vision(b64, task_text)
-            if text:
-                engine = "deepseek_vision"
-
-        # Шаг 3: локальный Tesseract (резерв).
+        # Шаг 4: локальный Tesseract (резерв).
         if not text:
             try:
                 img_bytes = base64.b64decode(b64)
@@ -435,7 +443,7 @@ def ocr_solution_images(
             except Exception as e:
                 logger.warning("[solution_ocr] b64 decode failed #%d: %s", idx, e)
 
-        # Шаг 4: Novita vision (резерв).
+        # Шаг 5: Novita vision (резерв).
         if not text:
             text = _ocr_novita_vision(b64, task_text)
             if text:
@@ -472,11 +480,12 @@ def ocr_solution_images(
         }
 
     # Итоговая уверенность — минимум по частям (грубая оценка)
+    # OCR_PRIMARY_V1: deepseek_vision — основной движок, уверенность 0.9.
     if "none" in engines_used:
         confidence = 0.3
-    elif "openrouter_gemini" in engines_used and engines_used[0] == "openrouter_gemini":
-        confidence = 0.9
-    elif "gemini_vision" in engines_used and engines_used[0] == "gemini_vision":
+    elif engines_used and engines_used[0] in (
+        "deepseek_vision", "openrouter_gemini", "gemini_vision",
+    ):
         confidence = 0.9
     elif "deepseek_vision" in engines_used and "tesseract" in engines_used:
         confidence = 0.7
@@ -485,8 +494,11 @@ def ocr_solution_images(
     else:
         confidence = 0.7
 
-    # Приоритет имени движка для аудита: gemini(openrouter/odirouter) > tesseract > novita > deepseek.
-    if "openrouter_gemini" in engines_used:
+    # Приоритет имени движка для аудита: deepseek (основной) > gemini
+    # (openrouter/odirouter) > tesseract > novita.
+    if "deepseek_vision" in engines_used:
+        engine_name = "deepseek_vision"
+    elif "openrouter_gemini" in engines_used:
         engine_name = "openrouter_gemini"
     elif "gemini_vision" in engines_used:
         engine_name = "gemini_vision"
@@ -494,8 +506,6 @@ def ocr_solution_images(
         engine_name = "tesseract"
     elif "novita_vision" in engines_used:
         engine_name = "novita_vision"
-    elif "deepseek_vision" in engines_used:
-        engine_name = "deepseek_vision"
     else:
         engine_name = "none"
 
