@@ -2,7 +2,7 @@
 {% block title %}Чертёж по условию | FORMYLA{% endblock %}
 {% block extra_css %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('geoexact.static', filename='draw.css') }}">
+<link rel="stylesheet" href="{{ url_for('geoexact.static', filename='draw.css') }}?v={{ asset_version }}">
 {% endblock %}
 {% block content %}
 <section id="geoexact" class="gx" data-api="{{ url_for('geoexact.submit') }}"
@@ -10,19 +10,19 @@
          data-csrf="{{ geoexact_csrf }}">
   <header><p class="gx-kicker">ГЕОМЕТРИЯ · FORMYLA</p>
     <h1>Чертёж по условию</h1>
-    <p>Введите задачу. Выберите исходную конфигурацию или чертёж с дополнительными построениями.</p>
+    <p class="gx-lead">Введите задачу. Выберите исходную конфигурацию или чертёж с дополнительными построениями.</p>
   </header>
   <form id="gx-form">
     <label for="gx-problem">Условие задачи</label>
     <textarea id="gx-problem" minlength="10" maxlength="12000" rows="7" required
       placeholder="В треугольнике ABC стороны AB = 13, BC = 14, AC = 15. Проведена высота AH…"></textarea>
     <fieldset><legend>Режим чертежа</legend>
-      <label><input type="radio" name="gx-mode" value="base" checked> Без дополнительных построений</label>
-      <label><input type="radio" name="gx-mode" value="aux"> С дополнительными построениями</label>
+      <div class="gx-modes">
+        <label><input type="radio" name="gx-mode" value="base" checked> Без дополнительных построений</label>
+        <label><input type="radio" name="gx-mode" value="aux"> С дополнительными построениями</label>
+      </div>
     </fieldset>
-    <p class="gx-hint">Текст отправляется в DeepSeek для разбора. Не вводите персональные данные.
-      Измерения на рисунке не заменяют доказательство.</p>
-    <button id="gx-submit" type="submit">Построить чертёж</button>
+    <button id="gx-submit" type="submit">✏️ Построить чертёж</button>
   </form>
   <p id="gx-status" role="status" aria-live="polite"></p>
   <button id="gx-resume" type="button" hidden>Проверить готовность</button>
@@ -45,5 +45,5 @@
 {% endblock %}
 {% block extra_js %}
 {{ super() }}
-<script src="{{ url_for('geoexact.static', filename='draw.js') }}" defer></script>
+<script src="{{ url_for('geoexact.static', filename='draw.js') }}?v={{ asset_version }}" defer></script>
 {% endblock %}

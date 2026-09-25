@@ -243,6 +243,9 @@
 
   function looksLikeTaskPage(){
     const path = window.location.pathname || '';
+    // Страница генерации чертежей — не страница задачи,
+    // плавающую кнопку «Поделиться с другом» там не показываем.
+    if (/^\/geometry\/draw(\/|$)/.test(path)) return false;
     if (TASK_URL_PATTERNS.some(re => re.test(path))) return true;
     // Запасной DOM-эвристик: есть блок с условием задачи
     return !!(document.querySelector('.problem-text, .problem-card, #taskTextBlock, [data-task-text]'));
