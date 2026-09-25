@@ -375,7 +375,6 @@ def ai_tutor_stats() -> dict:
         'assistant_week': 0,
         'users_week': 0,
         'top_agents': [],
-        'generation_cost_usd': 0.0,
     }
     try:
         from models import db, ChatMessage
@@ -403,13 +402,6 @@ def ai_tutor_stats() -> dict:
     except Exception as e:
         logger.warning('ai_tutor_stats: chat skipped: %r', e)
 
-    try:
-        from daily_tasks.models import DailyTaskSet
-        from sqlalchemy import func
-        total = db.session.query(func.sum(DailyTaskSet.total_cost_usd)).scalar()
-        out['generation_cost_usd'] = round(float(total or 0), 2)
-    except Exception as e:
-        logger.warning('ai_tutor_stats: cost skipped: %r', e)
     return out
 
 
