@@ -57,6 +57,12 @@
             <a href="/insights" class="misc-link"><span class="misc-link-label">💡 Банк неточностей</span><span class="misc-link-desc">Найденные недочёты и задачи на отработку</span></a>
             <button class="pin-btn" data-pin-id="insights" data-pin-label="💡 Банк неточностей" data-pin-href="/insights" data-pin-desc="Найденные недочёты и задачи на отработку" title="На главную">📌</button>
         </div>
+        {% if current_user.is_authenticated and not current_user.is_guest %}
+        <div class="misc-row">
+            <a href="/geometry/draw/" class="misc-link"><span class="misc-link-label">📐 Генерация чертежей</span><span class="misc-link-desc">Введи условие задачи по геометрии — получи чертёж: с доп. построением или без</span></a>
+            <button class="pin-btn" data-pin-id="geoexact" data-pin-label="📐 Генерация чертежей" data-pin-href="/geometry/draw/" data-pin-desc="Чертёж по условию задачи: с доп. построением или без" title="На главную">📌</button>
+        </div>
+        {% endif %}
     </div>
 
     <div class="misc-group">
