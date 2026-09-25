@@ -31,14 +31,8 @@ intake_bp = Blueprint('intake', __name__, url_prefix='/intake')
 @login_required
 def intake_page():
     """Страница анкеты входа."""
-    # Если роль уже teacher/parent — редирект в соответствующий раздел
-    _role = getattr(current_user, 'role', 'student') or 'student'
-    if _role == 'teacher':
-        from flask import redirect, url_for
-        return redirect(url_for('parent_teacher.teacher_dashboard'))
-    if _role == 'parent':
-        from flask import redirect, url_for
-        return redirect(url_for('parent_teacher.parent_dashboard'))
+    # FULL_ACCESS_V1 (25.09.2026): учитель и родитель тоже могут пройти
+    # анкету (у них всё, что у ученика). Раньше их редиректило в их раздел.
 
     # Анкету всегда рендерим: если она уже пройдена, фронтенд через
     # POST /intake/start получит сохранённый результат (решения переживают

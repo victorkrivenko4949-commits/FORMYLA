@@ -168,13 +168,10 @@
     </style>
     {% endif %}
     <header class="header">
-        {% if current_user.is_authenticated and current_user.role == 'teacher' %}
-        <a href="/teacher" class="logo">
-        {% elif current_user.is_authenticated and current_user.role == 'parent' %}
-        <a href="/parent" class="logo">
-        {% else %}
+        {# FULL_ACCESS_V1 (25.09.2026): учитель и родитель имеют всё, что у
+           ученика, поэтому логотип ведёт на главную, как у ученика. Их
+           собственный раздел («Мои ученики» / «Мои гении») — в навигации. #}
         <a href="{{ url_for('index') }}" class="logo">
-        {% endif %}
             <!-- 2026-09-15 FIX: после ребренда «FORMYLA.net» длиннее «FORMYLA» —
                  расширил viewBox до 400, иначе «.net» обрезалось справа. -->
             <svg class="site-logo" width="200" height="60" viewBox="0 0 400 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
@@ -201,8 +198,17 @@
         </button>
 
         <nav class="nav" id="navLinks">
-            <!-- 1. Олимпиады (dropdown) — скрыт для родителя; учитель видит всё, что и ученик -->
-            {% if not (current_user.is_authenticated and current_user.role == 'parent') %}
+            {# FULL_ACCESS_V1 (25.09.2026): учитель И родитель видят все разделы
+               ученика (Олимпиады, Задачи дня, Куратор, Прочее, Профиль) плюс
+               свой собственный раздел — «Мои ученики» / «Мои гении (дети)». #}
+            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+            <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.role == 'parent' %}
+            <a href="/parent" class="nav-item">👨‍👩‍👧 Мои гении (дети)</a>
+            {% endif %}
+
+            <!-- 1. Олимпиады (dropdown) — виден всем ролям -->
             <div class="nav-dropdown">
                 <button class="nav-item nav-toggle" type="button">
                     🏆 Олимпиады <span class="chev">▾</span>
@@ -212,26 +218,14 @@
                     <a href="{{ url_for('olympiad_prep.calendar') }}">📅 Календарь олимпиад</a>
                 </div>
             </div>
-            {% endif %}
 
-            <!-- 2. Ученик: Задачи дня + Куратор (видны всем; вход требуется при открытии)
-                 Родитель видит ТОЛЬКО свой раздел. Учитель — свой раздел ПЛЮС все ученичьи. -->
-            {% if current_user.is_authenticated and current_user.role == 'parent' %}
-            <a href="/parent" class="nav-item">👨‍👩‍👧 Мои гении (дети)</a>
-            <a href="/about" class="nav-item">📖 О сайте</a>
-            {% else %}
-            {% if current_user.is_authenticated and current_user.role == 'teacher' %}
-            <a href="/teacher" class="nav-item">👨‍🏫 Мои ученики</a>
-            {% endif %}
+            <!-- 2. Задачи дня + Куратор (видны всем ролям) -->
             <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="nav-item">📅 Задачи дня</a>
             <a href="{{ url_for('prep.coach') }}" class="nav-item">🎓 Куратор подготовки</a>
             <a href="/olympiad-start" class="nav-item">📖 С чего начать</a>
-            {% endif %}
 
-            <!-- 3. Прочее — скрыт для родителя; учитель видит как ученик -->
-            {% if not (current_user.is_authenticated and current_user.role == 'parent') %}
+            <!-- 3. Прочее — виден всем ролям -->
             <a href="/misc" class="nav-item">📦 Прочее <span class="insights-badge"></span></a>
-            {% endif %}
 
             <!-- Закреплённые пункты (из «Прочее» 📌, заполняется nav.js) -->
             <span class="nav-pinned" id="pinnedNavItems"></span>
@@ -265,8 +259,7 @@
                 {% endif %}
 
                 <!-- Авторизованный пользователь: «Профиль» авто-закреплён (всегда виден).
-                     Для родителя профиль скрыт — остаётся только «Выйти». -->
-                {% if not (current_user.is_authenticated and current_user.role == 'parent') %}
+                     FULL_ACCESS_V1: теперь и для родителя — у него полный профиль, как у ученика. -->
                 <span id="profileNavWrap" class="nav-pinned-item">
                     <a href="{{ url_for('profile') }}"
                        style="padding: 8px 16px; background: rgba(56, 189, 248, 0.1); color: var(--accent-2); text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(56, 189, 248, 0.3); transition: all 0.2s;"
@@ -278,7 +271,6 @@
                             title="Открепить" aria-label="Открепить профиль"
                             onclick="unpinProfile()">✕</button>
                 </span>
-                {% endif %}
                 
                 <!-- Простая кнопка «Выйти» (с подтверждением). Удаление аккаунта — в конце профиля. -->
                 <a href="{{ url_for('logout') }}" onclick="return confirmLogout(event)"
@@ -340,16 +332,18 @@
 
         <!-- Navigation links -->
         <nav class="drawer-nav">
-            {% if current_user.is_authenticated and current_user.role == 'parent' %}
-            <a href="/parent" class="drawer-link">
-                <span class="drawer-link-icon">👨‍👩‍👧</span>
-                Мои гении (дети)
-            </a>
-            {% else %}
+            {# FULL_ACCESS_V1: учитель И родитель видят разделы ученика + свой раздел #}
             {% if current_user.is_authenticated and current_user.role == 'teacher' %}
             <a href="/teacher" class="drawer-link">
                 <span class="drawer-link-icon">👨‍🏫</span>
                 Мои ученики
+            </a>
+            <div class="drawer-divider"></div>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.role == 'parent' %}
+            <a href="/parent" class="drawer-link">
+                <span class="drawer-link-icon">👨‍👩‍👧</span>
+                Мои гении (дети)
             </a>
             <div class="drawer-divider"></div>
             {% endif %}
@@ -385,7 +379,6 @@
                 <span class="drawer-link-icon">📦</span>
                 Прочее <span class="insights-badge"></span>
             </a>
-            {% endif %}
         </nav>
 
         <!-- Footer: auth actions -->
@@ -408,16 +401,17 @@
          BOTTOM NAVIGATION BAR (hidden on desktop via CSS)
          ═══════════════════════════════════════════════ -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
-        {% if current_user.is_authenticated and current_user.role == 'parent' %}
-        <a href="/parent" class="bottom-nav-item" data-path="/parent*,/student*">
-            <span class="bottom-nav-icon">👨‍👩‍👧</span>
-            <span class="bottom-nav-label">Мои гении</span>
-        </a>
-        {% else %}
+        {# FULL_ACCESS_V1: учитель И родитель видят разделы ученика + свой раздел #}
         {% if current_user.is_authenticated and current_user.role == 'teacher' %}
         <a href="/teacher" class="bottom-nav-item" data-path="/teacher*,/student*">
             <span class="bottom-nav-icon">👨‍🏫</span>
             <span class="bottom-nav-label">Мои ученики</span>
+        </a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.role == 'parent' %}
+        <a href="/parent" class="bottom-nav-item" data-path="/parent*,/student*">
+            <span class="bottom-nav-icon">👨‍👩‍👧</span>
+            <span class="bottom-nav-label">Мои гении</span>
         </a>
         {% endif %}
         <a href="{{ url_for('daily_tasks.get_daily_tasks') }}" class="bottom-nav-item" data-path="/daily*">
@@ -444,7 +438,6 @@
             <span class="bottom-nav-icon">📦</span>
             <span class="bottom-nav-label">Прочее</span>
         </a>
-        {% endif %}
     </nav>
 
     <main class="main">

@@ -658,6 +658,45 @@ except Exception as e:
     db.session.rollback()
     print(f"[XP-BACKFILL] Warning: {e}")
 
+
+# ── SOLVED_RECONCILE_V1 (25.09.2026): «решено» = факты из БД, а не дрейфующий
+# счётчик. Владелец заметил: в админ-статистике (аккаунт Lavrik) число «решено»
+# не соответствует рейтингу. Причины: (1) олимпиадные задачи решались, но им
+# не начислялись ни рейтинг, ни счётчик — роут возвращал xp_earned=10 в JSON
+# и не сохранял его; (2) счётчик total_problems_solved дрейфовал от реальных
+# ответов. Здесь при каждом старте: доначисляем +10 XP за уже решённые
+# олимпиадные задачи (однократно, по флагу xp_awarded) и пересчитываем всем
+# пользователям total_problems_solved из фактических таблиц (задачи дня,
+# банк, отработка неточностей, олимпиады).
+try:
+    with app.app_context():
+        # сначала убеждаемся, что колонка olympiad_task_attempts.xp_awarded есть
+        try:
+            from migrations.add_olympiad_task_attempts_xp_awarded import (
+                ensure_column_sqla as _ensure_xp_col,
+            )
+            _ensure_xp_col()
+        except Exception as _col_err:
+            print(f"[SOLVED-RECONCILE] ensure xp_awarded column skipped: {_col_err}")
+
+        from services.solved_stats import (
+            award_missing_olympiad_xp as _award_oly_xp,
+            recount_all_users_solved as _recount_solved,
+        )
+        _credited_oly = _award_oly_xp()
+        if _credited_oly:
+            print(f"[SOLVED-RECONCILE] [OK] олимпиадный XP доначислен: "
+                  f"{sorted(_credited_oly)}")
+        _fixed = _recount_solved()
+        if _fixed:
+            print(f"[SOLVED-RECONCILE] [OK] счётчик «решено» исправлен "
+                  f"у {_fixed} пользователей")
+        else:
+            print("[SOLVED-RECONCILE] счётчики «решено» актуальны")
+except Exception as e:
+    db.session.rollback()
+    print(f"[SOLVED-RECONCILE] Warning: {e}")
+
 # ── FIX: сброс только «битых» результатов анкеты (ВЫПОЛНЯЕТСЯ ВСЕГДА) ──
 # Раньше блок сброса был вложен внутрь `if 'prep_state' not in columns`,
 # поэтому на проде (где колонка уже есть) он НИКОГДА не выполнялся.
@@ -4202,12 +4241,11 @@ def welcome():
 @app.route("/")
 def index():
     """Главная страница — редирект по роли."""
+    # FULL_ACCESS_V1 (25.09.2026): учитель и родитель получают ВСЁ, что есть
+    # у ученика (задачи дня, куратор, олимпиады, профиль), а их собственный
+    # раздел («Мои ученики» / «Мои гении») доступен из навигации. Раньше их
+    # сразу редиректило в /teacher или /parent — теперь главная общая.
     if current_user.is_authenticated:
-        _role = getattr(current_user, 'role', 'student') or 'student'
-        if _role == 'teacher':
-            return redirect('/teacher')
-        if _role == 'parent':
-            return redirect('/parent')
         return redirect(url_for('prep.coach'))
     # Гость приходит по ссылке/объявлению — сначала показываем страницу
     # «О проекте», а не сразу страницу входа.
@@ -6543,24 +6581,11 @@ def get_ai_solution(problem_id):
 @login_required
 def profile():
     """Личный кабинет пользователя с прогрессом и учениками."""
-    # ── Проверка роли: parent — показываем упрощённый профиль.
-    #    Учитель видит полный профиль, как ученик (навигация учителя = ученик + раздел «Мои ученики»). ──
+    # FULL_ACCESS_V1 (25.09.2026): родитель, как и учитель, видит ПОЛНЫЙ
+    # профиль (прогресс по темам, тесты, mastery, streak) — у него теперь
+    # всё, что у ученика, плюс раздел «Мои гении (дети)». Упрощённый
+    # пустой профиль для родителя убран.
     _user_role = getattr(current_user, 'role', 'student') or 'student'
-    if _user_role == 'parent':
-        return render_template('profile.html',
-                             user=current_user,
-                             user_role=_user_role,
-                             is_teacher_or_parent=True,
-                             progress_dict={},
-                             recent_tests=[],
-                             test_stats={},
-                             students=[],
-                             incoming_requests=[],
-                             mastery_list=[],
-                             mastery_list_json=[],
-                             overall_level=0,
-                             ai_recommendation='',
-                             streak_data=None)
 
     # Получаем прогресс по темам
     topic_progress = UserTopicProgress.query.filter_by(user_id=current_user.id).all()

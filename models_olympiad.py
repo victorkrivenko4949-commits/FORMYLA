@@ -334,6 +334,15 @@ class TaskAttempt(db.Model):
     started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     finished_at = db.Column(db.DateTime, nullable=True)
 
+    # XP_AWARD_V1 (25.09.2026): флаг «+10 рейтинга и +1 решённая за эту задачу
+    # уже начислены». Раньше роут отправки ответа возвращал xp_earned=10 в JSON,
+    # но НЕ начислял ни рейтинга, ни счётчика решённых — решённые олимпиадные
+    # задачи вообще не попадали в статистику и лидерборд. Флаг ставится в той
+    # же транзакции, что и начисление, поэтому двойного начисления нет.
+    xp_awarded = db.Column(
+        db.Boolean, nullable=False, default=False, server_default='0',
+    )
+
     task = db.relationship('OlympiadTask', back_populates='attempts')
 
     __table_args__ = (

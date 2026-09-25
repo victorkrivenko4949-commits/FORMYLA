@@ -268,11 +268,17 @@ def task_submit(task_id):
         except Exception as _e:
             _lg.getLogger(__name__).warning('AI-equivalence check failed: %r', _e)
 
-    # в”Ђв”Ђ upsert TaskAttempt в”Ђв”Ђ
+    # ── upsert TaskAttempt ──
     new_status = 'solved' if is_correct else 'attempted'
     attempt = (TaskAttempt.query
                .filter_by(user_id=current_user.id, task_id=task_id)
                .first())
+
+    # XP_AWARD_V1: +10 рейтинга и +1 решённая начисляются только за ПЕРВОЕ
+    # решение задачи (переход в status='solved'). Повторные отправки уже
+    # решённой задачи ничего не начисляют.
+    _award_xp_now = is_correct
+
     if not attempt:
         attempt = TaskAttempt(
             user_id=current_user.id, task_id=task_id,
@@ -282,12 +288,34 @@ def task_submit(task_id):
         )
         db.session.add(attempt)
     else:
-        # РЅРµ РїРѕРЅРёР¶Р°РµРј СЃС‚Р°С‚СѓСЃ СЃ solved в†’ attempted
+        # не понижаем статус solved -> attempted
         if attempt.status != 'solved':
             attempt.status = new_status
         attempt.note = user_answer_raw
         if is_correct:
             attempt.finished_at = datetime.utcnow()
+        # задача уже была решена раньше — XP за неё уже начислен
+        if attempt.status == 'solved' and getattr(attempt, 'xp_awarded', False):
+            _award_xp_now = False
+
+    # XP_AWARD_V1 (25.09.2026): раньше роут возвращал xp_earned=10, но НЕ
+    # начислял ни рейтинга, ни счётчика решённых — олимпиадные задачи вообще
+    # не попадали в статистику «решено» и в лидерборд (отсюда расхождение
+    # «решено» с рейтингом). Теперь +10 XP и +1 решённая начисляются в одной
+    # транзакции с ответом; флаг xp_awarded защищает от двойного начисления.
+    if _award_xp_now:
+        try:
+            from models import User as _User
+            _u = db.session.get(_User, current_user.id)
+            if _u is not None:
+                _u.experience_points = (_u.experience_points or 0) + 10
+                _u.total_problems_solved = (_u.total_problems_solved or 0) + 1
+                attempt.xp_awarded = True
+        except Exception as _xp_err:
+            _lg.getLogger(__name__).warning(
+                'task_submit: +XP не начислен task=%d user=%s: %r',
+                task_id, getattr(current_user, 'id', '?'), _xp_err,
+            )
     db.session.commit()
 
     xp_earned = 10 if is_correct else 0

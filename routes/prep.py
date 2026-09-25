@@ -1188,12 +1188,9 @@ def get_subtopic_test(grade, subtopic_key, count=5):
 @login_required
 def coach():
     """Страница Куратора: радар по 7 выбранным куратором подтемам + чат с ИИ-агентом."""
-    # Teacher/parent have no profile — redirect to their section
-    _role = getattr(current_user, 'role', 'student') or 'student'
-    if _role == 'teacher':
-        return redirect('/teacher')
-    if _role == 'parent':
-        return redirect('/parent')
+    # FULL_ACCESS_V1 (25.09.2026): учитель и родитель видят Куратора, как
+    # ученики (у них всё, что у ученика, + свой раздел в навигации).
+    # Раньше их редиректило в /teacher или /parent.
 
     # ── T3: compute user name for personalized greeting ─────────────────
     _t3_user_name = display_name_from_email(

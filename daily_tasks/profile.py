@@ -582,22 +582,13 @@ def _resolve_class_level(user: User) -> int:
     """Явный, не-молчаливый резолв класса.
 
     Если ``preferred_grade`` пуст или не парсится — бросаем ProfileBuildError.
-    Для пользователей с role='teacher' или 'parent' — сообщаем, что задачи дня
-    для них не генерируются (у них нет класса).
+
+    FULL_ACCESS_V1 (25.09.2026): учитель и родитель теперь полноценные
+    пользователи — задачи дня им тоже генерируются (после того, как они
+    укажут класс в профиле). Отдельная ветка «у вас нет класса» убрана.
 
     Никакого silent ``class_level=9`` (ТЗ п.6).
     """
-    role = getattr(user, 'role', 'student') or 'student'
-
-    # Учителя и родители не имеют класса — им задачи дня не нужны
-    if role in ('teacher', 'parent'):
-        msg = (
-            f"Профиль: {role}. У {role} нет класса ученика — "
-            "задачи дня не генерируются. Перейдите в раздел "
-            f"{'учителя' if role == 'teacher' else 'родителя'}."
-        )
-        raise ProfileBuildError(msg)
-
     raw_grade = getattr(user, 'preferred_grade', None)
     if raw_grade in (None, '', 0, '0'):
         msg = (

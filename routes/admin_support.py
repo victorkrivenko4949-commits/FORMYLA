@@ -1150,10 +1150,24 @@ def admin_users_stats():
              .all())
 
     # presence: онлайн прямо сейчас (last_seen < 5 мин назад)
+    # USERS_STATS_FIX (25.09.2026): на SQLite raw-SQL возвращает last_seen строкой —
+    # парсим defensively, иначе `now - seen` ронял страницу 500-й.
     presence_rows = db.session.execute(text(
         'SELECT user_id, last_seen FROM user_presence'
     )).fetchall()
-    presence_map = {r[0]: r[1] for r in presence_rows}
+
+    def _as_dt(v):
+        if isinstance(v, str):
+            from datetime import datetime as _dtx
+            for _fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S',
+                         '%Y-%m-%d %H:%M'):
+                try:
+                    return _dtx.strptime(v, _fmt)
+                except ValueError:
+                    continue
+        return v
+
+    presence_map = {r[0]: _as_dt(r[1]) for r in presence_rows}
 
     # Реальный уровень сложности (1..4) из curator_state.level_mu,
     # а не XP-уровень 1..10 из users.current_level.
@@ -1161,6 +1175,19 @@ def admin_users_stats():
         SELECT user_id, level_mu FROM curator_state WHERE level_mu IS NOT NULL
     ''')).fetchall()
     mu_map = {r[0]: float(r[1]) for r in cs_rows}
+
+    # SOLVED_STATS_V1 (25.09.2026): «решено» считаем из фактических таблиц БД
+    # (задачи дня + банк + отработка неточностей + олимпиады), а не из дрейфующего
+    # счётчика users.total_problems_solved — раньше число не соответствовало
+    # рейтингу. Счётчик тоже синхронизируется при старте приложения
+    # (SOLVED_RECONCILE в app.py), здесь же — живой пересчёт для страницы.
+    solved_map = {}
+    try:
+        from services.solved_stats import solved_counts_by_user
+        solved_map = solved_counts_by_user()
+    except Exception as _sm_err:
+        current_app.logger.warning('admin_users_stats: solved recount failed: %r',
+                                   _sm_err)
 
     rows = []
     for u in users:
@@ -1177,7 +1204,7 @@ def admin_users_stats():
             'created_at': u.created_at.strftime('%d.%m.%Y') if u.created_at else '—',
             'last_login': u.last_login.strftime('%d.%m.%Y %H:%M') if u.last_login else '—',
             'login_count': u.login_count or 0,
-            'problems': u.total_problems_solved or 0,
+            'problems': solved_map.get(u.id, u.total_problems_solved or 0),
             'level': diff_level,
             'xp': u.experience_points or 0,
             'xp_level': u.current_level or 1,
