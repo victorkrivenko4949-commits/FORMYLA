@@ -1438,10 +1438,32 @@ def admin_users_stats():
         'solved_week': solved_week,
         'photos_total': len(photo_items),
     }
+
+    # ADMIN_STATS_EXTRA_V1 (25.09.2026): доп. блоки по запросу владельца —
+    # воронка/удержание, слабые темы, проблемные задачи, типы задач,
+    # стрики, AI-тьютор, роли учителя/родителя. Каждый блок независим
+    # и при ошибке отдаёт пустые данные (страница не падает).
+    extra = {}
+    try:
+        from services import admin_stats_extra as _ase
+        extra = {
+            'funnel': _ase.funnel_stats(),
+            'weak_themes': _ase.weak_themes_stats(),
+            'problem_tasks': _ase.problem_tasks_stats(),
+            'task_types': _ase.task_types_stats(),
+            'streaks': _ase.streak_stats(),
+            'ai_tutor': _ase.ai_tutor_stats(),
+            'roles': _ase.roles_stats(),
+        }
+    except Exception as _ase_err:
+        current_app.logger.warning('admin_users_stats: extra stats failed: %r',
+                                   _ase_err)
+
     return render_template('admin/users_stats.html', rows=rows, total=total,
                            by_day=by_day, reg_map=reg_map, by_hour=by_hour,
                            top_xp=top_xp, top_problems=top_problems,
                            top_time=top_time, inactive=inactive,
                            photo_items=photo_items,
                            feedback_list=feedback_list,
-                           feedback_stats=feedback_stats)
+                           feedback_stats=feedback_stats,
+                           **extra)

@@ -272,5 +272,147 @@
       </tbody>
     </table>
   </div>
+
+  {# ══ ADMIN_STATS_EXTRA_V1 (25.09.2026): воронка, темы, типы задач, ══ #}
+  {# ══ стрики, AI-тьютор, роли — блоки по запросу владельца            ══ #}
+
+  {% if funnel and funnel.steps %}
+  <div class="us-sec">Воронка и удержание</div>
+  <div class="us-table-wrap">
+    <table class="us-table">
+      <thead>
+        <tr><th>Шаг</th><th>Пользователей</th><th>% от регистраций</th></tr>
+      </thead>
+      <tbody>
+      {% for s in funnel.steps %}
+        <tr>
+          <td><strong>{{ s.name }}</strong></td>
+          <td style="text-align:center;"><strong>{{ s.count }}</strong></td>
+          <td style="text-align:center;">{{ s.pct }}%</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="us-summary" style="margin-top:12px;">
+    {% for label, key in [('через 1 день', 'd1'), ('через 7 дней', 'd7'), ('через 30 дней', 'd30')] %}
+    {% set rr = funnel.retention.get(key) %}
+    <div class="us-card">
+      <div class="us-card-num">{{ rr.pct if rr else 0 }}%</div>
+      <div class="us-card-label">возвращаются {{ label }}</div>
+      <div class="us-card-sub">{% if rr %}{{ rr.retained }} из {{ rr.cohort }} зарегистрированных{% endif %}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if task_types %}
+  <div class="us-sec">По типам задач — где решают и с каким успехом</div>
+  <div class="us-table-wrap">
+    <table class="us-table">
+      <thead>
+        <tr><th>Раздел</th><th>Отвечено</th><th>Верно</th><th>% верных</th><th>Ср. время на задачу</th></tr>
+      </thead>
+      <tbody>
+      {% for t in task_types %}
+        <tr>
+          <td><strong>{{ t.name }}</strong></td>
+          <td style="text-align:center;">{{ t.answered }}</td>
+          <td style="text-align:center;">{{ t.correct }}</td>
+          <td style="text-align:center;"><strong style="{% if t.pct < 50 %}color:#f87171{% elif t.pct >= 75 %}color:#34d399{% endif %}">{{ t.pct }}%</strong></td>
+          <td style="text-align:center;">{% if t.avg_sec is not none %}{{ t.avg_sec }} сек{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if weak_themes %}
+  <div class="us-sec">Слабые темы — худший процент верных (минимум 5 ответов)</div>
+  <div class="us-table-wrap">
+    <table class="us-table">
+      <thead>
+        <tr><th>Источник</th><th>Тема</th><th>Отвечено</th><th>Верно</th><th>% верных</th></tr>
+      </thead>
+      <tbody>
+      {% for w in weak_themes %}
+        <tr>
+          <td>{{ w.source }}</td>
+          <td><strong>{{ w.theme }}</strong></td>
+          <td style="text-align:center;">{{ w.answered }}</td>
+          <td style="text-align:center;">{{ w.correct }}</td>
+          <td style="text-align:center;"><strong style="color:#f87171;">{{ w.pct }}%</strong></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if problem_tasks %}
+  <div class="us-sec">Проблемные задачи — чаще всего решают неверно</div>
+  <div class="us-table-wrap">
+    <table class="us-table">
+      <thead>
+        <tr><th>Условие (начало)</th><th>Отвечено</th><th>Неверных</th><th>% верных</th></tr>
+      </thead>
+      <tbody>
+      {% for p in problem_tasks %}
+        <tr>
+          <td>{{ p.text }}</td>
+          <td style="text-align:center;">{{ p.answered }}</td>
+          <td style="text-align:center;"><strong style="color:#f87171;">{{ p.wrong }}</strong></td>
+          <td style="text-align:center;">{{ p.pct }}%</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if streaks %}
+  <div class="us-sec">Серии дней подряд (стрики)</div>
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num">{{ streaks.avg }}</div><div class="us-card-label">средняя серия</div></div>
+    <div class="us-card"><div class="us-card-num">{{ streaks.max_ever }}</div><div class="us-card-label">рекорд серии</div></div>
+    {% for label, cnt in streaks.buckets.items() %}
+    <div class="us-card"><div class="us-card-num">{{ cnt }}</div><div class="us-card-label">серия {{ label }} дн.</div></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if ai_tutor %}
+  <div class="us-sec">AI-тьютор и генерация задач</div>
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num">{{ ai_tutor.assistant_total }}</div><div class="us-card-label">ответов тьютора всего</div></div>
+    <div class="us-card"><div class="us-card-num">{{ ai_tutor.assistant_week }}</div><div class="us-card-label">за 7 дней</div></div>
+    <div class="us-card"><div class="us-card-num">{{ ai_tutor.users_week }}</div><div class="us-card-label">общались за 7 дней</div></div>
+    <div class="us-card"><div class="us-card-num">${{ ai_tutor.generation_cost_usd }}</div><div class="us-card-label">генерация задач дня, всего</div></div>
+  </div>
+  {% if ai_tutor.top_agents %}
+  <div class="us-table-wrap">
+    <table class="us-table">
+      <thead><tr><th>Агент (30 дней)</th><th>Сообщений</th></tr></thead>
+      <tbody>
+      {% for a in ai_tutor.top_agents %}
+        <tr><td><strong>{{ a.name }}</strong></td><td style="text-align:center;">{{ a.count }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  {% if roles %}
+  <div class="us-sec">Роли — учителя и родители</div>
+  <div class="us-summary">
+    <div class="us-card"><div class="us-card-num">{{ roles.students }}</div><div class="us-card-label">учеников</div><div class="us-card-sub">активны за 7 дней: {{ roles.active_by_role.get('student', 0) }}</div></div>
+    <div class="us-card"><div class="us-card-num">{{ roles.teachers }}</div><div class="us-card-label">учителей</div><div class="us-card-sub">активны за 7 дней: {{ roles.active_by_role.get('teacher', 0) }}</div></div>
+    <div class="us-card"><div class="us-card-num">{{ roles.parents }}</div><div class="us-card-label">родителей</div><div class="us-card-sub">активны за 7 дней: {{ roles.active_by_role.get('parent', 0) }}</div></div>
+    <div class="us-card"><div class="us-card-num">{{ roles.parents_bound }}</div><div class="us-card-label">родителей привязали ребёнка</div></div>
+    <div class="us-card"><div class="us-card-num">{{ roles.groups }}</div><div class="us-card-label">групп учителей</div><div class="us-card-sub">с учениками: {{ roles.groups_with_members }}, учеников в группах: {{ roles.group_members }}</div></div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
