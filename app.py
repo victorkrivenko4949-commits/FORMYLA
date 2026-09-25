@@ -3183,6 +3183,12 @@ def force_intake_completion():
 
     # Только реальные пользователи
     if not (current_user.is_authenticated and not getattr(current_user, 'is_guest', False)):
+        # Публичные пути уже разрешены хуком require_registration — не блокируем
+        # их здесь (иначе гости не могут отправить отзыв / поддержку:
+        # POST /api/feedback получал 401 authentication_required).
+        for _p in _PUBLIC_PATHS:
+            if path.startswith(_p):
+                return
         # Для API-запросов вместо HTML-редиректа на логин возвращаем JSON-ошибку,
         # иначе response.json() на клиенте падает в catch и виджеты молча не работают.
         if path.startswith('/api/'):
