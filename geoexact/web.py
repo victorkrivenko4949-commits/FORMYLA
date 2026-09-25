@@ -1,5 +1,6 @@
 """Concrete Flask-Login + FORMYLA CSRF integration, disabled unless opted in."""
 import os
+import time
 
 from flask import Blueprint, abort, current_app, jsonify, render_template, request
 from flask_login import current_user, login_required
@@ -8,6 +9,19 @@ from .jobs import Queue, QueueFull, init_db, make_engine
 
 bp = Blueprint("geoexact", __name__, url_prefix="/geometry/draw",
                template_folder="templates", static_folder="static")
+
+# In-memory rate-limit для распознавания фото: ≤ 20 фото/час на пользователя.
+_PHOTO_RATE_LIMIT = {}
+
+# Промпт распознавания: полный текст условия, формулы в LaTeX.
+# В конвейер уходит эта версия, а пользователь видит её без LaTeX
+# (преобразование на клиенте).
+_VISION_PROMPT = (
+    "Это фотография геометрической задачи. Верни полный текст условия "
+    "задачи так, как он написан, на языке оригинала. Формулы переведи "
+    "в LaTeX (например \\frac{3}{4}, \\angle ABC, 90^\\circ). "
+    "Без пояснений и без markdown — только текст условия."
+)
 
 
 def init_app(app):
@@ -115,3 +129,82 @@ def active():
             jobs.c.status.in_(["queued", "running"])
         ).order_by(jobs.c.created.desc()).limit(1)).first()
     return jsonify(job_id=row.id if row else None)
+
+
+@bp.post("/recognize-photo")
+@login_required
+def recognize_photo():
+    """Распознать текст условия с фото.
+
+    Основной распознаватель — DeepSeek vision (DEEPSEEK_VISION_MODEL),
+    резерв — локальный Tesseract OCR. Тот же пайплайн, что и у проверки
+    фото-решений. Формулы возвращаются в LaTeX: конвейер получает полную
+    версию, клиент показывает пользователю её же без LaTeX.
+    """
+    from services.security import validate_csrf
+    if not validate_csrf(request.headers.get("X-CSRF-Token", "")):
+        return jsonify(error="Обновите страницу и повторите запрос."), 403
+
+    # Rate-limit: ≤ 20 фото/час на пользователя (in-memory).
+    rl_key = f"gx-photo:{current_user.get_id()}"
+    now = time.time()
+    bucket = _PHOTO_RATE_LIMIT.setdefault(rl_key, [])
+    bucket[:] = [t for t in bucket if now - t < 3600]
+    if len(bucket) >= 20:
+        return jsonify(error="Слишком много фото за час, попробуйте позже."), 429
+    bucket.append(now)
+
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        return jsonify(error="Распознавание ещё не настроено."), 503
+    if request.content_length is not None and request.content_length > 12 * 1024 * 1024:
+        return jsonify(error="Фото слишком большое."), 413
+    data = request.get_json(silent=True) or {}
+    img_b64 = (data.get("image") or "").strip()
+    mime = data.get("mime") or "image/jpeg"
+    if not img_b64:
+        return jsonify(error="Нет фото."), 400
+    import base64
+    try:
+        raw_bytes = base64.b64decode(img_b64)
+    except Exception:
+        return jsonify(error="Некорректное фото."), 400
+    if len(raw_bytes) > 10 * 1024 * 1024:
+        return jsonify(error="Фото слишком большое."), 413
+
+    # ── Шаг 1: DeepSeek vision (основной распознаватель) ────────────────
+    try:
+        import requests as _rq
+        model = os.getenv("DEEPSEEK_VISION_MODEL",
+                           "deepseek-v4-flash-vision-exp").strip()
+        r = _rq.post(
+            "https://api.deepseek.com/v1/chat/completions",
+            headers={"Authorization": "Bearer " + os.environ["DEEPSEEK_API_KEY"],
+                     "Content-Type": "application/json"},
+            json={"model": model, "max_tokens": 8192, "messages": [
+                {"role": "user", "content": [
+                    {"type": "text", "text": _VISION_PROMPT},
+                    {"type": "image_url",
+                     "image_url": {"url": f"data:{mime};base64,{img_b64}"}},
+                ]},
+            ]},
+            timeout=(15, 60),
+        )
+        if r.status_code == 200:
+            body = r.json()
+            if body.get("choices"):
+                text = (body["choices"][0].get("message", {}) or {}).get("content") or ""
+                if text.strip():
+                    return jsonify(text=text.strip(), engine="deepseek_vision")
+    except Exception:
+        pass
+
+    # ── Шаг 2: локальный Tesseract OCR (резерв) ────────────────────
+    try:
+        from services.tesseract_ocr import recognize_bytes as _tesseract_ocr
+        text, _err = _tesseract_ocr(raw_bytes, mime)
+        if text and text.strip():
+            return jsonify(text=text.strip(), engine="tesseract")
+    except Exception:
+        pass
+
+    return jsonify(error="Не удалось распознать фото."), 422
