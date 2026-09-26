@@ -39,9 +39,9 @@ def init_app(app):
     init_db(engine)
     app.extensions["geoexact"] = Queue(
         engine,
-        per_hour=os.environ.get("GEOEXACT_PER_HOUR", "3"),
-        per_day=os.environ.get("GEOEXACT_PER_DAY", "10"),
-        daily_usd=os.environ.get("GEOEXACT_DAILY_USD", "5.00"),
+        per_hour=os.environ.get("GEOEXACT_PER_HOUR", "0"),
+        per_day=os.environ.get("GEOEXACT_PER_DAY", "0"),
+        daily_usd=os.environ.get("GEOEXACT_DAILY_USD", "0"),
         queue_size=os.environ.get("GEOEXACT_QUEUE_SIZE", "8"),
     )
     app.register_blueprint(bp)

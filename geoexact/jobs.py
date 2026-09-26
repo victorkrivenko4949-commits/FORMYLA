@@ -73,15 +73,20 @@ def failure(code, message):
 
 
 class Queue:
-    def __init__(self, engine, *, per_hour=3, per_day=10, daily_usd="5.00",
+    def __init__(self, engine, *, per_hour=0, per_day=0, daily_usd="0",
                  queue_size=8, runner=None):
+        # 0 = лимит отключён (без ограничения). Раньше: 3/час, 10/день,
+        # $5/день на сервис — блокировали владельца при активном тестировании.
         self.engine = engine
         self.per_hour = int(per_hour)
         self.per_day = int(per_day)
-        self.daily_jobs = int(Decimal(str(daily_usd)) / Decimal("0.10"))
+        self.daily_jobs = (
+            0 if Decimal(str(daily_usd)) <= 0
+            else int(Decimal(str(daily_usd)) / Decimal("0.10"))
+        )
         self.queue_size = int(queue_size)
-        if min(self.per_hour, self.per_day, self.daily_jobs, self.queue_size) < 1:
-            raise ValueError("GeoExact limits must be positive")
+        if self.queue_size < 1:
+            raise ValueError("GeoExact queue_size must be positive")
         self.runner = runner or run_generation
         self._thread = None
         self._start_lock = threading.Lock()
@@ -98,11 +103,16 @@ class Queue:
             if count(jobs.c.owner == owner,
                      jobs.c.status.in_(["queued", "running"])):
                 raise QueueFull("У вас уже есть незавершённый запрос.")
-            if count(jobs.c.owner == owner, jobs.c.created > now - 3600) >= self.per_hour:
+            if self.per_hour > 0 and count(
+                    jobs.c.owner == owner,
+                    jobs.c.created > now - 3600) >= self.per_hour:
                 raise QueueFull("Часовой лимит исчерпан. Попробуйте позже.")
-            if count(jobs.c.owner == owner, jobs.c.created >= midnight) >= self.per_day:
+            if self.per_day > 0 and count(
+                    jobs.c.owner == owner,
+                    jobs.c.created >= midnight) >= self.per_day:
                 raise QueueFull("Дневной лимит исчерпан.")
-            if count(jobs.c.created >= midnight) >= self.daily_jobs:
+            if self.daily_jobs > 0 and count(
+                    jobs.c.created >= midnight) >= self.daily_jobs:
                 raise QueueFull("Дневной лимит сервиса исчерпан.")
             if count(jobs.c.status.in_(["queued", "running"])) >= self.queue_size:
                 raise QueueFull("Очередь заполнена. Попробуйте позже.")
