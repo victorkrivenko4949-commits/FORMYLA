@@ -20,8 +20,16 @@ daily_tasks/formyla_bank.py — Банк «Задачи дня» из файла
     }
 
 Ключ подбора: (grade, topic, level). Дополнительно поддерживает
-детерминированную перемешку под пользователя (md5(user_id:position)),
-чтобы разные ученики получали задачи в разном порядке.
+детерминированную перемешку под пользователя и день цикла
+(md5(user_id:day_seed:position)), чтобы:
+  * разные ученики получали задачи в разном порядке;
+  * один ученик в разные дни цикла (день 1 и день 8 — одна тема месяца)
+    получал РАЗНЫЕ задачи, а не дословное повторение выдачи.
+
+Также поддерживается exclude_texts — тексты задач, которые ученик уже
+получал по этой теме ранее; они исключаются из выдачи, пока ячейка банка
+не исчерпана. При исчерпании уже виденные задачи возвращаются в конец
+списка (wrap-around), но с дневным сдвигом сортировки.
 """
 
 from __future__ import annotations
@@ -82,12 +90,20 @@ def has_rows() -> bool:
 
 def get_tasks(grade: int, topic: str, level: int,
               count: int = 5, user_id: Optional[int] = None,
-              exclude_positions: Optional[Set[int]] = None) -> List[Dict[str, Any]]:
+              exclude_positions: Optional[Set[int]] = None,
+              exclude_texts: Optional[Set[str]] = None,
+              day_seed: Optional[int] = None) -> List[Dict[str, Any]]:
     """Вернуть до ``count`` задач по (grade, topic, level).
 
     Порядок детерминированно перемешан по пользователю (если передан
-    user_id) через md5(user_id:position). Уже выданные позиции можно
-    исключить через exclude_positions.
+    user_id) через md5(user_id:day_seed:position). Уже выданные позиции
+    можно исключить через ``exclude_positions``, уже выданные ТЕКСТЫ —
+    через ``exclude_texts`` (защита от дословного повтора выдачи при
+    возврате к той же теме через 7 дней цикла). Явно исключённые тексты
+    попадают в конец списка только если свежих задач не хватает
+    (wrap-around) — день не будет пустым, но повтор минимален.
+    ``day_seed`` — номер дня месячного цикла: меняет порядок выдачи
+    между днями 1/8/15/22 при неизменном (grade, topic, level).
     """
     load()
     key = (grade, (topic or "").strip(), level)
@@ -125,12 +141,39 @@ def get_tasks(grade: int, topic: str, level: int,
     if exclude_positions:
         unique = [t for t in unique if int(t.get("position", -1)) not in exclude_positions]
 
+    # Anti-repeat: тексты, которые ученик уже видел по этой теме.
+    # Свежие задачи идут вперёд; уже виденные возвращаем в конец списка
+    # только как запас на случай исчерпания ячейки банка.
+    if exclude_texts:
+        fresh: List[Dict[str, Any]] = []
+        seen_again: List[Dict[str, Any]] = []
+        for t in unique:
+            _txt = (t.get("task_text") or t.get("statement") or "").strip()
+            if _txt and _txt in exclude_texts:
+                seen_again.append(t)
+            else:
+                fresh.append(t)
+        unique = fresh + seen_again
+
     if user_id is not None:
+        day_part = int(day_seed) if day_seed else 0
+
         def _sort_key(t: Dict[str, Any]) -> str:
             return hashlib.md5(
-                f"{user_id}:{t.get('position')}".encode("utf-8")
+                f"{user_id}:{day_part}:{t.get('position')}".encode("utf-8")
             ).hexdigest()
-        unique.sort(key=_sort_key)
+
+        if exclude_texts:
+            # Сортируем свежие и «уже виденные» раздельно, чтобы
+            # wrap-around не перемешал их и повторы шли строго в конец.
+            _excl = set(exclude_texts)
+            _fresh = [t for t in unique if (t.get("task_text") or t.get("statement") or "").strip() not in _excl]
+            _seen = [t for t in unique if (t.get("task_text") or t.get("statement") or "").strip() in _excl]
+            _fresh.sort(key=_sort_key)
+            _seen.sort(key=_sort_key)
+            unique = _fresh + _seen
+        else:
+            unique.sort(key=_sort_key)
 
     return unique[:count]
 

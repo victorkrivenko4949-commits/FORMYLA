@@ -550,10 +550,41 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
                 except Exception:
                     pass
             if current_theme:
-                tasks = fb_get(grade, _bank_topic, _bank_level, count=count, user_id=user_id)
+                # ── anti-repeat (дни 1/8/15/22 — одна тема месяца) ─────
+                # Собираем тексты задач, уже выданных этому ученику по
+                # этой теме из formyla_bank, чтобы возврат к теме через
+                # 7 дней не повторял дословно предыдущую выдачу.
+                # Номер дня цикла уходит дневным сидом в перемешку банка.
+                day_idx = 0
+                try:
+                    day_idx = int(cycle.get('day_index') or 0)
+                except (TypeError, ValueError):
+                    day_idx = 0
+                exclude_texts: Set[str] = set()
+                try:
+                    _hist_rows = (
+                        DailyTaskItem.query
+                        .join(DailyTaskSet, DailyTaskItem.daily_set_id == DailyTaskSet.id)
+                        .filter(
+                            DailyTaskSet.user_id == user_id,
+                            DailyTaskItem.gemini_spec_json.like('%"formyla_bank"%'),
+                        )
+                        .all()
+                    )
+                    for _h in _hist_rows:
+                        _t = (_h.task_text or '').strip()
+                        if _t:
+                            exclude_texts.add(_t)
+                except Exception as _hist_err:
+                    logger.warning("daily_rotation: formyla_bank history failed: %s", _hist_err)
+                tasks = fb_get(grade, _bank_topic, _bank_level, count=count,
+                               user_id=user_id, exclude_texts=exclude_texts,
+                               day_seed=day_idx)
                 if not tasks:
                     # fallback: попробовать по slug, если в банке вдруг slug-ключи
-                    tasks = fb_get(grade, current_theme, _bank_level, count=count, user_id=user_id)
+                    tasks = fb_get(grade, current_theme, _bank_level, count=count,
+                                   user_id=user_id, exclude_texts=exclude_texts,
+                                   day_seed=day_idx)
                 if tasks and len(tasks) >= 1:
                     daily_set = DailyTaskSet(
                         user_id=user_id, target_date=today, status='ready',
@@ -573,7 +604,7 @@ def pick_daily_set(user_id: int, force_regenerate: bool = False) -> Dict[str, An
                             correct_answer=t.get('correct_answer', ''),
                             solution=t.get('solution', '') or '',
                             hints=json.dumps([], ensure_ascii=False),
-                            gemini_spec_json=json.dumps({'source':'formyla_bank','grade':grade,'topic':current_theme,'level':_bank_level}, ensure_ascii=False),
+                            gemini_spec_json=json.dumps({'source':'formyla_bank','grade':grade,'topic':current_theme,'level':_bank_level,'position':t.get('position'),'day_index':day_idx}, ensure_ascii=False),
                             status='approved',
                             figure_svg_path=(_t_svg or None),
                         )
