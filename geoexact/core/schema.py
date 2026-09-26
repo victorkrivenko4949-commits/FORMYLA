@@ -106,6 +106,9 @@ class Draw:
     rays: list[list[str]] = field(default_factory=list)
     aux_lines: list[list[str]] = field(default_factory=list)
     aux_rays: list[list[str]] = field(default_factory=list)
+    # [A,B] продолжает отрезок AB за B коротким штрихом (не до края рисунка).
+    extensions: list[list[str]] = field(default_factory=list)
+    aux_extensions: list[list[str]] = field(default_factory=list)
     aux_points: list[str] = field(default_factory=list)
     # окружность: [центр, точка_на_окружности]
     circles: list[list[str]] = field(default_factory=list)
@@ -113,6 +116,7 @@ class Draw:
     # прямой угол: [A, B, C] — метка при вершине B
     right_angles: list[list[str]] = field(default_factory=list)
     # Угловая метка: {"pts": [A,B,C], "text": "60°", "reflex": False}.
+    # reverse_first=True означает луч из B, противоположный BA (внешний угол).
     # Явно заданный count=1..3 также заявляет равенство углов с тем же count.
     # Без count дуга — только аннотация, не утверждение равенства.
     angle_marks: list[dict] = field(default_factory=list)
@@ -380,6 +384,7 @@ def validate_plan(plan: FigurePlan) -> list[str]:
 
     # ссылочная целостность отрисовки
     draw_pairs = ("segments", "aux_segments", "lines", "rays", "aux_lines", "aux_rays",
+                  "extensions", "aux_extensions",
                   "circles", "aux_circles")
     for name, items in ((n, getattr(plan.draw, n)) for n in draw_pairs):
         if not isinstance(items, list):
@@ -418,6 +423,8 @@ def validate_plan(plan: FigurePlan) -> list[str]:
                 raise PlanError("BAD_MARK", f"{name}: layer должен быть main или aux")
             if name == "angle_marks" and "reflex" in m and not isinstance(m["reflex"], bool):
                 raise PlanError("BAD_MARK", "angle_marks.reflex должен быть bool")
+            if name == "angle_marks" and "reverse_first" in m and not isinstance(m["reverse_first"], bool):
+                raise PlanError("BAD_MARK", "angle_marks.reverse_first должен быть bool")
     for arc in plan.draw.arcs:
         if not isinstance(arc, dict) or not all(isinstance(arc.get(k), str) for k in ("center", "start", "end")):
             raise PlanError("BAD_MARK", "arcs требует center/start/end")
@@ -455,7 +462,7 @@ def plan_json_schema() -> str:
         "DRAW: segments,lines,rays,aux_segments,aux_lines,aux_rays,circles,aux_circles"
         " — списки пар точек; aux_points/hide_labels — списки имён; "
         "right_angles — тройки [A,B,C] с вершиной B; "
-        "angle_marks=[{pts:[A,B,C],text:'60°',reflex:false,count:1,layer:'main'}]; "
+        "angle_marks=[{pts:[A,B,C],text:'60°',reflex:false,reverse_first:false,count:1,layer:'main'}]; "
         "length_marks=[{pts:[A,B],text:'6',layer:'main'}]; "
         "equal_marks=[{pts:[A,B],count:1,layer:'main'}]; "
         "arcs=[{center:O,start:A,end:B,reflex:false,layer:'main'}]. "
@@ -463,6 +470,8 @@ def plan_json_schema() -> str:
         "Одинаковый count в equal_marks означает равные длины; явно указанный count "
         "в angle_marks означает равные углы. Для обычной угловой подписи count опускай. "
         "Вспомогательный слой может быть пуст, если дополнительные построения не нужны."
+        " extensions/aux_extensions=[[A,B]] продолжают AB немного за B; "
+        "angle_marks.reverse_first=true отмечает угол между продолжением AB за B и BC."
     )
     return f"КОНСТРУКЦИИ:\n{cons}\n\nОГРАНИЧЕНИЯ:\n{cstr}\n\nЦЕЛИ: {', '.join(TARGETS)}\n\n{draw}"
 

@@ -146,7 +146,7 @@ def _visibility(draw: Any, points: dict[str, np.ndarray]):
     primitives: dict[str, list[tuple[list[str], str]]] = {"main": [], "aux": []}
     refs: dict[str, set[str]] = {"main": set(), "aux": set()}
     for layer, prefix in (("main", ""), ("aux", "aux_")):
-        for kind in ("segments", "lines", "rays", "circles"):
+        for kind in ("segments", "lines", "rays", "circles", "extensions"):
             for item in getattr(draw, prefix + kind, []):
                 refs[layer].update(item)
                 if len(item) == 2 and all(n in points for n in item):
@@ -321,11 +321,30 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
             px_segs.extend(zip(samples, samples[1:]))
 
     emit_segments(d.segments, main, "seg")
+    def emit_extensions(items, out, cls):
+        for a, b in items:
+            if a not in Q or b not in Q:
+                continue
+            start, end = np.asarray(Q[a]), np.asarray(Q[b])
+            direction = end - start
+            length = float(np.linalg.norm(direction))
+            if length < 1e-9:
+                continue
+            far = end + direction / length * min(32.0, max(15.0, length * 0.22))
+            px_segs.append((tuple(end), tuple(far)))
+            straight_segs.append((tuple(end), tuple(far)))
+            geometry_boxes.append((min(end[0], far[0]), min(end[1], far[1]),
+                                   max(end[0], far[0]), max(end[1], far[1])))
+            out.append(f'<line class="{cls}" data-kind="extension" '
+                       f'x1="{_f(end[0])}" y1="{_f(end[1])}" '
+                       f'x2="{_f(far[0])}" y2="{_f(far[1])}"/>')
+    emit_extensions(d.extensions, main, "seg")
     emit_segments(getattr(d, "lines", []), main, "seg", "lines")
     emit_segments(getattr(d, "rays", []), main, "seg", "rays")
     emit_circles(d.circles, main, "circ")
     if show_aux:
         emit_segments(d.aux_segments, aux, "aux-seg")
+        emit_extensions(d.aux_extensions, aux, "aux-seg")
         emit_segments(getattr(d, "aux_lines", []), aux, "aux-seg", "lines")
         emit_segments(getattr(d, "aux_rays", []), aux, "aux-seg", "rays")
         emit_circles(d.aux_circles, aux, "aux-circ")
@@ -423,6 +442,8 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
             continue
         A, B, C = (np.array(Q[t]) for t in pts)
         u, v = A - B, C - B
+        if m.get("reverse_first", False):
+            u = -u
         nu, nv = float(np.linalg.norm(u)), float(np.linalg.norm(v))
         if min(nu, nv) < 1e-9:
             if explicit_right:
