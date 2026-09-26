@@ -34,13 +34,13 @@ PRICES = {
 # Маршрутизация: класс сложности -> (модель, лимит вывода) для каждого пути
 ROUTES = {
     # путь A: без доп. построений — только формализация
-    ("A", "S"):  ("deepseek-v4-flash", 2400),
-    ("A", "M"):  ("deepseek-v4-flash", 4000),
-    ("A", "L"):  ("deepseek-v4-flash", 6000),
+    ("A", "S"):  ("deepseek-v4-flash", 4000),
+    ("A", "M"):  ("deepseek-v4-flash", 6000),
+    ("A", "L"):  ("deepseek-v4-flash", 8000),
     ("A", "XL"): ("deepseek-v4-pro", 10000),
     # путь B: с доп. построениями — модель обязана решить задачу
-    ("B", "S"):  ("deepseek-v4-flash", 4000),
-    ("B", "M"):  ("deepseek-v4-flash", 8000),
+    ("B", "S"):  ("deepseek-v4-flash", 6000),
+    ("B", "M"):  ("deepseek-v4-flash", 10000),
     ("B", "L"):  ("deepseek-v4-pro", 12000),
     ("B", "XL"): ("deepseek-v4-pro", 16000),
 }
@@ -324,8 +324,27 @@ def _parse_json(text: str) -> dict:
 
 # ------------------------------------------------------------------ этап 2
 def classify(sess, problem: str, budget: Budget) -> dict:
-    txt, _ = _chat(sess, "deepseek-v4-flash", SYS_CLASSIFY, problem, 300, "classify", budget)
-    d = _parse_json(txt)
+    """Классификация с запасом лимита и одним повтором.
+
+    Раньше лимит был 300 токенов: reasoning-токены модели входят в
+    completion_tokens и съедали весь лимит, JSON обрезался — TRUNCATED
+    БЕЗ права на повтор (этап 2 не ретраится в конвейере). Теперь
+    стартовый запас 4000 и повтор на 12000.
+    """
+    d = None
+    for max_out in (4000, 12000):
+        try:
+            txt, _ = _chat(sess, "deepseek-v4-flash", SYS_CLASSIFY, problem,
+                            max_out, "classify", budget)
+            d = _parse_json(txt)
+            break
+        except PlanError as e:
+            # Повтор имеет смысл только для обрезки/битого JSON;
+            # бюджет и сбои API повторять бессмысленно или опасно.
+            if e.code not in ("TRUNCATED", "BAD_JSON", "BAD_CLASSIFICATION"):
+                raise
+    if d is None:
+        raise PlanError("BAD_CLASSIFICATION", "классификация не удалась после повтора")
     d.setdefault("space", "plane")
     d.setdefault("class", "M")
     d.setdefault("needs_aux", False)
@@ -349,17 +368,17 @@ def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
     if prev_code == "TRUNCATED":
         # Предыдущий ответ упёрся в лимит токенов и был обрезан —
         # повтор с тем же лимитом обрежется так же. Даём заметно больше места.
-        max_out = min(max(max_out * 2, 8000), 16000)
+        max_out = min(max(max_out * 2, 8000), 24000)
     # деградация модели, если бюджета не хватает
     if not budget.can_afford(model, max_out) and model == "deepseek-v4-pro":
-        model, max_out = "deepseek-v4-flash", min(max_out, 8000)
+        model, max_out = "deepseek-v4-flash", min(max_out, 16000)
     system = SYS_AUX if with_aux else SYS_FORMALIZE
     user = problem if not feedback else (
         f"{problem}\n\nПРЕДЫДУЩАЯ ПОПЫТКА ОТКЛОНЕНА ДВИЖКОМ: {feedback}\n"
         "Исправь план. Верни полный JSON заново.")
     bound = len((system + user).encode("utf-8")) + 512
     if not budget.can_afford(model, max_out, bound) and model == "deepseek-v4-pro":
-        model, max_out = "deepseek-v4-flash", min(max_out, 8000)
+        model, max_out = "deepseek-v4-flash", min(max_out, 16000)
     txt, _ = _chat(sess, model, system, user, max_out, f"formalize-{path}", budget,
                   thinking=(bool(feedback) or cls in ("L", "XL") or (with_aux and cls == "M")))
     d = _parse_json(txt)
@@ -390,7 +409,7 @@ def formalize_space(sess, problem: str, cls: str, with_aux: bool, budget: Budget
     if prev_code == "TRUNCATED":
         # Предыдущий ответ был обрезан лимитом токенов — повтор с тем же
         # лимитом обрежется так же, даём заметно больше места.
-        max_out = min(max(max_out * 2, 8000), 16000)
+        max_out = min(max(max_out * 2, 8000), 24000)
     system = ("Переведи геометрическую задачу в точную параметрическую 3D-сцену. "
               "Никаких координат от модели. НЕ заменяй произвольную пирамиду правильной. "
               "Не выдумывай размеры. Если данных мало, верни error: NEEDS_CLARIFICATION. "
