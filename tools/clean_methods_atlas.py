@@ -1,4 +1,4 @@
-"""Keep drawings in the 102-method atlas only for the geometry section.
+"""Keep only geometry-related drawings in the 102-method atlas.
 
 The HTML files are self-contained: both the public index and the older direct
 atlas URL carry their own JSON. Run this script after regenerating the atlas.
@@ -17,6 +17,8 @@ from atlas_geometry_fixes import FIXES
 ROOT = Path(__file__).resolve().parents[1]
 FILES = (ROOT / "static/methods/index.html", ROOT / "static/methods/atlas.html")
 STAGES = ("condition", "construction", "result")
+# F8.1 is a Ramsey graph, not a geometry diagram, despite its section label.
+NON_GEOMETRY_VISUALS = {"f8-1"}
 
 
 def embedded(html, name):
@@ -41,7 +43,8 @@ def clean(path, check=False):
     for method in methods:
         for example in method.get("examples", []):
             example_count += 1
-            if method["section"] == "F" and example.get("visual_id"):
+            if (method["section"] == "F" and example.get("visual_id")
+                    and example["visual_id"] not in NON_GEOMETRY_VISUALS):
                 keep.add(example["visual_id"])
             else:
                 for field in ("visual_id", "visual_type", "visual_spec", "visual_need", "stage_notes"):
@@ -58,7 +61,7 @@ def clean(path, check=False):
                 svg = FIXES[visual_id](stage)
             ET.fromstring(svg)
             kept_visuals[key] = svg
-    if example_count != 306 or len(keep) != 63:
+    if example_count != 306 or len(keep) != 62:
         raise ValueError(f"{path}: unexpected examples ({example_count}) or geometry drawings ({len(keep)})")
 
     stats.update(methods=len(methods), examples=example_count,
@@ -95,7 +98,7 @@ if __name__ == "__main__":
     try:
         for file in FILES:
             before, after = clean(file, check=args.check)
-            print(f"{file.name}: {before} -> {after} SVG stages; 63 geometry examples kept")
+            print(f"{file.name}: {before} -> {after} SVG stages; 62 geometry examples kept")
     except ValueError as exc:
         print(exc, file=sys.stderr)
         sys.exit(1)

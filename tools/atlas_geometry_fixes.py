@@ -163,13 +163,187 @@ def locus(stage):
     return svg("Биссектрисы двух углов между пересекающимися прямыми", parts)
 
 
+def intersecting_circles(stage):
+    # AC=AD=120, AB is the common chord. Tangents CP and DP really are
+    # perpendicular to their corresponding radii, and B,C,D,P are concyclic.
+    a, b = (300, 200), (300, 110)
+    c, d, p = (180, 200), (420, 200), (300, 360)
+    parts = [circle((240, 155), 75, "#83949d", 2),
+             circle((360, 155), 75, "#83949d", 2),
+             line(c, d), dot("A", a, 8, 22), dot("B", b, 8, -12),
+             dot("C", c, -22, 23), dot("D", d, 8, 23)]
+    if stage != "condition":
+        parts += [line(c, p, "#176a73", 3), line(d, p, "#176a73", 3),
+                  dot("P", p, 10, 20)]
+    if stage == "result":
+        parts += [circle((300, 235), 125, "#bd8241", 2),
+                  caption("B, C, D и P лежат на одной окружности")]
+    return svg("Две окружности пересекаются в A, B; касательные в C и D встречаются в P", parts)
+
+
+def circumcenter(a, b, c):
+    ax, ay = a
+    bx, by = b
+    cx, cy = c
+    determinant = 2*(ax*(by-cy) + bx*(cy-ay) + cx*(ay-by))
+    return (
+        ((ax*ax+ay*ay)*(by-cy) + (bx*bx+by*by)*(cy-ay) +
+         (cx*cx+cy*cy)*(ay-by))/determinant,
+        ((ax*ax+ay*ay)*(cx-bx) + (bx*bx+by*by)*(ax-cx) +
+         (cx*cx+cy*cy)*(bx-ax))/determinant,
+    )
+
+
+def euler_line(stage):
+    # Leave clear space below the circumcircle for the result caption.
+    a, b, c = (141.6, 347.6), (436.4, 338.8), (181.2, 145.2)
+    o = circumcenter(a, b, c)
+    g = ((a[0]+b[0]+c[0])/3, (a[1]+b[1]+c[1])/3)
+    h = (3*g[0]-2*o[0], 3*g[1]-2*o[1])
+    midpoint = ((a[0]+b[0])/2, (a[1]+b[1])/2)
+    parts = [line(a, b), line(b, c), line(c, a),
+             dot("A", a, -24, 18), dot("B", b, 9, 18), dot("C", c, -4, -12)]
+    if stage != "condition":
+        parts += [circle(o, hypot(o[0]-a[0], o[1]-a[1]), "#83949d", 1.6),
+                  line(c, midpoint, "#83949d", 2, "6 5"),
+                  line(a, h, "#83949d", 2, "6 5"),
+                  line(b, h, "#83949d", 2, "6 5"),
+                  dot("O", o, 10, -12), dot("G", g, -8, 27),
+                  dot("H", h, -25, -12)]
+    if stage == "result":
+        parts += [line(o, h, "#176a73", 3.6),
+                  caption("O, G, H на одной прямой · HG = 2 · GO")]
+    return svg("Прямая Эйлера: O, G, H коллинеарны и HG равно удвоенному GO", parts)
+
+
+def rhombus(stage):
+    a, b, c, d, center = ((115, 250), (300, 385), (485, 250),
+                          (300, 115), (300, 250))
+    corners = (a, b, c, d, a)
+    parts = [line(corners[i], corners[i+1]) for i in range(4)]
+    # One identical tick on each equal side, perpendicular at its midpoint.
+    for first, second in zip(corners, corners[1:]):
+        mx, my = (first[0]+second[0])/2, (first[1]+second[1])/2
+        dx, dy = second[0]-first[0], second[1]-first[1]
+        length = hypot(dx, dy)
+        tick = (dy*6/length, -dx*6/length)
+        parts.append(line((mx-tick[0], my-tick[1]),
+                          (mx+tick[0], my+tick[1]), "#176a73", 2))
+    parts += [dot("A", a, -23, 0), dot("B", b, -5, 25),
+              dot("C", c, 10, 0), dot("D", d, -5, -14)]
+    if stage != "condition":
+        parts += [line(a, c, "#176a73", 2.5),
+                  line(b, d, "#176a73", 2.5), dot("M", center, 9, 19)]
+    if stage == "result":
+        parts += [line((300, 238), (312, 238), "#bd8241", 1.6),
+                  line((312, 238), (312, 250), "#bd8241", 1.6),
+                  caption("AB = BC = CD = DA · AC ⟂ BD")]
+    return svg("Ромб ABCD: четыре равные стороны и перпендикулярные диагонали", parts)
+
+
+def axes(origin, scale, x_values=(), y_values=(), x_end=525, y_top=55):
+    ox, oy = origin
+    pieces = [line((ox-15, oy), (x_end, oy), "#83949d", 1.6),
+              line((ox, oy+14), (ox, y_top), "#83949d", 1.6)]
+    for value in x_values:
+        x = ox + value*scale
+        pieces += [line((x, oy-4), (x, oy+4), "#83949d", 1.4),
+                   f'<text x="{num(x)}" y="{num(oy+22)}" text-anchor="middle" '
+                   f'font-size="14" fill="#718a99">{value}</text>']
+    for value in y_values:
+        y = oy - value*scale
+        pieces += [line((ox-4, y), (ox+4, y), "#83949d", 1.4),
+                   f'<text x="{num(ox-12)}" y="{num(y+5)}" text-anchor="end" '
+                   f'font-size="14" fill="#718a99">{value}</text>']
+    pieces += [f'<text x="{num(x_end+5)}" y="{num(oy+5)}" font-size="17" fill="#718a99">x</text>',
+               f'<text x="{num(ox-5)}" y="{num(y_top-8)}" font-size="17" fill="#718a99">y</text>']
+    return pieces
+
+
+def coordinate_circumcircle(stage):
+    a, b, c, o = (120, 390), (360, 390), (120, 70), (240, 230)
+    parts = axes(a, 40, (2, 4, 6), (2, 4, 6, 8), 480, 48)
+    parts += [line(a, b), line(a, c), line(b, c),
+              dot("A", a, 7, 19), dot("B", b, 7, -9),
+              dot("C", c, 10, -9)]
+    if stage != "condition":
+        parts += [line(b, c, "#176a73", 3),
+                  dot("O", o, 10, -10)]
+    if stage == "result":
+        parts += [circle(o, 200, "#bd8241", 2),
+                  caption("O(3, 4) · R = 5")]
+    return svg("A(0,0), B(6,0), C(0,8); центр описанной окружности O(3,4)", parts)
+
+
+def apollonius(stage):
+    a, b, o, m = (120, 300), (300, 300), (360, 300), (360, 180)
+    parts = axes(a, 60, (1, 2, 3, 4, 5, 6), (1, 2), 505, 100)
+    parts += [line(a, b, "#83949d", 2),
+              dot("A", a, -8, 25), dot("B", b, -15, -12)]
+    if stage != "condition":
+        parts += [line(a, m, "#83949d", 2, "6 5"),
+                  line(b, m, "#83949d", 2, "6 5"),
+                  dot("M", m, 10, -12)]
+    if stage == "result":
+        parts += [circle(o, 120, "#176a73", 3), dot("O", o, 12, -12),
+                  caption("MA / MB = 2 · центр (4, 0), радиус 2")]
+    return svg("Окружность Аполлония для A(0,0), B(3,0), MA/MB=2", parts)
+
+
+def orthocenter_coordinates(stage):
+    a, b, c, h = (130, 390), (470, 390), (215, 135), (215, 305)
+    # Foot of the altitude from B on AC is the projection of B-A onto AC.
+    foot = (164, 288)
+    parts = axes(a, 85, (1, 2, 3, 4), (1, 2, 3), 520, 78)
+    parts += [line(a, b), line(b, c), line(c, a),
+              dot("A", a, 9, 20), dot("B", b, -4, 22),
+              dot("C", c, -21, -12)]
+    if stage != "condition":
+        parts += [line(c, (215, 390), "#176a73", 2.5, "6 5"),
+                  line(b, foot, "#176a73", 2.5, "6 5")]
+    if stage == "result":
+        parts += [dot("H", h, 12, -10), caption("H = (1, 1)")]
+    return svg("A(0,0), B(4,0), C(1,3); высоты пересекаются в H(1,1)", parts)
+
+
+def inversion_of_line(stage):
+    o, h, h_prime = (200, 250), (380, 250), (325, 250)
+    p = (380, 120)
+    inversion_radius = 150
+    factor = inversion_radius**2/((p[0]-o[0])**2+(p[1]-o[1])**2)
+    p_prime = (o[0]+factor*(p[0]-o[0]), o[1]+factor*(p[1]-o[1]))
+    parts = [circle(o, inversion_radius, "#83949d", 2),
+             line((380, 75), (380, 410), "#2b3742", 2.6),
+             dot("O", o, -20, 22), dot("H", h, 10, 20),
+             dot("P", p, 10, -10),
+             '<text x="392" y="83" font-size="19" fill="#19364a">ℓ</text>']
+    if stage != "condition":
+        parts += [line(o, h, "#83949d", 1.5, "6 5"),
+                  line(o, p, "#83949d", 1.5, "6 5"),
+                  dot("H′", h_prime, 8, 25),
+                  dot("P′", p_prime, 10, -12)]
+    if stage == "result":
+        parts += [circle((262.5, 250), 62.5, "#176a73", 3),
+                  caption("Образ прямой ℓ — окружность с диаметром OH′")]
+    return svg("Инверсия прямой ℓ: окружность-образ проходит через O и H′", parts)
+
+
 FIXES = {
     "f2-2": tangent,
     "f3-2": chords,
     "f4a-1": reflection,
+    "f4b-3": intersecting_circles,
     "f6-2": bisector,
+    "f7-1": rhombus,
+    "f7-2": euler_line,
+    "f9-3": euler_line,
+    "f9a-1": coordinate_circumcircle,
+    "f9a-2": apollonius,
+    "f9a-3": orthocenter_coordinates,
     "f13-3": lambda stage: ceva(stage, nagel=True),
     "f14-1": locus,
+    "f15-2": inversion_of_line,
     "f16-2": ceva,
     "f17-2": lambda stage: ceva(stage, nagel=True),
+    "f17-3": euler_line,
 }

@@ -73,6 +73,26 @@
   font-size: 18px;
   flex-shrink: 0;
 }
+/* mobile.css targets [class*="card"] with !important, including every
+   child of these cards. Reset that broad rule only within this menu. */
+@media (max-width: 768px) {
+  .olm-list .olm-card {
+    padding: 18px 16px !important;
+    margin-bottom: 0 !important;
+    border-radius: 14px !important;
+  }
+  .olm-list .olm-card .olm-card-icon,
+  .olm-list .olm-card .olm-card-body,
+  .olm-list .olm-card .olm-card-title,
+  .olm-list .olm-card .olm-card-sub,
+  .olm-list .olm-card .olm-card-arrow {
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+  }
+  .olm-list .olm-card .olm-card-icon { width: 36px; }
+  .olm-list .olm-card .olm-card-title { margin-bottom: 4px !important; }
+}
 </style>
 {% endblock %}
 
@@ -102,4 +122,3 @@
     </div>
 </div>
 {% endblock %}
-
