@@ -4298,7 +4298,7 @@ def leaderboard():
             'score': user.get_leaderboard_score(),
             'nickname': user.display_name,
             'avatar_url': user.avatar_url,
-            'level': user.current_level,
+            'level': user.xp_level,
             'total_solved': user.total_problems_solved,
             'mock_exams_passed': user.mock_exams_passed,
             'adaptive_tests_completed': user.adaptive_tests_completed,
@@ -4627,28 +4627,36 @@ def check_answer():
         "correct_answer": problem.get("answer", "")
     }
     
-    # Если ответ верный, сохраняем в сессию и начисляем XP
+    # Факт проверки хранится в БД: прежний session['solved_problems']
+    # не переживал смену устройства и не участвовал в пересчёте статистики.
+    from models import VerifiedProblemCheck
+    check = VerifiedProblemCheck.query.filter_by(
+        user_id=current_user.id, problem_id=str(problem_id)).first()
+    if check is None:
+        check = VerifiedProblemCheck(user_id=current_user.id,
+                                     problem_id=str(problem_id))
+        db.session.add(check)
+    else:
+        check.attempts_count = (check.attempts_count or 0) + 1
+    first_correct = is_correct and not check.is_correct
+    check.checked_at = datetime.utcnow()
+    if is_correct:
+        check.is_correct = True  # неверный повтор не стирает старое решение
+        if check.solved_at is None:
+            check.solved_at = check.checked_at
+
     if is_correct:
         solved_problems = session.get('solved_problems', [])
         if problem_id not in solved_problems:
             solved_problems.append(problem_id)
             session['solved_problems'] = solved_problems
             session.modified = True
-        
-        # Начисляем XP если пользователь авторизован
-        if current_user.is_authenticated:
+
+        # XP начисляется только при первом верном ответе на эту задачу.
+        if first_correct:
             task_difficulty = problem.get('difficulty', 1)
-            
-            # Начисляем XP за задачу
             xp_result = add_xp_for_task(current_user, task_difficulty)
-            
-            # Получаем прогресс до следующего уровня
             progress = get_xp_for_next_level(current_user)
-            
-            # Сохраняем изменения в БД
-            db.session.commit()
-            
-            # Добавляем информацию об XP в ответ
             response_data.update({
                 "xp_gained": xp_result['xp_gained'],
                 "bonus_xp": xp_result['bonus_xp'],
@@ -4658,6 +4666,13 @@ def check_answer():
                 "progress_percent": progress['progress_percentage'],
                 "xp_needed": progress['xp_needed']
             })
+        else:
+            response_data.update({"xp_gained": 0, "bonus_xp": 0,
+                                  "total_xp": current_user.experience_points,
+                                  "new_level": current_user.xp_level,
+                                  "level_up": False})
+
+    db.session.commit()
     
     return jsonify(response_data)
 
@@ -12862,7 +12877,7 @@ def api_get_profile():
                 'is_guest': user.is_guest,
                 'device_id': user.device_id,
                 'total_problems_solved': user.total_problems_solved,
-                'current_level': user.current_level,
+                'current_level': user.xp_level,
                 'experience_points': user.experience_points,
                 'created_at': user.created_at.isoformat() if user.created_at else None
             },
@@ -14123,4 +14138,3 @@ if __name__ == '__main__':
             port=5000,
             use_reloader=_use_reloader,
         )
-

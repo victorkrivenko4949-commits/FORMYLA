@@ -1181,13 +1181,17 @@ def admin_users_stats():
     # счётчика users.total_problems_solved — раньше число не соответствовало
     # рейтингу. Счётчик тоже синхронизируется при старте приложения
     # (SOLVED_RECONCILE в app.py), здесь же — живой пересчёт для страницы.
-    solved_map = {}
     try:
-        from services.solved_stats import solved_counts_by_user
+        from services.solved_stats import solved_counts_by_user, task_counts_by_user
         solved_map = solved_counts_by_user()
+        checked_map = task_counts_by_user(checked=True)
+        solved_today_map = task_counts_by_user(since=now.replace(
+            hour=0, minute=0, second=0, microsecond=0))
+        solved_week_map = task_counts_by_user(since=now - timedelta(days=7))
     except Exception as _sm_err:
-        current_app.logger.warning('admin_users_stats: solved recount failed: %r',
-                                   _sm_err)
+        current_app.logger.exception('admin_users_stats: task recount failed: %r',
+                                     _sm_err)
+        abort(503, description='Статистика временно недоступна: ошибка пересчёта')
 
     rows = []
     for u in users:
@@ -1204,10 +1208,11 @@ def admin_users_stats():
             'created_at': u.created_at.strftime('%d.%m.%Y') if u.created_at else '—',
             'last_login': u.last_login.strftime('%d.%m.%Y %H:%M') if u.last_login else '—',
             'login_count': u.login_count or 0,
-            'problems': solved_map.get(u.id, u.total_problems_solved or 0),
+            'problems': solved_map.get(u.id, 0),
+            'checked': checked_map.get(u.id, 0),
             'level': diff_level,
             'xp': u.experience_points or 0,
-            'xp_level': u.current_level or 1,
+            'xp_level': u.xp_level,
             'seconds': u.site_seconds_total or 0,
             'minutes': round((u.site_seconds_total or 0) / 60, 1),
             'hours': round((u.site_seconds_total or 0) / 3600, 2),
@@ -1280,21 +1285,9 @@ def admin_users_stats():
         SELECT COUNT(DISTINCT user_id) FROM site_events WHERE ts >= :since
     '''), {'since': today - timedelta(days=30)}).scalar() or 0
 
-    # задачи решённые за сегодня / 7 дней (daily_task_items answered_at)
-    solved_today = db.session.execute(text('''
-        SELECT COUNT(*) FROM daily_task_items
-        WHERE answered_at >= :since AND is_correct IS TRUE
-    ''' if is_pg else '''
-        SELECT COUNT(*) FROM daily_task_items
-        WHERE answered_at >= :since AND is_correct = 1
-    '''), {'since': today}).scalar() or 0
-    solved_week = db.session.execute(text('''
-        SELECT COUNT(*) FROM daily_task_items
-        WHERE answered_at >= :since AND is_correct IS TRUE
-    ''' if is_pg else '''
-        SELECT COUNT(*) FROM daily_task_items
-        WHERE answered_at >= :since AND is_correct = 1
-    '''), {'since': today - timedelta(days=7)}).scalar() or 0
+    # Те же пять источников, что и «решено всего». Периоды в UTC.
+    solved_today = sum(solved_today_map.get(u.id, 0) for u in users)
+    solved_week = sum(solved_week_map.get(u.id, 0) for u in users)
 
     # почасовое распределение за сегодня (heartbeat + login)
     hour_expr = "EXTRACT(HOUR FROM ts)" if is_pg else "CAST(strftime('%H', ts) AS INTEGER)"
@@ -1427,6 +1420,7 @@ def admin_users_stats():
         'online_now': online_now,
         'logins': sum(r['login_count'] for r in rows),
         'problems': sum(r['problems'] for r in rows),
+        'checked': sum(r['checked'] for r in rows),
         'seconds': sum(r['seconds'] for r in rows),
         'dau': dau,
         'wau': wau,

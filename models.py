@@ -204,10 +204,14 @@ class User(UserMixin, db.Model):
     def get_leaderboard_score(self):
         """Вычислить общий рейтинг для leaderboard.
 
-        Рейтинг = сумма XP. Начисление: +20 за анкету (один раз),
-        +5 за каждую правильную задачу дня, +20 за каждый срез.
+        Рейтинг = накопленный XP (за подтверждённые задачи и бонусы).
         """
         return self.experience_points or 0
+
+    @property
+    def xp_level(self):
+        """Display level derived from XP, not the potentially stale cached column."""
+        return min(10, 1 + max(0, self.experience_points or 0) // 100)
     
     def get_friends(self):
         """Все принятые друзья (с двух сторон)."""
@@ -1197,6 +1201,25 @@ class OlympiadGenerationLog(db.Model):
             f'<OlympiadGenerationLog {self.olympiad_slug}/{self.round_key}'
             f'/класс {self.class_level} success={self.success}>'
         )
+
+
+class VerifiedProblemCheck(db.Model):
+    """Server-verified regular problem; one credit per user and problem."""
+    __tablename__ = 'verified_problem_checks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                        nullable=False, index=True)
+    problem_id = db.Column(db.String(100), nullable=False)
+    is_correct = db.Column(db.Boolean, nullable=False, default=False)
+    checked_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    solved_at = db.Column(db.DateTime, nullable=True)
+    attempts_count = db.Column(db.Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'problem_id',
+                            name='uq_verified_problem_user_problem'),
+    )
 
 
 class TestResult(db.Model):

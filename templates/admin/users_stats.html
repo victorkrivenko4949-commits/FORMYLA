@@ -75,7 +75,7 @@
 {% block content %}
 <div class="us-wrap">
   <h1 class="us-title">Статистика пользователей</h1>
-  <div class="us-subtitle">Онлайн, активность по дням, пики, топы. Обновляется с каждым heartbeat (~30 сек).</div>
+  <div class="us-subtitle">Онлайн, активность по дням, пики, топы. Даты и граница «сегодня» здесь в UTC. Обновляется с каждым heartbeat (~30 сек).</div>
 
   <div class="us-sec">Прямо сейчас</div>
   <div class="us-summary">
@@ -94,7 +94,8 @@
     <div class="us-card"><div class="us-card-num">{{ total.logins }}</div><div class="us-card-label">входов за всё время</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.solved_today }}</div><div class="us-card-label">решено сегодня</div></div>
     <div class="us-card"><div class="us-card-num">{{ total.solved_week }}</div><div class="us-card-label">решено за 7 дней</div></div>
-    <div class="us-card"><div class="us-card-num">{{ total.problems }}</div><div class="us-card-label">решено всего</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.problems }}</div><div class="us-card-label">верно решено всего</div></div>
+    <div class="us-card"><div class="us-card-num">{{ total.checked }}</div><div class="us-card-label">проверено разных задач</div><div class="us-card-sub">Верные и неверные; повторы одной задачи не сохраняются отдельно</div></div>
     <div class="us-card"><div class="us-card-num">{{ (total.seconds / 3600) | round(1) }} ч</div><div class="us-card-label">на сайте провели</div></div>
   </div>
 
@@ -246,7 +247,7 @@
         <tr>
           <th>ID</th><th>Ник</th><th>Имя</th><th>Email</th><th>Регистрация</th>
           <th>Последний вход</th><th>Входов</th>
-          <th title="Реально решённые задачи из БД: задачи дня + банк + отработка неточностей + олимпиады">Решено</th><th>Сложность</th>
+          <th title="Верные ответы по задачам дня, банка, отработке, олимпиадам и тренажёру">Решено</th><th title="Проверенные разные задачи: верные и неверные; повторные проверки не сохранены">Проверено</th><th>Сложность</th>
           <th title="Рейтинг = весь накопленный XP: задачи (+5/+10) + бонусы (анкета +20, друзья +10 и т.п.)">Рейтинг (XP)</th><th>Время на сайте</th>
         </tr>
       </thead>
@@ -261,6 +262,7 @@
           <td style="white-space:nowrap;">{{ r.last_login }}</td>
           <td style="text-align:center;"><strong>{{ r.login_count }}</strong></td>
           <td style="text-align:center;"><strong>{{ r.problems }}</strong></td>
+          <td style="text-align:center;"><strong>{{ r.checked }}</strong></td>
           <td style="text-align:center;" title="Сложность задач 1–4 (реальная). XP-уровень: {{ r.xp_level }}"><strong>{{ r.level }}/4</strong></td>
           <td style="text-align:center;"><strong>{{ r.xp }}</strong></td>
           <td class="us-time">
