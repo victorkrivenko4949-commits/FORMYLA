@@ -14,7 +14,7 @@
         top: var(--atlas-header-h, 62px);
         left: 0;
         right: 0;
-        bottom: 0;
+        bottom: var(--atlas-bottom-h, 0px);
         margin: 0;
         padding: 0;
     }
@@ -46,9 +46,16 @@
 (function () {
     function syncAtlasTop() {
         var header = document.querySelector('.header');
-        if (!header) return;
+        var bottomNav = document.querySelector('.mobile-bottom-nav');
+        if (header) {
+            document.documentElement.style.setProperty(
+                '--atlas-header-h', header.getBoundingClientRect().height + 'px'
+            );
+        }
         document.documentElement.style.setProperty(
-            '--atlas-header-h', header.offsetHeight + 'px'
+            '--atlas-bottom-h',
+            bottomNav && getComputedStyle(bottomNav).display !== 'none'
+                ? bottomNav.getBoundingClientRect().height + 'px' : '0px'
         );
     }
     syncAtlasTop();
