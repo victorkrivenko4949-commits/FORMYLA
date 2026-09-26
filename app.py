@@ -6783,10 +6783,31 @@ def profile():
     except Exception:
         pass
 
+    # ── Входящие запросы на привязку от родителей ─────────────────────
+    # Ребёнок должен явно согласиться (принять / отклонить / заблокировать) —
+    # привязка больше не происходит мгновенно со стороны родителя.
+    parent_link_requests = []
+    try:
+        from models import ParentChildLink as _PCLink
+        _pending_links = _PCLink.query.filter_by(
+            child_id=current_user.id, status='pending',
+        ).order_by(_PCLink.created_at.desc()).all()
+        for _l in _pending_links:
+            _p = User.query.get(_l.parent_id)
+            parent_link_requests.append({
+                'id': _l.id,
+                'parent_name': (_p.display_name if _p else 'Родитель'),
+                'parent_nickname': (_p.nickname if _p else None),
+                'created_at': _l.created_at,
+            })
+    except Exception:
+        parent_link_requests = []
+
     return render_template('profile.html',
                          user=current_user,
                          user_role=_user_role,
                          is_teacher_or_parent=False,
+                         parent_link_requests=parent_link_requests,
                          progress_dict=progress_dict,
                          recent_tests=recent_tests,
                          test_stats=test_stats,

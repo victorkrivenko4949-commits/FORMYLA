@@ -16,7 +16,7 @@ from flask import (
 )
 from flask_login import current_user, login_required
 
-from models import db, User, T10Group, T10GroupMember, StreakRecord
+from models import db, User, T10Group, T10GroupMember, StreakRecord, ParentChildLink
 from services.user_helpers import display_name_from_email
 from services.parent_teacher_helpers import generate_invite_code, student_streak
 
@@ -180,6 +180,20 @@ def teacher_group_view(gid: int):
     student_data = []
     group_total = 0.0
     for s in students:
+        # Приватность: если ученик отключил share_progress, его метрики
+        # не показываем даже учителю группы (раньше группа этот флаг
+        # игнорировала — учитель видел прогресс вопреки настройке).
+        if getattr(s, 'share_progress', True) in (False, 0):
+            student_data.append({
+                'id': s.id,
+                'name': display_name_from_email(s.email),
+                'avg_tasks': None,
+                'row_color': 'gray',
+                'streak': None,
+                'anchors': {},
+                'progress_hidden': True,
+            })
+            continue
         avg = _week_avg_tasks(s, today)
         group_total += avg
         student_data.append({
@@ -189,6 +203,7 @@ def teacher_group_view(gid: int):
             'row_color': 'green' if avg >= 4 else 'red',
             'streak': student_streak(s.id),
             'anchors': _latest_mu_sigma(s.id),
+            'progress_hidden': False,
         })
 
     n = len(student_data) or 1
@@ -276,16 +291,36 @@ def teacher_group_delete(gid: int):
 @login_required
 def parent_dashboard():
     _require_role('parent')
-    child_nick = getattr(current_user, 'child_email', None)
-    if not child_nick:
-        # Ребёнок ещё не привязан — показываем форму добавления.
-        return render_template('parent/dashboard.html', child=None, no_child_bound=True)
 
-    # Привязка идёт по НИКНЕЙМУ ребёнка (поле child_email исторически
-    # хранит идентификатор привязки — здесь это nickname).
-    child = User.query.filter_by(nickname=child_nick).first()
+    # Основная привязка — подтверждённая связь ParentChildLink (по id,
+    # не по никнейму: никнейм ребёнок может сменить, связь не ломается).
+    link = ParentChildLink.query.filter_by(
+        parent_id=current_user.id, status='accepted'
+    ).order_by(ParentChildLink.responded_at.desc()).first()
+
+    child = User.query.get(link.child_id) if link else None
+
     if child is None:
-        return render_template('parent/dashboard.html', child=None, not_found=True)
+        # Легаси-путь: раньше привязка хранилась в User.child_email
+        # (никнейм ребёнка) без таблицы связей.
+        child_nick = getattr(current_user, 'child_email', None)
+        if child_nick:
+            child = User.query.filter_by(nickname=child_nick).first()
+
+    if child is None:
+        # Привязанного ребёнка нет. Покажем форму добавления, а если есть
+        # pending-запрос — его статус («ждём ответа ребёнка»).
+        pending = ParentChildLink.query.filter_by(
+            parent_id=current_user.id, status='pending'
+        ).order_by(ParentChildLink.created_at.desc()).first()
+        pending_child = User.query.get(pending.child_id) if pending else None
+        return render_template(
+            'parent/dashboard.html',
+            child=None,
+            no_child_bound=True,
+            pending_child_nickname=(pending_child.nickname if pending_child else None),
+            pending_since=(pending.created_at if pending else None),
+        )
 
     if not getattr(child, 'share_progress', True):
         return render_template(
@@ -447,7 +482,16 @@ def student_detail(sid: int):
         if member is None:
             abort(403)
     elif role == 'parent':
-        if getattr(current_user, 'child_email', None) != student.nickname:
+        # Доступ по подтверждённой связи ParentChildLink (устойчиво к смене
+        # никнейма) или по легаси-полю child_email для старых привязок.
+        _link = ParentChildLink.query.filter_by(
+            parent_id=current_user.id, child_id=student.id, status='accepted',
+        ).first()
+        _legacy_ok = (
+            getattr(current_user, 'child_email', None) is not None
+            and current_user.child_email == student.nickname
+        )
+        if _link is None and not _legacy_ok:
             abort(403)
     elif not is_self:
         # Обычный ученик может видеть только свой профиль.
@@ -524,7 +568,13 @@ def profile_share_toggle():
 @parent_teacher_bp.route('/parent/bind-child', methods=['POST'])
 @login_required
 def parent_bind_child():
-    """Привязать ребёнка к родителю по НИКНЕЙМУ ребёнка."""
+    """Отправить ребёнку ЗАПРОС на привязку (не мгновенная привязка!).
+
+    Раньше привязка была мгновенной: родитель вводил никнейм и сразу
+    видел прогресс — без всякого согласия ребёнка (приватность).
+    Теперь создаётся ParentChildLink со статусом pending, а решение
+    (принять / отклонить / заблокировать) принимает сам ученик.
+    """
     _require_role('parent')
     nickname = (request.form.get('child_nickname', '') or '').strip()
     if not nickname:
@@ -536,7 +586,88 @@ def parent_bind_child():
         flash('Ребёнок с таким никнеймом не найден в системе', 'error')
         return redirect(url_for('parent_teacher.parent_dashboard'))
 
-    current_user.child_email = child.nickname
+    if child.id == current_user.id:
+        flash('Нельзя привязать самого себя', 'error')
+        return redirect(url_for('parent_teacher.parent_dashboard'))
+
+    child_role = getattr(child, 'role', 'student') or 'student'
+    if child_role in ('teacher', 'parent'):
+        flash('Привязать можно только аккаунт ученика', 'error')
+        return redirect(url_for('parent_teacher.parent_dashboard'))
+
+    link = ParentChildLink.query.filter_by(
+        parent_id=current_user.id, child_id=child.id
+    ).first()
+
+    if link is not None:
+        if link.status == 'accepted':
+            flash(f'{nickname} уже привязан к вашему аккаунту', 'info')
+            return redirect(url_for('parent_teacher.parent_dashboard'))
+        if link.status == 'pending':
+            flash(f'Запрос для {nickname} уже отправлен и ждёт ответа ребёнка', 'info')
+            return redirect(url_for('parent_teacher.parent_dashboard'))
+        if link.status == 'blocked':
+            flash(f'{nickname} запретил запросы на привязку от вашего аккаунта', 'error')
+            return redirect(url_for('parent_teacher.parent_dashboard'))
+        # rejected — разовый отказ: родитель вправе отправить запрос повторно
+        link.status = 'pending'
+        link.created_at = datetime.utcnow()
+        db.session.commit()
+        flash(f'Запрос на привязку повторно отправлен ученику {nickname}', 'success')
+        return redirect(url_for('parent_teacher.parent_dashboard'))
+
+    link = ParentChildLink(
+        parent_id=current_user.id, child_id=child.id, status='pending',
+    )
+    db.session.add(link)
     db.session.commit()
-    flash('Ребёнок привязан. Теперь вы видите его прогресс.', 'success')
+    flash(
+        f'Запрос на привязку отправлен ученику {nickname}. '
+        f'Прогресс станет виден после того, как ребёнок примет запрос.',
+        'success',
+    )
     return redirect(url_for('parent_teacher.parent_dashboard'))
+
+
+@parent_teacher_bp.route('/parent-link/<int:link_id>/respond', methods=['POST'])
+@login_required
+def parent_link_respond(link_id: int):
+    """Ответ ребёнка на запрос привязки: accept / reject / block.
+
+    * accept — принять: родитель получает доступ к прогрессу ребёнка;
+    * reject — отклонить разово (родитель может повторить запрос);
+    * block  — заблокировать: запросы от этого родителя больше не приходят.
+    """
+    link = ParentChildLink.query.get(link_id)
+    if link is None:
+        abort(404)
+    # Отвечать может только сам ребёнок, которому адресован запрос.
+    if link.child_id != current_user.id:
+        abort(403)
+
+    action = (request.form.get('action', '') or '').strip()
+    if action not in ('accept', 'reject', 'block'):
+        flash('Некорректное действие', 'error')
+        return redirect(request.form.get('next') or '/profile')
+
+    if link.status not in ('pending',):
+        flash('Запрос уже обработан', 'info')
+        return redirect(request.form.get('next') or '/profile')
+
+    if action == 'accept':
+        link.accept()
+        # Легаси-совместимость: legacy-проверки доступа (student_detail)
+        # читают User.child_email (никнейм привязанного ребёнка).
+        parent_user = User.query.get(link.parent_id)
+        if parent_user is not None and not getattr(parent_user, 'child_email', None):
+            parent_user.child_email = current_user.nickname
+        flash('Запрос принят. Родитель теперь видит ваш прогресс.', 'success')
+    elif action == 'reject':
+        link.reject()
+        flash('Запрос отклонён. Родитель сможет отправить его повторно.', 'info')
+    else:  # block
+        link.block()
+        flash('Запросы от этого аккаунта заблокированы.', 'info')
+
+    db.session.commit()
+    return redirect(request.form.get('next') or '/profile')

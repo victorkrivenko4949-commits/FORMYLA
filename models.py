@@ -859,6 +859,56 @@ class Mentorship(db.Model):
         return f'<Mentorship Teacher:{self.teacher_id} -> Student:{self.student_id} ({self.status})>'
 
 
+class ParentChildLink(db.Model):
+    """Связь родитель↔ребёнок с обязательным подтверждением ребёнком.
+
+    Статусы:
+      pending  — родитель отправил запрос, ребёнок ещё не ответил
+      accepted — ребёнок принял: родитель видит прогресс
+      rejected — ребёнок отклонил (разово, родитель может повторить запрос)
+      blocked  — ребёнок заблокировал: родитель больше НЕ может слать запросы
+    """
+    __tablename__ = 'parent_child_links'
+
+    id = db.Column(db.Integer, primary_key=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    child_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    status = db.Column(db.String(20), default='pending', nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    responded_at = db.Column(db.DateTime, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('parent_id', 'child_id', name='_parent_child_unique'),
+        db.CheckConstraint('parent_id != child_id', name='_no_self_parent_child'),
+    )
+
+    parent = db.relationship('User', foreign_keys=[parent_id],
+                             backref=db.backref('child_links', lazy='dynamic'))
+    child = db.relationship('User', foreign_keys=[child_id],
+                            backref=db.backref('parent_links', lazy='dynamic'))
+
+    STATUSES = ('pending', 'accepted', 'rejected', 'blocked')
+
+    def accept(self):
+        self.status = 'accepted'
+        self.responded_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
+
+    def reject(self):
+        self.status = 'rejected'
+        self.responded_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
+
+    def block(self):
+        self.status = 'blocked'
+        self.responded_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
+
+    def __repr__(self):
+        return f'<ParentChildLink Parent:{self.parent_id} -> Child:{self.child_id} ({self.status})>'
+
+
 class OlympiadSecret(db.Model):
     """Модель для базы знаний олимпиадной математики"""
     __tablename__ = 'olympiad_secrets'

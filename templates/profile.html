@@ -175,6 +175,55 @@
         </p>
     </div>
 
+    <!-- Входящие запросы на привязку от родителя -->
+    {% if parent_link_requests %}
+    {% for req in parent_link_requests %}
+    <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 26px 30px; border-radius: var(--radius-lg); border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 8px 32px rgba(56, 189, 248, 0.15); margin-bottom: 30px;">
+        <h2 style="color: var(--accent-2); margin-bottom: 12px; font-size: 1.35em;">
+            👪 Запрос на привязку от родителя
+        </h2>
+        <p style="color: var(--text-soft); margin-bottom: 18px; line-height: 1.5;">
+            <strong style="color: var(--text-main);">{{ req.parent_name }}{% if req.parent_nickname %} (@{{ req.parent_nickname }}){% endif %}</strong>
+            хочет привязать ваш аккаунт как родитель и видеть ваш прогресс.
+            Решение принимаете вы:
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <form method="POST" action="{{ url_for('parent_teacher.parent_link_respond', link_id=req.id) }}" style="margin: 0;">
+                <input type="hidden" name="action" value="accept">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 34px; min-height: 48px; background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: none; border-radius: 12px; font-size: 1.05em; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35); transition: transform 0.15s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✓ Принять
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('parent_teacher.parent_link_respond', link_id=req.id) }}" style="margin: 0;">
+                <input type="hidden" name="action" value="reject">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 26px; min-height: 48px; background: rgba(148, 163, 184, 0.08); color: var(--text-soft); border: 1px solid var(--border-soft); border-radius: 12px; font-size: 1em; font-weight: 600; cursor: pointer;"
+                        title="Отклонить запрос только сейчас — родитель сможет отправить его повторно">
+                    Отклонить
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('parent_teacher.parent_link_respond', link_id=req.id) }}" style="margin: 0;"
+                  onsubmit="return confirm('Заблокировать запросы на привязку от этого аккаунта? Они больше не будут приходить.');">
+                <input type="hidden" name="action" value="block">
+                <input type="hidden" name="next" value="/profile">
+                <button type="submit"
+                        style="padding: 14px 26px; min-height: 48px; background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.45); border-radius: 12px; font-size: 1em; font-weight: 600; cursor: pointer;"
+                        title="Больше не получать запросы от этого родителя">
+                    🚫 Заблокировать
+                </button>
+            </form>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.82em; margin-top: 14px; margin-bottom: 0;">
+            «Отклонить» — разовый отказ, запрос можно будет отправить повторно. «Заблокировать» — запросы от этого аккаунта больше не придут.
+        </p>
+    </div>
+    {% endfor %}
+    {% endif %}
+
     <!-- Информация об аккаунте -->
     <div style="background: var(--bg-card); backdrop-filter: blur(12px); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-soft); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;">
         <h2 style="color: var(--accent-2); margin-bottom: 20px; font-size: 1.5em;">

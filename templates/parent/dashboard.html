@@ -115,10 +115,22 @@
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <input type="text" name="child_nickname" required placeholder="Никнейм ребёнка"
                            style="flex: 1 1 220px; padding: 12px 14px; background: rgba(15,23,42,0.6); border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 16px;">
-                    <button type="submit" style="padding: 12px 20px; min-height: 44px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Привязать</button>
+                    <button type="submit" style="padding: 12px 20px; min-height: 44px; background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Отправить запрос</button>
                 </div>
             </form>
+            <p style="color: var(--muted); margin-top: 12px; font-size: 13px;">
+                Ребёнку придёт запрос на привязку — прогресс станет виден только после его согласия.
+            </p>
         </div>
+        {% if pending_child_nickname %}
+        <div class="card" style="border-color: rgba(56,189,248,0.4);">
+            <h2>Запрос отправлен</h2>
+            <p style="color: var(--muted); margin: 0;">
+                Ученику <strong style="color: var(--text);">{{ pending_child_nickname }}</strong> отправлен запрос на привязку{% if pending_since %} ({{ pending_since.strftime('%d.%m.%Y %H:%M') }}){% endif %}.
+                Как только ребёнок примет запрос в своём профиле, вы увидите его прогресс здесь.
+            </p>
+        </div>
+        {% endif %}
     {% elif not_found %}
         <div class="not-found">NOT FOUND: Ребёнок с указанным email не найден в системе.</div>
     {% elif share_blocked %}
