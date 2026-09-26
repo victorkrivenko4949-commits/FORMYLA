@@ -34,7 +34,8 @@ CONSTRUCTIONS: dict[str, dict[str, Any]] = {
     "line_circle":     {"args": 4, "value": True, "doc": "пересечение AB с окружностью (центр C, радиус |CD|); value=0/1 выбор корня"},
     "circle_circle":   {"args": 4, "value": True, "doc": "пересечение окружностей (C1=A,r=|AB|),(C2=C,r=|CD|); value=0/1"},
     # --- биссектрисы и параллели ---
-    "bisector_point":  {"args": 3, "doc": "пересечение бисс. угла A треугольника ABC со стороной BC"},
+    "bisector_point":  {"args": 3, "doc": "пересечение бисс. угла A треугольника ABC со стороной BC; НЕ с описанной окружностью"},
+    "bisector_circumcircle": {"args": 3, "doc": "второе после A пересечение биссектрисы угла A треугольника ABC с описанной окружностью"},
     "parallel_point":  {"args": 3, "value": True, "doc": "точка через A параллельно BC на расстоянии value*|BC|"},
     "translate":       {"args": 3, "doc": "A + (C - B)"},
     "rotate":          {"args": 2, "value": True, "doc": "поворот A вокруг B на value градусов"},

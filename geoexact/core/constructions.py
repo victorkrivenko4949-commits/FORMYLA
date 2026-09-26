@@ -198,6 +198,21 @@ def _line_circle(A, B, C, D, value=None):
     return A + t * d
 
 
+def _bisector_circumcircle(A, B, C, value=None):
+    """Second intersection of the internal A-angle bisector with (ABC).
+
+    The incenter lies strictly inside a nondegenerate triangle, so the ray
+    A->I meets the circumcircle again at positive distance from A. Avoid a
+    model-chosen root index or a free point on the circle.
+    """
+    I = _incenter(A, B, C)
+    O = _circumcenter(A, B, C)
+    W = _line_circle(A, I, O, A, value=1)
+    if _norm(W - A) <= _REL_EPS * max(_norm(B - A), _norm(C - A)):
+        raise PlanError("DEGENERATE", "второе пересечение совпало с A")
+    return W
+
+
 def _circle_circle(A, B, C, D, value=None):
     """Пересечение окружностей (A, |AB|) и (C, |CD|); корни по возрастанию
     проекции на нормаль к линии центров (сначала «минус», потом «плюс»)."""
@@ -330,6 +345,7 @@ OPS = {
     "line_circle": _line_circle,
     "circle_circle": _circle_circle,
     "bisector_point": _bisector_point,
+    "bisector_circumcircle": _bisector_circumcircle,
     "parallel_point": _parallel_point,
     "translate": _translate,
     "rotate": _rotate,
