@@ -55,6 +55,10 @@ _API_SLOTS = threading.BoundedSemaphore(4)
 _START_LOCK = threading.Lock()
 _LAST_START = 0.0
 
+# Модели, для которых провайдер не принял параметр thinking
+# (HTTP 400 с упоминанием «thinking») — повтор идёт без параметра.
+_THINKING_UNSUPPORTED: set[str] = set()
+
 
 def _post_limited(sess, payload):
     """Independent CPU workers, bounded API concurrency and safe 429 backoff."""
@@ -242,6 +246,7 @@ ok: false только если текст вообще не про геомет
 def _chat(sess, model: str, system: str, user: str, max_out: int,
           stage: str, budget: Budget, temperature: float = 0.0,
           thinking: bool = False) -> tuple[str, Usage]:
+    # thinking здесь больше не управляет запросом: см. _THINKING_FIX ниже.
     input_bound = len((system + user).encode("utf-8")) + 512
     if not budget.can_afford(model, max_out, input_bound):
         raise PlanError("BUDGET_EXCEEDED", f"остаток ${budget.left:.4f} не покрывает вызов {model}")
@@ -252,19 +257,35 @@ def _chat(sess, model: str, system: str, user: str, max_out: int,
     # GEOEXACT_MODEL_FIX: тело запроса повторяет проверенную форму AI-тьютора
     # (services/atlas_tutor.py): model/messages/temperature/max_tokens
     # (+ response_format json_object — сайт уже использует это в проде).
-    # Поля "thinking"/"reasoning_effort" удалены: непроверенные параметры
-    # не отправляются, чтобы прямой api.deepseek.com не отвечал HTTP 400.
+    # GEOEXACT_THINKING_FIX: модели DeepSeek v4 по умолчанию «думают» перед
+    # ответом: reasoning-токены входят в completion_tokens (обрезка JSON —
+    # TRUNCATED) и растягивают каждый вызов на минуты. Для JSON-планов мышление
+    # не нужно — отключаем тем же параметром, что и services/llm_router.py
+    # (работает в проде на api.deepseek.com). Если провайдер параметр не знает —
+    # помечаем и повторяем без него.
+    payload = {"model": model, "max_tokens": max_out, "temperature": temperature,
+               "messages": [{"role": "system", "content": system},
+                            {"role": "user", "content": user}],
+               "response_format": {"type": "json_object"}}
+    if model not in _THINKING_UNSUPPORTED:
+        payload["thinking"] = {"type": "disabled"}
     try:
-        r = _post_limited(sess,
-            {"model": model, "max_tokens": max_out, "temperature": temperature,
-              "messages": [{"role": "system", "content": system},
-                           {"role": "user", "content": user}],
-              "response_format": {"type": "json_object"}},
-        )
+        r = _post_limited(sess, payload)
     except requests.RequestException as e:
         budget.uncertain = True
         budget.spent += reserve  # upper-bound reservation, NOT a verified API charge
         raise PlanError("NETWORK_UNCERTAIN", "ответ API не получен; стоимость неизвестна, автоповтор запрещён") from e
+    if r.status_code == 400 and model not in _THINKING_UNSUPPORTED \
+            and "thinking" in (r.text or "").lower():
+        # Провайдер не знает параметр thinking — повторяем без него.
+        _THINKING_UNSUPPORTED.add(model)
+        payload.pop("thinking", None)
+        try:
+            r = _post_limited(sess, payload)
+        except requests.RequestException as e:
+            budget.uncertain = True
+            budget.spent += reserve
+            raise PlanError("NETWORK_UNCERTAIN", "ответ API не получен; стоимость неизвестна, автоповтор запрещён") from e
     dt = time.time() - t0
     if r.status_code != 200:
         if r.status_code >= 500:
