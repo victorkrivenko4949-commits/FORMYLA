@@ -2279,10 +2279,16 @@ try:
 except Exception as _e:
     print(f"[JINJA] inject_geometry filter NOT registered: {_e}")
 
-# Limit upload size: 12 MB (for solution photos).
-app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
+# Limit upload size: 55 MB (covers solution photos and chat video attachments up to 50 MB).
+app.config['MAX_CONTENT_LENGTH'] = 55 * 1024 * 1024
 
 # ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
+@app.errorhandler(413)
+def request_too_large(e):
+    max_mb = app.config.get('MAX_CONTENT_LENGTH', 0) // (1024 * 1024)
+    return jsonify({'error': f'Файл слишком большой (максимум {max_mb} МБ)'}), 413
+
+
 @app.errorhandler(500)
 def internal_error(e):
     import traceback, uuid
@@ -11942,7 +11948,7 @@ def api_chat_send(friend_id):
         att = payload.get('attachment') or {}
         att_url = (att.get('url') or '').strip()
         att_kind = (att.get('kind') or '').strip()
-        if not att_url or att_kind not in ('image', 'pdf'):
+        if not att_url or att_kind not in ('image', 'pdf', 'video'):
             return jsonify({'error': 'Вложение пустое или неподдерживаемого типа'}), 400
         # Server-side ownership check: the URL must point at a file we just
         # saved under /static/uploads/chat/<current_user.id>/...
@@ -12022,7 +12028,9 @@ def api_chat_upload(friend_id):
 
     ALLOWED_IMG = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
     ALLOWED_PDF = {'pdf'}
+    ALLOWED_VIDEO = {'mp4', 'webm', 'mov', 'm4v', 'ogg'}
     MAX_BYTES = 5 * 1024 * 1024
+    MAX_VIDEO_BYTES = 50 * 1024 * 1024
 
     original_name = os.path.basename(f.filename)[:255]
     ext = (original_name.rsplit('.', 1)[-1] if '.' in original_name else '').lower()
@@ -12030,16 +12038,20 @@ def api_chat_upload(friend_id):
         att_kind = 'image'
     elif ext in ALLOWED_PDF:
         att_kind = 'pdf'
+    elif ext in ALLOWED_VIDEO:
+        att_kind = 'video'
     else:
-        return jsonify({'error': 'Разрешены только изображения (jpg/png/webp/gif) и PDF'}), 400
+        return jsonify({'error': 'Разрешены только изображения (jpg/png/webp/gif), видео (mp4/webm/mov) и PDF'}), 400
 
     f.stream.seek(0, os.SEEK_END)
     size = f.stream.tell()
     f.stream.seek(0)
     if size <= 0:
         return jsonify({'error': 'Файл пустой'}), 400
-    if size > MAX_BYTES:
-        return jsonify({'error': 'Файл больше 5 МБ'}), 400
+    size_limit = MAX_VIDEO_BYTES if att_kind == 'video' else MAX_BYTES
+    if size > size_limit:
+        limit_mb = size_limit // (1024 * 1024)
+        return jsonify({'error': f'Файл больше {limit_mb} МБ'}), 400
 
     folder = os.path.join('static', 'uploads', 'chat', str(current_user.id))
     os.makedirs(folder, exist_ok=True)
@@ -14034,22 +14046,28 @@ def api_groups_upload(group_id):
         return jsonify({'error': 'Файл пустой'}), 400
     ALLOWED_IMG = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
     ALLOWED_PDF = {'pdf'}
+    ALLOWED_VIDEO = {'mp4', 'webm', 'mov', 'm4v', 'ogg'}
     MAX_BYTES = 5 * 1024 * 1024
+    MAX_VIDEO_BYTES = 50 * 1024 * 1024
     original_name = os.path.basename(f.filename)[:255]
     ext = (original_name.rsplit('.', 1)[-1] if '.' in original_name else '').lower()
     if ext in ALLOWED_IMG:
         att_kind = 'image'
     elif ext in ALLOWED_PDF:
         att_kind = 'pdf'
+    elif ext in ALLOWED_VIDEO:
+        att_kind = 'video'
     else:
-        return jsonify({'error': 'Разрешены только изображения (jpg/png/webp/gif) и PDF'}), 400
+        return jsonify({'error': 'Разрешены только изображения (jpg/png/webp/gif), видео (mp4/webm/mov) и PDF'}), 400
     f.stream.seek(0, os.SEEK_END)
     size = f.stream.tell()
     f.stream.seek(0)
     if size <= 0:
         return jsonify({'error': 'Файл пустой'}), 400
-    if size > MAX_BYTES:
-        return jsonify({'error': 'Файл больше 5 МБ'}), 400
+    size_limit = MAX_VIDEO_BYTES if att_kind == 'video' else MAX_BYTES
+    if size > size_limit:
+        limit_mb = size_limit // (1024 * 1024)
+        return jsonify({'error': f'Файл больше {limit_mb} МБ'}), 400
     folder = os.path.join('static', 'uploads', 'chat', str(current_user.id))
     os.makedirs(folder, exist_ok=True)
     import uuid
