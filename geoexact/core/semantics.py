@@ -34,24 +34,38 @@ _EXACT_THEOREM = (
     "треугольника в точке W. Докажите, что WB = WC = WI."
 )
 
+_EXCENTER_THEOREM = (
+    "В треугольнике ABC (где AB AC) точка I — центр вписанной окружности, "
+    "I_A — центр вневписанной окружности, касающейся стороны BC. "
+    "Биссектриса угла A второй раз пересекает описанную окружность в точке W. "
+    "Докажите, что W — середина отрезка II_A и WB = WC = WI = WI_A. "
+    "Иными словами, точки B, C, I и I_A лежат на одной окружности с центром W."
+)
+
 
 def _canonical(text: str) -> str:
     # Vision OCR may wrap the same point names and equality in LaTeX.
     text = re.sub(r"\\(?:mathrm|text|operatorname)\s*\{([^{}]*)\}",
                   r"\1", text)
-    return re.sub(r"[\W_]+", "", text.casefold())
+    text = re.sub(r"\\(?:neq|ne)\b|!=", "≠", text)
+    return re.sub(r"[^\w=<>≠≤≥]+|_", "", text.casefold())
 
 
 def theorem_plan(text: str, with_aux: bool) -> FigurePlan | None:
-    """Only bypass the model for the exact theorem, not an augmented task."""
+    """Only bypass the model for the two known theorems, not augmented tasks."""
     without_heading = re.sub(r"^\s*условие\s*[.:]\s*", "", text, flags=re.I)
-    if _canonical(without_heading) != _canonical(_EXACT_THEOREM):
+    statement = _canonical(without_heading)
+    with_excenter = statement == _canonical(_EXCENTER_THEOREM)
+    if not with_excenter and statement != _canonical(_EXACT_THEOREM):
         return None
     plan = FigurePlan.from_dict({
-        "points": ["A", "B", "C", "I", "O", "W"],
+        "points": ["A", "B", "C", "I", *(["I_A"] if with_excenter else []),
+                   "O", "W"],
         "constructions": [
             *({"op": "free_point", "out": n} for n in "ABC"),
             {"op": "incenter", "out": "I", "args": ["A", "B", "C"]},
+            *([{"op": "excenter", "out": "I_A",
+                "args": ["A", "B", "C"], "value": 0}] if with_excenter else []),
             {"op": "circumcenter", "out": "O", "args": ["A", "B", "C"]},
             {"op": "bisector_circumcircle", "out": "W",
              "args": ["A", "B", "C"]},
@@ -59,16 +73,19 @@ def theorem_plan(text: str, with_aux: bool) -> FigurePlan | None:
         "constraints": [],
         "draw": {
             "segments": [["A", "B"], ["B", "C"], ["C", "A"], ["A", "W"],
-                         ["W", "B"], ["W", "C"], ["W", "I"]],
-            "circles": [["O", "A"]],
+                         ["W", "B"], ["W", "C"], ["W", "I"],
+                         *([["W", "I_A"]] if with_excenter else [])],
+            "circles": [["O", "A"], *([["W", "B"]] if with_excenter else [])],
             "aux_segments": [["B", "I"], ["C", "I"]] if with_aux else [],
             "aux_points": ["O"],
             "hide_labels": ["O"],
         },
         "target": {"kind": "none", "args": []},
         "scale_free": True,
-        "notes": ("Иллюстрация условия и равных отрезков; рисунок "
-                  "сам по себе не является доказательством."),
+        "notes": ("Иллюстрация условия, середины и равных отрезков; рисунок "
+                  if with_excenter else
+                  "Иллюстрация условия и равных отрезков; рисунок ")
+                 + "сам по себе не является доказательством.",
     })
     validate_plan(plan)
     return plan
@@ -80,7 +97,7 @@ def semantic_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
         return []
     if not all(name in coords for name in ("A", "B", "C", "I", "W")):
         return ["В плане отсутствуют A, B, C, I или W"]
-    from .constructions import _circumcenter, _incenter
+    from .constructions import _circumcenter, _excenter, _incenter
     A, B, C, I, W = (np.asarray(coords[name], dtype=float)
                       for name in ("A", "B", "C", "I", "W"))
     try:
@@ -106,6 +123,25 @@ def semantic_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
                      for name in ("B", "C", "I")]
         if max(distances) - min(distances) > 1e-4 * scale:
             fails.append("WB, WC и WI не равны на построенной фигуре")
+    named_excenter = ("вневписанн" in text.casefold()
+        and bool(re.search(r"(?<!\w)i\s*_\s*(?:\{\s*a\s*\}|a)(?!\w)|(?<!\w)iₐ(?!\w)",
+                           text, re.I)))
+    if named_excenter:
+        if "I_A" not in coords:
+            fails.append("в плане отсутствует вневписанный центр I_A")
+        else:
+            IA = np.asarray(coords["I_A"], dtype=float)
+            if float(np.linalg.norm(IA - _excenter(A, B, C, value=0))) > 1e-5 * scale:
+                fails.append("I_A не является вневписанным центром напротив A")
+            if "середин" in text.casefold() and (
+                float(np.linalg.norm(W - (I + IA) / 2)) > 1e-5 * scale
+            ):
+                fails.append("W не является серединой II_A")
+            if "WI_A" in re.sub(r"[\s{}$\\()]+", "", text).upper():
+                distances = [float(np.linalg.norm(W - coords[name]))
+                             for name in ("B", "C", "I", "I_A")]
+                if max(distances) - min(distances) > 1e-4 * scale:
+                    fails.append("WB, WC, WI и WI_A не равны на фигуре")
     # An illustrative scale is harmless; three invented side lengths are not.
     # Limit this check to this named configuration so other, possibly numeric
     # problems keep their existing behaviour.

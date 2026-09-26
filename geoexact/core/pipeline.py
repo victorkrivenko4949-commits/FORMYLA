@@ -275,8 +275,11 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         sol, gate = ranked[0]
         if special_plan is not None:
             gate.warnings = [w for w in gate.warnings
-                             if not w.startswith(
-                                 "UNDECLARED_INCIDENCE: I лежит на AW")]
+                             if not (
+                                 w.startswith("UNDECLARED_INCIDENCE: I лежит на AW")
+                                 or (w.startswith("POINT_ON_SEGMENT: O ")
+                                     and "O" in plan.draw.hide_labels)
+                             )]
         if not gate.ok:
             last = Result(False, "8-readability", "GATE_READABILITY",
                           "; ".join(gate.failures), plan=plan.to_dict(),
@@ -303,6 +306,14 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                         "чертёж иллюстративный, измеренное значение не является доказанным ответом")
         # Renderer collision notices must not live only inside hidden SVG comments.
         render_warn = re.findall(r"<!--\s*((?:LABEL_COLLISION|ANGLE_LABEL|MARK_COLLISION)[^\n]*?)\s*-->", svg)
+        if special_plan is not None:
+            # A sub-unit placement preference is not an actual collision.
+            render_warn = [
+                w for w in render_warn
+                if not (w.startswith("LABEL_COLLISION:")
+                        and (m := re.search(r"штраф ([\d.]+)", w))
+                        and float(m.group(1)) < 1.0)
+            ]
         from .detail import detail_view
         svg_detail=detail_view(plan,sol,show_aux=with_aux)
         if svg_detail:
