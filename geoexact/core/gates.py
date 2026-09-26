@@ -581,7 +581,10 @@ def _used_points(plan: FigurePlan) -> set[str]:
 
 def readability_score(plan: FigurePlan, P: dict[str, np.ndarray]) -> float:
     """Оценка наглядности 0..1 для РАНЖИРОВАНИЯ конфигураций."""
-    pts = [P[p] for p in plan.points if p in P and np.all(np.isfinite(P[p]))]
+    used = _used_points(plan)
+    hidden = set(plan.draw.hide_labels) - used
+    pts = [P[p] for p in plan.points if p in P and p not in hidden
+           and np.all(np.isfinite(P[p]))]
     if len(pts) < 2:
         return 0.0
     span = _span({str(i): p for i, p in enumerate(pts)})
@@ -622,7 +625,10 @@ def gate_readability(plan: FigurePlan, sol: Any, *, strict: bool = True) -> Gate
     warns: list[str] = []
     P = _coords(sol)
 
-    live = {p: P[p] for p in plan.points if p in P and P[p].shape[0] >= 2
+    used = _used_points(plan)
+    hidden = set(plan.draw.hide_labels) - used
+    live = {p: P[p] for p in plan.points if p in P and p not in hidden
+            and P[p].shape[0] >= 2
             and np.all(np.isfinite(P[p]))}
     if len(live) < 2:
         return GateResult(ok=False, score=0.0,
