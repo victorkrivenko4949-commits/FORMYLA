@@ -22,7 +22,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.0"
+ENGINE_VERSION = "2.1"
 
 
 @dataclass
@@ -116,11 +116,19 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                     os.unlink(temp)
         return res
 
-    # ---------------------------------------------------------- этап 2
-    try:
-        c = L.classify(sess, text, budget)
-    except PlanError as e:
-        return finish(Result(False, "2-classify", e.code, str(e)))
+    # A narrow, exactly specified theorem family needs no stochastic model
+    # plan: the second intersection of the angle bisector with (ABC) is a
+    # deterministic construction, not bisector_point (which lies on BC).
+    from .semantics import theorem_plan, semantic_failures
+    special_plan = theorem_plan(text, with_aux)
+    if special_plan is None:
+        # ------------------------------------------------------ этап 2
+        try:
+            c = L.classify(sess, text, budget)
+        except PlanError as e:
+            return finish(Result(False, "2-classify", e.code, str(e)))
+    else:
+        c = {"ok": True, "class": "M", "space": "plane"}
     if not c.get("ok", True):
         return finish(Result(False, "2-classify", "BAD_PROBLEM",
                              c.get("reason", "условие некорректно")))
@@ -151,10 +159,15 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
 
     # ---------------------------------------------------------- этапы 3-8
     feedback, last, prev_code = "", None, ""
-    for attempt in range(max_retries + 1):
+    for attempt in range((0 if special_plan is not None else max_retries) + 1):
         # этап 3 маршрутизация + этап 4 формализация + этап 5 валидация
         try:
-            plan, warn = L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code)
+            if special_plan is not None:
+                plan = special_plan
+                warn = [w for w in validate_plan(plan)
+                        if not w.startswith("UNDERDETERMINED:")]
+            else:
+                plan, warn = L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code)
         except PlanError as e:
             last = Result(False, "4-formalize" if e.code not in
                           ("BUDGET_EXCEEDED",) else "3-route", e.code, str(e),
@@ -218,6 +231,28 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                          "используй angle_ray с 2 аргументами и line_intersect.")
             continue
 
+        # The numeric gates validate the *plan*, not its fidelity to the
+        # wording. For a named incenter/arc configuration, independently
+        # reject a model's W on BC (or invented equality) before rendering.
+        semantic_errors: list[str] = []
+        faithful = []
+        for s in good:
+            failures = semantic_failures(text, plan, s.coords)
+            if failures:
+                semantic_errors.extend(failures)
+            else:
+                faithful.append(s)
+        if not faithful:
+            details = "; ".join(dict.fromkeys(semantic_errors))
+            last = Result(False, "7-semantics", "SEMANTIC_MISMATCH",
+                          details, plan=plan.to_dict(), cls=cls,
+                          with_aux=with_aux, retries=attempt)
+            feedback = ("План не соответствует исходному условию: " + details
+                        + ". Используй bisector_circumcircle(W,[A,B,C]), "
+                        "не bisector_point; не выдумывай длины сторон.")
+            continue
+        good = faithful
+
         # этапы 7-8 гейты и ранжирование
         ranked = rank_solutions(plan, good, strict_readability=False)
         if not ranked:
@@ -238,6 +273,10 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             feedback = "построенная фигура не прошла проверку: " + det
             continue
         sol, gate = ranked[0]
+        if special_plan is not None:
+            gate.warnings = [w for w in gate.warnings
+                             if not w.startswith(
+                                 "UNDECLARED_INCIDENCE: I лежит на AW")]
         if not gate.ok:
             last = Result(False, "8-readability", "GATE_READABILITY",
                           "; ".join(gate.failures), plan=plan.to_dict(),
