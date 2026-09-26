@@ -79,7 +79,7 @@
                         </div>
                         {% if answer.task_text %}
                         <div style="font-size: 0.9em; color: var(--text-soft); margin-bottom: 8px; line-height: 1.5;">
-                            {{ answer.task_text|truncate(200) }}
+                            {{ answer.task_text | preview_text(200) }}
                         </div>
                         {% endif %}
                         <div style="display: flex; gap: 16px; font-size: 0.85em; color: var(--text-muted); flex-wrap: wrap;">
