@@ -977,6 +977,23 @@ try:
 except Exception as e:
     print(f"[AUTO-MIGRATION] group_chats Warning: {e}")
 
+# AUTO-MIGRATION: таблица parent_child_links — запросы привязки
+# родитель→ребёнок с подтверждением учеником. Создаём на проде, если нет.
+try:
+    with app.app_context():
+        from sqlalchemy import inspect as _inspect_pcl
+        from models import ParentChildLink as _PCLink  # noqa: F401 — регистрация модели в metadata
+        _ins_pcl = _inspect_pcl(db.engine)
+        if 'parent_child_links' not in set(_ins_pcl.get_table_names()):
+            print("[AUTO-MIGRATION] Creating parent_child_links")
+            db.create_all()
+            print("[AUTO-MIGRATION] [OK] parent_child_links created")
+        else:
+            print("[AUTO-MIGRATION] [OK] parent_child_links already exists")
+except Exception as e:
+    print(f"[AUTO-MIGRATION] parent_child_links Warning: {e}")
+
+
 # AUTO-MIGRATION CH22: aux_status / aux_fail_reason для figure_build_jobs.
 try:
     with app.app_context():
