@@ -42,7 +42,7 @@
                             data-task-grade="{{ grade }}"
                             data-task-difficulty="{{ task.difficulty_level }}"
                             data-task-url="/adaptive_task/{{ task.id }}"
-                            data-task-preview="{{ task.task_text|truncate(280) }}"
+                            data-task-preview="{{ task.task_text | preview_text(280) }}"
                             style="padding: 8px 16px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 8px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;"
                             onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.borderColor='#8b5cf6'"
                             onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.borderColor='rgba(139, 92, 246, 0.35)'">

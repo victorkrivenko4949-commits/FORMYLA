@@ -16,7 +16,7 @@
                 data-task-grade="{{ problem.grade }}"
                 data-task-difficulty="{{ problem.difficulty }}"
                 data-task-url="/problem/{{ problem.id }}"
-                data-task-preview="{{ (problem.title ~ ' — ' ~ (problem.text|striptags))|truncate(280) }}"
+                data-task-preview="{{ (problem.title ~ ' — ' ~ (problem.text|striptags|preview_text(280))) }}"
                 style="padding: 6px 14px; background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 999px; font-size: 0.82em; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
             <span></span><span>Поделиться с другом</span>
         </button>
@@ -210,7 +210,7 @@
                 setTimeout(function() {
                     var input = document.getElementById('tutorInput');
                     if (input) {
-                        input.value = 'Помоги с задачей: {{ problem.text[:100] | escape }}...';
+                        input.value = 'Помоги с задачей: {{ problem.text | preview_text(200) | escape }}';
                         input.focus();
                         if (typeof sendToTutor === 'function') {
                             sendToTutor();
@@ -229,7 +229,7 @@
                     setTimeout(function() {
                         var input = document.getElementById('tutorInput');
                         if (input) {
-                            input.value = 'Помоги с задачей: {{ problem.text[:100] | escape }}...';
+                            input.value = 'Помоги с задачей: {{ problem.text | preview_text(200) | escape }}';
                             input.focus();
                             if (typeof sendToTutor === 'function') {
                                 sendToTutor();

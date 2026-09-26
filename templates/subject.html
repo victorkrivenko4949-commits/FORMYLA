@@ -67,7 +67,7 @@
                             <span class="problem-difficulty">Уровень {{ problem.difficulty }}</span>
                         </div>
                         <h3>{{ problem.title }}</h3>
-                        <p class="problem-preview">{{ problem.text | truncate(100) }}</p>
+                        <p class="problem-preview">{{ problem.text | preview_text(160) }}</p>
                     </a>
                 {% endfor %}
             {% else %}
