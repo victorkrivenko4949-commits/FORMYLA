@@ -5303,6 +5303,13 @@ _TOPIC_LABELS_RU = {
 
 @app.route("/olympiads")
 def olympiads():
+    """Единый вход в олимпиадный раздел на телефоне и компьютере."""
+    return render_template("olympiads_menu.html")
+
+
+@app.route("/olympiads/probniks")
+def olympiads_probniks():
+    """Старый каталог пробников остаётся по отдельному адресу для прямых ссылок."""
     # Структура: {slug: {year: {round_key: [round_title, [grade1, grade2, ...]]}}}
     # Порядок: Олимпиада -> Год -> Этап -> Класс
     olympiad_data = {}
@@ -14078,5 +14085,4 @@ if __name__ == '__main__':
             port=5000,
             use_reloader=_use_reloader,
         )
-
 
