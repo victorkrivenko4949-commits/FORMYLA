@@ -22,7 +22,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.1"
+ENGINE_VERSION = "2.2"
 
 
 @dataclass
@@ -119,8 +119,10 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     # A narrow, exactly specified theorem family needs no stochastic model
     # plan: the second intersection of the angle bisector with (ABC) is a
     # deterministic construction, not bisector_point (which lies on BC).
-    from .semantics import theorem_plan, semantic_failures
-    special_plan = theorem_plan(text, with_aux)
+    from .semantics import (common_plan, requests_circumcircle,
+                            requests_incircle, requests_rhombus,
+                            semantic_failures, theorem_plan)
+    special_plan = theorem_plan(text, with_aux) or common_plan(text, with_aux)
     if special_plan is None:
         # ------------------------------------------------------ этап 2
         try:
@@ -247,9 +249,21 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             last = Result(False, "7-semantics", "SEMANTIC_MISMATCH",
                           details, plan=plan.to_dict(), cls=cls,
                           with_aux=with_aux, retries=attempt)
-            feedback = ("План не соответствует исходному условию: " + details
-                        + ". Используй bisector_circumcircle(W,[A,B,C]), "
-                        "не bisector_point; не выдумывай длины сторон.")
+            if requests_incircle(text):
+                advice = (". Построй I=incenter(A,B,C), T=foot(I,B,C); "
+                          "в основном draw.circles добавь [I,T]. "
+                          "Окружность радиуса IA не является вписанной.")
+            elif requests_circumcircle(text):
+                advice = (". Построй O=circumcenter(A,B,C), добавь [O,A] "
+                          "в основной draw.circles.")
+            elif requests_rhombus(text):
+                advice = (". Построй невырожденный ромб с равными сторонами "
+                          "AB=BC=CD=DA и покажи все четыре стороны в draw.segments. "
+                          "Не ссылайся на точки до их построения.")
+            else:
+                advice = (". Используй bisector_circumcircle(W,[A,B,C]), "
+                          "не bisector_point; не выдумывай длины сторон.")
+            feedback = "План не соответствует исходному условию: " + details + advice
             continue
         good = faithful
 
