@@ -17,7 +17,7 @@ import os
 import tempfile
 from dataclasses import dataclass, field
 
-from .schema import FigurePlan, PlanError
+from .schema import FigurePlan, PlanError, validate_plan
 from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
@@ -167,7 +167,24 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
 
         # этап 6 решение ограничений
         try:
-            sols = solve(plan, n_seeds=n_seeds, seed=0)
+            # Convert free points fixed by side+angle into exact ray/side
+            # intersections first. This avoids slow, ill-conditioned
+            # five-free-point solves; every candidate is checked against
+            # ALL original constraints and the correctness/readability gates.
+            from .repair import angle_side_variants
+            variants = angle_side_variants(plan)
+            sols = []
+            for candidate in variants:
+                candidate_sols = solve(candidate, n_seeds=min(n_seeds, 8), seed=0)
+                candidate_good = [s for s in candidate_sols if s.ok]
+                if candidate_good and rank_solutions(
+                        candidate, candidate_good, strict_readability=False):
+                    plan = candidate
+                    warn = warn + validate_plan(plan)
+                    sols = candidate_sols
+                    break
+            if not sols:
+                sols = solve(plan, n_seeds=n_seeds, seed=0)
         except PlanError as e:
             last = Result(False, "6-solve", e.code, str(e), plan=plan.to_dict(),
                           cls=cls, with_aux=with_aux, retries=attempt)
@@ -179,7 +196,26 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             last = Result(False, "6-solve", why,
                           "система ограничений не имеет допустимого решения",
                           plan=plan.to_dict(), cls=cls, with_aux=with_aux, retries=attempt)
-            feedback = "ограничения несовместимы или недоопределены"
+            feedback = "не удалось удовлетворить ограничения"
+            if sols and sols[0].coords:
+                try:
+                    from .solver import residuals
+                    errors = residuals(plan, sols[0].coords)
+                    failures = sorted(
+                        ((abs(float(value)), c) for c, value in zip(plan.constraints, errors)),
+                        key=lambda pair: pair[0], reverse=True,
+                    )
+                    significant = [
+                        f"{c.type}({','.join(c.args)})={c.value}: невязка {error:.3g}"
+                        for error, c in failures[:3] if error > 1e-7
+                    ]
+                    if significant:
+                        feedback += ": " + "; ".join(significant)
+                except (PlanError, ValueError, TypeError):
+                    pass
+            feedback += (". Проверь правильность угловых вершин и ветвей; "
+                         "если точка на стороне определяется лучом из вершины, "
+                         "используй angle_ray с 2 аргументами и line_intersect.")
             continue
 
         # этапы 7-8 гейты и ранжирование

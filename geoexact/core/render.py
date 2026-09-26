@@ -212,7 +212,12 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
     d = plan.draw
     notes: list[str] = []
     aux_only, mark_layer = _visibility(d, P)
-    visible = {k: p for k, p in P.items() if show_aux or k not in aux_only}
+    from .gates import _used_points
+    # hide_labels still keeps points on drawn primitives (e.g. an unlabeled
+    # vertex), but construction-only ray witnesses must not become black dots.
+    hidden_helpers = set(d.hide_labels) - _used_points(plan)
+    visible = {k: p for k, p in P.items()
+               if k not in hidden_helpers and (show_aux or k not in aux_only)}
 
     if len(visible) == 0:
         return ('<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d">'
