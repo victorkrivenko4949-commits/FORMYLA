@@ -22,7 +22,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.2"
+ENGINE_VERSION = "2.3"
 
 
 @dataclass
@@ -302,6 +302,8 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             continue
 
         # ---------------------------------------------------------- этап 9
+        from .annotations import enrich_annotations
+        plan = enrich_annotations(plan, sol, with_aux=with_aux, problem_text=text)
         from .completion import complete_intersection_support
         plan, completion_warn = complete_intersection_support(plan, sol)
         warn.extend(completion_warn)

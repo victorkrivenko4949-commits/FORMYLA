@@ -40,6 +40,11 @@ def complete_intersection_support(plan, solution):
     for m in plan.draw.angle_marks:
         a,b,c=m["pts"]
         entries.extend((([a,b],m.get("layer","main")),([b,c],m.get("layer","main"))))
+        if m.get("reverse_first", False):
+            field = "aux_extensions" if m.get("layer") == "aux" else "extensions"
+            pair = [a, b]
+            if pair not in getattr(plan.draw, field):
+                getattr(plan.draw, field).append(pair)
     for a,b,c in plan.draw.right_angles:
         layer="aux" if any(n in aux_points for n in (a,b,c)) else "main"
         entries.extend((([a,b],layer),([b,c],layer)))

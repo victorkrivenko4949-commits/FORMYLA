@@ -77,6 +77,14 @@ def theorem_plan(text: str, with_aux: bool) -> FigurePlan | None:
                          *([["W", "I_A"]] if with_excenter else [])],
             "circles": [["O", "A"], *([["W", "B"]] if with_excenter else [])],
             "aux_segments": [["B", "I"], ["C", "I"]] if with_aux else [],
+            "angle_marks": [
+                {"pts": ["B", "A", "W"], "count": 1},
+                {"pts": ["W", "A", "C"], "count": 1},
+            ],
+            "equal_marks": [
+                {"pts": ["W", name], "count": 1}
+                for name in ("B", "C", "I", *(["I_A"] if with_excenter else []))
+            ],
             "aux_points": ["O"],
             "hide_labels": ["O"],
         },

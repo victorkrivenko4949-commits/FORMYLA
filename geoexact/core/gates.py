@@ -472,6 +472,8 @@ def _check_marks(plan: FigurePlan, P: dict[str, np.ndarray],
         for mark in marks:
             pts = [P[n] for n in mark["pts"]]
             actual = _angle_deg(*pts) if is_angle else _d(*pts)
+            if is_angle and mark.get("reverse_first", False):
+                actual = 180.0 - actual
             if is_angle and mark.get("reflex", False):
                 actual = 360.0 - actual
             label = mark.get("text", "")
@@ -492,6 +494,8 @@ def _check_marks(plan: FigurePlan, P: dict[str, np.ndarray],
         for mark in marks:
             pts = [P[n] for n in mark["pts"]]
             value = _angle_deg(*pts) if is_angle else _d(*pts)
+            if is_angle and mark.get("reverse_first", False):
+                value = 180.0 - value
             if is_angle and mark.get("reflex", False):
                 value = 360.0 - value
             groups.setdefault(mark.get("count", 1), []).append((mark["pts"], value))
@@ -568,6 +572,7 @@ def _used_points(plan: FigurePlan) -> set[str]:
     used: set[str] = set()
     d = plan.draw
     for group in (d.segments, d.aux_segments, d.lines, d.rays, d.aux_lines, d.aux_rays,
+                  d.extensions, d.aux_extensions,
                   d.circles, d.aux_circles, d.right_angles):
         for it in group:
             used.update(it)

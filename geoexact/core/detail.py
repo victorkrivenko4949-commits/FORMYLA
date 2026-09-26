@@ -22,6 +22,7 @@ def detail_view(plan, sol, *, show_aux=True):
         fragment.points=[n for n in plan.points if n in inside]
         d=fragment.draw
         for key in ("segments","aux_segments","lines","rays","aux_lines","aux_rays",
+                    "extensions","aux_extensions",
                     "circles","aux_circles","right_angles"):
             setattr(d,key,[s for s in getattr(d,key) if all(n in inside for n in s)])
         for key in ("angle_marks","length_marks","equal_marks"):
