@@ -67,7 +67,7 @@ def _key(text: str, with_aux: bool) -> str:
 
 
 def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
-             use_cache: bool = True, n_seeds: int = 24, max_retries: int = 1) -> Result:
+             use_cache: bool = True, n_seeds: int = 24, max_retries: int = 2) -> Result:
     from . import constructions  # noqa: F401  (регистрация операций)
     from .solver import solve
     from .gates import rank_solutions
@@ -128,9 +128,10 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         from .space3d import build_scene
         last = None
         feedback = ""
+        prev_code = ""
         for attempt in range(max_retries + 1):
             try:
-                data = L.formalize_space(sess, text, c["class"], with_aux, budget, feedback)
+                data = L.formalize_space(sess, text, c["class"], with_aux, budget, feedback, prev_code)
                 scene = build_scene(data, show_aux=with_aux)
                 base = build_scene(data, show_aux=False) if with_aux else scene
                 return finish(Result(True, "9-render-3D", svg=scene["svg"],
@@ -142,22 +143,24 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 last = Result(False, "6-space", e.code, str(e), cls=c["class"],
                               space="space", with_aux=with_aux, retries=attempt)
                 feedback = str(e)
+                prev_code = e.code
                 if budget.uncertain or e.code in ("BUDGET_EXCEEDED", "API_ERROR", "NEEDS_CLARIFICATION"):
                     break
         return finish(last)
     cls = c.get("class", "M")
 
     # ---------------------------------------------------------- этапы 3-8
-    feedback, last = "", None
+    feedback, last, prev_code = "", None, ""
     for attempt in range(max_retries + 1):
         # этап 3 маршрутизация + этап 4 формализация + этап 5 валидация
         try:
-            plan, warn = L.formalize(sess, text, cls, with_aux, budget, feedback)
+            plan, warn = L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code)
         except PlanError as e:
             last = Result(False, "4-formalize" if e.code not in
                           ("BUDGET_EXCEEDED",) else "3-route", e.code, str(e),
                           cls=cls, with_aux=with_aux, retries=attempt)
             feedback = str(e)
+            prev_code = e.code
             if budget.uncertain or e.code in ("BUDGET_EXCEEDED", "API_ERROR"):
                 break
             continue

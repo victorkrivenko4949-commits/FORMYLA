@@ -7,6 +7,7 @@
 {% block content %}
 <section id="geoexact" class="gx" data-api="{{ url_for('geoexact.submit') }}"
          data-active="{{ url_for('geoexact.active') }}"
+         data-recognize="{{ url_for('geoexact.recognize_photo') }}"
          data-csrf="{{ geoexact_csrf }}">
   <header><p class="gx-kicker">ГЕОМЕТРИЯ · FORMYLA</p>
     <h1>Чертёж по условию</h1>
@@ -22,7 +23,12 @@
         <label><input type="radio" name="gx-mode" value="aux"> С дополнительными построениями</label>
       </div>
     </fieldset>
-    <button id="gx-submit" type="submit">✏️ Построить чертёж</button>
+    <div class="gx-actions">
+      <label class="gx-photo-btn" for="gx-photo-input" title="Распознать условие с фото">📷 Распознать по фото</label>
+      <input type="file" id="gx-photo-input" accept="image/*" hidden>
+      <button id="gx-submit" type="submit">✏️ Построить чертёж</button>
+    </div>
+    <p class="gx-photo-hint">Фото можно также вставить прямо в поле условия через Ctrl+V</p>
   </form>
   <p id="gx-status" role="status" aria-live="polite"></p>
   <button id="gx-resume" type="button" hidden>Проверить готовность</button>

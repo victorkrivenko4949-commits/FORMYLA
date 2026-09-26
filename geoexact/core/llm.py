@@ -339,13 +339,17 @@ def classify(sess, problem: str, budget: Budget) -> dict:
 
 # ------------------------------------------------------------------ этап 4
 def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
-              feedback: str = "") -> tuple[FigurePlan, list[str]]:
+              feedback: str = "", prev_code: str = "") -> tuple[FigurePlan, list[str]]:
     path = "B" if with_aux else "A"
     model, max_out = ROUTES.get((path, cls), ROUTES[(path, "M")])
     if feedback:
         # A repeated malformed formalization needs reasoning, not the same
         # deterministic non-thinking response with a slightly longer prompt.
         max_out = max(max_out, 8000)
+    if prev_code == "TRUNCATED":
+        # Предыдущий ответ упёрся в лимит токенов и был обрезан —
+        # повтор с тем же лимитом обрежется так же. Даём заметно больше места.
+        max_out = min(max(max_out * 2, 8000), 16000)
     # деградация модели, если бюджета не хватает
     if not budget.can_afford(model, max_out) and model == "deepseek-v4-pro":
         model, max_out = "deepseek-v4-flash", min(max_out, 8000)
@@ -377,9 +381,16 @@ def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
 
 
 def formalize_space(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
-                    feedback: str = "") -> dict:
+                    feedback: str = "", prev_code: str = "") -> dict:
     from .space3d import scene_schema_prompt
     model, max_out = ROUTES.get(("B" if with_aux else "A", cls), ROUTES[("A", "M")])
+    if feedback:
+        # Повторная формализация после отказа движка — нужен запас на рассуждение.
+        max_out = max(max_out, 8000)
+    if prev_code == "TRUNCATED":
+        # Предыдущий ответ был обрезан лимитом токенов — повтор с тем же
+        # лимитом обрежется так же, даём заметно больше места.
+        max_out = min(max(max_out * 2, 8000), 16000)
     system = ("Переведи геометрическую задачу в точную параметрическую 3D-сцену. "
               "Никаких координат от модели. НЕ заменяй произвольную пирамиду правильной. "
               "Не выдумывай размеры. Если данных мало, верни error: NEEDS_CLARIFICATION. "

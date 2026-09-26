@@ -65,6 +65,7 @@
 .gx input{accent-color:#425ed8}
 
 /* Кнопка отправки */
+.gx-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .gx button{
   border:0;border-radius:12px;padding:14px 30px;font:inherit;font-weight:700;
   font-size:15px;cursor:pointer;color:#fff;
@@ -72,6 +73,14 @@
   box-shadow:0 6px 20px rgba(66,94,216,.4);
   transition:transform .16s,box-shadow .16s,filter .16s;
 }
+.gx-photo-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:13px 22px;
+  border-radius:12px;border:1px solid rgba(155,167,184,.3);cursor:pointer;
+  font:inherit;font-weight:600;font-size:14.5px;color:inherit;opacity:.85;
+  transition:all .18s;user-select:none;
+}
+.gx-photo-btn:hover{opacity:1;border-color:#5a7bef;background:rgba(66,94,216,.12)}
+.gx-photo-hint{font-size:12.5px;line-height:1.5;opacity:.5;margin:12px 2px 0}
 .gx button:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(66,94,216,.5);filter:brightness(1.06)}
 .gx button:active{transform:translateY(0);box-shadow:0 4px 12px rgba(66,94,216,.4)}
 .gx button:disabled{opacity:.5;cursor:wait;transform:none;box-shadow:none}
@@ -128,6 +137,8 @@
   .gx-modes{display:flex;flex-direction:column;gap:6px;width:100%;box-sizing:border-box}
   .gx-modes label{width:100%;box-sizing:border-box;justify-content:flex-start;padding:12px 14px;font-size:13.5px}
   .gx button{width:100%}
+  .gx-actions{flex-direction:column;align-items:stretch}
+  .gx-photo-btn{justify-content:center;width:100%;box-sizing:border-box}
   .gx-toolbar{flex-direction:column;align-items:stretch;gap:10px}
   .gx-toolbar a{width:100%;text-align:center;box-sizing:border-box}
 }
