@@ -22,7 +22,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.4"
+ENGINE_VERSION = "2.5"
 
 
 @dataclass
@@ -89,6 +89,10 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         return Result(False, "1-normalize", "INPUT_TOO_LONG", "максимум 12 000 символов")
     if len(text) < 10:
         return Result(False, "1-normalize", "EMPTY_INPUT", "условие слишком короткое")
+    from .semantics import preflight_condition_error
+    condition_error = preflight_condition_error(text)
+    if condition_error:
+        return Result(False, "1-normalize", "INVALID_CONDITION", condition_error)
     ck = _key(text, with_aux)
     cf = CACHE / f"{ck}.json"
     if use_cache and cf.exists():
@@ -119,12 +123,14 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     # A narrow, exactly specified theorem family needs no stochastic model
     # plan: the second intersection of the angle bisector with (ABC) is a
     # deterministic construction, not bisector_point (which lies on BC).
-    from .semantics import (common_plan, proof_parallelogram_plan, requests_circumcircle,
+    from .semantics import (common_plan, proof_parallelogram_plan, trisected_parallel_plan,
+                            requests_circumcircle,
                             requests_incircle, requests_rhombus,
                             semantic_failures, theorem_plan)
     special_plan = (theorem_plan(text, with_aux)
                     or common_plan(text, with_aux)
-                    or proof_parallelogram_plan(text, with_aux))
+                    or proof_parallelogram_plan(text, with_aux)
+                    or trisected_parallel_plan(text, with_aux))
     if special_plan is None:
         # ------------------------------------------------------ этап 2
         try:

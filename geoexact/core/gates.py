@@ -174,6 +174,9 @@ def constraint_residual(ctype: str, pts: list[np.ndarray], value: float | None,
         return abs(_d(pts[0], pts[1]) - v * _d(pts[2], pts[3])) / s
     if ctype == "angle":
         return abs(_angle_deg(pts[0], pts[1], pts[2]) - v) / 180.0
+    if ctype == "cos_double_angle":
+        theta = _angle_deg(pts[0], pts[1], pts[2])
+        return abs(math.cos(2 * math.radians(theta)) - v) if math.isfinite(theta) else 1.0
     if ctype == "angle_eq":
         return abs(_angle_deg(pts[0], pts[1], pts[2]) - _angle_deg(pts[3], pts[4], pts[5])) / 180.0
     if ctype == "collinear":

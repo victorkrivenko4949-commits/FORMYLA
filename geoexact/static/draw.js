@@ -112,12 +112,16 @@
     // Корни и текстовые команды с одним аргументом
     t = t.replace(/\\sqrt\s*\{([^{}]*)\}/g, "√($1)");
     t = t.replace(/\\(?:text|mbox)\s*\{([^{}]*)\}/g, "$1");
+    t = t.replace(/\\(?:operatorname|mathrm)\s*\{\s*(cos|sin|tan|cot|arccos|arcsin|arctan|ln|log)\s*\}/gi, "$1");
     t = t.replace(/\\(?:overline|vec)\s*\{([^{}]*)\}/g, "$1");
     // Частые команды -> символы
     const map = {
       "\\angle": "∠", "\\triangle": "△", "\\circ": "°", "\\degree": "°",
       "\\cdot": "·", "\\times": "×", "\\div": ":", "\\perp": "⊥",
       "\\parallel": "∥", "\\cong": "≅", "\\sim": "∼", "\\approx": "≈",
+      "\\arccos": "arccos", "\\arcsin": "arcsin", "\\arctan": "arctan",
+      "\\cos": "cos", "\\sin": "sin", "\\tan": "tan", "\\cot": "cot",
+      "\\ln": "ln", "\\log": "log",
       "\\alpha": "α", "\\beta": "β", "\\gamma": "γ", "\\delta": "δ",
       "\\varepsilon": "ε", "\\epsilon": "ε", "\\theta": "θ", "\\varphi": "φ",
       "\\phi": "φ", "\\omega": "ω", "\\lambda": "λ", "\\mu": "μ", "\\pi": "π",
@@ -127,8 +131,8 @@
     for (const k of Object.keys(map)) t = t.split(k).join(map[k]);
     t = t.replace(/\^\{?\\?circ\}?/g, "°");
     t = t.replace(/\^°/g, "°");   // 60^\circ -> 60° после замены \\circ
-    // Остальные неизвестные команды убираем
-    t = t.replace(/\\[a-zA-Z]+/g, " ");
+    // Неизвестные команды оставляем видимыми: молчаливое удаление \cos
+    // превращало осмысленное условие в невозможное «(2∠CAN) = -1/4».
     t = t.replace(/[{}]/g, "");
     t = t.replace(/[ \t]{2,}/g, " ");
     return t.trim();

@@ -585,10 +585,28 @@ def render_svg(plan: FigurePlan, sol: Any, gate: Any = None, show_aux: bool = Tr
             a, b = start, finish
             t = b - a
         gap, half = min(4.0, length / (count + 2)), min(5.0, length * 0.2)
-        # Move away from a midpoint dot when one is present.
+        # Move a tick away from both point dots and crossing strokes. Merely
+        # avoiding dots can put a tick directly over a transversal and make an
+        # equality mark look like an unlabelled intersection.
+        def tick_clearance(f):
+            mid = a + t * f
+            distances = [float(np.linalg.norm(mid - q)) for q in visible_q.values()]
+            for start, end in px_segs:
+                v = np.asarray(end) - np.asarray(start)
+                den = float(v @ v)
+                if den < 1e-12:
+                    continue
+                # The marked segment itself is not an obstacle.
+                if (abs(float(np.linalg.det(np.array([t, v])))) < 1e-6 * length * math.sqrt(den)
+                        and abs(float(np.linalg.det(np.array([t, np.asarray(start) - a]))))
+                            < 2.0 * length):
+                    continue
+                fraction = float(np.clip(np.dot(mid - start, v) / den, 0, 1))
+                distances.append(float(np.linalg.norm(mid - (np.asarray(start) + fraction * v))))
+            return min(min(distances, default=18.0), 18.0)
+
         frac = max((0.5, 0.42, 0.58, 0.32, 0.68),
-                   key=lambda f: min(min(float(np.linalg.norm(a + t * f - q))
-                                         for q in visible_q.values()), 18.0))
+                   key=lambda f: (tick_clearance(f), -abs(f - 0.5)))
         for index in range(count):
             mid = a + t * frac + u * (index - (count - 1) / 2) * gap
             p, q = mid - n * half, mid + n * half

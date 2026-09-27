@@ -24,9 +24,10 @@ def main():
     for field in ("plan", "usage", "cost", "seconds", "retries", "cls"):
         payload.pop(field, None)
     if not result.ok:
-        payload = failure(result.reason,
-            "Не удалось построить проверенный чертёж. Проверьте полноту и "
-            "непротиворечивость условия. Некоторые конфигурации пока не поддерживаются.")
+        detail = (result.detail if result.reason == "INVALID_CONDITION" else
+                  "Не удалось построить проверенный чертёж. Проверьте полноту и "
+                  "непротиворечивость условия. Некоторые конфигурации пока не поддерживаются.")
+        payload = failure(result.reason, detail)
     print(json.dumps(payload, ensure_ascii=False))
 
 

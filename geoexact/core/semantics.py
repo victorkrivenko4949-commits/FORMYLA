@@ -7,6 +7,7 @@ problems continue through the regular model pipeline.
 """
 from __future__ import annotations
 
+import math
 import re
 
 import numpy as np
@@ -48,6 +49,110 @@ _PARALLELOGRAM_PROOF = (
     "Точка E выбрана так, что четырёхугольник CDEF — параллелограмм. "
     "Докажите, что BE = BF."
 )
+
+_TRISECTOR_PREFIX = (
+    "На стороне BC треугольника ABC отмечены точки M и N так, что BM = MN = NC. "
+    "Прямая, параллельная AN и проходящая через точку M, пересекает продолжение "
+    "стороны AC за точку A в такой точке D, что AB = CD. Найдите AB, "
+)
+
+
+def _math_text(text: str) -> str:
+    """Small OCR/LaTeX equivalences, without guessing a missing operator."""
+    text = re.sub(r"\\(?:operatorname|mathrm)\s*\{\s*(cos|sin|tan|cot)\s*\}",
+                  r"\1", text, flags=re.I)
+    text = re.sub(r"\\frac\s*\{\s*(\d+)\s*\}\s*\{\s*(\d+)\s*\}",
+                  r"\1/\2", text)
+    return (text.replace(r"\angle", "∠").replace(r"\cos", "cos")
+            .replace(r"\(", "").replace(r"\)", "").replace("$", "")
+            .replace("−", "-"))
+
+
+def _cos_double_claims(text: str) -> list[tuple[str, float]]:
+    from .gates import numeric_mark_value
+    text = _math_text(text)
+    pattern = (r"\bcos\s*\(\s*2\s*∠\s*([A-Z]{3})\s*\)\s*=\s*"
+               r"([-+]?\d+(?:[.,]\d+)?(?:\s*/\s*\d+(?:[.,]\d+)?)?)")
+    result = []
+    for match in re.finditer(pattern, text, re.I):
+        value = numeric_mark_value(match[2])
+        if value is not None:
+            result.append((match[1].upper(), value))
+    return result
+
+
+def preflight_condition_error(text: str) -> str | None:
+    """Reject a bare negative angle, rather than asking the model to invent cos."""
+    normalized = _math_text(text)
+    pattern = (r"\(\s*2\s*∠\s*([A-Z]{3})\s*\)\s*=\s*"
+               r"(-\s*\d+(?:[.,]\d+)?(?:\s*/\s*\d+)?)")
+    for match in re.finditer(pattern, normalized, re.I):
+        if re.search(r"(?:cos|sin|tan|tg|ctg|кос|син)\s*$",
+                     normalized[max(0, match.start() - 12):match.start()], re.I):
+            continue
+        return (f"В распознанном условии 2∠{match[1].upper()} равно "
+                f"{match[2].replace(' ', '')}, что невозможно для угла. "
+                "Проверьте фото: возможно, перед скобкой пропущено cos.")
+    for angle, value in _cos_double_claims(text):
+        if not -1 <= value <= 1:
+            return f"cos(2∠{angle})={value:g} вне допустимого диапазона [-1,1]."
+    return None
+
+
+def trisected_parallel_plan(text: str, with_aux: bool) -> FigurePlan | None:
+    """Exact affine construction for a recognized trisector/parallel family."""
+    statement = re.sub(r"^\s*условие\s*[.:]\s*", "", _math_text(text), flags=re.I)
+    head = re.search(r"\bесли\b", statement, re.I)
+    if head is None or _canonical(statement[:head.start()]) != _canonical(_TRISECTOR_PREFIX):
+        return None
+    tail = statement[head.start():]
+    match = re.fullmatch(
+        r"если\s+BC\s*=\s*(\d+(?:[.,]\d+)?)\s*,\s*"
+        r"cos\s*\(\s*2\s*∠\s*CAN\s*\)\s*=\s*"
+        r"([-+]?\d+(?:[.,]\d+)?(?:\s*/\s*\d+(?:[.,]\d+)?)?)\s*\.?\s*",
+        tail, re.I)
+    if not match:
+        return None
+    from .gates import numeric_mark_value
+    length = numeric_mark_value(match[1])
+    cosine = numeric_mark_value(match[2])
+    if length is None or length <= 0 or cosine is None or not -1 <= cosine <= 1:
+        return None
+    plan = FigurePlan.from_dict({
+        "points": ["B", "C", "A", "M", "N", "D"],
+        "constructions": [
+            {"op": "free_point", "out": "B"},
+            {"op": "free_point", "out": "C"},
+            {"op": "free_point", "out": "A"},
+            {"op": "divide_segment", "out": "M", "args": ["B", "C"], "value": 1 / 3},
+            {"op": "divide_segment", "out": "N", "args": ["B", "C"], "value": 2 / 3},
+            # The parallels intersect CD at its midpoint A: D=2A-C.
+            {"op": "reflect_point", "out": "D", "args": ["C", "A"]},
+        ],
+        "constraints": [
+            {"type": "dist", "args": ["B", "C"], "value": length},
+            {"type": "dist_eq", "args": ["A", "B", "C", "D"]},
+            {"type": "cos_double_angle", "args": ["C", "A", "N"], "value": cosine},
+            {"type": "parallel", "args": ["M", "D", "A", "N"]},
+            {"type": "on_segment", "args": ["A", "C", "D"]},
+        ],
+        "draw": {
+            "segments": [["A", "B"], ["B", "C"], ["A", "C"], ["A", "N"],
+                         ["M", "D"], ["A", "D"], ["C", "D"]],
+            "aux_segments": [["A", "M"]] if with_aux else [],
+            "equal_marks": [{"pts": [p, q], "count": 1}
+                            for p, q in (("B", "M"), ("M", "N"), ("N", "C"))]
+                           + [{"pts": [p, q], "count": 2}
+                              for p, q in (("A", "B"), ("C", "D"))],
+            "length_marks": [{"pts": ["B", "C"], "text": f"{length:g}"}],
+        },
+        "target": {"kind": "dist", "args": ["A", "B"]},
+        "notes": ("M и N делят BC на три равные части; из MD ∥ AN следует, "
+                  "что A — середина CD. Значение AB измерено на одном "
+                  "проверенном чертеже, а не объявлено доказанным ответом."),
+    })
+    validate_plan(plan)
+    return plan
 
 
 def _canonical(text: str) -> str:
@@ -410,6 +515,67 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
                        for s in (left, right)]
             if abs(lengths[0] - lengths[1]) > 1e-4 * max(*lengths, 1e-9):
                 fails.append(f"заданное равенство {left}={right} не выполняется")
+
+    from .gates import numeric_mark_value, _angle_deg
+    for match in re.finditer(
+        r"(?<![A-Z_])([A-Z]{2})\s*=\s*(\d+(?:[.,]\d+)?)\b", text, re.I,
+    ):
+        name, expected = match[1].upper(), numeric_mark_value(match[2])
+        if expected is None:
+            continue
+        if not set(name) <= P.keys():
+            fails.append(f"отсутствуют точки заданной длины {name}")
+        elif abs(float(np.linalg.norm(P[name[0]] - P[name[1]]))
+                 - expected) > 1e-4 * max(abs(expected), 1e-9):
+            fails.append(f"заданная длина {name}={expected:g} не выполняется")
+
+    for angle, expected in _cos_double_claims(text):
+        if not set(angle) <= P.keys():
+            fails.append(f"отсутствуют точки угла {angle}")
+            continue
+        theta = _angle_deg(P[angle[0]], P[angle[1]], P[angle[2]])
+        if not math.isfinite(theta) or abs(
+            math.cos(2 * math.radians(theta)) - expected
+        ) > 1e-4:
+            fails.append(f"cos(2∠{angle}) не совпадает с условием")
+
+    # A common affine construction: ordered trisectors on BC, MD parallel
+    # AN and D on the continuation of CA beyond A. Verify the wording even
+    # when a model omitted the equivalent constraints from its own plan.
+    t = _math_text(text)
+    if (re.search(r"на\s+сторон\w*\s+BC\b[^.!?]{0,90}\bточк\w*\s+M\s+и\s+N\b", t, re.I)
+            and re.search(r"BM\s*=\s*MN\s*=\s*NC\b", t, re.I)):
+        if not set("BCMN") <= P.keys():
+            fails.append("отсутствуют M и N на стороне BC")
+        else:
+            v = P["C"] - P["B"]
+            den = float(v @ v)
+            if den < 1e-18:
+                fails.append("сторона BC вырождена")
+            else:
+                fs = [float(np.dot(P[k] - P["B"], v) / den) for k in "MN"]
+                errs = [abs(float(np.linalg.det(np.array([v, P[k] - P["B"]]))))
+                        for k in "MN"]
+                if not 1e-5 < fs[0] < fs[1] < 1 - 1e-5 or max(errs) > 1e-5 * den:
+                    fails.append("M и N не лежат по порядку внутри BC")
+
+    if (re.search(r"параллельн\w*\s+AN\b[^.!?]{0,65}через\s+точк\w*\s+M\b", t, re.I)
+            and re.search(r"продолжени\w*\s+сторон\w*\s+AC\s+за\s+точк\w*\s+A", t, re.I)
+            and re.search(r"\bточк\w*\s+D\b", t, re.I)):
+        if not set("ACDMN") <= P.keys():
+            fails.append("отсутствуют точки параллели MD и продолжения AC")
+        else:
+            u, v = P["D"] - P["M"], P["N"] - P["A"]
+            length = float(np.linalg.norm(u) * np.linalg.norm(v))
+            cross = abs(float(np.linalg.det(np.array([u, v]))))
+            ca = P["A"] - P["C"]
+            den = float(ca @ ca)
+            position = float(np.dot(P["D"] - P["C"], ca) / den) if den > 1e-18 else -1
+            off = abs(float(np.linalg.det(np.array([ca, P["D"] - P["C"]]))))
+            if length < 1e-12 or cross > 1e-5 * length:
+                fails.append("MD не параллельна AN")
+            if den < 1e-18 or position <= 1 + 1e-5 or off > 1e-5 * den:
+                fails.append("D не лежит на продолжении AC за A")
 
     sides = []
     for match in re.finditer(
