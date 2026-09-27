@@ -42,6 +42,13 @@ _EXCENTER_THEOREM = (
     "Иными словами, точки B, C, I и I_A лежат на одной окружности с центром W."
 )
 
+_PARALLELOGRAM_PROOF = (
+    "В равнобедренном треугольнике ABC (AB = BC) проведена биссектриса CD. "
+    "На основании AC отмечена точка F так, что BD = CF. "
+    "Точка E выбрана так, что четырёхугольник CDEF — параллелограмм. "
+    "Докажите, что BE = BF."
+)
+
 
 def _canonical(text: str) -> str:
     # Vision OCR may wrap the same point names and equality in LaTeX.
@@ -49,6 +56,60 @@ def _canonical(text: str) -> str:
                   r"\1", text)
     text = re.sub(r"\\(?:neq|ne)\b|!=", "≠", text)
     return re.sub(r"[^\w=<>≠≤≥]+|_", "", text.casefold())
+
+
+def proof_parallelogram_plan(text: str, with_aux: bool) -> FigurePlan | None:
+    """An exact, non-LLM construction for the stated theorem, not its variants.
+
+    The arbitrary altitude and AC=1 fix an illustrative shape and scale;
+    neither appears as an asserted measurement on the drawing.
+    """
+    statement = re.sub(r"^\s*условие\s*[.:]\s*", "", text, flags=re.I)
+    if _canonical(statement) != _canonical(_PARALLELOGRAM_PROOF):
+        return None
+    plan = FigurePlan.from_dict({
+        "points": ["A", "C", "M", "B", "D", "R", "F", "E"],
+        "constructions": [
+            {"op": "free_point", "out": "A"},
+            {"op": "free_point", "out": "C"},
+            {"op": "midpoint", "out": "M", "args": ["A", "C"]},
+            {"op": "perp_point", "out": "B",
+             "args": ["M", "A", "C"], "value": 0.65},
+            {"op": "bisector_point", "out": "D", "args": ["C", "A", "B"]},
+            # |CR|=|BD|. The first intersection on the oriented line AC
+            # is F=C-|BD|*unit(AC), rather than the exterior root.
+            {"op": "translate", "out": "R", "args": ["C", "B", "D"]},
+            {"op": "line_circle", "out": "F",
+             "args": ["A", "C", "C", "R"], "value": 0},
+            # CDEF is a parallelogram in cyclic order: E=D+(F-C).
+            {"op": "translate", "out": "E", "args": ["D", "C", "F"]},
+        ],
+        "constraints": [
+            {"type": "dist", "args": ["A", "C"], "value": 1},
+        ],
+        "draw": {
+            "segments": [["A", "B"], ["B", "C"], ["C", "A"],
+                         ["C", "D"], ["D", "E"], ["E", "F"], ["F", "C"],
+                         ["B", "E"], ["B", "F"]],
+            "aux_segments": [["B", "M"], ["D", "F"]] if with_aux else [],
+            "aux_points": ["M"],
+            "hide_labels": ["M", "R"],
+            "equal_marks": [
+                {"pts": ["A", "B"], "count": 1},
+                {"pts": ["B", "C"], "count": 1},
+                {"pts": ["B", "D"], "count": 2},
+                {"pts": ["C", "F"], "count": 2},
+            ],
+        },
+        "target": {"kind": "none", "args": []},
+        "scale_free": True,
+        "notes": ("Иллюстрация доказательства; AC=1 задаёт только масштаб, "
+                  "высота выбрана для невырожденного примера. "
+                  "Равенство BE=BF проверено на чертеже, "
+                  "но рисунок сам по себе не является доказательством."),
+    })
+    validate_plan(plan)
+    return plan
 
 
 def theorem_plan(text: str, with_aux: bool) -> FigurePlan | None:
@@ -314,11 +375,137 @@ def _rhombus_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
     return failures
 
 
+def proof_equality(text: str) -> tuple[str, str] | None:
+    """A plain named-segment equality requested as a proof, not a target kind."""
+    match = re.search(
+        r"\bдокажите\s*,?\s*что\b[^.!?]{0,140}?"
+        r"(?<![A-Z_])([A-Z]{2})\s*=\s*([A-Z]{2})(?![A-Z_])",
+        text, re.I,
+    )
+    return (match[1].upper(), match[2].upper()) if match else None
+
+
+def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
+    """Check explicitly named 2D relationships independent of the LLM plan.
+
+    Unlike constraints, these are parsed from the user's wording, so a model
+    cannot quietly replace a point on a side by an intersection at its end or
+    omit a stated equality and still return a verified drawing.
+    """
+    P = {name: np.asarray(value, dtype=float) for name, value in coords.items()}
+    if not P:
+        return []
+    fails: list[str] = []
+
+    for match in re.finditer(
+        r"(?<![A-Z_])(?=([A-Z]{2})\s*=\s*([A-Z]{2})(?![A-Z_]))",
+        text, re.I,
+    ):
+        left, right = match[1].upper(), match[2].upper()
+        names = set(left + right)
+        if not names <= P.keys():
+            fails.append(f"отсутствуют точки равенства {left}={right}")
+        else:
+            lengths = [float(np.linalg.norm(P[s[0]] - P[s[1]]))
+                       for s in (left, right)]
+            if abs(lengths[0] - lengths[1]) > 1e-4 * max(*lengths, 1e-9):
+                fails.append(f"заданное равенство {left}={right} не выполняется")
+
+    sides = []
+    for match in re.finditer(
+        r"\bточк\w*\s+([A-Z])\s+(?:лежит|находится)\b"
+        r"[^.!?]{0,35}?\bна\s+(?:сторон\w*|основани\w*)\s+([A-Z]{2})\b",
+        text, re.I,
+    ):
+        sides.append((match[1].upper(), match[2].upper()))
+    for match in re.finditer(
+        r"\bна\s+(?:сторон\w*|основани\w*)\s+([A-Z]{2})\b"
+        r"[^.!?]{0,45}?\bточк\w*\s+([A-Z])\b",
+        text, re.I,
+    ):
+        sides.append((match[2].upper(), match[1].upper()))
+    for point, side in dict.fromkeys(sides):
+        if not set(point + side) <= P.keys():
+            fails.append(f"отсутствует точка {point} на стороне {side}")
+            continue
+        a, b, x = P[side[0]], P[side[1]], P[point]
+        v = b - a
+        den = float(v @ v)
+        if den <= 1e-18:
+            fails.append(f"сторона {side} вырождена")
+            continue
+        t = float(np.dot(x - a, v) / den)
+        cross = abs(float(np.linalg.det(np.array([v, x - a]))))
+        if cross > 1e-5 * den or not 1e-5 < t < 1 - 1e-5:
+            fails.append(f"точка {point} не лежит внутри стороны {side}")
+
+    triangle = re.search(r"\bтреугольник\w*\s+([A-Z]{3})\b", text, re.I)
+    triangle_names = triangle[1].upper() if triangle else ""
+    bisector = re.search(r"\bбиссектрис\w*\s+([A-Z])([A-Z])\b", text, re.I)
+    if bisector and triangle_names:
+        vertex, foot = bisector[1].upper(), bisector[2].upper()
+        if vertex in triangle_names:
+            others = [n for n in triangle_names if n != vertex]
+            if len(others) == 2:
+                refs = {vertex, foot, *others}
+                if not refs <= P.keys():
+                    fails.append(f"для биссектрисы {vertex}{foot} отсутствуют точки")
+                else:
+                    from .gates import _angle_deg
+                    a, b, f, v = P[others[0]], P[others[1]], P[foot], P[vertex]
+                    direction = b - a
+                    den = float(direction @ direction)
+                    tri_scale = max(float(np.linalg.norm(direction)),
+                                    float(np.linalg.norm(v - a)),
+                                    float(np.linalg.norm(v - b)), 1e-9)
+                    t = float(np.dot(f - a, direction) / den) if den > 1e-15 else -1
+                    left = _angle_deg(a, v, f)
+                    right = _angle_deg(f, v, b)
+                    if (not 1e-5 < t < 1 - 1e-5
+                            or abs(float(np.linalg.det(np.array([direction, f - a]))))
+                               > 1e-5 * tri_scale * tri_scale
+                            or not np.isfinite([left, right]).all()
+                            or abs(left - right) > 0.01):
+                        fails.append(f"{vertex}{foot} не является биссектрисой треугольника {triangle_names}")
+                    if frozenset((vertex, foot)) not in {
+                            frozenset(s) for s in plan.draw.segments}:
+                        fails.append(f"биссектриса {vertex}{foot} не показана на основном чертеже")
+
+    figure = re.search(
+        r"\b(?:четырёхугольник|четырехугольник)\s+([A-Z]{4})\s*"
+        r"(?:[-—–:]\s*)?параллелограмм\b"
+        r"|\bпараллелограмм\s+([A-Z]{4})\b", text, re.I,
+    )
+    if figure:
+        names = (figure[1] or figure[2]).upper()
+        if len(set(names)) != 4 or not set(names) <= P.keys():
+            fails.append(f"отсутствуют вершины параллелограмма {names}")
+        else:
+            V = [P[n] for n in names]
+            edges = [V[(i + 1) % 4] - V[i] for i in range(4)]
+            figure_scale = max(*(float(np.linalg.norm(e)) for e in edges), 1e-9)
+            turns = [float(np.linalg.det(np.array([edges[i], edges[(i + 1) % 4]])))
+                     for i in range(4)]
+            cross = lambda u, v: abs(float(np.linalg.det(np.array([u, v]))))
+            if (min(float(np.linalg.norm(e)) for e in edges) < 1e-5 * figure_scale
+                    or not (all(t > 1e-5 * figure_scale ** 2 for t in turns)
+                            or all(t < -1e-5 * figure_scale ** 2 for t in turns))
+                    or cross(edges[0], edges[2]) > 1e-5 * figure_scale ** 2
+                    or cross(edges[1], edges[3]) > 1e-5 * figure_scale ** 2
+                    or np.linalg.norm(edges[0] + edges[2]) > 1e-4 * figure_scale):
+                fails.append(f"{names} не является невырожденным параллелограммом")
+            sides = {frozenset((names[i], names[(i + 1) % 4])) for i in range(4)}
+            if not sides <= {frozenset(s) for s in plan.draw.segments}:
+                fails.append(f"не все стороны параллелограмма {names} показаны")
+    return fails
+
+
 def semantic_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
     """Independently check the named incenter, circle and equality claims."""
     fails = (_incircle_failures(text, plan, coords)
              + _circumcircle_failures(text, plan, coords)
-             + _rhombus_failures(text, plan, coords))
+             + _rhombus_failures(text, plan, coords)
+             + _statement_failures(text, plan, coords))
     if not _claims_incenter_arc_bisector(text):
         return fails
     if not all(name in coords for name in ("A", "B", "C", "I", "W")):

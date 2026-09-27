@@ -22,7 +22,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.3"
+ENGINE_VERSION = "2.4"
 
 
 @dataclass
@@ -119,10 +119,12 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     # A narrow, exactly specified theorem family needs no stochastic model
     # plan: the second intersection of the angle bisector with (ABC) is a
     # deterministic construction, not bisector_point (which lies on BC).
-    from .semantics import (common_plan, requests_circumcircle,
+    from .semantics import (common_plan, proof_parallelogram_plan, requests_circumcircle,
                             requests_incircle, requests_rhombus,
                             semantic_failures, theorem_plan)
-    special_plan = theorem_plan(text, with_aux) or common_plan(text, with_aux)
+    special_plan = (theorem_plan(text, with_aux)
+                    or common_plan(text, with_aux)
+                    or proof_parallelogram_plan(text, with_aux))
     if special_plan is None:
         # ------------------------------------------------------ этап 2
         try:
@@ -307,6 +309,16 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         from .completion import complete_intersection_support
         plan, completion_warn = complete_intersection_support(plan, sol)
         warn.extend(completion_warn)
+        # Derived marks and support lines are checked too; the pre-render
+        # correctness gate only saw the un-annotated model plan.
+        from .gates import gate_correctness
+        after_marks = gate_correctness(plan, sol)
+        if not after_marks.ok:
+            last = Result(False, "9-annotations", "GATE_CORRECTNESS",
+                          "; ".join(after_marks.failures), plan=plan.to_dict(),
+                          cls=cls, with_aux=with_aux, retries=attempt)
+            feedback = "добавленные метки не прошли проверку: " + last.detail
+            continue
         try:
             svg = render_svg(plan, sol, gate=gate, show_aux=with_aux)
             svg_base = render_svg(plan, sol, gate=gate, show_aux=False) if with_aux else svg
