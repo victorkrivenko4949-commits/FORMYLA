@@ -11935,7 +11935,7 @@ def api_chat_send(friend_id):
         if not body:
             return jsonify({'error': 'Сообщение не может быть пустым'}), 400
         msg.body = body[:4000]
-    else:
+    elif kind == 'task_share':
         task = payload.get('task') or {}
         try:
             msg.task_id = int(task.get('id')) if task.get('id') is not None else None
