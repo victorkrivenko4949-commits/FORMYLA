@@ -186,8 +186,19 @@ SYS_FORMALIZE = """Ты переводишь условие планиметри
    Радиус числом ЗАПРЕЩЁН. Если точки на окружности нет — объяви её в points
    и построй. В draw, constraints и target разрешены ТОЛЬКО имена из points:
    слова вроде "center", "O1", "tangent" без объявления — ошибка.
-9. Если условие противоречиво либо нужная операция не поддерживается, верни
-   {"error":"UNSUPPORTED_CONSTRUCTION", "notes":"объяснение"} и ничего больше.
+9. Не возвращай UNSUPPORTED_CONSTRUCTION, если фигуру можно получить цепочкой
+   доступных операций и ограничений. Сначала разбей фразу на отношения:
+   доли отрезка — divide_segment(A,B,value=доля); параллель через M к AN
+   — D=line_intersect(C,A,M,R), где R=translate(M,A,N);
+   продолжение CA за A проверь on_segment(A,C,D), но НЕ on_segment(D,C,A).
+   Доказанные геометрией аффинные зависимости тоже можно задавать точно:
+   если M,N делят BC на три части, MD∥AN и D лежит на CA,
+   то A=midpoint(C,D), значит D=reflect_point(C,A).
+   cos(2∠CAN)=q задавай cos_double_angle([C,A,N],value=q), не
+   придумывай величину ∠CAN и не превращай q в длину.
+   Если часть условия не выражается, не опускай её молча: только после
+   попытки разложения верни {"error":"UNSUPPORTED_CONSTRUCTION",
+   "notes":"какое именно отношение нельзя проверить"}.
 10. Можно рисовать бесконечные lines и rays (пары точек), aux_lines/aux_rays,
     aux_points (новые точки только для решения); equal_marks:
     [{"pts":["A","B"],"count":1,"layer":"main"}] ставит засечки равных длин.
@@ -446,7 +457,12 @@ def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
     system = SYS_AUX if with_aux else SYS_FORMALIZE
     user = problem if not feedback else (
         f"{problem}\n\nПРЕДЫДУЩАЯ ПОПЫТКА ОТКЛОНЕНА ДВИЖКОМ: {feedback}\n"
-        "Исправь план. Верни полный JSON заново.")
+        + ("Предыдущий ответ отказался строить фигуру. Попробуй использовать "
+           "free_point с явными ограничениями, divide_segment, translate, "
+           "line_intersect и cos_double_angle вместо новой операции. "
+           "Не теряй ни одного условия. Верни полный JSON заново."
+           if prev_code == "UNSUPPORTED_CONSTRUCTION" else
+           "Исправь план. Верни полный JSON заново."))
     bound = len((system + user).encode("utf-8")) + 512
     if not budget.can_afford(model, max_out, bound) and model == "deepseek-v4-pro":
         model, max_out = "deepseek-v4-flash", min(max_out, 16000)

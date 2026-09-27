@@ -59,6 +59,8 @@ CONSTRAINTS: dict[str, dict[str, Any]] = {
     "dist_eq":       {"pts": 4, "value": False, "doc": "|AB| = |CD|"},
     "dist_ratio":    {"pts": 4, "value": True,  "doc": "|AB| = value * |CD|"},
     "angle":         {"pts": 3, "value": True,  "doc": "угол ABC (вершина B) = value градусов"},
+    "cos_double_angle": {"pts": 3, "value": True,
+                         "doc": "cos(2∠ABC) = value, value в [-1,1]; угол при B"},
     "angle_eq":      {"pts": 6, "value": False, "doc": "угол ABC = угол DEF"},
     "collinear":     {"pts": 3, "value": False, "doc": "A, B, C на одной прямой"},
     "perpendicular": {"pts": 4, "value": False, "doc": "AB ⟂ CD"},
@@ -358,6 +360,8 @@ def validate_plan(plan: FigurePlan) -> list[str]:
                 raise PlanError("BAD_VALUE", f"{c.type}.value должно быть положительным")
             if c.type == "angle" and not 0 < c.value < 180:
                 raise PlanError("BAD_VALUE", "angle.value должно быть между 0 и 180 градусами")
+            if c.type == "cos_double_angle" and not -1 <= c.value <= 1:
+                raise PlanError("BAD_VALUE", "cos_double_angle.value должно быть в [-1,1]")
 
     fixed_distances = {frozenset(c.args): c.value for c in plan.constraints if c.type == "dist"}
     for c in plan.constructions:

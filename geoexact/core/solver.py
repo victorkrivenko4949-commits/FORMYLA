@@ -137,6 +137,10 @@ def residuals(plan: FigurePlan, coords: dict[str, np.ndarray]) -> np.ndarray:
             A, B, C = P
             res[i] = _angle(A, B, C) - math.radians(float(c.value))
 
+        elif t == "cos_double_angle":
+            A, B, C = P
+            res[i] = math.cos(2 * _angle(A, B, C)) - float(c.value)
+
         elif t == "angle_eq":
             A, B, C, D, E, F = P
             res[i] = _angle(A, B, C) - _angle(D, E, F)
