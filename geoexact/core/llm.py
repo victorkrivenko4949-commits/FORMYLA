@@ -250,7 +250,15 @@ SYS_FORMALIZE = """Ты переводишь условие планиметри
     и AC за C задавай aux_extensions [[A,B],[A,C]]. Внешний угол при B
     задаётся angle_marks pts:[A,B,I_A], reverse_first:true; его равная
     половина pts:[I_A,B,C] с тем же count. При C аналогично.
-    Не маркируй равными углы/отрезки только из-за сходства на рисунке."""
+    Не маркируй равными углы/отрезки только из-за сходства на рисунке.
+21. «Докажите, что BE=BF» — это НЕ измерение: target.kind="none",
+    target.args=[]. Равенство проверяется независимо по координатам.
+    Не создавай target.kind="dist_eq", "proof" или "equality".
+22. Для F на AC с CF=BD: R=translate(C,B,D) даёт CR=BD,
+    F=line_circle(A,C,C,R,value=0) выбирает точку между A и C
+    (проверяй on_segment(F,A,C)), а E=translate(D,C,F) задаёт
+    параллелограмм CDEF. Не ставь F=line_intersect(A,C,B,D):
+    если D лежит на AB, это возвращает A, а не нужную точку."""
 
 SYS_AUX = SYS_FORMALIZE + """
 
@@ -447,6 +455,24 @@ def formalize(sess, problem: str, cls: str, with_aux: bool, budget: Budget,
     d = _parse_json(txt)
     if "error" in d:
         raise PlanError(str(d["error"]), d.get("notes", ""))
+    # A proof of segment equality has no scalar measurement target. Models
+    # sometimes invent target.kind="dist_eq"/"proof" despite the schema.
+    # Only this explicitly recognized proof form is safely normalizable;
+    # unrelated unknown kinds must still fail schema validation.
+    from .semantics import proof_equality
+    from .schema import TARGETS
+    asserted = proof_equality(problem)
+    target = d.get("target") if isinstance(d, dict) else None
+    if (asserted and isinstance(target, dict)
+            and isinstance(target.get("kind"), str)
+            and target["kind"] not in TARGETS
+            and isinstance(d.get("points"), list)
+            and all(isinstance(n, str) for n in d["points"])
+            and set("".join(asserted)) <= set(d.get("points", []))
+            and isinstance(target.get("args", []), list)
+            and all(isinstance(n, str) for n in target.get("args", []))
+            and set(target.get("args", [])) <= set(d.get("points", []))):
+        d["target"] = {"kind": "none", "args": []}
     plan = FigurePlan.from_dict(d)
     warn = validate_plan(plan)          # этап 5
     if not (plan.draw.segments or plan.draw.lines or plan.draw.rays
