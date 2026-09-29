@@ -116,8 +116,41 @@ def _key(text: str, with_aux: bool) -> str:
     return hashlib.sha256(f"{ENGINE_VERSION}|{text}|{int(with_aux)}".encode()).hexdigest()[:20]
 
 
-def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
-             use_cache: bool = True, n_seeds: int = 24, max_retries: int = 2) -> Result:
+_NUMERIC_ERRORS = (ValueError, TypeError, ZeroDivisionError, FloatingPointError,
+                   OverflowError, ArithmeticError, KeyError, IndexError, AttributeError)
+
+
+def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
+    """Public entry point: never raises; an internal fault degrades to a sketch."""
+    try:
+        return _generate(problem, with_aux, **kwargs)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except Exception as exc:  # noqa: BLE001 - last line of defence for the user
+        import logging
+        logging.getLogger(__name__).exception("GeoExact internal error")
+        text = _norm(problem) if isinstance(problem, str) else ""
+        failed = Result(False, "0-internal", "INTERNAL_ERROR",
+                        f"внутренняя ошибка построения ({type(exc).__name__})")
+        sketch = _sketch_result(text, with_aux, failed) if text else None
+        if sketch is not None:
+            sketch.warnings.append(f"INTERNAL: {type(exc).__name__}")
+            return sketch
+        return failed
+
+
+def _coerce_formalized(res):
+    """The model adapter must return (FigurePlan, warnings); anything else is BAD_JSON."""
+    from .schema import FigurePlan
+    if (not isinstance(res, tuple) or len(res) != 2
+            or not isinstance(res[0], FigurePlan)):
+        raise PlanError("BAD_JSON", "модель вернула не план чертежа")
+    plan, warn = res
+    return plan, [str(w) for w in (warn or []) if isinstance(w, str)]
+
+
+def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
+              use_cache: bool = True, n_seeds: int = 24, max_retries: int = 2) -> Result:
     from . import constructions  # noqa: F401  (регистрация операций)
     from .solver import solve
     from .gates import rank_solutions
@@ -192,8 +225,13 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         # ------------------------------------------------------ этап 2
         try:
             c = L.classify(sess, text, budget)
+            if not isinstance(c, dict):
+                raise PlanError("BAD_JSON", "классификатор вернул не объект")
         except PlanError as e:
             failed = Result(False, "2-classify", e.code, str(e))
+            return finish(_sketch_result(text, with_aux, failed) or failed)
+        except _NUMERIC_ERRORS + (RuntimeError, OSError) as e:
+            failed = Result(False, "2-classify", "API_ERROR", type(e).__name__)
             return finish(_sketch_result(text, with_aux, failed) or failed)
     else:
         c = {"ok": True, "class": "M", "space": "plane"}
@@ -260,7 +298,14 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 warn = [w for w in validate_plan(plan)
                         if not w.startswith("UNDERDETERMINED:")]
             else:
-                plan, warn = L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code)
+                try:
+                    plan, warn = _coerce_formalized(
+                        L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code))
+                    validate_plan(plan)
+                except PlanError:
+                    raise
+                except _NUMERIC_ERRORS + (RuntimeError, OSError) as e:
+                    raise PlanError("BAD_JSON", f"ответ модели не разобран ({type(e).__name__})") from e
         except PlanError as e:
             last = Result(False, "4-formalize" if e.code not in
                           ("BUDGET_EXCEEDED",) else "3-route", e.code, str(e),
@@ -291,7 +336,9 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                     break
             if not sols:
                 sols = solve(plan, n_seeds=n_seeds, seed=0)
-        except PlanError as e:
+        except (PlanError,) + _NUMERIC_ERRORS as e:
+            if not isinstance(e, PlanError):
+                e = PlanError("DEGENERATE", f"план не исполняется ({type(e).__name__})")
             last = Result(False, "6-solve", e.code, str(e), plan=plan.to_dict(),
                           cls=cls, with_aux=with_aux, retries=attempt)
             feedback = f"движок не построил фигуру — {e}"
