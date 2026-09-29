@@ -73,3 +73,16 @@ def test_worker_timeout_returns_sketch(monkeypatch):
     assert "<svg" in payload["svg"] and "plan" not in payload
     empty = jobs.run_generation("угол 30°", False)
     assert not empty["ok"] and empty["reason"] == "TIMEOUT"
+
+
+def test_bounded_call_gives_up_on_a_connection_kept_alive_past_the_deadline():
+    import time as _t
+    import requests
+    from geoexact.core import llm
+    started = _t.time()
+    with pytest.raises(requests.Timeout):
+        llm._bounded_call(lambda: _t.sleep(5), 0.4)     # keep-alive: bytes keep coming
+    assert _t.time() - started < 2
+    assert llm._bounded_call(lambda: 7, 1.0) == 7
+    with pytest.raises(ValueError):
+        llm._bounded_call(lambda: (_ for _ in ()).throw(ValueError("x")), 1.0)

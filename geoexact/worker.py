@@ -9,7 +9,8 @@ def main():
     # Enforce a wall-clock limit even if Gunicorn dies and this child is orphaned.
     import signal
     signal.signal(signal.SIGALRM, lambda *_: os._exit(124))
-    signal.alarm(290)
+    # Just after the pipeline's own limit; jobs.py then serves the keyword sketch.
+    signal.alarm(int(min(290, float(os.getenv("GEOEXACT_TIME_LIMIT", "170")) + 25)))
     from .jobs import failure
     if not os.environ.get("DEEPSEEK_API_KEY"):
         print(json.dumps(failure("NOT_CONFIGURED", "Сервис ещё не настроен.")))

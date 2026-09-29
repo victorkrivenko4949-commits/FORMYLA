@@ -217,11 +217,14 @@ def run_generation(problem, with_aux):
         process = subprocess.run(
             [sys.executable, "-m", "geoexact.worker"],
             input=json.dumps({"problem": problem, "with_aux": with_aux}),
-            text=True, capture_output=True, timeout=300, env=env,
+            text=True, capture_output=True, timeout=215, env=env,
         )
     except subprocess.TimeoutExpired:
         return _sketch_payload(problem, with_aux) or failure("TIMEOUT",
             "Превышено время генерации. Возможен расход API; автоматического повторения нет.")
     if process.returncode != 0:
+        if process.returncode in (124, -14):        # the worker's own time alarm
+            return _sketch_payload(problem, with_aux) or failure("TIMEOUT",
+                "Превышено время генерации. Возможен расход API; автоматического повторения нет.")
         return failure("WORKER_ERROR", "Не удалось завершить генерацию.")
     return json.loads(process.stdout)
