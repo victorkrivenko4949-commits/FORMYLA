@@ -88,9 +88,12 @@ def test_model_cannot_report_wrong_figure_as_verified(monkeypatch):
     monkeypatch.setattr(llm, "formalize",
                         lambda *_, **__: (wrong_plan(), []))
     result = generate(text, sess=object(), use_cache=False, max_retries=0)
-    assert not result.ok
-    assert result.reason == "SEMANTIC_MISMATCH"
-    assert "точка F" in result.detail
+    # A wrong model figure is never reported as verified: it is shown
+    # as a best-effort sketch with the exact mismatch in the warnings.
+    assert result.ok and result.verification == "approximate"
+    assert result.stage == "9-render-fallback"
+    assert result.measured is None
+    assert "точка F" in " ".join(result.warnings)
 
 
 @pytest.mark.parametrize("mutator,expected", [

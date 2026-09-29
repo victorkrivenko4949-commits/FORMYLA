@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import json
 import pathlib
 import re
@@ -22,7 +23,7 @@ from . import llm as L
 
 CACHE = pathlib.Path(__file__).resolve().parent.parent / "cache"
 CACHE.mkdir(exist_ok=True)
-ENGINE_VERSION = "2.5"
+ENGINE_VERSION = "2.6"
 
 
 @dataclass
@@ -62,12 +63,94 @@ def _norm(text: str) -> str:
     return t
 
 
+SIMPLIFY_FEEDBACK = (
+    "Все предыдущие планы не удалось построить. Построй УПРОЩЁННЫЙ, но "
+    "гарантированно исполнимый план: основная фигура из free_point, точки на "
+    "сторонах через divide_segment, пересечения через line_intersect, "
+    "середины через midpoint. Используй только простые операции и не больше "
+    "одной dist для масштаба. Условия, которые не удаётся выразить, НЕ "
+    "добавляй, а перечисли одной строкой в notes. Никогда не возвращай error."
+)
+
+# Wall-clock limit for starting one more LLM attempt (worker alarm is 590 s).
+_EXTRA_ATTEMPT_DEADLINE = 300.0
+
+
+def _finite_coords(sol) -> bool:
+    import math
+    coords = getattr(sol, "coords", None) or {}
+    try:
+        values = [float(v) for p in coords.values() for v in p]
+    except (TypeError, ValueError):
+        return False
+    return len(coords) >= 2 and all(math.isfinite(v) and abs(v) < 1e9 for v in values)
+
+
+def _sketch_result(text: str, with_aux: bool, base: "Result | None") -> "Result | None":
+    """Deterministic keyword sketch when nothing else is drawable (no LLM)."""
+    from .sketch import sketch_plan
+    from .constructions import execute
+    from .solver import Solution
+    from .render import render_svg
+    try:
+        built = sketch_plan(text)
+        if built is None:
+            return None
+        plan, free = built
+        coords = execute(plan, free_values=free)
+        sol = Solution(coords=coords, residual=0.0, ok=True)
+        if not _finite_coords(sol):
+            return None
+        svg = render_svg(plan, sol, gate=None, show_aux=with_aux)
+    except Exception:  # noqa: BLE001 - a sketch must never break the pipeline
+        return None
+    return Result(True, "9-render-sketch", "", "", svg=svg, svg_base=svg,
+                  plan=plan.to_dict(), with_aux=with_aux,
+                  cls=getattr(base, "cls", "") or "",
+                  warnings=["SKETCH: построен схематичный чертёж по ключевым словам "
+                            "условия; пропорции условные, проверьте его по тексту задачи."],
+                  notes=plan.notes, verification="sketch")
+
+
 def _key(text: str, with_aux: bool) -> str:
     return hashlib.sha256(f"{ENGINE_VERSION}|{text}|{int(with_aux)}".encode()).hexdigest()[:20]
 
 
-def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
-             use_cache: bool = True, n_seeds: int = 24, max_retries: int = 2) -> Result:
+_NUMERIC_ERRORS = (ValueError, TypeError, ZeroDivisionError, FloatingPointError,
+                   OverflowError, ArithmeticError, KeyError, IndexError, AttributeError)
+
+
+def generate(problem: str, with_aux: bool = False, **kwargs) -> Result:
+    """Public entry point: never raises; an internal fault degrades to a sketch."""
+    try:
+        return _generate(problem, with_aux, **kwargs)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except Exception as exc:  # noqa: BLE001 - last line of defence for the user
+        import logging
+        logging.getLogger(__name__).exception("GeoExact internal error")
+        text = _norm(problem) if isinstance(problem, str) else ""
+        failed = Result(False, "0-internal", "INTERNAL_ERROR",
+                        f"внутренняя ошибка построения ({type(exc).__name__})")
+        sketch = _sketch_result(text, with_aux, failed) if text else None
+        if sketch is not None:
+            sketch.warnings.append(f"INTERNAL: {type(exc).__name__}")
+            return sketch
+        return failed
+
+
+def _coerce_formalized(res):
+    """The model adapter must return (FigurePlan, warnings); anything else is BAD_JSON."""
+    from .schema import FigurePlan
+    if (not isinstance(res, tuple) or len(res) != 2
+            or not isinstance(res[0], FigurePlan)):
+        raise PlanError("BAD_JSON", "модель вернула не план чертежа")
+    plan, warn = res
+    return plan, [str(w) for w in (warn or []) if isinstance(w, str)]
+
+
+def _generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
+              use_cache: bool = True, n_seeds: int = 24, max_retries: int = 2) -> Result:
     from . import constructions  # noqa: F401  (регистрация операций)
     from .solver import solve
     from .gates import rank_solutions
@@ -92,7 +175,13 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     from .semantics import preflight_condition_error
     condition_error = preflight_condition_error(text)
     if condition_error:
-        return Result(False, "1-normalize", "INVALID_CONDITION", condition_error)
+        failed = Result(False, "1-normalize", "INVALID_CONDITION", condition_error)
+        sketch = _sketch_result(text, with_aux, failed)
+        if sketch is None:
+            return failed
+        # Draw the figure anyway, but never build on an impossible value.
+        sketch.warnings.insert(0, "INVALID_CONDITION: " + condition_error)
+        return sketch
     ck = _key(text, with_aux)
     cf = CACHE / f"{ck}.json"
     if use_cache and cf.exists():
@@ -108,7 +197,7 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         res.seconds = round(time.time() - t_start, 2)
         res.usage = [vars(u) for u in budget.calls]
         res.cost_uncertain = budget.uncertain
-        if res.ok and use_cache:
+        if res.ok and use_cache and res.verification not in ("approximate", "simplified", "sketch"):
             d = dict(vars(res)); d.pop("from_cache", None)
             fd, temp = tempfile.mkstemp(dir=CACHE, prefix=ck, suffix=".tmp")
             try:
@@ -126,6 +215,7 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
     from .semantics import (common_plan, proof_parallelogram_plan, trisected_parallel_plan,
                             requests_circumcircle,
                             requests_incircle, requests_rhombus,
+                            _claims_incenter_arc_bisector as _claims_bisector_arc,
                             semantic_failures, theorem_plan)
     special_plan = (theorem_plan(text, with_aux)
                     or common_plan(text, with_aux)
@@ -135,8 +225,14 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         # ------------------------------------------------------ этап 2
         try:
             c = L.classify(sess, text, budget)
+            if not isinstance(c, dict):
+                raise PlanError("BAD_JSON", "классификатор вернул не объект")
         except PlanError as e:
-            return finish(Result(False, "2-classify", e.code, str(e)))
+            failed = Result(False, "2-classify", e.code, str(e))
+            return finish(_sketch_result(text, with_aux, failed) or failed)
+        except _NUMERIC_ERRORS + (RuntimeError, OSError) as e:
+            failed = Result(False, "2-classify", "API_ERROR", type(e).__name__)
+            return finish(_sketch_result(text, with_aux, failed) or failed)
     else:
         c = {"ok": True, "class": "M", "space": "plane"}
     if not c.get("ok", True):
@@ -169,7 +265,32 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
 
     # ---------------------------------------------------------- этапы 3-8
     feedback, last, prev_code = "", None, ""
-    for attempt in range((0 if special_plan is not None else max_retries) + 1):
+    # Candidates for a best-effort drawing when strict verification fails:
+    # (priority, attempt, plan, solution, reasons). Lower priority is better:
+    # 0 — only derived annotations failed; 1 — readability only; 2 — the
+    # wording check failed although plan constraints hold; 3 — correctness
+    # gate failed; 4 — the solver did not converge (approximate coordinates).
+    candidates: list[tuple] = []
+
+    def keep(priority, plan_, sol_, reasons):
+        if sol_ is not None and _finite_coords(sol_):
+            candidates.append((priority, len(candidates), plan_, sol_,
+                               [r for r in reasons if r][:4]))
+
+    total_attempts = (1 if special_plan is not None else max_retries + 2)
+    for attempt in range(total_attempts):
+        simplified = False
+        if special_plan is None and attempt == total_attempts - 1:
+            # Last resort: a simplified but executable plan, only when no
+            # earlier attempt produced anything drawable.
+            if (candidates or budget.uncertain
+                    or time.time() - t_start > _EXTRA_ATTEMPT_DEADLINE
+                    or (last is not None and last.reason in
+                        ("BUDGET_EXCEEDED", "API_ERROR", "NETWORK_UNCERTAIN"))):
+                break
+            feedback = SIMPLIFY_FEEDBACK + (f" Предыдущая ошибка: {feedback}" if feedback else "")
+            prev_code = "SIMPLIFY"
+            simplified = True
         # этап 3 маршрутизация + этап 4 формализация + этап 5 валидация
         try:
             if special_plan is not None:
@@ -177,7 +298,14 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 warn = [w for w in validate_plan(plan)
                         if not w.startswith("UNDERDETERMINED:")]
             else:
-                plan, warn = L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code)
+                try:
+                    plan, warn = _coerce_formalized(
+                        L.formalize(sess, text, cls, with_aux, budget, feedback, prev_code))
+                    validate_plan(plan)
+                except PlanError:
+                    raise
+                except _NUMERIC_ERRORS + (RuntimeError, OSError) as e:
+                    raise PlanError("BAD_JSON", f"ответ модели не разобран ({type(e).__name__})") from e
         except PlanError as e:
             last = Result(False, "4-formalize" if e.code not in
                           ("BUDGET_EXCEEDED",) else "3-route", e.code, str(e),
@@ -208,7 +336,9 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                     break
             if not sols:
                 sols = solve(plan, n_seeds=n_seeds, seed=0)
-        except PlanError as e:
+        except (PlanError,) + _NUMERIC_ERRORS as e:
+            if not isinstance(e, PlanError):
+                e = PlanError("DEGENERATE", f"план не исполняется ({type(e).__name__})")
             last = Result(False, "6-solve", e.code, str(e), plan=plan.to_dict(),
                           cls=cls, with_aux=with_aux, retries=attempt)
             feedback = f"движок не построил фигуру — {e}"
@@ -236,6 +366,9 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                         feedback += ": " + "; ".join(significant)
                 except (PlanError, ValueError, TypeError):
                     pass
+            if sols:
+                best = min(sols, key=lambda s: getattr(s, "residual", float("inf")))
+                keep(4, plan, best, ["условия выполнены лишь приближённо"])
             feedback += (". Проверь правильность угловых вершин и ветвей; "
                          "если точка на стороне определяется лучом из вершины, "
                          "используй angle_ray с 2 аргументами и line_intersect.")
@@ -254,6 +387,9 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 faithful.append(s)
         if not faithful:
             details = "; ".join(dict.fromkeys(semantic_errors))
+            ranked_any = rank_solutions(plan, good, strict_readability=False)
+            keep(2, plan, ranked_any[0][0] if ranked_any else good[0],
+                 list(dict.fromkeys(semantic_errors)))
             last = Result(False, "7-semantics", "SEMANTIC_MISMATCH",
                           details, plan=plan.to_dict(), cls=cls,
                           with_aux=with_aux, retries=attempt)
@@ -268,9 +404,14 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 advice = (". Построй невырожденный ромб с равными сторонами "
                           "AB=BC=CD=DA и покажи все четыре стороны в draw.segments. "
                           "Не ссылайся на точки до их построения.")
-            else:
+            elif _claims_bisector_arc(text):
                 advice = (". Используй bisector_circumcircle(W,[A,B,C]), "
                           "не bisector_point; не выдумывай длины сторон.")
+            else:
+                advice = (". Исправь именно эти отношения: точки на сторонах "
+                          "строй divide_segment/line_intersect, отношения вида "
+                          "BD:DC=1:2 — divide_segment(B,C,value=1/3); "
+                          "не выдумывай длин, которых нет в условии.")
             feedback = "План не соответствует исходному условию: " + details + advice
             continue
         good = faithful
@@ -290,6 +431,7 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                 if w not in uniq:
                     uniq.append(w)
             det = "; ".join(uniq[:6]) or "причина не определена"
+            keep(3, plan, good[0], uniq[:3] or ["проверка корректности не пройдена"])
             last = Result(False, "7-correctness", "GATE_CORRECTNESS", det,
                           plan=plan.to_dict(), cls=cls, with_aux=with_aux, retries=attempt)
             feedback = "построенная фигура не прошла проверку: " + det
@@ -303,6 +445,7 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
                                      and "O" in plan.draw.hide_labels)
                              )]
         if not gate.ok:
+            keep(1, plan, sol, ["чертёж может быть плохо читаемым: " + "; ".join(gate.failures[:2])])
             last = Result(False, "8-readability", "GATE_READABILITY",
                           "; ".join(gate.failures), plan=plan.to_dict(),
                           cls=cls, with_aux=with_aux, retries=attempt)
@@ -311,6 +454,7 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
 
         # ---------------------------------------------------------- этап 9
         from .annotations import enrich_annotations
+        plain_plan = plan
         plan = enrich_annotations(plan, sol, with_aux=with_aux, problem_text=text)
         from .completion import complete_intersection_support
         plan, completion_warn = complete_intersection_support(plan, sol)
@@ -320,6 +464,7 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         from .gates import gate_correctness
         after_marks = gate_correctness(plan, sol)
         if not after_marks.ok:
+            keep(0, plain_plan, sol, ["часть автоматических отметок не показана"])
             last = Result(False, "9-annotations", "GATE_CORRECTNESS",
                           "; ".join(after_marks.failures), plan=plan.to_dict(),
                           cls=cls, with_aux=with_aux, retries=attempt)
@@ -329,6 +474,7 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
             svg = render_svg(plan, sol, gate=gate, show_aux=with_aux)
             svg_base = render_svg(plan, sol, gate=gate, show_aux=False) if with_aux else svg
         except PlanError as e:
+            keep(0, plain_plan, sol, ["часть оформления не удалось показать"])
             last = Result(False, "9-render", e.code, str(e), cls=cls,
                           with_aux=with_aux, retries=attempt, plan=plan.to_dict())
             feedback = str(e)
@@ -352,10 +498,47 @@ def generate(problem: str, with_aux: bool = False, *, sess=None, budget=None,
         svg_detail=detail_view(plan,sol,show_aux=with_aux)
         if svg_detail:
             warn.append("DETAIL_VIEW: исходная фигура мала на общем виде; приложен увеличенный фрагмент")
+        if simplified:
+            warn.insert(0, "SIMPLIFIED: чертёж построен по упрощённой схеме; часть условий "
+                           "могла быть опущена" + (f" ({plan.notes})" if plan.notes else ""))
         return finish(Result(True, "9-render", "", "", svg=svg, plan=plan.to_dict(),
                              svg_base=svg_base, svg_detail=svg_detail, measurement_range=value_range,
-                             measured=gate.measured, cls=cls, with_aux=with_aux,
+                             measured=None if simplified else gate.measured,
+                             cls=cls, with_aux=with_aux,
                              retries=attempt, warnings=warn + gate.warnings + render_warn,
-                             notes=plan.notes))
+                             notes=plan.notes,
+                             verification="simplified" if simplified else "constraints_only"))
 
-    return finish(last or Result(False, "4-formalize", "UNKNOWN", ""))
+    # ------------------------------------------------------ best-effort
+    # Strict verification failed on every attempt. Instead of an error, show
+    # the most trustworthy drawing that exists, labelled as not fully checked.
+    from .gates import measure_target
+    for priority, _, cplan, csol, reasons in sorted(candidates, key=lambda c: c[:2]):
+        try:
+            svg = render_svg(cplan, csol, gate=None, show_aux=with_aux)
+            svg_base = render_svg(cplan, csol, gate=None, show_aux=False) if with_aux else svg
+        except Exception:  # noqa: BLE001 - try the next candidate
+            continue
+        measured = None
+        if priority <= 1:
+            try:
+                measured = measure_target(cplan, csol.coords)
+            except Exception:  # noqa: BLE001
+                measured = None
+        if priority == 0:
+            warns = ["APPROXIMATE: чертёж проверен, часть автоматических отметок не показана"]
+        else:
+            warns = ["APPROXIMATE: не подтверждено автоматически: "
+                     + ("; ".join(reasons) or "часть условия")]
+        if priority >= 3:
+            warns.append("Размеры и углы на рисунке могут быть неточными.")
+        return finish(Result(True, "9-render-fallback", "", "", svg=svg,
+                             svg_base=svg_base, plan=cplan.to_dict(),
+                             measured=measured if isinstance(measured, (int, float))
+                             and math.isfinite(measured) else None,
+                             cls=cls, with_aux=with_aux, retries=attempt,
+                             warnings=warns, notes=cplan.notes,
+                             verification="approximate"))
+
+    last = last or Result(False, "4-formalize", "UNKNOWN", "")
+    return finish(_sketch_result(text, with_aux, last) or last)

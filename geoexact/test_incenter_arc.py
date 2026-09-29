@@ -79,9 +79,12 @@ def test_wrong_w_on_bc_is_not_reported_as_verified(monkeypatch):
     monkeypatch.setattr(llm, "formalize",
                         lambda *_, **__: (wrong_plan(), []))
     result = generate(text, sess=object(), use_cache=False, max_retries=0)
-    assert not result.ok
-    assert result.reason == "SEMANTIC_MISMATCH"
-    assert "описанной окружности" in result.detail
+    # A wrong model figure is never reported as verified: it is shown
+    # as a best-effort sketch with the exact mismatch in the warnings.
+    assert result.ok and result.verification == "approximate"
+    assert result.stage == "9-render-fallback"
+    assert result.measured is None
+    assert "описанной окружности" in " ".join(result.warnings)
 
 
 def test_invented_lengths_rejected_even_with_correct_w():
@@ -185,6 +188,9 @@ def test_model_plan_with_wrong_excenter_is_rejected(monkeypatch):
     monkeypatch.setattr(llm, "formalize",
                         lambda *_, **__: (wrong, []))
     result = generate(text, sess=object(), use_cache=False, max_retries=0)
-    assert not result.ok
-    assert result.reason == "SEMANTIC_MISMATCH"
-    assert "вневписанным центром" in result.detail
+    # A wrong model figure is never reported as verified: it is shown
+    # as a best-effort sketch with the exact mismatch in the warnings.
+    assert result.ok and result.verification == "approximate"
+    assert result.stage == "9-render-fallback"
+    assert result.measured is None
+    assert "вневписанным центром" in " ".join(result.warnings)

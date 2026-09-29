@@ -29,9 +29,13 @@ def test_bare_negative_angle_is_diagnosed_before_model(monkeypatch):
     monkeypatch.setattr(llm, "classify",
                         lambda *_: pytest.fail("invalid OCR must not call an LLM"))
     result = generate(OCR, sess=object(), use_cache=False)
-    assert not result.ok
-    assert result.reason == "INVALID_CONDITION"
-    assert "возможно, перед скобкой пропущено cos" in result.detail
+    # The figure is still drawn as a sketch; the impossible value is reported
+    # and never used as a constraint.
+    assert result.ok and result.verification == "sketch"
+    assert result.measured is None
+    assert result.warnings[0].startswith("INVALID_CONDITION:")
+    assert "возможно, перед скобкой пропущено cos" in result.warnings[0]
+    assert {"M", "N"} <= set(result.plan["points"])
     assert preflight_condition_error(VALID) is None
     assert preflight_condition_error(
         _TRISECTOR_PREFIX + "если BC = 12, sin(2∠CAN) = -1/4."
@@ -50,9 +54,9 @@ def test_worker_reports_actionable_ocr_error():
     )
     assert p.returncode == 0, p.stderr
     data = json.loads(p.stdout)
-    assert data["reason"] == "INVALID_CONDITION"
-    assert "пропущено cos" in data["detail"]
-    assert not data["ok"]
+    assert data["ok"] and data["verification"] == "sketch"
+    assert "пропущено cos" in data["warnings"][0]
+    assert "plan" not in data
 
 
 @pytest.mark.parametrize("aux", [False, True])

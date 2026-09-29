@@ -490,6 +490,20 @@ def proof_equality(text: str) -> tuple[str, str] | None:
     return (match[1].upper(), match[2].upper()) if match else None
 
 
+_OPERATOR_BEFORE = re.compile(r"[:/·*×+\-^∙]\s*$")
+_OPERATOR_AFTER = re.compile(r"^(?:\s*[:/·*×+\-^∙]|[A-Za-zА-Яа-я(√])")
+
+
+def _plain_relation(text: str, start: int, end: int) -> bool:
+    """True for a bare 'XY = value' claim, not a term of a ratio/expression.
+
+    'BD : DC = 1 : 2' must not be read as DC = 1, and
+    'BD : DC = AE : EC' must not be read as DC = AE.
+    """
+    return not (_OPERATOR_BEFORE.search(text[max(0, start - 6):start])
+                or _OPERATOR_AFTER.match(text[end:end + 3]))
+
+
 def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
     """Check explicitly named 2D relationships independent of the LLM plan.
 
@@ -507,6 +521,10 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
         text, re.I,
     ):
         left, right = match[1].upper(), match[2].upper()
+        end = match.start() + len(re.match(r"[A-Z]{2}\s*=\s*[A-Z]{2}",
+                                           text[match.start():], re.I)[0])
+        if not _plain_relation(text, match.start(), end):
+            continue
         names = set(left + right)
         if not names <= P.keys():
             fails.append(f"отсутствуют точки равенства {left}={right}")
@@ -521,7 +539,7 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
         r"(?<![A-Z_])([A-Z]{2})\s*=\s*(\d+(?:[.,]\d+)?)\b", text, re.I,
     ):
         name, expected = match[1].upper(), numeric_mark_value(match[2])
-        if expected is None:
+        if expected is None or not _plain_relation(text, match.start(), match.end()):
             continue
         if not set(name) <= P.keys():
             fails.append(f"отсутствуют точки заданной длины {name}")
@@ -663,7 +681,63 @@ def _statement_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
             sides = {frozenset((names[i], names[(i + 1) % 4])) for i in range(4)}
             if not sides <= {frozenset(s) for s in plan.draw.segments}:
                 fails.append(f"не все стороны параллелограмма {names} показаны")
+    fails += _ratio_and_point_failures(_math_text(text), P)
     return fails
+
+
+_NAME = r"[A-Z](?:_?\d{1,2})?"
+_HYPOTHETICAL = re.compile(r"может\s+ли|верно\s+ли|возможно\s+ли|если\s+бы|предполож|неверно",
+                           re.I)
+
+
+def _point_key(name: str, P: dict) -> str | None:
+    for candidate in (name, name.replace("_", ""), re.sub(r"(\d)", r"_\1", name, count=1)):
+        if candidate in P:
+            return candidate
+    return None
+
+
+def _ratio_and_point_failures(text: str, P: dict) -> list[str]:
+    """Stated segment ratios and explicitly named points must be on the figure.
+
+    'BD : DC = 1 : 2', 'AE/EC = 1/3', 'AB : BC : CA = 3 : 4 : 5' are checked
+    as proportions (never as lengths); 'пересекаются в точке O' requires O.
+    """
+    fails: list[str] = []
+    seg = rf"({_NAME})({_NAME})(?![A-Za-z0-9_])"
+    for sentence in re.split(r"(?<=[.;!?])\s+", text):
+        if _HYPOTHETICAL.search(sentence):
+            continue
+        chains = re.finditer(
+            rf"(?<![A-Za-z0-9_])((?:{_NAME}){{2}}(?:\s*[:/]\s*(?:{_NAME}){{2}})+)(?![A-Za-z0-9_])"
+            r"\s*=\s*(\d+(?:[.,]\d+)?(?:\s*[:/]\s*\d+(?:[.,]\d+)?)+)(?![\d.,]*\s*[A-Za-z(√])",
+            sentence)
+        for m in chains:
+            segs = [re.match(seg, part.strip()) for part in re.split(r"[:/]", m[1])]
+            nums = [float(x.replace(",", ".")) for x in re.split(r"\s*[:/]\s*", m[2])]
+            if len(segs) != len(nums) or not all(segs) or min(nums) <= 0:
+                continue
+            keys = [(_point_key(g[1], P), _point_key(g[2], P)) for g in segs]
+            label = m[0].strip()
+            if not all(a and b for a, b in keys):
+                fails.append(f"отсутствуют точки отношения {label}")
+                continue
+            lengths = [float(np.linalg.norm(P[a] - P[b])) for a, b in keys]
+            if min(lengths) <= 1e-9:
+                fails.append(f"вырожденный отрезок в отношении {label}")
+                continue
+            for length, num in zip(lengths[1:], nums[1:]):
+                want = num / nums[0]
+                got = length / lengths[0]
+                if abs(got - want) > 1e-4 * max(want, 1e-9):
+                    fails.append(f"заданное отношение {label} не выполняется")
+                    break
+        for m in re.finditer(rf"точк[а-яё]*\s+((?:{_NAME})(?![A-Za-z0-9_])"
+                             rf"(?:\s*(?:,|и)\s*(?:{_NAME})(?![A-Za-z0-9_]))*)", sentence):
+            for name in re.findall(_NAME, m[1]):
+                if _point_key(name, P) is None:
+                    fails.append(f"на чертеже нет точки {name}, названной в условии")
+    return list(dict.fromkeys(fails))
 
 
 def semantic_failures(text: str, plan: FigurePlan, coords: dict) -> list[str]:
