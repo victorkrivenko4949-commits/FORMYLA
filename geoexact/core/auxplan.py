@@ -35,13 +35,16 @@ ALLOWED = {
 MAX_NEW_POINTS = 6
 _NAME = re.compile(r"^[A-Z](?:_?\d{1,2})?$")
 
-OP_DOC = """Разрешённые операции (out — НОВОЕ имя точки, args — уже существующие точки):
+OP_DOC = """Разрешённые операции (out — НОВОЕ имя точки, args — уже существующие точки; число k/t/градусы
+пишется ОТДЕЛЬНЫМ полем "value", а не в args):
 midpoint(A,B) — середина AB;
 divide_segment(A,B,value=t) — точка A+t·(B−A) (t>1 даёт продолжение за B);
 reflect_point(A,O) — точка, симметричная A относительно точки O;
 translate(A,B,C) — A+(C−B), то есть A, сдвинутая на вектор BC;
 parallel_point(A,B,C,value=k) — A+k·(C−B);
 line_intersect(A,B,C,D) — пересечение прямых AB и CD;
+parallel_intersect(P,A,B,C,D) — точка пересечения прямой, проведённой через P параллельно AB, с прямой CD
+  («через P провести прямую, параллельную AB, до пересечения с CD»);
 foot(P,A,B) — основание перпендикуляра из P на прямую AB;
 homothety(A,O,value=k) — O+k·(A−O);
 rotate(A,O,value=градусы) — поворот A вокруг O против часовой стрелки;
@@ -217,6 +220,34 @@ def claims_hold(idea: str, coords: dict) -> bool:
     return True
 
 
+def _expand_steps(steps, taken: set):
+    """Normalise model steps: a stray numeric last argument becomes `value`, and the
+    compound «parallel_intersect(P,A,B,C,D)» becomes two ordinary steps."""
+    out = []
+    for step in steps:
+        if not isinstance(step, dict):
+            return None
+        step = dict(step)
+        op, args = step.get("op"), step.get("args")
+        if op in ALLOWED and isinstance(args, list) and ALLOWED[op][1] and step.get("value") is None \
+                and len(args) == ALLOWED[op][0] + 1 and isinstance(args[-1], (int, float)) \
+                and not isinstance(args[-1], bool):
+            step["value"], step["args"] = args[-1], args[:-1]
+        if op == "parallel_intersect":
+            if not (isinstance(args, list) and len(args) == 5 and all(isinstance(a, str) for a in args)):
+                return None
+            p, a, b, c, d = args
+            helper = next((f"Z_{i}" for i in range(1, 100) if f"Z_{i}" not in taken), None)
+            if helper is None:
+                return None
+            taken.add(helper)
+            out.append({"op": "translate", "out": helper, "args": [p, a, b]})
+            out.append({"op": "line_intersect", "out": step.get("out"), "args": [p, helper, c, d]})
+            continue
+        out.append(step)
+    return out
+
+
 def apply_aux(plan, coords: dict, data) -> tuple | None:
     """Validate and execute an auxiliary plan. Returns (plan, coords) or None."""
     if not isinstance(data, dict) or not isinstance(data.get("steps"), list):
@@ -230,7 +261,10 @@ def apply_aux(plan, coords: dict, data) -> tuple | None:
         return None
     centre = pts.mean(axis=0)
     new: list[Construction] = []
-    for step in data["steps"]:
+    steps = _expand_steps(data["steps"], set(known) | set(plan.points))
+    if steps is None:
+        return None
+    for step in steps:
         if not isinstance(step, dict):
             return None
         op, out, args = step.get("op"), step.get("out"), step.get("args")

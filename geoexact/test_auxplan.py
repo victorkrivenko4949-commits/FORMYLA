@@ -176,9 +176,8 @@ def test_planner_not_called_in_plain_mode_but_always_asked_with_aux(monkeypatch,
     generate("Треугольник ABC со сторонами 5, 6, 7.", False, sess=object(), use_cache=False)
     assert calls == []
     generate("Дана трапеция ABCD, MN — средняя линия.", True, sess=object(), use_cache=False)
-    # even when the figure already has auxiliary lines, the model decides: one request
-    # with reasoning and one quick request
-    assert sorted(calls, key=bool) == [False, True]
+    # even when the figure already has auxiliary lines, the model decides
+    assert len(calls) == 1
 
 
 def test_collapsed_model_drawing_falls_back_to_sketch_with_construction(model):
@@ -280,7 +279,7 @@ def test_production_worker_path_starts_model_request_without_session(monkeypatch
     monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: calls.append(k.get("deep")) or
                         {"idea": "", "steps": []})
     r = generate(_PARALLELOGRAM_PROOF, True, use_cache=False)
-    assert r.ok and sorted(calls, key=bool) == [False, True]
+    assert r.ok and len(calls) == 1
 
 
 def test_drawing_that_contradicts_the_models_words_is_not_shown(monkeypatch):
@@ -291,3 +290,85 @@ def test_drawing_that_contradicts_the_models_words_is_not_shown(monkeypatch):
         "aux_segments": [["B", "G"]]})
     r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
     assert r.plan["draw"]["aux_segments"] == [] and "G" not in r.plan["points"]
+
+
+def _bce_expert(monkeypatch, text, data):
+    monkeypatch.setattr(llm, "expert_text", lambda *a, **k: text)
+    monkeypatch.setattr(llm, "aux_plan_from_text", lambda *a, **k: {**data, "_expert_text": text})
+    monkeypatch.setattr(llm, "aux_plan", lambda *a, **k: {"idea": "", "steps": []})
+
+
+BCE_STEPS = {"idea": "Через D параллельно AC до K на BC; тогда BK = BD.", "steps": [
+    {"op": "parallel_point", "out": "K", "args": ["D", "A", "C"], "value": 1.0}],
+    "aux_segments": [["D", "K"], ["K", "B"]]}
+
+
+def test_expert_answer_is_drawn_when_it_survives_the_checks(monkeypatch):
+    """Gemini's construction for BE = BF: K on BC with DK ∥ AC (proof: BKE = CBF)."""
+    from geoexact.core.semantics import _PARALLELOGRAM_PROOF
+    _bce_expert(monkeypatch, "Продлить ED до K на BC, DK ∥ AC. Тогда BK = BD и KE = BC.",
+                {"idea": "K на BC, DK ∥ AC", "steps": [
+                    {"op": "line_intersect", "out": "K", "args": ["D", "K0", "B", "C"]}]})
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    # whatever the steps do, an unusable answer must not break the drawing
+    assert r.ok
+
+
+def test_expert_words_that_contradict_the_drawing_are_rejected(monkeypatch):
+    from geoexact.core.semantics import _PARALLELOGRAM_PROOF
+    _bce_expert(monkeypatch, "Отложим G так, что DG = BD.", {
+        "idea": "G", "steps": [{"op": "divide_segment", "out": "G", "args": ["C", "D"], "value": 2}],
+        "aux_segments": [["B", "G"]]})
+    r = generate(_PARALLELOGRAM_PROOF, True, sess=object(), use_cache=False)
+    assert r.plan["draw"]["aux_segments"] == []
+
+
+def test_expert_without_key_falls_back_to_quick_answer(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    import pytest as _pt
+    with _pt.raises(llm.PlanError):
+        llm.expert_text(object(), "задача")
+
+
+def test_expert_stream_is_parsed(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+
+    class R:
+        status_code = 200
+
+        def iter_lines(self, decode_unicode=True):
+            yield 'data: {"choices":[{"delta":{"content":"Провести "}}]}'
+            yield ""
+            yield 'data: {"choices":[{"delta":{"content":"BE"},"finish_reason":"stop"}]}'
+            yield "data: [DONE]"
+
+    class S:
+        def post(self, url, **kw):
+            assert kw["stream"] is True and kw["json"]["model"] == llm.EXPERT_MODEL
+            assert kw["headers"]["Authorization"] == "Bearer k"
+            return R()
+    assert llm.expert_text(S(), "задача") == "Провести BE"
+
+
+def test_parallel_intersect_and_stray_value_are_normalised():
+    from geoexact.core.auxplan import apply_aux
+    from geoexact.core.semantics import _PARALLELOGRAM_PROOF, proof_parallelogram_plan
+    plan = proof_parallelogram_plan(_PARALLELOGRAM_PROOF, False)
+    coords = {k: np.asarray(v, float) for k, v in
+              next(s for s in solve(plan, n_seeds=6) if s.ok).coords.items()}
+    data = {"idea": "Через D параллельно AC до K на BC: BK = BD, KD = KC.", "steps": [
+        {"op": "parallel_intersect", "out": "K", "args": ["D", "A", "C", "B", "C"]}],
+        "aux_segments": [["D", "K"], ["E", "K"], ["B", "K"]]}
+    got = apply_aux(plan, coords, data)
+    assert got is not None
+    new_plan, new = got
+    n = np.linalg.norm
+    assert abs(n(new["B"] - new["K"]) - n(new["B"] - new["D"])) < 1e-9        # BK = BD
+    assert abs(n(new["K"] - new["D"]) - n(new["K"] - new["C"])) < 1e-9        # KD = KC
+    assert abs(n(new["K"] - new["E"]) - n(new["B"] - new["C"])) < 1e-9        # KE = BC
+    from geoexact.core.auxplan import claims_hold
+    assert claims_hold(data["idea"] + " KE = BC", new)
+    # a numeric last argument is the value, not a point
+    assert apply_aux(plan, coords, {"idea": "", "steps": [
+        {"op": "parallel_point", "out": "P", "args": ["D", "A", "C", 1]}],
+        "aux_segments": [["D", "P"]]}) is not None
